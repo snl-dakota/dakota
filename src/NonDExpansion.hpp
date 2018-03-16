@@ -199,6 +199,13 @@ protected:
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric);
 
+  /// helper function to manage different grid increment cases
+  void increment_grid(bool update_anisotropy = true);
+  /// helper function to manage different push increment cases
+  void push_increment();
+  /// helper function to manage different grid decrement cases
+  void decrement_grid();
+
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);
 
@@ -301,7 +308,7 @@ private:
   void reduce_decay_rate_sets(RealVector& min_decay);
 
   /// perform an adaptive refinement increment using generalized sparse grids
-  size_t increment_sets(Real& delta_star, bool apply_best = true);
+  size_t increment_sets(Real& delta_star, bool revert);
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 

@@ -947,78 +947,19 @@ void NonDExpansion::pre_refinement()
 
 size_t NonDExpansion::core_refinement(Real& metric, bool revert)
 {
+  size_t candidate = 0;
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
-    switch (expansionCoeffsApproach) {
-    case Pecos::QUADRATURE:           case Pecos::CUBATURE:
-    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
-      // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
-      NonDIntegration* nond_integration = (NonDIntegration*)
-	uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_integration->increment_grid();
-      update_expansion();
-      metric = compute_covariance_metric(revert);
-      if (revert) {
-	nond_integration->decrement_grid();
-	uSpaceModel.pop_approximation(true);// store increment to use in restore
-      }
-      break;
-    }
-    case Pecos::DEFAULT_REGRESSION: case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
-    case Pecos::SVD_LEAST_SQ_REGRESSION:
-    case Pecos::EQ_CON_LEAST_SQ_REGRESSION:
-    case Pecos::BASIS_PURSUIT:        case Pecos::BASIS_PURSUIT_DENOISING:
-    case Pecos::ORTHOG_MATCH_PURSUIT: case Pecos::LASSO_REGRESSION:
-    case Pecos::LEAST_ANGLE_REGRESSION:
-      // ramp expansion order and update regression samples, keeping
-      // initial collocation ratio (either user specified or inferred)
-      increment_order_and_grid(); // virtual fn defined for NonDPCE
-      update_expansion(); // invokes uSpaceModel.build_approximation()
-      metric = compute_covariance_metric(revert);
-      if (revert) {
-	decrement_order_and_grid();
-	uSpaceModel.pop_approximation(true);// store increment to use in restore
-      }
-      break;
-    }
-    return 0; // only one candidate
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
-    // Dimension adaptive refinement: define anisotropic preference
-    // vector from total Sobol' indices, averaged over response fn set.
-    RealVector dim_pref;
-    reduce_total_sobol_sets(dim_pref);
-    // incrementing grid & updating aniso wts best performed together
-    NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+    increment_grid(); // recompute anisotropy
     update_expansion();
     metric = compute_covariance_metric(revert);
     if (revert) {
-      nond_integration->decrement_grid();  // reuses latest dim_pref
-      uSpaceModel.pop_approximation(true); // store increment to use in restore
+      decrement_grid();
+      uSpaceModel.pop_approximation(true);// store increment to use in restore
     }
-    return 0; // only one candidate
     break;
-  }
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
-    // Dimension adaptive refinement: define anisotropic weight vector
-    // from min of spectral decay rates (PCE only) over response fn set.
-    RealVector aniso_wts;
-    reduce_decay_rate_sets(aniso_wts);
-    // incrementing grid & updating aniso wts best performed together
-    NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
-    update_expansion();
-    metric = compute_covariance_metric(revert);
-    if (revert) {
-      nond_integration->decrement_grid();  // reuses latest aniso_wts
-      uSpaceModel.pop_approximation(true); // store increment to use in restore
-    }
-    return 0; // only one candidate
-    break;
-  }
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: // SSG only
     // Dimension adaptive refinement using generalized sparse grids.
     // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
@@ -1027,9 +968,10 @@ size_t NonDExpansion::core_refinement(Real& metric, bool revert)
     // > Starting GSG from TPQ is conceptually straightforward but
     //   awkward in implementation (would need something like
     //   nond_sparse->ssg_driver->compute_tensor_grid()).
-    return increment_sets(metric, !revert); // best of several candidates
+    candidate = increment_sets(metric, revert); // best of several candidates
     break;
   }
+  return candidate;
 }
 
 
@@ -1045,28 +987,96 @@ void NonDExpansion::post_refinement(Real& metric)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     if (uSpaceModel.push_available()) {
-      switch (expansionCoeffsApproach) {
-      case Pecos::QUADRATURE: case Pecos::CUBATURE:
-      case Pecos::INCREMENTAL_SPARSE_GRID:
-      case Pecos::HIERARCHICAL_SPARSE_GRID: {
-	// ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
-	NonDIntegration* nond_integration = (NonDIntegration*)
-	  uSpaceModel.subordinate_iterator().iterator_rep();
-	nond_integration->increment_grid();
-	break;
-      }
-      default: // ramp expansion order and update regression samples
-	increment_order_and_grid(); // virtual fn defined for NonDPCE
-	break;
-      }
-      // can ignore best index since only one candidate for now
+      increment_grid(false); // don't update anisotropy weights
+      push_increment();
       uSpaceModel.push_approximation();
     }
     break;
   }
 }
 
-  
+
+void NonDExpansion::increment_grid(bool update_anisotropy)
+{
+  switch (refineControl) {
+  case Pecos::UNIFORM_CONTROL:
+    switch (expansionCoeffsApproach) {
+    case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+      NonDIntegration* nond_integration = (NonDIntegration*)
+	uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_integration->increment_grid(); break;
+    }
+    case Pecos::ORTHOG_LEAST_INTERPOLATION: // case Pecos::SAMPLING:
+      break;
+    default: // regression cases
+      increment_order_and_grid(); break;
+    }
+    break;
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
+    // Dimension adaptive refinement: define anisotropic preference
+    // vector from total Sobol' indices, averaged over response fn set.
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    if (update_anisotropy) { // weight SSG to emphasize larger Sobol indices
+      RealVector dim_pref;
+      reduce_total_sobol_sets(dim_pref);
+      nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
+    }
+    else // increment level while preserving current weighting / bounds
+      nond_integration->increment_grid_preference();
+    break;
+  }
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
+    // Dimension adaptive refinement: define anisotropic weight vector
+    // from min of spectral decay rates (PCE only) over response fn set.
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    if (update_anisotropy) { // weight SSG to emphasize slower decay
+      RealVector aniso_wts;
+      reduce_decay_rate_sets(aniso_wts);
+      nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
+    }
+    else // increment level while preserving current weighting / bounds
+      nond_integration->increment_grid_weights();
+    break;
+  }
+  }
+}
+
+
+void NonDExpansion::push_increment()
+{
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_integration->push_grid_increment(); // SparseGridDriver: INC2
+    break;
+  }
+  }
+}
+
+
+void NonDExpansion::decrement_grid()
+{
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_integration->decrement_grid();  break;
+  }
+  case Pecos::ORTHOG_LEAST_INTERPOLATION: // case Pecos::SAMPLING:
+    break;
+  default: // regression cases
+    decrement_order_and_grid();  break;
+  }
+}
+
+
 void NonDExpansion::
 configure_levels(size_t& num_lev, size_t& model_form, bool& multilevel,
 		 bool mf_precedence)
@@ -1339,40 +1349,30 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     // increment the grid and, if needed, the expansion order.
     // can ignore best_candidate (only one candidate for now).
+    increment_grid(false); // don't recompute anisotropy
+    push_increment();
+    uSpaceModel.push_approximation();
+    // adopt incremented state as new reference
     switch (expansionCoeffsApproach) {
     case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
-      // restore previously-incremented grid and approximation state
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
-      // -----------------------------------------------------------------------
-      nond_integration->increment_grid(); // SparseGridDriver: advance level
-      //nond_integration->increment_grid_preference(dim_pref);
-      //nond_integration->increment_grid_weights(aniso_wts);
-      // -----------------------------------------------------------------------
-      nond_integration->push_grid_increment();  // SparseGridDriver: INC2
-      uSpaceModel.push_approximation();
-      // adopt incremented state as new reference
-      nond_integration->merge_grid_increment(); // SparseGridDriver: INC3
+      nond_integration->merge_grid_increment(); // SparseGridDriver:INC3
       nond_integration->update_reference();
-      break;
     }
-    default: // ramp expansion order and update regression samples
-      increment_order_and_grid(); // virtual fn defined for NonDPCE
-      uSpaceModel.push_approximation();
-      break;
     }
-
-    // For distinct discrepancy, promotion of best candidate does not invalidate
-    // coefficient increments for other levels, as they are separate functions.
-    // Only the metric roll up must be updated when pushing existing expansion
-    // increments.  For recursive discrepancy, however, all levels above the
-    // selected candidate are invalidated.
-    //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-    //  for (lev=best_lev+1; lev<num_lev; ++lev)
-    //    uSpaceModel.clear_popped();
     break;
   }
+
+  // For distinct discrepancy, promotion of best candidate does not invalidate
+  // coefficient increments for other levels, as they are separate functions.
+  // Only the metric roll up must be updated when pushing existing expansion
+  // increments.  For recursive discrepancy, however, all levels above the
+  // selected candidate are invalidated.
+  //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+  //  for (lev=best_lev+1; lev<num_lev; ++lev)
+  //    uSpaceModel.clear_popped();
 
   // Update reference stats
   metric_roll_up();
@@ -1470,7 +1470,7 @@ void NonDExpansion::increment_specification_sequence()
 }
 
 
-size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
+size_t NonDExpansion::increment_sets(Real& delta_star, bool revert)
 {
   Cout << "\n>>>>> Begin evaluation of active index sets.\n";
 
@@ -1479,7 +1479,7 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
   std::set<UShortArray>::const_iterator cit, cit_star;
   Real delta; delta_star = -DBL_MAX;
   RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
-  bool revert = !apply_best; // can revert metrics immediately
+  bool apply_best = !revert;
 
   if (apply_best) { // store reference points for efficient restoration
     if (totalLevelRequests)     stats_ref = finalStatistics.function_values();

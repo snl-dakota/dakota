@@ -69,6 +69,7 @@ protected:
 
   void increment_grid();
   void increment_grid_preference(const RealVector& dim_pref);
+  void increment_grid_preference();
   void decrement_grid();
 
   int num_samples() const;
@@ -105,8 +106,13 @@ inline unsigned short NonDCubature::integrand_order() const
 { return cubDriver->integrand_order(); }
 
 
-/** Should not be used, but pure virtual must be defined. */
+/** Should not be used, but one of virtual function pair must be defined. */
 inline void NonDCubature::increment_grid_preference(const RealVector& dim_pref)
+{ increment_grid(); } // ignore dim_pref
+
+
+/** Should not be used, but one of virtual function pair must be defined. */
+inline void NonDCubature::increment_grid_preference()
 { increment_grid(); } // ignore dim_pref
 
 

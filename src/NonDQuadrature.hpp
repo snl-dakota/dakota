@@ -115,6 +115,8 @@ protected:
 
   void increment_grid_preference(const RealVector& dim_pref);
 
+  void increment_grid_preference();
+
   int num_samples() const;
 
 private:
@@ -273,6 +275,10 @@ inline void NonDQuadrature::decrement_grid()
 inline void NonDQuadrature::
 increment_grid_preference(const RealVector& dim_pref)
 { increment_grid_preference(dim_pref, dimQuadOrderRef); }
+
+
+inline void NonDQuadrature::increment_grid_preference()
+{ increment_grid_preference(dimPrefSpec, dimQuadOrderRef); }
 
 
 inline int NonDQuadrature::num_samples() const

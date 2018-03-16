@@ -61,6 +61,8 @@ public:
   /// update ssgDriver::ssgAnisoLevelWts and increment ssgDriver::ssgLevel
   /// based on specified anisotropic weighting
   void increment_grid_weights(const RealVector& aniso_wts);
+  /// increment ssgDriver::ssgLevel based on existing anisotropic weighting
+  void increment_grid_weights();
   /// decrement ssgDriver::ssgLevel
   void decrement_grid();
 
@@ -120,6 +122,12 @@ protected:
 
   void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
 
+  //
+  //- Heading: Member functions
+  //
+
+  const RealVector& anisotropic_weights() const;
+
 private:
 
   //
@@ -139,16 +147,20 @@ private:
 };
 
 
+inline void NonDSparseGrid::increment_grid_weights()
+{ increment_grid_weights(ssgDriver->anisotropic_weights()); }
+
+
+inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
+{ ssgLevelSpec = ssg_level; reset(); }
+
+
 inline void NonDSparseGrid::reset()
 {
   // restore user specification state prior to any uniform/adaptive refinement
   ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
 }
-
-
-inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
-{ ssgLevelSpec = ssg_level; reset(); }
 
 
 inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const
@@ -218,6 +230,10 @@ inline void NonDSparseGrid::merge_grid_increment()
 
 inline int NonDSparseGrid::num_samples() const
 { return ssgDriver->grid_size(); }
+
+
+inline const RealVector& NonDSparseGrid::anisotropic_weights() const
+{ return ssgDriver->anisotropic_weights(); }
 
 } // namespace Dakota
 
