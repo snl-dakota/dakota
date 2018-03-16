@@ -52,7 +52,11 @@ public:
 
   /// computes a grid increment and evaluates the new parameter sets
   virtual void evaluate_grid_increment();
-
+  /// restores a previously computed grid increment (no new evaluations)
+  virtual void push_grid_increment();
+  /// merges a grid increment into the reference grid
+  virtual void merge_grid_increment();
+  
   /// update reference grid within adaptive grid refinement procedures
   virtual void update_reference();
 

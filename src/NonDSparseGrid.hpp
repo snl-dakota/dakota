@@ -64,8 +64,9 @@ public:
   /// decrement ssgDriver::ssgLevel
   void decrement_grid();
 
-  /// computes a grid increment and evaluates the new parameter sets
   void evaluate_grid_increment();
+  void push_grid_increment();
+  void merge_grid_increment();
 
   /// set level and dimension preference within ssgDriver based on ssgLevelSpec
   /// and dimPrefSpec, following refinement or sequence advancement
@@ -205,6 +206,14 @@ inline void NonDSparseGrid::evaluate_grid_increment()
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }
+
+
+inline void NonDSparseGrid::push_grid_increment()
+{ ssgDriver->push_grid_increment(); }
+
+
+inline void NonDSparseGrid::merge_grid_increment()
+{ ssgDriver->merge_grid_increment(); }
 
 
 inline int NonDSparseGrid::num_samples() const

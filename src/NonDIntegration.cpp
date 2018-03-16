@@ -182,6 +182,22 @@ void NonDIntegration::evaluate_grid_increment()
 }
 
 
+void NonDIntegration::push_grid_increment()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "push_grid_increment()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDIntegration::merge_grid_increment()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "merge_grid_increment()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void NonDIntegration::update_reference()
 {
   Cerr << "Error: derived class lacking redefinition for NonDIntegration::"

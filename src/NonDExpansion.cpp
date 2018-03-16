@@ -1340,13 +1340,20 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     // increment the grid and, if needed, the expansion order.
     // can ignore best_candidate (only one candidate for now).
     switch (expansionCoeffsApproach) {
-    case Pecos::QUADRATURE:           case Pecos::CUBATURE:
+    case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
-      // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+      // restore previously-incremented grid and approximation state
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_integration->increment_grid();
-      uSpaceModel.push_approximation(); // TO DO: only INC2, need INC3
+      // -----------------------------------------------------------------------
+      nond_integration->increment_grid(); // SparseGridDriver: advance level
+      //nond_integration->increment_grid_preference(dim_pref);
+      //nond_integration->increment_grid_weights(aniso_wts);
+      // -----------------------------------------------------------------------
+      nond_integration->push_grid_increment();  // SparseGridDriver: INC2
+      uSpaceModel.push_approximation();
+      // adopt incremented state as new reference
+      nond_integration->merge_grid_increment(); // SparseGridDriver: INC3
       nond_integration->update_reference();
       break;
     }
@@ -1416,11 +1423,21 @@ void NonDExpansion::decrement_order_and_grid()
     no need to update these for an expansion refinement. */
 void NonDExpansion::update_expansion()
 {
-  if (uSpaceModel.push_available()) // defaults to false
+  if (uSpaceModel.push_available()) { // defaults to false
+    switch (expansionCoeffsApproach) {
+    case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+      NonDIntegration* nond_int = (NonDIntegration*)
+	uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_int->push_grid_increment(); break;
+    }
+    // no-op for SAMPLING, all REGRESSION cases
+    }
     uSpaceModel.push_approximation();
+  }
   else
     switch (expansionCoeffsApproach) {
-    case Pecos::QUADRATURE:           case Pecos::CUBATURE:
+    case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
       NonDIntegration* nond_int = (NonDIntegration*)
