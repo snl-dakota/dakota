@@ -482,6 +482,7 @@ bool NonDMultilevelPolynomialChaos::resize()
 void NonDMultilevelPolynomialChaos::core_run()
 {
   initialize_expansion();
+  sequenceIndex = 0;
 
   // Options for import of discrepancy data.
   // > There is no good way for import to segregate the desired Q^l sample sets
@@ -541,6 +542,67 @@ void NonDMultilevelPolynomialChaos::core_run()
   uSpaceModel.clear_inactive();
 
   ++numUncertainQuant;
+}
+
+
+void NonDMultilevelPolynomialChaos::assign_specification_sequence()
+{
+  bool update_exp = false, update_sampler = false, update_from_ratio = false;
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE: {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    if (sequenceIndex < quadOrderSeqSpec.size())
+      nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
+    else if (refineControl)
+      nond_quad->reset();   // reset driver to pre-refinement state
+    break;
+  }
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    if (sequenceIndex < ssgLevelSeqSpec.size())
+      nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
+    else if (refineControl)
+      nond_sparse->reset(); // reset driver to pre-refinement state
+    break;
+  }
+  case Pecos::CUBATURE:
+    Cerr << "Error: cubature sequences not supported in NonDMultilevel"
+	 << "PolynomialChaos::increment_specification_sequence()" << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  case Pecos::SAMPLING: {
+    // assign expansionOrder and/or expansionSamples, as admissible
+    if (sequenceIndex <   expOrderSeqSpec.size()) update_exp = true;
+    if (sequenceIndex < expSamplesSeqSpec.size()) {
+      numSamplesOnModel = expSamplesSeqSpec[sequenceIndex];
+      update_sampler = true;
+    }
+    break;
+  }
+  case Pecos::ORTHOG_LEAST_INTERPOLATION:
+    // assign collocationPoints
+    if (sequenceIndex < collocPtsSeqSpec.size()) {
+      numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+      update_sampler = true;
+    }
+    break;
+  default: { // regression
+    // assign expansionOrder and/or collocationPoints, as admissible
+    if (sequenceIndex <  expOrderSeqSpec.size()) update_exp = true;
+    if (sequenceIndex < collocPtsSeqSpec.size()) {
+      numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+      update_sampler = true;
+    }
+    if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+      update_from_ratio = update_sampler = true;
+    break;
+  }
+  }
+
+  update_from_specification(update_exp, update_sampler, update_from_ratio);
 }
 
 
@@ -605,6 +667,14 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   }
   }
 
+  update_from_specification(update_exp, update_sampler, update_from_ratio);
+}
+
+
+void NonDMultilevelPolynomialChaos::
+update_from_specification(bool update_exp, bool update_sampler,
+			  bool update_from_ratio)
+{
   UShortArray exp_order;
   if (update_exp) {
     // update expansion order within Pecos::SharedOrthogPolyApproxData

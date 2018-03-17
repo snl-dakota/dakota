@@ -73,6 +73,7 @@ protected:
   //
 
   void core_run();
+  void assign_specification_sequence();
   void increment_specification_sequence();
   void metric_roll_up();
   void compute_covariance();
@@ -111,6 +112,11 @@ private:
   //
   //- Heading: Utility functions
   //
+
+  /// perform specification updates (shared code from
+  // {assign,increment}_specification_sequence())
+  void update_from_specification(bool update_exp, bool update_sampler,
+				 bool update_from_ratio);
 
   /// scale sample profile new_N_l to retain shape while enforcing an upper
   /// bound of cardinality * factor

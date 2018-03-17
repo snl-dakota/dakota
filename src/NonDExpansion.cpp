@@ -1208,6 +1208,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // initial low fidelity/lowest discretization expansion
   size_t lev = 0;
   configure_indices(lev, form, multilev, cost, lev_cost);
+  assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
     refine_expansion(); // uniform/adaptive refinement
@@ -1456,17 +1457,24 @@ void NonDExpansion::update_expansion()
 }
 
 
+void NonDExpansion::assign_specification_sequence()
+{
+  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
+
+  Cerr << "Error: no default implementation for assign_specification_"
+       << "sequence() used by multifidelity expansions." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+/** Default implementation redefined by Multilevel derived classes. */
 void NonDExpansion::increment_specification_sequence()
 {
+  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
+
   Cerr << "Error: no default implementation for increment_specification_"
        << "sequence() used by multifidelity expansions." << std::endl;
   abort_handler(METHOD_ERROR);
-
-  /*
-  NonDIntegration* nond_integration
-    = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-  nond_integration->reset(); // TPQ or SSG
-  */
 }
 
 

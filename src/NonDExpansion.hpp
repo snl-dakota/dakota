@@ -93,7 +93,9 @@ protected:
   /// uniformly decrement the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void decrement_order_and_grid();
-  /// increment the input specification sequence (PCE only)
+  /// assign the current values from the input specification sequence
+  virtual void assign_specification_sequence();
+  /// increment the input specification sequence and assign values
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();

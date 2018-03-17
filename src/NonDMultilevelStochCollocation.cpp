@@ -187,6 +187,7 @@ bool NonDMultilevelStochCollocation::resize()
 void NonDMultilevelStochCollocation::core_run()
 {
   initialize_expansion();
+  sequenceIndex = 0;
 
   bool multifid_uq = true, greedy = false;
   switch (methodName) {
@@ -220,6 +221,37 @@ void NonDMultilevelStochCollocation::core_run()
   ++numUncertainQuant;
 }
 
+
+void NonDMultilevelStochCollocation::assign_specification_sequence()
+{
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE: {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    if (sequenceIndex < quadOrderSeqSpec.size())
+      nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
+    else if (refineControl)
+      nond_quad->reset();   // reset driver to pre-refinement state
+    break;
+  }
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    if (sequenceIndex < ssgLevelSeqSpec.size())
+      nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
+    else if (refineControl)
+      nond_sparse->reset(); // reset driver to pre-refinement state
+    break;
+  }
+  default:
+    Cerr << "Error: unsupported expansion coefficient estimation approach in "
+	 << "NonDMultilevelStochCollocation::assign_specification_sequence()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+}
 
 void NonDMultilevelStochCollocation::increment_specification_sequence()
 {
@@ -255,6 +287,7 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
     break;
   }
 }
+
 
 
 void NonDMultilevelStochCollocation::metric_roll_up()
