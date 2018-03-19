@@ -38,6 +38,12 @@
 // - ROLOptimizer implementation
 //
 
+// An compile unit (this source file) variable used to toggle tabular data
+// output when dealing with sequential duplicates - ROL specific
+namespace {
+  bool orig_auto_graphics_flag = false;
+}
+
 namespace Dakota {
 
 // -----------------------------------------------------------------
@@ -315,6 +321,14 @@ void ROLOptimizer::set_problem()
 
 } // set_problem
 
+void ROLOptimizer::initialize_run()
+{
+  // Needed to make ROL output to tabular data consistent with other Opt TPLs
+  // NOTE: This cannot be set in the consructr (or helper functions associated
+  //       with the contructor) because some variables get assigned by base 
+  //       class constructors and are not available until all have completed.
+  orig_auto_graphics_flag = iteratedModel.auto_graphics();
+}
 
 // QUESTION: Shouldn't this be called from somewhere?
 // Helper function to reset ROL data and solver parameters.  This can
@@ -475,6 +489,16 @@ namespace {
 
   void update_model(Model & model, const std::vector<Real> & x)
   {
+    static std::vector<Real> prev_x = x;
+    static bool first_step = true;
+
+    // throttle consequetive duplicate output
+    bool is_seq_dup = !first_step && (prev_x == x);
+    if( is_seq_dup )
+      model.auto_graphics(false);
+    else
+      prev_x = x;
+
     // CLEAN-UP: Use an adapter.
     // Set the model variables to the current values.
     size_t num_cv = model.cv();
@@ -489,6 +513,12 @@ namespace {
     else
       eval_set.request_values(AS_FUNC+AS_GRAD+AS_HESS);
     model.evaluate(eval_set);
+
+    // Restore tabular data output state
+    if( is_seq_dup )
+      model.auto_graphics(orig_auto_graphics_flag);
+
+    first_step = false;
 
   } // update_model
 

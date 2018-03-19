@@ -74,8 +74,12 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
+  /// Initializes the ROLOptimizer with values available after the chain of
+  /// constructors has finished.
+  void initialize_run() override;
+
   /// Iterates the ROL solver to determine the optimal solution
-  void core_run();
+  void core_run() override;
 
   /// Support re-entrant behavior by allowing problem reset (selected
   /// components for now)
