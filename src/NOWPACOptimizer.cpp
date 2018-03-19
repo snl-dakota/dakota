@@ -97,6 +97,10 @@ void NOWPACOptimizer::initialize_options()
     if (random_seed) // default for no user spec is zero
       nowpacSolver.set_option("seed",                random_seed);
     //else SNOWPAC uses a machine generated seed and is non-repeatable
+
+    // frequency of optimizing the GP hyper-parameters
+    int gp_adaption_factor = 5 * numContinuousVars;
+    nowpacSolver.set_option("GP_adaption_factor", gp_adaption_factor);
   }
 
   // Maximum number of total accepted steps
@@ -176,7 +180,7 @@ void NOWPACOptimizer::core_run()
 				      iteratedModel.continuous_upper_bounds());
 
   // allocate arrays passed to optimization solver
-  RealArray x_star; Real obj_star;
+  RealArray x_star, fn_star;
   nowpacEvaluator.scale(iteratedModel.continuous_variables(), x_star);
   // create data object for nowpac output ( required for warm start )
   BlackBoxData bb_data(numFunctions, numContinuousVars);
@@ -184,15 +188,15 @@ void NOWPACOptimizer::core_run()
   //////////////////////////////////////////////////////////////////////////
   // start optimization (on output: bbdata contains data that allows warmstart
   // and enables post-processing to get model values, gradients and hessians)
-  nowpacSolver.optimize(x_star, obj_star, bb_data);
+  nowpacSolver.optimize(x_star, fn_star, bb_data);
     
-  // create post-processing object to compute surrogate models
-  PostProcessModels<> PPD( bb_data );
   if (outputLevel >= DEBUG_OUTPUT) {
+    // create post-processing object to compute surrogate models
+    PostProcessModels<> PPD( bb_data );
     Cout << "\n----------------------------------------"
-	 << "\nSolution returned from nowpacSolver:\n  optimal value = "
-	 << obj_star << "\n  optimal point =\n" << x_star
-	 << "\nData from PostProcessModels:\n"
+	 << "\nSolution returned from nowpacSolver:\n"
+	 << "  optimal objective and inequality constraints =\n" << fn_star
+	 << "  optimal point =\n" << x_star << "Data from PostProcessModels:\n"
 	 << "  tr size = " << PPD.get_trustregion() << '\n';
     // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
     // model gradient = g + H (x-x_c)
@@ -211,12 +215,12 @@ void NOWPACOptimizer::core_run()
   nowpacEvaluator.unscale(x_star, c_vars);
   // Publish optimal response
   if (!localObjectiveRecast) {
-    // objective value is returned from optimize()
     RealVector best_fns(numFunctions);
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star : obj_star;
 
-    // final constraint vals are approximate since come from internal surrogate
+    // objective and mapped nonlinear inequalities returned from optimize()
+    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
+      -fn_star[0] : fn_star[0];
     const SizetList& nln_ineq_map_indices
       = nowpacEvaluator.nonlinear_inequality_mapping_indices();
     const RealList&  nln_ineq_map_mult
@@ -229,15 +233,14 @@ void NOWPACOptimizer::core_run()
 	 m_iter  = nln_ineq_map_mult.begin(),
 	 o_iter  = nln_ineq_map_offsets.begin();
 	 i_iter != nln_ineq_map_indices.end(); ++i_iter, ++m_iter, ++o_iter)
-      best_fns[(*i_iter)+1] = (PPD.get_c(++cntr, x_star) - (*o_iter))/(*m_iter);
-
+      best_fns[(*i_iter)+1] = (fn_star[++cntr] - (*o_iter))/(*m_iter);
     /*
     size_t i, offset = iteratedModel.num_nonlinear_ineq_constraints() + 1,
       num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
     const RealVector& nln_eq_targets
       = iteratedModel.nonlinear_eq_constraint_targets();
     for (i=0; i<num_nln_eq; i++)
-      best_fns[i+offset] = PPD.get_c(++cntr, x_star) + nln_eq_targets[i];
+      best_fns[i+offset] = fn_star[++cntr] + nln_eq_targets[i];
     */
 
     bestResponseArray.front().function_values(best_fns);
