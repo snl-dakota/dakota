@@ -1352,7 +1352,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   RealVector ave_params(num_cols);
   compute_col_means(acc_chain_transpose, ave_params); 
   mcmcModel.continuous_variables(ave_params);
-  mcmcModel.evaluate();
+  //mcmcModel.evaluate();
  
   int num_exp = expData.num_experiments();
   size_t num_configvars = expData.config_vars()[0].length();
@@ -1365,6 +1365,9 @@ void NonDBayesCalibration::build_field_discrepancy()
     Teuchos::setCol(config_vec, i, allConfigInputs);
     Cout << "Config Vars " << allConfigInputs << '\n';
   } 
+  for (int i = 0; i < num_exp; i++) {
+    Cout << "KAM exp data = " << expData.response(i) << '\n';
+  }
   */
 
   size_t num_field_groups = expData.num_fields();
@@ -1396,7 +1399,7 @@ void NonDBayesCalibration::build_field_discrepancy()
         col_vec.putScalar(config_vec[k]);
         Teuchos::setCol(col_vec, dim_indepvars+k, vars_mat);
       }
-      Cout << "Vars matrix " << vars_mat << '\n';
+//      Cout << "Vars matrix " << vars_mat << '\n';
       // add to total matrix
       RealMatrix varsmat_trans(vars_mat, Teuchos::TRANS);
       int col = allvars_mat.numCols();
@@ -1447,35 +1450,38 @@ void NonDBayesCalibration::build_field_discrepancy()
   RealVector concat_disc;
   for (int i = 0; i < num_exp; i++) {
     const IntVector field_lengths = expData.field_lengths(i);
+    RealVector config_vec = expData.config_vars()[i];
+    Model::inactive_variables(config_vec, mcmcModel);
+    mcmcModel.evaluate();
     for (int j = 0; j < field_lengths.length(); j++) {
       concat_disc.resize(ind + field_lengths[j]);
       if (expData.interpolate_flag()) {
         const Response model_resp = mcmcModel.current_response().copy();
-        Response interpolated_resp = model_resp.copy();
+//        Cout << "model = " << mcmcModel.current_response();
+//        Cout << "model vars = " << mcmcModel.continuous_variables() << '\n';;
+        Cout << mcmcModel.all_continuous_variables() << '\n';
+        Cout << mcmcModel.inactive_continuous_variables() << '\n';
+        Response interpolated_resp = expData.response(i).copy();
         expData.interpolate_simulation_data(model_resp, i, exp_asv, 0, 
                                             interpolated_resp);
+//        Cout << "interp = " << interpolated_resp << '\n';
+        //Cout << "field lengths = " << field_lengths[j] << '\n';
         for (int k=0; k<field_lengths[j]; k++)
-          concat_disc[ind + k] = expData.all_data(j)[k] - 
+          concat_disc[ind + k] = expData.all_data(i)[k] - 
                                  interpolated_resp.function_values()[k];
       }
-      else 
+      else {
+        //Cout << "model = " << mcmcModel.current_response().function_values();
         for (int k=0; k<field_lengths[j]; k++)
-          concat_disc[ind + k] = expData.all_data(j)[k] - 
+          concat_disc[ind + k] = expData.all_data(i)[k] - 
                               mcmcModel.current_response().function_values()[k];
+      }
       ind += field_lengths[j];
+//      Cout << "exp " << i << " = " << expData.all_data(i) << '\n';
+//      Cout << "disc_build_points " <<concat_disc;
     }
   }
-    Cout << "disc_build_points " <<concat_disc;
-    //RealVector disc_pred(6); 
-    RealMatrix t_pred(1,6); 
-    t_pred(0,0)=0.5;
-    t_pred(0,1)=1.0;
-    t_pred(0,2)=1.5;
-    t_pred(0,3)=1.75;
-    t_pred(0,4)=2.0;
-    t_pred(0,5)=2.5;
-    //build_GP_field(coord_transpose, t_pred, concat_disc, disc_pred);
-    //build_GP_field(allvars_mat, t_pred, concat_disc, disc_pred);
+  //  Cout << "disc_build_points " <<concat_disc;
   RealMatrix discrepvars_pred;
   for (int i = 0; i < num_field_groups; i++) { 
     for (int j = 0; j < num_exp; j++) {
@@ -1489,7 +1495,7 @@ void NonDBayesCalibration::build_field_discrepancy()
         col_vec.putScalar(config_vec[k]);
         Teuchos::setCol(col_vec, dim_indepvars+k, vars_mat);
       }
-      Cout << "Vars matrix " << vars_mat << '\n';
+      //Cout << "Vars matrix " << vars_mat << '\n';
       // add to total matrix
       RealMatrix varsmat_trans(vars_mat, Teuchos::TRANS);
       int col = discrepvars_pred.numCols();
@@ -1501,10 +1507,12 @@ void NonDBayesCalibration::build_field_discrepancy()
       }
     }
   }
-  Cout << "Pred vars matrix " << discrepvars_pred << '\n';
+//  Cout << "All vars matrix " << allvars_mat << '\n';
+//  Cout << "Pred vars matrix " << discrepvars_pred << '\n';
   RealVector disc_pred(discrepvars_pred.numCols());
+  //build_GP_field(allvars_mat, allvars_mat, concat_disc, disc_pred);
   build_GP_field(allvars_mat, discrepvars_pred, concat_disc, disc_pred);
-  Cout << "disc_pred " << disc_pred;
+//  Cout << "disc_pred " << disc_pred;
 
     //allExperiments[exp_ind].function_value(i);
     //Response residual_response;
@@ -1531,7 +1539,6 @@ void NonDBayesCalibration::build_GP_field(const RealMatrix& discrep_vars_mat,
                            RealMatrix& discrep_vars_pred,
 			   const RealVector& concat_disc, RealVector& disc_pred)
 {
-
   String approx_type;
   approx_type = "global_kriging";  // Surfpack GP
   UShortArray approx_order;
@@ -1546,10 +1553,6 @@ void NonDBayesCalibration::build_GP_field(const RealMatrix& discrep_vars_mat,
   Approximation gpApproximation(sharedData);
 
   // build the GP for the discrepancy
-  Cout << "t size = [" << discrep_vars_mat.numRows() << ", " 
-       << discrep_vars_mat.numCols() << "]\n"; 
-  Cout << "concat disc size = [" << concat_disc.numRows() << ", " 
-       << concat_disc.numCols() << "]\n"; 
   gpApproximation.add(discrep_vars_mat,concat_disc);
   gpApproximation.build();
   //gpApproximations.export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
@@ -1558,7 +1561,6 @@ void NonDBayesCalibration::build_GP_field(const RealMatrix& discrep_vars_mat,
     RealVector new_sample = Teuchos::getCol(Teuchos::View,discrep_vars_pred,i);
     disc_pred(i)=gpApproximation.value(new_sample);
   }
-
 }
 
 void NonDBayesCalibration::export_discrepancy(RealMatrix& 
