@@ -11,7 +11,7 @@ option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
 option(HAVE_NL2SOL "Build the NL2SOL package." ON)
 option(HAVE_NLPQL "Build the NLPQL package." ON)
 option(HAVE_NOMAD "Build the NOMAD package." ON)
-option(HAVE_NOWPAC "Build the NOWPAC package." OFF)
+option(HAVE_NOWPAC "Build the NOWPAC package (experimental)." OFF)
 option(HAVE_NPSOL "Build the NPSOL package." ON)
 option(HAVE_OPTPP "Build the OPTPP package." ON)
 option(HAVE_PECOS "Build the Pecos package." ON)
@@ -63,8 +63,6 @@ ManageRelocatablePackage(LHS external/LHS)
 ManageRelocatablePackage(SPARSE_GRID external/VPISparseGrid)
 
 add_subdirectory(pecos)
-
-#add_subdirectory(nowpac)
 
 include(ExternalProject)
 
@@ -258,6 +256,10 @@ endif(HAVE_NLPQL)
 if(HAVE_NOMAD)
   add_subdirectory(external/NOMAD)
 endif(HAVE_NOMAD)
+
+if(HAVE_NOWPAC)
+  add_subdirectory(external/nowpac)
+endif()
 
 if(HAVE_NPSOL)
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../local/packages/NPSOL/npsolsubs.f)

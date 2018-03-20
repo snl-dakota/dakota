@@ -189,7 +189,6 @@ void NOWPACOptimizer::core_run()
   // start optimization (on output: bbdata contains data that allows warmstart
   // and enables post-processing to get model values, gradients and hessians)
   nowpacSolver.optimize(x_star, fn_star, bb_data);
-    
   if (outputLevel >= DEBUG_OUTPUT) {
     // create post-processing object to compute surrogate models
     PostProcessModels<> PPD( bb_data );
