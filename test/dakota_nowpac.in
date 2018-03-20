@@ -34,7 +34,7 @@ interface
 #   analysis_driver = 'cantilever'			#s1
 
 responses
-  objective_functions = 1                   #s0,#s2
+  objective_functions = 1
 # nonlinear_inequality_constraints = 2			#s1
   no_gradients
   no_hessians

@@ -176,7 +176,7 @@ void NOWPACOptimizer::core_run()
 				      iteratedModel.continuous_upper_bounds());
 
   // allocate arrays passed to optimization solver
-  RealArray x_star; Real obj_star;
+  RealArray x_star, obj_star_vec;
   nowpacEvaluator.scale(iteratedModel.continuous_variables(), x_star);
   // create data object for nowpac output ( required for warm start )
   BlackBoxData bb_data(numFunctions, numContinuousVars);
@@ -184,8 +184,9 @@ void NOWPACOptimizer::core_run()
   //////////////////////////////////////////////////////////////////////////
   // start optimization (on output: bbdata contains data that allows warmstart
   // and enables post-processing to get model values, gradients and hessians)
-  nowpacSolver.optimize(x_star, obj_star, bb_data);
-    
+  nowpacSolver.optimize(x_star, obj_star_vec, bb_data);
+  Real obj_star = obj_star_vec.front();
+
   // create post-processing object to compute surrogate models
   PostProcessModels<> PPD( bb_data );
   if (outputLevel >= DEBUG_OUTPUT) {
