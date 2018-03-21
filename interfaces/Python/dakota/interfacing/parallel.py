@@ -223,7 +223,7 @@ def _calc_num_tiles(applic_tasks=None, tasks_per_node=None, num_nodes=None,
         num_tiles = num_nodes*tasks_per_node//applic_tasks
     return num_tiles
 
-def tile_run_static(commands=[], dedicated_master=None, eval_num=None,
+def tile_run_static(commands=None, dedicated_master=None, eval_num=None,
         parameters_file=None):
     """Run a command in parallel on an available tile assuming static scheduling
 
@@ -270,7 +270,7 @@ def tile_run_static(commands=[], dedicated_master=None, eval_num=None,
     returncode = _mpirun(node_list, commands)
     return returncode
 
-def tile_run_dynamic(commands=[], dedicated_master=None, lock_id=None, lock_dir=None):
+def tile_run_dynamic(commands=None, dedicated_master=None, lock_id=None, lock_dir=None):
     """Run a command in parallel on an available tile assuming dynamic scheduling
 
     Keyword args:
