@@ -838,6 +838,12 @@ if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
 endif()
 
+if(HAVE_NOWPAC)
+  # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
+  # and installed before building Dakota sources
+  add_dependencies(dakota_src EIGEN NLOPT)
+endif()
+
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
 if (DAKOTA_MODELCENTER)
   target_link_libraries(dakota_src PHXCppApi)
