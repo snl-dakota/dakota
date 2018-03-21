@@ -17,12 +17,15 @@ method,
 #	  convergence_tolerance = 1e-5		#s4,#s5
 	  constraint_tolerance  = 1e-4		#s0,#s1,#s2,#s4
 	output quiet
+#	scaling										#s2
 
 variables,					
 	continuous_design = 1000
 	cdv_initial_point    500 * 5.0, 500 * 40.0
 	cdv_lower_bounds     500 * 1.0, 500 *  5.0
 	cdv_upper_bounds    1000 * 100.0
+#	scale_types = 'value'					#s2
+#	scales = 500 * 2.5, 500 * 40.0		#s2
 
 interface,
 	fork

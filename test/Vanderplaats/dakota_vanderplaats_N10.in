@@ -24,12 +24,15 @@ method,
 	  convergence_tolerance = 1e-4		#s0,#s1,#s2,#s3
 #	  convergence_tolerance = 1e-5		#s4,#s5
 	  constraint_tolerance  = 1e-4		#s0,#s1,#s2,#s4
+#	scaling										#s2
 
 variables,					
 	continuous_design = 20
 	cdv_initial_point   10 * 5.0, 10 * 40.0
 	cdv_lower_bounds    10 * 1.0, 10 *  5.0
 	cdv_upper_bounds    20 * 100.0
+#	scale_types = 'value'					#s2
+#	scales = 10 * 2.5, 10 * 40.0			#s2
 
 interface,
 	fork
