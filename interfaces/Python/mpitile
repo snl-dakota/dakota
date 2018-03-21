@@ -23,9 +23,9 @@ def main():
             "command must be on the PATH.\n\n" +
             "Options and arguments may be passed to mpirun (or the user's code) " +
             "by including\nthem in COMMANDs.\n\n" +
-            "Example 1: Launch my_sim using 32 tasks, assuming a dedicated master. Pass\n" +
+            "Example 1: Launch my_sim using 32 tasks, assuming a dedicated master node. Pass\n" +
             "the option --bind-to none to mpirun and -verbose=OFF to my_sim.\n\n" +
-            "      %(prog)s -np 32 --dedicated-master --bind-to none my_sim -verbose=OFF" +
+            "      %(prog)s -np 32 --dedicated-master NODE --bind-to none my_sim -verbose=OFF" +
             "\n\nExample 2: Launch my_sim1 and my_sim2 in MIMD configuration using 16 " +
             "tasks\nand static scheduling.\n\n" +
             "      %(prog)s -np 16 --static --eval-num=$num my_sim1 : -np 16 my_sim2")
