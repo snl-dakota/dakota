@@ -16,13 +16,13 @@ environment,
 method,
 	conmin_mfd									#s0
 #	dot_mmfd										#s1
-#  dot_slp										#s2
+#	dot_slp										#s2
 #	nlpql											#s3
 #	npsol											#s4
 #	optpp_q_newton								#s5
 	  max_iterations = 200
-	  convergence_tolerance = 1e-4				#s0,#s1,#s2,#s3
-#	  convergence_tolerance = 1e-6				#s4,#s5
+	  convergence_tolerance = 1e-4				#s0,#s1,#s2,#s3,#s4
+#	  convergence_tolerance = 1e-5				#s5
 	  constraint_tolerance  = 1e-4				#s0,#s1,#s2,#s4
 
 variables,
