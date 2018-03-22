@@ -54,6 +54,7 @@ namespace Dakota {
 // information from the problem database.
 ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
+  SNLLBase(problem_db),
   optSolverParams("Dakota::ROL"), problemType(TYPE_B)
 {
   // Populate ROL data with user-provided problem dimensions and
@@ -124,7 +125,11 @@ void ROLOptimizer::core_run()
   ActiveSet search_set(best_resp.active_set());
   search_set.request_values(AS_FUNC);
   best_resp.active_set(search_set);
-  bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+  bool db_found = false;
+  if( "simulation" == iteratedModel.model_type() )
+    db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+  else if( "recast" == iteratedModel.model_type() )
+    db_found = iteratedModel.truth_model().db_lookup(best_vars, search_set, best_resp);
 
   // Fall back on re-evaluation if not found.
   if (db_found)
@@ -323,6 +328,8 @@ void ROLOptimizer::set_problem()
 
 void ROLOptimizer::initialize_run()
 {
+  Optimizer::initialize_run();
+
   // Needed to make ROL output to tabular data consistent with other Opt TPLs
   // NOTE: This cannot be set in the consructr (or helper functions associated
   //       with the contructor) because some variables get assigned by base 

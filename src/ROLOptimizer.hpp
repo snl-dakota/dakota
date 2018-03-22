@@ -23,6 +23,7 @@
 #include "DakotaOptimizer.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaTraitsBase.hpp"
+#include "SNLLBase.hpp"
 
 // ROL headers
 #include "ROL_StdObjective.hpp"
@@ -53,7 +54,7 @@ namespace Dakota {
     ROL solver appropriate for the type of problem specified by the
     user. */
 
-class ROLOptimizer : public Optimizer
+class ROLOptimizer : public Optimizer, public SNLLBase
 {
 public:
 
