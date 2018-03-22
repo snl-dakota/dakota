@@ -30060,6 +30060,24 @@ Test Number 6 succeeded
 Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238166996e+00, 4.0785030735e+00 ]
             x2: [ 4.3943429713e-01, 3.5137892648e+00 ]
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 177 total (92 new, 85 duplicate)
+<<<<< Best parameters          =
+                      4.0011599482e+00 x1
+                      1.9766102401e+00 x2
+<<<<< Best model responses =
+                      8.2035019641e+01
+                      1.5020975811e+01
+                      1.9064080670e+00
+<<<<< Best residual terms =
+                      3.5019641336e-02
+                      -4.7902418889e-01
+                      -9.3591933024e-02
+<<<<< Best residual terms =
+                      3.5019641336e-02
+                      -4.7902418889e-01
+                      -9.3591933024e-02
+<<<<< Best data captured at function evaluation 176
 dakota_textbook_nips.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
