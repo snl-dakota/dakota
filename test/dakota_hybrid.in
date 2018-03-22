@@ -16,7 +16,7 @@
 #@ [taxonomy:end]
 
 # DAKOTA INPUT FILE: dakota_hybrid.in
-# Dakota Input File: textbook_hybrid_strat.in                           #s0
+# Dakota Input File: textbook_hybrid_strat.in                           #s0,#s4
 
 # Hybrid optimization on the unconstrained Textbook test problem using
 # 3 optimization methods in sequence:
@@ -26,19 +26,22 @@
 # This provides an initial global search using a derivative-free method,
 # followed by a local search using a derivative-free method, with a final
 # local search using a full Newton method.
+#
+# Version s4 uses ROL instead of OPT++
 
 environment
   top_method_pointer = 'HS'
-## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s0
-## Consider newer capabilities in the Dakota GUI     	     	      #s0
+## Activate Dakota's legacy X Windows-based graphics on Unix systems    #s0,#s4
+## Consider newer capabilities in the Dakota GUI                        #s0,#s4
   graphics
 
 method
   id_method = 'HS'
   hybrid sequential
-#    iterator_servers = 3                   #p0
-    method_pointer_list = 'GA' 'PS' 'NLP'		#s0,#s3,#p0
-#    method_pointer_list = 'GA' 'PS' 'PS2'	#s1,#s2
+#    iterator_servers = 3                       #p0
+    method_pointer_list = 'GA' 'PS' 'NLP'       #s0,#s3,#p0
+#    method_pointer_list = 'GA' 'PS' 'PS2'      #s1,#s2
+#    method_pointer_list = 'GA' 'PS' 'ROL'      #s4
 
 method
   id_method = 'GA'
@@ -46,14 +49,14 @@ method
     seed = 1234
     population_size = 5 
     model_pointer = 'M1'
-# final_solutions = 3              #s3,#p0
-  final_solutions = 1               #s0,#s1,#s2
+# final_solutions = 3                           #s3,#p0
+  final_solutions = 1                           #s0,#s1,#s2,#s4
   output verbose
 
 method
   id_method = 'PS'
   coliny_pattern_search stochastic
-#   max_function_evaluations = 100     #s1
+#   max_function_evaluations = 100              #s1
     seed = 1234
     initial_delta = 0.1
     threshold_delta = 1.e-4
@@ -62,42 +65,51 @@ method
     model_pointer = 'M1'
   output verbose
 
-#method,                              #s1,#s2
-#  id_method = 'PS2'				          #s1,#s2
-#  coliny_pattern_search stochastic		#s1,#s2
-#    max_function_evaluations = 10		#s1,#s2
-#    seed = 1234	      			        #s1,#s2
-#    initial_delta = 0.1			        #s1,#s2
-#    threshold_delta = 1.e-4			    #s1,#s2
-#    solution_target = 1.e-10			    #s1,#s2
-#    exploratory_moves basic_pattern	#s1,#s2
-#    model_pointer = 'M1'				      #s1,#s2
-#  output verbose    				        #s1,#s2
+#method,                                        #s1,#s2
+#  id_method = 'PS2'                            #s1,#s2
+#  coliny_pattern_search stochastic             #s1,#s2
+#    max_function_evaluations = 10              #s1,#s2
+#    seed = 1234                                #s1,#s2
+#    initial_delta = 0.1                        #s1,#s2
+#    threshold_delta = 1.e-4                    #s1,#s2
+#    solution_target = 1.e-10                   #s1,#s2
+#    exploratory_moves basic_pattern            #s1,#s2
+#    model_pointer = 'M1'                       #s1,#s2
+#  output verbose                               #s1,#s2
 
-method	  	  				                #s0,#s3,#p0
-  id_method = 'NLP'				            #s0,#s3,#p0
-  optpp_newton  				              #s0,#s3,#p0
-    gradient_tolerance = 1.e-12			  #s0,#s3,#p0
-    convergence_tolerance = 1.e-15		#s0,#s3,#p0
-    model_pointer = 'M2'				      #s0,#s3,#p0
-  output verbose	  			          #s0,#s3,#p0
+method                                          #s0,#s3,#p0
+  id_method = 'NLP'                             #s0,#s3,#p0
+  optpp_newton                                  #s0,#s3,#p0
+    gradient_tolerance = 1.e-12                 #s0,#s3,#p0
+    convergence_tolerance = 1.e-15              #s0,#s3,#p0
+    model_pointer = 'M2'                        #s0,#s3,#p0
+  output verbose                                #s0,#s3,#p0
+
+#method                                          #s4
+#  id_method = 'ROL'                             #s4
+#  rol_ls                                        #s4
+#    gradient_tolerance 1.0e-8                   #s4
+#    constraint_tolerance 1.0e-8                 #s4
+#    threshold_delta 1.0e-8                      #s4
+#    model_pointer = 'M2'                        #s4
+#  output verbose                                #s4
 
 model
   id_model = 'M1'
   single
-    interface_pointer = 'I1'		    #s0
-  variables_pointer = 'V1'          #s0
+    interface_pointer = 'I1'                    #s0,#s4
+  variables_pointer = 'V1'                      #s0,#s4
   responses_pointer = 'R1'
 
 model
   id_model = 'M2'
   single
-    interface_pointer = 'I1'		    #s0
-  variables_pointer = 'V1'          #s0
+    interface_pointer = 'I1'                    #s0,#s4
+  variables_pointer = 'V1'                      #s0,#s4
   responses_pointer = 'R2'
 
 variables
-  id_variables = 'V1'               #s0
+  id_variables = 'V1'                           #s0,#s4
   continuous_design = 2
     initial_point    0.6    0.7
     upper_bounds     5.8    2.9
@@ -105,10 +117,10 @@ variables
     descriptors      'x1'   'x2'
 
 interface
-  id_interface = 'I1'               #s0
+  id_interface = 'I1'                           #s0,#s4
   analysis_drivers =  'text_book'
-    direct				                    #s0,#s1,#s3,#p0
-#   system asynch   			            #s2
+    direct                                      #s0,#s1,#s3,#p0,#s4
+#   system asynch                               #s2
 
 responses
   id_responses = 'R1'

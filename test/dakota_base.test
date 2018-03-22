@@ -11036,6 +11036,31 @@ Test Number 3 succeeded
 <<<<< Best objective function  =
                       2.2761478478e-16
 <<<<< Best data captured at function evaluation 1267
+Test Number 4 succeeded
+<<<<< Function evaluation summary (I1): 405 total (405 new, 0 duplicate)
+         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      1.0527006153e+00 x1
+                      1.0825664856e+00 x2
+<<<<< Best objective function  =
+                      5.4188250571e-05
+<<<<< Best data captured at function evaluation 12
+<<<<< Function evaluation summary (I1): 235 total (234 new, 1 duplicate)
+         obj_fn: 235 val (234 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      1.0121224903e+00 x1
+                      1.0117657044e+00 x2
+<<<<< Best objective function  =
+                      4.0759068116e-08
+<<<<< Best data captured at function evaluation 640
+<<<<< Function evaluation summary (I1): 88 total (30 new, 58 duplicate)
+         obj_fn: 88 val (30 n, 58 d), 88 grad (30 n, 58 d), 88 Hess (30 n, 58 d)
+<<<<< Best parameters          =
+                      9.9912893262e-01 x1
+                      9.9914549728e-01 x2
+<<<<< Best objective function  =
+                      1.1088696397e-12
+<<<<< Best data captured at function evaluation 727
 dakota_illum.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 256 total (256 new, 0 duplicate)
