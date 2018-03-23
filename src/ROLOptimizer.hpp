@@ -82,12 +82,8 @@ public:
   /// Iterates the ROL solver to determine the optimal solution
   void core_run() override;
 
-  /// Support re-entrant behavior by allowing problem reset (selected
-  /// components for now)
-  void reset_problem(const RealVector &,              // initial vals
-                     const RealVector &,              // lower bounds
-                     const RealVector &,              // upper bounds
-                     const Teuchos::ParameterList &); // ROL solver settings
+  /// Support resetting ROL solver options
+  void reset_solver_options(const Teuchos::ParameterList &); // ROL solver settings
 
   /// Accessor for the underlying ROL Problem
   ROL::OptimizationProblem<Real> & get_rol_problem()

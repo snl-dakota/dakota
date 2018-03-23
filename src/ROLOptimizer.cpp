@@ -100,6 +100,9 @@ void ROLOptimizer::core_run()
   //rol_cout.push(Cout, buffer_size);
   rol_cout.push(Cout);
 
+  // Should we attempt to remove this call from the constructor to avoid redundancy? - RWH
+  set_problem();
+
   // Instantiate and call simplified interface solver object
   ROL::OptimizationSolver<Real> opt_solver( optProblem, optSolverParams );
   opt_solver.solve(rol_cout);
@@ -341,21 +344,11 @@ void ROLOptimizer::initialize_run()
 // Helper function to reset ROL data and solver parameters.  This can
 // be used to ensure that ROL is re-entrant since ROL itself does not
 // provide such assurance.
-void ROLOptimizer::reset_problem( const RealVector & init_vals,
-                                  const RealVector & lower_bnds,
-                                  const RealVector & upper_bnds,
-                                  const Teuchos::ParameterList & params)
+void ROLOptimizer::reset_solver_options(const Teuchos::ParameterList & params)
 {
-  // Reset ROL problem data.
-  copy_data(init_vals, *rolX);
-  copy_data(lower_bnds, *(lowerBounds->getVector()));
-  copy_data(upper_bnds, *(upperBounds->getVector()));
-  optProblem.reset();
-
   // Reset ROL solver settings.
   optSolverParams.setParameters(params);
-
-} // reset_problem
+} // reset_solver_options
 
 
 // Helper function to set ROL solver parameters.  This function uses
