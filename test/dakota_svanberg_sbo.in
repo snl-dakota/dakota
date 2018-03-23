@@ -28,7 +28,7 @@ method,
 	model_pointer = 'SURROGATE'
 	approx_method_pointer = 'NLPQL'
 	max_iterations = 50
-	  convergence_tolerance = 1e-4
+	  convergence_tolerance = 5e-2
 	  constraint_tolerance  = 1e-4
 	trust_region
 	  initial_size = 0.40
@@ -39,6 +39,7 @@ method,
 method,                                         
 	id_method = 'NLPQL'
 	nlpql_sqp
+	  convergence_tolerance = 1e-5
 
 model,
 	id_model = 'SURROGATE'

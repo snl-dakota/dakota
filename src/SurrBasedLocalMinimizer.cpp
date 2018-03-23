@@ -808,7 +808,7 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
   if (meritFnType      == LAGRANGIAN_MERIT     ||
       approxSubProbObj == LAGRANGIAN_OBJECTIVE || !constraint_viol)
     update_lagrange_multipliers(fns_truth,
-				response_truth.function_gradients());
+				response_truth.function_gradients(), tr_data);
   if (constraint_viol)
     return;
 

@@ -58,7 +58,7 @@ protected:
 
   /// initialize and update Lagrange multipliers for basic Lagrangian
   void update_lagrange_multipliers(const RealVector& fn_vals,
-				   const RealMatrix& fn_grads);
+				   const RealMatrix& fn_grads, SurrBasedLevelData& tr_data);
 
   /// initialize and update the Lagrange multipliers for augmented Lagrangian
   void update_augmented_lagrange_multipliers(const RealVector& fn_vals);

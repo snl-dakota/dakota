@@ -22,9 +22,6 @@
 
 static const char rcsId[]="@(#) $Id: SurrBasedMinimizer.cpp 4718 2007-11-15 21:44:58Z wjbohnh $";
 
-#define DEBUG
-
-
 extern "C" {
 
 #define NNLS_F77 F77_FUNC(nnls,NNLS)
@@ -194,18 +191,18 @@ void SurrBasedMinimizer::initialize_graphics(int iterator_server_id)
     through solution of a nonnegative linear least squares problem. */
 void SurrBasedMinimizer::
 update_lagrange_multipliers(const RealVector& fn_vals,
-			    const RealMatrix& fn_grads, SurrBasedLevelData& tr_data)
+			    const RealMatrix& fn_grads)
 {
   // solve nonnegative linear least squares [A]{lambda} = -{grad_f} for
   // lambda where A = gradient matrix for active/violated constraints.
 
   // identify active inequality constraints (equalities always active)
-  size_t i, j, n = 0, cntr = 0, num_free_continuous_vars;
+  size_t i, j, cntr = 0;
   IntList active_lag_ineq, lag_index;
-  for (j=0; j<numNonlinearIneqConstraints; j++) {
-    int ineq_id = j+1; // can't use +/- 0
-    Real g = fn_vals[numUserPrimaryFns+j], l_bnd = origNonlinIneqLowerBnds[j],
-      u_bnd = origNonlinIneqUpperBnds[j];
+  for (i=0; i<numNonlinearIneqConstraints; i++) {
+    int ineq_id = i+1; // can't use +/- 0
+    Real g = fn_vals[numUserPrimaryFns+i], l_bnd = origNonlinIneqLowerBnds[i],
+      u_bnd = origNonlinIneqUpperBnds[i];
     // check for active, not violated --> apply constraintTol on feasible side
     //   g < l_bnd + constraintTol, g > u_bnd - constraintTol
     if (l_bnd > -bigRealBoundSize) { // g has a lower bound
@@ -229,50 +226,31 @@ update_lagrange_multipliers(const RealVector& fn_vals,
     num_active_lag = num_active_lag_ineq + numNonlinearEqConstraints;
   lagrangeMult = 0.;
   if (num_active_lag) {
+    // form [A]
+    RealVector A(num_active_lag*numContinuousVars);
+    ILIter iter;
+    for (i=0, iter=active_lag_ineq.begin(); i<num_active_lag_ineq; i++, iter++){
+      int ineq_id = *iter;
+      size_t index = numUserPrimaryFns + std::abs(ineq_id) - 1;
+      const Real* grad_g = fn_grads[index];
+      for (j=0; j<numContinuousVars; j++)
+	A[i+j*num_active_lag] = (ineq_id > 0) ? grad_g[j] : -grad_g[j];
+    }
+    for (i=0; i<numNonlinearEqConstraints; i++) {
+      const Real* grad_h
+	= fn_grads[numUserPrimaryFns+numNonlinearIneqConstraints+i];
+      for (j=0; j<numContinuousVars; j++)
+	A[i+num_active_lag_ineq+j*num_active_lag] = grad_h[j];
+    }
+
+    // form -{grad_f}
     RealVector m_grad_f;
     const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
     const RealVector&  wts = iteratedModel.primary_response_fn_weights();
-    const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
-    const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
     objective_gradient(fn_vals, fn_grads, sense, wts, m_grad_f);
-
-    RealVector A(num_active_lag*numContinuousVars);
-    ILIter iter;
-    const RealVector& c_vars = tr_data.c_vars_center();
-    for (i=0; i<numContinuousVars; i++) {
-      Real c_var = c_vars[i], l_bnd = lower_bnds[i], u_bnd = upper_bnds[i];
-      // Determine if the calculated gradient component dg/dx_i is directed into
-      // an active bound constraint.
-	   Cout << "c_var=" << c_var << "\n";
-      bool active_lower_bnd = ( (l_bnd == 0.0 && std::fabs(c_var) < 1.e-10) ||
-        (l_bnd != 0.0 && std::fabs(1.0 - c_var/l_bnd) < 1.e-10) );
-      bool active_upper_bnd = ( (u_bnd == 0.0 && std::fabs(c_var) < 1.e-10) ||
-        (u_bnd != 0.0 && std::fabs(1.0 - c_var/u_bnd) < 1.e-10) );
-      if ( !( (active_lower_bnd && m_grad_f[i] > 0.0) ||
-	           (active_upper_bnd && m_grad_f[i] < 0.0) ) ) {
-		  Cout << "active variable, i=" << i << ", n=" << n << "\n";
-        for (j=0, iter=active_lag_ineq.begin(); j<num_active_lag_ineq; j++, iter++){
-          int ineq_id = *iter;
-          size_t index = numUserPrimaryFns + std::abs(ineq_id) - 1;
-          const Real* grad_g = fn_grads[index];
-          // form [A]
-          Cout << "constraint, j=" << j << "\n";
-          A[j+n*num_active_lag] = (ineq_id > 0) ? grad_g[i] : -grad_g[i];
-        }
-        for (j=0; j<numNonlinearEqConstraints; j++) {
-          const Real* grad_h	= fn_grads[numUserPrimaryFns+numNonlinearIneqConstraints+j];
-          A[j+num_active_lag_ineq+n*num_active_lag] = grad_h[i];
-        }
-        // form -{grad_f}
-        m_grad_f[n] = -m_grad_f[n];
-        ++n;
-      }
-    }
-    num_free_continuous_vars = n;
-#ifdef DEBUG
-	 Cout << "number of free variables, n = " << num_free_continuous_vars << "\n";
+    for (j=0; j<numContinuousVars; ++j)
+      m_grad_f[j] = -m_grad_f[j];
     Cout << "[A]:\n" << A << "-{grad_f}:\n" << m_grad_f;
-#endif
 
     // solve bound-constrained least squares using Lawson & Hanson routines:
     // > if inequality-constrained, use non-negative least squares (NNLS)
@@ -280,7 +258,7 @@ update_lagrange_multipliers(const RealVector& fn_vals,
     RealVector lambda(num_active_lag), w(num_active_lag);
     IntVector index(num_active_lag);
     double res_norm;
-    int m = num_free_continuous_vars, n = num_active_lag;
+    int m = numContinuousVars, n = num_active_lag;
     if (numNonlinearEqConstraints) {
 #ifdef DAKOTA_F90
       int nsetp, ierr;
@@ -312,7 +290,7 @@ update_lagrange_multipliers(const RealVector& fn_vals,
 	abort_handler(-1);
       }
     }
-//  Cout << "{lambda}:\n" << lambda << "res_norm: " << res_norm << '\n';
+    Cout << "{lambda}:\n" << lambda << "res_norm: " << res_norm << '\n';
 
     // update lagrangeMult from least squares solution
     cntr = 0;
@@ -320,9 +298,9 @@ update_lagrange_multipliers(const RealVector& fn_vals,
       lagrangeMult[*iter] = lambda[cntr++];
   }
 
-#ifdef DEBUG
+//#ifdef DEBUG
   Cout << "Lagrange multipliers updated:\n" << lagrangeMult << '\n';
-#endif
+//#endif
 }
 
 
