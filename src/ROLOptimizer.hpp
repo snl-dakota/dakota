@@ -94,13 +94,13 @@ protected:
   //- Heading: constructor convenience member functions
   //
 
+  /// Helper function called during construction to extract problem
+  /// information from the Model and set it for ROL
+  void set_problem();
+
   /// Convenience function to map Dakota input and power-user
   /// parameters to ROL
   void set_rol_parameters();
-
-  /// Helper function called during construction to extract problem
-  /// information from the Model and set it for ROL.
-  void set_problem();
 
   //
   //- Heading: Data
@@ -109,8 +109,8 @@ protected:
   /// Parameters for the ROL::OptimizationSolver
   Teuchos::ParameterList optSolverParams;
 
-  /// Handle to ROL::OptimizationProblem, part of ROL's simplified interface 
-  ROL::OptimizationProblem<Real> optProblem;
+  /// ROL problem type
+  unsigned short problemType;
 
   /// Handle to ROL's solution vector 
   Teuchos::RCP<std::vector<Real> > rolX;
@@ -121,8 +121,9 @@ protected:
   /// Handle to ROL's upper bounds vector 
   Teuchos::RCP<ROL::StdVector<Real> > upperBounds;
 
-  /// ROL problem type
-  unsigned short problemType;
+  /// Handle to ROL::OptimizationProblem, part of ROL's simplified
+  /// interface 
+  ROL::OptimizationProblem<Real> optProblem;
 
 }; // class ROLOptimizer
 
@@ -132,12 +133,11 @@ protected:
     supports by overriding the default traits accessors in
     TraitsBase. */
 
-// CLEAN-UP: Now that we understand how ROL works, we should do a
+// TODO (traits): Now that we understand how ROL works, we should do a
 // sanity check to make sure these still make sense.  We should also
 // revisit the Traits base class to see if there's anything that needs
-// to be changed or added.
-// BMA TODO: Traits should indicate that ROL requires gradients
-// Also need to include Hessian support
+// to be changed or added.  BMA TODO: Traits should indicate that ROL
+// requires gradients Also need to include Hessian support
 
 class ROLTraits: public TraitsBase
 {
@@ -153,7 +153,6 @@ public:
   /// Destructor
   virtual ~ROLTraits() { }
 
-  // CHECK-ME
   /// ROL default data type to be used by Dakota data adapters
   typedef std::vector<Real> VecT;
 
@@ -204,7 +203,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // QUESTION: Do we need a destructor?
+  // TODO (Moe): Do we need a destructor?
   /// Constructor
   DakotaROLObjective(Model & model);
 
@@ -225,7 +224,7 @@ public:
   //- Heading: Data
   //
 
-  // CLEAN-UP: Would be nice to ultimately get rid of this via
+  // TODO (adapters): Would be nice to ultimately get rid of this via
   // adapters.  May take a little thought and work, so defer for now.
 
   /// Dakota problem data provided by user
@@ -263,27 +262,21 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  /// Function to returen Hessian-vector product needed by ROL when
+  /// Function to return Hessian-vector product needed by ROL when
   /// using user/Dakota-supplied Hessians
   void hessVec(std::vector<Real> &hv,
 	       const std::vector<Real> &v,
 	       const std::vector<Real> &x,
 	       Real &tol) override;
 
-  // CLEAN-UP: Should we take this out or leave it for possible future
-  // use cases?
-  /// This callback is not used by ROL algorithms currently supported
-  /// by Dakota
+  /// This function is not used by ROL algorithms currently supported
+  /// by Dakota but is included to protect against unexpected behavior
   void invHessVec(std::vector<Real> &hv,
 		  const std::vector<Real> &v,
 		  const std::vector<Real> &x,
 		  Real &tol) override;
 
 private:
-
-  //
-  //- Heading: Data
-  //
 
 }; // class DakotaROLObjectiveHess
 
@@ -303,7 +296,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // QUESTION: Do we need a destructor?
+  // TODO (Moe): Do we need a destructor?
   /// Constructor
   DakotaROLIneqConstraints(Model & model);
 
@@ -336,7 +329,7 @@ protected:
   //- Heading: Data
   //
 
-  // CLEAN-UP: Would be nice to ultimately get rid of these via
+  // TODO (adapters): Would be nice to ultimately get rid of these via
   // adapters.  May take a little thought and work, so defer for now.
 
   /// Dakota problem data provided by user
@@ -386,10 +379,6 @@ public:
 
 private:
 
-  //
-  //- Heading: Data
-  //
-
 }; // class DakotaROLIneqConstraintsHess
 
 
@@ -407,7 +396,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // QUESTION: Do we need a destructor?
+  // TODO (Moe): Do we need a destructor?
   /// Constructor
   DakotaROLEqConstraints(Model & model);
 
@@ -440,7 +429,7 @@ protected:
   //- Heading: Data
   //
 
-  // CLEAN-UP: Would be nice to ultimately get rid of these via
+  // TODO (adapters): Would be nice to ultimately get rid of these via
   // adapters.  May take a little thought and work, so defer for now.
 
   /// Dakota problem data provided by user
@@ -510,7 +499,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // QUESTION: Do we need a destructor?
+  // TODO (Brian): Do we need a destructor?
   /// Constructor
   explicit PrefixingLineFilter(const std::string& prefix_in):
     linePrefix(prefix_in)

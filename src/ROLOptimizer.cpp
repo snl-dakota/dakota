@@ -26,9 +26,6 @@
 
 // Teuchos headers
 #include "Teuchos_XMLParameterListHelpers.hpp"
-// CLEAN-UP: Are these comments still needed?
-// BMA TODO: Above will break with newer Teuchos; instead need 
-//#include "Teuchos_XMLParameterListCoreHelpers.hpp"
 #include "Teuchos_StandardCatchMacros.hpp"
 
 // Semi-standard headers
@@ -89,14 +86,10 @@ ROLOptimizer::ROLOptimizer(const String& method_string, Model& model):
 // optimization using ROL and catalogue the results.
 void ROLOptimizer::core_run()
 {
-  // ostream that will prefix lines with ROL identifier
+  // ostream that will prefix lines with ROL identifier to distinguish
+  // ROL output from Dakota output.
   boost::iostreams::filtering_ostream rol_cout;
   rol_cout.push(PrefixingLineFilter("ROL: "));
-  // CLEAN-UP: Are these comments still needed?
-  // Tried to disable buffering so ROL output gets inlined with
-  // Dakota's; doesn't work perfectly. Instead, modified ROL to flush()
-  //std::streamsize buffer_size = 0;
-  //rol_cout.push(Cout, buffer_size);
   rol_cout.push(Cout);
 
   // Should we attempt to remove this call from the constructor to avoid redundancy? - RWH
@@ -115,14 +108,16 @@ void ROLOptimizer::core_run()
   // optProblem.check(*outStream_checking);
 
   // TODO: print termination criteria (based on Step or AlgorithmState?)
-
-  // CLEAN-UP: If memory serves me correctly, Russell implementd a
+  // TODO: If memory serves me correctly, Russell implementd a
   // function at the DakotaOptimizer level that sets all the final
   // values.  It was based on APPS, but we should revisit to figure
   // out how this compares and if it makes sense to merge them.
 
   // QUESTION: Do we need the copy_data?  Where is rolX coming from
-  // and/or what does is get used for?
+  // and/or what does is get used for?  rolX is an RCP - gets rolled
+  // up in x, which gets updated throughout.  Multiple levels of
+  // indirection.  Semantics nearly identical to C++/Boost shared
+  // pointer.
   // Copy ROL solution to Dakota bestVariablesArray
   Variables& best_vars = bestVariablesArray.front();
   RealVector& cont_vars = best_vars.continuous_variables_view();
@@ -130,6 +125,7 @@ void ROLOptimizer::core_run()
 
   // ROL does not currently provide access to the final solution, so
   // attempt a model database lookup directly into best.
+<<<<<<< HEAD
   if (!localObjectiveRecast)
   {
     Response& best_resp = bestResponseArray.front();
@@ -145,9 +141,6 @@ void ROLOptimizer::core_run()
       Cout << "INFO: ROL re-evaluating model to retrieve best response."
         << std::endl;
 
-      // QUESTION: Is this evaluating at the right parameter values?  If
-      // I read other code correctly, rolX was copied into cont_vars.
-      // But rolX hasn't been touched since the problem was set up.
       // Evaluate model for responses at best parameters and set Dakota
       // bestResponseArray.
       iteratedModel.continuous_variables(cont_vars);
@@ -168,13 +161,14 @@ void ROLOptimizer::set_problem()
   size_t j;
 
   // Needed in redefining upper and lower bounds for variables and
-  // constraints as required by ROL for good performance.
+  // inequality constraints as required by ROL for good performance.
   Real rol_inf = ROL::ROL_INF<Real>();
   Real rol_ninf = ROL::ROL_NINF<Real>();
 
-  // CLEAN-UP: Seems like we should be able to use traits to determine
+  // TODO: Seems like we should be able to use traits to determine
   // when we need to provide the sum rather than making the user do
-  // it.  Also, same comment about class data as below.
+  // it.  Also, same comment about class data as below.  What do we
+  // want/need to do about these member variables anyway?
 
   size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
   size_t num_ineq_const = numLinearIneqConstraints + 
@@ -190,10 +184,8 @@ void ROLOptimizer::set_problem()
       problemType = (num_eq_const > 0) ? TYPE_E : TYPE_U;
   }
 
-  // QUESTION: Why do it this way?  Is it recommended practice for
-  // ROL?  Some other best practice?
   // Instantiate null defaults for ROL problem data.  They will be
-  // dimensioned and populated later.
+  // dimensioned and populated as appropriate later.
   Teuchos::RCP<DakotaROLObjective> obj = Teuchos::null;
   Teuchos::RCP<ROL::Vector<Real> > x = Teuchos::null;
   Teuchos::RCP<ROL::BoundConstraint<Real> > bnd = Teuchos::null;
@@ -203,32 +195,22 @@ void ROLOptimizer::set_problem()
   Teuchos::RCP<ROL::Vector<Real> > imul = Teuchos::null;
   Teuchos::RCP<ROL::BoundConstraint<Real> > ineq_bnd = Teuchos::null;
 
-  // CLEAN-UP: Should figure out which of this class data (e.g.,
-  // numContinuousVars) we could/should elminate and which we should
-  // keep and formally make part of the TPL API.
-
-  // QUESTION: Why do we need both rolX and x?
-  // QUESTION: Should all bound constraint related stuff be inside the
-  // conditional below?
   // Dimension ROL variable vector and set initial values.
   rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
-  Teuchos::RCP<std::vector<Real> >
-    l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
-  Teuchos::RCP<std::vector<Real> >
-    u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
-
   get_initial_values(iteratedModel, *rolX);
   x.reset( new ROL::StdVector<Real>(rolX) );
 
-  // For TYPE_B and TYPE_EB problems, set values of the bounds.  Map
-  // any Dakota infinite bounds to ROL_INF for best performance.
+  // For TYPE_B and TYPE_EB problems, dimension bounds variable
+  // vectors and set initial values.  Map any Dakota infinite bounds
+  // to ROL_INF for best performance.
   if ( (problemType == TYPE_B) || (problemType == TYPE_EB) ) {
 
+    Teuchos::RCP<std::vector<Real> >
+      l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
+    Teuchos::RCP<std::vector<Real> >
+      u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
     get_bounds(iteratedModel, *l_rcp, *u_rcp);
 
-    // QUESTION: Is there a reason not to just use isfinite() and set
-    // to rol_(n)inf based on that?  And maybe save the extra data
-    // running around with the assignment above?
     // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
     // (ROL_NINF)
     for (size_t i = 0; i < numContinuousVars; i++) {
@@ -252,9 +234,6 @@ void ROLOptimizer::set_problem()
   else
     obj.reset(new DakotaROLObjectiveHess(iteratedModel));
 
-  // QUESTION: Is there a distinction/order between linear and
-  // nonlinear as there appears to be with the inequality constraints?
-  // Does ROL assume the target is 0.0?
   // If there are equality constraints, create the object and provide
   // the Dakota model.
   if (num_eq_const > 0){
@@ -265,8 +244,8 @@ void ROLOptimizer::set_problem()
     else
       eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
 
-    // QUESTION: What are the multipliers for?
-    // equality multipliers
+    // QUESTION: What are ROL defaults?
+    // Initialize Lagrange multipliers for equality constraints.
     Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(num_eq_const,0.0) );
     emul.reset(new ROL::StdVector<Real>(emul_rcp) );
   }
@@ -281,8 +260,7 @@ void ROLOptimizer::set_problem()
     else
       ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
 
-    // QUESTION: What are the multipliers for?
-    // inequality multipliers
+    // Initial Lagrange multipliers for inequality constraints.
     Teuchos::RCP<std::vector<Real> > imul_rcp = 
       Teuchos::rcp( new std::vector<Real>(num_ineq_const,0.0) );
     imul.reset(new ROL::StdVector<Real>(imul_rcp) );
@@ -293,7 +271,7 @@ void ROLOptimizer::set_problem()
     Teuchos::RCP<std::vector<Real> >
       ineq_u_rcp(new std::vector<Real>(num_ineq_const, 0.0));
 
-    // CLEAN-UP: Seems like we should be able to pull this into the
+    // TODO: Seems like we should be able to pull this into the
     // adapters and use traits to determine what to populate the
     // bounds vectors with...similar to get_bounds for the bound
     // constraints above.
@@ -343,7 +321,9 @@ void ROLOptimizer::initialize_run()
   orig_auto_graphics_flag = iteratedModel.auto_graphics();
 }
 
-// QUESTION: Shouldn't this be called from somewhere?
+// QUESTION: Shouldn't this be called from somewhere?  From core_run?
+// Do set_problem and set_rol_parameters also need to be called at run
+// time?  Currently called in a unit test.
 // Helper function to reset ROL data and solver parameters.  This can
 // be used to ensure that ROL is re-entrant since ROL itself does not
 // provide such assurance.
@@ -488,10 +468,6 @@ void ROLOptimizer::set_rol_parameters()
 // --------------------------------------------------------------
 
 
-// QUESTION: Why the anonymous namespace?  Is it to avoid conflict
-// with update_model in the surrogate classes or something else?
-// Regardless, perhaps we should re-consider the name of this function
-// to ensure that it is consistent with what it does.
 namespace {
   // Helper function to manage response evaluations, both objectives
   // and nonlinear constraints.  The response and all derivatives are
@@ -602,7 +578,6 @@ DakotaROLObjectiveHess::hessVec(std::vector<Real> &hv,
 } // objective hessVec
 
 
-// CLEAN-UP: Should it stay or should it go?
 // Compute product of objective Hessian and a vector.  Not implemented
 // since no ROL methods currently exposed use it.
 void
