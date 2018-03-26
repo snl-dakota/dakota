@@ -115,6 +115,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   posteriorStatsKL(probDescDB.get_bool("method.posterior_stats.kl_divergence")),
   posteriorStatsMutual(
     probDescDB.get_bool("method.posterior_stats.mutual_info")),
+  posteriorStatsKDE(probDescDB.get_bool("method.posterior_stats.kde")),
   subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
   exportMCMCFilename(
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
@@ -1774,7 +1775,7 @@ void NonDBayesCalibration::compute_statistics()
     kl_post_prior(acceptanceChain);
   if (posteriorStatsMutual)
     mutual_info_buildX();
-  if (outputLevel > NORMAL_OUTPUT) {
+  if (posteriorStatsKDE) {
     calculate_kde();
   }
 }

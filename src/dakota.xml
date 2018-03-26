@@ -2824,6 +2824,7 @@
 	    <keyword id="mutual_info" name="mutual_info" code="{N_mdm(true,posteriorStatsMutual)}" minOccurs="0" >
 	      <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
 	    </keyword>
+	    <keyword id="kde" name="kde" code="{N_mdm(true,posteriorStatsKDE)}" minOccurs="0" />
 	  </keyword>
 	  <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
 	    <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type"  minOccurs="0" default="gaussian process" >
