@@ -131,8 +131,16 @@ void ROLOptimizer::core_run()
   bool db_found = false;
   if( "simulation" == iteratedModel.model_type() )
     db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+  // RWH - TODO: need code review to see if this is expected:
+  // This is needed when using ROL with LeastSq problems, eg using the iteratedModel
+  // gives the following error:
+  //       Error: inconsistent asv sizing in RecastModel::transform_set()
   else if( "recast" == iteratedModel.model_type() )
     db_found = iteratedModel.truth_model().db_lookup(best_vars, search_set, best_resp);
+  // RWH: Does using ROL with SBO require similar treatment as for LeastSq?
+  else if( "surrogate" == iteratedModel.model_type() )
+    //db_found = iteratedModel.surrogate_model().db_lookup(best_vars, search_set, best_resp);
+    db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
 
   // Fall back on re-evaluation if not found.
   if (db_found)

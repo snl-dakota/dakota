@@ -1,0 +1,84 @@
+#@ s4: DakotaConfig=HAVE_ACRO
+# Test least squares transformations with annotated data file (freeform on some)
+#   0: nl2sol, freeform data
+#   1: nl2sol, annotated data
+#   2: automatic recast to optpp_q_newton
+#   3: automatic recast to coliny_ea)
+#   4: OPT++ gauss-newton recast
+#   5: nl2sol, with surrogate(model) - data
+#      - Optimization points to a response that differences with data
+#      - DACE points to a response that just returns the raw responses
+#   6: nl2sol, freeform data, scaling enabled
+#
+# Can't do surrogate on model-data as DACE method has no knowledge of
+# the data transformation!
+#
+# Data		 [82.0, 15.5, 2.0] likely generated with (4, 2) which yields 
+# Residuals      [82.0, 15.0, 2.0] so 
+# Best Residuals [ 0.0, -0.5, 0.0]
+
+method
+  model_pointer = 'TEXTBOOK_MINUS_DATA'		#s0,#s1,#s2,#s3,#s4,#s6
+#  model_pointer = 'SURROGATE_MINUS_DATA'	#s5
+  max_iterations = 50
+  rol_ls
+    gradient_tolerance   1.0e-8
+    constraint_tolerance 1.0e-8
+    threshold_delta      1.0e-8
+
+# All the models and responses are defined for all the tests, so must specify
+model						
+  id_model = 'TEXTBOOK_MINUS_DATA'			
+  single
+  responses_pointer = 'TEXTBOOK_MINUS_DATA'
+
+model
+  id_model = 'TEXTBOOK_NATIVE'
+  single
+  responses_pointer = 'TEXTBOOK_NATIVE'
+
+# The following for testing a one-pass global surrogate build on the raw model,
+# then differenced with the data by the outer method
+model                       	    	                        
+  id_model = 'SURROGATE_MINUS_DATA'		      
+  # difference the surrogate with the data via the responses spec
+  responses_pointer = 'TEXTBOOK_MINUS_DATA'
+  surrogate global		      
+    dace_method_pointer = 'DACE'	       
+    gaussian_process surfpack
+
+method       
+  id_method = 'DACE'			 
+  # DACE method builds the surrogate on the raw responses from textbook	
+  model_pointer = 'TEXTBOOK_NATIVE'		 
+  sampling sample_type lhs		 
+  samples = 100 seed = 5034
+
+variables
+  continuous_design = 2
+    initial_point    0.9    1.1
+    upper_bounds     5.8    2.9
+    lower_bounds     0.5   -2.9
+    descriptors      'x1'   'x2'
+
+interface
+  direct
+    analysis_driver = 'text_book'
+
+# responses used for optimization on (model-data), or surrogate(model) - data
+responses
+  id_responses = 'TEXTBOOK_MINUS_DATA'
+  calibration_terms = 3
+    calibration_data_file = 'dakota_textbook_lsq.dat'	#s0,#s5
+      freeform						#s0,#s5
+#     calibration_data_file = 'dakota_textbook_lsq.ann'	#s1,#s2,#s3,#s4,#s6
+  analytic_gradients					#s0,#s1,#s2,#s3,#s5,#s6
+#  no_gradients	   	   				#s4
+  no_hessians				
+
+# responses used to build surrogate directly on model
+responses 
+  id_responses = 'TEXTBOOK_NATIVE'
+  calibration_terms = 3		
+  no_gradients	    		
+  no_hessians			

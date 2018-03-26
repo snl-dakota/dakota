@@ -1,0 +1,114 @@
+#@ p*: Label=FastTest
+#@ p0: MPIProcs=2
+
+# DAKOTA INPUT FILE - dakota_sbo_textbook_rol.in
+
+# Demonstrates the use of approximation models and a trust region
+# optimization environment in performing constrained minimization on
+# the textbook test function.
+
+# These tests exercise the "correction" capabilities of the surrogate
+# based optimization environment. Here, the options are "none," "additive
+# zeroth_order," "multiplicative zeroth_order," "additive first_order,"
+# and "multiplicative first_order."  The "none" case is the default
+# setting which is invoked if the "correction" keyword is omitted.
+
+environment,
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'ROL'
+	max_iterations = 50
+	soft_convergence_limit = 10
+	trust_region
+	  initial_size = 0.10
+	  contraction_factor = 0.5
+	  expansion_factor   = 1.50
+
+method
+	id_method = 'ROL'
+        rol_ls
+          gradient_tolerance   1.0e-2
+          constraint_tolerance 1.0e-1
+          threshold_delta      1.0e-8
+          max_iterations       50
+
+model,
+	id_model = 'SURROGATE'
+	responses_pointer = 'SURROGATE_RESP'
+	surrogate global
+	  dace_method_pointer = 'SAMPLING'
+#	  reuse_samples region
+#	  correction additive       zeroth_order #s1,#s5
+#	  correction multiplicative zeroth_order #s2
+#	  correction additive       first_order	 #s3,#s6,#s7,#p0
+#	  correction multiplicative first_order	 #s4
+#	  use_derivatives			 #s6,#s7
+#	  neural_network
+	  polynomial quadratic			 #s0,#s1,#s2,#s3,#s4,#p0	
+#	  gaussian_process surfpack		 #s5,#s6,#s7
+#	  gaussian_process surfpack correlation_lengths =  0.707106781186547 0.707106781186547
+#	  mars
+# 	surrogate local taylor_series
+#	  actual_model_pointer = 'TRUTH'
+
+variables,
+	continuous_design = 2
+	  initial_point    2.0    2.0
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+#	analytic_gradients			
+#	no_gradients				
+  	numerical_gradients			
+  	  method_source dakota			
+  	  interval_type forward			
+  	  fd_gradient_step_size = .0001		
+#	analytic_hessians
+	no_hessians
+
+###############################################
+# SAMPLING method specifications for building #
+# surrogate function(s)			      #
+###############################################
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+#	dace central_composite
+#	dace box_behnken
+	dace lhs
+	  seed = 12345
+	  samples = 10
+#	dace oas seed = 5
+#	  samples = 49 symbols = 7
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+interface,
+	direct
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver = 'text_book'
+
+responses,
+	id_responses = 'TRUE_RESP'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+#	analytic_gradients		#s3,#s4,#s7
+	no_gradients		 	#s0,#s1,#s2,#s5
+#  	numerical_gradients		#s6,#p0
+#  	  method_source dakota		#s6,#p0
+#  	  interval_type central		#s6,#p0
+#  	  fd_gradient_step_size = 1.e-9	#s6,#p0
+	no_hessians
