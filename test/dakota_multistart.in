@@ -16,6 +16,8 @@
 #@ s0: [model:Smooth]
 #@ s0: [model:FirstDerivatives]
 #@ [taxonomy:end]
+#
+#Test s4 uses ROL instead of NLP
 
 # DAKOTA INPUT FILE - dakota_multistart.in
 # Dakota Input File: qsf_multistart_strat.in                  #s0
@@ -45,6 +47,7 @@ method
 #    iterator_scheduling master   #p1,#p3,#p4
 #    processors_per_iterator = 1  #p2,#p3
     method_pointer = 'NLP'        #s0,#s1,#s2,#p0,#p1,#p2,#p3
+#    method_pointer = 'ROL'       #s4
 #    method_name 'dot_bfgs'       #s3,#p4
     random_starts = 3 seed = 123
     starting_points = -0.8  -0.8
@@ -59,6 +62,13 @@ method                            #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
 ## conmin_mfd or optpp_q_newton instead)     			      #s0
   dot_bfgs                        #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
 #   scaling                       #s1,#s2
+
+#method                                 #s4
+#  id_method = 'ROL'                    #s4
+#  rol_ls                               #s4
+#    gradient_tolerance 1.0e-12         #s4
+#    constraint_tolerance 1.0e-12       #s4
+#    threshold_delta 1.0e-12            #s4
 
 variables
   continuous_design = 2
