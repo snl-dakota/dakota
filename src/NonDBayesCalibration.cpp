@@ -1503,11 +1503,14 @@ void NonDBayesCalibration::build_field_discrepancy()
       num_pred = configpred_mat.numCols();
     }
     else if (!predictionConfigList.empty()) {
-      num_pred = predictionConfigList.length();
+      //Cout << "pred config list = " << predictionConfigList << '\n';
+      //KAM TODO: check length % num_config vars
+      num_pred = predictionConfigList.length()/num_configvars;
       configpred_mat.shapeUninitialized(num_configvars, num_pred);
       RealVector config(num_configvars);
       for (int j = 0; j < num_pred; j++) {
-        config = predictionConfigList[j];
+        for (int k = 0; k < num_configvars; k++) 
+          config[k] = predictionConfigList[j*num_configvars + k];
         Teuchos::setCol(config, j, configpred_mat);
       }
     }
@@ -1533,7 +1536,7 @@ void NonDBayesCalibration::build_field_discrepancy()
         Teuchos::setCol(config_vec, j, configpred_mat);
       }
     }
-    //Cout << "pred config mat = " << configpred_mat << '\n';
+    Cout << "pred config mat = " << configpred_mat << '\n';
     // Combine with simulation indep vars
     for (int j = 0; j < num_pred; j++) {
       RealMatrix vars_mat = mcmcModel.current_response().field_coords_view(i);
@@ -1547,7 +1550,7 @@ void NonDBayesCalibration::build_field_discrepancy()
         col_vec.putScalar(config_vec[k]);
         Teuchos::setCol(col_vec, dim_indepvars+k, vars_mat);
       }
-      //Cout << "Vars matrix " << vars_mat << '\n';
+      Cout << "Vars matrix " << vars_mat << '\n';
       RealMatrix varsmat_trans(vars_mat, Teuchos::TRANS);
       int col = discrepvars_pred.numCols();
       discrepvars_pred.reshape(vars_mat.numCols(), 
@@ -1559,8 +1562,8 @@ void NonDBayesCalibration::build_field_discrepancy()
     }
   }
 
-  //Cout << "All vars matrix " << allvars_mat << '\n';
-  //Cout << "Pred vars matrix " << discrepvars_pred << '\n';
+  Cout << "All vars matrix " << allvars_mat << '\n';
+  Cout << "Pred vars matrix " << discrepvars_pred << '\n';
   RealVector disc_pred(discrepvars_pred.numCols());
   build_GP_field(allvars_mat, discrepvars_pred, concat_disc, disc_pred);
   //Cout << "disc_pred " << disc_pred;
