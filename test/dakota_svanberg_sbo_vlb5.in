@@ -1,5 +1,8 @@
 ## DAKOTA INPUT FILE - dakota_svanberg_sbo_vlb5.in
 #                      lower bound on x5 prevents hard convergence unless Lagrange multiplier accounts for bounds
+#  The Svanberg five-segment beam has a linear objective and a nonlinear constraint:
+#  Svanberg, Krister, "The Method of Moving Asymptotes--A New Method for
+#  Structural Optimization," Intl. J. Num. Meth. Vol. 24, 1987, pp. 359-373.
 
 environment,
 	tabular_data

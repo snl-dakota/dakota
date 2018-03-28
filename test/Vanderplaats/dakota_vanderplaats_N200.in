@@ -3,6 +3,13 @@
 #@ 3: DakotaConfig=HAVE_NLPQL
 #@ 4: DakotaConfig=HAVE_NPSOL
 ## DAKOTA INPUT FILE - dakota_vanderplaats_N200.in
+#  The Vanderplaats 200-segment cantilever beam has 400 design variables, a nonlinear objective, 
+#  200 nonlinear stress constraints, a nonlinear tip displacement constraint, and
+#  200 linear aspect ratio constraints. 
+#
+#  Vanderplaats, Garret N. (1984) Example 5-1
+#  Numerical Optimization Techniques for Engineering Design: With Applications
+#  New York: McGraw-Hill, pp. 147-150.
 
 method,
 	conmin_mfd								   #s0

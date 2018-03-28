@@ -1,4 +1,11 @@
 ## DAKOTA INPUT FILE - dakota_svanberg_N50_sbo.in
+#  The Vanderplaats 50-segment cantilever beam has 100 design variables, a nonlinear objective, 
+#  50 nonlinear stress constraints, a nonlinear tip displacement constraint, and
+#  50 linear aspect ratio constraints. 
+#
+#  Vanderplaats, Garret N. (1984) Example 5-1
+#  Numerical Optimization Techniques for Engineering Design: With Applications
+#  New York: McGraw-Hill, pp. 147-150.
 
 environment,
 	tabular_data
