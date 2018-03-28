@@ -19984,6 +19984,36 @@ Test Number 28 succeeded
                       1.9999989948e-01
                      -5.3043797743e-08
 <<<<< Best data captured at function evaluation 1472
+Test Number 29 succeeded
+<<<<< Function evaluation summary: 597 total (75 new, 522 duplicate)
+<<<<< Best parameters          =
+                      2.4148100249e+00 w
+                      3.4150570872e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      8.2467140899e+00
+<<<<< Best constraint values   =
+                     -9.0771499400e-02
+                     -9.9999905612e-02
+<<<<< Best data captured at function evaluation 587
+Test Number 30 succeeded
+<<<<< Function evaluation summary: 1751 total (44 new, 1707 duplicate)
+<<<<< Best parameters          =
+                      2.4148100438e+00 w
+                      3.4150571145e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      8.2467142203e+00
+<<<<< Best constraint values   =
+                     -9.0771520976e-02
+                     -9.9999934072e-02
+<<<<< Best data captured at function evaluation 1741
 dakota_rosenbrock.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)

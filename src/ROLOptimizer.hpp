@@ -435,7 +435,7 @@ public:
 			    const std::vector<Real> &x,
 			    Real &tol) override;
 
-private:
+protected:
 
   //
   //- Heading: Data
@@ -451,6 +451,51 @@ private:
   bool haveNlnConst;
 
 }; // class DakotaROLEqConstraints
+
+
+// -----------------------------------------------------------------
+/** DakotaROLEqConstraintsHess is derived from
+    DakotaROLEqConstraints.  It implements overrides of ROL member
+    functions to provide a Dakota-specific implementation of a adjoint
+    Hessian-vector product for equality constraints.  This separate
+    class is needed (rather than putting the product into
+    DakotaROLEqConstraints) because logic in ROL does not always
+    protect against calling the adjoint Hessian-vector product in
+    cases where there is not actually a Hessian provided. */
+
+class DakotaROLEqConstraintsHess : public DakotaROLEqConstraints
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// Constructor
+  DakotaROLEqConstraintsHess(Model & model);
+
+  /// Destructor
+  virtual ~DakotaROLEqConstraintsHess() { }
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  /// Function to return the result of applying the constraint adjoint
+  /// Hessian to an arbitrary vector to ROL
+  void applyAdjointHessian( std::vector<Real>       & ahuv,
+                            const std::vector<Real> & u, 
+                            const std::vector<Real> & v,
+                            const std::vector<Real> & x,
+                            Real &tol ) override;
+
+private:
+
+  //
+  //- Heading: Data
+  //
+
+}; // class DakotaROLIneqConstraintsHess
 
 
 // -----------------------------------------------------------------

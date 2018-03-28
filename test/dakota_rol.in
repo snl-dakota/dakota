@@ -9,7 +9,7 @@ method
     max_iterations       10				#s0
 
 # ILLUMINATION, ROSENBROCK, HERBIE, TEXTBOOK (large), BARNES, CYLINDER HEAD, CANTILEVER, SCALABLE TEXTBOOK
-#    threshold_delta = 1.e-4				#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
+#    threshold_delta = 1.e-4				#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30
 #    gradient_tolerance = 1.e-6       #s16,
 
 # TEXTBOOK
@@ -63,15 +63,15 @@ variables
 #    descriptors   'intake_dia' 'flatness'    #s19,#s20,#s21,#s22
 
 # CANTILEVER
-#  continuous_design = 2                              #s23,#s24
-#    initial_point 2*2.0                              #s23
+#  continuous_design = 2                              #s23,#s24,#s29,#s30
+#    initial_point 2*2.0                              #s23,#s29,#s30
 #    initial_point 2*8.0                              #s24
-#    lower_bounds  2*1.0                              #s23,#s24
-#    upper_bounds  2*10.0                             #s23,#s24
-#    descriptors   'w' 't'                            #s23,#s24
-#  continuous_state = 4                               #s23,#s24
-#    initial_state   40000.  29.E+6  500.  1000.      #s23,#s24
-#    descriptors       'R'    'E'    'X'    'Y'       #s23,#s24
+#    lower_bounds  2*1.0                              #s23,#s24,#s29,#s30
+#    upper_bounds  2*10.0                             #s23,#s24,#s29,#s30
+#    descriptors   'w' 't'                            #s23,#s24,#s29,#s30
+#  continuous_state = 4                               #s23,#s24,#s29,#s30
+#    initial_state   40000.  29.E+6  500.  1000.      #s23,#s24,#s29,#s30
+#    descriptors       'R'    'E'    'X'    'Y'       #s23,#s24,#s29,#s30
 
 # SCALABLE TEXTBOOK
 #  continuous_design = 6                                  #s25,#s26,#s27,#s28
@@ -87,7 +87,7 @@ interface
 #  analysis_drivers = 'herbie'                #s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
 #  analysis_drivers = 'barnes'                #s17,#s18
 #  analysis_drivers = 'cyl_head'              #s19,#s20,#s21,#s22
-#  analysis_drivers = 'cantilever'            #s23,#s24
+#  analysis_drivers = 'cantilever'            #s23,#s24,#s29,#s30
 #  analysis_drivers = 'scalable_text_book'    #s25,#s26,#s27,#s28
 
 responses
@@ -133,11 +133,17 @@ responses
 #  no_hessians                                #s19,#s20,#s21,#s22
 
 # CANTILEVER
-#  objective_functions = 1                    #s23,#s24
+#  objective_functions = 1                    #s23,#s24,#s29,#s30
 #  nonlinear_inequality_constraints = 2       #s23,#s24
 #  nonlinear_inequality_upper_bounds = 2*0.0  #s23,#s24
-#  analytic_gradients                         #s23,#s24
-#  no_hessians                                #s23,#s24
+#  nonlinear_inequality_constraints = 1       #s29,#s30
+#  nonlinear_inequality_upper_bounds = 0.0    #s29,#s30
+#  nonlinear_equality_constraints = 1         #s29,#s30
+#  nonlinear_equality_targets = -0.1          #s29,#s30
+#  analytic_gradients                         #s23,#s24,#s29,#s30
+#  no_hessians                                #s23,#s24,#s29
+#  analytic_hessians                          #s30
+
 
 # SCALABLE TEXTBOOK
 #  objective_functions = 1                                          #s25,#s26,#s27,#s28

@@ -108,6 +108,13 @@ void ROLOptimizer::core_run()
   opt_solver.solve(rol_cout);
   rol_cout.flush();
 
+  // CLEAN-UP: Do we need these comments anymore?
+  // checking, may be enabled in tests or debug mode
+
+  // Teuchos::RCP<std::ostream> outStream_checking;
+  // outStream_checking = Teuchos::rcp(&std::cout, false);
+  // optProblem.check(*outStream_checking);
+
   // TODO: print termination criteria (based on Step or AlgorithmState?)
 
   // CLEAN-UP: If memory serves me correctly, Russell implementd a
@@ -261,7 +268,12 @@ void ROLOptimizer::set_problem()
   // If there are equality constraints, create the object and provide
   // the Dakota model.
   if (num_eq_const > 0){
-    eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
+    // create appropriate equality constraint object and give it
+    // access to Dakota model
+    if (iteratedModel.hessian_type() == "none")
+      eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
+    else
+      eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
 
     // QUESTION: What are the multipliers for?
     // equality multipliers
@@ -327,13 +339,6 @@ void ROLOptimizer::set_problem()
   // Instantiate ROL problem and populate it with relevant data.
   optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eq_const, emul,
 					       ineq_const, imul, ineq_bnd);
-
-  // CLEAN-UP: Do we need these comments anymore?
-  // checking, may be enabled in tests or debug mode
-
-  // Teuchos::RCP<std::ostream> outStream_checking;
-  // outStream_checking = Teuchos::rcp(&std::cout, false);
-  // optProblem.check(*outStream_checking);
 
 } // set_problem
 
@@ -817,5 +822,53 @@ DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
   }
 
 } // eqConstraints applyAdjointJacobian
+
+
+
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLEqConstraintsHess class. */
+
+
+// Constructor.
+DakotaROLEqConstraintsHess::DakotaROLEqConstraintsHess(Model & model) :
+  DakotaROLEqConstraints(model)
+{ }
+
+
+// Multiply a vector by the transpose of the inequality constraint
+// Hessian and return to ROL.
+void
+DakotaROLEqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
+                                                   const std::vector<Real> & u, 
+                                                   const std::vector<Real> & v,
+                                                   const std::vector<Real> & x,
+                                                   Real &tol )
+{
+  // Must init since linear info is 0.0 and we are appending 
+  // the effect of nonlinear
+  ahuv.assign(ahuv.size(), 0.0);
+
+  // apply nonlinear constraint Hessian (might be empty)
+  if (haveNlnConst) {
+
+    size_t num_nln_ineq_constraints = dakotaModel.num_nonlinear_ineq_constraints();
+    // make sure that model is current
+    update_model(dakotaModel, x);
+
+    RealSymMatrix hu(dakotaModel.current_response().function_hessian(1+num_nln_ineq_constraints));
+    hu *= u[0];
+
+    for( size_t i=1; i<dakotaModel.num_nonlinear_eq_constraints(); ++i )
+    {
+      RealSymMatrix temp_hu(dakotaModel.current_response().function_hessian(1+num_nln_ineq_constraints+i));
+      temp_hu *= u[i];
+      hu += temp_hu;
+    }
+
+    apply_matrix_partial(hu, v, ahuv);
+  }
+
+} // eqConstraintsHess applyAdjointHessian
+
 
 } // namespace Dakota
