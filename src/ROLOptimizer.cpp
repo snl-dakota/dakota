@@ -54,7 +54,6 @@ namespace Dakota {
 // information from the problem database.
 ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
-  SNLLBase(problem_db),
   optSolverParams("Dakota::ROL"), problemType(TYPE_B)
 {
   // Populate ROL data with user-provided problem dimensions and
