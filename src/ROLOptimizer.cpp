@@ -130,41 +130,32 @@ void ROLOptimizer::core_run()
 
   // ROL does not currently provide access to the final solution, so
   // attempt a model database lookup directly into best.
-  Response& best_resp = bestResponseArray.front();
-  ActiveSet search_set(best_resp.active_set());
-  search_set.request_values(AS_FUNC);
-  best_resp.active_set(search_set);
-  bool db_found = false;
-  if( "simulation" == iteratedModel.model_type() )
-    db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
-  // RWH - TODO: need code review to see if this is expected:
-  // This is needed when using ROL with LeastSq problems, eg using the iteratedModel
-  // gives the following error:
-  //       Error: inconsistent asv sizing in RecastModel::transform_set()
-  else if( "recast" == iteratedModel.model_type() )
-    db_found = iteratedModel.truth_model().db_lookup(best_vars, search_set, best_resp);
-  // RWH: Does using ROL with SBO require similar treatment as for LeastSq?
-  else if( "surrogate" == iteratedModel.model_type() )
-    //db_found = iteratedModel.surrogate_model().db_lookup(best_vars, search_set, best_resp);
-    db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+  if (!localObjectiveRecast)
+  {
+    Response& best_resp = bestResponseArray.front();
+    ActiveSet search_set(best_resp.active_set());
+    search_set.request_values(AS_FUNC);
+    best_resp.active_set(search_set);
+    bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
 
-  // Fall back on re-evaluation if not found.
-  if (db_found)
-    Cout << "INFO: ROL retrieved best response from cache." << std::endl;
-  else {
-    Cout << "INFO: ROL re-evaluating model to retrieve best response."
-	 << std::endl;
+    // Fall back on re-evaluation if not found.
+    if (db_found)
+      Cout << "INFO: ROL retrieved best response from cache." << std::endl;
+    else {
+      Cout << "INFO: ROL re-evaluating model to retrieve best response."
+        << std::endl;
 
-    // QUESTION: Is this evaluating at the right parameter values?  If
-    // I read other code correctly, rolX was copied into cont_vars.
-    // But rolX hasn't been touched since the problem was set up.
-    // Evaluate model for responses at best parameters and set Dakota
-    // bestResponseArray.
-    iteratedModel.continuous_variables(cont_vars);
-    iteratedModel.evaluate();
-    const RealVector& best_fns =
-      iteratedModel.current_response().function_values();
-    best_resp.function_values(best_fns);
+      // QUESTION: Is this evaluating at the right parameter values?  If
+      // I read other code correctly, rolX was copied into cont_vars.
+      // But rolX hasn't been touched since the problem was set up.
+      // Evaluate model for responses at best parameters and set Dakota
+      // bestResponseArray.
+      iteratedModel.continuous_variables(cont_vars);
+      iteratedModel.evaluate();
+      const RealVector& best_fns =
+        iteratedModel.current_response().function_values();
+      best_resp.function_values(best_fns);
+    }
   }
 
 } // core_run
