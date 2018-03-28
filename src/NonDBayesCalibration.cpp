@@ -1283,7 +1283,10 @@ void NonDBayesCalibration::build_scalar_discrepancy()
     num_pred = ( numPredConfigs > 0) ? numPredConfigs : 10;
     configpred_array.resize(num_pred);
     configpred_mat.shapeUninitialized(num_configvars, num_pred);
-    double config_step = (configUpperBnds[0]-configLowerBnds[0])/(num_pred-1);
+    if (numPredConfigs == 1)
+      double config_step = (configUpperBnds[0] - configLowerBnds[0])/2;
+    else
+      double config_step = (configUpperBnds[0]-configLowerBnds[0])/(num_pred-1);
     for (int i = 0; i < num_pred; i++){
       config = configLowerBnds[0] + config_step*i;
       configvars.continuous_variables(config);
@@ -1385,6 +1388,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   }
   */
 
+  // Read variables for discrepancy build points
   RealMatrix allvars_mat;
   RealVector col_vec;
   for (int i = 0; i < num_field_groups; i++) { 
@@ -1444,6 +1448,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   }
   */
 
+  // Build concatenated vector for discrepancy
   //for (int i = 0; i < num_field_groups; i++) {
   // Question:  do we want the t and concat_disp to include ALL the experiments?
   int ind = 0;
@@ -1482,21 +1487,66 @@ void NonDBayesCalibration::build_field_discrepancy()
     }
   }
   //  Cout << "disc_build_points " <<concat_disc;
+
+  // Build matrix containing prediction points for discrepancy
   RealMatrix discrepvars_pred;
+  RealMatrix configpred_mat;
+  int num_pred;
   for (int i = 0; i < num_field_groups; i++) { 
-    for (int j = 0; j < num_exp; j++) {
+    // Read in prediction config vars
+    if (!importPredConfigs.empty()) {
+      TabularIO::read_data_tabular(importPredConfigs,
+                                   "user-provided prediction configurations",
+                                   configpred_mat, num_configvars,
+                                   importPredConfigFormat, false);
+      num_pred = configpred_mat.numCols();
+    }
+    else if (!predictionConfigList.empty()) {
+      num_pred = predictionConfigList.length();
+      configpred_mat.shapeUninitialized(num_configvars, num_pred);
+      RealVector config(num_configvars);
+      for (int j = 0; j < num_pred; j++) {
+        config = predictionConfigList[j];
+        Teuchos::setCol(config, j, configpred_mat);
+      }
+    }
+    else if (numPredConfigs > 1) {
+      num_pred = numPredConfigs;
+      configpred_mat.shapeUninitialized(num_configvars, numPredConfigs);
+      RealVector config_step(num_configvars);
+      RealVector config(num_configvars);
+      for (int i = 0; i < num_configvars; i++)
+        config_step[i] = (configUpperBnds[i] -
+                                configLowerBnds[i])/(numPredConfigs - 1);
+      for (int i = 0; i < numPredConfigs; i++) {
+        for (int j = 0; j < num_configvars; j++)
+          config[j] = configLowerBnds[j] + config_step[j]*i;
+        Teuchos::setCol(config, i, configpred_mat);
+      }
+    }
+    else {
+      for (int j = 0; j < num_exp; j++) {
+        num_pred = num_exp;
+        configpred_mat.shapeUninitialized(num_configvars, num_exp);
+        RealVector config_vec = expData.config_vars()[j];
+        Teuchos::setCol(config_vec, j, configpred_mat);
+      }
+    }
+    //Cout << "pred config mat = " << configpred_mat << '\n';
+    // Combine with simulation indep vars
+    for (int j = 0; j < num_pred; j++) {
       RealMatrix vars_mat = mcmcModel.current_response().field_coords_view(i);
       int num_indepvars = vars_mat.numRows();
       int dim_indepvars = vars_mat.numCols();
       vars_mat.reshape(num_indepvars, dim_indepvars + num_configvars);
-      RealVector config_vec = expData.config_vars()[j];
+      const RealVector& config_vec = Teuchos::getCol(Teuchos::Copy,
+                                              configpred_mat, j);
       col_vec.resize(num_indepvars);
       for (int k = 0; k < num_configvars; k++) {
         col_vec.putScalar(config_vec[k]);
         Teuchos::setCol(col_vec, dim_indepvars+k, vars_mat);
       }
       //Cout << "Vars matrix " << vars_mat << '\n';
-      // add to total matrix
       RealMatrix varsmat_trans(vars_mat, Teuchos::TRANS);
       int col = discrepvars_pred.numCols();
       discrepvars_pred.reshape(vars_mat.numCols(), 
@@ -1507,12 +1557,12 @@ void NonDBayesCalibration::build_field_discrepancy()
       }
     }
   }
-//  Cout << "All vars matrix " << allvars_mat << '\n';
-//  Cout << "Pred vars matrix " << discrepvars_pred << '\n';
+
+  //Cout << "All vars matrix " << allvars_mat << '\n';
+  //Cout << "Pred vars matrix " << discrepvars_pred << '\n';
   RealVector disc_pred(discrepvars_pred.numCols());
-  //build_GP_field(allvars_mat, allvars_mat, concat_disc, disc_pred);
   build_GP_field(allvars_mat, discrepvars_pred, concat_disc, disc_pred);
-//  Cout << "disc_pred " << disc_pred;
+  //Cout << "disc_pred " << disc_pred;
 
     //allExperiments[exp_ind].function_value(i);
     //Response residual_response;
