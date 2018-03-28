@@ -1283,10 +1283,11 @@ void NonDBayesCalibration::build_scalar_discrepancy()
     num_pred = ( numPredConfigs > 0) ? numPredConfigs : 10;
     configpred_array.resize(num_pred);
     configpred_mat.shapeUninitialized(num_configvars, num_pred);
+    double config_step;
     if (numPredConfigs == 1)
-      double config_step = (configUpperBnds[0] - configLowerBnds[0])/2;
+      config_step = (configUpperBnds[0] - configLowerBnds[0])/2;
     else
-      double config_step = (configUpperBnds[0]-configLowerBnds[0])/(num_pred-1);
+      config_step = (configUpperBnds[0]-configLowerBnds[0])/(num_pred-1);
     for (int i = 0; i < num_pred; i++){
       config = configLowerBnds[0] + config_step*i;
       configvars.continuous_variables(config);
