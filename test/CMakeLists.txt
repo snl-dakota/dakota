@@ -419,6 +419,7 @@ set(dakota_test_executables
   steel_column_cost
   steel_column_perf
   steel_section
+  svanberg
   text_book
   text_book1
   text_book2
