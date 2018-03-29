@@ -106,7 +106,7 @@ void NLPQLPOptimizer::initialize()
 
   // Set NLPQL optimization controls 
   L      = 1;
-  ACC    = convergenceTol; // override default=1.0e-9;
+  ACC    = 1.0e-9;
   ACCQP  = 1.0e-11;
   STPMIN = 0;
   MAXFUN = 10; // max fn evals per line search

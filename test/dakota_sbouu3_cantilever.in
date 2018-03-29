@@ -15,7 +15,6 @@ method,
 	model_pointer = 'OPTIM_M'
         dot_sqp
 	  convergence_tolerance = 1.e-6
-	scaling
 
 model,
 	id_model = 'OPTIM_M'
@@ -34,8 +33,6 @@ variables,
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
 	  descriptors 'w' 't'
-	scale_type = 'value'
-	scales     =       2.5	  2.5
 
 responses,
 # minimize mean Weight
@@ -80,7 +77,6 @@ variables,
 	  means             =  40000. 29.E+6 500. 1000.
 	  std_deviations    =  2000. 1.45E+6 100. 100.
 	  descriptors       =  'R' 'E' 'X' 'Y'
-	scale_type = 'auto'
 
 responses,
 	id_responses = 'UQ_R'

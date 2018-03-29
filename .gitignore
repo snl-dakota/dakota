@@ -4,4 +4,4 @@ local
 *.swp
 cscope*
 tags
-.DS_Store
+

@@ -122,9 +122,7 @@ void DOTOptimizer::initialize()
 
   // Initialize DOT specific data
 
-  intCntlParmArray[1] = -1;            // IPRM(2)=ISCAL, turn off default scaling
   intCntlParmArray[2] = maxIterations; // IPRM(3)=ITMAX, p.3-8 DOT V4.20
-  intCntlParmArray[7] = maxIterations; // IPRM(8)=JTMAX, p.3-8 DOT V4.20
 
   // assign a nondefault constraint tolerance if a valid value has been 
   // set in dakota.in; otherwise utilize the DOT default.
@@ -138,10 +136,7 @@ void DOTOptimizer::initialize()
   // defining our own default (in the DataMethod constructor) and
   // always assigning it applies some consistency across methods.
   // Therefore, the DOT default is not used.
-  realCntlParmArray[2] = convergenceTol; // RPRM(3) =DABOBJ=MAX(0.0001*ABS(F0),1.E-20)
-  realCntlParmArray[3] = convergenceTol; // RPRM(4) =DELOBJ
-  realCntlParmArray[11]= convergenceTol; // RPRM(12)=DABSTR=MAX(0.0001*ABS(F0),1.E-20)
-  realCntlParmArray[12]= convergenceTol; // RPRM(13)=DELSTR
+  realCntlParmArray[3] = convergenceTol;
 
   // Default DOT gradients [ IPRM(1)=0 ] = numerical;forward;vendor setting.
   const String& grad_type     = iteratedModel.gradient_type();

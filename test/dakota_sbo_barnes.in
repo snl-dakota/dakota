@@ -23,8 +23,6 @@ method,
 	  contraction_factor = 0.5
 #	  constraint_relax homotopy		#s6,#s8,#s9,#s11
 	  expansion_factor   = 1.50
-	  soft_convergence_limit = 1		# Slowed convergence criteria
-	  minimum_size = 0.001
 
 method,
 	id_method = 'NLP'
