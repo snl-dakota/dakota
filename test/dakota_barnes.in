@@ -6,14 +6,12 @@ environment,
 #	tabular_data_file = 'dakota_barnes_f_optpp.dat'		#s3
 #	tabular_data_file = 'dakota_barnes_f_nlqpl.dat'		#s4
 #	tabular_data_file = 'dakota_barnes_f_npsol.dat'		#s5
-#	tabular_data_file = 'dakota_barnes_f_rol.dat'		#s6
 #	tabular_data_file = 'dakota_barnes_i_conmin.dat'	#s10
 #	tabular_data_file = 'dakota_barnes_i_dotmfd.dat'	#s11
 #	tabular_data_file = 'dakota_barnes_i_dotslp.dat'	#s12
 #	tabular_data_file = 'dakota_barnes_i_optpp.dat'		#s13
 #	tabular_data_file = 'dakota_barnes_i_nlqpl.dat'		#s14
 #	tabular_data_file = 'dakota_barnes_i_npsol.dat'		#s15
-#	tabular_data_file = 'dakota_barnes_i_rol.dat'		#s16
 
 method,
 	conmin_mfd								#s0,#s10
@@ -22,18 +20,17 @@ method,
 #	optpp_q_newton							#s3,#s13
 #	nlpql										#s4,#s14
 #	npsol										#s5,#s15
-#	rol_ls									#s6,#s16
+#	rol_ls									
 	  max_iterations = 50
 	  convergence_tolerance = 1e-6	#s0,#s1,#s2,#s4,#s5, #s10,#11,#12,#s14,#s15
 #	  convergence_tolerance = 1e-7	#s3, #s13
-	  constraint_tolerance  = 1e-4	#s0,#s1,#s2,#s5,#s6, #s10,#11,#12,#s15,#s16
-#	  threshold_delta       = 1.e-2	#s6,#s16
+	  constraint_tolerance  = 1e-4	#s0,#s1,#s2,#s5, #s10,#s11,#s12,#s15
 #	  scaling								#s2,#s12
 
 variables,
 	continuous_design = 2
-	  initial_point    30.   40.		#s0,#s1,#s2,#s3,#s4,#s5,#s6        #   feasible
-#	  initial_point    10.   20.		#s10,#s11,#s12,#s13,#s14,#s15,#s16 # infeasible
+	  initial_point    30.   40.		#s0,#s1,#s2,#s3,#s4,#s5       #   feasible
+#	  initial_point    10.   20.		#s10,#s11,#s12,#s13,#s14,#s15 # infeasible
 	  lower_bounds      0.    0.
 	  upper_bounds     80.   80.
 	  descriptors      'x1'  'x2'
