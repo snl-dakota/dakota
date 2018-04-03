@@ -1,0 +1,58 @@
+#@ 1: DakotaConfig=HAVE_DOT
+#@ 2: DakotaConfig=HAVE_DOT
+#@ 3: DakotaConfig=HAVE_NLPQL
+#@ 4: DakotaConfig=HAVE_NPSOL
+## DAKOTA INPUT FILE - dakota_vanderplaats_N50.in
+#  The Vanderplaats 50-segment cantilever beam has 100 design variables, a nonlinear objective, 
+#  50 nonlinear stress constraints, a nonlinear tip displacement constraint, and
+#  50 linear aspect ratio constraints. 
+#
+#  Vanderplaats, Garret N. (1984) Example 5-1
+#  Numerical Optimization Techniques for Engineering Design: With Applications
+#  New York: McGraw-Hill, pp. 147-150.
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_vanderplaats_N50_conmin.dat'		#s0
+#	tabular_data_file = 'dakota_vanderplaats_N50_dotmfd.dat'		#s1
+#	tabular_data_file = 'dakota_vanderplaats_N50_dotslp.dat'		#s2
+#	tabular_data_file = 'dakota_vanderplaats_N50_nlpql.dat' 		#s3
+#	tabular_data_file = 'dakota_vanderplaats_N50_npsol.dat' 		#s4
+#	tabular_data_file = 'dakota_vanderplaats_N50_optpp.dat' 		#s5
+
+method,
+	conmin_mfd								   #s0
+#	dot_mmfd									   #s1
+#  dot_slp									   #s2
+#	nlpql										   #s3
+#	npsol										   #s4
+#	optpp_q_newton							   #s5
+	  max_iterations = 500
+	  convergence_tolerance = 1e-4		#s0,#s1,#s2,#s3
+#	  convergence_tolerance = 1e-5		#s4,#s5
+	  constraint_tolerance  = 1e-4		#s0,#s1,#s2,#s4
+
+variables,					
+	continuous_design = 100
+	cdv_initial_point   50 * 5.0, 50 * 40.0
+	cdv_lower_bounds    50 * 1.0, 50 *  5.0
+	cdv_upper_bounds   100 * 100.0
+
+interface,
+	fork
+	  analysis_driver = './vanderplaats'
+	  parameters_file = 'vanderplaats_params_N50.in'
+	  results_file = 'vanderplaats_results_N50_conmin.out'	#s0
+#	  results_file = 'vanderplaats_results_N50_dotmfd.out'	#s1
+#	  results_file = 'vanderplaats_results_N50_dotslp.out'	#s2
+#	  results_file = 'vanderplaats_results_N50_nlpql.out'	   #s3
+#	  results_file = 'vanderplaats_results_N50_npsol.out'	   #s4
+#	  results_file = 'vanderplaats_results_N50_optpp.out'	   #s5
+	  deactivate active_set_vector
+#	  file_tag file_save
+	  
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints  = 101
+	analytic_gradients
+	no_hessians

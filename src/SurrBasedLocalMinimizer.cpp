@@ -505,6 +505,30 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   const RealVector& fns_star_approx
     = tr_data.response_star(CORR_APPROX_RESPONSE).function_values();
 
+  // Initialize measures for slowed convergence (RAC 3/27/18)
+  const RealVector& c_vars = tr_data.c_vars_center();
+  const RealVector& s_vars = tr_data.c_vars_star();
+  const Response& response_truth = tr_data.response_center(CORR_TRUTH_RESPONSE);
+  const RealVector&    fns_truth = response_truth.function_values();
+  bool  constraint_viol = (constraint_violation(fns_truth, constraintTol) > 0.);
+  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+  Real obj_fn_star_truth   = objective(fns_star_truth,   sense, wts);
+  Real obj_fn_center_truth = objective(fns_center_truth, sense, wts);
+  Real obj_delta = obj_fn_center_truth - obj_fn_star_truth;
+  Real rel_obj = ( std::fabs(obj_fn_center_truth) > DBL_MIN ) ?
+                   std::fabs(obj_delta / obj_fn_center_truth) : std::fabs(obj_delta);
+/* Until a variable_tolerance is implemented as Dakota user input, set it to a generic default.
+  (Or it could be set to half of relative distance from center to trust region bound.)
+  Trust region size ought to be larger than design variable tolerance. */
+  Real dx, max_dx=0.0, variable_tolerance = 1e-4; //variable_tolerance = minTrustRegionFactor / 4;
+  if (softConvLimit==1 ) {
+    for (size_t i=0; i<numContinuousVars; ++i) {
+        dx = std::fabs(c_vars[i] - s_vars[i]) / (globalUpperBnds[i]-globalLowerBnds[i]);
+    if ( dx > max_dx ) max_dx = dx;
+    }
+  }
+
   // ---------------------------------------------------
   // Compute trust region ratio based on merit fn values
   // ---------------------------------------------------
@@ -522,8 +546,6 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 
   // Consolidate objective fn values and constraint violations into a
   // single merit fn value for center truth/approx and star truth/approx.
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
   if (meritFnType == LAGRANGIAN_MERIT) { // penalty-free (like filter)
 
     // This approach has been observed to be ineffective since NNLS/BVLS
@@ -673,7 +695,6 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 	       c_vars_star[i] < tr_lower_bnds[i] + constraintTol )
 	    boundary_pt_flag = true;
       }
-
       if (check_interior && !boundary_pt_flag)
 	Cout << "Excellent Accuracy, Iterate in Trust Region Interior, "
 	     << "ACCEPT Step, RETAIN Trust Region Size\n\n";
@@ -759,18 +780,34 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   // Merit fn case: soft convergence counter is incremented if insufficient
   // relative or absolute improvement in actual or approx.
   if (accept_step) {
-    Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
-      std::fabs(numerator / merit_fn_center_truth)    : std::fabs(numerator);
-    Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
-      std::fabs(denominator / merit_fn_center_approx) : std::fabs(denominator);
-    if ( numerator   <= 0. || rel_numer < convergenceTol ||
-	 denominator <= 0. || rel_denom < convergenceTol )
-      tr_data.increment_soft_convergence_count(); // ++ soft conv counter
-    else
-      tr_data.reset_soft_convergence_count();     // reset soft conv cntr to 0
+  // SOFT CONVERGENCE
+    if (softConvLimit > 1 ) {
+    	Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
+      	std::fabs(numerator / merit_fn_center_truth)    : std::fabs(numerator);
+    	Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
+      	std::fabs(denominator / merit_fn_center_approx) : std::fabs(denominator);
+      if ( numerator   <= 0. || rel_numer < convergenceTol ||
+	        denominator <= 0. || rel_denom < convergenceTol )
+        tr_data.increment_soft_convergence_count(); // ++ soft conv counter
+      else
+        tr_data.reset_soft_convergence_count();     // reset soft conv cntr to 0
+	 }
+    else // SLOWED CONVERGENCE -- based on two consecutive accepted points
+	 {
+      if ( rel_obj < convergenceTol && !constraint_viol      
+           && max_dx < variable_tolerance ) {
+		  Cout << "Slowed convergence for accepted step: softConvLimit=" << softConvLimit << "\n";
+		  Cout << "       rel_obj = " << rel_obj   << ",  convergenceTol=" << convergenceTol << "\n";
+		  Cout << "       obj_delta=" << obj_delta << ",  center_truth=" << obj_fn_center_truth << "\n";
+		  Cout << "       max_dx =  " << max_dx    << ",  variable_tolerance=" << variable_tolerance << "\n";
+        tr_data.increment_soft_convergence_count(); // ++ slowed conv counter	
+		}
+    }
   }
   else
-    tr_data.increment_soft_convergence_count();   // ++ soft conv counter
+	 if (softConvLimit > 1 ) {
+		tr_data.increment_soft_convergence_count(); // ++ soft conv counter
+	 }
 }
 
 
@@ -808,7 +845,7 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
   if (meritFnType      == LAGRANGIAN_MERIT     ||
       approxSubProbObj == LAGRANGIAN_OBJECTIVE || !constraint_viol)
     update_lagrange_multipliers(fns_truth,
-				response_truth.function_gradients());
+				response_truth.function_gradients(), tr_data);
   if (constraint_viol)
     return;
 
