@@ -6,35 +6,35 @@ environment,
 #	tabular_data_file = 'dakota_barnes_f_optpp.dat'		#s3
 #	tabular_data_file = 'dakota_barnes_f_nlqpl.dat'		#s4
 #	tabular_data_file = 'dakota_barnes_f_npsol.dat'		#s5
-#	tabular_data_file = 'dakota_barnes_i_conmin.dat'	#s10
-#	tabular_data_file = 'dakota_barnes_i_dotmfd.dat'	#s11
-#	tabular_data_file = 'dakota_barnes_i_dotslp.dat'	#s12
-#	tabular_data_file = 'dakota_barnes_i_optpp.dat'		#s13
-#	tabular_data_file = 'dakota_barnes_i_nlqpl.dat'		#s14
-#	tabular_data_file = 'dakota_barnes_i_npsol.dat'		#s15
+#	tabular_data_file = 'dakota_barnes_i_conmin.dat'	#s6
+#	tabular_data_file = 'dakota_barnes_i_dotmfd.dat'	#s7
+#	tabular_data_file = 'dakota_barnes_i_dotslp.dat'	#s8
+#	tabular_data_file = 'dakota_barnes_i_optpp.dat'		#s9
+#	tabular_data_file = 'dakota_barnes_i_nlqpl.dat'		#s10
+#	tabular_data_file = 'dakota_barnes_i_npsol.dat'		#s11
 
 method,
-	conmin_mfd								#s0,#s10
-#	dot_mmfd									#s1,#s11
-#	dot_slp									#s2,#s12
-#	optpp_q_newton							#s3,#s13
-#	nlpql										#s4,#s14
-#	npsol										#s5,#s15
+	conmin_mfd								#s0,#s6
+#	dot_mmfd									#s1,#s7
+#	dot_slp									#s2,#s8
+#	optpp_q_newton							#s3,#s9
+#	nlpql										#s4,#s10
+#	npsol										#s5,#s11
 #	rol_ls									
 	  max_iterations = 50
-	  convergence_tolerance = 1e-6	#s0,#s1,#s2,#s4,#s5, #s10,#11,#12,#s14,#s15
-#	  convergence_tolerance = 1e-7	#s3, #s13
-	  constraint_tolerance  = 1e-4	#s0,#s1,#s2,#s5, #s10,#s11,#s12,#s15
-#	  scaling								#s2,#s12
+	  convergence_tolerance = 1e-6	#s0,#s1,#s2,#s4,#s5, #s6,#11,#12,#s10,#s11
+#	  convergence_tolerance = 1e-7	#s3, #s9
+	  constraint_tolerance  = 1e-4	#s0,#s1,#s2,#s5, #s6,#s7,#s8,#s11
+#	  scaling								#s2,#s8
 
 variables,
 	continuous_design = 2
 	  initial_point    30.   40.		#s0,#s1,#s2,#s3,#s4,#s5       #   feasible
-#	  initial_point    10.   20.		#s10,#s11,#s12,#s13,#s14,#s15 # infeasible
+#	  initial_point    10.   20.		#s6,#s7,#s8,#s9,#s10,#s11 # infeasible
 	  lower_bounds      0.    0.
 	  upper_bounds     80.   80.
 	  descriptors      'x1'  'x2'
-#	  scale_type = 'auto'				#s2,#s12
+#	  scale_type = 'auto'				#s2,#s8
 
 model,
 	single

@@ -14,36 +14,36 @@ environment,
 #	tabular_data_file = 'dakota_rosenbrock_2d_rol.dat' 		#s6
 
 
-#	tabular_data_file = 'dakota_rosenbrock_10d_conmin.dat'	#s10
-#	tabular_data_file = 'dakota_rosenbrock_10d_dotfrcg.dat'	#s11
-#	tabular_data_file = 'dakota_rosenbrock_10d_optppcg.dat' 	#s12
-#	tabular_data_file = 'dakota_rosenbrock_10d_optppqn.dat' 	#s13
-#	tabular_data_file = 'dakota_rosenbrock_10d_nlpql.dat' 	#s14
-#	tabular_data_file = 'dakota_rosenbrock_10d_npsol.dat' 	#s15
-#	tabular_data_file = 'dakota_rosenbrock_10d_rol.dat' 		#s16
+#	tabular_data_file = 'dakota_rosenbrock_10d_conmin.dat'	#s7
+#	tabular_data_file = 'dakota_rosenbrock_10d_dotfrcg.dat'	#s8
+#	tabular_data_file = 'dakota_rosenbrock_10d_optppcg.dat' 	#s9
+#	tabular_data_file = 'dakota_rosenbrock_10d_optppqn.dat' 	#s10
+#	tabular_data_file = 'dakota_rosenbrock_10d_nlpql.dat' 	#s11
+#	tabular_data_file = 'dakota_rosenbrock_10d_npsol.dat' 	#s12
+#	tabular_data_file = 'dakota_rosenbrock_10d_rol.dat' 		#s13
 
-#	tabular_data_file = 'dakota_rosenbrock_100d_conmin.dat'	#s20
-#	tabular_data_file = 'dakota_rosenbrock_100d_dotfrcg.dat'	#s21
-#	tabular_data_file = 'dakota_rosenbrock_100d_optppcg.dat'	#s22
-#	tabular_data_file = 'dakota_rosenbrock_100d_optppqn.dat'	#s23
-#	tabular_data_file = 'dakota_rosenbrock_100d_nlpql.dat' 	#s24
-#	tabular_data_file = 'dakota_rosenbrock_100d_npsol.dat' 	#s25
-#	tabular_data_file = 'dakota_rosenbrock_100d_rol.dat' 		#s26
+#	tabular_data_file = 'dakota_rosenbrock_100d_conmin.dat'	#s14
+#	tabular_data_file = 'dakota_rosenbrock_100d_dotfrcg.dat'	#s15
+#	tabular_data_file = 'dakota_rosenbrock_100d_optppcg.dat'	#s16
+#	tabular_data_file = 'dakota_rosenbrock_100d_optppqn.dat'	#s17
+#	tabular_data_file = 'dakota_rosenbrock_100d_nlpql.dat' 	#s18
+#	tabular_data_file = 'dakota_rosenbrock_100d_npsol.dat' 	#s19
+#	tabular_data_file = 'dakota_rosenbrock_100d_rol.dat' 		#s20
 
 method,
-	conmin_frcg                      #s0,#s10,#s20
-#	dot_frcg									#s1,#s11,#s21
-#	optpp_cg									#s2,#s12,#s22
-#	optpp_q_newton							#s3,#s13,#s23
-#	nlpql										#s4,#s14,#s24
-#	npsol										#s5,#s15,#s25
-#	rol_ls									#s6,#s16,#s26
-#	  threshold_delta = 1.e-5			#s6,#s16,#s26
+	conmin_frcg                      #s0,#s7,#s14
+#	dot_frcg									#s1,#s8,#s15
+#	optpp_cg									#s2,#s9,#s16
+#	optpp_q_newton							#s3,#s10,#s17
+#	nlpql										#s4,#s11,#s18
+#	npsol										#s5,#s12,#s19
+#	rol_ls									#s6,#s13,#s20
+#	  threshold_delta = 1.e-5			#s6,#s13,#s20
 	  max_iterations = 500
 #	  convergence_tolerance = 1e-5	#s0,#s1,#s3,#s4,#s5
-#	  convergence_tolerance = 1e-5	#s10,#s11,#s13,#s14,#s15
-#	  convergence_tolerance = 1e-5	#s20,#s21,#s23,#s24,#s25
-#	  convergence_tolerance = 1e-7	#s2,#s12,#s22 # opt++cg tighter tolerance
+#	  convergence_tolerance = 1e-5	#s7,#s8,#s10,#s11,#s12
+#	  convergence_tolerance = 1e-5	#s14,#s15,#s17,#s18,#s19
+#	  convergence_tolerance = 1e-7	#s2,#s9,#s16 # opt++cg tighter tolerance
 
 variables,					
 	continuous_design = 2					#s0,#s1,#s2,#s3,#s4,#s5,#s6
@@ -51,15 +51,15 @@ variables,
 	lower_bounds        -2.0, -2.0		#s0,#s1,    #s3,#s4,#s5,#s6
 	upper_bounds         2.0,  2.0		#s0,#s1,    #s3,#s4,#s5,#s6
 #
-#	continuous_design = 10					#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#	initial_point  -1.9, 2.0, 8 * 0.0	#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#	lower_bounds        10 * -2.048		#s10,#s11,     #s13,#s14,#s15,#s16
-#	upper_bounds        10 *  2.048		#s10,#s11,     #s13,#s14,#s15,#s16
+#	continuous_design = 10					#s7,#s8,#s9,#s10,#s11,#s12,#s13
+#	initial_point  -1.9, 2.0, 8 * 0.0	#s7,#s8,#s9,#s10,#s11,#s12,#s13
+#	lower_bounds        10 * -2.048		#s7,#s8,     #s10,#s11,#s12,#s13
+#	upper_bounds        10 *  2.048		#s7,#s8,     #s10,#s11,#s12,#s13
 #
-#	continuous_design = 100					#s20,#s21,#s22,#s23,#s24,#s25,#s26
-#	initial_point -1.9, 2.0, 98 * 0.0	#s20,#s21,#s22,#s23,#s24,#s25,#s26
-#	lower_bounds        100 * -2.048		#s20,#s21,     #s23,#s24,#s25,#s26
-#	upper_bounds        100 *  2.048		#s20,#s21,     #s23,#s24,#s25,#s26
+#	continuous_design = 100					#s14,#s15,#s16,#s17,#s18,#s19,#s20
+#	initial_point -1.9, 2.0, 98 * 0.0	#s14,#s15,#s16,#s17,#s18,#s19,#s20
+#	lower_bounds        100 * -2.048		#s14,#s15,     #s17,#s18,#s19,#s20
+#	upper_bounds        100 *  2.048		#s14,#s15,     #s17,#s18,#s19,#s20
 
 interface,
 	direct

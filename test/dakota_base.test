@@ -3302,7 +3302,7 @@ Test Number 5 succeeded
                      -2.9806264124e-09
                       3.8005658000e-01
 <<<<< Best data captured at function evaluation 9
-Test Number 10 succeeded
+Test Number 6 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 36 total (36 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9520896445e+01 x1
@@ -3314,7 +3314,7 @@ Test Number 10 succeeded
                       8.9232583409e-04
                       3.8006269159e-01
 <<<<< Best data captured at function evaluation 36
-Test Number 11 succeeded
+Test Number 7 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 72 total (72 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9562757354e+01 x1
@@ -3326,7 +3326,7 @@ Test Number 11 succeeded
                      -6.8328137431e-05
                       3.7928964723e-01
 <<<<< Best data captured at function evaluation 55
-Test Number 12 succeeded
+Test Number 8 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 117 total (58 new, 59 duplicate)
 <<<<< Best parameters          =
                       4.9516054665e+01 x1
@@ -3338,7 +3338,7 @@ Test Number 12 succeeded
                      -1.3135607230e-04
                       3.8029001654e-01
 <<<<< Best data captured at function evaluation 57
-Test Number 13 succeeded
+Test Number 9 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 12 total (12 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9526285859e+01 x1
@@ -3350,7 +3350,7 @@ Test Number 13 succeeded
                       1.9609059425e-06
                       3.8005632047e-01
 <<<<< Best data captured at function evaluation 12
-Test Number 14 succeeded
+Test Number 10 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 24 total (24 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9526287655e+01 x1
@@ -3362,7 +3362,7 @@ Test Number 14 succeeded
                      -9.9698027611e-13
                       3.8005652055e-01
 <<<<< Best data captured at function evaluation 23
-Test Number 15 succeeded
+Test Number 11 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 13 total (13 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9526258053e+01 x1
@@ -19989,7 +19989,8 @@ Test Number 5 succeeded
 <<<<< Best objective function  =
                       4.1475967816e-09
 <<<<< Best data captured at function evaluation 45
-Test Number 10 succeeded
+Test Number 6 failed with exit code 254
+Test Number 7 succeeded
 <<<<< Function evaluation summary: 301 total (229 new, 72 duplicate)
 <<<<< Best parameters          =
                       1.0000040386e+00 cdv_1
@@ -20005,7 +20006,7 @@ Test Number 10 succeeded
 <<<<< Best objective function  =
                       8.0109683215e-10
 <<<<< Best data captured at function evaluation 301
-Test Number 11 succeeded
+Test Number 8 succeeded
 <<<<< Function evaluation summary: 240 total (191 new, 49 duplicate)
 <<<<< Best parameters          =
                       9.9790883160e-01 cdv_1
@@ -20021,7 +20022,7 @@ Test Number 11 succeeded
 <<<<< Best objective function  =
                       2.5312657052e-04
 <<<<< Best data captured at function evaluation 240
-Test Number 12 succeeded
+Test Number 9 succeeded
 <<<<< Function evaluation summary: 459 total (459 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9789365279e-01 cdv_1
@@ -20037,7 +20038,7 @@ Test Number 12 succeeded
 <<<<< Best objective function  =
                       1.2108697392e-05
 <<<<< Best data captured at function evaluation 459
-Test Number 13 succeeded
+Test Number 10 succeeded
 <<<<< Function evaluation summary: 208 total (208 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9995765452e-01 cdv_1
@@ -20053,7 +20054,7 @@ Test Number 13 succeeded
 <<<<< Best objective function  =
                       1.9081762575e-07
 <<<<< Best data captured at function evaluation 208
-Test Number 14 succeeded
+Test Number 11 succeeded
 <<<<< Function evaluation summary: 200 total (118 new, 82 duplicate)
 <<<<< Best parameters          =
                       9.9984814763e-01 cdv_1
@@ -20069,7 +20070,7 @@ Test Number 14 succeeded
 <<<<< Best objective function  =
                       2.2885558099e-04
 <<<<< Best data captured at function evaluation 199
-Test Number 15 succeeded
+Test Number 12 succeeded
 <<<<< Function evaluation summary: 154 total (154 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9999466380e-01 cdv_1
@@ -20085,7 +20086,8 @@ Test Number 15 succeeded
 <<<<< Best objective function  =
                       2.3972553687e-09
 <<<<< Best data captured at function evaluation 154
-Test Number 20 succeeded
+Test Number 13 failed with exit code 254
+Test Number 14 succeeded
 <<<<< Function evaluation summary: 213 total (160 new, 53 duplicate)
 <<<<< Best parameters          =
                       9.9451467207e-01 cdv_1
@@ -20191,7 +20193,7 @@ Test Number 20 succeeded
 <<<<< Best objective function  =
                       8.8722841452e-05
 <<<<< Best data captured at function evaluation 213
-Test Number 21 succeeded
+Test Number 15 succeeded
 <<<<< Function evaluation summary: 182 total (145 new, 37 duplicate)
 <<<<< Best parameters          =
                       1.0021005690e+00 cdv_1
@@ -20297,7 +20299,7 @@ Test Number 21 succeeded
 <<<<< Best objective function  =
                       6.8788185586e-06
 <<<<< Best data captured at function evaluation 182
-Test Number 22 succeeded
+Test Number 16 succeeded
 <<<<< Function evaluation summary: 429 total (429 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9947521258e-01 cdv_1
@@ -20403,7 +20405,7 @@ Test Number 22 succeeded
 <<<<< Best objective function  =
                       1.1446709471e-05
 <<<<< Best data captured at function evaluation 429
-Test Number 23 succeeded
+Test Number 17 succeeded
 <<<<< Function evaluation summary: 360 total (360 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9890078575e-01 cdv_1
@@ -20509,7 +20511,7 @@ Test Number 23 succeeded
 <<<<< Best objective function  =
                       3.5939106348e-05
 <<<<< Best data captured at function evaluation 360
-Test Number 24 succeeded
+Test Number 18 succeeded
 <<<<< Function evaluation summary: 647 total (433 new, 214 duplicate)
 <<<<< Best parameters          =
                       9.9879451887e-01 cdv_1
@@ -20615,7 +20617,7 @@ Test Number 24 succeeded
 <<<<< Best objective function  =
                       3.1810756378e-05
 <<<<< Best data captured at function evaluation 646
-Test Number 25 succeeded
+Test Number 19 succeeded
 <<<<< Function evaluation summary: 294 total (294 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9982828584e-01 cdv_1
@@ -20721,6 +20723,7 @@ Test Number 25 succeeded
 <<<<< Best objective function  =
                       9.4355792007e-08
 <<<<< Best data captured at function evaluation 294
+Test Number 20 failed with exit code 254
 dakota_rosenbrock_fail.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
