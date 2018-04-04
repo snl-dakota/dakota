@@ -29744,6 +29744,143 @@ Test Number 4 succeeded
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
+dakota_svanberg.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 46 total (35 new, 11 duplicate)
+<<<<< Best parameters          =
+                      6.0079884774e+00 x1
+                      5.3097751488e+00 x2
+                      4.4911845833e+00 x3
+                      3.4954829621e+00 x4
+                      2.1688138738e+00 x5
+<<<<< Best objective function  =
+                      1.3399304908e+00
+<<<<< Best constraint values   =
+                      9.7856458585e-05
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 88 total (82 new, 6 duplicate)
+<<<<< Best parameters          =
+                      6.0169324989e+00 x1
+                      5.3054682010e+00 x2
+                      4.4921385585e+00 x3
+                      3.4990506238e+00 x4
+                      2.1594726956e+00 x5
+<<<<< Best objective function  =
+                      1.3399191048e+00
+<<<<< Best constraint values   =
+                      9.0925220954e-05
+<<<<< Best data captured at function evaluation 83
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 429 total (56 new, 373 duplicate)
+<<<<< Best parameters          =
+                      6.0146103700e+00 x1
+                      5.3067704750e+00 x2
+                      4.4943869090e+00 x3
+                      3.5028977419e+00 x4
+                      2.1528241516e+00 x5
+<<<<< Best objective function  =
+                      1.3398209540e+00
+<<<<< Best constraint values   =
+                      3.0371989324e-04
+<<<<< Best data captured at function evaluation 83
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 33 total (17 new, 16 duplicate)
+<<<<< Best parameters          =
+                      6.0188907589e+00 x1
+                      5.3017462657e+00 x2
+                      4.5004517163e+00 x3
+                      3.4997371412e+00 x4
+                      2.1528747676e+00 x5
+<<<<< Best objective function  =
+                      1.3399589205e+00
+<<<<< Best constraint values   =
+                      1.3417398965e-07
+<<<<< Best data captured at function evaluation 32
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 130 total (130 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.0227588821e+00 x1
+                      5.3406950901e+00 x2
+                      4.5607542530e+00 x3
+                      3.5278837016e+00 x4
+                      2.0377234953e+00 x5
+<<<<< Best objective function  =
+                      1.3409644823e+00
+<<<<< Best constraint values   =
+                      1.4148692777e-07
+<<<<< Best data captured at function evaluation 130
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.0158101923e+00 x1
+                      5.3090750609e+00 x2
+                      4.4941837575e+00 x3
+                      3.5019507813e+00 x4
+                      2.1526097682e+00 x5
+<<<<< Best objective function  =
+                      1.3399544846e+00
+<<<<< Best constraint values   =
+                      4.2224795632e-06
+<<<<< Best data captured at function evaluation 13
+dakota_svanberg_sbo.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 395 total (395 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 45 total (26 new, 19 duplicate)
+<<<<< Best parameters          =
+                      6.0147751894e+00 x1
+                      5.3080219338e+00 x2
+                      4.4929241327e+00 x3
+                      3.5018792902e+00 x4
+                      2.1560716421e+00 x5
+<<<<< Best objective function  =
+                      1.3399571445e+00
+<<<<< Best constraint values   =
+                      2.4220883660e-08
+<<<<< Best data captured at function evaluation 44
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 71 total (71 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 7 total (4 new, 3 duplicate)
+<<<<< Best parameters          =
+                      6.0122724141e+00 x1
+                      5.3147130262e+00 x2
+                      4.4890707238e+00 x3
+                      3.5023547822e+00 x4
+                      2.1552429343e+00 x5
+<<<<< Best objective function  =
+                      1.3399560022e+00
+<<<<< Best constraint values   =
+                      5.7111102141e-06
+<<<<< Best data captured at function evaluation 6
+dakota_svanberg_sbo_vlb5.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 185 total (185 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 57 total (32 new, 25 duplicate)
+<<<<< Best parameters          =
+                      6.0132762358e+00 x1
+                      5.2938354047e+00 x2
+                      4.4808129004e+00 x3
+                      3.4880198805e+00 x4
+                      2.2000000000e+00 x5
+<<<<< Best objective function  =
+                      1.3400989319e+00
+<<<<< Best constraint values   =
+                      5.1017939429e-08
+<<<<< Best data captured at function evaluation 56
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 55 total (55 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 9 total (5 new, 4 duplicate)
+<<<<< Best parameters          =
+                      6.0016528910e+00 x1
+                      5.2968822176e+00 x2
+                      4.4841346292e+00 x3
+                      3.4931988472e+00 x4
+                      2.2000000000e+00 x5
+<<<<< Best objective function  =
+                      1.3400941997e+00
+<<<<< Best constraint values   =
+                      1.4752563527e-06
+<<<<< Best data captured at function evaluation 8
 dakota_tabular_io.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)

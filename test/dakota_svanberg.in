@@ -37,7 +37,7 @@ variables,
 
 interface,
 	fork
-	  analysis_driver = './svanberg'
+	  analysis_driver = 'svanberg'
 	  parameters_file = 'svanberg_params.in'
 	  results_file = 'svanberg_results.out'
 	  deactivate active_set_vector
