@@ -126,7 +126,9 @@ void RolTestInterface::init_simple_eq_cons()
 
   ROL::ZOO::getSimpleEqConstrained
     < Real, ROL::StdVector<Real>, ROL::StdVector<Real>, ROL::StdVector<Real>,
-      ROL::StdVector<Real> > (rolObj, rolEqCon, x0, sol);
+      ROL::StdVector<Real> > PC;
+  rolObj = PC.getObjective();
+  rolEqCon = PC.getEqualityConstraint();
 
   evaluate_optimal_solution();
 }
@@ -142,7 +144,9 @@ void RolTestInterface::init_paraboloid_circle()
 
   ROL::ZOO::getParaboloidCircle
     < Real, ROL::StdVector<Real>, ROL::StdVector<Real>, ROL::StdVector<Real>,
-      ROL::StdVector<Real> > (rolObj, rolEqCon, x0, sol);
+      ROL::StdVector<Real> > PC;
+  rolObj = PC.getObjective();
+  rolEqCon = PC.getEqualityConstraint();
 
   evaluate_optimal_solution();
 }
