@@ -214,18 +214,18 @@ finalize_sets(bool output_sets, bool converged_within_tol)
 
 inline void NonDSparseGrid::evaluate_grid_increment()
 {
-  ssgDriver->compute_grid_increment(allSamples);
+  ssgDriver->compute_increment(allSamples);
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }
 
 
 inline void NonDSparseGrid::push_grid_increment()
-{ ssgDriver->push_grid_increment(); }
+{ ssgDriver->push_increment(); }
 
 
 inline void NonDSparseGrid::merge_grid_increment()
-{ ssgDriver->merge_grid_increment(); }
+{ ssgDriver->merge_increment(); }
 
 
 inline int NonDSparseGrid::num_samples() const

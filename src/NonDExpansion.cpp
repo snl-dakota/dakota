@@ -926,20 +926,16 @@ void NonDExpansion::refine_expansion()
 void NonDExpansion::pre_refinement()
 {
   // initialize refinement algorithms (if necessary)
+
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+
+  // now embedded in IncrementalSparseGridDriver::compute_grid():
+  //nond_sparse->update_reference();
+
   switch (refineControl) {
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
     Cout << "\n>>>>> Initialization of generalized sparse grid sets.\n";
     ((NonDSparseGrid*)sub_iter_rep)->initialize_sets();
-    break;
-  case Pecos::UNIFORM_CONTROL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    switch (expansionCoeffsApproach) {
-    case Pecos::INCREMENTAL_SPARSE_GRID: //case Pecos::HIERARCHICAL_SPARSE_GRID:
-      ((NonDSparseGrid*)sub_iter_rep)->update_reference();
-      break;
-    }
     break;
   }
 }
@@ -959,6 +955,8 @@ size_t NonDExpansion::core_refinement(Real& metric, bool revert)
       decrement_grid();
       uSpaceModel.pop_approximation(true);// store increment to use in restore
     }
+    else
+      merge_grid();
     break;
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: // SSG only
     // Dimension adaptive refinement using generalized sparse grids.
@@ -990,6 +988,7 @@ void NonDExpansion::post_refinement(Real& metric)
       increment_grid(false); // don't update anisotropy weights
       push_increment();
       uSpaceModel.push_approximation();
+      merge_grid();
     }
     break;
   }
@@ -1048,11 +1047,11 @@ void NonDExpansion::increment_grid(bool update_anisotropy)
 void NonDExpansion::push_increment()
 {
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_integration->push_grid_increment(); // SparseGridDriver: INC2
+    nond_integration->push_grid_increment(); //TO DO:implement for other drivers
     break;
   }
   }
@@ -1074,6 +1073,22 @@ void NonDExpansion::decrement_grid()
   default: // regression cases
     decrement_order_and_grid();  break;
   }
+}
+
+  
+void NonDExpansion::merge_grid()
+{
+  NonDIntegration* nond_integration = (NonDIntegration*)
+    uSpaceModel.subordinate_iterator().iterator_rep();
+
+  switch (expansionCoeffsApproach) {
+//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
+    nond_integration->merge_grid_increment();//TO DO:implement for other drivers
+    break;
+  }
+
+  nond_integration->update_reference(); // TO DO: implement for other drivers
 }
 
 
@@ -1270,7 +1285,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
-    pre_refinement(); // e.g., initialize_sets() for each level
+    pre_refinement();
   }
 
   size_t iter = 0,
@@ -1317,7 +1332,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   NLev.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
-    post_refinement(best_lev_metric); // e.g., finalize_sets() for each level
+    post_refinement(best_lev_metric);
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   uSpaceModel.combine_approximation();
@@ -1341,7 +1356,7 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     std::advance(best_cit, best_candidate);
     // See also bottom of NonDExpansion::increment_sets() ...
     nond_sparse->update_sets(*best_cit);
-    uSpaceModel.push_approximation();
+    uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
     nond_sparse->update_reference();
     break;
   }
@@ -1352,17 +1367,8 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     // can ignore best_candidate (only one candidate for now).
     increment_grid(false); // don't recompute anisotropy
     push_increment();
-    uSpaceModel.push_approximation();
-    // adopt incremented state as new reference
-    switch (expansionCoeffsApproach) {
-    case Pecos::QUADRATURE:              case Pecos::CUBATURE:
-    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
-      NonDIntegration* nond_integration = (NonDIntegration*)
-	uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_integration->merge_grid_increment(); // SparseGridDriver:INC3
-      nond_integration->update_reference();
-    }
-    }
+    uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
+    merge_grid(); // adopt incremented state as new reference
     break;
   }
 
@@ -1572,6 +1578,7 @@ void NonDExpansion::finalize_sets(bool converged_within_tol)
   bool output_sets = (outputLevel >= VERBOSE_OUTPUT);
   nond_sparse->finalize_sets(output_sets, converged_within_tol);
   uSpaceModel.finalize_approximation();
+  nond_sparse->update_reference(); // for completeness
 }
 
 

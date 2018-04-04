@@ -207,6 +207,8 @@ protected:
   void push_increment();
   /// helper function to manage different grid decrement cases
   void decrement_grid();
+  /// helper function to manage different grid merge cases
+  void merge_grid();
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);
