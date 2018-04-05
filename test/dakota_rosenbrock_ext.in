@@ -1,6 +1,9 @@
 #@ 1: DakotaConfig=HAVE_DOT
 #@ 4: DakotaConfig=HAVE_NLPQL
 #@ 5: DakotaConfig=HAVE_NPSOL
+#@ 6: DakotaConfig=HAVE_ROL
+#@ 13: DakotaConfig=HAVE_ROL
+#@ 20: DakotaConfig=HAVE_ROL
 ## DAKOTA INPUT FILE - dakota_rosenbrock_ext.in
 
 environment,
