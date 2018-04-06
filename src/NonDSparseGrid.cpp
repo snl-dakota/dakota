@@ -278,8 +278,6 @@ void NonDSparseGrid::increment_grid()
   // smolyak arrays (from scratch) --> don't currently need to increment here.
   // However, push_approximation() lacks compute_grid() and requires update.
   ssgDriver->update_smolyak_arrays();
-  // *** TO DO: Once DFSModel::rebuild_global() uses a grid increment,
-  // ***        this won't be redundant with allocate_arrays()
 }
 
 

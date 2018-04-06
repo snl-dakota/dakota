@@ -914,7 +914,7 @@ void NonDExpansion::refine_expansion()
     core_refinement(metric);
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
-    if (!converged)
+    //if (!converged)
       annotated_refinement_results(false); // no initialization of traces
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
   }
