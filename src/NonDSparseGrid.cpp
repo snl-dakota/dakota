@@ -272,12 +272,6 @@ void NonDSparseGrid::increment_grid()
   // level will not always change the grid.  Anisotropy (if present) is fixed.
   while (ssgDriver->grid_size() == orig_size)
     ssgDriver->level(++ssg_lev);
-
-  // downstream call to daceIterator.run() in DFSModel::{,re}build_global()
-  // results in CombinedSparseGridDriver::compute_grid(), which re-allocates
-  // smolyak arrays (from scratch) --> don't currently need to increment here.
-  // However, push_approximation() lacks compute_grid() and requires update.
-  ssgDriver->update_smolyak_arrays();
 }
 
 
@@ -286,10 +280,6 @@ void NonDSparseGrid::decrement_grid()
   // adaptive increment logic is not reversible, so use ssgLevelPrev
   // (assumes no change in active key between increment-decrement pairs)
   ssgDriver->level(ssgLevelPrev);
-
-  // no downstream call to daceIterator.run() --> apply decrement here
-  // [See also CombinedSparseGridDriver::{push,pop}_trial_set()]
-  ssgDriver->update_smolyak_arrays();
 }
 
 

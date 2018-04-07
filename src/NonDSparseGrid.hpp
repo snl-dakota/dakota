@@ -68,6 +68,7 @@ public:
 
   void evaluate_grid_increment();
   void push_grid_increment();
+  void pop_grid_increment();
   void merge_grid_increment();
 
   /// set level and dimension preference within ssgDriver based on ssgLevelSpec
@@ -222,6 +223,10 @@ inline void NonDSparseGrid::evaluate_grid_increment()
 
 inline void NonDSparseGrid::push_grid_increment()
 { ssgDriver->push_increment(); }
+
+
+inline void NonDSparseGrid::pop_grid_increment()
+{ ssgDriver->pop_increment(); }
 
 
 inline void NonDSparseGrid::merge_grid_increment()

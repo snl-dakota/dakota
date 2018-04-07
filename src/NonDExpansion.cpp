@@ -953,6 +953,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool revert)
     metric = compute_covariance_metric(revert);
     if (revert) {
       decrement_grid();
+      pop_increment();
       uSpaceModel.pop_approximation(true);// store increment to use in restore
     }
     else
@@ -1044,20 +1045,6 @@ void NonDExpansion::increment_grid(bool update_anisotropy)
 }
 
 
-void NonDExpansion::push_increment()
-{
-  switch (expansionCoeffsApproach) {
-//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
-  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_integration->push_grid_increment(); //TO DO:implement for other drivers
-    break;
-  }
-  }
-}
-
-
 void NonDExpansion::decrement_grid()
 {
   switch (expansionCoeffsApproach) {
@@ -1072,6 +1059,34 @@ void NonDExpansion::decrement_grid()
     break;
   default: // regression cases
     decrement_order_and_grid();  break;
+  }
+}
+
+
+void NonDExpansion::push_increment()
+{
+  switch (expansionCoeffsApproach) {
+//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_integration->push_grid_increment(); //TO DO:implement for other drivers
+    break;
+  }
+  }
+}
+
+
+void NonDExpansion::pop_increment()
+{
+  switch (expansionCoeffsApproach) {
+//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_integration->pop_grid_increment(); //TO DO:implement for other drivers
+    break;
+  }
   }
 }
 

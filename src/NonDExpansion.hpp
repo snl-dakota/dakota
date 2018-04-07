@@ -203,12 +203,15 @@ protected:
 
   /// helper function to manage different grid increment cases
   void increment_grid(bool update_anisotropy = true);
-  /// helper function to manage different push increment cases
-  void push_increment();
   /// helper function to manage different grid decrement cases
   void decrement_grid();
   /// helper function to manage different grid merge cases
   void merge_grid();
+
+  /// helper function to manage different push increment cases
+  void push_increment();
+  /// helper function to manage different pop increment cases
+  void pop_increment();
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);

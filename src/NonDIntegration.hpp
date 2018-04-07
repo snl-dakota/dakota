@@ -58,6 +58,8 @@ public:
   virtual void evaluate_grid_increment();
   /// restores a previously computed grid increment (no new evaluations)
   virtual void push_grid_increment();
+  /// removes a previously computed grid increment
+  virtual void pop_grid_increment();
   /// merges a grid increment into the reference grid
   virtual void merge_grid_increment();
   
