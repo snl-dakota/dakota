@@ -388,11 +388,21 @@ void ROLOptimizer::set_rol_parameters()
     // evals for smoothing, so ROL developers recommend Coleman-Li.
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Model", "Coleman-Li");
 
+    // Turns off adaptively choosing initial penalty parameters
+    // New ROL capabaility that results in slower convergence overall
+    optSolverParams.sublist("Step").sublist("Augmented Lagrangian").
+        set("Use Default Initial Penalty Parameter",false);
+
+    // Turns off automatic constraint and objective scaling
+    // New ROL capabaility that results in slower convergence overall
+    optSolverParams.sublist("Step").sublist("Augmented Lagrangian").
+        set("Use Default Problem Scaling",false);
+
     // QUESTION: Is there a reason this is only for problem TYPE_EB?
     // Set the verbosity level.
     if (outputLevel >= VERBOSE_OUTPUT)
       optSolverParams.sublist("Step").sublist("Augmented Lagrangian").
-        set("Print Intermediate Optimization History","true");
+        set("Print Intermediate Optimization History",true);
   }
 
   // PRECEDENCE 2: Dakota input file settings
