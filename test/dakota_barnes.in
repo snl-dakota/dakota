@@ -1,3 +1,17 @@
+#@ s1: DakotaConfig=HAVE_DOT
+#@ s2: DakotaConfig=HAVE_DOT
+#@ s3: DakotaConfig=HAVE_OPTPP
+#@ s4: DakotaConfig=HAVE_NLPQL
+#@ s5: DakotaConfig=HAVE_NPSOL
+#@ s7: DakotaConfig=HAVE_DOT
+#@ s8: DakotaConfig=HAVE_DOT
+#@ s9: DakotaConfig=HAVE_OPTPP
+#@ s10: DakotaConfig=HAVE_NLPQL
+#@ s11: DakotaConfig=HAVE_NPSOL
+#
+# RWH: Will need to add HAVE_ROL along with new s-number once rol_integ
+# has been merged into devel
+
 environment,
 	tabular_data
 	tabular_data_file = 'dakota_barnes_f_conmin.dat'	#s0
