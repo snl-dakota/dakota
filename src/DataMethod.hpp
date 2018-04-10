@@ -981,6 +981,9 @@ public:
   /// flag indicating the calculation of mutual information between prior
   /// and posterior in Bayesian methods 
   bool posteriorStatsMutual;
+  /// flat indicating calculation of kernel density estimate of posterior 
+  /// distributions
+  bool posteriorStatsKDE;
   /// the method used for performing a pre-solve for the MAP point
   unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior

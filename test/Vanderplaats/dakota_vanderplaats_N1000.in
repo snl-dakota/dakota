@@ -1,0 +1,51 @@
+#@ 1: DakotaConfig=HAVE_DOT
+#@ 2: DakotaConfig=HAVE_DOT
+#@ 3: DakotaConfig=HAVE_NLPQL
+#@ 4: DakotaConfig=HAVE_NPSOL
+## DAKOTA INPUT FILE - dakota_vanderplaats_N1000.in
+#  The Vanderplaats 1000-segment cantilever beam has 2000 design variables, a nonlinear objective, 
+#  1000 nonlinear stress constraints, a nonlinear tip displacement constraint, and
+#  1000 linear aspect ratio constraints. 
+#
+#  Vanderplaats, Garret N. (1984) Example 5-1
+#  Numerical Optimization Techniques for Engineering Design: With Applications
+#  New York: McGraw-Hill, pp. 147-150.
+
+method,
+	conmin_mfd								   #s0
+#	dot_mmfd									   #s1
+#  dot_slp									   #s2
+#	nlpql										   #s3
+#	npsol										   #s4
+#	optpp_q_newton							   #s5
+	  max_iterations = 5000
+     max_function_evaluations = 1e4
+	  convergence_tolerance = 1e-4		#s0,#s1,#s2,#s3
+#	  convergence_tolerance = 1e-5		#s4,#s5
+	  constraint_tolerance  = 1e-4		#s0,#s1,#s2,#s4
+	output quiet
+
+variables,					
+	continuous_design = 2000
+	cdv_initial_point   1000 * 5.0, 1000 * 40.0
+	cdv_lower_bounds    1000 * 1.0, 1000 *  5.0
+	cdv_upper_bounds    2000 * 100.0
+
+interface,
+	fork
+	  analysis_driver = './vanderplaats'
+	  parameters_file = 'vanderplaats_params_N1000.in'
+	  results_file = 'vanderplaats_results_N1000_conmin.out'    #s0
+#	  results_file = 'vanderplaats_results_N1000_dotmfd.out'	   #s1
+#	  results_file = 'vanderplaats_results_N1000_dotslp.out'	   #s2
+#	  results_file = 'vanderplaats_results_N1000_nlpql.out'	   #s3
+#	  results_file = 'vanderplaats_results_N1000_npsol.out'	   #s4
+#	  results_file = 'vanderplaats_results_N1000_optpp.out'	   #s5
+	  deactivate active_set_vector
+#	  file_tag file_save
+	  
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints  = 2001
+	analytic_gradients
+	no_hessians

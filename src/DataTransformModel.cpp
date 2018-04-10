@@ -800,7 +800,9 @@ void DataTransformModel::init_continuous_vars()
   const SizetArray& sm_vc_totals = svd.components_totals();
   const RealVector& sm_acv = subModel.all_continuous_variables();
   StringMultiArrayConstView sm_acvl = subModel.all_continuous_variable_labels();
-  
+  const RealVector & sm_aclb = subModel.all_continuous_lower_bounds();
+  const RealVector & sm_acub = subModel.all_continuous_upper_bounds();
+
   int continuous_vc_inds[4] = {TOTAL_CDV, TOTAL_CAUV, TOTAL_CEUV, TOTAL_CSV};
   int hyperparam_vc_ind = get_hyperparam_vc_index(subModel);
 
@@ -813,6 +815,8 @@ void DataTransformModel::init_continuous_vars()
     for (size_t i=0; i<num_cvars; ++i) {
       all_continuous_variable(sm_acv[sm_offset], dtm_offset);
       all_continuous_variable_label(sm_acvl[sm_offset], dtm_offset);
+      all_continuous_lower_bound(sm_aclb[sm_offset], dtm_offset);
+      all_continuous_upper_bound(sm_acub[sm_offset], dtm_offset);
       ++sm_offset;
       ++dtm_offset;
     }
@@ -823,6 +827,9 @@ void DataTransformModel::init_continuous_vars()
       for (size_t i=0; i<numHyperparams; ++i) {
 	all_continuous_variable(1.0, dtm_offset);
 	all_continuous_variable_label(hyper_labels[i], dtm_offset);
+	all_continuous_lower_bound(0.0, dtm_offset);
+	all_continuous_upper_bound(std::numeric_limits<double>::infinity(),
+				   dtm_offset);
 	++dtm_offset;
       }
     }

@@ -29,6 +29,7 @@ method,
 #	conmin_frcg,					#s4
   	  max_iterations = 50,
 	  convergence_tolerance = 1e-4
+#	  scaling								#s2,#s3
 
 variables,
 	continuous_design = 7
@@ -36,6 +37,9 @@ variables,
      	  lower_bounds   0. 0. 0. 0. 0. 0. 0.	#s0,#s2,#s3,#s4,#s5
           upper_bounds   1. 1. 1. 1. 1. 1. 1.	#s0,#s2,#s3,#s4,#s5
           descriptors   'x1' 'x2' 'x3' 'x4' 'x5' 'x6' 'x7'
+#	scale_type = 'value'									#s2,#s3
+#	scales     = 7 * .5									#s2
+#	scales     = 7 * .1									#s3
 
 interface,
 	direct

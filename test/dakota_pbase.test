@@ -5367,26 +5367,26 @@ Sample moment statistics for each response function:
 Test Number 27 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0136218880e+00 x1
-                      1.0290344953e+00 x2
-                      1.0099323045e+00 CovMultExp1
-                      9.9109452868e-01 CovMultExp2
+                      1.0220837024e+00 x1
+                      1.0392846739e+00 x2
+                      1.0084675844e+00 CovMultExp1
+                      9.9778388223e-01 CovMultExp2
 <<<<< Best misfit              =
-                      4.7840005168e-04
+                      7.5421207653e-03
 <<<<< Best log prior           =
-                      1.3802798011e+00
+                      1.3855221645e+00
 <<<<< Best log posterior       =
-                     -9.2010531484e-01
+                     -9.2720208944e-01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  7.7762609409e-01  3.6377998420e-01 -1.3834322442e+00  1.8290614254e+00
-            x2  7.2706673859e-01  4.2674925645e-01 -6.9996369287e-02 -8.5739751075e-01
-   CovMultExp1  1.0078580412e+00  9.9728891882e-02  2.9857836210e-01 -2.8588016841e-01
-   CovMultExp2  1.0118299914e+00  1.0030022498e-01  2.9794864661e-01 -4.0340129717e-02
+            x1  6.1813535008e-01  3.8214084535e-01 -9.5403765187e-01  1.3963128048e+00
+            x2  5.1758450011e-01  4.0397048541e-01  6.9340506094e-01 -3.0107885797e-01
+   CovMultExp1  1.0332005491e+00  1.0360960752e-01  5.6058755009e-01  4.2934268395e-01
+   CovMultExp2  1.0222699364e+00  9.9617674770e-02  3.6582342226e-01  2.9619580531e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1 -9.9053125836e-02  4.8224696017e-01 -6.1216172162e-02  3.7901391019e-01
-            f2  2.2237390591e-01  3.6377998420e-01  1.3834322442e+00  1.8290614254e+00
+            f1 -1.0465420775e-01  4.5544431757e-01  1.2660074268e-01  6.1727826044e-02
+            f2  3.8186464992e-01  3.8214084535e-01  9.5403765187e-01  1.3963128048e+00
 dakota_sbo_hierarchical.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 82 total (73 new, 9 duplicate)

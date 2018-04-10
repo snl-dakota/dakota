@@ -17,6 +17,7 @@ method,
 #	npsol_sqp
 	  convergence_tolerance = 1.e-6
 	  output verbose
+	scaling
 
 model,
 	id_model = 'OPTIM_M'
@@ -35,6 +36,8 @@ variables,
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
 	  descriptors 'w' 't'
+	scale_type = 'value'
+	scales     =       2.5	  2.5
 
 responses,
 # minimize mean Weight

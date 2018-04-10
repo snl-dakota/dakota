@@ -1,0 +1,61 @@
+#@ 1: DakotaConfig=HAVE_DOT
+#@ 2: DakotaConfig=HAVE_DOT
+#@ 3: DakotaConfig=HAVE_NLPQL
+#@ 4: DakotaConfig=HAVE_NPSOL
+## DAKOTA INPUT FILE - dakota_vanderplaats_N10.in
+#  The Vanderplaats 10-segment cantilever beam has 20 design variables, a nonlinear objective, 
+#  10 nonlinear stress constraints, a nonlinear tip displacement constraint, and
+#  10 linear aspect ratio constraints. 
+#
+#  Vanderplaats, Garret N. (1984) Example 5-1
+#  Numerical Optimization Techniques for Engineering Design: With Applications
+#  New York: McGraw-Hill, pp. 147-150.
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_vanderplaats_N10_conmin.dat'		#s0
+#	tabular_data_file = 'dakota_vanderplaats_N10_dotmfd.dat'		#s1
+#	tabular_data_file = 'dakota_vanderplaats_N10_dotslp.dat'		#s2
+#	tabular_data_file = 'dakota_vanderplaats_N10_nlpql.dat' 		#s3
+#	tabular_data_file = 'dakota_vanderplaats_N10_npsol.dat' 		#s4
+#	tabular_data_file = 'dakota_vanderplaats_N10_optpp.dat' 		#s5
+
+method,
+	conmin_mfd								   #s0
+#	dot_mmfd									   #s1
+#  dot_slp									   #s2
+#	nlpql										   #s3
+#	npsol										   #s4
+#	optpp_q_newton							   #s5
+	  max_iterations = 500
+	  convergence_tolerance = 1e-4		#s0,#s1,#s2,#s3
+#	  convergence_tolerance = 1e-5		#s4,#s5
+	  constraint_tolerance  = 1e-4		#s0,#s1,#s2,#s4
+#	scaling										#s2
+
+variables,					
+	continuous_design = 20
+	cdv_initial_point   10 * 5.0, 10 * 40.0
+	cdv_lower_bounds    10 * 1.0, 10 *  5.0
+	cdv_upper_bounds    20 * 100.0
+#	scale_types = 'value'					#s2
+#	scales = 10 * 2.5, 10 * 40.0			#s2
+
+interface,
+	fork
+	  analysis_driver = './vanderplaats'
+	  parameters_file = 'vanderplaats_params_N10.in'
+	  results_file = 'vanderplaats_results_N10_conmin.out'	#s0
+#	  results_file = 'vanderplaats_results_N10_dotmfd.out'	#s1
+#	  results_file = 'vanderplaats_results_N10_dotslp.out'	#s2
+#	  results_file = 'vanderplaats_results_N10_nlpql.out'	   #s3
+#	  results_file = 'vanderplaats_results_N10_npsol.out'	   #s4
+#	  results_file = 'vanderplaats_results_N10_optpp.out'	   #s5
+	  deactivate active_set_vector
+#	  file_tag file_save
+	  
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints  = 21
+	analytic_gradients
+	no_hessians

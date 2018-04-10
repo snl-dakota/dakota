@@ -1,0 +1,74 @@
+## DAKOTA INPUT FILE - dakota_svanberg_sbo_vlb5.in
+#                      lower bound on x5 prevents hard convergence unless Lagrange multiplier accounts for bounds
+#  The Svanberg five-segment beam has a linear objective and a nonlinear constraint:
+#  Svanberg, Krister, "The Method of Moving Asymptotes--A New Method for
+#  Structural Optimization," Intl. J. Num. Meth. Vol. 24, 1987, pp. 359-373.
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_svanberg_dakslp.dat'	#s0
+#	tabular_data_file = 'dakota_svanberg_tana.dat'   	#s1
+	method_pointer = 'SBLO'
+
+variables,
+	continuous_design = 5
+	  initial_point  5.0  5.0  5.0  5.0  5.0
+	  lower_bounds   0.0  0.0  0.0  0.0  2.2
+	  upper_bounds  10.0 10.0 10.0 10.0 10.0
+	  descriptors   'x1' 'x2' 'x3' 'x4' 'x5'
+
+interface,
+	id_interface = 'TRUE_FN'
+	fork
+	  analysis_driver = 'svanberg'
+	  parameters_file = 'svanberg_params.in'
+	  results_file = 'svanberg_results.out'
+	  deactivate active_set_vector
+#	  file_tag file_save
+	
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'SAO'
+	max_iterations = 50
+	  convergence_tolerance = 2e-3 # threshhold for hard convegence with correct Lagrange multiplier for x5=x5_lb
+	  constraint_tolerance  = 1e-4
+	trust_region
+	  initial_size = 0.40
+	  contraction_factor = 0.5
+	  expansion_factor   = 2.0
+	acceptance_logic  filter
+
+method,                                         
+	id_method = 'SAO'
+	npsol
+	  convergence_tolerance = 1e-4
+	  constraint_tolerance  = 1e-5
+
+model,
+	id_model = 'SURROGATE'
+	responses_pointer = 'SURROGATE_RESP'
+ 	surrogate local taylor_series		#s0
+# 	surrogate multipoint tana			#s1
+	  actual_model_pointer = 'TRUTH'
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	num_objective_functions = 1             
+	nonlinear_inequality_constraints = 1
+	analytic_gradients
+	no_hessians
+
+responses,                                      
+	id_responses = 'TRUE_RESP'
+	num_objective_functions = 1             
+	nonlinear_inequality_constraints = 1
+	analytic_gradients
+	no_hessians
