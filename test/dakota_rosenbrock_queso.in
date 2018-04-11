@@ -20,7 +20,7 @@ method,
 #	    standardized_space					#p11,#p12,#p13,#p14,#p17,#p20,#p23
 	  proposal_covariance
 	    derivatives	
-	    proposal_updates = 50 # default update is every 100 samples
+	      update_period = 40
 	  logit_transform         # default is off
 	  posterior_stats kl_divergence
 #         calibrate_error_multipliers  #p27

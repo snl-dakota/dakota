@@ -981,9 +981,9 @@ public:
   unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
-  /// number of updates of the proposal covariance from computing the
-  /// misfit Hessian using residual values and derivatives
-  int proposalCovUpdates;
+  /// number of samples after which to update the proposal covariance from
+  /// misfit Hessian (using residual values and derivatives)
+  int proposalCovUpdatePeriod;
   /// the format of proposal covariance input: diagonal or matrix
   String proposalCovInputType;
   /// raw list of real data for the proposal covariance

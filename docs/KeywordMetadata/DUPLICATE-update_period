@@ -1,0 +1,34 @@
+Blurb:: Period at which to update derivative-based proposal covariance
+
+Description::
+For derivative-based proposal covariance, this specifies the period
+(number of accepted MCMC samples) after which the proposal covariance
+is updated using derivative values at the current chain point.
+
+<b> Default Behavior </b>
+
+When \c update_period is not specified, derivatives will inform the
+proposal covariance at the start of the chain, but not updated
+further.
+
+<b> Usage Tips </b>
+
+The \c update_period should be tailored to the size of the total chain,
+accounting for the relative expense of derivative-based proposal updates.
+
+Topics::
+
+Examples::
+\verbatim
+method,
+        bayes_calibration queso
+          samples = 2000 seed = 348
+          delayed_rejection
+          emulator pce sparse_grid_level = 2
+          proposal_covariance derivatives
+            update_period = 40  # update proposal covariance every 40 points
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

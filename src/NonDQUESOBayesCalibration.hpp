@@ -197,9 +197,6 @@ protected:
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
 
-
-
-
   // the following QUESO objects listed in order of construction;
   // scoped_ptr more appropriate, but don't want to include QUESO
   // headers here (would be needed for checked delete on scoped_ptr)
@@ -259,13 +256,6 @@ private:
   // - Heading: Data
   // 
   
-  /// container for aggregating unique MCMC sample points collected
-  /// across multiple (restarted) chains
-  RealVectorArray uniqueSamples;
-
-  // cache previous MCMC starting point for assessing convergence of
-  // chain restart process
-  //RealVector prevCenter;
   /// cache previous expansion coefficients for assessing convergence of
   /// emulator refinement process
   RealVectorArray prevCoeffs;

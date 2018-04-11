@@ -3309,7 +3309,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
-          [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
+          [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
          )
         |
         prior {N_mdm(lit,proposalCovType_prior)}
@@ -3378,7 +3378,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
-          [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
+          [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
          )
         |
         prior {N_mdm(lit,proposalCovType_prior)}

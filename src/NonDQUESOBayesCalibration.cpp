@@ -456,7 +456,7 @@ NonDQUESOBayesCalibration::
 NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
-  chainLength(0), propCovUpdatePeriod(std::numeric_limits<unsigned int>::max()),
+  propCovUpdatePeriod(probDescDB.get_int("method.nond.prop_cov_update_period")),
   batchSize(1),
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
@@ -468,37 +468,11 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // surrogate updates for now, hence this override is in this class
   // assign default proposalCovarType
 
+  // BMA TODO: Consider unconditional default for simplicity
   if (proposalCovarType.empty()) {
     if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
     else              proposalCovarType = "prior";       // prior covariance
   }
-
-  // manage sample partitions and defaults
-  int samples_spec = probDescDB.get_int("method.nond.chain_samples");
-  if (proposalCovarType == "derivatives") {
-    int pc_update_spec
-      = probDescDB.get_int("method.nond.proposal_covariance_updates");
-    if (pc_update_spec < 1) { // default partition: update every 100 samples
-      // if the user specified less than 100 samples, use that,
-      // resulting in chainCycles = 1
-      chainSamples = std::min(samples_spec, 100);
-      chainCycles  = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
-    }
-    else { // partition as specified
-      if (samples_spec < pc_update_spec) {
-	// hard error since the user explicitly gave both controls
-	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
-	found_error = true;
-      }
-      chainSamples = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
-      chainCycles  = pc_update_spec;
-    }
-  }
-
-  // BMA TODO: rework this to use chainSamples for the length of each chain
-  // For now, leaving as-is to recreate existing behavior
-  chainLength = chainSamples * chainCycles;
-  propCovUpdatePeriod = chainSamples;
 
   // assign default maxIterations (DataMethod default is -1)
   if (adaptPosteriorRefine) {
@@ -565,9 +539,6 @@ void NonDQUESOBayesCalibration::calibrate()
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
-
-  // BMA TODO: change to chainSamples for consistency
-  calIpMhOptionsValues->m_rawChainSize = chainLength;
 
   // generate the sample chain that defines the joint posterior distribution
   if (adaptPosteriorRefine) {
@@ -655,7 +626,7 @@ void NonDQUESOBayesCalibration::run_chain()
 
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "QUESO: Running chain with " << chainSamples << " samples." << std::endl;
-    if (propCovUpdatePeriod < std::numeric_limits<unsigned int>::max())
+    if (propCovUpdatePeriod < std::numeric_limits<int>::max())
       Cout << "QUESO: Updating proposal covariance every "
 	   << propCovUpdatePeriod << " samples." << std::endl;
   }
@@ -911,14 +882,12 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 }
 
 
-// BMA TODO: Update the sizes in this comment once samples/cycles cleaned up
-/** Populate all of 
-    acceptanceChain(num_params, chainLength = Samples * chainCycles) and 
-    acceptedFnVals(numFunctions, chainLenght = chainSamples * chainCycles) */
+/** Populate all of acceptanceChain(num_params, chainSamples)
+    acceptedFnVals(numFunctions, chainSamples) */
 void NonDQUESOBayesCalibration::cache_chain()
 {
-  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams, chainLength);
-  acceptedFnVals.shapeUninitialized(numFunctions, chainLength);
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams, chainSamples);
+  acceptedFnVals.shapeUninitialized(numFunctions, chainSamples);
 
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
@@ -934,9 +903,9 @@ void NonDQUESOBayesCalibration::cache_chain()
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
 
-  if (num_mcmc != chainLength) {
+  if (num_mcmc != chainSamples) {
     Cerr << "\nError: QUESO cache_chain(): chain length is " << num_mcmc
-	 << "; expected " << chainLength << '\n';
+	 << "; expected " << chainSamples << '\n';
     abort_handler(METHOD_ERROR);
   }
 
@@ -1573,7 +1542,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
   calIpMhOptionsValues->m_rawChainDataInputFileName   = ".";
-  calIpMhOptionsValues->m_rawChainSize = (chainSamples) ? chainSamples : 1000;
+  calIpMhOptionsValues->m_rawChainSize = (chainSamples > 0) ? chainSamples : 1000;
   //calIpMhOptionsValues->m_rawChainGenerateExtra     = false;
   //calIpMhOptionsValues->m_rawChainDisplayPeriod     = 20000;
   //calIpMhOptionsValues->m_rawChainMeasureRunTimes   = true;
@@ -1636,7 +1605,8 @@ void NonDQUESOBayesCalibration::set_mh_options()
   }
 
   // Use custom TK for derivative-based proposal updates
-  if (proposalCovarType == "derivatives") {
+  if (proposalCovarType == "derivatives" &&
+      propCovUpdatePeriod < std::numeric_limits<int>::max()) {
     if (logitTransform)
       calIpMhOptionsValues->m_tk = "dakota_dipc_logit_tk";
     else
