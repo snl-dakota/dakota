@@ -1,0 +1,74 @@
+## DAKOTA INPUT FILE - dakota_svanberg_N10_sbo.in
+#  The Vanderplaats 10-segment cantilever beam has 20 design variables, a nonlinear objective, 
+#  10 nonlinear stress constraints, a nonlinear tip displacement constraint, and
+#  10 linear aspect ratio constraints. 
+#
+#  Vanderplaats, Garret N. (1984) Example 5-1
+#  Numerical Optimization Techniques for Engineering Design: With Applications
+#  New York: McGraw-Hill, pp. 147-150.
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_vanderplaats_N10_dakslp.dat'		#s0
+#	tabular_data_file = 'dakota_vanderplaats_N10_tana.dat'   	#s1
+	method_pointer = 'SBLO'
+
+variables,					
+	continuous_design = 20
+	cdv_initial_point   10 * 5.0, 10 * 40.0
+	cdv_lower_bounds    10 * 1.0, 10 *  5.0
+	cdv_upper_bounds    20 * 100.0
+
+interface,
+	id_interface = 'TRUE_FN'
+	fork
+	  analysis_driver = './vanderplaats'
+	  parameters_file = 'vanderplaats_params_N10.in'
+	  results_file = 'vanderplaats_results_N10_dakslp.out'	#s0
+#	  results_file = 'vanderplaats_results_N10_tana.out'		#s1
+	  deactivate active_set_vector
+	
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLPQL'
+	max_iterations = 50
+	  convergence_tolerance = 1e-4
+	  constraint_tolerance  = 1e-4
+	trust_region
+	  initial_size = 0.40
+	  contraction_factor = 0.5
+	  expansion_factor   = 2.0
+	acceptance_logic  filter
+
+method,                                         
+	id_method = 'NLPQL'
+	nlpql_sqp
+
+model,
+	id_model = 'SURROGATE'
+	responses_pointer = 'SURROGATE_RESP'
+ 	surrogate local taylor_series					#s0
+# 	surrogate multipoint tana						#s1
+	  actual_model_pointer = 'TRUTH'
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	objective_functions = 1
+	nonlinear_inequality_constraints  = 21
+	analytic_gradients
+	no_hessians
+
+responses,                                      
+	id_responses = 'TRUE_RESP'
+	objective_functions = 1
+	nonlinear_inequality_constraints  = 21
+	analytic_gradients
+	no_hessians

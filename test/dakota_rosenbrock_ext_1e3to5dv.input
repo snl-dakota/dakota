@@ -1,0 +1,44 @@
+#@ 1: DakotaConfig=HAVE_DOT
+#@ 4: DakotaConfig=HAVE_NLPQL
+#@ 5: DakotaConfig=HAVE_NPSOL
+## DAKOTA INPUT FILE - dakota_rosenbrock_ext_1000dv.in
+
+method,
+	conmin_frcg                      	#s0,#s10,#s20
+#	dot_frcg										#s1,#s11,#s21
+#  optpp_cg                            #s2,#s12,#s22
+#	optpp_q_newton								#s3,#s13,#s23
+#	nlpql											#s4,#s14,#s24
+#	npsol											#s5,#s15,#s25
+#	  convergence_tolerance = 1e-5		#s3,#s4,#s5,#s13,#s14,#s15,#s23,#s24,#s25
+#	  convergence_tolerance = 1e-7		#s0,#s1,#s2,#s10,#s11,#s12,#s20,#s21,#s22
+#	  max_iterations = 5000					#s3,#s4,#s5,#s13,#s14,#s15,#s23,#s24,#s25
+#    max_function_evaluations = 1e4		#s0,#s1,#s2,#s10,#s11,#s12,#s20,#s21,#s22
+#	output quiet
+
+variables,					
+	continuous_design = 1e3					#s0,#s1,#s2,#s3,#s4,#s5
+	initial_point       1e3 * 0.0			#s0,#s1,#s2,#s3,#s4,#s5
+	lower_bounds        1e3 * -2.048		#s0,#s1,    #s3,#s4,#s5
+	upper_bounds        1e3 *  2.048		#s0,#s1,    #s3,#s4,#s5
+#
+#	continuous_design = 1e4					#s10,#s11,#s12,#s13,#s14,#s15
+#	initial_point       1e4 * 0.0			#s10,#s11,#s12,#s13,#s14,#s15
+#	lower_bounds        1e4 * -2.048		#s10,#s11,     #s13,#s14,#s15
+#	upper_bounds        1e4 *  2.048		#s10,#s11,     #s13,#s14,#s15
+#
+#	continuous_design = 1e5					#s20,#s21,#s22
+#	initial_point       1e5 * 0.0			#s20,#s21,#s22
+#	lower_bounds        1e5 * -2.048		#s20,#s21
+#	upper_bounds        1e5 *  2.048		#s20,#s21
+
+interface,
+	direct
+	  analysis_driver = 'extended_rosenbrock'
+#	  analysis_driver = 'generalized_rosenbrock'
+#	  deactivate active_set_vector
+
+responses,
+	objective_functions = 1
+	analytic_gradients
+	no_hessians

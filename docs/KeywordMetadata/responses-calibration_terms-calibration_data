@@ -21,8 +21,10 @@ experiment number.
      files named \c DESC.NUM.dat (one per response descriptor, per
      experiment), e.g, \c volts.1.dat, \c volts.2.dat.  Scalar files
      will contain a single value, while field files will each contain
-     a column of field reponse values with length indicated in \ref
-     responses-calibration_terms-field_calibration_terms-lengths. 
+     a column of field reponse values. Without 
+     \ref responses-calibration_terms-calibration_data-interpolate enabled,
+     the lengths of these files must match those specified using the 
+     responses-calibration_terms-field_calibration_terms-lengths keyword. 
 </li>
 <li> <b>Coordinates:</b> Field coordinates specify independent variables
      (e.g., spatial or temporal coordinates) upon which the field
@@ -30,8 +32,8 @@ experiment number.
      so time is the field coordinate.  These are read from files named
      \c DESC.NUM.coords, each containing \ref
      responses-calibration_terms-field_calibration_terms-num_coordinates_per_field
-     columns and 1 (scalar) or field length (\ref
-     responses-calibration_terms-field_calibration_terms-lengths).
+     columns. The number of rows must be the same as in the values files
+     described in the previous bullet.
 </li>
 <li> <b>Variances:</b> If \ref
      responses-calibration_terms-calibration_data-experiment_variance_type is
@@ -43,14 +45,15 @@ experiment number.
      <li> 'scalar': a single variance value will be read from the file.
      </li>
      <li> 'diagonal' (field responses only): a column vector of
-          variance values (length equal to length of the field) will
-          be read from the file. The values are the variances of each
+          variance values (length equal to the number of experimental data points) 
+          will be read from the file. The values are the variances of each
           field value for this descriptor.
      </li>
      <li> 'matrix' (field responses only): a matrix of covariance
-          values (square with size the length of the field) will be
+          values (square with size the number of experimental values) will be
           read from the file. The matrix is a full covariance matrix
-          for the components of this field response.  While covariance among entries in a field response may be specified, covariance among experiments is not permitted.
+          for the components of this field response.  While covariance among 
+          entries in a field response may be specified, covariance among experiments is not permitted.
      </li>
      </ul>
 </li>
