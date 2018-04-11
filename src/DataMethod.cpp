@@ -145,11 +145,11 @@ DataMethodRep::DataMethodRep():
   samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),
   mcmcType("dram"), standardizedSpace(false), adaptPosteriorRefine(false),
   logitTransform(false), gpmsaNormalize(false), posteriorStatsKL(false),
-  posteriorStatsMutual(false),  preSolveMethod(SUBMETHOD_DEFAULT),
-  proposalCovUpdates(0), fitnessMetricType("predicted_variance"), 
-  batchSelectionType("naive"), lipschitzType("local"), 
-  calibrateErrorMode(CALIBRATE_NONE), burnInSamples(0), subSamplingPeriod(1),
-  calModelDiscrepancy(false),
+  posteriorStatsMutual(false),  posteriorStatsKDE(false),
+  preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
+  fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
+  lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
+  burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
   // numPredConfigs (BMA TODO this is not initialized...)
   importPredConfigFormat(TABULAR_ANNOTATED),
   modelDiscrepancyType("global_kriging"),
@@ -294,21 +294,21 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
-    << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
-    << proposalCovType << proposalCovUpdates << proposalCovInputType
-    << proposalCovData << proposalCovFile << quesoOptionsFilename
-    << fitnessMetricType << batchSelectionType << lipschitzType
-    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
-    << burnInSamples << subSamplingPeriod << calModelDiscrepancy
-    << numPredConfigs << predictionConfigList << importPredConfigs
-    << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
-    << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
-    << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
-    << adaptExpDesign << importCandPtsFile << importCandFormat
-    << numCandidates << maxHifiEvals << batchSize << mutualInfoKSG2 << numChains
-    << numCR << crossoverChainPairs << grThreshold << jumpStep
-    << numPushforwardSamples 
-    << dataDistType << dataDistCovInputType << dataDistMeans 
+    << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
+    << preSolveMethod << proposalCovType << proposalCovUpdates
+    << proposalCovInputType << proposalCovData << proposalCovFile
+    << quesoOptionsFilename << fitnessMetricType << batchSelectionType
+    << lipschitzType << calibrateErrorMode << hyperPriorAlphas
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod
+    << calModelDiscrepancy << numPredConfigs << predictionConfigList
+    << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
+    << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
+    << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
+    << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
+    << importCandFormat << numCandidates << maxHifiEvals << batchSize
+    << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
+    << grThreshold << jumpStep << numPushforwardSamples
+    << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;
@@ -445,21 +445,21 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> chainSamples >> buildSamples >> samplesOnEmulator >> emulatorOrder
     >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
-    >> posteriorStatsKL >> posteriorStatsMutual >> preSolveMethod
-    >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
-    >> proposalCovData >> proposalCovFile >> quesoOptionsFilename
-    >> fitnessMetricType >> batchSelectionType >> lipschitzType
-    >> calibrateErrorMode >> hyperPriorAlphas >> hyperPriorBetas
-    >> burnInSamples >> subSamplingPeriod >> calModelDiscrepancy
-    >> numPredConfigs >> predictionConfigList >> importPredConfigs
-    >> importPredConfigFormat >> modelDiscrepancyType >> approxCorrectionOrder
-    >> exportCorrModelFile >> exportCorrModelFormat >> exportCorrVarFile
-    >> exportCorrVarFormat >> exportDiscrepFile >> exportDiscrepFormat
-    >> adaptExpDesign >> importCandPtsFile >> importCandFormat
-    >> numCandidates >> maxHifiEvals >> batchSize >> mutualInfoKSG2 >> numChains
-    >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep
-    >> numPushforwardSamples 
-    >> dataDistType >> dataDistCovInputType >> dataDistMeans 
+    >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
+    >> preSolveMethod >> proposalCovType >> proposalCovUpdates
+    >> proposalCovInputType >> proposalCovData >> proposalCovFile
+    >> quesoOptionsFilename >> fitnessMetricType >> batchSelectionType
+    >> lipschitzType >> calibrateErrorMode >> hyperPriorAlphas
+    >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
+    >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
+    >> importPredConfigs >> importPredConfigFormat >> modelDiscrepancyType
+    >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
+    >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
+    >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
+    >> importCandFormat >> numCandidates >> maxHifiEvals >> batchSize
+    >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
+    >> grThreshold >> jumpStep >> numPushforwardSamples
+    >> dataDistType >> dataDistCovInputType >> dataDistMeans
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
     >> generatePosteriorSamples >> evaluatePosteriorDensity;
@@ -596,21 +596,21 @@ void DataMethodRep::write(std::ostream& s) const
     << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
-    << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
-    << proposalCovType << proposalCovUpdates << proposalCovInputType
-    << proposalCovData << proposalCovFile << quesoOptionsFilename
-    << fitnessMetricType << batchSelectionType << lipschitzType
-    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
-    << burnInSamples << subSamplingPeriod << calModelDiscrepancy
-    << numPredConfigs << predictionConfigList << importPredConfigs
-    << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
-    << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
-    << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
-    << adaptExpDesign << importCandPtsFile << importCandFormat
-    << numCandidates << maxHifiEvals << batchSize << mutualInfoKSG2 << numChains
-    << numCR << crossoverChainPairs << grThreshold << jumpStep
-    << numPushforwardSamples 
-    << dataDistType << dataDistCovInputType << dataDistMeans 
+    << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
+    << preSolveMethod << proposalCovType << proposalCovUpdates
+    << proposalCovInputType << proposalCovData << proposalCovFile
+    << quesoOptionsFilename << fitnessMetricType << batchSelectionType
+    << lipschitzType << calibrateErrorMode << hyperPriorAlphas
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod
+    << calModelDiscrepancy << numPredConfigs << predictionConfigList
+    << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
+    << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
+    << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
+    << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
+    << importCandFormat << numCandidates << maxHifiEvals << batchSize
+    << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
+    << grThreshold << jumpStep << numPushforwardSamples
+    << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;

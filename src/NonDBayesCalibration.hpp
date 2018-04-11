@@ -358,10 +358,15 @@ protected:
   /// flag indicating use of a variable transformation to standardized
   /// probability space for the model or emulator
   bool standardizedSpace;
-  /// flag indicating the calculation of KL divergence between prior and posterior
+  /// flag indicating the calculation of KL divergence between prior and
+  /// posterior
   bool posteriorStatsKL;
-  /// flag indicating the calculation of mutual information between prior and posterior
+  /// flag indicating the calculation of mutual information between prior and
+  /// posterior
   bool posteriorStatsMutual;
+  /// flat indicating the calculation of the kernel density estimate of the
+  /// posteriors
+  bool posteriorStatsKDE;
   /// flag indicating usage of adaptive posterior refinement; currently makes
   /// sense for unstructured grids in GP and PCE least squares/CS
   bool adaptPosteriorRefine;

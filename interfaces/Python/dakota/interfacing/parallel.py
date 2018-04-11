@@ -71,11 +71,6 @@ __license__ = 'GNU Lesser General Public License'
 #
 # Or, not. After all, how many resource managers are in common use?
 
-## Constants
-NODE = 0
-TILE = 1
-
-
 # TODO: Insert code to add plugin modules to this list
 _user_mangers = []
 
@@ -109,16 +104,16 @@ def _get_node_list(tile=None, applic_tasks=None,
         tile: Tile number, 0-based.
         applic_tasks: Number of MPI processes (tasks) per tile.
         tasks_per_node: Number of MPI tasks per node.
-        dedicated_master: Reserve the first NODE or TILE for Dakota (default: 
+        dedicated_master: Reserve the first 'NODE' or 'TILE' for Dakota (default: 
             no reserved node)
 
     Returns:
         A string containing the relative node list.
             
     """
-    if dedicated_master == NODE:
+    if dedicated_master == 'NODE':
         start_node = tile * applic_tasks//tasks_per_node + 1
-    elif dedicated_master == TILE:
+    elif dedicated_master == 'TILE':
         start_node = (tile + 1) * applic_tasks//tasks_per_node
     else:
         start_node = tile * applic_tasks//tasks_per_node
@@ -208,7 +203,7 @@ def _calc_num_tiles(applic_tasks=None, tasks_per_node=None, num_nodes=None,
     Args:
         applic_tasks: Number of tasks for tile
         num_nodes: Total number of nodes in the allocation
-        dedicated_master: Reserve a NODE or TILE for Dakota
+        dedicated_master: Reserve a 'NODE' or 'TILE' for Dakota
 
     Returns:
         Number of tiles
@@ -216,11 +211,11 @@ def _calc_num_tiles(applic_tasks=None, tasks_per_node=None, num_nodes=None,
     Raises:
         ResourseError: When a dedicated master takes up the entire allocation
     """
-    if dedicated_master == NODE:
+    if dedicated_master == 'NODE':
         if num_nodes == 1:
             raise ResourceError("Dedicated master node requested, but job has only one node.")
         num_tiles = (num_nodes-1)*tasks_per_node//applic_tasks 
-    elif dedicated_master == TILE:
+    elif dedicated_master == 'TILE':
         num_tiles = num_nodes*tasks_per_node//applic_tasks - 1
         if num_tiles == 0:
             raise ResourceError("Dedicated master tile requested, but job has only one tile.")
@@ -228,14 +223,14 @@ def _calc_num_tiles(applic_tasks=None, tasks_per_node=None, num_nodes=None,
         num_tiles = num_nodes*tasks_per_node//applic_tasks
     return num_tiles
 
-def tile_run_static(commands=[], dedicated_master=None, eval_num=None,
+def tile_run_static(commands=None, dedicated_master=None, eval_num=None,
         parameters_file=None):
     """Run a command in parallel on an available tile assuming static scheduling
 
     Keyword args:
         commands (list): Each item is a tuple: (applic_procs, tokenized command 
             to be run). len(commands) == 1 for SIMD model.
-        dedicated_master (NODE or TILE, optional): Reserve the first NODE or TILE 
+        dedicated_master ('NODE' or 'TILE', optional): Reserve the first 'NODE' or 'TILE' 
             for Dakota (default: None).
         eval_num (int): Dakota evaluation number. Either eval_num or
             parameters_file is required. eval_num supercedes parameters_file.
@@ -275,13 +270,13 @@ def tile_run_static(commands=[], dedicated_master=None, eval_num=None,
     returncode = _mpirun(node_list, commands)
     return returncode
 
-def tile_run_dynamic(commands=[], dedicated_master=None, lock_id=None, lock_dir=None):
+def tile_run_dynamic(commands=None, dedicated_master=None, lock_id=None, lock_dir=None):
     """Run a command in parallel on an available tile assuming dynamic scheduling
 
     Keyword args:
         commands (list): Each item is a tuple: (applic_procs, tokenized command 
             to be run). len(commands) == 1 for SIMD model.
-        dedicated_master (NODE or TILE, optional): Reserve the first NODE or TILE 
+        dedicated_master ('NODE' or 'TILE', optional): Reserve the first 'NODE' or 'TILE' 
             for Dakota (default: None).
         lock_id (str, optional): Unique prefix for lockfiles used to manage tiles.
         lock_dir (str, optional): Name of directory where lockfiles will be written.

@@ -6853,6 +6853,7 @@ static bool
 	MP_(normalizedCoeffs),
 	MP_(pcaFlag),
 	MP_(posteriorStatsKL),
+	MP_(posteriorStatsKDE),
 	MP_(posteriorStatsMutual),
 	MP_(printPopFlag),
 	MP_(pstudyFileActive),

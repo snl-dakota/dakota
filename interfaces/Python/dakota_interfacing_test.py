@@ -211,23 +211,23 @@ class dakotaInterfacingTestCase(unittest.TestCase):
                                              tasks_per_node=16))
         self.assertEqual( "+n1",
                 parallel._get_node_list(tile=0, applic_tasks=16,
-                    tasks_per_node=16, dedicated_master=parallel.NODE))
+                    tasks_per_node=16, dedicated_master='NODE'))
 
         self.assertEqual( "+n1,+n2",
                 parallel._get_node_list(tile=0, applic_tasks=32,
-                    tasks_per_node=16, dedicated_master=parallel.NODE))
+                    tasks_per_node=16, dedicated_master='NODE'))
 
         self.assertEqual( "+n0",
                 parallel._get_node_list(tile=0, applic_tasks=8,
-                    tasks_per_node=16, dedicated_master=parallel.TILE))
+                    tasks_per_node=16, dedicated_master='TILE'))
 
         self.assertEqual( "+n1",
                 parallel._get_node_list(tile=1, applic_tasks=8,
-                    tasks_per_node=16, dedicated_master=parallel.TILE))
+                    tasks_per_node=16, dedicated_master='TILE'))
 
         self.assertEqual( "+n1",
                 parallel._get_node_list(tile=0, applic_tasks=16,
-                    tasks_per_node=16, dedicated_master=parallel.TILE))
+                    tasks_per_node=16, dedicated_master='TILE'))
 
 
 
@@ -255,25 +255,25 @@ class dakotaInterfacingTestCase(unittest.TestCase):
                     num_nodes=1))
         self.assertEqual(9,
                 parallel._calc_num_tiles(applic_tasks=16, tasks_per_node=16,
-                    num_nodes=10, dedicated_master=parallel.NODE))
+                    num_nodes=10, dedicated_master='NODE'))
         self.assertEqual(9,
                 parallel._calc_num_tiles(applic_tasks=16, tasks_per_node=16,
-                    num_nodes=10, dedicated_master=parallel.TILE))
+                    num_nodes=10, dedicated_master='TILE'))
         self.assertEqual(18,
                 parallel._calc_num_tiles(applic_tasks=8, tasks_per_node=16,
-                    num_nodes=10, dedicated_master=parallel.NODE))
+                    num_nodes=10, dedicated_master='NODE'))
         self.assertEqual(19,
                 parallel._calc_num_tiles(applic_tasks=8, tasks_per_node=16,
-                    num_nodes=10, dedicated_master=parallel.TILE))
+                    num_nodes=10, dedicated_master='TILE'))
         self.assertEqual(1,
                 parallel._calc_num_tiles(applic_tasks=8, tasks_per_node=16,
-                    num_nodes=1, dedicated_master=parallel.TILE))
+                    num_nodes=1, dedicated_master='TILE'))
         self.assertRaises(parallel.ResourceError,parallel._calc_num_tiles,
                     applic_tasks=8, tasks_per_node=16, num_nodes=1, 
-                    dedicated_master=parallel.NODE)
+                    dedicated_master='NODE')
         self.assertRaises(parallel.ResourceError,parallel._calc_num_tiles,
                     applic_tasks=16, tasks_per_node=16, num_nodes=1, 
-                    dedicated_master=parallel.TILE)
+                    dedicated_master='TILE')
 # todo: test iteration, integer access
 
 

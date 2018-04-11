@@ -4619,6 +4619,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ mutual_info {N_mdm(true,posteriorStatsMutual)}
         [ ksg2 {N_mdm(true,mutualInfoKSG2)} ]
        ]
+      [ kde {N_mdm(true,posteriorStatsKDE)} ]
      ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}
