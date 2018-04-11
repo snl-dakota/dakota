@@ -1,4 +1,5 @@
 from __future__ import print_function
+from io import open
 import collections
 import re
 import sys
@@ -508,8 +509,6 @@ def read_parameters_file(parameters_file=None, results_file=None,
         except IndexError:
             raise MissingSourceError("No parameters filename provided and no "
                     "command line argument.")
-    with open(parameters_file,"r") as ifp:
-        parameters_list = ifp.readlines()
 
     ### Determine the name of the results file
     if results_file is None:
@@ -522,7 +521,7 @@ def read_parameters_file(parameters_file=None, results_file=None,
         results_file = ""
 
     ### Open and parse the parameters file
-    with open(parameters_file, "r") as ifp:
+    with open(parameters_file, "r", encoding='utf8') as ifp:
         return _read_parameters_stream(ifp, ignore_asv, results_file)
 
 
