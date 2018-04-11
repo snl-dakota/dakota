@@ -106,9 +106,10 @@ protected:
   virtual void compute_covariance();
 
   /// compute 2-norm of change in response covariance
-  virtual Real compute_covariance_metric(bool restore_ref);
+  virtual Real compute_covariance_metric(bool restore_ref, bool print_metric);
   /// compute 2-norm of change in final statistics
-  virtual Real compute_final_statistics_metric(bool restore_ref);
+  virtual Real compute_final_statistics_metric(bool restore_ref,
+					       bool print_metric);
   /// perform any required expansion roll-ups prior to metric computation
   virtual void metric_roll_up();
 
@@ -197,7 +198,8 @@ protected:
   /// initialization of expansion refinement, if necessary
   void pre_refinement();
   /// advance the refinement strategy one step
-  size_t core_refinement(Real& metric, bool revert = false);
+  size_t core_refinement(Real& metric, bool revert = false,
+			 bool print_metric = true);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric);
 
@@ -220,6 +222,9 @@ protected:
   /// set of results (full statistics) or an intermediate set of results
   /// (reduced set of core results used for levels/fidelities, etc.)
   void annotated_results(short results_state = FINAL_RESULTS);
+
+  /// print respCovariance
+  void print_covariance(std::ostream& s);
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -315,7 +320,7 @@ private:
   void reduce_decay_rate_sets(RealVector& min_decay);
 
   /// perform an adaptive refinement increment using generalized sparse grids
-  size_t increment_sets(Real& delta_star, bool revert);
+  size_t increment_sets(Real& delta_star, bool revert, bool print_metric);
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 
@@ -338,15 +343,13 @@ private:
 
   /// print expansion and numerical moments
   void print_moments(std::ostream& s);
-  /// print respCovariance
-  void print_covariance(std::ostream& s);
   /// print global sensitivity indices
   void print_sobol_indices(std::ostream& s);
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
 
-  /// manage print of results following a generalized index set increment
-  void annotated_index_set_results();
+  // manage print of results following a generalized index set increment
+  //void annotated_index_set_results();
   /// manage print of results following a refinement increment
   void annotated_refinement_results(bool initialize);
 

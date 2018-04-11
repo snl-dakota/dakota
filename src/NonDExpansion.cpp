@@ -941,7 +941,8 @@ void NonDExpansion::pre_refinement()
 }
 
 
-size_t NonDExpansion::core_refinement(Real& metric, bool revert)
+size_t NonDExpansion::
+core_refinement(Real& metric, bool revert, bool print_metric)
 {
   size_t candidate = 0;
   switch (refineControl) {
@@ -950,7 +951,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool revert)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     increment_grid(); // recompute anisotropy
     update_expansion();
-    metric = compute_covariance_metric(revert);
+    metric = compute_covariance_metric(revert, print_metric);
     if (revert) {
       decrement_grid();
       pop_increment();
@@ -967,7 +968,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool revert)
     // > Starting GSG from TPQ is conceptually straightforward but
     //   awkward in implementation (would need something like
     //   nond_sparse->ssg_driver->compute_tensor_grid()).
-    candidate = increment_sets(metric, revert); // best of several candidates
+    candidate = increment_sets(metric, revert, print_metric); // best of several
     break;
   }
   return candidate;
@@ -1316,7 +1317,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      lev_candidate = core_refinement(lev_metric, true);
+      lev_candidate = core_refinement(lev_metric, true, true);
       // core_refinement() normalizes level candidates based on the number of
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
@@ -1368,7 +1369,7 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
     std::set<UShortArray>::const_iterator best_cit = active_mi.begin();
     std::advance(best_cit, best_candidate);
-    // See also bottom of NonDExpansion::increment_sets() ...
+    // See also bottom of NonDExpansion::increment_sets()
     nond_sparse->update_sets(*best_cit);
     uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
     nond_sparse->update_reference();
@@ -1498,7 +1499,8 @@ void NonDExpansion::increment_specification_sequence()
 }
 
 
-size_t NonDExpansion::increment_sets(Real& delta_star, bool revert)
+size_t NonDExpansion::
+increment_sets(Real& delta_star, bool revert, bool print_metric)
 {
   Cout << "\n>>>>> Begin evaluation of active index sets.\n";
 
@@ -1534,8 +1536,9 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool revert)
     }
 
     // assess effect of increment (non-negative norm); restore ref once done
-    delta = (totalLevelRequests) ? compute_final_statistics_metric(revert)
-                                 : compute_covariance_metric(revert);
+    delta = (totalLevelRequests) ?
+      compute_final_statistics_metric(revert, print_metric) :
+      compute_covariance_metric(revert, print_metric);
     // normalize effect of increment based on cost (# of collocation pts).
     // Note: increment size must be nonzero since growth restriction is
     // precluded for generalized sparse grids.
@@ -1552,7 +1555,7 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool revert)
 	else                    stats_star = respVariance;
       }
     }
-    annotated_index_set_results();
+    //annotated_index_set_results(); // old data if reverted above
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
@@ -1596,6 +1599,7 @@ void NonDExpansion::finalize_sets(bool converged_within_tol)
 }
 
 
+/*
 void NonDExpansion::annotated_index_set_results()
 {
   switch (refineControl) {
@@ -1616,6 +1620,7 @@ void NonDExpansion::annotated_index_set_results()
     break;
   }
 }
+*/
 
 
 void NonDExpansion::annotated_refinement_results(bool initialize)
@@ -1719,7 +1724,8 @@ void NonDExpansion::annotated_results(short results_state)
 
 
 /** computes the default refinement metric based on change in respCovariance */
-Real NonDExpansion::compute_covariance_metric(bool restore_ref)
+Real NonDExpansion::
+compute_covariance_metric(bool restore_ref, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1729,12 +1735,12 @@ Real NonDExpansion::compute_covariance_metric(bool restore_ref)
 
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
-    RealVector resp_var_ref;
+    RealVector resp_var_ref, delta_resp_var = respVariance; // deep copy
     if (restore_ref) resp_var_ref = respVariance;
-
-    RealVector delta_resp_var = respVariance; // deep copy
     Real scale = respVariance.normFrobenius();
+
     compute_covariance();                     // update
+    if (print_metric) print_covariance(Cout);
     delta_resp_var -= respVariance;           // compute change
 
 #ifdef DEBUG
@@ -1754,12 +1760,12 @@ Real NonDExpansion::compute_covariance_metric(bool restore_ref)
     break;
   }
   case FULL_COVARIANCE: {
-    RealSymMatrix resp_covar_ref;
+    RealSymMatrix resp_covar_ref, delta_resp_covar = respCovariance;// deep copy
     if (restore_ref) resp_covar_ref = respCovariance;
-
-    RealSymMatrix delta_resp_covar = respCovariance; // deep copy
     Real scale = respCovariance.normFrobenius();
+
     compute_covariance();                            // update
+    if (print_metric) print_covariance(Cout);
     delta_resp_covar -= respCovariance;              // compute change
 
 #ifdef DEBUG
@@ -1789,7 +1795,8 @@ Real NonDExpansion::compute_covariance_metric(bool restore_ref)
 
 
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
-Real NonDExpansion::compute_final_statistics_metric(bool restore_ref)
+Real NonDExpansion::
+compute_final_statistics_metric(bool restore_ref, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1798,8 +1805,11 @@ Real NonDExpansion::compute_final_statistics_metric(bool restore_ref)
   metric_roll_up();
 
   RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
+
   compute_statistics(INTERMEDIATE_RESULTS);
+  if (print_metric) print_results(Cout, INTERMEDIATE_RESULTS);
   const RealVector& final_stats_new = finalStatistics.function_values();
+
 #ifdef DEBUG
   Cout << "final_stats_ref:\n" << final_stats_ref
        << "final_stats_new:\n" << final_stats_new << std::endl;
