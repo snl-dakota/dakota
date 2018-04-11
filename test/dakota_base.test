@@ -3827,7 +3827,6 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  2.0011247816e+00  8.5449314196e-03 -2.5470466416e+01  7.4828269571e+02
-Information gained from prior to posterior = -4.2579856701e-01
 dakota_big_dataset.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 300 total (300 new, 0 duplicate)
@@ -6990,7 +6989,6 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.5632849885e-02  5.5328382145e-03  6.4434824403e-01 -5.4101597132e-01
 least_sq_term_2  1.3492064490e-01  1.7471504542e-02  3.6846752157e-01 -7.8714959309e-01
 least_sq_term_3  2.5632849886e-02  5.5328382145e-03  6.4434824403e-01 -5.4101597131e-01
-Information gained from prior to posterior = -5.8294648569e+00
 Test Number 1 succeeded
 Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    2.5082955196e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
@@ -8621,7 +8619,6 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.4526384509e-02  5.7876704408e-03  8.9826920165e-01  2.6487827428e-01
 least_sq_term_2  1.2735844009e-01  1.2331562075e-02  9.3775921605e-01 -6.5851684323e-02
 least_sq_term_3  2.4526384510e-02  5.7876704373e-03  8.9826920219e-01  2.6487827519e-01
-Information gained from prior to posterior = -5.6037032312e+00
 Test Number 2 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -8689,7 +8686,6 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.4531608101e-02  5.9384571082e-03  9.7255268291e-01  5.2964417267e-01
 least_sq_term_2  1.2733881851e-01  1.2020079729e-02  9.5707815697e-01  1.0120348405e-01
 least_sq_term_3  2.4531608095e-02  5.9384571087e-03  9.7255268231e-01  5.2964417131e-01
-Information gained from prior to posterior = -5.4272787501e+00
 Test Number 3 succeeded
 Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    2.5272274224e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
@@ -9992,7 +9988,6 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.4928500364e-02  5.9695015035e-03  8.7395072101e-01  2.7780776291e-01
 least_sq_term_2  1.2795055903e-01  1.2297485186e-02  8.6702045167e-01 -1.0289586526e-01
 least_sq_term_3  2.4928500363e-02  5.9695015037e-03  8.7395072123e-01  2.7780776327e-01
-Information gained from prior to posterior = -5.3773465245e+00
 dakota_dll.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)

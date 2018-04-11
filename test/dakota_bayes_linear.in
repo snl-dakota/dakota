@@ -20,11 +20,12 @@ method,
        bayes_calibration queso
           dram
 	  seed = 34785				
-          chain_samples = 1000 
+          chain_samples = 1000
           calibrate_error_multipliers one
           #hyperprior_alphas = 1000.0                   	#s2,#s3        
           #hyperprior_betas = 1.0				#s2,#s3 
-          posterior_stats kl_divergence
+	  # TODO: debug negative information gain on test s3
+          posterior_stats kl_divergence				#s0,#s1,#s2
           #output debug 
 
 variables,
