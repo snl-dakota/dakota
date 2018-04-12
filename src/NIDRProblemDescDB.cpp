@@ -6905,7 +6905,7 @@ static int
 	MP_(numTrials),
 	MP_(populationSize),
         MP_(procsPerIterator),
-        MP_(proposalCovUpdates),
+        MP_(proposalCovUpdatePeriod),
 	MP_(numPushforwardSamples),
 	MP_(randomSeed),
 	MP_(samplesOnEmulator),

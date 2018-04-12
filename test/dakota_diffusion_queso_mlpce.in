@@ -16,8 +16,10 @@ method,
 	    collocation_ratio = 0.9				#s0,#s1,#s3
 	  proposal_covariance
 	    derivatives
-	    proposal_updates = 50 # default update is every 100 samples
+	      update_period = 40
 #	  logit_transform         # default is off
+	  # TODO: debug negative information gain on tests s0--s3
+##	  posterior_stats kl_divergence
 
 model,
 	id_model = 'HIERARCH'

@@ -1297,7 +1297,7 @@ sub parse_test_output {
       print TEST_OUT;
     }
     
-    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Mutual information =)/) {
+    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Information gained from prior to posterior|Mutual information =)/) {
       print;
       print TEST_OUT;
     }

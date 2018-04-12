@@ -2582,7 +2582,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.chain_samples", P chainSamples},
 	{"nond.max_refinement_iterations", P maxRefineIterations},
 	{"nond.max_solver_iterations", P maxSolverIterations},
-	{"nond.proposal_covariance_updates", P proposalCovUpdates},
+	{"nond.prop_cov_update_period", P proposalCovUpdatePeriod},
 	{"nond.pushforward_samples", P numPushforwardSamples},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
 	{"nond.surrogate_order", P emulatorOrder},
