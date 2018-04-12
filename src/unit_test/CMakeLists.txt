@@ -100,6 +100,10 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     opt_api_traits.cpp
     reduced_basis.cpp
     restart_test.cpp
+    rol_adapters.cpp
+    rol_integration.cpp
+    opt_tpl_rol_test_textbook.cpp
+    opt_tpl_rol_test_rol_pbs.cpp
     stat_utils.cpp
     wilks_sampling.cpp
     )
@@ -113,6 +117,10 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
     "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
+    dakota_unit_test_copied_files
+    )
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/opt_tpl_test_files"
+    "${CMAKE_CURRENT_BINARY_DIR}/opt_tpl_test_files"
     dakota_unit_test_copied_files
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/stat_util_test_files"

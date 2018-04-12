@@ -78,6 +78,7 @@ enum { DEFAULT_METHOD=0,
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,
        DOT_BFGS, DOT_FRCG, DOT_MMFD, DOT_SLP, DOT_SQP, CONMIN_FRCG, CONMIN_MFD,
+       ROL_LS,
        // Generic Optimizers / Minimizers:
        DL_SOLVER,
        // Minimizers that are both opt & least sq
@@ -993,6 +994,8 @@ public:
   RealVector proposalCovData;
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
+  /// file containing advanced ROL option overrides
+  String advancedOptionsFilename;
   /// file containing advanced QUESO option overrides
   String quesoOptionsFilename;
   /// the \c fitness metric type specification in \ref

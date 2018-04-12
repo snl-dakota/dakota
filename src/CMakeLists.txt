@@ -733,6 +733,12 @@ if(HAVE_OPTPP)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
 
+if(HAVE_ROL)
+  list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
+  add_definitions("-DHAVE_ROL")
+  set(iterator_src ${iterator_src} ROLOptimizer.cpp)
+endif(HAVE_ROL)
+
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
   list(APPEND interface_src PSUADEDesignCompExp.cpp)

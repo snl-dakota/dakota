@@ -298,8 +298,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << preSolveMethod << proposalCovType << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
-    << quesoOptionsFilename << fitnessMetricType << batchSelectionType
-    << lipschitzType << calibrateErrorMode << hyperPriorAlphas
+    << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
+    << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
@@ -449,8 +449,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
     >> preSolveMethod >> proposalCovType >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
-    >> quesoOptionsFilename >> fitnessMetricType >> batchSelectionType
-    >> lipschitzType >> calibrateErrorMode >> hyperPriorAlphas
+    >> advancedOptionsFilename >> quesoOptionsFilename >> fitnessMetricType
+    >> batchSelectionType >> lipschitzType >> calibrateErrorMode >> hyperPriorAlphas
     >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
     >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
     >> importPredConfigs >> importPredConfigFormat >> modelDiscrepancyType
@@ -600,8 +600,8 @@ void DataMethodRep::write(std::ostream& s) const
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
     << preSolveMethod << proposalCovType << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
-    << quesoOptionsFilename << fitnessMetricType << batchSelectionType
-    << lipschitzType << calibrateErrorMode << hyperPriorAlphas
+    << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
+    << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType

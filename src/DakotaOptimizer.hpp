@@ -18,17 +18,34 @@
 
 namespace Dakota {
 
+/** Adapter for copying initial continuous variables values from a Dakota Model
+   into TPL vectors */
+
+template <typename VecT>
+void get_initial_values( const Model & model,
+                               VecT  & values)
+{
+  const RealVector& initial_points = model.continuous_variables();
+
+  for(int i=0; i<model.cv(); ++i)
+    values[i] = initial_points[i];
+}
 
 /** Adapter for copying continuous variables data from Dakota RealVector
    into TPL vectors */
 
+//PDH: At some point, need to get rid of big_real_bound_size.  Was no_value
+//specific to APPS?  I think it was.  If so, we should look at how general
+//that is across the other TPLs.  It might make more sense to push it back
+//down to APPS.
+
 template <typename VecT>
 bool get_bounds( const RealVector  & lower_source,
                  const RealVector  & upper_source,
-                       Real          big_real_bound_size,
-                       Real          no_value,
                        VecT        & lower_target,
-                       VecT        & upper_target )
+                       VecT        & upper_target,
+                       Real          big_real_bound_size,
+                       Real          no_value)
 {
   bool allSet = true;
 
@@ -51,9 +68,30 @@ bool get_bounds( const RealVector  & lower_source,
   return allSet;
 }
 
+/** Adapter for copying continuous variables data from a Dakota Model
+   into TPL vectors */
+
+template <typename VecT>
+void get_bounds( const Model & model,
+                       VecT  & lower_target,
+                       VecT  & upper_target)
+{
+  const RealVector& c_l_bnds = model.continuous_lower_bounds();
+  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+
+  for( int i=0; i<c_l_bnds.length(); ++i )
+  {
+    lower_target[i] = c_l_bnds[i];
+    upper_target[i] = c_u_bnds[i];
+  }
+}
+
 /** Adapter originating from (and somewhat specialized based on)
    APPSOptimizer for copying discrete variables from a set-based Dakota
    container into TPL vectors */
+
+//PDH: I think the target_offset can be eliminated from the argument list
+//by using a trait specifying expected order.
 
 template <typename SetT, typename VecT>
 void get_bounds( const SetT & source_set,
@@ -70,6 +108,8 @@ void get_bounds( const SetT & source_set,
 /** Adapter originating from (and somewhat specialized based on)
    APPSOptimizer for copying discrete integer variables data
    with bit masking from Dakota into TPL vectors */
+
+//PDH: Same comments as above for bigBoundSize, no_value, target_offset.
 
 template <typename OrdinalType, typename ScalarType, typename VectorType2, typename MaskType, typename SetArray>
 bool get_mixed_bounds( const MaskType& mask_set,
@@ -118,6 +158,8 @@ bool get_mixed_bounds( const MaskType& mask_set,
     APPSOptimizer for copying heterogeneous bounded data from 
     Dakota::Variables into concatenated TPL vectors */
 
+//PDH: Same for big_real_bound_size, big_int_bound_size.
+
 template <typename AdapterT>
 bool get_variable_bounds( Model &                   model, // would like to make const but cannot due to discrete_int_sets below
                           Real                      big_real_bound_size,
@@ -143,10 +185,10 @@ bool get_variable_bounds( Model &                   model, // would like to make
 
   bool allSet = get_bounds(lower_bnds_cont,
                            upper_bnds_cont,
-                           big_real_bound_size,
-                           AdapterT::noValue(),
                            lower,
-                           upper);
+                           upper,
+                           big_real_bound_size,
+                           AdapterT::noValue());
 
   int offset = model.cv();
   allSet = allSet && 
@@ -172,6 +214,8 @@ bool get_variable_bounds( Model &                   model, // would like to make
 
 /** Adapter for configuring inequality constraint maps used when
    transferring data between Dakota and a TPL */
+
+//PDH: Yes, scaling should be tied to a trait.  And get rid of big_real...
 
 template <typename RVecT, typename IVecT>
 int configure_inequality_constraint_maps(
@@ -214,6 +258,10 @@ int configure_inequality_constraint_maps(
 
 /** Adapter for configuring equality constraint maps used when
    transferring data between Dakota and a TPL */
+
+//PDH: I'll have to remind myself what the call chain is.  Ultimately,
+//make_one_sided should be tied to a trait somewhere along the line.
+//Same for the map-related vectors (e.g., multipliers).
 
 template <typename RVecT, typename IVecT>
 void configure_equality_constraint_maps(
@@ -279,12 +327,96 @@ void get_linear_constraints( Model & model,
 
   get_bounds(linear_ineq_lower_bnds,
              linear_ineq_upper_bnds,
-             big_real_bound_size,
-             AdapterT::noValue(),
              lin_ineq_lower_bnds,
-             lin_ineq_upper_bnds);
+             lin_ineq_upper_bnds,
+             big_real_bound_size,
+             AdapterT::noValue());
 
   copy_data(linear_eq_targets, lin_eq_targets);
+}
+
+//----------------------------------------------------------------
+
+/** Data adapter to transfer data from Dakota to third-party opt
+    packages.  The vector values might contain additional constraints;
+    the first entries corresponding to linear constraints are
+    populated by apply. */
+template <typename VecT>
+void apply_linear_constraints( const Model & model,
+                               CONSTRAINT_EQUALITY_TYPE etype,
+                               const VecT & in_vals,
+			       VecT & values,
+			       bool adjoint = false)
+{
+  size_t num_linear_consts      = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                              model.num_linear_eq_constraints() :
+                                              model.num_linear_ineq_constraints();
+  const RealMatrix & lin_coeffs = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                              model.linear_eq_constraint_coeffs() :
+                                              model.linear_ineq_constraint_coeffs();
+
+  apply_matrix_partial(lin_coeffs, in_vals, values);
+
+  if( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY )
+  {
+    const RealVector & lin_eq_targets = model.linear_eq_constraint_targets();
+    for(size_t i=0;i<num_linear_consts;++i)
+      values[i] -= lin_eq_targets(i);
+  }
+}
+
+//----------------------------------------------------------------
+
+/** Data adapter to transfer data from Dakota to third-party opt packages
+
+    If adjoint = false, (perhaps counter-intuitively) apply the
+    Jacobian (transpose of the gradient) to in_vals, which should be
+    of size num_continuous_vars: J*x = G'*x, resulting in
+    num_nonlinear_const values getting populated (possibly a subset of
+    the total constraint vector).
+
+    If adjoint = true, apply the adjoint Jacobian (gradient) to the
+    nonlinear constraint portion of in_vals, which should be of size
+    at least num_nonlinear_consts: J'*y = G*y, resulting in
+    num_continuous_vars values getting populated.
+*/
+template <typename VecT>
+void apply_nonlinear_constraints( const Model & model,
+                               CONSTRAINT_EQUALITY_TYPE etype,
+                               const VecT & in_vals,
+				  VecT & values ,
+				  bool adjoint = false)
+{
+  size_t num_resp = 1; // does this need to be generalized to more than one response value? - RWH
+
+  size_t num_continuous_vars         = model.cv();
+
+  size_t num_linear_consts           = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                                   model.num_linear_eq_constraints() :
+                                                   model.num_linear_ineq_constraints();
+  size_t num_nonlinear_consts        = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                                   model.num_nonlinear_eq_constraints() :
+                                                   model.num_nonlinear_ineq_constraints();
+
+  const RealMatrix & gradient_matrix = model.current_response().function_gradients();
+
+  int grad_offset = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                                   num_resp + model.num_nonlinear_ineq_constraints() :
+                                                   num_resp;
+
+  if (adjoint)
+    for (size_t i=0; i<num_continuous_vars; ++i) {
+      // BMA --> RWH: can't zero in case compounding linear and nonlinear (usability issue)
+      // values[i] = 0.0;
+      for(size_t j=0; j<num_nonlinear_consts; ++j)
+	values[i] += gradient_matrix(i, grad_offset+j) * in_vals[num_linear_consts+j];
+    }
+  else
+    for(size_t j=0; j<num_nonlinear_consts; ++j) {
+      values[num_linear_consts+j] = 0.0;
+      for (size_t i=0; i<num_continuous_vars; i++)
+	values[num_linear_consts+j] += gradient_matrix(i, grad_offset+j) * in_vals[i];
+    }
 }
 
 //----------------------------------------------------------------
@@ -522,6 +654,10 @@ inline void Optimizer::not_available(const std::string& package_name)
 
 //----------------------------------------------------------------
 
+//PDH: How much of everything from here on is used by both APPS and ROL?
+//Probably need to make a pass to look for possible redundancies and to
+//consolidate if/where necessary.
+
 // Data utilities supporting Opt TPL refactor which may eventually be promoted
 // to a more generally accessible location - RWH
 template <typename VectorType1, typename VectorType2, typename SetArray>
@@ -758,25 +894,30 @@ void get_responses( const Model & model,
 //----------------------------------------------------------------
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
-template <typename RVecT>
-void get_nonlinear_eq_constraints( Model & model,
-                                   const RVecT & curr_resp_vals,
-                                         RVecT & values)
+template <typename VecT>
+void get_nonlinear_eq_constraints( const Model & model,
+                                         VecT & values,
+                                         Real scale,
+                                         int offset = -1 )
 {
+  if( -1 == offset )
+    offset = model.num_linear_eq_constraints();
+  size_t num_nonlinear_ineq        = model.num_nonlinear_ineq_constraints();
+  size_t num_nonlinear_eq          = model.num_nonlinear_eq_constraints();
   const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
-  int num_nl_eq_constr             = model.num_nonlinear_eq_constraints();
+  const RealVector& curr_resp_vals = model.current_response().function_values();
 
-  for (int i=0; i<num_nl_eq_constr; i++)
-    values.push_back(curr_resp_vals[i] - nln_eq_targets[i]);
+  for (int i=0; i<num_nonlinear_eq; i++)
+    values[i+offset] = curr_resp_vals[i+1+num_nonlinear_ineq] + scale*nln_eq_targets[i];
 }
 
 //----------------------------------------------------------------
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
-template <typename RVecT>
+template <typename VecT>
 void get_nonlinear_eq_constraints( Model & model,
                                    const RealVector & curr_resp_vals,
-                                         RVecT & values,
+                                         VecT & values,
                                          Real scale,
                                          int offset = 0 )
 {
@@ -785,6 +926,20 @@ void get_nonlinear_eq_constraints( Model & model,
 
   for (int i=0; i<num_nl_eq_constr; i++)
     values[i+offset] = curr_resp_vals[i] + scale*nln_eq_targets[i];
+}
+
+//----------------------------------------------------------------
+
+/** Data adapter to transfer data from Dakota to third-party opt packages */
+template <typename VecT>
+void get_nonlinear_ineq_constraints( const Model & model,
+                                           VecT & values)
+{
+  size_t num_nonlinear_ineq        = model.num_nonlinear_ineq_constraints();
+  size_t num_linear_ineq           = model.num_linear_ineq_constraints();
+  const RealVector& curr_resp_vals = model.current_response().function_values();
+
+  copy_data_partial(curr_resp_vals, 1, values, num_linear_ineq, num_nonlinear_ineq);
 }
 
 //----------------------------------------------------------------

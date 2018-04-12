@@ -6784,6 +6784,7 @@ static UShortArray
 	MP_(varPartitions);
 
 static String
+        MP_(advancedOptionsFilename),
         MP_(betaSolverName),
         MP_(dataDistFile),
         MP_(displayFormat),
@@ -6814,7 +6815,6 @@ static String
         MP_(posteriorSamplesImportFilename),
 	MP_(proposalCovFile),
 	MP_(pstudyFilename),
-        MP_(quesoOptionsFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
         MP_(subModelPointer);
@@ -7086,7 +7086,8 @@ static Method_mp_utype
 	MP2s(methodName,MESH_ADAPTIVE_SEARCH),
 	MP2s(methodName,MOGA),
 	MP2s(methodName,MULTI_START),
-	MP2s(methodName,NCSU_DIRECT),
+  MP2s(methodName,NCSU_DIRECT),
+  MP2s(methodName,ROL_LS),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
