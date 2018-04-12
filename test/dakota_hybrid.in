@@ -38,10 +38,10 @@ environment
 method
   id_method = 'HS'
   hybrid sequential
-#    iterator_servers = 3                       #p0
+#    iterator_servers = 3                       #p0,#p1
     method_pointer_list = 'GA' 'PS' 'NLP'       #s0,#s3,#p0
 #    method_pointer_list = 'GA' 'PS' 'PS2'      #s1,#s2
-#    method_pointer_list = 'GA' 'PS' 'ROL'      #s4
+#    method_pointer_list = 'GA' 'PS' 'ROL'      #s4,#p1
 
 method
   id_method = 'GA'
@@ -49,7 +49,7 @@ method
     seed = 1234
     population_size = 5 
     model_pointer = 'M1'
-# final_solutions = 3                           #s3,#p0
+# final_solutions = 3                           #s3,#p0,#p1
   final_solutions = 1                           #s0,#s1,#s2,#s4
   output verbose
 
@@ -85,14 +85,14 @@ method                                          #s0,#s3,#p0
     model_pointer = 'M2'                        #s0,#s3,#p0
   output verbose                                #s0,#s3,#p0
 
-#method                                          #s4
-#  id_method = 'ROL'                             #s4
-#  rol_ls                                        #s4
-#    gradient_tolerance 1.0e-8                   #s4
-#    constraint_tolerance 1.0e-8                 #s4
-#    threshold_delta 1.0e-8                      #s4
-#    model_pointer = 'M2'                        #s4
-#  output verbose                                #s4
+#method                                          #s4,#p1
+#  id_method = 'ROL'                             #s4,#p1
+#  rol_ls                                        #s4,#p1
+#    gradient_tolerance 1.0e-8                   #s4,#p1
+#    constraint_tolerance 1.0e-8                 #s4,#p1
+#    threshold_delta 1.0e-8                      #s4,#p1
+#    model_pointer = 'M2'                        #s4,#p1
+#  output verbose                                #s4,#p1
 
 model
   id_model = 'M1'
@@ -119,7 +119,7 @@ variables
 interface
   id_interface = 'I1'                           #s0,#s4
   analysis_drivers =  'text_book'
-    direct                                      #s0,#s1,#s3,#p0,#s4
+    direct                                      #s0,#s1,#s3,#s4,#p0,#p1
 #   system asynch                               #s2
 
 responses

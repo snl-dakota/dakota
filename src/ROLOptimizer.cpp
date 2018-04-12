@@ -125,7 +125,6 @@ void ROLOptimizer::core_run()
 
   // ROL does not currently provide access to the final solution, so
   // attempt a model database lookup directly into best.
-<<<<<<< HEAD
   if (!localObjectiveRecast)
   {
     Response& best_resp = bestResponseArray.front();
