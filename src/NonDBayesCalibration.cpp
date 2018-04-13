@@ -2040,7 +2040,7 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
       Cout << "Hessian decomposition neglects " << num_neglect
            << " eigenvalues based on " << eigenval_tol << " tolerance.\n";
   }
-  if (output_lev >= NORMAL_OUTPUT) {
+  if (output_lev > NORMAL_OUTPUT) {
     Cout << "Positive definite covariance from inverse of Hessian:\n";
     write_data(Cout, covariance, true, true, true);
     //Cout << "2x2 determinant = " << covariance(0,0) * covariance(1,1) -
