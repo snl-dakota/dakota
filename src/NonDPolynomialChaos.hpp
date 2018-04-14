@@ -298,10 +298,12 @@ inline void NonDPolynomialChaos::append_expansion()
   // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
   //         increment_order_from_grid() called
 
-  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
+  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
   uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
 						    true, false);
-  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
+  uSpaceModel.run_dace();
+  // append new DACE pts and rebuild expansion
+  uSpaceModel.append_approximation(true);
 }
 
 

@@ -3342,14 +3342,13 @@ void Model::clear_inactive()
 }
 
 
-void Model::run_dace_iterator(bool rebuild_flag)
+void Model::run_dace()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->run_dace_iterator(rebuild_flag);
+    modelRep->run_dace();
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual run_dace_iterator()"
-	 << "function.\n       This model does not support DACE executions."
-	 << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual run_dace() function."
+	 << "\n       This model does not support DACE executions."<< std::endl;
     abort_handler(MODEL_ERROR);
   }
 }

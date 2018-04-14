@@ -283,9 +283,8 @@ public:
   /// clear inactive approximations (finalization + combination completed)
   virtual void clear_inactive();
 
-  /// execute the DACE iterator, append the approximation data, and
-  /// rebuild the approximation if indicated
-  virtual void run_dace_iterator(bool rebuild_flag);
+  /// execute the DACE iterator (prior to building/appending the approximation)
+  virtual void run_dace();
 
   // retrieve the variables used to build a surrogate model
   //virtual const VariablesArray build_variables() const;
