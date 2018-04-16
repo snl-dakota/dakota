@@ -3530,8 +3530,11 @@
 		          <keyword  id="active_only22" name="active_only" code="{N_mom(true,importChallengeActive)}" label="Active Variables Only"  minOccurs="0" />
               </keyword>
             </keyword>
-            <keyword  id="multipoint" name="multipoint" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Multipoint Approximation"  minOccurs="1" complexity="1">
-              <keyword  id="tana" name="tana" code="{0}" label="Two-point adaptive nonlinear approximation "   />
+            <keyword  id="multipoint" name="multipoint" code="{0}" label="Multipoint Approximation"  minOccurs="1" complexity="1">
+            <oneOf label="Multipoint Surrogate" >
+              <keyword  id="tana" name="tana" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Two-point adaptive nonlinear approximation "   />
+              <keyword  id="qmea" name="qmea" code="{N_mom(lit,surrogateType_multipoint_qmea)}" label="Quadratic multipoint exponential approximation "   />
+            </oneOf>
            	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"   >
               <param type="STRING" in_taglist="model" />
             </keyword>
