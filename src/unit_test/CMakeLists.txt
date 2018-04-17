@@ -88,31 +88,52 @@ include_directories(${Teuchos_INCLUDE_DIRS})
 include_directories(${Pecos_SOURCE_DIR}/src)
 
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
-  set(dakota_teuchos_unit_tests
+  set(dakota_utils_unit_tests
     demo_teuchos.cpp
     covariance_reader.cpp
     expt_data.cpp
     expt_data_reader.cpp
     file_reader.cpp
     data_conversions.cpp
+    restart_test.cpp
+    stat_utils.cpp
+    )
+
+  set(dakota_surrogate_unit_tests
+    reduced_basis.cpp
+    )
+
+  set(dakota_sampling_unit_tests
+    wilks_sampling.cpp
+    )
+
+  set(dakota_opt_unit_tests
     opt_api_core_data_xfers.cpp
     opt_tpl_api.cpp
     opt_api_traits.cpp
-    reduced_basis.cpp
-    restart_test.cpp
     rol_adapters.cpp
     rol_integration.cpp
     opt_tpl_rol_test_textbook.cpp
     opt_tpl_rol_test_rol_pbs.cpp
-    stat_utils.cpp
-    wilks_sampling.cpp
     )
   if (DAKOTA_HAVE_MPI)
-    list(REMOVE_ITEM dakota_teuchos_unit_tests opt_tpl_api.cpp opt_tpl_test.cpp)
+    list(REMOVE_ITEM dakota_opt_unit_tests opt_tpl_api.cpp opt_tpl_test.cpp)
   endif(DAKOTA_HAVE_MPI)
 
-  dakota_add_unit_test(NAME teuchos_unit_tests
-    SOURCES teuchos_unit_test_driver.cpp ${dakota_teuchos_unit_tests}
+  dakota_add_unit_test(NAME utils_unit_tests
+    SOURCES teuchos_unit_test_driver.cpp ${dakota_utils_unit_tests}
+    LINK_DAKOTA_LIBS
+    )
+  dakota_add_unit_test(NAME surrogate_unit_tests
+    SOURCES teuchos_unit_test_driver.cpp ${dakota_surrogate_unit_tests}
+    LINK_DAKOTA_LIBS
+    )
+  dakota_add_unit_test(NAME sampling_unit_tests
+    SOURCES teuchos_unit_test_driver.cpp ${dakota_sampling_unit_tests}
+    LINK_DAKOTA_LIBS
+    )
+  dakota_add_unit_test(NAME opt_tpl_unit_tests
+    SOURCES teuchos_unit_test_driver.cpp ${dakota_opt_unit_tests}
     LINK_DAKOTA_LIBS
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
