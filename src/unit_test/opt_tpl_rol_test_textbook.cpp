@@ -639,7 +639,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
 
   target = 1.0;
   // BMA: Needs review
-  max_tol = 1.e-2;
+  max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
