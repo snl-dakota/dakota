@@ -23024,6 +23024,19 @@ Test Number 7 succeeded
                      -5.5511151231e-17
                       1.1102230246e-16
 <<<<< Best data captured at function evaluation 49
+dakota_sbo_textbook_rol.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 36640 total (36640 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 551 total (551 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.1148203475e-01 x1
+                      6.0308598600e-01 x2
+<<<<< Best objective function  =
+                      4.7603841138e-02
+<<<<< Best constraint values   =
+                      7.2367285818e-02
+                      5.7971689140e-02
+<<<<< Best data captured at function evaluation 551
 dakota_sbouu2_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 8 total (8 new, 0 duplicate)
