@@ -597,7 +597,7 @@ CheckPackage(QUESO)
 if(HAVE_QUESO)
   list(APPEND DAKOTA_INCDIRS
     ${Dakota_BINARY_DIR}/packages/external/queso/include/)
-  list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
+  list(APPEND iterator_src QUESOImpl.cpp NonDQUESOBayesCalibration.cpp)
   if(HAVE_QUESO_GPMSA)
     add_definitions("-DHAVE_QUESO_GPMSA")
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
