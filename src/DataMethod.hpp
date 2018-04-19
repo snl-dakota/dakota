@@ -985,6 +985,8 @@ public:
   unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
+  /// optional multiplier for prior-based proposal covariance
+  double priorPropCovMult;
   /// number of samples after which to update the proposal covariance from
   /// misfit Hessian (using residual values and derivatives)
   int proposalCovUpdatePeriod;

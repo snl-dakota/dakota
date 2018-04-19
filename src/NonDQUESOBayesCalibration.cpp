@@ -460,6 +460,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   batchSize(1),
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
+  priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult")),
   advancedOptionsFile(probDescDB.get_string("method.advanced_options_file"))
 {
   bool found_error = false;
@@ -472,6 +473,13 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   if (proposalCovarType.empty()) {
     if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
     else              proposalCovarType = "prior";       // prior covariance
+  }
+
+  if (priorPropCovMult < std::numeric_limits<double>::min() ||
+      priorPropCovMult >= std::numeric_limits<double>::infinity()) {
+    Cerr << "\nError: QUESO proposal covariance multiplier  = "
+	 << priorPropCovMult << " not in [DBL_MIN, Inf).\n";
+    found_error = true;
   }
 
   // assign default maxIterations (DataMethod default is -1)
@@ -1353,7 +1361,7 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
     natafTransform.u_moments() : natafTransform.x_moments();
   for (int i=0; i<numContinuousVars; ++i) {
     stdev = dist_moments[i].second;
-    (*proposalCovMatrix)(i,i) = stdev * stdev;
+    (*proposalCovMatrix)(i,i) = priorPropCovMult * stdev * stdev;
   }
   //proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
 

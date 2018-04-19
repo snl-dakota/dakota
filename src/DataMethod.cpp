@@ -146,7 +146,7 @@ DataMethodRep::DataMethodRep():
   mcmcType("dram"), standardizedSpace(false), adaptPosteriorRefine(false),
   logitTransform(false), gpmsaNormalize(false), posteriorStatsKL(false),
   posteriorStatsMutual(false),  posteriorStatsKDE(false),
-  preSolveMethod(SUBMETHOD_DEFAULT),
+  preSolveMethod(SUBMETHOD_DEFAULT), priorPropCovMult(1.0),
   proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
@@ -296,7 +296,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << preSolveMethod << proposalCovType << proposalCovUpdatePeriod
+    << preSolveMethod << proposalCovType << priorPropCovMult
+    << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
     << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas
@@ -447,7 +448,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
-    >> preSolveMethod >> proposalCovType >> proposalCovUpdatePeriod
+    >> preSolveMethod >> proposalCovType >> priorPropCovMult
+    >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
     >> advancedOptionsFilename >> quesoOptionsFilename >> fitnessMetricType
     >> batchSelectionType >> lipschitzType >> calibrateErrorMode >> hyperPriorAlphas
@@ -598,7 +600,8 @@ void DataMethodRep::write(std::ostream& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << preSolveMethod << proposalCovType << proposalCovUpdatePeriod
+    << preSolveMethod << proposalCovType << priorPropCovMult
+    << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
     << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas

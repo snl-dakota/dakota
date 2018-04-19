@@ -766,12 +766,16 @@
     <!ENTITY bayes_proposal_covariance '
 	     <keyword id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type"  minOccurs="0" >
 	       <oneOf label="Proposal Covariance Source">
+		 <keyword id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance">
+		   <keyword  id="multiplier" name="multiplier" code="{N_mdm(Real,priorPropCovMult)}" label="Proposal Covariance Multiplier"  minOccurs="0" default="1.0" >
+		     <param type="REAL" constraint="> 0.0" />
+		   </keyword>
+		 </keyword>
 		 <keyword id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance"  >
 		   <keyword id="update_period" name="update_period" code="{N_mdm(int,proposalCovUpdatePeriod)}" label="Samples between proposal updates"  minOccurs="0" >
 		     <param type="INTEGER" />
 		   </keyword>
 		 </keyword>
-		 <keyword id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance"   />
 		 <keyword id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values"  minOccurs="1" >
 		   <param type="REALLIST"/>
 		   <oneOf label="Values For">

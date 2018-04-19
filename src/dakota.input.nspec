@@ -3318,11 +3318,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         none {N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
+        ( prior {N_mdm(lit,proposalCovType_prior)}
+          [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]
+         )
+        |
         ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
           [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
          )
-        |
-        prior {N_mdm(lit,proposalCovType_prior)}
         |
         ( values REALLIST {N_mdm(RealDL,proposalCovData)}
           diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
@@ -3387,11 +3389,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         rnum2 {N_mdm(lit,rngName_rnum2)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
+        ( prior {N_mdm(lit,proposalCovType_prior)}
+          [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]
+         )
+        |
         ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
           [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
          )
-        |
-        prior {N_mdm(lit,proposalCovType_prior)}
         |
         ( values REALLIST {N_mdm(RealDL,proposalCovData)}
           diagonal {N_mdm(lit,proposalCovInputType_diagonal)}

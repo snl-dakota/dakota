@@ -226,6 +226,9 @@ protected:
   /// proposal covariance for DRAM
   boost::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
 
+  /// optional multiplier to scale prior-based proposal covariance 
+  double priorPropCovMult;
+
   /// general inverse problem options
   boost::shared_ptr<QUESO::SipOptionsValues> calIpOptionsValues;
 

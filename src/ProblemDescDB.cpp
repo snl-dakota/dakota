@@ -2485,6 +2485,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"optpp.max_step", P maxStep},
 	{"optpp.steplength_to_boundary", P stepLenToBoundary},
 	{"percent_variance_explained", P percentVarianceExplained},
+	{"prior_prop_cov_mult", P priorPropCovMult},
 	{"solution_target", P solnTarget},
 	{"threshold_delta", P threshStepLength},
 	{"trust_region.contract_threshold", P trustRegionContractTrigger},
