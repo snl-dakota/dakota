@@ -120,7 +120,7 @@ inline void QMEApproximation::clear_current()
   // (for completeness; no longer uses anchor designation)
   approxData.clear_anchor_index();
   //  previous is deleted and anchor moved to previous
-  if (approxData.points() > ndv)
+  if (approxData.points() > ndv+1)
     approxData.pop_front();
 
   /*

@@ -15,6 +15,7 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 
+#define DEBUG
 
 namespace Dakota {
 

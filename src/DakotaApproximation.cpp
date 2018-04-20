@@ -183,6 +183,8 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
     approx = new TaylorApproximation(shared_data);
   else if (approx_type == "multipoint_tana")
     approx = new TANA3Approximation(shared_data);
+  else if (approx_type == "multipoint_qmea")
+    approx = new QMEApproximation(shared_data);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(shared_data);

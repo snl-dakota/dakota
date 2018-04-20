@@ -14,6 +14,7 @@
 #include "QMEApproximation.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
+#include <math.h>
 
 #define DEBUG
 
@@ -76,10 +77,12 @@ void QMEApproximation::build()
   }
 
   if (num_pts >= 2) { // QMEA
+//  const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
+    const size_t k=1,         p=0;         // indices to current and previous points
     const Pecos::SDRArray& sdr_array = approxData.response_data();
     // Check gradients
-    if (sdr_array[0].response_gradient().length() != num_v ||
-	sdr_array[1].response_gradient().length() != num_v) {
+    if (sdr_array[p].response_gradient().length() != num_v ||
+        sdr_array[k].response_gradient().length() != num_v) {
       Cerr << "Error: gradients required in QMEApproximation::build."
 	   << std::endl;
       abort_handler(APPROX_ERROR);
@@ -91,8 +94,8 @@ void QMEApproximation::build()
 
     // Calculate TANA3 terms
     const Pecos::SDVArray& sdv_array = approxData.variables_data();
-    const RealVector& x1 = sdv_array[0].continuous_variables();
-    const RealVector& x2 = sdv_array[1].continuous_variables();
+    const RealVector& x1 = sdv_array[p].continuous_variables();
+    const RealVector& x2 = sdv_array[k].continuous_variables();
     for (size_t i=0; i<num_v; i++)
       minX[i] = std::min(x1[i], x2[i]);
     find_scaled_coefficients();
@@ -128,16 +131,35 @@ void QMEApproximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
+  size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
+//const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
+  const size_t k=1, p=0;                 // indices to current and previous points
+  Cout << "QMEA num_pts=" << num_pts << ", k=" << k << ", p=" << p << '\n';
+
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
   const Pecos::SDRArray& sdr_array = approxData.response_data();
 
-  const RealVector& x1    = sdv_array[0].continuous_variables();
-  const Real&       f1    = sdr_array[0].response_function();
-  const RealVector& grad1 = sdr_array[0].response_gradient();
+  const RealVector& x1    = sdv_array[p].continuous_variables();
+  const Real&       f1    = sdr_array[p].response_function();
+  const RealVector& grad1 = sdr_array[p].response_gradient();
 
-  const RealVector& x2    = sdv_array[1].continuous_variables();
-  const Real&       f2    = sdr_array[1].response_function();
-  const RealVector& grad2 = sdr_array[1].response_gradient();
+  const RealVector& x2    = sdv_array[k].continuous_variables();
+  const Real&       f2    = sdr_array[k].response_function();
+  const RealVector& grad2 = sdr_array[k].response_gradient();
+
+  if ( num_pts > 2 ) {
+  const RealVector& x0    = sdv_array[2].continuous_variables();
+  const Real&       f0    = sdr_array[2].response_function();
+  const RealVector& grad0 = sdr_array[2].response_gradient();
+  Cout << "\n\nQMEA inputs X0: " << x0 << "\nF(X0): " << f0
+       << "\n\ndF/dX(X0): " << grad0 << '\n';
+  }
+
+#ifdef DEBUG
+  Cout << "\n\nQMEA inputs X1: " << x1 << "\nX2: " << x2 << "\nF(X1): " << f1
+       << " F(X2): " << f2 << "\n\ndF/dX(X1): " << grad1 << "\ndF/dX(X2): "
+       << grad2 << '\n';
+#endif // DEBUG
 
   // Numerical safeguarding must be performed since x^p is problematic for
   // x < 0 and nonintegral p.  Three approaches for this have been explored:
@@ -180,7 +202,7 @@ void QMEApproximation::find_scaled_coefficients()
   offset(x2, scX2);
 
   // Calculate p exponents
-  size_t i, num_v = sharedDataRep->numVars;
+  size_t i;
   Real p_max = 10.; // TANA papers use either 5 or application-specific logic
   for (i=0; i<num_v; i++) {
     // A number of numerical problems are possible:
@@ -236,19 +258,23 @@ void QMEApproximation::find_scaled_coefficients()
   H *= 2.;
 
 #ifdef DEBUG
-  Cout << "\n\nQMEA inputs X1: " << x1 << "\nX2: " << x2 << "\nF(X1): " << f1
-       << " F(X2): " << f2 << "\n\ndF/dX(X1): " << grad1 << "\ndF/dX(X2): "
-       << grad2 << "\nScaled QMEA inputs S1: " << scX1 << "\nS2: " << scX2
+  Cout << "\nScaled QMEA inputs S1: " << scX1 << "\nS2: " << scX2
      //<< "\ndF/dS(S1): " << sgrad1 << "\ndF/dS(S2): " << sgrad2
        << "\nQMEA outputs p: " << pExp << "\nH: " << H << '\n';
 #endif // DEBUG
 
 // Find previous points to build QMEAM surrogate (RAC)
-  size_t num_pts = approxData.points();
-  Cout << "QMEA num_pts=" << num_pts << '\n';
+  size_t n;
+  RealVector y(num_v);
   for (i=0; i<num_pts; ++i) {
     const Pecos::SurrogateDataVars& sdv_i = sdv_array[i];
     const RealVector& c_vars = sdv_i.continuous_variables();
+    Cout << "QMEA point = " << i << '\n';
+    for (n=0; n<num_v; ++n ) {
+      y[n] = pow( c_vars[n], pExp[n] );
+      Cout << "     dv(" << n+1 << ")=" << c_vars[n] << '\n'; 
+      Cout << "      y(" << n+1 << ")=" << y[n]      << '\n';
+    }
 
     const Pecos::SurrogateDataResp& sdr_i = sdr_array[i];
     Real fn_val = sdr_i.response_function();
@@ -286,7 +312,7 @@ Real QMEApproximation::value(const Variables& vars)
   const RealVector& x = vars.continuous_variables();
   size_t i, num_v = sharedDataRep->numVars, num_pts = approxData.points();
 
-  if (num_pts == 2) { // QMEA approximation
+  if (num_pts >= 2) { // QMEA 
 
     // Check existing scaling to verify that it is sufficient for x
     RealVector s_eval;
