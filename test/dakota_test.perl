@@ -33,8 +33,9 @@ my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
-my $using_srun = 0;          # use srun to launch parallel dakota
+my $using_srun = 0;          # use srun to launch parallel dakota (and serial on Cray)
 my $using_aprun = 0;         # use aprun to launch both serial and parallel dakota
+my $on_cray = 0;             # Testing is being done on cray
 my $run_valgrind = 0;        # boolean for whether to run valgrind
 my $vg_extra_args = "";      # append args from DAKOTA_TEST_VALGRIND_EXTRA_ARGS
 
@@ -602,6 +603,7 @@ sub manage_parallelism {
   # Detect launch within a job on a Cray XC system. These systems
   # can run MOAB, PBS (only with MOAB?), or SLURM
   if (exists $ENV{CRAYPE_VERSION}) {
+    $on_cray = 1;
     if ( exists $ENV{MOAB_JOBNAME} || exists $ENV{PBS_VERSION} ) {  
       $using_aprun = 1;
     } elsif ( exists $ENV{SLURM_JOB_ID} ) {
@@ -1044,12 +1046,15 @@ sub form_test_command {
     $test_command = "${vg_cmd} ${test_command}";
   }
 
-  # If testing within a Cray XC job and aprun, aprun the test and force Dakota into serial mode
-  if( $using_aprun && $parallelism eq "serial") {
-    $test_command = "aprun --export=DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
+  # If testing within a Cray XC job, launch using aprun or srun 
+  if( $on_cray && $parallelism eq "serial" ) {
+    if($using_aprun) {
+      $test_command = "aprun --export=DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
+    }
+    elsif($using_srun) {
+      $test_command = "srun -n 1 $test_command";
+    }
   }
- 
-
   if ($parallelism eq "parallel") {
     my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
     # parallel test
