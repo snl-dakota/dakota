@@ -21,7 +21,7 @@
 #include "PRPMultiIndex.hpp"
 // Dakota/QUESO interfaces
 #include "QUESOImpl.hpp"
-// then list additional QUESO headers
+// finally list additional QUESO headers
 #include "queso/StatisticalInverseProblem.h"
 #include "queso/EnvironmentOptions.h"
 #include "queso/GenericScalarFunction.h"
@@ -32,16 +32,14 @@ namespace Dakota {
 
 extern PRPCache data_pairs; // global container
 
-// Statically register Dakota TKs with the QUESO TK factory
-TKFactoryDIPC<DerivInformedPropCovTK<QUESO::GslVector, QUESO::GslMatrix> >
-tk_factory_dipc("dakota_dipc_tk");
-
-TKFactoryDIPCLogit<DerivInformedPropCovLogitTK<QUESO::GslVector, QUESO::GslMatrix> >
-tk_factory_dipclogit("dakota_dipc_logit_tk");
-
+/// Static registration of RW TK with the QUESO TK factory
+TKFactoryDIPC tk_factory_dipc("dakota_dipc_tk");
+/// Static registration of Logit RW TK with the QUESO TK factory
+TKFactoryDIPCLogit tk_factory_dipclogit("dakota_dipc_logit_tk");
 
 // initialization of statics
 NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::nonDQUESOInstance(NULL);
+
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
@@ -59,9 +57,9 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
 {
   bool found_error = false;
 
-  // Only QUESO supports proposal covariance updates and posterior adaptive
-  // surrogate updates for now, hence this override is in this class
-  // assign default proposalCovarType
+  // Assign default proposalCovarType (Only QUESO supports proposal
+  // covariance updates and posterior adaptive surrogate updates for
+  // now, hence this override is in this class)
 
   // BMA TODO: Consider unconditional default for simplicity
   if (proposalCovarType.empty()) {

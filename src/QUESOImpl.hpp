@@ -6,7 +6,9 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/** File: QUESO evaluation and utility implementations */
+/** \file 
+ * QUESO specializations for evaluations and utilities
+ */
 
 #ifndef DAKOTA_QUESO_IMPL_H
 #define DAKOTA_QUESO_IMPL_H
@@ -21,9 +23,12 @@
 #include "queso/TransformedScaledCovMatrixTKGroup.h"
 #include "queso/TransitionKernelFactory.h"
 
+
 namespace Dakota {
 
+/// forward declaration of QUESO method class
 class NonDQUESOBayesCalibration;
+
 
 /// Dakota specialization of QUESO generic joint PDF
 template <class V, class M>
@@ -42,7 +47,7 @@ public:
   //! Actual value of the PDF (scalar function).
   double actualValue(const V& domainVector, const V* domainDirection, 
 		     V* gradVector, M* hessianMatrix, V* hessianEffect) const;
-  
+
   //! Logarithm of the value of the function.
   double lnValue(const V& domainVector, const V* domainDirection, 
 		 V* gradVector, M* hessianMatrix, V* hessianEffect) const;
@@ -54,7 +59,7 @@ public:
 
   //! Mean value of underlying random variable
   void distributionMean(V & meanVector) const;
-
+  //! Covariance of the underlying random variable
   void distributionVariance(M & covMatrix) const;
 
 private:
@@ -63,6 +68,7 @@ private:
   // using QUESO::BaseScalarFunction<V,M>::m_domainSet;
   // using QUESO::BaseJointPdf<V,M>::m_normalizationStyle;
   // using QUESO::BaseJointPdf<V,M>::m_logOfNormalizationFactor;
+  /// pointer to QUESO instance for PDF evaluation callbacks
   NonDQUESOBayesCalibration* nonDQUESOInstance;
 };
 
@@ -97,24 +103,26 @@ private:
 };
 
 
-
 /// Dakota transition kernel that updates proposal covariance based on
 /// derivatives (for random walk case)
 template <class V, class M>
 class DerivInformedPropCovTK: public QUESO::ScaledCovMatrixTKGroup<V, M>
 {
 public:
+  /// Constructor for derivative-informed proposal covariance
   DerivInformedPropCovTK(const char * prefix,
 			 const QUESO::VectorSpace<V, M> & vectorSpace,
 			 const std::vector<double> & scales,
 			 const M & covMatrix,
 			 NonDQUESOBayesCalibration* queso_instance);
-
+  /// Destructor for derivative-informed proposal covariance
   virtual ~DerivInformedPropCovTK() {  /* empty dtor */ }
   /// update the transition kernel with new covariance information
-  virtual void updateTK();
-  virtual bool covMatrixIsDirty() { return covIsDirty; }
-  virtual void cleanCovMatrix()   { covIsDirty = false; }
+  virtual void updateTK() override;
+  /// whether the covariance matrix has been updated
+  virtual bool covMatrixIsDirty() override { return covIsDirty; }
+  /// dependent algorithms have taken necessary cleanup actions
+  virtual void cleanCovMatrix() override { covIsDirty = false; }
 
 private:
   /// calibration parameter vector space (note: hides base class member)
@@ -124,13 +132,9 @@ private:
   bool covIsDirty;
   /// index into current chain position
   unsigned int chainIndex;
-
   /// Dakota QUESO instance for callbacks
   NonDQUESOBayesCalibration* nonDQUESOInstance;
 };
-
-
-
 
 
 /// Dakota transition kernel that updates proposal covariance based on
@@ -139,17 +143,20 @@ template <class V, class M>
 class DerivInformedPropCovLogitTK: public QUESO::TransformedScaledCovMatrixTKGroup<V, M>
 {
 public:
+  /// Constructor for derivative-informed logit proposal covariance
   DerivInformedPropCovLogitTK(const char * prefix,
 			 const QUESO::VectorSet<V, M> & vectorSet,
 			 const std::vector<double> & scales,
 			 const M & covMatrix,
 			 NonDQUESOBayesCalibration* queso_instance);
-
+  /// Destructor for derivative-informed logit proposal covariance
   virtual ~DerivInformedPropCovLogitTK() {  /* empty dtor */ }
   // update the transition kernel with new covariance information
-  virtual void updateTK();
-  virtual bool covMatrixIsDirty() { return covIsDirty; }
-  virtual void cleanCovMatrix()   { covIsDirty = false; }
+  virtual void updateTK() override;
+  /// whether the covariance matrix has been updated
+  virtual bool covMatrixIsDirty() override { return covIsDirty; }
+  /// dependent algorithms have taken necessary cleanup actions
+  virtual void cleanCovMatrix() override { covIsDirty = false; }
 
 private:
   /// calibration parameter vector set (note: hides base class member)
@@ -159,89 +166,93 @@ private:
   bool covIsDirty;
   /// index into current chain position
   unsigned int chainIndex;
-
   /// Dakota QUESO instance for callbacks
   NonDQUESOBayesCalibration* nonDQUESOInstance;
 };
 
 
-
-
-
 /// Custom RW TKfactory: passes Dakota QUESO instance pointer to the TK at build
 /** Can't share this factory between random walk and logit as their
     constructor arguments differ */
-// BMA TODO: Remove this needless template parameter
-template <class DerivedTK>
 class TKFactoryDIPC : public QUESO::TransitionKernelFactory
 {
 public:
+  /// Constructor for Dakota RW transition kernel factory
   TKFactoryDIPC(const std::string & name)
     : QUESO::TransitionKernelFactory(name), nonDQUESOInstance(NULL)
   {  /* empty ctor */  }
 
-  virtual ~TKFactoryDIPC() {  /* empty dtor */  }
+  /// Destructor for Dakota RW transition kernel factory
+  virtual ~TKFactoryDIPC()
+  {  /* empty dtor */  }
 
+  /// Update the factory's QUESO callback pointer
   void set_callback(NonDQUESOBayesCalibration* queso_instance)
   { nonDQUESOInstance = queso_instance; }
 
 protected:
-  virtual QUESO::SharedPtr<QUESO::BaseTKGroup<QUESO::GslVector, QUESO::GslMatrix> >::Type build_tk()
+  /// build and return the custom TK
+  virtual QUESO::SharedPtr<QUESO::BaseTKGroup<QUESO::GslVector, QUESO::GslMatrix> >::Type build_tk() override
   {
     QUESO::SharedPtr<QUESO::BaseTKGroup<QUESO::GslVector, QUESO::GslMatrix> >::Type new_tk;
 
-    new_tk.reset( new DerivedTK(this->m_options->m_prefix.c_str(),
-				*(this->m_vectorSpace),
-				*(this->m_dr_scales),
-				*(this->m_initial_cov_matrix),
-				this->nonDQUESOInstance) );
+    new_tk.reset( new DerivInformedPropCovTK<QUESO::GslVector, QUESO::GslMatrix>
+		  (this->m_options->m_prefix.c_str(),
+		   *(this->m_vectorSpace),
+		   *(this->m_dr_scales),
+		   *(this->m_initial_cov_matrix),
+		   this->nonDQUESOInstance) );
 
     return new_tk;
   }
 
 private:
+  /// pointer for callbacks to Dakota QUESO class
   NonDQUESOBayesCalibration* nonDQUESOInstance;
 };
-
-
 
 
 /// Custom Logit RW TKfactory: passed Dakota QUESO instance pointer to the TK at build
 /** Can't share this factory between random walk and logit as their
     constructor arguments differ */
-// BMA TODO: Remove the template parameter
-template <class DerivedTK>
 class TKFactoryDIPCLogit: public QUESO::TransitionKernelFactory
 {
 public:
+  /// Constructor for Dakota Logit RW transition kernel factory
   TKFactoryDIPCLogit(const std::string & name)
     : QUESO::TransitionKernelFactory(name), nonDQUESOInstance(NULL)
   {  /* empty ctor */  }
 
-  virtual ~TKFactoryDIPCLogit() {  /* empty dtor */  }
+  /// Destructor for Dakota Logit RW transition kernel factory
+  virtual ~TKFactoryDIPCLogit()
+  {  /* empty dtor */  }
 
+  /// Update the factory's QUESO callback pointer
   void set_callback(NonDQUESOBayesCalibration* queso_instance)
   { nonDQUESOInstance = queso_instance; }
 
 protected:
-  virtual QUESO::SharedPtr<QUESO::BaseTKGroup<QUESO::GslVector, QUESO::GslMatrix> >::Type build_tk()
+  /// build and return the custom TK
+  virtual QUESO::SharedPtr<QUESO::BaseTKGroup<QUESO::GslVector, QUESO::GslMatrix> >::Type build_tk() override
   {
     QUESO::SharedPtr<QUESO::BaseTKGroup<QUESO::GslVector, QUESO::GslMatrix> >::Type new_tk;
 
-    new_tk.reset( new DerivedTK(this->m_options->m_prefix.c_str(),
-				(this->m_target_pdf->domainSet()),
-				*(this->m_dr_scales),
-				*(this->m_initial_cov_matrix),
-				this->nonDQUESOInstance) );
+    new_tk.reset( new DerivInformedPropCovLogitTK<QUESO::GslVector, QUESO::GslMatrix> 
+		  (this->m_options->m_prefix.c_str(),
+		   (this->m_target_pdf->domainSet()),
+		   *(this->m_dr_scales),
+		   *(this->m_initial_cov_matrix),
+		   this->nonDQUESOInstance) );
 
     return new_tk;
   }
 
 private:
+  /// pointer for callbacks to Dakota QUESO class
   NonDQUESOBayesCalibration* nonDQUESOInstance;
 };
 
 
-}
+}  // namespace Dakota
 
 #endif

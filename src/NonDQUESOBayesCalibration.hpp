@@ -17,7 +17,7 @@
 
 #include "NonDBayesCalibration.hpp"
 
-// forward declare isolate QUESO includes to Dakota .cpp files
+// forward declare here to isolate QUESO includes to Dakota .cpp files
 namespace QUESO {
   class GslVector;
   class GslMatrix;
@@ -42,12 +42,11 @@ template <class V, class M> class DerivInformedPropCovLogitTK;
 
 /// Bayesian inference using the QUESO library from UT Austin
 
-/** This class provides a wrapper to the QUESO library developed as
-    part of the Predictive Science Academic Alliance Program (PSAAP),
-    specifically the PECOS (Predictive Engineering and Computational
-    Sciences) Center at UT Austin.  The name QUESO stands for
-    Quantification of Uncertainty for Estimation, Simulation, and
-    Optimization. */
+/** This class wraps the Quantification of Uncertainty for Estimation,
+    Simulation, and Optimization (QUESO) library, developed as part of
+    the Predictive Science Academic Alliance Program (PSAAP)-funded
+    Predictive Engineering and Computational Sciences (PECOS) Center
+    at UT Austin. */
 class NonDQUESOBayesCalibration: public NonDBayesCalibration
 {
   /// Random walk transition kernel needs callback access to QUESO details

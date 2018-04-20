@@ -11,7 +11,7 @@
 
 namespace Dakota {
 
-// Constructor -------------------------------------
+
 template<class V,class M>
 QuesoJointPdf<V,M>::QuesoJointPdf(const char* prefix,
 				  const QUESO::VectorSet<V,M>& domainSet,
@@ -33,10 +33,10 @@ QuesoJointPdf<V,M>::QuesoJointPdf(const char* prefix,
 }
 
 
-// Destructor --------------------------------------
 template<class V,class M>
 QuesoJointPdf<V,M>::~QuesoJointPdf()
 { }
+
 
 template<class V,class M>
 double QuesoJointPdf<V,M>::
@@ -44,36 +44,39 @@ actualValue(const V& domainVector, const V* domainDirection,
 	    V* gradVector, M* hessianMatrix, V* hessianEffect) const
 { return nonDQUESOInstance->prior_density(domainVector); }
 
+
 template<class V,class M>
 double QuesoJointPdf<V,M>::
-lnValue(const V& domainVector, const V* domainDirection, 
+lnValue(const V& domainVector, const V* domainDirection,
 	V* gradVector, M* hessianMatrix, V* hessianEffect) const
 { return nonDQUESOInstance->log_prior_density(domainVector); }
 
+
 template<class V,class M>
 double QuesoJointPdf<V,M>::
-computeLogOfNormalizationFactor(unsigned int numSamples, 
+computeLogOfNormalizationFactor(unsigned int numSamples,
 				bool m_logOfNormalizationFactor) const
 { }
 
-// Assumes meanVector is sized
+
+/** Assumes meanVector is sized */
 template<class V,class M>
 void QuesoJointPdf<V,M>::
 distributionMean(V & meanVector) const
-{ 
+{
   nonDQUESOInstance->prior_mean(meanVector);
 }
 
-// Assumes covMatrix is sized
+
+/** Assumes covMatrix is sized */
 template<class V,class M>
 void QuesoJointPdf<V,M>::
 distributionVariance(M & covMatrix) const
-{ 
+{
   nonDQUESOInstance->prior_variance(covMatrix);
 }
 
 
-// Default constructor-------------------------------
 template<class V, class M>
 QuesoVectorRV<V,M>::QuesoVectorRV(const char* prefix,
 				  const QUESO::VectorSet<V,M>& imageSet,
@@ -96,7 +99,7 @@ QuesoVectorRV<V,M>::QuesoVectorRV(const char* prefix,
                             << ": prefix = " << m_prefix << std::endl;
 }
 
-// Destructor ---------------------------------------
+
 template<class V, class M>
 QuesoVectorRV<V,M>::~QuesoVectorRV()
 {
@@ -107,7 +110,7 @@ QuesoVectorRV<V,M>::~QuesoVectorRV()
   delete m_pdf;
 }
 
-// I/O methods --------------------------------------
+
 template <class V, class M>
 void
 QuesoVectorRV<V,M>::print(std::ostream& os) const
@@ -147,7 +150,6 @@ void DerivInformedPropCovTK<V, M>::updateTK()
 }
 
 
-
 template <class V, class M>
 DerivInformedPropCovLogitTK<V, M>::
 DerivInformedPropCovLogitTK(const char * prefix,
@@ -175,7 +177,6 @@ void DerivInformedPropCovLogitTK<V, M>::updateTK()
     Cout << "QUESO updateTK(): New proposal covariance at sample "
 	 << chainIndex + 1 << ":\n" << *nonDQUESOInstance->proposalCovMatrix;
 }
-
 
 
 // Explicit instantiation of the templates
