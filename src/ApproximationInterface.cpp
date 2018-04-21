@@ -710,6 +710,7 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
       if (first_vars) {
 	fn_surf.add(vars, anchor, true);            // deep
 	fn_surf.add(response, index, anchor, true); // deep
+	// carry newly added sdv over to other approx fn indices:
 	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
 	                 fn_surf.approximation_data().variables_data().back();
 	first_vars = false;
@@ -744,6 +745,7 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
       if (first_vars) {
 	fn_surf.add(c_vars, anchor, true);          // deep
 	fn_surf.add(response, index, anchor, true); // deep
+	// carry newly added sdv over to other approx fn indices:
 	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
 	                 fn_surf.approximation_data().variables_data().back();
 	first_vars = false;
