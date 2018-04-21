@@ -6,21 +6,22 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        TANA3Approximation
-//- Description:  Implementation of TANA-3 two-point exponential approximation
+//- Class:        QMEApproximation
+//- Description:  Implementation of QMEA Quadratic Multipoint Exponential Approximation
 //-               
-//- Owner:        Mike Eldred, Sandia National Laboratories
+//- Owner:        Robert A. Canfield, Virginia Tech
  
-#include "TANA3Approximation.hpp"
+#include "QMEApproximation.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
+#include <math.h>
 
 #define DEBUG
 
 namespace Dakota {
 
-TANA3Approximation::
-TANA3Approximation(ProblemDescDB& problem_db,
+QMEApproximation::
+QMEApproximation(ProblemDescDB& problem_db,
 		   const SharedApproxData& shared_data,
                    const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
@@ -28,7 +29,7 @@ TANA3Approximation(ProblemDescDB& problem_db,
   // sanity checks
   if (sharedDataRep->buildDataOrder != 3) {
     Cerr << "Error: response values and gradients required in "
-	 << "TANA3Approximation." << std::endl;
+	 << "QMEApproximation." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
@@ -37,17 +38,18 @@ TANA3Approximation(ProblemDescDB& problem_db,
 }
 
 
-int TANA3Approximation::min_coefficients() const
+int QMEApproximation::min_coefficients() const
 {
-  // TANA-3 requires 2 expansion points, each with value and gradient data.
-  // However, this class requires a minimum of 1 expansion point, for which a
+  // QMEA requires at least two expansion points, each with a value,  
+  // and at least two with gradient data.
+  // However, this class requires a minimum of one expansion point, for which a
   // first-order Taylor series is employed as an interim approximation.
   return sharedDataRep->numVars + 1;
 }
 
 
 /*
-int TANA3Approximation::num_constraints() const
+int QMEApproximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
   // the number of constraints within approxData's anchor point.
@@ -56,7 +58,7 @@ int TANA3Approximation::num_constraints() const
 */
 
 
-void TANA3Approximation::build()
+void QMEApproximation::build()
 {
   // base class implementation checks data set against min required
   Approximation::build();
@@ -67,18 +69,21 @@ void TANA3Approximation::build()
   // Sanity checking verifies 1 or 2 points with gradients (Hessians ignored)
 
   size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
-  if (num_pts < 1 || num_pts > 2) {
+//if (num_pts < 1 || num_pts > 2) {
+  if (num_pts < 1 ) {
     Cerr << "Error: wrong number of data points (" << num_pts
-	 << ") in TANA3Approximation::build." << std::endl;
+	 << ") in QMEApproximation::build." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
-  if (num_pts == 2) { // two-point approximation
+  if (num_pts >= 2) { // QMEA
+//  const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
+    const size_t k=1,         p=0;         // indices to current and previous points
     const Pecos::SDRArray& sdr_array = approxData.response_data();
     // Check gradients
-    if (sdr_array[0].response_gradient().length() != num_v ||
-	sdr_array[1].response_gradient().length() != num_v) {
-      Cerr << "Error: gradients required in TANA3Approximation::build."
+    if (sdr_array[p].response_gradient().length() != num_v ||
+        sdr_array[k].response_gradient().length() != num_v) {
+      Cerr << "Error: gradients required in QMEApproximation::build."
 	   << std::endl;
       abort_handler(APPROX_ERROR);
     }
@@ -89,19 +94,19 @@ void TANA3Approximation::build()
 
     // Calculate TANA3 terms
     const Pecos::SDVArray& sdv_array = approxData.variables_data();
-    const RealVector& x1 = sdv_array[0].continuous_variables();
-    const RealVector& x2 = sdv_array[1].continuous_variables();
+    const RealVector& x1 = sdv_array[p].continuous_variables();
+    const RealVector& x2 = sdv_array[k].continuous_variables();
     for (size_t i=0; i<num_v; i++)
       minX[i] = std::min(x1[i], x2[i]);
     find_scaled_coefficients();
   }
   else {
-    // Insufficient data accumulated for two-point approximation.
+    // Insufficient data accumulated for multipoint approximation.
     // Fall back to 1st-order Taylor series as interim approach,
     // for which no additional computations are needed.
 
     if (approxData.num_gradient_variables() != num_v) {
-      Cerr << "Error: response gradients required in TANA3Approximation::build."
+      Cerr << "Error: response gradients required in QMEApproximation::build."
 	   << std::endl;
       abort_handler(APPROX_ERROR);
     }
@@ -109,7 +114,7 @@ void TANA3Approximation::build()
 }
 
 
-void TANA3Approximation::find_scaled_coefficients()
+void QMEApproximation::find_scaled_coefficients()
 {
   // Note: x notation follows TANA references and is generic
   // (it does not imply x-space in reliability analysis).
@@ -126,16 +131,35 @@ void TANA3Approximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
+  size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
+//const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
+  const size_t k=1, p=0;                 // indices to current and previous points
+  Cout << "QMEA num_pts=" << num_pts << ", k=" << k << ", p=" << p << '\n';
+
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
   const Pecos::SDRArray& sdr_array = approxData.response_data();
 
-  const RealVector& x1    = sdv_array[0].continuous_variables();
-  const Real&       f1    = sdr_array[0].response_function();
-  const RealVector& grad1 = sdr_array[0].response_gradient();
+  const RealVector& x1    = sdv_array[p].continuous_variables();
+  const Real&       f1    = sdr_array[p].response_function();
+  const RealVector& grad1 = sdr_array[p].response_gradient();
 
-  const RealVector& x2    = sdv_array[1].continuous_variables();
-  const Real&       f2    = sdr_array[1].response_function();
-  const RealVector& grad2 = sdr_array[1].response_gradient();
+  const RealVector& x2    = sdv_array[k].continuous_variables();
+  const Real&       f2    = sdr_array[k].response_function();
+  const RealVector& grad2 = sdr_array[k].response_gradient();
+
+  if ( num_pts > 2 ) {
+  const RealVector& x0    = sdv_array[2].continuous_variables();
+  const Real&       f0    = sdr_array[2].response_function();
+  const RealVector& grad0 = sdr_array[2].response_gradient();
+  Cout << "\n\nQMEA inputs X0:\n" << x0 << "\nF(X0): " << f0
+       << "\n\ndF/dX(X0):\n" << grad0 << '\n';
+  }
+
+#ifdef DEBUG
+  Cout << "\n\nQMEA inputs X1:\n" << x1 << "\nX2:\n" << x2 << "\nF(X1): " << f1
+       << " F(X2): " << f2 << "\n\ndF/dX(X1):\n" << grad1 << "\ndF/dX(X2):\n"
+       << grad2 << '\n';
+#endif // DEBUG
 
   // Numerical safeguarding must be performed since x^p is problematic for
   // x < 0 and nonintegral p.  Three approaches for this have been explored:
@@ -178,7 +202,7 @@ void TANA3Approximation::find_scaled_coefficients()
   offset(x2, scX2);
 
   // Calculate p exponents
-  size_t i, num_v = sharedDataRep->numVars;
+  size_t i;
   Real p_max = 10.; // TANA papers use either 5 or application-specific logic
   for (i=0; i<num_v; i++) {
     // A number of numerical problems are possible:
@@ -234,16 +258,32 @@ void TANA3Approximation::find_scaled_coefficients()
   H *= 2.;
 
 #ifdef DEBUG
-  Cout << "\n\nTANA inputs X1: " << x1 << "\nX2: " << x2 << "\nF(X1): " << f1
-       << " F(X2): " << f2 << "\n\ndF/dX(X1): " << grad1 << "\ndF/dX(X2): "
-       << grad2 << "\nScaled TANA inputs S1: " << scX1 << "\nS2: " << scX2
+  Cout << "\nScaled QMEA inputs S1:\n" << scX1 << "\nS2:\n" << scX2
      //<< "\ndF/dS(S1): " << sgrad1 << "\ndF/dS(S2): " << sgrad2
-       << "\nTANA outputs p: " << pExp << "\nH: " << H << '\n';
+       << "\nQMEA outputs p:\n" << pExp << "\nH: " << H << '\n';
 #endif // DEBUG
+
+// Find previous points to build QMEAM surrogate (RAC)
+  size_t n;
+  RealVector y(num_v);
+  for (i=0; i<num_pts; ++i) {
+    const Pecos::SurrogateDataVars& sdv_i = sdv_array[i];
+    const RealVector& c_vars = sdv_i.continuous_variables();
+    Cout << "QMEA point = " << i << '\n';
+    for (n=0; n<num_v; ++n ) {
+      y[n] = pow( c_vars[n], pExp[n] );
+      Cout << "     dv(" << n+1 << ")=" << c_vars[n] << '\n'; 
+      Cout << "      y(" << n+1 << ")=" << y[n]      << '\n';
+    }
+
+    const Pecos::SurrogateDataResp& sdr_i = sdr_array[i];
+    Real fn_val = sdr_i.response_function();
+	 Cout << "QMEA fn_val=" << fn_val << '\n';
+  }
 }
 
 
-void TANA3Approximation::offset(const RealVector& x, RealVector& s)
+void QMEApproximation::offset(const RealVector& x, RealVector& s)
 {
   copy_data(x, s);
   size_t i, num_v = sharedDataRep->numVars;
@@ -266,13 +306,13 @@ void TANA3Approximation::offset(const RealVector& x, RealVector& s)
 }
 
 
-Real TANA3Approximation::value(const Variables& vars)
+Real QMEApproximation::value(const Variables& vars)
 {
   Real approx_val;
   const RealVector& x = vars.continuous_variables();
   size_t i, num_v = sharedDataRep->numVars, num_pts = approxData.points();
 
-  if (num_pts == 2) { // TANA-3 approximation
+  if (num_pts >= 2) { // QMEA 
 
     // Check existing scaling to verify that it is sufficient for x
     RealVector s_eval;
@@ -323,7 +363,7 @@ Real TANA3Approximation::value(const Variables& vars)
 }
 
 
-const RealVector& TANA3Approximation::gradient(const Variables& vars)
+const RealVector& QMEApproximation::gradient(const Variables& vars)
 {
   size_t num_pts = approxData.points();
 
@@ -331,10 +371,10 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
     const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
     return center_sdr.response_gradient(); // can be view of DB response
 
-    //copy_data(center_sdr.response_gradient(), approxGradient);// deep copy
+    //copy_data(center_sdr.response_gradient(), approxGradient);// can be view
     //return approxGradient;
   }
-  else { // TANA-3 approximation
+  else { // QMEA 
 
     // Check existing scaling to verify that it is sufficient for x
     const RealVector& x = vars.continuous_variables();
@@ -380,7 +420,7 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
 }
 
 
-//const RealMatrix& TANA3Approximation::hessian(const Variables& vars)
+//const RealMatrix& QMEApproximation::hessian(const Variables& vars)
 //{ return approxHessian; }
 
 } // namespace Dakota

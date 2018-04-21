@@ -17,6 +17,7 @@
 #include "DakotaResponse.hpp"
 #include "TaylorApproximation.hpp"
 #include "TANA3Approximation.hpp"
+#include "QMEApproximation.hpp"
 #include "PecosApproximation.hpp"
 #include "GaussProcApproximation.hpp"
 #include "VPSApproximation.hpp"
@@ -125,6 +126,8 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
       return new TaylorApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "multipoint_tana")
       return new TANA3Approximation(problem_db, shared_data, approx_label);
+    else if (approx_type == "multipoint_qmea")
+      return new QMEApproximation(problem_db, shared_data, approx_label);
     else if (strends(approx_type, "_orthogonal_polynomial") ||
 	     strends(approx_type, "_interpolation_polynomial"))
       return new PecosApproximation(problem_db, shared_data, approx_label);
@@ -180,6 +183,8 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
     approx = new TaylorApproximation(shared_data);
   else if (approx_type == "multipoint_tana")
     approx = new TANA3Approximation(shared_data);
+  else if (approx_type == "multipoint_qmea")
+    approx = new QMEApproximation(shared_data);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(shared_data);

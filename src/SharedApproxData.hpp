@@ -40,6 +40,7 @@ class SharedApproxData
   friend class Approximation;
   friend class TaylorApproximation;
   friend class TANA3Approximation;
+  friend class QMEApproximation;
   friend class GaussProcApproximation;
   friend class VPSApproximation;
   friend class SurfpackApproximation;

@@ -5259,8 +5259,10 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
      )
     |
-    ( multipoint {N_mom(lit,surrogateType_multipoint_tana)}
-      tana {0}
+    ( multipoint {0}
+      tana {N_mom(lit,surrogateType_multipoint_tana)}
+      |
+      qmea {N_mom(lit,surrogateType_multipoint_qmea)}
       actual_model_pointer STRING {N_mom(str,actualModelPointer)}
      )
     |

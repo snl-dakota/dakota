@@ -7216,6 +7216,7 @@ static Model_mp_lit
 	MP2(surrogateType,global_radial_basis),
 	MP2(surrogateType,global_voronoi_surrogate),
 	MP2(surrogateType,local_taylor),
+        MP2(surrogateType,multipoint_qmea),
         MP2(surrogateType,multipoint_tana),
         MP2(trendOrder,constant),
         MP2(trendOrder,linear),
