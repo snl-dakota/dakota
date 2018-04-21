@@ -109,7 +109,7 @@ const RealVector& TaylorApproximation::gradient(const Variables& vars)
   else { // build up approxGradient from derivative terms
     const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
     if (bdo & 2) // include gradient terms
-      approxGradient = anchor_sdr.response_gradient();
+      copy_data(anchor_sdr.response_gradient(), approxGradient); // can be view
     else {       // initialize approxGradient to zero
       size_t num_v = sharedDataRep->numVars;
       if (approxGradient.length() != num_v)

@@ -327,7 +327,14 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
 {
   size_t num_pts = approxData.points();
 
-  if (num_pts == 2) { // TANA-3 approximation
+  if (num_pts == 1) { // First-order Taylor series (interim approx)
+    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
+    return center_sdr.response_gradient(); // can be view of DB response
+
+    //copy_data(center_sdr.response_gradient(), approxGradient);// deep copy
+    //return approxGradient;
+  }
+  else { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
     const RealVector& x = vars.continuous_variables();
@@ -354,6 +361,8 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
       sum_diff1_sq += diff1*diff1;
       sum_diff2_sq += diff2*diff2;
     }
+    if (approxGradient.length() != num_v)
+      approxGradient.sizeUninitialized(num_v);
     for (i=0; i<num_v; i++) {
       Real svi = s_eval[i], s2i = scX2[i], pi = pExp[i], sp = std::pow(svi,pi),
 	diff1 = sp - std::pow(scX1[i],pi), diff2 = sp - std::pow(s2i,pi);
@@ -366,13 +375,8 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
 	   << approxGradient[i] << '\n';
 #endif // DEBUG
     }
+    return approxGradient;
   }
-  else { // First-order Taylor series (interim approx)
-    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
-    approxGradient = center_sdr.response_gradient();
-  }
-
-  return approxGradient;
 }
 
 
