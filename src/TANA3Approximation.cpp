@@ -15,7 +15,7 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 
-#define DEBUG
+//#define DEBUG
 
 namespace Dakota {
 
@@ -114,8 +114,8 @@ void TANA3Approximation::find_scaled_coefficients()
   // Note: x notation follows TANA references and is generic
   // (it does not imply x-space in reliability analysis).
   //
-  //                                      Original     Scaled
-  //                                      --------     ------
+  //                                      Original     Offset/Scaled
+  //                                      --------     -------------
   //  Evaluation point                    x_eval       s_eval
   //  Last expansion point                x1           scX1
   //    Function value at x1              f1           N/A
@@ -234,11 +234,11 @@ void TANA3Approximation::find_scaled_coefficients()
   H *= 2.;
 
 #ifdef DEBUG
-  Cout << "\n\nTANA inputs X1: " << x1 << "\nX2: " << x2 << "\nF(X1): " << f1
-       << " F(X2): " << f2 << "\n\ndF/dX(X1): " << grad1 << "\ndF/dX(X2): "
-       << grad2 << "\nScaled TANA inputs S1: " << scX1 << "\nS2: " << scX2
+  Cout << "\n\nTANA inputs X1:\n" << x1 << "\nX2:\n" << x2 << "\nF(X1): " << f1
+       << " F(X2): " << f2 << "\n\ndF/dX(X1):\n" << grad1 << "\ndF/dX(X2):\n"
+       << grad2 << "\nScaled TANA inputs S1:\n" << scX1 << "\nS2:\n" << scX2
      //<< "\ndF/dS(S1): " << sgrad1 << "\ndF/dS(S2): " << sgrad2
-       << "\nTANA outputs p: " << pExp << "\nH: " << H << '\n';
+       << "\nTANA outputs p:\n" << pExp << "\nH: " << H << '\n';
 #endif // DEBUG
 }
 
@@ -253,7 +253,7 @@ void TANA3Approximation::offset(const RealVector& x, RealVector& s)
     //Real offset = (lb <= 0.) ? 1. - lb : 0.;
 
     // Offset based on current min for each variable:
-    //minX[i] = std::min( std::min(x1[i], x2[i]), x_eval[i]);
+    //minX[i] = std::min( std::min(x1[i], x2[i]), x_eval[i] );
     // offset of -2*minX is intended to preserve the magnitude of x (results
     // in a simple sign flip for the smallest x value).  A minX of 0 causes
     // problems with negative exponents and a minX less than 0 causes problems
