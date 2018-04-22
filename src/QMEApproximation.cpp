@@ -140,16 +140,16 @@ void QMEApproximation::find_scaled_coefficients()
   const Pecos::SDRArray& sdr_array = approxData.response_data();
 
   const RealVector& x1    = sdv_array[p].continuous_variables();
-  const Real&       f1    = sdr_array[p].response_function();
+  Real              f1    = sdr_array[p].response_function();
   const RealVector& grad1 = sdr_array[p].response_gradient();
 
   const RealVector& x2    = sdv_array[k].continuous_variables();
-  const Real&       f2    = sdr_array[k].response_function();
+  Real              f2    = sdr_array[k].response_function();
   const RealVector& grad2 = sdr_array[k].response_gradient();
 
   if ( num_pts > 2 ) {
   const RealVector& x0    = sdv_array[2].continuous_variables();
-  const Real&       f0    = sdr_array[2].response_function();
+  Real              f0    = sdr_array[2].response_function();
   const RealVector& grad0 = sdr_array[2].response_gradient();
   Cout << "\n\nQMEA inputs X0:\n" << x0 << "\nF(X0): " << f0
        << "\n\ndF/dX(X0):\n" << grad0 << '\n';
@@ -251,9 +251,9 @@ void QMEApproximation::find_scaled_coefficients()
   // Calculate H
   H = f1 - f2;
   for (i=0; i<num_v; i++) {
-    Real s2i = scX2[i], pi = pExp[i];
-    H -= grad2[i] * std::pow(s2i,1.-pi) / pi *
-      (std::pow(scX1[i],pi) - std::pow(s2i,pi));
+    Real s2i = scX2[i], p_i = pExp[i];
+    H -= grad2[i] * std::pow(s2i,1.-p_i) / p_i *
+      (std::pow(scX1[i],p_i) - std::pow(s2i,p_i));
   }
   H *= 2.;
 
@@ -312,7 +312,18 @@ Real QMEApproximation::value(const Variables& vars)
   const RealVector& x = vars.continuous_variables();
   size_t i, num_v = sharedDataRep->numVars, num_pts = approxData.points();
 
-  if (num_pts >= 2) { // QMEA 
+  if (num_pts == 1) { // First-order Taylor series (interim approx)
+    const Pecos::SurrogateDataVars& center_sdv = approxData.variables_data()[0];
+    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
+    const RealVector&    center_x = center_sdv.continuous_variables();
+    approx_val                    = center_sdr.response_function();
+    const RealVector& center_grad = center_sdr.response_gradient();
+    for (i=0; i<num_v; i++) {
+      Real dist_i = x[i] - center_x[i];
+      approx_val += center_grad[i] * dist_i;
+    }
+  }
+  else {// QMEA 
 
     // Check existing scaling to verify that it is sufficient for x
     RealVector s_eval;
@@ -330,13 +341,13 @@ Real QMEApproximation::value(const Variables& vars)
 
     // Calculate approx_val
     const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[1];
-    const Real&           f2 = curr_sdr.response_function();
-    const RealVector&  grad2 = curr_sdr.response_gradient();
-    Real sum1 = 0., sum_diff1_sq = 0., sum_diff2_sq = 0.;
+    Real f2 = curr_sdr.response_function(), sum1 = 0.,
+      sum_diff1_sq = 0., sum_diff2_sq = 0.;
+    const RealVector& grad2 = curr_sdr.response_gradient();
     for (i=0; i<num_v; i++) {
-      Real pi = pExp[i], sp = std::pow(s_eval[i],pi), s2i = scX2[i],
-	diff1 = sp - std::pow(scX1[i],pi), diff2 = sp - std::pow(s2i,pi);
-      sum1 += grad2[i]*std::pow(s2i,1.-pi)/pi*diff2;
+      Real p_i = pExp[i], sp = std::pow(s_eval[i],p_i), s2i = scX2[i],
+	diff1 = sp - std::pow(scX1[i],p_i), diff2 = sp - std::pow(s2i,p_i);
+      sum1 += grad2[i]*std::pow(s2i,1.-p_i)/p_i*diff2;
       sum_diff1_sq += diff1 * diff1;
       sum_diff2_sq += diff2 * diff2;
     }
@@ -346,17 +357,6 @@ Real QMEApproximation::value(const Variables& vars)
     Cout << "epsilon: " << epsilon << " sum1: " << sum1 << " approx value: "
 	 << approx_val << '\n';
 #endif // DEBUG
-  }
-  else { // First-order Taylor series (interim approx)
-    const Pecos::SurrogateDataVars& center_sdv = approxData.variables_data()[0];
-    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
-    const RealVector&        center_x = center_sdv.continuous_variables();
-    approx_val                        = center_sdr.response_function();
-    const RealVector&     center_grad = center_sdr.response_gradient();
-    for (i=0; i<num_v; i++) {
-      Real dist_i = x[i] - center_x[i];
-      approx_val += center_grad[i] * dist_i;
-    }
   }
 
   return approx_val;
@@ -396,20 +396,21 @@ const RealVector& QMEApproximation::gradient(const Variables& vars)
     const RealVector& grad2 = curr_sdr.response_gradient();
     Real sum_diff1_sq = 0., sum_diff2_sq = 0.;
     for (i=0; i<num_v; i++) {
-      Real pi = pExp[i], sp = std::pow(s_eval[i],pi),
-	diff1 = sp - std::pow(scX1[i],pi), diff2 = sp - std::pow(scX2[i],pi);
+      Real p_i = pExp[i], sp = std::pow(s_eval[i],p_i),
+	diff1 = sp - std::pow(scX1[i],p_i), diff2 = sp - std::pow(scX2[i],p_i);
       sum_diff1_sq += diff1*diff1;
       sum_diff2_sq += diff2*diff2;
     }
     if (approxGradient.length() != num_v)
       approxGradient.sizeUninitialized(num_v);
     for (i=0; i<num_v; i++) {
-      Real svi = s_eval[i], s2i = scX2[i], pi = pExp[i], sp = std::pow(svi,pi),
-	diff1 = sp - std::pow(scX1[i],pi), diff2 = sp - std::pow(s2i,pi);
-      Real E= H*pi*std::pow(svi,pi-1.)*(diff2*sum_diff1_sq - diff1*sum_diff2_sq)
-	/ std::pow(sum_diff1_sq + sum_diff2_sq,2.);
+      Real svi = s_eval[i], s2i = scX2[i], p_i = pExp[i],
+	sp = std::pow(svi,p_i),	diff1 = sp - std::pow(scX1[i],p_i),
+	diff2 = sp - std::pow(s2i,p_i), E = H*p_i*std::pow(svi,p_i-1.)
+	  * (diff2*sum_diff1_sq - diff1*sum_diff2_sq)
+	  / std::pow(sum_diff1_sq + sum_diff2_sq,2.);
       // df/dx = df/ds * ds/dx = df/ds for simple offsets
-      approxGradient[i] = std::pow(svi/s2i,pi-1.)*grad2[i] + E;
+      approxGradient[i] = std::pow(svi/s2i,p_i-1.)*grad2[i] + E;
 #ifdef DEBUG
       Cout << "E: " << E << " approxGradient[" << i << "]: "
 	   << approxGradient[i] << '\n';
