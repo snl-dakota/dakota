@@ -537,7 +537,7 @@ namespace Dakota
             _fgrad = new double*[_num_inserted_points];
             for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
             {
-                RealVector fn_grad = sdr_array[ipoint].response_gradient();
+                const RealVector& fn_grad = sdr_array[ipoint].response_gradient();
                 _fgrad[ipoint] = new double[_n_dim];
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
@@ -559,7 +559,7 @@ namespace Dakota
             _fhess = new double**[_num_inserted_points];
             for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
             {
-                RealSymMatrix fn_hessian = sdr_array[ipoint].response_hessian();
+                const RealSymMatrix& fn_hessian = sdr_array[ipoint].response_hessian();
                 _fhess[ipoint] = new double*[_n_dim];
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {

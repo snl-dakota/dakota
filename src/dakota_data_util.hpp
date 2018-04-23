@@ -564,7 +564,8 @@ void copy_data(const std::map<int, T>& im, std::vector<T>& da)
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to same
-/// (used in place of operator= when a deep copy of a vector view is needed) - used by SensAnalysisGlobal::valid_sample_matrix - RWH
+/// (used in place of operator= when a deep copy is required) -
+/// used by Response - MSE
 template <typename OrdinalType, typename ScalarType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv1,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv2)
@@ -574,6 +575,32 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv1,
     sdv2.sizeUninitialized(size_sdv1);
   for (OrdinalType i=0; i<size_sdv1; ++i)
     sdv2[i] = sdv1[i];
+}
+
+/// copy Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> to same
+/// (used in place of operator= when a deep copy is required) -
+/// used by Response - MSE
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm1,
+	       Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm2)
+{
+  OrdinalType nr1 = sdm1.numRows(), nc1 = sdm1.numCols();
+  if (sdm2.numRows() != nr1 || sdm2.numCols() != nc1)
+    sdm2.shapeUninitialized(nr1, nc1);
+  sdm2.assign(sdm1);
+}
+
+/// copy Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType> to same
+/// (used in place of operator= when a deep copy is required) -
+/// used by Response - MSE
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm1,
+	       Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm2)
+{
+  OrdinalType nr1 = ssdm1.numRows();
+  if (ssdm2.numRows() != nr1)
+    ssdm2.shapeUninitialized(nr1);
+  ssdm2.assign(ssdm1);
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
