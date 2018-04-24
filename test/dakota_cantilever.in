@@ -1,5 +1,3 @@
-#@ Diff in tests 7, 9, carried until we can aggregate final data recovery (fns in 1 eval, constraints in another)
-#@ *: Label=CarryDiff
 #@ s0: DakotaConfig=HAVE_NPSOL
 #@ s1: DakotaConfig=HAVE_NPSOL
 #@ s2: DakotaConfig=HAVE_NPSOL
