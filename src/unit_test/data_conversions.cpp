@@ -61,6 +61,30 @@ TEUCHOS_UNIT_TEST(data_conversion, rva2rm)
 
 //----------------------------------------------------------------
 
+TEUCHOS_UNIT_TEST(data_conversion, mat2mat)
+{
+  const int NROWS = 5;
+  const int NCOLS = 3;
+  RealMatrix test_mat(NROWS, NCOLS);
+  test_mat.random();
+  RealMatrix dest_mat;
+
+  /////////////////  What we want to test
+  copy_data(test_mat, dest_mat);
+  /////////////////  What we want to test
+
+  // Verify correct dimensions
+  TEST_EQUALITY( NROWS, dest_mat.numRows() );
+  TEST_EQUALITY( NCOLS, dest_mat.numCols() );
+
+  // Verify contents of what we wrote and what we read
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    TEST_FLOATING_EQUALITY( test_mat(i,j), dest_mat(i,j), 1.e-14 );
+}
+
+//----------------------------------------------------------------
+
 TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
 {
   const int NROWS = 5;

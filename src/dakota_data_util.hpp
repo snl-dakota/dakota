@@ -189,6 +189,22 @@ bool is_equal_vec( const RealVector & vec1,
 // Misc matrix utilities 
 // ---------------------
 
+// Taken from pecos/src/MathTools.hpp, BUT
+// not templated because the implementation is specific to RealMatrix
+inline void copy_data( const RealMatrix &source, RealMatrix &dest, 
+	        int num_rows, int num_cols, int start_row=0, int start_col=0 )
+{
+  RealMatrix source_subset( Teuchos::View, source, num_rows, num_cols, 
+			    start_row, start_col );
+  dest.reshape( num_rows, num_cols );
+  dest.assign( source_subset );
+}
+
+inline void copy_data( const RealMatrix &source, RealMatrix &dest )
+{
+  return copy_data(source, dest, source.numRows(), source.numCols());
+}
+
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 
