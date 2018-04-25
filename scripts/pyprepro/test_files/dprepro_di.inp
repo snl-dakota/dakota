@@ -1,0 +1,28 @@
+
+This template makes use of the DakotaParams and DakotaResults objects
+that are made availble for substitution when the dakota.interfacing
+module is present.
+
+First, here's the string variable ddssv_1, printed using the 
+DakotaParams object: {DakotaParams["ddssv_1"]}
+
+And, without: {ddssv_1}.
+
+The DakotaParams object provides access to variables by their original
+names, even when they were clobbered by pyprepro.
+
+For example, x:y is not a valid Python identifer, but it can be
+accessed using DakotaParams["x:y"]: {DakotaParams["x:y"]}.
+
+This variable is available with a mangled name, too, as x_y: {x_y}
+
+Ditto for várïåbłę (in Python 2): {DakotaParams["várïåbłę"]}
+
+The "metadata" for the evaluation that are stored in these objects
+are also available:
+
+* The evaluation ID: {DakotaParams.eval_id}
+* The ASV for the functions:
+  o Function: {DakotaResults["response_fn_1"].asv.function}
+  o Gradient: {DakotaResults["response_fn_1"].asv.gradient}
+  o Hessian:  {DakotaResults["response_fn_1"].asv.hessian}

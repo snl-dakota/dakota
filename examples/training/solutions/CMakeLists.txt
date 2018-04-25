@@ -71,7 +71,7 @@ function(add_training_test _test_input_file aux_file_string extra_file_string
         list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
       endforeach()
 
-      file(COPY ${Dakota_SOURCE_DIR}/scripts/dprepro DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
+      file(COPY ${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
       foreach( aux_file ${aux_file_list})
         #message("Will copy file ${aux_file}")
         file(COPY ${alt_path}/${aux_file} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${test_name})

@@ -1,0 +1,21 @@
+Testing Changing code blocks
+<{*
+    A = 'a'
+*>}
+{A} # Should NOT fill
+\{A\} # Should not fill *and* show escape
+[[A]] # Should fill
+\[[A\]] # Should not fill -- test escape
+
+% for i in range(2):
+{i}
+% end
+
+$ for j in range(2):
+[[j]]
+$ end
+
+Test inline expansions:
+[[tt = 1]][[tt = tt + 1]][[tt = tt + 1]][[tt = Immutable(tt)]][[tt = tt + 1]]
+{ss = 1}{ss = ss +  1}{ss = ss + 1}{ss = Immutable(ss)}{ss = ss + 1}
+

@@ -1,0 +1,67 @@
+DPREPRO(1)	      User Contributed Perl Documentation	    DPREPRO(1)
+
+
+
+NAME
+       dprepro - A Perl pre-processor for manipulating input files with
+       DAKOTA.
+
+SYNOPSIS
+       dprepro [options] parameters_file template_input_file new_input_file
+
+OPTIONS
+       --help
+	   print brief help message
+
+       --man
+	   print full manual page and exit
+
+       --left-delimiter=string, --right-delimiter=string
+	   override the default curly brace delimiters { and }; these may need
+	   to be quoted or escaped on the command line, e.g.,
+	     require escaping with backslash: ` $ #
+	     require quotes or escaping: \ ' ( ) |
+
+       --output-format=string
+	   use the specified C-style format specification string as the
+	   default for numeric output in all substitutions; will be overridden
+	   by field-specific format strings; may need to be quoted or escaped
+
+DESCRIPTION
+       Reads the variable tags and values from the parameters_file and then
+       replaces each appearance of "{tag}" in the template_input_file with its
+       associated value in order to create the new_input_file.	The
+       parameters_file written by Dakota may either be in standard format
+       (using "value tag" constructs) or in "aprepro" format (using "{ tag =
+       value }" constructs), and the variable tags used inside
+       template_input_file must match the variable descriptors specified in
+       the Dakota input file.  Supports assignments and numerical expressions
+       in the template file; the parameters file takes precedence in the case
+       of duplicate assignments (so that template file assignments can be
+       treated as defaults to be overridden). Also supports per-tag format
+       strings, e.g. {tag,%5.3f}, which override the format string provided as
+       a command line option.
+
+       To leave a literal delimiter, e.g., brace or backslash, in the template
+       file without its enclosing contents being treated as a dprepro
+       expression for substitution, escape it with backslash, e.g., \{ dontsub
+       \} or \\ dontsub \\.
+
+       basic operation
+	   dprepro params.in app.template app.input
+
+       specifying output format
+	   dprepro --output-format='%10.5f' params.in app.template app.input
+
+	   Alternately, specify per-field formatting within the delimiters in
+	   the templaqte file:
+	     {DakotaParam1,%10.5f}
+	     {DakotaParam2,%06d}
+
+       specifying double brackets as delimiters
+	   dprepro --left-delimiter='[[' --right-delimiter=']]' params.in
+	   app.template app.input
+
+
+
+perl v5.18.2			  2017-11-13			    DPREPRO(1)

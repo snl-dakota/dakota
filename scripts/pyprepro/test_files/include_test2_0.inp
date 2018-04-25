@@ -1,0 +1,18 @@
+{'_-'*30} Deep 0
+% d0_1 = 0.1
+{d0_2 = 0.2}
+{d0_3 = Immutable(0.3)}
+
+
+% include('include_test2_1.inp')
+
+{'*+'*30} Back at parent
+Check them all
+
+d0_1: {d0_1}
+d0_2: {d0_2}
+d0_3: {d0_3}
+d1_1: {d1_1}
+d1_2: {d1_2}
+d1_3: {d1_3}
+d2_1: {d2_1}

@@ -1,0 +1,15 @@
+This is part of the include test. None of these variables should be printed and
+they should all be define as Immutable.
+
+There should also be no difference between any kind of block
+
+{include_var1 = 1.1}
+{include_var2 = include_var1 + 1}
+
+% include_var3 = 'include var 3 in code line'
+
+{%
+    include_var4 = 'include 4 code block'
+%}
+
+{param = 10}
