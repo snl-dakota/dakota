@@ -236,7 +236,7 @@ are ideal but often unavailable.  If analytic gradient and Hessian
 information can be provided by an application code, a full Newton
 method will achieve quadratic convergence rates near the solution. If
 only gradient information is available and the Hessian information is
-approximated from an accumulation of gradient data, the superlinear
+approximated from an accumulation of gradient data, superlinear
 convergence rates can be obtained.  It is most often the case for
 engineering applications, however, that a finite difference method
 will be used by the optimization algorithm to estimate gradient
@@ -1303,9 +1303,12 @@ code, a full Newton method will provide quadratic convergence rates
 near the solution. More commonly, only gradient information is
 available and a quasi-Newton method is chosen in which the Hessian
 information is approximated from an accumulation of gradient data. In
-this case, superlinear convergence rates can be obtained. These
-characteristics make gradient-based optimization methods the methods
-of choice when the problem is smooth, unimodal, and
+this case, superlinear convergence rates can be obtained. First-order
+methods, such as the Method of Feasible Directions, may achieve only
+a linear rate of convergence, which may entail more iterations, 
+but potentially at a lower cost per iteration associated with 
+Hessian calculations. These characteristics make gradient-based optimization
+the methods of choice when the problem is smooth, unimodal, and
 well-behaved. However, when the problem exhibits nonsmooth,
 discontinuous, or multimodal behavior, these methods can also be the
 least robust since inaccurate gradients will lead to bad search

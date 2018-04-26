@@ -2,10 +2,12 @@ Blurb::
 Stopping critiera based on L2 norm of gradient
 Description::
 The \c gradient_tolerance control defines the                                             
-threshold value on the L2 norm of the objective function gradient that
-indicates convergence to an unconstrained minimum (no active
-constraints). The \c gradient_tolerance control is defined for all
-gradient-based optimizers.
+threshold value on the L2 norm of the objective function gradient
+(for unconstrained minimum or no active constraints) or the
+Lagrangian gradient (for constrained minimum) that
+indicates convergence to a stationary point. 
+The \c gradient_tolerance control is currently defined 
+only for the OPT++ and ROL libraries.
 
 Topics::	
 Examples::
