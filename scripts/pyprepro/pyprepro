@@ -24,7 +24,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20180411'
+__version__ = '20180426'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -74,8 +74,7 @@ CLI_MODE = False # Reset in the if __name__ == '__main__'
 ############################## Main Functions #############################
 ###########################################################################
 def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
-    code='%',code_block='{% %}',inline='{ }',
-    ):
+    code='%',code_block='{% %}',inline='{ }'):
     """
     Main pyprepro function.
     
@@ -132,7 +131,6 @@ def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
     
     _check_block_syntax()
     
-    
     if include_files is None:
         include_files = []
     if json_include is None:
@@ -142,7 +140,6 @@ def pyprepro(tpl,include_files=None,json_include=None,env=None,fmt='%0.10g',
         include_files = [include_files]
     if isinstance(json_include,(str,unicode)):
         json_include = [json_include]
-    
     
     # The broken_bottle code is designed (modified) such that when an 
     # environment is passed in, that environment is modified and not copied
@@ -276,8 +273,8 @@ def _parse_cli(argv,positional_include=False):
     ########## Handle Dakota fallbacks
 
     left,right = args.inline.split()
-    left  = agrs.left_delimiter  if args.left_delimiter  else left
-    right = agrs.right_delimiter if args.right_delimiter else right
+    left  = args.left_delimiter  if args.left_delimiter  else left
+    right = args.right_delimiter if args.right_delimiter else right
     args.inline = left + ' ' + right
         
     del args.left_delimiter
@@ -423,43 +420,15 @@ def _formatter(*obj):
     # give up!
     return repr(obj)
 
-       
-class _bracket_escape_obj:
-    """
-    This class escapes inline \{ \} brackets. It needs to only be instanitated
-    once (at the bottom). It uses random characters to delineate brackets
-    so they cannot be (easily) fooled
-    """
-    def __init__(self):
-        self.esc = _rnd_str(30) # regenerate so it cannot be fooled (easily)
-        self.find_esc_out = re.compile('{0}(.*?){0}'.format(self.esc))
-        
-    def pre(self,text):
-        # Note, we redefine this regex in case the globals have changed
-        replacements = { 
-            'IS':re.escape(INLINE_START),
-            'IE':re.escape(INLINE_END),
-        } 
-        re_find_esc = re.compile(_mult_replace(r'\\IS(.*?)\\IE',replacements)) 
-         
-        return re_find_esc.sub(self.subin,text)
-    
-    def subin(self,re_obj):
-        return self.esc+re_obj.group(1)+self.esc    
-    
-    def post(self,text):
-        return self.find_esc_out.sub(self.subout,text) 
-    
-    def subout(self,re_obj):
-        return INLINE_START + re_obj.group(1) + INLINE_END
-
-def _parse_inline_assignments(text):
+def _preparser(text):
     """
     This is a PREPARSER before sending anything to Bottle.
     
     It parses out inline syntax of `{ param = val }` so that it will still 
     define `param`. It will also make sure the evaluation is NOT inside 
-    of %< and %} blocks (by parsing them out first
+    of %< and %} blocks (by parsing them out first).
+    
+    It also handles escaped inline assigments
     
     Can also handle complex siutations such as:
     
@@ -470,14 +439,14 @@ def _parse_inline_assignments(text):
     which will turn into the following.
     
         \\
-        % p = 10
+        {% p = 10 %}
         { p }
         start,\\
-        % p = p+1
+        {% p = p+1 %}
         { p },\\
-        % p = p+1
+        {% p = p+1 %}
         { p },\\
-        % p = p+1
+        {% p = p+1 %}
         { p },end
         {p}
     
@@ -504,15 +473,58 @@ def _parse_inline_assignments(text):
     
     # Remove any code blocks and replace with random text
     code_rep = defaultdict(lambda:_rnd_str(20))    # will return random string but store it
+    _,text = _delim_capture(text,'{0} {1}'.format(BLOCK_START,BLOCK_CLOSE), # delim_capture does NOT want re.escape
+                            lambda t:code_rep[t])
+    
+    #if text != 'BLA': import ipdb;ipdb.set_trace()
+    
+    # Convert single line expression "% expr" and convert them to "{% expr %}" 
+    search  =  "^([\t\f ]*)LINE_START(.*)".replace('LINE_START',re.escape(LINE_START))
+    replace = r"\1{0} \2 {1}".format(BLOCK_START,BLOCK_CLOSE)
+    text = re.sub(search,replace,text)
+    
+    # and then remove them too!
+    _,text = _delim_capture(text,'{0} {1}'.format(BLOCK_START,BLOCK_CLOSE), # delim_capture does NOT want re.escape
+                            lambda t:code_rep[t])
+    
+    ###### Bracket Escaping
+    # Apply escaping to things like '\{' --> "{" and "\\{" --> "\{"
+    # by replacing them with a variable. First, remove all inline, then find
+    # the offending lines, replace them, then add back in the inline
+    inline_rep = defaultdict(lambda:_rnd_str(20)) 
+    _,text = _delim_capture(text,
+                            '{0} {1}'.format(INLINE_START,INLINE_END), # do not use re escaped
+                            lambda t:inline_rep[t]) 
+    
+    # Replace '\{' with a variable version of '{ _INLINE_START }'. Make sure it is not escaped
+    text = re.sub(r'(?<!\\)\\{0}'.format(re.escape(INLINE_START)),
+                  r'{0} _INLINE_START {1}'.format(INLINE_START,INLINE_END),
+                  text) 
+    
+    # replace '\\{' with '\{ _INLINE_START }' since it is escaped
+    text = re.sub(r'\\\\{0}'.format(re.escape(INLINE_START)),
+                  r'{0}_eINLINE_START{1}'.format(INLINE_START,INLINE_END),
+                  text)
 
-    code_blocks,text = _delim_capture(text,
-                                     '{0} {1}'.format(BLOCK_START,BLOCK_CLOSE), # do not use re escaped
-                                      lambda t:code_rep[t])
- 
+    # Replace '\}' with a variable version of '{ _INLINE_END }'. Make sure it is not escaped
+    text = re.sub(r'(?<!\\)\\{0}'.format(re.escape(INLINE_END)),
+                  r'{0} _INLINE_END {1}'.format(INLINE_START,INLINE_END),
+                  text) # reminder r"\\" will *still* be "\" to regex
+    
+    # replace '\\{' with '\{ _INLINE_END }' since it is escaped
+    text = re.sub(r'\\\\{0}'.format(re.escape(INLINE_END)),
+                  r'{0}_eINLINE_END{1}'.format(INLINE_START,INLINE_END),
+                  text)
+                  
+    # Sub back in the other removed inline expressions
+    text = _mult_replace(text,inline_rep,_invert=True)       
+    ###### /Bracket Escaping
+    
     # Apply _inline_fix to all inline assignments
     _,text = _delim_capture(text,
                             '{0} {1}'.format(INLINE_START,INLINE_END), # do not use re escaped
                             _inline_fix)
+                
     
     # Re-add the code blocks with an inverted dict
     return _mult_replace(text,code_rep,_invert=True)
@@ -587,7 +599,7 @@ def _inline_fix(capture):
     
     # Set the value
     return ''.join([r'\\','\n', 
-                    LINE_START,' ',var,opperator,val,'\n', 
+                    BLOCK_START,' ',var,opperator,val,' ',BLOCK_CLOSE,'\n', 
                     INLINE_START,' ',var.strip(),' ',INLINE_END])
 
 
@@ -985,7 +997,12 @@ def _dprepro_cli(argv):
         env2 = convert_dakota(args.include) # ToDo: Check with Adam on how this should be passed
         env.update(env2)
     else:
-        params, results = di.read_parameters_file(parameters_file=args.include,results_file=di.UNNAMED)
+        try:
+            params, results = di.read_parameters_file(parameters_file=args.include,results_file=di.UNNAMED)
+        except di.ParamsFormatError as e:
+            sys.stderr.write("Error occurred: " + e.args[0] + "\n")
+            sys.exit(2)
+
         env["DakotaParams"] = params
         for _, d, v in params:
             env[d] = v
@@ -1091,7 +1108,7 @@ def dprepro(include=None, template=None, output=None, fmt='%0.10g', code='%',
 # 
 # * Changed the default environment to ImmutableValDict
 # * Added Immutable and Mutable functions to be passed it
-# * All text is routed through _parse_inline_assignments (3 places...I think)
+# * All text is routed through _preparser (3 places...I think)
 # * Ability to return the environment
 # * Adjusted scope so that if a variable is parsed in an include, it is present
 #   in the parent. (the env object is passed in and NEVER copied)
@@ -1197,7 +1214,7 @@ class _BaseTemplate(object):
         The settings parameter contains a dict for engine-specific settings.
         """
         self.name = name
-        self.source = _bracket_escape.pre(_parse_inline_assignments(source.read())) if hasattr(source, 'read') else source
+        self.source = _preparser(source.read()) if hasattr(source, 'read') else source
         self.filename = source.filename if hasattr(source, 'filename') else None
         self.lookup = [os.path.abspath(x) for x in lookup] if lookup else []
         self.encoding = encoding
@@ -1287,7 +1304,7 @@ class _SimpleTemplate(_BaseTemplate):
             source, encoding = _touni(source), 'utf8'
         except UnicodeError:
             raise depr(0, 11, 'Unsupported _template encodings.', 'Use utf-8 for _templates.')
-        source = _bracket_escape.pre(_parse_inline_assignments(source))
+        source = _preparser(source)
         parser = _StplParser(source, encoding=encoding, syntax=self.syntax)
         code = parser.translate()
         self.encoding = parser.encoding
@@ -1344,6 +1361,18 @@ class _SimpleTemplate(_BaseTemplate):
             'all_vars':lambda **k: _vartxt(env,return_values=True,**k),
             'all_var_names':lambda **k: _vartxt(env,return_values=False,**k),
         })
+        
+        # String literals of escape characters
+        env.update({
+            '_BLOCK_START':BLOCK_START,
+            '_BLOCK_CLOSE':BLOCK_CLOSE,
+            '_LINE_START':LINE_START,
+            '_INLINE_START':INLINE_START,
+            '_eINLINE_START': '\\' + INLINE_START,
+            '_INLINE_END':INLINE_END,
+            '_eINLINE_END':'\\' + INLINE_END,
+            })
+
         
         exec_(self.co,env)
         
@@ -1570,9 +1599,17 @@ def _template(tpl, env=None, return_env=False):
         settings = {}
         tpl = _touni(tpl)
     
-        if not os.path.exists(tpl): # template string
+        # Try to determine if it is a file or a template string
+        
+        isfile = False
+        try:
+            if os.path.exists(tpl):
+                isfile = True
+        except:pass # Catch any kind of error
+    
+        if not isfile:  # template string
             lookup = ['./'] # Just have the lookup be in this path
-            tpl = _bracket_escape.pre(_parse_inline_assignments(tpl))
+            tpl = _preparser(tpl)
             tpl_obj = _SimpleTemplate(source=tpl, lookup=lookup, **settings)
         else: # template file
             # set the lookup. It goes in order so first check directory
@@ -1584,10 +1621,6 @@ def _template(tpl, env=None, return_env=False):
         # if env is set.
     
         rendered,env =  tpl_obj.render(env)
-    
-        # All methods had _bracket_escape.pre run on them (potentially multiple times but that is ok.
-        # Undo it
-        rendered = _bracket_escape.post(rendered)
     
         if not return_env:
             return rendered
@@ -1608,7 +1641,7 @@ def _template(tpl, env=None, return_env=False):
 #   https://pypi.python.org/pypi/six
 #   http://pythonhosted.org/six/
 ##############################################################################
-# Copyright (c) 2017, Marcel Hellkamp.
+# Copyright (c) 2010-2018 Benjamin Peterson
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1645,9 +1678,6 @@ else:
         exec("""exec _code_ in _globs_, _locs_""")
 
 ##############################################################################
-
-# Global object for bracket escape modes
-_bracket_escape = _bracket_escape_obj()      
 
 # Global set of keys from an empty execution:
 INIT_VARS = set(_template('BLA',return_env=True)[-1].keys())

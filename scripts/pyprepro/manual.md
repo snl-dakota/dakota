@@ -87,6 +87,22 @@ As noted in the `--help` for pyprepro, the actual delimiters can be changed. Thi
 
 For code blocks (default `{% %}`) the major requirement is that the inner-most characters cannot be any of "`{}[]()`".
 
+## Escaping delimiters
+
+All delimiters can be escaped with a leading `\`. A double `\\` followed by the delimiter will return `\`. For example:
+
+    {A=5}
+    \{A=5\}
+    \\{A=5\\}
+
+returns
+
+    5
+    {A=5}
+    \{A=5\}  
+
+Note that escaping the trailing delimiter (e.g. `\}`) is not necessary but will work either way.
+
 # Immutable Variables
 
 One major addition is that variable names can be fixed such that they cannot be redefined (without explicitly allowing it). 

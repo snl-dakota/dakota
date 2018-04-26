@@ -53,9 +53,8 @@ import unittest
 import pyprepro
 
 from pyprepro import ImmutableValDict,Immutable,Mutable
-from pyprepro import _parse_inline_assignments
-from pyprepro import _formatter,_bracket_escape_obj
-bracket_escape = _bracket_escape_obj()
+from pyprepro import _preparser
+from pyprepro import _formatter
 
 ####################
 
@@ -473,6 +472,46 @@ class preparser_edge_cases(unittest.TestCase):
         output = pyprepro.pyprepro(input)
         self.assert_(compare_lines(output,gold))
     
+        # More single line tests
+        
+        # just for speed
+        p = pyprepro.pyprepro       
+        c = lambda a,b: self.assert_(compare_lines(a,b))
+        
+        # Reminder that r means string literal. So r'\' is '\\' but this is NOT needed in read-files
+        c( p(r'{a=5}')      ,r'5')
+        c( p(r'\{a=5}')     ,r'{a=5}')
+        c( p(r'\{a=5\}')    ,r'{a=5}')
+        c( p(r'\\{a=5}')    ,r'\{a=5}')
+        c( p(r'\\{a=5\}')   ,r'\{a=5}')
+        c( p(r'\\{a=5\\}')  ,r'\{a=5\}')
+    
+        # test with different delimiters
+        c( p(r'[b=2$',inline='[ $'),'2')
+        c( p(r'\[b=2$',inline='[ $'),'[b=2$')
+        c( p(r'\[b=2\$',inline='[ $'),'[b=2$')
+        c( p(r'\\[b=2$',inline='[ $'),'\[b=2$')
+        c( p(r'\\[b=2\$',inline='[ $'),'\[b=2$')
+        c( p(r'\\[b=2\\$',inline='[ $'),'\[b=2\$')
+        
+        # Test with nested
+        IN = """\
+# Several on a line, some escaped
+{ alpha = 0.1 } then \{ beta = alpha \} then { beta = 2.0*alpha }
+ 
+# Nested with escapes
+{ alpha = 0.1 } then \{ beta = alpha \} then \{ { beta = 2.0*alpha } \} {beta}"""
+        
+        GOLD = """\
+# Several on a line, some escaped
+0.1 then { beta = alpha } then 0.2
+
+# Nested with escapes
+0.1 then { beta = alpha } then { 0.2 } 0.2"""
+        
+        c(p(IN),GOLD)
+        
+    
     def test_multiple_inline_variables(self):
         """
         This tests reading and redefining variables inline, and ensuring spacing
@@ -556,10 +595,10 @@ class preparser_edge_cases(unittest.TestCase):
         GOLD = """\
 {% A = 10 %}
 \\\\
-% A= 1
+{% A= 1 %}
 { A }
 {% A += 4 %}"""
-        self.assert_(compare_lines(pyprepro._parse_inline_assignments(IN),GOLD))
+        self.assert_(compare_lines(pyprepro._preparser(IN),GOLD))
 
 
         # This tests the regression
@@ -572,11 +611,11 @@ class preparser_edge_cases(unittest.TestCase):
         GOLD = """\
 {% A = 10 %}
 \\\\
-% A= 1
+{% A= 1 %}
 { A }
 {% A += 4
 %}"""
-        self.assert_(compare_lines(pyprepro._parse_inline_assignments(IN),GOLD))
+        self.assert_(compare_lines(pyprepro._preparser(IN),GOLD))
 
         
     def test_pathological_quotes(self):
