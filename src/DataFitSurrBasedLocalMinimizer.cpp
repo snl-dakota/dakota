@@ -32,7 +32,8 @@ extern PRPCache data_pairs; // global container
 
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedLocalMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
+  SurrBasedLocalMinimizer(problem_db, model,
+    std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
   multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
 {
@@ -216,14 +217,19 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
 
 void DataFitSurrBasedLocalMinimizer::build()
 {
+  // On rejection of candidate iterate:
+  // > global:     rebuild with new DACE samples within reduced TR bounds
+  // > multipoint: verify() performs append + rebuild using truth values
+  //               from rejected pt (QMEA, MPEA)
+  // > local:      reuse previous approx within reduced TR bounds
   if (!globalApproxFlag && !trustRegionData.status(NEW_CENTER)) {
     Cout << "\n>>>>> Reusing previous approximation.\n";
     return;
   }
 
   bool embed_correction = (globalApproxFlag) ?
-    build_global() : // global rebuild: new center or new TR bounds
-    build_local();   // local/multipt/hierarch: rebuild if new center
+    build_global() :          // global rebuild: new center or new TR bounds
+    build_local_multipoint(); // local/multipt/hierarch: rebuild if new center
 
   // Update graphics for iteration 0 (initial guess).
   if (globalIterCount == 0)
@@ -273,7 +279,7 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
 }
 
 
-bool DataFitSurrBasedLocalMinimizer::build_local()
+bool DataFitSurrBasedLocalMinimizer::build_local_multipoint()
 {
   // local/multipt/hierarchical with new center
 
@@ -391,13 +397,26 @@ void DataFitSurrBasedLocalMinimizer::verify()
   }
   else
     truth_model.evaluate(trustRegionData.active_set_star(TRUTH_RESPONSE));
-  const Response& truth_resp = truth_model.current_response();
-  trustRegionData.response_star_pair(truth_model.evaluation_id(), truth_resp,
+
+  trustRegionData.response_star_pair(truth_model.evaluation_id(),
+				     truth_model.current_response(),
 				     CORR_TRUTH_RESPONSE);
 
   // compute the trust region ratio, update soft convergence counters, and
   // transfer data from star to center (if accepted step)
   compute_trust_region_ratio(trustRegionData, globalApproxFlag);
+
+  // If multipoint approximation and point rejected (a gradient-enhanced data
+  // set is not forthcoming), append as new truth data for updating selected
+  // multipoint approximations that accumulate more than 2 pts (QMEA, MPEA).
+  // > Not an anchor point --> use append_approx rather than update_approx
+  // > Make logic in Approximation::clear_current() consistent with these
+  //   augmented data sets
+  // > Rebuild now (retain multipoint return in build()) or later (call
+  //   build_local_multipoint() from build()) ???
+  if (multiptApproxFlag && !trustRegionData.status(NEW_CENTER)) // rejected
+    iteratedModel.append_approximation(trustRegionData.vars_star(),
+      trustRegionData.response_star_pair(CORR_TRUTH_RESPONSE), true);
 
   // record the iteration results, even if no change in center iterate
   iteratedModel.active_variables(trustRegionData.vars_center());

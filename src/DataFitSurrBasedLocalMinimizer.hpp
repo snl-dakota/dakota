@@ -103,7 +103,7 @@ protected:
   void verify();
 
   bool build_global();
-  bool build_local();
+  bool build_local_multipoint();
   void compute_center_correction(bool embed_correction);
 
   unsigned short converged();
