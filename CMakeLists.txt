@@ -50,6 +50,17 @@ else()
     "${Dakota_VERSION_PAIR}${Dakota_VERSION_APPEND_STABLE}")
 endif()
 
+
+# Installation destination options
+# (relative to ${CMAKE_INSTALL_PREFIX}, unless absolute)
+set(DAKOTA_EXAMPLES_INSTALL "share/dakota" CACHE STRING
+  "Installation destination for DAKOTA examples/ dir")
+set(DAKOTA_TEST_INSTALL "share/dakota" CACHE STRING
+  "Installation destination for DAKOTA test/ dir")
+set(DAKOTA_TOPFILES_INSTALL "share/dakota" CACHE STRING
+  "Installation destination for DAKOTA top-level files")
+
+
 # Location for generated files
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
   "${Dakota_BINARY_DIR}/generated")
@@ -95,7 +106,7 @@ Built from GIT revision ${Dakota_GIT_REV}
 " )
   set(DAKOTA_VERSION_file_path "${Dakota_BINARY_DIR}/generated/VERSION/")
   install(FILES ${Dakota_BINARY_DIR}/generated/VERSION/VERSION DESTINATION
-	  .)
+	  ${DAKOTA_TOPFILES_INSTALL})
 
   message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   message(STATUS "Dakota git revision is: ${Dakota_GIT_REV}")
@@ -369,16 +380,6 @@ endif()
 include(CTest)
 
 
-# Installation destination options 
-# (relative to ${CMAKE_INSTALL_PREFIX}, unless absolute)
-set(DAKOTA_EXAMPLES_INSTALL . CACHE FILEPATH 
-  "Installation destination for DAKOTA examples/ dir")
-set(DAKOTA_TEST_INSTALL . CACHE FILEPATH 
-  "Installation destination for DAKOTA test/ dir")
-set(DAKOTA_TOPFILES_INSTALL . CACHE FILEPATH 
-  "Installation destination for DAKOTA top-level files")
-
-
 # Set the export name for install targets; parent packages likely want
 # to override this to the name of their target
 set(ExportTarget DakotaTargets CACHE STRING 
@@ -454,6 +455,9 @@ if (NOT BUILD_IN_TRILINOS)
 	"Dakota disabling Trilinos development mode")
       # This would be lighter weight, but might result in strong warnings
       ##set(Trilinos_ASSERT_MISSING_PACKAGES OFF CACHE BOOL "Dakota being lazy")
+
+      set(Trilinos_GENERATE_REPO_VERSION_FILE OFF CACHE BOOL
+        "Dakota disabling generation of TrilinosRepoVersion.txt")
 
       add_subdirectory(packages/external/trilinos)
 
