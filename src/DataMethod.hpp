@@ -78,6 +78,7 @@ enum { DEFAULT_METHOD=0,
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,
        DOT_BFGS, DOT_FRCG, DOT_MMFD, DOT_SLP, DOT_SQP, CONMIN_FRCG, CONMIN_MFD,
+       ROL_LS,
        // Generic Optimizers / Minimizers:
        DL_SOLVER,
        // Minimizers that are both opt & least sq
@@ -984,15 +985,19 @@ public:
   unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior
   String proposalCovType;
-  /// number of updates of the proposal covariance from computing the
-  /// misfit Hessian using residual values and derivatives
-  int proposalCovUpdates;
+  /// optional multiplier for prior-based proposal covariance
+  double priorPropCovMult;
+  /// number of samples after which to update the proposal covariance from
+  /// misfit Hessian (using residual values and derivatives)
+  int proposalCovUpdatePeriod;
   /// the format of proposal covariance input: diagonal or matrix
   String proposalCovInputType;
   /// raw list of real data for the proposal covariance
   RealVector proposalCovData;
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
+  /// file containing advanced ROL option overrides
+  String advancedOptionsFilename;
   /// file containing advanced QUESO option overrides
   String quesoOptionsFilename;
   /// the \c fitness metric type specification in \ref

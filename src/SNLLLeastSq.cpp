@@ -122,7 +122,7 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
 			iteratedModel.interval_type(),
 			iteratedModel.fd_gradient_step_size(),
 			maxIterations, maxFunctionEvals, convergenceTol,
-			probDescDB.get_real("method.optpp.gradient_tolerance"), 
+			probDescDB.get_real("method.gradient_tolerance"),
 			maxStep, boundConstraintFlag, numConstraints,
 			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
 }

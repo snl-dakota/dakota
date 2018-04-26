@@ -6718,6 +6718,7 @@ static Real
 	MP_(mutationRate),
 	MP_(mutationScale),
 	MP_(percentVarianceExplained),
+        MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
@@ -6784,6 +6785,7 @@ static UShortArray
 	MP_(varPartitions);
 
 static String
+        MP_(advancedOptionsFilename),
         MP_(betaSolverName),
         MP_(dataDistFile),
         MP_(displayFormat),
@@ -6814,7 +6816,6 @@ static String
         MP_(posteriorSamplesImportFilename),
 	MP_(proposalCovFile),
 	MP_(pstudyFilename),
-        MP_(quesoOptionsFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
         MP_(subModelPointer);
@@ -6905,7 +6906,7 @@ static int
 	MP_(numTrials),
 	MP_(populationSize),
         MP_(procsPerIterator),
-        MP_(proposalCovUpdates),
+        MP_(proposalCovUpdatePeriod),
 	MP_(numPushforwardSamples),
 	MP_(randomSeed),
 	MP_(samplesOnEmulator),
@@ -7086,7 +7087,8 @@ static Method_mp_utype
 	MP2s(methodName,MESH_ADAPTIVE_SEARCH),
 	MP2s(methodName,MOGA),
 	MP2s(methodName,MULTI_START),
-	MP2s(methodName,NCSU_DIRECT),
+  MP2s(methodName,NCSU_DIRECT),
+  MP2s(methodName,ROL_LS),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),

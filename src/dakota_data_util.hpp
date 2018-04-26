@@ -168,12 +168,95 @@ Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv);
 Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 		   const IntVector&  curr_iv,  const IntVector&  prev_iv,
 		   const RealVector& curr_rv2, const RealVector& prev_rv2);
+
+/// equality function for RealVector and a vector of arbitrary type
+template <typename VectorType>
+bool is_equal_vec( const RealVector & vec1,
+	           const VectorType & vec2)
+{ 
+  // Check for equality in array lengths
+  int len = vec1.length();
+  if ( (int)vec2.size() != len )
+    return false;
+  // Check each size_t
+  for (int i=0; i<len; ++i)
+    if ( vec1[i] != vec2[i] )
+      return false;
+  return true;
+}
+
 // ---------------------
 // Misc matrix utilities 
 // ---------------------
 
+// Taken from pecos/src/MathTools.hpp, BUT
+// not templated because the implementation is specific to RealMatrix
+inline void copy_data( const RealMatrix &source, RealMatrix &dest, 
+	        int num_rows, int num_cols, int start_row=0, int start_col=0 )
+{
+  RealMatrix source_subset( Teuchos::View, source, num_rows, num_cols, 
+			    start_row, start_col );
+  dest.reshape( num_rows, num_cols );
+  dest.assign( source_subset );
+}
+
+inline void copy_data( const RealMatrix &source, RealMatrix &dest )
+{
+  return copy_data(source, dest, source.numRows(), source.numCols());
+}
+
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
+
+/// Applies a RealMatrix to a vector (or subset of vector) v1
+/** Optionally works with a subset of the passed vectors; applies the
+    matrix M to the first M.numCols() entries in v1, and populates the
+    first M.numRows entries in v2. */
+template<typename MatrixType, typename VectorType>
+void apply_matrix_partial(const MatrixType& M, const VectorType & v1, VectorType & v2)
+{
+  if( M.numCols() > v1.size() ) {
+    Cerr << "apply_matrix Error: incoming vector size is inconsistent with matrix column dimension."
+      << std::endl;
+    abort_handler(-1);
+  }
+
+  // Resize target vector if needed
+  if( M.numRows() > v2.size() )
+    v2.resize(M.numRows());
+
+  // Apply the matrix
+  for(size_t i=0; i<M.numRows(); ++i) {
+    v2[i] = 0.0;
+    for (size_t j=0; j<M.numCols(); ++j)
+      v2[i] += M(i,j) * v1[j];
+  }
+}
+
+/// Applies transpose of a RealMatrix to a vector (or subset of vector) v1
+/** Optionally works with a subset of the passed vectors; applies the
+    matrix M^T to the first M.numRows() entries in v1, and populates the
+    first M.numCols() entries in v2. */
+template<typename VectorType>
+void apply_matrix_transpose_partial(const RealMatrix& M, const VectorType & v1, VectorType & v2)
+{
+  if( M.numRows() > v1.size() ) {
+    Cerr << "apply_matrix_transpose Error: incoming vector size is inconsistent with matrix row dimension."
+      << std::endl;
+    abort_handler(-1);
+  }
+
+  // Resize target vector if needed
+  if( M.numCols() > v2.size() )
+    v2.resize(M.numCols());
+
+  // Apply the matrix
+  for(size_t j=0; j<M.numCols(); ++j) {
+    v2[j] = 0.0;
+    for (size_t i=0; i<M.numRows(); ++i)
+      v2[j] += M(i,j) * v1[i];
+  }
+}
 
 // -----
 // Utility functions for manipulating or searching strings
@@ -867,6 +950,19 @@ void copy_data_partial(const std::vector<T>& da, boost::multi_array<T, 1>& bma,
 //    da2[start_index2+i] = da1[start_index1+i];
 //}
 
+/// Copies a column of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
+template<typename VectorType>
+void copy_column_vector(const RealMatrix& m,
+                              RealMatrix::ordinalType j,
+			      VectorType& col)
+{
+  RealMatrix::ordinalType i, num_items = m.numRows();
+  if (col.size() != num_items)
+    col.resize(num_items);
+  for(i=0; i<num_items; ++i)
+    col[i] = m(i,j);
+}
+
 /// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
 template<typename VectorType>
 void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
@@ -880,7 +976,7 @@ void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
 }
 
 
-/// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
+/// Inserts a std::vector<Real> into a row of a Teuchos_SerialDenseMatrix<int,Real>
 template<typename ScalarType>
 void insert_row_vector(const std::vector<ScalarType>& row, 
                              RealMatrix::ordinalType i,

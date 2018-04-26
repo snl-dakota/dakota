@@ -386,6 +386,7 @@ set(ExportTarget DakotaTargets CACHE STRING
 
 # TODO: Have etphipp remove Trilinos-specific code and instead set in TriKota
 # when building inside Trilinos, the path to Teuchos will already be set
+option(HAVE_ROL "Build the ROL package." ON)
 if (NOT BUILD_IN_TRILINOS)
 
   # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
@@ -405,6 +406,7 @@ if (NOT BUILD_IN_TRILINOS)
       message(STATUS
 	"Dakota using previously specified Teuchos in ${Teuchos_DIR}")
     else()
+      # Directory containing TeuchosConfig.cmake at build time
       set(Teuchos_DIR
         ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/teuchos)
       set(Trilinos_ENABLE_Teuchos ON CACHE BOOL
@@ -430,6 +432,29 @@ if (NOT BUILD_IN_TRILINOS)
       message(STATUS "Dakota setting Teuchos_DIR to ${Teuchos_DIR}")
       set(DAKOTA_BUILDING_TEUCHOS TRUE CACHE BOOL
         "Dakota is building Teuchos in its build tree" FORCE)
+
+      # Partial support for ROL TPL; some logic paths are uncovered in
+      # the case of specified Teuchos_DIR.  This only works since ROL
+      # is header-only and won't build/install any libraries.
+      if(HAVE_ROL)
+	# Enabling so we generate ROL_config.h
+	set(Trilinos_ENABLE_ROL ON CACHE BOOL "Dakota enabling Trilinos ROL")
+	# Directory containing ROLConfig.cmake at build time (not used for now)
+	##set(ROL_DIR
+        ##  ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/rol)
+	##message(STATUS "Dakota setting ROL_DIR to ${ROL_DIR}")
+      else()
+	set(Trilinos_ENABLE_ROL OFF CACHE BOOL "Dakota disabling Trilinos ROL")
+      endif()
+
+      # This mirrors the Trilinos release process setting, so Dakota
+      # can work with Trilinos master, when needed.  Specifically it
+      # will suppress errors about missing packages.
+      set(Trilinos_ENABLE_DEVELOPMENT_MODE OFF CACHE BOOL
+	"Dakota disabling Trilinos development mode")
+      # This would be lighter weight, but might result in strong warnings
+      ##set(Trilinos_ASSERT_MISSING_PACKAGES OFF CACHE BOOL "Dakota being lazy")
+
       add_subdirectory(packages/external/trilinos)
 
     endif() # Teuchos_DIR
@@ -438,6 +463,10 @@ if (NOT BUILD_IN_TRILINOS)
     set(Trilinos_TARGETS_IMPORTED 1)
 
     find_package( Teuchos NO_MODULE REQUIRED )
+    # Can't get this to work due to ROLConfig.cmake only working once installed
+    #if(HAVE_ROL)
+    #  find_package( ROL NO_MODULE REQUIRED )
+    #endif()
 
   endif() # Trilinos_DIR
 
@@ -570,15 +599,8 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   )
 
 # Install helper scripts to bin/:
-install(PROGRAMS "scripts/dprepro" DESTINATION "bin")
-# dakota.bat is useful in both native and Cygwin due to command prompt usage
-if (MSVC OR CYGWIN)
-  install(PROGRAMS "scripts/dakota.bat" DESTINATION "bin")
-endif()
-# dakota.sh is useful for all except native windows builds
-if(NOT MSVC)
-  install(PROGRAMS "scripts/dakota.sh" DESTINATION "bin")
-endif()
+add_subdirectory("scripts")
+
 
 # Final CPack settings
 

@@ -1,0 +1,31 @@
+## Pathological Dakota input
+
+environment
+method
+    sampling
+        seed 98765
+        samples 1
+
+model,
+	single
+
+variables,
+	uniform_uncertain =  6
+        lower_bounds    =    0    0     0     0      0       0
+        upper_bounds    =    +1   2     3     4      5       6
+        descriptors     =    'x'  'x:y' '1x'  '1x:y' 'pass'  'várïåbłę'
+    discrete_design_set
+        string 1 
+          elements 'double  space'
+
+
+interface
+    fork analysis_driver = 'echo.sh'
+    parameters_file = 'params.in'
+    file_save
+    aprepro
+
+responses
+	response_functions = 1
+	no_gradients
+	no_hessians

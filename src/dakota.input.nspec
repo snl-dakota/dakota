@@ -483,6 +483,16 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
+  ( rol_ls {N_mdm(utype,methodName_ROL_LS)}
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ threshold_delta REAL {N_mdm(Real,threshStepLength)} ]
+    [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
+    [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+    [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
+    [ scaling {N_mdm(true,methodScaling)} ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
   ( asynch_pattern_search ALIAS coliny_apps {N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}
     [ initial_delta REAL {N_mdm(Real,initStepLength)} ]
     [ contraction_factor REAL {N_mdm(Real,contractStepLength)} ]
@@ -3308,11 +3318,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         none {N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
-        ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
-          [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
+        ( prior {N_mdm(lit,proposalCovType_prior)}
+          [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]
          )
         |
-        prior {N_mdm(lit,proposalCovType_prior)}
+        ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
+          [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
+         )
         |
         ( values REALLIST {N_mdm(RealDL,proposalCovData)}
           diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
@@ -3326,7 +3338,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           matrix {N_mdm(lit,proposalCovInputType_matrix)}
          )
        ]
-      [ options_file STRING {N_mdm(str,quesoOptionsFilename)} ]
+      [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
      )
     |
     ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
@@ -3377,11 +3389,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         rnum2 {N_mdm(lit,rngName_rnum2)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
-        ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
-          [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
+        ( prior {N_mdm(lit,proposalCovType_prior)}
+          [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]
          )
         |
-        prior {N_mdm(lit,proposalCovType_prior)}
+        ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
+          [ update_period INTEGER {N_mdm(int,proposalCovUpdatePeriod)} ]
+         )
         |
         ( values REALLIST {N_mdm(RealDL,proposalCovData)}
           diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
@@ -3395,7 +3409,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           matrix {N_mdm(lit,proposalCovInputType_matrix)}
          )
        ]
-      [ options_file STRING {N_mdm(str,quesoOptionsFilename)} ]
+      [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
      )
     |
     ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}

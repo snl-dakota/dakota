@@ -17,6 +17,7 @@ option(HAVE_OPTPP "Build the OPTPP package." ON)
 option(HAVE_PECOS "Build the Pecos package." ON)
 option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
+option(HAVE_ROL "Build the ROL package." ON)
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
 # Packages formerly underneath Pecos
 option(HAVE_FFT "Use either the fftw or dfftpack packages" ON)

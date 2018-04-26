@@ -96,6 +96,9 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
+#ifdef HAVE_ROL
+#include "ROLOptimizer.hpp"
+#endif
 #ifdef HAVE_JEGA
 #include "JEGAOptimizer.hpp"
 #endif
@@ -533,6 +536,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_NCSU
   case NCSU_DIRECT: return new NCSUOptimizer(problem_db, model);       break;
 #endif
+#ifdef HAVE_ROL
+  case ROL_LS:
+    return new ROLOptimizer(problem_db, model); break;
+#endif
   default:
     switch (method_name) {
     case NPSOL_SQP: case NLPQL_SQP:
@@ -668,6 +675,14 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 #ifdef HAVE_NCSU
   else if (method_string == "ncsu_direct")
     return new NCSUOptimizer(model);
+#endif
+#ifdef HAVE_NCSU
+  else if (method_string == "ncsu_direct")
+    return new NCSUOptimizer(model);
+#endif
+#ifdef HAVE_ROL
+  else if (method_string == "rol_ls")
+    return new ROLOptimizer(method_string, model);
 #endif
   else {
     if ( method_string == "npsol_sqp" || method_string == "nlpql_sqp" ||
@@ -892,6 +907,7 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case FSU_HAMMERSLEY:          return String("fsu_hammersley"); break;
   case PSUADE_MOAT:             return String("psuade_moat"); break;
   case NCSU_DIRECT:             return String("ncsu_direct"); break;
+  case ROL_LS:                  return String("rol_ls"); break;
   default:
     Cerr << "Invalid method conversion: case " << method_name
 	 << " not available." << std::endl;
@@ -991,6 +1007,7 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "ncsu_direct")      return NCSU_DIRECT;
   else if (method_name == "genie_opt_darts")  return GENIE_OPT_DARTS;
   else if (method_name == "genie_direct")     return GENIE_DIRECT;
+  else if (method_name == "rol_ls")           return ROL_LS;
   else {
     Cerr << "Invalid method conversion: " << method_name << " not available."
 	 << std::endl;

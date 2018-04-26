@@ -17,7 +17,7 @@
 
 #include "NonDBayesCalibration.hpp"
 
-// forward declare isolate QUESO includes to Dakota .cpp files
+// forward declare here to isolate QUESO includes to Dakota .cpp files
 namespace QUESO {
   class GslVector;
   class GslMatrix;
@@ -35,18 +35,25 @@ namespace QUESO {
 
 namespace Dakota {
 
+// forward declarations of Dakota specializations
+template <class V, class M> class DerivInformedPropCovTK;
+template <class V, class M> class DerivInformedPropCovLogitTK;
+
 
 /// Bayesian inference using the QUESO library from UT Austin
 
-/** This class provides a wrapper to the QUESO library developed as
-    part of the Predictive Science Academic Alliance Program (PSAAP),
-    specifically the PECOS (Predictive Engineering and Computational
-    Sciences) Center at UT Austin.  The name QUESO stands for
-    Quantification of Uncertainty for Estimation, Simulation, and
-    Optimization. */
-
+/** This class wraps the Quantification of Uncertainty for Estimation,
+    Simulation, and Optimization (QUESO) library, developed as part of
+    the Predictive Science Academic Alliance Program (PSAAP)-funded
+    Predictive Engineering and Computational Sciences (PECOS) Center
+    at UT Austin. */
 class NonDQUESOBayesCalibration: public NonDBayesCalibration
 {
+  /// Random walk transition kernel needs callback access to QUESO details
+  friend class DerivInformedPropCovTK<QUESO::GslVector, QUESO::GslMatrix>;
+  /// Logit random walk transition kernel needs callback access to QUESO details
+  friend class DerivInformedPropCovLogitTK<QUESO::GslVector, QUESO::GslMatrix>;
+
 public:
 
   //
@@ -87,50 +94,31 @@ protected:
 
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
-  void precondition_proposal();
+  void precondition_proposal(unsigned int chain_index);
 
   /// perform the MCMC process
   void run_queso_solver();
 
+  void map_pre_solve();
+
   /// short term option to restart the MCMC chain with updated proposal
   /// density computed from the emulator at a new starting point
-  void run_chain_with_restarting();
+  void run_chain();
 
-  /// accumulate unique samples drawn from the acceptance chain
-  void accumulate_chain(size_t update_cntr);
-  /// accumulate the acceptance chain across multiple restart cycles,
-  /// including recovering corresponding function values
-  void aggregate_acceptance_chain(size_t update_cntr);
+  /// cache the chain to acceptanceChain and acceptedFnVals
+  void cache_chain();
 
-  /// extract batch_size points from the MCMC chain and store final
-  /// aggregated set within allSamples; unique points with highest
-  /// posterior probability are selected
-  void filter_chain_by_probability(size_t update_cntr,
-				   unsigned short batch_size);
-  /// extract batch_size points from the MCMC chain and store final
+  /// log at most batchSize best chain points into bestSamples
+  void log_best();
+
+  /// extract batchSize points from the MCMC chain and store final
   /// aggregated set within allSamples; unique points with best
   /// conditioning are selected, as determined by pivoted LU
-  void filter_chain_by_conditioning(size_t update_cntr,
-				    unsigned short batch_size);
+  void filter_chain_by_conditioning();
 
-  /// store indices of best batch_size samples from the current MCMC
-  /// chain within the local_best array
-  void chain_to_local(unsigned short batch_size,
-		      std::map<Real, size_t>& local_best);
-  /// update bestSamples aggregation using new contributions from the
-  /// current MCMC chain
-  void local_to_aggregated(unsigned short batch_size,
-			   const std::map<Real, size_t>& local_best);
-  /// following aggregation cycles, copy bestSamples to allSamples
-  void aggregated_to_all();
-  /// in the absence of aggregation cycles, copy local_best to allSamples
-  void local_to_all(const std::map<Real, size_t>& local_best);
+  /// copy bestSamples to allSamples to use in surrogate update
+  void best_to_all();
 
-  // update the starting point for a restarted MCMC chain using new_center
-  //Real update_center(const RealVector& new_center);
-  /// update the starting point for a restarted MCMC chain using last
-  /// point from previous chain
-  void update_center();
   /// evaluates allSamples on iteratedModel and update the mcmcModel emulator
   /// with all{Samples,Responses}
   void update_model();
@@ -197,15 +185,16 @@ protected:
   /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
   /// or "metropolis_hastings" or "multilevel",  within QUESO) 
   String mcmcType;
+  /// period (number of accepted chain samples) for proposal covariance update
+  int propCovUpdatePeriod;
+  /// number of points to add to surrogate at each iteration
+  unsigned int batchSize;
   /// the active set request value to use in proposal preconditioning
   short precondRequestValue;
   /// flag indicating user activation of logit transform option
   /** this option is useful for preventing rejection or resampling for
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
-
-
-
 
   // the following QUESO objects listed in order of construction;
   // scoped_ptr more appropriate, but don't want to include QUESO
@@ -229,11 +218,15 @@ protected:
   /// initial parameter values at which to start chain
   boost::shared_ptr<QUESO::GslVector> paramInitials;
 
+  /// random variable for the prior
   boost::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     priorRv;
 
   /// proposal covariance for DRAM
   boost::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
+
+  /// optional multiplier to scale prior-based proposal covariance 
+  double priorPropCovMult;
 
   /// general inverse problem options
   boost::shared_ptr<QUESO::SipOptionsValues> calIpOptionsValues;
@@ -244,9 +237,11 @@ protected:
   boost::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
     QUESO::GslMatrix> > likelihoodFunctionObj;
 
+  /// random variable for the posterior
   boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     postRv;
 
+  /// QUESO inverse problem solver
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
 
@@ -263,13 +258,6 @@ private:
   // - Heading: Data
   // 
   
-  /// container for aggregating unique MCMC sample points collected
-  /// across multiple (restarted) chains
-  RealVectorArray uniqueSamples;
-
-  // cache previous MCMC starting point for assessing convergence of
-  // chain restart process
-  //RealVector prevCenter;
   /// cache previous expansion coefficients for assessing convergence of
   /// emulator refinement process
   RealVectorArray prevCoeffs;

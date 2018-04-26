@@ -1,8 +1,10 @@
 from __future__ import print_function
+from io import open
 import collections
 import re
 import sys
 import copy
+from . import dprepro as dprepro_mod
 
 __author__ = 'J. Adam Stephens'
 __copyright__ = 'Copyright 2014 Sandia Corporation'
@@ -324,7 +326,7 @@ class Results(object):
                 raise MissingSourceError("No stream specified and no "
                         "results_file provided at construct time.")
             else:
-                with open(self.results_file, "w") as ofp:
+                with open(self.results_file, "w", encoding='utf8') as ofp:
                     self._write_results(ofp, my_ignore_asv)
         else:
             self._write_results(stream, my_ignore_asv)
@@ -508,8 +510,6 @@ def read_parameters_file(parameters_file=None, results_file=None,
         except IndexError:
             raise MissingSourceError("No parameters filename provided and no "
                     "command line argument.")
-    with open(parameters_file,"r") as ifp:
-        parameters_list = ifp.readlines()
 
     ### Determine the name of the results file
     if results_file is None:
@@ -522,7 +522,70 @@ def read_parameters_file(parameters_file=None, results_file=None,
         results_file = ""
 
     ### Open and parse the parameters file
-    with open(parameters_file, "r") as ifp:
+    with open(parameters_file, "r", encoding='utf8') as ifp:
         return _read_parameters_stream(ifp, ignore_asv, results_file)
+
+def dprepro(template, parameters=None, results=None, include=None,
+        output=None, fmt='%0.10g', code='%', code_block='{% %}', inline='{ }',
+        warn=True):
+    """Call dprepro to process a template
+    
+    The documentation for the command-line version of dprepro explains
+    template formatting and how the Dakota parameters are made available
+    within the template. This function optionally makes a Dakota Results object
+    available under the name DakotaResults.
+
+    Arguments:
+        template: If template is a string, it is assumed to be the name of a file 
+            that contains a template. If it's a file-like object, the template will
+            be read from it.
+
+    Keyword Args:
+        parameters: Parameters object. The object itself is available for use
+            within the template using the name DakotaParams. The variables will
+            also be extracted and made directly available.
+        results: Results object. The object itself is available for use
+            within the template using the name DakotaResults.
+        include: Dict of other items to make available for substitution. Items
+            in include will overwrite items from the Parameters object.
+        output: If output is a string, it is assumed to be the name of a file to 
+            write the processed template to. If it's a file-like object, the
+            processed template will be written to it. If None (the default), the
+            processed template will be returned as a string.
+        fmt: Default format for numerical fields. Default: '%0.10g'
+        code: Delimiter for a code line. Default: '%'
+        code_block: Delimiters for a code block. Default: '{% %}'
+        inline: Delimiters for inline substitution. Default: '{ }'
+        warn: Whether to print warnings
+
+    Returns:
+        If no output is specified, returns a string containing the substituted
+            template.
+    """
+
+    env = {}
+    if include is None:
+        include = {}
+    # Construct the env from parameters, results, and include
+    if isinstance(parameters,Parameters):
+        env["DakotaParams"] = parameters
+        for _, d, v in parameters:
+            env[d] = v
+    if isinstance(results,Results):
+        env["DakotaResults"] = results
+    env.update(include)
+    
+    # Call the template engine
+    output_string = dprepro_mod.dprepro(include=env, template=template, fmt=fmt, code=code,
+            code_block=code_block, inline=inline, warn=warn)
+
+    # Output
+    if output is None:
+        return output_string
+    elif hasttr(output, "write"):
+        output.write(output_string)
+    else:
+        with open(output,"w") as f:
+            f.write(output_string)
 
 

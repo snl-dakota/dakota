@@ -12,8 +12,9 @@ method,
 #	    pre_solve sqp				#p2
 	  proposal_covariance
 	    derivatives	
-	    proposal_updates = 50 # default update is every 100 samples
+	      update_period = 40
 	  logit_transform         # default is off
+	  posterior_stats kl_divergence
 #	  output verbose
 
 variables,								

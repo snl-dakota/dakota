@@ -61,6 +61,9 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
 		    (including any source, test, unit_test, example,
 		     script, build system, or other files not
 		     specifically marked)
+  pyprepro          MIT License [SNL]
+    bottlepy/bottle MIT License (modern stle with sublicense)
+    pypi/six        MIT License (modern stle with sublicense)
   acro              Revised BSD License [SNL]
     (including colin, dummy, interfaces, pebbl, scolib, utilib)
     tpl
@@ -84,7 +87,6 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
   LHS		    GNU Lesser General Public License (LGPL) [SNL]
-  motif/SciPlot	    GNU Library General Public License (old LGPL)
   NCSUOpt	    MIT License
   nidr		    BSD License [SNL]
   NL2SOL	    Publicly Available
@@ -95,8 +97,9 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
   PSUADE	    GNU Lesser General Public License (LGPL)
   queso		    GNU Lesser General Public License (LGPL)
+  sciplot	    GNU Library General Public License (old LGPL)
   surfpack	    GNU Lesser General Public License (LGPL) [SNL]
-  teuchos	    BSD License [SNL]
+  trilinos	    (rol, teuchos) BSD License [SNL]
   VPISparseGrid     GNU Lesser General Public License (LGPL)
 
 The commerically licensed packages are not distributed with public
