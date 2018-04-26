@@ -58,9 +58,10 @@ void NOWPACOptimizer::initialize_options()
 
   // Optional: note that we are overridding NOWPAC defaults with Dakota defaults
   // May want to leave NOWPAC defaults in place if there is no user spec.
-  nowpacSolver.set_option("eta_0",
-    probDescDB.get_real("method.trust_region.contract_threshold") );
+  //nowpacSolver.set_option("eta_0", 1.e-6); // accept/reject threshold
   nowpacSolver.set_option("eta_1",
+    probDescDB.get_real("method.trust_region.contract_threshold") );
+  nowpacSolver.set_option("eta_2",
     probDescDB.get_real("method.trust_region.expand_threshold") );
   // Criticality measures:
   //nowpacSolver.set_option("eps_c"                         , 1e-6 );
