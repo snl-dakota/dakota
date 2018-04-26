@@ -4820,6 +4820,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       u_two_point {N_mdm(utype,reliabilitySearchType_TANA_U)}
       |
+      x_multi_point {N_mdm(utype,reliabilitySearchType_QMEA_X)}
+      |
+      u_multi_point {N_mdm(utype,reliabilitySearchType_QMEA_U)}
+      |
       no_approx {N_mdm(utype,reliabilitySearchType_NO_APPROX)}
       [ 
         sqp {N_mdm(utype,subMethod_SUBMETHOD_SQP)}

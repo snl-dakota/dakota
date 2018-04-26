@@ -3046,6 +3046,10 @@
               </keyword>
               <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point"   >
               </keyword>
+              <keyword  id="x_multi_point" name="x_multi_point" code="{N_mdm(utype,reliabilitySearchType_QMEA_X)}" label="x_multi_point"   >
+              </keyword>
+              <keyword  id="u_multi_point" name="u_multi_point" code="{N_mdm(utype,reliabilitySearchType_QMEA_U)}" label="u_multi_point"   >
+              </keyword>
               <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,reliabilitySearchType_NO_APPROX)}" label="no_approx"   />
             </oneOf>
             <optional>

@@ -204,13 +204,16 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   // performance since far-field info is introduced into the BFGS Hessian.
   short recast_resp_order = 3; // grad-based quasi-Newton opt on mppModel
   if (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
-      mppSearchType == TANA_X) { // Recast( DataFit( iteratedModel ) )
+      mppSearchType == TANA_X || mppSearchType == QMEA_X) {
+    // Recast( DataFit( iteratedModel ) )
 
     // Construct g-hat(x) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel).
     Model g_hat_x_model;
-    String sample_reuse, approx_type = (mppSearchType == TANA_X) ?
-      "multipoint_tana" : "local_taylor";
+    String sample_reuse, approx_type;
+    if (mppSearchType == TANA_X)      approx_type = "multipoint_tana";
+    else if (mppSearchType == QMEA_X) approx_type = "multipoint_qmea";
+    else                              approx_type = "local_taylor";
     UShortArray approx_order(1, taylorOrder);
     short corr_order = -1, corr_type = NO_CORRECTION,
       data_order = (taylorOrder == 2) ? 7 : 3;
@@ -227,7 +230,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     transform_model(g_hat_x_model, uSpaceModel, true); // truncated dist bounds
   }
   else if (mppSearchType ==  AMV_U || mppSearchType == AMV_PLUS_U ||
-	   mppSearchType == TANA_U) { // DataFit( Recast( iteratedModel ) )
+	   mppSearchType == TANA_U || mppSearchType == QMEA_U) {
+    // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u)
     Model g_u_model;
@@ -235,8 +239,10 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
-    String sample_reuse, approx_type = (mppSearchType == TANA_U) ?
-      "multipoint_tana" : "local_taylor";
+    String sample_reuse, approx_type;
+    if (mppSearchType == TANA_U)      approx_type = "multipoint_tana";
+    else if (mppSearchType == QMEA_U) approx_type = "multipoint_qmea";
+    else                              approx_type = "local_taylor";
     UShortArray approx_order(1, taylorOrder);
     short corr_order = -1, corr_type = NO_CORRECTION,
       data_order = (taylorOrder == 2) ? 7 : 3;
@@ -363,7 +369,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     // model when available, construct one when not.
     NonDAdaptImpSampling* import_sampler_rep = NULL;
     switch (mppSearchType) {
-    case AMV_X: case AMV_PLUS_X: case TANA_X: {
+    case AMV_X: case AMV_PLUS_X: case TANA_X: case QMEA_X: {
       Model g_u_model;
       transform_model(iteratedModel, g_u_model); // original dist bounds
       import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
@@ -371,7 +377,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 	cdfFlag, x_model_flag, use_model_bounds, track_extreme);
       break;
     }
-    case AMV_U: case AMV_PLUS_U: case TANA_U:
+    case AMV_U: case AMV_PLUS_U: case TANA_U: case QMEA_U:
       import_sampler_rep = new NonDAdaptImpSampling(uSpaceModel.truth_model(),
 	sample_type, refine_samples, refine_seed, rng, vary_pattern,
 	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
@@ -974,9 +980,8 @@ void NonDLocalReliability::initial_taylor_series()
   case MV:
     asrv.assign(numFunctions, mode);
     break;
-  case AMV_X:      case AMV_U:
-  case AMV_PLUS_X: case AMV_PLUS_U:
-  case TANA_X:     case TANA_U:
+  case AMV_X:   case AMV_U:   case AMV_PLUS_X:  case AMV_PLUS_U:
+  case TANA_X:  case TANA_U:  case QMEA_X:      case QMEA_U:
     for (i=0; i<numFunctions; ++i)
       if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	  !requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty() )
@@ -1216,7 +1221,8 @@ void NonDLocalReliability::initialize_level_data()
       assign_mean_data();
     }
     else if (mppSearchType == AMV_PLUS_X || mppSearchType == AMV_PLUS_U ||
-	     mppSearchType == TANA_X     || mppSearchType == TANA_U) {
+	     mppSearchType == TANA_X     || mppSearchType == TANA_U ||
+	     mppSearchType == QMEA_X     || mppSearchType == QMEA_U) {
       mostProbPointU = initialPtU;
       natafTransform.trans_U_to_X(mostProbPointU, mostProbPointX);
       if (inactive_grads)
@@ -1439,7 +1445,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
   // Update MPP arrays from optimization results
   Real conv_metric;
   switch (mppSearchType) {
-  case AMV_PLUS_X: case AMV_PLUS_U: case TANA_X: case TANA_U:
+  case AMV_PLUS_X: case AMV_PLUS_U:
+  case TANA_X: case TANA_U: case QMEA_X: case QMEA_U:
     RealVector del_u(numUncertainVars, false);
     for (size_t i=0; i<numUncertainVars; i++)
       del_u[i] = mpp_u[i] - mostProbPointU[i];
@@ -1465,7 +1472,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       = iteratedModel.current_response().function_value(respFnCount);
     break;
   }
-  case AMV_PLUS_X: case AMV_PLUS_U: case TANA_X: case TANA_U: {
+  case AMV_PLUS_X: case AMV_PLUS_U:
+  case TANA_X: case TANA_U: case QMEA_X: case QMEA_U: {
     // Assess AMV+/TANA iteration convergence.  ||del_u|| is not a perfect
     // metric since cycling between MPP estimates can occur.  Therefore,
     // a maximum number of iterations is also enforced.
@@ -1746,7 +1754,7 @@ void NonDLocalReliability::update_level_data()
 void NonDLocalReliability::update_limit_state_surrogate()
 {
   bool x_space = (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
-		  mppSearchType == TANA_X);
+		  mppSearchType == TANA_X || mppSearchType == QMEA_X);
 
   // construct local Variables object
   Variables mpp_vars(iteratedModel.current_variables().shared_data());
