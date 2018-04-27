@@ -32,7 +32,6 @@ QMEApproximation(ProblemDescDB& problem_db,
 	 << "QMEApproximation." << std::endl;
     abort_handler(APPROX_ERROR);
   }
-
   pExp.sizeUninitialized(sharedDataRep->numVars);
   minX.sizeUninitialized(sharedDataRep->numVars);
 }
@@ -224,7 +223,6 @@ void QMEApproximation::find_scaled_coefficients()
     }
     else {
       Real p_val = 1. + std::log(grad_ratio)/std::log(pt_ratio);
-
       /*
       // *** Safeguarding approach 3: ***
       minX[i] = std::min( std::min(x1[i], x2i), x_eval[i]);
