@@ -16,10 +16,10 @@ method,
 
 method
 	id_method = 'ROL'
-        rol_ls
+        rol
           gradient_tolerance   1.0e-2
           constraint_tolerance 1.0e-1
-          threshold_delta      1.0e-8
+          variable_tolerance      1.0e-8
           max_iterations       50
 
 model,

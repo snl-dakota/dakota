@@ -107,7 +107,7 @@ method
 #    max_function_evaluations = 2000  #s4
 #    solution_target = 1e-4    	      #s4
 #    initial_delta = 0.5      		    #s4
-#    threshold_delta = 1e-4    		    #s4
+#    variable_tolerance = 1e-4    		    #s4
 #    exploratory_moves basic_pattern  #s4
 #    contraction_factor = 0.75    	  #s4
 #  coliny_ea        	  		          #s5

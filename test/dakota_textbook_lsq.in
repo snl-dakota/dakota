@@ -31,10 +31,10 @@ method
 #    max_iterations = 5000	     		#s4
 #    seed = 1234	   			#s4
 #  scaling                                      #s6
-#  rol_ls                                       #s7
+#  rol                                       #s7
 #    gradient_tolerance 1.0e-8                  #s7
 #    constraint_tolerance 1.0e-8                #s7
-#    threshold_delta 1.0e-8                     #s7
+#    variable_tolerance 1.0e-8                     #s7
 #
 
 # All the models and responses are defined for all the tests, so must specify

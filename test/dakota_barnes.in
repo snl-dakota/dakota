@@ -34,7 +34,7 @@ method,
 #	optpp_q_newton							#s3,#s9
 #	nlpql										#s4,#s10
 #	npsol										#s5,#s11
-#	rol_ls									
+#	rol									
 	  max_iterations = 50
 	  convergence_tolerance = 1e-6	#s0,#s1,#s2,#s4,#s5, #s6,#11,#12,#s10,#s11
 #	  convergence_tolerance = 1e-7	#s3, #s9

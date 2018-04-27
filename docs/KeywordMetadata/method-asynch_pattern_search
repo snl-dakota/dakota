@@ -23,7 +23,7 @@ releases.
 <b> Algorithm Behavior </b>
 
 \li \c initial_delta: the initial step length, must be positive
-\li \c threshold_delta: step length used to determine convergence,
+\li \c variable_tolerance: step length used to determine convergence,
 must be greater than or equal to 4.4e-16
 \li \c contraction_factor: amount by which step length is rescaled
 after unsuccesful iterates, must be strictly between 0 and 1

@@ -90,7 +90,7 @@ length is not contracted), a parallel search will be performed. After
 unsuccessful iterations (where the step length is contracted), only a
 single evaluation is performed.
 
-The \c initial_delta and \c threshold_delta specifications provide the
+The \c initial_delta and \c variable_tolerance specifications provide the
 initial offset size and the threshold size at which to terminate the
 algorithm. For any dimension that has both upper and lower bounds,
 this step length will be internally rescaled to provide search steps

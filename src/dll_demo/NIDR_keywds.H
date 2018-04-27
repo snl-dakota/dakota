@@ -103,7 +103,7 @@ static KeyWord
 		{"solution_accuracy",2,0,4,0,0,0.,0.,1,N_mdm(Real,solnTarget)},
 		{"solution_target",10,0,4,0,0,0.,0.,0,N_mdm(Real,solnTarget)},
 		{"synchronization",8,2,5,0,kw_12},
-		{"threshold_delta",10,0,3,0,0,0.,0.,0,N_mdm(Real,threshStepLength)}
+		{"variable_tolerance",10,0,3,0,0,0.,0.,0,N_mdm(Real,threshStepLength)}
 		},
 	kw_14[3] = {
 		{"deltas_per_variable",5,0,2,2,0,0.,0.,2,N_mdm(intDL,stepsPerVariable)},
@@ -119,7 +119,7 @@ static KeyWord
 		},
 	kw_16[2] = {
 		{"initial_delta",10,0,1,1,0,0.,0.,0,N_mdm(Real,initDelta)},
-		{"threshold_delta",10,0,2,2,0,0.,0.,0,N_mdm(Real,threshDelta)}
+		{"variable_tolerance",10,0,2,2,0,0.,0.,0,N_mdm(Real,threshDelta)}
 		},
 	kw_17[3] = {
 		{0,0,5,0,0,kw_15},

@@ -78,7 +78,7 @@ enum { DEFAULT_METHOD=0,
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,
        DOT_BFGS, DOT_FRCG, DOT_MMFD, DOT_SLP, DOT_SQP, CONMIN_FRCG, CONMIN_MFD,
-       ROL_LS,
+       ROL,
        // Generic Optimizers / Minimizers:
        DL_SOLVER,
        // Minimizers that are both opt & least sq
@@ -548,7 +548,7 @@ public:
   /// \ref MethodAPPS, \ref MethodSCOLIBCOB, \ref MethodSCOLIBPS, and
   /// \ref MethodSCOLIBSW
   Real initDelta;
-  /// the \c threshold_delta specification for APPS/COBYLA/PS/SW methods
+  /// the \c variable_tolerance specification for APPS/COBYLA/PS/SW methods
   /// in \ref MethodAPPS, \ref MethodSCOLIBCOB, \ref MethodSCOLIBPS, and
   /// \ref MethodSCOLIBSW
   Real threshDelta;

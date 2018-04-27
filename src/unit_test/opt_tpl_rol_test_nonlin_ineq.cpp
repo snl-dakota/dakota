@@ -21,10 +21,10 @@ TEUCHOS_UNIT_TEST(opt_rol,nln_ineq_const_1)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-8"
     "     constraint_tolerance 1.0e-8"
-    "     threshold_delta 1.0e-8"
+    "     variable_tolerance 1.0e-8"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 2"
@@ -84,10 +84,10 @@ TEUCHOS_UNIT_TEST(opt_rol,nln_ineq_const_2)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-8"
     "     constraint_tolerance 1.0e-8"
-    "     threshold_delta 1.0e-8"
+    "     variable_tolerance 1.0e-8"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 2"
@@ -148,10 +148,10 @@ TEUCHOS_UNIT_TEST(opt_rol,nln_ineq_const_3)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-8"
     "     constraint_tolerance 1.0e-8"
-    "     threshold_delta 1.0e-8"
+    "     variable_tolerance 1.0e-8"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 2"
@@ -237,10 +237,10 @@ TEUCHOS_UNIT_TEST(opt_rol,nln_ineq_const_4)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-8"
     "     constraint_tolerance 1.0e-8"
-    "     threshold_delta 1.0e-8"
+    "     variable_tolerance 1.0e-8"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 6"
@@ -332,10 +332,10 @@ TEUCHOS_UNIT_TEST(opt_rol,nln_ineq_const_5)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-8"
     "     constraint_tolerance 1.0e-8"
-    "     threshold_delta 1.0e-8"
+    "     variable_tolerance 1.0e-8"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 6"

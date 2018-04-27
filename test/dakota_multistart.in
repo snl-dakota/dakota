@@ -63,10 +63,10 @@ method                            #s0,#s1,#s2,#s4,#p0,#p1,#p2,#p3,#p4,#p5,#p6
 ## conmin_mfd or optpp_q_newton instead)     			      #s0
   dot_bfgs                        #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
 #   scaling                       #s1,#s2
-#  rol_ls                               #s4,#p5,#p6
+#  rol                               #s4,#p5,#p6
 #    gradient_tolerance 1.0e-12         #s4,#p5,#p6
 #    constraint_tolerance 1.0e-12       #s4,#p5,#p6
-#    threshold_delta 1.0e-12            #s4,#p5,#p6
+#    variable_tolerance 1.0e-12            #s4,#p5,#p6
 
 variables
   continuous_design = 2

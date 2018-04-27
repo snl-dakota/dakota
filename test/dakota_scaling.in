@@ -33,10 +33,10 @@ method,
 	  convergence_tolerance = 1e-8	#s0,#s1,#s2,#s3,#s4,#s5,#s6
 #	  convergence_tolerance = 1e-8	#s7,#s8,#s9,#s20,#s21
 #	mesh_adaptive_search	  	#s22,#s23,#s24
-#  	rol_ls                          #s25,#s26,#s27
+#  	rol                          #s25,#s26,#s27
 #    	  gradient_tolerance 1.0e-8     #s25,#s26,#s27
 #    	  constraint_tolerance 1.0e-8   #s25,#s26,#s27
-#    	  threshold_delta 1.0e-8        #s25,#s26,#s27
+#    	  variable_tolerance 1.0e-8        #s25,#s26,#s27
 #-----------------------------------------------------------------------
 # OPT tests with hessian formulations and log scaled functions
 #	optpp_newton			#s10,#s11

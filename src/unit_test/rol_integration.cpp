@@ -184,10 +184,10 @@ TEUCHOS_UNIT_TEST(rol, text_book_nln_ineq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-4"
     "     constraint_tolerance 1.0e-4"
-    "     threshold_delta 1.0e-4"
+    "     variable_tolerance 1.0e-4"
     "     max_iterations 0"
     " variables,"
     "   continuous_design = 3"

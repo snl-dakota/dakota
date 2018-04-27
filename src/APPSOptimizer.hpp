@@ -40,7 +40,7 @@ namespace Dakota {
 
     The user input mappings are as follows: \c output \c
     max_function_evaluations, \c constraint_tol \c initial_delta, \c
-    contraction_factor, \c threshold_delta, \c solution_target, \c
+    contraction_factor, \c variable_tolerance, \c solution_target, \c
     synchronization, \c merit_function, \c constraint_penalty, and \c
     smoothing_factor are mapped into HOPS's \c "Display", "Maximum
     Evaluations", "Active Tolerance"/"Nonlinear Active Tolerance",

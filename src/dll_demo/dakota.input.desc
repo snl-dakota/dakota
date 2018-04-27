@@ -277,7 +277,7 @@ TAG "method/asynch_pattern_search/initial_delta"
 TAG "method/asynch_pattern_search/contraction_factor"
 	DESC "{Pattern contraction factor} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
 
-TAG "method/asynch_pattern_search/threshold_delta"
+TAG "method/asynch_pattern_search/variable_tolerance"
 	DESC "{Threshold for offset values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
 
 TAG "method/asynch_pattern_search/solution_target"
@@ -523,7 +523,7 @@ TAG "method/coliny_cobyla" GROUP "Optimization: Local, Derivative-free"
 TAG "method/coliny_pattern_search/initial_delta"
 	DESC "{Initial offset value} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYCOB"
 
-TAG "method/coliny_pattern_search/threshold_delta"
+TAG "method/coliny_pattern_search/variable_tolerance"
 	DESC "{Threshold for offset values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYCOB"
 
 TAG "method/coliny_direct" GROUP "Optimization: Global"

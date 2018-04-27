@@ -398,7 +398,7 @@ void ROLOptimizer::set_rol_parameters()
 	probDescDB.get_real("method.constraint_tolerance")
 	);
   optSolverParams.sublist("Status Test").
-    set("Step Tolerance", probDescDB.get_real("method.threshold_delta"));
+    set("Step Tolerance", probDescDB.get_real("method.variable_tolerance"));
   optSolverParams.sublist("Status Test").set("Iteration Limit", maxIterations);
 
   // BMA: We aren't yet using ROL's Trust Region Step, but Patty

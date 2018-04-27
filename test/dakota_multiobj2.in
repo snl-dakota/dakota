@@ -17,10 +17,10 @@
 method,
         npsol_sqp			#s0,#s1
 	  convergence_tolerance = 1.e-8	#s0,#s1
-#  	rol_ls                          #s2,#s3
+#  	rol                          #s2,#s3
 #    	  gradient_tolerance 1.0e-8     #s2,#s3
 #    	  constraint_tolerance 1.0e-8   #s2,#s3
-#    	  threshold_delta 1.0e-8        #s2,#s3
+#    	  variable_tolerance 1.0e-8        #s2,#s3
 
 variables,
 	continuous_design = 2

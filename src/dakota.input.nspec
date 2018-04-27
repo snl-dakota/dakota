@@ -483,9 +483,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( rol_ls {N_mdm(utype,methodName_ROL_LS)}
+  ( rol {N_mdm(utype,methodName_ROL)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ threshold_delta REAL {N_mdm(Real,threshStepLength)} ]
+    [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
     [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
     [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
@@ -496,7 +496,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   ( asynch_pattern_search ALIAS coliny_apps {N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}
     [ initial_delta REAL {N_mdm(Real,initStepLength)} ]
     [ contraction_factor REAL {N_mdm(Real,contractStepLength)} ]
-    [ threshold_delta REAL {N_mdm(Real,threshStepLength)} ]
+    [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
     [ synchronization {0}
       blocking {N_mdm(lit,evalSynchronize_blocking)}
@@ -528,7 +528,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   |
   ( mesh_adaptive_search {N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}
     [ initial_delta REAL {N_mdm(Real,initMeshSize)} ]
-    [ threshold_delta REAL {N_mdm(Real,minMeshSize)} ]
+    [ variable_tolerance REAL {N_mdm(Real,minMeshSize)} ]
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ history_file STRING {N_mdm(str,historyFile)} ]
@@ -761,7 +761,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
     [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
     [ initial_delta REAL {N_mdm(Real,initDelta)} ]
-    [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+    [ variable_tolerance REAL {N_mdm(Real,threshDelta)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
@@ -781,7 +781,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
     [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
     [ initial_delta REAL {N_mdm(Real,initDelta)} ]
-    [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+    [ variable_tolerance REAL {N_mdm(Real,threshDelta)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]
@@ -795,7 +795,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   |
   ( coliny_cobyla {N_mdm(utype,methodName_COLINY_COBYLA)}
     [ initial_delta REAL {N_mdm(Real,initDelta)} ]
-    [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+    [ variable_tolerance REAL {N_mdm(Real,threshDelta)} ]
     [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ show_misc_options {N_mdm(true,showMiscOptions)} ]

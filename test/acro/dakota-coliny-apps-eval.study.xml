@@ -19,7 +19,7 @@
       </factor>
 
       <factor name="method:required">
-          <level>threshold_delta=1.e-5</level>
+          <level>variable_tolerance=1.e-5</level>
       </factor>
 
       <factor name="method:output">

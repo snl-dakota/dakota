@@ -18,10 +18,10 @@ TEUCHOS_UNIT_TEST(opt_rol,simple_eq_cons)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-5"
     "     constraint_tolerance 1.0e-5"
-    "     threshold_delta 1.0e-5"
+    "     variable_tolerance 1.0e-5"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 5"
@@ -78,10 +78,10 @@ TEUCHOS_UNIT_TEST(opt_rol,paraboloid_circle)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-5"
     "     constraint_tolerance 1.0e-5"
-    "     threshold_delta 1.0e-5"
+    "     variable_tolerance 1.0e-5"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 2"

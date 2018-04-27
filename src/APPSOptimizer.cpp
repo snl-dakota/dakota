@@ -240,11 +240,11 @@ void APPSOptimizer::set_apps_parameters()
 	   << "\n         Using default value of 0.5.\n\n";
 
     const Real& thresh_step_length
-      = probDescDB.get_real("method.threshold_delta");
+      = probDescDB.get_real("method.variable_tolerance");
     if (thresh_step_length >= 4.4e-16)
       citizenParams->setParameter("Step Tolerance", thresh_step_length);
     else
-      Cout << "\nWarning: threshold_delta must be between greater than or equal to 4.4e-16."
+      Cout << "\nWarning: variable_tolerance must be between greater than or equal to 4.4e-16."
 	   << "\n         Using default value of 0.01.\n\n";
 
     const Real& solution_target

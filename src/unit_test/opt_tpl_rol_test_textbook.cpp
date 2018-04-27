@@ -24,10 +24,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-6"
     "     constraint_tolerance 1.0e-6"
-    "     threshold_delta 1.0e-6"
+    "     variable_tolerance 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -97,10 +97,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
 
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-3"
     "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     variable_tolerance 1.0e-3"
     "     max_iterations 20"
     "     options_file 'opt_tpl_test_files/opt_rol-text_book.xml'"
     " variables,"
@@ -168,10 +168,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-6"
     "     constraint_tolerance 1.0e-6"
-    "     threshold_delta 1.0e-6"
+    "     variable_tolerance 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -241,10 +241,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_hessian)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-6"
     "     constraint_tolerance 1.0e-6"
-    "     threshold_delta 1.0e-6"
+    "     variable_tolerance 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -314,10 +314,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-6"
     "     constraint_tolerance 1.0e-6"
-    "     threshold_delta 1.0e-6"
+    "     variable_tolerance 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -431,10 +431,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-1"
     "     constraint_tolerance 1.0e-1"
-    "     threshold_delta 1.0e-1"
+    "     variable_tolerance 1.0e-1"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -512,10 +512,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-6"
     "     constraint_tolerance 1.0e-6"
-    "     threshold_delta 1.0e-6"
+    "     variable_tolerance 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -589,10 +589,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-6"
     "     constraint_tolerance 1.0e-6"
-    "     threshold_delta 1.0e-6"
+    "     variable_tolerance 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -667,10 +667,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-2"
     "     constraint_tolerance 1.0e-2"
-    "     threshold_delta 1.0e-2"
+    "     variable_tolerance 1.0e-2"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -745,10 +745,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-2"
     "     constraint_tolerance 1.0e-2"
-    "     threshold_delta 1.0e-2"
+    "     variable_tolerance 1.0e-2"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -830,10 +830,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-4"
     "     constraint_tolerance 1.0e-4"
-    "     threshold_delta 1.0e-4"
+    "     variable_tolerance 1.0e-4"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -915,10 +915,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-2"
     "     constraint_tolerance 1.0e-2"
-    "     threshold_delta 1.0e-2"
+    "     variable_tolerance 1.0e-2"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -1014,10 +1014,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-3"
     "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     variable_tolerance 1.0e-3"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -1092,10 +1092,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessian)
   /// Dakota input string:
   static const char text_book_input[] =
     " method,"
-    "   rol_ls"
+    "   rol"
     "     gradient_tolerance 1.0e-6"
     "     constraint_tolerance 1.0e-6"
-    "     threshold_delta 1.0e-6"
+    "     variable_tolerance 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"

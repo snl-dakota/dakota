@@ -203,7 +203,7 @@ method
  coliny_pattern_search stochastic
   seed = 1234
   initial_delta = 0.1
-  threshold_delta = 1.e-4
+  variable_tolerance = 1.e-4
   solution_accuracy = 1.e-10
   exploratory_moves basic_pattern
   #verbose output
@@ -215,7 +215,7 @@ method
  coliny_pattern_search stochastic
   seed = 1234
   initial_delta = 0.1
-  threshold_delta = 1.e-4
+  variable_tolerance = 1.e-4
   solution_accuracy = 1.e-10
   exploratory_moves basic_pattern
   #verbose output
