@@ -65,27 +65,24 @@ void QMEApproximation::build()
   // New data is appended via push_back(), so leading data (index 0) is older
   // (previous iterate) and trailing data (index 1) is newer (current iterate)
 
-  // Sanity checking verifies 1 or 2 points with gradients (Hessians ignored)
-
+  // Sanity checking:
   size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
-//if (num_pts < 1 || num_pts > 2) {
   if (num_pts < 1 ) {
-    Cerr << "Error: wrong number of data points (" << num_pts
-	 << ") in QMEApproximation::build." << std::endl;
+    Cerr << "Error: insufficient data (" << num_pts << " points) in "
+	 << "QMEApproximation::build." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+  // gradients required for expansion point:
+  if (!approxData.anchor() ||
+      approxData.anchor_response().response_gradient().length() != num_v) {
+    Cerr << "Error: gradients required for expansion point in "
+	 << "QMEApproximation::build()." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
   if (num_pts >= 2) { // QMEA
 //  const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
     const size_t k=1,         p=0;         // indices to current and previous points
-    const Pecos::SDRArray& sdr_array = approxData.response_data();
-    // Check gradients
-    if (sdr_array[p].response_gradient().length() != num_v ||
-        sdr_array[k].response_gradient().length() != num_v) {
-      Cerr << "Error: gradients required in QMEApproximation::build."
-	   << std::endl;
-      abort_handler(APPROX_ERROR);
-    }
 
     // alternate constructor sets numVars after construction
     if (pExp.empty()) pExp.sizeUninitialized(num_v);
