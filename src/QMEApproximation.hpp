@@ -115,22 +115,24 @@ inline QMEApproximation::~QMEApproximation()
 /** Redefine default implementation to support history mechanism. */
 inline void QMEApproximation::clear_current()
 {
-  size_t ndv = sharedDataRep->numVars;
-  // demote from anchor to regular/previous data
-  // (for completeness; no longer uses anchor designation)
-  approxData.clear_anchor_index();
-  //  previous is deleted and anchor moved to previous
-  if (approxData.points() > ndv+1)
-    approxData.pop_front();
+  // This function is called from DataFitSurrModel::build_approximation(),
+  // immediately prior to generation of new build data (with full derivative
+  // orders: value+gradient in this case).  The state of approxData may be
+  // mixed, containing zero or more points with derivatives (the last of which
+  // is the expansion/anchor point) and zero or more points without derivatives
+  // (rejected iterates for which gradients were never computed).
 
-  /*
-  approxData.clear_data();
-  if (approxData.anchor()) { // anchor becomes previous expansion point
-    approxData.push_back(approxData.anchor_variables(),
-			 approxData.anchor_response());
-    approxData.clear_anchor();
-  }
-  */
+  // demote current expansion point (if defined) to regular/previous data
+  approxData.clear_anchor_index();
+
+  // limit the number of previous points to numVars, such that subsequent
+  // addition of an expansion point results in numVars+1.  In the future,
+  // may want to limit aggregate value/gradient equations from mixed data,
+  // but the QMEA approach is segregated among pExp and hessian estimation,
+  // so a coarse-grained point count is currently sufficient.
+  size_t ndv = sharedDataRep->numVars;
+  while (approxData.points() > ndv)
+    approxData.pop_front(); // remove oldest
 }
 
 } // namespace Dakota

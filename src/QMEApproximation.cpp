@@ -67,7 +67,7 @@ void QMEApproximation::build()
 
   // Sanity checking:
   size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
-  if (num_pts < 1 ) {
+  if (num_pts < 1) {
     Cerr << "Error: insufficient data (" << num_pts << " points) in "
 	 << "QMEApproximation::build." << std::endl;
     abort_handler(APPROX_ERROR);
