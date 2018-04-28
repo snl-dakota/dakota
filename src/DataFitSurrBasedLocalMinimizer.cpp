@@ -237,12 +237,11 @@ void DataFitSurrBasedLocalMinimizer::build()
   // --------------------------
   // Multipoint approximations:
   // --------------------------
-  // If point rejected (a gradient-enhanced data
-  // set is not forthcoming), append as new truth data for updating
-  // multipoint approximations that accumulate more than 2 pts (QMEA, MPEA).
+  // If point rejected (a gradient-enhanced data set is not forthcoming),
+  // append as new truth data for updating multipoint approximations that
+  // accumulate more than 2 pts (QMEA, MPEA).
   // > Not an anchor point --> use append_approx rather than update_approx
-  // > logic in Approximation::clear_current() must be consistent with these
-  //   augmented data sets
+  // > logic in *Approximation::clear_current() must manage mixed data sets
   else if (multiPtApproxFlag) {
     if (trustRegionData.status(NEW_CENTER))
       embed_correction = build_centered();
