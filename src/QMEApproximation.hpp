@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 //- Class:        QMEApproximation
-//- Description:  Class for QMEA quadratic multipoint exponential approximation.
+//- Description:  Class for Quadratic Multipoint Exponential Approximation.
 //-               
 //- Owner:        Robert A. Canfield, Virginia Tech
  
@@ -78,6 +78,9 @@ private:
   /// based on minX, apply offset scaling to x to define s
   void offset(const RealVector& x, RealVector& s);
 
+  //Real apxfn_value(const RealVector&);
+  Real apxfn_value(const RealVector&);
+
   //
   //- Heading: Data
   //
@@ -87,6 +90,9 @@ private:
   RealVector scX1; ///< vector of scaled x1 values
   RealVector scX2; ///< vector of scaled x2 values
   Real H; ///< the scalar Hessian value in the TANA-3 approximation
+  RealVector beta; ///< vector of QMEA reduced space diagonal Hessian coefficients
+  RealMatrix G_reduced_xfm; ///< Grahm-Schmidt orthonormal reduced subspace transformation
+  size_t num_used; ///< number of previous data points used (size of reduced subspace)
 };
 
 
@@ -120,7 +126,7 @@ inline void QMEApproximation::clear_current()
   // (for completeness; no longer uses anchor designation)
   approxData.clear_anchor_index();
   //  previous is deleted and anchor moved to previous
-  if (approxData.points() > ndv+1)
+  if (approxData.points() > ndv)
     approxData.pop_front();
 
   /*

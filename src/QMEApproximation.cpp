@@ -14,7 +14,8 @@
 #include "QMEApproximation.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
-#include <math.h>
+#include "LinearAlgebra.hpp"
+#include "dakota_linear_algebra.hpp"
 
 #define DEBUG
 
@@ -76,8 +77,8 @@ void QMEApproximation::build()
   }
 
   if (num_pts >= 2) { // QMEA
-//  const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
-    const size_t k=1,         p=0;         // indices to current and previous points
+//  const size_t k=1,         p=0;         // indices to current and previous points
+    const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
     const Pecos::SDRArray& sdr_array = approxData.response_data();
     // Check gradients
     if (sdr_array[p].response_gradient().length() != num_v ||
@@ -131,8 +132,8 @@ void QMEApproximation::find_scaled_coefficients()
   //  Upper variable bounds for scaling   u_bnds 
 
   size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
-//const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
-  const size_t k=1, p=0;                 // indices to current and previous points
+//const size_t k=1, p=0;                 // indices to current and previous points
+        size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
   Cout << "QMEA num_pts=" << num_pts << ", k=" << k << ", p=" << p << '\n';
 
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
@@ -146,10 +147,11 @@ void QMEApproximation::find_scaled_coefficients()
   Real              f2    = sdr_array[k].response_function();
   const RealVector& grad2 = sdr_array[k].response_gradient();
 
+  const RealVector& x0    = sdv_array[k].continuous_variables();
+  Real              f0    = sdr_array[k].response_function();
+  const RealVector& grad0 = sdr_array[k].response_gradient();
+
   if ( num_pts > 2 ) {
-  const RealVector& x0    = sdv_array[2].continuous_variables();
-  Real              f0    = sdr_array[2].response_function();
-  const RealVector& grad0 = sdr_array[2].response_gradient();
   Cout << "\n\nQMEA inputs X0:\n" << x0 << "\nF(X0): " << f0
        << "\n\ndF/dX(X0):\n" << grad0 << '\n';
   }
@@ -261,23 +263,85 @@ void QMEApproximation::find_scaled_coefficients()
        << "\nQMEA outputs p:\n" << pExp << "\nH: " << H << '\n';
 #endif // DEBUG
 
-// Find previous points to build QMEAM surrogate (RAC)
-  size_t n;
-  RealVector y(num_v);
-  for (i=0; i<num_pts; ++i) {
-    const Pecos::SurrogateDataVars& sdv_i = sdv_array[i];
-    const RealVector& c_vars = sdv_i.continuous_variables();
-    Cout << "QMEA point = " << i << '\n';
-    for (n=0; n<num_v; ++n ) {
-      y[n] = pow( c_vars[n], pExp[n] );
-      Cout << "     dv(" << n+1 << ")=" << c_vars[n] << '\n'; 
-      Cout << "      y(" << n+1 << ")=" << y[n]      << '\n';
+// Find previous points to build QMEA surrogate (RAC)
+  size_t n=0;
+  num_used = std::min(num_v,num_pts);
+  RealVector y0(num_v), y(num_v);
+  RealMatrix dy(num_v,num_used);
+  beta.sizeUninitialized(num_used);
+  for (p=0; p<num_pts; ++p) {
+    const RealVector& xp    = sdv_array[p].continuous_variables();
+    Real              fp    = sdr_array[p].response_function();
+    for (i=0; i<num_v; ++i) {
+      if (p==0) y0[i] = std::pow( x0[i],     pExp[i] );
+      y[i]            = std::pow( xp[i], pExp[i] );
+      if (p >= num_pts-num_used) dy(i,n) = y[i] - y0[i];
     }
-
-    const Pecos::SurrogateDataResp& sdr_i = sdr_array[i];
-    Real fn_val = sdr_i.response_function();
+    if (p >= num_pts-num_used) {beta[n]=0.0; ++n;}
+    Real fn_val = fp;
+#ifdef DEBUG
+    Cout << "QMEA point = " << p << '\n';
 	 Cout << "QMEA fn_val=" << fn_val << '\n';
+    Cout << "     x0=" << x0 << '\n'; 
+    Cout << "      y=" << y  << '\n';
+    Cout.flush();
+#endif // DEBUG
   }
+  RealVector singularValues, delta(num_used), approx_delta(num_used);
+  RealMatrix V_transpose, D(num_used,num_used), D2T(num_used,num_used);
+  G_reduced_xfm = dy;
+  svd(G_reduced_xfm, singularValues, V_transpose);
+
+#ifdef DEBUG
+    Cout << "QMEA: num_used=" << num_used << '\n';
+    Cout << "      y0=" << y0 << '\n';
+    Cout << "      dy=" << dy << '\n';
+    Cout << "singularValues=" << singularValues << '\n';
+    Cout << "G_reduced_xfm="  << G_reduced_xfm  << '\n';
+    Cout << "V_transpose="    << V_transpose    << '\n';
+    Cout.flush();
+#endif // DEBUG
+
+  D.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0,
+             G_reduced_xfm,  dy,                0.0);
+  if ( D.numCols() != num_used ) {
+    Cerr << "Error: QMEApproximation num sing vectors=" << D.numCols()
+         << "num_pts_used= " << num_used << std::endl;
+    abort_handler(-1);
+  }
+  dy.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0,
+              G_reduced_xfm,     D,                 0.0);
+#ifdef DEBUG
+  Cout << "D="                   << D                   << '\n';
+  Cout << "reproduces dy="       << dy                  << '\n';
+  Cout.flush();
+#endif // DEBUG
+
+
+//Form RHS residual and (D.^2)^T/2
+  n=0;
+  for (p=num_pts-num_used; p<num_pts; ++p) {
+    const RealVector& xp    = sdv_array[p].continuous_variables();
+    Real              fp    = sdr_array[p].response_function();
+    for (i=0; i<num_used; ++i ) D2T(n,i) = D(i,n)*D(i,n)/2.0;
+    delta(n) = fp - apxfn_value(xp); ++n;
+  }
+#ifdef DEBUG
+    Cout << "before qr_solve" << '\n';
+    Cout << "     delta=" << delta << '\n';
+    Cout.flush();
+#endif // DEBUG
+
+  Pecos::qr_solve( D2T, delta, beta );
+
+//Check approximate values
+  approx_delta.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0,
+                        D2T,               beta,              0.0);
+#ifdef DEBUG
+    Cout << "after qr_solve" << '\n';
+    Cout << "     Approximate previous function delta=" << approx_delta <<'\n';
+    Cout << "     beta="  << beta  << '\n';
+#endif // DEBUG
 }
 
 
@@ -304,10 +368,9 @@ void QMEApproximation::offset(const RealVector& x, RealVector& s)
 }
 
 
-Real QMEApproximation::value(const Variables& vars)
+Real QMEApproximation::apxfn_value(const RealVector& x)
 {
   Real approx_val;
-  const RealVector& x = vars.continuous_variables();
   size_t i, num_v = sharedDataRep->numVars, num_pts = approxData.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
@@ -337,26 +400,53 @@ Real QMEApproximation::value(const Variables& vars)
       offset(x, s_eval);
     }
 
-    // Calculate approx_val
-    const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[1];
-    Real f2 = curr_sdr.response_function(), sum1 = 0.,
-      sum_diff1_sq = 0., sum_diff2_sq = 0.;
-    const RealVector& grad2 = curr_sdr.response_gradient();
+    // Calculate TANA approx_val
+    size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
+    const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[k];
+    const RealVector&       grad2 = curr_sdr.response_gradient();
+    const Real                 f2 = curr_sdr.response_function();
+          Real sum1 = 0., sum_diff1_sq = 0., sum_diff2_sq = 0., lin_val;
+    RealVector dy(num_v);
     for (i=0; i<num_v; i++) {
       Real p_i = pExp[i], sp = std::pow(s_eval[i],p_i), s2i = scX2[i],
-	diff1 = sp - std::pow(scX1[i],p_i), diff2 = sp - std::pow(s2i,p_i);
+	               diff1 = sp - std::pow(scX1[i],p_i), 
+                  diff2 = sp - std::pow(s2i,p_i);
       sum1 += grad2[i]*std::pow(s2i,1.-p_i)/p_i*diff2;
       sum_diff1_sq += diff1 * diff1;
       sum_diff2_sq += diff2 * diff2;
     }
     Real epsilon = H/(sum_diff1_sq + sum_diff2_sq);
+    lin_val     = f2 + sum1;
     approx_val  = f2 + sum1 + sum_diff2_sq*epsilon/2.;
 #ifdef DEBUG
-    Cout << "epsilon: " << epsilon << " sum1: " << sum1 << " approx value: "
-	 << approx_val << '\n';
+    Cout << "epsilon: " << epsilon << " sum1: " << sum1 << " Lin_val: " << lin_val 
+         << " TANA3 approx value: " << approx_val << '\n';
+#endif // DEBUG
+
+    // Calculate QMEA value
+    RealVector d_reduced_coeff(num_used);
+    Real quad_term=0.0;
+    // Project transformed design point difference from anchor onto reduced subspace
+    d_reduced_coeff.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0,
+                             G_reduced_xfm,  dy,                0.0);
+    for (i=0; i<num_used; ++i) {
+      quad_term += beta[i]*d_reduced_coeff[i]*d_reduced_coeff[i];
+    }
+    approx_val = lin_val + quad_term/2.0;
+#ifdef DEBUG
+    Cout << "QMEA quad_term: " << quad_term << '\n';
+    Cout << "QMEA approx value: " << approx_val << '\n';
+    Cout << "     dy=" << dy << '\n';
+    Cout << "     d_reduced_coeff=" << d_reduced_coeff << '\n';
 #endif // DEBUG
   }
+  return approx_val;
+}
 
+Real QMEApproximation::value(const Variables& vars)
+{
+  const RealVector& x = vars.continuous_variables();
+  Real approx_val = apxfn_value( x );
   return approx_val;
 }
 
