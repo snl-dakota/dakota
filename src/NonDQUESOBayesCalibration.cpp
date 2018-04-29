@@ -49,8 +49,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   propCovUpdatePeriod(probDescDB.get_int("method.nond.prop_cov_update_period")),
-  batchSize(1),
-  precondRequestValue(0),
+  batchSize(1), precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
   priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult")),
   advancedOptionsFile(probDescDB.get_string("method.advanced_options_file"))
@@ -72,6 +71,12 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
     Cerr << "\nError: QUESO proposal covariance multiplier  = "
 	 << priorPropCovMult << " not in [DBL_MIN, Inf).\n";
     found_error = true;
+  }
+
+  if (propCovUpdatePeriod < std::numeric_limits<int>::max() &&
+      propCovUpdatePeriod >= chainSamples) {
+    Cout << "\nWarning: QUESO proposal covariance update_period >= chain_samples;"
+	 << "\n         no updates will occur." << std::endl;
   }
 
   // assign default maxIterations (DataMethod default is -1)
