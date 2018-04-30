@@ -136,7 +136,10 @@ DerivInformedPropCovTK(const char * prefix,
 template <class V, class M>
 void DerivInformedPropCovTK<V, M>::updateTK()
 {
-  // BMA TODO: Make sure no indexing error by dumping full chain
+  // QUESO stores the initial position in chain[0]. This updateTK()
+  // function gets called _after_ chain[i] is populated if (i %
+  // propCovUpdatePeriod) == 0, so this will be the index of the last
+  // chain position accepted:
   chainIndex += nonDQUESOInstance->propCovUpdatePeriod;
 
   // compute update to proposal cov and tell AM it's dirty

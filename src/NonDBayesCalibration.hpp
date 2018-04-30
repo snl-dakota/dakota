@@ -250,9 +250,6 @@ protected:
   /// number of samples in the chain (e.g. number of MCMC samples);
   /// for iterative update cycles, number of samples per update cycle
   int chainSamples;
-  /// number of update cycles for MCMC chain (implemented by restarting
-  /// of short chains)
-  int chainCycles;
   /// random seed for MCMC process
   int randomSeed;
 

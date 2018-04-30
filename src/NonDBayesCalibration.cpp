@@ -59,7 +59,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   mcmcModelHasSurrogate(false),
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
-  chainSamples(probDescDB.get_int("method.nond.chain_samples")), chainCycles(1),
+  chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
   mcmcDerivOrder(1),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
@@ -127,6 +127,22 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // Use NonD convenience function for system seed
     randomSeed = generate_system_seed();
     Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
+  }
+
+  // NOTE: Burn-in defaults to 0 and sub-sampling to 1. We want to
+  // allow chain_samples == 0 to perform map pre-solve only, so
+  // account for that case here.
+  if (burnInSamples > 0 && burnInSamples >= chainSamples) {
+    Cerr << "\nError: burn_in_samples must be less than chain_samples.\n";
+    abort_handler(PARSE_ERROR);
+  }
+  if (chainSamples > 0 && subSamplingPeriod >= chainSamples - burnInSamples) {
+    if (burnInSamples > 0)
+      Cout << "\nWarning: sub_sampling_period >= (chain_samples - burn_in_samples);"
+	   << "\n         will have no effect." << std::endl;
+    else
+      Cout << "\nWarning: sub_sampling_period >= chain_samples;"
+	   << " will have no effect." << std::endl;
   }
 
   if (adaptExpDesign) {

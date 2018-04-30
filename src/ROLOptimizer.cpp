@@ -99,13 +99,7 @@ void ROLOptimizer::core_run()
   ROL::OptimizationSolver<Real> opt_solver( optProblem, optSolverParams );
   opt_solver.solve(rol_cout);
   rol_cout.flush();
-
-  // CLEAN-UP: Do we need these comments anymore?
-  // checking, may be enabled in tests or debug mode
-
-  // Teuchos::RCP<std::ostream> outStream_checking;
-  // outStream_checking = Teuchos::rcp(&std::cout, false);
-  // optProblem.check(*outStream_checking);
+  opt_solver.reset(true);
 
   // TODO: print termination criteria (based on Step or AlgorithmState?)
   // TODO: If memory serves me correctly, Russell implementd a
@@ -113,11 +107,6 @@ void ROLOptimizer::core_run()
   // values.  It was based on APPS, but we should revisit to figure
   // out how this compares and if it makes sense to merge them.
 
-  // QUESTION: Do we need the copy_data?  Where is rolX coming from
-  // and/or what does is get used for?  rolX is an RCP - gets rolled
-  // up in x, which gets updated throughout.  Multiple levels of
-  // indirection.  Semantics nearly identical to C++/Boost shared
-  // pointer.
   // Copy ROL solution to Dakota bestVariablesArray
   Variables& best_vars = bestVariablesArray.front();
   RealVector& cont_vars = best_vars.continuous_variables_view();
@@ -243,7 +232,6 @@ void ROLOptimizer::set_problem()
     else
       eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
 
-    // QUESTION: What are ROL defaults?
     // Initialize Lagrange multipliers for equality constraints.
     Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(num_eq_const,0.0) );
     emul.reset(new ROL::StdVector<Real>(emul_rcp) );
@@ -320,9 +308,6 @@ void ROLOptimizer::initialize_run()
   orig_auto_graphics_flag = iteratedModel.auto_graphics();
 }
 
-// QUESTION: Shouldn't this be called from somewhere?  From core_run?
-// Do set_problem and set_rol_parameters also need to be called at run
-// time?  Currently called in a unit test.
 // Helper function to reset ROL data and solver parameters.  This can
 // be used to ensure that ROL is re-entrant since ROL itself does not
 // provide such assurance.
@@ -619,9 +604,6 @@ DakotaROLIneqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x
   // Matrix-vector multiply to get linear constraint values.
   apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
 
-  // QUESTION: What does this do?  Get the nonlinear constraint values
-  // from the Dakota model and append them to the linear constraint
-  // values?
   get_nonlinear_ineq_constraints( dakotaModel, c );
 
 } // ineqConstraints value
@@ -637,8 +619,6 @@ DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
   const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
   apply_matrix_partial(lin_ineq_coeffs, v, jv);
 
-  // QUESTION: Why is this separate from the linear constraints?
-  // What's different about it?
   // Apply nonlinear constraint Jacobian.
   if( haveNlnConst ) {
     update_model(dakotaModel, x);
@@ -654,8 +634,6 @@ void
 DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
-  // QUESTION: Why isn't this needed in applyJacobian?  Or shoult it
-  // be there too?
   // Must init since are merging the effect of linear and nonlinear
   // might get skipped.
   ajv.assign(ajv.size(), 0.0);
@@ -665,7 +643,6 @@ DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
   const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
   apply_matrix_transpose_partial(lin_ineq_coeffs, v, ajv);
 
-  // QUESTION: What signifies that the transpose should be applied?
   // Apply transpose of nonlinear constraint Jacobian.
   if (haveNlnConst) {
     update_model(dakotaModel, x);
@@ -736,8 +713,6 @@ DakotaROLEqConstraints::DakotaROLEqConstraints(Model & model) :
 void
 DakotaROLEqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
 {
-  // CLEAN-UP: Same comments as for the inequality constraints class.
-
   // Evaluate nonlinear constraints.
   update_model(dakotaModel, x);
 
@@ -760,8 +735,6 @@ DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
   const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
   apply_matrix_partial(lin_eq_coeffs, v, jv);
 
-  // QUESTION: Why is this separate from the linear constraints?
-  // What's different about it?
   // Apply nonlinear constraint Jacobian.
   if( haveNlnConst ) {
     update_model(dakotaModel, x);
@@ -777,8 +750,6 @@ void
 DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
-  // QUESTION: Why isn't this needed in applyJacobian?  Or shoult it
-  // be there too?
   // Must init since are merging the effect of linear and nonlinear
   // and linear might get skipped
   ajv.assign(ajv.size(), 0.0);
@@ -788,7 +759,6 @@ DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
   const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
   apply_matrix_transpose_partial(lin_eq_coeffs, v, ajv);
 
-  // QUESTION: What signifies that the transpose should be applied?
   // Apply transpose of nonlinear constraint Jacobian.
   if (haveNlnConst) {
     update_model(dakotaModel, x);
