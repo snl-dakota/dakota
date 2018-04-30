@@ -129,6 +129,22 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }
 
+  // NOTE: Burn-in defaults to 0 and sub-sampling to 1. We want to
+  // allow chain_samples == 0 to perform map pre-solve only, so
+  // account for that case here.
+  if (burnInSamples > 0 && burnInSamples >= chainSamples) {
+    Cerr << "\nError: burn_in_samples must be less than chain_samples.\n";
+    abort_handler(PARSE_ERROR);
+  }
+  if (chainSamples > 0 && subSamplingPeriod >= chainSamples - burnInSamples) {
+    if (burnInSamples > 0)
+      Cout << "\nWarning: sub_sampling_period >= (chain_samples - burn_in_samples);"
+	   << "\n         will have no effect." << std::endl;
+    else
+      Cout << "\nWarning: sub_sampling_period >= chain_samples;"
+	   << " will have no effect." << std::endl;
+  }
+
   if (adaptExpDesign) {
     // TODO: instead of pulling these models out, change modes on the
     // iteratedModel
