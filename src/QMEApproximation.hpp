@@ -93,6 +93,8 @@ private:
   RealVector beta; ///< vector of QMEA reduced space diagonal Hessian coefficients
   RealMatrix G_reduced_xfm; ///< Grahm-Schmidt orthonormal reduced subspace transformation
   size_t num_used; ///< number of previous data points used (size of reduced subspace)
+  size_t curr_grad;///< current expansion point with gradients
+  size_t prev_grad;///< previous point to current expansion point with gradients
 };
 
 
