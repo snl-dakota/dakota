@@ -184,22 +184,32 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
     "${Dakota_SOURCE_DIR}/local/packages/NPSOL")
 endif()
 
-# RPATH settings 
-# These settings must take into consideration the presence of shared libraries in both bin/
-# and /lib, and applications in bin/ and test/.
+# Default RPATH settings
+#
+# These settings must take into consideration the presence of shared
+# libraries in both bin/ and /lib, and applications in bin/ (formerly
+# test/, which is now managed in share/dakota/test; see override in
+# test/CMakeLists.txt).
+#
+#
+# $ORIGIN (@executable_path on Mac) is replaced at runtime by the path
+# of the executable (application or .so).
+#
+# Add:
+#   $ORIGIN so executables can find shared libs in their own folder
+#   $ORIGIN/../lib so that executables in bin and test can find shared libs in the lib folder
+#   $ORIGIN/../bin so that exectuables in lib and test can find shared libs in the bin folder.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL "Add @rpath to library install names")
-  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib;@executable_path/../bin" 
+  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib;@executable_path/../bin"
     CACHE STRING "Set the RPATH in Dakota executables and libraries")
 elseif(UNIX)
-   #$ORIGIN is replaced at runtime by the path of the executable (application or .so).
-   # Add:
-   #  $ORIGIN so executables can find shared libs in their own folder
-   #  $ORIGIN/../lib so that executables in bin and test can find shared libs in the lib folder
-   #  $ORIGIN/../bin so that exectuables in lib and test can find shared libs in the bin folder.
-   set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin")
+   set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin"
+     CACHE STRING "Set the RPATH in Dakota executables and libraries")
 endif()
 
+option(DAKOTA_INSTALL_DYNAMIC_DEPS
+  "Install Dakota's dynamic dependencies to CMAKE_INSTALL_PREFIX/bin/" ON)
 
 
 # Manage developer convenience options (experimental)
@@ -603,6 +613,8 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   )
 
 # Install helper scripts to bin/:
+# NOTE: This directory manages dynamic library manipulation at install time,
+# as the install script must be called after src/ and test/ are installed.
 add_subdirectory("scripts")
 
 

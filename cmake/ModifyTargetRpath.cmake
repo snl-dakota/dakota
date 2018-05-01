@@ -7,12 +7,12 @@ function(ModifyTargetRpath3up target_name)
     set(target_install_rpath
       "@executable_path;@executable_path/../../../lib;@executable_path/../../../bin")
     set_target_properties(${target_name}
-      PROPERTIES INSTALL_RPATH ${target_install_rpath})
+      PROPERTIES "INSTALL_RPATH" "${target_install_rpath}")
   elseif(UNIX)
     set(target_install_rpath
       "\$ORIGIN:\$ORIGIN/../../../lib:\$ORIGIN/../../../bin")
     set_target_properties(${target_name}
-      PROPERTIES "INSTALL_RPATH" ${target_install_rpath})
+      PROPERTIES "INSTALL_RPATH" "${target_install_rpath}")
   endif()
 
 endfunction()
