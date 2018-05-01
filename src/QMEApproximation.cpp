@@ -22,10 +22,10 @@
 namespace Dakota {
 
 QMEApproximation::
-QMEApproximation(ProblemDescDB& problem_db,
-		   const SharedApproxData& shared_data,
-                   const String& approx_label):
-  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
+QMEApproximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+		 const String& approx_label):
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
+  numUsed(0), currGradIndex(_NPOS), prevGradIndex(_NPOS)
 {
   // sanity checks
   if (sharedDataRep->buildDataOrder != 3) {
@@ -65,64 +65,67 @@ void QMEApproximation::build()
 
   // New data is appended via push_back(), so leading data (index 0) is older
   // (previous iterate) and trailing data (index 1) is newer (current iterate)
+  size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
 
   // Sanity checking:
-  size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
-  if (num_pts < 1) {
-    Cerr << "Error: insufficient data (" << num_pts << " points) in "
-	 << "QMEApproximation::build." << std::endl;
+  if (!approxData.anchor()) {
+    Cerr << "Error: expansion point required in QMEApproximation::build()."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
-  // gradients required for expansion point:
-  if (!approxData.anchor() ||
-      approxData.anchor_response().response_gradient().length() != num_v) {
-    Cerr << "Error: gradients required for expansion point in "
-	 << "QMEApproximation::build()." << std::endl;
+  if (approxData.anchor_response().response_gradient().length() != num_v) {
+    Cerr << "Error: gradients required for expansion point in QMEApproximation"
+	 << "::build()." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
-  if (num_pts >= 2) { // QMEA
-//  const size_t k=1, p=0; // indices to current and previous points
-          size_t k,   p;   // indices to current and previous points
+  currGradIndex = approxData.anchor_index();
+  prevGradIndex = _NPOS; // updated below, if found
+
+  // Can't happen: already tested for anchor point above
+  //if (num_pts < 1) {
+  //  Cerr << "Error: insufficient data (" << num_pts << " points) in "
+  //	   << "QMEApproximation::build()." << std::endl;
+  //  abort_handler(APPROX_ERROR);
+  //}
+  if (num_pts == 1) {
+    // Insufficient data for multipoint approximation.
+    // Fall back to 1st-order Taylor series as interim approach.
+  }
+  else { // QMEA: more than 1 point, even if only a single gradient point
+
+    // Scan backwards from expansion point for most recent point with gradients
     const Pecos::SDRArray& sdr_array = approxData.response_data();
-    // Check gradients
-    for (p=0; p<num_pts; ++p) { 
-      if (sdr_array[p].response_gradient().length() == num_v) k=p;
-    }
-    curr_grad = k;
-    prev_grad = k-1; // assume for now, adjust later
-    p = prev_grad;
-    Cout << "QMEA current point with gradient, k=" << k         << '\n';
-    Cout << "QMEA current point with gradient, p=" << prev_grad << '\n';
-    if (sdr_array[p].response_gradient().length() != num_v ||
-        sdr_array[k].response_gradient().length() != num_v) {
-      Cerr << "Error: gradients required in QMEApproximation::build."
-	   << std::endl;
-      abort_handler(APPROX_ERROR);
-    }
+    int p = currGradIndex; // careful with underflow of unsigned type
+    while (--p >= 0)
+      if (sdr_array[p].active_bits() & 2) // gradient data is active
+	{ prevGradIndex = p; break; }
 
-    // alternate constructor sets numVars after construction
-    if (pExp.empty()) pExp.sizeUninitialized(num_v);
-    if (minX.empty()) minX.sizeUninitialized(num_v);
+    Cout << "QMEA current point index = " << currGradIndex << '\n';
+    if (prevGradIndex != _NPOS) {
+      Cout << "QMEA previous point index = " << prevGradIndex << '\n';
+      if (sdr_array[prevGradIndex].response_gradient().length() != num_v ) {
+	Cerr << "Error: insufficient gradient data or previous point in "
+	     << "QMEApproximation::build()." << std::endl;
+	abort_handler(APPROX_ERROR);
+      }
+    }
 
     // Calculate TANA3 terms
     const Pecos::SDVArray& sdv_array = approxData.variables_data();
-    const RealVector& x1 = sdv_array[p].continuous_variables();
-    const RealVector& x2 = sdv_array[k].continuous_variables();
-    for (size_t i=0; i<num_v; i++)
-      minX[i] = std::min(x1[i], x2[i]);
-    find_scaled_coefficients();
-  }
-  else {
-    // Insufficient data accumulated for multipoint approximation.
-    // Fall back to 1st-order Taylor series as interim approach,
-    // for which no additional computations are needed.
-
-    if (approxData.num_gradient_variables() != num_v) {
-      Cerr << "Error: response gradients required in QMEApproximation::build."
-	   << std::endl;
-      abort_handler(APPROX_ERROR);
+    // TO DO: minX defined only from {curr,prev}GradIndex points as in TANA.
+    // Should we include other non-gradient points for minX ?
+    if (prevGradIndex == _NPOS) // no previous gradient point
+      minX = sdv_array[currGradIndex].continuous_variables();
+    else {
+      if (minX.empty()) minX.sizeUninitialized(num_v);
+      const RealVector& x1 = sdv_array[prevGradIndex].continuous_variables();
+      const RealVector& x2 = sdv_array[currGradIndex].continuous_variables();
+      for (size_t i=0; i<num_v; i++)
+	minX[i] = std::min(x1[i], x2[i]);
     }
+    if (pExp.empty()) pExp.sizeUninitialized(num_v);
+    find_scaled_coefficients();
   }
 }
 
@@ -147,7 +150,7 @@ void QMEApproximation::find_scaled_coefficients()
   const size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
 //size_t k=1, p=0;                 // indices to current and previous points
   size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
-//size_t k=curr_grad, p=prev_grad;
+//size_t k=currGradIndex, p=prevGradIndex;
   Cout << "QMEA num_pts=" << num_pts << ", k=" << k << ", p=" << p << '\n';
 
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
@@ -278,11 +281,11 @@ void QMEApproximation::find_scaled_coefficients()
 #endif // DEBUG
 
 // Find previous points to build QMEA surrogate (RAC)
-  num_used = std::min(num_v,num_pts-1);
+  numUsed = std::min(num_v,num_pts-1);
   RealVector y0(num_v), y(num_v);
-  RealMatrix dy(num_v,num_used);
-  beta.sizeUninitialized(num_used);
-  size_t num_prev=num_pts-1, p1=num_prev-num_used, n=0;
+  RealMatrix dy(num_v,numUsed);
+  beta.sizeUninitialized(numUsed);
+  size_t num_prev=num_pts-1, p1=num_prev-numUsed, n=0;
   for (p=0; p<num_pts; ++p) { 
     const RealVector& xp    = sdv_array[p].continuous_variables();
     Real              fp    = sdr_array[p].response_function();
@@ -301,13 +304,13 @@ void QMEApproximation::find_scaled_coefficients()
     Cout.flush();
 #endif // DEBUG
   }
-  RealVector singularValues, delta(num_used), approx_delta(num_used);
-  RealMatrix V_transpose, D(num_used,num_used), D2T(num_used,num_used);
+  RealVector singularValues, delta(numUsed), approx_delta(numUsed);
+  RealMatrix V_transpose, D(numUsed,numUsed), D2T(numUsed,numUsed);
   G_reduced_xfm = dy;
   svd(G_reduced_xfm, singularValues, V_transpose);
 
 #ifdef DEBUG
-    Cout << "QMEA: num_used=" << num_used << '\n';
+    Cout << "QMEA: numUsed=" << numUsed << '\n';
     Cout << "      x0=" << x0 << '\n';
     Cout << "      y0=" << y0 << '\n';
     Cout << "      dy=" << dy << '\n';
@@ -319,9 +322,9 @@ void QMEApproximation::find_scaled_coefficients()
 
   D.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0,
              G_reduced_xfm,  dy,                0.0);
-  if ( D.numCols() != num_used ) {
+  if ( D.numCols() != numUsed ) {
     Cerr << "Error: QMEApproximation num sing vectors=" << D.numCols()
-         << "num_pts_used= " << num_used << std::endl;
+         << "num_pts_used= " << numUsed << std::endl;
     abort_handler(-1);
   }
   dy.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0,
@@ -338,7 +341,7 @@ void QMEApproximation::find_scaled_coefficients()
   for (p=p1; p<num_prev; ++p) {
     const RealVector& xp    = sdv_array[p].continuous_variables();
     Real              fp    = sdr_array[p].response_function();
-    for (i=0; i<num_used; ++i ) D2T(n,i) = D(i,n)*D(i,n)/2.0;
+    for (i=0; i<numUsed; ++i ) D2T(n,i) = D(i,n)*D(i,n)/2.0;
     delta(n) = fp - apxfn_value(xp); ++n;
   }
 #ifdef DEBUG
@@ -422,7 +425,7 @@ Real QMEApproximation::apxfn_value(const RealVector& x)
 
     // Calculate TANA approx_val
     size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
-//  size_t k=curr_grad, p=prev_grad;
+//  size_t k=currGradIndex, p=prevGradIndex;
     const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[k];
     const RealVector&       grad2 = curr_sdr.response_gradient();
     const Real                 f2 = curr_sdr.response_function();
@@ -445,12 +448,12 @@ Real QMEApproximation::apxfn_value(const RealVector& x)
 #endif // DEBUG
 
     // Calculate QMEA value
-    RealVector d_reduced_coeff(num_used);
+    RealVector d_reduced_coeff(numUsed);
     Real quad_term=0.0;
     // Project transformed design point difference from anchor onto reduced subspace
     d_reduced_coeff.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0,
                              G_reduced_xfm,  dy,                0.0);
-    for (i=0; i<num_used; ++i) {
+    for (i=0; i<numUsed; ++i) {
       quad_term += beta[i]*d_reduced_coeff[i]*d_reduced_coeff[i];
     }
     approx_val = lin_val + quad_term/2.0;

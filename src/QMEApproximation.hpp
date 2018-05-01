@@ -92,9 +92,9 @@ private:
   Real H; ///< the scalar Hessian value in the TANA-3 approximation
   RealVector beta; ///< vector of QMEA reduced space diagonal Hessian coefficients
   RealMatrix G_reduced_xfm; ///< Grahm-Schmidt orthonormal reduced subspace transformation
-  size_t num_used; ///< number of previous data points used (size of reduced subspace)
-  size_t curr_grad;///< current expansion point with gradients
-  size_t prev_grad;///< previous point to current expansion point with gradients
+  size_t numUsed; ///< number of previous data points used (size of reduced subspace)
+  size_t currGradIndex; ///< index of current expansion point with gradients
+  size_t prevGradIndex; ///< index of most recent previous point with gradients
 };
 
 
@@ -130,16 +130,29 @@ inline void QMEApproximation::clear_current()
   // is the expansion/anchor point) and zero or more points without derivatives
   // (rejected iterates for which gradients were never computed).
 
-  // demote current expansion point (if defined) to regular/previous data
+  size_t ndv = sharedDataRep->numVars, num_pts = approxData.points(), num_pop;
+  currGradIndex = approxData.anchor_index();
+
+  // demote anchor within approxData bookkeeping
   approxData.clear_anchor_index();
 
-  // limit the number of previous points to numVars, such that subsequent
-  // addition of an expansion point results in numVars+1.  In the future,
-  // may want to limit aggregate value/gradient equations from mixed data,
-  // but the QMEA approach is segregated among pExp and hessian estimation,
-  // so a coarse-grained point count is currently sufficient.
-  size_t ndv = sharedDataRep->numVars;
-  while (approxData.points() > ndv)
+  // prune history of more than ndv points, while ensuring retention
+  // of current expansion point
+  if (currGradIndex == _NPOS) { // no exp point to preserve (should not happen)
+    num_pop = (num_pts > ndv) ? num_pts - ndv : 0;
+    prevGradIndex = _NPOS; // demote current to previous (for completeness)
+  }
+  else {
+    size_t excess_pts = (num_pts > ndv) ? num_pts - ndv : 0;
+    num_pop = std::min(excess_pts, currGradIndex);
+
+    // update local indices (for completeness), demoting current to previous
+    prevGradIndex = currGradIndex - num_pop;
+    currGradIndex = _NPOS;
+  }
+
+  // pop points from approxData
+  for (size_t i=0; i<num_pop; ++i)
     approxData.pop_front(); // remove oldest
 }
 
