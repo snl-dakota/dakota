@@ -217,7 +217,7 @@ III. Test Binary Distribution installation.
    > dakota -v
    Running serial executable in serial mode.
    Dakota released <release date>.
-   Subversion revision ### build <build data & time>.
+   Revision ### build <build data & time>.
    Dakota execution time in seconds;
    Total CPU = ...
    Total wall clock = ...
@@ -324,7 +324,7 @@ For additional help with installing Dakota from source, please
 visit https://dakota.sandia.gov/content/build-compile-source-code
 
 Topic include:
-* accessing Dakota via Subversion repository checkout
+* accessing Dakota via repository checkout
 * source installation dependencies
 * source installation options
 * Dakota CMake hints
