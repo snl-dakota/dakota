@@ -17,7 +17,7 @@ the local evaluation queue.
 If local_evaluation_scheduling is specified as static, each completed
 evaluation will be replaced by an evaluation number that is congruent
 modulo the evaluation_concurrency.  This is helpful for relative node
-scheduling as described in \c dakota/examples/parallelism.  For example,
+scheduling as described in \c dakota/share/dakota/examples/parallelism.  For example,
 assuming only asynchronous local concurrency (no MPI), if the local
 concurrency is 6 and job 2 completes, it will be replaced with job 8.
 

@@ -4,7 +4,7 @@ Description::
 
 When the \c numpy keyword is used, Dakota expects responses in
 the form of a Python dictionary of numpy arrays. See the example
-in \c examples/linked_interfaces/Python.
+in \c dakota/share/dakota/examples/linked_interfaces/Python.
 
 Topics::	
 Examples::

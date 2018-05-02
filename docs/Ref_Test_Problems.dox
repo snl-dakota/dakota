@@ -146,7 +146,7 @@ f_2 = 1 - x_1 \tag{rosenr2}
 are residual terms.
 
 The included analysis driver can handle both formulations.
-In the \c Dakota/test directory, the \c rosenbrock
+In the \c dakota/share/dakota/test directory, the \c rosenbrock
 executable (compiled from \c Dakota_Source/test/rosenbrock.cpp) checks the number of
 response functions passed in the parameters file and returns either an
 objective function (as computed from
