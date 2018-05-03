@@ -65,7 +65,7 @@ following test functions are available: \texttt{cantilever},
 \texttt{short\_column}, and \texttt{text\_book} (including
 \texttt{text\_book1}, \texttt{text\_book2}, \texttt{text\_book3}, and
 \texttt{text\_book\_ouu}). While these functions are also available
-as external programs in the \texttt{Dakota/test} directory,
+as external programs in the \texttt{dakota/share/dakota/test} directory,
 maintaining internally linked versions allows more rapid testing. See
 Chapter~\ref{additional} for additional information on several of
 these test problems. An example input specification for a direct
@@ -252,7 +252,7 @@ can be used. If the user prefers, the desired pre- and post-processing
 functionality may also be compiled or interpreted from any number of
 programming languages (C, C++, F77, F95, JAVA, Basic, etc.).
 
-In the \texttt{Dakota/examples/script\_interfaces/generic} directory,
+In the \texttt{dakota/share/dakota/examples/script\_interfaces/generic} directory,
 a simple example uses the Rosenbrock test function as a mock
 engineering simulation code. Several scripts have been included to
 demonstrate ways to accomplish the pre- and post-processing
@@ -264,7 +264,7 @@ applications.
 
 \subsection{Generic Script Interface Files}\label{interfaces:generic}
 
-The {\tt Dakota/examples/script\_interfaces/generic} directory contains four important files:
+The {\tt dakota/share/dakota/examples/script\_interfaces/generic} directory contains four important files:
 \texttt{dakota\_rosenbrock.in} (the Dakota input file),
 \texttt{simulator\_script} (the simulation driver script),
 \texttt{dprepro} (a pre-processing utility), and \\
@@ -332,7 +332,7 @@ used for this purpose. For external sites where APREPRO is not
 available, the DPrePro utility mentioned above is an alternative with
 many of the capabilities of APREPRO that is specifically tailored for
 use with Dakota and is distributed with it (in
-\\ \texttt{Dakota/examples/script\_interfaces/generic/dprepro}, or {\tt
+\\ \texttt{dakota/share/dakota/examples/script\_interfaces/generic/dprepro}, or {\tt
 Dakota/bin} in a binary distribution). Additionally, the BPREPRO
 utility is another alternative to APREPRO (see~\cite{WalXX}), and at
 Lockheed Martin sites, the JPrePost utility is available as a JAVA
@@ -611,7 +611,7 @@ Section~\ref{intro:coupling}.
 
 A variety of additional examples of black-box interfaces to simulation
 codes are maintained in the\\
-\texttt{Dakota/examples/script\_interfaces} directory in the source
+\texttt{dakota/share/dakota/examples/script\_interfaces} directory in the source
 code distribution.
 
 
@@ -976,7 +976,7 @@ execution of the input filter, each of the analysis drivers, and the
 output filter.
 
 A complete example of these filters and multi-part drivers can be
-found in \texttt{Dakota/test/dakota\_3pc/dakota\_3pc.in}.
+found in \texttt{dakota/share/dakota/test/dakota\_3pc/dakota\_3pc.in}.
 
 \section{Simulation File Management}\label{interfaces:file}
 
@@ -1077,7 +1077,7 @@ e.g., outermodel.innermodel.interfaceid = 4.9.2.  This communicates
 the outer contexts to the analysis driver when performing a function
 evaluation.  For an example of using hierarhical tagging in a nested
 model context, see {\tt
-  dakota/test/dakota\_uq\_timeseries\_*\_optinterf.in}.
+  dakota/share/dakota/test/dakota\_uq\_timeseries\_*\_optinterf.in}.
 
 \subsection{Temporary Files}\label{interfaces:file:temporary}
 
@@ -1673,7 +1673,7 @@ ignore\_asv is False).
 
 \subsection{dakota.interfacing Examples}
 
-In addition to those in this section, the {\tt Dakota/examples/script\_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, {\tt rosenbrock\_bb.py}, parameters file parsing is performed manually. The other, {\tt rosenbrock\_bb\_di.py}, demonstrates the {\tt dakota.interfacing} module.
+In addition to those in this section, the {\tt dakota/share/dakota/examples/script\_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, {\tt rosenbrock\_bb.py}, parameters file parsing is performed manually. The other, {\tt rosenbrock\_bb\_di.py}, demonstrates the {\tt dakota.interfacing} module.
 
 For most applications, using {\tt dakota.interfacing} is straightforward. The first example, in Figure~\ref{diexample:simple}, is a mock analysis driver. Two variables with the descriptors {\tt x1} and {\tt x2} are read from the Dakota parameters file and used to evaluate the fictitious user function {\tt applic\_module.run()}. The result, stored in {\tt f}, is assigned to the {\tt function} value of the appropriate response. (A common error is leaving off the {\tt function} attribute, which is needed to distinguish the function value of the response from its gradient and Hessian.)
 

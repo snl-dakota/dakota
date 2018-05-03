@@ -90,7 +90,7 @@ Figure~\ref{adv_meth:figure01} shows a Dakota input file that specifies
 a sequential hybrid optimization method to solve the
 ``textbook'' optimization test problem.
 The \texttt{textbook\_hybrid\_strat.in} file
-provided in {\tt Dakota/examples/users} starts with a
+provided in {\tt dakota/share/dakota/examples/users} starts with a
 \texttt{coliny\_ea} solution which feeds its best point into a
 \texttt{coliny\_pattern\_search} optimization which feeds its best
 point into \texttt{optpp\_newton}. While this approach is overkill for
@@ -134,7 +134,7 @@ Hessian data to perform its search.
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for a sequential hybrid optimization method --
-see \texttt{Dakota/examples/users/textbook\_hybrid\_strat.in} }
+see \texttt{dakota/share/dakota/examples/users/textbook\_hybrid\_strat.in} }
   \label{adv_meth:figure01}
 \end{figure}
 
@@ -171,7 +171,7 @@ a single optimization run.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for a multistart local optimization method --
-see \texttt{Dakota/examples/users/qsf\_multistart\_strat.in} }
+see \texttt{dakota/share/dakota/examples/users/qsf\_multistart\_strat.in} }
   \label{adv_meth:figure02}
 \end{figure}
 
@@ -250,7 +250,7 @@ competing objectives.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for the Pareto optimization method --
-see \texttt{Dakota/examples/users/textbook\_pareto\_strat.in} }
+see \texttt{dakota/share/dakota/examples/users/textbook\_pareto\_strat.in} }
   \label{adv_meth:figure04}
 \end{figure}
 
@@ -363,7 +363,7 @@ two integer variables, a modified value of $1.4$ is used inside the
 quartic sum to render the continuous solution a non-integral solution.
 %Figure~\ref{adv_meth:figure06} shows a Dakota input file for solving this
 %problem. This input file is named \texttt{dakota\_bandb.in} in the
-%\texttt{Dakota/test} directory. Note the specification for the
+%\texttt{dakota/share/dakota/test} directory. Note the specification for the
 %discrete variables, where lower and upper bounds are given. The
 %discrete variables can take on any integer value within these bounds.
 
@@ -597,7 +597,7 @@ bounds) from this point in the $x_1$ and $x_2$ coordinate directions.
   \end{bigbox}
   \caption{Dakota input file for the surrogate-based local optimization
     example --
-see \texttt{Dakota/examples/users/rosen\_opt\_sbo.in} }
+see \texttt{dakota/share/dakota/examples/users/rosen\_opt\_sbo.in} }
   \label{sbm:sblm_rosen}
 \end{figure}
 
@@ -616,7 +616,7 @@ optima~\cite{Giu02}. In these types of engineering design problems,
 traditional gradient-based optimizers often are ineffective, whereas
 global data fits can extract the global trends of interest despite the
 presence of local nonsmoothness (for an example problem with multiple
-local optima, look in \texttt{Dakota/test} for the file
+local optima, look in \texttt{dakota/share/dakota/test} for the file
 \texttt{dakota\_sbo\_sine\_fcn.in}~\cite{Giu00}).
 
 The surrogate-based local minimizer is only mathematically
@@ -694,7 +694,7 @@ model~\cite{Eld04}.
 
 A multifidelity test problem named
 \texttt{dakota\_sbo\_hierarchical.in} is available in
-\texttt{Dakota/test} to demonstrate this SBO approach. This test
+\texttt{dakota/share/dakota/test} to demonstrate this SBO approach. This test
 problem uses the Rosenbrock function as the high fidelity model and a
 function named ``lf\_rosenbrock'' as the low fidelity model. Here,
 lf\_rosenbrock is a variant of the Rosenbrock function (see
@@ -850,6 +850,6 @@ as objective functions from that driver.
     \end{scriptsize}
   \end{bigbox}
   \caption{MOGA example -- 
-see \texttt{Dakota/examples/users/mogatest1\_opt\_sbo.in} }
+see \texttt{dakota/share/dakota/examples/users/mogatest1\_opt\_sbo.in} }
   \label{sbm:sbgm_moga}
 \end{figure}

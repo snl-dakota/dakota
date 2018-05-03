@@ -147,7 +147,7 @@ in the problem.
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for the interval-valued probability example --
-see \texttt{Dakota/examples/users/cantilever\_uq\_sop\_rel.in} }
+see \texttt{dakota/share/dakota/examples/users/cantilever\_uq\_sop\_rel.in} }
   \label{adv_models:2ndprob}
 \end{figure}
 
@@ -177,7 +177,7 @@ may employ directed optimization techniques to compute these extrema
 and potentially avoid the cost of sampling the full epistemic space.
 %resulting in more precise output bounds at lower cost.
 
-In \texttt{dakota/test}, test input files such as
+In \texttt{dakota/share/dakota/test}, test input files such as
 \texttt{dakota\_uq\_cantilever\_ivp\_exp.in} and\\
 \texttt{dakota\_uq\_short\_column\_ivp\_exp.in} replace the outer loop
 sampling with the local and global interval optimization methods
@@ -217,7 +217,7 @@ ones as used for the aleatory propagation on the inner loop.
 The previous example in Figure~\ref{adv_models:2ndprob} can be
 modified to define the epistemic outer loop using uniform variables
 instead of interval variables (annotated test \texttt{\#1} in
-\texttt{dakota/test/dakota\_uq\_cantilever\_sop\_rel.in}). The process of
+\texttt{dakota/share/dakota/test/dakota\_uq\_cantilever\_sop\_rel.in}). The process of
 generating the epistemic values is essentially the same in both cases;
 however, the interpretation of results is quite different. In IVP,
 each ``hair'' or individual CDF in the horsetail plot in
@@ -234,7 +234,7 @@ level input probability specifications are meaningful (i.e., to the
 extent that uniform distributions are believed to be representative 
 of the epistemic variables).
 
-In \texttt{dakota/test}, additional test input files such as
+In \texttt{dakota/share/dakota/test}, additional test input files such as
 \texttt{dakota\_uq\_cantilever\_sop\_exp.in} and\\
 \texttt{dakota\_uq\_short\_column\_sop\_exp.in} explore other outer/inner
 loop probabilistic analysis combinations, particulary using stochastic
@@ -256,7 +256,7 @@ than a basic output interval.
 The single-level DSTE approach for propagating epistemic uncertainties
 is described in Section~\ref{uq:dempshaf} and in the Dakota Theory
 Manual~\cite{TheoMan}. An example of nested DSTE for propagating mixed
-uncertainties can be seen in \texttt{dakota/test} in the input file
+uncertainties can be seen in \texttt{dakota/share/dakota/test} in the input file
 \texttt{dakota\_uq\_ishigami\_dste\_exp.in}.
 
 
@@ -362,7 +362,7 @@ follow the relationships among the different keyword blocks.
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for the nested OUU example --
-see \texttt{Dakota/examples/users/textbook\_opt\_ouu1.in} }
+see \texttt{dakota/share/dakota/examples/users/textbook\_opt\_ouu1.in} }
   \label{adv_models:figure09}
 \end{figure}
 
@@ -374,7 +374,7 @@ gradient-based optimizers may not perform well due to noisy or
 insensitive statistics resulting from under-resolved sampling. These
 observations motivate the use of surrogate-based approaches to OUU.
 
-Other nested OUU examples in the \texttt{dakota/test} directory
+Other nested OUU examples in the \texttt{dakota/share/dakota/test} directory
 include \texttt{dakota\_ouu1\_tbch.in}, which adds an additional
 interface for including deterministic data in the textbook OUU
 problem, and\\ \texttt{dakota\_ouu1\_cantilever.in}, which solves the
@@ -404,7 +404,7 @@ surrogate models.
   \label{adv_models:figure10}
 \end{figure}
 
-SBOUU examples in the \texttt{dakota/test} directory include
+SBOUU examples in the \texttt{dakota/share/dakota/test} directory include
 \texttt{dakota\_sbouu2\_tbch.in},\\ \texttt{dakota\_sbouu3\_tbch.in},
 and \texttt{dakota\_sbouu4\_tbch.in}, which solve the textbook OUU
 problem, and \texttt{dakota\_sbouu2\_cantilever.in},
@@ -433,7 +433,7 @@ however they are more reliable in that they maintain the accuracy of
 results. Relative to nested OUU (formulation 1), TR-SBOUU tends to be
 less expensive and less sensitive to initial seed and starting point.
 
-TR-SBOUU examples in the \texttt{dakota/test} directory include
+TR-SBOUU examples in the \texttt{dakota/share/dakota/test} directory include
 \texttt{dakota\_trsbouu2\_tbch.in} and\\
 \texttt{dakota\_trsbouu4\_tbch.in}, which solve the textbook OUU
 problem, and\\ \texttt{dakota\_trsbouu2\_cantilever.in} and
@@ -450,7 +450,7 @@ optimization (RBDO) and their associated sensitivity analysis
 requirements are described in the Optimization Under Uncertainty
 chapter of the Dakota Theory Manual~\cite{TheoMan}.
 
-A number of bi-level RBDO examples are provided in \texttt{dakota/test}.
+A number of bi-level RBDO examples are provided in \texttt{dakota/share/dakota/test}.
 The \texttt{dakota\_rbdo\_cantilever.in},
 \texttt{dakota\_rbdo\_short\_column.in}, and
 \texttt{dakota\_rbdo\_steel\_column.in} input files solve the
@@ -468,7 +468,7 @@ approximations. The \texttt{dakota\_rbdo\_cantilever\_analytic2.in},
 employ analytic design gradients, but are extended to employ
 second-order limit state approximations and integrations.
 
-Sequential RBDO examples are also provided in \texttt{dakota/test}. 
+Sequential RBDO examples are also provided in \texttt{dakota/share/dakota/test}. 
 The \texttt{dakota\_rbdo\_cantilever\_trsb.in} and
 \texttt{dakota\_rbdo\_short\_column\_trsb.in} input files solve 
 the cantilever and short column OUU problems using a first-order
@@ -491,7 +491,7 @@ their associated sensitivity analysis requirements are described in
 the Optimization Under Uncertainty chapter of the Dakota Theory
 Manual~\cite{TheoMan}.
 
-In \texttt{dakota/test}, the \texttt{dakota\_pcbdo\_cantilever.in},
+In \texttt{dakota/share/dakota/test}, the \texttt{dakota\_pcbdo\_cantilever.in},
 \texttt{dakota\_pcbdo\_rosenbrock.in},\\
 \texttt{dakota\_pcbdo\_short\_column.in}, and
 \texttt{dakota\_pcbdo\_steel\_column.in} input files solve cantilever
@@ -582,7 +582,7 @@ the use of interval estimation for epistemic analysis,
 specifically in epistemic-aleatory nesting, are: 
 \texttt{dakota\_uq\_cantilever\_sop\_exp.in}, and
 \texttt{dakota\_short\_column\_sop\_exp.in}. Both files are in
-{\tt Dakota/test}.
+{\tt dakota/share/dakota/test}.
 
 \section{Surrogate-Based Uncertainty Quantification} \label{adv_models:sbuq}
 
@@ -604,7 +604,7 @@ percentiles of the output directly based on the initial sample values)
 with the results obtained by sampling a variety of surrogate approximations. 
 Example input files of a standard UQ analysis based on sampling alone vs. 
 sampling a surrogate are shown in the \texttt{textbook\_uq\_sampling.in} and 
-\texttt{textbook\_uq\_surrogate.in} in the \texttt{Dakota/examples/users}
+\texttt{textbook\_uq\_surrogate.in} in the \texttt{dakota/share/dakota/examples/users}
 directory. 
 
 Note that one must exercise some caution when using surrogate-based methods 

@@ -74,7 +74,7 @@ of running a simple example.
   \item Make sure Dakota runs. You should see Dakota version information
    when you type: \texttt{dakota -v}
   \item Create a working directory 
-  \item Copy \texttt{rosen\_multidim.in} from the \texttt{Dakota/examples/users/}
+  \item Copy \texttt{rosen\_multidim.in} from the \texttt{dakota/share/dakota/examples/users/}
     directory to the working directory -- see Section~\ref{intro:files} for help.
   \item From the working directory, run \texttt{dakota -i 
     rosen\_multidim.in -o rosen\_multidim.out > rosen\_multidim.stdout}
@@ -502,7 +502,7 @@ The output of the Dakota run is written to the file named
 standard output, is redirect to \texttt{rosen\_multidim.stdout}.
 For comparison, files named \texttt{rosen\_multidim.out.sav}
 and \texttt{rosen\_multidim.stdout.sav} are included in the
-\texttt{Dakota/examples/users} directory. As for many of the examples,
+\texttt{dakota/share/dakota/examples/users} directory. As for many of the examples,
 Dakota provides a report on the best design point located during the
 study at the end of these output files.
 
@@ -583,7 +583,7 @@ the convergence tolerance for three successive iterations).
 \end{figure}
 
 The Dakota command is noted in the file, and copies of the outputs are
-in the \texttt{Dakota/examples/users} directory, with \texttt{.sav}
+in the \texttt{dakota/share/dakota/examples/users} directory, with \texttt{.sav}
 appended to the name.  When this example problem is executed using
 Dakota's legacy X Windows-based graphics support enabled, Dakota
 creates some iteration history graphics similar to the screen capture
@@ -680,7 +680,7 @@ parameter space, evaluate the value of Rosenbrock's function at all
 the 200 response values.
 
 The Dakota command is noted in the file, and copies of the outputs
-are in the \texttt{Dakota/examples/users} directory, with \texttt{.sav} 
+are in the \texttt{dakota/share/dakota/examples/users} directory, with \texttt{.sav} 
 appended to the name.  
 Figure~\ref{tutorial:results_mc} shows example results from this 
 sampling method. 
@@ -822,7 +822,7 @@ Dakota's internal Rosenbrock test function.
 
 Figure~\ref{tutorial:rosenbrock_user} shows the text of the Dakota
 input file named \texttt{rosen\_syscall.in} that is
-provided in the directory \texttt{Dakota/examples/users}.
+provided in the directory \texttt{dakota/share/dakota/examples/users}.
 The only differences between this input file and the one in Figure~
 \ref{tutorial:rosenbrock_grad} occur in the \emph{interface} keyword
 section. The keyword \texttt{fork} indicates that Dakota will use
@@ -833,7 +833,7 @@ the \texttt{analysis\_driver}, \texttt{parameters\_file}, and
 \texttt{results\_file} keywords, respectively.
 
 The Dakota command is noted in the file, and copies of the outputs
-are in the \texttt{Dakota/examples/users} directory, with \texttt{.sav} 
+are in the \texttt{dakota/share/dakota/examples/users} directory, with \texttt{.sav} 
 appended to the name.  
 
 This run of Dakota takes longer to complete than the previous
@@ -1139,7 +1139,7 @@ information on parameter studies and design of experiments methods.
 
 For a list of all the example Dakota input files, see 
 Table~\ref{tutorial:examples:table}. All of these input files 
-can be found in \\ \texttt{Dakota/examples/users}. 
+can be found in \\ \texttt{dakota/share/dakota/examples/users}. 
 
 \begin{table}[hbp]
 \centering
