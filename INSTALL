@@ -157,17 +157,23 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
       $INSTALL_DIR with the absolute path to your installation directory,
       e.g. /home/username.
 
-         setenv path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $path)
+         setenv PATH ($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $PATH)
 
    c. Save and close file.
    d. Update changes in your terminal window. At
       
       $ source ~/.cshrc
 
-4. If you intend to use the dakota Python package, add the path
-   $INSTALL_DIR/share/dakota/Python/ to the environment variable PYTHONPATH.
-   This can be made permanent by making this change in ~/.bashrc or ~/.cshrc. 
-   Adapt the instructions in step 3.
+4. To use the dakota Python package (and to enjoy the full features of
+   dprepro), add the path $INSTALL_DIR/share/dakota/Python/ to the environment 
+   variable PYTHONPATH. Adapt the instructions in step 3 by substituting 
+   PYTHONPATH where you see PATH to make this change persistent. After 
+   restarting the shell, issue the command:
+   
+      $ python -c "import dakota"
+
+   If it exits silently, producing no output, installation was succcessful.
+   An ImportError or ModuleNotFoundError indicates a problem. 
 
 --------------------------------------------------------------------
 II.  Install Windows Executable
@@ -202,11 +208,11 @@ II.  Install Windows Executable
       remains open. To permanently add Dakota to your path, consult the 
       documentation for your version of Windows.
 
-3. If you intend to use the dakota Python package, add the path
-   %install_dir%\share\dakota\Python to the environment variable PYTHONPATH. As 
-   with the change to %path%, this change will be lost when the cmd Window is 
-   closed. Consult the documentation for your version of Windows to make an 
-   environment variable persistent.
+3. To use the dakota Python package (and to enoy the full features of
+   dprepro), add the path %install_dir%\share\dakota\Python to the environment
+   variable PYTHONPATH. As with the change to %path%, this change will be lost 
+   when the cmd Window is closed. Consult the documentation for your version of 
+   Windows to make an environment variable persistent.
 
 --------------------------------------------------------------------
 III. Test Binary Distribution installation.
@@ -287,16 +293,12 @@ particular platform or shell.
    $ make [-j#]
    $ make install
 
-7. Set paths and library paths. In the instructions below, $DAK_INSTALL
-   refers to the Dakota installation path you specified for the variable
-   CMAKE_INSTALL_PREFIX in your BuildCustom.cmake file.
+7. Set paths. In the instructions below, $DAK_INSTALL refers to the Dakota 
+   installation path you specified for the variable CMAKE_INSTALL_PREFIX 
+   in your BuildCustom.cmake file.
 
    $ export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/share/dakota/test:$PATH
-   $ export LD_LIBRARY_PATH=$DAK_INSTALL/lib:$DAK_INSTALL/bin:$LD_LIBRARY_PATH
-
-   NOTE: For Mac OS X, you need to set DYLD_LIBRARY_PATH instead.
-
-   $ export DYLD_LIBRARY_PATH=$DAK_INSTALL/lib:$DAK_INSTALL/bin:$DYLD_LIBRARY_PATH
+   $ export PYTHONPATH=$DAK_INSTALL:share/dakota/Python:$PYTHONPATH
 
 Miscellaneous Notes:
  * 'make [-j#]': Dakota supports concurrent build processes
