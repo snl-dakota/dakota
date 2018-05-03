@@ -2824,7 +2824,7 @@ be modified,
 \begin{equation}
 d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \epsilon_i,
 \end{equation} 
-with the ensuing equations of the likelihood and Bayes Theorem updated 
+with the ensuing equations of the likelihood and Bayes' Theorem updated 
 likewise. The configuration variables represent experimental settings, such 
 as temperature or pressure, that may vary between experiments. 
 
@@ -2836,18 +2836,20 @@ O'Hagan~\cite{Kenn01} formulation takes the form
 \begin{equation}
 d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \delta_i(x) + \epsilon_i,
 \end{equation} 
-where $\delta_i(x)$ represents the model discrepancy. It should be noted that
-the discrepancy depends \textit{only} on the configuration variables. 
+where $\delta_i(x)$ represents the model discrepancy. For scalar responses, the
+model discrepancy is \textit{only} a function of the configuration variables.
 Furthermore, one discrepancy model is calculated for \textit{each} observable
-$d_i$, $i = 1, \ldots, n$, yielding $\delta_1, \ldots, \delta_n$. Future 
-work includes developing a discrepancy model that accounts for field data so
-that a single, global $\delta(x)$ will be approximated.
+$d_i$, $i = 1, \ldots, n$, yielding $\delta_1, \ldots, \delta_n$. For field
+responses, a single, global $\delta$ is a function of the configuration 
+variables as well as the independent field coordinates, which are usually 
+points in time or space. The construction of the model discrepancy in cases 
+with mixed scalar and field responses has not been tested.
 
 The current implementation of the model discrepancy capability in Dakota 
 serves as a post-processing mechanism after the completion of a Bayesian update.
 If \texttt{model\_discrepancy} is specified in the input file, Dakota will 
 perform the Bayesian update as detailed in the section above, and then begin 
-the process of approximating $\delta_i$. For each observable $d_i$ and for 
+the process of approximating $\delta$. For each scalar observable $d_i$ and for 
 each configuration $x_j$,
 \begin{equation}
 \delta_i \left( x_j \right) = d_i \left( x_j \right) - 
@@ -2856,17 +2858,30 @@ q_i \left(\boldsymbol{\theta}^*, x_j \right),
 where $\boldsymbol{\theta}^*$ is the average of the calibrated posterior 
 distribution of the model parameters. The $i^{th}$ discrepancy function
 will be built over the computed $\delta_i \left( x_j \right)$, $j = 1, \ldots,
-m$. Within the Dakota input file, the user may specify the 
-\texttt{discrepancy\_type} to be either a Gaussian process or polynomial
-regression model with the \texttt{gaussian\_process} or \texttt{polynomial}
-commands, respectively. Additionally, the order of the trend function may be
-selected using the \texttt{correction\_order} command and choosing one of
-\texttt{constant}, \texttt{linear}, or \texttt{quadratic}. Any specifications
-using these keywords will apply to all $\delta_i$. By default, Dakota will 
-build a Gaussian process discrepancy model with a quadratic trend function.
-Information regarding how polynomial and Gaussian process models are built
-can be found in Sections~\ref{models:surf:polynomial} 
-and~\ref{models:surf:kriging}, respectively. 
+m$. For field observable $d$, the discrepancy is calculated for each
+independent field coordinate $t_{i}$ and for each configuration $x_{j}$,
+\begin{equation}
+  \delta(t_{i}, x_{j}) = d(t_{i}, x_{j}) - q(\boldsymbol{\theta}^{*}, t_{i},
+  x_{j}).
+\end{equation}
+The global discrepancy function is then built over the computed $\delta(t_{i},
+x_{j})$, $i = 1, \ldots, n$, $j = 1, \ldots, m$. For simplicity in future
+notation, we let $\delta_{i}(x_i) = \delta(t_i, x_i)$.
+
+The field discrepancy function is built using a Gaussian process regression
+model with a quadratic trend function. If instead the responses are scalars, 
+more options for the regression model are available. Within the Dakota input 
+file, the user may specify the \texttt{discrepancy\_type} to be either a 
+Gaussian process or polynomial regression model with the 
+\texttt{gaussian\_process} or \texttt{polynomial} commands, respectively. 
+Additionally, the order of the trend function may be selected using the 
+\texttt{correction\_order} command and choosing one of \texttt{constant}, 
+\texttt{linear}, or \texttt{quadratic}. Any specifications using these keywords 
+will apply to all $\delta_i$. By default, Dakota will build a Gaussian process 
+discrepancy model with a quadratic trend function. Information regarding how 
+polynomial and Gaussian process models are built can be found in 
+Sections~\ref{models:surf:polynomial} and~\ref{models:surf:kriging}, 
+respectively. 
 
 The user may specify new ``prediction" configurations at which the 
 corrected model should be calculated. For each response and for each new
@@ -2892,9 +2907,10 @@ model tabular files using the \texttt{export\_discrepancy\_file} and
 \texttt{export\_corrected\_model\_file} keywords, respectively. 
 
 Variance information corresponding to each specified configuration location 
-and for each observable is also computed. In a prediction setting, the 
-variance calculated from the discrepancy model is additively combined with 
-the variance information provided with the experimental data, such that
+and for each observable is also computed. In a prediction setting for scalar 
+responses, the variance calculated from the discrepancy model is additively 
+combined with the variance information provided with the experimental data, 
+such that
 \begin{equation}
 \label{eq:discrep_var}
 \Sigma_{total,i}(x) = \Sigma_{\delta, i}(x) + \sigma^{2}_{exp,i} I
@@ -2920,7 +2936,10 @@ predictions that arise due to uncertainties in the calibration data. These
 prediction variances are output to the file 
 \texttt{dakota\_discrepancy\_variance\_tabular.dat} by default. The name of 
 this file can be modified using the \texttt{export\_corrected\_variance\_file} 
-keyword in the input script. 
+keyword in the input script. If the response is a field, the variance 
+information written to this file is the variance of the Gaussian process alone.
+Future work includes calculation of combined experimental variance and 
+discrepancy model variance for field responses.
 
 Additional details and an illustrative example of these calculations are given 
 in the Dakota Theory Manual~\cite{TheoMan}.

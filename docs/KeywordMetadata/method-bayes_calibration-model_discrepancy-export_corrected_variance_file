@@ -7,8 +7,8 @@ corrected model variance information is output. The file will contain the
 values of the variances computed at those points specified with \c
 num_predictions, \c prediction_configs, or \c import_prediction_configs.
 
-The prediction variance for each observable \f$d_i\f$ is calculated according 
-to
+For scalar responses, the prediction variance for each observable \f$d_i\f$ is 
+calculated according to
 
 \f[
 \Sigma_{total}(x) = \Sigma_{\delta}(x) + \sigma^2_{exp}I.
@@ -19,7 +19,8 @@ Gaussian process or polynomial regression model, details of which can be
 found in the Dakota User's and Theory Manuals. If experimental variance
 information is provided for the calibration, the maximum variance found for 
 the observable \f$d_i\f$ is used as \f$\sigma^2_{exp}\f$. For more details, 
-see the Dakota User's and Theory Manuals.
+see the Dakota User's and Theory Manuals. For field responses, the variance 
+of the discrepancy model alone is output to this file. 
 
 <b> Default Behavior </b>
 
