@@ -43,20 +43,24 @@ Distribution  Directory	 Description
 Type
 ------------  ---------  --------------------------------------------------  
 bin-dist      bin	 Binary files for Dakota, restart utility, dprepo
-	      		 and various third-part libraries (TPLs).
+                         and various third-party libraries (TPLs).
+src-dist      scripts    Source files for some scripts installed to bin-dist:bin
 
-bin-dist      examples	 Example problems from the Users Manual, examples of
-	      		 interfacing with other codes using script-based or
-			 direct linkage-based interfaces, parallel computing
-			 examples, and platform installation examples.
 
-bin-dist      test	 Files for regression and unit testing of the
+src-dist      examples	 Example problems from the Users Manual, examples of
+bin-dist      share/	 interfacing with other codes using script-based or
+               dakota/	 direct linkage-based interfaces, parallel computing
+                examples examples, and platform installation examples.
+
+src-dist      test	 Files for regression and unit testing of the
 src-dist      unit_test	 Dakota system. Test simulator programs and Dakota
-			 input files are provided for testing different
-			 capabilities. 
+bin-dist      share/	 input files are provided for testing different
+               dakota/   capabilities.
+                test
 
-bin-dist      share      dakota Python package and Bash interface helper
-src-dist      interfaces 
+bin-dist      share/     dakota Python package and Bash interface helpers
+               dakota
+src-dist      interfaces Corresponding source files
 
 bin-dist      include	 Include files for Dakota and it's associated TPLs.
 
@@ -139,7 +143,7 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
       $INSTALL_DIR with the absolute path to your installation directory,
       e.g. /home/username.
 
-         export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/test:$PATH
+         export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$PATH
      
    c. Save and close file.
    d. Update changes in your terminal window. At
@@ -153,7 +157,7 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
       $INSTALL_DIR with the absolute path to your installation directory,
       e.g. /home/username.
 
-         setenv path=($INSTALL_DIR/bin $INSTALL_DIR/test $path)
+         setenv path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $path)
 
    c. Save and close file.
    d. Update changes in your terminal window. At
@@ -192,7 +196,7 @@ II.  Install Windows Executable
    b. At the command prompt, type the following command, replacing %install_dir%
       with the path to your Dakota installation:
 
-      C:\Users\name> path=%path%;%install_dir%\bin;%install_dir%\test;%install_dir%\lib
+      C:\Users\name> path=%path%;%install_dir%\bin;%install_dir%\share\dakota\test;%install_dir%\lib
       
       Note that the path will be set only for as long as the cmd window
       remains open. To permanently add Dakota to your path, consult the 
@@ -213,7 +217,7 @@ III. Test Binary Distribution installation.
    > dakota -v
    Running serial executable in serial mode.
    Dakota released <release date>.
-   Subversion revision ### build <build data & time>.
+   Revision ### build <build data & time>.
    Dakota execution time in seconds;
    Total CPU = ...
    Total wall clock = ...
@@ -287,7 +291,7 @@ particular platform or shell.
    refers to the Dakota installation path you specified for the variable
    CMAKE_INSTALL_PREFIX in your BuildCustom.cmake file.
 
-   $ export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/test:$PATH
+   $ export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/share/dakota/test:$PATH
    $ export LD_LIBRARY_PATH=$DAK_INSTALL/lib:$DAK_INSTALL/bin:$LD_LIBRARY_PATH
 
    NOTE: For Mac OS X, you need to set DYLD_LIBRARY_PATH instead.
@@ -320,7 +324,7 @@ For additional help with installing Dakota from source, please
 visit https://dakota.sandia.gov/content/build-compile-source-code
 
 Topic include:
-* accessing Dakota via Subversion repository checkout
+* accessing Dakota via repository checkout
 * source installation dependencies
 * source installation options
 * Dakota CMake hints

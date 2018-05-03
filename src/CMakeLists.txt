@@ -920,24 +920,6 @@ if (DAKOTA_DLL_API)
   DakotaApplyMPISettings(dakota_dll_api)
 endif()
 
-# Install dyanamic deps, omitting standard system libs
-# CMake variables aren't passed to the script, so we have to invoke
-# separate scripts for each platform
-option(DAKOTA_INSTALL_DYNAMIC_DEPS 
-  "Install Dakota's dynamic dependencies to CMAKE_INSTALL_PREFIX/bin/" ON)
-if (DAKOTA_INSTALL_DYNAMIC_DEPS)
-  if (CYGWIN)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallCygwinDLLs.cmake")
-  elseif (APPLE)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallDarwinDylibs.cmake")
-  elseif (UNIX)
-#    include(InstallRequiredSystemLibraries)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake")
-  elseif (WIN32)
-    include(InstallWinDLLs)
-  endif()
-endif()
-  
 
 # --- Define variables used for export Makefiles
 # TODO: use these variables/names in the Trilinos block below

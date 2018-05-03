@@ -42,7 +42,7 @@ get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
 set(dakota_darwin_dylibs "")
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
                        "${CMAKE_INSTALL_PREFIX}/lib/*"
-                       "${CMAKE_INSTALL_PREFIX}/test/*")
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/test/*")
            
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
@@ -163,7 +163,7 @@ endforeach()
 # ${CMAKE_INSTALL_PREFIX}/lib to refer to libs by their new install names.
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
                        "${CMAKE_INSTALL_PREFIX}/lib/*"
-                       "${CMAKE_INSTALL_PREFIX}/test/*")
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/test/*")
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
   if(NOT IS_DIRECTORY "${loader}" AND NOT loader MATCHES "\\.a$")

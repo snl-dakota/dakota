@@ -1,0 +1,30 @@
+Blurb:: Multiplier to scale prior variance
+
+Description::
+The initial proposal covariance will be given by the prior variance
+times the multiplier.
+
+<b> Default Behavior </b>
+When using prior-based proposal covariance, the default is to use the
+prior variance for the proposal (multiplier = 1.0)
+
+<b> Usage Tips </b>
+
+The prior variance may result in too tight or narrow a proposal
+covariance. The multiplier can be used to scale all entries of the
+prior variance in determining the initial proposal covariance.
+
+Topics::
+
+Examples::
+\verbatim
+method
+  bayes_calibration queso
+    samples = 2000 seed = 348
+    dram
+    proposal_covariance prior
+      multiplier 0.1
+\endverbatim
+Theory::
+Faq::
+See_Also::

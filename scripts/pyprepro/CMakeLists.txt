@@ -9,5 +9,6 @@ if(PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GREATER 2.6)
 	  PROPERTY ENVIRONMENT PYTHONPATH "$ENV{PYTHONPATH}:${CMAKE_SOURCE_DIR}/interfaces/Python")
 endif()
 
-install(PROGRAMS "dprepro" "pyprepro" DESTINATION "bin/")
+install(PROGRAMS "pyprepro" DESTINATION "bin/")
+install(PROGRAMS "pyprepro" DESTINATION "bin/" RENAME "dprepro")
 

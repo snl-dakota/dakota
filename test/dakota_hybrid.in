@@ -56,14 +56,16 @@ method
 
 method
   id_method = 'PS'
-  coliny_pattern_search stochastic
-#   max_function_evaluations = 100              #s1
-    seed = 1234
+  coliny_pattern_search
+    stochastic
     initial_delta = 0.1
-    variable_tolerance = 1.e-4
-    solution_target = 1.e-10
-    exploratory_moves basic_pattern
-    model_pointer = 'M1'
+    seed = 1234
+#   max_function_evaluations = 100              #s1
+    variable_tolerance = 1e-4
+  solution_target = 1.e-10  
+  exploratory_moves 
+    basic_pattern  
+  model_pointer = 'M1'
   output verbose
 
 #method,                                        #s1,#s2
