@@ -942,7 +942,8 @@ void NonDExpansion::pre_refinement()
 
 
 size_t NonDExpansion::
-core_refinement(Real& metric, bool revert, bool print_metric)
+core_refinement(Real& metric, bool revert, bool print_metric,
+		bool relative_metric)
 {
   size_t candidate = 0;
   switch (refineControl) {
@@ -951,7 +952,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     increment_grid(); // recompute anisotropy
     update_expansion();
-    metric = compute_covariance_metric(revert, print_metric);
+    metric = compute_covariance_metric(revert, print_metric, relative_metric);
     if (revert) {
       decrement_grid();
       pop_increment();
@@ -968,7 +969,8 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // > Starting GSG from TPQ is conceptually straightforward but
     //   awkward in implementation (would need something like
     //   nond_sparse->ssg_driver->compute_tensor_grid()).
-    candidate = increment_sets(metric, revert, print_metric); // best of several
+    // Returns best of several candidates for this level
+    candidate = increment_sets(metric, revert, print_metric, relative_metric);
     break;
   }
   return candidate;
@@ -1317,7 +1319,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      lev_candidate = core_refinement(lev_metric, true, true);
+      lev_candidate = core_refinement(lev_metric, true, true, true);//false);
       // core_refinement() normalizes level candidates based on the number of
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
@@ -1500,7 +1502,8 @@ void NonDExpansion::increment_specification_sequence()
 
 
 size_t NonDExpansion::
-increment_sets(Real& delta_star, bool revert, bool print_metric)
+increment_sets(Real& delta_star, bool revert, bool print_metric,
+	       bool relative_metric)
 {
   Cout << "\n>>>>> Begin evaluation of active index sets.\n";
 
@@ -1537,8 +1540,8 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
 
     // assess effect of increment (non-negative norm); restore ref once done
     delta = (totalLevelRequests) ?
-      compute_final_statistics_metric(revert, print_metric) :
-      compute_covariance_metric(revert, print_metric);
+      compute_final_statistics_metric(revert, print_metric, relative_metric) :
+      compute_covariance_metric(revert, print_metric, relative_metric);
     // normalize effect of increment based on cost (# of collocation pts).
     // Note: increment size must be nonzero since growth restriction is
     // precluded for generalized sparse grids.
@@ -1725,7 +1728,8 @@ void NonDExpansion::annotated_results(short results_state)
 
 /** computes the default refinement metric based on change in respCovariance */
 Real NonDExpansion::
-compute_covariance_metric(bool restore_ref, bool print_metric)
+compute_covariance_metric(bool restore_ref, bool print_metric,
+			  bool relative_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1733,21 +1737,23 @@ compute_covariance_metric(bool restore_ref, bool print_metric)
   // perform any roll-ups of expansion contributions, prior to metric compute
   metric_roll_up();
 
+  Real scale;
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
     RealVector resp_var_ref, delta_resp_var = respVariance; // deep copy
     if (restore_ref) resp_var_ref = respVariance;
-    Real scale = respVariance.normFrobenius();
+    if (relative_metric)
+      scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
 
     compute_covariance();                     // update
     if (print_metric) print_covariance(Cout);
     delta_resp_var -= respVariance;           // compute change
+    Real delta_norm = delta_resp_var.normFrobenius();
 
 #ifdef DEBUG
     Cout << "resp_var_ref:\n"; write_data(Cout, resp_var_ref);
     Cout << "respVariance:\n"; write_data(Cout, respVariance);
-    Cout << "norm of delta_resp_var = " << delta_resp_var.normFrobenius()
-	 << std::endl;
+    Cout << "norm of delta_resp_var = " << delta_norm << std::endl;
 #endif // DEBUG
 
     if (restore_ref) respVariance = resp_var_ref;
@@ -1755,26 +1761,26 @@ compute_covariance_metric(bool restore_ref, bool print_metric)
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
     // change compared against relative conv tol.
-    return (scale > 0.) ? delta_resp_var.normFrobenius() / scale :
-                          delta_resp_var.normFrobenius() / Pecos::SMALL_NUMBER;
+    return (relative_metric) ? delta_norm / scale : delta_norm;
     break;
   }
   case FULL_COVARIANCE: {
     RealSymMatrix resp_covar_ref, delta_resp_covar = respCovariance;// deep copy
     if (restore_ref) resp_covar_ref = respCovariance;
-    Real scale = respCovariance.normFrobenius();
+    if (relative_metric)
+      scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
 
     compute_covariance();                            // update
     if (print_metric) print_covariance(Cout);
     delta_resp_covar -= respCovariance;              // compute change
+    Real delta_norm = delta_resp_covar.normFrobenius();
 
 #ifdef DEBUG
     Cout << "resp_covar_ref:\n";
     write_data(Cout, resp_covar_ref, false, true, true);
     Cout << "respCovariance:\n";
     write_data(Cout, respCovariance, false, true, true);
-    Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
-	 << std::endl;
+    Cout << "norm of delta_resp_covar = " << delta_norm << std::endl;
 #endif // DEBUG
 
     if (restore_ref) respCovariance = resp_covar_ref;
@@ -1782,9 +1788,7 @@ compute_covariance_metric(bool restore_ref, bool print_metric)
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
     // change compared against relative conv tol.
-    return (scale > 0.) ?
-      delta_resp_covar.normFrobenius() / scale :
-      delta_resp_covar.normFrobenius() / Pecos::SMALL_NUMBER;
+    return (relative_metric) ? delta_norm / scale : delta_norm;
     break;
   }
   default: // NO_COVARIANCE or failure to redefine DEFAULT_COVARIANCE
@@ -1796,7 +1800,8 @@ compute_covariance_metric(bool restore_ref, bool print_metric)
 
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
 Real NonDExpansion::
-compute_final_statistics_metric(bool restore_ref, bool print_metric)
+compute_final_statistics_metric(bool restore_ref, bool print_metric,
+				bool relative_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1842,8 +1847,8 @@ compute_final_statistics_metric(bool restore_ref, bool print_metric)
       requestedGenRelLevels[i].length();
     for (j=0; j<num_lev_i; ++j, ++cntr) {
       Real ref  = final_stats_ref[cntr], delta = final_stats_new[cntr] - ref;
-      scale_sq +=   ref *   ref;
-      sum_sq   += delta * delta;
+      if (relative_metric) scale_sq += ref * ref;
+      sum_sq += delta * delta;
     }
   }
 
@@ -1852,8 +1857,12 @@ compute_final_statistics_metric(bool restore_ref, bool print_metric)
   // Risk of zero reference is reduced relative to covariance control, but not
   // eliminated. Trap this and also avoid possible bogus termination from using
   // absolute change compared against relative conv tol.
-  return (scale_sq > 0.) ? std::sqrt(sum_sq / scale_sq) :
-                           std::sqrt(sum_sq / Pecos::SMALL_NUMBER);
+  if (relative_metric) {
+    Real scale = std::max(Pecos::SMALL_NUMBER, std::sqrt(scale_sq));
+    return std::sqrt(sum_sq) / scale;
+  }
+  else
+    return std::sqrt(sum_sq);
 }
 
 

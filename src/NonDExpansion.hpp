@@ -106,10 +106,12 @@ protected:
   virtual void compute_covariance();
 
   /// compute 2-norm of change in response covariance
-  virtual Real compute_covariance_metric(bool restore_ref, bool print_metric);
+  virtual Real compute_covariance_metric(bool restore_ref, bool print_metric,
+					 bool relative_metric);
   /// compute 2-norm of change in final statistics
   virtual Real compute_final_statistics_metric(bool restore_ref,
-					       bool print_metric);
+					       bool print_metric,
+					       bool relative_metric);
   /// perform any required expansion roll-ups prior to metric computation
   virtual void metric_roll_up();
 
@@ -199,7 +201,7 @@ protected:
   void pre_refinement();
   /// advance the refinement strategy one step
   size_t core_refinement(Real& metric, bool revert = false,
-			 bool print_metric = true);
+			 bool print_metric = true, bool relative_metric = true);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric);
 
@@ -320,7 +322,8 @@ private:
   void reduce_decay_rate_sets(RealVector& min_decay);
 
   /// perform an adaptive refinement increment using generalized sparse grids
-  size_t increment_sets(Real& delta_star, bool revert, bool print_metric);
+  size_t increment_sets(Real& delta_star, bool revert, bool print_metric,
+			bool relative_metric);
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 
