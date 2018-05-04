@@ -300,8 +300,7 @@ conjugate gradient method (\texttt{optpp\_cg}) and ROL's trust-region
 method with truncated conjugate gradient subproblem solver 
 (\texttt{rol}). ROL relies on secant updates for the Hessian, with the 
 an approximation to the Hessian matrix at each iteration provided 
-using only values of the gradient at current and p
-revious iterates.
+using only values of the gradient at current and previous iterates.
 
 \subsubsection{Methods for Bound-Constrained Problems}
 \label{opt:methods:gradient:bound_constrained}
@@ -380,9 +379,9 @@ The augmented Lagrangian method provides a strategy to handle equality
 and inequality constraints by introducing the augmented Lagrangian 
 function, combining the use of Lagrange multipliers and a quadratic 
 penalty term. It is implemented in ROL (\texttt{rol}) exhibiting 
-scalable performance for large-scale problems. Note that ROL converts 
-inequality constraints into equality constraints with bounded slack 
-variables.
+scalable performance for large-scale problems. Note that ROL internally
+converts inequality constraints into equality constraints with bounded
+slack variables.
 
 \subsubsection{Example}
 \label{opt:methods:gradient:example}
@@ -1496,8 +1495,11 @@ here along with the license status and web page where available.
 \item OPT++ (\texttt{optpp\_} methods) License: LGPL; website:
   \url{http://csmr.ca.sandia.gov/opt++}.
 
+\item ROL (\texttt{rol}) License: BSD; website:
+  \url{https://trilinos.org/packages/rol}.
+
 \item SCOLIB (\texttt{coliny\_} methods) License: BSD; website:
-  \url{https://software.sandia.gov/trac/acro/wiki/Packages}
+  \url{https://software.sandia.gov/trac/acro/wiki/Packages}.
 
 \end{itemize}
 
