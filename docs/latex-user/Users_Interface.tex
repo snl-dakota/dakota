@@ -1667,6 +1667,42 @@ ignore\_asv is False).
 
 \end{itemize}
 
+\subsection{Processing Templates}
+
+Dakota is packaged with a sophisticated command-line template processor
+called \texttt{dprepro}. It is fully documented in 
+Section~\ref{interfaces:dprepro-and-pyprepro}. Templates may be processed 
+within Python analysis drivers without externally invoking \texttt{dprepro} 
+by calling the \texttt{dprepro} function:
+
+\phantomsection\label{index:dakota.interfacing.dprepro}\texttt{dakota.interfacing.}\textbf{\texttt{dprepro}}({\emph{template}, \emph{parameters=None}, \emph{results=None}, \emph{include=None},
+	\emph{output=None}, \emph{fmt='\%0.10g'}, \emph{code='\%'}, \emph{code\_block='\{\% \%\}'},
+		\emph{inline='\{ \}'}, \emph{warn=True}){}
+
+If \emph{template} is a string, it is assumed to be the name of a file that
+contains a template. If it is a file-like object (that has a \texttt{.read()}
+method), the template will be read from it. (Templates that are already in
+string form can be passed in by first wrapping them in a \texttt{StringIO}
+object.)
+
+\texttt{Parameters} and \texttt{Results} objects can be made available to the
+template using The \emph{parameters} and \emph{results} keyword arguments, and 
+additional variable defintions can be provided in a \texttt{dict} via the
+\emph{include} argument.
+
+The \emph{output} keyword is used to specify an output file for the processed 
+template. \emph{output=None} causes the output to be returned as a string. A
+string is interpreted as a file name, and a file-like object (that has a 
+\texttt{.write()} method) is written to.
+
+The \emph{fmt} keyword sets the global numerical format for template output.
+
+\emph{code}, \emph{code\_block}, and \emph{inline} are used to specify custom 
+delimiters for these three types of expressions within the template.
+
+Finally, the \emph{warn} keyword controls whether warnings are printed by the
+template engine.
+
 \subsection{dakota.interfacing Examples}
 
 In addition to those in this section, the {\tt dakota/share/dakota/examples/script\_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, {\tt rosenbrock\_bb.py}, parameters file parsing is performed manually. The other, {\tt rosenbrock\_bb\_di.py}, demonstrates the {\tt dakota.interfacing} module.
@@ -1678,7 +1714,7 @@ For most applications, using {\tt dakota.interfacing} is straightforward. The fi
 \begin{small}
 \begin{verbatim}
   import dakota.interfacing as di
-  import applic_module 
+  import applic_module # fictitious application 
 
   params, results = di.read_parameters_file()
 
@@ -1810,6 +1846,8 @@ The remaining options are used to
     \texttt{"\{ \}"}.
   \item Insert additional parameters for substitution, either from a JSON file
    (\texttt{-\/-json-include}) or directly on the command line (\texttt{-\/-var}).
+   Variables that are defined using these options are \emph{immutable}
+   (Section~\ref{interfaces:immutable-variables}).
   \item Silence warnings (\texttt{-\/-no-warn})
   \item Set the default numerical output format (\texttt{-\/-output-format}).
 \end{itemize}
@@ -2016,9 +2054,16 @@ make mutable    : { param = Mutable(21) }   : 21
 reset           : { param = 20 }            : 20
 \end{verbatim}
 
-Note that any variable set via an \texttt{-\/-include} file or on the 
-command line using \{\texttt{-\/-var} will be set as Immutable.
-This is useful for overriding defaults within templates.
+Note that any variable set on the command line by any of these three means:
+\begin{itemize}
+ \item \texttt{-\/-var} argument 
+ \item \texttt{-\/-include} file
+ \item \texttt{-\/-json-include} file
+\end{itemize}
+is immutable. This listing is in order of precendence; variables set by a 
+\texttt{-\/-var} argument cannot be modified by \texttt{-\/-include}
+or \texttt{-\/-json-include} files. This feature is useful for overriding
+defaults set in templates.
 
 Suppose the template file \texttt{MyTemplate.inp} contains:
 
@@ -2427,13 +2472,11 @@ in the path of the original template, and then in the path where
 
 As explained elsewhere, variables can be defined as
 \texttt{Immutable(value)} or \texttt{Mutable(value)}. If a variable is
-Immutable, it cannot be rassigned without first explicitly make it Mutable.
+Immutable, it cannot be reassigned without first explicitly make it Mutable.
 
-Note: Variables defined in files that are include using the command line 
-\texttt{-\/-include} options are Immutable by default. Likewise, variables
-defined using the \texttt{-\/-var} command line option are Immutable. However,
-variables from files read in by the \texttt{include()} function are not 
-Immutable by default.
+\emph{Note}: Unlike variables defined \texttt{-\/-include} files 
+(Section~\ref{interfaces:immutable-variables}), variables from files read in 
+using the \texttt{include()} function are not Immutable by default.
 
 \subsubsection{Print All Variables}\label{interfaces:print-all-variables}
 
