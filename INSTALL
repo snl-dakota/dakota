@@ -157,7 +157,7 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
       $INSTALL_DIR with the absolute path to your installation directory,
       e.g. /home/username.
 
-         setenv PATH ($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $PATH)
+         setenv PATH $INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test $PATH
 
    c. Save and close file.
    d. Update changes in your terminal window. At
