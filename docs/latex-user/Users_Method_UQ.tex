@@ -3,16 +3,20 @@
 \section{Overview}\label{uq:overview}
 
 At a high level, uncertainty quantification (UQ) or nondeterministic
-analysis is the process of characterizing input uncertainties, forward
-propagating these uncertainties through a computational model, and
-performing statistical or interval assessments on the resulting
-responses. This process determines the effect of uncertainties and
-assumptions on model outputs or results. In Dakota, uncertainty
-quantification methods specifically focus on the forward propagation
-part of the process, where probabilistic or interval information on
-parametric inputs are mapped through the computational model to assess
-statistics or intervals on outputs. For an overview of these
-approaches for engineering applications, consult~\cite{Hal00}.
+analysis is the process of (1) characterizing input uncertainties, (2)
+forward propagating these uncertainties through a computational model,
+and (3) performing statistical or interval assessments on the
+resulting responses. This process determines the effect of
+uncertainties and assumptions on model outputs or results. In Dakota,
+uncertainty quantification methods primarily focus on the forward
+propagation and analysis parts of the process (2 and 3), where
+probabilistic or interval information on parametric inputs are mapped
+through the computational model to assess statistics or intervals on
+outputs. For an overview of these approaches for engineering
+applications, consult~\cite{Hal00}. Dakota also has emerging methods
+for inference or inverse UQ, such as Bayesian calibration. These
+methods help with (1) by obtaining a statistical characterization of
+input parameters based on provided data.
 
 UQ is related to sensitivity analysis in that the common goal is to
 gain an understanding of how variations in the parameters affect the
@@ -268,17 +272,16 @@ intervals on the input) using either global or local optimization methods.
 Interval analysis is often used to model epistemic variables in 
 nested analyses, where probability theory is used to model aleatory variables.
 
-\textbf{Bayesian Calibration}:  In Bayesian calibration, uncertain 
-input parameters are described by a ``prior'' distribution. The priors
-are updated with experimental data, in a Bayesian framework that 
-involves the experimental data and a likelihood function which describes 
-how well each parameter value is supported by the data. After the process
-of Bayesian calibration, the prior distribution becomes a posterior 
-distribution. The posterior distribution of the parameters represents
-the parameter values that have been updated with the data (e.g. the 
-model, when run at these parameters, should yield results that are 
-consistent with the observational data). 
- 
+\textbf{Bayesian Calibration}: In Bayesian calibration, uncertain
+input parameters are initially characterized by a ``prior''
+distribution. A Bayesian calibration approach uses experimental data
+together with a likelihood function, which describes how well a
+realization of the parameters is supported by the data, to update this
+prior knowledge. The process yields a posterior distribution of the
+parameters most consistent with the data, such that running the model
+at samples from the posterior yields results consistent with the
+observational data.
+
 
 \subsection{Variables and Responses for UQ}\label{uq:overview:varsresp}
 
@@ -2732,7 +2735,7 @@ experiment for each quantity of interest.
       \verbatimtabinput[8]{queso_uq.in}
     \end{small}
   \end{bigbox}
-  \caption{Dakota input file for UQ example using Bayesian Calibration}
+  \caption{Dakota input file for Bayesian calibration}
 \label{uq:figure18}
 \end{figure}
 

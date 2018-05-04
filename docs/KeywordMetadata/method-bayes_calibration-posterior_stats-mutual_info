@@ -1,5 +1,5 @@
 Blurb::
-Calculate the mutual information between
+Calculate the mutual information between prior and posterior
 
 Description::
 The mutual information quantifies how much information two random variables 
