@@ -70,11 +70,14 @@ private:
   //- Heading: Data
   //
 
+  /// type of sample allocation scheme for discretization levels / model forms
+  /// within multilevel / multifidelity methods
+  short mlmfAllocControl;
+
   /// user request of quadrature order
   UShortArray quadOrderSeqSpec;
   /// user request of sparse grid level
   UShortArray ssgLevelSeqSpec;
-
   /// sequence index for quadOrderSeqSpec and ssgLevelSeqSpec
   size_t sequenceIndex;
 };

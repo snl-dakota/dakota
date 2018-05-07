@@ -102,7 +102,8 @@ protected:
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
-  /// calculate the response covariance (diagonal or full matrix)
+  /// calculate the response covariance (diagonal or full matrix) of
+  /// the currently active expansion
   virtual void compute_covariance();
 
   /// compute 2-norm of change in response covariance
@@ -216,6 +217,9 @@ protected:
   void push_increment();
   /// helper function to manage different pop increment cases
   void pop_increment();
+
+  /// calculate the response covariance of the combined expansion
+  void compute_combined_covariance();
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);

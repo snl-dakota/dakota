@@ -32,6 +32,8 @@ namespace Dakota {
 NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   NonDStochCollocation(BaseConstructor(), problem_db, model),
+  mlmfAllocControl(
+    probDescDB.get_short("method.nond.multilevel_allocation_control")),
   quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)
@@ -114,7 +116,7 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 			       bool piecewise_basis, bool use_derivs):
   NonDStochCollocation(MULTIFIDELITY_STOCH_COLLOCATION, model,
 		       exp_coeffs_approach, piecewise_basis, use_derivs),
-  sequenceIndex(0)
+  mlmfAllocControl(DEFAULT_MLMF_CONTROL), sequenceIndex(0)
 {
   assign_hierarchical_response_mode();
 
@@ -189,15 +191,22 @@ void NonDMultilevelStochCollocation::core_run()
   initialize_expansion();
   sequenceIndex = 0;
 
-  bool multifid_uq = true, greedy = false;
+  bool multifid_uq = true;
   switch (methodName) {
   case MULTIFIDELITY_STOCH_COLLOCATION:
-    if (greedy) greedy_multifidelity_expansion();    // from NonDExpansion
-    else        multifidelity_expansion(refineType); // from NonDExpansion
+    // algorithms inherited from NonDExpansion:
+    switch (mlmfAllocControl) {
+    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
+    default:                   multifidelity_expansion(refineType); break;
+    }
     break;
   //case MULTILEVEL_STOCH_COLLOCATION:
   //  multifid_uq = false;
-  //  multilevel_sparse_grid();                  // specific to this class
+  //  switch (mlmfAllocControl) {
+  //  case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
+  //  case DEFAULT_MLMF_CONTROL: multifidelity_expansion(refineType); break;
+  //  default:                   multilevel_sparse_grid();            break;
+  //  }
   //  break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelStochCollocation::"
@@ -292,69 +301,26 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
 
 void NonDMultilevelStochCollocation::metric_roll_up()
 {
-  bool greedy_mf
-    = (methodName == MULTIFIDELITY_STOCH_COLLOCATION && refineType &&
-       refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);//for now
-
-  if (greedy_mf) // multilev/multifid on inner loop --> roll up multilevel stats
+  // greedy_multifidelity_expansion() assesses level candidates using combined
+  // stats --> roll up approx for combined stats
+  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
     uSpaceModel.combine_approximation();
 }
 
 
 void NonDMultilevelStochCollocation::compute_covariance()
 {
-  bool greedy_mf
-    = (methodName == MULTIFIDELITY_STOCH_COLLOCATION && refineType &&
-       refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);//for now
-
-  if (!greedy_mf) // multilev/multifid on outer loop --> return single lev covar
-    { NonDExpansion::compute_covariance(); return; }
-
-  // multilev/multifid on inner loop --> roll up of multilevel covariance
-  size_t i, j;
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  switch (covarianceControl) {
-  case DIAGONAL_COVARIANCE:
-    for (size_t i=0; i<numFunctions; ++i) {
-      PecosApproximation* poly_approx_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep_i->expansion_coefficient_flag())
-	respVariance[i] = (all_vars) ?
-	  poly_approx_rep_i->combined_covariance(initialPtU, poly_approx_rep_i):
-	  poly_approx_rep_i->combined_covariance(poly_approx_rep_i);
-      else
-	{ warn_flag = true; respVariance[i] = 0.; }
-    }
-    break;
-  case FULL_COVARIANCE:
-    for (i=0; i<numFunctions; ++i) {
-      PecosApproximation* poly_approx_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep_i->expansion_coefficient_flag())
-	for (j=0; j<=i; ++j) {
-	  PecosApproximation* poly_approx_rep_j
-	    = (PecosApproximation*)poly_approxs[j].approx_rep();
-	  if (poly_approx_rep_j->expansion_coefficient_flag())
-	    respCovariance(i,j) = (all_vars) ? poly_approx_rep_i->
-	      combined_covariance(initialPtU, poly_approx_rep_j) :
-	      poly_approx_rep_i->combined_covariance(poly_approx_rep_j);
-	  else
-	    { warn_flag = true; respCovariance(i,j) = 0.; }
-	}
-      else {
-	warn_flag = true;
-	for (j=0; j<=i; ++j)
-	  respCovariance(i,j) = 0.;
-      }
-    }
-    break;
-  }
-  if (warn_flag)
-    Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
-	 << "compute_diagonal_variance().\n         Zeroing affected variance "
-	 << "terms." << std::endl;
+  // greedy_multifidelity_expansion() (multifidelity_expansion() on inner loop):
+  // > roll up effect of level candidate on combined multilevel covariance,
+  //   avoiding combined_to_active() promotion until end
+  // > limited stats support for combinedExpCoeffs: only compute_covariance()
+  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
+    compute_combined_covariance();
+  // multifidelity_expansion() is outer loop:
+  // > use of refine_expansion(): refine individually based on level covariance
+  // > after combine_approx(), combined_to_active() enables use of active covar
+  else
+    NonDExpansion::compute_covariance();
 }
 
 } // namespace Dakota

@@ -127,8 +127,8 @@ private:
   //- Heading: Data
   //
 
-  /// type of sample allocation scheme for PCE levels within
-  /// multilevel / multifidelity methods
+  /// type of sample allocation scheme for discretization levels / model forms
+  /// within multilevel / multifidelity methods
   short mlmfAllocControl;
 
   /// user specification for expansion_order (array for multifidelity)
