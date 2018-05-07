@@ -298,7 +298,7 @@ particular platform or shell.
    in your BuildCustom.cmake file.
 
    $ export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/share/dakota/test:$PATH
-   $ export PYTHONPATH=$DAK_INSTALL:share/dakota/Python:$PYTHONPATH
+   $ export PYTHONPATH=$DAK_INSTALL/share/dakota/Python:$PYTHONPATH
 
 Miscellaneous Notes:
  * 'make [-j#]': Dakota supports concurrent build processes
