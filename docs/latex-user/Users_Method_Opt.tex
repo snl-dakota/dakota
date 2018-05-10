@@ -194,7 +194,12 @@ inequalities $g_{i}(\mathbf{x}) \geq 0$, but does not natively support
 linear constraints. Constraint mappings are used with NLPQL for both
 linear and nonlinear cases. Most \texttt{coliny\_} methods now support
 two-sided nonlinear inequality constraints and nonlinear constraints
-with targets, but do not natively support linear constraints.
+with targets, but do not natively support linear constraints. ROL's 
+(\texttt{rol}) augmented Lagrangian method converts inequality 
+constraints into equality constraints with bounded slack variables. 
+This conversion is performed internally within ROL, but might explain 
+potentially weak convergence rates for problems with large number of 
+inequality constraints.
 
 When gradient and Hessian information is used in the optimization,
 derivative components are most commonly computed with respect to the
@@ -258,46 +263,73 @@ problem.  The optimization methods available in Dakota fall into
 several categories, each of which is characterized by the nature of
 the subproblems solved at each iteration.
 
-\subsubsection{Method Descriptions}
-\label{opt:methods:gradient:descriptions}
+\subsubsection{Methods for Unconstrained Problems}
+\label{opt:methods:gradient:unconstrained}
 
-{\bf Conjugate Gradient} methods require first derivative information
-and can only be applied to \emph{unconstrained} problems.  The
-subproblems entail minimizing a quadratic function over a space
-defined by the gradient and directions that are mutually conjugate
-with respect to the Hessian, though the Hessian is never computed.
-There are several variants of how those directions are defined.  Those
-available in Dakota are the Fletcher-Reeves conjugate gradient method
-(\texttt{conmin\_frcg} and \texttt{dot\_frcg}~\cite{Van95}) and the
-Polak-Ribiere conjugate gradient method (\texttt{optpp\_cg}).
-\emph{We here provide a caution regarding \texttt{dot\_frcg}.  In DOT
-  Version 4.20, we have noticed inconsistent behavior of this
-  algorithm across different versions of Linux.  Our best assessment
-  is that it is due to different treatments of uninitialized
-  variables.  As we do not know the intention of the code authors and
-  maintaining DOT source code is outside of the Dakota project scope,
-  we have not made nor are we recommending any code changes to address
-  this.  However, all users who use \texttt{dot\_frcg} in DOT Version
-  4.20 should be aware that results may not be reliable.}
+For unconstrained problems, conjugate gradient methods can be applied 
+which require first derivative information. The subproblems entail 
+minimizing a quadratic function over a space defined by the gradient 
+and directions that are mutually conjugate with respect to the 
+Hessian. There are a couple of options in terms of methods to be used 
+strictly for unconstrained problems, namely the Polak-Ribiere 
+conjugate gradient method (\texttt{optpp\_cg}) and ROL's (Rapid 
+Optimization Library for large-scale optimization, part of the 
+Trilinos software suite~\cite{Kou2014}) trust-region method with 
+truncated conjugate gradient subproblem solver (\texttt{rol}). ROL 
+relies on secant updates for the Hessian, with the an approximation to 
+the Hessian matrix at each iteration provided using only values of the 
+gradient at current and previous iterates.
 
-{\bf Sequential Quadratic Programming (SQP)} methods are appropriate
+\subsubsection{Methods for Bound-Constrained Problems}
+\label{opt:methods:gradient:bound_constrained}
+
+For bound-constrained problems, both conjugate gradient methods and 
+quasi-Newton methods (described in the next sub-section) are available 
+in Dakota. For conjugate gradient methods, the Fletcher-Reeves 
+conjugate gradient method (\texttt{conmin\_frcg} and 
+\texttt{dot\_frcg}~\cite{Van95}) and ROL's trust-region method with 
+truncated conjugate gradient subproblem solver (\texttt{rol}) are 
+available. DOT (\texttt{dot\_bfgs}) provides a quasi-Newton method for 
+such problems. \emph{We here provide a caution regarding 
+\texttt{dot\_frcg}.  In DOT Version 4.20, we have noticed inconsistent 
+behavior of this algorithm across different versions of Linux. Our 
+best assessment is that it is due to different treatments of 
+uninitialized variables. As we do not know the intention of the code 
+authors and maintaining DOT source code is outside of the Dakota 
+project scope, we have not made nor are we recommending any code 
+changes to address this.  However, all users who use 
+\texttt{dot\_frcg} in DOT Version 4.20 should be aware that results 
+may not be reliable.}
+
+
+\subsubsection{Methods for Constrained Problems}
+\label{opt:methods:gradient:constrained}
+
+For constrained problems, the available methods fall under one of four 
+categories, namely Sequential Quadratic Programming (SQP) methods, 
+Newton methods, Method of Feasible Directions (MFD) methods, and the 
+augmented Lagrangian method.
+
+Sequential Quadratic Programming (SQP) methods are appropriate
 for nonlinear optimization problems with nonlinear constraints.  Each
 subproblem involves minimizing a quadratic approximation the
-Lagrangian subject to linearized constraints.  Only gradient
+Lagrangian subject to linearized constraints. Only gradient
 information is required; Hessians are approximated by low-rank updates
 defined by the step taken at each iterations. \emph{It is important to note
 that while the solution found by an SQP method will respect the
-constraints, the intermediate iterates may not.}  SQP methods available
-in Dakota are \texttt{dot\_sqp}, \texttt{nlpql\_sqp}, and
+constraints, the intermediate iterates may not.} SQP methods available
+in Dakota include \texttt{dot\_sqp}, \texttt{nlpql\_sqp}, and
 \texttt{npsol\_sqp}~\cite{Gil86}. The particular implementation in
 \texttt{nlpql\_sqp}~\cite{Sch04} uses a variant with distributed and
 non-monotone line search.  Thus, this variant is designed to be more
 robust in the presence of inaccurate or noisy gradients common in many
-engineering applications.  Also available is a method related to SQP:
-sequential linear programming (\texttt{dot\_slp}).
+engineering applications. ROL's composite-step method (\texttt{rol}), 
+utilizing SQP with trust regions, for equality-constrained problems is 
+another option. Also available is a method related to SQP: sequential 
+linear programming (\texttt{dot\_slp}).
 
-{\bf Newton Methods} can be applied to nonlinear optimization problems
-with nonlinear constraints.  The subproblems associated with these
+Newton Methods can be applied to nonlinear optimization problems
+with nonlinear constraints. The subproblems associated with these
 methods entail finding the solution to a linear system of equations
 derived by setting the derivative of a second-order Taylor series
 expansion to zero.  Unlike SQP methods, Newton methods maintain
@@ -305,21 +337,27 @@ feasibility over the course of the optimization iterations.  The
 variants of this approach correspond to the amount of derivative
 information provided by the user.  The full Newton method
 (\texttt{optpp\_newton}) expects both gradients and Hessians to be
-provided.  Quasi-Newton methods (\texttt{optpp\_q\_newton},
-\texttt{dot\_bfgs}) expect only gradients.  The Hessian is
-approximated by the Broyden-Fletcher-Goldfarb-Shanno (BFGS) low-rank
-updates.  Finally, the finite difference Newton method
-(\texttt{optpp\_fd\_newton}) expects only gradients and approximates
-the Hessian with second-order finite differences.
+provided.  Quasi-Newton methods (\texttt{optpp\_q\_newton}) expect 
+only gradients. The Hessian is approximated by the 
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) low-rank updates.  Finally, 
+the finite difference Newton method (\texttt{optpp\_fd\_newton}) 
+expects only gradients and approximates the Hessian with second-order 
+finite differences.
 
-{\bf Method of Feasible Directions (MFD)} methods are appropriate for
+Method of Feasible Directions (MFD) methods are appropriate for
 nonlinear optimization problems with nonlinear constraints.  These
 methods ensure that all iterates remain feasible.  Dakota includes
 \texttt{conmin\_mfd}~\cite{Van78} and \texttt{dot\_mmfd} \emph{One
-  observed drawback to \texttt{conmin\_mfd} is that it does a poor job
-  handling equality constraints}. \texttt{dot\_mmfd} does not
+observed drawback to \texttt{conmin\_mfd} is that it does a poor job
+handling equality constraints}. \texttt{dot\_mmfd} does not
 suffer from this problem, nor do other methods for constrained
 problems.
+
+The augmented Lagrangian method provides a strategy to handle equality 
+and inequality constraints by introducing the augmented Lagrangian 
+function, combining the use of Lagrange multipliers and a quadratic 
+penalty term. It is implemented in ROL (\texttt{rol}) exhibiting 
+scalable performance for large-scale problems.
 
 \subsubsection{Example}
 \label{opt:methods:gradient:example}
@@ -414,7 +452,24 @@ search directions.  \emph{Note that one observed drawback to
   implemented in such a way as to take advantage of parallel computing
   resources via Dakota's infrastructure.}
 
-{\bf Nonlinear Optimization with Path Augmented Constraints (NOWPAC)} is a provably-convergent gradient-free inequality-constrained optimization method that solves a series of trust region surrogate-based subproblems to generate improving steps. Due to its use of an interior penalty scheme and enforcement of strict feasibility, \texttt{nowpac}~\cite{Augustin-preprint-nowpac} does not support linear or nonlinear equality constraints. The stochastic version is \texttt{snowpac}, which incorporates noise estimates in its objective and inequality constraints. \texttt{snowpac} modifies its trust region controls and adds smoothing from a Gaussian process surrogate in order to mitigate noise. \emph{Note that as opposed to the stochastic version (\texttt{snowpac}), \texttt{nowpac} does not currently support a feasibility restoration mode, so it is necessary to start from a feasible design. Also note that \texttt{(s)nowpac} is not configured with Dakota by default and requires a separate installation of the NOWPAC distribution, along with third-party libraries Eigen and NLOPT.}
+{\bf Nonlinear Optimization with Path Augmented Constraints (NOWPAC)} 
+is a provably-convergent gradient-free inequality-constrained 
+optimization method that solves a series of trust region 
+surrogate-based subproblems to generate improving steps. Due to its 
+use of an interior penalty scheme and enforcement of strict 
+feasibility, \texttt{nowpac}~\cite{Augustin-preprint-nowpac} does not 
+support linear or nonlinear equality constraints. The stochastic 
+version is \texttt{snowpac}, which incorporates noise estimates in its 
+objective and inequality constraints. \texttt{snowpac} modifies its 
+trust region controls and adds smoothing from a Gaussian process 
+surrogate in order to mitigate noise. \emph{Note that as opposed to 
+the stochastic version (\texttt{snowpac}), \texttt{nowpac} does not 
+currently support a feasibility restoration mode, so it is necessary 
+to start from a feasible design. Also note that \texttt{(s)nowpac} is 
+not configured with Dakota by default and requires a separate 
+installation of the NOWPAC distribution, along with third-party 
+libraries Eigen and NLOPT.}
+
 
 \subsubsection{Example}
 \label{opt:methods:gradientfree:local:example}
@@ -447,7 +502,7 @@ used with SCOLIB algorithms.
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock pattern search optimization example: the Dakota input file --
-see \texttt{Dakota/examples/users/rosen\_opt\_patternsearch.in} }
+see \texttt{dakota/share/dakota/examples/users/rosen\_opt\_patternsearch.in} }
   \label{opt:methods:gradientfree:local:example:ps}
 \end{figure}
 
@@ -609,7 +664,7 @@ expensive to compute or are not readily available.
   \end{bigbox}
   \caption{Rosenbrock evolutionary algorithm optimization example: the
   Dakota input file --
-see \texttt{Dakota/examples/users/rosen\_opt\_ea.in} }
+see \texttt{dakota/share/dakota/examples/users/rosen\_opt\_ea.in} }
   \label{opt:methods:gradientfree:global:example:rosenbrock_ea}
 \end{figure}
 
@@ -694,7 +749,7 @@ the EGO algorithm is shown in Figure~\ref{opt:methods:gradientfree:global:exampl
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for the efficient global optimization example --
-see \texttt{Dakota/examples/users/rosen\_opt\_ego.in} }
+see \texttt{dakota/share/dakota/examples/users/rosen\_opt\_ego.in} }
   \label{opt:methods:gradientfree:global:example:egm_rosen}
 \end{figure}
 
@@ -856,7 +911,7 @@ constraints, although none are included in this example.
 \end{small}
 \end{bigbox}
 \caption{Example Dakota input file for multiobjective optimization --
-see \texttt{Dakota/examples/users/textbook\_opt\_multiobj1.in} }
+see \texttt{dakota/share/dakota/examples/users/textbook\_opt\_multiobj1.in} }
 \label{opt:additional:multiobjective:example1:figure01}
 \end{figure}
 
@@ -1008,7 +1063,7 @@ available with the moga method.
   \end{bigbox}
   \caption{Multiple objective genetic algorithm (MOGA) example: the
     Dakota input file --
-see \texttt{Dakota/examples/users/mogatest1.in} }
+see \texttt{dakota/share/dakota/examples/users/mogatest1.in} }
   \label{opt:additional:multiobjective:example2:moga1inp}
 \end{figure}
  
@@ -1180,7 +1235,7 @@ factor of 15.0, and the second nonlinear constraint is not scaled.
 \end{small}
 \end{bigbox}
 \caption{Sample usage of scaling keywords in Dakota input specification --
-see \texttt{Dakota/examples/users/rosen\_opt\_scaled.in} }
+see \texttt{dakota/share/dakota/examples/users/rosen\_opt\_scaled.in} }
 \label{opt:additional:scaling:example:figure01}
 \end{figure}
 
@@ -1240,17 +1295,17 @@ listed only at their highest level of constraint support for brevity.
 \textbf{Classification} & \textbf{Characteristics} & \\
 \hline
 Gradient-Based Local & smooth; continuous variables; no constraints
-& optpp\_cg \\
+& optpp\_cg, rol \\
 \hline
-         & smooth; continuous variables; & dot\_bfgs, dot\_frcg, conmin\_frcg \\
-         & bound constraints &  \\
+         & smooth; continuous variables; & dot\_bfgs, dot\_frcg \\
+         & bound constraints & conmin\_frcg, rol \\
 \hline
          & smooth; continuous variables; & npsol\_sqp, nlpql\_sqp, dot\_mmfd, \\
          & bound constraints, & dot\_slp, dot\_sqp,
          conmin\_mfd, \\
          & linear and nonlinear constraints & optpp\_newton,
          optpp\_q\_newton, \\
-         &          &optpp\_fd\_newton, \\
+         &          &optpp\_fd\_newton, rol \\
          &          & weighted sums (multiobjective), \\
          &          & pareto\_set strategy (multiobjective) \\
 \hline
@@ -1328,6 +1383,36 @@ This requires an assessment of the local smoothness of the response
 functions using, for example, a parameter study method. Central
 differencing, in general, will produce more reliable gradients than
 forward differencing, but at roughly twice the expense.
+
+ROL has traditionally been applied to problems with analytic gradients 
+(and Hessians) but can can be used with Dakota-provided 
+finite-differencing approximations to the gradient of both objective 
+and constraints.  However, a user employing these is advised to use 
+alternative optimizers such as DOT until performance of ROL improves 
+in future releases.
+
+We offer the following recommendations in deciding upon a 
+suitable gradient-based method for a given problem
+\begin{itemize}
+\item For {\bf unonstrained and bound-constrained problems}, conjugate 
+gradient-based methods exhibit the best scalability for large-scale 
+problems (1,000+ variables). These include the Polak-Ribiere conjugate 
+gradient method (\texttt{optpp\_cg}), ROL's trust-region method with 
+truncated conjugate gradient subproblem solver (\texttt{rol}), and the 
+Fletcher-Reeves conjugate gradient method (\texttt{conmin\_frcg} and 
+\texttt{dot\_frcg}). These methods also provide good performance for 
+small- to intermediate-sized problems.
+\item For {\bf constrained problems}, with large number of constraints 
+with respect to number of variables, Method of Feasible Directions 
+methods (\texttt{conmin\_mfd} and \texttt{dot\_mmfd}) and Sequential 
+Quadratic Programming methods (\texttt{nlpql\_sqp} and 
+\texttt{npsol\_sqp}) exhibit good performance (relatively fast 
+convergence rates). \emph{Note that we have observed weak convergence 
+rates while using {\rm \texttt{npsol\_sqp}} for certain problems with 
+equality constraints}. Quasi-Newton method \texttt{optpp\_q\_newton} 
+show moderate performance for constrained problems across all scales.
+
+\end{itemize}
 
 {\bf Non-gradient-based Methods} \\
 Nongradient-based methods exhibit much slower convergence rates for
@@ -1433,8 +1518,11 @@ here along with the license status and web page where available.
 \item OPT++ (\texttt{optpp\_} methods) License: LGPL; website:
   \url{http://csmr.ca.sandia.gov/opt++}.
 
+\item ROL (\texttt{rol}) License: BSD; website:
+  \url{https://trilinos.org/packages/rol}.
+
 \item SCOLIB (\texttt{coliny\_} methods) License: BSD; website:
-  \url{https://software.sandia.gov/trac/acro/wiki/Packages}
+  \url{https://software.sandia.gov/trac/acro/wiki/Packages}.
 
 \end{itemize}
 

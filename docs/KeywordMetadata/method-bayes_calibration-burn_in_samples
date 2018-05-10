@@ -16,7 +16,8 @@ If \c burn_in_samples is specified, an additional tabular output file containing
 the final MCMC chain is generated. 
 
 Examples::
-An example method block of a Dakota input file is given below
+Generate a chain of length 1000 and discard the first 100 points,
+resulting in a chain of length 900.
 
 \verbatim
 method,

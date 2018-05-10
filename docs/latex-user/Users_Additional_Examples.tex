@@ -129,19 +129,19 @@ that Dakota will use its internal version of the textbook problem.
   \end{bigbox}
   \caption{Textbook gradient-based constrained optimization example:
     the Dakota input file --
-see \texttt{Dakota/examples/users/textbook\_opt\_conmin.in} }
+see \texttt{dakota/share/dakota/examples/users/textbook\_opt\_conmin.in} }
   \label{additional:textbook_grad_constr}
 \end{figure}
 
 The \texttt{conmin\_mfd} keyword in
 Figure~\ref{additional:textbook_grad_constr} tells Dakota to use the
 CONMIN package's implementation of the Method of Feasible Directions
-(see Section~\ref{opt:methods:gradient:descriptions} for more
+(see Section~\ref{opt:methods:gradient:constrained} for more
 details).
 
 A significantly faster alternative is the DOT package's Modified
 Method of Feasible Directions, i.e. \texttt{dot\_mmfd} (see
-Section~\ref{opt:methods:gradient:descriptions} for more
+Section~\ref{opt:methods:gradient:constrained} for more
 details). However, DOT is licensed software that may not be available
 on a particular system. If it is installed on your system and Dakota
 has been compiled without the \texttt{--without-dot} flag, you may use
@@ -303,7 +303,7 @@ f_2 = 1 - x_1 \label{additional:rosenr2}
 are residual terms.
 
 The included analysis driver can handle both formulations.
-In the \texttt{Dakota/test} directory, the \texttt{rosenbrock}
+In the \texttt{dakota/share/dakota/test} directory, the \texttt{rosenbrock}
 executable (compiled from \texttt{Dakota\_Source/test/rosenbrock.cpp}) checks the number of
 response functions passed in the parameters file and returns either an
 objective function (as computed from
@@ -484,7 +484,7 @@ squares minimization problems).
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock nonlinear least squares example: the Dakota input file --
-see \texttt{Dakota/examples/users/rosen\_opt\_nls.in} }
+see \texttt{dakota/share/dakota/examples/users/rosen\_opt\_nls.in} }
   \label{additional:rosenbrock_nls}
 \end{figure}
 
@@ -578,7 +578,7 @@ of these functions is $-2\le x_k \le 2$ for all dimensions.
     \end{bigbox}
   \end{small}
   \caption{Herbie/Shubert examples: the Dakota input file --
-see \texttt{Dakota/examples/users/herbie\_shubert\_opt\_ego.in} }
+see \texttt{dakota/share/dakota/examples/users/herbie\_shubert\_opt\_ego.in} }
   \label{additional:herbie_shubert_ego}
 \end{figure}
 
@@ -708,7 +708,7 @@ An example using the cylinder head test problem is shown below:
     \end{bigbox}
   \end{small}
   \caption{Cylinder Head Example: the Dakota input file --
-see \texttt{Dakota/examples/users/cylhead\_opt\_npsol.in} }
+see \texttt{dakota/share/dakota/examples/users/cylhead\_opt\_npsol.in} }
   \label{additional:cylinder_head}
 \end{figure}
 
@@ -992,7 +992,7 @@ The test problem is solved using {\tt cantilever\_opt\_npsol.in}:
     \end{bigbox}
   \end{small}
   \caption{Cantilever Example: the Dakota input file --
-see \texttt{Dakota/examples/users/cantilever\_opt\_npsol.in} }
+see \texttt{dakota/share/dakota/examples/users/cantilever\_opt\_npsol.in} }
   \label{additional:cant_opt_npsol}
 \end{figure}
 
@@ -1101,7 +1101,7 @@ discontinuous nature of the front in this example.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file specifying the use of MOGA on mogatest2 --
-see \texttt{Dakota/examples/users/mogatest2.in} }
+see \texttt{dakota/share/dakota/examples/users/mogatest2.in} }
   \label{additional:moga2inp}
 \end{figure}
 
@@ -1155,7 +1155,7 @@ shown in Figure~\ref{additional:moga3front}.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file specifying the use of MOGA on mogatest3 --
-see \texttt{Dakota/examples/users/mogatest3.in} }
+see \texttt{dakota/share/dakota/examples/users/mogatest3.in} }
   \label{additional:moga3inp}
 \end{figure}
 
@@ -1306,8 +1306,8 @@ linear effects, and black Xs denote insignificant inputs.}
 \clearpage
 \section{Test Problems for Reliability Analyses}\label{additional:reliabilityproblems}
 This section includes several test problems and examples related to
-reliability analyses. {\bf These are NOT included in the {\tt Dakota/examples/users}
-directory, but are in the {\tt Dakota/test} directory.}
+reliability analyses. {\bf These are NOT included in the {\tt dakota/share/dakota/examples/users}
+directory, but are in the {\tt dakota/share/dakota/test} directory.}
 
 
 \subsection{Log Ratio}\label{additional:logratio}
@@ -1324,9 +1324,9 @@ a correlation coefficient between the two variables of 0.3.
 {\bf Reliability Analyses} \\
 
 First-order and second-order reliability analysis (FORM and SORM) are performed in the
-\texttt{logratio\_uq\_reliability.in} in the {\tt Dakota/examples/users}
+\texttt{logratio\_uq\_reliability.in} in the {\tt dakota/share/dakota/examples/users}
  directory and \texttt{dakota\_logratio\_taylor2.in} in directory
-{\tt Dakota/test}.
+{\tt dakota/share/dakota/test}.
 
 For the reliability index approach (RIA),
 24 response levels (.4, .5, .55,
@@ -1360,7 +1360,7 @@ g({\bf x}) = F_y Z - 1140
 where $F_y$ is Lognormal(38., 3.8), $Z$ is Normal(54., 2.7), and the
 variables are uncorrelated.
 
-The \texttt{Dakota/test/dakota\_steel\_section.in} input file computes
+The \texttt{dakota/share/dakota/test/dakota\_steel\_section.in} input file computes
 a first-order CDF probability of $p(g \leq 0.)$ = 1.297e-07 and a
 second-order CDF probability of $p(g \leq 0.)$ = 1.375e-07. This
 second-order result differs from that reported in~\cite{Hal00}, since
@@ -1384,7 +1384,7 @@ where $x_1 - x_4$ are Lognormal(120., 12.), $x_5$ is Lognormal(50.,
 
 While the limit state is linear in x-space, the nonlinear
 transformation of lognormals to u-space induces curvature. The
-\texttt{Dakota/test/dakota\_portal\_frame.in} input file computes a
+\texttt{dakota/share/dakota/test/dakota\_portal\_frame.in} input file computes a
 first-order CDF probability of $p(g \leq 0.)$ = 9.433e-03 and a
 second-order CDF probability of $p(g \leq 0.)$ = 1.201e-02. These
 results agree with the published results from the literature.
@@ -1411,7 +1411,7 @@ respectively.
 First-order and second-order reliability analysis are performed in the
 \texttt{dakota\_short\_column.in} and \\
 \texttt{dakota\_short\_column\_taylor2.in} input files in
-{\tt Dakota/test}. For RIA, 43 response levels (-9.0, -8.75,
+{\tt dakota/share/dakota/test}. For RIA, 43 response levels (-9.0, -8.75,
 -8.5, -8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0, -4.5,
 -4.0, -3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4,
 -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3,
@@ -1453,7 +1453,7 @@ are explored in inputs files \\
 \texttt{dakota\_rbdo\_short\_column.in},
 \texttt{dakota\_rbdo\_short\_column\_analytic.in}, and\\
 \texttt{dakota\_rbdo\_short\_column\_trsb.in}, with results as
-described in~\cite{Eld05,Eld06a}. These files are located in {\tt Dakota/test}.
+described in~\cite{Eld05,Eld06a}. These files are located in {\tt dakota/share/dakota/test}.
 
 \subsection{Steel Column}\label{additional:steel_column}
 
@@ -1487,7 +1487,7 @@ E_b & = & \frac{\pi^2 E B D H^2}{2 L^2}
 and the column length $L$ is 7500 mm.
 
 This design problem (\texttt{dakota\_rbdo\_steel\_column.in} in
-\texttt{Dakota/test}) demonstrates design variable insertion into
+\texttt{dakota/share/dakota/test}) demonstrates design variable insertion into
 random variable distribution parameters through the design of the mean
 flange breadth, flange thickness, and profile height. The RBDO
 formulation maximizes the reliability subject to a cost constraint:
@@ -1504,8 +1504,8 @@ maximal reliability of 3.132.
 \section{Test Problems for Forward Uncertainty Quantification}\label{additional:fwd_uq}
 This section includes several test problems and examples related to
 forward uncertainty quantification. {\bf These are NOT included in the
-  {\tt Dakota/examples/users} directory, but are in the {\tt
-    Dakota/test} directory.}
+  {\tt dakota/share/dakota/examples/users} directory, but are in the {\tt
+    dakota/share/dakota/test} directory.}
 
 \subsection{Genz functions}
 The Genz functions have traditionally been used to test quadrature

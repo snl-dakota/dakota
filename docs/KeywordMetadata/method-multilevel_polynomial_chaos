@@ -33,7 +33,7 @@ PCE-based estimator of the statistics, requiring approximation of the
 variance of these estimators.
 
 Initial prototypes for multilevel PCE can be explored using \c
-dakota/test/dakota_uq_diffusion_mlpce.in, and will be stabilized in
+dakota/share/dakota/test/dakota_uq_diffusion_mlpce.in, and will be stabilized in
 future releases.
 
 

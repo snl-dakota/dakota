@@ -1,7 +1,7 @@
 Blurb::
 Static local scheduling (tiled)
 Description::
-If local_evaluation_scheduling is specified as static, each completed evaluation will be replaced by an evaluation number that is congruent modulo the evaluation_concurrency. This is helpful for relative node scheduling as described in Dakota/examples/parallelism. For example, assuming only asynchronous local concurrency (no MPI), if the local concurrency is 6 and job 2 completes, it will be replaced with job 8.
+If local_evaluation_scheduling is specified as static, each completed evaluation will be replaced by an evaluation number that is congruent modulo the evaluation_concurrency. This is helpful for relative node scheduling as described in dakota/share/dakota/examples/parallelism. For example, assuming only asynchronous local concurrency (no MPI), if the local concurrency is 6 and job 2 completes, it will be replaced with job 8.
 
 For the case of hybrid parallelism, static local scheduling results in evaluation replacements that are modulo the total capacity, defined as the product of the evaluation concurrency and the number of evaluation servers.
 Both of these cases can result in idle processors if runtimes are non-uniform, so the default dynamic scheduling is preferred when relative node scheduling is not required.

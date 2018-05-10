@@ -535,7 +535,7 @@ concurrent analyses.
 
 \subsubsection{Asynchronous Local Example}\label{parallel:SLP:local:ex}
 
-The test file \texttt{Dakota/test/dakota\_dace.in} computes 49
+The test file \texttt{dakota/share/dakota/test/dakota\_dace.in} computes 49
 orthogonal array samples, which may be evaluated concurrently using
 parallel computing.  When executing Dakota with this input file on a
 single processor, the following execution syntax may be used:
@@ -689,7 +689,7 @@ scheduling.  The keyword
 so a completed evaluation will be replaced with one congruent module
 the evaluation concurrency.  For example, with 7 concurrent jobs, eval
 number 2 will be replaced with eval number 9.  Examples of this usage
-can be seen in \texttt{Dakota/examples/parallelism}.
+can be seen in \texttt{dakota/share/dakota/examples/parallelism}.
 
 
 %\subsection{Message Passing Components}\label{parallel:SLP:message}
@@ -1447,8 +1447,8 @@ Not all supercomputers employ the same model for service/compute
 partitions or provide the same support for tiling of concurrent
 multiprocessor simulations within a single NQS/PBS allocation.  For
 this reason, templates for parallel job configuration are being
-catalogued within {\tt Dakota/examples/script\_interfaces} and 
-\texttt{Dakota/examples/parallelism} (in the software
+catalogued within {\tt dakota/share/dakota/examples/script\_interfaces} and 
+\texttt{dakota/share/dakota/examples/parallelism} (in the software
 distributions) that are intended to provide guidance for individual
 machine idiosyncrasies.
 
@@ -2081,7 +2081,7 @@ be most appropriate.
 \end{table}
 
 Relevant example files for each case are included in directories {\tt
-Dakota/examples/parallelism/Case*} with the Dakota distribution.
+dakota/share/dakota/examples/parallelism/Case*} with the Dakota distribution.
 These typically include a PBS or SLURM job submission script to launch
 the Dakota study, a Dakota input file, and a driver script.
 

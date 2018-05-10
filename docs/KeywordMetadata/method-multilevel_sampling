@@ -127,7 +127,7 @@ model,
 	  solution_level_control = 'N_x'
 	  solution_level_cost = 630. 1260. 2100. 4200.
 \endverbatim
-Refer to \c dakota/test/dakota_uq_heat_eq_{mlmc,cvmc,mlcvmc}.in for 
+Refer to \c dakota/share/dakota/test/dakota_uq_heat_eq_{mlmc,cvmc,mlcvmc}.in for 
 additional examples.
 
 Theory::
