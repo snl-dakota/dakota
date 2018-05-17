@@ -69,7 +69,7 @@ following test functions are available: \texttt{cantilever},
 \texttt{short\_column}, and \texttt{text\_book} (including
 \texttt{text\_book1}, \texttt{text\_book2}, \texttt{text\_book3}, and
 \texttt{text\_book\_ouu}). While these functions are also available
-as external programs in the \texttt{dakota/share/dakota/test} directory,
+as external programs in the \path{dakota/share/dakota/test} directory,
 maintaining internally linked versions allows more rapid testing. See
 Chapter~\ref{additional} for additional information on several of
 these test problems. An example input specification for a direct
@@ -256,7 +256,7 @@ can be used. If the user prefers, the desired pre- and post-processing
 functionality may also be compiled or interpreted from any number of
 programming languages (C, C++, F77, F95, JAVA, Basic, etc.).
 
-In the \texttt{dakota/share/dakota/examples/script\_interfaces/generic} directory,
+In the \path{dakota/share/dakota/examples/script_interfaces/generic} directory,
 a simple example uses the Rosenbrock test function as a mock
 engineering simulation code. Several scripts have been included to
 demonstrate ways to accomplish the pre- and post-processing
@@ -268,16 +268,17 @@ applications.
 
 \subsection{Generic Script Interface Files}\label{interfaces:generic}
 
-The {\tt dakota/share/dakota/examples/script\_interfaces/generic} directory contains four important files:
-\texttt{dakota\_rosenbrock.in} (the Dakota input file),
-\texttt{simulator\_script} (the simulation driver script),
-\texttt{dprepro} (a pre-processing utility), and \\
-\texttt{templatedir/ros.template} (a template simulation input file).
+The \path{dakota/share/dakota/examples/script_interfaces/generic}
+directory contains four important files:
+\path{dakota_rosenbrock.in} (the Dakota input file),
+\path{simulator_script} (the simulation driver script),
+\path{dprepro} (a pre-processing utility), and
+\path{templatedir/ros.template} (a template simulation input file).
 
-The file \texttt{dakota\_rosenbrock.in} specifies the study that
+The file \path{dakota_rosenbrock.in} specifies the study that
 Dakota will perform and, in the interface section, describes the
 components to be used in performing function evaluations. In
-particular, it identifies \\ \texttt{simulator\_script} as its
+particular, it identifies \path{simulator_script} as its
 \texttt{analysis\_driver}, as shown in Figure~\ref{advint:figure01}.
 \begin{figure}
   \centering
@@ -286,16 +287,16 @@ particular, it identifies \\ \texttt{simulator\_script} as its
       \verbatimtabinput[8]{dakota_rosenbrock.in}
     \end{small}
   \end{bigbox}
-  \caption{The \texttt{dakota\_rosenbrock.in} input file.}
+  \caption{The \protect\path{dakota_rosenbrock.in} input file.}
   \label{advint:figure01}
 \end{figure}
 
-The \texttt{simulator\_script} listed in Figure~\ref{advint:figure02}
+The \path{simulator_script} listed in Figure~\ref{advint:figure02}
 is a short driver shell script that Dakota executes to perform each
 function evaluation. The names of the parameters and results files are
 passed to the script on its command line; they are
 referenced in the script by \texttt{\$1}
-and \texttt{\$2}, respectively. The \texttt{simulator\_script}
+and \texttt{\$2}, respectively. The \path{simulator_script}
 is divided into three parts: pre-processing, analysis, and post-processing.
 % is divided into five parts: set up, pre-processing, analysis,
 % post-processing, and clean up.
@@ -307,7 +308,7 @@ is divided into three parts: pre-processing, analysis, and post-processing.
       \verbatimtabinput[8]{simulator_script}
     \end{small}
   \end{bigbox}
-  \caption{The \texttt{simulator\_script} sample driver script.}
+  \caption{The \protect\path{simulator_script} sample driver script.}
   \label{advint:figure02}
 \end{figure}
 
@@ -321,22 +322,22 @@ is divided into three parts: pre-processing, analysis, and post-processing.
 % simulation do not conflict with those for another simulation. This is
 % particularly important when executing concurrent simulations in
 % parallel (to actually execute function evaluations concurrently,
-% uncomment the \texttt{asynchronous} line in \texttt{dakota\_rosenbrock.in}).
+% uncomment the \texttt{asynchronous} line in \path{dakota_rosenbrock.in}).
 % %Once executing within the confines of the working directory, tags on the 
 % %files are no longer necessary, and for this reason, the tagged parameters
-% %file is moved to a more convenient name of ``\texttt{dakota\_vars}''.
+% %file is moved to a more convenient name of ``\path{dakota_vars}''.
 
-In the pre-processing portion, the \texttt{simulator\_script} uses
-\texttt{dprepro}, a template processing utility, to extract the
+In the pre-processing portion, the \path{simulator_script} uses
+\path{dprepro}, a template processing utility, to extract the
 current variable values from a parameters file (\texttt{\$1})
 and combine them with the simulator template input file
-(\texttt{ros.template}) to create a new input file (\texttt{ros.in})
+(\path{ros.template}) to create a new input file (\path{ros.in})
 for the simulator. Internal to Sandia, the APREPRO utility is often
 used for this purpose. For external sites where APREPRO is not
 available, \texttt{dprepro} is an alternative with many of the 
 capabilities of APREPRO that is specifically tailored for use with Dakota
-and is distributed with it (in \texttt{Dakota/scripts/pyprepro/}, or 
-{\tt Dakota/bin} in a binary distribution). Dakota also provides a second,
+and is distributed with it (in \path{dakota/scripts/pyprepro/}, or
+\path{dakota/bin} in a binary distribution). Dakota also provides a second,
 more general-purpose template processing tool named \texttt{pyprepro}, 
 which is as a Python-based alternative to APREPRO. This pair of
 tools, which permit not only parameter substitution, but execution of
@@ -351,21 +352,21 @@ Dakota's \texttt{aprepro} parameters file format (see
 Section~\ref{variables:parameters:aprepro}) or Dakota's standard
 format (see Section~\ref{variables:parameters:standard}), so either
 option may be selected in the interface section of the Dakota input
-file. The \texttt{ros.template} file listed in
+file. The \path{ros.template} file listed in
 Figure~\ref{advint:figure04} is a template simulation input file which
 contains targets for the incoming variable values, identified by the
 strings ``\texttt{\{x1\}}'' and ``\texttt{\{x2\}}''. These
 identifiers match the variable descriptors specified in
-\texttt{dakota\_rosenbrock.in}. The template input file is contrived
+\path{dakota_rosenbrock.in}. The template input file is contrived
 as Rosenbrock has nothing to do with finite element analysis; it only
 mimics a finite element code to demonstrate the simulator
 template process. The \texttt{dprepro} script will search the
 simulator template input file for fields marked with curly
-brackets and then create a new file (\texttt{ros.in}) by replacing
+brackets and then create a new file (\path{ros.in}) by replacing
 these targets with the corresponding numerical values for the
-variables. As shown in \texttt{simulator\_script}, the names for the Dakota
+variables. As shown in \path{simulator_script}, the names for the Dakota
 parameters file (\texttt{\$1}), template file
-(\texttt{ros.template}), and generated input file (\texttt{ros.in})
+(\path{ros.template}), and generated input file (\path{ros.in})
 must be specified in the \texttt{dprepro} command line arguments.
 
 \begin{figure}
@@ -375,24 +376,24 @@ must be specified in the \texttt{dprepro} command line arguments.
       \verbatimtabinput[8]{ros.template}
     \end{small}
   \end{bigbox}
-  \caption{Listing of the \texttt{ros.template} file}
+  \caption{Listing of the \protect\path{ros.template} file}
   \label{advint:figure04}
 \end{figure}
 
-The second part of the script executes the \texttt{rosenbrock\_bb}
-simulator. The input and output file names, \texttt{ros.in} and
-\texttt{ros.out}, respectively, are hard-coded into the FORTRAN 77
-program \texttt{rosenbrock\_bb.f}. When the \texttt{rosenbrock\_bb}
+The second part of the script executes the \path{rosenbrock_bb}
+simulator. The input and output file names, \path{ros.in} and
+\path{ros.out}, respectively, are hard-coded into the FORTRAN 77
+program \path{rosenbrock_bb.f}. When the \path{rosenbrock_bb}
 simulator is executed, the values for \texttt{x1} and \texttt{x2} are
-read in from \texttt{ros.in}, the Rosenbrock function is evaluated,
-and the function value is written out to \texttt{ros.out}.
+read in from \path{ros.in}, the Rosenbrock function is evaluated,
+and the function value is written out to \path{ros.out}.
 
 The third part performs the post-processing and writes the response
 results to a file for Dakota to read. Using the UNIX ``\texttt{grep}'' utility, the
 particular response values of interest are extracted from the raw
-simulator output and saved to a temporary file (\texttt{results.tmp}).
+simulator output and saved to a temporary file (\path{results.tmp}).
 When complete, this file is renamed \texttt{\$2}, which in this
-example is always ``\texttt{results.out}''.
+example is always ``\path{results.out}''.
 Note that moving or renaming the completed results file
 avoids any problems with read race
 conditions (see Section~\ref{parallel:SLP:local:system}).
@@ -403,35 +404,35 @@ conditions (see Section~\ref{parallel:SLP:local:system}).
 % commented out by inserting a ``\texttt{\#}'' character before
 % ``\texttt{$\backslash$rm -rf}''.
 
-Because the Dakota input file \texttt{dakota\_rosenbrock.in}
+Because the Dakota input file \path{dakota_rosenbrock.in}
 (Figure~\ref{advint:figure01}) specifies
 \texttt{work\_directory} and \texttt{directory\_tag} in its interface
-section, each invocation of \texttt{simulator\_script} wakes up in
+section, each invocation of \path{simulator_script} wakes up in
 its own temporary directory, which Dakota has populated with the
-contents of directory \texttt{templatedir}. Having a separate directory
-for each invocation of \texttt{simulator\_script} simplifies the script
+contents of directory \path{templatedir/}. Having a separate directory
+for each invocation of \path{simulator_script} simplifies the script
 when the Dakota input file specifies \texttt{asynchronous} (so
-several instances of \texttt{simulator\_script} might run simultaneously),
-as fixed names such as \texttt{ros.in}, \texttt{ros.out}, and \texttt{results.tmp}
+several instances of \path{simulator_script} might run simultaneously),
+as fixed names such as \path{ros.in}, \path{ros.out}, and \path{results.tmp}
 can be used for intermediate files. If neither \texttt{asynchronous} nor
 \texttt{file\_tag} is specified, and if there is no need (e.g., for debugging)
 to retain intermediate files having fixed names, then \texttt{directory\_tag}
 offers no benefit and can be omitted. An alternative to \texttt{directory\_tag}
 is to proceed as earlier versions of this chapter --- prior to Dakota 5.0's
 introduction of \texttt{work\_directory} --- recommended:  add two more
-steps to the \texttt{simulator\_script},
+steps to the \path{simulator_script},
 an initial one to create a temporary directory explicitly and
-copy \texttt{templatedir} to it if needed, and a final step to remove the temporary
+copy \path{templatedir/} to it if needed, and a final step to remove the temporary
 directory and any files in it.
 
 When \texttt{work\_directory} is specified, Dakota adjusts the \texttt{\$PATH} seen
-by \texttt{simulator\_script} so that simple program names
-%in the \texttt{simulator\_script}
+by \path{simulator_script} so that simple program names
+%in the \path{simulator_script}
 (i.e., names not containing a slash) that
 are visible in Dakota's directory will also be visible in the work directory.
 Relative path names ---
 involving an intermediate slash but not an initial one,
-such as \texttt{./rosenbrock\_bb} or \texttt{a/bc/rosenbrock\_bb} ---
+such as \path{./rosenbrock_bb} or \path{a/bc/rosenbrock_bb} ---
 will only be visible in the work directory if a \texttt{link\_files}
 or \texttt{copy\_files} specification (see \S\ref{interfaces:workdir})
 has made them visible there.
@@ -452,7 +453,7 @@ consider evaluation 60. The parameters file for this evaluation consists of:
 \end{verbatim}
 \end{small}
 
-This file is called \texttt{workdir/workdir.60/params.in} if the line
+This file is called \path{workdir/workdir.60/params.in} if the line
 \begin{small}
 \begin{verbatim}
  	  named 'workdir' file_save  directory_save
@@ -464,12 +465,12 @@ followed by new values for variables \texttt{x1} and \texttt{x2}, and
 one response function (an objective function), followed by an active
 set vector (ASV) value of \texttt{1}. The ASV indicates the need to
 return the value of the objective function for these parameters (see
-Section~\ref{variables:asv}). The \texttt{dprepro} script reads the
+Section~\ref{variables:asv}). The \path{dprepro} script reads the
 variable values from this file, namely \texttt{1.638247697999295e-01}
 and \texttt{2.197298209103481e-02} for \texttt{x1} and \texttt{x2}
 respectively, and substitutes them in the \texttt{\{x1\}} and
-\texttt{\{x2\}} fields of the \texttt{ros.template} file. The final
-three lines of the resulting input file (\texttt{ros.in}) then appear
+\texttt{\{x2\}} fields of the \path{ros.template} file. The final
+three lines of the resulting input file (\path{ros.in}) then appear
 as follows:
 \begin{small}
 \begin{verbatim}
@@ -480,8 +481,8 @@ as follows:
 \end{small}
 
 where all other lines are identical to the template file. The
-\texttt{rosenbrock\_bb} simulator accepts \texttt{ros.in} as its input
-file and generates the following output to the file \texttt{ros.out}:
+\path{rosenbrock_bb} simulator accepts \path{ros.in} as its input
+file and generates the following output to the file \path{ros.out}:
 \begin{small}
 \begin{verbatim}
     Beginning execution of model: Rosenbrock black box
@@ -504,15 +505,15 @@ file and generates the following output to the file \texttt{ros.out}:
 
 Next, the appropriate values are extracted from the raw simulator output
 and returned in the results file. This post-processing is relatively
-trivial in this case, and the \texttt{simulator\_script} uses the
+trivial in this case, and the \path{simulator_script} uses the
 \texttt{grep} and \texttt{cut} utilities to extract the value from the
-``\texttt{Function value}" line of the \texttt{ros.out} output file and save it to
-\texttt{\$2}, which is the \texttt{results.out} file for this
+``\texttt{Function value}" line of the \path{ros.out} output file and save it to
+\texttt{\$2}, which is the \path{results.out} file for this
 evaluation. This single value provides the objective function value
 requested by the ASV.
 
 After 132 of these function evaluations, the following Dakota output
-shows the final solution using the \\ \texttt{rosenbrock\_bb} simulator:
+shows the final solution using the \path{rosenbrock_bb} simulator:
 \begin{small}
 \begin{verbatim}
     Exit NPSOL - Optimal solution found.
@@ -556,19 +557,19 @@ need to be performed:
   simulation.
 
 \item Modify the \texttt{dprepro} arguments in
-  \texttt{simulator\_script} to reflect names of the Dakota parameters
+  \path{simulator_script} to reflect names of the Dakota parameters
   file (previously ``\texttt{\$1}''), template file name
-  (previously ``\texttt{ros.template}'') and generated input file
-  (previously ``\texttt{ros.in}''). Alternatively, use APREPRO,
+  (previously ``\path{ros.template}'') and generated input file
+  (previously ``\path{ros.in}''). Alternatively, use APREPRO,
   BPREPRO, or JPrePost to perform this step (and adapt the syntax
   accordingly).
 
-\item Modify the analysis section of \texttt{simulator\_script} to
-  replace the \texttt{rosenbrock\_bb} function call with the new
+\item Modify the analysis section of \path{simulator_script} to
+  replace the \path{rosenbrock_bb} function call with the new
   simulator name and command line syntax (typically including the
   input and output file names).
 
-\item Change the post-processing section in \texttt{simulator\_script}
+\item Change the post-processing section in \path{simulator_script}
   to reflect the revised extraction process. At a minimum, this would
   involve changing the \texttt{grep} command to reflect the name of
   the output file, the string to search for, and the characters to cut
@@ -576,7 +577,7 @@ need to be performed:
   tasks, invocation of additional tools may have to be added to the
   script.
 
-\item Modify the \texttt{dakota\_rosenbrock.in} input file to reflect,
+\item Modify the \path{dakota_rosenbrock.in} input file to reflect,
   at a minimum, updated variables and responses specifications.
 \end{enumerate}
 
@@ -606,9 +607,8 @@ Section~\ref{intro:coupling}.
 \subsection{Additional Examples}
 
 A variety of additional examples of black-box interfaces to simulation
-codes are maintained in the\\
-\texttt{dakota/share/dakota/examples/script\_interfaces} directory in the source
-code distribution.
+codes are maintained in the
+\path{dakota/share/dakota/examples/script_interfaces} directory.
 
 
 \section{Simulation Interface Components}\label{interfaces:components}
@@ -681,8 +681,8 @@ system call case is:
 \end{verbatim}
 \end{small}
 
-where ``\texttt{driver}'' is the user-specified analysis driver and
-``\texttt{params.in}'' and ``\texttt{results.out}'' are the names of the
+where ``\path{driver}'' is the user-specified analysis driver and
+``\path{params.in}'' and ``\path{results.out}'' are the names of the
 parameters and results files, respectively, passed on the command
 line. In this case, the user need not retrieve the command line
 arguments since the same file names will be used each time.
@@ -747,8 +747,8 @@ performs is:
 \end{verbatim}
 \end{small}
 
-in which the input filter (``\texttt{ifilter}''), analysis driver
-(``\texttt{driver}''), and output filter (``\texttt{ofilter}'')
+in which the input filter (``\path{ifilter}''), analysis driver
+(``\path{driver}''), and output filter (``\path{ofilter}'')
 processes are combined into a single system call through the use of
 semi-colons (see~\cite{And86}). All three portions are
 passed the names of the parameters and results files on the command
@@ -827,9 +827,9 @@ would appear as:
 \end{verbatim}
 \end{small}
 
-where ``\texttt{driver1}'', ``\texttt{driver2}'', and
-``\texttt{driver3}'' are the user-specified analysis drivers and
-``\texttt{params.in}'' and ``\texttt{results.out}'' are the
+where ``\path{driver1}'', ``\path{driver2}'', and
+``\path{driver3}'' are the user-specified analysis drivers and
+``\path{params.in}'' and ``\path{results.out}'' are the
 user-selected names of the parameters and results files. Note that the
 results files for the different analysis drivers have been
 automatically tagged to prevent overwriting. This automatic tagging of
@@ -972,7 +972,7 @@ execution of the input filter, each of the analysis drivers, and the
 output filter.
 
 A complete example of these filters and multi-part drivers can be
-found in \texttt{dakota/share/dakota/test/dakota\_3pc/dakota\_3pc.in}.
+found in \path{dakota/share/dakota/test/dakota_3pc/dakota_3pc.in}.
 
 \section{Simulation File Management}\label{interfaces:file}
 
@@ -1067,13 +1067,13 @@ multiple models with a nested or hierarchical relationship.  For
 example a nested model has a sub-method, which itself likely operates
 on a sub-model, or a hierarchical approximation involves coordination
 of low and high fidelity models.  Specifying {\tt
-  hierarchical\_tagging} will yield function evaluation identifiers
+hierarchical\_tagging} will yield function evaluation identifiers
 (``tags'') composed of the evaluation IDs of the models involved,
 e.g., outermodel.innermodel.interfaceid = 4.9.2.  This communicates
 the outer contexts to the analysis driver when performing a function
 evaluation.  For an example of using hierarhical tagging in a nested
-model context, see {\tt
-  dakota/share/dakota/test/dakota\_uq\_timeseries\_*\_optinterf.in}.
+model context,
+see \path{dakota/share/dakota/test/dakota_uq_timeseries_*_optinterf.in}.
 
 \subsection{Temporary Files}\label{interfaces:file:temporary}
 
@@ -1151,16 +1151,16 @@ since each analysis driver must contribute a
 user-defined subset of the total response results for the evaluation.
 If an output filter is not supplied, Dakota will combine these
 portions through a simple overlaying of the individual contributions
-(i.e., summing the results in \texttt{/var/tmp/baaxkaOKZ.1},
-\texttt{/var/tmp/baaxkaOKZ.2}, and \texttt{/var/tmp/baaxkaOKZ.3}). If
+(i.e., summing the results in \path{/var/tmp/baaxkaOKZ.1},
+\path{/var/tmp/baaxkaOKZ.2}, and \path{/var/tmp/baaxkaOKZ.3}). If
 this simple approach is inadequate, then an output filter should be
 supplied to perform the combination. This is the reason why the
 results file for the output filter does not use analysis tagging; it
 is responsible for the results combination (i.e., combining
-\texttt{/var/tmp/baaxkaOKZ.1}, \texttt{/var/tmp/baaxkaOKZ.2}, and
-\texttt{/var/tmp/baaxkaOKZ.3} into \texttt{/var/tmp/baaxkaOKZ}). In
+\path{/var/tmp/baaxkaOKZ.1}, \path{/var/tmp/baaxkaOKZ.2}, and
+\path{/var/tmp/baaxkaOKZ.3} into \path{/var/tmp/baaxkaOKZ}). In
 this case, Dakota will read only the results file from the output
-filter (i.e., \texttt{/var/tmp/baaxkaOKZ}) and interpret it as the
+filter (i.e., \path{/var/tmp/baaxkaOKZ}) and interpret it as the
 total response set for the evaluation.
 
 Parameters files are not currently tagged with an analysis identifier.
@@ -1206,7 +1206,7 @@ path to them (i.e., by a name not involving any slashes) from
 Dakota's directory can also be invoked from the simulator's (and filter's)
 directory.  On occasion, it is convenient for the simulator to have
 various files, e.g., data files, available in the directory where it
-runs.  If, say, \texttt{my/special/directory} is such a directory
+runs.  If, say, \path{my/special/directory/} is such a directory
 (as seen from Dakota's directory), the interface specification
 \begin{small}
 \begin{verbatim}
@@ -1237,7 +1237,7 @@ new directory populated with some files.  Adding
 \end{verbatim}
 \end{small}
 to the work directory specification would cause the
-contents of directory \texttt{templatedir} to be linked
+contents of directory \path{templatedir/} to be linked
 into the work directory.  Linking makes sense if files are large,
 but when practical, it is far more reliable to have
 copies of the files; adding \texttt{copy\_files} to the specification
@@ -1705,7 +1705,7 @@ template engine.
 
 \subsection{dakota.interfacing Examples}
 
-In addition to those in this section, the {\tt dakota/share/dakota/examples/script\_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, {\tt rosenbrock\_bb.py}, parameters file parsing is performed manually. The other, {\tt rosenbrock\_bb\_di.py}, demonstrates the {\tt dakota.interfacing} module.
+In addition to those in this section, the \path{dakota/share/dakota/examples/script_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, \path{rosenbrock_bb.py}, parameters file parsing is performed manually. The other, \path{rosenbrock_bb_di.py}, demonstrates the {\tt dakota.interfacing} module.
 
 For most applications, using {\tt dakota.interfacing} is straightforward. The first example, in Figure~\ref{diexample:simple}, is a mock analysis driver. Two variables with the descriptors {\tt x1} and {\tt x2} are read from the Dakota parameters file and used to evaluate the fictitious user function {\tt applic\_module.run()}. The result, stored in {\tt f}, is assigned to the {\tt function} value of the appropriate response. (A common error is leaving off the {\tt function} attribute, which is needed to distinguish the function value of the response from its gradient and Hessian.)
 

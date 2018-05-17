@@ -35,15 +35,14 @@ get started with Dakota. This typically involves the following steps:
     you can compile Dakota from source code. Downloads are available from 
     \url{http://dakota.sandia.gov/download.html}.
     
-  \item Install Dakota. \\
-    Instructions are available from
+  \item Install Dakota. \\ Instructions are available from
     \url{http://dakota.sandia.gov/content/install-dakota}. Guidance is
     also included in Dakota distributions, e.g.,
-    \texttt{dakota\_binary/share/dakota/INSTALL} (or
-    \texttt{dakota\_source/INSTALL}). Further platform/operating
-    system-specific guidance can be found in \\
-    {\tt dakota\_binary/share/dakota/examples/platforms} \\
-    ({\tt dakota\_source/examples/platforms}).
+    \path{dakota/share/dakota/INSTALL} (or
+    \path{dakota_source/INSTALL}). Further platform/operating
+    system-specific guidance can be found in
+    \path{dakota/share/dakota/examples/platforms}
+    (\path{dakota_source/examples/platforms}).
 
   \item Verify that Dakota runs. \\
     To perform a quick check that your Dakota executable runs, open a 
@@ -62,7 +61,7 @@ get started with Dakota. This typically involves the following steps:
   \item Participate in Dakota user communities. \\
     Join Dakota mail lists to get the most up-to-date guidance for
     downloading, compiling, installing, or running. For information about
-    mail lists, getting help, and other available help resources, see \\
+    mail lists, getting help, and other available help resources, see
     \url{http://dakota.sandia.gov/content/get-help}.
 
 \end{enumerate}
@@ -76,7 +75,7 @@ of running a simple example.
   \item Make sure Dakota runs. You should see Dakota version information
    when you type: \texttt{dakota -v}
   \item Create a working directory 
-  \item Copy \texttt{rosen\_multidim.in} from the \texttt{dakota/share/dakota/examples/users/}
+  \item Copy \path{rosen_multidim.in} from the \path{dakota/share/dakota/examples/users/}
     directory to the working directory -- see Section~\ref{intro:files} for help.
   \item From the working directory, run \texttt{dakota -i 
     rosen\_multidim.in -o rosen\_multidim.out > rosen\_multidim.stdout}
@@ -86,19 +85,19 @@ of running a simple example.
 Dakota outputs a large amount of information to help users track  progress. 
 Four files should have been created:
 \begin{enumerate}
-  \item The screen output has been redirected to the file 
-\texttt{rosen\_multidim.stdout}. \\
-  The contents are messages from Dakota and notes about the 
-progress of the iterator (i.e. method/algorithm).
-  \item The output file \texttt{rosen\_multidim.out} 
-contains information about the function evaluations.
-  \item \texttt{rosen\_multidim.dat} is created due to the 
-specification of \texttt{tabular\_data} and \\
-\texttt{tabular\_data\_file}. This summarizes 
-the variables and responses for each function evaluation.
-  \item \texttt{dakota.rst} is a restart file. If a Dakota 
-analysis is interrupted, it can be often be restarted without 
-losing all progress.
+  \item The screen output has been redirected to the file
+    \path{rosen_multidim.stdout}.  The contents are messages from
+    Dakota and notes about the progress of the iterator
+    (i.e. method/algorithm).
+  \item The output file \path{rosen_multidim.out} contains information
+    about the function evaluations.
+  \item \path{rosen_multidim.dat} is created due to the specification
+    of \texttt{tabular\_data} and
+    \\ \texttt{tabular\_data\_file}. This summarizes the variables and
+    responses for each function evaluation.
+  \item \path{dakota.rst} is a restart file. If a Dakota analysis is
+    interrupted, it can be often be restarted without losing all
+    progress.
 \end{enumerate}
 When running on Unix operating systems with Dakota's legacy X
 Windows-based graphics enabled, some plots are created as well, due to
@@ -180,8 +179,8 @@ $<<<<<$ Iterator {\it study\_type} completed.
 {\textbf{Tabular output file}}
 
 For this example, the default name for the tabular output file 
-\texttt{dakota\_tabular.dat} was changed in the input file to
-\texttt{rosen\_multidim.dat}. This tab-delimited text file
+\path{dakota_tabular.dat} was changed in the input file to
+\path{rosen_multidim.dat}. This tab-delimited text file
 (Figure \ref{tutorial:quickstart:rosenbrock_multidim:dat})
 summarizes the inputs and outputs to the function evaluator.
 The first line contains the names of the variables and responses,
@@ -296,7 +295,7 @@ discussed in Chapter~\ref{adv_meth}.
 \end{figure}
 
 As a concrete example, a simple Dakota input file,
-\texttt{rosen\_multidim.in}, is shown in
+\path{rosen_multidim.in}, is shown in
 Figure~\ref{tutorial:rosenbrock_multidim} for a two-dimensional
 parameter study on Rosenbrock's function.  This input file will be
 used to describe the basic format and syntax used in all Dakota input
@@ -501,11 +500,11 @@ executed by Dakota using the command noted in the comments:
 \end{small}
 
 The output of the Dakota run is written to the file named
-\texttt{rosen\_multidim.out} while the screen output, or
-standard output, is redirect to \texttt{rosen\_multidim.stdout}.
-For comparison, files named \texttt{rosen\_multidim.out.sav}
-and \texttt{rosen\_multidim.stdout.sav} are included in the
-\texttt{dakota/share/dakota/examples/users} directory. As for many of the examples,
+\path{rosen_multidim.out} while the screen output, or
+standard output, is redirect to \path{rosen_multidim.stdout}.
+For comparison, files named \path{rosen_multidim.out.sav}
+and \path{rosen_multidim.stdout.sav} are included in the
+\path{dakota/share/dakota/examples/users} directory. As for many of the examples,
 Dakota provides a report on the best design point located during the
 study at the end of these output files.
 
@@ -586,7 +585,7 @@ the convergence tolerance for three successive iterations).
 \end{figure}
 
 The Dakota command is noted in the file, and copies of the outputs are
-in the \texttt{dakota/share/dakota/examples/users} directory, with \texttt{.sav}
+in the \path{dakota/share/dakota/examples/users} directory, with \texttt{.sav}
 appended to the name.  When this example problem is executed using
 Dakota's legacy X Windows-based graphics support enabled, Dakota
 creates some iteration history graphics similar to the screen capture
@@ -682,14 +681,12 @@ parameter space, evaluate the value of Rosenbrock's function at all
 200 points, and then perform some basic statistical calculations on
 the 200 response values.
 
-The Dakota command is noted in the file, and copies of the outputs
-are in the \texttt{dakota/share/dakota/examples/users} directory, with \texttt{.sav} 
-appended to the name.  
-Figure~\ref{tutorial:results_mc} shows example results from this 
-sampling method. 
-Note that your results will differ from those in
-this file if your \texttt{seed} value differs or if no \texttt{seed}
-is specified.
+The Dakota command is noted in the file, and copies of the outputs are
+in the \path{dakota/share/dakota/examples/users} directory, with
+\texttt{.sav} appended to the name.  Figure~\ref{tutorial:results_mc}
+shows example results from this sampling method.  Note that your
+results will differ from those in this file if your \texttt{seed}
+value differs or if no \texttt{seed} is specified.
 
 As shown in Figure~\ref{tutorial:results_mc}, 
 the statistical data on the 200 Monte Carlo samples is printed at the
@@ -816,7 +813,7 @@ use the \texttt{fork} interface approach within
 Dakota to manage external simulation codes. In both of these cases,
 the communication between Dakota and the external code is conducted
 through the reading and writing of short text files. For this example,
-the C++ program \texttt{rosenbrock.cpp} in \texttt{Dakota\_Source/test} is used
+the C++ program \path{rosenbrock.cpp} in \path{dakota_source/test} is used
 as the simulation code. This file is compiled to create the
 stand-alone \texttt{rosenbrock} executable that is referenced as the
 \texttt{analysis\_driver} in Figure~\ref{tutorial:rosenbrock_user}.
@@ -824,8 +821,8 @@ This stand-alone program performs the same function evaluations as
 Dakota's internal Rosenbrock test function.
 
 Figure~\ref{tutorial:rosenbrock_user} shows the text of the Dakota
-input file named \texttt{rosen\_syscall.in} that is
-provided in the directory \texttt{dakota/share/dakota/examples/users}.
+input file named \path{rosen_syscall.in} that is
+provided in the directory \path{dakota/share/dakota/examples/users}.
 The only differences between this input file and the one in Figure~
 \ref{tutorial:rosenbrock_grad} occur in the \emph{interface} keyword
 section. The keyword \texttt{fork} indicates that Dakota will use
@@ -835,9 +832,9 @@ the names for Dakota's parameters and results file are specified using
 the \texttt{analysis\_driver}, \texttt{parameters\_file}, and
 \texttt{results\_file} keywords, respectively.
 
-The Dakota command is noted in the file, and copies of the outputs
-are in the \texttt{dakota/share/dakota/examples/users} directory, with \texttt{.sav} 
-appended to the name.  
+The Dakota command is noted in the file, and copies of the outputs are
+in the \path{dakota/share/dakota/examples/users} directory, with
+\texttt{.sav} appended to the name.
 
 This run of Dakota takes longer to complete than the previous
 gradient-based optimization example since the \texttt{fork}
@@ -850,11 +847,11 @@ the \texttt{fork} interface approach, add the keywords
 \texttt{file\_tag} and \texttt{file\_save} to the interface
 specification and re-run Dakota. Check the listing of the local
 directory and you will see many new files with names such as
-\texttt{params.in.1}, \texttt{params.in.2}, etc., and
-\texttt{results.out.1}, \texttt{results.out.2}, etc. There is one
-\texttt{params.in.X} file and one \texttt{results.out.X} file for each
+\path{params.in.1}, \path{params.in.2}, etc., and
+\path{results.out.1}, \path{results.out.2}, etc. There is one
+\path{params.in.X} file and one \path{results.out.X} file for each
 of the function evaluations performed by Dakota. This is the file
-listing for \texttt{params.in.1}:
+listing for \path{params.in.1}:
 %\newpage
 \begin{small}
 \begin{verbatim}
@@ -895,7 +892,7 @@ of response functions (1) and the ``functions'' string identifier,
 followed by one ASV code and descriptor tag
 (``ASV\_1'') for each function. In this case, the ASV value of 1 indicates that Dakota
 is requesting that the simulation code return the response function
-value in the file \texttt{results.out.X}. (Possible ASV values: 1 = value of
+value in the file \path{results.out.X}. (Possible ASV values: 1 = value of
 response function value, 2 = response function gradient, 4 = response
 function Hessian, and any sum of these for combinations up to
 7 = response function value, gradient, and Hessian; see ~\ref{variables:asv} for
@@ -911,11 +908,11 @@ first line of the array gives the total number of analysis components
 (0) and the ``analysis\_components'' string identifier, followed by the
 listing of the array, which is empty in this case.
 
-The executable program rosenbrock reads in the \texttt{params.in.X}
+The executable program rosenbrock reads in the \path{params.in.X}
 file and evaluates the objective function at the given values for
 $x_1$ and $x_2$. Then, rosenbrock writes out
-the objective function data to the \texttt{results.out.X} file. Here
-is the listing for the file \texttt{results.out.1}:
+the objective function data to the \path{results.out.X} file. Here
+is the listing for the file \path{results.out.1}:
 \begin{small}
 \begin{verbatim}
                      2.420000000000000e+01 f
@@ -925,15 +922,15 @@ is the listing for the file \texttt{results.out.1}:
 The value shown above is the value of the objective function, and the
 descriptor `f' is an optional tag returned by the simulation code.
 When the fork call has completed, Dakota reads in the data from the
-\texttt{results.in.X} file and processes the results. Dakota then
+\path{results.in.X} file and processes the results. Dakota then
 continues with additional executions of the rosenbrock program until
 the optimization process is complete.
 
 \subsubsection{Optimization with a User-Supplied Simulation Code - Case 2}\label{tutorial:examples:user_supply:optimization2}
 
 In many situations the user-supplied simulation code cannot be
-modified to read and write the \texttt{params.in.X file} and the
-\texttt{results.out.X} file, as described above. Typically, this
+modified to read and write the \path{params.in.X file} and the
+\path{results.out.X} file, as described above. Typically, this
 occurs when the simulation code is a commercial or proprietary
 software product that has specific input file and output file formats.
 In such cases, it is common to replace the executable program name in
@@ -942,18 +939,18 @@ a sequence of commands that read and write the necessary files and run
 the simulation code. For example, the executable program named
 \texttt{rosenbrock} listed in Figure~\ref{tutorial:rosenbrock_user}
 could be replaced by a Unix Bourne or C-shell script named
-\texttt{simulator\_script}, with the script containing a sequence of
+\path{simulator_script}, with the script containing a sequence of
 commands to perform the following steps: insert the data from the
-\texttt{parameters.in.X} file into the input file of the simulation
+\path{parameters.in.X} file into the input file of the simulation
 code, execute the simulation code, post-process the files generated by
 the simulation code to compute response data, and return the response
-data to Dakota in the \texttt{results.out.X} file. The steps that are
+data to Dakota in the \path{results.out.X} file. The steps that are
 typically used in constructing and using a Unix shell script are
 described in Section~\ref{interfaces:building}.
 
 \section{Dakota Command-Line Options}\label{tutorial:installation:running}
 
-The Dakota executable file is named {\tt dakota} ({\tt dakota.exe} on
+The Dakota executable file is named \path{dakota} (\path{dakota.exe} on
 Windows). If this command is entered at the command prompt without any
 arguments, a usage message similar to the following appears:
 \begin{small}
@@ -1142,7 +1139,7 @@ information on parameter studies and design of experiments methods.
 
 For a list of all the example Dakota input files, see 
 Table~\ref{tutorial:examples:table}. All of these input files 
-can be found in \\ \texttt{dakota/share/dakota/examples/users}. 
+can be found in \path{dakota/share/dakota/examples/users}.
 
 \begin{table}[hbp]
 \centering

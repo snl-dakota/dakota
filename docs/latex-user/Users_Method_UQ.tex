@@ -443,7 +443,7 @@ Figure~\ref{uq:figure02} for the case where \texttt{samples} = 5 and
   \centering \begin{bigbox} \begin{small}
   \verbatimtabinput[8]{textbook_uq_sampling.in} \end{small} \end{bigbox}
 \caption{Dakota input file for UQ example using LHS --
-see \texttt{dakota/share/dakota/examples/users/textbook\_uq\_sampling.in} }
+see \protect\path{dakota/share/dakota/examples/users/textbook_uq_sampling.in} }
 \label{uq:figure01}
 \end{figure}
 
@@ -657,7 +657,7 @@ In many situations, one may run an initial sample set and then need to
 perform further sampling to get better estimates of the mean,
 variance, and percentiles, and to obtain more comprehensive sample
 coverage. We call this capability incremental sampling.  Typically, a
-Dakota restart file (\texttt{dakota.rst}) would be available from the
+Dakota restart file (\path{dakota.rst}) would be available from the
 original sample, so only the newly generated samples would need to be
 evaluated.  Incremental sampling supports continuous uncertain
 variables and discrete uncertain variables such as discrete
@@ -698,7 +698,7 @@ hundred, the benefit of incremental sampling diminishes.
   for the full sample of 60. The command line syntax for
   running the second sample is \texttt{dakota -i input60.in -r
     dakota.50.rst} where \texttt{input60.in} is the input file with
-  the refinement samples specification and \texttt{dakota.50.rst} is
+  the refinement samples specification and \path{dakota.50.rst} is
   the restart file containing the initial 50 samples.  Note that if
   the restart file has a different name, that is fine; the correct
   restart file name should be used.
@@ -724,8 +724,8 @@ hundred, the benefit of incremental sampling diminishes.
   both for the initial 50 samples and for the full sample of 100. The command 
   line syntax for running the second sample
   is \texttt{dakota -i input100.in -r dakota.50.rst}, where
-  \texttt{input100.in} is the input file with the incremental sampling
-  specification and \texttt{dakota.50.rst} is the restart file
+  \path{input100.in} is the input file with the incremental sampling
+  specification and \path{dakota.50.rst} is the restart file
   containing the initial 50 samples.  Note that if the restart file
   has a different name, that is fine; the correct restart file name
   should be used.
@@ -761,7 +761,7 @@ the number of components that accounts for at least 99 percent of the variance
 in the responses will be retained.  The default for this percentage is 0.95.  
 In many applications, only a few principal components explain the majority 
 of the variance, resulting in significant data reduction.
-The principal components are written to a file, \texttt{princ\_comp.txt}.
+The principal components are written to a file, \path{princ_comp.txt}.
 Dakota also uses the principal components to create a surrogate model by 
 representing the overall response as weighted sum of M principal components, 
 where the weights will be determined by Gaussian processes which are a function 
@@ -1113,8 +1113,9 @@ deviation is zero.
       \verbatimtabinput[8]{textbook_uq_meanvalue.in}
     \end{small}
   \end{bigbox}
-  \caption{Mean Value Reliability Method: the Dakota input file --
-see \texttt{dakota/share/dakota/examples/users/textbook\_uq\_meanvalue.in} }
+  \caption{Mean Value Reliability Method: the Dakota input file -- see
+    \protect\path{dakota/share/dakota/examples/users/textbook_uq_meanvalue.in}
+  }
   \label{uq:examples:mv_input}
 \end{figure}
 
@@ -1187,7 +1188,7 @@ when using a Mean Value method, which will be discussed next.
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for Reliability UQ example using FORM --
-see \texttt{dakota/share/dakota/examples/users/logratio\_uq\_reliability.in} }
+see \protect\path{dakota/share/dakota/examples/users/logratio_uq_reliability.in} }
 \label{uq:rel_input_form}
 \end{figure}
 
@@ -1456,7 +1457,7 @@ function evaluations to compute the PCE coefficients.
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for performing UQ using polynomial chaos expansions --
-see \texttt{dakota/share/dakota/examples/users/rosen\_uq\_pce.in} }
+see \protect\path{dakota/share/dakota/examples/users/rosen_uq_pce.in} }
 \label{uq:examples:pce_input}
 \end{figure}
 
@@ -1612,7 +1613,7 @@ Figure~\ref{uq:figure11b}.
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for performing UQ using stochastic collocation --
-see \texttt{dakota/share/dakota/examples/users/rosen\_uq\_sc.in} }
+see \protect\path{dakota/share/dakota/examples/users/rosen_uq_sc.in} }
 \label{uq:figure11}
 \end{figure}
 
@@ -2088,7 +2089,7 @@ interval analysis, we recommend using either
 \texttt{global\_interval\_est} or \texttt{local\_interval\_est}
 instead of \texttt{global\_evidence} or \texttt{local\_evidence}, for
 reasons of simplicity. %An example of interval estimation is found in
-%the \texttt{dakota/share/dakota/examples/users/cantilever\_uq\_global\_interval.in}, 
+%the \path{dakota/share/dakota/examples/users/cantilever_uq_global_interval.in},
 %and also in Section~\ref{uq:examples:interval}.
 
 %Note that we have kept separate implementations of interval analysis and
@@ -2134,7 +2135,7 @@ beam weight is approximately [1,100].
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for performing UQ using interval analysis --
-see \texttt{dakota/share/dakota/examples/users/cantilever\_uq\_global\_interval.in} }
+see \protect\path{dakota/share/dakota/examples/users/cantilever_uq_global_interval.in} }
 \label{uq:examples:interval_input}
 \end{figure}
 
@@ -2240,7 +2241,7 @@ are 0.1 to 0.5, etc.
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for UQ example using Evidence Theory --
-see \texttt{dakota/share/dakota/examples/users/textbook\_uq\_glob\_evidence.in} }
+see \protect\path{dakota/share/dakota/examples/users/textbook_uq_glob_evidence.in} }
 \label{uq:figure16}
 \end{figure}
 
@@ -2752,23 +2753,23 @@ chain, standard deviation of the chain samples, etc.), as well as the
 credible and prediction intervals for each model output.
 
 Auxilliary output is also generated to a directory called
-\texttt{QuesoDiagnostics/} in the directory from which Dakota is run.
-The file \texttt{display\_sub0.txt} contains diagnostic information
+\path{QuesoDiagnostics/} in the directory from which Dakota is run.
+The file \path{display_sub0.txt} contains diagnostic information
 regarding the MCMC process.  The Matlab files contained in the
-\texttt{QuesoDiagnostics} directory contain the chain files.  The
-files to load in Matlab are \texttt{raw\_chain.m} or
-\texttt{filtered\_chain.m}, containing the full chain or the filtered
+\path{QuesoDiagnostics/} directory contain the chain files.  The
+files to load in Matlab are \path{raw_chain.m} or
+\path{filtered_chain.m}, containing the full chain or the filtered
 chain values of the parameters\footnote{The full chain will be output
   in cases of adaptive posterior refinement or proposal updating,
   since these use cases access the entire acceptance chain to identify
   refinement data or restarting points, respectively.}.  In addition,
 the accepted chain values that Dakota generates are written to a file
 in the run directory called (by default)
-\texttt{dakota\_mcmc\_tabular.dat}. The first columns of this file are
+\path{dakota_mcmc_tabular.dat}. The first columns of this file are
 the posterior values of the input variables. If \texttt{burn\_in} or
 \texttt{sub\_sampling\_period} are specified, the filtered acceptance
 chain is instead written to the file
-\texttt{dakota\_mcmc\_tabular.dat}. This file contains the posterior
+\path{dakota_mcmc_tabular.dat}. This file contains the posterior
 values of the filtered MCMC chain, as well as the values of state
 variables and the resulting model responses. Finally, if one wants to
 see the likelihood of each point, specifying verbose output in the
@@ -2903,8 +2904,8 @@ configuration variable domain.
 
 Calculations corresponding to each prediction configuration and to each
 observable will be output to tabular files. The responses from the discrepancy
-model itself is output to \texttt{dakota\_discrepancy\_tabular.dat}. Those
-from the corrected model are output to \texttt{dakota\_corrected\_tabular.dat}.
+model itself is output to \path{dakota_discrepancy_tabular.dat}. Those
+from the corrected model are output to \path{dakota_corrected_tabular.dat}.
 The user may specify the output file names for the discrepancy and corrected
 model tabular files using the \texttt{export\_discrepancy\_file} and
 \texttt{export\_corrected\_model\_file} keywords, respectively. 
@@ -2937,7 +2938,7 @@ described in Section~\ref{uq:bayesian:queso}. Including $\sigma^{2}_{exp,i}$
 in the variance calculation accounts for the uncertainty in the model 
 predictions that arise due to uncertainties in the calibration data. These
 prediction variances are output to the file 
-\texttt{dakota\_discrepancy\_variance\_tabular.dat} by default. The name of 
+\path{dakota_discrepancy_variance_tabular.dat} by default. The name of
 this file can be modified using the \texttt{export\_corrected\_variance\_file} 
 keyword in the input script. If the response is a field, the variance 
 information written to this file is the variance of the Gaussian process alone.
@@ -3087,7 +3088,7 @@ Progress of the algorithm will be reported to the screen with the rest of the
 Dakota output. Furthermore, a summary of the algorithm's results, including, 
 for each iteration, the optimal design, the mutual information, and the 
 corresponding high-fidelity model response, can be found in the file 
-\texttt{experimental\_design\_output.txt}.  
+\path{experimental_design_output.txt}.
 
 \subsubsection{One-at-a-time Implementation}
 
@@ -3110,7 +3111,7 @@ optimal designs when \texttt{batch\_size} is greater than 1) from
 those provided in \texttt{import\_candidate\_points\_file}, and exit 
 \textit{without} running the ``dummy" high-fidelity model code. The selected
 design(s) will be output to the screen, as well as to 
-\texttt{experimental\_design\_output.txt}, as detailed above. The high-fidelity
+\path{experimental_design_output.txt}, as detailed above. The high-fidelity
 model may then be run offline with the newly selected design point(s).
 
 The user must update \texttt{calibration\_data\_file} with the new 
