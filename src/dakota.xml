@@ -3606,12 +3606,14 @@
             <keyword  id="secondary_variable_mapping" name="secondary_variable_mapping" code="{N_mom(strL,secondaryVarMaps)}" label="Secondary Variable Mappings"  minOccurs="0" default="primary mappings into sub-model variables are value-based" >
               <param type="STRINGLIST" />
             </keyword>
-            <keyword  id="primary_response_mapping" name="primary_response_mapping" code="{N_mom(RealDL,primaryRespCoeffs)}" label="Primary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to primary functions" >
-              <param type="REALLIST" />
-            </keyword>
-            <keyword  id="secondary_response_mapping" name="secondary_response_mapping" code="{N_mom(RealDL,secondaryRespCoeffs)}" label="Secondary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to secondary functions" >
-              <param type="REALLIST" />
-            </keyword>
+	    <!-- BMA TODO: Identity should be mutually exclusive with pri/sec map. -->
+	    <keyword  id="primary_response_mapping" name="primary_response_mapping" code="{N_mom(RealDL,primaryRespCoeffs)}" label="Primary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to primary functions" >
+	      <param type="REALLIST" />
+	    </keyword>
+	    <keyword  id="secondary_response_mapping" name="secondary_response_mapping" code="{N_mom(RealDL,secondaryRespCoeffs)}" label="Secondary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to secondary functions" >
+	      <param type="REALLIST" />
+	    </keyword>
+	    <keyword  id="identity_response_mapping" name="identity_response_mapping" code="{N_mom(true,identityRespMap)}" label="Identity Response Mapping"  minOccurs="0" default="no sub-iterator contribution to nested model functions" />
           </keyword>
         </keyword>
         <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace"  minOccurs="1" complexity="1">

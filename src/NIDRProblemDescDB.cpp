@@ -7334,6 +7334,7 @@ static bool
 	MP_(decompDiscontDetect),
 	MP_(exportSurrogate),
 	MP_(hierarchicalTags),
+        MP_(identityRespMap),
       //MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(importChallengeActive),

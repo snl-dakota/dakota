@@ -672,6 +672,8 @@ void NestedModel::update_sub_iterator()
   const RealVector& secondary_resp_coeffs
     = probDescDB.get_rv("model.nested.secondary_response_mapping");
 
+  bool identity_resp_map = probDescDB.get_bool("model.nested.identity_resp_map");
+
   if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
     Cerr << "\nError: no mappings provided for sub-iterator functions in "
 	 << "NestedModel initialization." << std::endl;
