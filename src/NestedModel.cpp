@@ -693,7 +693,8 @@ void NestedModel::update_sub_iterator()
 	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
       abort_handler(-1);
     }
-    copy_data(primary_resp_coeffs, primaryRespCoeffs, 0, (int)numSubIterFns);
+    copy_data(primary_resp_coeffs, primaryRespCoeffs.get(), 0,
+	      (int)numSubIterFns);
   }
   if (!secondary_resp_coeffs.empty()) {
     // this error would also be caught within copy_data(), but by checking here,
@@ -703,9 +704,12 @@ void NestedModel::update_sub_iterator()
 	   << secondary_resp_coeffs.length() << ") not evenly divisible"
 	   << "\n       by number of sub-iterator response functions ("
 	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
+      Cerr << "\nSub-iterator returns these responses:\n"
+	   << subIterator.response_results().function_labels() << std::endl;
       abort_handler(-1);
     }
-    copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);
+    copy_data(secondary_resp_coeffs, secondaryRespCoeffs.get(), 0,
+	      (int)numSubIterFns);
   }
 
   // Back out the number of eq/ineq constraints within secondaryRespCoeffs
