@@ -136,14 +136,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     Cerr << "\nError: burn_in_samples must be less than chain_samples.\n";
     abort_handler(PARSE_ERROR);
   }
-  if (chainSamples > 0 && subSamplingPeriod >= chainSamples - burnInSamples) {
-    if (burnInSamples > 0)
-      Cout << "\nWarning: sub_sampling_period >= (chain_samples - burn_in_samples);"
-	   << "\n         will have no effect." << std::endl;
-    else
-      Cout << "\nWarning: sub_sampling_period >= chain_samples;"
-	   << " will have no effect." << std::endl;
-  }
+  int num_filtered = 1 + (chainSamples - burnInSamples - 1)/subSamplingPeriod;
+  Cout << "\nA chain of length " << chainSamples << " has been specified. "
+       << burnInSamples << " burn in samples will be \ndiscarded and every "
+       << subSamplingPeriod << "-th sample will be kept in the final chain. "
+       << "The \nfinal chain will have length " << num_filtered << ".\n";
 
   if (adaptExpDesign) {
     // TODO: instead of pulling these models out, change modes on the
