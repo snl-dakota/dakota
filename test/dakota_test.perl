@@ -263,7 +263,7 @@ foreach my $file (@test_inputs) {
 
 	# turn off graphics for all test files
 	# requires 'graphics' on a line by itself, so it can appear in comments
-	if ( s/^[\s]*graphics[,\s]*$/# graphics\n/) {
+        if ( s/^[\s]*graphics[,\s#sp0-9]*$/# graphics\n/) {
 	  print INPUT_TMP;
 	}
 	# if line contains $cnt tag, then comment/uncomment
