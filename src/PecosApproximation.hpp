@@ -119,7 +119,6 @@ public:
   /// a subset of the variables as random
   Real covariance(const Pecos::RealVector& x,
 		  PecosApproximation* pecos_approx_2);
-
   /// return the covariance between two combined response expansions,
   /// treating all variables as random
   Real combined_covariance(PecosApproximation* pecos_approx_2);
@@ -135,6 +134,13 @@ public:
   /// treating a subset of the variables as random
   Real delta_covariance(const Pecos::RealVector& x,
 			PecosApproximation* pecos_approx_2);
+  /// return the change in covariance between two rcombined esponse
+  /// expansions, treating all variables as random
+  Real delta_combined_covariance(PecosApproximation* pecos_approx_2);
+  /// return the change in covariance between two combined response
+  /// expansions, treating a subset of the variables as random
+  Real delta_combined_covariance(const Pecos::RealVector& x,
+				 PecosApproximation* pecos_approx_2);
 
   /// return the change in mean between two response expansions,
   /// treating all variables as random
@@ -386,6 +392,23 @@ delta_covariance(PecosApproximation* pecos_approx_2)
 inline Real PecosApproximation::
 delta_covariance(const Pecos::RealVector& x, PecosApproximation* pecos_approx_2)
 { return polyApproxRep->delta_covariance(x, pecos_approx_2->polyApproxRep); }
+
+
+inline Real PecosApproximation::
+delta_combined_covariance(PecosApproximation* pecos_approx_2)
+{
+  return polyApproxRep->
+    delta_combined_covariance(pecos_approx_2->polyApproxRep);
+}
+
+
+inline Real PecosApproximation::
+delta_combined_covariance(const Pecos::RealVector& x,
+			  PecosApproximation* pecos_approx_2)
+{
+  return polyApproxRep->
+    delta_combined_covariance(x, pecos_approx_2->polyApproxRep);
+}
 
 
 inline Real PecosApproximation::delta_mean()

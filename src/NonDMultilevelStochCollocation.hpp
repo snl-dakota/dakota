@@ -63,6 +63,10 @@ protected:
   void increment_specification_sequence();
   void metric_roll_up();
   void compute_covariance();
+  Real compute_covariance_metric(bool restore_ref, bool print_metric,
+				 bool relative_metric);
+  Real compute_final_statistics_metric(bool restore_ref, bool print_metric,
+				       bool relative_metric);
 
 private:
 
