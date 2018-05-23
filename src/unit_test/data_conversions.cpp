@@ -81,6 +81,75 @@ TEUCHOS_UNIT_TEST(data_conversion, mat2mat)
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
     TEST_FLOATING_EQUALITY( test_mat(i,j), dest_mat(i,j), 1.e-14 );
+
+  // Verifiy that the copy is a deep copy
+  dest_mat(1,1) *= 1.5;
+  double diff = dest_mat(1,1) - test_mat(1,1);
+  TEST_FLOATING_EQUALITY( diff, 0.5*test_mat(1,1), 1.e-14 );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sub)
+{
+  const int NROWS = 5;
+  const int NCOLS = 3;
+  RealMatrix test_mat(NROWS, NCOLS);
+  test_mat.random();
+  RealMatrix dest_mat;
+
+  int roffset = 2;
+  int coffset = 1;
+
+  /////////////////  What we want to test
+  copy_data(test_mat, dest_mat,
+            /* num_rows */ 3,
+            /* num_cols */ 2,
+            roffset, coffset );
+  /////////////////  What we want to test
+
+  // Verify correct dimensions
+  TEST_EQUALITY( 3, dest_mat.numRows() );
+  TEST_EQUALITY( 2, dest_mat.numCols() );
+
+  // Verify contents of what we wrote and what we read
+  for( int i=0; i<dest_mat.numRows(); ++i )
+    for( int j=0; j<dest_mat.numCols(); ++j )
+    TEST_FLOATING_EQUALITY( test_mat(i+roffset,j+coffset), dest_mat(i,j), 1.e-14 );
+
+  // Verifiy that the copy is a deep copy
+  dest_mat(1,1) *= 1.5;
+  double diff = dest_mat(1,1) - test_mat(1+roffset,1+coffset);
+  TEST_FLOATING_EQUALITY( diff, 0.5*test_mat(1+roffset,1+coffset), 1.e-14 );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sym)
+{
+  const int NROWS = 3;
+  const int NCOLS = NROWS;
+  RealSymMatrix test_mat(NROWS, NCOLS);
+  test_mat.random();
+  RealSymMatrix dest_mat;
+
+  /////////////////  What we want to test
+  copy_data(test_mat, dest_mat);
+  /////////////////  What we want to test
+
+  // Verify correct dimensions
+  TEST_EQUALITY( NROWS, dest_mat.numRows() );
+  TEST_EQUALITY( NCOLS, dest_mat.numCols() );
+
+  // Verify contents of what we wrote and what we read
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    TEST_FLOATING_EQUALITY( test_mat(i,j), dest_mat(i,j), 1.e-14 );
+
+  // Verifiy that the copy is a deep copy
+  dest_mat(1,1) *= 1.5;
+  double diff = dest_mat(1,1) - test_mat(1,1);
+  TEST_FLOATING_EQUALITY( diff, 0.5*test_mat(1,1), 1.e-14 );
 }
 
 //----------------------------------------------------------------

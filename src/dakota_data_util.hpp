@@ -189,22 +189,6 @@ bool is_equal_vec( const RealVector & vec1,
 // Misc matrix utilities 
 // ---------------------
 
-// Taken from pecos/src/MathTools.hpp, BUT
-// not templated because the implementation is specific to RealMatrix
-inline void copy_data( const RealMatrix &source, RealMatrix &dest, 
-	        int num_rows, int num_cols, int start_row=0, int start_col=0 )
-{
-  RealMatrix source_subset( Teuchos::View, source, num_rows, num_cols, 
-			    start_row, start_col );
-  dest.reshape( num_rows, num_cols );
-  dest.assign( source_subset );
-}
-
-inline void copy_data( const RealMatrix &source, RealMatrix &dest )
-{
-  return copy_data(source, dest, source.numRows(), source.numCols());
-}
-
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 
@@ -657,6 +641,43 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv1,
     sdv2.sizeUninitialized(size_sdv1);
   for (OrdinalType i=0; i<size_sdv1; ++i)
     sdv2[i] = sdv1[i];
+}
+
+/// copy Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> to same
+/// (used in place of operator= when a deep copy is required) -
+/// used by Response - MSE
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm1,
+	       Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm2)
+{
+  OrdinalType nr1 = sdm1.numRows(), nc1 = sdm1.numCols();
+  if (sdm2.numRows() != nr1 || sdm2.numCols() != nc1)
+    sdm2.shapeUninitialized(nr1, nc1);
+  sdm2.assign(sdm1);
+}
+
+/// copy Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType> to same
+/// (used in place of operator= when a deep copy is required) -
+/// used by Response - MSE
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm1,
+	       Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm2)
+{
+  OrdinalType nr1 = ssdm1.numRows();
+  if (ssdm2.numRows() != nr1)
+    ssdm2.shapeUninitialized(nr1);
+  ssdm2.assign(ssdm1);
+}
+
+/// Taken from pecos/src/MathTools.hpp, BUT
+/// not templated because the implementation is specific to RealMatrix
+inline void copy_data( const RealMatrix &source, RealMatrix &dest, 
+	        int num_rows, int num_cols, int start_row=0, int start_col=0 )
+{
+  RealMatrix source_subset( Teuchos::View, source, num_rows, num_cols, 
+			    start_row, start_col );
+  dest.reshape( num_rows, num_cols );
+  dest.assign( source_subset );
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
