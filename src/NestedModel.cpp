@@ -667,14 +667,70 @@ void NestedModel::update_sub_iterator()
     active2ACVarMapTargets,  active2ADIVarMapTargets, active2ADSVarMapTargets,
     active2ADRVarMapTargets);
 
+  // Back out the number of eq/ineq constraints within secondaryRespCoeffs
+  // (subIterator constraints) from the total number of equality/inequality
+  // constraints and the number of interface equality/inequality constraints.
+  size_t num_mapped_ineq_con
+    = probDescDB.get_sizet("responses.num_nonlinear_inequality_constraints"),
+    num_mapped_eq_con
+    = probDescDB.get_sizet("responses.num_nonlinear_equality_constraints");
+  numSubIterMappedIneqCon = num_mapped_ineq_con - numOptInterfIneqCon;
+  numSubIterMappedEqCon   = num_mapped_eq_con   - numOptInterfEqCon;
+
+  // For auto-generated identity map, we don't support an optional
+  // interface and require that the total number of NestedModel
+  // responses (pri+sec) equal the number of sub-iterator results
+  // functions.
+  //
+  // Rationale: Too complex to get right and communicate to
+  // user. Secondary responses from an optional interface augment any
+  // mapped secondary responses. Nested model primary responses come
+  // from an overlay of optional interface and mapped responses, with
+  // no restrictions on which is larger or smaller.
+  size_t num_mapped_total = currentResponse.num_functions(),
+    num_mapped_sec = num_mapped_ineq_con + num_mapped_eq_con,
+    num_mapped_pri = num_mapped_total - num_mapped_sec;
+  numSubIterFns = subIterator.response_results().num_functions();
+
+  bool identity_resp_map = probDescDB.get_bool("model.nested.identity_resp_map");
   const RealVector& primary_resp_coeffs
     = probDescDB.get_rv("model.nested.primary_response_mapping");
   const RealVector& secondary_resp_coeffs
     = probDescDB.get_rv("model.nested.secondary_response_mapping");
 
-  bool identity_resp_map = probDescDB.get_bool("model.nested.identity_resp_map");
+  if (identity_resp_map) {
+    bool found_error = false;
+    if (!optInterfacePointer.empty()) {
+      Cerr << "\nError: identity_response_mapping not supported in conjunction with optional_interface_pointer; use explicit primary/secondary_response_mapping instead.\n";
+      found_error = true;
+    }
+    if (!primary_resp_coeffs.empty() || !secondary_resp_coeffs.empty()) {
+      Cerr << "\nError: Neither primary_response_mapping nor secondary_response_mapping may be specified in conjunction with identity_response_mapping.\n";
+      found_error = true;
+    }
+    if (num_mapped_total != numSubIterFns) {
+      Cerr << "\nError: For identity_response_mapping, nested model response (primary + secondary functions) must be same size as sub-method final results. Specified nested model response has " << num_mapped_total << " functions, while there are " << numSubIterFns << " sub-method results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
+      found_error = true;
+    }
+    if (found_error)
+      abort_handler(-1);
 
-  if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
+    if (outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Info: NestedModel using identity response mapping." << std::endl;
+    primaryRespCoeffs.init_identity(num_mapped_pri, numSubIterFns);
+    secondaryRespCoeffs.init_identity(num_mapped_sec, numSubIterFns,
+				      num_mapped_pri);
+
+    // BMA TODO: When using identity map, propagate labels when not
+    // present (there's no way to detect that the user didn't give
+    // them as defaults get generated at parse time)
+  }
+  else if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
     Cerr << "\nError: no mappings provided for sub-iterator functions in "
 	 << "NestedModel initialization." << std::endl;
     abort_handler(-1);
@@ -684,15 +740,25 @@ void NestedModel::update_sub_iterator()
   // (rows are open ended since the number of subModel primary fns may
   // be different from the total number of primary fns and subModel's
   // constraints are a subset of the total constraints).
-  numSubIterFns = subIterator.response_results().num_functions();
   if (!primary_resp_coeffs.empty()) {
     // this error would also be caught within copy_data(), but by checking here,
     // we can provide a more helpful error message.
     if (primary_resp_coeffs.length() % numSubIterFns) {
       Cerr << "\nError: number of entries in primary_response_mapping ("
 	   << primary_resp_coeffs.length() << ") not evenly divisible"
-	   << "\n       by number of sub-iterator response functions ("
+	   << "\n       by number of sub-iterator final results functions ("
 	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
+
+      Cerr << "\nInfo: The primary_response_mapping must have between 1 and "
+	   << num_mapped_pri
+	   << " (number of nested model primary response functions) row(s).\n"
+	   << "It must have " << numSubIterFns
+           << " columns corresponding to the sub-method final results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
       abort_handler(-1);
     }
     copy_data(primary_resp_coeffs, primaryRespCoeffs.get(), 0,
@@ -704,25 +770,24 @@ void NestedModel::update_sub_iterator()
     if (secondary_resp_coeffs.length() % numSubIterFns) {
       Cerr << "\nError: number of entries in secondary_response_mapping ("
 	   << secondary_resp_coeffs.length() << ") not evenly divisible"
-	   << "\n       by number of sub-iterator response functions ("
+	   << "\n       by number of sub-iterator final results functions ("
 	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
-      Cerr << "\nSub-iterator returns these responses:\n"
-	   << subIterator.response_results().function_labels() << std::endl;
+
+      Cerr << "\nInfo: The secondary_response_mapping must have "
+	   << numSubIterMappedIneqCon + numSubIterMappedEqCon 
+	   << " (number of nested model secondary response functions, less any optional interface secondary response functions) row(s).\n"
+	   << "It must have " << numSubIterFns
+           << " columns corresponding to the sub-method final results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
       abort_handler(-1);
     }
     copy_data(secondary_resp_coeffs, secondaryRespCoeffs.get(), 0,
 	      (int)numSubIterFns);
   }
-
-  // Back out the number of eq/ineq constraints within secondaryRespCoeffs
-  // (subIterator constraints) from the total number of equality/inequality
-  // constraints and the number of interface equality/inequality constraints.
-  size_t num_mapped_ineq_con
-    = probDescDB.get_sizet("responses.num_nonlinear_inequality_constraints"),
-    num_mapped_eq_con
-    = probDescDB.get_sizet("responses.num_nonlinear_equality_constraints");
-  numSubIterMappedIneqCon = num_mapped_ineq_con - numOptInterfIneqCon;
-  numSubIterMappedEqCon   = num_mapped_eq_con   - numOptInterfEqCon;
 }
 
 
