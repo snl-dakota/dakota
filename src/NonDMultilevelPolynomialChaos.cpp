@@ -192,7 +192,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   NonDPolynomialChaos(/*method_name*/MULTIFIDELITY_POLYNOMIAL_CHAOS, model,
 		      exp_coeffs_approach, dim_pref, u_space_type,
 		      piecewise_basis, use_derivs), 
-  sequenceIndex(0), kappaEstimatorRate(2.), gammaEstimatorScale(1.)
+  mlmfAllocControl(DEFAULT_MLMF_CONTROL), sequenceIndex(0),
+  kappaEstimatorRate(2.), gammaEstimatorScale(1.)
 {
   assign_hierarchical_response_mode();
 
@@ -269,7 +270,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, piecewise_basis, use_derivs, colloc_ratio,
 		      seed, cv_flag), 
-  mlmfAllocControl(ESTIMATOR_VARIANCE), expOrderSeqSpec(exp_order_seq),
+  mlmfAllocControl(DEFAULT_MLMF_CONTROL), expOrderSeqSpec(exp_order_seq),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), pilotSamples(pilot)
 {
@@ -511,15 +512,19 @@ void NonDMultilevelPolynomialChaos::core_run()
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
-    // inherited methods from from NonDExpansion:
-    if (mlmfAllocControl == GREEDY_REFINEMENT) greedy_multifidelity_expansion();
-    else                                    multifidelity_expansion(refineType);
+    // algorithms inherited from NonDExpansion:
+    switch (mlmfAllocControl) {
+    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
+    default:                   multifidelity_expansion(refineType); break;
+    }
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
-    //if (mlmfAllocControl == GREEDY_REFINEMENT)
-    //  greedy_multifidelity_expansion();
-    //else
-    multilevel_regression(); // specific to derived class
+    switch (mlmfAllocControl) {
+    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
+    case DEFAULT_MLMF_CONTROL: multifidelity_expansion(refineType); break;
+    // specific to this derived class: ESTIMATOR_VARIANCE, RIP_SAMPLING
+    default:                   multilevel_regression();             break;
+    }
     break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
@@ -931,7 +936,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 
 void NonDMultilevelPolynomialChaos::metric_roll_up()
 {
-  // multilev/multifid on inner loop --> roll up multilevel stats
+  // greedy_multifidelity_expansion() assesses level candidates using combined
+  // stats --> roll up approx for combined stats
   if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
     uSpaceModel.combine_approximation();
 }
@@ -939,55 +945,17 @@ void NonDMultilevelPolynomialChaos::metric_roll_up()
 
 void NonDMultilevelPolynomialChaos::compute_covariance()
 {
-  bool greedy_mf = (mlmfAllocControl == GREEDY_REFINEMENT && refineControl);
-  if (!greedy_mf) // multilev/multifid on outer loop --> return single lev covar
-    { NonDExpansion::compute_covariance(); return; }
-
-  // multilev/multifid on inner loop --> roll up of multilevel covariance
-  size_t i, j;
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  switch (covarianceControl) {
-  case DIAGONAL_COVARIANCE:
-    for (size_t i=0; i<numFunctions; ++i) {
-      PecosApproximation* poly_approx_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep_i->expansion_coefficient_flag())
-	respVariance[i] = (all_vars) ?
-	  poly_approx_rep_i->combined_covariance(initialPtU, poly_approx_rep_i):
-	  poly_approx_rep_i->combined_covariance(poly_approx_rep_i);
-      else
-	{ warn_flag = true; respVariance[i] = 0.; }
-    }
-    break;
-  case FULL_COVARIANCE:
-    for (i=0; i<numFunctions; ++i) {
-      PecosApproximation* poly_approx_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep_i->expansion_coefficient_flag())
-	for (j=0; j<=i; ++j) {
-	  PecosApproximation* poly_approx_rep_j
-	    = (PecosApproximation*)poly_approxs[j].approx_rep();
-	  if (poly_approx_rep_j->expansion_coefficient_flag())
-	    respCovariance(i,j) = (all_vars) ? poly_approx_rep_i->
-	      combined_covariance(initialPtU, poly_approx_rep_j) :
-	      poly_approx_rep_i->combined_covariance(poly_approx_rep_j);
-	  else
-	    { warn_flag = true; respCovariance(i,j) = 0.; }
-	}
-      else {
-	warn_flag = true;
-	for (j=0; j<=i; ++j)
-	  respCovariance(i,j) = 0.;
-      }
-    }
-    break;
-  }
-  if (warn_flag)
-    Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
-	 << "compute_diagonal_variance().\n         Zeroing affected variance "
-	 << "terms." << std::endl;
+  // greedy_multifidelity_expansion() (multifidelity_expansion() on inner loop):
+  // > roll up effect of level candidate on combined multilevel covariance,
+  //   avoiding combined_to_active() promotion until end
+  // > limited stats support for combinedExpCoeffs: only compute_covariance()
+  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
+    compute_combined_covariance();
+  // multifidelity_expansion() is outer loop:
+  // > use of refine_expansion(): refine individually based on level covariance
+  // > after combine_approx(), combined_to_active() enables use of active covar
+  else
+    NonDExpansion::compute_covariance();
 }
 
 

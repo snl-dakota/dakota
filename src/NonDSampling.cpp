@@ -997,7 +997,7 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
   size_t i, j, num_obs = samples.size(), num_samp;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  if (extreme_fns.empty()) extreme_fns.resize(numFunctions);
+  extreme_fns.resize(numFunctions);
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
     num_samp = 0;
@@ -1114,7 +1114,7 @@ compute_moments(const RealVectorArray& fn_samples, SizetArray& sample_counts,
   Real sum, cm2, cm3, cm4, sample;
 
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
-  if (sample_counts.size() != num_qoi) sample_counts.resize(num_qoi);
+  sample_counts.resize(num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
     size_t& num_samp = sample_counts[i];

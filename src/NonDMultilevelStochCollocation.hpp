@@ -63,6 +63,10 @@ protected:
   void increment_specification_sequence();
   void metric_roll_up();
   void compute_covariance();
+  Real compute_covariance_metric(bool restore_ref, bool print_metric,
+				 bool relative_metric);
+  Real compute_final_statistics_metric(bool restore_ref, bool print_metric,
+				       bool relative_metric);
 
 private:
 
@@ -70,11 +74,14 @@ private:
   //- Heading: Data
   //
 
+  /// type of sample allocation scheme for discretization levels / model forms
+  /// within multilevel / multifidelity methods
+  short mlmfAllocControl;
+
   /// user request of quadrature order
   UShortArray quadOrderSeqSpec;
   /// user request of sparse grid level
   UShortArray ssgLevelSeqSpec;
-
   /// sequence index for quadOrderSeqSpec and ssgLevelSeqSpec
   size_t sequenceIndex;
 };

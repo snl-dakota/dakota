@@ -7149,6 +7149,8 @@ static Method_mp_utype
 	MP2s(reliabilitySearchType,EGRA_U),
 	MP2s(reliabilitySearchType,EGRA_X),
 	MP2s(reliabilitySearchType,NO_APPROX),
+	MP2s(reliabilitySearchType,QMEA_U),
+	MP2s(reliabilitySearchType,QMEA_X),
 	MP2s(reliabilitySearchType,TANA_U),
 	MP2s(reliabilitySearchType,TANA_X),
 	MP2s(sampleType,SUBMETHOD_LHS),

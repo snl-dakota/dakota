@@ -2283,6 +2283,7 @@
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
+
 	<keyword  id="stoch_collocation" name="stoch_collocation" code="{N_mdm(utype,methodName_STOCH_COLLOCATION)}" label="stoch_collocation"  minOccurs="1" group="Uncertainty Quantification" >
 	  <alias name="nond_stoch_collocation"/>
 	  &sc_refinement;
@@ -2303,6 +2304,7 @@
 
 	<keyword  id="multifidelity_stoch_collocation" name="multifidelity_stoch_collocation" code="{N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}" label="multifidelity_stoch_collocation"  minOccurs="1" group="Uncertainty Quantification" >
 	  &sc_refinement;
+	  &mf_alloc_control;
 	  &discrep_emulation;
 	  <oneOf label="Interpolation Grid Type">
 	    &expansion_quadrature_sequence;
@@ -3045,6 +3047,10 @@
               <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point"   >
               </keyword>
               <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point"   >
+              </keyword>
+              <keyword  id="x_multi_point" name="x_multi_point" code="{N_mdm(utype,reliabilitySearchType_QMEA_X)}" label="x_multi_point"   >
+              </keyword>
+              <keyword  id="u_multi_point" name="u_multi_point" code="{N_mdm(utype,reliabilitySearchType_QMEA_U)}" label="u_multi_point"   >
               </keyword>
               <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,reliabilitySearchType_NO_APPROX)}" label="no_approx"   />
             </oneOf>

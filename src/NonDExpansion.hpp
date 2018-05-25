@@ -102,14 +102,17 @@ protected:
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
-  /// calculate the response covariance (diagonal or full matrix)
+  /// calculate the response covariance (diagonal or full matrix) of
+  /// the currently active expansion
   virtual void compute_covariance();
 
   /// compute 2-norm of change in response covariance
-  virtual Real compute_covariance_metric(bool restore_ref, bool print_metric);
+  virtual Real compute_covariance_metric(bool restore_ref, bool print_metric,
+					 bool relative_metric);
   /// compute 2-norm of change in final statistics
   virtual Real compute_final_statistics_metric(bool restore_ref,
-					       bool print_metric);
+					       bool print_metric,
+					       bool relative_metric);
   /// perform any required expansion roll-ups prior to metric computation
   virtual void metric_roll_up();
 
@@ -199,7 +202,7 @@ protected:
   void pre_refinement();
   /// advance the refinement strategy one step
   size_t core_refinement(Real& metric, bool revert = false,
-			 bool print_metric = true);
+			 bool print_metric = true, bool relative_metric = true);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric);
 
@@ -215,6 +218,9 @@ protected:
   /// helper function to manage different pop increment cases
   void pop_increment();
 
+  /// calculate the response covariance of the combined expansion
+  void compute_combined_covariance();
+
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);
 
@@ -223,8 +229,14 @@ protected:
   /// (reduced set of core results used for levels/fidelities, etc.)
   void annotated_results(short results_state = FINAL_RESULTS);
 
-  /// print respCovariance
+  /// print resp{Variance,Covariance}
   void print_covariance(std::ostream& s);
+  /// print resp_var (response variance vector) using optional pre-pend
+  void print_variance(std::ostream& s, const RealVector& resp_var,
+		      const String& prepend = "");
+  /// print resp_covar (response covariance matrix) using optional pre-pend
+  void print_covariance(std::ostream& s, const RealSymMatrix& resp_covar,
+			const String& prepend = "");
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -320,7 +332,8 @@ private:
   void reduce_decay_rate_sets(RealVector& min_decay);
 
   /// perform an adaptive refinement increment using generalized sparse grids
-  size_t increment_sets(Real& delta_star, bool revert, bool print_metric);
+  size_t increment_sets(Real& delta_star, bool revert, bool print_metric,
+			bool relative_metric);
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 

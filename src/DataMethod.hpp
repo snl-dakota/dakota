@@ -188,8 +188,8 @@ enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 // NonDReliability
 // ---------------
 // define special values for mppSearchType
-enum { MV=0, AMV_X, AMV_U, AMV_PLUS_X, AMV_PLUS_U, TANA_X, TANA_U, NO_APPROX,
-       EGRA_X, EGRA_U };
+enum { MV=0, AMV_X, AMV_U, AMV_PLUS_X, AMV_PLUS_U, TANA_X, TANA_U,
+       QMEA_X, QMEA_U, NO_APPROX, EGRA_X, EGRA_U };
 // define special values for secondOrderIntType
 enum { BREITUNG, HOHENRACK, HONG };
 

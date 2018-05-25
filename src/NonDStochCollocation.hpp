@@ -76,8 +76,10 @@ protected:
   //void compute_expansion();
   //void update_expansion();
 
-  Real compute_covariance_metric(bool restore_ref, bool print_metric);
-  Real compute_final_statistics_metric(bool restore_ref, bool print_metric);
+  Real compute_covariance_metric(bool restore_ref, bool print_metric,
+				 bool relative_metric);
+  Real compute_final_statistics_metric(bool restore_ref, bool print_metric,
+				       bool relative_metric);
 
   //
   //- Heading: Member functions
