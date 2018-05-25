@@ -373,48 +373,80 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
 			  bool relative_metric)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
+
     size_t i, j;
-    RealSymMatrix delta_resp_covar(numFunctions, false);
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     bool warn_flag = false,
       all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      //compute_ref = (relative_metric || !restore_ref);
     for (i=0; i<numFunctions; ++i) {
       PecosApproximation* pa_rep_i
 	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (pa_rep_i->expansion_coefficient_flag())
-	for (j=0; j<=i; ++j) {
-	  PecosApproximation* pa_rep_j
-	    = (PecosApproximation*)poly_approxs[j].approx_rep();
-	  if (pa_rep_j->expansion_coefficient_flag())
-	    delta_resp_covar(i,j) = (all_vars) ?
-	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
-	      pa_rep_i->delta_covariance(pa_rep_j);
-	  else
-	    { warn_flag = true; delta_resp_covar(i,j) = 0.; }
-	}
-      else {
-	warn_flag = true;
-	for (j=0; j<=i; ++j)
-	  delta_resp_covar(i,j) = 0.;
-      }
+      if (!pa_rep_i->expansion_coefficient_flag())
+	{ warn_flag = true; break; }
     }
     if (warn_flag)
-      Cerr << "Warning: expansion coefficients unavailable in "
-	   << "NonDStochCollocation::compute_covariance_metric().\n         "
+      Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
+	   << "Collocation::compute_covariance_metric().\n         "
 	   << "Zeroing affected delta_covariance terms." << std::endl;
 
-    // Metric scale is determined from reference covariance.  While defining
-    // the scale from an updated covariance would eliminate problems with zero
-    // covariance for adaptations from level 0, different refinement candidates
-    // would score equally at 1 (induced 100% of change in updated covariance)
-    // in this initial set of candidates.  Therefore, use reference covariance
-    // as the scale and trap covariance underflows.
-    Real scale, delta_norm = delta_resp_covar.normFrobenius();
-    if (relative_metric) // reference covariance, bounded from zero
-      scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
-    // reference covariance gets restored in NonDExpansion::increment_sets()
-    if (!restore_ref || print_metric) respCovariance += delta_resp_covar;
-    if (print_metric) print_covariance(Cout);
+    Real scale, delta_norm;
+    switch (covarianceControl) {
+    case DIAGONAL_COVARIANCE: {
+      RealVector delta_resp_var(numFunctions, false);
+      for (i=0; i<numFunctions; ++i) {
+	PecosApproximation* pa_rep_i
+	  = (PecosApproximation*)poly_approxs[i].approx_rep();
+	if (pa_rep_i->expansion_coefficient_flag())
+	  delta_resp_var[i] = (all_vars) ?
+	    pa_rep_i->delta_covariance(initialPtU, pa_rep_i) :
+	    pa_rep_i->delta_covariance(pa_rep_i);
+	else delta_resp_var[i] = 0.;
+      }
+
+      delta_norm = delta_resp_var.normFrobenius();
+      if (relative_metric) // reference covariance, bounded from zero
+	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
+      // reference covariance gets restored in NonDExpansion::increment_sets()
+      if (!restore_ref) respVariance += delta_resp_var;
+      if (print_metric) print_variance(Cout, delta_resp_var, "Change in");
+      break;
+    }
+    case FULL_COVARIANCE: {
+      RealSymMatrix delta_resp_covar(numFunctions, false);
+      for (i=0; i<numFunctions; ++i) {
+	PecosApproximation* pa_rep_i
+	  = (PecosApproximation*)poly_approxs[i].approx_rep();
+	if (pa_rep_i->expansion_coefficient_flag())
+	  for (j=0; j<=i; ++j) {
+	    PecosApproximation* pa_rep_j
+	      = (PecosApproximation*)poly_approxs[j].approx_rep();
+	    if (pa_rep_j->expansion_coefficient_flag())
+	      delta_resp_covar(i,j) = (all_vars) ?
+		pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
+		pa_rep_i->delta_covariance(pa_rep_j);
+	    else delta_resp_covar(i,j) = 0.;
+	  }
+	else
+	  for (j=0; j<=i; ++j)
+	    delta_resp_covar(i,j) = 0.;
+      }
+
+      // Metric scale is determined from reference covariance.  While defining
+      // the scale from an updated covariance would eliminate problems with
+      // zero covariance for adaptations from level 0, different refinement
+      // candidates would score equally at 1 (induced 100% of change in
+      // updated covariance) in this initial set of candidates.  Therefore,
+      // use reference covariance as the scale and trap covariance underflows.
+      delta_norm = delta_resp_covar.normFrobenius();
+      if (relative_metric) // reference covariance, bounded from zero
+	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
+      // reference covariance gets restored in NonDExpansion::increment_sets()
+      if (!restore_ref) respCovariance += delta_resp_covar;
+      if (print_metric) print_covariance(Cout, delta_resp_covar, "Change in");
+      break;
+    }
+    }
 
     return (relative_metric) ? delta_norm / scale : delta_norm;
   }

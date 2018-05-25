@@ -229,8 +229,14 @@ protected:
   /// (reduced set of core results used for levels/fidelities, etc.)
   void annotated_results(short results_state = FINAL_RESULTS);
 
-  /// print respCovariance
+  /// print resp{Variance,Covariance}
   void print_covariance(std::ostream& s);
+  /// print resp_var (response variance vector) using optional pre-pend
+  void print_variance(std::ostream& s, const RealVector& resp_var,
+		      const String& prepend = "");
+  /// print resp_covar (response covariance matrix) using optional pre-pend
+  void print_covariance(std::ostream& s, const RealSymMatrix& resp_covar,
+			const String& prepend = "");
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();

@@ -2774,18 +2774,32 @@ void NonDExpansion::print_moments(std::ostream& s)
 void NonDExpansion::print_covariance(std::ostream& s)
 {
   switch (covarianceControl) {
-  case DIAGONAL_COVARIANCE:
-    if (!respVariance.empty()) {
-      s << "\nVariance vector for response functions:\n";
-      write_col_vector_trans(s, 0, respVariance);
-    }
-    break;
-  case FULL_COVARIANCE:
-    if (!respCovariance.empty()) {
-      s << "\nCovariance matrix for response functions:\n";
-      write_data(s, respCovariance);
-    }
-    break;
+  case DIAGONAL_COVARIANCE: print_variance(s,   respVariance);   break;
+  case FULL_COVARIANCE:     print_covariance(s, respCovariance); break;
+  }
+}
+
+
+void NonDExpansion::
+print_variance(std::ostream& s, const RealVector& resp_var,
+	       const String& prepend)
+{
+  if (!resp_var.empty()) {
+    if (prepend.empty())   s << "\nVariance vector for response functions:\n";
+    else s << '\n' << prepend << " variance vector for response functions:\n";
+    write_col_vector_trans(s, 0, resp_var);
+  }
+}
+
+
+void NonDExpansion::
+print_covariance(std::ostream& s, const RealSymMatrix& resp_covar,
+		 const String& prepend)
+{
+  if (!resp_covar.empty()) {
+    if (prepend.empty())   s << "\nCovariance matrix for response functions:\n";
+    else s << '\n' << prepend << " covariance matrix for response functions:\n";
+    write_data(s, resp_covar);
   }
 }
 
