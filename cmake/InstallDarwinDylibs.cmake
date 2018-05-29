@@ -38,12 +38,20 @@ message( "CMAKE_SHARED_LIBRARY_SUFFIX: ${CMAKE_SHARED_LIBRARY_SUFFIX}" )
 get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
 
 # Get all dylib dependencies excluding system libraries and Dakota project 
-# libraries as a semicolon-separated list
+# libraries as a semicolon-separated list. This a terrible solution that requires
+# this file command to be updated every time a new installation location that contains
+# bianries is added.
 set(dakota_darwin_dylibs "")
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
                        "${CMAKE_INSTALL_PREFIX}/lib/*"
-                       "${CMAKE_INSTALL_PREFIX}/test/*")
-           
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/test/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/1-var-bnds-only/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/2-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/3-degen-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/4-nonlinear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/5-multi-start/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/script_interfaces/generic/*")
+
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
   if(NOT IS_DIRECTORY "${loader}" AND NOT loader MATCHES "\\.a$")
@@ -163,7 +171,14 @@ endforeach()
 # ${CMAKE_INSTALL_PREFIX}/lib to refer to libs by their new install names.
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
                        "${CMAKE_INSTALL_PREFIX}/lib/*"
-                       "${CMAKE_INSTALL_PREFIX}/test/*")
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/test/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/1-var-bnds-only/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/2-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/3-degen-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/4-nonlinear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/5-multi-start/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/script_interfaces/generic/*")
+
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
   if(NOT IS_DIRECTORY "${loader}" AND NOT loader MATCHES "\\.a$")

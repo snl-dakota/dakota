@@ -16,6 +16,7 @@ method,
 #	  proposal_covariance					            #s1,#s4
 #	    diagonal values 1.0e6 1.0e-1          #s1,#s4
 #	  logit_transform     # default is off		#s1,#s4
+#	  posterior_stats kl_divergence	   		#s1,#s4
 #	output debug
 	#probability_levels 0.05 0.1
 	# 		   0.05 0.1

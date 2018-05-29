@@ -351,19 +351,27 @@ It is often the case that the calibrated model provides an insufficient fit to
 the experimental data. This is generally attributed to model form or 
 structural error, and can be corrected to some extent with the use of a model 
 discrepancy term. The seminal work in model discrepancy techniques, Kennedy and 
-O'Hagan~\cite{Kenn01} introduces an additive formulation 
+O'Hagan~\cite{Kenn01}, introduces an additive formulation 
 \begin{equation}
 d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \delta_i(x) + \epsilon_i,
+\label{eq:koh_discrep}
 \end{equation} 
-where $\delta_i(x)$ represents the model discrepancy. It should be noted and
-stressed that $\delta_i$ depends \textit{only} on the configuration variables.
-Future work includes expanding the model discrepancy capability in Dakota to
-account for field data, so that the discrepancy may also be a function of
-independent variables such as time or spacial location. Currently, one
+where $\delta_i(x)$ represents the model discrepancy. For scalar responses, 
+$\delta_i$ depends \textit{only} on the configuration variables, and one
 discrepancy model is calculated for \textit{each} observable $d_i$, $i = 1, 
-\ldots, n$, yielding $\delta_1, \ldots, \delta_n$.
+\ldots, n$, yielding $\delta_1, \ldots, \delta_n$. For field responses in which 
+the observational data and corresponding model responses are also functions of 
+independent field coordinates such as time or space, Eq.~\ref{eq:koh_discrep} 
+can be rewritten as
+\begin{equation}
+d(t,x) = q(t, \boldsymbol{\theta}, x) + \delta(t,x) + \epsilon.
+\end{equation}
+In this case, a single, global discrepancy model $\delta$ is calculated over 
+the entire field. The current model discrepancy implementation in Dakota has 
+not been tested for cases in which scalar and field responses are mixed.
 
-The Dakota implementation of model discrepancy also includes the calculation
+The Dakota implementation of model discrepancy for scalar responses also 
+includes the calculation
 of prediction intervals for each prediction configuration $x_{k,new}$. These
 intervals capture the uncertainty in the discrepancy approximation as well as
 the experimental uncertainty in the response functions. It is assumed that the
@@ -386,6 +394,15 @@ When a Gaussian process discrepancy function is used, the variance is calculated
 according to Eq.~\ref{Eq:KrigVar}. For polynomial discrepancy functions, the
 variance is given by Eq.~\ref{eq:poly_var}. 
 
+It should be noted that a Gaussian process discrepancy function is used when 
+the response is a field instead of a scalar; the option to use a polynomial
+discrepancy function has not yet been activated. The variance of the
+discrepancy function $\Sigma_{\delta, i}$ is calculated according to 
+Eq.~\ref{Eq:KrigVar}. Future work includes extending this capability to 
+include polynomial discrepancy formulations for field responses, as well as 
+computation of prediction intervals which include experimental variance 
+information.
+
 %Introducing a discrepancy term gives rise to practical, as well as 
 %philosphical, issues: What model form is most appropriate for $\delta_i$? How
 %should $\delta_i$ be estimated? How does including $\delta_i$ change the 
@@ -395,7 +412,7 @@ variance is given by Eq.~\ref{eq:poly_var}.
 %%add comments regarding interpolation vs extrapolation?
 %kam
 
-\subsection{Example}
+\subsection{Scalar Responses Example}
 
 For the purposes of illustrating the model discrepancy capability implemented
 in Dakota, consider the following example. Let the ``truth" be given by
@@ -480,7 +497,97 @@ model output. In each case, the truth falls within the prediction intervals.
 \vspace{-0.5cm}
 \caption{The graphs of $y(t,x)$ for $x = 7.5, 12.5, 17.5$ are compared to the corrected model and its prediction intervals. The uncorrected model is also shown to illustrate its inadequacy.}
 \end{figure}
+
+\subsection{Field Responses Example}
+
+To illustrate the model discrepancy capability for field responses, consider
+the stress-strain experimental data shown in Figure~\ref{fig:mat_exp}. The 
+configuration variable in this example represents temperature. Unlike the
+example discussed in the previous section, the domain of the independent 
+variable (strain) differs from temperature to temperature, as do the shapes
+of the stress curves. This presents a challenge for the simulation model as 
+well as the discrepancy model.
  
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=.6\textwidth]{images/moddiscrep_ExpAllData.png}
+\end{center}
+\vspace{-0.5cm}
+\caption{Graphs of the experimental data $d(t,x)$ for configurations 
+(temperatures) ranging from $x = 296.15K$ to $x = 1073.15K$.}
+\label{fig:mat_exp}
+\end{figure}
+
+Let the ``model" be given by
+\begin{equation}
+m(t, \boldsymbol{\theta}, x) = \theta_{1} \left[ \frac{\log(100t + 1)}{x^0.5}
+  - \frac{1}{x^{0.2}\left(100t - 1.05\left(\frac{x}{100} - 6.65\right)^{2}
+\theta_{2}\right)^{2}} \right],
+\end{equation}
+where $t$ is the independent variable (strain) and $x$ is the configuration 
+parameter (temperature). Note that there are two parameters to be calibrated,
+$\boldsymbol{\theta} = (\theta_{1}, \theta_{2})$. 
+
+The average and standard deviation of the experimental data at temperatures 
+$x = 373.15$, $x = 673.15$, and $x = 973.15$ are calculated and used as
+calibration data. The four remaining temperatures
+will be used to evaluate the performance of the corrected model. The 
+calibration data and the resulting calibrated model are shown in 
+Figure~\ref{fig:mat_uncorr}. With experimental data, the observations may not 
+be taken at the same independent field coordinates, so the keyword 
+\texttt{interpolate} can be used in the \texttt{responses} block of the Dakota 
+input file. The uncorrected model does not adequately capture the experimental.
+
+\begin{figure}[b!]
+\begin{center}
+\includegraphics[width=.6\textwidth]{images/moddiscrep_ExpUncorr.png}
+\end{center}
+\vspace{-0.5cm}
+\caption{Graphs of the calibration data $d(t,x)$ and uncorrected calibrated
+  model $m(t, \boldsymbol{\theta}, x)$ for configurations (temperatures) $x = 
+373.15K$, $x = 673.15K$, and $x = 973.15K$.}
+\label{fig:mat_uncorr}
+\end{figure}
+
+Following the Bayesian update, Dakota calculates the build points of the model
+discrepancy,
+\begin{equation}
+  \delta(t_{i}, x_{j}) = d(t_{i}, x_{j}) - m(t_{i}, \boldsymbol{\theta}, x_j),
+\end{equation}
+for each experimental data point. Dakota then approximates the global 
+discrepancy function $\delta(t, x)$ and computes the corrected model responses 
+$m(t_{i}, \boldsymbol{\theta}, x_{j, new}) + \delta(t_{i}, x_{j, new})$ and 
+variance of the discrepancy model $\sigma_{\delta, x_{j, new}}$ for each 
+prediction configuration. The corrected model for the prediction configurations
+is shown in Figure~\ref{fig:mat_corr}. The corrected model is able to 
+capture the shape of the stress-strain curve quite well in all four cases; 
+however, the point of failure is difficult to capture for the extrapolated
+temperatures. The difference in shape and point of failure between temperatures
+may also explain the large variance in the discrepancy model.
+
+\begin{figure}[htbp]
+  \begin{subfigmatrix}{2}
+\subfigure[Corrected model for interpolation configuration $x = 473.15K$]{\includegraphics[width=0.49\linewidth]{images/moddiscrep_PredT4.png}}
+\subfigure[Corrected model for interpolation configuration $x = 873.15K$]{\includegraphics[width=0.49\linewidth]{images/moddiscrep_PredT8.png}}
+  \end{subfigmatrix}
+  \begin{subfigmatrix}{2}
+  \subfigure[Corrected model for extrapolation configuration $x = 273.15K$]{\includegraphics[width=0.49\textwidth]{images/moddiscrep_PredT2.png}}
+  \subfigure[Corrected model for extrapolation configuration $x = 1073.15K$]{\includegraphics[width=0.49\textwidth]{images/moddiscrep_PredT10.png}}
+  \end{subfigmatrix}
+  \caption{Illustration of corrected model for four prediction configurations.
+  Two prediction configurations are interpolations of the calibration
+configurations, and two prediction configurations are extrapolations of the
+calibration configurations. The corrected model is able to capture the shape
+of the interpolated configurations quite well. The corrected model for the 
+extrapolated configurations also performs quite well, but it is unable to
+capture the point of failure. In all cases, the experimental data falls within
+the bounds of the prediction intervals. The ``prediction intervals" have a 
+width of $0.5\sigma_{\delta}$ and do not incorporate experimental variance.}
+\label{fig:mat_corr}
+\end{figure}
+
+
+
 \section{Experimental Design}
 \label{uq:bayes_experimental_design}
 

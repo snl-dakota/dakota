@@ -35,7 +35,7 @@ optimizer.
     \end{bigbox}
   \end{small}
   \caption{Dakota input file for the ``container'' test problem --
-see \texttt{Dakota/examples/users/container\_opt\_npsol.in} }
+see \protect\path{dakota/share/dakota/examples/users/container_opt_npsol.in} }
   \label{output:incont}
 \end{figure}
 
@@ -52,7 +52,7 @@ Start time: Fri May  2 15:38:11 2014
 
 ----------------------------------------------------------------
 Begin DAKOTA input file
-/home/briadam/dakota/build/examples/users/container_opt_npsol.in
+/home/user/dakota/build/examples/users/container_opt_npsol.in
 ----------------------------------------------------------------
 # Dakota Input File: container_opt_npsol.in
 environment
@@ -63,7 +63,7 @@ environment
 End DAKOTA input file
 ---------------------
 
-Using Dakota input file '/home/briadam/dakota/build/examples/users/container_opt_npsol.in'
+Using Dakota input file '/home/user/dakota/build/examples/users/container_opt_npsol.in'
 Writing new restart file dakota.rst
 
 >>>>> Executing environment.
@@ -243,8 +243,8 @@ optimizer finds a design that is both feasible and optimal for this
 example. Between the design variables and response values, the content
 of the system call to the simulator is displayed as
 ``\texttt{(container container.in.1 container.out.1)}'', with
-\texttt{container} being the name of the simulator and
-\texttt{container.in.1} and \texttt{container.out.1} being the names
+\path{container} being the name of the simulator and
+\path{container.in.1} and \path{container.out.1} being the names
 of the parameters and results files, respectively.
 
 Just preceding the output of the objective and constraint function
@@ -305,7 +305,7 @@ analysis and/or graphics plotting packages (e.g., MATLAB, TECplot,
 Excel, S-plus, Minitab).
 
 The default file name for the top-level tabular output data is
-``\texttt{dakota\_tabular.dat},'' though \texttt{tabular\_data\_file}
+``\path{dakota_tabular.dat},'' though \texttt{tabular\_data\_file}
 allows specification of an alternate name.  Example tabular output
 from the ``container'' optimization problem is shown in
 Figure~\ref{output:tabcont}. This annotated tabular format (see
@@ -508,9 +508,9 @@ When using numerical integration schemes with structured rules, Dakota
 can also output the integration points and corresponding weights to a
 tabular file.  This output is generated when \texttt{method output} is
 \texttt{verbose} or higher.  Weights and points are printed to a file
-\texttt{dakota\_quadrature\_tabular.dat} (tensor product quadrature),
-\texttt{dakota\_sparse\_tabular.dat} (sparse grids), or
-\texttt{dakota\_cubature\_tabular.dat} (cubature methods), with one
+\path{dakota_quadrature_tabular.dat} (tensor product quadrature),
+\path{dakota_sparse_tabular.dat} (sparse grids), or
+\path{dakota_cubature_tabular.dat} (cubature methods), with one
 line per integration point.
 
 \section{Surrogate Model Exports}

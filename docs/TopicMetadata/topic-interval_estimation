@@ -42,7 +42,7 @@ interval analysis, we recommend using either
 \c global_interval_est or \c local_interval_est
 instead of \c global_evidence or \c local_evidence, for
 reasons of simplicity. %An example of interval estimation is found in
-%the \c Dakota/examples/users/cantilever_uq_global_interval.in, 
+%the \c dakota/share/dakota/examples/users/cantilever_uq_global_interval.in, 
 %and also in Section <!-- ~\ref{uq:examples:interval} -->.
 
 %Note that we have kept separate implementations of interval analysis and
@@ -89,7 +89,7 @@ beam weight is approximately [1,100].
     \end{small}
   \end{bigbox}
 \caption{Dakota input file for performing UQ using interval analysis --
-see \c Dakota/examples/users/cantilever_uq_global_interval.in} }
+see \c dakota/share/dakota/examples/users/cantilever_uq_global_interval.in} }
 \label{uq:examples:interval_input}
 \end{figure}
 -->

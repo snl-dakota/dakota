@@ -1,0 +1,155 @@
+# Tests for Rapid Optimization Library (ROL)
+# s0: (verification) constrained textbook with known minimum f(0.5, 0.5) = 0.125
+
+method
+  rol
+    gradient_tolerance   1.0e-3				#s0
+    constraint_tolerance 1.0e-3				#s0
+    variable_tolerance   1.0e-3				#s0
+    max_iterations       10				#s0
+
+# ILLUMINATION, ROSENBROCK, HERBIE, TEXTBOOK (large), BARNES, CYLINDER HEAD, CANTILEVER, SCALABLE TEXTBOOK
+#    variable_tolerance = 1.e-4				#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30
+#    gradient_tolerance = 1.e-6       #s16,
+
+# TEXTBOOK
+variables
+  continuous_design  2					#s0
+    initial_point 0.9    1.1				#s0
+    upper_bounds  5.8    2.9				#s0
+    lower_bounds  0.5   -2.9				#s0
+#  continuous_design  50				#s16
+#    initial_point 50*0.				#s16
+#    upper_bounds  50*2.				#s16
+#    lower_bounds  50*-0.5				#s16
+
+# ILLUMINATION
+#  continuous_design = 7				#s1
+#    initial_point 7*.5					#s1
+#    lower_bounds  7*0.					#s1
+#    upper_bounds  7*1.					#s1
+#    descriptors   'x1' 'x2' 'x3' 'x4' 'x5' 'x6' 'x7'	#s1
+
+# ROSENBROCK
+#  continuous_design = 2				#s2,#s3
+#    initial_point  0.8   1.2				#s2
+#    initial_point -1.5  -1.5				#s3
+#    lower_bounds  -2.0  -2.0				#s2,#s3
+#    upper_bounds   2.0   2.0				#s2,#s3
+#    descriptors   'x1'  'x2'				#s2,#s3
+
+# HERBIE
+#  continuous_design = 5				#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#    initial_point 5*-0.9				#s4,#s6,#s8,#s10,#s12,#s14
+#    initial_point 5*0.					#s5,#s7,#s9,#s11,#s13,#s15
+#    lower_bounds  5*-2.0				#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#    upper_bounds  5*2.0				#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#    descriptors   'x1'  'x2'  'x3'  'x4'  'x5'		#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+
+# BARNES
+#  continuous_design = 2        #s17,#s18
+#    initial_point 30.0 40.0    #s17
+#    initial_point 90.0 10.0    #s18
+#    lower_bounds  2*0.0        #s17,#s18
+#    upper_bounds  2*100.0      #s17,#s18
+#    descriptors   'x1'  'x2'   #s17,#s18
+
+# CYLINDER HEAD
+#  continuous_design = 2                      #s19,#s20,#s21,#s22
+#    initial_point 1.8 1.0                    #s19,#s21
+#    initial_point 1.5 0.1                    #s20,#s22
+#    lower_bounds  1.5 0.0                    #s19,#s20,#s21,#s22
+#    upper_bounds  2.164   4.0                #s19,#s20,#s21,#s22
+#    descriptors   'intake_dia' 'flatness'    #s19,#s20,#s21,#s22
+
+# CANTILEVER
+#  continuous_design = 2                              #s23,#s24,#s29,#s30
+#    initial_point 2*2.0                              #s23,#s29,#s30
+#    initial_point 2*8.0                              #s24
+#    lower_bounds  2*1.0                              #s23,#s24,#s29,#s30
+#    upper_bounds  2*10.0                             #s23,#s24,#s29,#s30
+#    descriptors   'w' 't'                            #s23,#s24,#s29,#s30
+#  continuous_state = 4                               #s23,#s24,#s29,#s30
+#    initial_state   40000.  29.E+6  500.  1000.      #s23,#s24,#s29,#s30
+#    descriptors       'R'    'E'    'X'    'Y'       #s23,#s24,#s29,#s30
+
+# SCALABLE TEXTBOOK
+#  continuous_design = 6                                  #s25,#s26,#s27,#s28
+#    initial_point 6*1.0                                  #s25,#s27
+#    initial_point 6*2.0                                  #s26,#s28
+#    descriptors   'x1'  'x2'  'x3'  'x4'  'x5'  'x6'     #s25,#s26,#s27,#s28
+
+interface
+  direct
+  analysis_drivers  'text_book'				        #s0,#s16
+#  analysis_drivers = 'illumination'			    #s1
+#  analysis_drivers = 'rosenbrock'			      #s2,#s3
+#  analysis_drivers = 'herbie'                #s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#  analysis_drivers = 'barnes'                #s17,#s18
+#  analysis_drivers = 'cyl_head'              #s19,#s20,#s21,#s22
+#  analysis_drivers = 'cantilever'            #s23,#s24,#s29,#s30
+#  analysis_drivers = 'scalable_text_book'    #s25,#s26,#s27,#s28
+
+responses
+  descriptors 'f' 'c1' 'c2'				#s0
+  objective_functions  1				#s0,#s16
+  nonlinear_inequality_constraints  2			#s0
+    lower_bounds  -inf  -inf				#s0
+    upper_bounds   0.0   0.0				#s0
+  analytic_gradients					#s0,#s16
+#  numerical_gradients
+#    method_source dakota
+#    interval_type central
+#    fd_step_size = 1.e-4
+  no_hessians						#s0,#s16
+
+# ILLUMINATION, ROSENBROCK
+#  objective_functions = 1				#s1,#s2,#s3
+#  analytic_gradients  					#s1,#s2,#s3
+#  analytic_hessians					#s1,#s2,#s3
+
+# HERBIE
+#  objective_functions = 1        #s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#  analytic_gradients           #s4,#s5,#s8,#s9,#s12,#s13
+#  numerical_gradients          #s6,#s7,#s10,#s11,#s14,#s15
+#  analytic_hessians          #s4,#s5,#s6,#s7
+#  no_hessians            #s8,#s9,#s10,#s11
+#  quasi_hessians bfgs          #s12,#s13,#s14,#s15
+
+# BARNES
+#  objective_functions = 1                    #s17,#s18
+#  nonlinear_inequality_constraints = 3       #s17,#s18 
+#  nonlinear_inequality_lower_bounds = 3*0.0  #s17,#s18 
+#  nonlinear_inequality_upper_bounds = 3*1.0  #s17,#s18
+#  analytic_gradients                         #s17,#s18
+#  no_hessians                                #s17,#s18
+
+# CYLINDER HEAD
+#  objective_functions = 1                    #s19,#s20,#s21,#s22
+#  nonlinear_inequality_constraints = 3       #s19,#s20,#s21,#s22
+#  nonlinear_inequality_upper_bounds = 3*0.0  #s19,#s20,#s21,#s22
+#  analytic_gradients                         #s19,#s20
+#  numerical_gradients                        #s21,#s22
+#  no_hessians                                #s19,#s20,#s21,#s22
+
+# CANTILEVER
+#  objective_functions = 1                    #s23,#s24,#s29,#s30
+#  nonlinear_inequality_constraints = 2       #s23,#s24
+#  nonlinear_inequality_upper_bounds = 2*0.0  #s23,#s24
+#  nonlinear_inequality_constraints = 1       #s29,#s30
+#  nonlinear_inequality_upper_bounds = 0.0    #s29,#s30
+#  nonlinear_equality_constraints = 1         #s29,#s30
+#  nonlinear_equality_targets = -0.1          #s29,#s30
+#  analytic_gradients                         #s23,#s24,#s29,#s30
+#  no_hessians                                #s23,#s24,#s29
+#  analytic_hessians                          #s30
+
+
+# SCALABLE TEXTBOOK
+#  objective_functions = 1                                          #s25,#s26,#s27,#s28
+#  nonlinear_inequality_constraints = 6                             #s25,#s26,#s27,#s28
+#  nonlinear_inequality_upper_bounds = 0.2 0.0 0.2 0.0 0.2 0.0      #s25,#s26,#s27,#s28
+#  nonlinear_inequality_lower_bounds = 0.0 -0.2 0.0 -0.2 0.0 -0.2   #s25,#s26,#s27,#s28
+#  analytic_gradients                                               #s25,#s26,#s27,#s28
+#  no_hessians                                                      #s25,#s26
+#  analytic_hessians                                                #s27,#s28

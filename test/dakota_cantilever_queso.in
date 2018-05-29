@@ -3,59 +3,60 @@
 #@ *: DakotaConfig=HAVE_QUESO
 #@ p*: MPIProcs=1
 
-method,									
-        bayes_calibration queso
+method
+  bayes_calibration queso
 # NOTE: typically you will want O(10^4) samples; this is just a short test
-         chain_samples = 1000 seed = 348
-          dram  # | delayed_rejection | adaptive_metropolis | metropolis_hastings
-#         calibrate_error_multipliers per_response            #p4,#p5
-#            # inverse gamma prior                            #p4,#p5
-#            #   alpha = (mean/std_dev)^2 + 2                 #p4,#p5
-#            #   beta = mean*(alpha-1)                        #p4,#p5
-#            # mean = 1.0, s.d. = 0.2                         #p4
-#           hyperprior_alphas = 27.0                          #p4
-#           hyperprior_betas  = 26.0                          #p4
-#           # mean = 1.5, s.d. = 2.0                          #p5
-#           hyperprior_alphas = 2.5625                        #p5
-#           hyperprior_betas  = 2.34375                       #p5
-	  proposal_covariance
+    chain_samples = 1000 seed = 348
+    dram  # | delayed_rejection | adaptive_metropolis | metropolis_hastings
+#    calibrate_error_multipliers per_response            #p4,#p5
+#       # inverse gamma prior                            #p4,#p5
+#       #   alpha = (mean/std_dev)^2 + 2                 #p4,#p5
+#       #   beta = mean*(alpha-1)                        #p4,#p5
+#       # mean = 1.0, s.d. = 0.2                         #p4
+#      hyperprior_alphas = 27.0                          #p4
+#      hyperprior_betas  = 26.0                          #p4
+#      # mean = 1.5, s.d. = 2.0                          #p5
+#      hyperprior_alphas = 2.5625                        #p5
+#      hyperprior_betas  = 2.34375                       #p5
+    proposal_covariance
 # diagonal and matrix formats with values
-	    values 1.0e6 1.0e-1				                    #s0,#s1,#p0,#p4,#p5
+      values 1.0e6 1.0e-1				                    #s0,#s1,#p0,#p4,#p5
         diagonal                                    #s0,#s1,#p0,#p4,#p5
-#	    values 1.0 0.1					                      #p1
-#          	 0.1 2.0					                      #p1
-#       matrix                                       #p1
-# diagonal and matrix formats from file
-#	    filename 'dakota_cantilever_queso.diag.dat'	diagonal  #p2
-#	    filename 'dakota_cantilever_queso.matrix.dat'	matrix  #p3
-	  logit_transform         # default is off
-#	burn_in_samples 200 						#s1
-#	sub_sampling_period 10 					#s1
-	probability_levels 0.05 0.1  				#s0,#s1
-	 		   0.05 0.1				#s0,#s1
-	output debug
+#      values 1.0 0.1					                      #p1
+#             0.1 2.0					                      #p1
+#        matrix                                       #p1
+#  diagonal and matrix formats from file
+#      filename 'dakota_cantilever_queso.diag.dat'	diagonal  #p2
+#      filename 'dakota_cantilever_queso.matrix.dat'	matrix  #p3
+    logit_transform         # default is off
+#    burn_in_samples 200 						#s1
+#    sub_sampling_period 10 					#s1
+    probability_levels 0.05 0.1  				#s0,#s1
+                       0.05 0.1				#s0,#s1
+    posterior_stats kl_divergence
+    output debug
 
-variables,								
-        uniform_uncertain 2
-          upper_bounds  1.e8 10.0
-# Truth value is 2.85e7 2.5 
-          lower_bounds 1.e6 0.1
-          initial_point 2.85e7 2.5
-          descriptors 'E' 'w' 
-        continuous_state 4 
-          initial_state 3 40000 500 1000 
-          descriptors 't' 'R' 'X' 'Y' 
+variables
+  uniform_uncertain 2
+    upper_bounds  1.e8 10.0
+# Truth value is 2.85e7 2.5
+    lower_bounds 1.e6 0.1
+    initial_point 2.85e7 2.5
+    descriptors 'E' 'w'
+  continuous_state 4
+    initial_state 3 40000 500 1000
+    descriptors 't' 'R' 'X' 'Y'
 
-interface,								
+interface
   analysis_drivers = 'mod_cantilever'
     direct
 
-responses,								
-	calibration_terms = 2
-        calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
-          freeform
-          num_experiments = 10
-	  variance_type = 'scalar' # read 2 scalar sigmas in each row
-  	descriptors = 'stress' 'displacement'
- 	no_gradients							
-	no_hessians
+responses
+  calibration_terms = 2
+  calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
+    freeform
+    num_experiments = 10
+    variance_type = 'scalar' # read 2 scalar sigmas in each row
+  descriptors = 'stress' 'displacement'
+  no_gradients
+  no_hessians

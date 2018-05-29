@@ -17,6 +17,9 @@ If specified, an additional tabular output file containing the final (sub-
 sampled) MCMC chain is generated.
 
 Examples::
+Generate and then filter a 1000 sample MCMC chain, retainining the
+first accepted sample and every 100th sample thereafter.
+
 An example method block of a Dakota input file is given below
 
 \verbatim

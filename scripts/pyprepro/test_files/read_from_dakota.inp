@@ -1,0 +1,12 @@
+% setfmt('%0.3g')
+These are read from Dakota. We also test immutability of
+
+param 1. Also test immutable
+x = {x = 10}
+
+{x_y}
+{i1x}
+{i1x_y}
+{pass_}
+{várïåbłę}
+{ddssv_1}

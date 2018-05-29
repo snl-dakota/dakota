@@ -16,7 +16,7 @@ method,
 #	use_surrogate inform_search				#s14,#s15,#s16
 	seed = 1234
 #	initial_delta = 2.0					#s1,#s9
-#	threshold_delta = 0.01					#s2,#s10
+#	variable_tolerance = 0.01					#s2,#s10
 #       max_function_evaluations = 1000				#s5,#s14
 #	max_iterations = 100					#s5,#s14
 #	function_precision = 0.00000001				#s5,#s14

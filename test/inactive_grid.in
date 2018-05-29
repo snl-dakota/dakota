@@ -28,7 +28,7 @@ method,
 	solution_accuracy = 1.e-6
 	asynch_pattern_search				#0,#5
 	  initial_delta = .2				#0,#5
-	  threshold_delta = 1.e-4			#0,#5
+	  variable_tolerance = 1.e-4			#0,#5
 	  synchronization blocking			#0,#5
 #
 #	seed = 1234					#1,#2,#3,#4,#6,#7,#8,#9
@@ -39,18 +39,18 @@ method,
 #
 #	coliny_pattern_search				#2,#7
 #	  initial_delta = .2				#2,#7
-#	  threshold_delta = 1.e-4			#2,#7
+#	  variable_tolerance = 1.e-4			#2,#7
 #	  pattern_basis coordinate			#2,#7
 #	  synchronization nonblocking			#2,#7
 #	  exploratory_moves basic_pattern		#2,#7
 #
 #	coliny_solis_wets,				#3,#8
 #	  misc_options  = 'max_failure=6'		#3,#8
-#	  initial_delta = 0.2 threshold_delta = 0.001	#3,#8
+#	  initial_delta = 0.2 variable_tolerance = 0.001	#3,#8
 #
 #	coliny_cobyla					#4,#9
 # 	  initial_delta = .2				#4,#9
-# 	  threshold_delta = 1.e-4			#4,#9
+# 	  variable_tolerance = 1.e-4			#4,#9
 
 variables,
 	continuous_design = 3

@@ -6,6 +6,7 @@ include(CheckIncludeFile)
 include(CMakeParseArguments)
 include(DakotaCopyTarget)
 include(ListFilterEmacsBackups)
+include(ModifyTargetRpath)
 
 # Macro: dakota_get_test_properties; macro so can set in parent context.
 #
@@ -431,17 +432,20 @@ set(dakota_test_executables
 
 foreach(dte ${dakota_test_executables})
   add_executable(${dte} ${dte}.cpp)
+  ModifyTargetRpath(${dte} 3)
 endforeach()
 
 # nl2func has two source files
 list(APPEND dakota_test_executables nl2func)
 add_executable(nl2func nl2func.cpp nl2test.cpp)
+ModifyTargetRpath(nl2func 3)
 
 # parallel tester
 if(DAKOTA_HAVE_MPI)
   add_executable(text_book_par text_book_par.cpp)
   list(APPEND dakota_test_executables text_book_par)
   DakotaApplyMPISettings(text_book_par)
+  ModifyTargetRpath(text_book_par 3)
 endif()
 
 # Enforce an "imaginary" dependency

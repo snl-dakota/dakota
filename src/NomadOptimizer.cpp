@@ -35,7 +35,7 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   initMesh = probDescDB.get_real("method.mesh_adaptive_search.initial_delta");
 
   // Set minimum mesh size
-  minMesh = probDescDB.get_real("method.mesh_adaptive_search.threshold_delta");
+  minMesh = probDescDB.get_real("method.mesh_adaptive_search.variable_tolerance");
 
   // Set Rnd Seed
   randomSeed = probDescDB.get_int("method.random_seed");

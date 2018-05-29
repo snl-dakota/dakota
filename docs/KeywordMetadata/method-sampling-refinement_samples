@@ -112,7 +112,7 @@ environment
 method
   sampling
     seed = 1337
-    sample_type incremental_lhs
+    sample_type lhs
     samples = 50
       refinement_samples = 50
 

@@ -161,6 +161,12 @@ protected:
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();
+  void build_scalar_discrepancy();
+  void build_field_discrepancy();
+  void build_GP_field(const RealMatrix& t, RealMatrix& t_pred,
+                           const RealVector& concat_disc, RealVector& disc_pred,
+                           RealVector& disc_var);
+
 
   /// calculate a Kernel Density Estimate (KDE) for the posterior samples
   void calculate_kde();
@@ -244,9 +250,6 @@ protected:
   /// number of samples in the chain (e.g. number of MCMC samples);
   /// for iterative update cycles, number of samples per update cycle
   int chainSamples;
-  /// number of update cycles for MCMC chain (implemented by restarting
-  /// of short chains)
-  int chainCycles;
   /// random seed for MCMC process
   int randomSeed;
 
@@ -316,6 +319,15 @@ protected:
   unsigned short importPredConfigFormat;
   /// print tabular files containing model+discrepancy responses and variances
   void export_discrepancy(RealMatrix& pred_config_mat); 
+  /// print tabular files containing model+discrepancy responses and variances
+  /// for field responses
+  void export_field_discrepancy(RealMatrix& pred_vars_mat);
+  /// array containing predicted of model+discrepancy
+  RealVector discrepancyFieldResponses;
+  /// array containing predicted of model+discrepancy
+  RealVector correctedFieldResponses;
+  /// matrix containing variances of model+discrepancy
+  RealVector correctedFieldVariances;
 
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;

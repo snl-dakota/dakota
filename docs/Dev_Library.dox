@@ -713,7 +713,7 @@ CMAKE_INSTALL_PREFIX/bin/ \c CMAKE_INSTALL_PREFIX/lib/, or more
 accurately, see the file Makefile.export.Dakota in the %Dakota
 build/src/ or installation include/ directory. <!-- A sample XML
 specification of library names and paths is also available in \c
-Dakota/examples/linked_interfaces/linkage_spec. --> Here are some
+dakota/examples/linked_interfaces/linkage_spec. --> Here are some
 additional notes on specific libraries:
 
 <ul>

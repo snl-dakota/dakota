@@ -6,6 +6,8 @@
 #@ p2: MPIProcs=4 CheckOutput='dakota.out.1'
 #@ p3: MPIProcs=4
 #@ p4: MPIProcs=3
+#@ p5: MPIProcs=4 CheckOutput='dakota.out.1'
+#@ p6: MPIProcs=3 CheckOutput='dakota.out.1'
 #@ s0: UserMan=qsf_multistart_strat
 #@ [taxonomy:start]
 #@ s0: [analysis:Optimization]
@@ -16,6 +18,8 @@
 #@ s0: [model:Smooth]
 #@ s0: [model:FirstDerivatives]
 #@ [taxonomy:end]
+#
+#Test s4 uses ROL instead of NLP
 
 # DAKOTA INPUT FILE - dakota_multistart.in
 # Dakota Input File: qsf_multistart_strat.in                  #s0
@@ -39,12 +43,12 @@ environment
 method
   id_method = 'MS'
   multi_start
-#    iterator_servers = 3         #p0,#p2
-#    iterator_scheduling peer     #p0,#p2
-#    iterator_servers = 2         #p1,#p3,#p4
-#    iterator_scheduling master   #p1,#p3,#p4
-#    processors_per_iterator = 1  #p2,#p3
-    method_pointer = 'NLP'        #s0,#s1,#s2,#p0,#p1,#p2,#p3
+#    iterator_servers = 3         #p0,#p2,#p5
+#    iterator_scheduling peer     #p0,#p2,#p5
+#    iterator_servers = 2         #p1,#p3,#p4,#p6
+#    iterator_scheduling master   #p1,#p3,#p4,#p6
+#    processors_per_iterator = 1  #p2,#p3,#p5
+    method_pointer = 'NLP'        #s0,#s1,#s2,#s4,#p0,#p1,#p2,#p3,#p5,#p6
 #    method_name 'dot_bfgs'       #s3,#p4
     random_starts = 3 seed = 123
     starting_points = -0.8  -0.8
@@ -53,12 +57,16 @@ method
                        0.8   0.8
                        0.0   0.0
 
-method                            #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
-  id_method = 'NLP'               #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
+method                            #s0,#s1,#s2,#s4,#p0,#p1,#p2,#p3,#p4,#p5,#p6
+  id_method = 'NLP'               #s0,#s1,#s2,#s4,#p0,#p1,#p2,#p3,#p4,#p5,#p6
 ## (DOT requires a software license; if not available, try	      #s0
 ## conmin_mfd or optpp_q_newton instead)     			      #s0
   dot_bfgs                        #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
 #   scaling                       #s1,#s2
+#  rol                               #s4,#p5,#p6
+#    gradient_tolerance 1.0e-12         #s4,#p5,#p6
+#    constraint_tolerance 1.0e-12       #s4,#p5,#p6
+#    variable_tolerance 1.0e-12            #s4,#p5,#p6
 
 variables
   continuous_design = 2

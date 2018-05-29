@@ -782,12 +782,16 @@
     <!ENTITY bayes_proposal_covariance '
 	     <keyword id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type"  minOccurs="0" >
 	       <oneOf label="Proposal Covariance Source">
+		 <keyword id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance">
+		   <keyword  id="multiplier" name="multiplier" code="{N_mdm(Real,priorPropCovMult)}" label="Proposal Covariance Multiplier"  minOccurs="0" default="1.0" >
+		     <param type="REAL" constraint="> 0.0" />
+		   </keyword>
+		 </keyword>
 		 <keyword id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance"  >
-		   <keyword id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates"  minOccurs="0" >
+		   <keyword id="update_period" name="update_period" code="{N_mdm(int,proposalCovUpdatePeriod)}" label="Samples between proposal updates"  minOccurs="0" >
 		     <param type="INTEGER" />
 		   </keyword>
 		 </keyword>
-		 <keyword id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance"   />
 		 <keyword id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values"  minOccurs="1" >
 		   <param type="REALLIST"/>
 		   <oneOf label="Values For">
@@ -1702,6 +1706,24 @@
 	  &method_optional_model_pointer;
         </keyword>
 
+
+        <keyword  id="rol" name="rol" code="{N_mdm(utype,methodName_ROL)}" label="rol" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
+	  &default_max_iterations;
+          <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
+            <param type="REAL" />
+          </keyword>
+          <keyword  id="gradient_tolerance" name="gradient_tolerance" code="{N_mdm(Real,gradientTolerance)}" label="gradient_tolerance"  minOccurs="0" default="1.e-4" >
+            <param type="REAL" />
+          </keyword>
+	  &default_constraint_tolerance;
+	  <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	    <param type="INPUT_FILE" />
+	  </keyword>
+	  &default_scaling;
+          &method_optional_model_pointer;
+        </keyword>
+
+
         <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search"  minOccurs="1" group="Optimization: Local, Derivative-free" >
           <alias name="coliny_apps"/>
           <keyword  id="initial_delta" name="initial_delta" code="{N_mdm(Real,initStepLength)}" label="Initial offset value"  minOccurs="0" default="1.0" >
@@ -1710,7 +1732,7 @@
           <keyword  id="contraction_factor1" name="contraction_factor" code="{N_mdm(Real,contractStepLength)}" label="Pattern contraction factor"  minOccurs="0" default="0.5" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="threshold_delta" name="threshold_delta" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
+          <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
             <param type="REAL" />
           </keyword>
           <keyword  id="solution_target" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution target"  minOccurs="0" default="no target" >
@@ -1751,7 +1773,7 @@
           <keyword  id="initial_delta2" name="initial_delta" code="{N_mdm(Real,initMeshSize)}" label="Initial mesh size"  minOccurs="0" default="1.0" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="threshold_delta2" name="threshold_delta" code="{N_mdm(Real,minMeshSize)}" label="Minimum mesh size"  minOccurs="0" default="1.0e-6" >
+          <keyword  id="variable_tolerance2" name="variable_tolerance" code="{N_mdm(Real,minMeshSize)}" label="Minimum mesh size"  minOccurs="0" default="1.0e-6" >
             <param type="REAL" />
           </keyword>
           <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision"  minOccurs="0" default="1.0e-10" >
@@ -1947,7 +1969,7 @@
           <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta"  minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="threshold_delta1" name="threshold_delta" code="{N_mdm(Real,threshDelta)}" label="threshold_delta"  minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
+          <keyword  id="variable_tolerance1" name="variable_tolerance" code="{N_mdm(Real,threshDelta)}" label="variable_tolerance"  minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
             <param type="REAL" />
           </keyword>
 	  &coliny_common_opts;
@@ -1973,7 +1995,7 @@
           <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta"  minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="threshold_delta1" name="threshold_delta" code="{N_mdm(Real,threshDelta)}" label="threshold_delta"  minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
+          <keyword  id="variable_tolerance1" name="variable_tolerance" code="{N_mdm(Real,threshDelta)}" label="variable_tolerance"  minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
             <param type="REAL" />
 	  </keyword>
 	  &coliny_common_opts;
@@ -1984,7 +2006,7 @@
           <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta"  minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
             <param type="REAL" />
           </keyword>
-          <keyword  id="threshold_delta1" name="threshold_delta" code="{N_mdm(Real,threshDelta)}" label="threshold_delta"  minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
+          <keyword  id="variable_tolerance1" name="variable_tolerance" code="{N_mdm(Real,threshDelta)}" label="variable_tolerance"  minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
             <param type="REAL" />
           </keyword>
 	  &coliny_common_opts;
@@ -2672,7 +2694,7 @@
 		</oneOf>
 	      </keyword>
 	      &bayes_proposal_covariance;
-	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		<param type="INPUT_FILE" />
 	      </keyword>
 	    </keyword>
@@ -2716,7 +2738,7 @@
 	      </optional>
 	      &rng_options;
 	      &bayes_proposal_covariance;
-	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		<param type="INPUT_FILE" />
 	      </keyword>
 	    </keyword>

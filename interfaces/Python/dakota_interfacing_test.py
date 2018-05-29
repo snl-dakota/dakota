@@ -170,7 +170,36 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         expected = "FAIL\n"
         self.assertEqual(rio.getvalue(), expected)
 
+    def test_dprepro(self):
+        """Verify that templates are substituted correctly"""
+ 
+        sio = StringIO.StringIO(dakotaParams % 3)
+        p, r = di.interfacing._read_parameters_stream(stream=sio)
 
+        # Test insertion of DakotaParams and DakotaResults
+        tpl = """{"%3.1f" % DakotaParams["x1"]}
+{"%3.1f" % x1}
+{DakotaResults[0].asv.function}
+"""
+        result = di.dprepro(tpl, parameters=p, results=r)
+        solution = "0.7\n0.7\nTrue\n"
+        self.assertEqual(result,solution) 
+        # Test insertion of extra "include" parameters
+        extra = {"foo":5}
+        tpl = """{"%3.1f" % DakotaParams["x1"]}
+{"%3.1f" % x1}
+{DakotaResults[0].asv.function}
+{foo}
+"""  
+        result = di.dprepro(tpl, parameters=p, results=r, include=extra)
+        solution = "0.7\n0.7\nTrue\n5\n"
+        self.assertEqual(result,solution)
+        # Test without DakotaParams or DakotaResults
+        tpl = "{foo}"
+        result = di.dprepro(tpl,include=extra)
+        solution = "5"
+        self.assertEqual(result,solution)
+ 
     def test_slurm_info(self):
         """Info correctly extracted from the environment."""
         # Check env without SLURM_JOBID set

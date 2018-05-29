@@ -147,10 +147,11 @@ DataMethodRep::DataMethodRep():
   adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
   posteriorStatsKL(false), posteriorStatsMutual(false),
   posteriorStatsKDE(false), preSolveMethod(SUBMETHOD_DEFAULT),
-  proposalCovUpdates(0), fitnessMetricType("predicted_variance"),
-  batchSelectionType("naive"), lipschitzType("local"),
-  calibrateErrorMode(CALIBRATE_NONE), burnInSamples(0),
-  subSamplingPeriod(1), calModelDiscrepancy(false),
+  priorPropCovMult(1.0),
+  proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
+  fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
+  lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
+  burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
   //numPredConfigs (BMA TODO this is not initialized...)
   importPredConfigFormat(TABULAR_ANNOTATED),
   modelDiscrepancyType("global_kriging"),
@@ -297,10 +298,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << preSolveMethod << proposalCovType << proposalCovUpdates
+    << preSolveMethod << proposalCovType << priorPropCovMult
+    << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
-    << quesoOptionsFilename << fitnessMetricType << batchSelectionType
-    << lipschitzType << calibrateErrorMode << hyperPriorAlphas
+    << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
+    << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
@@ -449,10 +451,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
-    >> preSolveMethod >> proposalCovType >> proposalCovUpdates
+    >> preSolveMethod >> proposalCovType >> priorPropCovMult
+    >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
-    >> quesoOptionsFilename >> fitnessMetricType >> batchSelectionType
-    >> lipschitzType >> calibrateErrorMode >> hyperPriorAlphas
+    >> advancedOptionsFilename >> quesoOptionsFilename >> fitnessMetricType
+    >> batchSelectionType >> lipschitzType >> calibrateErrorMode >> hyperPriorAlphas
     >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
     >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
     >> importPredConfigs >> importPredConfigFormat >> modelDiscrepancyType
@@ -601,10 +604,11 @@ void DataMethodRep::write(std::ostream& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << preSolveMethod << proposalCovType << proposalCovUpdates
+    << preSolveMethod << proposalCovType << priorPropCovMult
+    << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
-    << quesoOptionsFilename << fitnessMetricType << batchSelectionType
-    << lipschitzType << calibrateErrorMode << hyperPriorAlphas
+    << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
+    << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType

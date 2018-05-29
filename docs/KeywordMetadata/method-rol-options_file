@@ -1,0 +1,19 @@
+Blurb:: File containing advanced ROL options
+
+Description:: 
+Allow power users to override default ROL options
+
+<b> Default Behavior </b>
+No advanced options used.
+
+<b> Usage Tips </b>
+The \c options_file offers a final override over other options
+settings, which are applied with the folowing precedence:
+<ol>
+<li>ROL library defaults</li>
+<li>Dakota hard-coded defaults</li>
+<li>Settings from Dakota input file</li>
+<li>Settings from the advaned \c options_file</li>
+</ol>
+
+Examples::

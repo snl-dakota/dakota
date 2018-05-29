@@ -15,18 +15,18 @@ interfaces to Matlab, Python, and Scilab
 
 If desired, one can define algebraic input-output mappings using the
 AMPL code~\cite{Fou03} and save these mappings in 3 files:
-\texttt{stub.nl}, \texttt{stub.col}, and \texttt{stub.row}, where
+\path{stub.nl}, \path{stub.col}, and \path{stub.row}, where
 \texttt{stub} is a particular root name describing a particular
 problem.  These files names can be communicated to Dakota using the
 \texttt{algebraic\_mappings} input.
 
-Dakota will use \texttt{stub.col} and \texttt{stub.row} to obtain
+Dakota will use \path{stub.col} and \path{stub.row} to obtain
 input and output identifier strings, respectively, and will use the
 AMPL solver library~\cite{Gay97} to evaluate expressions conveyed
-in \texttt{stub.nl}, and, if needed, their first and second
+in \path{stub.nl}, and, if needed, their first and second
 derivatives.
 
-As a simple example (from \texttt{Dakota/test/dakota\_ampl*}), consider
+As a simple example (from \path{dakota/share/dakota/test/dakota_ampl*}), consider
 algebraic mappings based on Newton's law $F = m a$.  The
 following is an AMPL input file of variable and expression
 declarations and output commands:
@@ -39,7 +39,7 @@ declarations and output commands:
 \end{center}
 
 When processed by an AMPL processor, three files are created (as
-requested by the ``option auxfiles" command).  The first is the \texttt{dakota\_ampl\_fma.nl}
+requested by the ``option auxfiles" command).  The first is the \path{dakota_ampl_fma.nl}
 file containing problem statistics, expression graphs, bounds, etc.:
 \begin{center}
 \begin{bigbox}
@@ -49,7 +49,7 @@ file containing problem statistics, expression graphs, bounds, etc.:
 \end{bigbox}
 \end{center}
 
-Next, the \texttt{dakota\_ampl\_fma.col} file contains the set of variable
+Next, the \path{dakota_ampl_fma.col} file contains the set of variable
 descriptor strings:
 \begin{center}
 \begin{bigbox}
@@ -59,7 +59,7 @@ descriptor strings:
 \end{bigbox}
 \end{center}
 
-and the \texttt{dakota\_ampl\_fma.row} file contains the set of response descriptor
+and the \path{dakota_ampl_fma.row} file contains the set of response descriptor
 strings:
 \begin{center}
 \begin{bigbox}
@@ -75,7 +75,7 @@ by Dakota (see the Dakota Reference Manual~\cite{RefMan} for information
 on Dakota variable and response descriptors).  Ordering of the inputs
 and outputs within the AMPL declaration is not important, as Dakota
 will reorder data as needed.  The following listing shows an excerpt
-from \texttt{Dakota/test/dakota\_ampl\_fma.in}, which demonstrates a
+from \path{dakota/share/dakota/test/dakota_ampl_fma.in}, which demonstrates a
 combined algebraic/simulation-based mapping in which algebraic
 mappings from the \texttt{fma} definition are overlaid with
 simulation-based mappings from \texttt{text\_book}:
@@ -301,8 +301,8 @@ export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
 or add such a command to the .bashrc file. Then proceed with
 compiling as usual.
 
-Example files corresponding to the following tutorial are available in \\ 
-{\tt Dakota/examples/linked\_interfaces/Matlab}.
+Example files corresponding to the following tutorial are available in
+\path{dakota/share/dakota/examples/linked_interfaces/Matlab}.
 
 \subsubsection{Dakota/Matlab input file specification}
 
@@ -519,8 +519,8 @@ arrayobject.h). If NumPy is not enabled, Dakota will use
 multiply-subscripted lists for data flow.
 
 An example of using the Python direct interface with both lists and
-arrays is included in \\
-{\tt Dakota/examples/linked\_interfaces/Python}. The Python direct driver is
+arrays is included in
+\path{dakota/share/dakota/examples/linked_interfaces/Python}. The Python direct driver is
 selected with, for example,
 \begin{verbatim}
   interface,
@@ -528,8 +528,8 @@ selected with, for example,
       # numpy
       analysis_drivers = 'python_module:analysis_function'
 \end{verbatim}
-where {\tt python\_module} denotes the module (file {\tt
-  python\_module.py}) Dakota will attempt to import into the Python
+where {\tt python\_module} denotes the module (file
+\path{python_module.py}) Dakota will attempt to import into the Python
 environment and {\tt analysis\_function} denotes the function to call
 when evaluating a parameter set. If the Python module is not in the
 directory from which Dakota is started, setting the {\tt PYTHONPATH}
@@ -589,38 +589,38 @@ Dakota/Scilab interface variants are described next.
 \subsection{Scilab Script Interface} 
 
 Dakota distributions include a directory
-\texttt{Dakota/examples/script\_interfaces/Scilab} which demonstrates
+\path{dakota/share/dakota/examples/script_interfaces/Scilab} which demonstrates
 script-based interfacing to Scilab. The {\tt Rosenbrock} subdirectory
 contains four notable files:
 \begin{itemize}
-  \item \texttt{dakota\_scilab\_rosenbrock.in} (the Dakota input file),
-  \item \texttt{rosenbrock.sci} (the Scilab computation code),
-  \item \texttt{scilab\_rosen\_bb\_simulator.sh} (the analysis driver), and
-  \item \texttt{scilab\_rosen\_wrapper.sci} (Scilab script).
+  \item \path{dakota_scilab_rosenbrock.in} (the Dakota input file),
+  \item \path{rosenbrock.sci} (the Scilab computation code),
+  \item \path{scilab_rosen_bb_simulator.sh} (the analysis driver), and
+  \item \path{scilab_rosen_wrapper.sci} (Scilab script).
 \end{itemize}
 
-The \texttt{dakota\_scilab\_rosenbrock.in} file specifies the Dakota
+The \path{dakota_scilab_rosenbrock.in} file specifies the Dakota
 study to perform. The interface type is external ({\tt fork}) and the
-shell script \texttt{scilab\_rosen\_bb\_simulator.sh} is the analysis
+shell script \path{scilab_rosen_bb_simulator.sh} is the analysis
 driver used to perform function evaluations.
 
-The Scilab file \texttt{rosenbrock.sci} accepts variable values and
+The Scilab file \path{rosenbrock.sci} accepts variable values and
 computes the objective, gradient, and Hessian values of the Rosenbrock
 function as requested by Dakota.
 
-The \texttt{scilab\_rosen\_bb\_simulator.sh} is a short shell driver
+The \path{scilab_rosen_bb_simulator.sh} is a short shell driver
 script, like that described in Section~\ref{interfaces:building}, that
 Dakota executes to perform each function evaluation. Dakota passes
 the names of the parameters and results files to this script as
 \texttt{\$argv[1]} and \texttt{\$argv[2]}, respectively. The
-\texttt{scilab\_rosen\_bb\_simulator.sh} is divided into three parts:
+\path{scilab_rosen_bb_simulator.sh} is divided into three parts:
 pre-processing, analysis, and post-processing.
 
-In the analysis portion, the \texttt{scilab\_rosen\_bb\_simulator.sh}
-uses \texttt{scilab\_rosen\_wrapper.sci} to extract the current
+In the analysis portion, the \path{scilab_rosen_bb_simulator.sh}
+uses \path{scilab_rosen_wrapper.sci} to extract the current
 variable values from the input parameters file (\texttt{\$argv[1]})
 and communicate them to the computation code in
-\texttt{rosenbrock.sci}. The resulting objective function is
+\path{rosenbrock.sci}. The resulting objective function is
 transmitted to Dakota via the output result file (\texttt{\$argv[1]}),
 and the driver script cleans up any temporary files.
 
@@ -644,11 +644,11 @@ The linked interface is implemented in source files {\tt
   src/ScilabInterface.[CH]} directory, and must be enabled at compile
 time when building Dakota from source by setting {\tt
   DAKOTA\_SCILAB:BOOL=ON}, and setting appropriate environment
-variables at compile and run time as described in {\tt README.Scilab}
-in \\ {\tt Dakota/examples/linked\_interfaces/Scilab/}. This directory also
+variables at compile and run time as described in \path{README.Scilab}
+in \path{dakota/share/dakota/examples/linked_interfaces/Scilab/}. This directory also
 contains examples for the Rosenbrock and PID problems.
 
-These examples are similar to those in {\tt Dakota/examples/script\_interfaces}, with
+These examples are similar to those in \path{dakota/share/dakota/examples/script_interfaces}, with
 a few notable exceptions:
 \begin{enumerate}
 \item There is no shell driver script
@@ -670,13 +670,13 @@ interface,
 In ``compiled interface'' mode, the Dakota analysis driver is a
 lightweight shim, which communicates with the running application code
 such as Scilab via named pipes. It is similar to that for Matlab in
-\texttt{Dakota/examples/compiled\_interfaces/Matlab}, whose README is likely
+\path{dakota/share/dakota/examples/compiled_interfaces/Matlab}, whose README is likely
 instructive. An example of a Scilab compiled interface is included in \\
-\texttt{Dakota/examples/compiled\_interfaces/Scilab/Rosenbrock}.
+\path{dakota/share/dakota/examples/compiled_interfaces/Scilab/Rosenbrock}.
 
 As with the other Scilab examples, there are computation code and
 Dakota input files. Note the difference in the Dakota input file
-\texttt{rosenbrock.in}, where the analysis driver starts the dakscilab
+\path{rosenbrock.in}, where the analysis driver starts the dakscilab
 shim program and always evaluates functions, gradients, and Hessians.
 
 \begin{small}
@@ -690,7 +690,7 @@ interface,
 \end{verbatim} 
 \end{small}
 
-The dakscilab executable results from compiling \texttt{dakscilab.c}
+The dakscilab executable results from compiling \path{dakscilab.c}
 and has the following behavior and options. The driver dakscilab
 launches a server. This server then facilitates communication between
 Dakota and Scilab via named pipes communication. The user can also use
@@ -703,7 +703,7 @@ with the server:
 \end{verbatim} 
 \end{small}
 The first command, with the keyword 'dbg', launches the script
-scilab\_script.sci for evaluation in Scilab. It permits to give
+\path{scilab_script.sci} for evaluation in Scilab. It permits to give
 instructions to Scilab. The second command 'quit' stops the server.
 
 The dakscilab shim supports the following options for the driver call:
@@ -724,12 +724,12 @@ For the included PID example, the driver call is
 \end{small}
 
 Here there is an initialization script
-(\texttt{init\_test\_automatic.sce;}) which is launched before the
+(\path{init_test_automatic.sce;}) which is launched before the
 main computation. It initializes a specific Scilab module called
 xcos. A finalization script to visualize the xcos solution is also
-specified (\texttt{visualize\_solution.sce}). Finally, the objective
+specified (\path{visualize_solution.sce}). Finally, the objective
 function is given with the computation code called
-\texttt{f\_pid.sci}.
+\path{f_pid.sci}.
 
 
 % LocalWords:  Scilab Yann Collette Chapalain Rosenbrock subdirectory dakota bb

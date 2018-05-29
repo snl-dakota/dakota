@@ -19,7 +19,7 @@ method,
         coliny_pattern_search					#s0,#s1
 	  solution_accuracy = -3.0				#s0,#s1
 	  initial_delta = .2					#s0,#s1
-	  threshold_delta = 1.e-4				#s0,#s1
+	  variable_tolerance = 1.e-4				#s0,#s1
 	  pattern_basis coordinate				#s0,#s1
 	  exploratory_moves basic_pattern			#s0,#s1
 #	soga							#s2

@@ -52,8 +52,12 @@ function(DakotaFindMPI)
 
       message(STATUS "Dakota MPI C++ configuration:")
       foreach(output 
-  	FOUND COMPILER COMPILE_FLAGS INCLUDE_PATH LINK_FLAGS LIBRARIES)
+		      FOUND COMPILER COMPILE_FLAGS INCLUDE_PATH INCLUDE_DIRS LINK_FLAGS LIBRARIES)
         message(STATUS "  MPI_CXX_${output}: ${MPI_CXX_${output}}")
+	# CMake 3.11 (and possibly earlier) doesn't appear to insert these vars into the
+	# cache. They are of different types, so it's simpler to push them up to the
+	# parent scope. Also, INCLUDE_PATH was deprecated in CMake 3.10.
+	set(MPI_CXX_${output} ${MPI_CXX_${output}} PARENT_SCOPE )
       endforeach()
       message(STATUS "  MPIEXEC: ${MPIEXEC}")
     

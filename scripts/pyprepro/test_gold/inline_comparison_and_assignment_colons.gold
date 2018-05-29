@@ -1,0 +1,14 @@
+11  # 11
+True # True
+22 # 22 (Bitwise left shift)
+
+Also test for colons in quotes.
+Note: these only need to be done for inline. Non-inline may NOT have colon names
+hi:there
+atested #atested
+=}tested # =}tested
+
+10 # 10
+11 # 11
+12 # 12
+12 # 12

@@ -1,0 +1,8 @@
+{'-='*30} in template
+Paramaters defined outside. Test immutability too
+I: {I}; I+1: {I+1}; I = 2*I: {I = 2*I}
+M: {M}; M+1: {M+1}; M = 2*M: {M = 2*M}
+
+Define parameters here
+{ii = Immutable(pi)}
+{mm = pi/2}

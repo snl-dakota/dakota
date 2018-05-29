@@ -1,6 +1,6 @@
 echo off
 
-rem  This simulator script example requires Perl on the PATH.
+rem  This simulator script example requires Python on the PATH.
 rem  It can be installed with, e.g., a Windows installer, via Cygwin, or MSYS.
 
 rem  --------------
@@ -11,7 +11,7 @@ rem  Use the following line if SNL's APREPRO utility is used instead of DPrePro.
 rem  ../aprepro -c '*' -q --nowarning ros.template ros.in
 
 rem  As shipped, example uses workdir, so dprepro is up one directory level
-perl ..\dprepro %1% ros.template ros.in
+python ..\dprepro %1% ros.template ros.in
 
 
 rem  --------

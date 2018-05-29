@@ -1110,6 +1110,11 @@ public:
   /// the model as opposed to graphics posting at the strategy level).
   void auto_graphics(const bool flag);
 
+  /// get modelAutoGraphicsFlag to activate posting of graphics data within
+  /// evaluate/synchronize functions (automatic graphics posting in
+  /// the model as opposed to graphics posting at the strategy level).
+  bool auto_graphics() const;
+
   /// function to check modelRep (does this envelope contain a letter)
   bool is_null() const;
 
@@ -3500,6 +3505,12 @@ inline void Model::auto_graphics(const bool flag)
 {
   if (modelRep) modelRep->modelAutoGraphicsFlag = flag;
   else          modelAutoGraphicsFlag = flag;
+}
+
+inline bool Model::auto_graphics() const
+{
+  if (modelRep) return modelRep->modelAutoGraphicsFlag;
+  else          return modelAutoGraphicsFlag;
 }
 
 

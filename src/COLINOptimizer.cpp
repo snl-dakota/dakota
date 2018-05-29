@@ -600,7 +600,7 @@ void COLINOptimizer::set_solver_parameters()
       colinSolver->property("initial_step") = init_delta;
 
     const Real& thresh_delta
-      = probDescDB.get_real("method.coliny.threshold_delta");
+      = probDescDB.get_real("method.coliny.variable_tolerance");
     if (thresh_delta >= 0.0 && colinSolver->has_property("step_tolerance"))
       colinSolver->property("step_tolerance") = thresh_delta;
 

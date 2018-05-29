@@ -1,0 +1,30 @@
+Blurb::
+Rapid Optimization Library (ROL) is a large-scale
+optimization package within Trilinos.
+
+Description::
+
+ROL is used for the solution of optimal design, optimal control and
+inverse problems in large-scale engineering applications.
+
+<b> Usage Tips </b>
+
+ROL is a general gradient-based library designed to scale well to very
+large problem sizes.  For large problem sizes (i.e. number of variables),
+ROL’s trust region method and conjugate gradient methods exhibit good
+scalability for unconstrained problems. ROL handles equality constraints
+natively but converts inequality constraints into equality constraints
+with bounded slack variables.  This has might degrade convergence
+for problems involving large number of inequality constraints.  ROL has
+traditionally been applied to problems with analytic gradients (and
+Hessians)but can can be used with Dakota-provided finite-differencing
+approximations to the gradient of both objective and constraints.  However,
+a user employing these is advised to use alternative optimizers such as DOT
+until performance of ROL improves in future releases.
+
+
+Topics:: local_optimization_methods
+Examples::
+Theory::
+Faq::
+See_Also::

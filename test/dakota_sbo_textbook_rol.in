@@ -1,0 +1,73 @@
+
+environment,
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'ROL'
+	max_iterations = 50
+	soft_convergence_limit = 10
+	trust_region
+	  initial_size = 0.10
+	  contraction_factor = 0.5
+	  expansion_factor   = 1.50
+
+method
+	id_method = 'ROL'
+        rol
+          gradient_tolerance   1.0e-2
+          constraint_tolerance 1.0e-1
+          variable_tolerance      1.0e-8
+          max_iterations       50
+
+model,
+	id_model = 'SURROGATE'
+	responses_pointer = 'SURROGATE_RESP'
+	surrogate global
+	  dace_method_pointer = 'SAMPLING'
+#	  correction additive       first_order
+	  polynomial quadratic
+
+variables,
+	continuous_design = 2
+	  initial_point    2.0    2.0
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+  	numerical_gradients
+  	  method_source dakota
+  	  interval_type forward
+  	  fd_gradient_step_size = .0001
+	no_hessians
+
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+	dace lhs
+	  seed = 12345
+	  samples = 10
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+interface,
+	direct
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver = 'text_book'
+
+responses,
+	id_responses = 'TRUE_RESP'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
+	analytic_gradients
+	no_hessians

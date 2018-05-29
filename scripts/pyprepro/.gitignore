@@ -1,0 +1,6 @@
+test_output
+*.pyc
+htmlcov/
+.cache/
+.coverage
+.pytest*

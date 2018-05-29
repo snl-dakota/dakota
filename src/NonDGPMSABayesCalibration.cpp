@@ -607,27 +607,26 @@ void NonDGPMSABayesCalibration::fill_experiment_data()
 void NonDGPMSABayesCalibration::cache_acceptance_chain()
 {
   int num_params = numContinuousVars + numHyperparams;
-  int total_chain_length = chainSamples * chainCycles;
 
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
 
-  if (num_mcmc != total_chain_length && outputLevel >= NORMAL_OUTPUT) {
+  if (num_mcmc != chainSamples && outputLevel >= NORMAL_OUTPUT) {
     Cout << "GPMSA Warning: Final chain is length " << num_mcmc 
-	 << ", not expected length " << total_chain_length << std::endl;
+	 << ", not expected length " << chainSamples << std::endl;
   }
 
   acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
-				     total_chain_length);
-  acceptedFnVals.shapeUninitialized(numFunctions, total_chain_length);
+				     chainSamples);
+  acceptedFnVals.shapeUninitialized(numFunctions, chainSamples);
 
   // The posterior includes GPMSA hyper-parameters, so use the postRv space
   QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
   RealVector nan_fn_vals(numFunctions);
   nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
 
-  for (int i=0; i<total_chain_length; ++i) {
+  for (int i=0; i<chainSamples; ++i) {
 
     // translate the QUESO vector into x-space acceptanceChain
     mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence

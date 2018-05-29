@@ -1,5 +1,5 @@
 Blurb::
-Calculate the Kullback-Leibler Divergence
+Calculate the Kullback-Leibler Divergence between prior and posterior
 
 Description::
 The Kullback-Leibler (KL) Divergence, also called the relative entropy, 

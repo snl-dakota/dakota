@@ -39,8 +39,8 @@ method,
 #	  REQUIRED
 #	    initial_delta = .2			#s6,#s7,#s8,#s9
 #	    initial_delta = .2			#s10,#s11,#s12,#s13
-#	    threshold_delta = 1.e-4		#s6,#s7,#s8,#s9
-#	    threshold_delta = 1.e-4		#s10,#s11,#s12,#s13
+#	    variable_tolerance = 1.e-4		#s6,#s7,#s8,#s9
+#	    variable_tolerance = 1.e-4		#s10,#s11,#s12,#s13
 #         EXPLICIT DEFAULT OPTIONS
 #	    constraint_penalty = 1.0		#s8,#s9
 #	    expand_after_success = 1		#s8,#s9
@@ -62,7 +62,7 @@ method,
 #	coliny_solis_wets			#s14,#s15,#s16,#s17,#s18,#s19
 #	  REQUIRED
 #	    initial_delta = 0.2 		#s14,#s15,#s16,#s17,#s18,#s19
-#           threshold_delta = 1.e-4		#s14,#s15,#s16,#s17,#s18,#s19
+#           variable_tolerance = 1.e-4		#s14,#s15,#s16,#s17,#s18,#s19
 #         EXPLICIT DEFAULT OPTIONS
 #	    expand_after_success = 5		#s16,#s17
 #	    contract_after_failure = 3		#s16,#s17
@@ -76,7 +76,7 @@ method,
 #	coliny_cobyla				#s20,#s21
 #	  REQUIRED
 # 	    initial_delta = .2			#s20,#s21
-# 	    threshold_delta = 1.e-4		#s20,#s21
+# 	    variable_tolerance = 1.e-4		#s20,#s21
 #
 #	coliny_ea 				#s22,#s23,#s24,#s25,#s26
 #	coliny_ea 				#s27,#s28,#s29,#s30,#s31,#s32,#s33

@@ -139,7 +139,7 @@ Dakota's Gauss-Newton algorithm consists of combining an
 implementation of the Gauss-Newton Hessian approximation (see
 Section~\ref{nls:formulations}) with full Newton optimization
 algorithms from the OPT++ package~\cite{MeOlHoWi07} (see
-Section~\ref{opt:methods:gradient:descriptions}). The exact objective
+Section~\ref{opt:methods:gradient:constrained}). The exact objective
 function value, exact objective function gradient, and the approximate
 objective function Hessian are defined from the least squares term
 values and gradients and are passed to the full-Newton optimizer from
@@ -187,7 +187,7 @@ approximation to accelerate the search. Like the Gauss-Newton
 algorithm of Section~\ref{nls:solution:gauss}, its derivative order is
 balanced in that it requires only first-order information for the
 least-squares terms and nonlinear constraints. License: commercial;
-see NPSOL~\ref{opt:methods:gradient:descriptions}.
+see NPSOL~\ref{opt:methods:gradient:constrained}.
 
 This approach can be selected using the \texttt{nlssol\_sqp} method
 specification. An example specification follows:
@@ -334,10 +334,10 @@ simulation model results minus the experimental results), and the
 user-provided script can omit this step: the script can just return
 the simulation outputs of interest. An example of this can be found in
 the file named
-\texttt{Dakota/examples/users/textbook\_nls\_datafile.in}.  In this
+\path{dakota/share/dakota/examples/users/textbook_nls_datafile.in}.  In this
 example, there are 3 residual terms. The data file of experimental
 results associated with this example is
-\texttt{textbook\_nls\_datafile.lsq.dat}.  These three values are
+\path{textbook_nls_datafile.lsq.dat}.  These three values are
 subtracted from the least-squares terms to produce residuals for the
 nonlinear least-squares problem.  Note that the file may be annotated
 (specified by \texttt{annotated}) or freeform (specified by

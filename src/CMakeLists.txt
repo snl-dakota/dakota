@@ -381,7 +381,7 @@ endif(DAKOTA_MODELCENTER)
 
 if(DAKOTA_HAVE_MPI)
   add_definitions("-DDAKOTA_HAVE_MPI")
-  list(APPEND EXT_TPL_INCDIRS ${MPI_CXX_INCLUDE_PATH})
+  list(APPEND EXT_TPL_INCDIRS ${MPI_CXX_INCLUDE_PATH} ${MPI_CXX_INCLUDE_DIRS})
   list(APPEND EXT_TPL_LIBS ${MPI_CXX_LIBRARIES})
 endif(DAKOTA_HAVE_MPI)
 
@@ -597,7 +597,7 @@ CheckPackage(QUESO)
 if(HAVE_QUESO)
   list(APPEND DAKOTA_INCDIRS
     ${Dakota_BINARY_DIR}/packages/external/queso/include/)
-  list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
+  list(APPEND iterator_src QUESOImpl.cpp NonDQUESOBayesCalibration.cpp)
   if(HAVE_QUESO_GPMSA)
     add_definitions("-DHAVE_QUESO_GPMSA")
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
@@ -735,6 +735,12 @@ if(HAVE_OPTPP)
   list(APPEND DAKOTA_PKG_LIBS optpp)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
+
+if(HAVE_ROL)
+  list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
+  add_definitions("-DHAVE_ROL")
+  set(iterator_src ${iterator_src} ROLOptimizer.cpp)
+endif(HAVE_ROL)
 
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
@@ -923,24 +929,6 @@ if (DAKOTA_DLL_API)
   DakotaApplyMPISettings(dakota_dll_api)
 endif()
 
-# Install dyanamic deps, omitting standard system libs
-# CMake variables aren't passed to the script, so we have to invoke
-# separate scripts for each platform
-option(DAKOTA_INSTALL_DYNAMIC_DEPS 
-  "Install Dakota's dynamic dependencies to CMAKE_INSTALL_PREFIX/bin/" ON)
-if (DAKOTA_INSTALL_DYNAMIC_DEPS)
-  if (CYGWIN)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallCygwinDLLs.cmake")
-  elseif (APPLE)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallDarwinDylibs.cmake")
-  elseif (UNIX)
-#    include(InstallRequiredSystemLibraries)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake")
-  elseif (WIN32)
-    include(InstallWinDLLs)
-  endif()
-endif()
-  
 
 # --- Define variables used for export Makefiles
 # TODO: use these variables/names in the Trilinos block below

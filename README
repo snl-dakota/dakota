@@ -18,6 +18,7 @@ Sandia National Laboratories
 
 Brian M. Adams                                       
 William J. Bohnhoff                                  
+Robert A. Canfield
 Keith R. Dalbey
 John P. Eddy	                               	 
 Mohamed S. Ebeida
@@ -37,6 +38,7 @@ J. Adam Stephens
 Laura P. Swiler
 Dena M. Vigil			       
 Timothy M. Wildey		       
+Justin G. Winokur		       
 
 ------------------------------------------------------------------------------
 License
@@ -61,6 +63,9 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
 		    (including any source, test, unit_test, example,
 		     script, build system, or other files not
 		     specifically marked)
+  pyprepro          MIT License [SNL]
+    bottlepy/bottle MIT License (modern stle with sublicense)
+    pypi/six        MIT License (modern stle with sublicense)
   acro              Revised BSD License [SNL]
     (including colin, dummy, interfaces, pebbl, scolib, utilib)
     tpl
@@ -84,7 +89,6 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
   LHS		    GNU Lesser General Public License (LGPL) [SNL]
-  motif/SciPlot	    GNU Library General Public License (old LGPL)
   NCSUOpt	    MIT License
   nidr		    BSD License [SNL]
   NL2SOL	    Publicly Available
@@ -95,8 +99,9 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
   PSUADE	    GNU Lesser General Public License (LGPL)
   queso		    GNU Lesser General Public License (LGPL)
+  sciplot	    GNU Library General Public License (old LGPL)
   surfpack	    GNU Lesser General Public License (LGPL) [SNL]
-  teuchos	    BSD License [SNL]
+  trilinos	    (rol, teuchos) BSD License [SNL]
   VPISparseGrid     GNU Lesser General Public License (LGPL)
 
 The commerically licensed packages are not distributed with public
@@ -173,6 +178,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.8		   05/15/18 (refer to git submodules for TPL SHA1s)
 6.7		   11/15/17 (refer to git submodules for TPL SHA1s)
 6.6		   05/15/17 (refer to git submodules for TPL SHA1s)
 6.5		   11/16/16 (refer to git submodules for TPL SHA1s)
@@ -214,7 +220,7 @@ Contributing enhancements.
 Dakota is both a research and a production code and is under active
 development.  Bug reports, suggestions for improvement, and changes to
 support other platforms/compilers are welcome.  See the Dakota
-Developer Portal at http://dakota.sandia.gov/developer/ for more
-information.
+Developer Portal at https://dakota.sandia.gov/content/developer-portal/
+for more information.
 
 ------------------------------------------------------------------------------
