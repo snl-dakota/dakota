@@ -36,9 +36,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 		   problem_db.get_int("model.nested.iterator_servers"),
 		   problem_db.get_int("model.nested.processors_per_iterator"),
 		   problem_db.get_short("model.nested.iterator_scheduling")),
+  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer")),
   subIteratorJobCntr(0),
-  optInterfacePointer(problem_db.get_string("model.interface_pointer")),
-  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer"))
+  optInterfacePointer(problem_db.get_string("model.interface_pointer"))
 {
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
@@ -285,8 +285,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       size_t sm_adsv_offset = find_index(submodel_a_ds_types, curr_ds_type);
       if (sm_adsv_offset == _NPOS) {
 	Cerr << "\nError: active discrete string variable type '"
-	     << curr_ds_type << "' could not be matched within all sub-model "
-	     << "discrete string variable types." << std::endl;
+	     << curr_ds_type << "' could not be matched within all sub-model"
+	     << " discrete string variable types." << std::endl;
 	abort_handler(-1);
       }
       // For multiple types, sm_adsv_cntr must be reset to 0 at the type change
@@ -701,15 +701,23 @@ void NestedModel::update_sub_iterator()
   if (identity_resp_map) {
     bool found_error = false;
     if (!optInterfacePointer.empty()) {
-      Cerr << "\nError: identity_response_mapping not supported in conjunction with optional_interface_pointer; use explicit primary/secondary_response_mapping instead.\n";
+      Cerr << "\nError: identity_response_mapping not supported in conjunction"
+       << " with optional_interface_pointer; use explicit primary/secondary_"
+       << "response_mapping instead.\n";
       found_error = true;
     }
     if (!primary_resp_coeffs.empty() || !secondary_resp_coeffs.empty()) {
-      Cerr << "\nError: Neither primary_response_mapping nor secondary_response_mapping may be specified in conjunction with identity_response_mapping.\n";
+      Cerr << "\nError: Neither primary_response_mapping nor secondary_"
+        << "response_mapping may be specified in conjunction with identity_"
+        << "response_mapping.\n";
       found_error = true;
     }
     if (num_mapped_total != numSubIterFns) {
-      Cerr << "\nError: For identity_response_mapping, nested model response (primary + secondary functions) must be same size as sub-method final results. Specified nested model response has " << num_mapped_total << " functions, while there are " << numSubIterFns << " sub-method results.\n";
+      Cerr << "\nError: For identity_response_mapping, number of nested model "
+        << "responses (primary + secondary functions) must equal the number of "
+        << "sub-method final results. Specified nested model has " 
+        << num_mapped_total << " functions, while there are " << numSubIterFns 
+        << " sub-method results.\n";
       if (outputLevel >= VERBOSE_OUTPUT)
 	Cerr << "Info: Sub-method returns these results:\n"
 	     << subIterator.response_results().function_labels() << "\n";
@@ -775,7 +783,8 @@ void NestedModel::update_sub_iterator()
 
       Cerr << "\nInfo: The secondary_response_mapping must have "
 	   << numSubIterMappedIneqCon + numSubIterMappedEqCon 
-	   << " (number of nested model secondary response functions, less any optional interface secondary response functions) row(s).\n"
+	   << " (number of nested model secondary response functions, less any "
+           << "optional interface secondary response functions) row(s).\n"
 	   << "It must have " << numSubIterFns
            << " columns corresponding to the sub-method final results.\n";
       if (outputLevel >= VERBOSE_OUTPUT)
@@ -1926,7 +1935,7 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
   // estimator variance)
 
   size_t i, j, m_index, num_mapped_fns = currentResponse.num_functions();
-  if (mapped_errors.length() != num_mapped_fns)
+  if (static_cast<unsigned>(mapped_errors.length()) != num_mapped_fns)
     mapped_errors.size(num_mapped_fns); // init to 0 
   else
     mapped_errors = 0.;
@@ -3311,9 +3320,6 @@ void NestedModel::
 string_variable_mapping(const String& s_var, size_t mapped_index,
 			 short svm_target)
 {
-  Pecos::AleatoryDistParams& submodel_adp
-    = subModel.aleatory_distribution_parameters();
-
   switch (svm_target) {
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for string value "

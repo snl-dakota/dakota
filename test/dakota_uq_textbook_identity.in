@@ -1,0 +1,114 @@
+# Test the identity_response_mapping
+#
+# Each test demonstrations mapping a different combination of aleatory results
+# (probability levels with and without moments) to different combinations of
+# epistemic responses (objective functions, inequality and equality constraints,
+# generic response functions).
+# Tests 8 and 9 repeat tests 6 and 7, but use explicit primary_response_mappings.
+# Their results should be identical.
+
+# s0: Map prob lvls and moments to obj fcns
+# s1: Map prob lvls and moments to obj fcns and inequality constraints
+# s2: Map prob lvls and moments to obj fcns and inequality and equality contraints
+# s3: Map prob lvls and moments to obj fcns and equality contraints
+# s4: Map prob lvls (no moments) to obj fcns
+# s5: Map prob lvls (no moments) to obj fcns and inequality and equality contraints
+# s6: Map prob lvls and moments to response functions
+# s7: Map prob lvls (no moments) to response functions
+# s8: Redo s6 with an explicit primary_response_mapping
+# s9: Redo s7 with an explicit primary_response_mapping
+
+environment
+  method_pointer 'epist'
+
+method
+  id_method 'epist'
+    sampling 
+    samples 40
+    seed 1234
+  model_pointer 'nested'
+
+model
+  id_model 'nested'
+    nested
+    sub_method_pointer 'aleat'
+    identity_response_mapping               #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#   primary_response_mapping                #s8,#s9 
+#      1 0 0 0 0 0 0 0                      #s8	
+#      0 1 0 0 0 0 0 0                      #s8 
+#      0 0 1 0 0 0 0 0                      #s8
+#      0 0 0 1 0 0 0 0                      #s8
+#      0 0 0 0 1 0 0 0                      #s8
+#      0 0 0 0 0 1 0 0                      #s8
+#      0 0 0 0 0 0 1 0                      #s8
+#      0 0 0 0 0 0 0 1                      #s8
+
+#      1 0 0 0                              #s9
+#      0 1 0 0                              #s9
+#      0 0 1 0                              #s9
+#      0 0 0 1                              #s9
+    variables_pointer 'e_vars'
+    responses_pointer 'e_resps'
+    primary_variable_mapping 's1' 's2'
+
+variables
+  active all
+  id_variables 'e_vars'
+    continuous_design 2
+    descriptors 's1' 's2'
+    lower_bounds -1 -1
+    upper_bounds  1  1
+
+responses
+  id_responses 'e_resps'
+    objective_functions                      #s0,#s1,#s2,#s3,#s4,#s5
+                        8                    #s0
+#                       6                    #s1,#s2,#s3
+#                       4                    #s4
+#                       2                    #s5
+#    nonlinear_inequality_constraints        #s1,#s2,#s5
+#                       2                    #s1     
+#                       1                    #s2,#s5
+#    nonlinear_equality_constraints          #s2,#s3,#s5
+#                       1                    #s2,#s5
+#                       2                    #s3
+#    response_functions                      #s6,#s7,#s8,#s9
+#                       8                    #s6,#s8
+#                       4                    #s7,#s9
+  no_gradients
+  no_hessians
+
+method
+  id_method 'aleat'
+    sampling 
+    samples 40
+    seed 1234
+    probability_levels 0.25 0.75
+                       0.25 0.75
+#    final_moments none                      #s4,#s5,#s7,#s9
+  model_pointer 'sim_m'
+
+model
+  id_model 'sim_m'
+  single
+  variables_pointer 's_vars'
+  responses_pointer 's_resps'
+   
+variables
+  id_variables 's_vars'
+    normal_uncertain 2
+      means 0.0 0.0
+      std_deviations 1.0 1.0
+    continuous_state 2 
+      descriptors 's1' 's2'
+
+responses
+  id_responses 's_resps'
+   response_functions 2
+  no_gradients
+  no_hessians
+
+interface
+  direct
+    analysis_drivers 'text_book'  
+    

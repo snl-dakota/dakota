@@ -364,8 +364,6 @@ private:
   //
   /// the sub-iterator that is executed on every evaluation of this model
   Iterator subIterator;
-  /// the sub-method pointer from the nested model specification
-  String subMethodPointer;
   /// the sub-model used in sub-iterator evaluations
   /** There are no restrictions on subModel, so arbitrary nestings are
       possible.  This is commonly used to support surrogate-based
@@ -376,6 +374,8 @@ private:
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
   IteratorScheduler subIteratorSched;
+  /// the sub-method pointer from the nested model specification
+  String subMethodPointer;
   /// subIterator job counter since last synchronize()
   int subIteratorJobCntr;
   /// mapping from subIterator evaluation counter to nested model counter
