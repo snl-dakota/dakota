@@ -67,7 +67,7 @@ add_custom_command(
 # Generate the master DakotaReferenceManual.dox
 add_custom_command(
   DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
-  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
+    dakota-input-summary
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
     ${ref_dox}
