@@ -179,7 +179,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     update(); // compute min quad order reqd for numSamples
     maxEvalConcurrency *= numSamples;
     break;
-   case RANDOM_TENSOR:
+  case RANDOM_TENSOR:
     // nested overrides not currently part of tensor regression spec
     //for () if () { nestedRules = true; break; }
     reset();  // propagate updated settings to tpqDriver

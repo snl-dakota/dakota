@@ -69,6 +69,7 @@ public:
 
   void increment_grid();
   void decrement_grid();
+  void evaluate_grid_increment();
 
   //
   //- Heading: Member functions
@@ -280,6 +281,19 @@ increment_grid_preference(const RealVector& dim_pref)
 inline void NonDQuadrature::increment_grid_preference()
 { increment_grid_preference(dimPrefSpec, dimQuadOrderRef); }
 
+
+inline void NonDQuadrature::evaluate_grid_increment()
+{
+  // *** TO DO: implement incremental build in Pecos::TensorProductDriver
+  // based on webbur::point_radial_tol_unique_index_inc2(), as in Pecos::
+  // IncrementalSparseGridDriver::increment_unique().
+  // (Relying on duplicate detection as below is insufficient for rebuilds
+  // since the point counts in latest incremental logic are wrong...)
+
+  tpqDriver->compute_grid(allSamples);//compute_increment(allSamples);
+  evaluate_parameter_sets(iteratedModel, true, false);
+  ++numIntegrations;
+}
 
 inline int NonDQuadrature::num_samples() const
 {
