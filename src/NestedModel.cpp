@@ -36,9 +36,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 		   problem_db.get_int("model.nested.iterator_servers"),
 		   problem_db.get_int("model.nested.processors_per_iterator"),
 		   problem_db.get_short("model.nested.iterator_scheduling")),
+  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer")),
   subIteratorJobCntr(0),
-  optInterfacePointer(problem_db.get_string("model.interface_pointer")),
-  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer"))
+  optInterfacePointer(problem_db.get_string("model.interface_pointer"))
 {
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
@@ -285,8 +285,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       size_t sm_adsv_offset = find_index(submodel_a_ds_types, curr_ds_type);
       if (sm_adsv_offset == _NPOS) {
 	Cerr << "\nError: active discrete string variable type '"
-	     << curr_ds_type << "' could not be matched within all sub-model "
-	     << "discrete string variable types." << std::endl;
+	     << curr_ds_type << "' could not be matched within all sub-model"
+	     << " discrete string variable types." << std::endl;
 	abort_handler(-1);
       }
       // For multiple types, sm_adsv_cntr must be reset to 0 at the type change
@@ -667,47 +667,6 @@ void NestedModel::update_sub_iterator()
     active2ACVarMapTargets,  active2ADIVarMapTargets, active2ADSVarMapTargets,
     active2ADRVarMapTargets);
 
-  const RealVector& primary_resp_coeffs
-    = probDescDB.get_rv("model.nested.primary_response_mapping");
-  const RealVector& secondary_resp_coeffs
-    = probDescDB.get_rv("model.nested.secondary_response_mapping");
-
-  if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
-    Cerr << "\nError: no mappings provided for sub-iterator functions in "
-	 << "NestedModel initialization." << std::endl;
-    abort_handler(-1);
-  }
-  // Convert vectors to matrices using the number of subIterator response
-  // results (e.g., the number of UQ statistics) as the number of columns
-  // (rows are open ended since the number of subModel primary fns may
-  // be different from the total number of primary fns and subModel's
-  // constraints are a subset of the total constraints).
-  numSubIterFns = subIterator.response_results().num_functions();
-  if (!primary_resp_coeffs.empty()) {
-    // this error would also be caught within copy_data(), but by checking here,
-    // we can provide a more helpful error message.
-    if (primary_resp_coeffs.length() % numSubIterFns) {
-      Cerr << "\nError: number of entries in primary_response_mapping ("
-	   << primary_resp_coeffs.length() << ") not evenly divisible"
-	   << "\n       by number of sub-iterator response functions ("
-	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
-      abort_handler(-1);
-    }
-    copy_data(primary_resp_coeffs, primaryRespCoeffs, 0, (int)numSubIterFns);
-  }
-  if (!secondary_resp_coeffs.empty()) {
-    // this error would also be caught within copy_data(), but by checking here,
-    // we can provide a more helpful error message.
-    if (secondary_resp_coeffs.length() % numSubIterFns) {
-      Cerr << "\nError: number of entries in secondary_response_mapping ("
-	   << secondary_resp_coeffs.length() << ") not evenly divisible"
-	   << "\n       by number of sub-iterator response functions ("
-	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
-      abort_handler(-1);
-    }
-    copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);
-  }
-
   // Back out the number of eq/ineq constraints within secondaryRespCoeffs
   // (subIterator constraints) from the total number of equality/inequality
   // constraints and the number of interface equality/inequality constraints.
@@ -717,6 +676,127 @@ void NestedModel::update_sub_iterator()
     = probDescDB.get_sizet("responses.num_nonlinear_equality_constraints");
   numSubIterMappedIneqCon = num_mapped_ineq_con - numOptInterfIneqCon;
   numSubIterMappedEqCon   = num_mapped_eq_con   - numOptInterfEqCon;
+
+  // For auto-generated identity map, we don't support an optional
+  // interface and require that the total number of NestedModel
+  // responses (pri+sec) equal the number of sub-iterator results
+  // functions.
+  //
+  // Rationale: Too complex to get right and communicate to
+  // user. Secondary responses from an optional interface augment any
+  // mapped secondary responses. Nested model primary responses come
+  // from an overlay of optional interface and mapped responses, with
+  // no restrictions on which is larger or smaller.
+  size_t num_mapped_total = currentResponse.num_functions(),
+    num_mapped_sec = num_mapped_ineq_con + num_mapped_eq_con,
+    num_mapped_pri = num_mapped_total - num_mapped_sec;
+  numSubIterFns = subIterator.response_results().num_functions();
+
+  bool identity_resp_map = probDescDB.get_bool("model.nested.identity_resp_map");
+  const RealVector& primary_resp_coeffs
+    = probDescDB.get_rv("model.nested.primary_response_mapping");
+  const RealVector& secondary_resp_coeffs
+    = probDescDB.get_rv("model.nested.secondary_response_mapping");
+
+  if (identity_resp_map) {
+    bool found_error = false;
+    if (!optInterfacePointer.empty()) {
+      Cerr << "\nError: identity_response_mapping not supported in conjunction"
+       << " with optional_interface_pointer; use explicit primary/secondary_"
+       << "response_mapping instead.\n";
+      found_error = true;
+    }
+    if (!primary_resp_coeffs.empty() || !secondary_resp_coeffs.empty()) {
+      Cerr << "\nError: Neither primary_response_mapping nor secondary_"
+        << "response_mapping may be specified in conjunction with identity_"
+        << "response_mapping.\n";
+      found_error = true;
+    }
+    if (num_mapped_total != numSubIterFns) {
+      Cerr << "\nError: For identity_response_mapping, number of nested model "
+        << "responses (primary + secondary functions) must equal the number of "
+        << "sub-method final results. Specified nested model has " 
+        << num_mapped_total << " functions, while there are " << numSubIterFns 
+        << " sub-method results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
+      found_error = true;
+    }
+    if (found_error)
+      abort_handler(-1);
+
+    if (outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Info: NestedModel using identity response mapping." << std::endl;
+    primaryRespCoeffs.init_identity(num_mapped_pri, numSubIterFns);
+    secondaryRespCoeffs.init_identity(num_mapped_sec, numSubIterFns,
+				      num_mapped_pri);
+
+    // BMA TODO: When using identity map, propagate labels when not
+    // present (there's no way to detect that the user didn't give
+    // them as defaults get generated at parse time)
+  }
+  else if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
+    Cerr << "\nError: no mappings provided for sub-iterator functions in "
+	 << "NestedModel initialization." << std::endl;
+    abort_handler(-1);
+  }
+  // Convert vectors to matrices using the number of subIterator response
+  // results (e.g., the number of UQ statistics) as the number of columns
+  // (rows are open ended since the number of subModel primary fns may
+  // be different from the total number of primary fns and subModel's
+  // constraints are a subset of the total constraints).
+  if (!primary_resp_coeffs.empty()) {
+    // this error would also be caught within copy_data(), but by checking here,
+    // we can provide a more helpful error message.
+    if (primary_resp_coeffs.length() % numSubIterFns) {
+      Cerr << "\nError: number of entries in primary_response_mapping ("
+	   << primary_resp_coeffs.length() << ") not evenly divisible"
+	   << "\n       by number of sub-iterator final results functions ("
+	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
+
+      Cerr << "\nInfo: The primary_response_mapping must have between 1 and "
+	   << num_mapped_pri
+	   << " (number of nested model primary response functions) row(s).\n"
+	   << "It must have " << numSubIterFns
+           << " columns corresponding to the sub-method final results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
+      abort_handler(-1);
+    }
+    copy_data(primary_resp_coeffs, primaryRespCoeffs.get(), 0,
+	      (int)numSubIterFns);
+  }
+  if (!secondary_resp_coeffs.empty()) {
+    // this error would also be caught within copy_data(), but by checking here,
+    // we can provide a more helpful error message.
+    if (secondary_resp_coeffs.length() % numSubIterFns) {
+      Cerr << "\nError: number of entries in secondary_response_mapping ("
+	   << secondary_resp_coeffs.length() << ") not evenly divisible"
+	   << "\n       by number of sub-iterator final results functions ("
+	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
+
+      Cerr << "\nInfo: The secondary_response_mapping must have "
+	   << numSubIterMappedIneqCon + numSubIterMappedEqCon 
+	   << " (number of nested model secondary response functions, less any "
+           << "optional interface secondary response functions) row(s).\n"
+	   << "It must have " << numSubIterFns
+           << " columns corresponding to the sub-method final results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
+      abort_handler(-1);
+    }
+    copy_data(secondary_resp_coeffs, secondaryRespCoeffs.get(), 0,
+	      (int)numSubIterFns);
+  }
 }
 
 
@@ -1855,7 +1935,7 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
   // estimator variance)
 
   size_t i, j, m_index, num_mapped_fns = currentResponse.num_functions();
-  if (mapped_errors.length() != num_mapped_fns)
+  if (static_cast<unsigned>(mapped_errors.length()) != num_mapped_fns)
     mapped_errors.size(num_mapped_fns); // init to 0 
   else
     mapped_errors = 0.;
@@ -3240,9 +3320,6 @@ void NestedModel::
 string_variable_mapping(const String& s_var, size_t mapped_index,
 			 short svm_target)
 {
-  Pecos::AleatoryDistParams& submodel_adp
-    = subModel.aleatory_distribution_parameters();
-
   switch (svm_target) {
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for string value "

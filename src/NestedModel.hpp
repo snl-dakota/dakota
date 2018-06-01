@@ -27,6 +27,67 @@
 
 namespace Dakota {
 
+/// Little wrapper matrix that provides a limited API so that the
+/// underlying matrix can be identity without storage, if desired.
+class ResponseMapMatrix
+{
+public:
+
+  /// Default ctor initializes as if a default-constructed RealMatrix
+  ResponseMapMatrix():
+    nRows(0), nCols(0), colOffset(0), respCoeffs(new RealMatrix())
+  { /* empty ctor */ }
+
+  /// Assume an identity matrix, potentially right-shifted by col_offset
+  void init_identity(int rows, int cols, int col_offset = 0)
+  {
+    nRows = rows;
+    nCols = cols;
+    colOffset = col_offset;
+    // don't allocate storage for the identity case
+    respCoeffs.reset();
+  }
+
+  /// Return matrix entry for specified row, col
+  Real operator()(int row_ind, int col_ind) const
+  {
+    if (respCoeffs)
+      return respCoeffs->operator()(row_ind, col_ind);
+    else
+      return (row_ind == col_ind - colOffset) ? 1.0 : 0.0;
+  }
+
+  /// Return a non-const reference to the stored matrix, to satisfy
+  /// previous API needs
+  RealMatrix& get()
+  {
+    if (respCoeffs)
+      return *respCoeffs;
+    else
+      throw std::logic_error("ResponseMapMatrix::get() not implemented for "
+			     "identity matrix.");
+  }
+
+  /// forward to underlying matrix in case client reshaped it
+  int numRows() { return respCoeffs ? respCoeffs->numRows() : nRows; }
+  /// forward to underlying matrix in case client reshaped it
+  int numCols() { return respCoeffs ? respCoeffs->numCols() : nCols; }
+
+private:
+
+  /// Number of rows for identity case
+  int nRows;
+  /// Number of columns for identity case
+  int nCols;
+  /// Number of columns by which to offset the identity matrix
+  int colOffset;
+
+  /// Stored response coefficients (non-identity case)
+  std::shared_ptr<RealMatrix> respCoeffs;
+
+};
+
+
 
 /// Derived model class which performs a complete sub-iterator
 /// execution within every evaluation of the model.
@@ -303,8 +364,6 @@ private:
   //
   /// the sub-iterator that is executed on every evaluation of this model
   Iterator subIterator;
-  /// the sub-method pointer from the nested model specification
-  String subMethodPointer;
   /// the sub-model used in sub-iterator evaluations
   /** There are no restrictions on subModel, so arbitrary nestings are
       possible.  This is commonly used to support surrogate-based
@@ -315,6 +374,8 @@ private:
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
   IteratorScheduler subIteratorSched;
+  /// the sub-method pointer from the nested model specification
+  String subMethodPointer;
   /// subIterator job counter since last synchronize()
   int subIteratorJobCntr;
   /// mapping from subIterator evaluation counter to nested model counter
@@ -428,11 +489,11 @@ private:
   /// functions.  For OUU, the matrix is applied to UQ statistics to create
   /// contributions to the top-level objective functions/least squares/
   /// generic response terms.
-  RealMatrix primaryRespCoeffs;
+  ResponseMapMatrix primaryRespCoeffs;
   /// "secondary" response_mapping matrix applied to the sub-iterator response
   /// functions.  For OUU, the matrix is applied to UQ statistics to create
   /// contributions to the top-level inequality and equality constraints.
-  RealMatrix secondaryRespCoeffs;
+  ResponseMapMatrix secondaryRespCoeffs;
 };
 
 

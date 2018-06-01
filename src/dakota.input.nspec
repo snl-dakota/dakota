@@ -5305,6 +5305,7 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ secondary_variable_mapping STRINGLIST {N_mom(strL,secondaryVarMaps)} ]
       [ primary_response_mapping REALLIST {N_mom(RealDL,primaryRespCoeffs)} ]
       [ secondary_response_mapping REALLIST {N_mom(RealDL,secondaryRespCoeffs)} ]
+      [ identity_response_mapping {N_mom(true,identityRespMap)} ]
      )
    )
   |
