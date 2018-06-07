@@ -423,13 +423,23 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
-#ifdef HAVE_QUESO_GPMSA
     case SUBMETHOD_GPMSA:
+#ifdef HAVE_QUESO_GPMSA
       return new NonDGPMSABayesCalibration(problem_db, model); break;
+#else
+      Cerr << "\nError: QUESO/GPMSA Bayesian calibration method unavailable.\n"
+	   << "(Not enabled in some Dakota distributions due to dependence on "
+	   << "GSL;\ncan be enabled when compiling from source code.)\n";
+      return NULL; break;
 #endif
-#ifdef HAVE_QUESO
     case SUBMETHOD_QUESO:
+#ifdef HAVE_QUESO
       return new NonDQUESOBayesCalibration(problem_db, model); break;
+#else
+      Cerr << "\nError: QUESO Bayesian calibration method unavailable.\n"
+	   << "(Not enabled in some Dakota distributions due to dependence on "
+	   << "GSL;\ncan be enabled when compiling from source code.)\n";
+      return NULL; break;
 #endif
 #ifdef HAVE_DREAM
     case SUBMETHOD_DREAM:
@@ -438,7 +448,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     case SUBMETHOD_WASABI:
       return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
-      Cerr << "Bayesian calibration selection not available." << std::endl;
+      Cerr << "\nError: Bayesian calibration method '"
+	   << submethod_enum_to_string(probDescDB.get_ushort("method.sub_method"))
+	   << "' unavailable.\n";
       return NULL;                                            break;
     } break;
   case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
