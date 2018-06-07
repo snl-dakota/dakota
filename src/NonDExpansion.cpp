@@ -2120,7 +2120,7 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
 
   // define flags for limiting unneeded computation (matched in print_results())
   bool full_stats = (results_state == FINAL_RESULTS);
-  bool local_grad_stats = ( full_stats && !subIteratorFlag &&
+  bool local_grad_stats = (full_stats && !subIteratorFlag &&
     outputLevel >= NORMAL_OUTPUT);
   bool vbd_stats = ( vbdFlag && ( full_stats ||
     refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ) );
