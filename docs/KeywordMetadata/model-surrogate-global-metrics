@@ -2,8 +2,8 @@ Blurb::
 Compute surrogate quality metrics
 
 Description::
-A variety of diagnostic metrics are available to assess the
-goodness of fit of a global surrogate to its training data.
+Diagnostic metrics assess the goodness of fit of a global surrogate to
+its training data.
 
 The default diagnostics are:
 \li \c root_mean_squared
@@ -20,8 +20,27 @@ The keywords \c press and \c cross_validation further specify
 leave-one-out or k-fold cross validation, respectively, for all of the
 active metrics from above.
 
+<b>Usage Tips</b>
+When specified, the \c metrics keyword must be followed by a list of
+quoted strings, each of which activates a metric.
+
 Topics::	surrogate_models
+
 Examples::
+This example input fragment constructs a quadratic polynomial
+surrogate and computes four metrics on the fit, both with and without
+5-fold cross validation. (Also see
+dakota/share/dakota/test/dakota_surrogate_import.in for additional
+examples.)
+
+\verbatim
+model
+  surrogate global
+    polynomial quadratic
+    metrics = "root_mean_squared" "sum_abs" "mean_abs" "max_abs"
+    cross_validation folds = 5
+\endverbatim
+
 Theory::
 
 Most of these diagnostics refer to some operation on the
