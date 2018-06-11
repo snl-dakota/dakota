@@ -45,8 +45,10 @@ public:
 	      const StoredType& stored_data,
 	      const MetaDataType metadata=  MetaDataType()) 
   {
-    hdf5Stream->store_data(dataset_name(iterator_id, data_name),
-			   stored_data);
+    //hdf5Stream->store_data(dataset_name(iterator_id, data_name),stored_data);
+    Cerr << "ResultsDBHDF5::insert is not fully supported.\n";
+    abort_handler(-1);
+
   }
 
  

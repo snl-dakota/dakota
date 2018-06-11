@@ -159,10 +159,10 @@ endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 if(DAKOTA_HAVE_HDF5)
   include_directories(${HDF5_INCLUDE_DIRS})
   link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
-  dakota_add_unit_test(NAME binary_io_test SOURCES binary_io_test.cpp
-    LINK_LIBS ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
-              ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES}
-    )
+  #dakota_add_unit_test(NAME binary_io_test SOURCES binary_io_test.cpp
+  #  LINK_LIBS ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
+  #            ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES}
+  #  )
 endif()
 
 

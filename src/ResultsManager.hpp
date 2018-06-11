@@ -21,7 +21,11 @@
 #include <memory>
 
 #ifdef DAKOTA_HAVE_HDF5
-#include "ResultsDBHDF5.hpp"
+//#include "ResultsDBHDF5.hpp" //  Will need to revisit this after adopting HDF5 version - RWH
+namespace Dakota {
+  class ResultsDBHDF5;
+}
+
 #else
 // forward declaration due to PIMPL in support of conditional compilation HDF5
 namespace Dakota {
@@ -259,8 +263,8 @@ public:
     if (coreDBActive)
       coreDB->insert(iterator_id, data_name, sent_data, metadata);
 #ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->insert(iterator_id, data_name, sent_data, metadata);
+    //if (hdf5DBActive)
+    //  hdf5DB->insert(iterator_id, data_name, sent_data, metadata);
 #endif
   }
   
@@ -278,8 +282,8 @@ public:
    if (coreDBActive)
       coreDB->insert(iterator_id, data_name, vs_labels, metadata);
 #ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->insert(iterator_id, data_name, vs_labels, metadata);
+    //if (hdf5DBActive)
+    //  hdf5DB->insert(iterator_id, data_name, vs_labels, metadata);
 #endif
   }
 
@@ -296,9 +300,8 @@ public:
       coreDB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
 					 metadata);
 #ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
-					 metadata);
+    //if (hdf5DBActive)
+    //  hdf5DB->array_allocate<StoredType>(iterator_id, data_name, array_size, metadata);
 #endif
 
   }
@@ -316,9 +319,8 @@ public:
       coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
 				       sent_data);
 #ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data);
+    //if (hdf5DBActive)
+    //  hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, sent_data);
 #endif
   }
 
@@ -340,9 +342,8 @@ public:
       coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
 				       sent_data_sa);
 #ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data_sa);
+    //if (hdf5DBActive)
+    //  hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, sent_data_sa);
 #endif
   }
 

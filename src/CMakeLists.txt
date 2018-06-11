@@ -433,8 +433,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
-  #list(APPEND util_src ResultsDBHDF5.cpp)
-  list(APPEND util_src BinaryIO_Helper.cpp)
+  #list(APPEND util_src BinaryIO_Helper.cpp) # Does not compile with newer versions of HDF5
 endif()
 
 if(DAKOTA_DL_SOLVER)
