@@ -321,7 +321,7 @@ endif()
 # and test subdirectories
 option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 if(DAKOTA_HAVE_HDF5)
-  find_package(HDF5 REQUIRED COMPONENTS "C;HL")
+  find_package(HDF5 REQUIRED COMPONENTS "C;HL;CXX")
 
   if(NOT HDF5_FOUND)
     message( SEND_ERROR "Dakota cannot write BINARY ResultsDB without HDF5 -

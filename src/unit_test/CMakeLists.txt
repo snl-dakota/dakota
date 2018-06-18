@@ -152,18 +152,20 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
     )
-endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
-
 
 # Unit test: Dakota output to binary HDF5 (depends on Teuchos and HDF5)
-if(DAKOTA_HAVE_HDF5)
-  include_directories(${HDF5_INCLUDE_DIRS})
-  link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
-  #dakota_add_unit_test(NAME binary_io_test SOURCES binary_io_test.cpp
-  #  LINK_LIBS ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
-  #            ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES}
-  #  )
-endif()
+  if(DAKOTA_HAVE_HDF5)
+    include_directories(${HDF5_INCLUDE_DIRS})
+    link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
+    dakota_add_unit_test(NAME hdf5_test_serial SOURCES teuchos_unit_test_driver hdf5_test_serial.cpp
+      LINK_DAKOTA_LIBS
+      LINK_LIBS ${HDF5_LIBRARIES}
+      )
+    target_link_libraries(hdf5_test_serial ${HDF5_LIBRARIES})
+  endif() # DAKOTA_HAVE_HDF5
+
+endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
+
 
 
 # Add a single target for all copied files
