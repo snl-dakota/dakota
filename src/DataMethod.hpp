@@ -981,6 +981,10 @@ public:
   /// flat indicating calculation of kernel density estimate of posterior 
   /// distributions
   bool posteriorStatsKDE;
+  /// flag indidcating calculation of the evidence of the model
+  bool modelEvidence;
+  /// number of prior samples to use in model evidence calculation
+  int evidenceSamples;
   /// the method used for performing a pre-solve for the MAP point
   unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior
