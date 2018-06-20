@@ -137,10 +137,6 @@ protected:
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
 
-  /// define the surrogate response mode for a hierarchical model in 
-  /// multilevel/multifidelity expansions
-  void assign_hierarchical_response_mode();
-
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 			  unsigned short cub_int_order);

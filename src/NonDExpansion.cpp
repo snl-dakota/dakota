@@ -105,35 +105,6 @@ NonDExpansion::~NonDExpansion()
 { }
 
 
-void NonDExpansion::assign_hierarchical_response_mode()
-{
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  //switch (methodName) {
-  //case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
-  //case MULTIFIDELITY_STOCH_COLLOCATION:
-    if (iteratedModel.surrogate_type() != "hierarchical") {
-      Cerr << "Error: multilevel/multifidelity expansions require a "
-	   << "hierarchical model." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else
-      iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  //  break;
-  //default: // single level/fidelity
-  //  if (iteratedModel.surrogate_type() == "hierarchical") {
-  //    Cerr << "Warning: single-level expansion configured with hierarchical "
-  //	     << "model.  High fidelity results will be used." << std::endl;
-  //    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  //  }
-  //  break;
-  //}
-}
-
-
 bool NonDExpansion::resize()
 {
   bool parent_reinit_comms = NonD::resize();
@@ -1177,15 +1148,18 @@ configure_indices(size_t lev, size_t form, bool multilevel,
 {
   // Set the active surrogate/truth models within iteratedModel
   // (the HierarchSurrModel)
-  bool  costs = !cost.empty(),
-    recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  lev_cost = (costs) ? cost[lev] : 0.;
+
+  bool costs = !cost.empty();
+
   if (multilevel) iteratedModel.truth_model_indices(form, lev);
   else            iteratedModel.truth_model_indices(lev);
-  if (lev == 0)
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  else if (!recursive) {
-    if (lev == 1) iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  lev_cost = (costs) ? cost[lev] : 0.;
+
+  // assume bottom-up sweep through levels (avoid redundant mode updates)
+  if (lev == 0)     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  else if (multilevDiscrepEmulation == DISTINCT_EMULATION &&
+	   expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT) {
+    if (lev == 1)   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
     if (multilevel) iteratedModel.surrogate_model_indices(form, lev-1);
     else            iteratedModel.surrogate_model_indices(lev-1);
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs

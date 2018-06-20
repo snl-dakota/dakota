@@ -123,6 +123,10 @@ private:
   void scale_profile(const SizetArray& cardinality, Real factor,
 		     RealVector& new_N_l);
 
+  /// define the surrogate response mode for a hierarchical model in 
+  /// multilevel/multifidelity expansions
+  void assign_hierarchical_response_mode();
+
   //
   //- Heading: Data
   //

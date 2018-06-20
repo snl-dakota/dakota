@@ -174,6 +174,28 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 { }
 
 
+void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
+{
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+
+  if (iteratedModel.surrogate_type() != "hierarchical") {
+    Cerr << "Error: multilevel/multifidelity expansions require a "
+	 << "hierarchical model." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // Hierarchical SC is already based on surpluses, so avoid complexity of
+  // using model discrepancies
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT ||
+      multilevDiscrepEmulation == RECURSIVE_EMULATION)
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  else
+    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+}
+
+
 bool NonDMultilevelStochCollocation::resize()
 {
   bool parent_reinit_comms = NonDExpansion::resize();

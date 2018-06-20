@@ -71,6 +71,14 @@ protected:
 private:
 
   //
+  //- Heading: Utility functions
+  //
+
+  /// define the surrogate response mode for a hierarchical model in 
+  /// multilevel/multifidelity expansions
+  void assign_hierarchical_response_mode();
+
+  //
   //- Heading: Data
   //
 
