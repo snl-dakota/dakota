@@ -136,7 +136,7 @@ DataMethodRep::DataMethodRep():
   regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
-  multilevDiscrepEmulation(DISTINCT_EMULATION),
+  multilevDiscrepEmulation(DEFAULT_EMULATION),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
   mlmfAllocControl(DEFAULT_MLMF_CONTROL), multilevEstimatorRate(2.),

@@ -82,7 +82,7 @@ NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
-  multilevDiscrepEmulation(DISTINCT_EMULATION),
+  multilevDiscrepEmulation(DEFAULT_EMULATION),
   expansionBasisType(Pecos::DEFAULT_BASIS), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
@@ -1157,8 +1157,7 @@ configure_indices(size_t lev, size_t form, bool multilevel,
 
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0)     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  else if (multilevDiscrepEmulation == DISTINCT_EMULATION &&
-	   expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT) {
+  else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     if (lev == 1)   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
     if (multilevel) iteratedModel.surrogate_model_indices(form, lev-1);
     else            iteratedModel.surrogate_model_indices(lev-1);
@@ -1188,14 +1187,19 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
   if (cost.empty() || N_l.empty())
     { equivHFEvals = 0.; return; }
 
-  bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  size_t lev, num_lev = N_l.size();
-
   // compute the equivalent number of HF evaluations
-  equivHFEvals = N_l[0] * cost[0]; // first level is single eval
-  for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
-    equivHFEvals += (recursive) ? N_l[lev] * cost[lev] :
-      N_l[lev] * (cost[lev] + cost[lev-1]);
+  size_t lev, num_lev = N_l.size();
+  switch (multilevDiscrepEmulation) {
+  case RECURSIVE_EMULATION:
+    for (lev=0; lev<num_lev; ++lev)
+      equivHFEvals += N_l[lev] * cost[lev]; // single model cost per level
+    break;
+  case DISTINCT_EMULATION:
+    equivHFEvals = N_l[0] * cost[0]; // first level is single model cost
+    for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
+      equivHFEvals += N_l[lev] * (cost[lev] + cost[lev-1]);
+    break;
+  }
   equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
 }
 

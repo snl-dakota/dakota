@@ -136,7 +136,7 @@ enum { CUMULATIVE, COMPLEMENTARY };
 // define special values for finalMomentsType
 enum { NO_MOMENTS, STANDARD_MOMENTS, CENTRAL_MOMENTS };
 // define special values for multilevDiscrepEmulation
-enum { NO_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
+enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)

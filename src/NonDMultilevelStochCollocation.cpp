@@ -38,6 +38,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)
 {
+  assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
   // ----------------------------------------------
@@ -118,6 +119,7 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 		       exp_coeffs_approach, piecewise_basis, use_derivs),
   mlmfAllocControl(DEFAULT_MLMF_CONTROL), sequenceIndex(0)
 {
+  assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
   switch (expansionCoeffsApproach) {
@@ -174,6 +176,34 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 { }
 
 
+void NonDMultilevelStochCollocation::assign_discrepancy_mode()
+{
+  switch (multilevDiscrepEmulation) {
+  case DISTINCT_EMULATION:
+    if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
+      Cerr << "Error: DISTINCT_EMULATION not currently supported for "
+	   << "Multilevel SC with hierarchical interpolants." << std::endl;
+      abort_handler(-1);
+    }
+    break;
+  /* TO DO: test this case...
+  case RECURSIVE_EMULATION:
+    if (expansionBasisType == Pecos::NODAL_INTERPOLANT) {
+      Cerr << "Error: RECURSIVE_EMULATION not currently supported for "
+	   << "Multilevel SC with nodal interpolants." << std::endl;
+      abort_handler(-1);
+    }
+    break;
+  */
+  case DEFAULT_EMULATION: // assign method-specific default
+    multilevDiscrepEmulation =
+      (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
+      RECURSIVE_EMULATION : DISTINCT_EMULATION;
+    break;
+  }
+}
+
+
 void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
 {
   // override default SurrogateModel::responseMode for purposes of setting
@@ -188,7 +218,7 @@ void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
 
   // Hierarchical SC is already based on surpluses, so avoid complexity of
   // using model discrepancies
-  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT ||
+  if (//expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT ||
       multilevDiscrepEmulation == RECURSIVE_EMULATION)
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else

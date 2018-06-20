@@ -44,6 +44,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
   //resizedFlag(false), callResize(false)
 {
+  assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
   // ----------------------------------------------
@@ -195,6 +196,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   mlmfAllocControl(DEFAULT_MLMF_CONTROL), sequenceIndex(0),
   kappaEstimatorRate(2.), gammaEstimatorScale(1.)
 {
+  assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
   // ----------------------------------------------
@@ -274,6 +276,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), pilotSamples(pilot)
 {
+  assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
   // ----------------------------------------------
@@ -337,6 +340,20 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 
 NonDMultilevelPolynomialChaos::~NonDMultilevelPolynomialChaos()
 { }
+
+
+void NonDMultilevelPolynomialChaos::assign_discrepancy_mode()
+{
+  switch (multilevDiscrepEmulation) {
+  //case DISTINCT_EMULATION:
+  //case RECURSIVE_EMULATION:
+  case DEFAULT_EMULATION: // assign method-specific default
+    multilevDiscrepEmulation
+      = //(expansionBasisType == () ? RECURSIVE_EMULATION :
+      DISTINCT_EMULATION;
+    break;
+  }
+}
 
 
 void NonDMultilevelPolynomialChaos::assign_hierarchical_response_mode()
