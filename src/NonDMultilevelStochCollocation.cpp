@@ -412,10 +412,17 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
       for (i=0; i<numFunctions; ++i) {
 	PecosApproximation* pa_rep_i
 	  = (PecosApproximation*)poly_approxs[i].approx_rep();
-	if (pa_rep_i->expansion_coefficient_flag())
-	  delta_resp_var[i] = (all_vars) ?
-	    pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_i) :
-	    pa_rep_i->delta_combined_covariance(pa_rep_i);
+	if (pa_rep_i->expansion_coefficient_flag()) {
+	  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
+	    // refinement assessed for impact on combined expansion from roll up
+	    delta_resp_var[i] = (all_vars) ?
+	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_i) :
+	      pa_rep_i->delta_combined_covariance(pa_rep_i);
+	  else // refinement assessed for impact on the current expansion
+	    delta_resp_var[i] = (all_vars) ?
+	      pa_rep_i->delta_covariance(initialPtU, pa_rep_i) :
+	      pa_rep_i->delta_covariance(pa_rep_i);
+	}
 	else delta_resp_var[i] = 0.;
       }
 
@@ -436,10 +443,17 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
 	  for (j=0; j<=i; ++j) {
 	    PecosApproximation* pa_rep_j
 	      = (PecosApproximation*)poly_approxs[j].approx_rep();
-	    if (pa_rep_j->expansion_coefficient_flag())
-	      delta_resp_covar(i,j) = (all_vars) ?
-		pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
-		pa_rep_i->delta_combined_covariance(pa_rep_j);
+	    if (pa_rep_j->expansion_coefficient_flag()) {
+	      if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
+		// refinement assessed for impact on combined exp from roll up
+		delta_resp_covar(i,j) = (all_vars) ?
+		  pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
+		  pa_rep_i->delta_combined_covariance(pa_rep_j);
+	      else // refinement assessed for impact on the current expansion
+		delta_resp_covar(i,j) = (all_vars) ?
+		  pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
+		  pa_rep_i->delta_covariance(pa_rep_j);
+	    }
 	    else delta_resp_covar(i,j) = 0.;
 	  }
 	else
