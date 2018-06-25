@@ -179,6 +179,7 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 void NonDMultilevelStochCollocation::assign_discrepancy_mode()
 {
   switch (multilevDiscrepEmulation) {
+  /*
   case DISTINCT_EMULATION:
     if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
       Cerr << "Error: DISTINCT_EMULATION not currently supported for "
@@ -186,7 +187,6 @@ void NonDMultilevelStochCollocation::assign_discrepancy_mode()
       abort_handler(-1);
     }
     break;
-  /* TO DO: test this case...
   case RECURSIVE_EMULATION:
     if (expansionBasisType == Pecos::NODAL_INTERPOLANT) {
       Cerr << "Error: RECURSIVE_EMULATION not currently supported for "
@@ -197,8 +197,9 @@ void NonDMultilevelStochCollocation::assign_discrepancy_mode()
   */
   case DEFAULT_EMULATION: // assign method-specific default
     multilevDiscrepEmulation =
-      (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
-      RECURSIVE_EMULATION : DISTINCT_EMULATION;
+      //(expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
+      //RECURSIVE_EMULATION :
+      DISTINCT_EMULATION;
     break;
   }
 }
@@ -222,7 +223,10 @@ void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
       multilevDiscrepEmulation == RECURSIVE_EMULATION)
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);//AGGREGATED_MODELS
+  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  // but would either require rework of scalar QoI in SurrogateDataResp or
+  // perhaps repurposing origSurrData + surrData for the high-low QoI pairs.
 }
 
 
