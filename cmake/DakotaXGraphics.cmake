@@ -30,6 +30,10 @@ macro(dakota_x_graphics)
   # Historically when statically linking, we've needed the following:
   # Xt, Xext, Xau
 
+  message(WARNING "DEPRECATED HAVE_X_GRAPHICS requested - use at your own risk!"
+    " While unsupported, Dakota X_GRAPHICS has been shown to work on SNL RHEL"
+    " systems; your mileage may vary.")
+
   set(DAKOTA_X_DEPS_FOUND FALSE)
   find_package(X11)
   find_package(Motif)
