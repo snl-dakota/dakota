@@ -114,14 +114,32 @@ TEUCHOS_UNIT_TEST(hdf5, realvec)
   RealVector vec_out(VEC_SIZE);
   vec_out.random();
 
-  bool db_is_incore = false;
-  bool file_exist = false;
-  bool write_file = true;
+  {
+    bool db_is_incore = false;
+    bool file_exist = false;
+    bool write_file = true;
 
-  HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
 
-  herr_t status = binary_file.store_data(ds_name, vec_out);
-  TEST_ASSERT(status >= 0);
+    herr_t status = binary_file.store_data(ds_name, vec_out);
+    TEST_ASSERT(status >= 0);
+  }
+
+  // Now read back in and test correctness
+  {
+    bool db_is_incore = false;
+    bool file_exist = true;
+    bool write_file = false;
+
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
+
+    RealVector test_vec;
+    binary_file.read_data(ds_name, test_vec);
+
+    TEST_EQUALITY( test_vec.length(), vec_out.length() );
+    double diff = max_diff( vec_out, test_vec );
+    TEST_COMPARE( diff, <, 1.e-15 );
+  }
 }
 
 //----------------------------------------------------------------
@@ -139,21 +157,38 @@ TEUCHOS_UNIT_TEST(hdf5, stdvec)
   for( auto & e : vec_out ) 
     e = rvec[i++];
 
-  bool db_is_incore = false;
-  bool file_exist = false;
-  bool write_file = true;
+  {
+    bool db_is_incore = false;
+    bool file_exist = false;
+    bool write_file = true;
 
-  HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
 
-  herr_t status = binary_file.store_data_array(ds_name, vec_out);
-  TEST_ASSERT(status >= 0);
+    herr_t status = binary_file.store_data_array(ds_name, vec_out);
+    TEST_ASSERT(status >= 0);
+  }
+
+  // Use C++ API to get the dimension of the dataset -- this can guide refactor of HDF5BinaryStream to C++ - RWH
+  H5File tmp_file(file_name, H5F_ACC_RDONLY);
+  DataSet dataset = tmp_file.openDataSet(ds_name);
+  TEST_ASSERT( dataset.getSpace().isSimple() );
+  int ndims = dataset.getSpace().getSimpleExtentNdims();
+  TEST_ASSERT( ndims == 1 );
 
   // Now read back in and test correctness
-  std::vector<Real> test_vec;
-  binary_file.read_data<Real, 1>(ds_name, test_vec);
-  
-  TEST_EQUALITY( test_vec.size(), vec_out.size() );
-  TEST_COMPARE_ARRAYS( vec_out, test_vec );
+  {
+    bool db_is_incore = false;
+    bool file_exist = true;
+    bool write_file = false;
+
+    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
+
+    std::vector<Real> test_vec;
+    binary_file.read_data(ds_name, ndims, test_vec);
+
+    TEST_EQUALITY( test_vec.size(), vec_out.size() );
+    TEST_COMPARE_ARRAYS( vec_out, test_vec );
+  }
 }
 
 //----------------------------------------------------------------

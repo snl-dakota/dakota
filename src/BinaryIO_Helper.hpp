@@ -22,8 +22,10 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "hdf5.h"
-#include "hdf5_hl.h"
+// We are mixing C and C++ APIs here with an eye to eventually adaopt one or the other - RWH
+#include "H5Cpp.h"      // C++ API
+#include "hdf5.h"       // C   API
+#include "hdf5_hl.h"    // C   H5Lite API
 
 #include <iostream>
 #include <limits>
@@ -622,15 +624,16 @@ public:
   //- Heading:  Data retrieval methods (read HDF5)
   //
 
-  template <typename T, size_t DIM>
+  template <typename T>
   herr_t read_data(const std::string& dset_name,
+                   size_t dim,
                    std::vector<T>& buf) const
   {
     //dbg_progress(binStreamId);
     // WJB: how to know what to size the dims vector??
     // H5LTget_dataset_ndims
     //      hardwire to have some success for now
-    std::vector<hsize_t> dims( DIM, hsize_t(1) ); // see "accumulate" below
+    std::vector<hsize_t> dims( dim, hsize_t(1) ); // see "accumulate" below
 
     herr_t ret_val = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
         &dims[0], NULL, NULL );
@@ -639,7 +642,7 @@ public:
       throw BinaryStream_GetDataFailure();
 
     hsize_t tot_dim = dims[0];
-    for( size_t i=1; i<DIM; ++i )
+    for( size_t i=1; i<dim; ++i )
       tot_dim *= dims[i];
 
     buf.resize( tot_dim );
@@ -650,6 +653,23 @@ public:
     //output_status(ret_val);
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_GetDataFailure();
+
+    return ret_val;
+  }
+
+
+  template <typename T>
+  herr_t read_data(const std::string& dset_name,
+                   Teuchos::SerialDenseVector<int,T> & buf) const
+  {
+    // This is not ideal in that we are copying data - RWH
+    std::vector<T> tmp_vec;
+    herr_t ret_val = read_data(dset_name, /* vector data is 1D */ 1, tmp_vec);
+
+    if( buf.length() != (int) tmp_vec.size() )
+      buf.sizeUninitialized(tmp_vec.size());
+    for( int i=0; i<buf.length(); ++i )
+      buf[i] = tmp_vec[i];
 
     return ret_val;
   }
