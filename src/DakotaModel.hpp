@@ -301,9 +301,10 @@ public:
   /// retrieve the set of Approximations within the ApproximationInterface
   /// of a DataFitSurrModel
   virtual std::vector<Approximation>& approximations();
-  /// retrieve the approximation data from a particular Approximation
+  /// retrieve a SurrogateData instance from a particular Approximation
   /// instance within the ApproximationInterface of a DataFitSurrModel
-  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
+  virtual const Pecos::SurrogateData&
+    approximation_data(size_t fn_index, size_t d_index = _NPOS);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within a DataFitSurrModel
@@ -324,6 +325,9 @@ public:
   /// return response computation mode used in SurrogateModels for
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
+
+  /// link together more than one SurrogateData instance (DataFitSurrModel)
+  virtual void link_multilevel_approximation_data();
 
   /// retrieve error estimates corresponding to the Model's response
   /// (could be surrogate error for SurrogateModels, statistical MSE for

@@ -148,8 +148,8 @@ compute(const Variables& vars, const Response& truth_response,
     it = surrogateFnIndices.begin();
     const Pecos::SurrogateDataVars& anchor_sdv
       = (computeAdditive || badScalingFlag) ?
-      addCorrections[*it].approximation_data().anchor_variables() :
-      multCorrections[*it].approximation_data().anchor_variables();
+      addCorrections[*it].approximation_data(0).anchor_variables() :
+      multCorrections[*it].approximation_data(0).anchor_variables();
     correctionPrevCenterPt.continuous_variables(
       anchor_sdv.continuous_variables());
     correctionPrevCenterPt.discrete_int_variables(
@@ -191,14 +191,14 @@ compute(const Variables& vars, const Response& truth_response,
       if (!quiet_flag)
 	Cout << "\nAdditive correction computed:\n" << sdr;
 
-      // update anchor data
-      if (approxType.empty()) {
-        addCorrections[index].add(sdv, true); //shallow copy into SurrogateData
-        addCorrections[index].add(sdr, true); //shallow copy into SurrogateData
+      // shallow copy of vars/resp into the active SurrogateData instance
+      if (approxType.empty()) { // update anchor data
+        addCorrections[index].add(sdv, true, _NPOS);
+        addCorrections[index].add(sdr, true, _NPOS);
       }
       else {
-        addCorrections[index].add(sdv, false); //shallow copy into SurrogateData
-        addCorrections[index].add(sdr, false); //shallow copy into SurrogateData
+        addCorrections[index].add(sdv, false, _NPOS);
+        addCorrections[index].add(sdr, false, _NPOS);
       }
     }
   }
@@ -215,9 +215,9 @@ compute(const Variables& vars, const Response& truth_response,
       if (!quiet_flag)
 	Cout << "\nMultiplicative correction computed:\n" << sdr;
 
-      // update anchor data
-      multCorrections[index].add(sdv, true); // shallow copy into SurrogateData
-      multCorrections[index].add(sdr, true); // shallow copy into SurrogateData
+      // update anchor data; shallow cp of vars/resp into active SurrogateData
+      multCorrections[index].add(sdv, true, _NPOS);
+      multCorrections[index].add(sdr, true, _NPOS);
     }
   }
 

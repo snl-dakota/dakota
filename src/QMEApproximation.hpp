@@ -116,19 +116,20 @@ inline QMEApproximation::~QMEApproximation()
 inline void QMEApproximation::clear_current()
 {
   size_t ndv = sharedDataRep->numVars;
+  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
   // demote from anchor to regular/previous data
   // (for completeness; no longer uses anchor designation)
-  approxData.clear_anchor_index();
+  approx_data.clear_anchor_index();
   //  previous is deleted and anchor moved to previous
-  if (approxData.points() > ndv+1)
-    approxData.pop_front();
+  if (approx_data.points() > ndv+1)
+    approx_data.pop_front();
 
   /*
-  approxData.clear_data();
-  if (approxData.anchor()) { // anchor becomes previous expansion point
-    approxData.push_back(approxData.anchor_variables(),
-			 approxData.anchor_response());
-    approxData.clear_anchor();
+  approx_data.clear_data();
+  if (approx_data.anchor()) { // anchor becomes previous expansion point
+    approx_data.push_back(approx_data.anchor_variables(),
+			  approx_data.anchor_response());
+    approx_data.clear_anchor();
   }
   */
 }

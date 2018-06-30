@@ -131,6 +131,10 @@ public:
   /// set the (currently active) approximation function index set
   virtual void approximation_function_indices(const IntSet& approx_fn_indices);
 
+  /// link together more than one SurrogateData instance within an
+  /// ApproximationInterface
+  virtual void link_multilevel_approximation_data();
+
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
 				    const IntResponsePair& response_pr);
@@ -179,18 +183,6 @@ public:
   /// promote the combined approximation to the currently active one
   virtual void combined_to_active();
 
-  /*
-  /// move the current approximation into storage for later combination;
-  /// the index of the stored approximation can be passed to allow
-  /// replacement instead of augmentation (default is push_back)
-  virtual void store_approximation(size_t index = _NPOS);
-  /// return an approximation from storage; the index identifies a
-  /// particular stored data set (default is pop_back from stored)
-  virtual void restore_approximation(size_t index = _NPOS);
-  /// remove a stored approximation, due to redundancy with the current
-  /// approximation, prior to combination (default for no index is pop_back)
-  virtual void remove_stored_approximation(size_t index = _NPOS);
-  */
   /// clear inactive approximation data
   virtual void clear_inactive();
 
@@ -216,7 +208,8 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve the approximation data from a particular Approximation
   /// within an ApproximationInterface
-  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
+  virtual const Pecos::SurrogateData&
+    approximation_data(size_t fn_index, size_t d_index);// = _NPOS);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface

@@ -263,7 +263,7 @@ void RandomFieldModel::identify_field_model()
       gpApproximations.push_back(Approximation(sharedData));
     for (int i = 0; i < actualReducedRank; ++i) {
       RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-      gpApproximations[i].add(rfBuildVars, factor_i);
+      gpApproximations[i].add_array(rfBuildVars, factor_i);
       gpApproximations[i].build();
       const String gp_string = boost::lexical_cast<String>(i);
       const String gp_prefix = "PCA_GP";

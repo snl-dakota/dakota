@@ -190,9 +190,6 @@ public:
   void augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 			     const UShort2DArray& multi_index);
 
-  // get the surrData instance
-  const Pecos::SurrogateData& surrogate_data() const;
-
   /// return pecosBasisApprox
   Pecos::BasisApproximation& pecos_basis_approximation();
 
@@ -238,6 +235,8 @@ protected:
   void approximation_coefficients(const RealVector& approx_coeffs,
 				  bool normalized);
 
+  void link_multilevel_approximation_data();
+
   void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
   //
@@ -257,8 +256,8 @@ private:
   //- Heading: Data
   //
 
-  /// the Pecos basis approximation, encompassing OrthogPolyApproximation
-  /// and InterpPolyApproximation
+  /// the Pecos basis approximation, encompassing orthogonal and interpolation
+  /// polynomial approximations
   Pecos::BasisApproximation pecosBasisApprox;
   /// convenience pointer to representation of Pecos polynomial approximation
   Pecos::PolynomialApproximation* polyApproxRep;
@@ -490,10 +489,6 @@ augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 }
 
 
-inline const Pecos::SurrogateData& PecosApproximation::surrogate_data() const
-{ return pecosBasisApprox.surrogate_data(); }
-
-
 inline Pecos::BasisApproximation& PecosApproximation::
 pecos_basis_approximation()
 { return pecosBasisApprox; }
@@ -542,7 +537,7 @@ inline void PecosApproximation::rebuild()
   // support of both update and append, need a mechanism to detect
   // the +/- direction of discrepancy between data and coefficients.
 
-  //size_t curr_pts  = approxData.points(),
+  //size_t curr_pts  = approxData[activeDataIndex].points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
     pecosBasisApprox.increment_coefficients();

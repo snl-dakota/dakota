@@ -348,9 +348,7 @@ void NonDMultilevelPolynomialChaos::assign_discrepancy_mode()
   //case DISTINCT_EMULATION:
   //case RECURSIVE_EMULATION:
   case DEFAULT_EMULATION: // assign method-specific default
-    multilevDiscrepEmulation
-      = //(expansionBasisType == () ? RECURSIVE_EMULATION :
-      DISTINCT_EMULATION;
+    multilevDiscrepEmulation = DISTINCT_EMULATION;
     break;
   }
 }
@@ -375,6 +373,10 @@ void NonDMultilevelPolynomialChaos::assign_hierarchical_response_mode()
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else
     iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+
+  // Bind more than one SurrogateData instance via DataFitSurrModel ->
+  // PecosApproximation
+  uSpaceModel.link_multilevel_approximation_data();
 }
 
 

@@ -513,12 +513,20 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, false);
 
+  // update pop counts for data in response_pr
   const ShortArray& asv = response_pr.second.active_set_request_vector();
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    if (asv[*it])
-      functionSurfaces[*it].pop_count(1); // one pt appended to SurrogateData
-    else
-      functionSurfaces[*it].pop_count(0); // nothing appended to SurrogateData
+  size_t i, sd_index, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = asv.size();
+  ISIter fn_it;
+  for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
+    fn_index = *fn_it;
+    // asv may be larger than num_fns due to response aggregation modes
+    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index)
+      if (asv[i])
+	functionSurfaces[fn_index].pop_count(1, sd_index); // one pt appended
+      else
+	functionSurfaces[fn_index].pop_count(0, sd_index); // no pts appended
+  }
 }
 
 
@@ -698,34 +706,36 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
 void ApproximationInterface::
 mixed_add(const Variables& vars, const Response& response, bool anchor)
 {
-  Pecos::SurrogateDataVars sdv; bool first_vars = true; size_t index;
+  Pecos::SurrogateDataVars sdv; bool first_vars = true;
   const ShortArray& asv = response.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
+    sd_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    index = *it; 
-    if (asv[index]) {
-      Approximation& fn_surf = functionSurfaces[index];
-      // rather than unrolling the response (containing all response functions)
-      // into per-response function arrays for input to fn_surf, pass the
-      // complete response along with a response function index.
-      if (first_vars) {
-	fn_surf.add(vars, anchor, true);            // deep
-	fn_surf.add(response, index, anchor, true); // deep
-	// carry newly added sdv over to other approx fn indices:
-	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
-	                 fn_surf.approximation_data().variables_data().back();
-	first_vars = false;
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): first vars\n";
-#endif // DEBUG
+    fn_index = *it;
+    // asv may be larger than num_fns due to response aggregation modes
+    // (e.g., multifidelity) --> use num_fns as stride and support add()
+    // to vector of SurrogateData
+    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index)
+      if (asv[i]) {
+	Approximation& fn_surf = functionSurfaces[fn_index];
+	// rather than unrolling the response (containing all response fns)
+	// into per-response function arrays for input to fn_surf, pass the
+	// complete response along with a response function index.
+	if (first_vars) {
+	  fn_surf.add(vars,        anchor, true, sd_index); // deep
+	  fn_surf.add(response, i, anchor, true, sd_index); // deep
+	  // carry newly added sdv over to other approx fn indices:
+	  const Pecos::SurrogateData& surr_data
+	    = fn_surf.approximation_data(sd_index);
+	  sdv = (anchor) ? surr_data.anchor_variables() :
+	                   surr_data.variables_data().back();
+	  first_vars = false;
+	}
+	else {
+	  fn_surf.add(sdv,         anchor,       sd_index); // shallow
+	  fn_surf.add(response, i, anchor, true, sd_index); // deep
+	}
       }
-      else {
-	fn_surf.add(sdv, anchor);                // shallow
-	fn_surf.add(response, index, anchor, true); // deep
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): subsequent vars\n";
-#endif // DEBUG
-      }
-    }
   }
 }
 
@@ -733,34 +743,36 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
 void ApproximationInterface::
 mixed_add(const Real* c_vars, const Response& response, bool anchor)
 {
-  Pecos::SurrogateDataVars sdv; bool first_vars = true; size_t index;
+  Pecos::SurrogateDataVars sdv; bool first_vars = true;
   const ShortArray& asv = response.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
+    sd_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    index = *it; 
-    if (asv[index]) {
-      Approximation& fn_surf = functionSurfaces[index];
-      // rather than unrolling the response (containing all response functions)
-      // into per-response function arrays for input to fn_surf, pass the
-      // complete response along with a response function index.
-      if (first_vars) {
-	fn_surf.add(c_vars, anchor, true);          // deep
-	fn_surf.add(response, index, anchor, true); // deep
-	// carry newly added sdv over to other approx fn indices:
-	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
-	                 fn_surf.approximation_data().variables_data().back();
-	first_vars = false;
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): first c_vars\n";
-#endif // DEBUG
+    fn_index = *it;
+    // asv may be larger than num_fns due to response aggregation modes
+    // (e.g., multifidelity) --> use num_fns as stride and support add()
+    // to vector of SurrogateData
+    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index)
+      if (asv[i]) {
+	Approximation& fn_surf = functionSurfaces[fn_index];
+	// rather than unrolling the response (containing all response fns)
+	// into per-response function arrays for input to fn_surf, pass the
+	// complete response along with a response function index.
+	if (first_vars) {
+	  fn_surf.add(c_vars,      anchor, true, sd_index); // deep
+	  fn_surf.add(response, i, anchor, true, sd_index); // deep
+	  // carry newly added sdv over to other approx fn indices:
+	  const Pecos::SurrogateData& surr_data
+	    = fn_surf.approximation_data(sd_index);
+	  sdv = (anchor) ? surr_data.anchor_variables() :
+	                   surr_data.variables_data().back();
+	  first_vars = false;
+	}
+	else {
+	  fn_surf.add(sdv,         anchor,       sd_index); // shallow
+	  fn_surf.add(response, i, anchor, true, sd_index); // deep
+	}
       }
-      else {
-	fn_surf.add(sdv, anchor);                // shallow
-	fn_surf.add(response, index, anchor, true); // deep
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): subsequent c_vars\n";
-#endif // DEBUG
-      }
-    }
   }
 }
 
@@ -768,34 +780,38 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
 void ApproximationInterface::
 shallow_add(const Variables& vars, const Response& response, bool anchor)
 {
-  size_t index;
   const ShortArray& asv = response.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
+    sd_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    index = *it; 
-    if (asv[index]) {
-      Approximation& fn_surf = functionSurfaces[index];
-      fn_surf.add(vars, anchor, false);            // shallow
-      // rather than unrolling the response (containing all response functions)
-      // into per-response function arrays for input to fn_surf, pass the
-      // complete response along with a response function index.
-      fn_surf.add(response, index, anchor, false); // shallow
-#ifdef DEBUG
-      Cout << "ApproximationInterface::shallow_add()\n";
-#endif // DEBUG
-    }
+    fn_index = *it;
+    // asv may be larger than num_fns due to response aggregation modes
+    // (e.g., multifidelity) --> use num_fns as stride and support add()
+    // to vector of SurrogateData
+    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index)
+      if (asv[i]) {
+	Approximation& fn_surf = functionSurfaces[fn_index];
+	fn_surf.add(vars,        anchor, false, sd_index); // shallow
+	fn_surf.add(response, i, anchor, false, sd_index); // shallow
+      }
   }
 }
 
 
 void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 {
-  ISIter a_it; IntRespMCIter r_it; size_t index, pop_count;
-  for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it) {
-    index = *a_it; pop_count = 0;
-    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
-      if (r_it->second.active_set_request_vector()[index])
-	++pop_count;
-    functionSurfaces[index].pop_count(pop_count);
+  ISIter fn_it; IntRespMCIter r_it = resp_map.begin();
+  size_t i, pop_count, sd_index, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = r_it->second.active_set_request_vector().size();
+  for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
+    fn_index = *fn_it;
+    // asv may be larger than num_fns due to response aggregation modes
+    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index) {
+      for (r_it=resp_map.begin(), pop_count=0; r_it!=resp_map.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
+	  ++pop_count;
+      functionSurfaces[fn_index].pop_count(pop_count, sd_index);
+    }
   }
 }
 

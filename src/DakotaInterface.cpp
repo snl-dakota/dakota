@@ -1048,6 +1048,19 @@ void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 }
 
 
+void Interface::link_multilevel_approximation_data()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->link_multilevel_approximation_data();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual link_multilevel_"
+	 << "approximation_data() function.\n       This interface does not "
+	 << "support multilevel data." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 void Interface::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
@@ -1226,46 +1239,6 @@ void Interface::finalize_approximation()
   }
 }
 
-/*
-void Interface::store_approximation(size_t index)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->store_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
-	 << "() function.\n       This interface does not support approximation"
-	 << " storage." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Interface::restore_approximation(size_t index)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->restore_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximation storage." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Interface::remove_stored_approximation(size_t index)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->remove_stored_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual remove_stored_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximation storage." << std::endl;
-    abort_handler(-1);
-  }
-}
-*/
-
 
 void Interface::clear_inactive()
 {
@@ -1394,7 +1367,8 @@ std::vector<Approximation>& Interface::approximations()
 }
 
 
-const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
+const Pecos::SurrogateData& Interface::
+approximation_data(size_t fn_index, size_t d_index)
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
@@ -1404,7 +1378,7 @@ const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
   }
   
   // envelope fwd to letter
-  return interfaceRep->approximation_data(fn_index);
+  return interfaceRep->approximation_data(fn_index, d_index);
 }
 
 

@@ -42,9 +42,13 @@ namespace Dakota {
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
-  approxData(true), sharedDataRep(shared_data.data_rep()),
-  approxLabel(approx_label), approxRep(NULL), referenceCount(1)
+  sharedDataRep(shared_data.data_rep()), approxLabel(approx_label),
+  activeDataIndex(0), approxRep(NULL), referenceCount(1)
 {
+  // We always have at least one SurrogateData instance in approxData.
+  // Aggregated data modes append to this vector downstream from ctor.
+  approxData.push_back(Pecos::SurrogateData(true));
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
        << "class for letter." << std::endl;
@@ -61,9 +65,13 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
-  approxData(true), sharedDataRep(shared_data.data_rep()),
+  sharedDataRep(shared_data.data_rep()), activeDataIndex(0),
   approxRep(NULL), referenceCount(1)
 {
+  // We always have at least one SurrogateData instance in approxData.
+  // Aggregated data modes append to this vector downstream from ctor.
+  approxData.push_back(Pecos::SurrogateData(true));
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
        << "base class for letter." << std::endl;
@@ -284,8 +292,15 @@ void Approximation::build()
 {
   if (approxRep)
     approxRep->build();
-  else // default is only a data check, to be augmented by derived class:
-    check_points(approxData.points());
+  else { // default is only a data check, to be augmented by derived class:
+    size_t d, num_d = approxData.size(), pts,
+      min_pts = std::numeric_limits<size_t>::max();
+    for (d=0; d<num_d; ++d) {
+      pts = approxData[d].points();
+      if (pts < min_pts) min_pts = pts;
+    }
+    check_points(min_pts);
+  }
 }
 
 
@@ -320,7 +335,11 @@ void Approximation::rebuild()
 void Approximation::pop(bool save_data)
 {
   if (approxRep) approxRep->pop(save_data);
-  else           approxData.pop(save_data);
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].pop(save_data);
+  }
 }
 
 
@@ -330,7 +349,12 @@ void Approximation::pop(bool save_data)
 void Approximation::push()
 {
   if (approxRep) approxRep->push();
-  else           approxData.push(sharedDataRep->retrieval_index());
+  else {
+    size_t d, num_d = approxData.size(),
+      r_index = sharedDataRep->retrieval_index();
+    for (d=0; d<num_d; ++d)
+      approxData[d].push(r_index);
+  }
 }
 
 
@@ -339,13 +363,29 @@ void Approximation::push()
     invoke (or reimplement) this base class contribution. */
 void Approximation::finalize()
 {
+  // finalization has to apply restorations in the correct order
+
   if (approxRep) approxRep->finalize();
   else {
-    // finalization has to apply restorations in the correct order
-    size_t i, num_popped = approxData.popped_sets(); // # of popped trials
-    for (i=0; i<num_popped; ++i)
-      approxData.push(sharedDataRep->finalization_index(i), false);
-    approxData.clear_active_popped(); // only after process completed
+    // assume number of popped trials is consistent across approxData
+    size_t d, p, f_index, num_popped = approxData[0].popped_sets(),
+      num_d = approxData.size();      
+    for (p=0; p<num_popped; ++p) {
+      f_index = sharedDataRep->finalization_index(p);
+      for (d=0; d<num_d; ++d)
+	approxData[d].push(f_index, false);
+    }
+    /* finalization indices are defined from shared data, so this is overkill:
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d) {
+      SurrogateData& data_d = approxData[d];
+      num_popped = data_d.popped_sets(); // # of popped trials
+      for (p=0; p<num_popped; ++p)
+	data_d.push(sharedDataRep->finalization_index(p), false);
+    }
+    */
+    for (d=0; d<num_d; ++d)
+      approxData[d].clear_active_popped(); // only after process completed
   }
 }
 
@@ -360,51 +400,44 @@ void Approximation::combine()
 void Approximation::combined_to_active()
 {
   if (approxRep) approxRep->combined_to_active();
-  //else approxData.active_key(sharedDataRep->active_model_key());
+  //else {
+  //  const UShortArray& key = sharedDataRep->active_model_key();
+  //  for (d=0; d<num_d; ++d)
+  //    approxData[d].active_key(key);
+  //}
 }
-
-
-/*
-void Approximation::store(size_t index)
-{
-  if (approxRep) approxRep->store(index);
-  else           approxData.store(index);
-}
-
-
-void Approximation::restore(size_t index)
-{
-  if (approxRep) approxRep->restore(index);
-  else           approxData.restore(index);
-}
-
-
-void Approximation::remove_stored(size_t index)
-{
-  if (approxRep) approxRep->remove_stored(index);
-  else           approxData.remove_stored(index);
-}
-*/
 
 
 void Approximation::active_model_key(const UShortArray& mi_key)
 {
   if (approxRep) approxRep->active_model_key(mi_key);
-  else           approxData.active_key(mi_key);
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].active_key(mi_key);
+  }
 }
 
 
 void Approximation::clear_model_keys()
 {
   if (approxRep) approxRep->clear_model_keys();
-  else           approxData.clear_keys();
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].clear_keys();
+  }
 }
 
 
 void Approximation::clear_inactive()
 {
   if (approxRep) approxRep->clear_inactive();
-  else           approxData.clear_inactive();
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].clear_inactive();
+  }
 }
 
 
@@ -598,6 +631,18 @@ approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 }
 
 
+void Approximation::link_multilevel_approximation_data()
+{
+  if (approxRep)
+    approxRep->link_multilevel_approximation_data();
+  else {
+    Cerr << "Error: link_multilevel_approximation_data() not available for "
+	 << "this approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
 void Approximation::
 coefficient_labels(std::vector<std::string>& coeff_labels) const
 {
@@ -650,8 +695,9 @@ int Approximation::num_constraints() const
   if (approxRep) // fwd to letter
     return approxRep->num_constraints(); 
   else { // default implementation
-    if (approxData.anchor()) { // anchor data may differ from buildDataOrder
-      const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    const Pecos::SurrogateData& data_0 = approxData[0];
+    if (data_0.anchor()) { // anchor data may differ from buildDataOrder
+      const SurrogateDataResp& anchor_sdr = data_0.anchor_response();
       int ng = anchor_sdr.response_gradient().length(),
           nh = anchor_sdr.response_hessian().numRows();
       return 1 + ng + nh*(nh + 1)/2;
@@ -701,30 +747,30 @@ int Approximation::recommended_points(bool constraint_flag) const
 
 
 void Approximation::
-add(const Variables& vars, bool anchor_flag, bool deep_copy)
+add(const Variables& vars, bool anchor_flag, bool deep_copy, size_t d_index)
 {
   if (approxRep)
-    approxRep->add(vars, anchor_flag, deep_copy);
+    approxRep->add(vars, anchor_flag, deep_copy, d_index);
   else { // not virtual: all derived classes use following definition
     // Approximation does not know about view mappings; therefore, take the
     // simple approach of matching up active or all counts with numVars.
     size_t num_v = sharedDataRep->numVars;
     if (vars.cv() + vars.div() + vars.drv() == num_v)
       add(vars.continuous_variables(), vars.discrete_int_variables(),
-	  vars.discrete_real_variables(), anchor_flag, deep_copy);
+	  vars.discrete_real_variables(), anchor_flag, deep_copy, d_index);
     else if (vars.acv() + vars.adiv() + vars.adrv() == num_v)
       add(vars.all_continuous_variables(), vars.all_discrete_int_variables(),
-	  vars.all_discrete_real_variables(), anchor_flag, deep_copy);
+	  vars.all_discrete_real_variables(), anchor_flag, deep_copy, d_index);
     /*
     else if (vars.cv() == num_v) {  // compactMode does not affect vars
       IntVector empty_iv; RealVector empty_rv;
       add(vars.continuous_variables(), empty_iv, empty_rv,
-	  anchor_flag, deep_copy);
+	  anchor_flag, deep_copy, d_index);
     }
     else if (vars.acv() == num_v) { // potential conflict with cv/div/drv
       IntVector empty_iv; RealVector empty_rv;
       add(vars.all_continuous_variables(), empty_iv, empty_rv,
-	  anchor_flag, deep_copy);
+	  anchor_flag, deep_copy, d_index);
     }
     */
     else {
@@ -737,62 +783,61 @@ add(const Variables& vars, bool anchor_flag, bool deep_copy)
 
 
 void Approximation::
-add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy)
+add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy,
+    size_t d_index)
 {
   if (approxRep)
-    approxRep->add(response, fn_index, anchor_flag, deep_copy);
+    approxRep->add(response, fn_index, anchor_flag, deep_copy, d_index);
   else { // not virtual: all derived classes use following definition
+
     short asv_val = response.active_set_request_vector()[fn_index];
     //if (asv_val) { // ASV dropouts are now managed at a higher level
 
     // use empty vectors/matrices if data is not active.
     Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
-    RealVector fn_grad;
-    if (asv_val & 2)
-      fn_grad = response.function_gradient_view(fn_index); // view of column
-    RealSymMatrix empty_hess;
-    const RealSymMatrix& fn_hess = (asv_val & 4) ?
-      response.function_hessian(fn_index) : empty_hess;
+    RealVector fn_grad;  RealSymMatrix fn_hess;
+    if (asv_val & 2) fn_grad = response.function_gradient_view(fn_index);
+    if (asv_val & 4) fn_hess = response.function_hessian_view(fn_index);
 
     // Map DAKOTA's deep_copy bool into Pecos' copy mode
     // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
     short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
     Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, asv_val, mode);
-    if (anchor_flag) approxData.anchor_response(sdr);
-    else             approxData.push_back(sdr);
+    add(sdr, anchor_flag, d_index);
 
     //}
   }
 }
 
 
+/** Short cut function (not used by ApproximationInterface). */
 void Approximation::
-add(const RealMatrix& sample_vars, const RealVector& sample_resp)
+add_array(const RealMatrix& sample_vars, const RealVector& sample_resp)
+//, size_t d_index)
 {
   if (approxRep)
-    approxRep->add(sample_vars, sample_resp);
+    approxRep->add_array(sample_vars, sample_resp);
   else { // not virtual: all derived classes use following definition
     size_t num_samples = sample_vars.numCols();
     if (sample_resp.length() != num_samples) {
-      Cerr << "\nError: incompatible approx build data sizes.\n";
+      Cerr << "\nError: incompatible data sizes in shortcut function "
+	   << "Approximation::add(RealMatrix&, RealVector&)." << std::endl;
       abort_handler(APPROX_ERROR);
     }
-    size_t num_vars = sample_vars.numRows();
+    size_t i, num_vars = sample_vars.numRows();
     bool anchor_flag = false, deep_copy = true;
-    for (size_t i=0; i<num_samples; ++i) {
+    short asv_val = 1,
+      mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+    RealVector empty_grad;  RealSymMatrix empty_hess;
+    for (i=0; i<num_samples; ++i) {
 
       // add variable values (column of samples matrix)
-      add(sample_vars[i], anchor_flag, deep_copy);
+      add(sample_vars[i], anchor_flag, deep_copy, activeDataIndex);//, d_index);
 
-      // add response value
-      short asv_val = 1;
-      Real fn_val = sample_resp[i];
-      RealVector empty_grad;
-      RealSymMatrix empty_hess;
-      short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+      // add response value (scalar)
       Pecos::SurrogateDataResp
-	sdr(fn_val, empty_grad, empty_hess, asv_val, mode);
-      approxData.push_back(sdr);
+	sdr(sample_resp[i], empty_grad, empty_hess, asv_val, mode);
+      add(sdr, anchor_flag, activeDataIndex);//, d_index);
     }
   }
 }

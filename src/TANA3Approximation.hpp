@@ -116,12 +116,13 @@ inline TANA3Approximation::~TANA3Approximation()
 /** Redefine default implementation to support history mechanism. */
 inline void TANA3Approximation::clear_current()
 {
+  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
   // demote from anchor to regular/previous data
   // (for completeness; TANA no longer uses anchor designation)
-  approxData.clear_anchor_index();
+  approx_data.clear_anchor_index();
   //  previous is deleted and anchor moved to previous
-  if (approxData.points() > 1)
-    approxData.pop_front();
+  if (approx_data.points() > 1)
+    approx_data.pop_front();
 }
 
 } // namespace Dakota

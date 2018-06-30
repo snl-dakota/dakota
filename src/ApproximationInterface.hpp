@@ -78,6 +78,8 @@ protected:
 
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
+  void link_multilevel_approximation_data();
+
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr);
   void update_approximation(const RealMatrix& samples,
@@ -129,7 +131,8 @@ protected:
 
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
-  const Pecos::SurrogateData& approximation_data(size_t fn_index);
+  const Pecos::SurrogateData&
+    approximation_data(size_t fn_index, size_t d_index);// = _NPOS);
 
   const RealVectorArray& approximation_coefficients(bool normalized = false);
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
@@ -285,6 +288,13 @@ approximation_function_indices(const IntSet& approx_fn_indices)
 { approxFnIndices = approx_fn_indices; }
 
 
+inline void ApproximationInterface::link_multilevel_approximation_data()
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].link_multilevel_approximation_data();
+}
+
+
 /** This function removes data provided by a previous append_approximation()
     call, possibly different numbers for each function, or as specified in
     pop_count, which is assumed to be the same for all functions. */
@@ -408,14 +418,14 @@ inline std::vector<Approximation>& ApproximationInterface::approximations()
 
 
 inline const Pecos::SurrogateData& ApproximationInterface::
-approximation_data(size_t fn_index)
+approximation_data(size_t fn_index, size_t d_index)
 {
   if (approxFnIndices.find(fn_index) == approxFnIndices.end()) {
     Cerr << "Error: index passed to ApproximationInterface::approximation_data"
 	 << "() does not correspond to an approximated function." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
-  return functionSurfaces[fn_index].approximation_data();
+  return functionSurfaces[fn_index].approximation_data(d_index);
 }
 
 
@@ -431,7 +441,7 @@ sample_to_variables(const Real* sample_c_vars, size_t num_cv, Variables& vars)
   else {
     Cerr << "Error: size mismatch in ApproximationInterface::"
 	 << "sample_to_variables()" << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 

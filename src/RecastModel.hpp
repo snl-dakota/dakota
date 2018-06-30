@@ -303,7 +303,8 @@ protected:
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
-  const Pecos::SurrogateData& approximation_data(size_t fn_index);
+  const Pecos::SurrogateData&
+    approximation_data(size_t fn_index, size_t d_index = _NPOS);
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
@@ -730,8 +731,8 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& RecastModel::
-approximation_data(size_t fn_index)
-{ return subModel.approximation_data(fn_index); }
+approximation_data(size_t fn_index, size_t d_index)
+{ return subModel.approximation_data(fn_index, d_index); }
 
 
 inline void RecastModel::component_parallel_mode(short mode)

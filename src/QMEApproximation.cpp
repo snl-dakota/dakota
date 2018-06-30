@@ -52,8 +52,8 @@ int QMEApproximation::min_coefficients() const
 int QMEApproximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
-  // the number of constraints within approxData's anchor point.
-  return (approxData.anchor()) ? sharedDataRep->numVars + 1 : 0;
+  // the number of constraints within active approxData's anchor point.
+  return (approxData[activeDataIndex].anchor()) ? sharedDataRep->numVars+1 : 0;
 }
 */
 
@@ -68,7 +68,8 @@ void QMEApproximation::build()
 
   // Sanity checking verifies 1 or 2 points with gradients (Hessians ignored)
 
-  size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
+  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
 //if (num_pts < 1 || num_pts > 2) {
   if (num_pts < 1 ) {
     Cerr << "Error: wrong number of data points (" << num_pts
@@ -79,7 +80,7 @@ void QMEApproximation::build()
   if (num_pts >= 2) { // QMEA
 //  const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
     const size_t k=1,         p=0;         // indices to current and previous points
-    const Pecos::SDRArray& sdr_array = approxData.response_data();
+    const Pecos::SDRArray& sdr_array = approx_data.response_data();
     // Check gradients
     if (sdr_array[p].response_gradient().length() != num_v ||
         sdr_array[k].response_gradient().length() != num_v) {
@@ -93,7 +94,7 @@ void QMEApproximation::build()
     if (minX.empty()) minX.sizeUninitialized(num_v);
 
     // Calculate TANA3 terms
-    const Pecos::SDVArray& sdv_array = approxData.variables_data();
+    const Pecos::SDVArray& sdv_array = approx_data.variables_data();
     const RealVector& x1 = sdv_array[p].continuous_variables();
     const RealVector& x2 = sdv_array[k].continuous_variables();
     for (size_t i=0; i<num_v; i++)
@@ -105,7 +106,7 @@ void QMEApproximation::build()
     // Fall back to 1st-order Taylor series as interim approach,
     // for which no additional computations are needed.
 
-    if (approxData.num_gradient_variables() != num_v) {
+    if (approx_data.num_gradient_variables() != num_v) {
       Cerr << "Error: response gradients required in QMEApproximation::build."
 	   << std::endl;
       abort_handler(APPROX_ERROR);
@@ -131,13 +132,14 @@ void QMEApproximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
-  size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
+  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
 //const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
   const size_t k=1, p=0;                 // indices to current and previous points
   Cout << "QMEA num_pts=" << num_pts << ", k=" << k << ", p=" << p << '\n';
 
-  const Pecos::SDVArray& sdv_array = approxData.variables_data();
-  const Pecos::SDRArray& sdr_array = approxData.response_data();
+  const Pecos::SDVArray& sdv_array = approx_data.variables_data();
+  const Pecos::SDRArray& sdr_array = approx_data.response_data();
 
   const RealVector& x1    = sdv_array[p].continuous_variables();
   Real              f1    = sdr_array[p].response_function();
@@ -310,11 +312,13 @@ Real QMEApproximation::value(const Variables& vars)
 {
   Real approx_val;
   const RealVector& x = vars.continuous_variables();
-  size_t i, num_v = sharedDataRep->numVars, num_pts = approxData.points();
+  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  size_t i, num_v = sharedDataRep->numVars, num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
-    const Pecos::SurrogateDataVars& center_sdv = approxData.variables_data()[0];
-    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
+    const Pecos::SurrogateDataVars& center_sdv
+      = approx_data.variables_data()[0];
+    const Pecos::SurrogateDataResp& center_sdr = approx_data.response_data()[0];
     const RealVector&    center_x = center_sdv.continuous_variables();
     approx_val                    = center_sdr.response_function();
     const RealVector& center_grad = center_sdr.response_gradient();
@@ -340,7 +344,7 @@ Real QMEApproximation::value(const Variables& vars)
     }
 
     // Calculate approx_val
-    const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[1];
+    const Pecos::SurrogateDataResp& curr_sdr = approx_data.response_data()[1];
     Real f2 = curr_sdr.response_function(), sum1 = 0.,
       sum_diff1_sq = 0., sum_diff2_sq = 0.;
     const RealVector& grad2 = curr_sdr.response_gradient();
@@ -365,10 +369,11 @@ Real QMEApproximation::value(const Variables& vars)
 
 const RealVector& QMEApproximation::gradient(const Variables& vars)
 {
-  size_t num_pts = approxData.points();
+  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  size_t num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
-    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
+    const Pecos::SurrogateDataResp& center_sdr = approx_data.response_data()[0];
     return center_sdr.response_gradient(); // can be view of DB response
 
     //copy_data(center_sdr.response_gradient(), approxGradient);// can be view
@@ -392,7 +397,7 @@ const RealVector& QMEApproximation::gradient(const Variables& vars)
     }
 
     // Calculate approxGradient
-    const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[1];
+    const Pecos::SurrogateDataResp& curr_sdr = approx_data.response_data()[1];
     const RealVector& grad2 = curr_sdr.response_gradient();
     Real sum_diff1_sq = 0., sum_diff2_sq = 0.;
     for (i=0; i<num_v; i++) {

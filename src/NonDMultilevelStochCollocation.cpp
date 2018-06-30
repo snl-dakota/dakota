@@ -219,14 +219,16 @@ void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
 
   // Hierarchical SC is already based on surpluses, so avoid complexity of
   // using model discrepancies
-  if (//expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT ||
-      multilevDiscrepEmulation == RECURSIVE_EMULATION)
+  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);//AGGREGATED_MODELS
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
   // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
-  // but would either require rework of scalar QoI in SurrogateDataResp or
-  // perhaps repurposing origSurrData + surrData for the high-low QoI pairs.
+  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
+
+  // Bind more than one SurrogateData instance via DataFitSurrModel ->
+  // PecosApproximation
+  uSpaceModel.link_multilevel_approximation_data();
 }
 
 

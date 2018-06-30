@@ -941,12 +941,10 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   // facilitate usage from other surrogate types (especially GP).
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   SharedApproxData&          shared_approx = uSpaceModel.shared_approximation();
-  PecosApproximation* poly_approx_rep
-    = (PecosApproximation*)poly_approxs[0].approx_rep();
   SharedPecosApproxData* shared_data_rep
     = (SharedPecosApproxData*)shared_approx.data_rep();
-
-  const Pecos::SurrogateData& surr_data = poly_approx_rep->surrogate_data();
+  // returns approxData[activeDataIndex] (= Pecos::modSurrData) by default
+  const Pecos::SurrogateData& surr_data = poly_approxs[0].approximation_data();
   const Pecos::SDVArray& sdv_array = surr_data.variables_data();
   int num_surr_data_pts = sdv_array.size();
   RealMatrix current_samples( numContinuousVars, num_surr_data_pts, false );

@@ -132,6 +132,10 @@ protected:
   /// any lower-level surrogates.
   void surrogate_response_mode(short mode);
 
+  /// link together more than one SurrogateData instance within
+  /// approxInterface.functionSurfaces[i].approxData[j]
+  void link_multilevel_approximation_data();
+
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
   void surrogate_function_indices(const IntSet& surr_fn_indices);
@@ -220,7 +224,8 @@ protected:
   const RealVector& approximation_variances(const Variables& vars);
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
-  const Pecos::SurrogateData& approximation_data(size_t fn_index);
+  const Pecos::SurrogateData&
+    approximation_data(size_t fn_index, size_t d_index = _NPOS);
 
   /// update component parallel mode for supporting parallelism in actualModel
   void component_parallel_mode(short mode);
@@ -527,6 +532,10 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 }
 
 
+inline void DataFitSurrModel::link_multilevel_approximation_data()
+{ approxInterface.link_multilevel_approximation_data(); }
+
+
 inline void DataFitSurrModel::
 surrogate_function_indices(const IntSet& surr_fn_indices)
 {
@@ -578,8 +587,8 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& DataFitSurrModel::
-approximation_data(size_t fn_index)
-{ return approxInterface.approximation_data(fn_index); }
+approximation_data(size_t fn_index, size_t d_index)
+{ return approxInterface.approximation_data(fn_index, d_index); }
 
 
 inline IntIntPair DataFitSurrModel::

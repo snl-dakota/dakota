@@ -181,9 +181,8 @@ protected:
 
   /// Prefix for model export files
   String modelExportPrefix;
-  /// Bitmapped format reques for exported models
+  /// Bitmapped format request for exported models
   unsigned short modelExportFormat;
-
 
   /// approximation continuous lower bounds (used by 3D graphics and
   /// Surfpack KrigingModel)

@@ -3476,7 +3476,8 @@ const RealVector& Model::error_estimates()
 }
 
 
-const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
+const Pecos::SurrogateData& Model::
+approximation_data(size_t fn_index, size_t d_index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"
@@ -3486,7 +3487,7 @@ const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
   }
 
   // envelope fwd to letter
-  return modelRep->approximation_data(fn_index);
+  return modelRep->approximation_data(fn_index, d_index);
 }
 
 
@@ -3504,6 +3505,19 @@ short Model::surrogate_response_mode() const
     return modelRep->surrogate_response_mode();
   else // letter lacking redefinition of virtual fn.
     return 0; // default for non-surrogate models
+}
+
+
+void Model::link_multilevel_approximation_data()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->link_multilevel_approximation_data();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual link_multilevel_"
+	 << "approximation_data() function.\nThis model does not support "
+	 << "multilevel data." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 

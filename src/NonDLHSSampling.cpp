@@ -760,7 +760,8 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
     for (samp=0; samp<numSamples; ++samp) {
       for (fn=0; fn<numFunctions; ++fn) {
 	s << principal_comp(samp,fn) << "  " ;
-	myfile <<  std::fixed << std::setprecision(16) << principal_comp(samp,fn) << "  " ;
+	myfile << std::fixed << std::setprecision(16) << principal_comp(samp,fn)
+	       << "  " ;
       }
       s << '\n';
       myfile << '\n';
@@ -816,7 +817,7 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }           
   for (int i = 0; i < num_signif_Pcomps; ++i) {
     RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-    gpApproximations[i].add(allSamples, factor_i );
+    gpApproximations[i].add_array(allSamples, factor_i);
     gpApproximations[i].build();
     std::stringstream ss;
     ss << i;
