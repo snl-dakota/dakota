@@ -75,7 +75,7 @@ TEUCHOS_UNIT_TEST(hdf5, scalar)
   // scope within which file write takes place
   {
     bool db_is_incore = false;
-    bool file_exist = false;
+    bool file_exist = true;
     bool write_file = true;
 
     // open file
@@ -116,7 +116,7 @@ TEUCHOS_UNIT_TEST(hdf5, realvec)
 
   {
     bool db_is_incore = false;
-    bool file_exist = false;
+    bool file_exist = true;
     bool write_file = true;
 
     HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
@@ -159,7 +159,7 @@ TEUCHOS_UNIT_TEST(hdf5, stdvec)
 
   {
     bool db_is_incore = false;
-    bool file_exist = false;
+    bool file_exist = true;
     bool write_file = true;
 
     HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
@@ -167,13 +167,6 @@ TEUCHOS_UNIT_TEST(hdf5, stdvec)
     herr_t status = binary_file.store_data_array(ds_name, vec_out);
     TEST_ASSERT(status >= 0);
   }
-
-  // Use C++ API to get the dimension of the dataset -- this can guide refactor of HDF5BinaryStream to C++ - RWH
-  H5File tmp_file(file_name, H5F_ACC_RDONLY);
-  DataSet dataset = tmp_file.openDataSet(ds_name);
-  TEST_ASSERT( dataset.getSpace().isSimple() );
-  int ndims = dataset.getSpace().getSimpleExtentNdims();
-  TEST_ASSERT( ndims == 1 );
 
   // Now read back in and test correctness
   {
@@ -184,7 +177,7 @@ TEUCHOS_UNIT_TEST(hdf5, stdvec)
     HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
 
     std::vector<Real> test_vec;
-    binary_file.read_data(ds_name, ndims, test_vec);
+    binary_file.read_data(ds_name, test_vec);
 
     TEST_EQUALITY( test_vec.size(), vec_out.size() );
     TEST_COMPARE_ARRAYS( vec_out, test_vec );

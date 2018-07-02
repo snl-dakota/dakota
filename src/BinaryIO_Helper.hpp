@@ -149,7 +149,7 @@ public:
                      bool file_stream_exist = true,
                      bool writable_fstream  = false,
                      bool exit_on_error     = true) :
-    fileName(file_name), binStreamId(),
+    fileName(file_name), binStreamId(), hdf5File(file_name, /* will change this later */ H5F_ACC_RDWR),
     dbIsIncore(db_is_incore), exitOnError(exit_on_error), errorStatus()
   {
     // WJB - ToDo: split-out into .cpp file
@@ -340,8 +340,19 @@ public:
   herr_t store_data_scalar(const std::string& dset_name, const T& val) const
   {
     hsize_t dims[1] = {1};    
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(), 1, dims,
-                       NativeDataTypes<T>::datatype(), &val );
+    htri_t ds_exists = H5LTpath_valid(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+
+    herr_t ret_val;
+
+    if (ds_exists == 0)
+      ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(), 1, dims,
+          NativeDataTypes<T>::datatype(), &val );
+    else
+    {
+      hid_t ds_id = H5Dopen2(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+      ret_val = H5Dwrite(ds_id, NativeDataTypes<T>::datatype(), H5S_ALL, H5S_ALL,
+          H5P_DEFAULT, &val);
+    }
 
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
@@ -626,14 +637,15 @@ public:
 
   template <typename T>
   herr_t read_data(const std::string& dset_name,
-                   size_t dim,
                    std::vector<T>& buf) const
   {
-    //dbg_progress(binStreamId);
-    // WJB: how to know what to size the dims vector??
-    // H5LTget_dataset_ndims
-    //      hardwire to have some success for now
-    std::vector<hsize_t> dims( dim, hsize_t(1) ); // see "accumulate" below
+    // Use C++ API to get the dimension of the dataset
+    H5::DataSet dataset = hdf5File.openDataSet(dset_name);
+    assert( dataset.getSpace().isSimple() );
+    int ndims = dataset.getSpace().getSimpleExtentNdims();
+    assert( ndims == 1 );
+
+    std::vector<hsize_t> dims( ndims, hsize_t(1) ); // see "accumulate" below
 
     herr_t ret_val = H5LTget_dataset_info( binStreamId, dset_name.c_str(),
         &dims[0], NULL, NULL );
@@ -642,7 +654,7 @@ public:
       throw BinaryStream_GetDataFailure();
 
     hsize_t tot_dim = dims[0];
-    for( size_t i=1; i<dim; ++i )
+    for( size_t i=1; i<ndims; ++i )
       tot_dim *= dims[i];
 
     buf.resize( tot_dim );
@@ -664,7 +676,7 @@ public:
   {
     // This is not ideal in that we are copying data - RWH
     std::vector<T> tmp_vec;
-    herr_t ret_val = read_data(dset_name, /* vector data is 1D */ 1, tmp_vec);
+    herr_t ret_val = read_data(dset_name, tmp_vec);
 
     if( buf.length() != (int) tmp_vec.size() )
       buf.sizeUninitialized(tmp_vec.size());
@@ -833,11 +845,25 @@ private:
       throw BinaryStream_StoreDataFailure();
 
 // WJB: need better group "management" (Evans uses a stack)
-    create_groups(dset_name);
 
-    herr_t ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
-                       DIM, dims.data(), NativeDataTypes<T>::datatype(),
-                       buf );
+    htri_t ds_exists = H5LTpath_valid(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+
+    herr_t ret_val;
+
+    if (ds_exists == 0)
+    {
+      create_groups(dset_name);
+
+      ret_val = H5LTmake_dataset( binStreamId, dset_name.c_str(),
+          DIM, dims.data(), NativeDataTypes<T>::datatype(),
+          buf );
+    }
+    else
+    {
+      hid_t ds_id = H5Dopen2(binStreamId, dset_name.c_str(), H5P_DEFAULT);
+      ret_val = H5Dwrite(ds_id, NativeDataTypes<T>::datatype(), H5S_ALL, H5S_ALL,
+                               H5P_DEFAULT, buf);
+    }
 
     if ( ret_val < 0 && exitOnError )
       throw BinaryStream_StoreDataFailure();
@@ -1057,8 +1083,11 @@ private:
   /// File name of binary file stream for persisting DB data store
   std::string fileName;
 
-  /// Binary stream ID
+  /// Binary stream ID, C-based API
   hid_t binStreamId;
+
+  /// H5 file object, C++-based API
+  H5::H5File hdf5File;
 
   /// Toggle for storage - default is true, i.e. store DB in-core
   bool dbIsIncore;
