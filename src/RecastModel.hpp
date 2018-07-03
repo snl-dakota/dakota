@@ -248,6 +248,9 @@ protected:
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
 
+  /// link SurrogateData instances within the subModel
+  void link_multilevel_approximation_data();
+
   /// retrieve error estimates corresponding to the subModel
   const RealVector& error_estimates();
 
@@ -613,13 +616,17 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
+inline void RecastModel::
+surrogate_function_indices(const IntSet& surr_fn_indices)
+{ subModel.surrogate_function_indices(surr_fn_indices); }
+
+
 inline void RecastModel::surrogate_response_mode(short mode)
 { if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
 
 
-inline void RecastModel::
-surrogate_function_indices(const IntSet& surr_fn_indices)
-{ subModel.surrogate_function_indices(surr_fn_indices); }
+inline void RecastModel::link_multilevel_approximation_data()
+{ subModel.link_multilevel_approximation_data(); }
 
 
 inline void RecastModel::build_approximation()

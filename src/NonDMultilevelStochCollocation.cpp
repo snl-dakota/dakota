@@ -225,6 +225,12 @@ void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
     iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
   // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
   // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
+}
+
+
+void NonDMultilevelStochCollocation::initialize_u_space_model()
+{
+  NonDStochCollocation::initialize_u_space_model();
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation

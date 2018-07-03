@@ -373,6 +373,12 @@ void NonDMultilevelPolynomialChaos::assign_hierarchical_response_mode()
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else
     iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+}
+
+
+void NonDMultilevelPolynomialChaos::initialize_u_space_model()
+{
+  NonDPolynomialChaos::initialize_u_space_model();
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
