@@ -294,12 +294,14 @@ void Approximation::build()
     approxRep->build();
   else { // default is only a data check, to be augmented by derived class:
     size_t d, num_d = approxData.size(), pts,
-      min_pts = std::numeric_limits<size_t>::max();
-    for (d=0; d<num_d; ++d) {
+      build_pts = approxData[0].points();
+    for (d=1; d<num_d; ++d) {
       pts = approxData[d].points();
-      if (pts < min_pts) min_pts = pts;
+      // exclude case of zero points for d > 0
+      // (e.g., empty modSurrData for coarse model)
+      if (pts && pts < build_pts) build_pts = pts;
     }
-    check_points(min_pts);
+    check_points(build_pts);
   }
 }
 

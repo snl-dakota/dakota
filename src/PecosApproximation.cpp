@@ -89,14 +89,22 @@ void PecosApproximation::link_multilevel_approximation_data()
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
   //   data to each approxData instance in turn.
 
-  while (approxData.size() < 2)
-    approxData.push_back(Pecos::SurrogateData(true));
+  SharedPecosApproxData* shared_data_rep
+    = (SharedPecosApproxData*)sharedDataRep;
+  switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
+  case Pecos::DISTINCT_DISCREP:
+    while (approxData.size() < 2)
+      approxData.push_back(Pecos::SurrogateData(true));
 
-  // replace default linkage above
-  pecosBasisApprox.modified_surrogate_data(approxData[0]);// LF --> discrepancy
-  pecosBasisApprox.original_surrogate_data(approxData[1]);// HF
+    // replace default linkage above
+    pecosBasisApprox.modified_surrogate_data(approxData[0]);// LF -> discrepancy
+    pecosBasisApprox.original_surrogate_data(approxData[1]);// HF
 
-  approximation_data_index(0); // reassign (is also the default)
+    approximation_data_index(0); // reassign (is also the default)
+    break;
+  //case Pecos::RECURSIVE_DISCREP: default:
+  // constructor linkages above are sufficient
+  }
 }
 
 } // namespace Dakota

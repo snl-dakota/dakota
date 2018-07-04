@@ -153,7 +153,9 @@ private:
 
   /// return pecosSharedData
   Pecos::SharedBasisApproxData& pecos_shared_data();
-
+  /// return pecosSharedDataRep
+  Pecos::SharedPolyApproxData* pecos_shared_data_rep();
+  
   /// utility to convert Dakota type string to Pecos type enumeration
   void approx_type_to_basis_type(const String& approx_type, short& basis_type);
 
@@ -386,6 +388,11 @@ configuration_options(const Pecos::RegressionConfigOptions& rc_options)
 
 inline Pecos::SharedBasisApproxData& SharedPecosApproxData::pecos_shared_data()
 { return pecosSharedData; }
+
+
+inline Pecos::SharedPolyApproxData* SharedPecosApproxData::
+pecos_shared_data_rep()
+{ return pecosSharedDataRep; }
 
 } // namespace Dakota
 
