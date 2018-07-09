@@ -165,21 +165,21 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_serial)
     // catch failure caused by the H5File operations
     catch(FileIException error)
     {
-	error.printErrorStack();
+	//error.printErrorStack();
 	TEST_ASSERT( false );
     }
 
     // catch failure caused by the DataSet operations
     catch(DataSetIException error)
     {
-	error.printErrorStack();
+	//error.printErrorStack();
 	TEST_ASSERT( false );
     }
 
     // catch failure caused by the DataSpace operations
     catch(DataSpaceIException error)
     {
-	error.printErrorStack();
+	//error.printErrorStack();
 	TEST_ASSERT( false );
     }
 
