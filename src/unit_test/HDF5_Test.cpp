@@ -1,9 +1,10 @@
 
 // #if 0// comment to make this file active
 
-#include "H5Cpp.h" // C++ API header file
+#include "hdf5.h"    // C API
+#include "hdf5_hl.h" // C API (HDF5 "high-level")
+#include "H5Cpp.h"   // C++ API
 #include <string>
-
 using namespace H5;
 
 #define FILE "file.h5"
@@ -11,11 +12,14 @@ using namespace H5;
 int HDF5_Test() {
 
 	/* FIELDS */
+	// TODO In general, the following variables should get passed in from elsewhere in Dakota.
 
 	int  num_evaluations = 2;
-	int  probability_density_dataset_count = 3;	//TODO: This should be an argument.
-	std::string  method_name = "sampling";		//TODO: This should be an argument.
+	int  probability_density_dataset_count = 3;
+	std::string  method_name = "sampling";
 	int  bin_number = 2;
+        float lower_bounds_arr[5] = { 2.7604749078e+11, 3.6000000000e+11, 4.0000000000e+11, 4.4000000000e+11 };
+        float upper_bounds_arr[5] = { 3.6000000000e+11, 4.0000000000e+11, 4.4000000000e+11, 5.4196114379e+11 };
 	
 	/* LOGIC */
 
@@ -37,29 +41,43 @@ int HDF5_Test() {
 		/* Create probability density group */
 		std::string probability_density_path = exec_id_path + "/probability_density";
 		Group probability_density_group(group_exec_id.createGroup(probability_density_path));
-		
-		/* Create probability density datasets */
-				
-		/* Scale dataset */
-		PredType type_ieee_f64le( PredType::IEEE_F64LE );
-		
-		hsize_t scale_dims[1];
-		scale_dims[0] = 2;
-		DataSpace scales_dataspace( 1, scale_dims );		
-		DataSet scales_dataset = probability_density_group.createDataSet("_scales", type_ieee_f64le, scales_dataspace);
-		
-		float lower_bound[5] = { 2.7604749078e+11, 3.6000000000e+11, 4.0000000000e+11, 4.4000000000e+11 };
-		float upper_bound[5] = { 3.6000000000e+11, 4.0000000000e+11, 4.4000000000e+11, 5.4196114379e+11 };
 
-		float* scales_data[2];
-		scales_data[0] = lower_bound;
-		scales_data[1] = upper_bound;
+		/* Create _scales group */
+		Group scales_group(probability_density_group.createGroup("/_scales"));
 		
-		VarLenType scales_type( &(PredType::C_S1) );
-		scales_dataset.write( scales_data, scales_type );
+		/* Dimension scales */
+                PredType type_ieee_f64le( PredType::IEEE_F64LE );
+
+		hsize_t dims_lb[1];
+		hsize_t dims_ub[1];
+
+		dims_lb[0] = sizeof(lower_bounds_arr);
+		dims_ub[0] = sizeof(upper_bounds_arr);
+
+                DataSpace scales_lb_dataspace( 1, dims_lb );
+		DataSpace scales_ub_dataspace( 1, dims_ub );
+
+		DataSet dim_scale_ds_lower_bounds = scales_group.createDataSet("lower_bounds", type_ieee_f64le, scales_lb_dataspace);
+		DataSet dim_scale_ds_upper_bounds = scales_group.createDataSet("upper_bounds", type_ieee_f64le, scales_ub_dataspace);
+
+		dim_scale_ds_lower_bounds.write(lower_bounds_arr, type_ieee_f64le);
+		dim_scale_ds_upper_bounds.write(upper_bounds_arr, type_ieee_f64le);
 		
-		scales_dataset.close();
-		
+		// Convert datasets to dimension scales (using C API)
+		hid_t  dim_scale_ds_lower_bounds_id = dim_scale_ds_lower_bounds.getId();
+		hid_t  dim_scale_ds_upper_bounds_id = dim_scale_ds_upper_bounds.getId();
+
+		herr_t ret_code_lb = H5DSset_scale(dim_scale_ds_lower_bounds_id, "lower_bounds");
+		herr_t ret_code_ub = H5DSset_scale(dim_scale_ds_upper_bounds_id, "upper_bounds");
+		if(ret_code_lb != 0 || ret_code_ub != 0) {
+			//TODO Do something to handle the error.
+		}
+
+		dim_scale_ds_lower_bounds.close();
+		dim_scale_ds_upper_bounds.close();
+
+		/* Probability density datasets */
+
 		hsize_t dims[1]; // dataset dimensions
 		dims[0] = bin_number;
 		DataSpace dataspace( 1, dims );
