@@ -149,7 +149,7 @@ public:
                      bool file_stream_exist = true,
                      bool writable_fstream  = false,
                      bool exit_on_error     = true) :
-    fileName(file_name), binStreamId(), hdf5File(file_name, /* will change this later */ H5F_ACC_RDWR),
+    fileName(file_name), binStreamId(), hdf5File(file_name, /* will change this later */ H5F_ACC_TRUNC),
     dbIsIncore(db_is_incore), exitOnError(exit_on_error), errorStatus()
   {
     // WJB - ToDo: split-out into .cpp file
