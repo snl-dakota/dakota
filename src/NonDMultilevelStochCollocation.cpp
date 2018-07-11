@@ -217,8 +217,8 @@ void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
     abort_handler(METHOD_ERROR);
   }
 
-  // Hierarchical SC is already based on surpluses, so avoid complexity of
-  // using model discrepancies
+  // Hierarchical SC is already based on surpluses, so default behavior could
+  // differ from PCE (see assign_discrepancy_mode())
   if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else

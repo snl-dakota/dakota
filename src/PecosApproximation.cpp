@@ -82,7 +82,7 @@ PecosApproximation(ProblemDescDB& problem_db,
 
 void PecosApproximation::link_multilevel_approximation_data()
 {
-  // Notes: 
+  // Notes:
   // > SurrogateModel::aggregate_response() uses order of LF,HF (consistent with
   //   ordered_models from low to high) such that approximation_data(fn_index,0)
   //   would retrieve the (to be modified) LF approxData.
@@ -100,11 +100,35 @@ void PecosApproximation::link_multilevel_approximation_data()
     pecosBasisApprox.modified_surrogate_data(approxData[0]);// LF -> discrepancy
     pecosBasisApprox.original_surrogate_data(approxData[1]);// HF
 
-    approximation_data_index(0); // reassign (is also the default)
+    // Configure active approxData such that other classes access the modified
+    // discrepancy data (0 is also the default)
+    approximation_data_index(0);
     break;
   //case Pecos::RECURSIVE_DISCREP: default:
-  // constructor linkages above are sufficient
+  //  default linkages in ctors are sufficient
   }
 }
+
+
+/*
+void PecosApproximation::activate_multilevel_approximation_data()
+{
+  SharedPecosApproxData* shared_data_rep
+    = (SharedPecosApproxData*)sharedDataRep;
+  switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
+  case Pecos::DISTINCT_DISCREP:
+    // > sdRep already defined in SurrogateData ctor...
+    // > active key and active iterators for SurrogateData already defined...
+    // > indicate that data sets are active, but must be key-specific so that
+    //   level 0 (coarse/LF) remains inactive for second approxData
+    approxData[0].activate_all_keys();
+    approxData[1].activate_nonbase_keys();// all keys beyond first
+    approximation_data_index(0); // reassign (is also the default)
+    // TO DO: need a default activation for non-ML cases
+    break;
+  //case Pecos::RECURSIVE_DISCREP: default: // nothing additional necessary
+  }
+}
+*/
 
 } // namespace Dakota

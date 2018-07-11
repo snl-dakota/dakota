@@ -517,18 +517,32 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
 
-  // Compared to HierarchSurrModel, we don't need to be as strict in validating
-  // AUTO_CORRECTED_SURROGATE mode against corrType, since NO_CORRECTION is an
-  // admissible option in the case of global data fits.  However,
-  // MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
-  if ( !corrType && mode == MODEL_DISCREPANCY ) {
-    Cerr << "Error: activation of mode MODEL_DISCREPANCY requires "
-	 << "specification of a correction type." << std::endl;
-    abort_handler(MODEL_ERROR);
+  // Mode-specific logic:
+  // > Compared to HierarchSurrModel, don't need to be as strict in validating
+  //   AUTO_CORRECTED_SURROGATE mode against corrType, since NO_CORRECTION is
+  //   an admissible option in the case of global data fits.  However,
+  //   MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
+  // > Management of multiple SurrogateData instances is complicated in the
+  //   heterogeneous setting where level 0 uses a single instance and levels
+  //   1-L use two isntances.  In the future, could manage activation explicitly
+  //   using functions shown below.  For now, SurrogateData::{push,pop}() are
+  //   hardened for inactive instances.
+  switch (mode) {
+  case MODEL_DISCREPANCY:
+    if (!corrType) {
+      Cerr << "Error: activation of mode MODEL_DISCREPANCY requires "
+	   << "specification of a correction type." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    break;
+  case BYPASS_SURROGATE:
+    actualModel.surrogate_response_mode(mode); // recurse in this case
+    //approxInterface.deactivate_multilevel_approximation_data();
+    break;
+  case AGGREGATED_MODELS:
+    //approxInterface.activate_multilevel_approximation_data();
+    break;
   }
-
-  if (mode == BYPASS_SURROGATE) // recurse in this case
-    actualModel.surrogate_response_mode(mode);
 }
 
 

@@ -372,7 +372,7 @@ void NonDMultilevelPolynomialChaos::assign_hierarchical_response_mode()
   if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
 }
 
 

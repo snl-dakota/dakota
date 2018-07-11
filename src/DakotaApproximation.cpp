@@ -292,14 +292,12 @@ void Approximation::build()
 {
   if (approxRep)
     approxRep->build();
-  else { // default is only a data check, to be augmented by derived class:
-    size_t d, num_d = approxData.size(), pts,
+  else { // default is only a data check --> augmented/replaced by derived class
+    size_t d, num_d = approxData.size(), num_pts,
       build_pts = approxData[0].points();
     for (d=1; d<num_d; ++d) {
-      pts = approxData[d].points();
-      // exclude case of zero points for d > 0
-      // (e.g., empty modSurrData for coarse model)
-      if (pts && pts < build_pts) build_pts = pts;
+      num_pts = approxData[d].points();
+      if (num_pts < build_pts) build_pts = num_pts;
     }
     check_points(build_pts);
   }
@@ -377,17 +375,8 @@ void Approximation::finalize()
       for (d=0; d<num_d; ++d)
 	approxData[d].push(f_index, false);
     }
-    /* finalization indices are defined from shared data, so this is overkill:
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d) {
-      SurrogateData& data_d = approxData[d];
-      num_popped = data_d.popped_sets(); // # of popped trials
-      for (p=0; p<num_popped; ++p)
-	data_d.push(sharedDataRep->finalization_index(p), false);
-    }
-    */
-    for (d=0; d<num_d; ++d)
-      approxData[d].clear_active_popped(); // only after process completed
+
+    clear_active_popped(); // after all finalization indices processes
   }
 }
 

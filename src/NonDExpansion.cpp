@@ -1158,7 +1158,8 @@ configure_indices(size_t lev, size_t form, bool multilevel,
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0)     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
-    if (lev == 1)   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    if (lev == 1)
+      iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREP
     if (multilevel) iteratedModel.surrogate_model_indices(form, lev-1);
     else            iteratedModel.surrogate_model_indices(lev-1);
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
