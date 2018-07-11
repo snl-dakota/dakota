@@ -198,9 +198,17 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, scalar)
 
   Real value = 1.23;
 
-  HDF5IOHelper h5_io(file_name);
+  // Write data
+  {
+    HDF5IOHelper h5_io(file_name, /* overwrite */ true);
+    h5_io.store_scalar_data(ds_name, value);
+  }
 
-  h5_io.store_scalar_data("blah", value);
+  // Read data
+  {
+    HDF5IOHelper h5_io(file_name);
+    h5_io.read_data(ds_name, value);
+  }
 
   TEST_ASSERT( true );
 }
@@ -215,11 +223,22 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
   RealVector vec_out(VEC_SIZE);
   vec_out.random();
 
-  HDF5IOHelper h5_io(file_name);
+  // Write data
+  {
+    HDF5IOHelper h5_io(file_name, /* overwrite */ true);
+    h5_io.store_vector_data(ds_name, vec_out);
+  }
 
-  h5_io.store_vector_data(ds_name, vec_out);
+  // Read data
+  RealVector test_vec;
+  {
+    HDF5IOHelper h5_io(file_name);
+    h5_io.read_data(ds_name, test_vec);
+  }
 
-  TEST_ASSERT( true );
+  TEST_EQUALITY( test_vec.length(), vec_out.length() );
+  double diff = max_diff( vec_out, test_vec );
+  TEST_COMPARE( diff, <, 1.e-15 );
 }
 
 //----------------------------------------------------------------
@@ -237,11 +256,21 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
   for( auto & e : vec_out ) 
     e = rvec[i++];
 
-  HDF5IOHelper h5_io(file_name);
+  // Write data
+  {
+    HDF5IOHelper h5_io(file_name, /* overwrite */ true);
+    h5_io.store_vector_data(ds_name, vec_out);
+  }
 
-  h5_io.store_vector_data(ds_name, vec_out);
+  // Read data
+  std::vector<Real> test_vec;
+  {
+    HDF5IOHelper h5_io(file_name);
+    h5_io.read_data(ds_name, test_vec);
+  }
 
-  TEST_ASSERT( true );
+  TEST_EQUALITY( test_vec.size(), vec_out.size() );
+  TEST_COMPARE_ARRAYS( vec_out, test_vec );
 }
 
 //----------------------------------------------------------------

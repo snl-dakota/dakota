@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -49,11 +50,21 @@ namespace Dakota
   {
     public:
 
-      HDF5IOHelper(const std::string& file_name) :
+      HDF5IOHelper(const std::string& file_name, bool overwrite = false) :
         fileName(file_name)
-        {
-          filePtr = new H5File(fileName, H5F_ACC_TRUNC);
-        }
+    {
+      // create or open a file
+      H5::Exception::dontPrint();
+
+      if( overwrite )
+        filePtr = std::shared_ptr<H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+
+      try {
+        filePtr = std::shared_ptr<H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
+      } catch(const H5::FileIException&) {
+        filePtr = std::shared_ptr<H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+      }
+    }
 
       //----------------------------------------------------------------
 
@@ -74,6 +85,7 @@ namespace Dakota
           DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(val), dataspace) );
 
           dataset.write(&val, h5_dtype(val));
+          dataset.close(); // does this flush the buffer; is it needed ? 
 
           return;
         }
@@ -81,7 +93,18 @@ namespace Dakota
       template <typename T>
         void read_data(const std::string& dset_name, T& val) const
         {
-          // WIP ...
+          htri_t ds_exists = H5Lexists(filePtr->getId(), dset_name.c_str(), H5P_DEFAULT);
+          if( !ds_exists )
+          {
+            Cerr << "\nError: HDF5 file \"" << fileName << "\""
+                 << " does not contain data path \"" << dset_name << "\""
+                 << std::endl;
+            abort_handler(-1);
+          }
+
+          DataSet dataset = filePtr->openDataSet(dset_name);
+          dataset.read(&val, h5_dtype(val));
+
           return;
         }
 
@@ -98,6 +121,37 @@ namespace Dakota
           DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(array[0]), dataspace) );
 
           dataset.write(array.data(), h5_dtype(array[0]));
+
+          return;
+        }
+
+      template <typename T>
+        void read_data(const std::string& dset_name, std::vector<T>& array) const
+        {
+          htri_t ds_exists = H5Lexists(filePtr->getId(), dset_name.c_str(), H5P_DEFAULT);
+          if( !ds_exists )
+          {
+            Cerr << "\nError: HDF5 file \"" << fileName << "\""
+              << " does not contain data path \"" << dset_name << "\""
+              << std::endl;
+            abort_handler(-1);
+          }
+
+          DataSet dataset = filePtr->openDataSet(dset_name);
+
+          // Get dims and size of dataset
+          assert( dataset.getSpace().isSimple() );
+          int ndims = dataset.getSpace().getSimpleExtentNdims();
+          assert( ndims == 1 );
+
+          std::vector<hsize_t> dims( ndims, hsize_t(1) );
+
+          herr_t ret_val = H5LTget_dataset_info( filePtr->getId(), dset_name.c_str(),
+              &dims[0], NULL, NULL );
+
+          array.resize(dims[0]);
+
+          dataset.read(&array[0], h5_dtype(array[0]));
 
           return;
         }
@@ -119,11 +173,27 @@ namespace Dakota
         }
 
 
+      template <typename T>
+        void read_data(const std::string& dset_name, Teuchos::SerialDenseVector<int,T> & buf) const
+        {
+          // This is not ideal in that we are copying data - RWH
+          std::vector<T> tmp_vec;
+          read_data(dset_name, tmp_vec);
+
+          if( buf.length() != (int) tmp_vec.size() )
+            buf.sizeUninitialized(tmp_vec.size());
+          for( int i=0; i<buf.length(); ++i )
+            buf[i] = tmp_vec[i];
+
+          return;
+        }
+
+
     protected:
 
       std::string fileName;
 
-      H5File* filePtr;
+      std::shared_ptr<H5File> filePtr;
   };
 
 } // namespace Dakota
