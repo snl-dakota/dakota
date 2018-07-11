@@ -15,19 +15,15 @@ using namespace H5;
 #define G_METHODS "/methods"
 
 Group* HDF5_add_method_group ( H5File* db_file, std::string method_name ) {
-	H5G_stat_t methods_group_exists;
-        herr_t status = H5Gget_objinfo (db_file->getId(), G_METHODS, 0, NULL);
+	//H5G_stat_t stat_buf;
+        // herr_t status = H5Gget_objinfo (db_file->getId(), G_METHODS, 0, &stat_buf);
 
-	std::cout << "*******1";
-
-	Group group_methods = NULL;
-	if( status != 0 ) {
+	Group group_methods;
+	//if( status != 0 ) {
 		group_methods = db_file->createGroup(G_METHODS);
-	} else {
-		group_methods = db_file->openGroup(G_METHODS);
-	}
-
-	std::cout << "******2";
+	//} else {
+	//	group_methods = db_file->openGroup(G_METHODS);
+	//}
 
 	Group * group_method = new Group(group_methods.createGroup(method_name));
         return group_method;
@@ -56,44 +52,56 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	
 	/* LOGIC */
 
-	std::cout << "**********0";
+	std::cout << "**********0\n";
 
-	/* Create a new file using default properties.*/
+	// Create a new file using default properties.
 	H5File* file_ptr = new H5File(FILE, H5F_ACC_TRUNC);
 
-	/* Create specific method group */
+	// Create specific method group
 	Group* group_method = HDF5_add_method_group(file_ptr, sampling_method_name);
 
-	/* Create execution groups */
+	std::cout << "*********1\n";
+
+	// Dimension scales
+	PredType type_ieee_f64le( PredType::IEEE_F64LE );
+
+	hsize_t dims_lb[1];
+        hsize_t dims_ub[1];
+
+        dims_lb[0] = 4;
+        dims_ub[0] = 4;
+        
+        DataSpace scales_lb_dataspace( 1, dims_lb );
+        DataSpace scales_ub_dataspace( 1, dims_ub );
+
+	// Create execution groups 
 	for(int i = 1; i <= num_evaluations; i++) {
-		std::string exec_id_path = "/execution_id_" + std::to_string(i);
+		std::cout << ("**********Start of " + std::to_string(i)) + "\n";
+
+		std::string exec_id_path = "execution_id_" + std::to_string(i);
+		std::cout << exec_id_path << "\n";
 		Group group_exec_id(group_method->createGroup(exec_id_path));
 
-		/* Create probability density group */
-		std::string probability_density_path = exec_id_path + "/probability_density";
-		Group probability_density_group(group_exec_id.createGroup(probability_density_path));
+		std::cout << "In loop - 0\n";
 
-		/* Create _scales group */
-		Group scales_group(probability_density_group.createGroup("/_scales"));
+		// Create probability density group
+		Group probability_density_group(group_exec_id.createGroup("probability_density"));
 		
-		/* Dimension scales */
-                PredType type_ieee_f64le( PredType::IEEE_F64LE );
+		std::cout << "In loop - 1a\n";
 
-		hsize_t dims_lb[1];
-		hsize_t dims_ub[1];
+		// Create _scales group
+		Group scales_group(probability_density_group.createGroup("_scales"));
 
-		dims_lb[0] = sizeof(lower_bounds_arr);
-		dims_ub[0] = sizeof(upper_bounds_arr);
-
-                DataSpace scales_lb_dataspace( 1, dims_lb );
-		DataSpace scales_ub_dataspace( 1, dims_ub );
+		std::cout << "In loop - 1b\n";
 
 		DataSet dim_scale_ds_lower_bounds = scales_group.createDataSet("lower_bounds", type_ieee_f64le, scales_lb_dataspace);
 		DataSet dim_scale_ds_upper_bounds = scales_group.createDataSet("upper_bounds", type_ieee_f64le, scales_ub_dataspace);
 
-		dim_scale_ds_lower_bounds.write(lower_bounds_arr, type_ieee_f64le);
-		dim_scale_ds_upper_bounds.write(upper_bounds_arr, type_ieee_f64le);
+		dim_scale_ds_lower_bounds.write(lower_bounds_arr, PredType::NATIVE_FLOAT);
+		dim_scale_ds_upper_bounds.write(upper_bounds_arr, PredType::NATIVE_FLOAT);
 		
+		std::cout << "In loop - 2\n";
+
 		// Convert datasets to dimension scales (using C API)
 		hid_t  dim_scale_ds_lower_bounds_id = dim_scale_ds_lower_bounds.getId();
 		hid_t  dim_scale_ds_upper_bounds_id = dim_scale_ds_upper_bounds.getId();
@@ -107,12 +115,19 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		dim_scale_ds_lower_bounds.close();
 		dim_scale_ds_upper_bounds.close();
 
-		/* Probability density datasets */
+		std::cout << "In loop - 3\n";
+
+		// Probability density datasets
 		
-		for(int j = 0; j < sizeof(probability_density_arrs); j++) {
+		for(int j = 0; j < 3; j++) {
+
+			std::cout << "In inner loop - " << std::to_string(j) << "\n";
+
 			hsize_t dims_ds[1];
-	                dims_ds[0] = sizeof(probability_density_arrs[j]);
+	                dims_ds[0] = 4;
         	        DataSpace probability_density_dataspace( 1, dims_ds );
+
+			std::cout << "In inner loop ************* 1\n";
 
 			std::string probability_density_dataset_name = "resp_desc_" + std::to_string(j+1);
 			DataSet probability_density_dataset = probability_density_group.createDataSet(probability_density_dataset_name, type_ieee_f64le, probability_density_dataspace);
@@ -120,22 +135,28 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 			probability_density_dataset.write(probability_density_arrs[j], type_ieee_f64le);
 			hid_t ds_id = probability_density_dataset.getId();
 
+			std::cout << "In inner loop ************* 2\n";
+
 			// Attach dataset to dimension scales (using C API)
 			herr_t ret_code;
 			ret_code = H5DSattach_scale(dim_scale_ds_lower_bounds_id, ds_id, 0);
 			ret_code = H5DSattach_scale(dim_scale_ds_upper_bounds_id, ds_id, 0);
 
 			probability_density_dataset.close();
+
+			std::cout << "In inner loop ************* 3\n";
 		}
 		
 		probability_density_group.close();
 		group_exec_id.close();
 	}
 
-	/* Close all this stuff */
+	// Close all this stuff
 	group_method->close();
 	// group_methods.close(); TODO Do we need to explicitly close the methods group?
 	file_ptr->close();
+
+	std::cout << "Done\n";
 
 	TEST_ASSERT( true );  // successfully terminated
 }
