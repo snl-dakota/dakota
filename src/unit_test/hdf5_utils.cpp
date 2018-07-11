@@ -64,6 +64,7 @@ namespace {
 
 //----------------------------------------------------------------
 
+#if 0
 TEUCHOS_UNIT_TEST(hdf5, scalar)
 {
   const std::string file_name("hdf5_scalar.h5");
@@ -182,6 +183,65 @@ TEUCHOS_UNIT_TEST(hdf5, stdvec)
     TEST_EQUALITY( test_vec.size(), vec_out.size() );
     TEST_COMPARE_ARRAYS( vec_out, test_vec );
   }
+}
+
+#endif
+
+//----------------------------------------------------------------
+
+#include "HDF5_IO.hpp"
+
+TEUCHOS_UNIT_TEST(hdf5_cpp, scalar)
+{
+  const std::string file_name("hdf5_scalar.h5");
+  const std::string ds_name("/SomeScalarData");
+
+  Real value = 1.23;
+
+  HDF5IOHelper h5_io(file_name);
+
+  h5_io.store_scalar_data("blah", value);
+
+  TEST_ASSERT( true );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
+{
+  const std::string file_name("hdf5_basic_realvec.h5");
+  const std::string ds_name("/SomeRealVectorData");
+
+  RealVector vec_out(VEC_SIZE);
+  vec_out.random();
+
+  HDF5IOHelper h5_io(file_name);
+
+  h5_io.store_vector_data(ds_name, vec_out);
+
+  TEST_ASSERT( true );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
+{
+  const std::string file_name("hdf5_basic_stdvec.h5");
+  const std::string ds_name("/SomeStdVectorData");
+
+  RealVector rvec(VEC_SIZE);
+  rvec.random();
+
+  std::vector<Real> vec_out(VEC_SIZE);
+  int i = 0;
+  for( auto & e : vec_out ) 
+    e = rvec[i++];
+
+  HDF5IOHelper h5_io(file_name);
+
+  h5_io.store_vector_data(ds_name, vec_out);
+
+  TEST_ASSERT( true );
 }
 
 //----------------------------------------------------------------
