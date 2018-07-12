@@ -2728,6 +2728,15 @@ void Model::clear_model_keys()
 }
 
 
+size_t Model::num_functions() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->num_functions();
+  else // default for models without aggregation
+    return currentResponse.num_functions();
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -2853,6 +2862,14 @@ void Model::derived_subordinate_models(ModelList& ml, bool recurse_flag)
   if (modelRep) // envelope fwd to letter
     modelRep->derived_subordinate_models(ml, recurse_flag);
   // else: default implementation (SimulationModel) is no-op.
+}
+
+
+void Model::resize_from_subordinate_model(size_t depth)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->resize_from_subordinate_model(depth);
+  // else default if no redefinition is no-op
 }
 
 

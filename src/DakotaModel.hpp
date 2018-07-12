@@ -141,6 +141,9 @@ public:
   /// multiple approximation states within surrogate models
   virtual void clear_model_keys();
 
+  /// return number of unique response functions (managing any aggregations)
+  virtual size_t num_functions() const;
+
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
   /// set the indices that define the active approximation sub-model
@@ -168,6 +171,9 @@ public:
 
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  /// resize vars/resp if needed from the bottom up
+  virtual void resize_from_subordinate_model(size_t depth = 
+    std::numeric_limits<size_t>::max());
   /// propagate vars/labels/bounds/targets from the bottom up
   virtual void update_from_subordinate_model(size_t depth = 
     std::numeric_limits<size_t>::max());
@@ -1016,8 +1022,6 @@ public:
   /// return the model identifier (modelId)
   const String& model_id() const;
 
-  /// return number of functions in currentResponse
-  size_t num_functions() const;
   /// return number of primary functions (total less nonlinear constraints)
   size_t num_primary_fns() const;
   /// return number of secondary functions (number of nonlinear constraints)
@@ -3316,12 +3320,6 @@ inline const String& Model::surrogate_type() const
 inline const String& Model::model_id() const
 { return (modelRep) ? modelRep->modelId : modelId; }
 
-
-inline size_t Model::num_functions() const
-{
-  return (modelRep) ? modelRep->currentResponse.num_functions()
-                    : currentResponse.num_functions();
-}
 
 inline size_t Model::num_primary_fns() const
 {

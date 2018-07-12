@@ -81,6 +81,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  size_t num_functions() const;
+
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
 
@@ -397,6 +399,17 @@ private:
 /** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
 { if (!exportPointsFile.empty()) finalize_export(); }
+
+
+inline size_t DataFitSurrModel::num_functions() const
+{
+  switch (responseMode) {
+  // Note: resize_response() aggregaates {truth,surrogate}_model().num_fns(),
+  //       such that code below is a bit more general that currResp num_fns/2
+  case AGGREGATED_MODELS:  return     actualModel.num_functions();  break;
+  default:                 return currentResponse.num_functions();  break;
+  }
+}
 
 
 inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()

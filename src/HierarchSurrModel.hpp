@@ -67,6 +67,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  size_t num_functions() const;
+
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
 
@@ -295,6 +297,19 @@ private:
 
 inline HierarchSurrModel::~HierarchSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+inline size_t HierarchSurrModel::num_functions() const
+{
+  switch (responseMode) {
+  // Note: resize_response() aggregaates {truth,surrogate}_model().num_fns(),
+  //       such that code below is a bit more general that currResp num_fns/2
+  case AGGREGATED_MODELS:
+    return orderedModels[highFidelityIndices.first].num_functions();  break;
+  default:
+    return currentResponse.num_functions();                           break;
+  }
+}
 
 
 inline void HierarchSurrModel::check_interface_instance()

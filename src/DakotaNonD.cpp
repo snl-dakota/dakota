@@ -1120,8 +1120,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
   size_t i, j, num_fns = x_asv.size(), num_deriv_vars = x_dvv.size();
   if (u_asv.size() != num_fns) {
     Cerr << "Error: inconsistent response function definition in NonD::"
-	 << "resp_x_to_u_mapping().\nx-space response size =\n" << num_fns
-	 << "u-space response size =\n" << u_asv.size() << std::endl;
+	 << "resp_x_to_u_mapping():\n       x-space response size = " << num_fns
+	 << ", u-space response size = " << u_asv.size() << std::endl;
     abort_handler(-1);
   }
   if (!nondInstance->natafTransform.x_correlation() && u_dvv != x_dvv) {
