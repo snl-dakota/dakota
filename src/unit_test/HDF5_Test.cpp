@@ -10,6 +10,7 @@
 
 #include <math.h>
 #include <string>
+#include <iostream>
 
 using namespace H5;
 
@@ -55,7 +56,7 @@ DataSet* HDF5_create_1D_dimension_scale ( Group* parent, int size, PredType type
 	hid_t  ds_dataset_id = ds_dataset->getId();
 	herr_t ret_code      = H5DSset_scale( ds_dataset_id, label );
 	if(ret_code != 0) {
-		//TODO Do something to handle the error.
+	   std::cerr << "H5DSset_scale returned an error\n";	// TODO Do something to handle the error.
     }
     
 	return ds_dataset;
@@ -74,7 +75,7 @@ void HDF5_attach_dimension_scale ( DataSet* target, DataSet* ds_to_attach ) {
 
 	herr_t ret_code = H5DSattach_scale(target_id, ds_id, 0);
 	if(ret_code != 0) {
-		// TODO Do something to handle the error.
+	   std::cerr << "H5DSattach_scale returned an error\n";	// TODO Do something to handle the error.
 	}
 }
 
@@ -129,8 +130,6 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		ds_lower_bounds->write( lower_bounds_arr, PredType::NATIVE_FLOAT );
 		ds_upper_bounds->write( upper_bounds_arr, PredType::NATIVE_FLOAT );
 
-		ds_lower_bounds->close();
-		ds_upper_bounds->close();
 
 		for(int j = 0; j < 3; j++) {
 			hsize_t dims_ds[1];
@@ -154,8 +153,12 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
 			probability_density_dataset.close();
 		}
+		// closing these dimension scale datasets invalidates their IDs, so it must be deferred 
+		// until after they are attached.	
+		ds_lower_bounds->close();
+		ds_upper_bounds->close();
 		
-		probability_density_group.close();
+                probability_density_group.close();
 		group_exec_id.close();
 	}
 
