@@ -375,6 +375,10 @@ private:
   //
   //- Heading: Data
   //
+  
+  /// Local ResultsManager instance for writing prototype sampling results
+  /// to HDF5
+  ResultsManager hdf5DB;
 
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;

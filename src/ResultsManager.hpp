@@ -19,6 +19,7 @@
 #include "ResultsDBAny.hpp"
 #include "dakota_data_util.hpp"
 #include <memory>
+#include <boost/any.hpp>
 
 #ifdef DAKOTA_HAVE_HDF5
 //#include "ResultsDBHDF5.hpp" //  Will need to revisit this after adopting HDF5 version - RWH
@@ -286,6 +287,37 @@ public:
     //  hdf5DB->insert(iterator_id, data_name, vs_labels, metadata);
 #endif
   }
+
+  /// Insert using dimension scales type (HDF5dss in dakota_results_types.hpp)
+  template<typename StoredType>
+  void insert(const StrStrSizet& iterator_id,
+              const std::string& result_name,
+              const std::string& response_name,
+	      const StoredType& sent_data,
+              const HDF5dss &scales = HDF5dss())
+  {
+    Cout << "Insert called for " << iterator_id.get<1>() << ":" << iterator_id.get<2>() << ".\n";
+    Cout << "Result is: " << result_name << std::endl;
+    Cout << "Response is: " << response_name << std::endl;
+    if(scale_is_double(scales)) {
+      for(auto s : scales) {
+        Cout << "Dimension " << s.first << " has label " << boost::any_cast<scale_t<double> >(s.second).label << ".\n";
+        Cout << "Scale Values:" << std::endl;
+        for(auto sv : boost::any_cast<scale_t<double> >(s.second).items)
+          Cout << "  " << sv << std::endl;
+      }
+    } else {
+      for(auto s : scales) {
+        Cout << "Dimension " << s.first << " has label " << boost::any_cast<scale_t<std::string> >(s.second).label << ".\n";
+        Cout << "Scale Values:" << std::endl;
+        for(auto sv : boost::any_cast<scale_t<std::string> >(s.second).items)
+          Cout << "  " << sv << std::endl;
+      }
+    }
+  }
+
+
+
 
   /// allocate an entry with array of StoredType of array_size for
   /// future insertion; likely move to non-templated accessors for these
