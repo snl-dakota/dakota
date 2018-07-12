@@ -7,6 +7,8 @@
 #include "hdf5.h"    // C API
 #include "hdf5_hl.h" // C API (HDF5 "high-level")
 #include "H5Cpp.h"   // C++ API
+
+#include <math.h>
 #include <string>
 
 using namespace H5;
@@ -105,11 +107,11 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	probability_density_arrs[2] = probability_density_3_arr;
 	
 	/* LOGIC */
+	// Part 1:  Write the data.
 
 	H5File* file_ptr = new H5File(FILE, H5F_ACC_TRUNC);
 	Group* group_method = HDF5_add_method_group(file_ptr, sampling_method_name);
 
-	// Execution groups 
 	for(int i = 1; i <= num_evaluations; i++) {
 		std::string exec_id_path = "execution_id_" + std::to_string(i);
 
@@ -130,7 +132,6 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		ds_lower_bounds->close();
 		ds_upper_bounds->close();
 
-		// Probability density datasets
 		for(int j = 0; j < 3; j++) {
 			hsize_t dims_ds[1];
 			float* probability_density_arr = probability_density_arrs[j];
@@ -159,9 +160,72 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	}
 
 	group_method->close();
-	// group_methods.close(); TODO Do we need to explicitly close the methods group?
 	file_ptr->close();
 
+	// Part 2:  Re-open and verify the data.
+
+	float EPSILON_BIG    = 1.5e+4;
+	float EPSILON_SMALL  = 1.0e-15;
+	float EPSILON_MEDIUM = 1.0e-07;
+	H5File file( FILE, H5F_ACC_RDONLY );
+
+	Group group_methods   = file.openGroup("/methods");
+	Group group_sampling  = group_methods.openGroup("sampling");
+	Group group_exec_id_1 = group_sampling.openGroup("execution_id_1");
+	Group group_prob_dens = group_exec_id_1.openGroup("probability_density");
+	Group group_scales    = group_prob_dens.openGroup("_scales");
+
+    // Test lower_bounds dimension scale.
+	DataSet dataset_lower_bounds = group_scales.openDataSet("lower_bounds");
+	float data_out[4];
+	hsize_t dimsm[1];  // memory space dimensions
+	dimsm[0] = 4;
+	DataSpace memspace( 1, dimsm );
+	DataSpace dataspace = dataset_lower_bounds.getSpace();
+
+	dataset_lower_bounds.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
+
+    TEST_ASSERT( fabs(data_out[0] - 2.7604749078e+11) < EPSILON_BIG );
+	TEST_ASSERT( fabs(data_out[1] - 3.6000000000e+11) < EPSILON_BIG );
+	TEST_ASSERT( fabs(data_out[2] - 4.0000000000e+11) < EPSILON_BIG );
+	TEST_ASSERT( fabs(data_out[3] - 4.4000000000e+11) < EPSILON_BIG );
+
+	// Test upper_bounds dimension scale.
+	DataSet dataset_upper_bounds = group_scales.openDataSet("upper_bounds");
+	dataspace = dataset_upper_bounds.getSpace();
+
+	dataset_upper_bounds.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
+	TEST_ASSERT( fabs(data_out[0] - 3.6000000000e+11) < EPSILON_BIG );
+	TEST_ASSERT( fabs(data_out[1] - 4.0000000000e+11) < EPSILON_BIG );
+	TEST_ASSERT( fabs(data_out[2] - 4.4000000000e+11) < EPSILON_BIG );
+	TEST_ASSERT( fabs(data_out[3] - 5.4196114379e+11) < EPSILON_BIG );
+
+	// Test resp_desc datasets.
+	DataSet dataset_resp_desc_1 = group_prob_dens.openDataSet("resp_desc_1");
+	dataspace = dataset_resp_desc_1.getSpace();
+    dataset_resp_desc_1.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
+    TEST_ASSERT( fabs(data_out[0] - 5.3601733194e-12) < EPSILON_SMALL );
+    TEST_ASSERT( fabs(data_out[1] - 4.2500000000e-12) < EPSILON_SMALL );
+    TEST_ASSERT( fabs(data_out[2] - 3.7500000000e-12) < EPSILON_SMALL );
+    TEST_ASSERT( fabs(data_out[3] - 2.2557612778e-12) < EPSILON_SMALL );
+
+	DataSet dataset_resp_desc_2 = group_prob_dens.openDataSet("resp_desc_2");
+	dataspace = dataset_resp_desc_2.getSpace();
+    dataset_resp_desc_2.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
+    TEST_ASSERT( fabs(data_out[0] - 2.8742313192e-05) < EPSILON_MEDIUM );
+    TEST_ASSERT( fabs(data_out[1] - 6.4000000000e-05) < EPSILON_MEDIUM );
+    TEST_ASSERT( fabs(data_out[2] - 4.0000000000e-05) < EPSILON_MEDIUM );
+    TEST_ASSERT( fabs(data_out[3] - 1.0341896485e-05) < EPSILON_MEDIUM );
+
+	DataSet dataset_resp_desc_3 = group_prob_dens.openDataSet("resp_desc_3");
+	dataspace = dataset_resp_desc_3.getSpace();
+    dataset_resp_desc_3.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
+    TEST_ASSERT( fabs(data_out[0] - 4.2844660868e-06) < EPSILON_MEDIUM );
+    TEST_ASSERT( fabs(data_out[1] - 8.6000000000e-06) < EPSILON_MEDIUM );
+    TEST_ASSERT( fabs(data_out[2] - 1.8000000000e-06) < EPSILON_MEDIUM );
+    TEST_ASSERT( fabs(data_out[3] - 1.8000000000e-06) < EPSILON_MEDIUM );
+	
+	file.close();
 	TEST_ASSERT( true );  // successfully terminated
 }
 
