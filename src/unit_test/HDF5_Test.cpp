@@ -51,7 +51,6 @@ DataSet* HDF5_create_1D_dimension_scale ( Group* parent, int size, PredType type
 
 	DataSpace ds_dataspace( 1, ds_dims );
 	DataSet * ds_dataset = new DataSet( parent->createDataSet( label, type, ds_dataspace ));
-	
 	// Use C API to set the appropriate dimension scale metadata.
 	hid_t  ds_dataset_id = ds_dataset->getId();
 	herr_t ret_code      = H5DSset_scale( ds_dataset_id, label );
@@ -143,28 +142,32 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 				PredType::IEEE_F64LE,
 				probability_density_dataspace
 			);
-			
 			probability_density_dataset.write(
 				probability_density_arrs[j], PredType::NATIVE_FLOAT
 			);
 
 			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_lower_bounds );
 			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_upper_bounds );
-
-			probability_density_dataset.close();
+			
+			probability_density_dataspace.close(); // may not be necessary?
+			probability_density_dataset.close();   // may not be necessary?
 		}
 		// closing these dimension scale datasets invalidates their IDs, so it must be deferred 
 		// until after they are attached.	
 		ds_lower_bounds->close();
 		ds_upper_bounds->close();
 		
-                probability_density_group.close();
-		group_exec_id.close();
+                probability_density_group.close(); // may not be necessary
+		group_exec_id.close();  // may not be necessary
+        	delete ds_lower_bounds; // This may call close()
+        	delete ds_upper_bounds;
 	}
 
 	group_method->close();
 	file_ptr->close();
 
+	delete file_ptr;
+	delete group_method;
 	// Part 2:  Re-open and verify the data.
 
 	float EPSILON_BIG    = 1.5e+4;
