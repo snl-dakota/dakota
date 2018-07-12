@@ -50,6 +50,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   //if (!sampleType)
   //  sampleType = SUBMETHOD_LHS;
 
+  hdf5DB.initialize("hdf5_test");
+
   if (epistemicStats && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
@@ -1430,6 +1432,20 @@ archive_moments(const RealMatrix& moment_stats, short moments_type,
   md_moments["Column Labels"] = make_metadatavalue(labels);
   resultsDB.insert(run_identifier(), resultsNames.moments_std, moment_stats,
 		   md_moments);
+  
+  // send to prototype hdf5DB, too
+  for(int i = 0; i < labels.size(); ++i) {
+    HDF5dss scales;
+    if(moments_type == CENTRAL_MOMENTS)
+      scales.emplace(0, scale_t<String>("moments", {"mean", "variance", "3rd_central", "4th_central"}));
+    else
+      scales.emplace(0, scale_t<String>("moments", {"mean", "std_deviation", "skewness", "kurtosis"}));
+    // extract column or row of moment_stats
+    const String label = labels[i];
+    hdf5DB.insert(run_identifier(), String("moments"), labels[i], 
+        Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&moment_stats), i), scales);
+    // Teuchos::getCol<int,double>(Teuchos::View, moment_stats, i);
+  }
 }
 
 

@@ -13,8 +13,11 @@
 #ifndef DAKOTA_RESULTS_TYPES_H
 #define DAKOTA_RESULTS_TYPES_H
 
+#include <map>
+#include <vector>
 #include <boost/tuple/tuple.hpp>
 #include "dakota_data_types.hpp"
+#include <boost/any.hpp>
 
 
 namespace Dakota {
@@ -198,6 +201,55 @@ inline ResultsKeyType make_key(const StrStrSizet& iterator_id,
 			iterator_id.get<2>(),
 			data_name);
 }
+
+// For the HDF5 NonDSampling prototype, dimension scales may 
+// accompany results to be written by the ResultsManager. They
+// are of type multimap<int, boost::any>, with the boost::any
+// containing either a scale_t<string> or scale_t<double>.
+// Overloaded scale_t constructors handle copying the contents of 
+// various source objects into vector<T> items.
+
+template<typename T>
+struct scale_t {
+  scale_t(const std::string &label, const std::vector<T> &items) :
+    label(label), items(items) {};
+
+  scale_t(const std::string& in_label, const char * const cstrings[], const int &len) {
+    label = in_label;
+    for(int i = 0; i < len; ++i)
+      items.push_back(cstrings[i]);
+  }
+
+  std::string label;
+  std::vector<T> items;
+};
+
+typedef std::multimap<int, boost::any> HDF5dss;
+
+inline
+bool scale_is_double(const HDF5dss::iterator &i) {
+  return boost::any_cast<scale_t<double> >(&i->second);
+}
+
+inline
+bool scale_is_double(const HDF5dss &s) {
+  if(s.size() == 0)
+    return false;
+  return boost::any_cast<scale_t<double> >(&s.begin()->second);
+}
+
+inline
+bool scale_is_string(const HDF5dss::iterator &i) {
+  return boost::any_cast<scale_t<std::string> >(&i->second);
+}
+
+inline
+bool scale_is_string(const HDF5dss &s) {
+  if(s.size() == 0)
+    return false;
+  return boost::any_cast<scale_t<std::string> >(&s.begin()->second);
+}
+
 
 }  // namespace Dakota
 
