@@ -21,46 +21,69 @@ using namespace H5;
  *  Insert a new method group into a Dakota HDF5 database at "/methods/<your method>."
  *  If "/methods" does not exist yet, it is automatically created for you.
  */
-Group* HDF5_add_method_group ( H5File* db_file, std::string method_name ) {
-    const char* G_METHODS = "/methods";
+std::unique_ptr<Group> HDF5_add_method_group ( H5File* db_file, std::string method_name ) {
+	std::string G_METHODS = "/methods";
 
 	H5G_stat_t stat_buf;
-	herr_t status = H5Gget_objinfo (db_file->getId(), G_METHODS, 0, &stat_buf);
+	herr_t status = H5Gget_objinfo (db_file->getId(), G_METHODS.c_str(), 0, &stat_buf);
 
 	Group group_methods;
 	if( status != 0 ) {
-		group_methods = db_file->createGroup(G_METHODS);
+		group_methods = db_file->createGroup(G_METHODS.c_str());
 	} else {
-		group_methods = db_file->openGroup(G_METHODS);
+		group_methods = db_file->openGroup(G_METHODS.c_str());
 	}
 
-	Group * group_method = new Group(group_methods.createGroup(method_name));
+	std::unique_ptr<Group> group_method( new Group(group_methods.createGroup(method_name)));
 	return group_method;
 }
 
 /**
  *  Create a 1D dimension scale with the length and label specified by the arguments.
- *  Returns a pointer to an open DataSet object.  It is up to the caller to then
+ *  Returns a unique_ptr to an open DataSet object.  It is up to the caller to then
  *  write to and close the DataSet.
  *
  *  This function uses C API to set dimension scale information, as dimension scales
  *  are not supported by HDF5's C++ API.
  */
-DataSet* HDF5_create_1D_dimension_scale ( Group* parent, int size, PredType type, const char* label ) {
+std::unique_ptr<DataSet> HDF5_create_1D_dimension_scale ( Group* parent, int size, PredType type, std::string label ) {
 	hsize_t ds_dims[1];
 	ds_dims[0] = size;
 
 	DataSpace ds_dataspace( 1, ds_dims );
-	DataSet  *ds_dataset = new DataSet( parent->createDataSet( label, type, ds_dataspace ));
+
+	std::unique_ptr<DataSet> ds_dataset(
+		new DataSet( parent->createDataSet( label.c_str(), type, ds_dataspace ))
+	);
 
 	// Use C API to set the appropriate dimension scale metadata.
-	hid_t  ds_dataset_id = ds_dataset->getId();
-	herr_t ret_code      = H5DSset_scale( ds_dataset_id, label );
+	hid_t  ds_dataset_id = (ds_dataset.get())->getId();
+	herr_t ret_code      = H5DSset_scale( ds_dataset_id, label.c_str() );
 	if(ret_code != 0) {
-	   std::cerr << "H5DSset_scale returned an error\n";	// TODO Do something to handle the error.
+		throw std::runtime_error( "H5DSset_scale returned an error" );
     }
     
 	return ds_dataset;
+}
+
+/**
+ * Create a 2D dimension scale with the row/column lengths and 2 dimension labels
+ * specified by the arguments.  Returns a pointer to an open DataSet object.  It is
+ * up to the caller to then write to and close the DataSet.
+ *
+ * This function uses C API to set dimension scale information, as dimension scales
+ * are not supported by HDF5's C++ API.
+ */
+std::unique_ptr<DataSet> HDF5_create_2D_dimension_scale ( Group* parent, int row_size, int col_size, PredType type, std::string row_label, std::string col_label) {
+	hsize_t ds_dims[2];
+	ds_dims[0] = row_size;
+	ds_dims[1] = col_size;
+
+	DataSpace ds_dataspace( 2, ds_dims );
+
+//	std::unique_ptr<DataSet> ds_dataset(
+//		new DataSet( parent->createDataSet( ))
+//	);
 }
 
 /**
@@ -76,7 +99,7 @@ void HDF5_attach_dimension_scale ( DataSet* target, DataSet* ds_to_attach ) {
 
 	herr_t ret_code = H5DSattach_scale(target_id, ds_id, 0);
 	if(ret_code != 0) {
-	   std::cerr << "H5DSattach_scale returned an error\n";	// TODO Do something to handle the error.
+		throw std::runtime_error( "H5DSattach_scale returned an error" );
 	}
 }
 
@@ -102,24 +125,22 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	// Part 1:  Write the data.
 
 	std::unique_ptr<H5File> file( new H5File(FILE, H5F_ACC_TRUNC) );
-	std::unique_ptr<Group>  group_method( HDF5_add_method_group(file.get(), sampling_method_name) );
+	std::unique_ptr<Group>  group_method = HDF5_add_method_group(file.get(), sampling_method_name);
 
 	for(int i = 1; i <= num_evaluations; i++) {
 		std::string exec_id_path = "execution_id_" + std::to_string(i);
-
 		Group group_exec_id( group_method->createGroup(exec_id_path) );
-		Group probability_density_group( group_exec_id.createGroup("probability_density") );
-		Group scales_group( probability_density_group.createGroup("_scales") );
 
-		std::unique_ptr<DataSet> ds_lower_bounds(
-			HDF5_create_1D_dimension_scale (
-				&scales_group, lower_bounds_arr.size(), PredType::IEEE_F64LE, "lower_bounds"
-			)
+		// Probability densities
+		Group group_prob_dens( group_exec_id.createGroup("probability_density") );
+		Group group_prob_dens_scales( group_prob_dens.createGroup("_scales") );
+
+		std::unique_ptr<DataSet> ds_lower_bounds = HDF5_create_1D_dimension_scale (
+			&group_prob_dens_scales, lower_bounds_arr.size(), PredType::IEEE_F64LE, "lower_bounds"
 		);
-		std::unique_ptr<DataSet> ds_upper_bounds(
-			HDF5_create_1D_dimension_scale (
-				&scales_group, upper_bounds_arr.size(), PredType::IEEE_F64LE, "upper_bounds"
-			)
+	
+		std::unique_ptr<DataSet> ds_upper_bounds = HDF5_create_1D_dimension_scale (
+			&group_prob_dens_scales, upper_bounds_arr.size(), PredType::IEEE_F64LE, "upper_bounds"
 		);
 
 		ds_lower_bounds->write( lower_bounds_arr.data(), PredType::NATIVE_DOUBLE );
@@ -130,18 +151,16 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 			dims_ds[0] = probability_density_arrs[j].size();
 			DataSpace probability_density_dataspace( 1, dims_ds );
 
-			std::string probability_density_dataset_name = "resp_desc_" + std::to_string(j+1);
-			DataSet probability_density_dataset = probability_density_group.createDataSet(
-				probability_density_dataset_name,
-				PredType::IEEE_F64LE,
-				probability_density_dataspace
+			std::string dataset_resp_desc_name = "resp_desc_" + std::to_string(j+1);
+			DataSet dataset_resp_desc = group_prob_dens.createDataSet(
+				dataset_resp_desc_name, PredType::IEEE_F64LE, probability_density_dataspace
 			);
-			probability_density_dataset.write(
+			dataset_resp_desc.write(
 				probability_density_arrs[j].data(), PredType::NATIVE_DOUBLE
 			);
 
-			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_lower_bounds.get() );
-			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_upper_bounds.get() );
+			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_lower_bounds.get() );
+			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_upper_bounds.get() );
 			
 			// EMR close() happens automatically in object destructors.
 			// probability_density_dataspace.close();
@@ -151,26 +170,26 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		// must be deferred until after they are attached.	
 		ds_lower_bounds->close();
 		ds_upper_bounds->close();
-		
-		// probability_density_group.close(); // may not be necessary
-		// group_exec_id.close();  // may not be necessary
+	
+		// Confidence intervals	
+		Group group_conf_int( group_exec_id.createGroup("confidence_intervals") );
+		Group group_conf_int_scales( group_conf_int.createGroup("_scales") );
 	}
 
-	// group_method->close();
 
 	// Part 2:  Re-open and verify the data.
 
 	double TOL  = 1.0e-15;
 	H5File h5file( FILE, H5F_ACC_RDONLY );
 
-	Group group_methods   = h5file.openGroup("/methods");
-	Group group_sampling  = group_methods.openGroup("sampling");
-	Group group_exec_id_1 = group_sampling.openGroup("execution_id_1");
-	Group group_prob_dens = group_exec_id_1.openGroup("probability_density");
-	Group group_scales    = group_prob_dens.openGroup("_scales");
+	Group group_methods          = h5file.openGroup("/methods");
+	Group group_sampling         = group_methods.openGroup("sampling");
+	Group group_exec_id_1        = group_sampling.openGroup("execution_id_1");
+	Group group_prob_dens        = group_exec_id_1.openGroup("probability_density");
+	Group group_prob_dens_scales = group_prob_dens.openGroup("_scales");
 
     // Test lower_bounds dimension scale.
-	DataSet dataset_lower_bounds = group_scales.openDataSet("lower_bounds");
+	DataSet dataset_lower_bounds = group_prob_dens_scales.openDataSet("lower_bounds");
 	double data_out[4];
 	hsize_t dimsm[1];  // memory space dimensions
 	dimsm[0] = 4;
@@ -185,7 +204,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	TEST_FLOATING_EQUALITY( data_out[3], 4.4e+11, TOL );
 
 	// Test upper_bounds dimension scale.
-	DataSet dataset_upper_bounds = group_scales.openDataSet("upper_bounds");
+	DataSet dataset_upper_bounds = group_prob_dens_scales.openDataSet("upper_bounds");
 	dataspace = dataset_upper_bounds.getSpace();
 
 	dataset_upper_bounds.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
