@@ -218,11 +218,6 @@ protected:
   void finalize();
   void combine();
   void combined_to_active();
-  /*
-  void store(size_t index = _NPOS);
-  void restore(size_t index = _NPOS);
-  void remove_stored(size_t index = _NPOS);
-  */
   void clear_inactive();
 
   void print_coefficients(std::ostream& s, bool normalized);
