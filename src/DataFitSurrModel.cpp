@@ -1397,7 +1397,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     mixed_eval = (actual_eval && approx_eval); break;
   case BYPASS_SURROGATE:
     actual_eval = true; approx_eval = false;   break;
-  case MODEL_DISCREPANCY:
+  case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
     actual_eval = approx_eval = true;          break;
   }
 
@@ -1434,7 +1434,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       // TODO: Add to surrogate build data
       //      add_datapoint(....)
       break;
-    case MODEL_DISCREPANCY:
+    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
       actualModel.evaluate(set);
       break;
     }
@@ -1464,7 +1464,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
       approxInterface.map(currentVariables, approx_set, approx_response); break;
     }
-    case MODEL_DISCREPANCY:
+    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
       approx_response = currentResponse.copy(); // TO DO
       approxInterface.map(currentVariables, set, approx_response);        break;
     }
@@ -1499,6 +1499,10 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 		      currentResponse, quiet_flag);
     break;
   }
+  case AGGREGATED_MODELS:
+    aggregate_response(actualModel.current_response(), approx_response,
+		       currentResponse);
+    break;
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if (mixed_eval) {
       currentResponse.active_set(set);
@@ -1526,7 +1530,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty(); break;
   case BYPASS_SURROGATE:
     actual_eval = true; approx_eval = false;                              break;
-  case MODEL_DISCREPANCY:
+  case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
     actual_eval = approx_eval = true;                                     break;
   }
 
@@ -1549,7 +1553,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       actual_set.request_vector(actual_asv);
       actualModel.evaluate_nowait(actual_set); break;
     }
-    case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
+    case BYPASS_SURROGATE: case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       actualModel.evaluate_nowait(set);        break;
     }
     // store mapping from actualModel eval id to DataFitSurrModel id
@@ -1578,7 +1582,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       approxInterface.map(currentVariables, approx_set, currentResponse, true);
       break;
     }
-    case MODEL_DISCREPANCY:
+    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
       approxInterface.map(currentVariables,        set, currentResponse, true);
       break;
     }

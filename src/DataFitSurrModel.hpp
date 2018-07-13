@@ -514,8 +514,9 @@ inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
       actualModel.resize_from_subordinate_model(depth - 1);
 
     // DataFitSurrModel consumes (newly) aggregated data sets through multiple
-    // SurrogateData instances --> don't resize locally...
+    // SurrogateData instances --> don't resize locally.
     //resize_response();
+    // It must therefore manage inflation of incoming ActiveSet instances...
   }
 }
 
