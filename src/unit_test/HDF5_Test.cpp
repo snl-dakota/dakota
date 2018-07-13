@@ -8,9 +8,10 @@
 #include "hdf5_hl.h" // C API (HDF5 "high-level")
 #include "H5Cpp.h"   // C++ API
 
-#include <math.h>
-#include <string>
 #include <iostream>
+#include <math.h>
+#include <memory>
+#include <string>
 
 using namespace H5;
 
@@ -50,7 +51,8 @@ DataSet* HDF5_create_1D_dimension_scale ( Group* parent, int size, PredType type
 	ds_dims[0] = size;
 
 	DataSpace ds_dataspace( 1, ds_dims );
-	DataSet * ds_dataset = new DataSet( parent->createDataSet( label, type, ds_dataspace ));
+	DataSet  *ds_dataset = new DataSet( parent->createDataSet( label, type, ds_dataspace ));
+
 	// Use C API to set the appropriate dimension scale metadata.
 	hid_t  ds_dataset_id = ds_dataset->getId();
 	herr_t ret_code      = H5DSset_scale( ds_dataset_id, label );
@@ -89,28 +91,18 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	int  num_evaluations = 2;
 	std::string  sampling_method_name = "sampling";
 
-	float lower_bounds_arr[4] =
-		{ 2.7604749078e+11, 3.6000000000e+11, 4.0000000000e+11, 4.4000000000e+11 };
-	float upper_bounds_arr[4] =
-		{ 3.6000000000e+11, 4.0000000000e+11, 4.4000000000e+11, 5.4196114379e+11 };
-	
-	float *probability_density_arrs[3];
-	float probability_density_1_arr[4] =
-		{ 5.3601733194e-12, 4.2500000000e-12, 3.7500000000e-12, 2.2557612778e-12 };
-	float probability_density_2_arr[4] =
-		{ 2.8742313192e-05, 6.4000000000e-05, 4.0000000000e-05, 1.0341896485e-05 };
-	float probability_density_3_arr[4] =
-		{ 4.2844660868e-06, 8.6000000000e-06, 1.8000000000e-06, 1.8000000000e-06 };
+	std::array<double, 4> lower_bounds_arr = { 2.7604749078e+11, 3.6e+11, 4.0e+11, 4.4e+11 };
+	std::array<double, 4> upper_bounds_arr = { 3.6e+11, 4.0e+11, 4.4e+11, 5.4196114379e+11 };
+    std::array<std::array<double, 4>, 3> probability_density_arrs =
+		{{{ 5.3601733194e-12, 4.25e-12, 3.75e-12, 2.2557612778e-12 },
+		  { 2.8742313192e-05, 6.4e-05, 4.0e-05, 1.0341896485e-05 },
+		  { 4.2844660868e-06, 8.6e-06, 1.8e-06, 1.8e-06 }}};
 
-	probability_density_arrs[0] = probability_density_1_arr;
-	probability_density_arrs[1] = probability_density_2_arr;
-	probability_density_arrs[2] = probability_density_3_arr;
-	
 	/* LOGIC */
 	// Part 1:  Write the data.
 
-	H5File* file_ptr = new H5File(FILE, H5F_ACC_TRUNC);
-	Group* group_method = HDF5_add_method_group(file_ptr, sampling_method_name);
+	std::unique_ptr<H5File> file( new H5File(FILE, H5F_ACC_TRUNC) );
+	std::unique_ptr<Group>  group_method( HDF5_add_method_group(file.get(), sampling_method_name) );
 
 	for(int i = 1; i <= num_evaluations; i++) {
 		std::string exec_id_path = "execution_id_" + std::to_string(i);
@@ -119,21 +111,23 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		Group probability_density_group( group_exec_id.createGroup("probability_density") );
 		Group scales_group( probability_density_group.createGroup("_scales") );
 
-		DataSet* ds_lower_bounds = HDF5_create_1D_dimension_scale (
-			&scales_group, sizeof(*lower_bounds_arr), PredType::IEEE_F64LE, "lower_bounds"
+		std::unique_ptr<DataSet> ds_lower_bounds(
+			HDF5_create_1D_dimension_scale (
+				&scales_group, lower_bounds_arr.size(), PredType::IEEE_F64LE, "lower_bounds"
+			)
 		);
-		DataSet* ds_upper_bounds = HDF5_create_1D_dimension_scale (
-			&scales_group, sizeof(*upper_bounds_arr), PredType::IEEE_F64LE, "upper_bounds"
+		std::unique_ptr<DataSet> ds_upper_bounds(
+			HDF5_create_1D_dimension_scale (
+				&scales_group, upper_bounds_arr.size(), PredType::IEEE_F64LE, "upper_bounds"
+			)
 		);
 
-		ds_lower_bounds->write( lower_bounds_arr, PredType::NATIVE_FLOAT );
-		ds_upper_bounds->write( upper_bounds_arr, PredType::NATIVE_FLOAT );
+		ds_lower_bounds->write( lower_bounds_arr.data(), PredType::NATIVE_DOUBLE );
+		ds_upper_bounds->write( upper_bounds_arr.data(), PredType::NATIVE_DOUBLE );
 
-
-		for(int j = 0; j < 3; j++) {
+		for(int j = 0; j < probability_density_arrs.size(); j++) {
 			hsize_t dims_ds[1];
-			float* probability_density_arr = probability_density_arrs[j];
-			dims_ds[0] = sizeof(*probability_density_arr);
+			dims_ds[0] = probability_density_arrs[j].size();
 			DataSpace probability_density_dataspace( 1, dims_ds );
 
 			std::string probability_density_dataset_name = "resp_desc_" + std::to_string(j+1);
@@ -143,39 +137,33 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 				probability_density_dataspace
 			);
 			probability_density_dataset.write(
-				probability_density_arrs[j], PredType::NATIVE_FLOAT
+				probability_density_arrs[j].data(), PredType::NATIVE_DOUBLE
 			);
 
-			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_lower_bounds );
-			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_upper_bounds );
+			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_lower_bounds.get() );
+			HDF5_attach_dimension_scale ( &probability_density_dataset, ds_upper_bounds.get() );
 			
-			probability_density_dataspace.close(); // may not be necessary?
-			probability_density_dataset.close();   // may not be necessary?
+			// EMR close() happens automatically in object destructors.
+			// probability_density_dataspace.close();
+			// probability_density_dataset.close();
 		}
-		// closing these dimension scale datasets invalidates their IDs, so it must be deferred 
-		// until after they are attached.	
+		// JAS closing these dimension scale datasets invalidates their IDs, so it
+		// must be deferred until after they are attached.	
 		ds_lower_bounds->close();
 		ds_upper_bounds->close();
 		
-                probability_density_group.close(); // may not be necessary
-		group_exec_id.close();  // may not be necessary
-        	delete ds_lower_bounds; // This may call close()
-        	delete ds_upper_bounds;
+		// probability_density_group.close(); // may not be necessary
+		// group_exec_id.close();  // may not be necessary
 	}
 
-	group_method->close();
-	file_ptr->close();
+	// group_method->close();
 
-	delete file_ptr;
-	delete group_method;
 	// Part 2:  Re-open and verify the data.
 
-	float EPSILON_BIG    = 1.5e+4;
-	float EPSILON_SMALL  = 1.0e-15;
-	float EPSILON_MEDIUM = 1.0e-07;
-	H5File file( FILE, H5F_ACC_RDONLY );
+	double TOL  = 1.0e-15;
+	H5File h5file( FILE, H5F_ACC_RDONLY );
 
-	Group group_methods   = file.openGroup("/methods");
+	Group group_methods   = h5file.openGroup("/methods");
 	Group group_sampling  = group_methods.openGroup("sampling");
 	Group group_exec_id_1 = group_sampling.openGroup("execution_id_1");
 	Group group_prob_dens = group_exec_id_1.openGroup("probability_density");
@@ -183,55 +171,55 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
     // Test lower_bounds dimension scale.
 	DataSet dataset_lower_bounds = group_scales.openDataSet("lower_bounds");
-	float data_out[4];
+	double data_out[4];
 	hsize_t dimsm[1];  // memory space dimensions
 	dimsm[0] = 4;
 	DataSpace memspace( 1, dimsm );
 	DataSpace dataspace = dataset_lower_bounds.getSpace();
 
-	dataset_lower_bounds.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
+	dataset_lower_bounds.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
 
-    TEST_ASSERT( fabs(data_out[0] - 2.7604749078e+11) < EPSILON_BIG );
-	TEST_ASSERT( fabs(data_out[1] - 3.6000000000e+11) < EPSILON_BIG );
-	TEST_ASSERT( fabs(data_out[2] - 4.0000000000e+11) < EPSILON_BIG );
-	TEST_ASSERT( fabs(data_out[3] - 4.4000000000e+11) < EPSILON_BIG );
+    TEST_FLOATING_EQUALITY( data_out[0], 2.7604749078e+11, TOL );
+	TEST_FLOATING_EQUALITY( data_out[1], 3.6e+11, TOL );
+	TEST_FLOATING_EQUALITY( data_out[2], 4.0e+11, TOL );
+	TEST_FLOATING_EQUALITY( data_out[3], 4.4e+11, TOL );
 
 	// Test upper_bounds dimension scale.
 	DataSet dataset_upper_bounds = group_scales.openDataSet("upper_bounds");
 	dataspace = dataset_upper_bounds.getSpace();
 
-	dataset_upper_bounds.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
-	TEST_ASSERT( fabs(data_out[0] - 3.6000000000e+11) < EPSILON_BIG );
-	TEST_ASSERT( fabs(data_out[1] - 4.0000000000e+11) < EPSILON_BIG );
-	TEST_ASSERT( fabs(data_out[2] - 4.4000000000e+11) < EPSILON_BIG );
-	TEST_ASSERT( fabs(data_out[3] - 5.4196114379e+11) < EPSILON_BIG );
+	dataset_upper_bounds.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
+	TEST_FLOATING_EQUALITY( data_out[0], 3.6e+11, TOL );
+	TEST_FLOATING_EQUALITY( data_out[1], 4.0e+11, TOL );
+	TEST_FLOATING_EQUALITY( data_out[2], 4.4e+11, TOL );
+	TEST_FLOATING_EQUALITY( data_out[3], 5.4196114379e+11, TOL );
 
 	// Test resp_desc datasets.
 	DataSet dataset_resp_desc_1 = group_prob_dens.openDataSet("resp_desc_1");
 	dataspace = dataset_resp_desc_1.getSpace();
-    dataset_resp_desc_1.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
-    TEST_ASSERT( fabs(data_out[0] - 5.3601733194e-12) < EPSILON_SMALL );
-    TEST_ASSERT( fabs(data_out[1] - 4.2500000000e-12) < EPSILON_SMALL );
-    TEST_ASSERT( fabs(data_out[2] - 3.7500000000e-12) < EPSILON_SMALL );
-    TEST_ASSERT( fabs(data_out[3] - 2.2557612778e-12) < EPSILON_SMALL );
+    dataset_resp_desc_1.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
+    TEST_FLOATING_EQUALITY( data_out[0], 5.3601733194e-12, TOL );
+    TEST_FLOATING_EQUALITY( data_out[1], 4.25e-12, TOL );
+    TEST_FLOATING_EQUALITY( data_out[2], 3.75e-12, TOL );
+    TEST_FLOATING_EQUALITY( data_out[3], 2.2557612778e-12, TOL );
 
 	DataSet dataset_resp_desc_2 = group_prob_dens.openDataSet("resp_desc_2");
 	dataspace = dataset_resp_desc_2.getSpace();
-    dataset_resp_desc_2.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
-    TEST_ASSERT( fabs(data_out[0] - 2.8742313192e-05) < EPSILON_MEDIUM );
-    TEST_ASSERT( fabs(data_out[1] - 6.4000000000e-05) < EPSILON_MEDIUM );
-    TEST_ASSERT( fabs(data_out[2] - 4.0000000000e-05) < EPSILON_MEDIUM );
-    TEST_ASSERT( fabs(data_out[3] - 1.0341896485e-05) < EPSILON_MEDIUM );
+    dataset_resp_desc_2.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
+    TEST_FLOATING_EQUALITY( data_out[0], 2.8742313192e-05, TOL );
+    TEST_FLOATING_EQUALITY( data_out[1], 6.4e-05, TOL );
+    TEST_FLOATING_EQUALITY( data_out[2], 4.0e-05, TOL );
+    TEST_FLOATING_EQUALITY( data_out[3], 1.0341896485e-05, TOL );
 
 	DataSet dataset_resp_desc_3 = group_prob_dens.openDataSet("resp_desc_3");
 	dataspace = dataset_resp_desc_3.getSpace();
-    dataset_resp_desc_3.read( data_out, PredType::NATIVE_FLOAT, memspace, dataspace );
-    TEST_ASSERT( fabs(data_out[0] - 4.2844660868e-06) < EPSILON_MEDIUM );
-    TEST_ASSERT( fabs(data_out[1] - 8.6000000000e-06) < EPSILON_MEDIUM );
-    TEST_ASSERT( fabs(data_out[2] - 1.8000000000e-06) < EPSILON_MEDIUM );
-    TEST_ASSERT( fabs(data_out[3] - 1.8000000000e-06) < EPSILON_MEDIUM );
+    dataset_resp_desc_3.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
+    TEST_FLOATING_EQUALITY( data_out[0], 4.2844660868e-06, TOL );
+    TEST_FLOATING_EQUALITY( data_out[1], 8.6e-06, TOL );
+    TEST_FLOATING_EQUALITY( data_out[2], 1.8e-06, TOL );
+    TEST_FLOATING_EQUALITY( data_out[3], 1.8e-06, TOL );
 	
-	file.close();
+	h5file.close();
 	TEST_ASSERT( true );  // successfully terminated
 }
 
