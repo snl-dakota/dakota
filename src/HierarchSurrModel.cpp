@@ -1137,21 +1137,31 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 
 void HierarchSurrModel::resize_response()
 {
-  size_t num_curr_fns;
+  bool use_virtual_counts = true;
+  size_t num_surr, num_truth, num_curr_fns;
+  if (use_virtual_counts) { // allow models to consume lower-level aggregations
+    num_surr  = surrogate_model().num_functions();
+    num_truth =     truth_model().num_functions();
+  }
+  else { // raw counts align with currentResponse raw count
+    num_surr  = surrogate_model().current_response().num_functions();
+    num_truth =     truth_model().current_response().num_functions();
+  }
+
   switch (responseMode) {
   case AGGREGATED_MODELS:
-    num_curr_fns = surrogate_model().num_functions()
-                 +     truth_model().num_functions();
-    break;
-  case BYPASS_SURROGATE:
-    num_curr_fns = truth_model().num_functions();
-    break;
-  //case MODEL_DISCREPANCY:
-  //  num_curr_fns = std::max(surrogate_model().num_functions(),
-  //                          truth_model().num_functions());             break;
-  default:
-    num_curr_fns = surrogate_model().num_functions();
-    break;
+    num_curr_fns = num_surr + num_truth;  break;
+  case MODEL_DISCREPANCY:
+    if (num_surr != num_truth) {
+      Cerr << "Error: mismatch in response sizes for MODEL_DISCREPANCY mode "
+	   << "in HierarchSurrModel::resize_response()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    num_curr_fns = num_truth;  break;
+  case BYPASS_SURROGATE:       case NO_SURROGATE:
+    num_curr_fns = num_truth;  break;
+  case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:  default:
+    num_curr_fns = num_surr;   break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
@@ -1184,9 +1194,9 @@ void HierarchSurrModel::component_parallel_mode(short mode)
   // terminate previous serve mode (if active)
   SizetSizetPair new_indices;
   switch (mode) {
-  case SURROGATE_MODEL: new_indices =  lowFidelityIndices; break;
-  case TRUTH_MODEL:     new_indices = highFidelityIndices; break;
-  default:       new_indices.first = new_indices.second = _NPOS; break;
+  case SURROGATE_MODEL: new_indices =  lowFidelityIndices;        break;
+  case TRUTH_MODEL:     new_indices = highFidelityIndices;        break;
+  default:        new_indices.first = new_indices.second = _NPOS; break;
   }
   // TO DO: restarting servers for a change in soln control index w/o change
   // in model may be overkill (send of state vars in vars buffer sufficient?)

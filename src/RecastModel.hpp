@@ -218,7 +218,10 @@ protected:
   Model& truth_model();
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
-  /// pass request to subModel if recursing and then update from it
+  /// pass request to subModel if recursing and then resize from its results
+  void resize_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
+  /// pass request to subModel if recursing and then update from its results
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
   /// return subModel interface
@@ -573,11 +576,37 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
+inline void RecastModel::resize_from_subordinate_model(size_t depth)
+{
+  // data flows from the bottom-up, so recurse first
+  if (depth == std::numeric_limits<size_t>::max())
+    subModel.resize_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.resize_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> resize this level only
+
+  // pull sizing updates from subModel: reflect aggregated counts, if present,
+  // by accessing count from response rather than virtual count from Model
+  size_t num_sm_resp_fns = subModel.current_response().num_functions();
+  if (currentResponse.num_functions() != num_sm_resp_fns)
+    currentResponse.reshape(num_sm_resp_fns, currentVariables.cv(),
+                            !currentResponse.function_gradients().empty(),
+                            !currentResponse.function_hessians().empty());
+  //size_t num_sm_acv = subModel.acv(), ...;
+  //if (currentVariables.acv() != num_sm_acv || ...)
+  //  currentVariables.reshape(num_sm_acv,num_sm_adiv,num_sm_adsv,num_sm_adrv);
+}
+
+
 inline void RecastModel::update_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
-  if (depth > 0)
-    subModel.update_from_subordinate_model(depth - 1);
+  if (depth == std::numeric_limits<size_t>::max())
+    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.update_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> update this level only
+
   // now pull the latest updates from subModel
   update_from_model(subModel);
 }

@@ -112,9 +112,14 @@ protected:
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
 
+  /// resize currentResponse if needed when one of the subordinate
+  /// models has been resized
+  void resize_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
   /// update currentVariables using non-active data from the passed model
   /// (one of the ordered models)
-  void update_from_subordinate_model(size_t depth);
+  void update_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into LF/HF models
@@ -436,13 +441,48 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
+inline void HierarchSurrModel::resize_from_subordinate_model(size_t depth)
+{
+  bool lf_resize = false, hf_resize = false;
+  switch (responseMode) {
+  case AGGREGATED_MODELS:     case MODEL_DISCREPANCY:
+    lf_resize = hf_resize = true; break;
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    lf_resize = true;             break;
+  case BYPASS_SURROGATE:      case NO_SURROGATE:
+    hf_resize = true;             break;
+  }
+
+  // bottom-up data flow, so recurse first
+  if (lf_resize) {
+    Model& lf_model = surrogate_model();
+    if (depth == std::numeric_limits<size_t>::max())
+      lf_model.resize_from_subordinate_model(depth);//retain special value (inf)
+    else if (depth)
+      lf_model.resize_from_subordinate_model(depth - 1);
+  }
+  if (hf_resize) {
+    Model& hf_model = truth_model();
+    if (depth == std::numeric_limits<size_t>::max())
+      hf_model.resize_from_subordinate_model(depth);//retain special value (inf)
+    else if (depth)
+      hf_model.resize_from_subordinate_model(depth - 1);
+  }
+
+  if (lf_resize || hf_resize)
+    resize_response();
+}
+
+
 inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
 {
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
     Model& lf_model = surrogate_model();
     // bottom-up data flow, so recurse first
-    if (depth)
+    if (depth == std::numeric_limits<size_t>::max())
+      lf_model.update_from_subordinate_model(depth);//retain special value (inf)
+    else if (depth)
       lf_model.update_from_subordinate_model(depth - 1);
     // now pull updates from LF
     update_from_model(lf_model);
@@ -451,7 +491,9 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
   case BYPASS_SURROGATE: {
     Model& hf_model = truth_model();
     // bottom-up data flow, so recurse first
-    if (depth)
+    if (depth == std::numeric_limits<size_t>::max())
+      hf_model.update_from_subordinate_model(depth);//retain special value (inf)
+    else if (depth)
       hf_model.update_from_subordinate_model(depth - 1);
     // now pull updates from HF
     update_from_model(hf_model);

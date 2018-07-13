@@ -1155,23 +1155,23 @@ configure_indices(size_t lev, size_t form, bool multilevel,
   else            iteratedModel.truth_model_indices(lev);
   lev_cost = (costs) ? cost[lev] : 0.;
 
+  // *** TO DO: resize activeSet ???
+
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0) {
     bool resize
       = (iteratedModel.surrogate_response_mode() == AGGREGATED_MODELS);
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
     if (resize)
-      uSpaceModel.resize_from_subordinate_model();//recur until hit aggregation?
-    // Another option: pass request to subModel and then check its size
-    // --> virtual behavior: Recast resizes, but DFSModel does not!
-    //uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE);
-    // Problem: for hierarchical iteratedModel, DFS must pass mode along
-    //          without absorbing it
+      uSpaceModel.resize_from_subordinate_model();//recur until hit aggregation
+    //uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE); // Recur: pass
+    // request to subModel, check resulting size, & resize locally.  Problem:
+    // for HS iteratedModel, DFS must pass mode along w/o absorbing it.
   }
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     if (lev == 1) {
       iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREP
-      uSpaceModel.resize_from_subordinate_model();// ecur until hit aggregation?
+      uSpaceModel.resize_from_subordinate_model();//recur until hit aggregation
       //uSpaceModel.surrogate_response_mode(AGGREGATED_MODELS);
     }
     if (multilevel) iteratedModel.surrogate_model_indices(form, lev-1);

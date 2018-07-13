@@ -119,6 +119,9 @@ protected:
   Model& truth_model();
   /// return actualModel (and optionally its sub-models)
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  /// pass request to actualModel if recursing
+  void resize_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
   /// pass request to actualModel if recursing and then update from it
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
@@ -404,8 +407,8 @@ inline DataFitSurrModel::~DataFitSurrModel()
 inline size_t DataFitSurrModel::num_functions() const
 {
   switch (responseMode) {
-  // Note: resize_response() aggregaates {truth,surrogate}_model().num_fns(),
-  //       such that code below is a bit more general that currResp num_fns/2
+  // Response inflation from aggregation does not proliferate above
+  // this Model recursion level
   case AGGREGATED_MODELS:  return     actualModel.num_functions();  break;
   default:                 return currentResponse.num_functions();  break;
   }
@@ -501,11 +504,29 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
+inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
+{
+  if (!actualModel.is_null()) {
+    // data flows from the bottom-up, so recurse first
+    if (depth == std::numeric_limits<size_t>::max())
+      actualModel.resize_from_subordinate_model(depth); // retain special value
+    else if (depth)
+      actualModel.resize_from_subordinate_model(depth - 1);
+
+    // DataFitSurrModel consumes (newly) aggregated data sets through multiple
+    // SurrogateData instances --> don't resize locally...
+    //resize_response();
+  }
+}
+
+
 inline void DataFitSurrModel::update_from_subordinate_model(size_t depth)
 {
   if (!actualModel.is_null()) {
     // data flows from the bottom-up, so recurse first
-    if (depth > 0)
+    if (depth == std::numeric_limits<size_t>::max())
+      actualModel.update_from_subordinate_model(depth); // retain special value
+    else if (depth)
       actualModel.update_from_subordinate_model(depth - 1);
     // now pull the latest updates from actualModel
     update_from_model(actualModel);
