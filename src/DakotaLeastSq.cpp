@@ -284,7 +284,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   Model orig_model = original_model();
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
-  ActiveSet search_set(orig_model.num_functions(), numContinuousVars);
+  ActiveSet search_set(orig_model.response_size(), numContinuousVars);
 
   activeSet.request_values(1);
   PRPCacheHIter cache_it = lookup_by_val(data_pairs,

@@ -36,10 +36,8 @@ public:
 
   /// Problem database constructor
   AdaptedBasisModel(ProblemDescDB& problem_db);
-
   /// destructor
   ~AdaptedBasisModel();
-
 
   //
   //- Heading: Virtual function redefinitions
@@ -160,8 +158,6 @@ protected:
 
   /// Number of fullspace active continuous variables
   size_t numFullspaceVars;
-  /// Total number of response functions
-  size_t numFunctions;
 
   /// boolean flag to determine if mapping has been fully initialized
   bool adaptedBasisInitialized;

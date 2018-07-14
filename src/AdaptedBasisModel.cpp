@@ -22,7 +22,7 @@ AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
 AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   pcePilotExpansion(pcePilotExpRepPtr, false), numFullspaceVars(subModel.cv()),
-  numFunctions(subModel.num_functions()), adaptedBasisInitialized(false),
+  adaptedBasisInitialized(false),
   reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
   abmInstance = this;
@@ -336,7 +336,7 @@ void AdaptedBasisModel::identify_subspace()
   Teuchos::LAPACK<int, Real> la;
 
   // composite set of A_i
-  RealMatrix A_q(numFunctions*numFullspaceVars, numFullspaceVars, false);
+  RealMatrix A_q(numFns*numFullspaceVars, numFullspaceVars, false);
   // Individual rotation matrix for each QoI
   RealMatrix A_i(numFullspaceVars, numFullspaceVars, false);
 
@@ -345,7 +345,7 @@ void AdaptedBasisModel::identify_subspace()
   //          Gramm-Schmidt (BLAS/LAPACK?).
   //          [Can neglect constant term/expansion mean]
   size_t i, j, k, row_cntr = 0;
-  for (i=0; i<numFunctions; ++i) {
+  for (i=0; i<numFns; ++i) {
     A_i.putScalar(0.);
     for (j=0; j<numFullspaceVars; ++j)
       A_i(0,j) = pce_coeffs[i][j+1]; // offset by 1 to neglect constant/mean
@@ -377,7 +377,7 @@ void AdaptedBasisModel::identify_subspace()
 
   Cout << "\nAdapted Basis Model: Composing composite reduction"  << std::endl;
 
-  // Given A_i for i=1,..,numFunctions, we need to compute a composite eta:
+  // Given A_i for i=1,..,numFns, we need to compute a composite eta:
   // Refer to board notes / emerging article:
 
   //   Stack A_i into a tall matrix A, we target KLE of \eta using eigenspectrum
@@ -428,12 +428,12 @@ void AdaptedBasisModel::identify_subspace()
     for (j=0; j<reducedRank; ++j) {
       const Real* U_col = /*truncated_*/left_singular_vectors[j];
       Real sum_prod = 0.;
-      for (k=0; k<numFullspaceVars*numFunctions; ++k)
+      for (k=0; k<numFullspaceVars*numFns; ++k)
 	sum_prod += A_col[k] * U_col[k];
       rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
     }
   }
-  rotationMatrix.scale(1./numFunctions);
+  rotationMatrix.scale(1./numFns);
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -497,8 +497,8 @@ void AdaptedBasisModel::initialize_recast()
   // TODO: can we get RecastModel to tolerate empty indices when no
   // map is present?
   size_t num_primary = subModel.num_primary_fns(),
-    num_secondary = subModel.num_functions() - subModel.num_primary_fns(),
-    num_recast_fns = num_primary + num_secondary,
+    num_secondary    = subModel.num_secondary_fns(),
+    num_recast_fns   = num_primary + num_secondary,
     recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
 
   Sizet2DArray primary_resp_map_indices(num_primary);
@@ -513,8 +513,7 @@ void AdaptedBasisModel::initialize_recast()
     secondary_resp_map_indices[i][0] = num_primary + i;
   }
 
-  BoolDequeArray nonlinear_resp_mapping(numFunctions,
-                                        BoolDeque(numFunctions, false));
+  BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
 
   // Initial response order for the newly built adapted basis model same as
   // the subModel (does not augment with gradient request)

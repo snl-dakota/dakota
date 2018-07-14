@@ -384,7 +384,7 @@ void HierarchSurrModel::build_approximation()
     total_asv.assign(numFns, dc_iter->second.data_order());
   else
     total_asv.assign(numFns, 1); // default: values only if no deriv correction
-  asv_mapping(total_asv, hf_asv, lf_asv, true);
+  asv_split(total_asv, hf_asv, lf_asv, true);
 
   if ( truthResponseRef.find(highFidelityIndices) == truthResponseRef.end() )
     truthResponseRef[highFidelityIndices] = currentResponse.copy();
@@ -460,7 +460,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   Response lo_fi_response, hi_fi_response; // don't use truthResponseRef
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
+    asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
     hi_fi_eval = !hi_fi_asv.empty();
     lo_fi_eval = !lo_fi_asv.empty();
     mixed_eval = (hi_fi_eval && lo_fi_eval);
@@ -608,7 +608,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   case UNCORRECTED_SURROGATE:   case AUTO_CORRECTED_SURROGATE:
     if (mixed_eval) {
       currentResponse.active_set(set);
-      response_mapping(hi_fi_response, lo_fi_response, currentResponse);
+      response_combine(hi_fi_response, lo_fi_response, currentResponse);
     }
     break;
   }
@@ -632,7 +632,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
                                asynch_hi_fi = hf_model.asynch_flag();
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
+    asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
     hi_fi_eval = !hi_fi_asv.empty();
     lo_fi_eval = !lo_fi_asv.empty();
     break;
@@ -907,17 +907,17 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
                        INT_MAX : lf_cit->first;
 
       if (hf_eval_id < lf_eval_id) { // only HF available
-        response_mapping(hf_cit->second, empty_resp,
+        response_combine(hf_cit->second, empty_resp,
                          combined_resp_map[hf_eval_id]);
         ++hf_cit;
       }
       else if (lf_eval_id < hf_eval_id) { // only LF available
-        response_mapping(empty_resp, lf_cit->second,
+        response_combine(empty_resp, lf_cit->second,
                          combined_resp_map[lf_eval_id]);
         ++lf_cit;
       }
       else { // both LF and HF available
-        response_mapping(hf_cit->second, lf_cit->second,
+        response_combine(hf_cit->second, lf_cit->second,
                          combined_resp_map[hf_eval_id]);
         ++hf_cit;
         ++lf_cit;
@@ -982,7 +982,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
           // LF contribution is pending -> cache HF response
           cachedTruthRespMap[hf_eval_id] = hf_cit->second;
         else // no LF component is pending -> HF contribution is sufficient
-          response_mapping(hf_cit->second, empty_resp,
+          response_combine(hf_cit->second, empty_resp,
                            surrResponseMap[hf_eval_id]);
         break;
       }
@@ -999,7 +999,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
           // HF contribution is pending -> cache LF response
           cachedApproxRespMap[lf_eval_id] = lf_it->second;
         else // no HF component is pending -> LF contribution is sufficient
-          response_mapping(empty_resp, lf_it->second,
+          response_combine(empty_resp, lf_it->second,
                            surrResponseMap[lf_eval_id]);
         break;
       }
@@ -1018,7 +1018,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
                            surrResponseMap[hf_eval_id]);
         break;
       default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-        response_mapping(hf_cit->second, lf_it->second,
+        response_combine(hf_cit->second, lf_it->second,
                          surrResponseMap[hf_eval_id]);
         break;
       }
@@ -1135,17 +1135,16 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 }
 
 
-void HierarchSurrModel::resize_response()
+void HierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  bool use_virtual_counts = true;
   size_t num_surr, num_truth, num_curr_fns;
   if (use_virtual_counts) { // allow models to consume lower-level aggregations
-    num_surr  = surrogate_model().num_functions();
-    num_truth =     truth_model().num_functions();
+    num_surr  = surrogate_model().qoi();
+    num_truth =     truth_model().qoi();
   }
   else { // raw counts align with currentResponse raw count
-    num_surr  = surrogate_model().current_response().num_functions();
-    num_truth =     truth_model().current_response().num_functions();
+    num_surr  = surrogate_model().response_size();
+    num_truth =     truth_model().response_size();
   }
 
   switch (responseMode) {

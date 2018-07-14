@@ -67,7 +67,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  size_t num_functions() const;
+  size_t qoi() const;
 
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
@@ -233,7 +233,7 @@ private:
                                           IntResponseMap& combined_resp_map);
 
   /// resize currentResponse based on responseMode
-  void resize_response();
+  void resize_response(bool use_virtual_counts = true);
 
   /// helper function used in the AUTO_CORRECTED_SURROGATE responseMode
   /// for computing a correction and applying it to lf_resp_map
@@ -304,15 +304,15 @@ inline HierarchSurrModel::~HierarchSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
-inline size_t HierarchSurrModel::num_functions() const
+inline size_t HierarchSurrModel::qoi() const
 {
   switch (responseMode) {
   // Note: resize_response() aggregaates {truth,surrogate}_model().num_fns(),
   //       such that code below is a bit more general that currResp num_fns/2
   case AGGREGATED_MODELS:
-    return orderedModels[highFidelityIndices.first].num_functions();  break;
+    return orderedModels[highFidelityIndices.first].qoi();  break;
   default:
-    return currentResponse.num_functions();                           break;
+    return response_size();                                 break;
   }
 }
 

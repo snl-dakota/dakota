@@ -81,7 +81,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  size_t num_functions() const;
+  size_t qoi() const;
 
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
@@ -104,6 +104,11 @@ protected:
   const IntResponseMap& derived_synchronize();
   /// portion of synchronize_nowait() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize_nowait();
+
+  /// split incoming ASV into actual and approximate requests, managing any
+  /// mismatch in sizes due to response aggregation modes in actualModel
+  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+		 ShortArray& approx_asv, bool build_flag);
 
   /// return daceIterator
   Iterator& subordinate_iterator();
@@ -404,13 +409,13 @@ inline DataFitSurrModel::~DataFitSurrModel()
 { if (!exportPointsFile.empty()) finalize_export(); }
 
 
-inline size_t DataFitSurrModel::num_functions() const
+inline size_t DataFitSurrModel::qoi() const
 {
   switch (responseMode) {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  case AGGREGATED_MODELS:  return     actualModel.num_functions();  break;
-  default:                 return currentResponse.num_functions();  break;
+  case AGGREGATED_MODELS:  return actualModel.qoi();  break;
+  default:                 return response_size();    break;
   }
 }
 

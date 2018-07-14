@@ -748,7 +748,7 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
                          const std::vector<double> constraint_map_offsets,
                                ResponseArray & response_array)
 {
-  RealVector best_fns(model.num_functions());
+  RealVector best_fns(model.response_size());
 
   size_t num_nl_eq_constr = model.num_nonlinear_eq_constraints();
   size_t num_nl_ineq_constr = model.num_nonlinear_ineq_constraints();

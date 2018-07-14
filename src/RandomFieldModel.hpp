@@ -147,14 +147,6 @@ protected:
   void write_field(const RealVector& field_prediction);
 
   // ---
-  // Member data
-  // ---
-
-  // Total number of response functions
-  size_t numFunctions;
-
-
-  // ---
   // Data source
   // ---
 

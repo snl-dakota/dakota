@@ -142,7 +142,7 @@ public:
   virtual void clear_model_keys();
 
   /// return number of unique response functions (managing any aggregations)
-  virtual size_t num_functions() const;
+  virtual size_t qoi() const;
 
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
@@ -501,6 +501,9 @@ public:
 
   /// estimate messageLengths for a model
   void estimate_message_lengths();
+
+  /// return (potentially aggregated) size of response vector in currentResponse
+  size_t response_size() const;
 
   /// initialize modelList and recastFlags for data import/export
   bool manage_data_recastings();
@@ -2589,6 +2592,13 @@ all_discrete_real_variable_label(const String& a_d_v_label, size_t i)
 }
 
 
+inline size_t Model::response_size() const
+{
+  return (modelRep) ? modelRep->currentResponse.num_functions()
+                    : currentResponse.num_functions();
+}
+
+
 inline const StringArray& Model::response_labels() const
 {
   return (modelRep) ? modelRep->currentResponse.function_labels()
@@ -3321,22 +3331,19 @@ inline const String& Model::model_id() const
 { return (modelRep) ? modelRep->modelId : modelId; }
 
 
-inline size_t Model::num_primary_fns() const
-{
-  if (modelRep)
-    return modelRep->num_primary_fns();
-
-  return (num_functions() - num_nonlinear_ineq_constraints() - 
-	  num_nonlinear_eq_constraints());
-}
-
 inline size_t Model::num_secondary_fns() const
 {
-  if (modelRep)
-    return modelRep->num_secondary_fns();
-
-  return (num_nonlinear_ineq_constraints() + num_nonlinear_eq_constraints());
+  return (modelRep) ? modelRep->num_secondary_fns() :
+    num_nonlinear_ineq_constraints() + num_nonlinear_eq_constraints();
 }
+
+
+inline size_t Model::num_primary_fns() const
+{
+  return (modelRep) ? modelRep->num_primary_fns() :
+    response_size() - num_secondary_fns();
+}
+
 
 inline const String& Model::gradient_type() const
 { return (modelRep) ? modelRep->gradientType : gradientType; }

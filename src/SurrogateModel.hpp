@@ -72,6 +72,14 @@ protected:
   size_t mi_parallel_level_index() const;
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  virtual void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+			 ShortArray& approx_asv, bool build_flag);
+
+  //
   //- Heading: Member functions
   //
 
@@ -86,14 +94,11 @@ protected:
   /// forced based on changes in the inactive data
   bool force_rebuild();
 
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  void asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
-		   ShortArray& approx_asv, bool build_flag);
   /// reconstitutes a combined_asv from actual_asv and approx_asv
-  void asv_mapping(const ShortArray& actual_asv, const ShortArray& approx_asv,
+  void asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
 		   ShortArray& combined_asv);
   /// overlays actual_response and approx_response to update combined_response
-  void response_mapping(const Response& actual_response,
+  void response_combine(const Response& actual_response,
                         const Response& approx_response,
                         Response& combined_response);
   /// aggregate LF and HF response to create a new response with 2x size

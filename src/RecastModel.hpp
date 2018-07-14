@@ -189,6 +189,8 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
+  size_t qoi() const;
+
   /// portion of evaluate() specific to RecastModel
   /// (forward to subModel.evaluate())
   void derived_evaluate(const ActiveSet& set);
@@ -543,6 +545,10 @@ inline bool RecastModel::finalize_mapping()
 { return Model::finalize_mapping(); }
 
 
+inline size_t RecastModel::qoi() const
+{ return subModel.qoi(); }
+
+
 inline Iterator& RecastModel::subordinate_iterator()
 { return subModel.subordinate_iterator(); }
 
@@ -587,7 +593,7 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
 
   // pull sizing updates from subModel: reflect aggregated counts, if present,
   // by accessing count from response rather than virtual count from Model
-  size_t num_sm_resp_fns = subModel.current_response().num_functions();
+  size_t num_sm_resp_fns = subModel.response_size();
   if (currentResponse.num_functions() != num_sm_resp_fns)
     currentResponse.reshape(num_sm_resp_fns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),

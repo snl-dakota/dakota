@@ -29,8 +29,7 @@ ScalingModel(Model& sub_model):
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
   RecastModel(sub_model, SizetArray(), BitArray(), BitArray(), 
-	      sub_model.num_primary_fns(), 
-	      sub_model.num_functions() - sub_model.num_primary_fns(),
+	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
 	      response_order(sub_model))
 {
@@ -51,8 +50,8 @@ ScalingModel(Model& sub_model):
 
   // No change in sizes for scaling
   size_t num_primary = sub_model.num_primary_fns(),
-    num_secondary = sub_model.num_functions() - sub_model.num_primary_fns(),
-    num_recast_fns = num_primary + num_secondary;
+    num_secondary    = sub_model.num_secondary_fns(),
+    num_recast_fns   = num_primary + num_secondary;
 
   // the scaling transformation doesn't change any counts of variables
   // or responses, but may require a nonlinear transformation of
@@ -282,10 +281,10 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   // each responseScale* = [fnScale*, nonlinearIneqScale*, nonlinearEqScale*]
   // to make transformations faster at run time 
-  // numFunctions should reflect size of user-space model
-  responseScaleTypes.resize(num_functions());
-  responseScaleMultipliers.resize(num_functions());
-  responseScaleOffsets.resize(num_functions());
+  // numFns should reflect size of user-space model
+  responseScaleTypes.resize(numFns);
+  responseScaleMultipliers.resize(numFns);
+  responseScaleOffsets.resize(numFns);
 
   // -------------------------
   // OBJECTIVE FNS / LSQ TERMS

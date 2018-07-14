@@ -282,9 +282,6 @@ protected:
   /// Number of fullspace active continuous variables
   size_t numFullspaceVars;
 
-  /// Total number of response functions
-  size_t numFunctions;
-
   /// total construction samples evaluated so far
   unsigned int totalSamples;
 
@@ -309,9 +306,9 @@ protected:
   /// current inactive variables
   RealVector inactiveVars;
 
-  /// matrix of derivative data with numFunctions columns per fullspace sample;
+  /// matrix of derivative data with numFns columns per fullspace sample;
   /// each column contains the gradient of one function at one sample point,
-  /// so total matrix size is numContinuousVars * (numFunctions * numSamples)
+  /// so total matrix size is numContinuousVars * (numFns * numSamples)
   /// [ D1 | D2 | ... | Dnum_samples]
   /// [ dy1/dx(k=1) | dy2/dx(k=1) | ... | dyM/dx(k=1) | k=2 | ... | k=n_s ]
   RealMatrix derivativeMatrix;

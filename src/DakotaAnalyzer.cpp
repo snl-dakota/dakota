@@ -80,11 +80,11 @@ bool Analyzer::resize()
 {
   bool parent_reinit_comms = Iterator::resize();
 
-  numContinuousVars = iteratedModel.cv();
-  numDiscreteIntVars = iteratedModel.div();
+  numContinuousVars     = iteratedModel.cv();
+  numDiscreteIntVars    = iteratedModel.div();
   numDiscreteStringVars = iteratedModel.dsv();
-  numDiscreteRealVars = iteratedModel.drv();
-  numFunctions = iteratedModel.num_functions();
+  numDiscreteRealVars   = iteratedModel.drv();
+  numFunctions          = iteratedModel.response_size();
 
   return parent_reinit_comms;
 }
@@ -95,7 +95,7 @@ void Analyzer::update_from_model(const Model& model)
 
   numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
   numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
-  numFunctions          = model.num_functions();
+  numFunctions          = model.response_size();
 
   bool err_flag = false;
   // Check for correct bit associated within methodName

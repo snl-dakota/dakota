@@ -113,7 +113,7 @@ void Minimizer::update_from_model(const Model& model)
 
   numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
   numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
-  numFunctions          = model.num_functions();
+  numFunctions          = model.response_size();
 
   bool err_flag = false;
   // Check for correct bit associated within methodName
@@ -400,7 +400,7 @@ void Minimizer::data_transform_model()
 
   // update sizes in Iterator view from the RecastModel
   numIterPrimaryFns = numTotalCalibTerms = iteratedModel.num_primary_fns();
-  numFunctions = iteratedModel.num_functions();
+  numFunctions = iteratedModel.response_size();
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
 	 << std::endl;

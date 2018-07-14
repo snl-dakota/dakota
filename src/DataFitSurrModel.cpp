@@ -946,7 +946,7 @@ void DataFitSurrModel::build_local_multipoint()
       actualModel.hessian_type() != "none")
     asv_value += 4;
   ShortArray orig_asv(numFns, asv_value), actual_asv, approx_asv;
-  asv_mapping(orig_asv, actual_asv, approx_asv, true);
+  asv_split(orig_asv, actual_asv, approx_asv, true);
 
   // Evaluate value and derivatives using actualModel
   ActiveSet set = actualModel.current_response().active_set(); // copy
@@ -1155,7 +1155,7 @@ void DataFitSurrModel::run_dace()
   // Execute the daceIterator
   ActiveSet set = daceIterator.active_set(); // copy
   ShortArray actual_asv, approx_asv;
-  asv_mapping(set.request_vector(), actual_asv, approx_asv, true);
+  asv_split(set.request_vector(), actual_asv, approx_asv, true);
   set.request_vector(actual_asv);
   daceIterator.active_set(set);
   // prepend hierarchical tag before running
@@ -1196,8 +1196,9 @@ void DataFitSurrModel::refine_surrogate()
   interface_build_approx();
   Real2DArray cv_diags = 
     approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
-  RealArray cv_per_fn(currentResponse.num_functions());
-  for (size_t i=0; i<currentResponse.num_functions(); ++i)
+  size_t resp_fns = currentResponse.num_functions();
+  RealArray cv_per_fn(resp_fns);
+  for (size_t i=0; i<resp_fns; ++i)
     cv_per_fn[i] = cv_diags[i][0];
   Real curr_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
   // keep prev_err to calculate improvement
@@ -1242,8 +1243,8 @@ void DataFitSurrModel::refine_surrogate()
     interface_build_approx();
     Real2DArray cv_diags = 
       approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
-    RealArray cv_per_fn(currentResponse.num_functions());
-    for (size_t i=0; i<currentResponse.num_functions(); ++i)
+    RealArray cv_per_fn(resp_fns);
+    for (size_t i=0; i<resp_fns; ++i)
       cv_per_fn[i] = cv_diags[i][0];
     curr_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
     Cout << "\n------------\nAuto-refinement iteration " << curr_iter 
@@ -1392,12 +1393,12 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   Response actual_response, approx_response; // empty handles
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
+    asv_split(set.request_vector(), actual_asv, approx_asv, false);
     actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty();
     mixed_eval = (actual_eval && approx_eval); break;
   case BYPASS_SURROGATE:
     actual_eval = true; approx_eval = false;   break;
-  case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
+  case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
     actual_eval = approx_eval = true;          break;
   }
 
@@ -1434,7 +1435,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       // TODO: Add to surrogate build data
       //      add_datapoint(....)
       break;
-    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       actualModel.evaluate(set);
       break;
     }
@@ -1464,7 +1465,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
       approxInterface.map(currentVariables, approx_set, approx_response); break;
     }
-    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approx_response = currentResponse.copy(); // TO DO
       approxInterface.map(currentVariables, set, approx_response);        break;
     }
@@ -1506,7 +1507,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if (mixed_eval) {
       currentResponse.active_set(set);
-      response_mapping(actual_response, approx_response, currentResponse);
+      response_combine(actual_response, approx_response, currentResponse);
     }
     break;
   }
@@ -1526,11 +1527,11 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   ShortArray actual_asv, approx_asv; bool actual_eval, approx_eval;
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
+    asv_split(set.request_vector(), actual_asv, approx_asv, false);
     actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty(); break;
   case BYPASS_SURROGATE:
     actual_eval = true; approx_eval = false;                              break;
-  case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
+  case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
     actual_eval = approx_eval = true;                                     break;
   }
 
@@ -1582,7 +1583,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       approxInterface.map(currentVariables, approx_set, currentResponse, true);
       break;
     }
-    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approxInterface.map(currentVariables,        set, currentResponse, true);
       break;
     }
@@ -1683,13 +1684,13 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
 	INT_MAX : app_it->first;
 
       if (act_eval_id < app_eval_id) // only HF available
-	{ response_mapping(act_it->second, empty_resp,
+	{ response_combine(act_it->second, empty_resp,
 			   surrResponseMap[act_eval_id]); ++act_it; }
       else if (app_eval_id < act_eval_id) // only LF available
-	{ response_mapping(empty_resp, app_it->second,
+	{ response_combine(empty_resp, app_it->second,
 			   surrResponseMap[app_eval_id]); ++app_it; }
       else // both LF and HF available
-	{ response_mapping(act_it->second, app_it->second,
+	{ response_combine(act_it->second, app_it->second,
 			   surrResponseMap[act_eval_id]); ++act_it; ++app_it; }
     }
     break;
@@ -1774,7 +1775,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 	abort_handler(MODEL_ERROR); break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
 	// there is no approx component to this response
-	response_mapping(act_it->second, empty_resp,
+	response_combine(act_it->second, empty_resp,
 			 surrResponseMap[act_eval_id]);
 	break;
       }
@@ -1790,7 +1791,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 	  // cache approx response since actual contribution still pending
 	  cachedApproxRespMap[app_eval_id] = app_it->second;
 	else // response complete: there is no actual contribution
-	  response_mapping(empty_resp, app_it->second, 
+	  response_combine(empty_resp, app_it->second, 
 			   surrResponseMap[app_eval_id]);
 	break;
       }
@@ -1805,7 +1806,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 	aggregate_response(act_it->second, app_it->second,
 			   surrResponseMap[act_eval_id]);            break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
-	response_mapping(act_it->second, app_it->second,
+	response_combine(act_it->second, app_it->second,
 			 surrResponseMap[act_eval_id]);              break;
       }
       ++act_it; ++app_it;
@@ -1868,6 +1869,66 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
        r_it != cachedApproxRespMap.end(); ++r_it)
     approx_resp_map_rekey[r_it->first] = r_it->second;
   cachedApproxRespMap.clear();
+}
+
+
+void DataFitSurrModel::
+asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+	  ShortArray& approx_asv, bool build_flag)
+{
+  // DataFitSurrModel consumes replicates from any response aggregations
+  // occurring in actualModel
+  size_t num_orig = orig_asv.size(), num_actual = actualModel.response_size();
+  if (num_orig != numFns || num_actual < num_orig || num_actual % num_orig) {
+    Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split()."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  if (surrogateFnIndices.size() == num_orig) {
+    if (build_flag) {
+      if (num_actual > num_orig) { // inflate actual_asv if needed
+	actual_asv.resize(num_actual);
+	for (size_t i=0; i<num_actual; i+=num_orig)
+	  actual_asv[i] = orig_asv[i % num_orig];
+      }
+      else
+	actual_asv = orig_asv;
+    }
+    else
+      approx_asv = orig_asv; // don't inflate approx_asv
+  }
+  else { // mixed response set
+    size_t i; int index; short orig_asv_val;
+    if (build_flag) { // construct mode: define actual_asv
+      actual_asv.assign(num_actual, 0);
+      for (ISIter it=surrogateFnIndices.begin();
+	   it!=surrogateFnIndices.end(); ++it) {
+	index = *it; orig_asv_val = orig_asv[index];
+	if (orig_asv_val)
+	  for (i=index; i<num_actual; i+=num_orig) // inflate actual_asv
+	    actual_asv[i] = orig_asv_val;
+      }
+    }
+    else { // eval mode: define actual_asv & approx_asv contributions
+      for (index=0; index<num_orig; ++index) {
+        orig_asv_val = orig_asv[index];
+	if (orig_asv_val) {
+	  if (surrogateFnIndices.count(index)) {
+	    if (approx_asv.empty()) // keep empty if no active requests
+	      approx_asv.assign(num_orig, 0);
+	    approx_asv[index] = orig_asv_val; // don't inflate approx_asv
+	  }
+	  else {
+	    if (actual_asv.empty()) // keep empty if no active requests
+	      actual_asv.assign(num_actual, 0);
+	    for (i=index; i<num_actual; i+=num_orig) // inflate actual_asv
+	      actual_asv[i] = orig_asv_val;
+	  }
+	}
+      }
+    }
+  }
 }
 
 

@@ -129,7 +129,6 @@ private:
   // correspond to either X or U space.  If a specific X or U variables count
   // is needed, then natafTransform.ranVarTypesX/U.count() should be used.
 
-  size_t numFunctions;          ///< number of response functions
   size_t numContinuousVars;     ///< number of active continuous vars
   size_t numDiscreteIntVars;    ///< number of active discrete integer vars
   size_t numDiscreteStringVars; ///< number of active discrete string vars

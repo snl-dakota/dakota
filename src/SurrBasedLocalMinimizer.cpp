@@ -1477,7 +1477,7 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   // tau_minimizer instantiation in relax_constraints()).
 
   // set active set vector in approxSubProbModel
-  size_t num_fns = sblmInstance->approxSubProbModel.num_functions(),
+  size_t num_fns = sblmInstance->approxSubProbModel.response_size(),
      num_obj_fns = num_fns - ncnln; // 1 if recast, numUserPrimaryFns if not
   ShortArray local_asv(num_fns, 0);
   for (int i=0; i<ncnln; ++i)

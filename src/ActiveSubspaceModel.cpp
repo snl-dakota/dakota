@@ -41,10 +41,9 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   subspaceIdCV(
     probDescDB.get_bool("model.active_subspace.truncation_method.cv")),
   numReplicates(problem_db.get_int("model.active_subspace.bootstrap_samples")),
-  numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
-  totalSamples(0), subspaceInitialized(false),
+  numFullspaceVars(subModel.cv()), totalSamples(0), subspaceInitialized(false),
   reducedRank(problem_db.get_int("model.active_subspace.dimension")),
-  gradientScaleFactors(RealArray(numFunctions, 1.0)),
+  gradientScaleFactors(RealArray(numFns, 1.0)),
   truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
   buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
   refinementSamples(0),
@@ -97,12 +96,10 @@ ActiveSubspaceModel::
 ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
                     const RealMatrix &rotation_matrix,
                     short output_level) :
-  RecastModel(sub_model),
-  numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
+  RecastModel(sub_model), numFullspaceVars(sub_model.cv()),
   subspaceInitialized(false), reducedRank(dimension),
-  gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  buildSurrogate(false), refinementSamples(0),
-  subspaceNormalization(SUBSPACE_NORM_DEFAULT)
+  gradientScaleFactors(RealArray(numFns, 1.0)), buildSurrogate(false),
+  refinementSamples(0), subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
   modelType = "active_subspace";
 
@@ -313,7 +310,7 @@ populate_matrices(unsigned int diff_samples)
   }
 
   int sample_insert_point = varsMatrix.numCols();
-  derivativeMatrix.reshape(numFullspaceVars, totalSamples*numFunctions);
+  derivativeMatrix.reshape(numFullspaceVars, totalSamples*numFns);
   varsMatrix.reshape(numFullspaceVars, totalSamples);
 
   unsigned int diff_sample_ind = 0;
@@ -321,11 +318,11 @@ populate_matrices(unsigned int diff_samples)
   IntRespMCIter resp_end = all_responses.end();
 
   // Compute gradient scaling factors if more than 1 response function
-  if(numFunctions > 1) {
+  if(numFns > 1) {
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
       if (subspaceNormalization == SUBSPACE_NORM_MEAN_VALUE) {
         const RealVector& resp_vector = resp_it->second.function_values();
-        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+        for (unsigned int fn_ind = 0; fn_ind < numFns; ++fn_ind) {
           gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
                                           static_cast<Real>(diff_samples);
         }
@@ -333,7 +330,7 @@ populate_matrices(unsigned int diff_samples)
         // handled later
       else if (subspaceNormalization == SUBSPACE_NORM_MEAN_GRAD) {
         const RealMatrix& resp_matrix = resp_it->second.function_gradients();
-        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+        for (unsigned int fn_ind = 0; fn_ind < numFns; ++fn_ind) {
           RealVector grad(numFullspaceVars);
           for (size_t ii = 0; ii < numFullspaceVars; ++ii)
             grad[ii] = resp_matrix(ii,fn_ind);
@@ -357,11 +354,11 @@ populate_matrices(unsigned int diff_samples)
     unsigned int sample_ind = sample_insert_point + diff_sample_ind;
     // matrix of num_variables x num_functions
     const RealMatrix& resp_matrix = resp_it->second.function_gradients();
-    for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
-      unsigned int col_ind = sample_ind * numFunctions + fn_ind;
+    for (unsigned int fn_ind = 0; fn_ind < numFns; ++fn_ind) {
+      unsigned int col_ind = sample_ind * numFns + fn_ind;
       for (unsigned int var_ind = 0; var_ind < numFullspaceVars; ++var_ind) {
         Real scale = 1.0;
-        if (numFunctions > 1 &&
+        if (numFns > 1 &&
             (subspaceNormalization == SUBSPACE_NORM_DEFAULT ||
              subspaceNormalization == SUBSPACE_NORM_LOCAL_GRAD)) {
           RealVector grad(numFullspaceVars);
@@ -555,7 +552,7 @@ computeBingLiCriterion(RealVector& singular_values)
 
   std::vector<Real> bootstrapped_det(bing_li_criterion.size());
 
-  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,numFunctions);
+  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,numFns);
 
   for (size_t i = 0; i < numReplicates; ++i) {
     bootstrap_sampler(bootstrapped_sample);
@@ -652,8 +649,7 @@ computeConstantineMetric(RealVector& singular_values)
 
   Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
 
-  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
-      numFunctions);
+  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix, numFns);
 
   for (size_t i = 0; i < numReplicates; ++i) {
     bootstrap_sampler(bootstrapped_sample);
@@ -1075,14 +1071,14 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
   IntRespMCIter resp_end = test_y.end();
   IntRespMCIter resp_surr_it = test_y_surr.begin();
   IntRespMCIter resp_surr_end = test_y_surr.end();
-  RealVector error_norm(numFunctions);
-  RealVector mean(numFunctions);
+  RealVector error_norm(numFns);
+  RealVector mean(numFns);
   for (; resp_it != resp_end
        && resp_surr_it != resp_surr_end; resp_it++, resp_surr_it++) {
     const RealVector& resp_vector = resp_it->second.function_values();
     const RealVector& resp_surr_vector = resp_surr_it->second.function_values();
 
-    for (size_t ii = 0; ii < numFunctions; ii++) {
+    for (size_t ii = 0; ii < numFns; ii++) {
       error_norm[ii] += std::pow(resp_vector[ii] - resp_surr_vector[ii], 2);
       mean[ii] += resp_vector[ii] / test_y.size();
     }
@@ -1091,17 +1087,17 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
 
   resp_it = test_y.begin();
   resp_end = test_y.end();
-  RealVector stdev(numFunctions);
+  RealVector stdev(numFns);
   for (; resp_it != resp_end; resp_it++) {
     const RealVector& resp_vector = resp_it->second.function_values();
-    for (size_t ii = 0; ii < numFunctions; ii++)
+    for (size_t ii = 0; ii < numFns; ii++)
       stdev[ii] += std::pow(resp_vector[ii] - mean[ii], 2) / test_y.size();
   }
-  for (size_t ii = 0; ii < numFunctions; ii++)
+  for (size_t ii = 0; ii < numFns; ii++)
     stdev[ii] = std::sqrt(stdev[ii]);
 
   Real max_error_norm = 0;
-  for (size_t ii = 0; ii < numFunctions; ii++) {
+  for (size_t ii = 0; ii < numFns; ii++) {
     Real norm_rms_error = std::sqrt(error_norm[ii] / test_y.size()) / stdev[ii];
 
     if (norm_rms_error > max_error_norm)
@@ -1499,8 +1495,8 @@ void ActiveSubspaceModel::initialize_recast()
   // Primary and secondary mapping are one-to-one (NULL callbacks)
   // TODO: can we get RecastModel to tolerate empty indices when no
   // map is present?
-  size_t num_primary = subModel.num_primary_fns(),
-         num_secondary = subModel.num_functions() - subModel.num_primary_fns(),
+  size_t num_primary   = subModel.num_primary_fns(),
+         num_secondary = subModel.num_secondary_fns(),
          num_recast_fns = num_primary + num_secondary,
          recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
 
@@ -1516,8 +1512,7 @@ void ActiveSubspaceModel::initialize_recast()
     secondary_resp_map_indices[i][0] = num_primary + i;
   }
 
-  BoolDequeArray nonlinear_resp_mapping(numFunctions,
-                                        BoolDeque(numFunctions, false));
+  BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
 
   // Initial response order for the newly built subspace model same as
   // the subModel (does not augment with gradient request)

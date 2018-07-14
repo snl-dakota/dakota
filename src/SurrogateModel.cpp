@@ -77,7 +77,7 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
 {
   bool error_flag = false;
   // Check for compatible array sizing between sub_model and currentResponse
-  size_t sm_num_fns = sub_model.num_functions();
+  size_t sm_num_fns = sub_model.qoi();
   if ( sm_num_fns != numFns ) {
     Cerr << "Error: incompatibility between approximate and actual model "
 	 << "response function sets\n       within SurrogateModel: "
@@ -483,8 +483,8 @@ bool SurrogateModel::force_rebuild()
 
 
 void SurrogateModel::
-asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
-	    ShortArray& approx_asv, bool build_flag)
+asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+	  ShortArray& approx_asv, bool build_flag)
 {
   if (surrogateFnIndices.size() == numFns) {
     if (build_flag) actual_asv = orig_asv;
@@ -519,7 +519,7 @@ asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
 
 
 void SurrogateModel::
-asv_mapping(const ShortArray& actual_asv, const ShortArray& approx_asv,
+asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
 	    ShortArray& combined_asv)
 {
   if (combined_asv.empty())
@@ -537,7 +537,7 @@ asv_mapping(const ShortArray& actual_asv, const ShortArray& approx_asv,
 
 
 void SurrogateModel::
-response_mapping(const Response& actual_response,
+response_combine(const Response& actual_response,
 		 const Response& approx_response, Response& combined_response)
 {
   const ShortArray& actual_asv = actual_response.active_set_request_vector();
@@ -545,7 +545,7 @@ response_mapping(const Response& actual_response,
   ShortArray combined_asv;
   if (combined_response.is_null()) {
     combined_response = currentResponse.copy();
-    asv_mapping(actual_asv, approx_asv, combined_asv);
+    asv_combine(actual_asv, approx_asv, combined_asv);
     combined_response.active_set_request_vector(combined_asv);
   }
   else

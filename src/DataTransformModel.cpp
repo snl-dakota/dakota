@@ -44,9 +44,8 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
   RecastModel(sub_model, variables_expand(sub_model, num_hyper),
-	      BitArray(), BitArray(), 
-	      exp_data.num_total_exppoints(), 
-	      sub_model.num_functions() - sub_model.num_primary_fns(),
+	      BitArray(), BitArray(), exp_data.num_total_exppoints(), 
+	      sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
               response_order(sub_model, recast_resp_deriv_order)), 
   expData(exp_data), numHyperparams(num_hyper), obsErrorMultiplierMode(mult_mode)

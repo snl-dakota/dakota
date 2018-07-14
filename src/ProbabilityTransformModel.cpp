@@ -34,7 +34,6 @@ ProbabilityTransformModel(const Model& x_model,
   numDiscreteIntVars = subModel.div();
   numDiscreteStringVars = subModel.dsv();
   numDiscreteRealVars = subModel.drv();
-  numFunctions = subModel.num_functions();
 
   initialize_sizes();
 
@@ -52,8 +51,8 @@ ProbabilityTransformModel(const Model& x_model,
     vars_map[i].resize(1);
     vars_map[i][0] = i;
   }
-  primary_resp_map.resize(numFunctions);
-  for (i=0; i<numFunctions; ++i) {
+  primary_resp_map.resize(numFns);
+  for (i=0; i<numFns; ++i) {
     primary_resp_map[i].resize(1);
     primary_resp_map[i][0] = i;
   }
@@ -85,7 +84,7 @@ ProbabilityTransformModel(const Model& x_model,
 
   // There is no additional response mapping beyond that required by the
   // nonlinear variables mapping.
-  BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
+  BoolDequeArray nonlinear_resp_map(numFns, BoolDeque(1, false));
   const Response& x_resp = subModel.current_response();
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
   const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
@@ -95,8 +94,8 @@ ProbabilityTransformModel(const Model& x_model,
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   RecastModel::
-  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFunctions,
-             0, 0,recast_resp_order);
+  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns,
+             0, 0, recast_resp_order);
 
   RecastModel::
   init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping,
@@ -1355,7 +1354,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 
   // In this recasting, the inputs and outputs are mapped one-to-one, with no
   // reordering.  However, the x-space ASV may be augmented from the original
-  // u-space ASV due to nonlinear mapping logic in RecastModel::asv_mapping().
+  // u-space ASV due to nonlinear mapping logic in RecastModel::transform_set().
   const ShortArray& u_asv = u_response.active_set_request_vector();
   const SizetArray& u_dvv = u_response.active_set_derivative_vector();
   const ShortArray& x_asv = x_response.active_set_request_vector();
@@ -1444,7 +1443,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 
     // manage data requirements for derivative transformations: if fn_grad_x
     // is needed for Hessian x-form (nonlinear I/O mapping), then x_asv has been
-    // augmented to include the gradient in RecastModel::asv_mapping().
+    // augmented to include the gradient in RecastModel::transform_set().
     if (x_asv_val & 2)
       fn_grad_x = x_response.function_gradient_view(i);
 

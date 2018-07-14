@@ -19,7 +19,6 @@ RandomFieldModel* RandomFieldModel::rfmInstance(NULL);
 RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   // LPS TODO: initialize other class data members off problemDB
-  numFunctions(subModel.num_functions()),
   numObservations(0), 
   expansionForm(problem_db.get_ushort("model.rf.expansion_form")),
   covarianceForm(problem_db.get_ushort("model.rf.analytic_covariance")),
@@ -185,11 +184,11 @@ void RandomFieldModel::get_field_data()
       rfBuildVars.reshape(subModel.cv(), num_samples);
       rfBuildVars.assign(daceIterator.all_samples());
     }
-    rfBuildData.reshape(num_samples, numFunctions);
+    rfBuildData.reshape(num_samples, numFns);
     const IntResponseMap& all_resp = daceIterator.all_responses();
     IntRespMCIter r_it = all_resp.begin(); 
     for (size_t samp=0; samp<num_samples; ++samp, ++r_it)
-      for (size_t fn=0; fn<numFunctions; ++fn) 
+      for (size_t fn=0; fn<numFns; ++fn) 
         rfBuildData(samp,fn) = r_it->second.function_value(fn);
   }
 }
@@ -236,13 +235,13 @@ void RandomFieldModel::identify_field_model()
       = rfBasis.get_right_singular_vector_transpose();
 
     // Compute the factor scores
-    RealMatrix factor_scores(num_samples, numFunctions);
+    RealMatrix factor_scores(num_samples, numFns);
     int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
                                        centered_matrix, principal_comp, 0.);
 
     // BMA TODO: verify why this size differs; seems that factor
     // scores should be n x p and that this could seg fault if
-    // num_samples > numFunctions...
+    // num_samples > numFns...
     RealMatrix
       f_scores(Teuchos::Copy, factor_scores, num_samples, num_samples, 0, 0);
 
@@ -335,8 +334,8 @@ void RandomFieldModel::initialize_recast()
   // TODO: can we get RecastModel to tolerate empty indices when no
   // map is present?
   size_t num_primary = subModel.num_primary_fns(),
-    num_secondary = subModel.num_functions() - subModel.num_primary_fns(),
-    num_recast_fns = num_primary + num_secondary,
+    num_secondary    = subModel.num_secondary_fns(),
+    num_recast_fns   = num_primary + num_secondary,
     recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
 
   Sizet2DArray primary_resp_map_indices(num_primary);
@@ -351,8 +350,7 @@ void RandomFieldModel::initialize_recast()
     secondary_resp_map_indices[i][0] = num_primary + i;
   }
 
-  BoolDequeArray nonlinear_resp_mapping(numFunctions,
-					BoolDeque(numFunctions, false));
+  BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
 
   // Initial response order for the newly built subspace model same as
   // the subModel (does not augment with gradient request)
@@ -558,7 +556,7 @@ void RandomFieldModel::generate_kl_realization()
   for (int i=0; i<actualReducedRank; ++i) {
     // BMA TODO: replace with matrix-vector ops (perhaps in ReducedBasis)
     Real mult = data_singular_values[i]/cov_dof * kl_coeffs[i];
-    for (int k=0; k<numFunctions; ++k)
+    for (int k=0; k<numFns; ++k)
       kl_prediction[k] += mult*rf_ev_trans(i,k);
   }
 
@@ -579,7 +577,7 @@ void RandomFieldModel::generate_pca_gp_realization()
     Real pca_coeff = gpApproximations[i].value(new_sample);
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "DEBUG: pca_coeff = " << pca_coeff << '\n';
-    for (int k=0; k<numFunctions; ++k)
+    for (int k=0; k<numFns; ++k)
       pca_prediction[k] += pca_coeff*principal_comp(i,k);
   }
 

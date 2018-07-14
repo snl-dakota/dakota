@@ -34,7 +34,7 @@ initialize(Model& surr_model, const IntSet& surr_fn_indices, short corr_type,
 {
   surrModel = surr_model; // shallow copy
   surrogateFnIndices = surr_fn_indices;
-  numFns = surr_model.num_functions(); numVars = surr_model.cv();
+  numFns = surr_model.qoi(); numVars = surr_model.cv();
   correctionType = corr_type; correctionOrder = corr_order;
 
   initialize_corrections();

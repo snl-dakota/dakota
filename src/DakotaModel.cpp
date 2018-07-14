@@ -178,10 +178,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   StringArray db_sense
     = problem_db.get_sa("responses.primary_response_fn_sense");
   if (!db_sense.empty()) {
-    size_t i, num_sense = db_sense.size(),
-      num_primary = currentResponse.num_functions()
-                  - userDefinedConstraints.num_nonlinear_ineq_constraints()
-                  - userDefinedConstraints.num_nonlinear_eq_constraints();
+    size_t i, num_sense = db_sense.size(), num_primary = num_primary_fns();
     primaryRespFnSense.resize(num_primary);
     if (num_sense == num_primary)
       for (i=0; i<num_primary; ++i)
@@ -2728,12 +2725,12 @@ void Model::clear_model_keys()
 }
 
 
-size_t Model::num_functions() const
+size_t Model::qoi() const
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->num_functions();
+    return modelRep->qoi();
   else // default for models without aggregation
-    return currentResponse.num_functions();
+    return response_size();
 }
 
 
@@ -4803,7 +4800,7 @@ void Model::evaluate(const RealMatrix& samples_matrix,
   // TODO: option for setting its active or inactive variables
 
   RealMatrix::ordinalType i, num_evals = samples_matrix.numCols();
-  resp_matrix.shape(model.num_functions(), num_evals);
+  resp_matrix.shape(model.response_size(), num_evals);
 
   for (i=0; i<num_evals; ++i) {
 
