@@ -1,4 +1,5 @@
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
 from io import open
 import collections
 import re
@@ -9,6 +10,9 @@ from . import dprepro as dprepro_mod
 __author__ = 'J. Adam Stephens'
 __copyright__ = 'Copyright 2014 Sandia Corporation'
 __license__ = 'GNU Lesser General Public License'
+
+PYTHON3 = True if sys.version_info[0] == 3 else False 
+PYTHON2 = True if sys.version_info[0] == 2 else False
 
 #### Exceptions
 
@@ -97,9 +101,24 @@ class Parameters(object):
         return len(self.an_comps)
 
     def __iter__(self):
-        for index, (name, value) in enumerate(self._variables.items()):
-            yield index, name, value
+        for name in self._variables:
+            yield name
 
+    def items(self):
+        if PYTHON3:
+            it = self._variables.items()
+        else:
+            it = self._variables.iteritems()
+        for name, var in it:
+            yield name, var
+    
+    def values(self):
+        if PYTHON3:
+            it = self._variables.values()
+        else:
+            it = self._variables.itervalues()
+        for value in self._variables.values():
+            yield value
 
 # Datatype to hold ASV element for a single response. function, gradient,
 # and hession are set to True or False. 
@@ -340,8 +359,24 @@ class Results(object):
         return list(self._deriv_vars)
 
     def __iter__(self):
-        for index, (name, response) in enumerate(self._responses.items()):
-            yield index, name, response
+        for name in self._responses:
+            yield name
+
+    def items(self):
+        if PYTHON3:
+            it = self._responses.items()
+        else:
+            it = self._responses.iteritems()
+        for name, response in it:
+            yield name, response
+    
+    def responses(self):
+        if PYTHON3:
+            it = self._responses.values()
+        else:
+            it = self._responses.itervalues()
+        for value in self._responses.values():
+            yield value
 
     def fail(self):
         """Set the FAIL attribute. 
@@ -569,7 +604,7 @@ def dprepro(template, parameters=None, results=None, include=None,
     # Construct the env from parameters, results, and include
     if isinstance(parameters,Parameters):
         env["DakotaParams"] = parameters
-        for _, d, v in parameters:
+        for d, v in parameters.items():
             env[d] = v
     if isinstance(results,Results):
         env["DakotaResults"] = results
