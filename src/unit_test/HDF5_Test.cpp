@@ -213,9 +213,6 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		std::array<const char*, 2> moments_arr = { "mean", "std_dev" };
 		std::array<const char*, 2> bounds_arr  = { "lower_bounds", "upper_bounds" };
 
-		// Use H5T_VARIABLE to create a variable-length string datatype.
-		StrType str_type(0, H5T_VARIABLE);
-
 		std::unique_ptr<DataSet> ds_moments = HDF5_create_1D_dimension_scale (
             &group_conf_int_scales, moments_arr.size(), str_type, "moments"
         );
@@ -230,11 +227,11 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 			hsize_t dims_ds[2];
 			dims_ds[0] = 2;
 			dims_ds[1] = 2;
-			DataSpace confidence_intervals_dataspace( 2, dims_ds );
+			DataSpace conf_int_dataspace( 2, dims_ds );
 
 			std::string dataset_resp_desc_name = "resp_desc_" + std::to_string(j+1);
 			DataSet dataset_resp_desc = group_conf_int.createDataSet(
-				dataset_resp_desc_name, PredType::IEEE_F64LE, confidence_intervals_dataspace
+				dataset_resp_desc_name, PredType::IEEE_F64LE, conf_int_dataspace
 			);
 			dataset_resp_desc.write(
     	    	confidence_intervals_arrs, PredType::NATIVE_DOUBLE
@@ -243,6 +240,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_moments.get(), 0 );
 			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_bounds.get(), 1 );
 		}
+
 		ds_moments->close();
 		ds_bounds->close();
 	}
@@ -314,10 +312,6 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
 	DataSet ds_moments = group_conf_int_scales.openDataSet("moments");
     char* rdata[2];
-    hsize_t ds_moments_dimsm[1];  // memory space dimensions
-    ds_moments_dimsm[0] = 2;
-    DataSpace ds_moments_memspace( 1, ds_moments_dimsm );
-    DataSpace ds_moments_dataspace = ds_moments.getSpace();
 
 	hid_t		native_type;
 
@@ -326,12 +320,12 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
     // Construct native type
     if((native_type = H5Tget_native_type(dtype.getId(), H5T_DIR_DEFAULT)) < 0) {
-        std::cerr << "H5Tget_native_type  failed!!! \n";
+        std::cerr << "H5Tget_native_type failed!!! \n";
 	}
 
     // Check if the data type is equal
     if(!H5Tequal(native_type, str_type.getId())) {
-        std::cerr << "native type is not tid1!!! \n";
+        std::cerr << "native type is not custom-defined srt_type!!! \n";
 	}
 
     // Read dataset from disk
@@ -339,9 +333,6 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
     TEST_EQUALITY( std::strcmp(rdata[0], "mean"), 0 );
 	TEST_EQUALITY( std::strcmp(rdata[1], "std_dev"), 0 );
-
-
-	// Test resp_desc datasets for confidence intervals.
 
 	h5file.close();
 	TEST_ASSERT( true );  // successfully terminated
