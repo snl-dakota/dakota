@@ -39,6 +39,40 @@ std::unique_ptr<Group> HDF5_add_method_group ( H5File* db_file, std::string meth
 }
 
 /**
+ * Creates an empty, N-dimensional dimension scale dataset.  Returns a pointer to
+ * an open DataSet object.  It is up to the caller to then write to and close the DataSet.
+ *
+ * This function uses C API to set dimension scale information, as dimension scales
+ * are not supported by HDF5's C++ API.
+ *
+ */
+std::unique_ptr<DataSet> HDF5_create_dimension_scale (
+        Group* parent, std::vector<int> dim_sizes, DataType type, std::string label) {
+
+    int dims = dim_sizes.size();
+
+    hsize_t ds_dims[dims];
+    for(int i = 0; i < dims; i++) {
+        ds_dims[i] = dim_sizes.at(i);
+    }
+
+    DataSpace ds_dataspace( dims, ds_dims );
+
+    std::unique_ptr<DataSet> ds_dataset(
+        new DataSet( parent->createDataSet( label.c_str(), type, ds_dataspace ) )
+    );
+
+    // Use C API to set the appropriate dimension scale metadata.
+	hid_t  ds_dataset_id = (ds_dataset.get())->getId();
+	herr_t ret_code      = H5DSset_scale( ds_dataset_id, label.c_str() );
+	if(ret_code != 0) {
+		throw std::runtime_error( "H5DSset_scale returned an error" );
+	}
+	return ds_dataset;
+}
+
+
+/**
  *  Create a 1D dimension scale with the length and label specified by the arguments.
  *  Returns a unique_ptr to an open DataSet object.  It is up to the caller to then
  *  write to and close the DataSet.
@@ -46,7 +80,16 @@ std::unique_ptr<Group> HDF5_add_method_group ( H5File* db_file, std::string meth
  *  This function uses C API to set dimension scale information, as dimension scales
  *  are not supported by HDF5's C++ API.
  */
-std::unique_ptr<DataSet> HDF5_create_1D_dimension_scale ( Group* parent, int size, PredType type, std::string label ) {
+std::unique_ptr<DataSet> HDF5_create_1D_dimension_scale (
+		Group* parent, int size, DataType type, std::string label ) {
+
+	std::vector<int> dim_sizes;
+	dim_sizes.push_back(size);
+
+	std::unique_ptr<DataSet> ds_dataset = HDF5_create_dimension_scale(
+		parent, dim_sizes, type, label
+	);
+/*
 	hsize_t ds_dims[1];
 	ds_dims[0] = size;
 
@@ -62,28 +105,9 @@ std::unique_ptr<DataSet> HDF5_create_1D_dimension_scale ( Group* parent, int siz
 	if(ret_code != 0) {
 		throw std::runtime_error( "H5DSset_scale returned an error" );
     }
+*/
     
 	return ds_dataset;
-}
-
-/**
- * Create a 2D dimension scale with the row/column lengths and 2 dimension labels
- * specified by the arguments.  Returns a pointer to an open DataSet object.  It is
- * up to the caller to then write to and close the DataSet.
- *
- * This function uses C API to set dimension scale information, as dimension scales
- * are not supported by HDF5's C++ API.
- */
-std::unique_ptr<DataSet> HDF5_create_2D_dimension_scale ( Group* parent, int row_size, int col_size, PredType type, std::string row_label, std::string col_label) {
-	hsize_t ds_dims[2];
-	ds_dims[0] = row_size;
-	ds_dims[1] = col_size;
-
-	DataSpace ds_dataspace( 2, ds_dims );
-
-//	std::unique_ptr<DataSet> ds_dataset(
-//		new DataSet( parent->createDataSet( ))
-//	);
 }
 
 /**
@@ -92,12 +116,12 @@ std::unique_ptr<DataSet> HDF5_create_2D_dimension_scale ( Group* parent, int row
  *  This function uses C API to set dimension scale information, as dimension scales
  *  are not supported by HDF5's C++ API.
  */
-void HDF5_attach_dimension_scale ( DataSet* target, DataSet* ds_to_attach ) {
+void HDF5_attach_dimension_scale ( DataSet* target, DataSet* ds_to_attach, int attach_index ) {
 	// Use C API to attach a dataset to a dimension scale.
 	hid_t target_id = target->getId();
 	hid_t ds_id     = ds_to_attach->getId();
 
-	herr_t ret_code = H5DSattach_scale(target_id, ds_id, 0);
+	herr_t ret_code = H5DSattach_scale(target_id, ds_id, attach_index );
 	if(ret_code != 0) {
 		throw std::runtime_error( "H5DSattach_scale returned an error" );
 	}
@@ -109,6 +133,9 @@ void HDF5_attach_dimension_scale ( DataSet* target, DataSet* ds_to_attach ) {
 TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
 	/* FIELDS */
+    // Use H5T_VARIABLE to create a variable-length string datatype.
+	StrType str_type(0, H5T_VARIABLE);
+
 	// TODO The following variables should get passed in from elsewhere in Dakota.
 
 	int  num_evaluations = 2;
@@ -120,6 +147,12 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		{{{ 5.3601733194e-12, 4.25e-12, 3.75e-12, 2.2557612778e-12 },
 		  { 2.8742313192e-05, 6.4e-05, 4.0e-05, 1.0341896485e-05 },
 		  { 4.2844660868e-06, 8.6e-06, 1.8e-06, 1.8e-06 }}};
+
+	double confidence_intervals_arrs[2][2];
+	confidence_intervals_arrs[0][0] = 5.3601733194e-12;
+	confidence_intervals_arrs[0][1] = 4.25e-12;
+	confidence_intervals_arrs[1][0] = 2.8742313192e-05;
+	confidence_intervals_arrs[1][1] = 6.4e-05;
 
 	/* LOGIC */
 	// Part 1:  Write the data.
@@ -159,8 +192,8 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 				probability_density_arrs[j].data(), PredType::NATIVE_DOUBLE
 			);
 
-			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_lower_bounds.get() );
-			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_upper_bounds.get() );
+			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_lower_bounds.get(), 0 );
+			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_upper_bounds.get(), 0 );
 			
 			// EMR close() happens automatically in object destructors.
 			// probability_density_dataspace.close();
@@ -168,14 +201,51 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		}
 		// JAS closing these dimension scale datasets invalidates their IDs, so it
 		// must be deferred until after they are attached.	
+		// EMR But do we even need to worry about closing explicitly?  Since closing &
+		// object destruction are both handled automatically by respective APIs.
 		ds_lower_bounds->close();
 		ds_upper_bounds->close();
 	
 		// Confidence intervals	
 		Group group_conf_int( group_exec_id.createGroup("confidence_intervals") );
 		Group group_conf_int_scales( group_conf_int.createGroup("_scales") );
-	}
 
+		std::array<const char*, 2> moments_arr = { "mean", "std_dev" };
+		std::array<const char*, 2> bounds_arr  = { "lower_bounds", "upper_bounds" };
+
+		// Use H5T_VARIABLE to create a variable-length string datatype.
+		StrType str_type(0, H5T_VARIABLE);
+
+		std::unique_ptr<DataSet> ds_moments = HDF5_create_1D_dimension_scale (
+            &group_conf_int_scales, moments_arr.size(), str_type, "moments"
+        );
+		ds_moments->write( moments_arr.data(), str_type );
+
+		std::unique_ptr<DataSet> ds_bounds = HDF5_create_1D_dimension_scale (
+            &group_conf_int_scales, bounds_arr.size(), str_type, "bounds"
+        );
+        ds_bounds->write( bounds_arr.data(), str_type );
+
+		for(int j = 0; j < 3; j++) {
+			hsize_t dims_ds[2];
+			dims_ds[0] = 2;
+			dims_ds[1] = 2;
+			DataSpace confidence_intervals_dataspace( 2, dims_ds );
+
+			std::string dataset_resp_desc_name = "resp_desc_" + std::to_string(j+1);
+			DataSet dataset_resp_desc = group_conf_int.createDataSet(
+				dataset_resp_desc_name, PredType::IEEE_F64LE, confidence_intervals_dataspace
+			);
+			dataset_resp_desc.write(
+    	    	confidence_intervals_arrs, PredType::NATIVE_DOUBLE
+			);
+
+			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_moments.get(), 0 );
+			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_bounds.get(), 1 );
+		}
+		ds_moments->close();
+		ds_bounds->close();
+	}
 
 	// Part 2:  Re-open and verify the data.
 
@@ -188,6 +258,9 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	Group group_prob_dens        = group_exec_id_1.openGroup("probability_density");
 	Group group_prob_dens_scales = group_prob_dens.openGroup("_scales");
 
+	Group group_conf_int         = group_exec_id_1.openGroup("confidence_intervals");
+    Group group_conf_int_scales  = group_conf_int.openGroup("_scales");
+
     // Test lower_bounds dimension scale.
 	DataSet dataset_lower_bounds = group_prob_dens_scales.openDataSet("lower_bounds");
 	double data_out[4];
@@ -197,7 +270,6 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	DataSpace dataspace = dataset_lower_bounds.getSpace();
 
 	dataset_lower_bounds.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
-
     TEST_FLOATING_EQUALITY( data_out[0], 2.7604749078e+11, TOL );
 	TEST_FLOATING_EQUALITY( data_out[1], 3.6e+11, TOL );
 	TEST_FLOATING_EQUALITY( data_out[2], 4.0e+11, TOL );
@@ -213,7 +285,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 	TEST_FLOATING_EQUALITY( data_out[2], 4.4e+11, TOL );
 	TEST_FLOATING_EQUALITY( data_out[3], 5.4196114379e+11, TOL );
 
-	// Test resp_desc datasets.
+	// Test resp_desc datasets for probability densities.
 	DataSet dataset_resp_desc_1 = group_prob_dens.openDataSet("resp_desc_1");
 	dataspace = dataset_resp_desc_1.getSpace();
     dataset_resp_desc_1.read( data_out, PredType::NATIVE_DOUBLE, memspace, dataspace );
@@ -238,6 +310,39 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
     TEST_FLOATING_EQUALITY( data_out[2], 1.8e-06, TOL );
     TEST_FLOATING_EQUALITY( data_out[3], 1.8e-06, TOL );
 	
+	// Test confidence interval dimension scales.
+
+	DataSet ds_moments = group_conf_int_scales.openDataSet("moments");
+    char* rdata[2];
+    hsize_t ds_moments_dimsm[1];  // memory space dimensions
+    ds_moments_dimsm[0] = 2;
+    DataSpace ds_moments_memspace( 1, ds_moments_dimsm );
+    DataSpace ds_moments_dataspace = ds_moments.getSpace();
+
+	hid_t		native_type;
+
+	// Get datatype for dataset
+    DataType dtype = ds_moments.getDataType();
+
+    // Construct native type
+    if((native_type = H5Tget_native_type(dtype.getId(), H5T_DIR_DEFAULT)) < 0) {
+        std::cerr << "H5Tget_native_type  failed!!! \n";
+	}
+
+    // Check if the data type is equal
+    if(!H5Tequal(native_type, str_type.getId())) {
+        std::cerr << "native type is not tid1!!! \n";
+	}
+
+    // Read dataset from disk
+    ds_moments.read((void*)rdata, dtype);
+
+    TEST_EQUALITY( std::strcmp(rdata[0], "mean"), 0 );
+	TEST_EQUALITY( std::strcmp(rdata[1], "std_dev"), 0 );
+
+
+	// Test resp_desc datasets for confidence intervals.
+
 	h5file.close();
 	TEST_ASSERT( true );  // successfully terminated
 }
