@@ -1626,7 +1626,6 @@ Parameters objects have the methods:
 	  \phantomsection\label{index:dakota.interfacing.Parameters.items}\textbf{\texttt{items}}{()}{}
           Return an iterator that yields tuples of the descriptor and value for each parameter. ({\tt Results} objects also have {\tt items()}.)
 
-\begin{itemize}
   \item\index{values() (dakota.interfacing.Parameters method)}
 	  \phantomsection\label{index:dakota.interfacing.Parameters.values}\textbf{\texttt{values}}{()}{}
           Return an iterator that yields the value for each parameter. ({\tt Results} objects have the corresponding method {\tt responses()}.)
@@ -1673,12 +1672,10 @@ Results objects have the methods:
 	  \phantomsection\label{index:dakota.interfacing.Results.items}\textbf{\texttt{items}}{()}{}
           Return an iterator that yields tuples of the descriptor and {\tt Response} object for each response. ({\tt Parameters} objects also have {\tt items()}.)
 
-\begin{itemize}
   \item\index{responses() (dakota.interfacing.Results method)}
 	  \phantomsection\label{index:dakota.interfacing.Results.responses}\textbf{\texttt{responses}}{()}{}
           Return an iterator that yields the {\tt Response} object for each response. ({\tt Parameters} objects have the corresponding method {\tt values()}.)
 
-\begin{itemize}
   \item\index{fail() (dakota.interfacing.Results method)}
 	  \phantomsection\label{index:dakota.interfacing.Results.fail}\textbf{\texttt{fail}}{()}{}
 	  Set the FAIL attribute. When the results file is written, it will contain only the word FAIL, triggering Dakota's failure capturing behavior (See Chapter~\ref{failure}).
