@@ -26,16 +26,12 @@ LinkCreatPropList group_create_pl;
  *  If "/methods" does not exist yet, it is automatically created for you.
  */
 std::unique_ptr<Group> HDF5_add_method_group ( H5File* db_file, std::string method_name ) {
-	std::string G_METHODS = "/methods";
-
-	H5G_stat_t stat_buf;
-	herr_t status = H5Gget_objinfo (db_file->getId(), G_METHODS.c_str(), 0, &stat_buf);
-
+        bool status = db_file->exists("methods");
 	Group group_methods;
-	if( status != 0 ) {
-		group_methods = db_file->createGroup(G_METHODS.c_str(), group_create_pl);
+	if( status ) {
+		group_methods = db_file->openGroup("methods");
 	} else {
-		group_methods = db_file->openGroup(G_METHODS.c_str());
+		group_methods = db_file->createGroup("methods", group_create_pl);
 	}
 
 	std::unique_ptr<Group> group_method( new Group(group_methods.createGroup(method_name, group_create_pl)));
@@ -156,9 +152,11 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		  { 4.2844660868e-06, 8.6e-06, 1.8e-06, 1.8e-06 }}};
 
 	double confidence_intervals_arrs[2][2];
-	confidence_intervals_arrs[0][0] = 5.3601733194e-12;
-	confidence_intervals_arrs[0][1] = 4.25e-12;
-	confidence_intervals_arrs[1][0] = 2.8742313192e-05;
+        // lower and upper bounds for the mean
+	confidence_intervals_arrs[0][0] = 4.25e-12;
+	confidence_intervals_arrs[0][1] = 5.3601733194e-12;
+	// lower and upper bounds for std deviation
+        confidence_intervals_arrs[1][0] = 2.8742313192e-05;
 	confidence_intervals_arrs[1][1] = 6.4e-05;
 
 	/* LOGIC */
@@ -235,17 +233,41 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 			dims_ds[0] = 2;
 			dims_ds[1] = 2;
 			DataSpace conf_int_dataspace( 2, dims_ds );
-
 			std::string dataset_resp_desc_name = "resp_desc_" + std::to_string(j+1);
 			DataSet dataset_resp_desc = group_conf_int.createDataSet(
 				dataset_resp_desc_name, PredType::IEEE_F64LE, conf_int_dataspace
 			);
-			dataset_resp_desc.write(
-    	    	confidence_intervals_arrs, PredType::NATIVE_DOUBLE
-			);
+                        // Write dataset all at once from contiguous memory
+			//dataset_resp_desc.write(confidence_intervals_arrs, 
+                        //                        PredType::NATIVE_DOUBLE);
+		        // Write a dataset one row at a time using hyperslab selections
+			// Steps:
+                        // 1. Create a 1x2 dataspace for the memory being read from.
+                        // 2. Select a 1x2 hyperslab to write into the dataset 
+                        // 3. Write the first row
+                        // 4. Reset the selection for the hyperslab and change the offset
+                        //    to write into the next row.
+                        // 5. Write the second row.
+			
+			// Row 0
+                        hsize_t mem_hs_ds[1] = {2};
+                        DataSpace mem_hs(1, mem_hs_ds); // Memory dataspace for
+                        DataSpace disk_hs = conf_int_dataspace;
+                        hsize_t offset[2] = {0, 0}; // start position of hyperslab 
+                        hsize_t count[2] = {1, 2};  // number of elements in each dimension for hyperslab
+                        disk_hs.selectHyperslab(H5S_SELECT_SET, count, offset);
+                        dataset_resp_desc.write(confidence_intervals_arrs, PredType::NATIVE_DOUBLE, 
+                                                mem_hs, disk_hs);
+                        // Row 1
+                        disk_hs.selectNone(); // reset the selection.
+                        offset[0] = 1;  // change the offset for the hyperslab to the next row
+                        disk_hs.selectHyperslab(H5S_SELECT_SET, count, offset); // make a new selection
+                        dataset_resp_desc.write(confidence_intervals_arrs + 2, PredType::NATIVE_DOUBLE, 
+                                                mem_hs, disk_hs);
 
 			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_moments.get(), 0 );
 			HDF5_attach_dimension_scale ( &dataset_resp_desc, ds_bounds.get(), 1 );
+
 		}
 
 		ds_moments->close();
