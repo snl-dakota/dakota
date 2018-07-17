@@ -15,6 +15,10 @@
 
 using namespace H5;
 
+// Define globally available custom property lists.
+LinkCreatPropList group_create_pl;
+
+
 #define FILE "file.h5"
 
 /**
@@ -29,12 +33,12 @@ std::unique_ptr<Group> HDF5_add_method_group ( H5File* db_file, std::string meth
 
 	Group group_methods;
 	if( status != 0 ) {
-		group_methods = db_file->createGroup(G_METHODS.c_str());
+		group_methods = db_file->createGroup(G_METHODS.c_str(), group_create_pl);
 	} else {
 		group_methods = db_file->openGroup(G_METHODS.c_str());
 	}
 
-	std::unique_ptr<Group> group_method( new Group(group_methods.createGroup(method_name)));
+	std::unique_ptr<Group> group_method( new Group(group_methods.createGroup(method_name, group_create_pl)));
 	return group_method;
 }
 
@@ -133,9 +137,12 @@ void HDF5_attach_dimension_scale ( DataSet* target, DataSet* ds_to_attach, int a
 TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
 	/* FIELDS */
-    // Use H5T_VARIABLE to create a variable-length string datatype.
+        // Use H5T_VARIABLE to create a variable-length string datatype.
 	StrType str_type(0, H5T_VARIABLE);
+        str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
 
+        // Customize property lists
+	group_create_pl.setCharEncoding(H5T_CSET_UTF8);
 	// TODO The following variables should get passed in from elsewhere in Dakota.
 
 	int  num_evaluations = 2;
@@ -143,7 +150,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
 	std::array<double, 4> lower_bounds_arr = { 2.7604749078e+11, 3.6e+11, 4.0e+11, 4.4e+11 };
 	std::array<double, 4> upper_bounds_arr = { 3.6e+11, 4.0e+11, 4.4e+11, 5.4196114379e+11 };
-    std::array<std::array<double, 4>, 3> probability_density_arrs =
+        std::array<std::array<double, 4>, 3> probability_density_arrs =
 		{{{ 5.3601733194e-12, 4.25e-12, 3.75e-12, 2.2557612778e-12 },
 		  { 2.8742313192e-05, 6.4e-05, 4.0e-05, 1.0341896485e-05 },
 		  { 4.2844660868e-06, 8.6e-06, 1.8e-06, 1.8e-06 }}};
@@ -162,11 +169,11 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
 	for(int i = 1; i <= num_evaluations; i++) {
 		std::string exec_id_path = "execution_id_" + std::to_string(i);
-		Group group_exec_id( group_method->createGroup(exec_id_path) );
+		Group group_exec_id( group_method->createGroup(exec_id_path, group_create_pl) );
 
 		// Probability densities
-		Group group_prob_dens( group_exec_id.createGroup("probability_density") );
-		Group group_prob_dens_scales( group_prob_dens.createGroup("_scales") );
+		Group group_prob_dens( group_exec_id.createGroup("probability_density", group_create_pl) );
+		Group group_prob_dens_scales( group_prob_dens.createGroup("_scales", group_create_pl) );
 
 		std::unique_ptr<DataSet> ds_lower_bounds = HDF5_create_1D_dimension_scale (
 			&group_prob_dens_scales, lower_bounds_arr.size(), PredType::IEEE_F64LE, "lower_bounds"
@@ -207,8 +214,8 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		ds_upper_bounds->close();
 	
 		// Confidence intervals	
-		Group group_conf_int( group_exec_id.createGroup("confidence_intervals") );
-		Group group_conf_int_scales( group_conf_int.createGroup("_scales") );
+		Group group_conf_int( group_exec_id.createGroup("confidence_intervals", group_create_pl) );
+		Group group_conf_int_scales( group_conf_int.createGroup("_scales", group_create_pl) );
 
 		std::array<const char*, 2> moments_arr = { "mean", "std_dev" };
 		std::array<const char*, 2> bounds_arr  = { "lower_bounds", "upper_bounds" };
