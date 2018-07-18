@@ -7,6 +7,7 @@
 #include "hdf5.h"    // C API
 #include "hdf5_hl.h" // C API (HDF5 "high-level")
 #include "H5Cpp.h"   // C++ API
+#include "H5Exception.h" // HDF5 exeptions
 
 #include <iostream>
 #include <math.h>
@@ -17,9 +18,32 @@ using namespace H5;
 
 // Define globally available custom property lists.
 LinkCreatPropList group_create_pl;
-
+DSetCreatPropList dataset_compact_pl;
+DSetCreatPropList dataset_contiguous_pl;
 
 #define FILE "file.h5"
+
+/**
+ * Create a new dataset at loc using the Dataset creation property list plist.
+ * It appears to be necessary to do dataset creation this way because H5Location::createDataset
+ * does not accept a LinkCreatPropList, which is needed to encode the name in UTF-8
+**/
+std::unique_ptr<DataSet> HDF5_create_dataset(const H5Location &loc, const std::string &name,
+    const DataType &type, const DataSpace &space, const DSetCreatPropList &plist) {
+
+   hid_t loc_id = loc.getId();
+   hid_t dtype_id = type.getId();
+   hid_t space_id = space.getId();
+   hid_t lcpl_id = group_create_pl.getId();
+   hid_t dcpl_id = plist.getId();
+
+
+   hid_t dataset_id = H5Dcreate2(loc_id, name.c_str(), dtype_id, space_id, lcpl_id, dcpl_id, H5P_DEFAULT);   
+   std::unique_ptr<DataSet> dataset(new DataSet(dataset_id));
+   // the dataset_id is "taken over" by this DataSet object. Closing it would cause an error when the
+   // dataset is used.
+   return dataset;
+}
 
 /**
  *  Insert a new method group into a Dakota HDF5 database at "/methods/<your method>."
@@ -47,7 +71,7 @@ std::unique_ptr<Group> HDF5_add_method_group ( H5File* db_file, std::string meth
  *
  */
 std::unique_ptr<DataSet> HDF5_create_dimension_scale (
-        Group* parent, std::vector<int> dim_sizes, DataType type, std::string label) {
+        Group* parent, std::vector<int> dim_sizes, DataType type, std::string label, DSetCreatPropList plist) {
 
     int dims = dim_sizes.size();
 
@@ -58,9 +82,7 @@ std::unique_ptr<DataSet> HDF5_create_dimension_scale (
 
     DataSpace ds_dataspace( dims, ds_dims );
 
-    std::unique_ptr<DataSet> ds_dataset(
-        new DataSet( parent->createDataSet( label.c_str(), type, ds_dataspace ) )
-    );
+    std::unique_ptr<DataSet> ds_dataset(HDF5_create_dataset(*parent, label, type, ds_dataspace, plist )); 
 
     // Use C API to set the appropriate dimension scale metadata.
 	hid_t  ds_dataset_id = (ds_dataset.get())->getId();
@@ -81,13 +103,13 @@ std::unique_ptr<DataSet> HDF5_create_dimension_scale (
  *  are not supported by HDF5's C++ API.
  */
 std::unique_ptr<DataSet> HDF5_create_1D_dimension_scale (
-		Group* parent, int size, DataType type, std::string label ) {
+		Group* parent, int size, DataType type, std::string label, DSetCreatPropList plist ) {
 
 	std::vector<int> dim_sizes;
 	dim_sizes.push_back(size);
 
 	std::unique_ptr<DataSet> ds_dataset = HDF5_create_dimension_scale(
-		parent, dim_sizes, type, label
+		parent, dim_sizes, type, label, plist
 	);
 /*
 	hsize_t ds_dims[1];
@@ -139,7 +161,8 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 
         // Customize property lists
 	group_create_pl.setCharEncoding(H5T_CSET_UTF8);
-	// TODO The following variables should get passed in from elsewhere in Dakota.
+        dataset_compact_pl.setLayout(H5D_COMPACT);        
+        // TODO The following variables should get passed in from elsewhere in Dakota.
 
 	int  num_evaluations = 2;
 	std::string  sampling_method_name = "sampling";
@@ -174,11 +197,13 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		Group group_prob_dens_scales( group_prob_dens.createGroup("_scales", group_create_pl) );
 
 		std::unique_ptr<DataSet> ds_lower_bounds = HDF5_create_1D_dimension_scale (
-			&group_prob_dens_scales, lower_bounds_arr.size(), PredType::IEEE_F64LE, "lower_bounds"
+			&group_prob_dens_scales, lower_bounds_arr.size(), PredType::IEEE_F64LE, 
+                        "lower_bounds", dataset_contiguous_pl
 		);
 	
 		std::unique_ptr<DataSet> ds_upper_bounds = HDF5_create_1D_dimension_scale (
-			&group_prob_dens_scales, upper_bounds_arr.size(), PredType::IEEE_F64LE, "upper_bounds"
+			&group_prob_dens_scales, upper_bounds_arr.size(), PredType::IEEE_F64LE,
+                        "upper_bounds", dataset_contiguous_pl
 		);
 
 		ds_lower_bounds->write( lower_bounds_arr.data(), PredType::NATIVE_DOUBLE );
@@ -190,9 +215,11 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 			DataSpace probability_density_dataspace( 1, dims_ds );
 
 			std::string dataset_resp_desc_name = "resp_desc_" + std::to_string(j+1);
-			DataSet dataset_resp_desc = group_prob_dens.createDataSet(
-				dataset_resp_desc_name, PredType::IEEE_F64LE, probability_density_dataspace
-			);
+
+                        DataSet dataset_resp_desc(*HDF5_create_dataset(group_prob_dens, dataset_resp_desc_name, 
+                                                                       PredType::IEEE_F64LE, probability_density_dataspace,
+                                                                       dataset_contiguous_pl));                      
+
 			dataset_resp_desc.write(
 				probability_density_arrs[j].data(), PredType::NATIVE_DOUBLE
 			);
@@ -219,12 +246,12 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 		std::array<const char*, 2> bounds_arr  = { "lower_bounds", "upper_bounds" };
 
 		std::unique_ptr<DataSet> ds_moments = HDF5_create_1D_dimension_scale (
-            &group_conf_int_scales, moments_arr.size(), str_type, "moments"
+            &group_conf_int_scales, moments_arr.size(), str_type, "moments", dataset_compact_pl
         );
 		ds_moments->write( moments_arr.data(), str_type );
 
 		std::unique_ptr<DataSet> ds_bounds = HDF5_create_1D_dimension_scale (
-            &group_conf_int_scales, bounds_arr.size(), str_type, "bounds"
+            &group_conf_int_scales, bounds_arr.size(), str_type, "bounds", dataset_compact_pl
         );
         ds_bounds->write( bounds_arr.data(), str_type );
 
@@ -234,10 +261,10 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_test) {
 			dims_ds[1] = 2;
 			DataSpace conf_int_dataspace( 2, dims_ds );
 			std::string dataset_resp_desc_name = "resp_desc_" + std::to_string(j+1);
-			DataSet dataset_resp_desc = group_conf_int.createDataSet(
-				dataset_resp_desc_name, PredType::IEEE_F64LE, conf_int_dataspace
-			);
-                        // Write dataset all at once from contiguous memory
+       			DataSet dataset_resp_desc(*HDF5_create_dataset(group_conf_int, dataset_resp_desc_name, 
+                                                                       PredType::IEEE_F64LE, conf_int_dataspace,
+                                                                       dataset_compact_pl));
+                 // Write dataset all at once from contiguous memory
 			//dataset_resp_desc.write(confidence_intervals_arrs, 
                         //                        PredType::NATIVE_DOUBLE);
 		        // Write a dataset one row at a time using hyperslab selections
