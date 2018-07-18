@@ -447,6 +447,10 @@ private:
   /// update current variables/labels/bounds/targets from subModel
   void update_from_model(Model& model);
 
+  /// resize {primary,secondary}MapIndices and nonlinearRespMapping to
+  /// synchronize with subModel sizes
+  void resize_response_mapping();
+
   //
   //- Heading: Data members
   //
@@ -593,11 +597,14 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
 
   // pull sizing updates from subModel: reflect aggregated counts, if present,
   // by accessing count from response rather than virtual count from Model
-  size_t num_sm_resp_fns = subModel.response_size();
-  if (currentResponse.num_functions() != num_sm_resp_fns)
-    currentResponse.reshape(num_sm_resp_fns, currentVariables.cv(),
+  size_t num_sm_fns   = subModel.response_size();
+  if (currentResponse.num_functions() != num_sm_fns) {
+    resize_response_mapping(); // requires current sizes before reshape below
+    currentResponse.reshape(num_sm_fns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),
                             !currentResponse.function_hessians().empty());
+  }
+
   //size_t num_sm_acv = subModel.acv(), ...;
   //if (currentVariables.acv() != num_sm_acv || ...)
   //  currentVariables.reshape(num_sm_acv,num_sm_adiv,num_sm_adsv,num_sm_adrv);

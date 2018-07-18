@@ -1000,6 +1000,81 @@ const RealVector& RecastModel::error_estimates()
 }
 
 
+void RecastModel::resize_response_mapping()
+{
+  // reshaping primaryRespMapIndices, secondaryRespMapIndices
+  size_t num_curr_fns       = response_size(),
+         num_curr_secondary = num_secondary_fns(),
+         num_curr_primary   = num_curr_fns - num_curr_secondary,
+         num_sm_fns         = subModel.response_size(),
+         num_sm_secondary   = subModel.num_secondary_fns(),
+         num_sm_primary     = num_sm_fns - num_sm_secondary,
+         num_replicates, num_ind, offset, i, j, k;
+
+  primaryRespMapIndices.resize(num_sm_primary);
+  secondaryRespMapIndices.resize(num_sm_secondary);
+  nonlinearRespMapping.resize(num_sm_fns);
+
+  // the number of mappings to replicate corresponds to the number
+  // of data sets being aggregated in, e.g., AGGREGATED_MODELS mode
+
+  if (num_sm_primary > num_curr_primary) { // inflate existing mappings
+    num_replicates = num_sm_primary / num_curr_primary;
+    if (num_sm_primary % num_curr_primary) {
+      Cerr << "Error: non-integer multiplier for response aggregation in "
+	   << "RecastModel::resize_response_mapping()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    for (i=0; i<num_curr_primary; ++i) {
+      // mirror pattern within new response indices, but offset index mapping
+      SizetArray& primary_ind_i = primaryRespMapIndices[i];
+      num_ind = primary_ind_i.size();
+      for (j=1; j<num_replicates; ++j) {
+	offset = j * num_curr_primary;
+	SizetArray& primary_ind_j = primaryRespMapIndices[i + offset];
+	primary_ind_j.resize(num_ind);
+	for (k=0; k<num_ind; ++k)
+	  primary_ind_j[k] = primary_ind_i[k] + offset;
+      }
+    }
+  }
+  if (num_sm_secondary > num_curr_secondary) { // inflate existing mappings
+    num_replicates = num_sm_secondary / num_curr_secondary;
+    if (num_sm_secondary % num_curr_secondary) {
+      Cerr << "Error: non-integer multiplier for response aggregation in "
+	   << "RecastModel::resize_response_mapping()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    for (i=0; i<num_curr_secondary; ++i) {
+      // mirror pattern within new response indices, but offset index mapping
+      SizetArray& secondary_ind_i = secondaryRespMapIndices[i];
+      num_ind = secondary_ind_i.size();
+      for (j=1; j<num_replicates; ++j) {
+	offset = j * num_curr_secondary;
+	SizetArray& secondary_ind_j = secondaryRespMapIndices[i + offset];
+	secondary_ind_j.resize(num_ind);
+	for (k=0; k<num_ind; ++k)
+	  secondary_ind_j[k]   = secondary_ind_i[k] + offset;
+      }
+    }
+  }
+  if (num_sm_fns > num_curr_fns) { // inflate existing mappings
+    num_replicates = num_sm_fns / num_curr_fns;
+    if (num_sm_fns % num_curr_fns) {
+      Cerr << "Error: non-integer multiplier for response aggregation in "
+	   << "RecastModel::resize_response_mapping()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    for (i=0; i<num_curr_fns; ++i) {
+      // mirror pattern within new response indices, but offset index mapping
+      BoolDeque& nonlin_resp_map_i = nonlinearRespMapping[i];
+      for (j=1; j<num_replicates; ++j)
+	nonlinearRespMapping[i + j * num_curr_fns] = nonlin_resp_map_i;
+    }
+  }
+}
+
+
 bool RecastModel::
 db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 	  Response& found_resp)

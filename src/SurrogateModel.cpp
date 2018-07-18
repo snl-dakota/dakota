@@ -486,12 +486,28 @@ void SurrogateModel::
 asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 	  ShortArray& approx_asv, bool build_flag)
 {
-  if (surrogateFnIndices.size() == numFns) {
-    if (build_flag) actual_asv = orig_asv;
-    else            approx_asv = orig_asv;
+  switch (responseMode) {
+  case AGGREGATED_MODELS: {
+    // split actual & approx asv (can ignore build_flag)
+    if (orig_asv.size() != 2*numFns) {
+      Cerr << "Error: ASV not aggregated for AGGREGATED_MODELS mode in "
+	   << "SurrogateModel::asv_split()." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    approx_asv.resize(numFns); actual_asv.resize(numFns); size_t i;
+    for (i=0; i<numFns; ++i)
+      approx_asv[i] = orig_asv[i];
+    for (i=0; i<numFns; ++i)
+      actual_asv[i] = orig_asv[i+numFns];
+    break;
   }
-  else { // mixed response set
-    if (build_flag) { // construct mode: define actual_asv
+  default: // non-aggregated modes have consistent ASV request vector lengths
+    if (surrogateFnIndices.size() == numFns) {
+      if (build_flag) actual_asv = orig_asv;
+      else            approx_asv = orig_asv;
+    }
+    // else response set is mixed:
+    else if (build_flag) { // construct mode: define actual_asv
       actual_asv.assign(numFns, 0);
       for (ISIter it=surrogateFnIndices.begin();
 	   it!=surrogateFnIndices.end(); ++it)
@@ -514,6 +530,7 @@ asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 	}
       }
     }
+    break;
   }
 }
 

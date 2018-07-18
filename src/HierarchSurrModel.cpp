@@ -460,18 +460,14 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   Response lo_fi_response, hi_fi_response; // don't use truthResponseRef
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+  case AGGREGATED_MODELS:
     asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
-    hi_fi_eval = !hi_fi_asv.empty();
-    lo_fi_eval = !lo_fi_asv.empty();
-    mixed_eval = (hi_fi_eval && lo_fi_eval);
-    break;
+    hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty();
+    mixed_eval = (hi_fi_eval && lo_fi_eval);            break;
   case BYPASS_SURROGATE:
-    hi_fi_eval = true;
-    lo_fi_eval = mixed_eval = false;
-    break;
-  case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
-    hi_fi_eval = lo_fi_eval = mixed_eval = true;
-    break;
+    hi_fi_eval = true; lo_fi_eval = mixed_eval = false; break;
+  case MODEL_DISCREPANCY:
+    hi_fi_eval = lo_fi_eval = mixed_eval = true;        break;
   }
 
   Model& lf_model = orderedModels[lowFidelityIndices.first];
@@ -507,9 +503,9 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     else
       update_model(hf_model);
     switch (responseMode) {
-    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
-      ActiveSet hi_fi_set = set;
-      hi_fi_set.request_vector(hi_fi_asv);
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    case AGGREGATED_MODELS: {
+      ActiveSet hi_fi_set(hi_fi_asv, set.derivative_vector());
       hf_model.evaluate(hi_fi_set);
       if (mixed_eval)
         hi_fi_response = (sameModelInstance) ? // deep copy or shared rep
@@ -525,7 +521,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
       currentResponse.active_set(set);
       currentResponse.update(hf_model.current_response());
       break;
-    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY:
       hf_model.evaluate(set);
       hi_fi_response = (sameModelInstance) ? hf_model.current_response().copy()
                        : hf_model.current_response(); // shared rep
@@ -545,7 +541,6 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
         build_approximation();
       break;
     }
-
     // compute the LF response
     component_parallel_mode(SURROGATE_MODEL); // TO DO: sameModelInstance
     if (sameModelInstance)
@@ -555,11 +550,12 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     ActiveSet lo_fi_set;
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-      lo_fi_set = set;
+    case AGGREGATED_MODELS:
       lo_fi_set.request_vector(lo_fi_asv);
+      lo_fi_set.derivative_vector(set.derivative_vector());
       lf_model.evaluate(lo_fi_set);
       break;
-    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
+    case MODEL_DISCREPANCY:
       lf_model.evaluate(set);
       break;
     }
@@ -632,17 +628,13 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
                                asynch_hi_fi = hf_model.asynch_flag();
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+  case AGGREGATED_MODELS:
     asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
-    hi_fi_eval = !hi_fi_asv.empty();
-    lo_fi_eval = !lo_fi_asv.empty();
-    break;
+    hi_fi_eval = !hi_fi_asv.empty();  lo_fi_eval = !lo_fi_asv.empty();  break;
   case BYPASS_SURROGATE:
-    hi_fi_eval = true;
-    lo_fi_eval = false;
-    break;
-  case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
-    hi_fi_eval = lo_fi_eval = true;
-    break;
+    hi_fi_eval = true; lo_fi_eval = false;                              break;
+  case MODEL_DISCREPANCY:
+    hi_fi_eval = lo_fi_eval = true;                                     break;
   }
 
   if (hierarchicalTagging) {
@@ -666,11 +658,10 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     hi_fi_set.derivative_vector(set.derivative_vector());
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-      hi_fi_set.request_vector(hi_fi_asv);
-      break;
-    case BYPASS_SURROGATE: case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-      hi_fi_set.request_vector(set.request_vector());
-      break;
+    case AGGREGATED_MODELS:
+      hi_fi_set.request_vector(hi_fi_asv);             break;
+    case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
+      hi_fi_set.request_vector(set.request_vector());  break;
     }
   }
   if (lo_fi_eval) {
@@ -684,11 +675,10 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     lo_fi_set.derivative_vector(set.derivative_vector());
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-      lo_fi_set.request_vector(lo_fi_asv);
-      break;
-    case MODEL_DISCREPANCY:     case AGGREGATED_MODELS:
-      lo_fi_set.request_vector(set.request_vector());
-      break;
+    case AGGREGATED_MODELS:
+      lo_fi_set.request_vector(lo_fi_asv);             break;
+    case MODEL_DISCREPANCY:
+      lo_fi_set.request_vector(set.request_vector());  break;
     }
   }
 
@@ -1275,9 +1265,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 	  abort_handler(-1);                                              break;
 	case AUTO_CORRECTED_SURROGATE:
 	  hf_model.serve_run(pl_iter, hf_model.derivative_concurrency()); break;
-	case BYPASS_SURROGATE:
-	case MODEL_DISCREPANCY:
-	case AGGREGATED_MODELS:
+	case BYPASS_SURROGATE: case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
 	  hf_model.serve_run(pl_iter, max_eval_concurrency);              break;
 	}
       }
