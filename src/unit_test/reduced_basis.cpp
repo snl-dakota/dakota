@@ -215,7 +215,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr0)
 
   // construct the GP
   Approximation gp_approx(shared_approx_data);
-  gp_approx.add(doe_vars, doe_resp);
+  gp_approx.add_array(doe_vars, doe_resp);
   gp_approx.build();
 
   // check the value of the surrogate
