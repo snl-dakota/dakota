@@ -20,6 +20,7 @@
 #include <Teuchos_UnitTestHarness.hpp> 
 
 #include "H5Cpp.h"
+#include "HDF5_IO.hpp"
 
 #ifndef H5_NO_NAMESPACE
      using namespace H5;
@@ -64,132 +65,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-#if 0
-TEUCHOS_UNIT_TEST(hdf5, scalar)
-{
-  const std::string file_name("hdf5_scalar.h5");
 
-  Real value = 1.23;
-
-  herr_t status;
-
-  // scope within which file write takes place
-  {
-    bool db_is_incore = false;
-    bool file_exist = true;
-    bool write_file = true;
-
-    // open file
-    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
-
-    status = binary_file.store_data_scalar("/SomeScalar", value);
-    TEST_ASSERT(status >= 0);
-
-    // binary stream goes out of scope... (file close)
-  }
-
-  // scope within which file read takes place
-  {
-    // open/read file
-    bool db_is_incore = false;
-    bool file_exist = true;
-    bool write_file = false;
-    Real val_in = 0;
-
-    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
-
-    // WJB: see hack (hdr file) to make a single val look like a vec of len==1
-    status = binary_file.read_data("/SomeScalar", val_in);
-    TEST_ASSERT(status >= 0);
-    TEST_ASSERT(val_in == value);
-  }
-}
-
-//----------------------------------------------------------------
-
-TEUCHOS_UNIT_TEST(hdf5, realvec)
-{
-  const std::string file_name("hdf5_basic_realvec.h5");
-  const std::string ds_name("/SomeRealVectorData");
-
-  RealVector vec_out(VEC_SIZE);
-  vec_out.random();
-
-  {
-    bool db_is_incore = false;
-    bool file_exist = true;
-    bool write_file = true;
-
-    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
-
-    herr_t status = binary_file.store_data(ds_name, vec_out);
-    TEST_ASSERT(status >= 0);
-  }
-
-  // Now read back in and test correctness
-  {
-    bool db_is_incore = false;
-    bool file_exist = true;
-    bool write_file = false;
-
-    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
-
-    RealVector test_vec;
-    binary_file.read_data(ds_name, test_vec);
-
-    TEST_EQUALITY( test_vec.length(), vec_out.length() );
-    double diff = max_diff( vec_out, test_vec );
-    TEST_COMPARE( diff, <, 1.e-15 );
-  }
-}
-
-//----------------------------------------------------------------
-
-TEUCHOS_UNIT_TEST(hdf5, stdvec)
-{
-  const std::string file_name("hdf5_basic_stdvec.h5");
-  const std::string ds_name("/SomeStdVectorData");
-
-  RealVector rvec(VEC_SIZE);
-  rvec.random();
-
-  std::vector<Real> vec_out(VEC_SIZE);
-  int i = 0;
-  for( auto & e : vec_out ) 
-    e = rvec[i++];
-
-  {
-    bool db_is_incore = false;
-    bool file_exist = true;
-    bool write_file = true;
-
-    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
-
-    herr_t status = binary_file.store_data_array(ds_name, vec_out);
-    TEST_ASSERT(status >= 0);
-  }
-
-  // Now read back in and test correctness
-  {
-    bool db_is_incore = false;
-    bool file_exist = true;
-    bool write_file = false;
-
-    HDF5BinaryStream binary_file(file_name, db_is_incore, file_exist, write_file);
-
-    std::vector<Real> test_vec;
-    binary_file.read_data(ds_name, test_vec);
-
-    TEST_EQUALITY( test_vec.size(), vec_out.size() );
-    TEST_COMPARE_ARRAYS( vec_out, test_vec );
-  }
-}
-
-#endif
-
-//----------------------------------------------------------------
-
-#include "HDF5_IO.hpp"
 
 TEUCHOS_UNIT_TEST(hdf5_cpp, scalar)
 {
@@ -218,7 +94,7 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, scalar)
 TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
 {
   const std::string file_name("hdf5_basic_realvec.h5");
-  const std::string ds_name("/SomeRealVectorData");
+  const std::string ds_name("/Level_1/level_2/SomeRealVectorData");
 
   RealVector vec_out(VEC_SIZE);
   vec_out.random();
@@ -246,7 +122,7 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
 TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
 {
   const std::string file_name("hdf5_basic_stdvec.h5");
-  const std::string ds_name("/SomeStdVectorData");
+  const std::string ds_name("/Level_One/level_two/2/b/SomeStdVectorData");
 
   RealVector rvec(VEC_SIZE);
   rvec.random();

@@ -22,7 +22,7 @@
 #include <boost/any.hpp>
 
 #ifdef DAKOTA_HAVE_HDF5
-//#include "ResultsDBHDF5.hpp" //  Will need to revisit this after adopting HDF5 version - RWH
+#include "ResultsDBHDF5.hpp"
 namespace Dakota {
   class ResultsDBHDF5;
 }
@@ -314,6 +314,12 @@ public:
           Cout << "  " << sv << std::endl;
       }
     }
+
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->insert(iterator_id, result_name, response_name, sent_data);
+#endif
+
   }
 
 
@@ -447,7 +453,7 @@ private:
 
   /// File-based database; using shared_ptr due to potentially incomplete type
   /// and requirements for checked_delete in debug builds
-  std::shared_ptr<ResultsDBHDF5> hdf5DB;
+  std::unique_ptr<ResultsDBHDF5> hdf5DB;
 
 };  // class ResultsManager
 

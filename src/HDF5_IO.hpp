@@ -38,11 +38,11 @@ namespace Dakota
 //----------------------------------------------------------------
 
   // Some free functions to try to consolidate data type specs
-  PredType h5_dtype( const Real & )
-    { return PredType::IEEE_F64LE; }
+  inline H5::PredType h5_dtype( const Real & )
+    { return H5::PredType::IEEE_F64LE; }
 
-  PredType h5_dtype( const int & )
-    { return PredType::IEEE_F64LE; }
+  inline H5::PredType h5_dtype( const int & )
+    { return H5::PredType::IEEE_F64LE; }
 
 //----------------------------------------------------------------
 
@@ -57,12 +57,12 @@ namespace Dakota
       H5::Exception::dontPrint();
 
       if( overwrite )
-        filePtr = std::shared_ptr<H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+        filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
 
       try {
-        filePtr = std::shared_ptr<H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
+        filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
       } catch(const H5::FileIException&) {
-        filePtr = std::shared_ptr<H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+        filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
       }
     }
 
@@ -76,10 +76,11 @@ namespace Dakota
       template <typename T>
         void store_scalar_data(const std::string& dset_name, const T& val) const
         {
-          DataSpace dataspace = DataSpace();
+          H5::DataSpace dataspace = H5::DataSpace();
 
           // Assume dset_name is syntactically correct - will need some utils - RWH
-          DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(val), dataspace) );
+          create_groups(dset_name);
+          H5::DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(val), dataspace) );
 
           dataset.write(&val, h5_dtype(val));
           dataset.close(); // does this flush the buffer; is it needed ? 
@@ -99,7 +100,7 @@ namespace Dakota
             abort_handler(-1);
           }
 
-          DataSet dataset = filePtr->openDataSet(dset_name);
+          H5::DataSet dataset = filePtr->openDataSet(dset_name);
           dataset.read(&val, h5_dtype(val));
 
           return;
@@ -112,10 +113,11 @@ namespace Dakota
         {
           hsize_t dims[1];
           dims[0] = array.size();
-          DataSpace dataspace = DataSpace(1, dims);
+          H5::DataSpace dataspace = H5::DataSpace(1, dims);
 
           // Assume dset_name is syntactically correct - will need some utils - RWH
-          DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(array[0]), dataspace) );
+          create_groups(dset_name);
+          H5::DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(array[0]), dataspace) );
 
           dataset.write(array.data(), h5_dtype(array[0]));
 
@@ -134,7 +136,7 @@ namespace Dakota
             abort_handler(-1);
           }
 
-          DataSet dataset = filePtr->openDataSet(dset_name);
+          H5::DataSet dataset = filePtr->openDataSet(dset_name);
 
           // Get dims and size of dataset
           assert( dataset.getSpace().isSimple() );
@@ -190,7 +192,52 @@ namespace Dakota
 
       std::string fileName;
 
-      std::shared_ptr<H5File> filePtr;
+      std::shared_ptr<H5::H5File> filePtr;
+
+      //----------------------------------------------------------------
+
+      /** Assume we have an absolute path /root/dir/dataset and create
+        groups /root/ and /root/dir/ if needed */
+      inline void create_groups(const std::string& dset_name) const
+      {
+        // the first group will be empty due to leading delimiter
+        // the last group will be the dataset name
+        std::vector<std::string> groups;
+        boost::split(groups, dset_name, boost::is_any_of("/"));
+
+        // index instead of pruning first and last or clever iterators
+        std::string full_path;
+        for( size_t i=1; i<(groups.size()-1); ++i )
+        {
+          full_path += '/' + groups[i];
+          // if doesn't exist, add
+
+          htri_t grpexists = H5Lexists(filePtr->getId(), full_path.c_str(), H5P_DEFAULT);
+          if( grpexists == 0 )
+          {
+            hid_t create_status = H5Gcreate(filePtr->getId(), full_path.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+            if (create_status < 0)
+            {
+              Cerr << "\nError: Could not create group hierarchy \"" << full_path << "\""
+                   << " for HDF5 file \"" << fileName << "\"."
+                   << std::endl;
+              abort_handler(-1);
+            }
+
+            // I think needed to avoid resource leaks:
+            H5Gclose(create_status);
+          }
+          else if (grpexists < 0)
+          {
+            Cerr << "\nError: Could not query group hierarchy \"" << full_path << "\""
+                 << " for HDF5 file \"" << fileName << "\"."
+                 << std::endl;
+            abort_handler(-1);
+          }
+        }
+      }
+
   };
 
 } // namespace Dakota

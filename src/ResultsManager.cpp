@@ -82,7 +82,7 @@ void ResultsManager::initialize(const std::string& base_filename)
 #ifdef DAKOTA_HAVE_HDF5
   hdf5DBActive = true;
   bool in_core = false;
-  //hdf5DB.reset(new ResultsDBHDF5(in_core, base_filename)); // TODO: revive once we settle on HDF% version - RWH
+  hdf5DB.reset(new ResultsDBHDF5(in_core, base_filename));
 #endif
 }
 

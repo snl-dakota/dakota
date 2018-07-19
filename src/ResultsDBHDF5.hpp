@@ -16,7 +16,7 @@
 
 #include "dakota_global_defs.hpp"
 #include "dakota_results_types.hpp"
-#include "BinaryIO_Helper.hpp"
+#include "HDF5_IO.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <memory>
@@ -29,26 +29,23 @@ class ResultsDBHDF5
 
 public:
 
-  ResultsDBHDF5(bool in_core, const String& base_filename):
-    hdf5Stream(new HDF5BinaryStream(base_filename + 
-				    (in_core ? ".tmp.h5" : ".h5"), 
-				    in_core, false)
-	       )
+  ResultsDBHDF5(bool in_core, const String& base_filename) :
+    hdf5Stream(new HDF5IOHelper(base_filename + (in_core ? ".tmp.h5" : ".h5"), true) )
   { 
-
   }
+
 
   /// insert a RealMatrix with metadata
   template<typename StoredType>
   void insert(const StrStrSizet& iterator_id,
-	      const std::string& data_name,
-	      const StoredType& stored_data,
-	      const MetaDataType metadata=  MetaDataType()) 
+              const std::string& result_name,
+              const std::string& response_name,
+	      const StoredType& data,
+              const HDF5dss &scales = HDF5dss())
   {
-    //hdf5Stream->store_data(dataset_name(iterator_id, data_name),stored_data);
-    Cerr << "ResultsDBHDF5::insert is not fully supported.\n";
-    abort_handler(-1);
-
+    hdf5Stream->store_vector_data(
+                        dataset_name(iterator_id, result_name),
+                        data);
   }
 
  
@@ -65,8 +62,8 @@ public:
     // WJB: add a dbg print msg here since NOT sure tested for 'array_size > 1'
     std::vector<StoredType> initial_array( array_size, StoredType() );
 
-    hdf5Stream->reserve_dataset_space(dataset_name(iterator_id, data_name),
-			              initial_array);
+    Cerr << "ResultsDBHDF5::insert is not fully supported.\n";
+    abort_handler(-1);
   }
  
   template<typename StoredType>
@@ -74,16 +71,8 @@ public:
 		    const std::string& data_name, size_t index,
 		    const StoredType& stored_data)
   {
-    // TODO: store at index specified...
-    // WJB: OK, I hope I an ready for " store_data.. 'at index' "
-
-#ifndef NDEBUG
-    std::cout << dataset_name(iterator_id, data_name) << "\tHDF5db array_insert at index:  " << index << std::endl;
-#endif
-
-    hdf5Stream->store_data(dataset_name(iterator_id, data_name),
-     			   stored_data, index);
-     			   //stored_data);
+    Cerr << "ResultsDBHDF5::insert is not fully supported.\n";
+    abort_handler(-1);
   }
 
 
@@ -109,9 +98,7 @@ private:
 
   /// BMA TODO: would prefer not to have a pointer, but no way to
   /// default construct an output handler
-  std::unique_ptr<HDF5BinaryStream> hdf5Stream;
-
-
+  std::unique_ptr<HDF5IOHelper> hdf5Stream;
 };
 
 
