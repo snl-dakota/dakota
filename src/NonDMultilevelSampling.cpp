@@ -265,14 +265,18 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
     // set initial surrogate responseMode and model indices for lev 0
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
     iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
+    //resize_active_set();// synch with iteratedModel.response_size()
 
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
+      // *** TO DO: ... configure_indices() et al. ...
       lev_cost = cost[lev];
       if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
+	if (lev == 1) { // update responseMode for levels 1:num_lev-1
 	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
+	  //resize_active_set();// synch with iteratedModel.response_size()
+	}
 	iteratedModel.surrogate_model_indices(model_form, lev-1);
 	iteratedModel.truth_model_indices(model_form,     lev);
 	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs

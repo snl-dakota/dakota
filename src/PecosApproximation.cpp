@@ -38,7 +38,7 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
 
   // Make a shallow copy of initial approxData instance (shared rep).
   // Note: there is only one empty SurrogateData instance at construct time
-  pecosBasisApprox.original_surrogate_data(approxData.back()); // single or HF
+  pecosBasisApprox.surrogate_data(approxData.back(), 0); // single or HF
   // This will have to happen downstream, and may require a push_front...
   //if ( == DISTINCT_DISCREP) // AGGREGATED_MODELS
   //  pecosBasisApprox.modified_surrogate_data(approxData.front()); // LF
@@ -69,7 +69,7 @@ PecosApproximation(ProblemDescDB& problem_db,
 
   // Make a shallow copy of initial approxData instance (shared rep):
   // Note: there is only one empty SurrogateData instance at construct time
-  pecosBasisApprox.original_surrogate_data(approxData.back()); // single or HF
+  pecosBasisApprox.surrogate_data(approxData.back(), 0); // single or HF
   //if (probDescDB.get_short("method.nond.multilevel_discrepancy_emulation") ==
   //    DISTINCT_EMULATION) // AGGREGATED_MODELS
   //  pecosBasisApprox.modified_surrogate_data(approxData.front()); // LF
@@ -93,12 +93,15 @@ void PecosApproximation::link_multilevel_approximation_data()
     = (SharedPecosApproxData*)sharedDataRep;
   switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
   case Pecos::DISTINCT_DISCREP:
-    while (approxData.size() < 2)
+    size_t i, num_pecos_sd = 2;
+    while (approxData.size() < num_pecos_sd)
       approxData.push_back(Pecos::SurrogateData(true));
 
     // replace default linkage above
-    pecosBasisApprox.modified_surrogate_data(approxData[0]);// LF -> discrepancy
-    pecosBasisApprox.original_surrogate_data(approxData[1]);// HF
+    for (i=0; i<num_pecos_sd; ++i)
+      pecosBasisApprox.surrogate_data(approxData[i], i);
+    // *** TO DO: need to link Pecos modSurrData back to PCE/SC,
+    // ***        or modify accessors to use modified_surrogate_data()
 
     // Configure active approxData such that other classes access the modified
     // discrepancy data (0 is also the default)
