@@ -367,8 +367,14 @@ add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag, size_t d_index)
   else { // not virtual: all derived classes use following definition
     if (d_index == _NPOS) d_index = activeDataIndex; // default
 
-    while (d_index >= approxData.size())
-      approxData.push_back(Pecos::SurrogateData(true));
+    size_t num_sd = approxData.size();
+    if (d_index >= num_sd) { // append new SurrogateData instances
+      const UShortArray& key = approxData.back().active_key(); // ctor pushes 1
+      for (size_t i=num_sd; i<=d_index; ++i)
+	approxData.push_back(Pecos::SurrogateData(key));
+    }
+    //while (d_index >= approxData.size())
+    //  approxData.push_back(Pecos::SurrogateData(true));
 
     if (anchor_flag) approxData[d_index].anchor_variables(sdv);
     else             approxData[d_index].push_back(sdv);
@@ -420,8 +426,14 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, size_t d_index)
   else { // not virtual: all derived classes use following definition
     if (d_index == _NPOS) d_index = activeDataIndex; // default
 
-    while (d_index >= approxData.size())
-      approxData.push_back(Pecos::SurrogateData(true));
+    size_t num_sd = approxData.size();
+    if (d_index >= num_sd) { // append new SurrogateData instances
+      const UShortArray& key = approxData.back().active_key(); // ctor pushes 1
+      for (size_t i=num_sd; i<=d_index; ++i)
+	approxData.push_back(Pecos::SurrogateData(key));
+    }
+    //while (d_index >= approxData.size())
+    //  approxData.push_back(Pecos::SurrogateData(true));
 
     if (anchor_flag) approxData[d_index].anchor_response(sdr);
     else             approxData[d_index].push_back(sdr);

@@ -93,12 +93,15 @@ void PecosApproximation::link_multilevel_approximation_data()
     = (SharedPecosApproxData*)sharedDataRep;
   switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
   case Pecos::DISTINCT_DISCREP:
-    size_t i, num_pecos_sd = 2;
-    while (approxData.size() < num_pecos_sd)
-      approxData.push_back(Pecos::SurrogateData(true));
+    size_t i, num_sd = approxData.size(), num_link = 2;
+    if (num_sd < num_link) { // append new SD instances (base ctor pushes 1)
+      const UShortArray& key = approxData.back().active_key();
+      for (i=num_sd; i<num_link; ++i)
+	approxData.push_back(Pecos::SurrogateData(key));
+    }
 
     // replace default linkage above
-    for (i=0; i<num_pecos_sd; ++i)
+    for (i=0; i<num_link; ++i)
       pecosBasisApprox.surrogate_data(approxData[i], i);
     // *** TO DO: need to link Pecos modSurrData back to PCE/SC,
     // ***        or modify accessors to use modified_surrogate_data()
