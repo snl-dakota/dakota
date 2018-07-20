@@ -148,8 +148,8 @@ compute(const Variables& vars, const Response& truth_response,
     it = surrogateFnIndices.begin();
     const Pecos::SurrogateDataVars& anchor_sdv
       = (computeAdditive || badScalingFlag) ?
-      addCorrections[*it].approximation_data(0).anchor_variables() :
-      multCorrections[*it].approximation_data(0).anchor_variables();
+      addCorrections[*it].surrogate_data(0).anchor_variables() :
+      multCorrections[*it].surrogate_data(0).anchor_variables();
     correctionPrevCenterPt.continuous_variables(
       anchor_sdv.continuous_variables());
     correctionPrevCenterPt.discrete_int_variables(

@@ -230,7 +230,7 @@ protected:
   void approximation_coefficients(const RealVector& approx_coeffs,
 				  bool normalized);
 
-  void link_multilevel_approximation_data();
+  void link_multilevel_surrogate_data();
 
   void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 

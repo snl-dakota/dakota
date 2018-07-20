@@ -209,7 +209,7 @@ public:
   /// retrieve the approximation data from a particular Approximation
   /// within an ApproximationInterface
   virtual const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index);// = _NPOS);
+    approximation_data(size_t fn_index, size_t d_index = _NPOS);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface

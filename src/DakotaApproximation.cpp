@@ -622,13 +622,13 @@ approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 }
 
 
-void Approximation::link_multilevel_approximation_data()
+void Approximation::link_multilevel_surrogate_data()
 {
   if (approxRep)
-    approxRep->link_multilevel_approximation_data();
+    approxRep->link_multilevel_surrogate_data();
   else {
-    Cerr << "Error: link_multilevel_approximation_data() not available for "
-	 << "this approximation type." << std::endl;
+    Cerr << "Error: link_multilevel_surrogate_data() not available for this "
+	 << "approximation type." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 }

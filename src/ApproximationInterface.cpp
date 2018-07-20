@@ -726,7 +726,7 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
 	  fn_surf.add(response, i, anchor, true, sd_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  const Pecos::SurrogateData& surr_data
-	    = fn_surf.approximation_data(sd_index);
+	    = fn_surf.surrogate_data(sd_index);
 	  sdv = (anchor) ? surr_data.anchor_variables() :
 	                   surr_data.variables_data().back();
 	  first_vars = false;
@@ -763,7 +763,7 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
 	  fn_surf.add(response, i, anchor, true, sd_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  const Pecos::SurrogateData& surr_data
-	    = fn_surf.approximation_data(sd_index);
+	    = fn_surf.surrogate_data(sd_index);
 	  sdv = (anchor) ? surr_data.anchor_variables() :
 	                   surr_data.variables_data().back();
 	  first_vars = false;

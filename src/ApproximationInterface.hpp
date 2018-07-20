@@ -132,7 +132,7 @@ protected:
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
   const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index);// = _NPOS);
+    approximation_data(size_t fn_index, size_t d_index = _NPOS);
 
   const RealVectorArray& approximation_coefficients(bool normalized = false);
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
@@ -291,7 +291,7 @@ approximation_function_indices(const IntSet& approx_fn_indices)
 inline void ApproximationInterface::link_multilevel_approximation_data()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].link_multilevel_approximation_data();
+    functionSurfaces[*it].link_multilevel_surrogate_data();
 }
 
 
@@ -425,7 +425,7 @@ approximation_data(size_t fn_index, size_t d_index)
 	 << "() does not correspond to an approximated function." << std::endl;
     abort_handler(APPROX_ERROR);
   }
-  return functionSurfaces[fn_index].approximation_data(d_index);
+  return functionSurfaces[fn_index].surrogate_data(d_index);
 }
 
 
