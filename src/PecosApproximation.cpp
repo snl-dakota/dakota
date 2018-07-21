@@ -80,11 +80,11 @@ PecosApproximation(ProblemDescDB& problem_db,
 }
 
 
-void PecosApproximation::link_multilevel_approximation_data()
+void PecosApproximation::link_multilevel_surrogate_data()
 {
   // Notes:
   // > SurrogateModel::aggregate_response() uses order of LF,HF (consistent with
-  //   ordered_models from low to high) such that approximation_data(fn_index,0)
+  //   ordered_models from low to high) such that surrogate_data(fn_index,0)
   //   would retrieve the (to be modified) LF approxData.
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
   //   data to each approxData instance in turn.
@@ -128,7 +128,7 @@ void PecosApproximation::link_multilevel_approximation_data()
 
 
 /*
-void PecosApproximation::activate_multilevel_approximation_data()
+void PecosApproximation::activate_multilevel_surrogate_data()
 {
   SharedPecosApproxData* shared_data_rep
     = (SharedPecosApproxData*)sharedDataRep;
@@ -140,7 +140,7 @@ void PecosApproximation::activate_multilevel_approximation_data()
     //   level 0 (coarse/LF) remains inactive for second approxData
     approxData[0].activate_all_keys();
     approxData[1].activate_nonbase_keys();// all keys beyond first
-    approximation_data_index(0); // reassign (is also the default)
+    surrogate_data_index(0); // reassign (is also the default)
     // TO DO: need a default activation for non-ML cases
     break;
   //case Pecos::RECURSIVE_DISCREP: default: // nothing additional necessary

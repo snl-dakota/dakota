@@ -152,7 +152,7 @@ public:
 
   /// link more than once approxData instance for aggregated response data
   /// (PecosApproximation)
-  virtual void link_multilevel_approximation_data();
+  virtual void link_multilevel_surrogate_data();
 
   /// print the coefficient array computed in build()/rebuild()
   virtual void coefficient_labels(std::vector<std::string>& coeff_labels) const;
@@ -187,11 +187,11 @@ public:
   int recommended_points(bool constraint_flag) const;
 
   /// set activeDataIndex
-  void approximation_data_index(size_t d_index);
+  void surrogate_data_index(size_t d_index);
   /// return approxData[activeDataIndex]
-  const Pecos::SurrogateData& approximation_data() const;
+  const Pecos::SurrogateData& surrogate_data() const;
   /// return approxData[d_index]
-  const Pecos::SurrogateData& approximation_data(size_t d_index) const;
+  const Pecos::SurrogateData& surrogate_data(size_t d_index) const;
 
   /// append to SurrogateData::varsData or assign to SurrogateData::anchorVars
   void add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag,
@@ -330,11 +330,11 @@ private:
 };
 
 
-inline void Approximation::approximation_data_index(size_t d_index)
+inline void Approximation::surrogate_data_index(size_t d_index)
 { activeDataIndex = d_index; }
 
 
-inline const Pecos::SurrogateData& Approximation::approximation_data() const
+inline const Pecos::SurrogateData& Approximation::surrogate_data() const
 {
   return (approxRep) ? approxRep->approxData[activeDataIndex]:
                                   approxData[activeDataIndex];
@@ -342,16 +342,16 @@ inline const Pecos::SurrogateData& Approximation::approximation_data() const
 
 
 inline const Pecos::SurrogateData& Approximation::
-approximation_data(size_t d_index) const
+surrogate_data(size_t d_index) const
 {
   if (approxRep)
-    return approxRep->approximation_data(d_index);
+    return approxRep->surrogate_data(d_index);
   else if (d_index == _NPOS)
     return approxData[activeDataIndex]; // defaults to front()
   else {
     if (d_index >= approxData.size()) {
-      Cerr << "Error: index out of range in Approximation::approximation_data"
-	   << "()." << std::endl;
+      Cerr << "Error: index out of range in Approximation::surrogate_data()."
+	   << std::endl;
       abort_handler(APPROX_ERROR);
     }
     return approxData[d_index];
