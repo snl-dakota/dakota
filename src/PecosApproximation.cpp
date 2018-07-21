@@ -111,14 +111,14 @@ void PecosApproximation::link_multilevel_surrogate_data()
 
     // Configure active approxData such that other classes access the
     // discrepancy/surplus data rather than the raw QoI data
-    approximation_data_index(num_replicates);// other classes access mod_surr
+    surrogate_data_index(num_replicates);// other classes access mod_surr
     break;
   }
   case Pecos::RECURSIVE_DISCREP: {
     Pecos::SurrogateData mod_surr(key);
     approxData.push_back(mod_surr);
     pecosBasisApprox.modified_surrogate_data(mod_surr);
-    approximation_data_index(1); // other classes access mod_surr
+    surrogate_data_index(1); // other classes access mod_surr
     break;
   }
   default: // default ctor linkages are sufficient
