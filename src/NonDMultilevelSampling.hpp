@@ -90,6 +90,11 @@ private:
   bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 		    const SizetArray& N_hf, size_t iter, size_t lev);
 
+  /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
+  void aggregated_models_mode();
+  /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
+  void uncorrected_surrogate_mode();
+
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
@@ -455,6 +460,22 @@ private:
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
 };
+
+
+inline void NonDMultilevelSampling::aggregated_models_mode()
+{
+  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
+  // synch activeSet with iteratedModel.response_size()
+  activeSet.reshape(2*numFunctions);
+  activeSet.request_values(1);
+}
+
+
+inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
+{
+  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+  activeSet.reshape(numFunctions);// synch with model.response_size()
+}
 
 
 inline void NonDMultilevelSampling::

@@ -51,7 +51,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
   if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
+    aggregated_models_mode();
   else {
     Cerr << "Error: Multilevel Monte Carlo requires a hierarchical "
 	 << "surrogate model specification." << std::endl;
@@ -263,7 +263,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    uncorrected_surrogate_mode();
     iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
     //resize_active_set();// synch with iteratedModel.response_size()
 
@@ -273,10 +273,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
       // *** TO DO: ... configure_indices() et al. ...
       lev_cost = cost[lev];
       if (lev) {
-	if (lev == 1) { // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
-	  //resize_active_set();// synch with iteratedModel.response_size()
-	}
+	if (lev == 1) // update responseMode for levels 1:num_lev-1
+	  aggregated_models_mode();
 	iteratedModel.surrogate_model_indices(model_form, lev-1);
 	iteratedModel.truth_model_indices(model_form,     lev);
 	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
@@ -413,7 +411,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    uncorrected_surrogate_mode();
     iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
 
     sum_sqrt_var_cost = 0.;
@@ -422,7 +420,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
       lev_cost = cost[lev];
       if (lev) {
 	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
+	  aggregated_models_mode();
 	iteratedModel.surrogate_model_indices(model_form, lev-1);
 	iteratedModel.truth_model_indices(model_form,     lev);
 	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
@@ -638,7 +636,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // --------------------------------------------------
   // Compute LF increment based on the evaluation ratio
   // --------------------------------------------------
-  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+  uncorrected_surrogate_mode();
   if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++iter, 0)) { // level 0
     accumulate_cv_sums(sum_L_refined, mu_hat, N_lf);
     raw_N_lf += numSamples;
@@ -703,7 +701,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // surr resp
+    uncorrected_surrogate_mode(); // one response
+    activeSet.reshape(numFunctions);// synch with model.response_size()
     iteratedModel.surrogate_model_indices(hf_model_form, 0); // HF level 0
 
     sum_sqrt_var_cost = 0.;
@@ -711,7 +710,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 
       hf_lev_cost = hf_cost[lev];
       if (lev) {
-	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // both resp
+	aggregated_models_mode(); // both responses
 	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
 	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
 	hf_lev_cost += hf_cost[lev-1]; // 2 levels
@@ -831,12 +830,12 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
 	if (lev) {
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+	  aggregated_models_mode();
 	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
 	  iteratedModel.truth_model_indices(lf_model_form,     lev);
 	}
 	else {
-	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+	  uncorrected_surrogate_mode();
 	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
 	}
 	// now execute additional LF sample increment, if needed
@@ -959,7 +958,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // surr resp
+    uncorrected_surrogate_mode(); // surr response
     iteratedModel.surrogate_model_indices(hf_model_form, 0); // HF level 0
 
     sum_sqrt_var_cost = 0.;
@@ -967,7 +966,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 
       hf_lev_cost = hf_cost[lev];
       if (lev) {
-	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // both resp
+	aggregated_models_mode(); // both responses
 	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
 	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
 	hf_lev_cost += hf_cost[lev-1]; // 2 levels
@@ -1101,12 +1100,12 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
 	if (lev) {
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+	  aggregated_models_mode();
 	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
 	  iteratedModel.truth_model_indices(lf_model_form,     lev);
 	}
 	else {
-	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+	  uncorrected_surrogate_mode();
 	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
 	}
 	// now execute additional LF sample increment, if needed
@@ -2109,7 +2108,7 @@ void NonDMultilevelSampling::shared_increment(size_t iter, size_t lev)
   else Cout << "\nCVMC iteration " << iter << " sample increments: ";
   Cout << "LF = " << numSamples << " HF = " << numSamples << '\n';
 
-  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+  aggregated_models_mode();
 
   // generate new MC parameter sets
   get_parameter_sets(iteratedModel);// pull dist params from any model
@@ -2165,7 +2164,7 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
       // mode for hierarchical surrogate model can be uncorrected surrogate
       // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
       // --> set at calling level
-      //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+      //uncorrected_surrogate_mode();
 
       // compute allResponses from allVariables using hierarchical model
       evaluate_parameter_sets(iteratedModel, true, false);
