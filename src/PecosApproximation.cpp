@@ -91,27 +91,38 @@ void PecosApproximation::link_multilevel_approximation_data()
 
   SharedPecosApproxData* shared_data_rep
     = (SharedPecosApproxData*)sharedDataRep;
+  const UShortArray& key = approxData.back().active_key();
   switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
-  case Pecos::DISTINCT_DISCREP:
-    size_t i, num_sd = approxData.size(), num_link = 2;
-    if (num_sd < num_link) { // append new SD instances (base ctor pushes 1)
-      const UShortArray& key = approxData.back().active_key();
-      for (i=num_sd; i<num_link; ++i)
-	approxData.push_back(Pecos::SurrogateData(key));
-    }
-
-    // replace default linkage above
-    for (i=0; i<num_link; ++i)
+  case Pecos::DISTINCT_DISCREP: {
+    size_t i, num_sd = approxData.size(), num_replicates = 2;
+    // append SD instances (base ctor adds 1)
+    for (i=num_sd; i<num_replicates; ++i)
+      approxData.push_back(Pecos::SurrogateData(key));
+    // replace default ctor linkage
+    // > push approxData instances constructed above
+    for (i=0; i<num_replicates; ++i)
       pecosBasisApprox.surrogate_data(approxData[i], i);
-    // *** TO DO: need to link Pecos modSurrData back to PCE/SC,
-    // ***        or modify accessors to use modified_surrogate_data()
 
-    // Configure active approxData such that other classes access the modified
-    // discrepancy data (0 is also the default)
-    approximation_data_index(0);
+    // > push another instance for modSurrData (allows consolidation of
+    //   Approximation::push/pop operations)
+    Pecos::SurrogateData mod_surr(key);
+    approxData.push_back(mod_surr);
+    pecosBasisApprox.modified_surrogate_data(mod_surr);
+
+    // Configure active approxData such that other classes access the
+    // discrepancy/surplus data rather than the raw QoI data
+    approximation_data_index(num_replicates);// other classes access mod_surr
     break;
-  //case Pecos::RECURSIVE_DISCREP: default:
-  //  default linkages in ctors are sufficient
+  }
+  case Pecos::RECURSIVE_DISCREP: {
+    Pecos::SurrogateData mod_surr(key);
+    approxData.push_back(mod_surr);
+    pecosBasisApprox.modified_surrogate_data(mod_surr);
+    approximation_data_index(1); // other classes access mod_surr
+    break;
+  }
+  default: // default ctor linkages are sufficient
+    break;
   }
 }
 
