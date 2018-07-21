@@ -262,23 +262,10 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    uncorrected_surrogate_mode();
-    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
-    //resize_active_set();// synch with iteratedModel.response_size()
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      // *** TO DO: ... configure_indices() et al. ...
-      lev_cost = cost[lev];
-      if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  aggregated_models_mode();
-	iteratedModel.surrogate_model_indices(model_form, lev-1);
-	iteratedModel.truth_model_indices(model_form,     lev);
-	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-      }
+      configure_indices(lev, model_form, cost, lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
@@ -410,21 +397,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    uncorrected_surrogate_mode();
-    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      lev_cost = cost[lev];
-      if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  aggregated_models_mode();
-	iteratedModel.surrogate_model_indices(model_form, lev-1);
-	iteratedModel.truth_model_indices(model_form,     lev);
-	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-      }
+      configure_indices(lev, model_form, cost, lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
@@ -700,21 +676,10 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
   // now converge on sample counts per level (N_hf)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    uncorrected_surrogate_mode(); // one response
-    activeSet.reshape(numFunctions);// synch with model.response_size()
-    iteratedModel.surrogate_model_indices(hf_model_form, 0); // HF level 0
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      hf_lev_cost = hf_cost[lev];
-      if (lev) {
-	aggregated_models_mode(); // both responses
-	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
-	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
-	hf_lev_cost += hf_cost[lev-1]; // 2 levels
-      }
+      configure_indices(lev, hf_model_form, hf_cost, hf_lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_hf[lev];
@@ -752,14 +717,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  lf_lev_cost = lf_cost[lev]; 
-	  if (lev) {
-	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	    iteratedModel.truth_model_indices(lf_model_form,     lev);
-	    lf_lev_cost += lf_cost[lev-1];
-	  }
-	  else
-	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	  configure_indices(lev, lf_model_form, lf_cost, lf_lev_cost);
 	  // compute allResp w/ LF model form reusing allVars from MLMC step
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for CV sums
@@ -829,16 +787,9 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     // All CV lf_increment() calls now follow all ML level evals:
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
-	if (lev) {
-	  aggregated_models_mode();
-	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	  iteratedModel.truth_model_indices(lf_model_form,     lev);
-	}
-	else {
-	  uncorrected_surrogate_mode();
-	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
-	}
-	// now execute additional LF sample increment, if needed
+	configure_indices(lev, lf_model_form);
+
+	// execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
 	  accumulate_mlcv_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
@@ -957,20 +908,10 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   // now converge on sample counts per level (N_hf)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    uncorrected_surrogate_mode(); // surr response
-    iteratedModel.surrogate_model_indices(hf_model_form, 0); // HF level 0
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      hf_lev_cost = hf_cost[lev];
-      if (lev) {
-	aggregated_models_mode(); // both responses
-	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
-	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
-	hf_lev_cost += hf_cost[lev-1]; // 2 levels
-      }
+      configure_indices(lev, hf_model_form, hf_cost, hf_lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_hf[lev];
@@ -1008,14 +949,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  lf_lev_cost = lf_cost[lev];
-	  if (lev) {
-	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	    iteratedModel.truth_model_indices(lf_model_form,     lev);
-	    lf_lev_cost += lf_cost[lev-1];
-	  }
-	  else
-	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	  configure_indices(lev, lf_model_form, lf_cost, lf_lev_cost);
 	  // eval allResp w/ LF model reusing allVars from ML step above
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for MLCV sums;
@@ -1099,15 +1033,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     //   similar Model eval sets for aggregated scheduling
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
-	if (lev) {
-	  aggregated_models_mode();
-	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	  iteratedModel.truth_model_indices(lf_model_form,     lev);
-	}
-	else {
-	  uncorrected_surrogate_mode();
-	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
-	}
+	configure_indices(lev, lf_model_form);
+
 	// now execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
 	  accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,

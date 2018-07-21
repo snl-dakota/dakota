@@ -95,6 +95,12 @@ private:
   /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
   void uncorrected_surrogate_mode();
 
+  /// manage response mode, model indices, and aggregate level cost
+  void configure_indices(size_t lev, size_t model_form,
+			 const RealVector& cost, Real& lev_cost);
+  /// manage response mode and model indices
+  void configure_indices(size_t lev, size_t model_form);
+
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
@@ -464,17 +470,55 @@ private:
 
 inline void NonDMultilevelSampling::aggregated_models_mode()
 {
-  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
-  // synch activeSet with iteratedModel.response_size()
-  activeSet.reshape(2*numFunctions);
-  activeSet.request_values(1);
+  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
+    // synch activeSet with iteratedModel.response_size()
+    activeSet.reshape(2*numFunctions);
+    activeSet.request_values(1);
+  }
 }
 
 
 inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 {
-  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-  activeSet.reshape(numFunctions);// synch with model.response_size()
+  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    activeSet.reshape(numFunctions);// synch with model.response_size()
+  }
+}
+
+
+inline void NonDMultilevelSampling::
+configure_indices(size_t lev, size_t model_form, const RealVector& cost,
+		  Real& lev_cost)
+{
+  lev_cost = cost[lev];
+  if (lev) {
+    //if (lev == 1) // update responseMode for levels 1:num_lev-1
+    aggregated_models_mode();
+    iteratedModel.surrogate_model_indices(model_form, lev-1);
+    iteratedModel.truth_model_indices(model_form,     lev);
+    lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
+  }
+  else {
+    uncorrected_surrogate_mode();
+    iteratedModel.surrogate_model_indices(model_form, lev);
+  }
+}
+
+
+inline void NonDMultilevelSampling::
+configure_indices(size_t lev, size_t model_form)
+{
+  if (lev) {
+    aggregated_models_mode();
+    iteratedModel.surrogate_model_indices(model_form, lev-1);
+    iteratedModel.truth_model_indices(model_form,     lev);
+  }
+  else {
+    uncorrected_surrogate_mode();
+    iteratedModel.surrogate_model_indices(model_form, lev);
+  }
 }
 
 

@@ -320,6 +320,11 @@ private:
   //- Heading: Convenience function definitions
   //
 
+  /// set response mode to AGGREGATED_MODELS and recur response size updates
+  void aggregated_models_mode();
+  /// set response mode to BYPASS_SURROGATE and recur response size updates
+  void bypass_surrogate_mode();
+
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator
   void reduce_total_sobol_sets(RealVector& avg_sobol);
@@ -415,6 +420,24 @@ private:
 
 inline const Model& NonDExpansion::algorithm_space_model() const
 { return uSpaceModel; }
+
+
+inline void NonDExpansion::aggregated_models_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); //MODEL_DISCREP
+    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
+  }
+}
+
+
+inline void NonDExpansion::bypass_surrogate_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // LF
+    uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
+  }
+}
 
 
 inline void NonDExpansion::archive_coefficients()

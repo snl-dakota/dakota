@@ -1159,18 +1159,10 @@ configure_indices(size_t lev, size_t form, bool multilevel,
   // > update iteratedModel / uSpaceModel in separate calls rather than using
   //   uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
   //   mode along to iteratedModel (a HierarchSurrModel) without absorbing it
-  if (lev == 0) {
-    bool resize
-      = (iteratedModel.surrogate_response_mode() == AGGREGATED_MODELS);
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    if (resize)
-      uSpaceModel.resize_from_subordinate_model();//recur until hit aggregation
-  }
+  if (lev == 0)
+    bypass_surrogate_mode();
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
-    if (lev == 1) {
-      iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREP
-      uSpaceModel.resize_from_subordinate_model();//recur until hit aggregation
-    }
+    aggregated_models_mode();
     if (multilevel) iteratedModel.surrogate_model_indices(form, lev-1);
     else            iteratedModel.surrogate_model_indices(lev-1);
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
