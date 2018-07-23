@@ -256,6 +256,11 @@ protected:
   /// link SurrogateData instances within the subModel
   void link_multilevel_approximation_data();
 
+  /// retrieve subModel's correction type
+  short correction_type();
+  /// update subModel's correction type
+  void correction_type(short corr_type);
+
   /// retrieve error estimates corresponding to the subModel
   const RealVector& error_estimates();
 
@@ -669,6 +674,14 @@ inline void RecastModel::surrogate_response_mode(short mode)
 
 inline void RecastModel::link_multilevel_approximation_data()
 { subModel.link_multilevel_approximation_data(); }
+
+
+inline short RecastModel::correction_type()
+{ return subModel.correction_type(); }
+
+
+inline void RecastModel::correction_type(short corr_type)
+{ subModel.correction_type(corr_type); }
 
 
 inline void RecastModel::build_approximation()

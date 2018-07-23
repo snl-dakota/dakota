@@ -344,12 +344,19 @@ NonDMultilevelPolynomialChaos::~NonDMultilevelPolynomialChaos()
 
 void NonDMultilevelPolynomialChaos::assign_discrepancy_mode()
 {
+  // assign alternate defaults for correction and discrepancy emulation types
+  switch (iteratedModel.correction_type()) {
+  //case ADDITIVE_CORRECTION:
+  //case MULTIPLICATIVE_CORRECTION:
+  case NO_CORRECTION: // assign method-specific default
+    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
+  }
+
   switch (multilevDiscrepEmulation) {
   //case DISTINCT_EMULATION:
   //case RECURSIVE_EMULATION:
   case DEFAULT_EMULATION: // assign method-specific default
-    multilevDiscrepEmulation = DISTINCT_EMULATION;
-    break;
+    multilevDiscrepEmulation = DISTINCT_EMULATION;      break;
   }
 }
 

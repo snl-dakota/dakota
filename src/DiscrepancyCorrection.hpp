@@ -87,12 +87,19 @@ public:
   void compute_variance(const VariablesArray& vars_array, RealMatrix& 
       			approx_variance, bool quiet_flag = false); 
 
+  /// update correctionType
+  void correction_type(short corr_type);
   /// return correctionType
   short correction_type() const;
+  /// update correctionOrder
+  void correction_order(short order);
   /// return correctionOrder
   short correction_order() const;
+  /// update dataOrder
+  void data_order(short order);
   /// return dataOrder
   short data_order() const;
+
   /// return correctionComputed
   bool computed() const;
   /// return initializedFlag
@@ -248,12 +255,24 @@ inline DiscrepancyCorrection::~DiscrepancyCorrection()
 { }
 
 
+inline void DiscrepancyCorrection::correction_type(short corr_type)
+{ correctionType = corr_type; }
+
+
 inline short DiscrepancyCorrection::correction_type() const
 { return correctionType; }
 
 
+inline void DiscrepancyCorrection::correction_order(short order)
+{ correctionOrder = order; }
+
+
 inline short DiscrepancyCorrection::correction_order() const
 { return correctionOrder; }
+
+
+inline void DiscrepancyCorrection::data_order(short order)
+{ dataOrder = order; }
 
 
 inline short DiscrepancyCorrection::data_order() const

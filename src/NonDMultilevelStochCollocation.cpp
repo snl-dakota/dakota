@@ -178,6 +178,14 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 
 void NonDMultilevelStochCollocation::assign_discrepancy_mode()
 {
+  // assign alternate defaults for correction and discrepancy emulation types
+  switch (iteratedModel.correction_type()) {
+  //case ADDITIVE_CORRECTION:
+  //case MULTIPLICATIVE_CORRECTION:
+  case NO_CORRECTION: // assign method-specific default
+    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
+  }
+
   switch (multilevDiscrepEmulation) {
   /*
   case DISTINCT_EMULATION:

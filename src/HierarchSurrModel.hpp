@@ -71,6 +71,7 @@ protected:
 
   DiscrepancyCorrection& discrepancy_correction();
   short correction_type();
+  void  correction_type(short corr_type);
 
   /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
@@ -292,7 +293,7 @@ private:
 
   /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
-  std::map<SizetSizetPair,Response> truthResponseRef;
+  std::map<SizetSizetPair, Response> truthResponseRef;
   /// map of truth (high-fidelity) responses retrieved in
   /// derived_synchronize_nowait() that could not be returned since
   /// corresponding low-fidelity response portions were still pending
@@ -337,6 +338,13 @@ inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
 
 inline short HierarchSurrModel::correction_type()
 { return discrepancy_correction().correction_type(); }
+
+
+inline void HierarchSurrModel::correction_type(short corr_type)
+{
+  for (DiscrepCorrMap::iterator it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
+    it->second.correction_type(corr_type);
+}
 
 
 inline SizetSizet2DPair HierarchSurrModel::get_indices()

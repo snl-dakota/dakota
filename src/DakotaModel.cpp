@@ -3558,6 +3558,14 @@ short Model::correction_type()
 }
 
 
+void Model::correction_type(short corr_type)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->correction_type(corr_type);
+  //else no-op
+}
+
+
 void Model::single_apply(const Variables& vars, Response& resp,
 			 const SizetSizet2DPair& indices)
 {

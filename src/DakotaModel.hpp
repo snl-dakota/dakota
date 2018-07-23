@@ -343,6 +343,9 @@ public:
 
   /// return the DiscrepancyCorrection object used by SurrogateModels
   virtual DiscrepancyCorrection& discrepancy_correction();
+  /// set the correction type from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual void correction_type(short corr_type);
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
