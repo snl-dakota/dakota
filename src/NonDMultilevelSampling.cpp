@@ -2088,9 +2088,9 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     // with finalCVRefinement=true.
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
     if (iter < max_iter || finalCVRefinement) {
-      // mode for hierarchical surrogate model can be uncorrected surrogate
-      // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
-      // --> set at calling level
+      // mode for hierarchical surrogate could be UNCORRECTED_SURROGATE for
+      // CV or UNCORRECTED_SURROGATE/AGGREGATED_MODELS for ML-CV MC (set at
+      // calling level)
       //uncorrected_surrogate_mode();
 
       // compute allResponses from allVariables using hierarchical model

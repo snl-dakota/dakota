@@ -489,16 +489,13 @@ inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 
 
 inline void NonDMultilevelSampling::
-configure_indices(size_t lev, size_t model_form, const RealVector& cost,
-		  Real& lev_cost)
+configure_indices(size_t lev, size_t model_form)
 {
-  lev_cost = cost[lev];
   if (lev) {
-    //if (lev == 1) // update responseMode for levels 1:num_lev-1
+    //if (lev == 1) // update responseMode for levels to follow (1:num_lev-1)
     aggregated_models_mode();
     iteratedModel.surrogate_model_indices(model_form, lev-1);
-    iteratedModel.truth_model_indices(model_form,     lev);
-    lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
+    iteratedModel.truth_model_indices(model_form, lev);
   }
   else {
     uncorrected_surrogate_mode();
@@ -508,17 +505,14 @@ configure_indices(size_t lev, size_t model_form, const RealVector& cost,
 
 
 inline void NonDMultilevelSampling::
-configure_indices(size_t lev, size_t model_form)
+configure_indices(size_t lev, size_t model_form, const RealVector& cost,
+		  Real& lev_cost)
 {
-  if (lev) {
-    aggregated_models_mode();
-    iteratedModel.surrogate_model_indices(model_form, lev-1);
-    iteratedModel.truth_model_indices(model_form,     lev);
-  }
-  else {
-    uncorrected_surrogate_mode();
-    iteratedModel.surrogate_model_indices(model_form, lev);
-  }
+  // discrepancies incur 2 level costs
+  lev_cost = (lev) ?
+    cost[lev] + cost[lev-1] : // aggregated {LF,HF} mode
+    cost[lev];                //     uncorrected LF mode
+  configure_indices(lev, model_form);
 }
 
 

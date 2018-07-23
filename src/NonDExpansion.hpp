@@ -425,7 +425,7 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 inline void NonDExpansion::aggregated_models_mode()
 {
   if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); //MODEL_DISCREP
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
     uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
   }
 }
@@ -434,7 +434,7 @@ inline void NonDExpansion::aggregated_models_mode()
 inline void NonDExpansion::bypass_surrogate_mode()
 {
   if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // LF
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // single level
     uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
   }
 }
