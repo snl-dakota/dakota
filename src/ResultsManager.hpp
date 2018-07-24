@@ -301,16 +301,16 @@ public:
     Cout << "Response is: " << response_name << std::endl;
     if(scale_is_double(scales)) {
       for(auto s : scales) {
-        Cout << "Dimension " << s.first << " has label " << boost::any_cast<scale_t<double> >(s.second).label << ".\n";
+        Cout << "Dimension " << s.first << " has label " << boost::any_cast<RealScale>(s.second).label << ".\n";
         Cout << "Scale Values:" << std::endl;
-        for(auto sv : boost::any_cast<scale_t<double> >(s.second).items)
+        for(auto sv : boost::any_cast< RealScale >(s.second).items)
           Cout << "  " << sv << std::endl;
       }
     } else {
       for(auto s : scales) {
-        Cout << "Dimension " << s.first << " has label " << boost::any_cast<scale_t<std::string> >(s.second).label << ".\n";
+        Cout << "Dimension " << s.first << " has label " << boost::any_cast<StringScale >(s.second).label << ".\n";
         Cout << "Scale Values:" << std::endl;
-        for(auto sv : boost::any_cast<scale_t<std::string> >(s.second).items)
+        for(auto sv : boost::any_cast<StringScale>(s.second).items)
           Cout << "  " << sv << std::endl;
       }
     }

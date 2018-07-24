@@ -15,6 +15,7 @@
 
 #include <map>
 #include <vector>
+#include <algorithm>
 #include <boost/tuple/tuple.hpp>
 #include "dakota_data_types.hpp"
 #include <boost/any.hpp>
@@ -220,9 +221,26 @@ struct scale_t {
   scale_t(const std::string& in_label, const char * const cstrings[], 
           const int &len, ScaleScope in_scope = ScaleScope::UNSHARED) {
     label = in_label;
-    for(int i = 0; i < len; ++i)
-      items.push_back(cstrings[i]);
+    items.resize(len);
+    std::copy(cstrings, cstrings + len, items.begin());
     scope = in_scope;
+  }
+
+  scale_t(const std::string & in_label, 
+          std::initializer_list<const char *> in_items,
+          ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    items.resize(in_items.size());
+    std::copy(in_items.begin(), in_items.end(), items.begin()); 
+  }
+
+  scale_t(const std::string& in_label, const std::vector<String> &in_items, 
+          ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    scope = in_scope;
+    items.resize(in_items.size());
+    std::transform(in_items.begin(), in_items.end(), items.begin(), 
+      [](const String &s) { return s.c_str();});
   }
 
   std::string label;
@@ -231,6 +249,8 @@ struct scale_t {
 };
 
 typedef std::multimap<int, boost::any> HDF5dss;
+typedef scale_t<Real> RealScale;
+typedef scale_t<const char *> StringScale;
 
 inline
 bool scale_is_double(const HDF5dss::iterator &i) {
@@ -246,14 +266,14 @@ bool scale_is_double(const HDF5dss &s) {
 
 inline
 bool scale_is_string(const HDF5dss::iterator &i) {
-  return boost::any_cast<scale_t<std::string> >(&i->second);
+  return boost::any_cast<scale_t<const char *> >(&i->second);
 }
 
 inline
 bool scale_is_string(const HDF5dss &s) {
   if(s.size() == 0)
     return false;
-  return boost::any_cast<scale_t<std::string> >(&s.begin()->second);
+  return boost::any_cast<scale_t<const char *> >(&s.begin()->second);
 }
 
 
