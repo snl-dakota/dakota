@@ -38,11 +38,17 @@ namespace Dakota
 //----------------------------------------------------------------
 
   // Some free functions to try to consolidate data type specs
-  inline H5::PredType h5_dtype( const Real & )
+  inline H5::DataType h5_dtype( const Real & )
     { return H5::PredType::IEEE_F64LE; }
 
-  inline H5::PredType h5_dtype( const int & )
+  inline H5::DataType h5_dtype( const int & )
     { return H5::PredType::IEEE_F64LE; }
+
+  inline H5::DataType h5_dtype( const char * )
+    { H5::StrType str_type(0, H5T_VARIABLE);
+      str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+      return str_type; }
+
 
 //----------------------------------------------------------------
 
@@ -64,6 +70,11 @@ namespace Dakota
       } catch(const H5::FileIException&) {
         filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
       }
+    
+      // Initialize global Link Creation Property List to enocde all link (group, dataset) names
+      // in UTF-8
+      link_create_pl.setCharEncoding(H5T_CSET_UTF8);
+      
     }
 
       //----------------------------------------------------------------
@@ -74,18 +85,16 @@ namespace Dakota
       //----------------------------------------------------------------
 
       template <typename T>
-        void store_scalar_data(const std::string& dset_name, const T& val) const
+        std::unique_ptr<H5::DataSet> store_scalar_data(const std::string& dset_name, const T& val) const
         {
           H5::DataSpace dataspace = H5::DataSpace();
 
           // Assume dset_name is syntactically correct - will need some utils - RWH
           create_groups(dset_name);
-          H5::DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(val), dataspace) );
+          std::unique_ptr<H5::DataSet> dataset(create_dataset(*filePtr, dset_name, h5_dtype(val), dataspace) );
 
-          dataset.write(&val, h5_dtype(val));
-          dataset.close(); // does this flush the buffer; is it needed ? 
-
-          return;
+          dataset->write(&val, h5_dtype(val));
+          return dataset;
         }
 
       template <typename T>
@@ -109,7 +118,7 @@ namespace Dakota
       //----------------------------------------------------------------
 
       template <typename T>
-        void store_vector_data(const std::string& dset_name, const std::vector<T>& array) const
+        std::unique_ptr<H5::DataSet> store_vector_data(const std::string& dset_name, const std::vector<T>& array) const
         {
           hsize_t dims[1];
           dims[0] = array.size();
@@ -117,11 +126,11 @@ namespace Dakota
 
           // Assume dset_name is syntactically correct - will need some utils - RWH
           create_groups(dset_name);
-          H5::DataSet dataset(filePtr->createDataSet( dset_name, h5_dtype(array[0]), dataspace) );
+          std::unique_ptr<H5::DataSet> dataset(create_dataset(*filePtr, dset_name, h5_dtype(array[0]), dataspace) );
 
-          dataset.write(array.data(), h5_dtype(array[0]));
+          dataset->write(array.data(), h5_dtype(array[0]));
 
-          return;
+          return dataset;
         }
 
       template <typename T>
@@ -158,7 +167,7 @@ namespace Dakota
       //----------------------------------------------------------------
 
       template <typename T>
-        void store_vector_data(const std::string & dset_name,
+        std::unique_ptr<H5::DataSet> store_vector_data(const std::string & dset_name,
                           const Teuchos::SerialDenseVector<int,T> & vec)
         {
           // This is kludgy but gets things moving ...
@@ -194,6 +203,8 @@ namespace Dakota
 
       std::shared_ptr<H5::H5File> filePtr;
 
+      H5::LinkCreatPropList link_create_pl;
+
       //----------------------------------------------------------------
 
       /** Assume we have an absolute path /root/dir/dataset and create
@@ -212,11 +223,11 @@ namespace Dakota
           full_path += '/' + groups[i];
           // if doesn't exist, add
 
-          htri_t grpexists = H5Lexists(filePtr->getId(), full_path.c_str(), H5P_DEFAULT);
-          if( grpexists == 0 )
+          bool grpexists = filePtr->exists(full_path.c_str());
+          if( !grpexists )
           {
-            hid_t create_status = H5Gcreate(filePtr->getId(), full_path.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
+            filePtr->createGroup(full_path.c_str(), link_create_pl);
+            /* Add Exception handling
             if (create_status < 0)
             {
               Cerr << "\nError: Could not create group hierarchy \"" << full_path << "\""
@@ -224,19 +235,29 @@ namespace Dakota
                    << std::endl;
               abort_handler(-1);
             }
-
-            // I think needed to avoid resource leaks:
-            H5Gclose(create_status);
-          }
-          else if (grpexists < 0)
-          {
-            Cerr << "\nError: Could not query group hierarchy \"" << full_path << "\""
-                 << " for HDF5 file \"" << fileName << "\"."
-                 << std::endl;
-            abort_handler(-1);
+            */
           }
         }
       }
+
+      inline std::unique_ptr<H5::DataSet> create_dataset(const H5::H5Location &loc, const std::string &name,
+	    const H5::DataType &type, const H5::DataSpace &space, H5::DSetCreatPropList plist = H5::DSetCreatPropList()) const {
+
+        hid_t loc_id = loc.getId();
+        hid_t dtype_id = type.getId();
+        hid_t space_id = space.getId();
+        hid_t lcpl_id = link_create_pl.getId();
+        hid_t dcpl_id = plist.getId();
+
+
+        hid_t dataset_id = H5Dcreate2(loc_id, name.c_str(), dtype_id, space_id, lcpl_id, dcpl_id, H5P_DEFAULT);   
+        std::unique_ptr<H5::DataSet> dataset(new H5::DataSet(dataset_id));
+        // the dataset_id is "taken over" by this DataSet object. Closing it would cause an error when the
+        // dataset is used.
+        return dataset;
+      }
+
+         
 
   };
 
