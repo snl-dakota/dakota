@@ -1435,13 +1435,16 @@ archive_moments(const RealMatrix& moment_stats, short moments_type,
   for(int i = 0; i < labels.size(); ++i) {
     HDF5dss scales;
     if(moments_type == CENTRAL_MOMENTS)
-      scales.emplace(0, scale_t<String>("moments", {"mean", "variance", "3rd_central", "4th_central"}));
+      scales.emplace(0, 
+                     scale_t<String>("moments", {"mean", "variance", "3rd_central", "4th_central"},
+                     ScaleScope::SHARED));
     else
-      scales.emplace(0, scale_t<String>("moments", {"mean", "std_deviation", "skewness", "kurtosis"}));
+      scales.emplace(0,
+                     scale_t<String>("moments", {"mean", "std_deviation", "skewness", "kurtosis"},
+                     ScaleScope::SHARED));
     // extract column or row of moment_stats
     resultsDB.insert(run_identifier(), String("moments"), labels[i], 
         Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&moment_stats), i), scales);
-    // Teuchos::getCol<int,double>(Teuchos::View, moment_stats, i);
   }
 }
 

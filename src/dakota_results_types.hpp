@@ -209,19 +209,25 @@ inline ResultsKeyType make_key(const StrStrSizet& iterator_id,
 // Overloaded scale_t constructors handle copying the contents of 
 // various source objects into vector<T> items.
 
+enum class ScaleScope {SHARED, UNSHARED};
+
 template<typename T>
 struct scale_t {
-  scale_t(const std::string &label, const std::vector<T> &items) :
-    label(label), items(items) {};
+  scale_t(const std::string &label, const std::vector<T> &items, 
+          ScaleScope scope = ScaleScope::UNSHARED) : 
+          label(label), items(items), scope(scope) {};
 
-  scale_t(const std::string& in_label, const char * const cstrings[], const int &len) {
+  scale_t(const std::string& in_label, const char * const cstrings[], 
+          const int &len, ScaleScope in_scope = ScaleScope::UNSHARED) {
     label = in_label;
     for(int i = 0; i < len; ++i)
       items.push_back(cstrings[i]);
+    scope = in_scope;
   }
 
   std::string label;
   std::vector<T> items;
+  ScaleScope scope;
 };
 
 typedef std::multimap<int, boost::any> HDF5dss;
