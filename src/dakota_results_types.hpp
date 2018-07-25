@@ -16,6 +16,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <iostream> // TODO: Remove!
 #include <boost/tuple/tuple.hpp>
 #include "dakota_data_types.hpp"
 #include <boost/any.hpp>
@@ -232,6 +233,7 @@ struct scale_t {
     label = in_label;
     items.resize(in_items.size());
     std::copy(in_items.begin(), in_items.end(), items.begin()); 
+    scope = in_scope;
   }
 
   scale_t(const std::string& in_label, const std::vector<String> &in_items, 
@@ -254,26 +256,54 @@ typedef scale_t<const char *> StringScale;
 
 inline
 bool scale_is_double(const HDF5dss::iterator &i) {
-  return boost::any_cast<scale_t<double> >(&i->second);
+  try {
+    boost::any_cast<RealScale >(i->second);
+    return true;
+  }
+  catch(const boost::bad_any_cast &) {
+      return false;
+  }
 }
 
 inline
 bool scale_is_double(const HDF5dss &s) {
   if(s.size() == 0)
     return false;
-  return boost::any_cast<scale_t<double> >(&s.begin()->second);
+  try {
+    boost::any_cast<RealScale>(s.begin()->second);
+    return true;
+  }
+  catch(const boost::bad_any_cast &) {
+    return false;
+ }
 }
 
 inline
 bool scale_is_string(const HDF5dss::iterator &i) {
-  return boost::any_cast<scale_t<const char *> >(&i->second);
+  try {
+    boost::any_cast<StringScale >(i->second);
+    return true;
+  }
+  catch(const boost::bad_any_cast &) {
+    return false;
+  }
 }
 
 inline
 bool scale_is_string(const HDF5dss &s) {
-  if(s.size() == 0)
+  if(s.size() == 0) {
+    std::cerr << "DEBUG in scale_is_string, Size is 0" << std::endl;
     return false;
-  return boost::any_cast<scale_t<const char *> >(&s.begin()->second);
+  }
+  try {
+    std::cerr << "DEBUG in scale_is_string try block" << std::endl;
+    boost::any_cast<StringScale>(s.begin()->second);
+    return true;
+  }
+  catch(const boost::bad_any_cast &) {
+    std::cerr << "DEBUG in scale_is_string, execption caught!" << std::endl;
+    return false;
+  }
 }
 
 

@@ -60,7 +60,7 @@ namespace Dakota
         fileName(file_name)
     {
       // create or open a file
-      H5::Exception::dontPrint();
+      //H5::Exception::dontPrint();
 
       if( overwrite )
         filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
@@ -73,8 +73,7 @@ namespace Dakota
     
       // Initialize global Link Creation Property List to enocde all link (group, dataset) names
       // in UTF-8
-      link_create_pl.setCharEncoding(H5T_CSET_UTF8);
-      
+      linkCreatePl.setCharEncoding(H5T_CSET_UTF8);      
     }
 
       //----------------------------------------------------------------
@@ -85,16 +84,16 @@ namespace Dakota
       //----------------------------------------------------------------
 
       template <typename T>
-        std::unique_ptr<H5::DataSet> store_scalar_data(const std::string& dset_name, const T& val) const
+        void store_scalar_data(const std::string& dset_name, const T& val) const
         {
           H5::DataSpace dataspace = H5::DataSpace();
 
           // Assume dset_name is syntactically correct - will need some utils - RWH
           create_groups(dset_name);
-          std::unique_ptr<H5::DataSet> dataset(create_dataset(*filePtr, dset_name, h5_dtype(val), dataspace) );
+          H5::DataSet dataset(create_dataset(*filePtr, dset_name, h5_dtype(val), dataspace) );
 
-          dataset->write(&val, h5_dtype(val));
-          return dataset;
+          dataset.write(&val, h5_dtype(val));
+          return;
         }
 
       template <typename T>
@@ -118,19 +117,23 @@ namespace Dakota
       //----------------------------------------------------------------
 
       template <typename T>
-        std::unique_ptr<H5::DataSet> store_vector_data(const std::string& dset_name, const std::vector<T>& array) const
+        void store_vector_data(const std::string& dset_name, const std::vector<T>& array) const
         {
           hsize_t dims[1];
           dims[0] = array.size();
           H5::DataSpace dataspace = H5::DataSpace(1, dims);
 
           // Assume dset_name is syntactically correct - will need some utils - RWH
+          Cerr << "DEBUG Before creating groups for " << dset_name << std::endl;
           create_groups(dset_name);
-          std::unique_ptr<H5::DataSet> dataset(create_dataset(*filePtr, dset_name, h5_dtype(array[0]), dataspace) );
-
-          dataset->write(array.data(), h5_dtype(array[0]));
-
-          return dataset;
+          Cerr << "DEBUG Groups created for " << dset_name << std::endl;
+          Cerr << "DEBUG Before creating dataset for " << dset_name << std::endl;
+          H5::DataSet dataset(create_dataset(*filePtr, dset_name, h5_dtype(array[0]), dataspace) );
+          Cerr << "DEBUG dataset created for " << dset_name << std::endl;
+          Cerr << "DEBUG Before writing dataset for " << dset_name << std::endl;
+          dataset.write(array.data(), h5_dtype(array[0]));
+          Cerr << "DEBUG dataset written for " << dset_name << std::endl;
+          return;
         }
 
       template <typename T>
@@ -167,7 +170,7 @@ namespace Dakota
       //----------------------------------------------------------------
 
       template <typename T>
-        std::unique_ptr<H5::DataSet> store_vector_data(const std::string & dset_name,
+        void store_vector_data(const std::string & dset_name,
                           const Teuchos::SerialDenseVector<int,T> & vec)
         {
           // This is kludgy but gets things moving ...
@@ -177,7 +180,8 @@ namespace Dakota
           for( int i=0; i<vec.length(); ++i )
             copy_vec.push_back(vec[i]);
 
-          return store_vector_data(dset_name, copy_vec);
+          store_vector_data(dset_name, copy_vec);
+          return;
         }
 
 
@@ -196,6 +200,43 @@ namespace Dakota
           return;
         }
 
+    void attach_scale(const String& dset_name, const String& scale_name, const String& label, const int& dim) const {
+      Cerr << "DEBUG Opening scale dataset " << scale_name << std::endl;
+      H5::DataSet scale_ds(filePtr->openDataSet(scale_name));
+      Cerr << "DEBUG Opening results dataset " << dset_name << std::endl;
+      H5::DataSet ds(filePtr->openDataSet(dset_name));
+      Cerr << "DEBUG Checking scale status of " << scale_name << std::endl;
+      if(!is_scale(scale_ds)) {
+        Cerr << "DEBUG Setting scale status for " << scale_name << " using label " << label << std::endl;
+        H5DSset_scale(scale_ds.getId(), label.c_str() ); 
+        Cerr << "DEBUG Set scale passed for " << scale_name << std::endl;
+	    }
+      Cerr << "DEBUG Attaching scale: " << scale_name << " to " << dset_name << std::endl;
+      H5DSattach_scale(ds.getId(), scale_ds.getId(), dim );
+      Cerr << "DEBUG Scale attached." << std::endl;
+    }
+
+    bool exists(const String location_name) const {
+      Cerr << "DEBUG exists() called with " << location_name << std::endl;
+      // the first group will be empty due to leading delimiter
+      // the last group will be the dataset name
+      std::vector<std::string> objects;
+      boost::split(objects, location_name, boost::is_any_of("/"));
+
+      // index instead of pruning first or clever iterators
+      std::string full_path;
+      for( size_t i=1; i<objects.size(); ++i )
+      {
+        full_path += '/' + objects[i];
+        // if doesn't exist, add
+        if(!filePtr->exists(full_path.c_str())) {
+           Cerr << "DEBUG Does not exist: " << full_path << std::endl;
+           return false;
+        }
+      }
+      Cerr << "DEBUG existence verified for " << location_name << std::endl;
+      return true;
+    }
 
     protected:
 
@@ -203,7 +244,7 @@ namespace Dakota
 
       std::shared_ptr<H5::H5File> filePtr;
 
-      H5::LinkCreatPropList link_create_pl;
+      H5::LinkCreatPropList linkCreatePl;
 
       //----------------------------------------------------------------
 
@@ -226,7 +267,7 @@ namespace Dakota
           bool grpexists = filePtr->exists(full_path.c_str());
           if( !grpexists )
           {
-            filePtr->createGroup(full_path.c_str(), link_create_pl);
+            filePtr->createGroup(full_path.c_str(), linkCreatePl);
             /* Add Exception handling
             if (create_status < 0)
             {
@@ -240,22 +281,32 @@ namespace Dakota
         }
       }
 
-      inline std::unique_ptr<H5::DataSet> create_dataset(const H5::H5Location &loc, const std::string &name,
-	    const H5::DataType &type, const H5::DataSpace &space, H5::DSetCreatPropList plist = H5::DSetCreatPropList()) const {
+      inline H5::DataSet create_dataset(const H5::H5Location &loc, const std::string &name,
+	                                      const H5::DataType &type, const H5::DataSpace &space,
+                                        H5::DSetCreatPropList plist = H5::DSetCreatPropList()) const {
 
         hid_t loc_id = loc.getId();
         hid_t dtype_id = type.getId();
         hid_t space_id = space.getId();
-        hid_t lcpl_id = link_create_pl.getId();
+        hid_t lcpl_id = linkCreatePl.getId();
         hid_t dcpl_id = plist.getId();
 
-
-        hid_t dataset_id = H5Dcreate2(loc_id, name.c_str(), dtype_id, space_id, lcpl_id, dcpl_id, H5P_DEFAULT);   
-        std::unique_ptr<H5::DataSet> dataset(new H5::DataSet(dataset_id));
-        // the dataset_id is "taken over" by this DataSet object. Closing it would cause an error when the
-        // dataset is used.
+        H5::DataSet dataset(H5Dcreate2(loc_id, name.c_str(), dtype_id, space_id, lcpl_id, dcpl_id, H5P_DEFAULT)); 
         return dataset;
       }
+
+    bool is_scale(const H5::DataSet dset) const {
+      htri_t status = H5DSis_scale(dset.getId());
+      if(status > 0) {
+        return true;
+      } else if(status == 0) {
+        return false;
+      } else {
+        Cerr << "Attempt to determine whether dataset is a scale filed.\n";
+        return false;
+      }
+    }
+
 
          
 

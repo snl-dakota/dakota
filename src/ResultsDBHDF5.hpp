@@ -43,9 +43,33 @@ public:
 	      const StoredType& data,
               const HDF5dss &scales = HDF5dss())
   {
-    hdf5Stream->store_vector_data(
-                        dataset_name(iterator_id, result_name),
-                        data);
+    // Store the results
+    String dset_name = dataset_name(iterator_id, result_name, response_name);
+    hdf5Stream->store_vector_data(dset_name, data);
+
+    // Store and attach the dimension scales. Hopefully there's a nice way 
+    // to refactor this.
+    if(scale_is_double(scales)) {
+      for(auto p : scales) {
+        const int &index = p.first;
+        const RealScale &scale = boost::any_cast<RealScale>(p.second);
+        String name = scale_name(iterator_id, result_name, response_name, scale);
+        if(!hdf5Stream->exists(name))
+          hdf5Stream->store_vector_data(name, scale.items);
+        hdf5Stream->attach_scale(dset_name, name, scale.label, index);
+      }
+    } else if(scale_is_string(scales)) {
+      for(auto p : scales) {
+        const int &index = p.first;
+        const StringScale &scale = boost::any_cast<StringScale>(p.second);
+        String name = scale_name(iterator_id, result_name, response_name, scale);
+        if(!hdf5Stream->exists(name))
+          hdf5Stream->store_vector_data(name, scale.items);
+        hdf5Stream->attach_scale(dset_name, name, scale.label, index);
+      }  
+    } else {
+      Cerr << "Scale is a disallowed type!" << std::endl;
+    }  
   }
 
  
@@ -79,7 +103,7 @@ public:
 private:
 
   /// Create a dataset name from the unique identifiers passed
-  String dataset_name(const StrStrSizet& iterator_id, const String& data_name)
+  String dataset_name(const StrStrSizet& iterator_id, const String& result_name, const String& response_name)
   {
     const String& method_name = iterator_id.get<0>();
     String method_id = iterator_id.get<1>();
@@ -88,12 +112,46 @@ private:
     if (method_id.empty())
       method_id = "anonymous";
 
-    String data_name_wospace(data_name);
+    String result_name_wospace(result_name);
     //    boost::replace_all(data_name_wospace, " ", ":");
     //boost::erase_all(data_name_wospace, " ");
+    
+    String rval = "/methods/" + method_id + "/execution_id:" +
+      boost::lexical_cast<String>(exec_num) + '/' + result_name_wospace;
+    // some types of results, like correlation matrices, may have an empty response name
+    if(!response_name.empty()) {
+      rval += '/' + response_name;
+    }
+    return rval;
+  }
 
-    return '/' + method_name + '/' + method_id + '/' + 
-      boost::lexical_cast<String>(exec_num) + '/' + data_name_wospace;
+  template<typename ScaleType>
+  String scale_name(const StrStrSizet& iterator_id, const String& result_name, 
+                    const String& response_name, const ScaleType& scale) {
+    const String& method_name = iterator_id.get<0>();
+    String method_id = iterator_id.get<1>();
+    const size_t& exec_num = iterator_id.get<2>();
+
+    if (method_id.empty())
+      method_id = "anonymous";
+
+    String result_name_wospace(result_name);
+    //    boost::replace_all(data_name_wospace, " ", ":");
+    //boost::erase_all(data_name_wospace, " ");
+    
+    // When scales are SHARED (by all the resposnes), they are stored under
+    // _scales/label. When they are UNSHARED, they go under _scales/label/response
+
+    String rval = "/methods/" + method_id + "/execution_id:" +
+      boost::lexical_cast<String>(exec_num) + '/';
+    if(!response_name.empty()) {
+      rval += result_name_wospace + "/_scales/" + scale.label;
+      if(scale.scope == ScaleScope::UNSHARED) 
+        rval += '/' + response_name;
+    } else { // No response name provided (e.g. correlation matrix)
+      rval += "/_scales/" + scale.label;
+    } 
+    return rval;
   }
 
   /// BMA TODO: would prefer not to have a pointer, but no way to

@@ -317,7 +317,7 @@ public:
 
 #ifdef DAKOTA_HAVE_HDF5
     if (hdf5DBActive)
-      hdf5DB->insert(iterator_id, result_name, response_name, sent_data);
+      hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales);
 #endif
 
   }
