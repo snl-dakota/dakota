@@ -516,17 +516,40 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 
 inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
 {
-  if (!actualModel.is_null()) {
+  if (!actualModel.is_null() && depth) {
     // data flows from the bottom-up, so recurse first
     if (depth == std::numeric_limits<size_t>::max())
       actualModel.resize_from_subordinate_model(depth); // retain special value
-    else if (depth)
+    else
       actualModel.resize_from_subordinate_model(depth - 1);
 
     // DataFitSurrModel consumes (newly) aggregated data sets through multiple
     // SurrogateData instances --> don't resize locally.
     //resize_response();
-    // It must therefore manage inflation of incoming ActiveSet instances...
+    // It must therefore manage inflation of incoming ActiveSet instances
+
+    // daceIterator::activeSet muse be resized for consistency with actualModel
+    if (!daceIterator.is_null()) {
+      const ActiveSet&  dace_set = daceIterator.active_set();
+      const ShortArray& dace_asv = dace_set.request_vector();
+      size_t num_am_resp = actualModel.response_size(),
+	   num_dace_resp = dace_asv.size();
+      if (num_am_resp != num_dace_resp) {
+	ActiveSet new_set(dace_set); // deep copy
+	new_set.reshape(num_am_resp);
+	/*
+	ShortArray new_asv(num_am_resp);
+	if (num_am_resp < num_dace_resp) // truncate ASV
+	  for (size_t i=0; i<num_am_resp; ++i)
+	    new_asv[i] = dace_asv[i];
+	else // recur ASV pattern for aggregated response vector
+	  for (size_t i=0; i<num_am_resp; ++i)
+	    new_asv[i] = dace_asv[i % num_dace_resp];
+	ActiveSet new_set(new_asv, dace_set.derivative_vector());
+	*/
+	daceIterator.active_set(new_set);
+      }
+    }
   }
 }
 

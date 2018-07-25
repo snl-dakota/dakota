@@ -163,19 +163,26 @@ inline ActiveSet& ActiveSet::operator=(const ActiveSet& set)
 //{ return !(set1 == set2); }
 
 
-inline void ActiveSet::reshape(size_t num_fns, size_t num_deriv_vars)
+inline void ActiveSet::reshape(size_t num_fns)
 {
-  if (requestVector.size() != num_fns)
+  size_t curr_fns = requestVector.size();
+  if (curr_fns != num_fns) {
     requestVector.resize(num_fns);
-  if (derivVarsVector.size() != num_deriv_vars)
-    derivVarsVector.resize(num_deriv_vars);
+    if (curr_fns && num_fns > curr_fns) // inflate: repeat pattern
+      for (size_t i=curr_fns; i<num_fns; ++i)
+	requestVector[i] = requestVector[i % curr_fns];
+  }
 }
 
 
-inline void ActiveSet::reshape(size_t num_fns)
+inline void ActiveSet::reshape(size_t num_fns, size_t num_deriv_v)
 {
-  if (requestVector.size() != num_fns)
-    requestVector.resize(num_fns);
+  reshape(num_fns);
+  if (derivVarsVector.size() != num_deriv_v) {
+    derivVarsVector.resize(num_deriv_v);
+    //if (curr_deriv_v && num_deriv_v > curr_deriv_v) // inflate
+    //  continue sequence?
+  }
 }
 
 
