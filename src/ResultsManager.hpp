@@ -303,15 +303,19 @@ public:
       for(auto s : scales) {
         Cout << "Dimension " << s.first << " has label " << boost::any_cast<RealScale>(s.second).label << ".\n";
         Cout << "Scale Values:" << std::endl;
-        for(auto sv : boost::any_cast< RealScale >(s.second).items)
-          Cout << "  " << sv << std::endl;
+        const RealScale &scale = boost::any_cast< RealScale >(s.second);
+        int num_scale_values = scale.items.length(); // totally gross that it's length() here, but size for StringScale
+        for(int i = 0; i < num_scale_values; ++i)
+          Cout << "  " << scale.items[i] << std::endl;
       }
     } else {
       for(auto s : scales) {
         Cout << "Dimension " << s.first << " has label " << boost::any_cast<StringScale >(s.second).label << ".\n";
         Cout << "Scale Values:" << std::endl;
-        for(auto sv : boost::any_cast<StringScale>(s.second).items)
-          Cout << "  " << sv << std::endl;
+        const StringScale &scale = boost::any_cast< StringScale >(s.second);
+        int num_scale_values = scale.items.size();
+        for(int i = 0; i < num_scale_values; ++i)
+          Cout << "  " << scale.items[i] << std::endl;
       }
     }
 

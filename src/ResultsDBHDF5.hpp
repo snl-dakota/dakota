@@ -116,7 +116,7 @@ private:
     //    boost::replace_all(data_name_wospace, " ", ":");
     //boost::erase_all(data_name_wospace, " ");
     
-    String rval = "/methods/" + method_id + "/execution_id:" +
+    String rval = "/methods/" + method_id + "/execution:" +
       boost::lexical_cast<String>(exec_num) + '/' + result_name_wospace;
     // some types of results, like correlation matrices, may have an empty response name
     if(!response_name.empty()) {
@@ -142,7 +142,7 @@ private:
     // When scales are SHARED (by all the resposnes), they are stored under
     // _scales/label. When they are UNSHARED, they go under _scales/label/response
 
-    String rval = "/methods/" + method_id + "/execution_id:" +
+    String rval = "/methods/" + method_id + "/execution:" +
       boost::lexical_cast<String>(exec_num) + '/';
     if(!response_name.empty()) {
       rval += result_name_wospace + "/_scales/" + scale.label;

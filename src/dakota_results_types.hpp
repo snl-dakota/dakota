@@ -213,30 +213,56 @@ inline ResultsKeyType make_key(const StrStrSizet& iterator_id,
 
 enum class ScaleScope {SHARED, UNSHARED};
 
-template<typename T>
-struct scale_t {
-  scale_t(const std::string &label, const std::vector<T> &items, 
+struct RealScale {
+  RealScale(const std::string &label, const RealVector &in_items, 
           ScaleScope scope = ScaleScope::UNSHARED) : 
-          label(label), items(items), scope(scope) {};
+          label(label), scope(scope) {
+            items = RealVector(Teuchos::View, 
+                *const_cast<RealVector*>(&in_items));
+          }
 
-  scale_t(const std::string& in_label, const char * const cstrings[], 
-          const int &len, ScaleScope in_scope = ScaleScope::UNSHARED) {
+  RealScale(const std::string &label, const RealArray &in_items, 
+          ScaleScope scope = ScaleScope::UNSHARED) : 
+          label(label), scope(scope) {
+            items = RealVector(Teuchos::View, 
+                const_cast<Real*>(in_items.data()),
+                in_items.size());
+          }
+
+
+  RealScale(const std::string &label, const Real in_items[], 
+          ScaleScope scope = ScaleScope::UNSHARED) : 
+          label(label), scope(scope) {
+            int len = sizeof(in_items)/sizeof(in_items[0]);
+            items = RealVector(Teuchos::View,
+                const_cast<Real*>(in_items), len);
+          }
+
+  std::string label;
+  ScaleScope scope;
+  RealVector items;
+};
+
+struct StringScale {
+  StringScale(const std::string& in_label, const char * const in_items[], 
+          ScaleScope in_scope = ScaleScope::UNSHARED) {
     label = in_label;
+    int len = sizeof(in_items)/sizeof(in_items[0]);
     items.resize(len);
-    std::copy(cstrings, cstrings + len, items.begin());
+    std::copy(in_items, in_items + len, items.begin());
     scope = in_scope;
   }
 
-  scale_t(const std::string & in_label, 
-          std::initializer_list<const char *> in_items,
-          ScaleScope in_scope = ScaleScope::UNSHARED) {
+  StringScale(const std::string & in_label, 
+        std::initializer_list<const char *> in_items,
+        ScaleScope in_scope = ScaleScope::UNSHARED) {
     label = in_label;
     items.resize(in_items.size());
     std::copy(in_items.begin(), in_items.end(), items.begin()); 
     scope = in_scope;
   }
 
-  scale_t(const std::string& in_label, const std::vector<String> &in_items, 
+  StringScale(const std::string& in_label, const std::vector<String> &in_items, 
           ScaleScope in_scope = ScaleScope::UNSHARED) {
     label = in_label;
     scope = in_scope;
@@ -246,13 +272,11 @@ struct scale_t {
   }
 
   std::string label;
-  std::vector<T> items;
   ScaleScope scope;
+  std::vector<const char *> items;
 };
 
 typedef std::multimap<int, boost::any> HDF5dss;
-typedef scale_t<Real> RealScale;
-typedef scale_t<const char *> StringScale;
 
 inline
 bool scale_is_double(const HDF5dss::iterator &i) {
