@@ -49,7 +49,7 @@ public:
 
     // Store and attach the dimension scales. Hopefully there's a nice way 
     // to refactor this.
-    if(scale_is_double(scales)) {
+    if(scale_is_real(scales)) {
       for(auto p : scales) {
         const int &index = p.first;
         const RealScale &scale = boost::any_cast<RealScale>(p.second);

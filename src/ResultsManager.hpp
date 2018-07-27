@@ -299,7 +299,7 @@ public:
     Cout << "Insert called for " << iterator_id.get<1>() << ":" << iterator_id.get<2>() << ".\n";
     Cout << "Result is: " << result_name << std::endl;
     Cout << "Response is: " << response_name << std::endl;
-    if(scale_is_double(scales)) {
+    if(scale_is_real(scales)) {
       for(auto s : scales) {
         Cout << "Dimension " << s.first << " has label " << boost::any_cast<RealScale>(s.second).label << ".\n";
         Cout << "Scale Values:" << std::endl;

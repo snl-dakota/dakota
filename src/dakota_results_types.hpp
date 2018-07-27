@@ -207,12 +207,17 @@ inline ResultsKeyType make_key(const StrStrSizet& iterator_id,
 // For the HDF5 NonDSampling prototype, dimension scales may 
 // accompany results to be written by the ResultsManager. They
 // are of type multimap<int, boost::any>, with the boost::any
-// containing either a scale_t<string> or scale_t<double>.
-// Overloaded scale_t constructors handle copying the contents of 
-// various source objects into vector<T> items.
+// containing either a RealScale or StringScale. These contain
+// a label, which is like a heading for the scale, the items
+// in the scale, and a ScaleScope enum, which determines whether
+// the scale is SHARED among multiple responses or is unique
+// to a particular response (UNHSARED).
 
 enum class ScaleScope {SHARED, UNSHARED};
 
+// RealScale and StringScale avoid making copies of data.
+// RealScale stores items in a RealVector, which is capable
+// of storing a "View" of the data provided to it.
 struct RealScale {
   RealScale(const std::string &label, const RealVector &in_items, 
           ScaleScope scope = ScaleScope::UNSHARED) : 
@@ -243,6 +248,8 @@ struct RealScale {
   RealVector items;
 };
 
+// A "view" of strings is stored as a vector of pointers to
+// the provided data.
 struct StringScale {
   StringScale(const std::string& in_label, const char * const in_items[], 
           ScaleScope in_scope = ScaleScope::UNSHARED) {
@@ -279,7 +286,7 @@ struct StringScale {
 typedef std::multimap<int, boost::any> HDF5dss;
 
 inline
-bool scale_is_double(const HDF5dss::iterator &i) {
+bool scale_is_real(const HDF5dss::iterator &i) {
   try {
     boost::any_cast<RealScale >(i->second);
     return true;
@@ -290,7 +297,7 @@ bool scale_is_double(const HDF5dss::iterator &i) {
 }
 
 inline
-bool scale_is_double(const HDF5dss &s) {
+bool scale_is_real(const HDF5dss &s) {
   if(s.size() == 0)
     return false;
   try {
@@ -302,6 +309,7 @@ bool scale_is_double(const HDF5dss &s) {
  }
 }
 
+// Test functions for unpacking boost::anys that contain Real/StringScales.
 inline
 bool scale_is_string(const HDF5dss::iterator &i) {
   try {
