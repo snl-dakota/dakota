@@ -91,6 +91,8 @@ private:
 
   /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
   void aggregated_models_mode();
+  /// synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
+  void bypass_surrogate_mode();
   /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
   void uncorrected_surrogate_mode();
 
@@ -478,6 +480,15 @@ inline void NonDMultilevelSampling::aggregated_models_mode()
 }
 
 
+inline void NonDMultilevelSampling::bypass_surrogate_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // LF
+    activeSet.reshape(numFunctions);// synch with model.response_size()
+  }
+}
+
+
 inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 {
   if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
@@ -490,22 +501,17 @@ inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 inline void NonDMultilevelSampling::
 configure_indices(unsigned short lev, unsigned short model_form)
 {
+  iteratedModel.truth_model_key(model_form, lev);
   if (lev) {
     //if (lev == 1) // update responseMode for levels to follow (1:num_lev-1)
     aggregated_models_mode();
     iteratedModel.surrogate_model_key(model_form, lev-1);
-    iteratedModel.truth_model_key(model_form, lev);
-
-    // Not currently necessary, since no surrogate data:
-    //iteratedModel.active_model_key(iteratedModel.truth_model_key());
   }
-  else {
-    uncorrected_surrogate_mode();
-    iteratedModel.surrogate_model_key(model_form, lev);
+  else
+    bypass_surrogate_mode();
 
-    // Not currently necessary, since no surrogate data:
-    //iteratedModel.active_model_key(iteratedModel.surrogate_model_key());
-  }
+  // Not currently necessary, since no surrogate data:
+  //iteratedModel.active_model_key(iteratedModel.truth_model_key());
 }
 
 

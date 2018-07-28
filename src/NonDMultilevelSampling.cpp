@@ -232,7 +232,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
   //      across major iterations (possible oscillation?  Or simple overlay
   //      of resolution reqmts?)
   // 2. Better: select N_l based on convergence in aggregated variance.
-  
+
   iteratedModel.surrogate_model_key(model_form);// soln lev not updated yet
   iteratedModel.truth_model_key(model_form);    // soln lev not updated yet
 
@@ -278,10 +278,10 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
-	// export separate output files for each data set.  surrogate_model()
-	// has the correct model_form index for all levels.
+	// export separate output files for each data set.  truth_model()
+	// has the correct data when in bypass-surrogate mode.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -413,10 +413,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
-	// export separate output files for each data set.  surrogate_model()
-	// has the correct model_form index for all levels.
+	// export separate output files for each data set.  truth_model()
+	// has the correct data when in bypass-surrogate mode.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -692,12 +692,12 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
 	// export separate output files for each data set.  Note that
-	// surrogate_model() is indexed with hf_model_form at this stage for
+	// truth_model() is indexed with hf_model_form at this stage for
 	// all levels.  The exported discretization level (e.g., state variable
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -925,12 +925,12 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
 	// export separate output files for each data set.  Note that
-	// surrogate_model() is indexed with hf_model_form at this stage for
+	// truth_model() is indexed with hf_model_form at this stage for
 	// all levels.  The exported discretization level (e.g., state variable
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -1417,7 +1417,7 @@ void NonDMultilevelSampling::
 accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
 		   SizetArray& num_L)
 {
-  // uses one set of allResponses in UNCORRECTED_SURROGATE mode
+  // uses one set of allResponses in BYPASS_SURROGATE mode
   // IntRealVectorMap is not a multilevel case --> no discrepancies
 
   using std::isfinite;
@@ -1593,7 +1593,7 @@ void NonDMultilevelSampling::
 accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 		      const RealVector& offset, SizetArray& num_Y)
 {
-  // uses one set of allResponses in UNCORRECTED_SURROGATE (level 0) or
+  // uses one set of allResponses in BYPASS_SURROGATE (level 0) or
   // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap is a multilevel
   // case with discrepancies, indexed by level.
 
@@ -1738,11 +1738,11 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
-  // uses two sets of responses (LF & HF) in UNCORRECTED_SURROGATE (level 0) or
+  // uses two sets of responses (LF & HF) in BYPASS_SURROGATE (level 0) or
   // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap are for multilevel
   // case with discrepancies, indexed by level.
 
-  if (lev == 0) // UNCORRECTED_SURROGATE -> 1 set of qoi per response map
+  if (lev == 0) // BYPASS_SURROGATE -> 1 set of qoi per response map
     accumulate_mlcv_Qsums(lf_resp_map, hf_resp_map, sum_L_shared,
 			  sum_L_refined, sum_H, sum_LL, sum_LH, sum_HH,
 			  lev, lf_offset, hf_offset, num_L, num_H);
@@ -1863,7 +1863,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
-  // uses two sets of responses (LF & HF) in UNCORRECTED_SURROGATE (level 0) or
+  // uses two sets of responses (LF & HF) in BYPASS_SURROGATE (level 0) or
   // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap are for multilevel
   // case with discrepancies, indexed by level.
 
@@ -2100,10 +2100,10 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     // with finalCVRefinement=true.
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
     if (iter < max_iter || finalCVRefinement) {
-      // mode for hierarchical surrogate could be UNCORRECTED_SURROGATE for
-      // CV or UNCORRECTED_SURROGATE/AGGREGATED_MODELS for ML-CV MC (set at
+      // mode for hierarchical surrogate could be BYPASS_SURROGATE for
+      // CV or BYPASS_SURROGATE/AGGREGATED_MODELS for ML-CV MC (set at
       // calling level)
-      //uncorrected_surrogate_mode();
+      //bypass_surrogate_mode();
 
       // compute allResponses from allVariables using hierarchical model
       evaluate_parameter_sets(iteratedModel, true, false);
