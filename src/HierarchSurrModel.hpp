@@ -89,26 +89,22 @@ protected:
 
   /// return the active low fidelity model
   Model& surrogate_model();
-  /// set the indices identifying the active low fidelity model
-  void surrogate_model_indices(size_t lf_model_index,
-                               size_t lf_soln_lev_index = _NPOS);
+  /// set the key identifying the active low fidelity model
+  void surrogate_model_key(unsigned short lf_model_index,
+			   unsigned short lf_soln_lev_index = USHRT_MAX);
   /// set the index pair identifying the active low fidelity model
-  void surrogate_model_indices(const SizetSizetPair& lf_form_level);
-  /// return the indices identifying the active low fidelity model
-  const SizetSizetPair& surrogate_model_indices() const;
-
-  /// return pair of active low fidelity and high fidelity model indices
-  SizetSizet2DPair get_indices();
+  void surrogate_model_key(const UShortArray& lf_key);
 
   /// return the active high fidelity model
   Model& truth_model();
-  /// set the indices identifying the active high fidelity model
-  void truth_model_indices(size_t hf_model_index,
-                           size_t hf_soln_lev_index = _NPOS);
+  /// set the key identifying the active high fidelity model
+  void truth_model_key(unsigned short hf_model_index,
+		       unsigned short hf_soln_lev_index = USHRT_MAX);
   /// set the index pair identifying the active high fidelity model
-  void truth_model_indices(const SizetSizetPair& hf_form_level);
-  /// return the indices identifying the active high fidelity model
-  const SizetSizetPair& truth_model_indices() const;
+  void truth_model_key(const UShortArray& hf_key);
+
+  /// return pair of active low fidelity and high fidelity model keys
+  UShortArrayPair fidelity_keys();
 
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -152,7 +148,7 @@ protected:
   /// set up serial operations for the array of ordered model fidelities
   void derived_init_serial();
   /// set active parallel configuration within the current low and
-  /// high fidelity models identified by {low,high}FidelityIndices
+  /// high fidelity models identified by {low,high}FidelityKey
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                  bool recurse_flag = true);
   /// deallocate communicator partitions for the HierarchSurrModel
@@ -198,8 +194,11 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// utility for propagating new key values
+  void key_updates(unsigned short model_index, unsigned short soln_lev_index);
+
   /// update sameInterfaceInstance based on interface ids for models
-  /// identified by current {low,high}FidelityIndices
+  /// identified by current {low,high}FidelityKey
   void check_interface_instance();
 
   /// update the passed model (one of the ordered models) with data that could
@@ -241,9 +240,9 @@ private:
   void compute_apply_delta(IntResponseMap& lf_resp_map);
 
   /// helper function for applying a single deltaCorr correction
-  /// corresponding to indices
+  /// corresponding to key
   void single_apply(const Variables& vars, Response& resp,
-		    const SizetSizet2DPair& indices);
+		    const UShortArrayPair& keys);
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);
@@ -267,33 +266,26 @@ private:
 
   /// vector to specify a sequence of discrepancy corrections to apply in
   /// AUTO_CORRECTED_SURROGATE mode
-  std::vector<SizetSizet2DPair> corrSequence;
+  std::vector<UShortArrayPair> corrSequence;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
   ModelArray orderedModels;
-  /// index of the low fidelity model that is currently active within
-  /// orderedModels; provides approximate low fidelity function evaluations.
-  SizetSizetPair lowFidelityIndices;
-  /// index of the high fidelity model that is currently active within
-  /// orderedModels; provides truth evaluations for computing corrections
-  /// to the low fidelity results.
-  SizetSizetPair highFidelityIndices;
-  /// flag indicating that the {low,high}FidelityIndices correspond to the
+  /// flag indicating that the {low,high}FidelityKey correspond to the
   /// same model instance, requiring modifications to updating and evaluation
   /// scheduling processes
   bool sameModelInstance;
-  /// flag indicating that the models identified by {low,high}FidelityIndices
+  /// flag indicating that the models identified by {low,high}FidelityKey
   /// employ the same interface instance, requiring modifications to evaluation
   /// scheduling processes
   bool sameInterfaceInstance;
 
-  /// store index pair that is active in component_parallel_mode()
-  SizetSizetPair componentParallelIndices;
+  /// store {LF,HF} model key that is active in component_parallel_mode()
+  UShortArray componentParallelKey;
 
   /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
-  std::map<SizetSizetPair, Response> truthResponseRef;
+  std::map<UShortArray, Response> truthResponseRef;
   /// map of truth (high-fidelity) responses retrieved in
   /// derived_synchronize_nowait() that could not be returned since
   /// corresponding low-fidelity response portions were still pending
@@ -311,9 +303,9 @@ inline size_t HierarchSurrModel::qoi() const
   // Note: resize_response() aggregaates {truth,surrogate}_model().num_fns(),
   //       such that code below is a bit more general that currResp num_fns/2
   case AGGREGATED_MODELS:
-    return orderedModels[highFidelityIndices.first].qoi();  break;
+    return orderedModels[truthModelKey.front()].qoi();  break;
   default:
-    return response_size();                                 break;
+    return response_size();                               break;
   }
 }
 
@@ -323,17 +315,17 @@ inline void HierarchSurrModel::check_interface_instance()
   if (sameModelInstance) sameInterfaceInstance = true;
   else
     sameInterfaceInstance
-      = (orderedModels[lowFidelityIndices.first].interface_id() ==
-         orderedModels[highFidelityIndices.first].interface_id());
+      = (orderedModels[surrModelKey.front()].interface_id() ==
+         orderedModels[truthModelKey.front()].interface_id());
 }
 
 
 inline Model& HierarchSurrModel::surrogate_model()
-{ return orderedModels[lowFidelityIndices.first]; }
+{ return orderedModels[surrModelKey.front()]; }
 
 
 inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
-{ return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)]; }
+{ return deltaCorr[fidelity_keys()]; }
 
 
 inline short HierarchSurrModel::correction_type()
@@ -347,33 +339,28 @@ inline void HierarchSurrModel::correction_type(short corr_type)
 }
 
 
-inline SizetSizet2DPair HierarchSurrModel::get_indices()
-{ return std::make_pair(lowFidelityIndices,highFidelityIndices); }
-
-
 inline void HierarchSurrModel::
-surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
+key_updates(unsigned short model_index, unsigned short soln_lev_index)
 {
-  lowFidelityIndices.first  = lf_model_index;
-  lowFidelityIndices.second = lf_soln_lev_index; // including _NPOS default
-  sameModelInstance = (lf_model_index == highFidelityIndices.first);
-  check_interface_instance();
-
-  if (lf_soln_lev_index != _NPOS) {
+  if (soln_lev_index != USHRT_MAX) {
     // Activate variable value for solution control within LF model
-    orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
+    orderedModels[model_index].solution_level_index(soln_lev_index);
     // Pull inactive variable change up into top-level currentVariables,
     // so that data flows correctly within Model recursions?  No, current
     // design is that forward pushes are automated, but inverse pulls are 
     // generally special case invocations from Iterator code (e.g., with
     // locally-managed Model recursions).
-    //update_from_model(orderedModels[lf_model_index]);
+    //update_from_model(orderedModels[model_index]);
   }
 
-  DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
+  sameModelInstance = (!surrModelKey.empty() && !truthModelKey.empty() &&
+		        surrModelKey.front() ==  truthModelKey.front());
+  check_interface_instance();
+
+  DiscrepancyCorrection& delta_corr = deltaCorr[fidelity_keys()];
   if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
-			  surrogateFnIndices, corrType, corrOrder);
+    delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,
+			  corrOrder);
 
   // TO DO:
   //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
@@ -382,55 +369,56 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
 
 
 inline void HierarchSurrModel::
-surrogate_model_indices(const SizetSizetPair& lf_form_level)
-{ surrogate_model_indices(lf_form_level.first, lf_form_level.second); }
-
-
-inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
-{ return lowFidelityIndices; }
-
-
-inline Model& HierarchSurrModel::truth_model()
-{ return orderedModels[highFidelityIndices.first]; }
-
-
-inline void HierarchSurrModel::
-truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
+surrogate_model_key(unsigned short lf_model_index,
+		    unsigned short lf_soln_lev_index)
 {
-  highFidelityIndices.first  = hf_model_index;
-  highFidelityIndices.second = hf_soln_lev_index; // including _NPOS default
-  sameModelInstance = (hf_model_index == lowFidelityIndices.first);
-  check_interface_instance();
+  SurrogateModel::surrogate_model_key(lf_model_index, lf_soln_lev_index);
 
-  if (hf_soln_lev_index != _NPOS) {
-    // Activate variable value for solution control within HF model
-    orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
-    // Pull inactive variable change up into top-level currentVariables,
-    // so that data flows correctly within Model recursions?  No, current
-    // design is that forward pushes are automated, but inverse pulls are 
-    // generally special case invocations from Iterator code (e.g., with 
-    // locally-managed Model recursions).
-    //update_from_model(orderedModels[hf_model_index]);
-  }
-
-  DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
-  if (!delta_corr.initialized())
-    delta_corr.initialize(surrogate_model(),
-			  surrogateFnIndices, corrType, corrOrder);
+  key_updates(lf_model_index, lf_soln_lev_index);
 }
 
 
+inline void HierarchSurrModel::surrogate_model_key(const UShortArray& lf_key)
+{
+  SurrogateModel::surrogate_model_key(lf_key);
+
+  size_t key_len = lf_key.size();
+  unsigned short model_form = (key_len >= 1) ? lf_key[0] : USHRT_MAX,
+             soln_lev_index = (key_len >= 2) ? lf_key[1] : USHRT_MAX;
+  key_updates(model_form, soln_lev_index);
+}
+
+
+inline Model& HierarchSurrModel::truth_model()
+{ return orderedModels[truthModelKey.front()]; }
+
+
 inline void HierarchSurrModel::
-truth_model_indices(const SizetSizetPair& hf_form_level)
-{ truth_model_indices(hf_form_level.first, hf_form_level.second); }
+truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
+{
+  SurrogateModel::truth_model_key(hf_model_index, hf_soln_lev_index);
+
+  key_updates(hf_model_index, hf_soln_lev_index);
+}
 
 
-inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
-{ return highFidelityIndices; }
+inline void HierarchSurrModel::truth_model_key(const UShortArray& hf_key)
+{
+  SurrogateModel::truth_model_key(hf_key);
+
+  size_t key_len = hf_key.size();
+  unsigned short model_form = (key_len >= 1) ? hf_key[0] : USHRT_MAX,
+             soln_lev_index = (key_len >= 2) ? hf_key[1] : USHRT_MAX;
+  key_updates(model_form, soln_lev_index);
+}
 
 
 inline const unsigned short HierarchSurrModel::correction_mode() const
 { return correctionMode; }
+
+
+inline UShortArrayPair HierarchSurrModel::fidelity_keys()
+{ return std::make_pair(surrModelKey, truthModelKey); }
 
 
 inline void HierarchSurrModel::correction_mode(unsigned short corr_mode)
@@ -553,7 +541,7 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
   // don't pass to low fidelity model (in case it includes surrogates) since
   // point of a surrogate bypass is to get a surrogate-free truth evaluation
   if (mode == BYPASS_SURROGATE) // recurse in this case
-    orderedModels[highFidelityIndices.first].surrogate_response_mode(mode);
+    orderedModels[truthModelKey.front()].surrogate_response_mode(mode);
 }
 
 
@@ -652,11 +640,11 @@ inline bool HierarchSurrModel::restart_file(bool recurse_flag) const
 
 inline void HierarchSurrModel::set_evaluation_reference()
 {
-  //orderedModels[lowFidelityIndices.first].set_evaluation_reference();
+  //orderedModels[surrModelKey.front()].set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
   //if (responseMode == BYPASS_SURROGATE)
-  //  orderedModels[highFidelityIndices.first].set_evaluation_reference();
+  //  orderedModels[truthModelKey.front()].set_evaluation_reference();
 
   // may want to add this in time
   //surrModelEvalRef = surrModelEvalCntr;

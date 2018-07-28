@@ -2747,42 +2747,33 @@ Model& Model::surrogate_model()
 
 
 void Model::
-surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
+surrogate_model_key(unsigned short lf_model_index,
+		    unsigned short lf_soln_lev_index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_indices(lf_model_index, lf_soln_lev_index);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_"
-	 << "indices(size_t, size_t) function.\n       surrogate model "
-	 << "activation is not supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+    modelRep->surrogate_model_key(lf_model_index, lf_soln_lev_index);
+  //else no-op
 }
 
 
-void Model::surrogate_model_indices(const SizetSizetPair& lf_form_level)
+void Model::surrogate_model_key(const UShortArray& lf_key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_indices(lf_form_level);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_"
-	 << "indices(SizetSizetPair) function.\n       surrogate model "
-	 << "activation is not supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+    modelRep->surrogate_model_key(lf_key);
+  //else no-op
 }
 
 
-const SizetSizetPair& Model::surrogate_model_indices() const
+const UShortArray& Model::surrogate_model_key() const
 {
   if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_"
-	 << "indices() function.\n       active surrogate model indices are "
-	 << "not supported by this Model class." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_key"
+	 << "() function.\n       active surrogate model indices are not "
+	 << "supported by this Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 
-  return modelRep->surrogate_model_indices();
+  return modelRep->surrogate_model_key();
 }
 
 
@@ -2798,42 +2789,33 @@ Model& Model::truth_model()
 }
 
 
-void Model::truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
+void Model::
+truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_indices(hf_model_index, hf_soln_lev_index);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_indices"
-	 << "(size_t, size_t) function.\n       truth_model activation is not "
-	 << "supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+    modelRep->truth_model_key(hf_model_index, hf_soln_lev_index);
+  //else no-op
 }
 
 
-void Model::truth_model_indices(const SizetSizetPair& hf_form_level)
+void Model::truth_model_key(const UShortArray& hf_key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_indices(hf_form_level);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_indices"
-	 << "(SizetSizetPair) function.\n       truth_model activation is not "
-	 << "supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+    modelRep->truth_model_key(hf_key);
+  //else no-op
 }
 
 
-const SizetSizetPair& Model::truth_model_indices() const
+const UShortArray& Model::truth_model_key() const
 {
   if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_indices"
-	 << "() function.\n       active truth_model indices are not supported "
+    Cerr << "Error: Letter lacking redefinition of virtual truth_model_key() "
+	 << "function.\n       active truth_model indices are not supported "
 	 << "by this Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 
-  return modelRep->truth_model_indices();
+  return modelRep->truth_model_key();
 }
 
 
@@ -2908,7 +2890,7 @@ size_t Model::solution_levels(bool lwr_bnd) const
 
 
 /** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_index(size_t index)
+void Model::solution_level_index(unsigned short index)
 {
   if (modelRep)
     modelRep->solution_level_index(index); // envelope fwd to letter
@@ -2921,7 +2903,7 @@ void Model::solution_level_index(size_t index)
 }
 
 
-size_t Model::solution_level_index() const
+unsigned short Model::solution_level_index() const
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
@@ -3567,10 +3549,10 @@ void Model::correction_type(short corr_type)
 
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const SizetSizet2DPair& indices)
+			 const UShortArrayPair& keys)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->single_apply(vars, resp, indices);
+    modelRep->single_apply(vars, resp, keys);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual single_apply() "
 	 << "function.\n." << std::endl;

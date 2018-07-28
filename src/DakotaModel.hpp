@@ -148,26 +148,26 @@ public:
   virtual Model& surrogate_model();
   /// set the indices that define the active approximation sub-model
   /// within surrogate models
-  virtual void surrogate_model_indices(size_t lf_model_index,
-				       size_t lf_soln_lev_index = _NPOS);
+  virtual void surrogate_model_key(unsigned short lf_model_index,
+				 unsigned short lf_soln_lev_index = USHRT_MAX);
   /// set the index pair that defines the active approximation sub-model
   /// within surrogate models
-  virtual void surrogate_model_indices(const SizetSizetPair& lf_form_level);
+  virtual void surrogate_model_key(const UShortArray& lf_key);
   /// return the indices of the active approximation sub-model within
   /// surrogate models
-  virtual const SizetSizetPair& surrogate_model_indices() const;
+  virtual const UShortArray& surrogate_model_key() const;
 
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
   /// set the indices that define the active truth sub-model within
   /// surrogate models
-  virtual void truth_model_indices(size_t hf_model_index,
-				   size_t hf_soln_lev_index = _NPOS);
+  virtual void truth_model_key(unsigned short hf_model_index,
+			       unsigned short hf_soln_lev_index = USHRT_MAX);
   /// set the index pair that defines the active truth sub-model within
   /// surrogate models
-  virtual void truth_model_indices(const SizetSizetPair& hf_form_level);
+  virtual void truth_model_key(const UShortArray& hf_key);
   /// return the indices of the active truth sub-model within surrogate models
-  virtual const SizetSizetPair& truth_model_indices() const;
+  virtual const UShortArray& truth_model_key() const;
 
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -186,10 +186,10 @@ public:
   virtual size_t solution_levels(bool lwr_bnd = true) const;
   /// activate a particular level within the solution level control
   /// and return the cost estimate (SimulationModel)
-  virtual void solution_level_index(size_t index);
+  virtual void solution_level_index(unsigned short index);
   /// return currently active level within the solution level control
   /// (SimulationModel)
-  virtual size_t solution_level_index() const;
+  virtual unsigned short solution_level_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
   virtual RealVector solution_level_costs() const;
   /// return currently active cost estimate from solution level
@@ -352,7 +352,7 @@ public:
   /// apply the DiscrepancyCorrection object to correct an approximation
   /// within a SurrogateModel
   virtual void single_apply(const Variables& vars, Response& resp,
-			    const SizetSizet2DPair& indices);
+			    const UShortArrayPair& keys);
   /// apply the DiscrepancyCorrection object to recursively correct an 
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);

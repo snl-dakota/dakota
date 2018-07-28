@@ -216,8 +216,24 @@ protected:
 
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
+  /// set surrogate model key within subModel
+  void surrogate_model_key(unsigned short lf_model_index,
+			   unsigned short lf_soln_lev_index);
+  /// set surrogate model key within subModel
+  void surrogate_model_key(const UShortArray& lf_key);
+  /// return surrogate model key from subModel
+  const UShortArray& surrogate_model_key() const;
+
   /// return truth model, if present, within subModel
   Model& truth_model();
+  /// set truth model key within subModel
+  void truth_model_key(unsigned short hf_model_index,
+		       unsigned short hf_soln_lev_index);
+  /// set truth model key within subModel
+  void truth_model_key(const UShortArray& hf_key);
+  /// return truth model key from subModel
+  const UShortArray& truth_model_key() const;
+
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// pass request to subModel if recursing and then resize from its results
@@ -232,9 +248,9 @@ protected:
   /// return size of subModel::solnControlCostMap
   size_t solution_levels() const;
   /// activate entry in subModel::solnControlCostMap
-  void solution_level_index(size_t lev_index);
+  void solution_level_index(unsigned short lev_index);
   /// return active entry in subModel::solnControlCostMap
-  size_t solution_level_index() const;
+  unsigned short solution_level_index() const;
   /// return cost estimates from subModel::solnControlCostMap
   RealVector solution_level_costs() const;
   /// return active cost estimate from subModel::solnControlCostMap
@@ -578,8 +594,35 @@ inline Model& RecastModel::surrogate_model()
 { return subModel.surrogate_model(); }
 
 
+inline void RecastModel::
+surrogate_model_key(unsigned short lf_model_index,
+		    unsigned short lf_soln_lev_index)
+{ subModel.surrogate_model_key(lf_model_index, lf_soln_lev_index); }
+
+
+inline void RecastModel::surrogate_model_key(const UShortArray& lf_key)
+{ subModel.surrogate_model_key(lf_key); }
+
+
+inline const UShortArray& RecastModel::surrogate_model_key() const
+{ return subModel.surrogate_model_key(); }
+
+
 inline Model& RecastModel::truth_model()
 { return subModel.truth_model(); }
+
+
+inline void RecastModel::
+truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
+{ subModel.truth_model_key(hf_model_index, hf_soln_lev_index); }
+
+
+inline void RecastModel::truth_model_key(const UShortArray& hf_key)
+{ subModel.truth_model_key(hf_key); }
+
+
+inline const UShortArray& RecastModel::truth_model_key() const
+{ return subModel.truth_model_key(); }
 
 
 inline void RecastModel::
@@ -638,11 +681,11 @@ inline size_t RecastModel::solution_levels() const
 { return subModel.solution_levels(); }
 
 
-inline void RecastModel::solution_level_index(size_t lev_index)
+inline void RecastModel::solution_level_index(unsigned short lev_index)
 { subModel.solution_level_index(lev_index); }
 
 
-inline size_t RecastModel::solution_level_index() const
+inline unsigned short RecastModel::solution_level_index() const
 { return subModel.solution_level_index(); }
 
 

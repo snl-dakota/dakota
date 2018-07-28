@@ -148,8 +148,8 @@ compute(const Variables& vars, const Response& truth_response,
     it = surrogateFnIndices.begin();
     const Pecos::SurrogateDataVars& anchor_sdv
       = (computeAdditive || badScalingFlag) ?
-      addCorrections[*it].surrogate_data(0).anchor_variables() :
-      multCorrections[*it].surrogate_data(0).anchor_variables();
+      addCorrections[*it].surrogate_data().anchor_variables() :
+      multCorrections[*it].surrogate_data().anchor_variables();
     correctionPrevCenterPt.continuous_variables(
       anchor_sdv.continuous_variables());
     correctionPrevCenterPt.discrete_int_variables(
@@ -176,6 +176,7 @@ compute(const Variables& vars, const Response& truth_response,
       addCorrections[*it] = Approximation(sharedData);
   }
 
+  UShortArray sd_key; // default empty key
   Pecos::SurrogateDataVars sdv(vars.continuous_variables(),
     vars.discrete_int_variables(), vars.discrete_real_variables(),
     Pecos::DEEP_COPY);
@@ -193,12 +194,12 @@ compute(const Variables& vars, const Response& truth_response,
 
       // shallow copy of vars/resp into the active SurrogateData instance
       if (approxType.empty()) { // update anchor data
-        addCorrections[index].add(sdv, true, _NPOS);
-        addCorrections[index].add(sdr, true, _NPOS);
+        addCorrections[index].add(sdv, true, sd_key);
+        addCorrections[index].add(sdr, true, sd_key);
       }
       else {
-        addCorrections[index].add(sdv, false, _NPOS);
-        addCorrections[index].add(sdr, false, _NPOS);
+        addCorrections[index].add(sdv, false, sd_key);
+        addCorrections[index].add(sdr, false, sd_key);
       }
     }
   }
@@ -216,8 +217,8 @@ compute(const Variables& vars, const Response& truth_response,
 	Cout << "\nMultiplicative correction computed:\n" << sdr;
 
       // update anchor data; shallow cp of vars/resp into active SurrogateData
-      multCorrections[index].add(sdv, true, _NPOS);
-      multCorrections[index].add(sdr, true, _NPOS);
+      multCorrections[index].add(sdv, true, sd_key);
+      multCorrections[index].add(sdr, true, sd_key);
     }
   }
 

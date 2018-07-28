@@ -38,10 +38,8 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
 
   // Make a shallow copy of initial approxData instance (shared rep).
   // Note: there is only one empty SurrogateData instance at construct time
-  pecosBasisApprox.surrogate_data(approxData.back(), 0); // single or HF
-  // This will have to happen downstream, and may require a push_front...
-  //if ( == DISTINCT_DISCREP) // AGGREGATED_MODELS
-  //  pecosBasisApprox.modified_surrogate_data(approxData.front()); // LF
+  pecosBasisApprox.surrogate_data(approxData.front());
+  // modified SurrogateData is linked downstream, if needed (ML-MF)
 
   // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
@@ -69,10 +67,8 @@ PecosApproximation(ProblemDescDB& problem_db,
 
   // Make a shallow copy of initial approxData instance (shared rep):
   // Note: there is only one empty SurrogateData instance at construct time
-  pecosBasisApprox.surrogate_data(approxData.back(), 0); // single or HF
-  //if (probDescDB.get_short("method.nond.multilevel_discrepancy_emulation") ==
-  //    DISTINCT_EMULATION) // AGGREGATED_MODELS
-  //  pecosBasisApprox.modified_surrogate_data(approxData.front()); // LF
+  pecosBasisApprox.surrogate_data(approxData.front());
+  // modified SurrogateData is linked downstream, if needed (ML-MF)
 
   // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
@@ -93,32 +89,16 @@ void PecosApproximation::link_multilevel_surrogate_data()
     = (SharedPecosApproxData*)sharedDataRep;
   const UShortArray& key = approxData.back().active_key();
   switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
-  case Pecos::DISTINCT_DISCREP: {
-    size_t i, num_sd = approxData.size(), num_replicates = 2;
-    // append SD instances (base ctor adds 1)
-    for (i=num_sd; i<num_replicates; ++i)
-      approxData.push_back(Pecos::SurrogateData(key));
-    // replace default ctor linkage
-    // > push approxData instances constructed above
-    for (i=0; i<num_replicates; ++i)
-      pecosBasisApprox.surrogate_data(approxData[i], i);
-
-    // > push another instance for modSurrData (allows consolidation of
-    //   Approximation::push/pop operations)
+  case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
+    // push another SurrogateData instance for modSurrData
+    // (allows consolidation of Approximation::push/pop operations)
+    size_t mod_index = approxData.size(); // typically 1
     Pecos::SurrogateData mod_surr(key);
     approxData.push_back(mod_surr);
     pecosBasisApprox.modified_surrogate_data(mod_surr);
-
     // Configure active approxData such that other classes access the
     // discrepancy/surplus data rather than the raw QoI data
-    surrogate_data_index(num_replicates);// other classes access mod_surr
-    break;
-  }
-  case Pecos::RECURSIVE_DISCREP: {
-    Pecos::SurrogateData mod_surr(key);
-    approxData.push_back(mod_surr);
-    pecosBasisApprox.modified_surrogate_data(mod_surr);
-    surrogate_data_index(1); // other classes access mod_surr
+    surrogate_data_index(mod_index);
     break;
   }
   default: // default ctor linkages are sufficient

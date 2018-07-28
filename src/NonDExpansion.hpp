@@ -177,19 +177,25 @@ protected:
   void greedy_multifidelity_expansion();
 
   /// configure fidelity/level counts from model hierarchy
-  void configure_levels(size_t& num_lev, size_t& model_form,
+  void configure_levels(size_t& num_lev, unsigned short& model_form,
 			bool& multilevel, bool mf_precedence);
   /// configure fidelity/level counts from model hierarchy
   void configure_cost(size_t num_lev, bool multilevel, RealVector& cost);
   /// configure response mode and truth/surrogate model indices within
-  /// hierarchical iteratedModel; also invokes configure_keys()
-  void configure_indices(size_t lev, size_t form, bool multilevel,
-			 const RealVector& cost, Real& lev_cost);
-  /// configure active model key within uSpaceModel
-  void configure_keys(size_t lev, size_t form, bool multilevel);
+  /// hierarchical iteratedModel
+  void configure_indices(unsigned short lev, unsigned short form,
+			 bool multilevel, const RealVector& cost,
+			 Real& lev_cost);
   /// compute equivHFEvals from samples per level and cost per evaluation
-
   void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
+
+  /// creat a model key from level index, form index, and multilevel flag
+  void form_key(unsigned short lev, unsigned short form, bool multilevel,
+		UShortArray& model_key);
+  /// activate model key within uSpaceModel
+  void activate_key(const UShortArray& model_key);
+  /// activate model key within uSpaceModel
+  void activate_key(unsigned short lev, unsigned short form, bool multilevel);
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
@@ -424,6 +430,9 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 
 inline void NonDExpansion::aggregated_models_mode()
 {
+  // update iteratedModel / uSpaceModel in separate calls rather than using
+  // uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
+  // mode along to iteratedModel (a HierarchSurrModel) without absorbing it
   if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
     iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
     uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
@@ -433,10 +442,38 @@ inline void NonDExpansion::aggregated_models_mode()
 
 inline void NonDExpansion::bypass_surrogate_mode()
 {
+  // update iteratedModel / uSpaceModel in separate calls rather than using
+  // uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
+  // mode along to iteratedModel (a HierarchSurrModel) without absorbing it
   if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // single level
     uSpaceModel.resize_from_subordinate_model();// recurs until hits aggregation
   }
+}
+
+
+inline void NonDExpansion::
+form_key(unsigned short lev, unsigned short form, bool multilevel,
+	 UShortArray& model_key)
+{
+  if (multilevel) // model form is fixed @ HF; lev enumerates the levels
+    { model_key.resize(2); model_key[0] = form; model_key[1] = lev; }
+  else            // lev enumerates the model forms; levels are ignored
+    { model_key.resize(1); model_key[0] = lev; } // mi_key[1] = _NPOS;
+}
+
+
+inline void NonDExpansion::
+activate_key(const UShortArray& model_key)
+{ uSpaceModel.active_model_key(model_key); }
+
+
+inline void NonDExpansion::
+activate_key(unsigned short lev, unsigned short form, bool multilevel)
+{
+  UShortArray model_key;
+  form_key(lev, form, multilevel, model_key);
+  activate_key(model_key); // assign key to uSpaceModel
 }
 
 

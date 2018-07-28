@@ -195,30 +195,30 @@ public:
 
   /// append to SurrogateData::varsData or assign to SurrogateData::anchorVars
   void add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag,
-	   size_t d_index);// = 0);
+	   const UShortArray& sd_key);
   /// extract the relevant vectors from Variables and invoke
   /// add(RealVector&, IntVector&, RealVector&)
   void add(const Variables& vars, bool anchor_flag, bool deep_copy,
-	   size_t d_index);// = 0);
+	   const UShortArray& sd_key);
   /// create a RealVector view and invoke add(RealVector&, empty, empty)
   void add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy,
-	   size_t d_index);// = 0);
+	   const UShortArray& sd_key);
   /// shared code among add(Variables&) and add(Real*); adds a new
   /// data point by either appending to SurrogateData::varsData or
   /// assigning to SurrogateData::anchorVars, as dictated by anchor_flag.
   /// Uses add_point() and add_anchor().
   void add(const RealVector& c_vars, const IntVector& di_vars,
 	   const RealVector& dr_vars, bool anchor_flag, bool deep_copy,
-	   size_t d_index);// = 0);
+	   const UShortArray& sd_key);
 
   /// append to SurrogateData::respData or assign to SurrogateData::anchorResp
   void add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag,
-	   size_t d_index);// = 0);
+	   const UShortArray& sd_key);
   /// adds a new data point by either appending to SurrogateData::respData
   /// or assigning to SurrogateData::anchorResp, as dictated by anchor_flag.
   /// Uses add_point() and add_anchor().
   void add(const Response& response, int fn_index, bool anchor_flag,
-	   bool deep_copy, size_t d_index);// = 0);
+	   bool deep_copy, const UShortArray& sd_key);
 
   /// add surrogate data from the provided sample and response data,
   /// assuming continuous variables and function values only
@@ -226,10 +226,10 @@ public:
 
   /// appends to SurrogateData::popCountStack (number of entries to pop from
   /// end of SurrogateData::{vars,resp}Data, based on size of last data append)
-  void pop_count(size_t count, size_t d_index);// = 0);
+  void pop_count(size_t count, const UShortArray& sd_key);
   // returns SurrogateData::popCountStack.back() (number of entries to pop from
   // end of SurrogateData::{vars,resp}Data, based on size of last data append)
-  //size_t pop_count(size_t d_index = 0) const;
+  //size_t pop_count(const UShortArray& sd_key) const;
 
   /// clear all build data (current and history) to restore original state
   void clear_all();
@@ -331,7 +331,14 @@ private:
 
 
 inline void Approximation::surrogate_data_index(size_t d_index)
-{ activeDataIndex = d_index; }
+{
+  if (d_index >= approxData.size()) {
+    Cerr << "Error: index out of range in Approximation::"
+	 << "surrogate_data_index()." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+  activeDataIndex = d_index;
+}
 
 
 inline const Pecos::SurrogateData& Approximation::surrogate_data() const
@@ -360,11 +367,19 @@ surrogate_data(size_t d_index) const
 
 
 inline void Approximation::
-add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag, size_t d_index)
+add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag,
+    const UShortArray& sd_key)
 {
   if (approxRep)
-    approxRep->add(sdv, anchor_flag, d_index);
+    approxRep->add(sdv, anchor_flag, sd_key);
   else { // not virtual: all derived classes use following definition
+    Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+    approx_data.active_key(sd_key); // no-op if key is already active
+
+    if (anchor_flag) approx_data.anchor_variables(sdv);
+    else             approx_data.push_back(sdv);
+
+    /*
     if (d_index == _NPOS) d_index = activeDataIndex; // default
 
     size_t num_sd = approxData.size();
@@ -373,36 +388,37 @@ add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag, size_t d_index)
       for (size_t i=num_sd; i<=d_index; ++i)
 	approxData.push_back(Pecos::SurrogateData(key));
     }
-    //while (d_index >= approxData.size())
-    //  approxData.push_back(Pecos::SurrogateData(true));
 
     if (anchor_flag) approxData[d_index].anchor_variables(sdv);
     else             approxData[d_index].push_back(sdv);
+    */
   }
 }
 
 
 inline void Approximation::
 add(const RealVector& c_vars, const IntVector& di_vars,
-    const RealVector& dr_vars, bool anchor_flag, bool deep_copy, size_t d_index)
+    const RealVector& dr_vars, bool anchor_flag, bool deep_copy,
+    const UShortArray& sd_key)
 {
   if (approxRep)
-    approxRep->add(c_vars, di_vars, dr_vars, anchor_flag, deep_copy, d_index);
+    approxRep->add(c_vars, di_vars, dr_vars, anchor_flag, deep_copy, sd_key);
   else { // not virtual: all derived classes use following definition
     // Map DAKOTA's deep_copy bool into Pecos' copy mode
     // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
     short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
     Pecos::SurrogateDataVars sdv(c_vars, di_vars, dr_vars, mode);
-    add(sdv, anchor_flag, d_index);
+    add(sdv, anchor_flag, sd_key);
   }
 }
 
 
 inline void Approximation::
-add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy, size_t d_index)
+add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy,
+    const UShortArray& sd_key)
 {
   if (approxRep)
-    approxRep->add(sample_c_vars, anchor_flag, deep_copy, d_index);
+    approxRep->add(sample_c_vars, anchor_flag, deep_copy, sd_key);
   else { // not virtual: all derived classes use following definition
     // create view of numVars entries within column of sample Matrix;
     // for compact mode, any active discrete {int,real} vars are managed
@@ -413,17 +429,25 @@ add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy, size_t d_index)
     IntVector di_vars; RealVector dr_vars; // empty
     short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
     Pecos::SurrogateDataVars sdv(c_vars, di_vars, dr_vars, mode);
-    add(sdv, anchor_flag, d_index);
+    add(sdv, anchor_flag, sd_key);
   }
 }
 
 
 inline void Approximation::
-add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, size_t d_index)
+add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag,
+    const UShortArray& sd_key)
 {
   if (approxRep)
-    approxRep->add(sdr, anchor_flag, d_index);
+    approxRep->add(sdr, anchor_flag, sd_key);
   else { // not virtual: all derived classes use following definition
+    Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+    approx_data.active_key(sd_key); // no-op if key is already active
+
+    if (anchor_flag) approx_data.anchor_response(sdr);
+    else             approx_data.push_back(sdr);
+
+    /*
     if (d_index == _NPOS) d_index = activeDataIndex; // default
 
     size_t num_sd = approxData.size();
@@ -432,28 +456,35 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, size_t d_index)
       for (size_t i=num_sd; i<=d_index; ++i)
 	approxData.push_back(Pecos::SurrogateData(key));
     }
-    //while (d_index >= approxData.size())
-    //  approxData.push_back(Pecos::SurrogateData(true));
 
     if (anchor_flag) approxData[d_index].anchor_response(sdr);
     else             approxData[d_index].push_back(sdr);
+    */
   }
 }
 
 
 /*
-inline size_t Approximation::pop_count(size_t d_index) const
+inline size_t Approximation::pop_count(const UShortArray& sd_key) const
 {
-  if (approxRep) return approxRep->approxData[d_index].pop_count();
-  else           return approxData[d_index].pop_count();
+  if (approxRep) return approxRep->pop_count(sd_key);
+  else {
+    Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+    approx_data.active_key(sd_key); // no-op if key is already active
+    return approx_data.pop_count();
+  }
 }
 */
 
 
-inline void Approximation::pop_count(size_t count, size_t d_index)
+inline void Approximation::pop_count(size_t count, const UShortArray& sd_key)
 {
-  if (approxRep) approxRep->approxData[d_index].pop_count(count);
-  else           approxData[d_index].pop_count(count);
+  if (approxRep) approxRep->pop_count(count, sd_key);
+  else {
+    Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+    approx_data.active_key(sd_key); // no-op if key is already active
+    approx_data.pop_count(count);
+  }
 }
 
 

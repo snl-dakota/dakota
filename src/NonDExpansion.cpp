@@ -1081,7 +1081,7 @@ void NonDExpansion::merge_grid()
 
 
 void NonDExpansion::
-configure_levels(size_t& num_lev, size_t& model_form, bool& multilevel,
+configure_levels(size_t& num_lev, unsigned short& model_form, bool& multilevel,
 		 bool mf_precedence)
 {
   // Allow either model forms or discretization levels, but not both
@@ -1143,45 +1143,49 @@ configure_cost(size_t num_lev, bool multilevel, RealVector& cost)
 
 
 void NonDExpansion::
-configure_indices(size_t lev, size_t form, bool multilevel,
+configure_indices(unsigned short lev, unsigned short form, bool multilevel,
 		  const RealVector& cost, Real& lev_cost)
 {
-  // Set the active surrogate/truth models within iteratedModel
-  // (the HierarchSurrModel)
+  // Set active surrogate/truth models within the hierarchical surrogate
+  // (iteratedModel)
 
   bool costs = !cost.empty();
 
-  if (multilevel) iteratedModel.truth_model_indices(form, lev);
-  else            iteratedModel.truth_model_indices(lev);
+  /*
+  UShortArray truth_key;
+  form_key(lev, form, multilevel, truth_key);
+  uSpaceModel.truth_model_key(truth_key);
   lev_cost = (costs) ? cost[lev] : 0.;
 
-  // assume bottom-up sweep through levels (avoid redundant mode updates)
-  // > update iteratedModel / uSpaceModel in separate calls rather than using
-  //   uSpaceModel.surrogate_response_mode(mode) since DFSurrModel must pass
-  //   mode along to iteratedModel (a HierarchSurrModel) without absorbing it
   if (lev == 0)
     bypass_surrogate_mode();
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
-    if (multilevel) iteratedModel.surrogate_model_indices(form, lev-1);
-    else            iteratedModel.surrogate_model_indices(lev-1);
+
+    UShortArray surr_key(truth_key);
+    --surr_key.back();// decrement trailing index (lev if multilevel, else form)
+    uSpaceModel.surrogate_model_key(surr_key);
+
+    if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
+  }
+  activate_key(truth_key);
+  */
+
+  if (multilevel) uSpaceModel.truth_model_key(form, lev);
+  else            uSpaceModel.truth_model_key(lev);
+  lev_cost = (costs) ? cost[lev] : 0.;
+
+  // assume bottom-up sweep through levels (avoid redundant mode updates)
+  if (lev == 0)
+    bypass_surrogate_mode();
+  else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
+    aggregated_models_mode();
+    if (multilevel) uSpaceModel.surrogate_model_key(form, lev-1);
+    else            uSpaceModel.surrogate_model_key(lev-1);
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
 
-  configure_keys(lev, form, multilevel);
-}
-
-
-void NonDExpansion::configure_keys(size_t lev, size_t form, bool multilevel)
-{
-  // Assign the multi-index key for surrogate model management within
-  // uSpaceModel (the DataFitSurrModel)
-  UShortArray mi_key;
-  if (multilevel) // model form is fixed @ HF; lev enumerates the levels
-    { mi_key.resize(2); mi_key[0] = form; mi_key[1] = lev; }
-  else            // lev enumerates the model forms; levels are ignored
-    { mi_key.resize(1); mi_key[0] = lev; } // mi_key[1] = _NPOS;
-  uSpaceModel.active_model_key(mi_key);
+  activate_key(uSpaceModel.truth_model_key());
 }
 
 
@@ -1216,11 +1220,12 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
-  bool multilev; size_t num_lev, form; RealVector cost; Real lev_cost;
-  configure_levels(num_lev, form, multilev, true);
+  size_t num_lev; unsigned short form; bool multilev;
+  RealVector cost; Real lev_cost;
+  configure_levels(num_lev, form, multilev, true); // MF given precedence
 
   // initial low fidelity/lowest discretization expansion
-  size_t lev = 0;
+  unsigned short lev = 0;
   configure_indices(lev, form, multilev, cost, lev_cost);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
@@ -1276,13 +1281,13 @@ void NonDExpansion::greedy_multifidelity_expansion()
   compute_covariance();// TO DO: annotated_results(false);
 
   // Initialize again (or must propagate settings from mf_expansion())
-  size_t lev, form, num_lev, best_lev, lev_candidate, best_candidate;
-  bool multilev;  RealVector cost;
-  configure_levels(num_lev, form, multilev, true);
+  size_t num_lev, best_lev, lev_candidate, best_candidate;
+  unsigned short lev, form; bool multilev; RealVector cost;
+  configure_levels(num_lev, form, multilev, true); // MF given precedence
   configure_cost(num_lev, multilev, cost);
 
   for (lev=0; lev<num_lev; ++lev) {
-    configure_keys(lev, form, multilev);
+    activate_key(lev, form, multilev);
     pre_refinement();
   }
 
@@ -1329,7 +1334,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Perform final roll-up for each level and then combine levels
   NLev.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev) {
-    configure_keys(lev, form, multilev);
+    activate_key(lev, form, multilev);
     post_refinement(best_lev_metric);
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }

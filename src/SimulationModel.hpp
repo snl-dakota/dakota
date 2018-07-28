@@ -56,9 +56,9 @@ protected:
   /// of 1 solution level
   size_t solution_levels(bool lwr_bnd = true) const;
   /// activate entry in solnControlCostMap
-  void solution_level_index(size_t lev_index);
+  void solution_level_index(unsigned short lev_index);
   /// return active entry in solnControlCostMap
-  size_t solution_level_index() const;
+  unsigned short solution_level_index() const;
   /// return all cost estimates from solnControlCostMap
   RealVector solution_level_costs() const;
   /// return active cost estimate from solnControlCostMap
