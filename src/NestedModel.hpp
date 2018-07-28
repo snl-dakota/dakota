@@ -466,7 +466,7 @@ inline const RealVector& NestedModel::error_estimates()
   // For now, assume no error contributions from optional interface, e.g.,
   // these are deterministic mappings and have no estimator variance.
 
-  // *** TO DO: integrate with evaluate and evalaute_nowait()
+  // *** TO DO: integrate with evaluate and evaluate_nowait()
 
   iterator_error_estimation(subIterator.response_error_estimates(),
 			    mappedErrorEstimates);

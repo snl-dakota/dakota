@@ -990,6 +990,8 @@ const RealVector& RecastModel::error_estimates()
          recast_error_est(currentResponse.shared_data(), recast_set);
     // transform the error estimates as Response::functionValues
     sm_error_est.function_values(subModel.error_estimates());
+    if (outputLevel >= DEBUG_OUTPUT) // distinguish ScalingModel debug blocks
+      Cout << "Transforming Error Estimates:\n";
     transform_response(currentVariables, subModel.current_variables(),
 		       sm_error_est, recast_error_est);
     mappedErrorEstimates = recast_error_est.function_values();
