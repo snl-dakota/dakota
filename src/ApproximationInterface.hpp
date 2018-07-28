@@ -76,6 +76,9 @@ protected:
   void active_model_key(const UShortArray& mi_key);
   void clear_model_keys();
 
+  void surrogate_model_key(const UShortArray& key);
+  void truth_model_key(const UShortArray& key);
+  
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
   void link_multilevel_approximation_data();
@@ -181,6 +184,10 @@ private:
   /// response function subset that is approximated
   IntSet approxFnIndices;
 
+  /// set of keys to enumerate when adding data to multiple
+  /// SurrogateData keys within each Approximation
+  UShort2DArray approxDataKeys;
+
   /// data that is shared among all functionSurfaces
   SharedApproxData sharedData;
   /// list of approximations, one per response function
@@ -280,6 +287,42 @@ inline void ApproximationInterface::clear_model_keys()
   // each contain their own approxData which must be cleared.
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].clear_model_keys();
+}
+
+
+inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
+{
+  // AGGREGATED_MODELS mode uses {HF,LF} order, as does
+  // ApproximationInterface::*_add()
+  approxDataKeys.resize(2);
+  const UShortArray& key0 = approxDataKeys[0];
+  UShortArray&       key1 = approxDataKeys[1];
+  key1 = key;
+  // alter key to distinguish a particular aggregation used for modeling
+  // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
+  key1.insert(key1.end(), key0.begin(), key0.end());
+}
+
+
+inline void ApproximationInterface::truth_model_key(const UShortArray& key)
+{
+  // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
+  size_t num_keys = approxDataKeys.size();
+  switch (num_keys) {
+  case 0: approxDataKeys.push_back(key); break;
+  case 1: approxDataKeys[0] = key;       break;
+  case 2: {
+    UShortArray& key0 = approxDataKeys[0];
+    UShortArray& key1 = approxDataKeys[1];
+    if (key0 != key) {
+      key0 = key;
+      size_t key_len = key1.size() - key.size();
+      key1.resize(key_len);
+      key1.insert(key1.end(), key.begin(), key.end());
+    }
+    break;
+  }
+  }
 }
 
 

@@ -868,8 +868,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
-  size_t lev, num_lev, form, iter = 0,
-    max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  unsigned short lev, form;
+  size_t num_lev, iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   RealVector cost;
   bool multilev, optional_cost = (mlmfAllocControl == RIP_SAMPLING),

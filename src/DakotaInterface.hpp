@@ -128,6 +128,11 @@ public:
   /// reset initial state by removing all model keys for an approximation
   virtual void clear_model_keys();
 
+  /// assign key for the surrogate model within a {truth,surrogate} pairing
+  virtual void surrogate_model_key(const UShortArray& key);
+  /// assign key for the truth model within a {truth,surrogate} pairing
+  virtual void truth_model_key(const UShortArray& key);
+
   /// set the (currently active) approximation function index set
   virtual void approximation_function_indices(const IntSet& approx_fn_indices);
 

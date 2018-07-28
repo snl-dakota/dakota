@@ -62,6 +62,16 @@ protected:
   /// return truth_model()
   Model& subordinate_model();
 
+  void surrogate_model_key(unsigned short model_index,
+			   unsigned short soln_lev_index);
+  void surrogate_model_key(const UShortArray& key);
+  const UShortArray& surrogate_model_key() const;
+
+  void truth_model_key(unsigned short model_index,
+		       unsigned short soln_lev_index);
+  void truth_model_key(const UShortArray& key);
+  const UShortArray& truth_model_key() const;
+
   /// return responseMode
   short surrogate_response_mode() const;
 
@@ -83,6 +93,11 @@ protected:
   //- Heading: Member functions
   //
 
+  /// return the level index from active low fidelity model key
+  unsigned short surrogate_level_index() const;
+  /// return the level index from active high fidelity model key
+  unsigned short truth_level_index() const;
+
   /// verify compatibility between SurrogateModel attributes and
   /// attributes of the submodel (DataFitSurrModel::actualModel or
   /// HierarchSurrModel::highFidelityModel)
@@ -101,7 +116,7 @@ protected:
   void response_combine(const Response& actual_response,
                         const Response& approx_response,
                         Response& combined_response);
-  /// aggregate LF and HF response to create a new response with 2x size
+  /// aggregate {HF,LF} response data to create a new response with 2x size
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
 
@@ -118,6 +133,13 @@ protected:
   /** SurrBasedLocalMinimizer toggles this mode since compute_correction()
       does not back out old corrections. */
   short responseMode;
+
+  /// array of indices that identify the surrogate (e.g., low fidelity) model
+  /// that is currently active within orderedModels
+  UShortArray surrModelKey;
+  /// array of indices that identify the truth (e.g., high fidelity) model that
+  /// is currently active within orderedModels
+  UShortArray truthModelKey;
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
@@ -233,6 +255,56 @@ inline bool SurrogateModel::mapping_initialized() const
 
 inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
+
+
+inline void SurrogateModel::
+surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
+{
+  if (soln_lev_index == USHRT_MAX)
+    surrModelKey.resize(1);
+  else {
+    surrModelKey.resize(2);
+    surrModelKey[1] = soln_lev_index; // including USHRT_MAX default
+  }
+  surrModelKey[0] = model_index;
+}
+
+
+inline void SurrogateModel::surrogate_model_key(const UShortArray& key)
+{ surrModelKey = key; }
+
+
+inline const UShortArray& SurrogateModel::surrogate_model_key() const
+{ return surrModelKey; }
+
+
+inline unsigned short SurrogateModel::surrogate_level_index() const
+{ return (surrModelKey.size() >= 2) ? surrModelKey.back() : USHRT_MAX; }
+
+
+inline void SurrogateModel::
+truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
+{
+  if (soln_lev_index == USHRT_MAX)
+    truthModelKey.resize(1);
+  else {
+    truthModelKey.resize(2);
+    truthModelKey[1] = soln_lev_index; // including USHRT_MAX default
+  }
+  truthModelKey[0] = model_index;
+}
+
+
+inline void SurrogateModel::truth_model_key(const UShortArray& key)
+{ truthModelKey = key; }
+
+
+inline const UShortArray& SurrogateModel::truth_model_key() const
+{ return truthModelKey; }
+
+
+inline unsigned short SurrogateModel::truth_level_index() const
+{ return (truthModelKey.size() >= 2) ? truthModelKey.back() : USHRT_MAX; }
 
 
 inline short SurrogateModel::surrogate_response_mode() const

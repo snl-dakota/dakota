@@ -219,22 +219,22 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-/* Real */void SimulationModel::solution_level_index(size_t lev_index)
+/* Real */void SimulationModel::solution_level_index(unsigned short lev_index)
 {
   // incoming soln level index is an index into the ordered solnCntlCostMap,
   // not to be confused with the value in the key-value pair that corresponds
   // to the discrete variable value index (val_index below).
-  if (lev_index == _NPOS) { // just return quietly to simplify calling code
-    return;                 // (rather than always checking index validity)
+  if (lev_index == USHRT_MAX) { // just return quietly to simplify calling code
+    return;                     // (rather than always checking index validity)
 
-    //Cerr << "Error: _NPOS passed to SimulationModel::solution_level_index()."
-    //     << std::endl;
+    //Cerr << "Error: USHRT_MAX passed to SimulationModel::solution_level_index"
+    //     << "()." << std::endl;
     //abort_handler(MODEL_ERROR);
   }
 
-  std::map<Real, size_t>::const_iterator cost_cit = solnCntlCostMap.begin();
-  std::advance(cost_cit, lev_index);
-  size_t val_index = cost_cit->second;
+  std::map<Real, size_t>::const_iterator c_cit = solnCntlCostMap.begin();
+  std::advance(c_cit, lev_index);
+  size_t val_index = c_cit->second;
 
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
@@ -246,71 +246,73 @@ initialize_solution_control(const String& control, const RealVector& cost)
   }
   //////////////////////////////
   case DISCRETE_DESIGN_SET_INT: {
-    ISCIter cit = discreteDesignSetIntValues[solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_int_variable(*cit, solnCntlADVIndex);
+    ISCIter is_cit = discreteDesignSetIntValues[solnCntlSetIndex].begin();
+    std::advance(is_cit, val_index);
+    currentVariables.all_discrete_int_variable(*is_cit, solnCntlADVIndex);
     break;
   }
   case DISCRETE_DESIGN_SET_STRING: {
-    SSCIter cit = discreteDesignSetStringValues[solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_string_variable(*cit, solnCntlADVIndex);
+    SSCIter ss_cit = discreteDesignSetStringValues[solnCntlSetIndex].begin();
+    std::advance(ss_cit, val_index);
+    currentVariables.all_discrete_string_variable(*ss_cit, solnCntlADVIndex);
     break;
   }
   case DISCRETE_DESIGN_SET_REAL: {
-    RSCIter cit = discreteDesignSetRealValues[solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_real_variable(*cit, solnCntlADVIndex);
+    RSCIter rs_cit = discreteDesignSetRealValues[solnCntlSetIndex].begin();
+    std::advance(rs_cit, val_index);
+    currentVariables.all_discrete_real_variable(*rs_cit, solnCntlADVIndex);
     break;
   }
   //////////////////////////////
   case DISCRETE_UNCERTAIN_SET_INT: {
-    IRMCIter cit = epistDistParams.discrete_set_int_values_probabilities()
+    IRMCIter ir_cit = epistDistParams.discrete_set_int_values_probabilities()
       [solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_int_variable(cit->first, solnCntlADVIndex);
+    std::advance(ir_cit, val_index);
+    currentVariables.all_discrete_int_variable(ir_cit->first, solnCntlADVIndex);
     break;
   }
   case DISCRETE_UNCERTAIN_SET_STRING: {
-    SRMCIter cit = epistDistParams.discrete_set_string_values_probabilities()
+    SRMCIter sr_cit = epistDistParams.discrete_set_string_values_probabilities()
       [solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_string_variable(cit->first, solnCntlADVIndex);
+    std::advance(sr_cit, val_index);
+    currentVariables.all_discrete_string_variable(sr_cit->first,
+						  solnCntlADVIndex);
     break;
   }
   case DISCRETE_UNCERTAIN_SET_REAL: {
-    RRMCIter cit = epistDistParams.discrete_set_real_values_probabilities()
+    RRMCIter rr_cit = epistDistParams.discrete_set_real_values_probabilities()
       [solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_real_variable(cit->first, solnCntlADVIndex);
+    std::advance(rr_cit, val_index);
+    currentVariables.all_discrete_real_variable(rr_cit->first,
+						solnCntlADVIndex);
     break;
   }
   //////////////////////////////
   case DISCRETE_STATE_SET_INT: {
-    ISCIter cit = discreteStateSetIntValues[solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_int_variable(*cit, solnCntlADVIndex);
+    ISCIter is_cit = discreteStateSetIntValues[solnCntlSetIndex].begin();
+    std::advance(is_cit, val_index);
+    currentVariables.all_discrete_int_variable(*is_cit, solnCntlADVIndex);
     break;
   }
   case DISCRETE_STATE_SET_STRING: {
-    SSCIter cit = discreteStateSetStringValues[solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_string_variable(*cit, solnCntlADVIndex);
+    SSCIter ss_cit = discreteStateSetStringValues[solnCntlSetIndex].begin();
+    std::advance(ss_cit, val_index);
+    currentVariables.all_discrete_string_variable(*ss_cit, solnCntlADVIndex);
     break;
   }
   case DISCRETE_STATE_SET_REAL: {
-    RSCIter cit = discreteStateSetRealValues[solnCntlSetIndex].begin();
-    std::advance(cit, val_index);
-    currentVariables.all_discrete_real_variable(*cit, solnCntlADVIndex);
+    RSCIter rs_cit = discreteStateSetRealValues[solnCntlSetIndex].begin();
+    std::advance(rs_cit, val_index);
+    currentVariables.all_discrete_real_variable(*rs_cit, solnCntlADVIndex);
     break;
   }
   }
 
-  //return cost_cit->first; // cost estimate for this solution level index
+  //return c_cit->first; // cost estimate for this solution level index
 }
 
 
-size_t SimulationModel::solution_level_index() const
+unsigned short SimulationModel::solution_level_index() const
 {
   size_t val_index;
   switch (solnCntlVarType) {
@@ -374,11 +376,12 @@ size_t SimulationModel::solution_level_index() const
       discreteStateSetRealValues[solnCntlSetIndex]);
     break;
   default: // EMPTY_TYPE (no solution_level_control provided)
-    return _NPOS; break;
+    return USHRT_MAX; break;
   }
 
   // convert val_index to lev_index and return
-  return map_value_to_index(val_index, solnCntlCostMap);
+  size_t lev_index = map_value_to_index(val_index, solnCntlCostMap);
+  return (lev_index == _NPOS) ? USHRT_MAX : (unsigned short)lev_index;
 }
 
 
@@ -397,8 +400,8 @@ Real SimulationModel::solution_level_cost() const
   std::map<Real, size_t>::const_iterator cit = solnCntlCostMap.begin();
   if (cit == solnCntlCostMap.end()) return 0.;
   else {
-    size_t lev_index = solution_level_index();
-    if (lev_index != _NPOS)
+    unsigned short lev_index = solution_level_index();
+    if (lev_index != USHRT_MAX)
       std::advance(cit, lev_index);
     return cit->first;
   }

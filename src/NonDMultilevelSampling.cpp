@@ -170,7 +170,8 @@ void NonDMultilevelSampling::core_run()
   // TO DO: following pilot sample across levels and fidelities in mixed case,
   // could pair models for CVMC based on estimation of rho2_LH.
 
-  size_t model_form = 0, num_mf = NLev.size();
+  unsigned short model_form = 0;
+  size_t num_mf = NLev.size();
   if (num_mf > 1) {
     size_t num_hf_lev = NLev.back().size();
     if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
@@ -184,10 +185,9 @@ void NonDMultilevelSampling::core_run()
     }
     else { // multiple model forms (only) --> CVMC
       // use nominal value from user input, ignoring solution_level_control
-      size_t soln_level = _NPOS;
-      SizetSizetPair lf_form_level(model_form,   soln_level),
-	             hf_form_level(model_form+1, soln_level);
-      control_variate_mc(lf_form_level, hf_form_level);
+      UShortArray lf_key(1);  lf_key[0] = model_form;     // ignore soln_level
+      UShortArray hf_key(1);  hf_key[0] = model_form + 1; // ignore soln_level
+      control_variate_mc(lf_key, hf_key);
     }
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
@@ -201,7 +201,7 @@ void NonDMultilevelSampling::core_run()
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
+void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 {
   // Formulate as a coordinated progression towards convergence, where, e.g.,
   // time step is inferred from the spatial discretization (NOT an additional
@@ -233,8 +233,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   //      of resolution reqmts?)
   // 2. Better: select N_l based on convergence in aggregated variance.
   
-  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
-  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+  iteratedModel.surrogate_model_key(model_form);// soln lev not updated yet
+  iteratedModel.truth_model_key(model_form);    // soln lev not updated yet
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
@@ -365,10 +365,10 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
+void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 {
-  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
-  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+  iteratedModel.surrogate_model_key(model_form);// soln lev not updated yet
+  iteratedModel.truth_model_key(model_form);    // soln lev not updated yet
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
@@ -529,18 +529,16 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
 void NonDMultilevelSampling::
-control_variate_mc(const SizetSizetPair& lf_form_level,
-		   const SizetSizetPair& hf_form_level)
+control_variate_mc(const UShortArray& lf_key, const UShortArray& hf_key)
 {
-  iteratedModel.surrogate_model_indices(lf_form_level);
-  iteratedModel.truth_model_indices(hf_form_level);
+  iteratedModel.surrogate_model_key(lf_key);
+  iteratedModel.truth_model_key(hf_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
 
-  // retrieve active index (will differ from incoming soln levels when _NPOS
-  // is passed)
-  //size_t lf_lev_index = surr_model.solution_level_index(),
-  //       hf_lev_index = truth_model.solution_level_index();
+  // retrieve active index
+  //unsigned short lf_lev_index =  surr_model.solution_level_index(),
+  //               hf_lev_index = truth_model.solution_level_index();
   // retrieve cost estimates across model forms for a particular soln level
   Real lf_cost =  surr_model.solution_level_cost(),
        hf_cost = truth_model.solution_level_cost(),
@@ -548,7 +546,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   size_t iter = 0;
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
-  initialize_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL,sum_LH);
+  initialize_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
             rho2_LH(numFunctions, false);
 
@@ -557,8 +555,9 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   load_pilot_sample(pilotSamples, NLev, delta_N_l);
 
   // NLev allocations currently enforce truncation to #HF levels (1)
-  SizetArray& N_lf = NLev[lf_form_level.first][0];//[lf_lev_index];
-  SizetArray& N_hf = NLev[hf_form_level.first][0];//[hf_lev_index];
+  unsigned short lf_model_form = lf_key.front(), hf_model_form = hf_key.front();
+  SizetArray& N_lf = NLev[lf_model_form][0];//[lf_lev_index];
+  SizetArray& N_hf = NLev[hf_model_form][0];//[hf_lev_index];
   size_t raw_N_lf = 0, raw_N_hf = 0;
   RealVector mu_hat;
 
@@ -567,8 +566,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // ---------------------
 
   // Initialize for pilot sample (shared sample count discarding any excess)
-  numSamples = std::min(delta_N_l[lf_form_level.first],
-			delta_N_l[hf_form_level.first]);
+  numSamples = std::min(delta_N_l[lf_model_form], delta_N_l[hf_model_form]);
   shared_increment(iter, 0);
   accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		     sum_HH, mu_hat, N_lf, N_hf);
@@ -635,10 +633,11 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
     across two model forms to exploit correlation in the discrepancies
     at each level (Y_l). */
 void NonDMultilevelSampling::
-multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
+multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
+				    unsigned short hf_model_form)
 {
-  iteratedModel.surrogate_model_indices(lf_model_form); // for init levs,cost
-  iteratedModel.truth_model_indices(hf_model_form);     // for init levs,cost
+  iteratedModel.surrogate_model_key(lf_model_form); // for init levs,cost
+  iteratedModel.truth_model_key(hf_model_form);     // for init levs,cost
 
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -856,10 +855,11 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     to separately target correlations for each QoI level embedded
     within the level discrepancies. */
 void NonDMultilevelSampling::
-multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
+multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
+				    unsigned short hf_model_form)
 {
-  iteratedModel.surrogate_model_indices(lf_model_form); // for init levs,cost
-  iteratedModel.truth_model_indices(hf_model_form);     // for init levs,cost
+  iteratedModel.surrogate_model_key(lf_model_form); // for init levs,cost
+  iteratedModel.truth_model_key(hf_model_form);     // for init levs,cost
 
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -1290,11 +1290,12 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODELS orders LF followed by HF
-	q_l_prod   = q_l   = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	q_l_prod   = q_l   = (os) ?  fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	q_lm1_prod = q_lm1 = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
-	q_lm1_prod = q_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -1382,8 +1383,10 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
-	hf_prod = hf_fn = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	hf_prod = hf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	lf_prod = lf_fn = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
 	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
@@ -1468,8 +1471,10 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
-      hf_prod = hf_fn = (os) ?
+      // response mode AGGREGATED_MODELS orders HF (active model key)
+      // followed by LF (previous/decremented model key)
+      hf_prod = hf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+      lf_prod = lf_fn = (os) ?
 	fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	fn_vals[qoi+numFunctions];
 
@@ -1545,11 +1550,12 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODELS orders LF followed by HF
-	q_l_prod   = q_l   = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	q_l_prod   = q_l   = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	q_lm1_prod = q_lm1 = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
-	q_lm1_prod = q_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -1604,10 +1610,12 @@ accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	prod_l   = fn_l   = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	prod_l   = fn_l   = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	prod_lm1 = fn_lm1 = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
-	prod_lm1 = fn_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	if (isfinite(fn_l) && isfinite(fn_lm1)) { // neither NaN nor +/-Inf
 	  y_it = sum_Y.begin(); ord = y_it->first; active_ord = 1;
@@ -1756,16 +1764,18 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
+	// response mode AGGREGATED_MODELS orders level l (active model key)
+	// followed by level l-1 (previous/decremented model key)
 	lf_l_prod   = lf_l   = (lfos) ?
+	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
+	lf_lm1_prod = lf_lm1 = (lfos) ?
 	  lf_fn_vals[qoi+numFunctions] - lf_offset[qoi+numFunctions] :
 	  lf_fn_vals[qoi+numFunctions];
-	lf_lm1_prod = lf_lm1 = (lfos) ?
-	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
 	hf_l_prod   = hf_l   = (hfos) ?
+	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
+	hf_lm1_prod = hf_lm1 = (hfos) ?
 	  hf_fn_vals[qoi+numFunctions] - hf_offset[qoi+numFunctions] :
 	  hf_fn_vals[qoi+numFunctions];
-	hf_lm1_prod = hf_lm1 = (hfos) ?
-	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&
@@ -1882,16 +1892,18 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
+	// response mode AGGREGATED_MODELS orders level l (active model key)
+	// followed by level l-1 (previous/decremented model key)
 	lf_l_prod   = lf_l   = (lfos) ?
+	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
+	lf_lm1_prod = lf_lm1 = (lfos) ?
 	  lf_fn_vals[qoi+numFunctions] - lf_offset[qoi+numFunctions] :
 	  lf_fn_vals[qoi+numFunctions];
-	lf_lm1_prod = lf_lm1 = (lfos) ?
-	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
 	hf_l_prod   = hf_l   = (hfos) ?
+	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
+	hf_lm1_prod = hf_lm1 = (hfos) ?
 	  hf_fn_vals[qoi+numFunctions] - hf_offset[qoi+numFunctions] :
 	  hf_fn_vals[qoi+numFunctions];
-	hf_lm1_prod = hf_lm1 = (hfos) ?
-	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&

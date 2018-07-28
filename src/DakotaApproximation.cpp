@@ -307,9 +307,9 @@ void Approximation::build()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::export_model(const String& fn_label, 
-                                 const String& export_prefix, 
-                                 const unsigned short export_format)
+void Approximation::
+export_model(const String& fn_label, const String& export_prefix, 
+	     const unsigned short export_format)
 {
   if (approxRep)
     approxRep->export_model(fn_label, export_prefix, export_format);
@@ -738,30 +738,31 @@ int Approximation::recommended_points(bool constraint_flag) const
 
 
 void Approximation::
-add(const Variables& vars, bool anchor_flag, bool deep_copy, size_t d_index)
+add(const Variables& vars, bool anchor_flag, bool deep_copy,
+    const UShortArray& sd_key)
 {
   if (approxRep)
-    approxRep->add(vars, anchor_flag, deep_copy, d_index);
+    approxRep->add(vars, anchor_flag, deep_copy, sd_key);
   else { // not virtual: all derived classes use following definition
     // Approximation does not know about view mappings; therefore, take the
     // simple approach of matching up active or all counts with numVars.
     size_t num_v = sharedDataRep->numVars;
     if (vars.cv() + vars.div() + vars.drv() == num_v)
       add(vars.continuous_variables(), vars.discrete_int_variables(),
-	  vars.discrete_real_variables(), anchor_flag, deep_copy, d_index);
+	  vars.discrete_real_variables(), anchor_flag, deep_copy, sd_key);
     else if (vars.acv() + vars.adiv() + vars.adrv() == num_v)
       add(vars.all_continuous_variables(), vars.all_discrete_int_variables(),
-	  vars.all_discrete_real_variables(), anchor_flag, deep_copy, d_index);
+	  vars.all_discrete_real_variables(), anchor_flag, deep_copy, sd_key);
     /*
     else if (vars.cv() == num_v) {  // compactMode does not affect vars
       IntVector empty_iv; RealVector empty_rv;
-      add(vars.continuous_variables(), empty_iv, empty_rv,
-	  anchor_flag, deep_copy, d_index);
+      add(vars.continuous_variables(), empty_iv, empty_rv, anchor_flag,
+          deep_copy, sd_key);
     }
     else if (vars.acv() == num_v) { // potential conflict with cv/div/drv
       IntVector empty_iv; RealVector empty_rv;
-      add(vars.all_continuous_variables(), empty_iv, empty_rv,
-	  anchor_flag, deep_copy, d_index);
+      add(vars.all_continuous_variables(), empty_iv, empty_rv, anchor_flag,
+          deep_copy, sd_key);
     }
     */
     else {
@@ -775,10 +776,10 @@ add(const Variables& vars, bool anchor_flag, bool deep_copy, size_t d_index)
 
 void Approximation::
 add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy,
-    size_t d_index)
+    const UShortArray& sd_key)
 {
   if (approxRep)
-    approxRep->add(response, fn_index, anchor_flag, deep_copy, d_index);
+    approxRep->add(response, fn_index, anchor_flag, deep_copy, sd_key);
   else { // not virtual: all derived classes use following definition
 
     short asv_val = response.active_set_request_vector()[fn_index];
@@ -794,7 +795,7 @@ add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy,
     // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
     short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
     Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, asv_val, mode);
-    add(sdr, anchor_flag, d_index);
+    add(sdr, anchor_flag, sd_key);
 
     //}
   }
@@ -804,7 +805,7 @@ add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy,
 /** Short cut function (not used by ApproximationInterface). */
 void Approximation::
 add_array(const RealMatrix& sample_vars, const RealVector& sample_resp)
-//, size_t d_index)
+//, const UShortArray& sd_key)
 {
   if (approxRep)
     approxRep->add_array(sample_vars, sample_resp);
@@ -820,15 +821,16 @@ add_array(const RealMatrix& sample_vars, const RealVector& sample_resp)
     short asv_val = 1,
       mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
     RealVector empty_grad;  RealSymMatrix empty_hess;
+    const UShortArray& active_key = surrogate_data().active_key();
     for (i=0; i<num_samples; ++i) {
 
       // add variable values (column of samples matrix)
-      add(sample_vars[i], anchor_flag, deep_copy, activeDataIndex);//, d_index);
+      add(sample_vars[i], anchor_flag, deep_copy, active_key);//, sd_key);
 
       // add response value (scalar)
       Pecos::SurrogateDataResp
 	sdr(sample_resp[i], empty_grad, empty_hess, asv_val, mode);
-      add(sdr, anchor_flag, activeDataIndex);//, d_index);
+      add(sdr, anchor_flag, active_key);//, sd_key);
     }
   }
 }

@@ -856,15 +856,16 @@ namespace Dakota
 	    Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
             const SDVArray& training_vars = approx_data.variables_data();
             const SDRArray& training_resp = approx_data.response_data();
+	    const UShortArray& key = approx_data.active_key();
             
             for (size_t j = 0; j <= _vps_ext_neighbors[cell_index][0]; j++) // loop over neighbors
             {
                 size_t neighbor = cell_index;
                 if (j > 0) neighbor = _vps_ext_neighbors[cell_index][j];
                 
-                gpApproximations[cell_index].add(training_vars[neighbor], false, activeDataIndex);
+                gpApproximations[cell_index].add(training_vars[neighbor], false, key);
                 
-                gpApproximations[cell_index].add(training_resp[neighbor], false, activeDataIndex);
+                gpApproximations[cell_index].add(training_resp[neighbor], false, key);
             }
             gpApproximations[cell_index].build();
         }

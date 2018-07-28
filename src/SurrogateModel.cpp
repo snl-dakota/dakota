@@ -618,22 +618,25 @@ aggregate_response(const Response& hf_resp, const Response& lf_resp,
   size_t i, offset_i, num_lf_fns = lf_asv.size(), num_hf_fns = hf_asv.size();
   short asv_i;
 
-  for (i=0; i<num_lf_fns; ++i) {
-    agg_asv[i] = asv_i = lf_asv[i];
-    if (asv_i & 1) agg_resp.function_value(lf_resp.function_value(i), i);
-    if (asv_i & 2)
-      agg_resp.function_gradient(lf_resp.function_gradient_view(i), i);
-    if (asv_i & 4) agg_resp.function_hessian(lf_resp.function_hessian(i), i);
-  }
-  
+  // Order with HF first since it corresponds to the active model key
   for (i=0; i<num_hf_fns; ++i) {
-    offset_i = i + num_lf_fns;
-    agg_asv[offset_i] = asv_i = hf_asv[i];
-    if (asv_i & 1) agg_resp.function_value(hf_resp.function_value(i), offset_i);
+    agg_asv[i] = asv_i = hf_asv[i];
+    if (asv_i & 1) agg_resp.function_value(hf_resp.function_value(i), i);
     if (asv_i & 2)
-      agg_resp.function_gradient(hf_resp.function_gradient_view(i), offset_i);
+      agg_resp.function_gradient(hf_resp.function_gradient_view(i), i);
     if (asv_i & 4)
-      agg_resp.function_hessian(hf_resp.function_hessian(i), offset_i);
+      agg_resp.function_hessian(hf_resp.function_hessian(i), i);
+  }
+
+  // Order with LF second since it corresponds to a previous/decremented key
+  for (i=0; i<num_lf_fns; ++i) {
+    offset_i = i + num_hf_fns;
+    agg_asv[offset_i] = asv_i = lf_asv[i];
+    if (asv_i & 1) agg_resp.function_value(lf_resp.function_value(i), offset_i);
+    if (asv_i & 2)
+      agg_resp.function_gradient(lf_resp.function_gradient_view(i), offset_i);
+    if (asv_i & 4)
+      agg_resp.function_hessian(lf_resp.function_hessian(i), offset_i);
   }
 
   agg_resp.active_set_request_vector(agg_asv);

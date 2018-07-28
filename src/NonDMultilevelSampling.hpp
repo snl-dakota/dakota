@@ -65,23 +65,22 @@ private:
 
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using discrepancy accumulators (sum_Y)
-  void multilevel_mc_Ysum(size_t model_form);
+  void multilevel_mc_Ysum(unsigned short model_form);
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
-  void multilevel_mc_Qsum(size_t model_form);
+  void multilevel_mc_Qsum(unsigned short model_form);
   /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc(const SizetSizetPair& lf_form_level,
-			  const SizetSizetPair& hf_form_level);
+  void control_variate_mc(const UShortArray& lf_key, const UShortArray& hf_key);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Y (LH correlations for level discrepancies)
-  void multilevel_control_variate_mc_Ycorr(size_t lf_model_form,
-					   size_t hf_model_form);
+  void multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
+					   unsigned short hf_model_form);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
-  void multilevel_control_variate_mc_Qcorr(size_t lf_model_form,
-					   size_t hf_model_form);
+  void multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
+					   unsigned short hf_model_form);
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
@@ -96,10 +95,10 @@ private:
   void uncorrected_surrogate_mode();
 
   /// manage response mode, model indices, and aggregate level cost
-  void configure_indices(size_t lev, size_t model_form,
+  void configure_indices(unsigned short lev, unsigned short model_form,
 			 const RealVector& cost, Real& lev_cost);
   /// manage response mode and model indices
-  void configure_indices(size_t lev, size_t model_form);
+  void configure_indices(unsigned short lev, unsigned short model_form);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -489,29 +488,36 @@ inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 
 
 inline void NonDMultilevelSampling::
-configure_indices(size_t lev, size_t model_form)
+configure_indices(unsigned short lev, unsigned short model_form)
 {
   if (lev) {
     //if (lev == 1) // update responseMode for levels to follow (1:num_lev-1)
     aggregated_models_mode();
-    iteratedModel.surrogate_model_indices(model_form, lev-1);
-    iteratedModel.truth_model_indices(model_form, lev);
+    iteratedModel.surrogate_model_key(model_form, lev-1);
+    iteratedModel.truth_model_key(model_form, lev);
+
+    // Not currently necessary, since no surrogate data:
+    //iteratedModel.active_model_key(iteratedModel.truth_model_key());
   }
   else {
     uncorrected_surrogate_mode();
-    iteratedModel.surrogate_model_indices(model_form, lev);
+    iteratedModel.surrogate_model_key(model_form, lev);
+
+    // Not currently necessary, since no surrogate data:
+    //iteratedModel.active_model_key(iteratedModel.surrogate_model_key());
   }
 }
 
 
 inline void NonDMultilevelSampling::
-configure_indices(size_t lev, size_t model_form, const RealVector& cost,
-		  Real& lev_cost)
+configure_indices(unsigned short lev, unsigned short model_form,
+		  const RealVector& cost, Real& lev_cost)
 {
   // discrepancies incur 2 level costs
   lev_cost = (lev) ?
     cost[lev] + cost[lev-1] : // aggregated {LF,HF} mode
     cost[lev];                //     uncorrected LF mode
+
   configure_indices(lev, model_form);
 }
 
