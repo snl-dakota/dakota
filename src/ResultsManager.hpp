@@ -244,6 +244,8 @@ public:
 
   /// whether any databases are active
   bool active() const;
+  bool isCoreDBActive() const;
+  bool isHDF5DBActive() const;
 
   // TODO: const
   /// Write in-core databases to file

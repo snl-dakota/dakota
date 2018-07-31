@@ -86,11 +86,21 @@ void ResultsManager::initialize(const std::string& base_filename)
 #endif
 }
 
-
 bool ResultsManager::active() const
 {
-  return (coreDBActive || hdf5DBActive);
+   return (coreDBActive || hdf5DBActive);
 }
+
+bool ResultsManager::isCoreDBActive() const
+{
+  return coreDBActive;
+}
+
+bool ResultsManager::isHDF5DBActive() const
+{
+  return hdf5DBActive;
+}
+
 
 void ResultsManager::write_databases()
 {

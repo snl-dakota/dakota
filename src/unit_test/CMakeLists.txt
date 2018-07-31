@@ -157,7 +157,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   if(DAKOTA_HAVE_HDF5)
     include_directories(${HDF5_INCLUDE_DIRS})
     link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
-    dakota_add_unit_test(NAME hdf5_tests SOURCES teuchos_unit_test_driver hdf5_test_serial.cpp hdf5_utils.cpp HDF5_Test.cpp
+    dakota_add_unit_test(NAME hdf5_tests SOURCES teuchos_unit_test_driver hdf5_test_serial.cpp hdf5_utils.cpp ResultsDBHDF5_Test.cpp
       LINK_DAKOTA_LIBS
       LINK_LIBS ${HDF5_LIBRARIES}
       )
