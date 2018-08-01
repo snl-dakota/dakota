@@ -370,7 +370,7 @@ void DataFitSurrModel::build_approximation()
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
 
   // clear out previous anchor/data points, but preserve history (if multipoint)
-  approxInterface.clear_current();
+  approxInterface.clear_current_data();
   // update actualModel w/ variable values/bounds/labels
   update_model(actualModel);
 
@@ -412,7 +412,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
 
   // clear out previous anchor/data points, but preserve history (if multipoint)
-  approxInterface.clear_current();
+  approxInterface.clear_current_data();
   // update actualModel w/ variable values/bounds/labels
   update_model(actualModel);
   // populate/replace the anchor point for the approximation.  When supported by

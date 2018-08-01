@@ -260,13 +260,16 @@ inline Model& SurrogateModel::subordinate_model()
 inline void SurrogateModel::
 surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
 {
-  if (soln_lev_index == USHRT_MAX)
-    surrModelKey.resize(1);
+  if (model_index == USHRT_MAX) surrModelKey.resize(0);
   else {
-    surrModelKey.resize(2);
-    surrModelKey[1] = soln_lev_index; // including USHRT_MAX default
+    if (soln_lev_index == USHRT_MAX)
+      surrModelKey.resize(1);
+    else {
+      surrModelKey.resize(2);
+      surrModelKey[1] = soln_lev_index;
+    }
+    surrModelKey[0] = model_index;
   }
-  surrModelKey[0] = model_index;
 }
 
 
@@ -285,13 +288,16 @@ inline unsigned short SurrogateModel::surrogate_level_index() const
 inline void SurrogateModel::
 truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
 {
-  if (soln_lev_index == USHRT_MAX)
-    truthModelKey.resize(1);
+  if (model_index == USHRT_MAX) truthModelKey.resize(0);
   else {
-    truthModelKey.resize(2);
-    truthModelKey[1] = soln_lev_index; // including USHRT_MAX default
+    if (soln_lev_index == USHRT_MAX)
+      truthModelKey.resize(1);
+    else {
+      truthModelKey.resize(2);
+      truthModelKey[1] = soln_lev_index;
+    }
+    truthModelKey[0] = model_index;
   }
-  truthModelKey[0] = model_index;
 }
 
 

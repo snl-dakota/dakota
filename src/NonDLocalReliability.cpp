@@ -1782,9 +1782,9 @@ void NonDLocalReliability::update_limit_state_surrogate()
   IntResponsePair response_pr(0, response); // dummy eval id
 
   // After a design variable change, history data (e.g., TANA) needs
-  // to be cleared (build_approximation() only calls clear_current())
+  // to be cleared (build_approximation() only calls clear_current_data())
   if (numRelAnalyses && levelCount == 0)
-    uSpaceModel.approximations()[respFnCount].clear_all();
+    uSpaceModel.approximations()[respFnCount].clear_data();
   // build the new local/multipoint approximation
   uSpaceModel.build_approximation(mpp_vars, response_pr);
 }

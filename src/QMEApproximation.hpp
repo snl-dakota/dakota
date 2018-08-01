@@ -64,7 +64,7 @@ protected:
 
   //const RealMatrix& hessian(const Variables& vars);
 
-  void clear_current();
+  void clear_current_data();
 
 private:
 
@@ -113,7 +113,7 @@ inline QMEApproximation::~QMEApproximation()
 
 
 /** Redefine default implementation to support history mechanism. */
-inline void QMEApproximation::clear_current()
+inline void QMEApproximation::clear_current_data()
 {
   size_t ndv = sharedDataRep->numVars;
   Pecos::SurrogateData& approx_data = approxData[activeDataIndex];

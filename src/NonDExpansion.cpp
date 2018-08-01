@@ -1150,40 +1150,42 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel,
   // (iteratedModel)
 
   bool costs = !cost.empty();
+  lev_cost = (costs) ? cost[lev] : 0.;
 
   /*
   UShortArray truth_key;
   form_key(lev, form, multilevel, truth_key);
   uSpaceModel.truth_model_key(truth_key);
-  lev_cost = (costs) ? cost[lev] : 0.;
 
-  if (lev == 0)
+  if (lev == 0) {
     bypass_surrogate_mode();
+    uSpaceModel.surrogate_model_key(UShortArray());
+  }
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
-
     UShortArray surr_key(truth_key);
     --surr_key.back();// decrement trailing index (lev if multilevel, else form)
     uSpaceModel.surrogate_model_key(surr_key);
-
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
   activate_key(truth_key);
   */
 
-  if (multilevel) uSpaceModel.truth_model_key(form, lev);
-  else            uSpaceModel.truth_model_key(lev);
-  lev_cost = (costs) ? cost[lev] : 0.;
-
   // assume bottom-up sweep through levels (avoid redundant mode updates)
-  if (lev == 0)
+  if (lev == 0) {
     bypass_surrogate_mode();
+    // deactivate surrogate model key (resize ApproxInterface::approxDataKeys)
+    uSpaceModel.surrogate_model_key(UShortArray());
+  }
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
     if (multilevel) uSpaceModel.surrogate_model_key(form, lev-1);
     else            uSpaceModel.surrogate_model_key(lev-1);
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
+
+  if (multilevel) uSpaceModel.truth_model_key(form, lev);
+  else            uSpaceModel.truth_model_key(lev);
 
   activate_key(uSpaceModel.truth_model_key());
 }

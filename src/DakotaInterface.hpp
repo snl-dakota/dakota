@@ -173,7 +173,7 @@ public:
   virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
 
   /// removes data from last append from the approximation
-  virtual void pop_approximation(bool save_surr_data);
+  virtual void pop_approximation(bool save_data);
 
   /// retrieves approximation data from a previous state (negates pop)
   virtual void push_approximation();
@@ -199,13 +199,9 @@ public:
 					  const RealMatrix& challenge_pts);
 
   /// clears current data from an approximation interface
-  virtual void clear_current();
+  virtual void clear_current_data();
   /// clears all data from an approximation interface
-  virtual void clear_all();
-  /// clears bookkeeping for popped data sets for the active key
-  virtual void clear_active_popped();
-  /// clears bookkeeping for popped data sets for all keys
-  virtual void clear_popped();
+  virtual void clear_data();
 
   /// retrieve the SharedApproxData within an ApproximationInterface
   virtual SharedApproxData& shared_approximation();

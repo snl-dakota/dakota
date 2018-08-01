@@ -213,12 +213,12 @@ protected:
 
   void build();
   void rebuild();
-  void pop(bool save_data);
-  void push();
-  void finalize();
-  void combine();
-  void combined_to_active();
-  void clear_inactive();
+  void pop_coefficients(bool save_data);
+  void push_coefficients();
+  void finalize_coefficients();
+  void combine_coefficients();
+  void combined_to_active_coefficients();
+  void clear_inactive_coefficients();
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -545,55 +545,43 @@ inline void PecosApproximation::rebuild()
 }
 
 
-inline void PecosApproximation::pop(bool save_data)
+inline void PecosApproximation::pop_coefficients(bool save_data)
 {
-  // base class implementation removes data from currentPoints
-  Approximation::pop(save_data); // *** active key not updated until decrement!
   // map to Pecos::BasisApproximation
   pecosBasisApprox.decrement_coefficients(save_data);
 }
 
 
-inline void PecosApproximation::push()
+inline void PecosApproximation::push_coefficients()
 {
-  // base class implementation updates currentPoints
-  Approximation::push();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.push_coefficients();
 }
 
 
-inline void PecosApproximation::finalize()
+inline void PecosApproximation::finalize_coefficients()
 {
-  // base class implementation appends currentPoints with popped data sets
-  Approximation::finalize();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.finalize_coefficients();
 }
 
 
-inline void PecosApproximation::combine()
+inline void PecosApproximation::combine_coefficients()
 {
-  // base class implementation manages approx data
-  //Approximation::combine();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.combine_coefficients();
 }
 
 
-inline void PecosApproximation::combined_to_active()
+inline void PecosApproximation::combined_to_active_coefficients()
 {
-  // base class implementation manages approx data
-  Approximation::combined_to_active();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.combined_to_active();
 }
 
 
-inline void PecosApproximation::clear_inactive()
+inline void PecosApproximation::clear_inactive_coefficients()
 {
-  // base class implementation manages approx data
-  Approximation::clear_inactive();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.clear_inactive();
 }

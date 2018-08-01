@@ -1205,10 +1205,10 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
 }
 
 
-void Interface::pop_approximation(bool save_surr_data)
+void Interface::pop_approximation(bool save_data)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->pop_approximation(save_surr_data);
+    interfaceRep->pop_approximation(save_data);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
 	 << "(bool)\n       function. This interface does not support "
@@ -1319,37 +1319,19 @@ RealArray Interface::challenge_diagnostics(const String& metric_type,
 }
 
 
-void Interface::clear_current()
+void Interface::clear_current_data()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_current();
+    interfaceRep->clear_current_data();
   //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
 }
 
 
-void Interface::clear_all()
+void Interface::clear_data()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_all();
-  //else // letter lacking redefinition of virtual fn.
-    // ApplicationInterfaces: do nothing
-}
-
-
-void Interface::clear_active_popped()
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_active_popped();
-  //else // letter lacking redefinition of virtual fn.
-    // ApplicationInterfaces: do nothing
-}
-
-
-void Interface::clear_popped()
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_popped();
+    interfaceRep->clear_data();
   //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
 }

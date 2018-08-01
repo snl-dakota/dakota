@@ -241,7 +241,7 @@ void DataFitSurrBasedLocalMinimizer::build()
   // append as new truth data for updating multipoint approximations that
   // accumulate more than 2 pts (QMEA, MPEA).
   // > Not an anchor point --> use append_approx rather than update_approx
-  // > logic in *Approximation::clear_current() must manage mixed data sets
+  // > logic in *Approximation::clear_current_data() must manage mixed data sets
   else if (multiPtApproxFlag) {
     if (trustRegionData.status(NEW_CENTER))
       embed_correction = build_centered();

@@ -391,6 +391,9 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   }
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, true);
+
+  // reset active approxData key to approxDataKeys.front()
+  restore_data_key();
 }
 
 
@@ -438,6 +441,9 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
   else                              // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(samples[i], r_it->second, false);
+
+  // reset active approxData key to approxDataKeys.front()
+  restore_data_key();
 }
 
 
@@ -484,6 +490,9 @@ update_approximation(const VariablesArray& vars_array,
   else                            // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(vars_array[i], r_it->second, false);
+
+  // reset active approxData key to approxDataKeys.front()
+  restore_data_key();
 }
 
 
@@ -532,6 +541,9 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
       functionSurfaces[fn_index].pop_count(count, approxDataKeys[sd_index]);
     }
   }
+
+  // reset active approxData key to approxDataKeys.front()
+  restore_data_key();
 }
 
 
@@ -579,6 +591,9 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       mixed_add(samples[i], r_it->second, false);
 
   update_pop_counts(resp_map);
+
+  // reset active approxData key to approxDataKeys.front()
+  restore_data_key();
 }
 
 
@@ -626,6 +641,9 @@ append_approximation(const VariablesArray& vars_array,
       mixed_add(vars_array[i], r_it->second, false);
 
   update_pop_counts(resp_map);
+
+  // reset active approxData key to approxDataKeys.front()
+  restore_data_key();
 }
 
 

@@ -332,13 +332,16 @@ void Approximation::rebuild()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::pop(bool save_data)
+void Approximation::pop_data(const UShortArray& sd_key, bool save_data)
 {
-  if (approxRep) approxRep->pop(save_data);
+  if (approxRep) approxRep->pop_data(sd_key, save_data);
   else {
     size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d)
-      approxData[d].pop(save_data);
+    for (d=0; d<num_d; ++d) {
+      Pecos::SurrogateData& approx_data = approxData[d];
+      approx_data.active_key(sd_key); // no-op if key is already active
+      approx_data.pop(save_data);
+    }
   }
 }
 
@@ -346,14 +349,17 @@ void Approximation::pop(bool save_data)
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::push()
+void Approximation::push_data(const UShortArray& sd_key)
 {
-  if (approxRep) approxRep->push();
+  if (approxRep) approxRep->push_data(sd_key);
   else {
     size_t d, num_d = approxData.size(),
       r_index = sharedDataRep->retrieval_index();
-    for (d=0; d<num_d; ++d)
-      approxData[d].push(r_index);
+    for (d=0; d<num_d; ++d) {
+      Pecos::SurrogateData& approx_data = approxData[d];
+      approx_data.active_key(sd_key); // no-op if key is already active
+      approx_data.push(r_index);
+    }
   }
 }
 
@@ -361,19 +367,22 @@ void Approximation::push()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::finalize()
+void Approximation::finalize_data(const UShortArray& sd_key)
 {
   // finalization has to apply restorations in the correct order
 
-  if (approxRep) approxRep->finalize();
+  if (approxRep) approxRep->finalize_data(sd_key);
   else {
     // assume number of popped trials is consistent across approxData
     size_t d, p, f_index, num_popped = approxData[0].popped_sets(),
       num_d = approxData.size();      
     for (p=0; p<num_popped; ++p) {
       f_index = sharedDataRep->finalization_index(p);
-      for (d=0; d<num_d; ++d)
-	approxData[d].push(f_index, false);
+      for (d=0; d<num_d; ++d) {
+	Pecos::SurrogateData& approx_data = approxData[d];
+	approx_data.active_key(sd_key); // no-op if key is already active
+	approx_data.push(f_index, false);
+      }
     }
 
     clear_active_popped(); // after all finalization indices processes
@@ -381,54 +390,58 @@ void Approximation::finalize()
 }
 
 
-void Approximation::combine()
+void Approximation::pop_coefficients(bool save_data)
 {
-  if (approxRep) approxRep->combine();
+  if (approxRep) approxRep->pop_coefficients(save_data);
   //else no op
 }
 
 
-void Approximation::combined_to_active()
+void Approximation::push_coefficients()
+{
+  if (approxRep) approxRep->push_coefficients();
+  //else no op
+}
+
+
+void Approximation::finalize_coefficients()
+{
+  if (approxRep) approxRep->finalize_coefficients();
+  //else no op
+}
+
+
+void Approximation::combine_coefficients()
+{
+  if (approxRep) approxRep->combine_coefficients();
+  //else no op
+}
+
+
+void Approximation::clear_inactive_coefficients()
+{
+  if (approxRep) approxRep->clear_inactive_coefficients();
+  //else no op
+}
+
+
+/*
+void Approximation::combined_to_active_data()
 {
   if (approxRep) approxRep->combined_to_active();
-  //else {
-  //  const UShortArray& key = sharedDataRep->active_model_key();
-  //  for (d=0; d<num_d; ++d)
-  //    approxData[d].active_key(key);
-  //}
-}
-
-
-void Approximation::active_model_key(const UShortArray& mi_key)
-{
-  if (approxRep) approxRep->active_model_key(mi_key);
   else {
-    size_t d, num_d = approxData.size();
+    const UShortArray& key = sharedDataRep->active_model_key();
     for (d=0; d<num_d; ++d)
-      approxData[d].active_key(mi_key);
+      approxData[d].active_key(key);
   }
 }
+*/
 
 
-void Approximation::clear_model_keys()
+void Approximation::combined_to_active_coefficients()
 {
-  if (approxRep) approxRep->clear_model_keys();
-  else {
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d)
-      approxData[d].clear_keys();
-  }
-}
-
-
-void Approximation::clear_inactive()
-{
-  if (approxRep) approxRep->clear_inactive();
-  else {
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d)
-      approxData[d].clear_inactive();
-  }
+  if (approxRep) approxRep->combined_to_active_coefficients();
+  //else no-op
 }
 
 

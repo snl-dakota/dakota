@@ -199,7 +199,7 @@ private:
 
   /// update sameInterfaceInstance based on interface ids for models
   /// identified by current {low,high}FidelityKey
-  void check_interface_instance();
+  void check_model_interface_instance();
 
   /// update the passed model (one of the ordered models) with data that could
   /// change once per set of evaluations (e.g., an outer iterator execution),
@@ -310,13 +310,19 @@ inline size_t HierarchSurrModel::qoi() const
 }
 
 
-inline void HierarchSurrModel::check_interface_instance()
+inline void HierarchSurrModel::check_model_interface_instance()
 {
-  if (sameModelInstance) sameInterfaceInstance = true;
-  else
-    sameInterfaceInstance
-      = (orderedModels[surrModelKey.front()].interface_id() ==
-         orderedModels[truthModelKey.front()].interface_id());
+  if (surrModelKey.empty() || truthModelKey.empty())
+    sameModelInstance = sameInterfaceInstance = false; // even if both empty
+  else {
+    sameModelInstance = (surrModelKey.front() == truthModelKey.front());
+
+    if (sameModelInstance) sameInterfaceInstance = true;
+    else
+      sameInterfaceInstance
+	= (orderedModels[ surrModelKey.front()].interface_id() ==
+	   orderedModels[truthModelKey.front()].interface_id());
+  }
 }
 
 
@@ -353,10 +359,10 @@ key_updates(unsigned short model_index, unsigned short soln_lev_index)
     //update_from_model(orderedModels[model_index]);
   }
 
-  sameModelInstance = (!surrModelKey.empty() && !truthModelKey.empty() &&
-		        surrModelKey.front() ==  truthModelKey.front());
-  check_interface_instance();
+  // assign same{Model,Interface}Instance
+  check_model_interface_instance();
 
+  // *** TO DO: move this to another location, once both keys updated ***
   DiscrepancyCorrection& delta_corr = deltaCorr[fidelity_keys()];
   if (!delta_corr.initialized())
     delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,

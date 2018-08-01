@@ -76,31 +76,21 @@ public:
   virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
-  virtual void pop(bool save_data);
+  virtual void pop_coefficients(bool save_data);
   /// restores state prior to previous pop()
-  virtual void push();
+  virtual void push_coefficients();
   /// finalize approximation by applying all remaining trial sets
-  virtual void finalize();
+  virtual void finalize_coefficients();
 
-  /*
-  /// store current approximation state for later combination
-  virtual void store(size_t index = _NPOS);
-  /// restore previous approximation state
-  virtual void restore(size_t index = _NPOS);
-  /// remove a stored approximation prior to combination
-  virtual void remove_stored(size_t index = _NPOS);
-  */
-  /// activate an approximation state based on its multi-index key
-  virtual void active_model_key(const UShortArray& mi_key);
-  /// reset initial state by removing all model keys for an approximation
-  virtual void clear_model_keys();
-  /// clear inactive approximation data
-  virtual void clear_inactive();
+  /// clear current build data in preparation for next build
+  virtual void clear_current_data();
 
   /// combine all level approximations into a single aggregate approximation
-  virtual void combine();
+  virtual void combine_coefficients();
   /// promote combined approximation into active approximation
-  virtual void combined_to_active();
+  virtual void combined_to_active_coefficients();
+  /// prune inactive coefficients following combination and promotion to active
+  virtual void clear_inactive_coefficients();
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);
@@ -171,9 +161,6 @@ public:
   /// return the number of constraints to be enforced via an anchor point
   virtual int num_constraints() const;
 
-  /// clear current build data in preparation for next build
-  virtual void clear_current();
-
   //
   //- Heading: Member functions
   //
@@ -185,6 +172,14 @@ public:
   /// return the recommended number of samples to build the approximation type
   /// in numVars dimensions (default same as min_points)
   int recommended_points(bool constraint_flag) const;
+
+  /// removes entries from end of SurrogateData::{vars,resp}Data
+  /// (last points appended, or as specified in args)
+  void pop_data(const UShortArray& sd_key, bool save_data);
+  /// restores SurrogateData state prior to previous pop()
+  void push_data(const UShortArray& sd_key);
+  /// finalize SurrogateData by applying all remaining trial sets
+  void finalize_data(const UShortArray& sd_key);
 
   /// set activeDataIndex
   void surrogate_data_index(size_t d_index);
@@ -231,10 +226,14 @@ public:
   // end of SurrogateData::{vars,resp}Data, based on size of last data append)
   //size_t pop_count(const UShortArray& sd_key) const;
 
-  /// clear all build data (current and history) to restore original state
-  void clear_all();
+  /// activate an approximation state based on its multi-index key
+  void active_model_key(const UShortArray& sd_key);
+  /// reset initial state by removing all model keys for an approximation
+  void clear_model_keys();
   /// clear SurrogateData::{vars,resp}Data
   void clear_data();
+  /// clear inactive approximation data
+  void clear_inactive_data();
   /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for active key
   void clear_active_popped();
   /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for all keys
@@ -332,19 +331,23 @@ private:
 
 inline void Approximation::surrogate_data_index(size_t d_index)
 {
-  if (d_index >= approxData.size()) {
-    Cerr << "Error: index out of range in Approximation::"
-	 << "surrogate_data_index()." << std::endl;
-    abort_handler(APPROX_ERROR);
+  if (approxRep)
+    approxRep->surrogate_data_index(d_index);
+  else { // not virtual: all derived classes use following definition
+    if (d_index >= approxData.size()) {
+      Cerr << "Error: index out of range in Approximation::"
+	   << "surrogate_data_index()." << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+    activeDataIndex = d_index;
   }
-  activeDataIndex = d_index;
 }
 
 
 inline const Pecos::SurrogateData& Approximation::surrogate_data() const
 {
-  return (approxRep) ? approxRep->approxData[activeDataIndex]:
-                                  approxData[activeDataIndex];
+  return (approxRep) ? approxRep->approxData[approxRep->activeDataIndex]
+                     : approxData[activeDataIndex];
 }
 
 
@@ -488,31 +491,19 @@ inline void Approximation::pop_count(size_t count, const UShortArray& sd_key)
 }
 
 
-/** Clears out any history (e.g., TANA3Approximation use for a
-    different response function in NonDReliability). */
-inline void Approximation::clear_all()
+/** Clear current but preserve hisory for active key (virtual function
+    redefined by {TANA3,QMEA}Approximation to demote current while
+    preserving previous points). */
+inline void Approximation::clear_current_data()
 {
   if (approxRep) // envelope fwd to letter
-    approxRep->clear_all();
-  else { // not virtual: base class implementation
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d)
-      approxData[d].clear_active();
-  }
-}
-
-
-/** Redefined by TANA3Approximation to clear current data but preserve
-    history. */
-inline void Approximation::clear_current()
-{
-  if (approxRep) // envelope fwd to letter
-    approxRep->clear_current();
+    approxRep->clear_current_data();
   else // default implementation
-    clear_all();
+    clear_data();
 }
 
 
+/** Clears out current + history for active key (not virtual). */
 inline void Approximation::clear_data()
 {
   if (approxRep) approxRep->clear_data();
@@ -520,6 +511,39 @@ inline void Approximation::clear_data()
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
       approxData[d].clear_active();
+  }
+}
+
+
+inline void Approximation::active_model_key(const UShortArray& sd_key)
+{
+  if (approxRep) approxRep->active_model_key(sd_key);
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].active_key(sd_key);
+  }
+}
+
+
+inline void Approximation::clear_model_keys()
+{
+  if (approxRep) approxRep->clear_model_keys();
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].clear_keys();
+  }
+}
+
+
+inline void Approximation::clear_inactive_data()
+{
+  if (approxRep) approxRep->clear_inactive_data();
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].clear_inactive();
   }
 }
 

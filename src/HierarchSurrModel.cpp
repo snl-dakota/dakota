@@ -55,18 +55,16 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
 
   // default index values, to be overridden at run time
   if (num_models == 1) { // first and last solution level (1 model)
-    sameModelInstance = true;
     surrModelKey.resize(2); truthModelKey.resize(2);
     surrModelKey[0] = surrModelKey[1] = truthModelKey[0] = 0;
     truthModelKey[1] = orderedModels[0].solution_levels() - 1;
   }
   else { // first and last model form (solution levels ignored)
-    sameModelInstance = false;
     surrModelKey.resize(1); truthModelKey.resize(1);
     surrModelKey[0] = 0; truthModelKey[0] = num_models - 1;
     //surrModelKey[1] = truthModelKey[1] = _NPOS;
   }
-  check_interface_instance();
+  check_model_interface_instance();
 
   // Correction is required in HierarchSurrModel for some responseModes.
   // Enforcement of a correction type for these modes occurs in
