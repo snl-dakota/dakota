@@ -38,9 +38,18 @@ namespace Dakota
 	//----------------------------------------------------------------
 
 	// Some free functions to try to consolidate data type specs
-	inline H5::DataType h5_dtype( const Real & );
-	inline H5::DataType h5_dtype( const int & );
-	inline H5::DataType h5_dtype( const char * );
+	H5::DataType h5_dtype( const Real & )
+	{ return H5::PredType::IEEE_F64LE; }
+
+	H5::DataType h5_dtype( const int & )
+	{ return H5::PredType::IEEE_F64LE; }
+
+	H5::DataType h5_dtype( const char * )
+	{
+		H5::StrType str_type(0, H5T_VARIABLE);
+		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+		return str_type;
+	}
 
 	//----------------------------------------------------------------
 
@@ -206,12 +215,16 @@ namespace Dakota
 
 	//----------------------------------------------------------------
 
-	inline void create_groups(const std::string& dset_name) const;
+	void create_groups(const std::string& dset_name) const;
 
-	inline H5::DataSet create_dataset(
+	H5::DataSet create_dataset(
+        const H5::H5Location &loc, const std::string &name,
+        const H5::DataType &type, const H5::DataSpace &space) const;
+
+	H5::DataSet create_dataset(
 		const H5::H5Location &loc, const std::string &name,
 		const H5::DataType &type, const H5::DataSpace &space,
-		H5::DSetCreatPropList plist = H5::DSetCreatPropList()) const;
+		const H5::DSetCreatPropList plist) const;
 
 	bool is_scale(const H5::DataSet dset) const;
 

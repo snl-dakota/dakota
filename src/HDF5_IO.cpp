@@ -32,20 +32,6 @@ namespace Dakota
 
 //----------------------------------------------------------------
 
-	// Some free functions to try to consolidate data type specs
-	inline H5::DataType h5_dtype( const Real & )
-	{ return H5::PredType::IEEE_F64LE; }
-
-	inline H5::DataType h5_dtype( const int & )
-	{ return H5::PredType::IEEE_F64LE; }
-
-	inline H5::DataType h5_dtype( const char * )
-	{
-		H5::StrType str_type(0, H5T_VARIABLE);
-		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
-		return str_type;
-	}
-
 	void HDF5IOHelper::attach_scale(
         const String& dset_name, const String& scale_name,
         const String& label, const int& dim) const
@@ -93,7 +79,7 @@ namespace Dakota
 
 	// Assume we have an absolute path /root/dir/dataset and create
 	// groups /root/ and /root/dir/ if needed.
-	inline void HDF5IOHelper::create_groups(const std::string& dset_name) const
+	void HDF5IOHelper::create_groups(const std::string& dset_name) const
 	{
 		// the first group will be empty due to leading delimiter
 		// the last group will be the dataset name
@@ -122,10 +108,10 @@ namespace Dakota
 		}
 	}
 
-	inline H5::DataSet HDF5IOHelper::create_dataset(
+	H5::DataSet HDF5IOHelper::create_dataset(
 		const H5::H5Location &loc, const std::string &name,
 		const H5::DataType &type, const H5::DataSpace &space,
-		H5::DSetCreatPropList plist) const {
+		const H5::DSetCreatPropList plist) const {
 
 		hid_t loc_id   = loc.getId();
 		hid_t dtype_id = type.getId();
@@ -138,6 +124,13 @@ namespace Dakota
 		);
 		return dataset;
 	}
+
+	H5::DataSet HDF5IOHelper::create_dataset(
+        const H5::H5Location &loc, const std::string &name,
+        const H5::DataType &type, const H5::DataSpace &space) const {
+
+		return create_dataset(loc, name, type, space, H5::DSetCreatPropList());
+    }
 
 	bool HDF5IOHelper::is_scale(const H5::DataSet dset) const {
 		htri_t status = H5DSis_scale(dset.getId());
