@@ -473,8 +473,8 @@ inline size_t Approximation::pop_count(const UShortArray& sd_key) const
   if (approxRep) return approxRep->pop_count(sd_key);
   else {
     Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
-    approx_data.active_key(sd_key); // no-op if key is already active
-    return approx_data.pop_count();
+    return (approx_data.contains_key(sd_key)) // updates key to active if found
+      ? approx_data.pop_count() : _NPOS;
   }
 }
 */
@@ -485,8 +485,8 @@ inline void Approximation::pop_count(size_t count, const UShortArray& sd_key)
   if (approxRep) approxRep->pop_count(count, sd_key);
   else {
     Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
-    approx_data.active_key(sd_key); // no-op if key is already active
-    approx_data.pop_count(count);
+    if (approx_data.contains_key(sd_key)) // updates key to active if found
+      approx_data.pop_count(count);
   }
 }
 

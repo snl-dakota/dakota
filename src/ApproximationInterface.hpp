@@ -162,7 +162,10 @@ private:
 			   Variables& vars);
 
   /// append to the stack of pop counts within each of the functionSurfaces
-  /// based on the active set definitions within resp_map
+  /// based on the active set definition within a single incoming response
+  void update_pop_counts(const IntResponsePair& response_pr);
+  /// append to the stack of pop counts within each of the functionSurfaces
+  /// based on the active set definitions within a map of incoming responses
   void update_pop_counts(const IntResponseMap& resp_map);
 
   /// following add() and pop_count() operations which may enumerate

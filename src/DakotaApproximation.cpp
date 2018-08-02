@@ -339,8 +339,8 @@ void Approximation::pop_data(const UShortArray& sd_key, bool save_data)
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d) {
       Pecos::SurrogateData& approx_data = approxData[d];
-      approx_data.active_key(sd_key); // no-op if key is already active
-      approx_data.pop(save_data);
+      if (approx_data.contains_key(sd_key)) // updates key to active if found
+	approx_data.pop(save_data);
     }
   }
 }
@@ -357,8 +357,8 @@ void Approximation::push_data(const UShortArray& sd_key)
       r_index = sharedDataRep->retrieval_index();
     for (d=0; d<num_d; ++d) {
       Pecos::SurrogateData& approx_data = approxData[d];
-      approx_data.active_key(sd_key); // no-op if key is already active
-      approx_data.push(r_index);
+      if (approx_data.contains_key(sd_key)) // updates key to active if found
+	approx_data.push(r_index);
     }
   }
 }
@@ -380,8 +380,8 @@ void Approximation::finalize_data(const UShortArray& sd_key)
       f_index = sharedDataRep->finalization_index(p);
       for (d=0; d<num_d; ++d) {
 	Pecos::SurrogateData& approx_data = approxData[d];
-	approx_data.active_key(sd_key); // no-op if key is already active
-	approx_data.push(f_index, false);
+	if (approx_data.contains_key(sd_key)) // updates key to active if found
+	  approx_data.push(f_index, false);
       }
     }
 

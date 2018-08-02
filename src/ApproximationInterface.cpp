@@ -528,19 +528,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, false);
 
-  // update pop counts for data in response_pr
-  const ShortArray& asv = response_pr.second.active_set_request_vector();
-  size_t i, sd_index, fn_index, num_fns = functionSurfaces.size(),
-    num_asv = asv.size(), count;
-  ISIter fn_it;
-  for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
-    fn_index = *fn_it;
-    // asv may be larger than num_fns due to response aggregation modes
-    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index) {
-      count = (asv[i]) ? 1 : 0; // either one or no pts appended
-      functionSurfaces[fn_index].pop_count(count, approxDataKeys[sd_index]);
-    }
-  }
+  update_pop_counts(response_pr);
 
   // reset active approxData key to approxDataKeys.front()
   restore_data_key();
@@ -816,6 +804,24 @@ shallow_add(const Variables& vars, const Response& response, bool anchor)
 	fn_surf.add(vars,        anchor, false, sd_key); // shallow
 	fn_surf.add(response, i, anchor, false, sd_key); // shallow
       }
+  }
+}
+
+
+void ApproximationInterface::update_pop_counts(const IntResponsePair& response_pr)
+{
+  // update pop counts for data in response_pr
+  const ShortArray& asv = response_pr.second.active_set_request_vector();
+  size_t i, sd_index, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = asv.size(), count;
+  ISIter fn_it;
+  for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
+    fn_index = *fn_it;
+    // asv may be larger than num_fns due to response aggregation modes
+    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index) {
+      count = (asv[i]) ? 1 : 0; // either one or no pts appended
+      functionSurfaces[fn_index].pop_count(count, approxDataKeys[sd_index]);
+    }
   }
 }
 
