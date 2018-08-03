@@ -38,13 +38,13 @@ namespace Dakota
 	//----------------------------------------------------------------
 
 	// Some free functions to try to consolidate data type specs
-	H5::DataType h5_dtype( const Real & )
+	inline H5::DataType h5_dtype( const Real & )
 	{ return H5::PredType::IEEE_F64LE; }
 
-	H5::DataType h5_dtype( const int & )
+	inline H5::DataType h5_dtype( const int & )
 	{ return H5::PredType::IEEE_F64LE; }
 
-	H5::DataType h5_dtype( const char * )
+	inline H5::DataType h5_dtype( const char * )
 	{
 		H5::StrType str_type(0, H5T_VARIABLE);
 		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8

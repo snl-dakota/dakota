@@ -38,7 +38,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, create_one_group) {
 	results_manager.initialize(database_name);
 
 	Dakota::HDF5IOHelper helper(database_name + ".h5", true);
-	helper.create_groups( "/methods");
+	//helper.create_groups( "/methods");
 
 	//TODO Read and make sure the group was written as expected.
 
