@@ -203,6 +203,8 @@ namespace Dakota
 
 	bool exists(const String location_name) const;
 
+	void create_groups(const std::string& dset_name) const;
+
 	//------------------------------------------------------------------
 
 	protected:
@@ -214,8 +216,6 @@ namespace Dakota
 	H5::LinkCreatPropList linkCreatePl;
 
 	//----------------------------------------------------------------
-
-	void create_groups(const std::string& dset_name) const;
 
 	H5::DataSet create_dataset(
         const H5::H5Location &loc, const std::string &name,
