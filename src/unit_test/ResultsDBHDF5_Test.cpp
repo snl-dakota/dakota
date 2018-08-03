@@ -21,7 +21,7 @@ using namespace H5;
 /**
  *  Test creating and destroying a Dakota HDF5 database.
  */
-TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_results_db) {
+TEUCHOS_UNIT_TEST(tpl_hdf5, test_results_manager_init) {
 	std::string database_name = "database_1";
 
 	Dakota::ResultsManager results_manager;
@@ -31,18 +31,32 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, new_hdf5_results_db) {
 	TEST_ASSERT( results_manager.isHDF5DBActive() );
 }
 
-TEUCHOS_UNIT_TEST(tpl_hdf5, create_one_group) {
+TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
 	std::string database_name = "database_2";
 
 	Dakota::ResultsManager results_manager;
 	results_manager.initialize(database_name);
 
-	Dakota::HDF5IOHelper helper(database_name + ".h5", true);
-	helper.create_groups( "/methods");
+	Dakota::HDF5IOHelper helper(database_name + ".h5", false);
+	helper.create_groups( "/methods" );
+	TEST_ASSERT( helper.exists("/methods") );
 
-	//TODO Read and make sure the group was written as expected.
+	helper.create_groups( "/methods/sampling" );
+	TEST_ASSERT( helper.exists("/methods") );
+	TEST_ASSERT( helper.exists("/methods/sampling") );
+}
 
-	TEST_ASSERT( true ); //Successfully terminated
+TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_datasets) {
+	std::string database_name = "database_3";
+
+    Dakota::ResultsManager results_manager;
+    results_manager.initialize(database_name);
+
+    Dakota::HDF5IOHelper helper(database_name + ".h5", false);
+    Group group = helper.create_groups( "/exec_id_1" );
+	//TODO
+	// helper.create_dataset( &group, "dataset", &dt, &ds, plist );
+
 }
 
 #endif

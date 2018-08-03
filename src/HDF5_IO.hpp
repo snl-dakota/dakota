@@ -61,6 +61,7 @@ namespace Dakota
 	HDF5IOHelper(const std::string& file_name, bool overwrite = false) :
        	fileName(file_name)
 	{
+
 		// create or open a file
 		//H5::Exception::dontPrint();
 		if( overwrite )
@@ -71,7 +72,7 @@ namespace Dakota
 		} catch(const H5::FileIException&) {
 			filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
 		}
-    
+
 		// Initialize global Link Creation Property List to enocde all link (group, dataset) names
 		// in UTF-8
 		linkCreatePl.setCharEncoding(H5T_CSET_UTF8);      
@@ -203,7 +204,7 @@ namespace Dakota
 
 	bool exists(const String location_name) const;
 
-	void create_groups(const std::string& dset_name) const;
+	H5::Group create_groups(const std::string& dset_name) const;
 
 	//------------------------------------------------------------------
 

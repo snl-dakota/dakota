@@ -79,7 +79,8 @@ namespace Dakota
 
 	// Assume we have an absolute path /root/dir/dataset and create
 	// groups /root/ and /root/dir/ if needed.
-	void HDF5IOHelper::create_groups(const std::string& dset_name) const
+	// Returns a pointer to the last Group created.
+	H5::Group HDF5IOHelper::create_groups(const std::string& dset_name) const
 	{
 		// the first group will be empty due to leading delimiter
 		// the last group will be the dataset name
@@ -88,13 +89,15 @@ namespace Dakota
 
 		// index instead of pruning first and last or clever iterators
 		std::string full_path;
-		for( size_t i=1; i<(groups.size()-1); ++i ) {
+		H5::Group new_group;
+		for( size_t i = 1; i < (groups.size()); ++i ) {
 			full_path += '/' + groups[i];
 			// if doesn't exist, add
 
 			bool grpexists = filePtr->exists(full_path.c_str());
 			if( !grpexists ) {
-				filePtr->createGroup(full_path.c_str(), linkCreatePl);
+				Cerr << "DEBUG Group doesn't exist.  Creating it." << std::endl;
+				new_group = filePtr->createGroup(full_path.c_str(), linkCreatePl);
 	            /* Add Exception handling
     	        if (create_status < 0)
         	    {
@@ -103,9 +106,10 @@ namespace Dakota
 	                   << std::endl;
     	          abort_handler(-1);
         	    }
-            	*/
+				*/
 			}
 		}
+		return new_group;
 	}
 
 	H5::DataSet HDF5IOHelper::create_dataset(
