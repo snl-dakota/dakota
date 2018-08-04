@@ -116,7 +116,8 @@ inline QMEApproximation::~QMEApproximation()
 inline void QMEApproximation::clear_current_data()
 {
   size_t ndv = sharedDataRep->numVars;
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  Pecos::SurrogateData& approx_data
+    = approxData[sharedDataRep->activeDataIndex];
   // demote from anchor to regular/previous data
   // (for completeness; no longer uses anchor designation)
   approx_data.clear_anchor_index();

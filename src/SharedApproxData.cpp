@@ -36,7 +36,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), 
+  buildDataOrder(1), activeDataIndex(0), 
   modelExportPrefix(
     problem_db.get_string("model.surrogate.model_export_prefix")),
   modelExportFormat(
@@ -85,6 +85,9 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
     problem_db.set_db_model_nodes(model_index);
   }
 
+  // initialize sequence of one empty key for first Approximation::approxData
+  approxDataKeys.resize(1);  approxDataKeys[0].resize(1);
+
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(BaseConstructor) called to build "
        << "base class for letter." << std::endl;
@@ -103,7 +106,7 @@ SharedApproxData::
 SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		 size_t num_vars, short data_order, short output_level):
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
-  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
+  activeDataIndex(0), modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
   dataRep(NULL), referenceCount(1)
 {
   bool global_approx = strbegins(approxType, "global_");
@@ -131,6 +134,9 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 	   << approxType << " for Hessian incorporation.\n\n";
   }
 
+  // initialize sequence of one empty key for first Approximation::approxData
+  approxDataKeys.resize(1);  approxDataKeys[0].resize(1);
+
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(NoDBBaseConstructor) called to "
        << "build base class for letter." << std::endl;
@@ -142,9 +148,9 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
     necessary to check for NULL in the copy constructor, assignment
     operator, and destructor. */
 SharedApproxData::SharedApproxData():
-  buildDataOrder(1), outputLevel(NORMAL_OUTPUT), dataRep(NULL),
-  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
-  referenceCount(1)
+  //buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
+  //modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
+  dataRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData() called to build empty "

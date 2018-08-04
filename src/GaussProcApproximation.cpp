@@ -175,7 +175,7 @@ int GaussProcApproximation::min_coefficients() const
 
 
 //int GaussProcApproximation::num_constraints() const
-//{ return (approxData[activeDataIndex].anchor()) ? 1 : 0; }
+//{ return (surrogate_data().anchor()) ? 1 : 0; }
 
 
 void GaussProcApproximation::build()
@@ -184,7 +184,7 @@ void GaussProcApproximation::build()
   Approximation::build();
 
   size_t i, j, num_v = sharedDataRep->numVars;
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   numObs = approx_data.points();
 
   // Transfer the training data to the Teuchos arrays used by the GP

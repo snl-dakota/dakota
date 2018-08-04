@@ -116,7 +116,8 @@ inline TANA3Approximation::~TANA3Approximation()
 /** Redefine default implementation to support history mechanism. */
 inline void TANA3Approximation::clear_current_data()
 {
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  Pecos::SurrogateData& approx_data
+    = approxData[sharedDataRep->activeDataIndex];
   // demote from anchor to regular/previous data
   // (for completeness; TANA no longer uses anchor designation)
   approx_data.clear_anchor_index();

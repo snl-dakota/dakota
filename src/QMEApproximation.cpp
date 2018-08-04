@@ -53,7 +53,7 @@ int QMEApproximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
   // the number of constraints within active approxData's anchor point.
-  return (approxData[activeDataIndex].anchor()) ? sharedDataRep->numVars+1 : 0;
+  return (surrogate_data().anchor()) ? sharedDataRep->numVars+1 : 0;
 }
 */
 
@@ -68,7 +68,7 @@ void QMEApproximation::build()
 
   // Sanity checking verifies 1 or 2 points with gradients (Hessians ignored)
 
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
 //if (num_pts < 1 || num_pts > 2) {
   if (num_pts < 1 ) {
@@ -132,7 +132,7 @@ void QMEApproximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
 //const size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
   const size_t k=1, p=0;                 // indices to current and previous points
@@ -312,7 +312,7 @@ Real QMEApproximation::value(const Variables& vars)
 {
   Real approx_val;
   const RealVector& x = vars.continuous_variables();
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   size_t i, num_v = sharedDataRep->numVars, num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
@@ -369,7 +369,7 @@ Real QMEApproximation::value(const Variables& vars)
 
 const RealVector& QMEApproximation::gradient(const Variables& vars)
 {
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   size_t num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)

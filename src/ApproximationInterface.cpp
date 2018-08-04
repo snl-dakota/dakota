@@ -54,9 +54,6 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
     for (int i=0; i<num_fns; i++)
       approxFnIndices.insert(i);
 
-  // initialize one empty approx data key
-  approxDataKeys.resize(1);
-
   // This section moved to the constructor so that ApproxInterfaces can be
   // queried for their state prior to build_approximation() (e.g., to configure
   // parallelism w/ max_concurrency).  Also, Approximation classes now
@@ -148,9 +145,6 @@ ApproximationInterface(const String& approx_type,
     approxFnIndices.insert(i);
     functionSurfaces[i] = Approximation(sharedData);
   }
-
-  // initialize one empty approx data key
-  approxDataKeys.resize(1);
 }
 
 
@@ -392,7 +386,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, true);
 
-  // reset active approxData key to approxDataKeys.front()
+  // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
 }
 
@@ -442,7 +436,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(samples[i], r_it->second, false);
 
-  // reset active approxData key to approxDataKeys.front()
+  // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
 }
 
@@ -491,7 +485,7 @@ update_approximation(const VariablesArray& vars_array,
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(vars_array[i], r_it->second, false);
 
-  // reset active approxData key to approxDataKeys.front()
+  // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
 }
 
@@ -530,7 +524,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   update_pop_counts(response_pr);
 
-  // reset active approxData key to approxDataKeys.front()
+  // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
 }
 
@@ -580,7 +574,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 
   update_pop_counts(resp_map);
 
-  // reset active approxData key to approxDataKeys.front()
+  // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
 }
 
@@ -630,7 +624,7 @@ append_approximation(const VariablesArray& vars_array,
 
   update_pop_counts(resp_map);
 
-  // reset active approxData key to approxDataKeys.front()
+  // reset active approxData key using SharedApproxData::approxDataKeys
   restore_data_key();
 }
 
@@ -720,30 +714,29 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
   Pecos::SurrogateDataVars sdv; bool first_vars = true;
   const ShortArray& asv = response.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
-    sd_index;
+    key_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
-    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index)
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
       if (asv[i]) {
-	Approximation&    fn_surf = functionSurfaces[fn_index];
-	const UShortArray& sd_key =   approxDataKeys[sd_index];
+	Approximation& fn_surf = functionSurfaces[fn_index];
 	// rather than unrolling the response (containing all response fns)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
 	if (first_vars) {
-	  fn_surf.add(vars,        anchor, true, sd_key); // deep
-	  fn_surf.add(response, i, anchor, true, sd_key); // deep
+	  fn_surf.add(vars,        anchor, true, key_index); // deep
+	  fn_surf.add(response, i, anchor, true, key_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
 	                   fn_surf.surrogate_data().variables_data().back();
 	  first_vars = false;
 	}
 	else {
-	  fn_surf.add(sdv,         anchor,       sd_key); // shallow
-	  fn_surf.add(response, i, anchor, true, sd_key); // deep
+	  fn_surf.add(sdv,         anchor,       key_index); // shallow
+	  fn_surf.add(response, i, anchor, true, key_index); // deep
 	}
       }
   }
@@ -756,30 +749,29 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
   Pecos::SurrogateDataVars sdv; bool first_vars = true;
   const ShortArray& asv = response.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
-    sd_index;
+    key_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
-    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index)
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
       if (asv[i]) {
-	Approximation&    fn_surf = functionSurfaces[fn_index];
-	const UShortArray& sd_key =   approxDataKeys[sd_index];
+	Approximation& fn_surf = functionSurfaces[fn_index];
 	// rather than unrolling the response (containing all response fns)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
 	if (first_vars) {
-	  fn_surf.add(c_vars,      anchor, true, sd_key); // deep
-	  fn_surf.add(response, i, anchor, true, sd_key); // deep
+	  fn_surf.add(c_vars,      anchor, true, key_index); // deep
+	  fn_surf.add(response, i, anchor, true, key_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
 	                   fn_surf.surrogate_data().variables_data().back();
 	  first_vars = false;
 	}
 	else {
-	  fn_surf.add(sdv,         anchor,       sd_key); // shallow
-	  fn_surf.add(response, i, anchor, true, sd_key); // deep
+	  fn_surf.add(sdv,         anchor,       key_index); // shallow
+	  fn_surf.add(response, i, anchor, true, key_index); // deep
 	}
       }
   }
@@ -791,36 +783,36 @@ shallow_add(const Variables& vars, const Response& response, bool anchor)
 {
   const ShortArray& asv = response.active_set_request_vector();
   size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
-    sd_index;
+    key_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     fn_index = *it;
     // asv may be larger than num_fns due to response aggregation modes
     // (e.g., multifidelity) --> use num_fns as stride and support add()
     // to vector of SurrogateData
-    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index)
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
       if (asv[i]) {
-	Approximation&    fn_surf = functionSurfaces[fn_index];
-	const UShortArray& sd_key =   approxDataKeys[sd_index];
-	fn_surf.add(vars,        anchor, false, sd_key); // shallow
-	fn_surf.add(response, i, anchor, false, sd_key); // shallow
+	Approximation& fn_surf = functionSurfaces[fn_index];
+	fn_surf.add(vars,        anchor, false, key_index); // shallow
+	fn_surf.add(response, i, anchor, false, key_index); // shallow
       }
   }
 }
 
 
-void ApproximationInterface::update_pop_counts(const IntResponsePair& response_pr)
+void ApproximationInterface::
+update_pop_counts(const IntResponsePair& response_pr)
 {
   // update pop counts for data in response_pr
   const ShortArray& asv = response_pr.second.active_set_request_vector();
-  size_t i, sd_index, fn_index, num_fns = functionSurfaces.size(),
+  size_t i, key_index, fn_index, num_fns = functionSurfaces.size(),
     num_asv = asv.size(), count;
   ISIter fn_it;
   for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
     fn_index = *fn_it;
     // asv may be larger than num_fns due to response aggregation modes
-    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index) {
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index) {
       count = (asv[i]) ? 1 : 0; // either one or no pts appended
-      functionSurfaces[fn_index].pop_count(count, approxDataKeys[sd_index]);
+      functionSurfaces[fn_index].pop_count(count, key_index);
     }
   }
 }
@@ -829,16 +821,16 @@ void ApproximationInterface::update_pop_counts(const IntResponsePair& response_p
 void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 {
   ISIter fn_it; IntRespMCIter r_it = resp_map.begin();
-  size_t i, count, sd_index, fn_index, num_fns = functionSurfaces.size(),
+  size_t i, count, key_index, fn_index, num_fns = functionSurfaces.size(),
     num_asv = r_it->second.active_set_request_vector().size();
   for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
     fn_index = *fn_it;
     // asv may be larger than num_fns due to response aggregation modes
-    for (i=fn_index, sd_index=0; i<num_asv; i+=num_fns, ++sd_index) {
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index) {
       for (r_it=resp_map.begin(), count=0; r_it!=resp_map.end(); ++r_it)
 	if (r_it->second.active_set_request_vector()[i])
 	  ++count;
-      functionSurfaces[fn_index].pop_count(count, approxDataKeys[sd_index]);
+      functionSurfaces[fn_index].pop_count(count, key_index);
     }
   }
 }

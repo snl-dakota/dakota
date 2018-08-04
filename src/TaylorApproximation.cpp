@@ -47,7 +47,7 @@ void TaylorApproximation::build()
   // No computations needed.  Only sanity checking on active approxData.
 
   // Check number of data points
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   if (!approx_data.anchor() || approx_data.points() != 1) {
     Cerr << "Error: wrong number of data points in TaylorApproximation::"
 	 << "build()." << std::endl;
@@ -76,7 +76,7 @@ void TaylorApproximation::build()
 Real TaylorApproximation::value(const Variables& vars)
 {
   short bdo = sharedDataRep->buildDataOrder;
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   if (bdo == 1)
     return approx_data.anchor_response().response_function();
   else { // build up approx value from constant and derivative terms
@@ -106,7 +106,7 @@ Real TaylorApproximation::value(const Variables& vars)
 const RealVector& TaylorApproximation::gradient(const Variables& vars)
 {
   short bdo = sharedDataRep->buildDataOrder;
-  Pecos::SurrogateData& approx_data = approxData[activeDataIndex];
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   if (bdo == 2)
     return approx_data.anchor_response().response_gradient();
   else { // build up approxGradient from derivative terms
@@ -139,7 +139,7 @@ const RealSymMatrix& TaylorApproximation::hessian(const Variables& vars)
 {
   short bdo = sharedDataRep->buildDataOrder;
   if (bdo & 4)
-    return approxData[activeDataIndex].anchor_response().response_hessian();
+    return surrogate_data().anchor_response().response_hessian();
   else { // initialize approxHessian to zero
     size_t num_v = sharedDataRep->numVars;
     if (approxHessian.numRows() != num_v) approxHessian.shape(num_v);

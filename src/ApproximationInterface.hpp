@@ -73,7 +73,7 @@ protected:
   /// functionSurfaces
   int recommended_points(bool constraint_flag) const;
 
-  void active_model_key(const UShortArray& mi_key);
+  void active_model_key(const UShortArray& key);
   void clear_model_keys();
 
   void surrogate_model_key(const UShortArray& key);
@@ -183,10 +183,6 @@ private:
   /// response function subset that is approximated
   IntSet approxFnIndices;
 
-  /// set of keys to enumerate when adding data to multiple
-  /// SurrogateData keys within each Approximation
-  UShort2DArray approxDataKeys;
-
   /// data that is shared among all functionSurfaces
   SharedApproxData sharedData;
   /// list of approximations, one per response function
@@ -268,14 +264,14 @@ recommended_points(bool constraint_flag) const
 }
 
 
-inline void ApproximationInterface::active_model_key(const UShortArray& mi_key)
+inline void ApproximationInterface::active_model_key(const UShortArray& key)
 {
-  sharedData.active_model_key(mi_key);
+  sharedData.active_model_key(key);
 
   // functionSurfaces access active key at run time through shared data; 
   // however they each contain their own approxData which must be updated.
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].active_model_key(mi_key);
+    functionSurfaces[*it].active_model_key(key);
 }
 
 
@@ -294,51 +290,22 @@ inline void ApproximationInterface::clear_model_keys()
 
 inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
 {
-  // AGGREGATED_MODELS mode uses {HF,LF} order, as does
-  // ApproximationInterface::*_add()
-  if (key.empty()) // remove second entry in approxDataKeys
-    approxDataKeys.resize(1);
-  else {
-    approxDataKeys.resize(2);
-    const UShortArray& key0 = approxDataKeys[0];
-    UShortArray&       key1 = approxDataKeys[1];
-    // Assign incoming LF key
-    key1 = key;
-    // Alter key to distinguish a particular aggregation used for modeling
-    // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...) by
-    // appending the HF key that matches this LF data
-    key1.insert(key1.end(), key0.begin(), key0.end());
-  }
+  //sharedData.surrogate_data_index(d_index);
+  sharedData.surrogate_model_key(key);
 }
 
 
 inline void ApproximationInterface::truth_model_key(const UShortArray& key)
 {
-  // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
-  size_t num_keys = approxDataKeys.size();
-  switch (num_keys) {
-  case 0: approxDataKeys.push_back(key); break;
-  case 1: approxDataKeys[0] = key;       break;
-  case 2: {
-    UShortArray& key0 = approxDataKeys[0];
-    UShortArray& key1 = approxDataKeys[1];
-    if (key0 != key) {
-      // Assign HF key
-      key0 = key;
-      // Alter LF key to distinguish a particular aggregation used for modeling
-      // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
-      size_t key_len = key1.size() - key.size();
-      key1.resize(key_len);
-      key1.insert(key1.end(), key.begin(), key.end());
-    }
-    break;
-  }
-  }
+  //sharedData.surrogate_data_index(d_index);
+  sharedData.truth_model_key(key);
 }
 
 
+/** Restore active key to leading key for first approxData
+    (only updates model key if needed). */
 inline void ApproximationInterface::restore_data_key()
-{ active_model_key(approxDataKeys.front()); } // only updates if needed
+{ active_model_key(sharedData.truth_model_key()); }
 
 
 inline void ApproximationInterface::
@@ -360,12 +327,10 @@ inline void ApproximationInterface::pop_approximation(bool save_data)
 {
   sharedData.pop(save_data); // operation order not currently important
 
-  size_t i, fn_index, num_keys = approxDataKeys.size();
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData instances:
-    for (i=0; i<num_keys; ++i)
-      fn_surf.pop_data(approxDataKeys[i], save_data);
+    // Approximation::approxData (1 or more keys for 1 or more instances)
+    fn_surf.pop_data(save_data);
     // Approximation coefficients
     fn_surf.pop_coefficients(save_data);
   }
@@ -378,12 +343,10 @@ inline void ApproximationInterface::push_approximation()
 {
   sharedData.pre_push(); // do shared aggregation first
 
-  size_t i, num_keys = approxDataKeys.size();
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData instances:
-    for (i=0; i<num_keys; ++i)
-      fn_surf.push_data(approxDataKeys[i]); // uses shared restoration index
+    // Approximation::approxData (1 or more keys for 1 or more instances)
+    fn_surf.push_data(); // uses shared restoration index
     // Approximation coefficients
     fn_surf.push_coefficients();
   }
@@ -400,12 +363,11 @@ inline void ApproximationInterface::finalize_approximation()
 {
   sharedData.pre_finalize(); // do shared aggregation first
 
-  size_t i, num_keys = approxDataKeys.size();
+  size_t fn_index, key_index, num_keys;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
-    // Approximation::approxData instances:
-    for (i=0; i<num_keys; ++i)
-      fn_surf.finalize_data(approxDataKeys[i]);// uses shared finalization index
+    // Approximation::approxData (1 or more keys for 1 or more instances)
+    fn_surf.finalize_data(); // uses shared finalization index
     // Approximation coefficients
     fn_surf.finalize_coefficients();
   }
@@ -439,7 +401,7 @@ inline void ApproximationInterface::clear_inactive()
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     Approximation& fn_surf = functionSurfaces[*it];
     // Approximation::approxData instances:
-    fn_surf.clear_inactive_data(); // only retain first of approxDataKeys
+    fn_surf.clear_inactive_data(); // only retain 1st of active data keys
     // Approximation coefficients
     fn_surf.clear_inactive_coefficients();
   }
