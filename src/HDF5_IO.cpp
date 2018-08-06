@@ -79,7 +79,7 @@ namespace Dakota
 
 	// Assume we have an absolute path /root/dir/dataset and create
 	// groups /root/ and /root/dir/ if needed.
-	// Returns a pointer to the last Group created.
+	// Returns the last Group created.
 	H5::Group HDF5IOHelper::create_groups(const std::string& dset_name) const
 	{
 		// the first group will be empty due to leading delimiter
@@ -147,4 +147,60 @@ namespace Dakota
 			return false;
     	}
     }
+
+	/**
+	 *  Creates an empty, N-dimensional dimension scale dataset.  Returns the
+	 *  open DataSet object.
+	 *
+	 *  This function uses C API to set dimension scale information, as dimension scales
+	 *  are not supported by HDF5's C++ API.
+	 *
+	 */
+	H5::DataSet HDF5IOHelper::create_dimension_scale (
+		const H5::H5Location &loc, std::vector<int> dim_sizes, H5::DataType type,
+		std::string label, H5::DSetCreatPropList plist ) const
+	{
+		int dims = dim_sizes.size();
+
+		hsize_t ds_dims[dims];
+		for(int i = 0; i < dims; i++) {
+			ds_dims[i] = dim_sizes.at(i);
+		}
+
+		H5::DataSpace ds_dataspace( dims, ds_dims );
+		H5::DataSet ds_dataset(
+			create_dataset( loc, label, type, ds_dataspace, plist )
+		);
+
+		// Use C API to set the appropriate dimension scale metadata.
+		hid_t  ds_dataset_id = ds_dataset.getId();
+		herr_t ret_code      = H5DSset_scale( ds_dataset_id, label.c_str() );
+		if(ret_code != 0) {
+			throw std::runtime_error( "H5DSset_scale returned an error" );
+		}
+
+		return ds_dataset;
+	}
+
+	/**
+	 *  Create a 1D dimension scale with the length and label specified by the arguments.
+	 *  Returns a unique_ptr to an open DataSet object.  It is up to the caller to then
+	 *  write to and close the DataSet.
+	 *
+	 *  This function uses C API to set dimension scale information, as dimension scales
+	 *  are not supported by HDF5's C++ API.
+	 */
+	H5::DataSet HDF5IOHelper::create_1D_dimension_scale (
+		const H5::H5Location &loc, int size, H5::DataType type,
+        std::string label, H5::DSetCreatPropList plist ) const
+	{
+
+    	std::vector<int> dim_sizes;
+	    dim_sizes.push_back(size);
+
+    	H5::DataSet ds_dataset = create_dimension_scale(
+			loc, dim_sizes, type, label, plist
+    	);
+    	return ds_dataset;
+	}
 }

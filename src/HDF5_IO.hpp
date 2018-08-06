@@ -204,7 +204,31 @@ namespace Dakota
 
 	bool exists(const String location_name) const;
 
+	bool is_scale(const H5::DataSet dset) const;
+
 	H5::Group create_groups(const std::string& dset_name) const;
+
+	H5::DataSet create_dimension_scale (
+		const H5::H5Location &loc, std::vector<int> dim_sizes, H5::DataType type,
+		std::string label, H5::DSetCreatPropList plist ) const;
+
+	H5::DataSet create_1D_dimension_scale (
+		const H5::H5Location &loc, int size, H5::DataType type,
+		std::string label, H5::DSetCreatPropList plist ) const;
+
+	H5::DataSet create_dataset(
+		const H5::H5Location &loc, const std::string &name,
+		const H5::DataType &type, const H5::DataSpace &space) const;
+
+	H5::DataSet create_dataset(
+		const H5::H5Location &loc, const std::string &name,
+		const H5::DataType &type, const H5::DataSpace &space,
+		const H5::DSetCreatPropList plist) const;
+
+	// Define globally available custom property lists.
+	H5::LinkCreatPropList h5_group_create_pl;
+	H5::DSetCreatPropList h5_dataset_compact_pl;
+	H5::DSetCreatPropList h5_dataset_contiguous_pl;
 
 	//------------------------------------------------------------------
 
@@ -215,19 +239,6 @@ namespace Dakota
 	std::shared_ptr<H5::H5File> filePtr;
 
 	H5::LinkCreatPropList linkCreatePl;
-
-	//----------------------------------------------------------------
-
-	H5::DataSet create_dataset(
-        const H5::H5Location &loc, const std::string &name,
-        const H5::DataType &type, const H5::DataSpace &space) const;
-
-	H5::DataSet create_dataset(
-		const H5::H5Location &loc, const std::string &name,
-		const H5::DataType &type, const H5::DataSpace &space,
-		const H5::DSetCreatPropList plist) const;
-
-	bool is_scale(const H5::DataSet dset) const;
 
 	}; // class HDF5IOHelper
 } // namespace Dakota
