@@ -142,68 +142,74 @@ void SharedPecosApproxData::link_multilevel_surrogate_data()
 
 void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
 {
-  // AGGREGATED_MODELS mode uses {HF,LF} order, as does
-  // ApproximationInterface::*_add()
-  UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+  // keys are organized in a 3D array: approxData instance by {truth,surrogate}
+  // by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
+  // as does ApproximationInterface::*_add()
 
-  /* *** TO DO
-  size_t i, num_sd = sharedData.surrogate_data_keys();
-    prev_index = sharedData.surrogate_data_index();
-  for (i=0; i<num_sd; ++i) {
-    sharedData.surrogate_data_index(i);
-    sharedData.truth_model_key(key);
-  }
-  sharedData.surrogate_data_index(prev_index); // restore
-  */
+  // Base class default implementation updates only for activeDataIndex:
+  //UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+  // Here, we ignore activeDataIndex and update the unmodified raw approxData
+  // instance (modSurrData aggregates {HF,LF} and is keyed based on truth key).
 
-  if (key.empty()) // remove second entry in approxDataKeys
-    data_keys.resize(1);
+  //size_t d, num_d = approxDataKeys.size();
+  if (key.empty()) // prune second entry from each set of approxDataKeys
+    /*
+    for (i=0; i<num_sd; ++i)
+    //if (maxNumKeys[i] > 1)      // need separate attribute to manage #keys
+      if (surrogate_data_keys(i)) // since approxDataKeys shrinks/expands
+        approxDataKeys[i].resize(1);
+    */
+    approxDataKeys[0].resize(1); // approxDataKeys[1] remains size 1
   else {
-    data_keys.resize(2);
-    const UShortArray& key0 = data_keys[0];
-    UShortArray&       key1 = data_keys[1];
+    //for (d=0; i<num_d; ++d)
+    //  if (surrogate_data_keys(i)) {
+    UShort2DArray& keys_0 = approxDataKeys[0];
+    keys_0.resize(2);
+    const UShortArray& key_00 = keys_0[0]; // HF
+    UShortArray&       key_01 = keys_0[1]; // LF
     // Assign incoming LF key
-    key1 = key;
+    key_01 = key;
     // Alter key to distinguish a particular aggregation used for modeling
     // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...) by
     // appending the HF key that matches this LF data
-    key1.insert(key1.end(), key0.begin(), key0.end());
+    key_01.insert(key_01.end(), key_00.begin(), key_00.end());
+    //  }
   }
 }
 
 
 void SharedPecosApproxData::truth_model_key(const UShortArray& key)
 {
-  // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
-  UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+  // keys are organized in a 3D array: approxData instance by {truth,surrogate}
+  // by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
+  // as does ApproximationInterface::*_add()
 
-  /* *** TO DO
-  size_t i, num_sd = sharedData.data_keys(),// truth_data_keys() ???
-    prev_index = sharedData.surrogate_data_index();
-  for (i=0; i<num_sd; ++i) {
-    sharedData.surrogate_data_index(i);
-    sharedData.truth_model_key(key);
-  }
-  sharedData.surrogate_data_index(prev_index); // restore
-  */
+  // Base class default implementation updates only for activeDataIndex:
+  //UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+  // but here we will update across approxData instances (surrData,modSurrData}.
 
-  switch (data_keys.size()) {
-  case 0: data_keys.push_back(key); break;
-  case 1: data_keys[0] = key;       break;
-  case 2: {
-    UShortArray& key0 = data_keys[0];
-    UShortArray& key1 = data_keys[1];
-    if (key0 != key) {
-      // Assign HF key
-      key0 = key;
-      // Alter LF key to distinguish a particular aggregation used for modeling
-      // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
-      size_t key_len = key1.size() - key.size();
-      key1.resize(key_len);
-      key1.insert(key1.end(), key.begin(), key.end());
+  size_t d, num_d = approxDataKeys.size();
+  for (d=0; d<num_d; ++d) {
+    UShort2DArray& keys_d = approxDataKeys[d];
+    //if (truth_data_keys(i)) { // for completeness
+    switch (keys_d.size()) { // can remain 1 if no surrogate aggregation
+    case 0: keys_d.push_back(key); break;
+    case 1: keys_d[0] = key;       break;
+    case 2: {
+      UShortArray& key_d0 = keys_d[0];
+      UShortArray& key_d1 = keys_d[1];
+      if (key_d0 != key) {
+	// Assign HF key
+	key_d0 = key;
+	// Alter LF key to distinguish a particular model pair that defines a
+	// discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
+	key_d1.resize(key_d1.size() - key.size());
+	key_d1.insert(key_d1.end(), key.begin(), key.end());
+      }
+      break;
     }
-    break;
-  }
+    }
+    //}
   }
 }
 

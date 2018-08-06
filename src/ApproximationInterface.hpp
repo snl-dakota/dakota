@@ -318,7 +318,7 @@ inline void ApproximationInterface::link_multilevel_approximation_data()
   // define approx data keys and active index
   sharedData.link_multilevel_surrogate_data();
 
-  // create and link SurrogateData instances
+  // (create and) link SurrogateData instances
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].link_multilevel_surrogate_data();
 }

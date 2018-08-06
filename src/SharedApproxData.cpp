@@ -397,7 +397,7 @@ void SharedApproxData::surrogate_model_key(const UShortArray& key)
     // AGGREGATED_MODELS mode uses {HF,LF} order, as does
     // ApproximationInterface::*_add()
     UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
-    if (key.empty()) // remove second entry in approxDataKeys
+    if (key.empty()) // prune second entry, if present, from approxDataKeys
       data_keys.resize(1);
     else {
       data_keys.resize(2);
