@@ -79,6 +79,19 @@ public:
   /// reset initial state by clearing all model keys for an approximation
   virtual void clear_model_keys();
 
+  /// define data keys and active data index for aggregated response data
+  /// (SharedPecosApproxData)
+  virtual void link_multilevel_surrogate_data();
+
+  /// update approxDataKeys[activeDataIndex] with trailing surrogate key
+  virtual void surrogate_model_key(const UShortArray& key);
+  /// return trailing surrogate key from approxDataKeys[activeDataIndex]
+  virtual const UShortArray& surrogate_model_key() const;
+  /// update approxDataKeys[activeDataIndex] with leading truth key
+  virtual void truth_model_key(const UShortArray& key);
+  /// return leading truth key from approxDataKeys[activeDataIndex]
+  virtual const UShortArray& truth_model_key() const;
+
   /// builds the shared approximation data from scratch
   virtual void build();
 
@@ -120,15 +133,6 @@ public:
 
   /// set activeDataIndex
   void surrogate_data_index(size_t d_index);
-
-  /// update approxDataKeys[activeDataIndex] with trailing surrogate key
-  void surrogate_model_key(const UShortArray& key);
-  /// update approxDataKeys[activeDataIndex] with leading truth key
-  void truth_model_key(const UShortArray& key);
-  /// return trailing surrogate key from approxDataKeys[activeDataIndex]
-  const UShortArray& surrogate_model_key() const;
-  /// return leading truth key from approxDataKeys[activeDataIndex]
-  const UShortArray& truth_model_key() const;
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -251,69 +255,6 @@ inline void SharedApproxData::surrogate_data_index(size_t d_index)
     activeDataIndex = d_index;
   }
 }
-
-
-inline void SharedApproxData::surrogate_model_key(const UShortArray& key)
-{
-  // AGGREGATED_MODELS mode uses {HF,LF} order, as does
-  // ApproximationInterface::*_add()
-  UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
-  if (key.empty()) // remove second entry in approxDataKeys
-    data_keys.resize(1);
-  else {
-    data_keys.resize(2);
-    const UShortArray& key0 = data_keys[0];
-    UShortArray&       key1 = data_keys[1];
-    // Assign incoming LF key
-    key1 = key;
-    // Alter key to distinguish a particular aggregation used for modeling
-    // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...) by
-    // appending the HF key that matches this LF data
-    key1.insert(key1.end(), key0.begin(), key0.end());
-  }
-}
-
-
-inline void SharedApproxData::truth_model_key(const UShortArray& key)
-{
-  // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
-  UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
-  switch (data_keys.size()) {
-  case 0: data_keys.push_back(key); break;
-  case 1: data_keys[0] = key;       break;
-  case 2: {
-    UShortArray& key0 = data_keys[0];
-    UShortArray& key1 = data_keys[1];
-    if (key0 != key) {
-      // Assign HF key
-      key0 = key;
-      // Alter LF key to distinguish a particular aggregation used for modeling
-      // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
-      size_t key_len = key1.size() - key.size();
-      key1.resize(key_len);
-      key1.insert(key1.end(), key.begin(), key.end());
-    }
-    break;
-  }
-  }
-}
-
-
-inline const UShortArray& SharedApproxData::surrogate_model_key() const
-{
-  const UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
-  if (data_keys.size() < 2) {
-    Cerr << "Error: no key defined in SharedApproxData::surrogate_model_key()."
-	 << std::endl;
-    abort_handler(APPROX_ERROR);
-    // or could return empty key by value
-  }
-  return data_keys.back();
-}
-
-
-inline const UShortArray& SharedApproxData::truth_model_key() const
-{ return approxDataKeys[activeDataIndex].front(); }
 
 
 inline void SharedApproxData::

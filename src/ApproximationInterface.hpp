@@ -290,14 +290,14 @@ inline void ApproximationInterface::clear_model_keys()
 
 inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
 {
-  //sharedData.surrogate_data_index(d_index);
+  //sharedData.surrogate_data_index(d_index); // if also passed
   sharedData.surrogate_model_key(key);
 }
 
 
 inline void ApproximationInterface::truth_model_key(const UShortArray& key)
 {
-  //sharedData.surrogate_data_index(d_index);
+  //sharedData.surrogate_data_index(d_index); // if also passed
   sharedData.truth_model_key(key);
 }
 
@@ -315,6 +315,10 @@ approximation_function_indices(const IntSet& approx_fn_indices)
 
 inline void ApproximationInterface::link_multilevel_approximation_data()
 {
+  // define approx data keys and active index
+  sharedData.link_multilevel_surrogate_data();
+
+  // create and link SurrogateData instances
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].link_multilevel_surrogate_data();
 }

@@ -78,54 +78,27 @@ PecosApproximation(ProblemDescDB& problem_db,
 
 void PecosApproximation::link_multilevel_surrogate_data()
 {
-  // Notes:
-  // > SurrogateModel::aggregate_response() uses order of LF,HF (consistent with
-  //   ordered_models from low to high) such that surrogate_data(fn_index,0)
-  //   would retrieve the (to be modified) LF approxData.
+  // Manage {surr,modSurr}Data instances (approxDataKeys and activeDataIndex
+  // are managed in SharedPecosApproxData::link_multilevel_surrogate_data()).
+  // > SurrogateModel::aggregate_response() uses order of HF,LF
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
   //   data to each approxData instance in turn.
 
   SharedPecosApproxData* shared_data_rep
     = (SharedPecosApproxData*)sharedDataRep;
-  const UShortArray& key = approxData.back().active_key();
   switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
   case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
     // push another SurrogateData instance for modSurrData
     // (allows consolidation of Approximation::push/pop operations)
-    size_t mod_index = approxData.size(); // typically 1
+    const UShortArray& key = approxData.back().active_key();
     Pecos::SurrogateData mod_surr(key);
     approxData.push_back(mod_surr);
     pecosBasisApprox.modified_surrogate_data(mod_surr);
-    // Configure active approxData such that other classes access the
-    // discrepancy/surplus data rather than the raw QoI data
-    //surrogate_data_index(mod_index); // 0 for push data, 1 for pull data ?
     break;
   }
   default: // default ctor linkages are sufficient
     break;
   }
 }
-
-
-/*
-void PecosApproximation::activate_multilevel_surrogate_data()
-{
-  SharedPecosApproxData* shared_data_rep
-    = (SharedPecosApproxData*)sharedDataRep;
-  switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
-  case Pecos::DISTINCT_DISCREP:
-    // > sdRep already defined in SurrogateData ctor...
-    // > active key and active iterators for SurrogateData already defined...
-    // > indicate that data sets are active, but must be key-specific so that
-    //   level 0 (coarse/LF) remains inactive for second approxData
-    approxData[0].activate_all_keys();
-    approxData[1].activate_nonbase_keys();// all keys beyond first
-    surrogate_data_index(0); // reassign (is also the default)
-    // TO DO: need a default activation for non-ML cases
-    break;
-  //case Pecos::RECURSIVE_DISCREP: default: // nothing additional necessary
-  }
-}
-*/
 
 } // namespace Dakota

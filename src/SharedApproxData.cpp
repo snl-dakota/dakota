@@ -377,6 +377,77 @@ void SharedApproxData::clear_model_keys()
 }
 
 
+void SharedApproxData::link_multilevel_surrogate_data()
+{
+  if (dataRep)
+    dataRep->link_multilevel_surrogate_data();
+  else {
+    Cerr << "Error: link_multilevel_surrogate_data() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+void SharedApproxData::surrogate_model_key(const UShortArray& key)
+{
+  if (dataRep)
+    dataRep->surrogate_model_key(key);
+  else {
+    // AGGREGATED_MODELS mode uses {HF,LF} order, as does
+    // ApproximationInterface::*_add()
+    UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+    if (key.empty()) // remove second entry in approxDataKeys
+      data_keys.resize(1);
+    else {
+      data_keys.resize(2);
+      data_keys[1] = key; // assign incoming LF key
+    }
+  }
+}
+
+
+void SharedApproxData::truth_model_key(const UShortArray& key)
+{
+  if (dataRep)
+    dataRep->truth_model_key(key);
+  else { // default implementation: no key augmentation
+    // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
+    UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+    switch  (data_keys.size()) {
+    case 0:  data_keys.push_back(key); break;
+    default: data_keys[0] = key;       break;
+    }
+  }
+}
+
+
+const UShortArray& SharedApproxData::surrogate_model_key() const
+{
+  if (dataRep)
+    return dataRep->surrogate_model_key();
+  else { // default implementation
+    const UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+    if (data_keys.size() < 2) {
+      Cerr << "Error: no key defined in SharedApproxData::surrogate_model_key()"
+	   << std::endl;
+      abort_handler(APPROX_ERROR);
+      // or could return empty key by value
+    }
+    return data_keys.back();
+  }
+}
+
+
+const UShortArray& SharedApproxData::truth_model_key() const
+{
+  if (dataRep)
+    return dataRep->truth_model_key();
+  else // default implementation
+    return approxDataKeys[activeDataIndex].front();
+}
+
+
 void SharedApproxData::build()
 {
   if (dataRep)

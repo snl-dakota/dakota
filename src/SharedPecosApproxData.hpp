@@ -120,6 +120,10 @@ protected:
   const UShortArray& active_model_key() const;
   void clear_model_keys();
 
+  void link_multilevel_surrogate_data();
+  void surrogate_model_key(const UShortArray& key);
+  void truth_model_key(const UShortArray& key);
+
   void build();
   void rebuild();
 
