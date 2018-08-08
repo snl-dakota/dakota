@@ -2497,9 +2497,9 @@
 	  <keyword  id="batch_selection" name="batch_selection" code="{0}" label="Batch selection strategy"  minOccurs="0" default="naive" >
 	    <oneOf label="Batch Selection Criterion">
 	      <keyword  id="naive" name="naive" code="{N_mdm(lit,batchSelectionType_naive)}" label="naive"   />
-	      <keyword  id="distance_penalty" name="distance_penalty" code="{N_mdm(lit,batchSelectionType_distance_penalty)}" label="distance_penalty"   />
+	      <keyword  id="distance_penalty" name="distance_penalty" code="{N_mdm(lit,batchSelectionType_distance)}" label="distance_penalty"   />
 	      <keyword  id="topology" name="topology" code="{N_mdm(lit,batchSelectionType_topology)}" label="topology"   />
-	      <keyword  id="constant_liar" name="constant_liar" code="{N_mdm(lit,batchSelectionType_constant_liar)}" label="constant_liar"   />
+	      <keyword  id="constant_liar" name="constant_liar" code="{N_mdm(lit,batchSelectionType_cl)}" label="constant_liar"   />
 	    </oneOf>
 	  </keyword>
 	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples per iteration"  minOccurs="0" >

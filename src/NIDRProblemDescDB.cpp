@@ -6578,9 +6578,9 @@ static Method_mp_ilit2z
 
 static Method_mp_lit
 	MP2(batchSelectionType,naive),
-	MP2(batchSelectionType,distance_penalty),
+	MP2(batchSelectionType,distance),
 	MP2(batchSelectionType,topology),
-	MP2(batchSelectionType,constant_liar),
+	MP2(batchSelectionType,cl),
 	MP2(boxDivision,all_dimensions),
 	MP2(boxDivision,major_dimension),
 	MP2(convergenceType,average_fitness_tracker),
