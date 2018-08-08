@@ -38,12 +38,19 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
 	results_manager.initialize(database_name);
 
 	Dakota::HDF5IOHelper helper(database_name + ".h5", false);
-	helper.create_groups( "/methods" );
+        helper.create_groups("/methods"); // methods treated like a dataset name
+        TEST_ASSERT(!helper.exists("/methods"));
+
+	helper.create_groups( "/methods",false ); // methods treated like a group
 	TEST_ASSERT( helper.exists("/methods") );
 
-	helper.create_groups( "/methods/sampling" );
+	helper.create_groups( "/methods/sampling"); // sampling treated like a dataset
+	TEST_ASSERT(!helper.exists("/methods/sampling") );
+
+	helper.create_groups( "/methods/sampling", false); // sampling treated like a group
 	TEST_ASSERT( helper.exists("/methods") );
 	TEST_ASSERT( helper.exists("/methods/sampling") );
+
 }
 
 TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_1D_dimension_scales) {
@@ -53,7 +60,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_1D_dimension_scales) {
     results_manager.initialize(database_name);
 
     Dakota::HDF5IOHelper helper(database_name + ".h5", false);
-    H5::Group group = helper.create_groups( "/exec_id_1" );
+    H5::Group group = helper.create_groups( "/exec_id_1", false);
 
 	std::array<double, 4> lower_bounds_arr = { 2.7604749078e+11, 3.6e+11, 4.0e+11, 4.4e+11 };	
 	H5::DataSet ds_lower_bounds = helper.create_1D_dimension_scale (

@@ -106,7 +106,7 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
   }
 
   // Read data
-  RealVector test_vec;
+  RealVector test_vec(VEC_SIZE);
   {
     HDF5IOHelper h5_io(file_name);
     h5_io.read_data(ds_name, test_vec[0]);
@@ -139,7 +139,7 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
   }
 
   // Read data
-  std::vector<Real> test_vec;
+  std::vector<Real> test_vec(VEC_SIZE);
   {
     HDF5IOHelper h5_io(file_name);
     h5_io.read_data(ds_name, test_vec[0]);

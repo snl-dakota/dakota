@@ -77,20 +77,25 @@ namespace Dakota
 		return true;
 	}
 
-	// Assume we have an absolute path /root/dir/dataset and create
-	// groups /root/ and /root/dir/ if needed.
-	// Returns the last Group created.
-	H5::Group HDF5IOHelper::create_groups(const std::string& dset_name) const
+	// Create groups for the absolute path in name.
+        // The includes_dset option controls whether the final token in name is a dataset.
+        // Suppose name is /path/to/object
+        // For includes_dset == true, object is interpreted as the name of a dataset and
+        // only the groups /path/ and /path/to are created.
+        // For includes_dset == false, the groups /path, /path/to, and /path/to/object
+        // are created.
+	H5::Group HDF5IOHelper::create_groups(const std::string& name, bool includes_dset) const
 	{
 		// the first group will be empty due to leading delimiter
 		// the last group will be the dataset name
 		std::vector<std::string> groups;
-		boost::split(groups, dset_name, boost::is_any_of("/"));
+		boost::split(groups, name, boost::is_any_of("/"));
 
-		// index instead of pruning first and last or clever iterators
+		// index instead of pruning first and/or last or clever iterators
 		std::string full_path;
 		H5::Group new_group;
-		for( size_t i = 1; i < (groups.size()); ++i ) {
+                size_t num_groups = (includes_dset) ? groups.size() -1 : groups.size();
+		for( size_t i = 1; i < num_groups; ++i ) {
 			full_path += '/' + groups[i];
 			// if doesn't exist, add
 

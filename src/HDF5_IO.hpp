@@ -206,7 +206,7 @@ namespace Dakota
 
 	bool is_scale(const H5::DataSet dset) const;
 
-	H5::Group create_groups(const std::string& dset_name) const;
+	H5::Group create_groups(const std::string& name, bool includes_dset=true) const;
 
 	H5::DataSet create_dimension_scale (
 		const H5::H5Location &loc, std::vector<int> dim_sizes, H5::DataType type,
