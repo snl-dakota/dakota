@@ -75,7 +75,7 @@ namespace Dakota
 
 		// Initialize global Link Creation Property List to enocde all link (group, dataset) names
 		// in UTF-8
-		linkCreatePl.setCharEncoding(H5T_CSET_UTF8);      
+		linkCreatePL.setCharEncoding(H5T_CSET_UTF8);      
 	}
 
 	~HDF5IOHelper() { }
@@ -208,6 +208,8 @@ namespace Dakota
 
 	H5::Group create_groups(const std::string& name, bool includes_dset=true) const;
 
+        // JAS: The current code in ResultsDBHDF5 calls store_vector_data and then
+        // attach_scale. This pair of functions may be unneeded.
 	H5::DataSet create_dimension_scale (
 		const H5::H5Location &loc, std::vector<int> dim_sizes, H5::DataType type,
 		std::string label, H5::DSetCreatPropList plist ) const;
@@ -218,27 +220,21 @@ namespace Dakota
 
 	H5::DataSet create_dataset(
 		const H5::H5Location &loc, const std::string &name,
-		const H5::DataType &type, const H5::DataSpace &space) const;
-
-	H5::DataSet create_dataset(
-		const H5::H5Location &loc, const std::string &name,
 		const H5::DataType &type, const H5::DataSpace &space,
-		const H5::DSetCreatPropList plist) const;
+                const H5::DSetCreatPropList &plist = H5::DSetCreatPropList()) const;
 
-	// Define globally available custom property lists.
-	H5::LinkCreatPropList h5_group_create_pl;
-	H5::DSetCreatPropList h5_dataset_compact_pl;
-	H5::DSetCreatPropList h5_dataset_contiguous_pl;
-
-	//------------------------------------------------------------------
+        // Define globally available custom property lists
+        // JAS: These probably should not be public. The point of this class is to
+        // encapsulate these kinds of low-level details.
+        H5::LinkCreatPropList linkCreatePL;
+        H5::DSetCreatPropList datasetCompactPL;
+	H5::DSetCreatPropList datasetContiguousPL;
 
 	protected:
 
 	std::string fileName;
 
 	std::shared_ptr<H5::H5File> filePtr;
-
-	H5::LinkCreatPropList linkCreatePl;
 
 	}; // class HDF5IOHelper
 } // namespace Dakota

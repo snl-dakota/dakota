@@ -46,6 +46,7 @@ def run_dakota(input_file):
     return output
 
 
+## Capture the output here, once.
 __OUTPUT = run_dakota("dakota_hdf5_test.in")
 
 

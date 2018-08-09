@@ -102,7 +102,7 @@ namespace Dakota
 			bool grpexists = filePtr->exists(full_path.c_str());
 			if( !grpexists ) {
 				Cerr << "DEBUG Group doesn't exist.  Creating it." << std::endl;
-				new_group = filePtr->createGroup(full_path.c_str(), linkCreatePl);
+				new_group = filePtr->createGroup(full_path.c_str(), linkCreatePL);
 	            /* Add Exception handling
     	        if (create_status < 0)
         	    {
@@ -120,12 +120,12 @@ namespace Dakota
 	H5::DataSet HDF5IOHelper::create_dataset(
 		const H5::H5Location &loc, const std::string &name,
 		const H5::DataType &type, const H5::DataSpace &space,
-		const H5::DSetCreatPropList plist) const {
+		const H5::DSetCreatPropList &plist) const {
 
 		hid_t loc_id   = loc.getId();
 		hid_t dtype_id = type.getId();
 		hid_t space_id = space.getId();
-		hid_t lcpl_id  = linkCreatePl.getId();
+		hid_t lcpl_id  = linkCreatePL.getId();
 		hid_t dcpl_id  = plist.getId();
 
 		H5::DataSet dataset(
@@ -133,13 +133,6 @@ namespace Dakota
 		);
 		return dataset;
 	}
-
-	H5::DataSet HDF5IOHelper::create_dataset(
-        const H5::H5Location &loc, const std::string &name,
-        const H5::DataType &type, const H5::DataSpace &space) const {
-
-		return create_dataset(loc, name, type, space, H5::DSetCreatPropList());
-    }
 
 	bool HDF5IOHelper::is_scale(const H5::DataSet dset) const {
 		htri_t status = H5DSis_scale(dset.getId());
