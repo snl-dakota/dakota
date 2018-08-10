@@ -2589,7 +2589,12 @@ void NonD::archive_from_resp(size_t i)
   std::string data_name;
 
   RealMatrix mapping(num_resp_levels, 2);
-  
+ 
+  HDF5dss scale;
+  scale.emplace(0, RealScale("response_levels", requestedRespLevels[i]));
+  const StringArray &labels = iteratedModel.response_labels();
+  RealVector *result;
+
   // TODO: could use SetCol?
   switch (respLevelTarget) { 
   case PROBABILITIES:
@@ -2598,6 +2603,7 @@ void NonD::archive_from_resp(size_t i)
       mapping(j, 0) = requestedRespLevels[i][j];
       mapping(j, 1) = computedProbLevels[i][j];
     }
+    result = &computedProbLevels[i]; 
     break;
   case RELIABILITIES:
     data_name = resultsNames.map_resp_rel;
@@ -2605,6 +2611,7 @@ void NonD::archive_from_resp(size_t i)
       mapping(j, 0) = requestedRespLevels[i][j];
       mapping(j, 1) = computedRelLevels[i][j];
     }
+    result = &computedRelLevels[i];
     break;
   case GEN_RELIABILITIES: 
     data_name = resultsNames.map_resp_genrel;
@@ -2612,8 +2619,11 @@ void NonD::archive_from_resp(size_t i)
       mapping(j, 0) = requestedRespLevels[i][j];
       mapping(j, 1) = computedGenRelLevels[i][j];
     }
+    result = &computedGenRelLevels[i];
     break;
   }
+
+  resultsDB.insert(run_identifier(), String("response_levels"), labels[i], *result, scale); 
 
   resultsDB.array_insert<RealMatrix>(run_identifier(), data_name, i, mapping);
 }
@@ -2624,6 +2634,8 @@ void NonD::archive_to_resp(size_t i)
 {
   if (!resultsDB.active())  return;
 
+  HDF5dss scale;
+  const StringArray &labels = iteratedModel.response_labels();
   size_t j;
   size_t num_prob_levels = requestedProbLevels[i].length();
   if (num_prob_levels > 0) {
@@ -2635,6 +2647,12 @@ void NonD::archive_to_resp(size_t i)
     resultsDB.
       array_insert<RealMatrix>(run_identifier(), 
 			       resultsNames.map_prob_resp, i, mapping);
+
+    scale.emplace(0, RealScale("probability_levels", requestedProbLevels[i]));
+    RealVector result(Teuchos::View, &computedRespLevels[i][0], num_prob_levels);
+    resultsDB.insert(run_identifier(), String("probability_levels"), labels[i], 
+        result, scale);
+
   } 
   size_t num_rel_levels = requestedRelLevels[i].length();
   size_t offset = num_prob_levels; 
@@ -2647,6 +2665,11 @@ void NonD::archive_to_resp(size_t i)
     resultsDB.
       array_insert<RealMatrix>(run_identifier(), 
 			       resultsNames.map_rel_resp, i, mapping);
+
+    scale.emplace(0, RealScale("reliability_levels", requestedRelLevels[i]));
+    RealVector result(Teuchos::View, &computedRespLevels[i][0] + offset, num_rel_levels);
+    resultsDB.insert(run_identifier(), String("reliability_levels"), labels[i], 
+        result, scale);
   } 
   size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
   offset += num_rel_levels; 
@@ -2659,6 +2682,12 @@ void NonD::archive_to_resp(size_t i)
     resultsDB.
       array_insert<RealMatrix>(run_identifier(), 
 			       resultsNames.map_genrel_resp, i, mapping);
+
+    scale.emplace(0, RealScale("gen_reliability_levels", requestedGenRelLevels[i]));
+    RealVector result(Teuchos::View, &computedRespLevels[i][0] + offset, num_gen_rel_levels);
+    resultsDB.insert(run_identifier(), String("gen_reliability_levels"), labels[i], 
+        result, scale);
+
   } 
 }
 
