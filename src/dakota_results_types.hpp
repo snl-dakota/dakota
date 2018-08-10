@@ -243,6 +243,14 @@ struct RealScale {
                 const_cast<Real*>(in_items), len);
           }
 
+  RealScale(const std::string &label, const Real *in_items, const int len,
+          ScaleScope scope = ScaleScope::UNSHARED) : 
+          label(label), scope(scope) {
+            items = RealVector(Teuchos::View,
+                const_cast<Real*>(in_items), len);
+          }
+
+
   std::string label;
   ScaleScope scope;
   RealVector items;

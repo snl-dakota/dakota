@@ -33,6 +33,38 @@ def extract_moments():
                 moments_line = next(lines_iter)
     return moments
 
+def extract_pdfs():
+    """Extract the PDFs from the global __OUTPUT
+
+    Returns: The PDFs with lower and upper bins structured
+        as a list of dictionaries. The items in the list
+        are for executions, and the key, value pairs in the
+        dictionaries are the response descriptors and 2D numpy
+        arrays of the lower and upper bounds and the densities
+        with dimension (num_bins, 3)
+    """
+    global __OUTPUT
+    pdfs = []
+    lines_iter = iter(__OUTPUT)
+    for line in lines_iter:
+        if line.startswith("Probability Density Function (PDF)"):
+            pdfs.append({})
+            nline = next(lines_iter) # get either 'PDF for <descriptor>:" or a blank line
+            while nline != '':  # Loop over the responses
+                desc = nline.split()[-1][:-1]
+                pdf_for_resp = []
+                next(lines_iter)  # Skip heading "Bin Lower..."
+                next(lines_iter)  # Skip heading "----..."
+                nline = next(lines_iter) # Get the first line of data for this response
+                pdf_for_resp = []
+                while not nline.startswith("PDF for") and nline != '':  # loop over data
+                    values = [float(t) for t in nline.split()]
+                    pdf_for_resp.append(values)
+                    nline = next(lines_iter)
+                pdfs[-1][desc] = pdf_for_resp
+    return pdfs
+
+
 def run_dakota(input_file):
     """Run Dakota on the input_file
 
@@ -53,6 +85,7 @@ __OUTPUT = run_dakota("dakota_hdf5_test.in")
 class Moments(unittest.TestCase):
 
     def setUp(self):
+        # This method will be called once for each test, so cache the moments
         try:
             self._moments
         except AttributeError:
@@ -95,6 +128,35 @@ class Moments(unittest.TestCase):
                     self.assertEqual(expected_scale_label, scale_label)
                     for es, s in zip(expected_scale, hdf5_moments.dims[0][0]):
                         self.assertEqual(es,s)
+
+class PDFs(unittest.TestCase):
+    def setUp(self):
+        try:
+            self._pdfs
+        except AttributeError:
+            self._pdfs = extract_pdfs()
+
+    def test_pdfs(self):
+        console_pdfs = self._pdfs
+        expected_scale_labels = set(('lower_bounds','upper_bounds'))
+        expected_descriptors = set(console_pdfs[0].keys())
+        expected_num_execs = len(console_pdfs)
+
+        with h5py.File("for_h5py.h5","r") as h:
+            # pdfs and scales
+            for i in range(expected_num_execs):
+                for r in expected_descriptors:
+                    hdf5_pdf = h["/methods/aleatory/execution:%d/probability_density/%s" % (i+1, r)]
+                    # same number of bins
+                    self.assertEqual(len(console_pdfs[i][r]), len(hdf5_pdf))
+                    console_pdf = console_pdfs[i][r]
+                    for j in range(len(hdf5_pdf)):
+                        # Lower bound
+                        self.assertAlmostEqual(console_pdf[j][0], hdf5_pdf.dims[0][0][j])
+                        # Upper bound
+                        self.assertAlmostEqual(console_pdf[j][1], hdf5_pdf.dims[0][1][j])
+                        # Density
+                        self.assertAlmostEqual(console_pdf[j][2], hdf5_pdf[j])
 
 if __name__ == '__main__':
     unittest.main()

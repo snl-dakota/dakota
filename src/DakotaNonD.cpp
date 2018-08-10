@@ -2691,6 +2691,13 @@ void NonD::archive_pdf(size_t i) // const
   
   resultsDB.array_insert<RealMatrix>
     (run_identifier(), resultsNames.pdf_histograms, i, pdf);
+
+  HDF5dss scales;
+  const StringArray &labels = iteratedModel.response_labels();
+  scales.emplace(0, RealScale("lower_bounds", &computedPDFAbscissas[i][0], pdf_len, ScaleScope::UNSHARED));
+  scales.emplace(0, RealScale("upper_bounds", &computedPDFAbscissas[i][1], pdf_len, ScaleScope::UNSHARED));
+  resultsDB.insert(run_identifier(), String("probability_density"), labels[i],
+      computedPDFOrdinates[i], scales);
 }
 
 } // namespace Dakota

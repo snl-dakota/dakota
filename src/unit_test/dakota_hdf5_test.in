@@ -26,8 +26,19 @@ variables
   
 responses
   id_responses 'epist_r'
-  response_functions 4
-  descriptors 'f_mean' 'f_stddev' 'c_mean' 'c_stddev'
+  response_functions 12
+  descriptors 'f_mean' 
+              'f_stddev' 
+              'f_p1'
+              'f_p2'
+              'f_p3'
+              'f_r1'
+              'c_mean' 
+              'c_stddev'
+              'c_p1'
+              'c_p2'
+              'c_p3'
+              'c_r1'
   no_gradients
   no_hessians
 
@@ -37,6 +48,10 @@ method
   sampling
     seed 1337
     samples 1000
+    probability_levels 0.25 0.5 0.75
+                       0.3  0.4 0.7
+    response_levels 0.6 0.2
+ 
   output verbose
 
 model
