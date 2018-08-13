@@ -142,14 +142,14 @@ private:
     // When scales are SHARED (by all the resposnes), they are stored under
     // _scales/label. When they are UNSHARED, they go under _scales/label/response
 
-    String rval = "/methods/" + method_id + "/execution:" +
+    String rval = "/_scales/methods/" + method_id + "/execution:" +
       boost::lexical_cast<String>(exec_num) + '/';
     if(!response_name.empty()) {
-      rval += result_name_wospace + "/_scales/" + scale.label;
+      rval += result_name_wospace + "/" + scale.label;
       if(scale.scope == ScaleScope::UNSHARED) 
         rval += '/' + response_name;
     } else { // No response name provided (e.g. correlation matrix)
-      rval += "/_scales/" + scale.label;
+      rval += scale.label;
     } 
     return rval;
   }

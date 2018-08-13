@@ -156,7 +156,6 @@ class Moments(unittest.TestCase):
                 self.assertEqual("execution:%d" %(i+1,), n)
             # descriptors
             hdf5_descriptors = set(h["/methods/aleatory/execution:1/moments/"].keys())
-            hdf5_descriptors.remove('_scales')
             self.assertEqual(expected_descriptors, hdf5_descriptors)
 
     def test_moments(self):
