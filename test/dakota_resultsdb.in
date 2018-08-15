@@ -4,8 +4,7 @@
 
 environment,
 	results_output
-#	  results_output_file = 'uq.results.txt.1'	#s1
-#	  results_output_file = 'uq.results.txt.2'	#s2
+#	  results_output_file = 'uq.results.txt'	#s1,#s2
 
 method,
 	# dakota_rosenbrock.in:0
