@@ -727,16 +727,16 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
 	if (first_vars) {
-	  fn_surf.add(vars,        anchor, true, key_index); // deep
-	  fn_surf.add(response, i, anchor, true, key_index); // deep
+	  fn_surf.add(vars,        anchor,  true, key_index); // deep
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
 	                   fn_surf.surrogate_data().variables_data().back();
 	  first_vars = false;
 	}
 	else {
-	  fn_surf.add(sdv,         anchor,       key_index); // shallow
-	  fn_surf.add(response, i, anchor, true, key_index); // deep
+	  fn_surf.add(sdv,         anchor, false, key_index); // shallow
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
 	}
       }
   }
@@ -762,16 +762,16 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
 	// into per-response function arrays for input to fn_surf, pass the
 	// complete response along with a response function index.
 	if (first_vars) {
-	  fn_surf.add(c_vars,      anchor, true, key_index); // deep
-	  fn_surf.add(response, i, anchor, true, key_index); // deep
+	  fn_surf.add(c_vars,      anchor,  true, key_index); // deep
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
 	  // carry newly added sdv over to other approx fn indices:
 	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
 	                   fn_surf.surrogate_data().variables_data().back();
 	  first_vars = false;
 	}
 	else {
-	  fn_surf.add(sdv,         anchor,       key_index); // shallow
-	  fn_surf.add(response, i, anchor, true, key_index); // deep
+	  fn_surf.add(sdv,         anchor, false, key_index); // shallow
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
 	}
       }
   }

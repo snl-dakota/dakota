@@ -394,8 +394,9 @@ add(const RealVector& c_vars, const IntVector& di_vars,
   if (approxRep)
     approxRep->add(c_vars, di_vars, dr_vars, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
+    // deep_copy requests are applied downstream in add(SurrogateDataVars)
     Pecos::SurrogateDataVars sdv(c_vars, di_vars, dr_vars, Pecos::SHALLOW_COPY);
-    add(sdv, anchor_flag, deep_copy, key_index);// deep copy can be applied here
+    add(sdv, anchor_flag, deep_copy, key_index);// deep copy applied here
   }
 }
 
@@ -413,8 +414,9 @@ add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy,
     // and we do not convert them back to {di,dr}_vars here.
     RealVector c_vars(Teuchos::View, const_cast<Real*>(sample_c_vars),
 		      sharedDataRep->numVars);
+    // deep_copy requests are applied downstream in add(SurrogateDataVars)
     Pecos::SurrogateDataVars sdv(c_vars, Pecos::SHALLOW_COPY);
-    add(sdv, anchor_flag, deep_copy, key_index);// deep copy can be applied here
+    add(sdv, anchor_flag, deep_copy, key_index); // deep copy applied here
   }
 }
 

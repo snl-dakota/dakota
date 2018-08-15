@@ -805,21 +805,28 @@ add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy,
   if (approxRep)
     approxRep->add(response, fn_index, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
-
     short asv_val = response.active_set_request_vector()[fn_index];
-    //if (asv_val) { // ASV dropouts are now managed at a higher level
-
-    // use empty vectors/matrices if data is not active.
-    Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
-    RealVector fn_grad;  RealSymMatrix fn_hess;
-    if (asv_val & 2) fn_grad = response.function_gradient_view(fn_index);
-    if (asv_val & 4) fn_hess = response.function_hessian_view(fn_index);
-
-    Pecos::SurrogateDataResp
-      sdr(fn_val, fn_grad, fn_hess, asv_val, Pecos::SHALLOW_COPY);
-    add(sdr, anchor_flag, deep_copy, key_index);
-
-    //}
+    switch (asv_val) {
+    case 0:
+      return; break; // should not happen: ASV dropouts managed at higher level
+    case 1: { // special case with lightweight ctor
+      Pecos::SurrogateDataResp sdr(response.function_value(fn_index));
+      add(sdr, anchor_flag, deep_copy, key_index);
+      break;
+    }
+    default: {
+      // general ASV: use empty vectors/matrices if data is not active.
+      Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
+      RealVector fn_grad;  RealSymMatrix fn_hess;
+      if (asv_val & 2) fn_grad = response.function_gradient_view(fn_index);
+      if (asv_val & 4) fn_hess = response.function_hessian_view(fn_index);
+      // deep_copy requests are applied downstream in add(SurrogateDataResp)
+      Pecos::SurrogateDataResp
+	sdr(fn_val, fn_grad, fn_hess, asv_val, Pecos::SHALLOW_COPY);
+      add(sdr, anchor_flag, deep_copy, key_index); // deep copy applied here
+      break;
+    }
+  }
   }
 }
 
