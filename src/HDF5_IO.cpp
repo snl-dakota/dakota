@@ -38,26 +38,17 @@ namespace Dakota
     {
 		create_groups(dset_name);
 
-        Cerr << "DEBUG Opening scale dataset " << scale_name << std::endl;
         H5::DataSet scale_ds(filePtr->openDataSet(scale_name));
-        Cerr << "DEBUG Opening results dataset " << dset_name << std::endl;
         H5::DataSet ds(filePtr->openDataSet(dset_name));
-        Cerr << "DEBUG Checking scale status of " << scale_name << std::endl;
         if(!is_scale(scale_ds)) {
-            Cerr << "DEBUG Setting scale status for " << scale_name
-                << " using label " << label << std::endl;
             H5DSset_scale(scale_ds.getId(), label.c_str() );
-            Cerr << "DEBUG Set scale passed for " << scale_name << std::endl;
         }
-        Cerr << "DEBUG Attaching scale: " << scale_name << " to " << dset_name << std::endl;
         H5DSattach_scale(ds.getId(), scale_ds.getId(), dim );
-        Cerr << "DEBUG Scale attached." << std::endl;
     }
 
 
 	bool HDF5IOHelper::exists(const String location_name) const
 	{
-        Cerr << "DEBUG exists() called with " << location_name << std::endl;
 		// the first group will be empty due to leading delimiter
 		// the last group will be the dataset name
 		std::vector<std::string> objects;
@@ -69,11 +60,9 @@ namespace Dakota
 			full_path += '/' + objects[i];
 			// if doesn't exist, add
 			if(!filePtr->exists(full_path.c_str())) {
-				Cerr << "DEBUG Does not exist: " << full_path << std::endl;
 				return false;
 			}
 		}
-		Cerr << "DEBUG existence verified for " << location_name << std::endl;
 		return true;
 	}
 
@@ -101,7 +90,6 @@ namespace Dakota
 
 			bool grpexists = filePtr->exists(full_path.c_str());
 			if( !grpexists ) {
-				Cerr << "DEBUG Group doesn't exist.  Creating it." << std::endl;
 				new_group = filePtr->createGroup(full_path.c_str(), linkCreatePL);
 	            /* Add Exception handling
     	        if (create_status < 0)

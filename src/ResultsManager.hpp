@@ -298,29 +298,6 @@ public:
 	      const StoredType& sent_data,
               const HDF5dss &scales = HDF5dss())
   {
-    Cout << "Insert called for " << iterator_id.get<1>() << ":" << iterator_id.get<2>() << ".\n";
-    Cout << "Result is: " << result_name << std::endl;
-    Cout << "Response is: " << response_name << std::endl;
-    if(scale_is_real(scales)) {
-      for(auto s : scales) {
-        Cout << "Dimension " << s.first << " has label " << boost::any_cast<RealScale>(s.second).label << ".\n";
-        Cout << "Scale Values:" << std::endl;
-        const RealScale &scale = boost::any_cast< RealScale >(s.second);
-        int num_scale_values = scale.items.length(); // totally gross that it's length() here, but size for StringScale
-        for(int i = 0; i < num_scale_values; ++i)
-          Cout << "  " << scale.items[i] << std::endl;
-      }
-    } else {
-      for(auto s : scales) {
-        Cout << "Dimension " << s.first << " has label " << boost::any_cast<StringScale >(s.second).label << ".\n";
-        Cout << "Scale Values:" << std::endl;
-        const StringScale &scale = boost::any_cast< StringScale >(s.second);
-        int num_scale_values = scale.items.size();
-        for(int i = 0; i < num_scale_values; ++i)
-          Cout << "  " << scale.items[i] << std::endl;
-      }
-    }
-
 #ifdef DAKOTA_HAVE_HDF5
     if (hdf5DBActive)
       hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales);

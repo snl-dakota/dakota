@@ -16,7 +16,6 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <iostream> // TODO: Remove!
 #include <boost/tuple/tuple.hpp>
 #include "dakota_data_types.hpp"
 #include <boost/any.hpp>

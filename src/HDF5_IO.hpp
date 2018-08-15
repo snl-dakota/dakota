@@ -123,15 +123,9 @@ namespace Dakota
           H5::DataSpace dataspace = H5::DataSpace(1, dims);
 
           // Assume dset_name is syntactically correct - will need some utils - RWH
-          Cerr << "DEBUG Before creating groups for " << dset_name << std::endl;
           create_groups(dset_name);
-          Cerr << "DEBUG Groups created for " << dset_name << std::endl;
-          Cerr << "DEBUG Before creating dataset for " << dset_name << std::endl;
           H5::DataSet dataset(create_dataset(*filePtr, dset_name, h5_dtype(array[0]), dataspace) );
-          Cerr << "DEBUG dataset created for " << dset_name << std::endl;
-          Cerr << "DEBUG Before writing dataset for " << dset_name << std::endl;
           dataset.write(array.data(), h5_dtype(array[0]));
-          Cerr << "DEBUG dataset written for " << dset_name << std::endl;
           return;
 	}
 
