@@ -83,7 +83,7 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, scalar)
   // Read data
   {
     HDF5IOHelper h5_io(file_name);
-    h5_io.read_data(ds_name, value);
+    h5_io.read_scalar_data(ds_name, value);
   }
 
   TEST_ASSERT( true );
@@ -109,7 +109,7 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, realvec)
   RealVector test_vec(VEC_SIZE);
   {
     HDF5IOHelper h5_io(file_name);
-    h5_io.read_data(ds_name, test_vec[0]);
+    h5_io.read_vector_data(ds_name, test_vec);
   }
 
   TEST_EQUALITY( test_vec.length(), vec_out.length() );
@@ -142,7 +142,7 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
   std::vector<Real> test_vec(VEC_SIZE);
   {
     HDF5IOHelper h5_io(file_name);
-    h5_io.read_data(ds_name, test_vec[0]);
+    h5_io.read_vector_data(ds_name, test_vec);
   }
 
   TEST_EQUALITY( test_vec.size(), vec_out.size() );

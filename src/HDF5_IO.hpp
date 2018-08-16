@@ -96,17 +96,16 @@ namespace Dakota
 	}
 
 	template <typename T>
-	const void read_data(const std::string& dset_name, T& val)
+	const void read_scalar_data(const std::string& dset_name, T& val)
 	{
-		htri_t ds_exists = H5Lexists(filePtr->getId(), dset_name.c_str(), H5P_DEFAULT);
-		if( !ds_exists )
+		if( !exists(dset_name) )
 		{
 			Cerr << "\nError: HDF5 file \"" << fileName << "\""
 				 << " does not contain data path \"" << dset_name << "\""
 				 << std::endl;
 			abort_handler(-1);
 		}
-
+    // JAS: We need some verification here that the dataset is really a scalar.
 		H5::DataSet dataset = filePtr->openDataSet(dset_name);
 		dataset.read(&val, h5_dtype(val));
 
@@ -118,22 +117,15 @@ namespace Dakota
 	template <typename T>
 	void store_vector_data(const std::string& dset_name, const std::vector<T>& array) const
 	{
-          hsize_t dims[1];
-          dims[0] = array.size();
-          H5::DataSpace dataspace = H5::DataSpace(1, dims);
-
-          // Assume dset_name is syntactically correct - will need some utils - RWH
-          create_groups(dset_name);
-          H5::DataSet dataset(create_dataset(*filePtr, dset_name, h5_dtype(array[0]), dataspace) );
-          dataset.write(array.data(), h5_dtype(array[0]));
-          return;
+    store_vector_data(dset_name, array.data(), array.size());
+    return;
 	}
 
+  // Use the same reader for std::vector and SerialDenseVector
 	template <typename T>
-	void read_data(const std::string& dset_name, std::vector<T>& array) const
+	void read_vector_data(const std::string& dset_name, T& array) const 
 	{
-          htri_t ds_exists = H5Lexists(filePtr->getId(), dset_name.c_str(), H5P_DEFAULT);
-          if( !ds_exists )
+          if( !exists(dset_name) )
           {
             Cerr << "\nError: HDF5 file \"" << fileName << "\""
               << " does not contain data path \"" << dset_name << "\""
@@ -147,16 +139,14 @@ namespace Dakota
           assert( dataset.getSpace().isSimple() );
           int ndims = dataset.getSpace().getSimpleExtentNdims();
           assert( ndims == 1 );
-
           std::vector<hsize_t> dims( ndims, hsize_t(1) );
-
-          herr_t ret_val = H5LTget_dataset_info( filePtr->getId(), dset_name.c_str(),
-              &dims[0], NULL, NULL );
-
+          dataset.getSpace().getSimpleExtentDims(dims.data());
+          // Calling resize on a SerialDenseVector is potentially wasteful if it is initially non-zero
+          // length because it copies the existing data to the new buffer. There's probably a better
+          // design that would avoid this issue without duplicating a lot of code for std::vector and 
+          // SDV.
           array.resize(dims[0]);
-
           dataset.read(&array[0], h5_dtype(array[0]));
-
           return;
 	}
 
@@ -164,29 +154,7 @@ namespace Dakota
 		const std::string & dset_name,
 		const Teuchos::SerialDenseVector<int,T> & vec )
 	{
-		// This is kludgy but gets things moving ...
-		// We should avoid a copy, but do we know whether or not SerialDenseMatrix data is
-		// contiguous? RWH
-		std::vector<T> copy_vec;
-		for( int i=0; i<vec.length(); ++i )
-			copy_vec.push_back(vec[i]);
-
-		store_vector_data(dset_name, copy_vec);
-		return;
-	}
-
-	template <typename T> void read_data(
-		const std::string& dset_name, Teuchos::SerialDenseVector<int,T> & buf) const
-	{
-    	// This is not ideal in that we are copying data - RWH
-		std::vector<T> tmp_vec;
-		read_data(dset_name, tmp_vec);
-
-		if( buf.length() != (int) tmp_vec.size() )
-			buf.sizeUninitialized(tmp_vec.size());
-		for( int i=0; i<buf.length(); ++i )
-			buf[i] = tmp_vec[i];
-
+		store_vector_data(dset_name, &vec[0], vec.length());
 		return;
 	}
 
@@ -229,6 +197,20 @@ namespace Dakota
 	std::string fileName;
 
 	std::shared_ptr<H5::H5File> filePtr;
+
+  template<typename T>
+  void store_vector_data(const String &dset_name, const T *data, const int &len) const {
+      hsize_t dims[1];
+      dims[0] = len;
+      H5::DataSpace dataspace = H5::DataSpace(1, dims);
+      H5::DataType datatype = h5_dtype(*data);
+      // Assume dset_name is syntactically correct - will need some utils - RWH
+      create_groups(dset_name);
+      H5::DataSet dataset(create_dataset(*filePtr, dset_name, datatype, dataspace) );
+      dataset.write(data, datatype);
+      return;
+	}
+
 
 	}; // class HDF5IOHelper
 } // namespace Dakota
