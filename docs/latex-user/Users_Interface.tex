@@ -1554,21 +1554,39 @@ and the corresponding results would appear as
 
 \section{Parameters and Results Files with dakota.interfacing}\label{interfaces:dakota.interfacing}
 
-The Python module {\tt dakota.interfacing} first was made available with Dakota 6.6. (It was released with Dakota 6.5 as the module {\tt dipy}.) By providing a Python interface to read and write, respectively, Dakota parameters and results files, {\tt dakota.interfacing} can greatly simplify development of black-box interfaces. The benefit may be greatest when one or more phases of the interface (pre-processing, execution, post-processing) is written in Python.
+The Python module {\tt dakota.interfacing} first was made available with Dakota 6.6. (It was released with 
+Dakota 6.5 as the module {\tt dipy}.) By providing a Python interface to read and write, respectively,
+Dakota parameters and results files, {\tt dakota.interfacing} can greatly simplify development of black-box
+interfaces. The benefit may be greatest when one or more phases of the interface (pre-processing, execution,
+post-processing) is written in Python.
 
-The following sections describe the components of {\tt dakota.interfacing}. These include a {\tt Parameters} class for making variable information available, a {\tt Results} class for collecting results and writing them to file, and a convenience function {\tt read\_parameters\_file}, the preferred way to construct {\tt Parameters} and {\tt Results} objects from a Dakota parameters file.
+The following sections describe the components of {\tt dakota.interfacing}. These include a {\tt Parameters}
+class for making variable information available, a {\tt Results} class for collecting results and writing
+them to file, and a convenience function {\tt read\_parameters\_file}, the preferred way to construct 
+{\tt Parameters} and {\tt Results} objects from a Dakota parameters file.
 
 \subsection{Creating Parameters and Results objects}
 
-{\tt dakota.interfacing} has one free function, {\tt read\_parameters\_file}, which creates {\tt Parameters} and {\tt Results} objects based on a Dakota parameters file. Its signature is:
+{\tt dakota.interfacing} has one free function, {\tt read\_parameters\_file}, which creates {\tt Parameters}
+and {\tt Results} objects based on a Dakota parameters file. Its signature is:
 
 \phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None}, \emph{ignore\_asv=False}}){}
 
-\emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or just filenames. If a parameters file or results file is not provided, it will be obtained from the command line arguments. (The results filename is assumed to be the last command line argument, and the parameters file the second to last.) Note that if the working directory has changed since script invocation, filenames provided as command line arguments by Dakota's {\tt fork} or {\tt system} interfaces may be incorrect.
+\emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read
+and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or
+just filenames. If a parameters file or results file is not provided, it will be obtained from the command 
+line arguments. (The results filename is assumed to be the last command line argument, and the parameters 
+file the second to last.) Note that if the working directory has changed since script invocation, filenames
+provided as command line arguments by Dakota's {\tt fork} or {\tt system} interfaces may be incorrect.
 
-If \emph{results\_file} is set to the constant {\tt dakota.interfacing.UNNAMED}, the {\tt Results} object is constructed without a results file name.  In this case, an output stream must be provided when {\tt Results.write()} is called. Unnamed results files are most helpful when no results file will be written, as with a script intended purely for pre-processing.
+If \emph{results\_file} is set to the constant {\tt dakota.interfacing.UNNAMED}, the {\tt Results} object
+is constructed without a results file name.  In this case, an output stream must be provided when {\tt Results.write()}
+is called. Unnamed results files are most helpful when no results file will be written, as with a script
+intended purely for pre-processing.
 
-By default, the returned {\tt Results} object enforces the active set vector (see the {\tt Results} class section). This behavior can be overriden, allowing any property (function, gradient, Hessian) of a response to be set, by setting \emph{ignore\_asv} to True.
+By default, the returned {\tt Results} object enforces the active set vector (see the {\tt Results} class section).
+This behavior can be overriden, allowing any property (function, gradient, Hessian) of a response to be set, by
+setting \emph{ignore\_asv} to True.
 
 
 \subsection{Parameters objects}
@@ -1577,7 +1595,8 @@ By default, the returned {\tt Results} object enforces the active set vector (se
 
 Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types (integer, real, string) are inferred by first attempting to convert to {\tt int} and then, if this fails, to {\tt float}.
 
-Analysis components are accessible by index only using the {\tt an\_comps} attribute. {\tt Parameters} objects support iteration over the variables, yielding the index, variable descriptor, and variable value.
+Analysis components are accessible by index only using the {\tt an\_comps} attribute. Iterating over a {\tt Parameters} 
+object yields the variable descriptors.
 
 {\tt Parameters} objects have the attributes:
 
@@ -1600,6 +1619,19 @@ Analysis components are accessible by index only using the {\tt an\_comps} attri
 
 \end{itemize}
 
+Parameters objects have the methods:
+
+\begin{itemize}
+  \item\index{items() (dakota.interfacing.Parameters method)}
+	  \phantomsection\label{index:dakota.interfacing.Parameters.items}\textbf{\texttt{items}}{()}{}
+          Return an iterator that yields tuples of the descriptor and value for each parameter. ({\tt Results} objects also have {\tt items()}.)
+
+  \item\index{values() (dakota.interfacing.Parameters method)}
+	  \phantomsection\label{index:dakota.interfacing.Parameters.values}\textbf{\texttt{values}}{()}{}
+          Return an iterator that yields the value for each parameter. ({\tt Results} objects have the corresponding method {\tt responses()}.)
+
+\end{itemize}
+
 \subsection{Results objects}
 
 {\tt Results} objects:
@@ -1610,7 +1642,7 @@ Analysis components are accessible by index only using the {\tt an\_comps} attri
   \item write Dakota results files
 \end{itemize}
 
-{\tt Results} objects are collections of {\tt Response} objects, which are documented in the following section. Each {\tt Response} can be accessed by name (Dakota descriptor) or by index using {[}{]} on the {\tt Results} object itself. {\tt Results} objects support iteration of the {\tt Response}s, yielding the index, response descriptor, and {\tt Response}. Although {\tt Results} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+{\tt Results} objects are collections of {\tt Response} objects, which are documented in the following section. Each {\tt Response} can be accessed by name (Dakota descriptor) or by index using {[}{]} on the {\tt Results} object itself. Iterating over a {\tt Results} object yields the response descriptors. Although {\tt Results} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
 
 Results objects have the attributes:
 
@@ -1636,6 +1668,14 @@ aprepro (True) or Dakota (False) format.
 Results objects have the methods:
 
 \begin{itemize}
+  \item\index{items() (dakota.interfacing.Results method)}
+	  \phantomsection\label{index:dakota.interfacing.Results.items}\textbf{\texttt{items}}{()}{}
+          Return an iterator that yields tuples of the descriptor and {\tt Response} object for each response. ({\tt Parameters} objects also have {\tt items()}.)
+
+  \item\index{responses() (dakota.interfacing.Results method)}
+	  \phantomsection\label{index:dakota.interfacing.Results.responses}\textbf{\texttt{responses}}{()}{}
+          Return an iterator that yields the {\tt Response} object for each response. ({\tt Parameters} objects have the corresponding method {\tt values()}.)
+
   \item\index{fail() (dakota.interfacing.Results method)}
 	  \phantomsection\label{index:dakota.interfacing.Results.fail}\textbf{\texttt{fail}}{()}{}
 	  Set the FAIL attribute. When the results file is written, it will contain only the word FAIL, triggering Dakota's failure capturing behavior (See Chapter~\ref{failure}).

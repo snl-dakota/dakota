@@ -2,11 +2,11 @@
 
 [TOC]
 
-All examples in the manual, except where otherwise noted, use the default syntax of `{  }` to be inline printed expressions, `%` to be a single line python code and `{% %}` to be block python code.
+All examples in the manual, except where otherwise noted, use the default syntax of `{  }` to be inline printed expressions, `%` to be a single line Python code and `{% %}` to be block Python code.
 
 # Introduction
 
-`pyprepro` is a robust preprocessor and template engine designed for parameterized simulation input decks. It features simple parameter substitution, setting of immutable (fixed) variable names, and enables full access to all of python. As such, it can contain loops, conditionals, arrays (lists) and more!
+`pyprepro` is a robust preprocessor and template engine designed for parameterized simulation input decks. It features simple parameter substitution, setting of immutable (fixed) variable names, and enables full access to all of Python. As such, it can contain loops, conditionals, arrays (lists) and more!
 
 # Expressions
 
@@ -18,7 +18,7 @@ Expressions can be of three different forms (with defaults)
 
 The delineation of these expressions are user settable
 
-Expressions can contain just about any valid Python code. The only important difference is that blocks must end with `end`. See examples below
+Expressions can contain just about any valid Python code. The only important difference is that blocks must end with `end`. See examples below.
 
 ## Inline Expressions
 
@@ -49,7 +49,7 @@ return:
     
     The new value is 0.7071067812
     
-Furthermore, single lines can be used for python logic and loops. Again, recall that unlike traditional python, the blocks must have an explicit `end`. This example also demonstrates looping over an array (explained below). Notice that indentation is ignored.
+Furthermore, single lines can be used for Python logic and loops. Again, recall that unlike traditional Python, the blocks must have an explicit `end`. This example also demonstrates looping over an array (explained below). Notice that indentation is ignored.
 
     % angles = [0,pi/4,pi/2,3*pi/4,pi]
     % for angle in angles:
@@ -85,7 +85,7 @@ returns:
 
 As noted in the `--help` for pyprepro, the actual delimiters can be changed. This is useful when the defaults would require extensive escaping. 
 
-For code blocks (default `{% %}`) the major requirement is that the inner-most characters cannot be any of "`{}[]()`".
+For code blocks (default `{% %}`), the innermost characters cannot be any of "`{}[]()`".
 
 ## Escaping delimiters
 
@@ -101,11 +101,11 @@ returns
     {A=5}
     \{A=5\}  
 
-Note that escaping the trailing delimiter (e.g. `\}`) is not necessary but will work either way.
+Note that escaping the trailing delimiter (e.g. `\}`) is optional.
 
 # Immutable Variables
 
-One major addition is that variable names can be fixed such that they cannot be redefined (without explicitly allowing it). 
+Variables can be fixed such that they cannot be redefined (without explicitly allowing it). 
 
     % param = Immutable(10)
     % param = 20 
@@ -161,7 +161,7 @@ And call `pyprepro --include MyInclude.inp <inputfile>`:
 
 (*This is an advanced usage and, in general, will not be encountered*)
 
-While the variable name is reserved, the value can still be changed if it is a mutable python object ("mutable" has different meanings for python objects than is used in pyprepro) For example:
+While the variable name is reserved, the value can still be changed if it is a mutable Python object ("mutable" has different meanings for Python objects than is used in pyprepro). For example:
 
     % param = Immutable( [1,2,3])
     % param.append(4)   # This will work because it is modifying the object
@@ -177,17 +177,17 @@ Will output:
 
 See:
 
-    $ python pyprepro -h
+    $ Python pyprepro -h
 
 for additional help
 
 # General Coding
 
-The language of pyprepro is python with a single, slight modification. In normal python, indentation delineates blocks. However, in pyprepro, indentation is ignored and blocks must have an `end` whether they are part of multi-line code (`{% %}`) or part of single line operation  (`%`).
+The language of pyprepro is Python with a single, slight modification. In normal Python, indentation delineates blocks. However, in pyprepro, indentation is ignored and blocks must have an `end` whether they are part of multi-line code (`{% %}`) or part of single line operation  (`%`).
 
 ## Python Coding Tips.
 
-For the most part, if you are familiar with other interpreted languages such as Matlab, coding is python is very similar.
+For the most part, if you are familiar with other interpreted languages such as Matlab, coding is Python is very similar.
 
 The key notes are:
 
@@ -199,7 +199,7 @@ The key notes are:
 
 ## Conditionals
 
-Python has the standard set of conditionals. Recall the conditional block declaration must end with a `:` and the entire block must have an `end` statement (again, this is not in normal python). Consider the following example:
+Python has the standard set of conditionals. Recall the conditional block declaration must end with a `:` and the entire block must have an `end` statement (again, this is not in normal Python). Consider the following example:
 
     % param = 10.5
     % if param == 10.0:
@@ -233,9 +233,9 @@ returns:
 
     param is in [10 11]
 
-## Loops.
+## Loops
 
-Python contains `for` loops that an iterate over arbitrary arrays or with an index. As with conditionals, the declaration must end with `:` and the block must have an `end`.
+Python contains `for` loops that iterate over arbitrary arrays or with an index. As with conditionals, the declaration must end with `:` and the block must have an `end`.
 
 To iterate over an index, from 0 to 4, use the  `range` command
 
@@ -281,7 +281,7 @@ will result in
     lion
 
 
-Note that pyprepro will *try* nicely format arrays for printing. For certain types, it may not work well.
+Note that pyprepro will *try* to nicely format arrays for printing. For certain types, it may not work well.
 
     {theta = [0,45,90,135,180,225,270,315]}
 
@@ -318,7 +318,7 @@ will return:
 
 ## Strings
 
-Python has  extremely powerful and extensive string support. Strings can be initialed in any of the following ways:
+Python has  extremely powerful and extensive string support. Strings can be initialized in any of the following ways:
 
     {mystring1="""
     multi-line
@@ -370,7 +370,7 @@ returns:
 
 You can define any arbitrary functions using either `def` or `lambda`
 
-Consider the following: (note, we use indentation here for readability but indentation *is ignored* and is terminated with `end`):
+Consider the following: (note, we use indentation here for readability but indentation *is ignored* and the function definition is terminated with `end`):
 
     {%
     def myfun1(param):
@@ -399,13 +399,13 @@ Using
  
     % include('path/to/include.txt')
 
-Will take the contents of `'path/to/include.txt'` and include them. Inside `'path/to/include.txt'`, there can be new variable definitions and/or it can access older ones. Note that unlike the command-line `--include`, there is *no (im)mutability assigned* for these unless explicit for each parameter!
+Will insert the contents of `'path/to/include.txt'`. Inside `'path/to/include.txt'`, there can be new variable definitions and/or it can access older ones. Note that unlike the command-line `--include`, there is *no (im)mutability assigned* for these unless explicit for each parameter!
 
 The code will search for the include text first in the path of the original template file and then in the path where `pyprepro` is executed.
 
 ## Immutable and Mutable
 
-As explained elseware, variables can be defined as `Immutable(value)` or `Mutable(value)`. If a variable is Immutable, the value cannot be reset unless *explicitly* made mutable.
+As explained elsewhere, variables can be defined as `Immutable(value)` or `Mutable(value)`. If a variable is Immutable, the value cannot be reset unless *explicitly* made mutable.
 
 Note: files called with the command line `--include` have all of their variables be immutable. But this does not affect those with the `include()` function
 
@@ -451,7 +451,7 @@ returns:
 
 ### Aside: Set output format individually
 
-The following demonstrates setting the output for a specific line. The key is to use python to convert the value into a string which is then displayed:
+The following demonstrates setting the output for a specific line. The key is to use Python to convert the value into a string which is then displayed:
 
     {pi}
     { '%0.3f' % pi }
@@ -512,7 +512,7 @@ you will get the following error:
 
 ## Mathematical Functions
 
-All of the python `math` module in imported with the functions:
+All of the Python `math` module in imported with the functions:
 
       acos       degrees     gamma   radians  
       acosh      erf         hypot   sin      
@@ -537,7 +537,7 @@ Also included are the following constants
 | `rad` (`pi/180`)         | 0.01745329252 |
 | `phi` (`(sqrt(5)+1 )/2`) | 1.618033989   |
  
-Note that all trig functions are assuming radians. See [Python's `math` library](https://docs.python.org/3/library/math.html) for more details. To compute based on degrees, convert first:
+Note that all trig functions are assuming radians. See [Python's `math` library](https://docs.Python.org/3/library/math.html) for more details. To compute based on degrees, convert first:
 
     { tan( radians(45) )}
     { tan( 45*rad)}
@@ -553,7 +553,7 @@ returns:
 
 ## Other Functions
 
-Other functions can be imported. All of python is available. For example, to get a random number, you can do:
+Other functions can be imported. All of Python is available. For example, to get a random number, you can do:
 
     % from random import random,seed
     % seed(1)

@@ -1978,9 +1978,14 @@ print_wilks_stastics(std::ostream& s) const
       << 100.0*wilksBeta << "% Confidence Level, Order = " << wilksOrder 
       << " for "  << iteratedModel.response_labels()[fn_index] << ":\n\n";
 
-    std::string one_sided_bound_label = (wilksSidedness == ONE_SIDED_UPPER ? "Upper" : "Lower");
-    s << "    Coverage Level     " << (wilks_twosided ? "Lower Bound      " : "")  << "  " << one_sided_bound_label << " Bound     Number of Samples"
-      << "\n    --------------  "  << (wilks_twosided ? "----------------- " : "") << " -----------------  ----------------- \n";
+    if(wilks_twosided) {
+      s << "    Coverage Level     Lower Bound        Upper Bound     Number of Samples\n"
+        << "    --------------  -----------------  -----------------  -----------------\n";
+    } else {    
+      s << "    Coverage Level       " << (wilksSidedness == ONE_SIDED_UPPER ? "Upper" : "Lower")
+        << " Bound     Number of Samples\n"
+        << "    --------------   -----------------  -----------------\n";
+    } 
 
     // Create a default probability level if none given
     RealVector prob_levels;

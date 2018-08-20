@@ -53,8 +53,8 @@ print "Rosenbrock complete."
 # ----------------------------
 
 # Insert functions from rosen into results
-# Results iterator provides an index, response name, and response
-for i, n, r in results:
+# Results.responses() yields the Response objects.
+for i, r in enumerate(results.responses()):
     if r.asv.function:
         r.function = rosen_results['fns'][i]
     if r.asv.gradient:

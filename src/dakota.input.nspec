@@ -4635,6 +4635,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ kde {N_mdm(true,posteriorStatsKDE)} ]
      ]
+    [ model_evidence {N_mdm(true,modelEvidence)}
+      [ evidence_samples INTEGER {N_mdm(int,evidenceSamples)} ]
+     ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}
         gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}

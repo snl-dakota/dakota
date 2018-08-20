@@ -1004,10 +1004,10 @@ def _dprepro_cli(argv):
             sys.exit(2)
 
         env["DakotaParams"] = params
-        for _, d, v in params:
+        for d, v in params.items():
             env[d] = v
         env["DakotaResults"] = results
-        for _, d, v in results:
+        for d, v in results.items():
             env[d] = v
 
     try:
