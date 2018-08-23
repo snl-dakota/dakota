@@ -498,8 +498,12 @@ inline void DataFitSurrModel::active_model_key(const UShortArray& mi_key)
     // *** TO DO: loss of encapsulation of ML logic ***
     UShortArray lf_key(mi_key); // copy
     unsigned short& lf_last = lf_key.back();
-    --lf_last; // decrement trailing index
-    approxInterface.active_model_keys(lf_key, mi_key);
+    if (lf_last > 0) {
+      --lf_last; // decrement trailing index
+      approxInterface.active_model_keys(lf_key, mi_key);
+    }
+    else
+      approxInterface.active_model_key(mi_key);
     break;
   }
   */
