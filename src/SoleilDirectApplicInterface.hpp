@@ -10,10 +10,10 @@
 //- Description:  Derived class for the case when analysis code simulators are
 //-               linked into the code and may be invoked directly
 //- Owner:        Mike Eldred
-//- Version: $Id: LegionDirectInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
+//- Version: $Id: SoleilDirectInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
 
-#ifndef LEGION_DIRECT_APPLIC_INTERFACE_H
-#define LEGION_DIRECT_APPLIC_INTERFACE_H
+#ifndef SOLEIL_DIRECT_APPLIC_INTERFACE_H
+#define SOLEIL_DIRECT_APPLIC_INTERFACE_H
 
 #include "DirectApplicInterface.hpp"
 
@@ -25,17 +25,17 @@
     simulation interface for use in library mode  See \ref DakLibrary
     for more information. */
 
-namespace SIM {
+namespace StanfordPSAAP {
 
 /// Sample derived interface class for testing serial simulator
 /// plug-ins using assign_rep().
 
-/** The plug-in LegionDirectApplicInterface resides in namespace SIM
+/** The plug-in SoleilDirectApplicInterface resides in namespace SIM
     and uses a copy of rosenbrock() to perform serial parameter to
     response mappings.  It is used to demonstrate plugging in a serial
     direct analysis driver into Dakota in library mode.  Test input
     files can then use an analysis_driver of "plugin_rosenbrock". */
-class LegionDirectApplicInterface: public Dakota::DirectApplicInterface
+class SoleilDirectApplicInterface: public Dakota::DirectApplicInterface
 {
 public:
 
@@ -44,9 +44,9 @@ public:
   //
 
   /// constructor
-  LegionDirectApplicInterface(const Dakota::ProblemDescDB& problem_db);
+  SoleilDirectApplicInterface(const Dakota::ProblemDescDB& problem_db);
   /// destructor
-  ~LegionDirectApplicInterface();
+  ~SoleilDirectApplicInterface();
 
 protected:
 
@@ -93,17 +93,17 @@ private:
 };
 
 
-inline LegionDirectApplicInterface::
-LegionDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
+inline SoleilDirectApplicInterface::
+SoleilDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
   Dakota::DirectApplicInterface(problem_db)
 { }
 
 
-inline LegionDirectApplicInterface::~LegionDirectApplicInterface()
+inline SoleilDirectApplicInterface::~SoleilDirectApplicInterface()
 { /* Virtual destructor handles referenceCount at Interface level. */ }
 
 
-inline void LegionDirectApplicInterface::
+inline void SoleilDirectApplicInterface::
 derived_map_asynch(const Dakota::ParamResponsePair& pair)
 {
   // no-op (just hides base class error throw). Jobs are run exclusively within
@@ -117,16 +117,16 @@ derived_map_asynch(const Dakota::ParamResponsePair& pair)
     (called using chain IteratorScheduler::run_iterator() --> Model::serve()
     --> ApplicationInterface::serve_evaluations()
     --> ApplicationInterface::serve_evaluations_asynch()). */
-inline void LegionDirectApplicInterface::
+inline void SoleilDirectApplicInterface::
 test_local_evaluations(Dakota::PRPQueue& prp_queue)
 { wait_local_evaluations(prp_queue); }
 
 
 // Hide default run-time error checks at DirectApplicInterface level
-inline void LegionDirectApplicInterface::
+inline void SoleilDirectApplicInterface::
 set_communicators_checks(int max_eval_concurrency)
 { }
 
-} // namespace Dakota
+} // namespace StanfordPSAAP
 
 #endif

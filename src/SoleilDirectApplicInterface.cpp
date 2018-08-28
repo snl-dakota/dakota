@@ -6,24 +6,24 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        LegionDirectApplicInterface
+//- Class:        SoleilDirectApplicInterface
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include "LegionDirectApplicInterface.hpp"
+#include "SoleilDirectApplicInterface.hpp"
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 
 
-namespace SIM { // *** TO DO
+namespace StanfordPSAAP {
 
-int LegionDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
+int SoleilDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 {
 #ifdef MPI_DEBUG
   Cout << "analysis server " << analysisServerId << " invoking " << ac_name
-       << " within SIM::LegionDirectApplicInterface." << std::endl;
+       << " within SIM::SoleilDirectApplicInterface." << std::endl;
 #endif // MPI_DEBUG
 
   if (multiProcAnalysisFlag) {
@@ -45,7 +45,7 @@ int LegionDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
   }
   else {
     Cerr << ac_name << " is not available as an analysis within "
-         << "SIM::LegionDirectApplicInterface." << std::endl;
+         << "SIM::SoleilDirectApplicInterface." << std::endl;
     Dakota::abort_handler(Dakota::INTERFACE_ERROR);
   }
 
@@ -60,7 +60,7 @@ int LegionDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 }
 
 
-void LegionDirectApplicInterface::
+void SoleilDirectApplicInterface::
 wait_local_evaluations(Dakota::PRPQueue& prp_queue)
 {
   if (multiProcAnalysisFlag) {
@@ -77,7 +77,7 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
     const Dakota::ActiveSet& set  = prp_iter->active_set();
     Dakota::Response         resp = prp_iter->response(); // shared rep
     if (outputLevel > Dakota::SILENT_OUTPUT)
-      Cout << "LegionDirectApplicInterface:: evaluating function evaluation "
+      Cout << "SoleilDirectApplicInterface:: evaluating function evaluation "
 	   << fn_eval_id << " in batch mode." << std::endl;
     Dakota::RealVector fn_grad; Dakota::RealSymMatrix fn_hess;
     //if (ac_name == "plugin_rosenbrock") { // not provided in this API
@@ -89,7 +89,7 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
     //}
     //else {
     //  Cerr << ac_name << " is not available as an analysis within "
-    //       << "SIM::LegionDirectApplicInterface." << std::endl;
+    //       << "SIM::SoleilDirectApplicInterface." << std::endl;
     //  Dakota::abort_handler(Dakota::INTERFACE_ERROR);
     //}
 
@@ -99,7 +99,7 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
 }
 
 
-int LegionDirectApplicInterface::
+int SoleilDirectApplicInterface::
 rosenbrock(const Dakota::RealVector& c_vars, short asv, Dakota::Real& fn_val, 
 	   Dakota::RealVector& fn_grad, Dakota::RealSymMatrix& fn_hess)
 {
@@ -132,4 +132,4 @@ rosenbrock(const Dakota::RealVector& c_vars, short asv, Dakota::Real& fn_val,
   return 0;
 }
 
-} // namespace SIM
+} // namespace StanfordPSAAP
