@@ -121,6 +121,9 @@
 #include "ResultsManager.hpp"
 #include "NonDWASABIBayesCalibration.hpp"
 
+#include <boost/bimap.hpp>
+#include <boost/assign.hpp>
+
 //#define REFCOUNT_DEBUG
 
 static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02Z mseldre $";
@@ -423,13 +426,23 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
-#ifdef HAVE_QUESO_GPMSA
     case SUBMETHOD_GPMSA:
+#ifdef HAVE_QUESO_GPMSA
       return new NonDGPMSABayesCalibration(problem_db, model); break;
+#else
+      Cerr << "\nError: QUESO/GPMSA Bayesian calibration method unavailable.\n"
+	   << "(Not enabled in some Dakota distributions due to dependence on "
+	   << "GSL;\ncan be enabled when compiling from source code.)\n";
+      return NULL; break;
 #endif
-#ifdef HAVE_QUESO
     case SUBMETHOD_QUESO:
+#ifdef HAVE_QUESO
       return new NonDQUESOBayesCalibration(problem_db, model); break;
+#else
+      Cerr << "\nError: QUESO Bayesian calibration method unavailable.\n"
+	   << "(Not enabled in some Dakota distributions due to dependence on "
+	   << "GSL;\ncan be enabled when compiling from source code.)\n";
+      return NULL; break;
 #endif
 #ifdef HAVE_DREAM
     case SUBMETHOD_DREAM:
@@ -438,7 +451,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     case SUBMETHOD_WASABI:
       return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
-      Cerr << "Bayesian calibration selection not available." << std::endl;
+      Cerr << "\nError: Bayesian calibration method '"
+	   << submethod_enum_to_string(probDescDB.get_ushort("method.sub_method"))
+	   << "' unavailable.\n";
       return NULL;                                            break;
     } break;
   case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
@@ -822,230 +837,158 @@ void Iterator::assign_rep(Iterator* iterator_rep, bool ref_count_incr)
 }
 
 
-String Iterator::method_enum_to_string(unsigned short method_name) const
+/// bimaps to convert from enums <--> strings
+typedef boost::bimap<unsigned short, std::string> UShortStrBimap;
+
+/// bimap between method enums and strings; only used in this
+/// compilation unit
+static UShortStrBimap method_map =
+  boost::assign::list_of<UShortStrBimap::relation>
+  (HYBRID,                          "hybrid")
+  (PARETO_SET,                      "pareto_set")
+  (MULTI_START,                     "multi_start")
+  (CENTERED_PARAMETER_STUDY,        "centered_parameter_study")
+  (LIST_PARAMETER_STUDY,            "list_parameter_study")
+  (MULTIDIM_PARAMETER_STUDY,        "multidim_parameter_study")
+  (VECTOR_PARAMETER_STUDY,          "vector_parameter_study")
+  (RICHARDSON_EXTRAP,               "richardson_extrap")
+  (LOCAL_RELIABILITY,               "local_reliability")
+  (LOCAL_INTERVAL_EST,              "local_interval_est")
+  (LOCAL_EVIDENCE,                  "local_evidence")
+  (GLOBAL_RELIABILITY,              "global_reliability")
+  (GLOBAL_INTERVAL_EST,             "global_interval_est")
+  (GLOBAL_EVIDENCE,                 "global_evidence")
+  (POLYNOMIAL_CHAOS,                "polynomial_chaos")
+  (STOCH_COLLOCATION,               "stoch_collocation")
+  (MULTIFIDELITY_POLYNOMIAL_CHAOS,  "multifidelity_polynomial_chaos")
+  (MULTILEVEL_POLYNOMIAL_CHAOS,     "multilevel_polynomial_chaos")
+  (MULTIFIDELITY_STOCH_COLLOCATION, "multifidelity_stoch_collocation")
+  (BAYES_CALIBRATION,               "bayes_calibration")
+  (CUBATURE_INTEGRATION,            "cubature")
+  (QUADRATURE_INTEGRATION,          "quadrature")
+  (SPARSE_GRID_INTEGRATION,         "sparse_grid")
+  (GPAIS,                           "gpais")
+  (POF_DARTS,                       "pof_darts")
+  (RKD_DARTS,                       "rkd_darts")
+  (IMPORTANCE_SAMPLING,             "importance_sampling")
+  (ADAPTIVE_SAMPLING,               "adaptive_sampling")
+  (RANDOM_SAMPLING,                 "random_sampling")
+  (MULTILEVEL_SAMPLING,             "multilevel_sampling")
+  (LIST_SAMPLING,                   "list_sampling")
+  (SURROGATE_BASED_LOCAL,           "surrogate_based_local")
+  (DATA_FIT_SURROGATE_BASED_LOCAL,  "data_fit_surrogate_based_local")
+  (HIERARCH_SURROGATE_BASED_LOCAL,  "hierarch_surrogate_based_local")
+  (SURROGATE_BASED_GLOBAL,          "surrogate_based_global")
+  (EFFICIENT_GLOBAL,                "efficient_global")
+  (NONLINEAR_CG,                    "nonlinear_cg")
+  (GENIE_DIRECT,                    "genie_direct")
+  (GENIE_OPT_DARTS,                 "genie_opt_darts")
+  (OPTPP_G_NEWTON,                  "optpp_g_newton")
+  (OPTPP_Q_NEWTON,                  "optpp_q_newton")
+  (OPTPP_FD_NEWTON,                 "optpp_fd_newton")
+  (OPTPP_NEWTON,                    "optpp_newton")
+  (OPTPP_CG,                        "optpp_cg")
+  (OPTPP_PDS,                       "optpp_pds")
+  (ASYNCH_PATTERN_SEARCH,           "asynch_pattern_search")
+  (COLINY_BETA,                     "coliny_beta")
+  (COLINY_COBYLA,                   "coliny_cobyla")
+  (COLINY_DIRECT,                   "coliny_direct")
+  (COLINY_EA,                       "coliny_ea")
+  (COLINY_PATTERN_SEARCH,           "coliny_pattern_search")
+  (COLINY_SOLIS_WETS,               "coliny_solis_wets")
+  (BRANCH_AND_BOUND,                "branch_and_bound")
+  (MOGA,                            "moga")
+  (SOGA,                            "soga")
+  (DL_SOLVER,                       "dl_solver")
+  (MESH_ADAPTIVE_SEARCH,            "mesh_adaptive_search")
+  (MIT_NOWPAC,                      "nowpac")
+  (MIT_SNOWPAC,                     "snowpac")
+  (NPSOL_SQP,                       "npsol_sqp")
+  (NLSSOL_SQP,                      "nlssol_sqp")
+  (NLPQL_SQP,                       "nlpql_sqp")
+  (NL2SOL,                          "nl2sol")
+  //(REDUCED_SQP,                   "reduced_sqp")
+  (DOT_BFGS,                        "dot_bfgs")
+  (DOT_FRCG,                        "dot_frcg")
+  (DOT_MMFD,                        "dot_mmfd")
+  (DOT_SLP,                         "dot_slp")
+  (DOT_SQP,                         "dot_sqp")
+  (CONMIN_FRCG,                     "conmin_frcg")
+  (CONMIN_MFD,                      "conmin_mfd")
+  (DACE,                            "dace")
+  (FSU_CVT,                         "fsu_cvt")
+  (FSU_HALTON,                      "fsu_halton")
+  (FSU_HAMMERSLEY,                  "fsu_hammersley")
+  (PSUADE_MOAT,                     "psuade_moat")
+  (NCSU_DIRECT,                     "ncsu_direct")
+  (ROL,                             "rol")
+  ;
+
+
+/// bimap between sub-method enums and strings; only used in this
+/// compilation unit (using bimap for consistency, though at time of
+/// addition, only uni-directional mapping is supported)
+static UShortStrBimap submethod_map =
+  boost::assign::list_of<UShortStrBimap::relation>
+  (HYBRID,                      "hybrid")
+  (SUBMETHOD_COLLABORATIVE,     "collaborative")
+  (SUBMETHOD_EMBEDDED,          "embedded")
+  (SUBMETHOD_SEQUENTIAL,        "sequential")
+  (SUBMETHOD_LHS,               "lhs")
+  (SUBMETHOD_RANDOM,            "random")
+  (SUBMETHOD_BOX_BEHNKEN,       "box_behnken")
+  (SUBMETHOD_CENTRAL_COMPOSITE, "central_composite")
+  (SUBMETHOD_GRID,              "grid")
+  (SUBMETHOD_OA_LHS,            "oa_lhs")
+  (SUBMETHOD_OAS,               "oas")
+  (SUBMETHOD_DREAM,             "dream")
+  (SUBMETHOD_WASABI,            "wasabi")
+  (SUBMETHOD_GPMSA,             "gpmsa")
+  (SUBMETHOD_QUESO,             "queso")
+  (SUBMETHOD_NIP,               "nip")
+  (SUBMETHOD_SQP,               "sqp")
+  (SUBMETHOD_EA,                "ea")
+  (SUBMETHOD_EGO,               "ego")
+  (SUBMETHOD_SBO,               "sbo")
+  (SUBMETHOD_CONVERGE_ORDER,    "converge_order")
+  (SUBMETHOD_CONVERGE_QOI,      "converge_qoi")
+  (SUBMETHOD_ESTIMATE_ORDER,    "estimate_order")
+  ;
+
+
+String Iterator::method_enum_to_string(unsigned short method_enum) const
 {
-  switch (method_name) {
-  case HYBRID:                  return String("hybrid"); break;
-  case PARETO_SET:              return String("pareto_set"); break;
-  case MULTI_START:             return String("multi_start"); break;
-  case CENTERED_PARAMETER_STUDY:return String("centered_parameter_study");break;
-  case LIST_PARAMETER_STUDY:    return String("list_parameter_study");    break;
-  case MULTIDIM_PARAMETER_STUDY:return String("multidim_parameter_study");break;
-  case VECTOR_PARAMETER_STUDY:  return String("vector_parameter_study");  break;
-  case RICHARDSON_EXTRAP:       return String("richardson_extrap"); break;
-  case LOCAL_RELIABILITY:       return String("local_reliability"); break;
-  case LOCAL_INTERVAL_EST:      return String("local_interval_est"); break;
-  case LOCAL_EVIDENCE:          return String("local_evidence"); break;
-  case GLOBAL_RELIABILITY:      return String("global_reliability"); break;
-  case GLOBAL_INTERVAL_EST:     return String("global_interval_est"); break;
-  case GLOBAL_EVIDENCE:         return String("global_evidence"); break;
-  case POLYNOMIAL_CHAOS:        return String("polynomial_chaos"); break;
-  case STOCH_COLLOCATION:       return String("stoch_collocation"); break;
-  case MULTIFIDELITY_POLYNOMIAL_CHAOS:
-    return String("multifidelity_polynomial_chaos"); break;
-  case MULTILEVEL_POLYNOMIAL_CHAOS:
-    return String("multilevel_polynomial_chaos"); break;
-  case MULTIFIDELITY_STOCH_COLLOCATION:
-    return String("multifidelity_stoch_collocation"); break;
-  case BAYES_CALIBRATION:       return String("bayes_calibration"); break;
-  case CUBATURE_INTEGRATION:    return String("cubature"); break;
-  case QUADRATURE_INTEGRATION:  return String("quadrature"); break;
-  case SPARSE_GRID_INTEGRATION: return String("sparse_grid"); break;
-  case GPAIS:                   return String("gpais"); break;
-  case POF_DARTS:               return String("pof_darts"); break;
-  case RKD_DARTS:               return String("rkd_darts"); break;
-  case IMPORTANCE_SAMPLING:     return String("importance_sampling"); break;
-  case ADAPTIVE_SAMPLING:       return String("adaptive_sampling"); break;
-  case RANDOM_SAMPLING:         return String("random_sampling"); break;
-  case MULTILEVEL_SAMPLING:     return String("multilevel_sampling"); break;
-  case LIST_SAMPLING:           return String("list_sampling"); break;
-  case SURROGATE_BASED_LOCAL:   return String("surrogate_based_local"); break;
-  case DATA_FIT_SURROGATE_BASED_LOCAL:
-    return String("data_fit_surrogate_based_local"); break;
-  case HIERARCH_SURROGATE_BASED_LOCAL:
-    return String("hierarch_surrogate_based_local"); break;
-  case SURROGATE_BASED_GLOBAL:  return String("surrogate_based_global"); break;
-  case EFFICIENT_GLOBAL:        return String("efficient_global"); break;
-  case NONLINEAR_CG:            return String("nonlinear_cg"); break;
-  case GENIE_DIRECT:            return String("genie_direct"); break;
-  case GENIE_OPT_DARTS:         return String("genie_opt_darts"); break;
-  case OPTPP_G_NEWTON:          return String("optpp_g_newton"); break;
-  case OPTPP_Q_NEWTON:          return String("optpp_q_newton"); break;
-  case OPTPP_FD_NEWTON:         return String("optpp_fd_newton"); break;
-  case OPTPP_NEWTON:            return String("optpp_newton"); break;
-  case OPTPP_CG:                return String("optpp_cg"); break;
-  case OPTPP_PDS:               return String("optpp_pds"); break;
-  case ASYNCH_PATTERN_SEARCH:   return String("asynch_pattern_search"); break;
-  case COLINY_BETA:             return String("coliny_beta"); break;
-  case COLINY_COBYLA:           return String("coliny_cobyla"); break;
-  case COLINY_DIRECT:           return String("coliny_direct"); break;
-  case COLINY_EA:               return String("coliny_ea"); break;
-  case COLINY_PATTERN_SEARCH:   return String("coliny_pattern_search"); break;
-  case COLINY_SOLIS_WETS:       return String("coliny_solis_wets"); break;
-  case BRANCH_AND_BOUND:        return String("branch_and_bound"); break;
-  case MOGA:                    return String("moga"); break;
-  case SOGA:                    return String("soga"); break;
-  case DL_SOLVER:               return String("dl_solver"); break;
-  case MESH_ADAPTIVE_SEARCH:    return String("mesh_adaptive_search"); break;
-  case MIT_NOWPAC:              return String("nowpac"); break;
-  case MIT_SNOWPAC:             return String("snowpac"); break;
-  case NPSOL_SQP:               return String("npsol_sqp"); break;
-  case NLSSOL_SQP:              return String("nlssol_sqp"); break;
-  case NLPQL_SQP:               return String("nlpql_sqp"); break;
-  case NL2SOL:                  return String("nl2sol"); break;
-  //case REDUCED_SQP:           return String("reduced_sqp"); break;
-  case DOT_BFGS:                return String("dot_bfgs"); break;
-  case DOT_FRCG:                return String("dot_frcg"); break;
-  case DOT_MMFD:                return String("dot_mmfd"); break;
-  case DOT_SLP:                 return String("dot_slp"); break;
-  case DOT_SQP:                 return String("dot_sqp"); break;
-  case CONMIN_FRCG:             return String("conmin_frcg"); break;
-  case CONMIN_MFD:              return String("conmin_mfd"); break;
-  case DACE:                    return String("dace"); break;
-  case FSU_CVT:                 return String("fsu_cvt"); break;
-  case FSU_HALTON:              return String("fsu_halton"); break;
-  case FSU_HAMMERSLEY:          return String("fsu_hammersley"); break;
-  case PSUADE_MOAT:             return String("psuade_moat"); break;
-  case NCSU_DIRECT:             return String("ncsu_direct"); break;
-  case ROL:                     return String("rol"); break;
-  default:
-    Cerr << "Invalid method conversion: case " << method_name
-	 << " not available." << std::endl;
-    abort_handler(METHOD_ERROR); return String(); break;
+  UShortStrBimap::left_const_iterator lc_iter = method_map.left.find(method_enum);
+  if (lc_iter == method_map.left.end()) {
+    Cerr << "\nError: Invalid method_enum_to_string conversion: "
+	 << method_enum << " not available." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  return lc_iter->second;
 }
 
 
-unsigned short Iterator::method_string_to_enum(const String& method_name) const
+unsigned short Iterator::method_string_to_enum(const String& method_str) const
 {
-  if (method_name == "hybrid")  return HYBRID;
-  else if (method_name == "pareto_set")  return PARETO_SET;
-  else if (method_name == "multi_start") return MULTI_START;
-  else if (method_name == "centered_parameter_study")
-    return CENTERED_PARAMETER_STUDY;
-  else if (method_name == "list_parameter_study")
-    return LIST_PARAMETER_STUDY;
-  else if (method_name == "multidim_parameter_study")
-    return MULTIDIM_PARAMETER_STUDY;
-  else if (method_name == "vector_parameter_study")
-    return VECTOR_PARAMETER_STUDY;
-  else if (method_name == "richardson_extrap")     return RICHARDSON_EXTRAP;
-  else if (method_name == "local_reliability")     return LOCAL_RELIABILITY;
-  else if (method_name == "local_interval_est")    return LOCAL_INTERVAL_EST;
-  else if (method_name == "local_evidence")        return LOCAL_EVIDENCE;
-  else if (method_name == "global_reliability")    return GLOBAL_RELIABILITY;
-  else if (method_name == "global_interval_est")   return GLOBAL_INTERVAL_EST;
-  else if (method_name == "global_evidence")       return GLOBAL_EVIDENCE;
-  else if (method_name == "polynomial_chaos")      return POLYNOMIAL_CHAOS;
-  else if (method_name == "stoch_collocation")     return STOCH_COLLOCATION;
-  else if (method_name == "multifidelity_polynomial_chaos")
-    return MULTIFIDELITY_POLYNOMIAL_CHAOS;
-  else if (method_name == "multilevel_polynomial_chaos")
-    return MULTILEVEL_POLYNOMIAL_CHAOS;
-  else if (method_name == "multifidelity_stoch_collocation")
-    return MULTIFIDELITY_STOCH_COLLOCATION;
-  else if (method_name == "bayes_calibration")     return BAYES_CALIBRATION;
-  else if (method_name == "cubature")    return CUBATURE_INTEGRATION;
-  else if (method_name == "quadrature")  return QUADRATURE_INTEGRATION;
-  else if (method_name == "sparse_grid") return SPARSE_GRID_INTEGRATION;
-  else if (method_name == "gpais")                 return GPAIS;
-  else if (method_name == "pof_darts")             return POF_DARTS;
-  else if (method_name == "rkd_darts")             return RKD_DARTS;
-  else if (method_name == "importance_sampling")   return IMPORTANCE_SAMPLING;
-  else if (method_name == "adaptive_sampling")     return ADAPTIVE_SAMPLING;
-  else if (method_name == "random_sampling")       return RANDOM_SAMPLING;
-  else if (method_name == "multilevel_sampling")   return MULTILEVEL_SAMPLING;
-  else if (method_name == "list_sampling")         return LIST_SAMPLING;
-  else if (method_name == "surrogate_based_local") return SURROGATE_BASED_LOCAL;
-  else if (method_name == "data_fit_surrogate_based_local")
-    return DATA_FIT_SURROGATE_BASED_LOCAL;
-  else if (method_name == "hierarch_surrogate_based_local")
-    return HIERARCH_SURROGATE_BASED_LOCAL;
-  else if (method_name == "surrogate_based_global")
-    return SURROGATE_BASED_GLOBAL;
-  else if (method_name == "efficient_global") return EFFICIENT_GLOBAL;
-  else if (method_name == "nonlinear_cg")     return NONLINEAR_CG;
-  else if (method_name == "genie_opt_darts")  return GENIE_OPT_DARTS;
-  else if (method_name == "genie_direct")     return GENIE_DIRECT;
-  else if (method_name == "optpp_g_newton")   return OPTPP_G_NEWTON;
-  else if (method_name == "optpp_q_newton")   return OPTPP_Q_NEWTON;
-  else if (method_name == "optpp_fd_newton")  return OPTPP_FD_NEWTON;
-  else if (method_name == "optpp_newton")     return OPTPP_NEWTON;
-  else if (method_name == "optpp_cg")         return OPTPP_CG;
-  else if (method_name == "optpp_pds")        return OPTPP_PDS;
-  else if (method_name == "asynch_pattern_search") return ASYNCH_PATTERN_SEARCH;
-  else if (method_name == "coliny_beta")      return COLINY_BETA;
-  else if (method_name == "coliny_cobyla")    return COLINY_COBYLA;
-  else if (method_name == "coliny_direct")    return COLINY_DIRECT;
-  else if (method_name == "coliny_ea")        return COLINY_EA;
-  else if (method_name == "coliny_pattern_search") return COLINY_PATTERN_SEARCH;
-  else if (method_name == "coliny_solis_wets")     return COLINY_SOLIS_WETS;
-  else if (method_name == "branch_and_bound")      return BRANCH_AND_BOUND;
-  else if (method_name == "moga")             return MOGA;
-  else if (method_name == "soga")             return SOGA;
-  else if (method_name == "dl_solver")        return DL_SOLVER;
-  else if (method_name == "mesh_adaptive_search")  return MESH_ADAPTIVE_SEARCH;
-  else if (method_name == "nowpac")           return MIT_NOWPAC;
-  else if (method_name == "snowpac")          return MIT_SNOWPAC;
-  else if (method_name == "npsol_sqp")        return NPSOL_SQP;
-  else if (method_name == "nlssol_sqp")       return NLSSOL_SQP;
-  else if (method_name == "nlpql_sqp")        return NLPQL_SQP;
-  else if (method_name == "nl2sol")           return NL2SOL;
-  //else if (method_name == "reduced_sqp")    return REDUCED_SQP;
-  else if (method_name == "dot_bfgs")         return DOT_BFGS;
-  else if (method_name == "dot_frcg")         return DOT_FRCG;
-  else if (method_name == "dot_mmfd")         return DOT_MMFD;
-  else if (method_name == "dot_slp")          return DOT_SLP;
-  else if (method_name == "dot_sqp")          return DOT_SQP;
-  else if (method_name == "conmin_frcg")      return CONMIN_FRCG;
-  else if (method_name == "conmin_mfd")       return CONMIN_MFD;
-  else if (method_name == "dace")             return DACE;
-  else if (method_name == "fsu_cvt")          return FSU_CVT;
-  else if (method_name == "fsu_halton")       return FSU_HALTON;
-  else if (method_name == "fsu_hammersley")   return FSU_HAMMERSLEY;
-  else if (method_name == "psuade_moat")      return PSUADE_MOAT;
-  else if (method_name == "ncsu_direct")      return NCSU_DIRECT;
-  else if (method_name == "genie_opt_darts")  return GENIE_OPT_DARTS;
-  else if (method_name == "genie_direct")     return GENIE_DIRECT;
-  else if (method_name == "rol")              return ROL;
-  else {
-    Cerr << "Invalid method conversion: " << method_name << " not available."
-	 << std::endl;
-    abort_handler(METHOD_ERROR); return 0;
+  UShortStrBimap::right_const_iterator rc_iter = method_map.right.find(method_str);
+  if (rc_iter == method_map.right.end()) {
+    Cerr << "\nError: Invalid method_string_to_enum conversion: "
+	 << method_str << " not available." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  return rc_iter->second;
 }
 
 
-String Iterator::submethod_enum_to_string(unsigned short submethod_name) const
+String Iterator::submethod_enum_to_string(unsigned short submethod_enum) const
 {
-  switch (submethod_name) {
-  case SUBMETHOD_COLLABORATIVE: return String("collaborative"); break;
-  case SUBMETHOD_EMBEDDED: return String("embedded"); break;
-  case SUBMETHOD_SEQUENTIAL: return String("sequential"); break;
-  case SUBMETHOD_LHS: return String("lhs"); break;
-  case SUBMETHOD_RANDOM: return String("random"); break;
-  case SUBMETHOD_BOX_BEHNKEN: return String("box_behnken"); break;
-  case SUBMETHOD_CENTRAL_COMPOSITE: return String("central_composite"); break;
-  case SUBMETHOD_GRID: return String("grid"); break; 
-  case SUBMETHOD_OA_LHS: return String("oa_lhs"); break;
-  case SUBMETHOD_OAS: return String("oas"); break;
-  case SUBMETHOD_DREAM: return String("dream"); break;
-  case SUBMETHOD_WASABI: return String("wasabi"); break;
-  case SUBMETHOD_GPMSA: return String("gpmsa"); break;
-  case SUBMETHOD_QUESO: return String("queso"); break;
-  case SUBMETHOD_NIP: return String("nip"); break;
-  case SUBMETHOD_SQP: return String("sqp"); break;
-  case SUBMETHOD_EA: return String("ea"); break;
-  case SUBMETHOD_EGO: return String("ego"); break;
-  case SUBMETHOD_SBO: return String("sbo"); break;
-  case SUBMETHOD_CONVERGE_ORDER: return String("converge_order"); break; 
-  case SUBMETHOD_CONVERGE_QOI: return String("converge_qoi"); break;
-  case SUBMETHOD_ESTIMATE_ORDER: return String("estimate_order"); break;
-  default:
-    Cerr << "Invalid submethod conversion: case " << submethod_name
-	 << " not available." << std::endl;
-    abort_handler(METHOD_ERROR); return String(); break;
+  UShortStrBimap::left_const_iterator lc_iter = submethod_map.left.find(submethod_enum);
+  if (lc_iter == submethod_map.left.end()) {
+    Cerr << "\nError: Invalid submethod_enum_to_string conversion: "
+	 << submethod_enum << " not available." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  return lc_iter->second;
 }
 
 

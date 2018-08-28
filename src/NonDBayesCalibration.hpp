@@ -170,6 +170,8 @@ protected:
 
   /// calculate a Kernel Density Estimate (KDE) for the posterior samples
   void calculate_kde();
+  /// calculate the model evidence
+  void calculate_evidence();
 
   void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
 					  const RealMatrix &samples_for_posterior_eval, 
@@ -361,9 +363,13 @@ protected:
   /// flag indicating the calculation of mutual information between prior and
   /// posterior
   bool posteriorStatsMutual;
-  /// flat indicating the calculation of the kernel density estimate of the
+  /// flag indicating the calculation of the kernel density estimate of the
   /// posteriors
   bool posteriorStatsKDE;
+  /// flag indictaing calculation of the evidence of the model
+  bool calModelEvidence;
+  /// number of samples to be used in model evidence calculation
+  int evidenceSamples;
   /// flag indicating usage of adaptive posterior refinement; currently makes
   /// sense for unstructured grids in GP and PCE least squares/CS
   bool adaptPosteriorRefine;

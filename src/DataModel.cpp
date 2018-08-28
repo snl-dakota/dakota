@@ -36,6 +36,7 @@ DataModelRep::DataModelRep():
   trendOrder("reduced_quadratic"), pointSelection(false),
   crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
   importChallengeFormat(TABULAR_ANNOTATED), importChallengeActive(false),
+  identityRespMap(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), initialSamples(0),
   maxIterations(100), convergenceTolerance(1.0e-4), softConvergenceLimit(0),
@@ -76,7 +77,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << numFolds << percentFold << pressFlag << importChallengePtsFile
     << importChallengeFormat << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
-    << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
+    << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
+    << subMethodServers
     << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
@@ -115,7 +117,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> numFolds >> percentFold >> pressFlag >> importChallengePtsFile
     >> importChallengeFormat >> importChallengeActive
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
-    >> primaryRespCoeffs >> secondaryRespCoeffs >> subMethodServers
+    >> primaryRespCoeffs >> secondaryRespCoeffs >> identityRespMap
+    >> subMethodServers
     >> subMethodProcs >> subMethodScheduling     
     >> initialSamples >> refineSamples >> maxIterations 
     >> convergenceTolerance >> softConvergenceLimit >> subspaceIdBingLi 
@@ -154,7 +157,8 @@ void DataModelRep::write(std::ostream& s) const
     << numFolds << percentFold << pressFlag << importChallengePtsFile
     << importChallengeFormat << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
-    << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
+    << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
+    << subMethodServers
     << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << subspaceIdBingLi << subspaceIdConstantine

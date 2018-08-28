@@ -36,9 +36,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 		   problem_db.get_int("model.nested.iterator_servers"),
 		   problem_db.get_int("model.nested.processors_per_iterator"),
 		   problem_db.get_short("model.nested.iterator_scheduling")),
+  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer")),
   subIteratorJobCntr(0),
-  optInterfacePointer(problem_db.get_string("model.interface_pointer")),
-  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer"))
+  optInterfacePointer(problem_db.get_string("model.interface_pointer"))
 {
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
@@ -667,47 +667,6 @@ void NestedModel::update_sub_iterator()
     active2ACVarMapTargets,  active2ADIVarMapTargets, active2ADSVarMapTargets,
     active2ADRVarMapTargets);
 
-  const RealVector& primary_resp_coeffs
-    = probDescDB.get_rv("model.nested.primary_response_mapping");
-  const RealVector& secondary_resp_coeffs
-    = probDescDB.get_rv("model.nested.secondary_response_mapping");
-
-  if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
-    Cerr << "\nError: no mappings provided for sub-iterator functions in "
-	 << "NestedModel initialization." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  // Convert vectors to matrices using the number of subIterator response
-  // results (e.g., the number of UQ statistics) as the number of columns
-  // (rows are open ended since the number of subModel primary fns may
-  // be different from the total number of primary fns and subModel's
-  // constraints are a subset of the total constraints).
-  numSubIterFns = subIterator.response_results().num_functions();
-  if (!primary_resp_coeffs.empty()) {
-    // this error would also be caught within copy_data(), but by checking here,
-    // we can provide a more helpful error message.
-    if (primary_resp_coeffs.length() % numSubIterFns) {
-      Cerr << "\nError: number of entries in primary_response_mapping ("
-	   << primary_resp_coeffs.length() << ") not evenly divisible"
-	   << "\n       by number of sub-iterator response functions ("
-	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    copy_data(primary_resp_coeffs, primaryRespCoeffs, 0, (int)numSubIterFns);
-  }
-  if (!secondary_resp_coeffs.empty()) {
-    // this error would also be caught within copy_data(), but by checking here,
-    // we can provide a more helpful error message.
-    if (secondary_resp_coeffs.length() % numSubIterFns) {
-      Cerr << "\nError: number of entries in secondary_response_mapping ("
-	   << secondary_resp_coeffs.length() << ") not evenly divisible"
-	   << "\n       by number of sub-iterator response functions ("
-	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-    copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);
-  }
-
   // Back out the number of eq/ineq constraints within secondaryRespCoeffs
   // (subIterator constraints) from the total number of equality/inequality
   // constraints and the number of interface equality/inequality constraints.
@@ -717,6 +676,126 @@ void NestedModel::update_sub_iterator()
     = probDescDB.get_sizet("responses.num_nonlinear_equality_constraints");
   numSubIterMappedIneqCon = num_mapped_ineq_con - numOptInterfIneqCon;
   numSubIterMappedEqCon   = num_mapped_eq_con   - numOptInterfEqCon;
+
+  // For auto-generated identity map, we don't support an optional
+  // interface and require that the total number of NestedModel
+  // responses (pri+sec) equal the number of sub-iterator results
+  // functions.
+  //
+  // Rationale: Too complex to get right and communicate to
+  // user. Secondary responses from an optional interface augment any
+  // mapped secondary responses. Nested model primary responses come
+  // from an overlay of optional interface and mapped responses, with
+  // no restrictions on which is larger or smaller.
+  size_t num_mapped_total = currentResponse.num_functions(),
+    num_mapped_sec = num_mapped_ineq_con + num_mapped_eq_con,
+    num_mapped_pri = num_mapped_total - num_mapped_sec;
+  numSubIterFns = subIterator.response_results().num_functions();
+
+  identityRespMap = probDescDB.get_bool("model.nested.identity_resp_map");
+  const RealVector& primary_resp_coeffs
+    = probDescDB.get_rv("model.nested.primary_response_mapping");
+  const RealVector& secondary_resp_coeffs
+    = probDescDB.get_rv("model.nested.secondary_response_mapping");
+
+  if (identityRespMap) {
+    bool found_error = false;
+    if (!optInterfacePointer.empty()) {
+      Cerr << "\nError: identity_response_mapping not supported in conjunction"
+       << " with optional_interface_pointer; use explicit primary/secondary_"
+       << "response_mapping instead.\n";
+      found_error = true;
+    }
+    if (!primary_resp_coeffs.empty() || !secondary_resp_coeffs.empty()) {
+      Cerr << "\nError: Neither primary_response_mapping nor secondary_"
+        << "response_mapping may be specified in conjunction with identity_"
+        << "response_mapping.\n";
+      found_error = true;
+    }
+    if (num_mapped_total != numSubIterFns) {
+      Cerr << "\nError: For identity_response_mapping, number of nested model "
+        << "responses (primary + secondary functions) must equal the number of "
+        << "sub-method final results. Specified nested model has " 
+        << num_mapped_total << " functions, while there are " << numSubIterFns 
+        << " sub-method results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
+      found_error = true;
+    }
+    if (found_error)
+      abort_handler(-1);
+
+    if (outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Info: NestedModel using identity response mapping." << std::endl;
+    subIterMappedPri = num_mapped_pri;
+    subIterMappedSec = num_mapped_sec;
+
+    // BMA TODO: When using identity map, propagate labels when not
+    // present (there's no way to detect that the user didn't give
+    // them as defaults get generated at parse time)
+  }
+  else if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
+    Cerr << "\nError: no mappings provided for sub-iterator functions in "
+	 << "NestedModel initialization." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  // Convert vectors to matrices using the number of subIterator response
+  // results (e.g., the number of UQ statistics) as the number of columns
+  // (rows are open ended since the number of subModel primary fns may
+  // be different from the total number of primary fns and subModel's
+  // constraints are a subset of the total constraints).
+  if (!primary_resp_coeffs.empty()) {
+    // this error would also be caught within copy_data(), but by checking here,
+    // we can provide a more helpful error message.
+    if (primary_resp_coeffs.length() % numSubIterFns) {
+      Cerr << "\nError: number of entries in primary_response_mapping ("
+	   << primary_resp_coeffs.length() << ") not evenly divisible"
+	   << "\n       by number of sub-iterator final results functions ("
+	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
+      Cerr << "\nInfo: The primary_response_mapping must have between 1 and "
+	   << num_mapped_pri
+	   << " (number of nested model primary response functions) row(s).\n"
+	   << "It must have " << numSubIterFns
+           << " columns corresponding to the sub-method final results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method "
+	     << "results.\n";
+      abort_handler(MODEL_ERROR);
+    }
+    copy_data(primary_resp_coeffs, primaryRespCoeffs, 0, (int)numSubIterFns);
+    subIterMappedPri = primaryRespCoeffs.numRows();
+  }
+  if (!secondary_resp_coeffs.empty()) {
+    // this error would also be caught within copy_data(), but by checking here,
+    // we can provide a more helpful error message.
+    if (secondary_resp_coeffs.length() % numSubIterFns) {
+      Cerr << "\nError: number of entries in secondary_response_mapping ("
+	   << secondary_resp_coeffs.length() << ") not evenly divisible"
+	   << "\n       by number of sub-iterator final results functions ("
+	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
+      Cerr << "\nInfo: The secondary_response_mapping must have "
+	   << numSubIterMappedIneqCon + numSubIterMappedEqCon 
+	   << " (number of nested model secondary response functions, less any "
+           << "optional interface secondary response functions) row(s).\n"
+	   << "It must have " << numSubIterFns
+           << " columns corresponding to the sub-method final results.\n";
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cerr << "Info: Sub-method returns these results:\n"
+	     << subIterator.response_results().function_labels() << "\n";
+      else
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method "
+	     << "results.\n";
+      abort_handler(MODEL_ERROR);
+    }
+    copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);
+    subIterMappedSec = secondaryRespCoeffs.numRows();
+  }
 }
 
 
@@ -1555,21 +1634,18 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
 	    bool& opt_interface_map,     ActiveSet& sub_iterator_set,
 	    bool& sub_iterator_map)
 {
-  size_t i, j, num_sub_iter_mapped_primary = primaryRespCoeffs.numRows(), 
-    num_sub_iter_mapped_con = secondaryRespCoeffs.numRows(),
-    num_opt_interf_con = numOptInterfIneqCon + numOptInterfEqCon,
-    num_mapped_primary = std::max(numOptInterfPrimary, 
-				  num_sub_iter_mapped_primary);
+  size_t i, j, num_opt_interf_con = numOptInterfIneqCon + numOptInterfEqCon,
+    num_mapped_primary = std::max(numOptInterfPrimary, subIterMappedPri);
 
   const ShortArray& mapped_asv = mapped_set.request_vector();
   const SizetArray& mapped_dvv = mapped_set.derivative_vector();
 
   if (mapped_asv.size() != num_mapped_primary + num_opt_interf_con +
-                           num_sub_iter_mapped_con) {
+                           subIterMappedSec) {
     Cerr << "\nError: mismatch is ASV lengths in NestedModel::set_mapping()."
 	 << "\n       expected " << mapped_asv.size() << " total, received "
 	 << num_mapped_primary << " primary plus " << num_opt_interf_con +
-            num_sub_iter_mapped_con << " secondary." << std::endl;
+            subIterMappedSec << " secondary." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 
@@ -1578,22 +1654,28 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
   sub_iterator_map = false;
   ShortArray sub_iterator_asv(numSubIterFns, 0);
   // augment sub_iterator_asv based on mapped primary asv and primaryRespCoeffs
-  for (i=0; i<num_sub_iter_mapped_primary; ++i) {
+  for (i=0; i<subIterMappedPri; ++i) {
     short mapped_asv_val = mapped_asv[i];
     if (mapped_asv_val) {
-      for (j=0; j<numSubIterFns; ++j)
-	if (std::fabs(primaryRespCoeffs(i,j)) > DBL_MIN)
-	  sub_iterator_asv[j] |= mapped_asv_val;
+      if (identityRespMap)
+	sub_iterator_asv[i] |= mapped_asv_val;
+      else
+	for (j=0; j<numSubIterFns; ++j)
+	  if (std::fabs(primaryRespCoeffs(i,j)) > DBL_MIN)
+	    sub_iterator_asv[j] |= mapped_asv_val;
       sub_iterator_map = true;
     }
   }
   // augment sub_iterator_asv based on mapped constr asv and secondaryRespCoeffs
-  for (i=0; i<num_sub_iter_mapped_con; ++i) {
+  for (i=0; i<subIterMappedSec; ++i) {
     short mapped_asv_val = mapped_asv[i+num_mapped_primary+num_opt_interf_con];
     if (mapped_asv_val) {
-      for (j=0; j<numSubIterFns; ++j)
-	if (std::fabs(secondaryRespCoeffs(i,j)) > DBL_MIN)
-	  sub_iterator_asv[j] |= mapped_asv_val;
+      if (identityRespMap)
+	sub_iterator_asv[subIterMappedPri + i] |= mapped_asv_val;
+      else
+	for (j=0; j<numSubIterFns; ++j)
+	  if (std::fabs(secondaryRespCoeffs(i,j)) > DBL_MIN)
+	    sub_iterator_asv[j] |= mapped_asv_val;
       sub_iterator_map = true;
     }
   }
@@ -1713,7 +1795,7 @@ interface_response_overlay(const Response& opt_interface_response,
   // {g}:
   size_t num_opt_interf_con = numOptInterfIneqCon + numOptInterfEqCon,
     num_mapped_1
-      = std::max(numOptInterfPrimary, (size_t)primaryRespCoeffs.numRows());
+      = std::max(numOptInterfPrimary, subIterMappedPri);
   for (i=0; i<num_opt_interf_con; ++i) {
     oi_index = numOptInterfPrimary + i;
     m_index  = num_mapped_1 + i; // {g_l} <= {g} <= {g_u}
@@ -1766,24 +1848,31 @@ iterator_response_overlay(const Response& sub_iterator_response,
   Real coeff;
 
   // [W]{S}:
-  size_t num_sub_iter_mapped_1 = primaryRespCoeffs.numRows();
-  for (i=0; i<num_sub_iter_mapped_1; ++i) {
+  for (i=0; i<subIterMappedPri; ++i) {
     if (mapped_asv[i] & 1) { // mapped_vals
-      Real& inner_prod = mapped_vals[i];
-      for (j=0; j<numSubIterFns; ++j) {
-        coeff = primaryRespCoeffs(i,j);
-	if (coeff != 0.) // avoid propagation of nan/inf for no mapping
-	  inner_prod += coeff * sub_iterator_vals[j]; // [W]{S}
+      if (identityRespMap)
+	mapped_vals[i] = sub_iterator_vals[i];
+      else {
+	Real& inner_prod = mapped_vals[i];
+	for (j=0; j<numSubIterFns; ++j) {
+	  coeff = primaryRespCoeffs(i,j);
+	  if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	    inner_prod += coeff * sub_iterator_vals[j]; // [W]{S}
+	}
       }
     }
     if (mapped_asv[i] & 2) { // mapped_grads
       RealVector mapped_grad = mapped_response.function_gradient_view(i);
       for (j=0; j<num_mapped_deriv_vars; ++j) {
-	Real& inner_prod = mapped_grad[j]; // [W]{S}
-	for (k=0; k<numSubIterFns; ++k) {
-	  coeff = primaryRespCoeffs(i,k);
-	  if (coeff != 0.) // avoid propagation of nan/inf for no mapping
-	    inner_prod += coeff * sub_iterator_grads(j,k);
+	if (identityRespMap)
+	  mapped_grad[j] = sub_iterator_grads(j,i);
+	else {
+	  Real& inner_prod = mapped_grad[j]; // [W]{S}
+	  for (k=0; k<numSubIterFns; ++k) {
+	    coeff = primaryRespCoeffs(i,k);
+	    if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	      inner_prod += coeff * sub_iterator_grads(j,k);
+	  }
 	}
       }
     }
@@ -1791,11 +1880,15 @@ iterator_response_overlay(const Response& sub_iterator_response,
       RealSymMatrix mapped_hess = mapped_response.function_hessian_view(i);
       for (j=0; j<num_mapped_deriv_vars; ++j) {
 	for (k=0; k<=j; ++k) {
-	  Real& inner_prod = mapped_hess(j,k); // [W]{S}
-	  for (l=0; l<numSubIterFns; ++l) {
-	    coeff = primaryRespCoeffs(i,l);
-	    if (coeff != 0.) // avoid propagation of nan/inf for no mapping
-	      inner_prod += coeff * sub_iterator_hessians[l](j,k);
+	  if (identityRespMap)
+	    mapped_hess(j,k) = sub_iterator_hessians[i](j,k);
+	  else {
+	    Real& inner_prod = mapped_hess(j,k); // [W]{S}
+	    for (l=0; l<numSubIterFns; ++l) {
+	      coeff = primaryRespCoeffs(i,l);
+	      if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+		inner_prod += coeff * sub_iterator_hessians[l](j,k);
+	    }
 	  }
 	}
       }
@@ -1803,28 +1896,38 @@ iterator_response_overlay(const Response& sub_iterator_response,
   }
 
   // [A]{S}:
-  size_t num_sub_iter_mapped_2 = secondaryRespCoeffs.numRows(),
-    num_mapped_1 = std::max(numOptInterfPrimary, num_sub_iter_mapped_1);
-  for (i=0; i<num_sub_iter_mapped_2; ++i) {
+  size_t num_mapped_1 = std::max(numOptInterfPrimary, subIterMappedPri);
+  for (i=0; i<subIterMappedSec; ++i) {
     m_index = num_mapped_1 + numOptInterfIneqCon + i;// {a_l} <= [A]{S} <= {a_u}
     if (i>=numSubIterMappedIneqCon)
       m_index += numOptInterfEqCon;                           // [A]{S} == {a_t}
+    // BMA: Using m_index is only safe for the identity map case
+    // because optional interfaces are disallowed and all the opt
+    // interf sizes will be 0
     if (mapped_asv[m_index] & 1) { // mapped_vals
-      Real& inner_prod = mapped_vals[m_index]; inner_prod = 0.;
-      for (j=0; j<numSubIterFns; ++j) {
-        coeff = secondaryRespCoeffs(i,j);
-	if (coeff != 0.) // avoid propagation of nan/inf for no mapping
-	  inner_prod += coeff * sub_iterator_vals[j];
+      if (identityRespMap)
+	mapped_vals[m_index] = sub_iterator_vals[m_index];
+      else {
+	Real& inner_prod = mapped_vals[m_index]; inner_prod = 0.;
+	for (j=0; j<numSubIterFns; ++j) {
+	  coeff = secondaryRespCoeffs(i,j);
+	  if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	    inner_prod += coeff * sub_iterator_vals[j];
+	}
       }
     }
     if (mapped_asv[m_index] & 2) { // mapped_grads
       RealVector mapped_grad = mapped_response.function_gradient_view(m_index);
       for (j=0; j<num_mapped_deriv_vars; ++j) {
-        Real& inner_prod = mapped_grad[j]; inner_prod = 0.;
-        for (k=0; k<numSubIterFns; ++k) {
-	  coeff = secondaryRespCoeffs(i,k);
-	  if (coeff != 0.) // avoid propagation of nan/inf for no mapping
-	    inner_prod += coeff * sub_iterator_grads(j,k);
+	if (identityRespMap)
+	  mapped_grad[m_index] = sub_iterator_grads(j,m_index);
+	else {
+	  Real& inner_prod = mapped_grad[j]; inner_prod = 0.;
+	  for (k=0; k<numSubIterFns; ++k) {
+	    coeff = secondaryRespCoeffs(i,k);
+	    if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	      inner_prod += coeff * sub_iterator_grads(j,k);
+	  }
 	}
       }
     }
@@ -1833,11 +1936,15 @@ iterator_response_overlay(const Response& sub_iterator_response,
         = mapped_response.function_hessian_view(m_index);
       for (j=0; j<num_mapped_deriv_vars; ++j) {
         for (k=0; k<=j; ++k) {
-          Real& inner_prod = mapped_hess(j,k); inner_prod = 0.;
-          for (l=0; l<numSubIterFns; ++l) {
-	    coeff = secondaryRespCoeffs(i,l);
-	    if (coeff != 0.) // avoid propagation of nan/inf for no mapping
-	      inner_prod += coeff * sub_iterator_hessians[l](j,k);
+	  if (identityRespMap)
+	    mapped_hess(j,k) = sub_iterator_hessians[m_index](j,k);
+	  else {
+	    Real& inner_prod = mapped_hess(j,k); inner_prod = 0.;
+	    for (l=0; l<numSubIterFns; ++l) {
+	      coeff = secondaryRespCoeffs(i,l);
+	      if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+		inner_prod += coeff * sub_iterator_hessians[l](j,k);
+	    }
 	  }
 	}
       }
@@ -1862,7 +1969,7 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
   }
 
   size_t i, j, m_index, num_mapped_fns = currentResponse.num_functions();
-  if (mapped_errors.length() != num_mapped_fns)
+  if (static_cast<unsigned>(mapped_errors.length()) != num_mapped_fns)
     mapped_errors.size(num_mapped_fns); // init to 0 
   else
     mapped_errors = 0.;
@@ -1873,36 +1980,42 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
   //       always standard (sqrt of estimator variance of central/std moment)
 
   // [W]{S}:
-  size_t num_sub_iter_mapped_1 = primaryRespCoeffs.numRows();
   Real sum, term, coeff;
-  for (i=0; i<num_sub_iter_mapped_1; ++i) {
-    sum = 0.;
-    for (j=0; j<numSubIterFns; ++j) {
-      coeff = primaryRespCoeffs(i,j);
-      if (coeff != 0.) { // avoid propagation of nan/inf for no mapping
-	term = coeff * sub_iterator_errors[j]; // [W]{S}
-	sum += term * term;
+  for (i=0; i<subIterMappedPri; ++i) {
+    if (identityRespMap)
+      mapped_errors[i] = sub_iterator_errors[i];
+    else {
+      sum = 0.;
+      for (j=0; j<numSubIterFns; ++j) {
+	coeff = primaryRespCoeffs(i,j);
+	if (coeff != 0.) { // avoid propagation of nan/inf for no mapping
+	  term = coeff * sub_iterator_errors[j]; // [W]{S}
+	  sum += term * term;
+	}
       }
+      mapped_errors[i] = std::sqrt(sum);
     }
-    mapped_errors[i] = std::sqrt(sum);
   }
 
   // [A]{S}:
-  size_t num_sub_iter_mapped_2 = secondaryRespCoeffs.numRows(),
-    num_mapped_1 = std::max(numOptInterfPrimary, num_sub_iter_mapped_1);
-  for (i=0; i<num_sub_iter_mapped_2; ++i) {
+  size_t num_mapped_1 = std::max(numOptInterfPrimary, subIterMappedPri);
+  for (i=0; i<subIterMappedSec; ++i) {
     m_index = num_mapped_1 + numOptInterfIneqCon + i;// {a_l} <= [A]{S} <= {a_u}
     if (i>=numSubIterMappedIneqCon)
       m_index += numOptInterfEqCon;                           // [A]{S} == {a_t}
-    sum = 0.;
-    for (j=0; j<numSubIterFns; ++j) {
-      coeff = secondaryRespCoeffs(i,j);
-      if (coeff != 0.) { // avoid propagation of nan/inf for no mapping
-	term = coeff * sub_iterator_errors[j]; // [W]{S}
-	sum += term * term;
+    if (identityRespMap)
+      mapped_errors[m_index] = sub_iterator_errors[m_index];
+    else {
+      sum = 0.;
+      for (j=0; j<numSubIterFns; ++j) {
+	coeff = secondaryRespCoeffs(i,j);
+	if (coeff != 0.) { // avoid propagation of nan/inf for no mapping
+	  term = coeff * sub_iterator_errors[j]; // [W]{S}
+	  sum += term * term;
+	}
       }
+      mapped_errors[m_index] = std::sqrt(sum);
     }
-    mapped_errors[m_index] = std::sqrt(sum);
   }
 }
 
@@ -1910,17 +2023,14 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
 void NestedModel::check_response_map(const ShortArray& mapped_asv)
 {
   // counter initialization & sanity checking
-  // NOTE: numSubIterFns != num_sub_iter_mapped_primary+num_sub_iter_mapped_con
-  // since subIterator response is converted to sub_iter_mapped_primary/con
+  // NOTE: numSubIterFns != subIterMappedPri + subIterMappedSec
+  // since subIterator response is converted to sub_iter_mapped_primary/sec
   // through the action of [W] and [A].
   size_t num_opt_interf_con = numOptInterfIneqCon + numOptInterfEqCon,
-    num_sub_iter_mapped_1 = primaryRespCoeffs.numRows(),
-    num_sub_iter_mapped_2 = secondaryRespCoeffs.numRows(),
-    num_mapped_1 = std::max(numOptInterfPrimary, num_sub_iter_mapped_1);
+    num_mapped_1 = std::max(numOptInterfPrimary, subIterMappedPri);
   if (mapped_asv.size() !=
-      num_mapped_1 + num_opt_interf_con + num_sub_iter_mapped_2 ||
-      num_sub_iter_mapped_2 !=
-      numSubIterMappedIneqCon + numSubIterMappedEqCon) {
+      num_mapped_1 + num_opt_interf_con + subIterMappedSec ||
+      subIterMappedSec != numSubIterMappedIneqCon + numSubIterMappedEqCon) {
     Cerr << "\nError: bad function counts in NestedModel::check_response_map()."
          << std::endl;
     abort_handler(MODEL_ERROR);
@@ -3247,9 +3357,6 @@ void NestedModel::
 string_variable_mapping(const String& s_var, size_t mapped_index,
 			 short svm_target)
 {
-  Pecos::AleatoryDistParams& submodel_adp
-    = subModel.aleatory_distribution_parameters();
-
   switch (svm_target) {
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for string value "

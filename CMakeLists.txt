@@ -489,7 +489,7 @@ endif() # NOT BUILD_IN_TRILINOS
 
 # Manage option for graphics (default ON if possible)
 include(DakotaXGraphics)
-option(HAVE_X_GRAPHICS "Build the Dakota/Motif Graphics package." ON)
+option(HAVE_X_GRAPHICS "Build the Dakota/Motif Graphics package." OFF)
 if(HAVE_X_GRAPHICS)
   if(WIN32)
     message(STATUS "HAVE_X_GRAPHICS requested, but not supported on Windows; "

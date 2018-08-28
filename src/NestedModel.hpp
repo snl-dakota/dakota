@@ -27,7 +27,6 @@
 
 namespace Dakota {
 
-
 /// Derived model class which performs a complete sub-iterator
 /// execution within every evaluation of the model.
 
@@ -303,8 +302,6 @@ private:
   //
   /// the sub-iterator that is executed on every evaluation of this model
   Iterator subIterator;
-  /// the sub-method pointer from the nested model specification
-  String subMethodPointer;
   /// the sub-model used in sub-iterator evaluations
   /** There are no restrictions on subModel, so arbitrary nestings are
       possible.  This is commonly used to support surrogate-based
@@ -315,6 +312,8 @@ private:
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
   IteratorScheduler subIteratorSched;
+  /// the sub-method pointer from the nested model specification
+  String subMethodPointer;
   /// subIterator job counter since last synchronize()
   int subIteratorJobCntr;
   /// mapping from subIterator evaluation counter to nested model counter
@@ -424,6 +423,14 @@ private:
   // Attributes pertaining to response_mapping (NOTE: these are opt.
   // specific for now -> generalize for UOO and others):
   //
+  /// whether identity response mapping is active
+  bool identityRespMap;
+  /// number of sub-iterator results functions mapped to nested model
+  /// primary functions (cached for use with identity case)
+  size_t subIterMappedPri;
+  /// number of sub-iterator results functions mapped to nested model
+  /// secondary functions (cached for use with identity case)
+  size_t subIterMappedSec;
   /// "primary" response_mapping matrix applied to the sub-iterator response
   /// functions.  For OUU, the matrix is applied to UQ statistics to create
   /// contributions to the top-level objective functions/least squares/

@@ -53,6 +53,9 @@ function(DakotaNidrgen)
             ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
     )
 
+  # custom target for dakota.input.summary since docs build depends on it
+  add_custom_target(dakota-input-summary
+    DEPENDS ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary)
 
   # -----
   # Simplified process to build/install dakreorder (dakota_order_input)

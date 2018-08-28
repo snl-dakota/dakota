@@ -2516,9 +2516,9 @@
 	  <keyword  id="batch_selection" name="batch_selection" code="{0}" label="Batch selection strategy"  minOccurs="0" default="naive" >
 	    <oneOf label="Batch Selection Criterion">
 	      <keyword  id="naive" name="naive" code="{N_mdm(lit,batchSelectionType_naive)}" label="naive"   />
-	      <keyword  id="distance_penalty" name="distance_penalty" code="{N_mdm(lit,batchSelectionType_distance_penalty)}" label="distance_penalty"   />
+	      <keyword  id="distance_penalty" name="distance_penalty" code="{N_mdm(lit,batchSelectionType_distance)}" label="distance_penalty"   />
 	      <keyword  id="topology" name="topology" code="{N_mdm(lit,batchSelectionType_topology)}" label="topology"   />
-	      <keyword  id="constant_liar" name="constant_liar" code="{N_mdm(lit,batchSelectionType_constant_liar)}" label="constant_liar"   />
+	      <keyword  id="constant_liar" name="constant_liar" code="{N_mdm(lit,batchSelectionType_cl)}" label="constant_liar"   />
 	    </oneOf>
 	  </keyword>
 	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples per iteration"  minOccurs="0" >
@@ -2867,6 +2867,11 @@
 	    </keyword>
 	    <keyword id="kde" name="kde" code="{N_mdm(true,posteriorStatsKDE)}" minOccurs="0" />
 	  </keyword>
+          <keyword id="model_evidence" name="model_evidence" code="{N_mdm(true,modelEvidence)}" minOccurs="0">
+            <keyword  id="evidence_samples" name="evidence_samples" code="{N_mdm(int,evidenceSamples)}" label="Evidence samples"  minOccurs="0" >
+	      <param type="INTEGER" />
+            </keyword>
+          </keyword>
 	  <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
 	    <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type"  minOccurs="0" default="gaussian process" >
     	      <oneOf label="Discrepancy Model">
@@ -3632,12 +3637,14 @@
             <keyword  id="secondary_variable_mapping" name="secondary_variable_mapping" code="{N_mom(strL,secondaryVarMaps)}" label="Secondary Variable Mappings"  minOccurs="0" default="primary mappings into sub-model variables are value-based" >
               <param type="STRINGLIST" />
             </keyword>
-            <keyword  id="primary_response_mapping" name="primary_response_mapping" code="{N_mom(RealDL,primaryRespCoeffs)}" label="Primary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to primary functions" >
-              <param type="REALLIST" />
-            </keyword>
-            <keyword  id="secondary_response_mapping" name="secondary_response_mapping" code="{N_mom(RealDL,secondaryRespCoeffs)}" label="Secondary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to secondary functions" >
-              <param type="REALLIST" />
-            </keyword>
+	    <!-- BMA TODO: Identity should be mutually exclusive with pri/sec map. -->
+	    <keyword  id="primary_response_mapping" name="primary_response_mapping" code="{N_mom(RealDL,primaryRespCoeffs)}" label="Primary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to primary functions" >
+	      <param type="REALLIST" />
+	    </keyword>
+	    <keyword  id="secondary_response_mapping" name="secondary_response_mapping" code="{N_mom(RealDL,secondaryRespCoeffs)}" label="Secondary Response Mappings"  minOccurs="0" default="no sub-iterator contribution to secondary functions" >
+	      <param type="REALLIST" />
+	    </keyword>
+	    <keyword  id="identity_response_mapping" name="identity_response_mapping" code="{N_mom(true,identityRespMap)}" label="Identity Response Mapping"  minOccurs="0" default="no sub-iterator contribution to nested model functions" />
           </keyword>
         </keyword>
         <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace"  minOccurs="1" complexity="1">

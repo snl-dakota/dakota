@@ -291,6 +291,8 @@ public:
   /// level (constraint) functions (from the \c secondary_response_mapping
   /// specification in \ref ModelNested)
   RealVector secondaryRespCoeffs;
+  /// whether an identity response map is requested in lieu of explicit maps
+  bool identityRespMap;
   /// number of servers for concurrent sub-iterator parallelism
   int subMethodServers;
   /// number of processors for each concurrent sub-iterator partition

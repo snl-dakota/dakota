@@ -2369,11 +2369,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ batch_selection {0}
       naive {N_mdm(lit,batchSelectionType_naive)}
       |
-      distance_penalty {N_mdm(lit,batchSelectionType_distance_penalty)}
+      distance_penalty {N_mdm(lit,batchSelectionType_distance)}
       |
       topology {N_mdm(lit,batchSelectionType_topology)}
       |
-      constant_liar {N_mdm(lit,batchSelectionType_constant_liar)}
+      constant_liar {N_mdm(lit,batchSelectionType_cl)}
      ]
     [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -4649,6 +4649,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ kde {N_mdm(true,posteriorStatsKDE)} ]
      ]
+    [ model_evidence {N_mdm(true,modelEvidence)}
+      [ evidence_samples INTEGER {N_mdm(int,evidenceSamples)} ]
+     ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}
         gaussian_process ALIAS kriging {N_mdm(lit,modelDiscrepancyType_global_kriging)}
@@ -5325,6 +5328,7 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ secondary_variable_mapping STRINGLIST {N_mom(strL,secondaryVarMaps)} ]
       [ primary_response_mapping REALLIST {N_mom(RealDL,primaryRespCoeffs)} ]
       [ secondary_response_mapping REALLIST {N_mom(RealDL,secondaryRespCoeffs)} ]
+      [ identity_response_mapping {N_mom(true,identityRespMap)} ]
      )
    )
   |

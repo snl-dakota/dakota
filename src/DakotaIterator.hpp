@@ -254,11 +254,11 @@ public:
   String method_string() const;
 
   /// convert a method name enumeration value to a string
-  String method_enum_to_string(unsigned short method_name) const;
+  String method_enum_to_string(unsigned short method_enum) const;
   /// convert a method name string to an enumeration value
-  unsigned short method_string_to_enum(const String& method_name) const;
-  /// convert a method name enumeration value to a string
-  String submethod_enum_to_string(unsigned short submethod_name) const;
+  unsigned short method_string_to_enum(const String& method_str) const;
+  /// convert a sub-method name enumeration value to a string
+  String submethod_enum_to_string(unsigned short submethod_enum) const;
 
   /// return the method identifier (methodId)
   const String& method_id() const;

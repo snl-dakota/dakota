@@ -116,6 +116,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   posteriorStatsMutual(
     probDescDB.get_bool("method.posterior_stats.mutual_info")),
   posteriorStatsKDE(probDescDB.get_bool("method.posterior_stats.kde")),
+  calModelEvidence(probDescDB.get_bool("method.model_evidence")),
+  evidenceSamples(probDescDB.get_int("method.evidence_samples")),
   subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
   exportMCMCFilename(
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
@@ -2179,9 +2181,10 @@ void NonDBayesCalibration::compute_statistics()
     kl_post_prior(acceptanceChain);
   if (posteriorStatsMutual)
     mutual_info_buildX();
-  if (posteriorStatsKDE) {
+  if (posteriorStatsKDE) 
     calculate_kde();
-  }
+  if (calModelEvidence)
+    calculate_evidence();
 }
 
 
@@ -2517,6 +2520,34 @@ calculate_kde()
   TabularIO::close_file(export_kde, "kde_posterior.dat",
 			"NonDBayesCalibration kde posterior export");
   
+}
+
+void NonDBayesCalibration::calculate_evidence()
+{
+  //int num_prior_samples = chainSamples; //KAM: replace later
+  int num_prior_samples = (evidenceSamples>0) ? evidenceSamples : chainSamples;
+  int num_params = numContinuousVars + numHyperparams;
+  // Draw samples from prior distribution 
+  RealMatrix prior_dist_samples(num_params, num_prior_samples);
+  prior_sample_matrix(prior_dist_samples);
+  // Calculate likelihood for each sample
+  double sum_like = 0.;
+  for (int i = 0; i < num_prior_samples; i++) {
+    RealVector params = Teuchos::getCol(Teuchos::View, prior_dist_samples, i);
+    RealVector cont_params = params;
+    cont_params.resize(numContinuousVars);  
+    residualModel.continuous_variables(cont_params);
+    residualModel.evaluate();
+    RealVector residual = residualModel.current_response().function_values();
+    mcmcModel.continuous_variables(cont_params);
+    mcmcModel.evaluate();
+    RealVector mcmc = mcmcModel.current_response().function_values();
+    double log_like = log_likelihood(residual, params);
+    sum_like += std::exp(log_like);
+  }
+  double evidence = sum_like/num_prior_samples;
+  Cout << "Model evidence = " << evidence << '\n';
+  Cout << "num samples = " << num_prior_samples << '\n';
 }
 
 void NonDBayesCalibration::print_intervals_file
