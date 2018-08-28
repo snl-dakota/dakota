@@ -106,9 +106,12 @@ inline SoleilDirectApplicInterface::~SoleilDirectApplicInterface()
 inline void SoleilDirectApplicInterface::
 derived_map_asynch(const Dakota::ParamResponsePair& pair)
 {
-  // no-op (just hides base class error throw). Jobs are run exclusively within
-  // wait_local_evaluations(), prior to there existing true batch processing
-  // facilities.
+  // no-op (just hides base class error trap)
+
+  // Jobs are run exclusively within wait_local_evaluations(), as called by
+  // ApplicationInterface::asynchronous_local_evaluations(), based on
+  // jobs added to asynchLocalActivePRPQueue by ApplicationInterface::
+  // launch_asynch_local().
 }
 
 

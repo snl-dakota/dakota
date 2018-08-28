@@ -19,11 +19,12 @@
 
 namespace StanfordPSAAP {
 
+/** Redefine this for serial/blocking execution of single Soleil simulations. */
 int SoleilDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 {
 #ifdef MPI_DEBUG
   Cout << "analysis server " << analysisServerId << " invoking " << ac_name
-       << " within SIM::SoleilDirectApplicInterface." << std::endl;
+       << " within StanfordPSAAP::SoleilDirectApplicInterface." << std::endl;
 #endif // MPI_DEBUG
 
   if (multiProcAnalysisFlag) {
@@ -45,7 +46,7 @@ int SoleilDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
   }
   else {
     Cerr << ac_name << " is not available as an analysis within "
-         << "SIM::SoleilDirectApplicInterface." << std::endl;
+         << "StanfordPSAAP::SoleilDirectApplicInterface." << std::endl;
     Dakota::abort_handler(Dakota::INTERFACE_ERROR);
   }
 
@@ -60,6 +61,18 @@ int SoleilDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 }
 
 
+/** Redefine this for (Legion-based) execution of a batch of Soleil 
+    simulations.  The incoming prp_queue is defined from 
+    ApplicationInterface::asynchLocalActivePRPQueue which is a local 
+    subset of beforeSynchCorePRPQueue.  This function must complete at 
+    least one job (whereas test_local_evaluations() may complete zero).  
+    Populating completionSet results in decrementing the active queue 
+    and backfilling as indicated by concurrency level.  For Soleil, we 
+    should not limit the concurrency level and will not combine with MPI 
+    scheduling --> incoming prp_queue is the full beforeSynchCorePRPQueue 
+    (no MPI distribution + no throttling).  Further, we should complete
+    the full local queue or we may need to distinguish still-running 
+    jobs from incoming new ones. */
 void SoleilDirectApplicInterface::
 wait_local_evaluations(Dakota::PRPQueue& prp_queue)
 {
@@ -89,7 +102,7 @@ wait_local_evaluations(Dakota::PRPQueue& prp_queue)
     //}
     //else {
     //  Cerr << ac_name << " is not available as an analysis within "
-    //       << "SIM::SoleilDirectApplicInterface." << std::endl;
+    //       << "StanfordPSAAP::SoleilDirectApplicInterface." << std::endl;
     //  Dakota::abort_handler(Dakota::INTERFACE_ERROR);
     //}
 
