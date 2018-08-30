@@ -96,7 +96,7 @@ private:
 inline SoleilDirectApplicInterface::
 SoleilDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
   Dakota::DirectApplicInterface(problem_db)
-{ }
+{ batchEval = true; }
 
 
 inline SoleilDirectApplicInterface::~SoleilDirectApplicInterface()
@@ -106,12 +106,14 @@ inline SoleilDirectApplicInterface::~SoleilDirectApplicInterface()
 inline void SoleilDirectApplicInterface::
 derived_map_asynch(const Dakota::ParamResponsePair& pair)
 {
-  // no-op (just hides base class error trap)
-
-  // Jobs are run exclusively within wait_local_evaluations(), as called by
-  // ApplicationInterface::asynchronous_local_evaluations(), based on
-  // jobs added to asynchLocalActivePRPQueue by ApplicationInterface::
-  // launch_asynch_local().
+  if (batchEval) {
+    // no-op: jobs are run exclusively within wait_local_evaluations(), as
+    // called by ApplicationInterface::asynchronous_local_evaluations(), based
+    // on jobs added to asynchLocalActivePRPQueue by ApplicationInterface::
+    // launch_asynch_local().
+  }
+  else
+    Dakota::DirectApplicInterface::derived_map_asynch(pair); // error trap
 }
 
 

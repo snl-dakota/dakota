@@ -24,10 +24,11 @@ extern PRPCache data_pairs;
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db):
   Interface(BaseConstructor(), problem_db),
-  parallelLib(problem_db.parallel_library()), suppressOutput(false),
-  evalCommSize(1), evalCommRank(0), evalServerId(1), eaDedMasterFlag(false),
-  analysisCommSize(1), analysisCommRank(0), analysisServerId(1),
-  multiProcAnalysisFlag(false), asynchLocalAnalysisFlag(false),
+  parallelLib(problem_db.parallel_library()), batchEval(false),
+  suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
+  eaDedMasterFlag(false), analysisCommSize(1), analysisCommRank(0),
+  analysisServerId(1), multiProcAnalysisFlag(false),
+  asynchLocalAnalysisFlag(false),
   asynchLocalEvalConcSpec(
     problem_db.get_int("interface.asynch_local_evaluation_concurrency")),
   asynchLocalAnalysisConcSpec(
@@ -1275,7 +1276,7 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
       }
 
       if (launch) {
-	launch_asynch_local(local_prp_iter); ++num_active; /*++num_launch;*/
+	launch_asynch_local(local_prp_iter); ++num_active; //++num_launch;
 	if (static_limited && num_active == asynchLocalEvalConcurrency)
 	  break;
       }
@@ -2318,19 +2319,7 @@ void ApplicationInterface::serve_evaluations_asynch()
 	  parallelLib.bcast_e(fn_eval_id);
 
         if (fn_eval_id) {
-	  if (multiProcEvalFlag)
-	    parallelLib.bcast_e(recv_buffer);
-	  // unpack
-          Variables vars; ActiveSet set;
-          recv_buffer >> vars >> set;
-	  recv_buffer.reset();
-	  Response local_response(sharedRespData, set); // special ctor
-          ParamResponsePair prp(vars, interfaceId, local_response,
-				fn_eval_id, false); // shallow copy
-          asynchLocalActivePRPQueue.insert(prp);
-	  // execute
-          derived_map_asynch(prp);
-          ++num_active;
+	  launch_asynch_local(recv_buffer, fn_eval_id); ++num_active;
 	  // repost
 	  if (evalCommRank == 0)
 	    parallelLib.irecv_ie(recv_buffer, 0, MPI_ANY_TAG, recv_request);
@@ -2409,17 +2398,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
     while (num_active < asynchLocalEvalConcurrency && num_launch < num_jobs) {
       parallelLib.bcast_e(fn_eval_id);
       if (fn_eval_id) {
-	parallelLib.bcast_e(recv_buffer);
-	// unpack
-	Variables vars;	ActiveSet set;
-	recv_buffer >> vars >> set;
-	recv_buffer.reset();
-	Response local_response(sharedRespData, set); // special ctor
-	ParamResponsePair prp(vars, interfaceId, local_response,
-			      fn_eval_id, false); // shallow copy
-	asynchLocalActivePRPQueue.insert(prp);
-	// execute
-	derived_map_asynch(prp);
+	launch_asynch_local(recv_buffer, fn_eval_id);
 	++num_active; ++num_launch;
       }
     }

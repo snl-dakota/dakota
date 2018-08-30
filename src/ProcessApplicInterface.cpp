@@ -256,12 +256,18 @@ void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
   write_parameters_files(pair.variables(), pair.active_set(),
 			 pair.response(),  fn_eval_id);
- 
-  // execute the simulator application -- nonblocking call
-  pid_t pid = create_evaluation_process(FALL_THROUGH);
 
-  // store process & eval ids for use in synchronization
-  map_bookkeeping(pid, fn_eval_id);
+  if (batchEval) { // suppress launch of individual process
+    // writing a batch params file (which augments individual params files) and
+    // launching batch driver deferred until {wait,test}_local_evaluations(),
+    // once local PRP queue is defined
+  }
+  else {
+    // execute the simulator application -- nonblocking call
+    pid_t pid = create_evaluation_process(FALL_THROUGH);
+    // bind process id with eval id for use in synchronization
+    map_bookkeeping(pid, fn_eval_id);
+  }
 }
 
 
@@ -895,6 +901,7 @@ void ProcessApplicInterface::prepare_process_environment()
   WorkdirHelper::set_environment("DAKOTA_PARAMETERS_FILE", paramsFileName);
   WorkdirHelper::set_environment("DAKOTA_RESULTS_FILE", resultsFileName);
 }
+
 
 /** Undo anything done prior to spawn */
 void ProcessApplicInterface::reset_process_environment()

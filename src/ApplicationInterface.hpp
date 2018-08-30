@@ -202,6 +202,9 @@ protected:
   /// the concurrent evaluations and concurrent analyses parallelism levels
   ParallelLibrary& parallelLib;
 
+  /// flag indicating usage of batch evaluation facilities, where a set of
+  /// jobs is launched and scheduled as a unit rather than individually
+  bool batchEval;
   /// flag for suppressing output on slave processors
   bool suppressOutput;
 
@@ -306,8 +309,11 @@ private:
   void receive_evaluation(PRPQueueIter& prp_it, size_t buff_index,
 			  int server_id, bool peer_flag);
 
-  /// launch an asynchronous local evaluation
+  /// launch an asynchronous local evaluation from a queue iterator 
   void launch_asynch_local(PRPQueueIter& prp_it);
+  /// launch an asynchronous local evaluation from a receive buffer
+  void launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id);
+
   /// process a completed asynchronous local evaluation
   void process_asynch_local(int fn_eval_id);
   /// process a completed synchronous local evaluation
@@ -677,19 +683,45 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 
 inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 {
-  int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
     Cout << "Initiating ";
     if (!interfaceId.empty()) Cout << interfaceId << ' ';
-    Cout << "evaluation " << fn_eval_id << '\n';
+    Cout << "evaluation " << prp_it->eval_id() << '\n';
   }
 
   // bcast job to other processors within peer 1 (added for direct plugins)
   if (multiProcEvalFlag)
     broadcast_evaluation(*prp_it);
-
+  // launch non-blocking job
   derived_map_asynch(*prp_it);
+
+  // Note: for (plug-in) direct interfaces supporting a batch capability,
+  // derived_map_asynch() should be overridden to no-op --> scheduler and
+  // server processors bcast and update asynchLocalActivePRPQueue, but launch
+  // of the batch is deferred until synchronization time (batch is then
+  // launched as one unit within {wait,test}_local_evaluations).
+  // > TO DO: insufficient for Fork/System -> add batchEval conditionals to
+  //   derived_map_asynch(), etc., to support batch executions
+
   asynchLocalActivePRPQueue.insert(*prp_it);
+}
+
+
+inline void ApplicationInterface::
+launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id)
+{
+  if (multiProcEvalFlag)
+    parallelLib.bcast_e(recv_buffer);
+  // unpack
+  Variables vars; ActiveSet set;
+  recv_buffer >> vars >> set;
+  recv_buffer.reset();
+  Response local_response(sharedRespData, set); // special ctor
+  ParamResponsePair
+    prp(vars, interfaceId, local_response, fn_eval_id, false); // shallow copy
+  asynchLocalActivePRPQueue.insert(prp);
+  // execute
+  derived_map_asynch(prp);
 }
 
 

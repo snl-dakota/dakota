@@ -344,8 +344,6 @@ protected:
   /// iterator master as well as server processors.  Currently, this is
   /// set prior to all invocations of derived_map() for all processors.
   int currEvalId;
-  // TO DO: what's the right behavior for derived_map_asynch()?  This is
-  // secondary, since DirectApplicInterface provides the main use case.
 
   // evaluation counters specific to each interface instance that track
   // counts on the iterator master processor
