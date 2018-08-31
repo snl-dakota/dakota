@@ -29,7 +29,7 @@ ForkApplicInterface(const ProblemDescDB& problem_db):
 { }
 
 
-void ForkApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
+void ForkApplicInterface::wait_local_evaluation_sequence(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Wait for at least one completion and complete all jobs that have returned.
@@ -39,7 +39,7 @@ void ForkApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
   // evals. - and starve some servers).
 
   // wait for any process within the process group to finish.  No need for
-  // usleep in wait_local_evaluations() since blocking wait is already
+  // usleep in wait_local_evaluation_sequence() since blocking wait is already
   // system optimized.
   pid_t pid = wait_evaluation(true); // block for completion
   do { // Perform this loop at least once for the pid from wait.
@@ -49,7 +49,7 @@ void ForkApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
 }
 
 
-void ForkApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
+void ForkApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Do not wait - complete all jobs that are immediately available.

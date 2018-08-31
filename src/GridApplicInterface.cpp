@@ -168,7 +168,7 @@ void GridApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 
 
 /// Convenience function for common code between wait and nowait case.
-void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
+void GridApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 {
   //
   // Iterate through the set of requests
@@ -190,7 +190,7 @@ void GridApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       PRPQueueIter queue_it = lookup_by_eval_id(prp_queue, fn_eval_id);
       if (queue_it == prp_queue.end()) {
 	Cerr << "Error: failure in queue lookup within GridApplicInterface::"
-	     << "test_local_evaluations()." << std::endl;
+	     << "test_local_evaluation_sequence()." << std::endl;
 	abort_handler(-1);
       }
       Response response = queue_it->response(); // shallow copy

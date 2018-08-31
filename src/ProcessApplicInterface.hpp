@@ -57,8 +57,10 @@ protected:
 
   void derived_map(const Variables& vars, const ActiveSet& set,
 		   Response& response, int fn_eval_id);
-
   void derived_map_asynch(const ParamResponsePair& pair);
+
+  void wait_local_evaluations(PRPQueue& prp_queue);
+  void test_local_evaluations(PRPQueue& prp_queue);
 
   const StringArray& analysis_drivers() const;
 
@@ -85,6 +87,13 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// version of wait_local_evaluations() managing of set of individual
+  /// asynchronous evaluations
+  virtual void wait_local_evaluation_sequence(PRPQueue& prp_queue) = 0;
+  /// version of test_local_evaluations() managing of set of individual
+  /// asynchronous evaluations
+  virtual void test_local_evaluation_sequence(PRPQueue& prp_queue) = 0;
+
   /// bookkeeping of process and evaluation ids for asynchronous maps
   virtual void map_bookkeeping(pid_t pid, int fn_eval_id) = 0;
 
@@ -96,7 +105,12 @@ protected:
   //- Heading: Methods
   //
 
-  /// execute analyses synchronously on the local processor
+  /// batch version of wait_local_evaluations()
+  void wait_local_evaluation_batch(PRPQueue& prp_queue);
+  /// batch version of test_local_evaluations()
+  void test_local_evaluation_batch(PRPQueue& prp_queue);
+
+/// execute analyses synchronously on the local processor
   void synchronous_local_analyses(int start, int end, int step);
 
   //void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap

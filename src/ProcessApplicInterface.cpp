@@ -271,6 +271,54 @@ void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 }
 
 
+void ProcessApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
+{
+  if (batchEval) wait_local_evaluation_batch(prp_queue);
+  else           wait_local_evaluation_sequence(prp_queue);
+}
+
+
+void ProcessApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
+{
+  if (batchEval) test_local_evaluation_batch(prp_queue);
+  else           test_local_evaluation_sequence(prp_queue);
+}
+
+
+void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
+{
+  PRPQueueIter prp_iter; 
+
+  // individual parameters files written in ProcessApplicInterface::
+  // derived_map_asynch()
+  // TO DO: augment with an alternate batch tabular file
+  //for (prp_iter)
+  //  write_tabular(prp_iter->second);
+
+  // In this case, individual jobs have not been launched and we launch the
+  // user's analysis driver once for the complete batch:
+  create_evaluation_process(BLOCK);
+  // TO DO: modify evaluation header output (paramsFileName, resultsFileName) 
+
+  // For now, collect individual results
+  if (evalCommRank == 0)
+    for (prp_iter=prp_queue.begin(); prp_iter!=prp_queue.end(); ++prp_iter) {
+      int fn_eval_id = prp_iter->eval_id();
+      Response resp  = prp_iter->response(); // shallow copy
+      read_results_files(resp, fn_eval_id, final_eval_id_tag(fn_eval_id));
+    }
+
+  // TO DO: detect whether batch evaluator wrote individual files or
+  // a batch tabular file, with some precedence
+  //for (prp_iter)
+  //  read_tabular(prp_iter->second);
+}
+
+
+void ProcessApplicInterface::test_local_evaluation_batch(PRPQueue& prp_queue)
+{ wait_local_evaluation_batch(prp_queue); }
+
+
 // ------------------------
 // Begin file I/O utilities
 // ------------------------
@@ -662,20 +710,18 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
 	// path) the workdir
 	// autotag_files(params_path, results_path, eval_id_tag,
 	// 	      bfs::current_path());
-	;
       }
     }
     else {
       // simple case; no workdir --> old behavior, tagging if needed
       // in place (whether relative or absolute)
-      if (!fileTagFlag) {
+      if (!fileTagFlag)
 	autotag_files(params_path, results_path, eval_id_tag);
-      }
     }
   }
   else
     remove_params_results_files(params_path, results_path);
- 
+
   // Now that files are handled, conditionally remove the work directory
   if (removing_workdir) {
     if (outputLevel > NORMAL_OUTPUT)
@@ -695,7 +741,8 @@ void ProcessApplicInterface::read_results_file(Response &response,
   bfs::ifstream recovery_stream(results_path);
   if (!recovery_stream) {
     Cerr << "\nError: cannot open results file " << results_path
-        << " for evaluation " << boost::lexical_cast<std::string>(id) << std::endl;
+	 << " for evaluation " << boost::lexical_cast<std::string>(id)
+	 << std::endl;
     abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
   }
   try {
