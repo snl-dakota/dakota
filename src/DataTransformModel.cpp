@@ -691,14 +691,16 @@ void DataTransformModel::collect_residuals(bool collect_all)
 {
   recastResponseMap.clear();
 
-  BOOST_FOREACH(IntIntResponseMapMap::value_type& cr_pair, cachedResp) {
-    int recast_id = cr_pair.first;  // (.second is a subModel IntResponseMap)
+  //BOOST_FOREACH(IntIntResponseMapMap::value_type& cr_pair, cachedResp) 
+  IntIntResponseMapMap::iterator cr_pair = cachedResp.begin();
+  while(cr_pair != cachedResp.end()) {
+    int recast_id = cr_pair->first;  // (.second is a subModel IntResponseMap)
     size_t num_exp = expData.num_experiments();
 
     // the blocking synch case requires all data present
-    if (collect_all && cr_pair.second.size() != num_exp) {
+    if (collect_all && cr_pair->second.size() != num_exp) {
       Cerr << "\nError (DataTransformModel): Sub-model returned " 
-           << cr_pair.second.size() << "evaluations,\n  but have " << num_exp 
+           << cr_pair->second.size() << "evaluations,\n  but have " << num_exp 
            << " experiment configurations.\n";
       abort_handler(-1);
     }
@@ -706,7 +708,7 @@ void DataTransformModel::collect_residuals(bool collect_all)
     // populate recastResponseMap with any recast evals that have all
     // their configs complete (only complete/clear those with finished
     // experiment configs)
-    if (cr_pair.second.size() == num_exp) {
+    if (cr_pair->second.size() == num_exp) {
 
       IntASMIter s_it = recastSetMap.find(recast_id);
       IntVarsMIter v_it = recastVarsMap.find(recast_id);
@@ -714,21 +716,21 @@ void DataTransformModel::collect_residuals(bool collect_all)
       recastResponseMap[recast_id] = currentResponse.copy();
       recastResponseMap[recast_id].active_set(s_it->second);
 
-      transform_response_map(cr_pair.second, v_it->second,
+      transform_response_map(cr_pair->second, v_it->second,
                              recastResponseMap[recast_id]);
 
       // cleanup (could do clear() at end)
       recastVarsMap.erase(v_it);
       recastSetMap.erase(s_it);
-      // BMA TODO: consider iterator here instead of value?
-      cachedResp.erase(cr_pair.first);
-
       // BMA TODO:
       //RecastModel::transform_secondary_response();
-
+      // BMA TODO: consider iterator here instead of value?
+      cr_pair++;      
+      cachedResp.erase(recast_id);
       print_residual_response(recastResponseMap[recast_id]);
+    } else {
+      cr_pair++;
     }
-
   }
 }
 
