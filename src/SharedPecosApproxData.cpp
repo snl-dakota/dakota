@@ -120,14 +120,14 @@ void SharedPecosApproxData::link_multilevel_surrogate_data()
   case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
     // expand approxDataKeys from default for discrepancy management:
     approxDataKeys.resize(2); // for surrData and modSurrData
-    UShort2DArray& keys_0 = approxDataKeys[0];
-    UShort2DArray& keys_1 = approxDataKeys[1];
+    UShort2DArray&     surr_keys = approxDataKeys[0];
+    UShort2DArray& mod_surr_keys = approxDataKeys[1];
     // surrData has either HF or HF,LF keys (raw data: level 0 or levels 1-L)
     // modSurrData has HF key (combined data / discrepancy)
-    keys_0.resize(2);  keys_1.resize(1);
-    //keys_0[0] = keys_1[0] = pecosSharedDataRep->active_key();
+    surr_keys.resize(2);  mod_surr_keys.resize(1);
+    //surr_keys[0] = mod_surr_keys[0] = pecosSharedDataRep->active_key();
 
-    // Configure active approxData
+    // Configure active approxData (surrData for pushing raw data)
     activeDataIndex = 0;
     // 0 for pushing raw data, 1 for pulling processed data ?
     // (other classes access the discrepancy/surplus data)
@@ -152,6 +152,7 @@ void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
   // instance (modSurrData aggregates {HF,LF} and is keyed based on truth key).
 
   //size_t d, num_d = approxDataKeys.size();
+  UShort2DArray& surr_keys = approxDataKeys[0];
   if (key.empty()) // prune second entry from each set of approxDataKeys
     /*
     for (i=0; i<num_sd; ++i)
@@ -159,20 +160,19 @@ void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
       if (surrogate_data_keys(i)) // since approxDataKeys shrinks/expands
         approxDataKeys[i].resize(1);
     */
-    approxDataKeys[0].resize(1); // approxDataKeys[1] remains size 1
+    surr_keys.resize(1); // approxDataKeys[1] remains size 1
   else {
     //for (d=0; i<num_d; ++d)
     //  if (surrogate_data_keys(i)) {
-    UShort2DArray& keys_0 = approxDataKeys[0];
-    keys_0.resize(2);
-    const UShortArray& key_00 = keys_0[0]; // HF
-    UShortArray&       key_01 = keys_0[1]; // LF
+    surr_keys.resize(2);
+    const UShortArray& surr_keys0 = surr_keys[0]; // HF
+    UShortArray&       surr_keys1 = surr_keys[1]; // LF
     // Assign incoming LF key
-    key_01 = key;
+    surr_keys1 = key;
     // Alter key to distinguish a particular aggregation used for modeling
     // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...) by
     // appending the HF key that matches this LF data
-    key_01.insert(key_01.end(), key_00.begin(), key_00.end());
+    surr_keys1.insert(surr_keys1.end(), surr_keys0.begin(), surr_keys0.end());
     //  }
   }
 }

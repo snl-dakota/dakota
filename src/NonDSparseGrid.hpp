@@ -135,6 +135,8 @@ private:
   //- Heading: Data
   //
 
+  /// type of sparse grid driver: combined, incremental, hierarchical, ...
+  short ssgDriverType;
   /// convenience pointer to the numIntDriver representation
   Pecos::SparseGridDriver* ssgDriver;
 

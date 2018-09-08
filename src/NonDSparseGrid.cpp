@@ -35,7 +35,7 @@ namespace Dakota {
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
-  NonDIntegration(problem_db, model),
+  NonDIntegration(problem_db, model),  
   ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level"))
 {
   short exp_basis_type
@@ -44,23 +44,22 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
-  short exp_coeffs_soln_approach;
   if (exp_basis_type == Pecos::HIERARCHICAL_INTERPOLANT)
-    exp_coeffs_soln_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
+    ssgDriverType = Pecos::HIERARCHICAL_SPARSE_GRID;
   else
-    exp_coeffs_soln_approach = (refine_control) ?
-      Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+    ssgDriverType = (refine_control) ? Pecos::INCREMENTAL_SPARSE_GRID
+                                     : Pecos::COMBINED_SPARSE_GRID;
 
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_soln_approach);
+  numIntDriver = Pecos::IntegrationDriver(ssgDriverType);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // initialize_random_variables() called in NonDIntegration ctor
   check_variables(natafTransform.x_random_variables());
 
   // define ExpansionConfigOptions
-  Pecos::ExpansionConfigOptions ec_options(exp_coeffs_soln_approach,
-    exp_basis_type, iteratedModel.correction_type(),
+  Pecos::ExpansionConfigOptions ec_options(ssgDriverType, exp_basis_type,
+    iteratedModel.correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
     outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
     probDescDB.get_ushort("method.nond.vbd_interaction_order"), //refine_type,
@@ -100,7 +99,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     // INTERPOLATION_MODE: standardize on number of interp pts: m = 2l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
 
-  switch (exp_coeffs_soln_approach) {
+  switch (ssgDriverType) {
   case Pecos::COMBINED_SPARSE_GRID: {
     bool track_colloc = false, track_uniq_prod_wts = false; // defaults
     ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
@@ -144,10 +143,10 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
 	       short driver_mode, short growth_rate, short refine_control,
 	       bool track_uniq_prod_wts): 
   NonDIntegration(SPARSE_GRID_INTEGRATION, model, dim_pref),
-  ssgLevelSpec(ssg_level)
+  ssgDriverType(exp_coeffs_soln_approach), ssgLevelSpec(ssg_level)
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_soln_approach);
+  numIntDriver = Pecos::IntegrationDriver(ssgDriverType);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // propagate general settings (not inferrable from the basis of polynomials)
@@ -157,7 +156,7 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
   ssgDriver->mode(driver_mode);
   ssgDriver->growth_rate(growth_rate);
   ssgDriver->refinement_control(refine_control);
-  switch (exp_coeffs_soln_approach) {
+  switch (ssgDriverType) {
   case Pecos::COMBINED_SPARSE_GRID: {
     Pecos::CombinedSparseGridDriver* csg_driver
       = (Pecos::CombinedSparseGridDriver*)ssgDriver;
@@ -214,7 +213,8 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
   Cout << "\nSparse grid level = " << ssgDriver->level() << "\nTotal number "
        << "of integration points: " << allSamples.numCols() << '\n';
 
-  if (outputLevel > NORMAL_OUTPUT)
+  if (outputLevel > NORMAL_OUTPUT &&
+      ssgDriverType != Pecos::HIERARCHICAL_SPARSE_GRID)// t1 wts not implemented
     print_points_weights("dakota_sparse_tabular.dat");
 }
 

@@ -340,9 +340,13 @@ void Approximation::pop_data(bool save_data)
     for (d=0; d<num_d; ++d) {
       Pecos::SurrogateData& approx_data = approxData[d];
       const UShort2DArray& keys_d = keys[d];  num_k = keys_d.size();
-      for (k=0; k<num_k; ++k) {
-	approx_data.active_key(keys_d[k]); // updates only if needed
-	approx_data.pop(save_data);
+      if (num_k) {
+	UShortArray curr_active = approx_data.active_key(); // for restoration
+	for (k=0; k<num_k; ++k) {
+	  approx_data.active_key(keys_d[k]); // updates only if needed
+	  approx_data.pop(save_data);
+	}
+	approx_data.active_key(curr_active); // restore
       }
     }
   }
@@ -362,9 +366,16 @@ void Approximation::push_data()
     for (d=0; d<num_d; ++d) {
       Pecos::SurrogateData& approx_data = approxData[d];
       const UShort2DArray& keys_d = keys[d];  num_k = keys_d.size();
-      for (k=0; k<num_k; ++k) {
-	approx_data.active_key(keys_d[k]); // updates only if needed
-	approx_data.push(r_index);
+      if (num_k) {
+	// Currently, some data must be recomputed from approx data (e.g.,
+	// product interpolants) such that active state needs to be preserved
+	// when pushing
+	UShortArray curr_active = approx_data.active_key(); // for restoration
+	for (k=0; k<num_k; ++k) {
+	  approx_data.active_key(keys_d[k]); // updates only if needed
+	  approx_data.push(r_index);
+	}
+	approx_data.active_key(curr_active); // restore
       }
     }
   }
@@ -384,6 +395,9 @@ void Approximation::finalize_data()
     // assume number of popped trials is consistent across approxData
     size_t d, num_d = approxData.size(), k, num_k, f_index, p,
       num_popped = approxData[0].popped_sets();
+    UShort2DArray curr_active(num_d);
+    for (d=0; d<num_d; ++d)
+      curr_active[d] = approxData[d].active_key(); // for restoration
     for (p=0; p<num_popped; ++p) {
       f_index = sharedDataRep->finalization_index(p);
       for (d=0; d<num_d; ++d) {
@@ -395,6 +409,8 @@ void Approximation::finalize_data()
 	}
       }
     }
+    for (d=0; d<num_d; ++d)
+      approxData[d].active_key(curr_active[d]); // restore
 
     clear_active_popped(); // after all finalization indices processes
   }
