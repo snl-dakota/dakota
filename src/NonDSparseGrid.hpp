@@ -98,7 +98,7 @@ public:
   /// invokes SparseGridDriver::update_sets()
   void update_sets(const UShortArray& set_star);
   /// invokes SparseGridDriver::finalize_sets()
-  void finalize_sets(bool output_sets, bool converged_within_tol);
+  void finalize_sets(bool output_sets, bool converged_within_tol,bool reverted);
 
   int num_samples() const;
 
@@ -211,8 +211,8 @@ inline void NonDSparseGrid::update_sets(const UShortArray& set_star)
 
 
 inline void NonDSparseGrid::
-finalize_sets(bool output_sets, bool converged_within_tol)
-{ ssgDriver->finalize_sets(output_sets, converged_within_tol); }
+finalize_sets(bool output_sets, bool converged_within_tol, bool reverted)
+{ ssgDriver->finalize_sets(output_sets, converged_within_tol, reverted); }
 
 
 inline void NonDSparseGrid::evaluate_grid_increment()

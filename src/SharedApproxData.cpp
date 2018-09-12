@@ -393,10 +393,10 @@ void SharedApproxData::surrogate_model_key(const UShortArray& key)
 {
   if (dataRep)
     dataRep->surrogate_model_key(key);
-  else {
+  else { // default implementation: no key augmentation
+    UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
     // AGGREGATED_MODELS mode uses {HF,LF} order, as does
     // ApproximationInterface::*_add()
-    UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
     if (key.empty()) // prune second entry, if present, from approxDataKeys
       data_keys.resize(1);
     else {
@@ -412,8 +412,8 @@ void SharedApproxData::truth_model_key(const UShortArray& key)
   if (dataRep)
     dataRep->truth_model_key(key);
   else { // default implementation: no key augmentation
-    // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
     UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+    // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
     switch  (data_keys.size()) {
     case 0:  data_keys.push_back(key); break;
     default: data_keys[0] = key;       break;
@@ -485,7 +485,7 @@ bool SharedApproxData::push_available()
 }
 
 
-size_t SharedApproxData::retrieval_index()
+size_t SharedApproxData::retrieval_index(const UShortArray& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: retrieval_index() not available for this approximation "
@@ -493,7 +493,7 @@ size_t SharedApproxData::retrieval_index()
     abort_handler(APPROX_ERROR);
   }
 
-  return dataRep->retrieval_index();
+  return dataRep->retrieval_index(key);
 }
 
 
@@ -521,15 +521,15 @@ void SharedApproxData::post_push()
 }
 
 
-size_t SharedApproxData::finalization_index(size_t i)
+size_t SharedApproxData::finalization_index(size_t i, const UShortArray& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: finalization_index(size_t) not available for this "
-	 << "approximation type." << std::endl;
+    Cerr << "Error: finalization_index() not available for this approximation "
+	 << "type." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
-  return dataRep->finalization_index(i);
+  return dataRep->finalization_index(i, key);
 }
 
 

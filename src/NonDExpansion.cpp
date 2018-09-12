@@ -948,18 +948,18 @@ core_refinement(Real& metric, bool revert, bool print_metric,
 }
 
 
-void NonDExpansion::post_refinement(Real& metric)
+void NonDExpansion::post_refinement(Real& metric, bool reverted)
 {
   // finalize refinement algorithms (if necessary)
   switch (refineControl) {
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: {
     bool converged_within_tol = (metric <= convergenceTol);
-    finalize_sets(converged_within_tol); break;
+    finalize_sets(converged_within_tol, reverted); break;
   }
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    if (uSpaceModel.push_available()) {
+    if (reverted && uSpaceModel.push_available()) {
       increment_grid(false); // don't update anisotropy weights
       push_increment();
       uSpaceModel.push_approximation();
@@ -1174,7 +1174,7 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel,
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0) {
     bypass_surrogate_mode();
-    // deactivate surrogate model key (resize ApproxInterface::approxDataKeys)
+    // deactivate surrogate model key (resize SharedApproxData::approxDataKeys)
     uSpaceModel.surrogate_model_key(UShortArray());
   }
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
@@ -1187,6 +1187,10 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel,
   if (multilevel) uSpaceModel.truth_model_key(form, lev);
   else            uSpaceModel.truth_model_key(lev);
 
+  // Notes:
+  // > truth and (modified) surrogate model keys get stored for use in
+  //   distinguishing data set relationships within SurrogateData
+  // > only the truth key gets activated for Model/Interface/Approximation/...
   activate_key(uSpaceModel.truth_model_key());
 }
 
@@ -1337,7 +1341,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   NLev.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev) {
     activate_key(lev, form, multilev);
-    post_refinement(best_lev_metric);
+    post_refinement(best_lev_metric, true); // increments have been reverted
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   uSpaceModel.combine_approximation();
@@ -1507,7 +1511,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric,
     else if (covarianceControl == FULL_COVARIANCE) covar_ref = respCovariance;
     else                                           stats_ref = respVariance;
   }
- 
+
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
   // eventually be inexpensive since each point set is only evaluated once).
@@ -1577,14 +1581,14 @@ increment_sets(Real& delta_star, bool revert, bool print_metric,
 }
 
 
-void NonDExpansion::finalize_sets(bool converged_within_tol)
+void NonDExpansion::finalize_sets(bool converged_within_tol, bool reverted)
 {
   Cout << "\n<<<<< Finalization of generalized sparse grid sets.\n";
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   // apply all remaining increments not previously selected
   bool output_sets = (outputLevel >= VERBOSE_OUTPUT);
-  nond_sparse->finalize_sets(output_sets, converged_within_tol);
+  nond_sparse->finalize_sets(output_sets, converged_within_tol, reverted);
   uSpaceModel.finalize_approximation();
   nond_sparse->update_reference(); // for completeness
 }

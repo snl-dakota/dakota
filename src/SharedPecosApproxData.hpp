@@ -130,11 +130,11 @@ protected:
   void pop(bool save_surr_data);
 
   bool push_available();
-  size_t retrieval_index();
+  size_t retrieval_index(const UShortArray& key);
   void pre_push();
   void post_push();
 
-  size_t finalization_index(size_t i);
+  size_t finalization_index(size_t i, const UShortArray& key);
   void pre_finalize();
   void post_finalize();
 
@@ -211,8 +211,8 @@ inline bool SharedPecosApproxData::push_available()
 { return pecosSharedDataRep->push_available(); }
 
 
-inline size_t SharedPecosApproxData::retrieval_index()
-{ return pecosSharedDataRep->retrieval_index(); }
+inline size_t SharedPecosApproxData::retrieval_index(const UShortArray& key)
+{ return pecosSharedDataRep->retrieval_index(key); }
 
 
 inline void SharedPecosApproxData::pre_push()
@@ -223,8 +223,9 @@ inline void SharedPecosApproxData::post_push()
 { pecosSharedDataRep->post_push_data(); }
 
 
-inline size_t SharedPecosApproxData::finalization_index(size_t i)
-{ return pecosSharedDataRep->finalization_index(i); }
+inline size_t SharedPecosApproxData::
+finalization_index(size_t i, const UShortArray& key)
+{ return pecosSharedDataRep->finalization_index(i, key); }
 
 
 inline void SharedPecosApproxData::pre_finalize()

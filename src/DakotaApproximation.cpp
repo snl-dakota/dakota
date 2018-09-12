@@ -339,7 +339,7 @@ void Approximation::pop_data(bool save_data)
     size_t d, num_d = approxData.size(), k, num_k;
     for (d=0; d<num_d; ++d) {
       Pecos::SurrogateData& approx_data = approxData[d];
-      const UShort2DArray& keys_d = keys[d];  num_k = keys_d.size();
+      const UShort2DArray& keys_d = keys[d]; num_k = keys_d.size();
       if (num_k) {
 	UShortArray curr_active = approx_data.active_key(); // for restoration
 	for (k=0; k<num_k; ++k) {
@@ -361,15 +361,20 @@ void Approximation::push_data()
   if (approxRep) approxRep->push_data();
   else {
     const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-    size_t d, num_d = approxData.size(), k, num_k,
-      r_index = sharedDataRep->retrieval_index();
+    size_t d, num_d = approxData.size(), k, num_k;
     for (d=0; d<num_d; ++d) {
       Pecos::SurrogateData& approx_data = approxData[d];
-      const UShort2DArray& keys_d = keys[d];  num_k = keys_d.size();
+      const UShort2DArray& keys_d = keys[d]; num_k = keys_d.size();
       if (num_k) {
+	// Only want truth model key for retrieval index as this is what is
+	// activated through the Model.  Surrogate model key is only used for
+	// enumerating SurrogateData updates using approxDataKeys.
+	const UShortArray& truth_key = keys_d[0];
+	size_t r_index = sharedDataRep->retrieval_index(truth_key);
 	// Currently, some data must be recomputed from approx data (e.g.,
 	// product interpolants) such that active state needs to be preserved
-	// when pushing
+	// when pushing (push_data() occurs after key setting and before
+	// computation of refinement metrics such as delta_covariance()).
 	UShortArray curr_active = approx_data.active_key(); // for restoration
 	for (k=0; k<num_k; ++k) {
 	  approx_data.active_key(keys_d[k]); // updates only if needed
@@ -393,24 +398,29 @@ void Approximation::finalize_data()
   else {
     const UShort3DArray& keys = sharedDataRep->approxDataKeys;
     // assume number of popped trials is consistent across approxData
-    size_t d, num_d = approxData.size(), k, num_k, f_index, p,
-      num_popped = approxData[0].popped_sets();
-    UShort2DArray curr_active(num_d);
-    for (d=0; d<num_d; ++d)
-      curr_active[d] = approxData[d].active_key(); // for restoration
-    for (p=0; p<num_popped; ++p) {
-      f_index = sharedDataRep->finalization_index(p);
-      for (d=0; d<num_d; ++d) {
-	Pecos::SurrogateData& approx_data = approxData[d];
-	const UShort2DArray& keys_d = keys[d];  num_k = keys_d.size();
-	for (k=0; k<num_k; ++k) {
-	  approx_data.active_key(keys_d[k]); // updates only if needed
-	  approx_data.push(f_index, false);
+    size_t d, num_d = approxData.size(), k, num_k, f_index, p;
+    // Preservation of active key state should not be reqd after finalization
+    //UShort2DArray curr_active(num_d);
+    //for (d=0; d<num_d; ++d)
+    //  curr_active[d] = approxData[d].active_key(); // for restoration
+    for (d=0; d<num_d; ++d) {
+      Pecos::SurrogateData& approx_data = approxData[d];
+      const UShort2DArray& keys_d = keys[d]; num_k = keys_d.size();
+      if (num_k) {
+	// Only need truth model key for finalization indices (see above)
+	const UShortArray& truth_key = keys_d[0];
+	size_t num_popped = approx_data.popped_sets(truth_key);
+	for (p=0; p<num_popped; ++p) {
+	  f_index = sharedDataRep->finalization_index(p, truth_key);
+	  for (k=0; k<num_k; ++k) {
+	    approx_data.active_key(keys_d[k]); // updates only if needed
+	    approx_data.push(f_index, false);
+	  }
 	}
       }
     }
-    for (d=0; d<num_d; ++d)
-      approxData[d].active_key(curr_active[d]); // restore
+    //for (d=0; d<num_d; ++d)
+    //  approxData[d].active_key(curr_active[d]); // restore
 
     clear_active_popped(); // after all finalization indices processes
   }

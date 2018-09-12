@@ -206,7 +206,7 @@ protected:
   size_t core_refinement(Real& metric, bool revert = false,
 			 bool print_metric = true, bool relative_metric = true);
   /// finalization of expansion refinement, if necessary
-  void post_refinement(Real& metric);
+  void post_refinement(Real& metric, bool reverted = false);
 
   /// helper function to manage different grid increment cases
   void increment_grid(bool update_anisotropy = true);
@@ -342,7 +342,7 @@ private:
   size_t increment_sets(Real& delta_star, bool revert, bool print_metric,
 			bool relative_metric);
   /// finalization of adaptive refinement using generalized sparse grids
-  void finalize_sets(bool converged_within_tol);
+  void finalize_sets(bool converged_within_tol, bool reverted = false);
 
   /// promote selected candidate into reference grid + expansion
   void select_candidate(size_t best_candidate);

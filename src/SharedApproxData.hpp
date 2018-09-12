@@ -102,13 +102,13 @@ public:
   /// queries availability of pushing data associated with a trial set
   virtual bool push_available();
   /// return index of trial set within popped bookkeeping sets
-  virtual size_t retrieval_index();
+  virtual size_t retrieval_index(const UShortArray& key);
   /// push a previous state of the shared approximation data 
   virtual void pre_push();
   /// clean up popped bookkeeping following push 
   virtual void post_push();
   /// return index of i-th trailing trial set within restorable bookkeeping sets
-  virtual size_t finalization_index(size_t i);
+  virtual size_t finalization_index(size_t i, const UShortArray& key);
   /// finalize the shared approximation data following a set of increments
   virtual void pre_finalize();
   /// clean up popped bookkeeping following aggregation
