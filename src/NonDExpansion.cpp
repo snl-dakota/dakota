@@ -29,7 +29,7 @@
 #include "dakota_tabular_io.hpp"
 #include "ParallelLibrary.hpp"
 
-#define DEBUG
+//#define DEBUG
 //#define CONVERGENCE_DATA
 //#define TEST_HESSIANS
 

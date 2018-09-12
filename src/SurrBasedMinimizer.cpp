@@ -22,7 +22,7 @@
 
 static const char rcsId[]="@(#) $Id: SurrBasedMinimizer.cpp 4718 2007-11-15 21:44:58Z wjbohnh $";
 
-#define DEBUG
+//#define DEBUG
 
 
 extern "C" {

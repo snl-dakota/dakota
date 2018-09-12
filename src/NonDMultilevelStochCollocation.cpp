@@ -402,8 +402,9 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
 
-    // perform any roll-ups of expansion contributions, prior to metric compute
-    metric_roll_up();
+    // Hierarchical SC does not require roll-up of expansion contributions in
+    // order to compute change in covariance
+    //metric_roll_up();
 
     size_t i, j;
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
