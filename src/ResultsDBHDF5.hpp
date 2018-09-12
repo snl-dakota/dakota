@@ -14,17 +14,13 @@
 #ifndef DAKOTA_RESULTS_DB_HDF5_H
 #define DAKOTA_RESULTS_DB_HDF5_H
 
-#include "dakota_global_defs.hpp"
-#include "dakota_results_types.hpp"
+#include "ResultsDBBase.hpp"
 #include "HDF5_IO.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <memory>
 
 namespace Dakota {
 
 
-class ResultsDBHDF5
+class ResultsDBHDF5 : public ResultsDBBase
 {
 
 public:
@@ -35,17 +31,48 @@ public:
   }
 
 
-  /// insert a RealMatrix with metadata
-  template<typename StoredType>
+  /// record addition with metadata map
+  void 
+  insert(const StrStrSizet& iterator_id,
+	 const std::string& data_name,
+	 const boost::any& result,
+	 const MetaDataType& metadata
+	 ) override
+  { std::cout << "ResultsDBHDF5 needs to implement insert(...) with metadata." << std::endl; }
+
+  /// insert an arbitrary type (eg RealMatrix) with scales
   void insert(const StrStrSizet& iterator_id,
               const std::string& result_name,
               const std::string& response_name,
-	      const StoredType& data,
-              const HDF5dss &scales = HDF5dss())
+              const boost::any& data,
+              const HDF5dss &scales = HDF5dss()) override
   {
     // Store the results
     String dset_name = dataset_name(iterator_id, result_name, response_name);
-    hdf5Stream->store_vector_data(dset_name, data);
+    // Need to fix this to use incoming "data"
+    if (data.type() == typeid(std::vector<double>)) {
+      hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<double> >(data));
+    }
+    else if (data.type() == typeid(RealVector)) {
+      hdf5Stream->store_vector_data(dset_name, boost::any_cast<RealVector>(data));
+    }
+    //  ----------------------------
+    //  These are some more types that HDF5 I/O utils will need to support ...
+    //  ----------------------------
+    //else if (data.type() == typeid(std::vector<std::string>)) {
+    //  hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<std::string> >(data));
+    //}
+    //else if (data.type() == typeid(std::vector<RealVector>)) {
+    //  hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<RealVector> >(data));
+    //}
+    //else if (data.type() == typeid(std::vector<RealMatrix>)) {
+    //  hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<RealMatrix> >(data));
+    //}
+    else
+    {
+      Cerr << "Warning: unknown type of any: " << data.type().name() << std::endl;
+      abort_handler(-1);
+    }
 
     // Store and attach the dimension scales. Hopefully there's a nice way 
     // to refactor this.

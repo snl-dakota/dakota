@@ -16,23 +16,11 @@
 #define RESULTS_MANAGER_H
 
 #include "dakota_results_types.hpp"
-#include "ResultsDBAny.hpp"
+#include "ResultsDBBase.hpp"
 #include "dakota_data_util.hpp"
 #include <memory>
 #include <boost/any.hpp>
 
-#ifdef DAKOTA_HAVE_HDF5
-#include "ResultsDBHDF5.hpp"
-namespace Dakota {
-  class ResultsDBHDF5;
-}
-
-#else
-// forward declaration due to PIMPL in support of conditional compilation HDF5
-namespace Dakota {
-  class ResultsDBHDF5;
-}
-#endif
 
 
 // Design notes (BMA, Fall 2012)
@@ -264,11 +252,7 @@ public:
 	      const MetaDataType metadata = MetaDataType())
   {
     if (coreDBActive)
-      coreDB->insert(iterator_id, data_name, sent_data, metadata);
-#ifdef DAKOTA_HAVE_HDF5
-    //if (hdf5DBActive)
-    //  hdf5DB->insert(iterator_id, data_name, sent_data, metadata);
-#endif
+      baseDB->insert(iterator_id, data_name, sent_data, metadata);
   }
   
   // TODO: can't seem to pass SMACV by const ref...
@@ -283,11 +267,7 @@ public:
       copy_data(sma_labels, vs_labels);
     }
    if (coreDBActive)
-      coreDB->insert(iterator_id, data_name, vs_labels, metadata);
-#ifdef DAKOTA_HAVE_HDF5
-    //if (hdf5DBActive)
-    //  hdf5DB->insert(iterator_id, data_name, vs_labels, metadata);
-#endif
+      baseDB->insert(iterator_id, data_name, vs_labels, metadata);
   }
 
   /// Insert using dimension scales type (HDF5dss in dakota_results_types.hpp)
@@ -318,13 +298,8 @@ public:
 		 const MetaDataType metadata = MetaDataType())
   {
     if (coreDBActive)
-      coreDB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
+      baseDB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
 					 metadata);
-#ifdef DAKOTA_HAVE_HDF5
-    //if (hdf5DBActive)
-    //  hdf5DB->array_allocate<StoredType>(iterator_id, data_name, array_size, metadata);
-#endif
-
   }
 
   /// insert into a previously allocated array of StoredType at index
@@ -337,12 +312,8 @@ public:
 	       const StoredType& sent_data)
   {
     if (coreDBActive)
-      coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
+      baseDB->array_insert<StoredType>(iterator_id, data_name, index, 
 				       sent_data);
-#ifdef DAKOTA_HAVE_HDF5
-    //if (hdf5DBActive)
-    //  hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, sent_data);
-#endif
   }
 
   /// specialization: insert a SMACV into a previously allocated array
@@ -360,61 +331,57 @@ public:
     copy_data(sent_data, sent_data_sa);
 
     if (coreDBActive)
-      coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
+      baseDB->array_insert<StoredType>(iterator_id, data_name, index, 
 				       sent_data_sa);
-#ifdef DAKOTA_HAVE_HDF5
-    //if (hdf5DBActive)
-    //  hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, sent_data_sa);
-#endif
   }
 
 private:
 
-  /// retrieve in-core entry given by id and name
-  template<typename StoredType>
-  StoredType core_lookup(const StrStrSizet& iterator_id,
-			 const std::string& data_name) const
-  {
-    return coreDB->get_data<StoredType>(iterator_id, data_name);
-  }
-
-  /// retrieve data via pointer to avoid copy; work-around for Boost
-  /// any use of pointer (could use utilib::Any)
-  template<typename StoredType>
-  StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
-			      const std::string& data_name) const
-  {
-    return coreDB->get_data_ptr<StoredType>(iterator_id, data_name);
-  }
-
-  /// retrieve data from in-core array of StoredType at given index
-  template<typename StoredType>
-  StoredType core_lookup(const StrStrSizet& iterator_id,
-			 const std::string& data_name,
-			 size_t index) const
-  {
-    return coreDB->get_array_data<StoredType>(iterator_id, data_name, index);
-  }
-
-  /// retrieve data via pointer to entry in in-core array
-  template<typename StoredType>
-  const StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
-				    const std::string& data_name,
-				    size_t index) const
-  {
-    return coreDB->get_array_data_ptr<StoredType>(iterator_id, data_name, index);
-  }
-
-  /// retrieve requested data into provided db_data StoredType
-  template<typename StoredType>
-  void file_lookup(StoredType& db_data,
-		   const StrStrSizet& iterator_id,
-		   const std::string& data_name) const
-  {
-    abort_handler(-1);
-    return;
-    //db_data = hdf5DB.lookup(iterator_id data_name);
-  }
+//  /// retrieve in-core entry given by id and name
+//  template<typename StoredType>
+//  StoredType core_lookup(const StrStrSizet& iterator_id,
+//			 const std::string& data_name) const
+//  {
+//    return coreDB->get_data<StoredType>(iterator_id, data_name);
+//  }
+//
+//  /// retrieve data via pointer to avoid copy; work-around for Boost
+//  /// any use of pointer (could use utilib::Any)
+//  template<typename StoredType>
+//  StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
+//			      const std::string& data_name) const
+//  {
+//    return coreDB->get_data_ptr<StoredType>(iterator_id, data_name);
+//  }
+//
+//  /// retrieve data from in-core array of StoredType at given index
+//  template<typename StoredType>
+//  StoredType core_lookup(const StrStrSizet& iterator_id,
+//			 const std::string& data_name,
+//			 size_t index) const
+//  {
+//    return coreDB->get_array_data<StoredType>(iterator_id, data_name, index);
+//  }
+//
+//  /// retrieve data via pointer to entry in in-core array
+//  template<typename StoredType>
+//  const StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
+//				    const std::string& data_name,
+//				    size_t index) const
+//  {
+//    return coreDB->get_array_data_ptr<StoredType>(iterator_id, data_name, index);
+//  }
+//
+//  /// retrieve requested data into provided db_data StoredType
+//  template<typename StoredType>
+//  void file_lookup(StoredType& db_data,
+//		   const StrStrSizet& iterator_id,
+//		   const std::string& data_name) const
+//  {
+//    abort_handler(-1);
+//    return;
+//    //db_data = hdf5DB.lookup(iterator_id data_name);
+//  }
 
 
   // ----
@@ -431,16 +398,20 @@ private:
   /// whether the file database is active
   bool hdf5DBActive;
 
+  /// Attempt at base class use
+  std::shared_ptr<ResultsDBBase> baseDB;
+
   /// In-core database, with option to flush to file at end
-  std::unique_ptr<ResultsDBAny> coreDB;
+  //std::shared_ptr<ResultsDBAny> coreDB;
 
   /// File-based database; using shared_ptr due to potentially incomplete type
   /// and requirements for checked_delete in debug builds
-  std::unique_ptr<ResultsDBHDF5> hdf5DB;
+  std::unique_ptr<ResultsDBBase> hdf5DB;
 
 };  // class ResultsManager
 
 
+#if 0 // This code appears to capture ideas but is not used anywhere
 
 // Notes on ResultsEntry: 
 // * Would want to generalize this to be able to possibly a templated
@@ -556,6 +527,7 @@ ResultsEntry(const ResultsManager& results_mgr,
 //   return dbData;
 // }
 
+#endif
 
 }  // namespace Dakota
 

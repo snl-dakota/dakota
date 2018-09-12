@@ -12,6 +12,8 @@
 //- Version: $Id:$
 
 #include "ResultsManager.hpp"
+#include "ResultsDBAny.hpp"
+#include "ResultsDBHDF5.hpp"
 
 namespace Dakota {
 
@@ -77,7 +79,8 @@ void ResultsManager::initialize(const std::string& base_filename)
 {
   coreDBActive = true;
   coreDBFilename = base_filename + ".txt";
-  coreDB.reset(new ResultsDBAny());
+  baseDB.reset(new ResultsDBAny());
+  //coreDB = std::dynamic_pointer_cast<ResultsDBAny>(baseDB);
 
 #ifdef DAKOTA_HAVE_HDF5
   hdf5DBActive = true;
@@ -107,6 +110,7 @@ void ResultsManager::write_databases()
   if (coreDBActive) {
     //  coreDB->dump_data(Cout);
     //  coreDB->print_data(Cout);
+    std::shared_ptr<ResultsDBAny> coreDB = std::dynamic_pointer_cast<ResultsDBAny>(baseDB);
     std::ofstream results_file(coreDBFilename.c_str());
     coreDB->print_data(results_file);
   }
