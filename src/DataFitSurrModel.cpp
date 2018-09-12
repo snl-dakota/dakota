@@ -1889,7 +1889,7 @@ asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
     if (build_flag) {
       if (num_actual > num_orig) { // inflate actual_asv if needed
 	actual_asv.resize(num_actual);
-	for (size_t i=0; i<num_actual; i+=num_orig)
+	for (size_t i=0; i<num_actual; ++i)
 	  actual_asv[i] = orig_asv[i % num_orig];
       }
       else

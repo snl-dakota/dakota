@@ -495,10 +495,11 @@ asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
       abort_handler(MODEL_ERROR);
     }
     approx_asv.resize(numFns); actual_asv.resize(numFns); size_t i;
+    // aggregated response uses {HF,LF} order:
     for (i=0; i<numFns; ++i)
-      approx_asv[i] = orig_asv[i];
+      actual_asv[i] = orig_asv[i];
     for (i=0; i<numFns; ++i)
-      actual_asv[i] = orig_asv[i+numFns];
+      approx_asv[i] = orig_asv[i+numFns];
     break;
   }
   default: // non-aggregated modes have consistent ASV request vector lengths
