@@ -102,10 +102,6 @@ protected:
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
-  /// calculate the response covariance (diagonal or full matrix) of
-  /// the currently active expansion
-  virtual void compute_covariance();
-
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric(bool restore_ref, bool print_metric,
 					 bool relative_metric);
@@ -113,8 +109,6 @@ protected:
   virtual Real compute_final_statistics_metric(bool restore_ref,
 					       bool print_metric,
 					       bool relative_metric);
-  /// perform any required expansion roll-ups prior to metric computation
-  virtual void metric_roll_up();
 
   //
   //- Heading: Virtual function redefinitions
@@ -220,8 +214,31 @@ protected:
   /// helper function to manage different pop increment cases
   void pop_increment();
 
+  /// perform any required expansion roll-ups prior to metric computation
+  void metric_roll_up();
+
+  /// calculate the response covariance (diagonal or full matrix) for
+  /// the expansion indicated by statsType
+  void compute_covariance();
+  /// calculate the response covariance of the active expansion
+  void compute_active_covariance();
   /// calculate the response covariance of the combined expansion
   void compute_combined_covariance();
+
+  /// calculate the diagonal response variance of the active expansion
+  void compute_active_diagonal_variance();
+  /// calculate the diagonal response variance of the cmbined expansion
+  void compute_combined_diagonal_variance();
+
+  /// calculate off diagonal terms in respCovariance(i,j) for j<i for
+  /// the expansion indicated by statsType
+  void compute_off_diagonal_covariance();
+  /// calculate off diagonal terms in respCovariance(i,j) for j<i
+  /// using the active expansion coefficients
+  void compute_active_off_diagonal_covariance();
+  /// calculate off diagonal terms in respCovariance(i,j) for j<i
+  /// using the combined expansion coefficients
+  void compute_combined_off_diagonal_covariance();
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);
@@ -254,6 +271,13 @@ protected:
   /// method for collocation point generation and subsequent
   /// calculation of the expansion coefficients
   short expansionCoeffsApproach;
+  /// type of expansion basis: DEFAULT_BASIS or
+  /// Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT for SC or
+  /// Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS for PCE regression
+  short expansionBasisType;
+  /// type of statistical metric: NO_EXPANSION_STATS,
+  /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
+  short statsType;
 
   /// emulation approach for multilevel discrepancy: distinct or recursive
   short multilevDiscrepEmulation;
@@ -263,11 +287,6 @@ protected:
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
-
-  /// type of expansion basis: DEFAULT_BASIS or
-  /// Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT for SC or
-  /// Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS for PCE regression
-  short expansionBasisType;
 
   /// number of invocations of core_run()
   size_t numUncertainQuant;
@@ -355,11 +374,6 @@ private:
   /// refinements to numerical probability statistics from importanceSampler
   void compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 					  RealRealPairArray& min_max_fns);
-
-  /// calculate respVariance or diagonal terms respCovariance(i,i)
-  void compute_diagonal_variance();
-  /// calculate respCovariance(i,j) for j<i
-  void compute_off_diagonal_covariance();
 
   /// print expansion and numerical moments
   void print_moments(std::ostream& s);
@@ -474,6 +488,75 @@ activate_key(unsigned short lev, unsigned short form, bool multilevel)
   UShortArray model_key;
   form_key(lev, form, multilevel, model_key);
   activate_key(model_key); // assign key to uSpaceModel
+}
+
+
+inline void NonDExpansion::metric_roll_up()
+{
+  // greedy_ML-MF expansions assess level candidates using combined stats
+  // --> roll up approx for combined stats
+  if (statsType == COMBINED_EXPANSION_STATS)
+    uSpaceModel.combine_approximation();
+}
+
+
+inline void NonDExpansion::compute_active_covariance()
+{
+  // See also full_covar_stats logic in compute_analytic_statistics() ...
+
+  switch (covarianceControl) {
+  case DIAGONAL_COVARIANCE:
+    compute_active_diagonal_variance(); break;
+  case FULL_COVARIANCE:
+    compute_active_diagonal_variance();
+    compute_active_off_diagonal_covariance(); break;
+  }
+}
+
+
+inline void NonDExpansion::compute_combined_covariance()
+{
+  // See also full_covar_stats logic in compute_analytic_statistics() ...
+
+  switch (covarianceControl) {
+  case DIAGONAL_COVARIANCE:
+    compute_combined_diagonal_variance(); break;
+  case FULL_COVARIANCE:
+    compute_combined_diagonal_variance();
+    compute_combined_off_diagonal_covariance(); break;
+  }
+}
+
+
+inline void NonDExpansion::compute_off_diagonal_covariance()
+{
+  if (numFunctions <= 1)
+    return;
+
+  switch (statsType) {
+  case ACTIVE_EXPANSION_STATS:
+    compute_active_off_diagonal_covariance();   break;
+  case COMBINED_EXPANSION_STATS:
+    compute_combined_off_diagonal_covariance(); break;
+  }
+}
+
+
+inline void NonDExpansion::compute_covariance()
+{
+  switch (statsType) {
+  // multifidelity_expansion() is outer loop:
+  // > use of refine_expansion(): refine individually based on level covariance
+  // > after combine_approx(), combined_to_active() enables use of active covar
+  case ACTIVE_EXPANSION_STATS:
+    compute_active_covariance();   break;
+  // greedy_multifidelity_expansion() (multifidelity_expansion() on inner loop):
+  // > roll up effect of level candidate on combined multilevel covariance,
+  //   avoiding combined_to_active() promotion until end
+  // > limited stats support for combinedExpCoeffs: only compute_covariance()
+  case COMBINED_EXPANSION_STATS:
+    compute_combined_covariance(); break;
+  }
 }
 
 

@@ -38,9 +38,10 @@ namespace Dakota {
 
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
+  expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
+  statsType(ACTIVE_EXPANSION_STATS),
   multilevDiscrepEmulation(
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
-  expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
   numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
   nestedRules(false),
@@ -82,8 +83,8 @@ NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
-  multilevDiscrepEmulation(DEFAULT_EMULATION),
-  expansionBasisType(Pecos::DEFAULT_BASIS), numUncertainQuant(0),
+  expansionBasisType(Pecos::DEFAULT_BASIS), statsType(ACTIVE_EXPANSION_STATS),
+  multilevDiscrepEmulation(DEFAULT_EMULATION), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
@@ -1223,6 +1224,8 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
+  // if refine_type, refine independently based on individual expansion metrics
+  statsType = ACTIVE_EXPANSION_STATS;
 
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
@@ -1283,6 +1286,9 @@ void NonDExpansion::greedy_multifidelity_expansion()
   //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
   // > suppress individual refinement
   multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
+
+  // refine independently based on metrics from the individual expansions
+  statsType = COMBINED_EXPANSION_STATS;
   // > Need reference stats
   compute_covariance();// TO DO: annotated_results(false);
 
@@ -1858,10 +1864,6 @@ compute_final_statistics_metric(bool restore_ref, bool print_metric,
 }
 
 
-void NonDExpansion::metric_roll_up()
-{ /* default is no-op */ }
-
-
 void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
 {
   // anisotropy based on total Sobol indices (univariate effects only) averaged
@@ -1946,58 +1948,46 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
 }
 
 
-void NonDExpansion::compute_covariance()
-{
-  if (covarianceControl >= DIAGONAL_COVARIANCE)
-    compute_diagonal_variance();
-  if (covarianceControl == FULL_COVARIANCE)
-    compute_off_diagonal_covariance();
-}
-
-
-void NonDExpansion::compute_diagonal_variance()
+void NonDExpansion::compute_active_diagonal_variance()
 {
   bool warn_flag = false,
     all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
-    Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE) ?
-      respVariance[i] : respCovariance(i,i);
-    PecosApproximation* poly_approx_rep_i
+    PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep_i->expansion_coefficient_flag())
-      var_i = (all_vars) ? poly_approx_rep_i->variance(initialPtU) :
-	                   poly_approx_rep_i->variance();
+    Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE)
+                ? respVariance[i] : respCovariance(i,i);
+    if (pa_rep_i->expansion_coefficient_flag())
+      var_i = (all_vars) ? pa_rep_i->variance(initialPtU) :
+	                   pa_rep_i->variance();
     else
       { warn_flag = true; var_i = 0.; }
   }
   if (warn_flag)
     Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
-	 << "compute_diagonal_variance().\n         Zeroing affected variance "
-	 << "terms." << std::endl;
+	 << "compute_covariance().\n         Zeroing affected variance terms."
+	 << std::endl;
 }
 
 
-void NonDExpansion::compute_off_diagonal_covariance()
+void NonDExpansion::compute_active_off_diagonal_covariance()
 {
-  if (numFunctions <= 1)
-    return;
-
   size_t i, j;
   bool warn_flag = false,
     all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* poly_approx_rep_i
+    PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep_i->expansion_coefficient_flag())
+    if (pa_rep_i->expansion_coefficient_flag())
       for (j=0; j<i; ++j) {
-	PecosApproximation* poly_approx_rep_j
+	PecosApproximation* pa_rep_j
 	  = (PecosApproximation*)poly_approxs[j].approx_rep();
-	if (poly_approx_rep_j->expansion_coefficient_flag())
+	if (pa_rep_j->expansion_coefficient_flag())
 	  respCovariance(i,j) = (all_vars) ?
-	    poly_approx_rep_i->covariance(initialPtU, poly_approx_rep_j) :
-	    poly_approx_rep_i->covariance(poly_approx_rep_j);
+	    pa_rep_i->covariance(initialPtU, pa_rep_j) :
+	    pa_rep_i->covariance(pa_rep_j);
 	else
 	  { warn_flag = true; respCovariance(i,j) = 0.; }
       }
@@ -2014,52 +2004,61 @@ void NonDExpansion::compute_off_diagonal_covariance()
 }
 
 
-void NonDExpansion::compute_combined_covariance()
+void NonDExpansion::compute_combined_diagonal_variance()
+{
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  for (size_t i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE)
+                ? respVariance[i] : respCovariance(i,i);
+    if (pa_rep_i->expansion_coefficient_flag())
+      var_i = (all_vars) ? pa_rep_i->combined_covariance(initialPtU, pa_rep_i)
+	                 : pa_rep_i->combined_covariance(pa_rep_i);
+    else
+      { warn_flag = true; var_i = 0.; }
+  }
+
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
+	 << "compute_combined_covariance().\n         Zeroing affected "
+	 << "covariance terms." << std::endl;
+}
+
+
+void NonDExpansion::compute_combined_off_diagonal_covariance()
 {
   size_t i, j;
   bool warn_flag = false,
     all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  switch (covarianceControl) {
-  case DIAGONAL_COVARIANCE:
-    for (size_t i=0; i<numFunctions; ++i) {
-      PecosApproximation* poly_approx_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep_i->expansion_coefficient_flag())
-	respVariance[i] = (all_vars) ?
-	  poly_approx_rep_i->combined_covariance(initialPtU, poly_approx_rep_i):
-	  poly_approx_rep_i->combined_covariance(poly_approx_rep_i);
-      else
-	{ warn_flag = true; respVariance[i] = 0.; }
-    }
-    break;
-  case FULL_COVARIANCE:
-    for (i=0; i<numFunctions; ++i) {
-      PecosApproximation* poly_approx_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (poly_approx_rep_i->expansion_coefficient_flag())
-	for (j=0; j<=i; ++j) {
-	  PecosApproximation* poly_approx_rep_j
-	    = (PecosApproximation*)poly_approxs[j].approx_rep();
-	  if (poly_approx_rep_j->expansion_coefficient_flag())
-	    respCovariance(i,j) = (all_vars) ? poly_approx_rep_i->
-	      combined_covariance(initialPtU, poly_approx_rep_j) :
-	      poly_approx_rep_i->combined_covariance(poly_approx_rep_j);
-	  else
-	    { warn_flag = true; respCovariance(i,j) = 0.; }
-	}
-      else {
-	warn_flag = true;
-	for (j=0; j<=i; ++j)
-	  respCovariance(i,j) = 0.;
+  for (i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag())
+      for (j=0; j<i; ++j) {
+	PecosApproximation* pa_rep_j
+	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	if (pa_rep_j->expansion_coefficient_flag())
+	  respCovariance(i,j) = (all_vars) ?
+	    pa_rep_i->combined_covariance(initialPtU, pa_rep_j) :
+	    pa_rep_i->combined_covariance(pa_rep_j);
+	else
+	  { warn_flag = true; respCovariance(i,j) = 0.; }
       }
+    else {
+      warn_flag = true;
+      for (j=0; j<=i; ++j)
+	respCovariance(i,j) = 0.;
     }
-    break;
   }
+
   if (warn_flag)
     Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
-	 << "compute_combined_covariance().\n         Zeroing affected "
-	 << "covariance terms." << std::endl;
+	 << "compute_off_diagonal_combined_covariance().\n         Zeroing "
+	 << "affected covariance terms." << std::endl;
 }
 
 

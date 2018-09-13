@@ -76,8 +76,6 @@ protected:
   void core_run();
   void assign_specification_sequence();
   void increment_specification_sequence();
-  void metric_roll_up();
-  void compute_covariance();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //

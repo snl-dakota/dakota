@@ -125,6 +125,8 @@ enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
 // define special values for covarianceControl
 enum { DEFAULT_COVARIANCE, NO_COVARIANCE, DIAGONAL_COVARIANCE,
        FULL_COVARIANCE };
+// define special values for type of expansion stats
+enum { NO_EXPANSION_STATS=0, ACTIVE_EXPANSION_STATS, COMBINED_EXPANSION_STATS };
 // define special values for probability integration refinement
 enum { NO_INT_REFINE=0, IS, AIS, MMAIS };
 // define special values for responseLevelTarget
@@ -134,7 +136,7 @@ enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 // define special values for distributionType
 enum { CUMULATIVE, COMPLEMENTARY };
 // define special values for finalMomentsType
-enum { NO_MOMENTS, STANDARD_MOMENTS, CENTRAL_MOMENTS };
+enum { NO_MOMENTS=0, STANDARD_MOMENTS, CENTRAL_MOMENTS };
 // define special values for multilevDiscrepEmulation
 enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 

@@ -988,31 +988,6 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 }
 
 
-void NonDMultilevelPolynomialChaos::metric_roll_up()
-{
-  // greedy_multifidelity_expansion() assesses level candidates using combined
-  // stats --> roll up approx for combined stats
-  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
-    uSpaceModel.combine_approximation();
-}
-
-
-void NonDMultilevelPolynomialChaos::compute_covariance()
-{
-  // greedy_multifidelity_expansion() (multifidelity_expansion() on inner loop):
-  // > roll up effect of level candidate on combined multilevel covariance,
-  //   avoiding combined_to_active() promotion until end
-  // > limited stats support for combinedExpCoeffs: only compute_covariance()
-  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
-    compute_combined_covariance();
-  // multifidelity_expansion() is outer loop:
-  // > use of refine_expansion(): refine individually based on level covariance
-  // > after combine_approx(), combined_to_active() enables use of active covar
-  else
-    NonDExpansion::compute_covariance();
-}
-
-
 void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 {
   // case ESTIMATOR_VARIANCE:
