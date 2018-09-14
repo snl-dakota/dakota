@@ -19,6 +19,115 @@
 
 namespace Dakota {
 
+// Helper functions for naming datasets and scales
+
+/// Create a method name (HDF5 link name) from iterator_id
+inline String method_hdf5_link_name(const StrStrSizet& iterator_id) {
+  String method_id = iterator_id.get<1>();
+
+  if (method_id.empty())
+    method_id = "anonymous";
+
+  String rval = "/methods/" + method_id;
+  return rval;
+}
+
+/// Create an execution name (HDF5 link name) from iterator_id
+inline String execution_hdf5_link_name(const StrStrSizet& iterator_id) {
+  const size_t& exec_num = iterator_id.get<2>();
+  String rval = method_hdf5_link_name(iterator_id) + "/execution:" +
+    boost::lexical_cast<String>(exec_num);
+  return rval;
+}
+
+/// Create a dataset name from the unique identifiers passed
+inline String dataset_hdf5_link_name(const StrStrSizet& iterator_id, const String& result_name, const String& response_name)
+{
+  String result_name_wospace(result_name);
+  //    boost::replace_all(data_name_wospace, " ", ":");
+  //boost::erase_all(data_name_wospace, " ");
+  
+  String rval = execution_hdf5_link_name(iterator_id) + '/' + result_name_wospace;
+  // some types of results, like correlation matrices, may have an empty response name
+  if(!response_name.empty()) {
+    rval += '/' + response_name;
+  }
+  return rval;
+}
+
+/// Create a scale name (hdf5 link name) for a scale
+template<typename ScaleType>
+String scale_hdf5_link_name(const StrStrSizet& iterator_id, const String& result_name, 
+                  const String& response_name, const ScaleType& scale) {
+  String result_name_wospace(result_name);
+  //    boost::replace_all(data_name_wospace, " ", ":");
+  //boost::erase_all(data_name_wospace, " ");
+  
+  // When scales are SHARED (by all the resposnes), they are stored under
+  // _scales/label. When they are UNSHARED, they go under _scales/label/response
+
+  String rval = "/_scales" + execution_hdf5_link_name(iterator_id) + '/';
+  if(!response_name.empty()) {
+    rval += result_name_wospace + "/" + scale.label;
+    if(scale.scope == ScaleScope::UNSHARED) 
+      rval += '/' + response_name;
+  } else { // No response name provided (e.g. correlation matrix)
+    rval += scale.label;
+  } 
+  return rval;
+}
+
+
+// Visitor classes for processing scales and metadata
+
+class AddAttributeVisitor : public boost::static_visitor <>
+{
+  public:
+    AddAttributeVisitor(const String &location, 
+                        const std::shared_ptr<HDF5IOHelper> &hdf5_stream) : 
+      location(location), hdf5Stream(hdf5_stream) {};
+
+    template<typename T>
+    void operator()(const ResultAttribute<T> & a) const
+    {
+      hdf5Stream->add_attribute(location, a.label, a.value);
+    }
+
+  private:
+    String location;
+    std::shared_ptr<HDF5IOHelper> hdf5Stream;
+    
+};
+
+class AttachScaleVisitor : public boost::static_visitor <>
+{
+  public:
+    AttachScaleVisitor(const StrStrSizet& iterator_id,
+                       const std::string& result_name,
+                       const std::string& response_name,
+                       const int &index,
+                       const String &dset_name,
+                       const std::shared_ptr<HDF5IOHelper> &hdf5_stream) :
+      iteratorID(iterator_id), resultName(result_name), responseName(response_name),
+      index(index),dsetName(dset_name), hdf5Stream(hdf5_stream) {};
+
+    template <typename T>
+    void operator()(const T &scale) {
+        String name = scale_hdf5_link_name(iteratorID, resultName, responseName, scale);
+        if(!hdf5Stream->exists(name))
+          hdf5Stream->store_vector_data(name, scale.items);
+        hdf5Stream->attach_scale(dsetName, name, scale.label, index);
+    }
+
+  private:
+    StrStrSizet iteratorID;
+    String resultName;
+    String responseName;
+    int index;
+    String dsetName;
+    std::shared_ptr<HDF5IOHelper> hdf5Stream;
+};
+
 
 class ResultsDBHDF5 : public ResultsDBBase
 {
@@ -45,10 +154,11 @@ public:
               const std::string& result_name,
               const std::string& response_name,
               const boost::any& data,
-              const HDF5dss &scales = HDF5dss()) override
+              const HDF5dss &scales = HDF5dss(),
+              const AttributeArray &attrs = AttributeArray()) override
   {
     // Store the results
-    String dset_name = dataset_name(iterator_id, result_name, response_name);
+    String dset_name = dataset_hdf5_link_name(iterator_id, result_name, response_name);
     // Need to fix this to use incoming "data"
     if (data.type() == typeid(std::vector<double>)) {
       hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<double> >(data));
@@ -74,29 +184,34 @@ public:
       abort_handler(-1);
     }
 
-    // Store and attach the dimension scales. Hopefully there's a nice way 
-    // to refactor this.
-    if(scale_is_real(scales)) {
-      for(auto p : scales) {
-        const int &index = p.first;
-        const RealScale &scale = boost::any_cast<RealScale>(p.second);
-        String name = scale_name(iterator_id, result_name, response_name, scale);
-        if(!hdf5Stream->exists(name))
-          hdf5Stream->store_vector_data(name, scale.items);
-        hdf5Stream->attach_scale(dset_name, name, scale.label, index);
-      }
-    } else if(scale_is_string(scales)) {
-      for(auto p : scales) {
-        const int &index = p.first;
-        const StringScale &scale = boost::any_cast<StringScale>(p.second);
-        String name = scale_name(iterator_id, result_name, response_name, scale);
-        if(!hdf5Stream->exists(name))
-          hdf5Stream->store_vector_data(name, scale.items);
-        hdf5Stream->attach_scale(dset_name, name, scale.label, index);
-      }  
-    } else {
-      Cerr << "Scale is a disallowed type!" << std::endl;
-    }  
+    // Store and attach the dimension scales.
+    // Iteration must be explicit for the dimension scales because they are stored in a
+    // multimap, which is a container of pairs, not of boost::variants
+    for(auto &s : scales) {  // s is a std::pair<int, boost::variant<StringScale, RealScale> >
+      int index = s.first;
+      AttachScaleVisitor visitor(iterator_id, result_name, response_name, index, dset_name, hdf5Stream);
+      boost::apply_visitor(visitor, s.second);
+
+    }
+    // Add metadata to the dataset
+    AddAttributeVisitor attribute_adder(dset_name, hdf5Stream);
+    std::for_each(attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder));
+  }
+
+  void add_metadata_for_method(const StrStrSizet& iterator_id,
+              const AttributeArray &attrs = AttributeArray()) override
+  {
+    String name = method_hdf5_link_name(iterator_id);
+    AddAttributeVisitor attribute_adder(name, hdf5Stream);
+    std::for_each(attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder));
+  }
+
+  void add_metadata_for_execution(const StrStrSizet& iterator_id,
+              const AttributeArray &attrs = AttributeArray()) override
+  {
+    String name = execution_hdf5_link_name(iterator_id);
+    AddAttributeVisitor attribute_adder(name, hdf5Stream);
+    std::for_each(attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder));
   }
 
  
@@ -128,62 +243,10 @@ public:
 
 
 private:
-
-  /// Create a dataset name from the unique identifiers passed
-  String dataset_name(const StrStrSizet& iterator_id, const String& result_name, const String& response_name)
-  {
-    const String& method_name = iterator_id.get<0>();
-    String method_id = iterator_id.get<1>();
-    const size_t& exec_num = iterator_id.get<2>();
-
-    if (method_id.empty())
-      method_id = "anonymous";
-
-    String result_name_wospace(result_name);
-    //    boost::replace_all(data_name_wospace, " ", ":");
-    //boost::erase_all(data_name_wospace, " ");
-    
-    String rval = "/methods/" + method_id + "/execution:" +
-      boost::lexical_cast<String>(exec_num) + '/' + result_name_wospace;
-    // some types of results, like correlation matrices, may have an empty response name
-    if(!response_name.empty()) {
-      rval += '/' + response_name;
-    }
-    return rval;
-  }
-
-  template<typename ScaleType>
-  String scale_name(const StrStrSizet& iterator_id, const String& result_name, 
-                    const String& response_name, const ScaleType& scale) {
-    const String& method_name = iterator_id.get<0>();
-    String method_id = iterator_id.get<1>();
-    const size_t& exec_num = iterator_id.get<2>();
-
-    if (method_id.empty())
-      method_id = "anonymous";
-
-    String result_name_wospace(result_name);
-    //    boost::replace_all(data_name_wospace, " ", ":");
-    //boost::erase_all(data_name_wospace, " ");
-    
-    // When scales are SHARED (by all the resposnes), they are stored under
-    // _scales/label. When they are UNSHARED, they go under _scales/label/response
-
-    String rval = "/_scales/methods/" + method_id + "/execution:" +
-      boost::lexical_cast<String>(exec_num) + '/';
-    if(!response_name.empty()) {
-      rval += result_name_wospace + "/" + scale.label;
-      if(scale.scope == ScaleScope::UNSHARED) 
-        rval += '/' + response_name;
-    } else { // No response name provided (e.g. correlation matrix)
-      rval += scale.label;
-    } 
-    return rval;
-  }
-
+ 
   /// BMA TODO: would prefer not to have a pointer, but no way to
   /// default construct an output handler
-  std::unique_ptr<HDF5IOHelper> hdf5Stream;
+  std::shared_ptr<HDF5IOHelper> hdf5Stream;
 };
 
 

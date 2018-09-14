@@ -116,4 +116,23 @@ void ResultsManager::write_databases()
   }
 }
 
+void ResultsManager::add_metadata_for_method(const StrStrSizet& iterator_id,
+                                             const AttributeArray &attrs)  
+{
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->add_metadata_for_method(iterator_id, attrs);
+#endif
+}
+
+void ResultsManager::add_metadata_for_execution(const StrStrSizet& iterator_id,
+                                                const AttributeArray &attrs)  
+{
+#ifdef DAKOTA_HAVE_HDF5
+    if (hdf5DBActive)
+      hdf5DB->add_metadata_for_execution(iterator_id, attrs);
+#endif
+}
+
+
 } // namespace Dakota

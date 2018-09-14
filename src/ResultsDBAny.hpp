@@ -28,6 +28,15 @@ class ResultsDBAny : public ResultsDBBase
 
 public:
 
+  void add_metadata_for_method(
+              const StrStrSizet& iterator_id,
+              const AttributeArray &attrs = AttributeArray()) override
+  { std::cout << "ResultsDBAny needs to implement add_metadata_for_method(...)." << std::endl; }
+
+  void add_metadata_for_execution(
+              const StrStrSizet& iterator_id,
+              const AttributeArray &attrs = AttributeArray()) override
+  { std::cout << "ResultsDBAny needs to implement add_metadata_for_execution(...)." << std::endl; }
   
   /// record addition with metadata map
   void 
@@ -42,8 +51,9 @@ public:
   insert(const StrStrSizet& iterator_id,
          const std::string& result_name,
          const std::string& response_name,
-	 const boost::any& result,
-         const HDF5dss &scales = HDF5dss()) override
+         const boost::any& data,
+         const HDF5dss &scales = HDF5dss(),
+         const AttributeArray &attrs = AttributeArray()) override
   { std::cout << "ResultsDBAny needs to implement insert(...) w/o metadata." << std::endl; }
 
   // NOTE: removed accessors to add metadata only or record w/o metadata

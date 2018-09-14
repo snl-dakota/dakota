@@ -276,11 +276,12 @@ public:
               const std::string& result_name,
               const std::string& response_name,
 	      const StoredType& sent_data,
-              const HDF5dss &scales = HDF5dss())
+              const HDF5dss &scales = HDF5dss(),
+              const AttributeArray &attrs = AttributeArray())
   {
 #ifdef DAKOTA_HAVE_HDF5
     if (hdf5DBActive)
-      hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales);
+      hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales, attrs);
 #endif
 
   }
@@ -334,6 +335,12 @@ public:
       baseDB->array_insert<StoredType>(iterator_id, data_name, index, 
 				       sent_data_sa);
   }
+
+  void add_metadata_for_method(const StrStrSizet& iterator_id,
+                               const AttributeArray &attrs);
+  void add_metadata_for_execution(const StrStrSizet& iterator_id,
+                                  const AttributeArray &attrs);
+
 
 private:
 

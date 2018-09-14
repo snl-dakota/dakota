@@ -64,7 +64,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_1D_dimension_scales) {
 
 	std::array<double, 4> lower_bounds_arr = { 2.7604749078e+11, 3.6e+11, 4.0e+11, 4.4e+11 };	
 	H5::DataSet ds_lower_bounds = helper.create_1D_dimension_scale (
-		group, lower_bounds_arr.size(), Dakota::h5_dtype( lower_bounds_arr[0]  ),
+		group, lower_bounds_arr.size(), Dakota::h5_file_dtype( lower_bounds_arr[0]  ),
 		"lower_bounds", helper.datasetContiguousPL
 	);
 	ds_lower_bounds.write( lower_bounds_arr.data(), PredType::NATIVE_DOUBLE );

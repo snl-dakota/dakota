@@ -23,7 +23,7 @@
 #include "H5Cpp.h"      // C++ API
 #include "hdf5.h"       // C   API
 #include "hdf5_hl.h"    // C   H5Lite API
-
+#include "H5Opublic.h"  
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -38,18 +38,44 @@ namespace Dakota
 	//----------------------------------------------------------------
 
 	// Some free functions to try to consolidate data type specs
-	inline H5::DataType h5_dtype( const Real & )
+	inline H5::DataType h5_file_dtype( const Real & )
 	{ return H5::PredType::IEEE_F64LE; }
 
-	inline H5::DataType h5_dtype( const int & )
-	{ return H5::PredType::IEEE_F64LE; }
+	inline H5::DataType h5_file_dtype( const int & )
+	{ return H5::PredType::STD_I32LE; }
 
-	inline H5::DataType h5_dtype( const char * )
+	inline H5::DataType h5_file_dtype( const char * )
 	{
 		H5::StrType str_type(0, H5T_VARIABLE);
 		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
 		return str_type;
 	}
+        inline H5::DataType h5_file_dtype( const String )
+	{
+		H5::StrType str_type(0, H5T_VARIABLE);
+		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+		return str_type;
+	}
+
+        inline H5::DataType h5_mem_dtype( const Real & )
+	{ return H5::PredType::NATIVE_DOUBLE; }
+
+	inline H5::DataType h5_mem_dtype( const int & )
+	{ return H5::PredType::NATIVE_INT; }
+
+	inline H5::DataType h5_mem_dtype( const char * )
+	{
+		H5::StrType str_type(0, H5T_VARIABLE);
+		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+		return str_type;
+	}
+        inline H5::DataType h5_mem_dtype( const String )
+	{
+		H5::StrType str_type(0, H5T_VARIABLE);
+		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+		return str_type;
+	}
+
 
 	//----------------------------------------------------------------
 
@@ -89,9 +115,9 @@ namespace Dakota
 
 		// Assume dset_name is syntactically correct - will need some utils - RWH
 		create_groups(dset_name);
-		H5::DataSet dataset(create_dataset(*filePtr, dset_name, h5_dtype(val), dataspace) );
+		H5::DataSet dataset(create_dataset(*filePtr, dset_name, h5_file_dtype(val), dataspace) );
 
-		dataset.write(&val, h5_dtype(val));
+		dataset.write(&val, h5_mem_dtype(val));
 		return;
 	}
 
@@ -107,7 +133,7 @@ namespace Dakota
 		}
     // JAS: We need some verification here that the dataset is really a scalar.
 		H5::DataSet dataset = filePtr->openDataSet(dset_name);
-		dataset.read(&val, h5_dtype(val));
+		dataset.read(&val, h5_mem_dtype(val));
 
 		return;
 	}
@@ -146,7 +172,7 @@ namespace Dakota
           // design that would avoid this issue without duplicating a lot of code for std::vector and 
           // SDV.
           array.resize(dims[0]);
-          dataset.read(&array[0], h5_dtype(array[0]));
+          dataset.read(&array[0], h5_mem_dtype(array[0]));
           return;
 	}
 
@@ -163,6 +189,32 @@ namespace Dakota
 	void attach_scale(
 		const String& dset_name, const String& scale_name,
 		const String& label, const int& dim) const;
+
+        template <typename T>
+        void add_attribute(const String &location, const String &label, const T &value) {
+          if(! exists(location)) {
+              // If it doesn't exist, assume it's a group.
+              create_groups(location, false);
+          }   
+
+          H5::DataSpace dataspace;
+          H5O_type_t type = filePtr->childObjType(location.c_str());
+          if(type == H5O_TYPE_GROUP) {
+            Cout << location << " is a group" << std::endl;
+            H5::Group group = filePtr->openGroup(location);
+            H5::Attribute attr = group.createAttribute(label, h5_file_dtype(value), dataspace);
+            attr.write(h5_mem_dtype(value), &value);
+          } else if(type == H5O_TYPE_DATASET) {
+            Cout << location << " is a dataset" << std::endl;
+            Cout << "Attribute is (" << label << ", " << value << ")\n";
+            H5::DataSet dataset = filePtr->openDataSet(location);
+            H5::Attribute attr = dataset.createAttribute(label, h5_file_dtype(value), dataspace);
+            attr.write(h5_mem_dtype(value), &value);
+          } else {
+            Cerr << location << " is an HDF5 object of unhandled type." << std::endl;
+          }
+          
+        }
 
 	bool exists(const String location_name) const;
 
@@ -192,6 +244,7 @@ namespace Dakota
         H5::DSetCreatPropList datasetCompactPL;
 	H5::DSetCreatPropList datasetContiguousPL;
 
+
 	protected:
 
 	std::string fileName;
@@ -203,7 +256,7 @@ namespace Dakota
       hsize_t dims[1];
       dims[0] = len;
       H5::DataSpace dataspace = H5::DataSpace(1, dims);
-      H5::DataType datatype = h5_dtype(*data);
+      H5::DataType datatype = h5_file_dtype(*data);
       // Assume dset_name is syntactically correct - will need some utils - RWH
       create_groups(dset_name);
       H5::DataSet dataset(create_dataset(*filePtr, dset_name, datatype, dataspace) );

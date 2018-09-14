@@ -19,7 +19,7 @@
 #include <boost/tuple/tuple.hpp>
 #include "dakota_data_types.hpp"
 #include <boost/any.hpp>
-
+#include <boost/variant.hpp>
 
 namespace Dakota {
 
@@ -290,7 +290,7 @@ struct StringScale {
   std::vector<const char *> items;
 };
 
-typedef std::multimap<int, boost::any> HDF5dss;
+typedef std::multimap<int, boost::variant<StringScale, RealScale> > HDF5dss;
 
 inline
 bool scale_is_real(const HDF5dss::iterator &i) {
@@ -331,19 +331,32 @@ bool scale_is_string(const HDF5dss::iterator &i) {
 inline
 bool scale_is_string(const HDF5dss &s) {
   if(s.size() == 0) {
-    std::cerr << "DEBUG in scale_is_string, Size is 0" << std::endl;
     return false;
   }
   try {
-    std::cerr << "DEBUG in scale_is_string try block" << std::endl;
     boost::any_cast<StringScale>(s.begin()->second);
     return true;
   }
   catch(const boost::bad_any_cast &) {
-    std::cerr << "DEBUG in scale_is_string, execption caught!" << std::endl;
     return false;
   }
 }
+
+// HDF5 objects can have metadata attached to them. These
+// are called attributes. We support integer, real, bool, and 
+// string valued metadata using these type defintions.
+
+template <typename T>
+struct ResultAttribute {
+  ResultAttribute(const String &label, const T &value) :
+    label(label), value(value) {};
+  String label;
+  T value;
+};
+
+typedef std::vector<boost::variant< ResultAttribute<int>, 
+                                    ResultAttribute<String>,
+                                    ResultAttribute<Real> > > AttributeArray;
 
 
 }  // namespace Dakota
