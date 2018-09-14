@@ -113,7 +113,7 @@ protected:
   void finalize_approximation();
 
   void combine_approximation();
-  void combined_to_active();
+  void combined_to_active(bool clear_combined = true);
 
   void clear_inactive();
   void clear_current_data();
@@ -391,12 +391,12 @@ inline void ApproximationInterface::combine_approximation()
 }
 
 
-inline void ApproximationInterface::combined_to_active()
+inline void ApproximationInterface::combined_to_active(bool clear_combined)
 {
-  sharedData.combined_to_active(); // shared aggregation first
+  sharedData.combined_to_active(clear_combined); // shared aggregation first
 
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combined_to_active_coefficients();
+    functionSurfaces[*it].combined_to_active_coefficients(clear_combined);
 }
 
 

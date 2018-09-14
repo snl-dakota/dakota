@@ -62,10 +62,11 @@ protected:
   void core_run();
   void assign_specification_sequence();
   void increment_specification_sequence();
-  Real compute_covariance_metric(bool restore_ref, bool print_metric,
-				 bool relative_metric);
-  Real compute_final_statistics_metric(bool restore_ref, bool print_metric,
-				       bool relative_metric);
+  Real compute_covariance_metric(bool update_ref, bool print_metric);
+  Real compute_final_statistics_metric(bool update_ref, bool print_metric);
+  void update_reference_stats();
+  void increment_reference_stats();
+  void combined_to_active();
 
 private:
 
@@ -78,6 +79,11 @@ private:
   /// define the surrogate response mode for a hierarchical model in 
   /// multilevel/multifidelity expansions
   void assign_hierarchical_response_mode();
+
+  /// helper function to compute deltaRespVariance
+  void compute_delta_variance(bool update_ref, bool print_metric);
+  /// helper function to compute deltaRespCovariance
+  void compute_delta_covariance(bool update_ref, bool print_metric);
 
   //
   //- Heading: Data
@@ -93,6 +99,11 @@ private:
   UShortArray ssgLevelSeqSpec;
   /// sequence index for quadOrderSeqSpec and ssgLevelSeqSpec
   size_t sequenceIndex;
+
+  /// change in (DIAGONAL) response variance induced by a refinement candidate
+  RealVector deltaRespVariance;
+  /// change in (FULL) response covariance induced by a refinement candidate
+  RealSymMatrix deltaRespCovariance;
 };
 
 } // namespace Dakota

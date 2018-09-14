@@ -313,7 +313,7 @@ protected:
   bool push_available();
   void finalize_approximation();
   void combine_approximation();
-  void combined_to_active();
+  void combined_to_active(bool clear_combined = true);
 
   /*
   void store_approximation(size_t index = _NPOS);
@@ -793,8 +793,8 @@ inline void RecastModel::combine_approximation()
 { subModel.combine_approximation(); }
 
 
-inline void RecastModel::combined_to_active()
-{ subModel.combined_to_active(); }
+inline void RecastModel::combined_to_active(bool clear_combined)
+{ subModel.combined_to_active(clear_combined); }
 
 
 /*

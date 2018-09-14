@@ -3275,10 +3275,10 @@ void Model::combine_approximation()
 }
 
 
-void Model::combined_to_active()
+void Model::combined_to_active(bool clear_combined)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->combined_to_active();
+    modelRep->combined_to_active(clear_combined);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
 	 << " function.\n       This model does not support approximation"

@@ -839,13 +839,13 @@ void DataFitSurrModel::combine_approximation()
 }
 
 
-void DataFitSurrModel::combined_to_active()
+void DataFitSurrModel::combined_to_active(bool clear_combined)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Promoting combined " << surrogateType << " approximation "
 	 << "to active approximation.\n";
 
-  approxInterface.combined_to_active();
+  approxInterface.combined_to_active(clear_combined);
 }
 
 

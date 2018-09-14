@@ -625,10 +625,10 @@ void SharedApproxData::post_combine()
 }
 
 
-void SharedApproxData::combined_to_active()
+void SharedApproxData::combined_to_active(bool clear_combined)
 {
   if (dataRep)
-    dataRep->combined_to_active();
+    dataRep->combined_to_active(clear_combined);
   //else
   //  default: no op
 }

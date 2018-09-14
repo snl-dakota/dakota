@@ -99,16 +99,20 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
+  /// update reference statistics used as refinement metrics
+  virtual void update_reference_stats();
+  /// update reference statistics used as refinement metrics
+  virtual void increment_reference_stats();
+  /// combine coefficients, promote to active, and update statsType
+  virtual void combined_to_active();
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
   /// compute 2-norm of change in response covariance
-  virtual Real compute_covariance_metric(bool restore_ref, bool print_metric,
-					 bool relative_metric);
+  virtual Real compute_covariance_metric(bool update_ref, bool print_metric);
   /// compute 2-norm of change in final statistics
-  virtual Real compute_final_statistics_metric(bool restore_ref,
-					       bool print_metric,
-					       bool relative_metric);
+  virtual Real compute_final_statistics_metric(bool update_ref,
+					       bool print_metric);
 
   //
   //- Heading: Virtual function redefinitions
@@ -198,7 +202,7 @@ protected:
   void pre_refinement();
   /// advance the refinement strategy one step
   size_t core_refinement(Real& metric, bool revert = false,
-			 bool print_metric = true, bool relative_metric = true);
+			 bool print_metric = true);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric, bool reverted = false);
 
@@ -297,6 +301,9 @@ protected:
   /// expansion in order to estimate probabilities
   int numSamplesOnExpansion;
 
+  /// flag indicating the use of relative scaling in refinement metrics
+  bool relativeMetric;
+
   /// flag for indicating state of \c nested and \c non_nested overrides of
   /// default rule nesting, which depends on the type of integration driver
   bool nestedRules;
@@ -358,8 +365,7 @@ private:
   void reduce_decay_rate_sets(RealVector& min_decay);
 
   /// perform an adaptive refinement increment using generalized sparse grids
-  size_t increment_sets(Real& delta_star, bool revert, bool print_metric,
-			bool relative_metric);
+  size_t increment_sets(Real& delta_star, bool revert, bool print_metric);
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol, bool reverted = false);
 
@@ -502,8 +508,6 @@ inline void NonDExpansion::metric_roll_up()
 
 inline void NonDExpansion::compute_active_covariance()
 {
-  // See also full_covar_stats logic in compute_analytic_statistics() ...
-
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE:
     compute_active_diagonal_variance(); break;
@@ -516,8 +520,6 @@ inline void NonDExpansion::compute_active_covariance()
 
 inline void NonDExpansion::compute_combined_covariance()
 {
-  // See also full_covar_stats logic in compute_analytic_statistics() ...
-
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE:
     compute_combined_diagonal_variance(); break;
@@ -532,6 +534,8 @@ inline void NonDExpansion::compute_off_diagonal_covariance()
 {
   if (numFunctions <= 1)
     return;
+
+  // See also full_covar_stats logic in compute_analytic_statistics() ...
 
   switch (statsType) {
   case ACTIVE_EXPANSION_STATS:

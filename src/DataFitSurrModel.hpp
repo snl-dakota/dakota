@@ -219,7 +219,7 @@ protected:
   /// combine all level approximations into a separate composite approximation
   void combine_approximation();
   /// promote the combined approximation into the active one
-  void combined_to_active();
+  void combined_to_active(bool clear_combined = true);
 
   /// clear inactive data stored in the approxInterface
   void clear_inactive();

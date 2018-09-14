@@ -370,9 +370,91 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
 }
 
 
+void NonDMultilevelStochCollocation::
+compute_delta_variance(bool update_ref, bool print_metric)
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+
+  if (deltaRespVariance.empty())
+    deltaRespVariance.sizeUninitialized(numFunctions);
+  for (size_t i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag()) {
+      if (statsType == COMBINED_EXPANSION_STATS)
+	// refinement assessed for impact on combined expansion from roll up
+	deltaRespVariance[i] = (all_vars) ?
+	  pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_i) :
+	  pa_rep_i->delta_combined_covariance(pa_rep_i);
+      else // refinement assessed for impact on the current expansion
+	deltaRespVariance[i] = (all_vars) ?
+	  pa_rep_i->delta_covariance(initialPtU, pa_rep_i) :
+	  pa_rep_i->delta_covariance(pa_rep_i);
+    }
+    else
+      { warn_flag = true; deltaRespVariance[i] = 0.; }
+  }
+
+  if (update_ref)   respVariance += deltaRespVariance;
+  if (print_metric) print_variance(Cout, deltaRespVariance, "Change in");
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDMultilevel"
+	 << "StochCollocation::compute_delta_variance().\n         "
+	 << "Zeroing affected deltaRespVariance terms." << std::endl;
+}
+
+
+void NonDMultilevelStochCollocation::
+compute_delta_covariance(bool update_ref, bool print_metric)
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  size_t i, j;
+
+  if (deltaRespCovariance.empty())
+    deltaRespCovariance.shapeUninitialized(numFunctions);
+  for (i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag())
+      for (j=0; j<=i; ++j) {
+	PecosApproximation* pa_rep_j
+	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	if (pa_rep_j->expansion_coefficient_flag()) {
+	  if (statsType == COMBINED_EXPANSION_STATS)
+	    // refinement assessed for impact on combined exp from roll up
+	    deltaRespCovariance(i,j) = (all_vars) ?
+	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_combined_covariance(pa_rep_j);
+	  else // refinement assessed for impact on the current expansion
+	    deltaRespCovariance(i,j) = (all_vars) ?
+	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_covariance(pa_rep_j);
+	}
+	else
+	  { warn_flag = true; deltaRespCovariance(i,j) = 0.; }
+      }
+    else {
+      warn_flag = true;
+      for (j=0; j<=i; ++j)
+	deltaRespCovariance(i,j) = 0.;
+    }
+  }
+
+  if (update_ref)   respCovariance += deltaRespCovariance;
+  if (print_metric) print_covariance(Cout, deltaRespCovariance, "Change in");
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDMultilevel"
+	 << "StochCollocation::compute_delta_covariance().\n         "
+	 << "Zeroing affected deltaRespCovariance terms." << std::endl;
+}
+
+
 Real NonDMultilevelStochCollocation::
-compute_covariance_metric(bool restore_ref, bool print_metric,
-			  bool relative_metric)
+compute_covariance_metric(bool update_ref, bool print_metric)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
 
@@ -380,105 +462,40 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
     // order to compute change in covariance
     //metric_roll_up();
 
-    size_t i, j;
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    bool warn_flag = false,
-      all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-      //compute_ref = (relative_metric || !restore_ref);
-    for (i=0; i<numFunctions; ++i) {
-      PecosApproximation* pa_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (!pa_rep_i->expansion_coefficient_flag())
-	{ warn_flag = true; break; }
-    }
-    if (warn_flag)
-      Cerr << "Warning: expansion coefficients unavailable in NonDMultilevel"
-	   << "StochCollocation::compute_covariance_metric().\n         "
-	   << "Zeroing affected delta_covariance terms." << std::endl;
-
     Real scale, delta_norm;
     switch (covarianceControl) {
     case DIAGONAL_COVARIANCE: {
-      RealVector delta_resp_var(numFunctions, false);
-      for (i=0; i<numFunctions; ++i) {
-	PecosApproximation* pa_rep_i
-	  = (PecosApproximation*)poly_approxs[i].approx_rep();
-	if (pa_rep_i->expansion_coefficient_flag()) {
-	  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
-	    // refinement assessed for impact on combined expansion from roll up
-	    delta_resp_var[i] = (all_vars) ?
-	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_i) :
-	      pa_rep_i->delta_combined_covariance(pa_rep_i);
-	  else // refinement assessed for impact on the current expansion
-	    delta_resp_var[i] = (all_vars) ?
-	      pa_rep_i->delta_covariance(initialPtU, pa_rep_i) :
-	      pa_rep_i->delta_covariance(pa_rep_i);
-	}
-	else delta_resp_var[i] = 0.;
-      }
-
-      delta_norm = delta_resp_var.normFrobenius();
-      if (relative_metric) // reference covariance, bounded from zero
+      compute_delta_variance(update_ref, print_metric);
+      delta_norm = deltaRespVariance.normFrobenius();
+      if (relativeMetric) // norm of reference variance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
-      // reference covariance gets restored in NonDExpansion::increment_sets()
-      if (!restore_ref) respVariance += delta_resp_var;
-      if (print_metric) print_variance(Cout, delta_resp_var, "Change in");
       break;
     }
     case FULL_COVARIANCE: {
-      RealSymMatrix delta_resp_covar(numFunctions, false);
-      for (i=0; i<numFunctions; ++i) {
-	PecosApproximation* pa_rep_i
-	  = (PecosApproximation*)poly_approxs[i].approx_rep();
-	if (pa_rep_i->expansion_coefficient_flag())
-	  for (j=0; j<=i; ++j) {
-	    PecosApproximation* pa_rep_j
-	      = (PecosApproximation*)poly_approxs[j].approx_rep();
-	    if (pa_rep_j->expansion_coefficient_flag()) {
-	      if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
-		// refinement assessed for impact on combined exp from roll up
-		delta_resp_covar(i,j) = (all_vars) ?
-		  pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
-		  pa_rep_i->delta_combined_covariance(pa_rep_j);
-	      else // refinement assessed for impact on the current expansion
-		delta_resp_covar(i,j) = (all_vars) ?
-		  pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
-		  pa_rep_i->delta_covariance(pa_rep_j);
-	    }
-	    else delta_resp_covar(i,j) = 0.;
-	  }
-	else
-	  for (j=0; j<=i; ++j)
-	    delta_resp_covar(i,j) = 0.;
-      }
-
+      compute_delta_covariance(update_ref, print_metric);
       // Metric scale is determined from reference covariance.  While defining
       // the scale from an updated covariance would eliminate problems with
       // zero covariance for adaptations from level 0, different refinement
       // candidates would score equally at 1 (induced 100% of change in
       // updated covariance) in this initial set of candidates.  Therefore,
       // use reference covariance as the scale and trap covariance underflows.
-      delta_norm = delta_resp_covar.normFrobenius();
-      if (relative_metric) // reference covariance, bounded from zero
+      delta_norm = deltaRespCovariance.normFrobenius();
+      if (relativeMetric) // norm of reference covariance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
-      // reference covariance gets restored in NonDExpansion::increment_sets()
-      if (!restore_ref) respCovariance += delta_resp_covar;
-      if (print_metric) print_covariance(Cout, delta_resp_covar, "Change in");
       break;
     }
     }
 
-    return (relative_metric) ? delta_norm / scale : delta_norm;
+    return (relativeMetric) ? delta_norm / scale : delta_norm;
   }
   else // use default implementation
     return NonDExpansion::
-      compute_covariance_metric(restore_ref, print_metric, relative_metric);
+      compute_covariance_metric(update_ref, print_metric);
 }
 
 
 Real NonDMultilevelStochCollocation::
-compute_final_statistics_metric(bool restore_ref, bool print_metric,
-				bool relative_metric)
+compute_final_statistics_metric(bool update_ref, bool print_metric)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     bool beta_map = false, numerical_map = false; size_t i, j, cntr;
@@ -502,13 +519,70 @@ compute_final_statistics_metric(bool restore_ref, bool print_metric,
     }
     else // use default implementation if no beta-mapping increments
       return NonDExpansion::
-	compute_final_statistics_metric(restore_ref, print_metric,
-					relative_metric);
+	compute_final_statistics_metric(update_ref, print_metric);
   }
   else // use default implementation for Nodal
     return NonDExpansion::
-      compute_final_statistics_metric(restore_ref, print_metric,
-				      relative_metric);
+      compute_final_statistics_metric(update_ref, print_metric);
+}
+
+
+void NonDMultilevelStochCollocation::update_reference_stats()
+{
+  switch (expansionBasisType) {
+  case Pecos::NODAL_INTERPOLANT: // need reference response stats
+    NonDExpansion::update_reference_stats(); break;
+  case Pecos::HIERARCHICAL_INTERPOLANT:
+    if (relativeMetric) // reference (co)var used for relative scaling
+      NonDExpansion::update_reference_stats();
+    //else no-op: response (co)variance reference not required
+    break;
+  }
+}
+
+
+void NonDMultilevelStochCollocation::increment_reference_stats()
+{
+  switch (expansionBasisType) {
+  case Pecos::NODAL_INTERPOLANT: // need reference response stats
+    update_reference_stats(); break;
+  case Pecos::HIERARCHICAL_INTERPOLANT:
+    // TO DO: add support for updating final_stats from increment and
+    // unify with multifidelity_expansion() operations
+
+    // Note: this function used for greedy MF refinement, augmenting the case
+    // of update_ref in compute_covariance_metric()
+
+    if (relativeMetric) { // ref (co)var used for scaling --> accumulate deltas
+      bool output_delta = (outputLevel > NORMAL_OUTPUT);
+      // deltas must be recomputed for selected candidate
+      if (covarianceControl == DIAGONAL_COVARIANCE)
+	compute_delta_variance(true, output_delta);
+      else if (covarianceControl == FULL_COVARIANCE)
+	compute_delta_covariance(true, output_delta);
+    }
+    //else no-op: response (co)variance reference not required
+    break;
+  }
+}
+
+
+void NonDMultilevelStochCollocation::combined_to_active()
+{
+  switch (expansionBasisType) {
+  case Pecos::NODAL_INTERPOLANT:
+    NonDExpansion::combined_to_active(); break;
+  case Pecos::HIERARCHICAL_INTERPOLANT:
+    uSpaceModel.combine_approximation();
+    // copy combined to active, but retain combined for use in hybrid stats.
+    // *** TO DO ***: This is a short term solution; best solution may be to
+    //                support complete set of stats using the combined data.
+    uSpaceModel.combined_to_active(false);
+    // don't force update to active statistics; allow hybrid approach where
+    // combined can still be used when needed (integrate_response_moments())
+    //statsType = ACTIVE_EXPANSION_STATS;
+    break;
+  }
 }
 
 } // namespace Dakota

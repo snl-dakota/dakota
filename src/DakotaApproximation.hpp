@@ -88,7 +88,7 @@ public:
   /// combine all level approximations into a single aggregate approximation
   virtual void combine_coefficients();
   /// promote combined approximation into active approximation
-  virtual void combined_to_active_coefficients();
+  virtual void combined_to_active_coefficients(bool clear_combined = true);
   /// prune inactive coefficients following combination and promotion to active
   virtual void clear_inactive_coefficients();
 

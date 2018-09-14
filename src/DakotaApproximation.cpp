@@ -475,9 +475,9 @@ void Approximation::combined_to_active_data()
 */
 
 
-void Approximation::combined_to_active_coefficients()
+void Approximation::combined_to_active_coefficients(bool clear_combined)
 {
-  if (approxRep) approxRep->combined_to_active_coefficients();
+  if (approxRep) approxRep->combined_to_active_coefficients(clear_combined);
   //else no-op
 }
 

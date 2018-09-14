@@ -122,7 +122,7 @@ public:
   /// clean up stored data sets after aggregation
   virtual void post_combine();
   /// promote aggregated data sets to active state
-  virtual void combined_to_active();
+  virtual void combined_to_active(bool clear_combined = true);
 
   //
   //- Heading: Member functions

@@ -169,10 +169,11 @@ public:
 
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
-  void compute_moments(bool full_stats = true);
+  void compute_moments(bool full_stats = true, bool combined_stats = false);
   /// compute moments in all-variables mode up to the order supported
   /// by the Pecos polynomial approximation
-  void compute_moments(const Pecos::RealVector& x, bool full_stats = true);
+  void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
+		       bool combined_stats = false);
   /// return virtual Pecos::PolynomialApproximation::moments()
   const RealVector& moments() const;
   /// return Pecos::PolynomialApproximation::expansionMoments
@@ -217,7 +218,7 @@ protected:
   void push_coefficients();
   void finalize_coefficients();
   void combine_coefficients();
-  void combined_to_active_coefficients();
+  void combined_to_active_coefficients(bool clear_combined = true);
   void clear_inactive_coefficients();
 
   void print_coefficients(std::ostream& s, bool normalized);
@@ -439,13 +440,15 @@ delta_z(const RealVector& x, bool cdf_flag, Real beta_bar)
 { return polyApproxRep->delta_z(x, cdf_flag, beta_bar); }
 
 
-inline void PecosApproximation::compute_moments(bool full_stats)
-{ polyApproxRep->compute_moments(full_stats); }
+inline void PecosApproximation::
+compute_moments(bool full_stats, bool combined_stats )
+{ polyApproxRep->compute_moments(full_stats, combined_stats); }
 
 
 inline void PecosApproximation::
-compute_moments(const Pecos::RealVector& x, bool full_stats)
-{ polyApproxRep->compute_moments(x, full_stats); }
+compute_moments(const Pecos::RealVector& x, bool full_stats,
+		bool combined_stats)
+{ polyApproxRep->compute_moments(x, full_stats, combined_stats); }
 
 
 inline const RealVector& PecosApproximation::moments() const
@@ -546,45 +549,28 @@ inline void PecosApproximation::rebuild()
 
 
 inline void PecosApproximation::pop_coefficients(bool save_data)
-{
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.decrement_coefficients(save_data);
-}
+{ pecosBasisApprox.decrement_coefficients(save_data); }
 
 
 inline void PecosApproximation::push_coefficients()
-{
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.push_coefficients();
-}
+{ pecosBasisApprox.push_coefficients(); }
 
 
 inline void PecosApproximation::finalize_coefficients()
-{
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.finalize_coefficients();
-}
+{ pecosBasisApprox.finalize_coefficients(); }
 
 
 inline void PecosApproximation::combine_coefficients()
-{
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.combine_coefficients();
-}
+{ pecosBasisApprox.combine_coefficients(); }
 
 
-inline void PecosApproximation::combined_to_active_coefficients()
-{
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.combined_to_active();
-}
+inline void PecosApproximation::
+combined_to_active_coefficients(bool clear_combined)
+{ pecosBasisApprox.combined_to_active(clear_combined); }
 
 
 inline void PecosApproximation::clear_inactive_coefficients()
-{
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.clear_inactive();
-}
+{ pecosBasisApprox.clear_inactive(); }
 
 
 inline void PecosApproximation::

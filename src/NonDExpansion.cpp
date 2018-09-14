@@ -44,7 +44,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
   numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
-  nestedRules(false),
+  relativeMetric(true), nestedRules(false),
   piecewiseBasis(probDescDB.get_bool("method.nond.piecewise_basis")),
   useDerivs(probDescDB.get_bool("method.derivative_usage")),
   refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
@@ -85,8 +85,8 @@ NonDExpansion(unsigned short method_name, Model& model,
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS), statsType(ACTIVE_EXPANSION_STATS),
   multilevDiscrepEmulation(DEFAULT_EMULATION), numUncertainQuant(0),
-  numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
-  piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
+  numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
+  nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
   softConvLimit(3), maxRefineIterations(100), maxSolverIterations(-1),
   ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
@@ -914,8 +914,7 @@ void NonDExpansion::pre_refinement()
 
 
 size_t NonDExpansion::
-core_refinement(Real& metric, bool revert, bool print_metric,
-		bool relative_metric)
+core_refinement(Real& metric, bool revert, bool print_metric)
 {
   size_t candidate = 0;
   switch (refineControl) {
@@ -924,7 +923,7 @@ core_refinement(Real& metric, bool revert, bool print_metric,
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     increment_grid(); // recompute anisotropy
     update_expansion();
-    metric = compute_covariance_metric(revert, print_metric, relative_metric);
+    metric = compute_covariance_metric(revert, print_metric);
     if (revert) {
       decrement_grid();
       pop_increment();
@@ -942,7 +941,7 @@ core_refinement(Real& metric, bool revert, bool print_metric,
     //   awkward in implementation (would need something like
     //   nond_sparse->ssg_driver->compute_tensor_grid()).
     // Returns best of several candidates for this level
-    candidate = increment_sets(metric, revert, print_metric, relative_metric);
+    candidate = increment_sets(metric, revert, print_metric);
     break;
   }
   return candidate;
@@ -1266,13 +1265,10 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
-  // compute aggregate expansion [combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}]
-  // with limited stats support, retaining multiIndex,expansionCoeff{s,Grads}.
-  uSpaceModel.combine_approximation();
-  // if not promoted to active here, callers of this fn must manage
-  // post_combine-like operations downstream to enable full stats
+  // promotion of combined to active can occur here or be deferred until
+  // downstream (when this function is a helper within another algorithm)
   if (to_active)
-    uSpaceModel.combined_to_active();
+    combined_to_active();
 }
 
 
@@ -1287,10 +1283,10 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // > suppress individual refinement
   multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
 
-  // refine independently based on metrics from the individual expansions
+  // refine based on metrics from combined expansions
   statsType = COMBINED_EXPANSION_STATS;
-  // > Need reference stats
-  compute_covariance();// TO DO: annotated_results(false);
+  // update combined reference stats (can't increment as no deltas available)
+  update_reference_stats();
 
   // Initialize again (or must propagate settings from mf_expansion())
   size_t num_lev, best_lev, lev_candidate, best_candidate;
@@ -1317,7 +1313,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      lev_candidate = core_refinement(lev_metric, true, true, true);//false);
+      lev_candidate = core_refinement(lev_metric, true, true);
       // core_refinement() normalizes level candidates based on the number of
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
@@ -1336,6 +1332,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     // permanently apply best increment and update references for next increment
     configure_indices(best_lev, form, multilev, cost, lev_cost);
     select_candidate(best_candidate);
+    increment_reference_stats(); // update combined reference stats
 
     ++iter;
     Cout << "\n<<<<< Iteration " << iter
@@ -1350,8 +1347,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     post_refinement(best_lev_metric, true); // increments have been reverted
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
-  uSpaceModel.combine_approximation();
-  uSpaceModel.combined_to_active();
+  combined_to_active();
   compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
   // Final annotated results are printed in core_run()
@@ -1395,10 +1391,6 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
   //  for (lev=best_lev+1; lev<num_lev; ++lev)
   //    uSpaceModel.clear_popped();
-
-  // Update reference stats
-  metric_roll_up();
-  compute_covariance();// TO DO: annotated_results(false);
 }
 
 
@@ -1478,6 +1470,36 @@ void NonDExpansion::update_expansion()
 }
 
 
+void NonDExpansion::update_reference_stats()
+{
+  // default implementation (used by greedy_multifidelity_expansion())
+  metric_roll_up();
+  compute_covariance();
+
+  // TO DO: unify with multifidelity_expansion() operations (+ output headers?)
+  //annotated_results(false); --> general metrics
+  //print_results(Cout, INTERMEDIATE_RESULTS);
+}
+
+
+void NonDExpansion::increment_reference_stats()
+{ update_reference_stats(); } // default implementation
+
+
+void NonDExpansion::combined_to_active()
+{
+  // default implementation
+
+  // compute aggregate expansion (combined{MultiIndex,ExpCoeff{s,Grads}})
+  // with limited stats support, retaining multiIndex,expansionCoeff{s,Grads}.
+  uSpaceModel.combine_approximation();
+  // migrate combined{MultiIndex,ExpCoeff{s,Grads}} to current active
+  uSpaceModel.combined_to_active();
+  // update approach for computing statistics
+  statsType = ACTIVE_EXPANSION_STATS;
+}
+
+
 void NonDExpansion::assign_specification_sequence()
 {
   // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
@@ -1500,8 +1522,7 @@ void NonDExpansion::increment_specification_sequence()
 
 
 size_t NonDExpansion::
-increment_sets(Real& delta_star, bool revert, bool print_metric,
-	       bool relative_metric)
+increment_sets(Real& delta_star, bool revert, bool print_metric)
 {
   Cout << "\n>>>>> Begin evaluation of active index sets.\n";
 
@@ -1538,8 +1559,8 @@ increment_sets(Real& delta_star, bool revert, bool print_metric,
 
     // assess effect of increment (non-negative norm); restore ref once done
     delta = (totalLevelRequests) ?
-      compute_final_statistics_metric(revert, print_metric, relative_metric) :
-      compute_covariance_metric(revert, print_metric, relative_metric);
+      compute_final_statistics_metric(revert, print_metric) :
+      compute_covariance_metric(revert, print_metric);
     // normalize effect of increment based on cost (# of collocation pts).
     // Note: increment size must be nonzero since growth restriction is
     // precluded for generalized sparse grids.
@@ -1726,8 +1747,7 @@ void NonDExpansion::annotated_results(short results_state)
 
 /** computes the default refinement metric based on change in respCovariance */
 Real NonDExpansion::
-compute_covariance_metric(bool restore_ref, bool print_metric,
-			  bool relative_metric)
+compute_covariance_metric(bool update_ref, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1739,8 +1759,8 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
     RealVector resp_var_ref, delta_resp_var = respVariance; // deep copy
-    if (restore_ref) resp_var_ref = respVariance;
-    if (relative_metric)
+    if (!update_ref) resp_var_ref = respVariance;
+    if (relativeMetric)
       scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
 
     compute_covariance();                     // update
@@ -1754,18 +1774,18 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
     Cout << "norm of delta_resp_var = " << delta_norm << std::endl;
 #endif // DEBUG
 
-    if (restore_ref) respVariance = resp_var_ref;
+    if (!update_ref) respVariance = resp_var_ref;
 
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
     // change compared against relative conv tol.
-    return (relative_metric) ? delta_norm / scale : delta_norm;
+    return (relativeMetric) ? delta_norm / scale : delta_norm;
     break;
   }
   case FULL_COVARIANCE: {
     RealSymMatrix resp_covar_ref, delta_resp_covar = respCovariance;// deep copy
-    if (restore_ref) resp_covar_ref = respCovariance;
-    if (relative_metric)
+    if (!update_ref) resp_covar_ref = respCovariance;
+    if (relativeMetric)
       scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
 
     compute_covariance();                            // update
@@ -1781,12 +1801,12 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
     Cout << "norm of delta_resp_covar = " << delta_norm << std::endl;
 #endif // DEBUG
 
-    if (restore_ref) respCovariance = resp_covar_ref;
+    if (!update_ref) respCovariance = resp_covar_ref;
 
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
     // change compared against relative conv tol.
-    return (relative_metric) ? delta_norm / scale : delta_norm;
+    return (relativeMetric) ? delta_norm / scale : delta_norm;
     break;
   }
   default: // NO_COVARIANCE or failure to redefine DEFAULT_COVARIANCE
@@ -1798,8 +1818,7 @@ compute_covariance_metric(bool restore_ref, bool print_metric,
 
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
 Real NonDExpansion::
-compute_final_statistics_metric(bool restore_ref, bool print_metric,
-				bool relative_metric)
+compute_final_statistics_metric(bool update_ref, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1845,17 +1864,17 @@ compute_final_statistics_metric(bool restore_ref, bool print_metric,
       requestedGenRelLevels[i].length();
     for (j=0; j<num_lev_i; ++j, ++cntr) {
       Real ref  = final_stats_ref[cntr], delta = final_stats_new[cntr] - ref;
-      if (relative_metric) scale_sq += ref * ref;
+      if (relativeMetric) scale_sq += ref * ref;
       sum_sq += delta * delta;
     }
   }
 
-  if (restore_ref) finalStatistics.function_values(final_stats_ref);
+  if (!update_ref) finalStatistics.function_values(final_stats_ref);
 
   // Risk of zero reference is reduced relative to covariance control, but not
   // eliminated. Trap this and also avoid possible bogus termination from using
   // absolute change compared against relative conv tol.
-  if (relative_metric) {
+  if (relativeMetric) {
     Real scale = std::max(Pecos::SMALL_NUMBER, std::sqrt(scale_sq));
     return std::sqrt(sum_sq) / scale;
   }
@@ -1877,7 +1896,8 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   }
 
   size_t i;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
+    combined_stats = (statsType == COMBINED_EXPANSION_STATS);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
@@ -1886,8 +1906,10 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
     // InterpPolyApproximation::compute_*_effects() assumes moments are
     // available and compute_statistics() has not been called if !DEBUG_OUTPUT
     if (outputLevel < DEBUG_OUTPUT) {
-      if (all_vars) poly_approx_rep->compute_moments(initialPtU, false);
-      else          poly_approx_rep->compute_moments(false);
+      if (all_vars)
+	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
+      else
+	poly_approx_rep->compute_moments(false, combined_stats);
     }
 
     if (!vbdOrderLimit) // no order limit --> component used within total
@@ -2111,7 +2133,8 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
     moment_offset = (finalMomentsType) ? 2 : 0;
 
   // define flags for limiting unneeded computation (matched in print_results())
-  bool full_stats = (results_state == FINAL_RESULTS);
+  bool full_stats  = (results_state == FINAL_RESULTS),
+    combined_stats = (statsType == COMBINED_EXPANSION_STATS);
   bool local_grad_stats = (full_stats && !subIteratorFlag &&
     outputLevel >= NORMAL_OUTPUT);
   bool vbd_stats = ( vbdFlag && ( full_stats ||
@@ -2148,8 +2171,10 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
     // expansionCoeffFlag as needed to support final data requirements.
     // If not full stats, suppress secondary moment calculations.
     if (poly_approx_rep->expansion_coefficient_flag()) {
-      if (all_vars) poly_approx_rep->compute_moments(initialPtU, full_stats);
-      else          poly_approx_rep->compute_moments(full_stats);
+      if (all_vars)
+	poly_approx_rep->compute_moments(initialPtU,full_stats,combined_stats);
+      else
+	poly_approx_rep->compute_moments(full_stats,combined_stats);
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
       mu = moments[0]; var = moments[1]; // Pecos provides central moments

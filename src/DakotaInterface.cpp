@@ -1278,10 +1278,10 @@ void Interface::combine_approximation()
 }
 
 
-void Interface::combined_to_active()
+void Interface::combined_to_active(bool clear_combined)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->combined_to_active();
+    interfaceRep->combined_to_active(clear_combined);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
 	 << " function.\n       This interface does not support approximation"
