@@ -152,7 +152,7 @@ void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
   // instance (modSurrData aggregates {HF,LF} and is keyed based on truth key).
 
   //size_t d, num_d = approxDataKeys.size();
-  UShort2DArray& surr_keys = approxDataKeys[0];
+  UShort2DArray& raw_data_keys = approxDataKeys[0];
   if (key.empty()) // prune second entry from each set of approxDataKeys
     /*
     for (i=0; i<num_sd; ++i)
@@ -160,19 +160,19 @@ void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
       if (surrogate_data_keys(i)) // since approxDataKeys shrinks/expands
         approxDataKeys[i].resize(1);
     */
-    surr_keys.resize(1); // approxDataKeys[1] remains size 1
+    raw_data_keys.resize(1); // approxDataKeys[1] remains size 1
   else {
     //for (d=0; i<num_d; ++d)
     //  if (surrogate_data_keys(i)) {
-    surr_keys.resize(2);
-    const UShortArray& surr_keys0 = surr_keys[0]; // HF
-    UShortArray&       surr_keys1 = surr_keys[1]; // LF
+    raw_data_keys.resize(2);
+    const UShortArray& hf_key = raw_data_keys[0]; // HF
+    UShortArray&       lf_key = raw_data_keys[1]; // LF
     // Assign incoming LF key
-    surr_keys1 = key;
+    lf_key = key;
     // Alter key to distinguish a particular aggregation used for modeling
     // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...) by
     // appending the HF key that matches this LF data
-    surr_keys1.insert(surr_keys1.end(), surr_keys0.begin(), surr_keys0.end());
+    lf_key.insert(lf_key.end(), hf_key.begin(), hf_key.end());
     //  }
   }
 }
@@ -196,15 +196,15 @@ void SharedPecosApproxData::truth_model_key(const UShortArray& key)
     case 0: keys_d.push_back(key); break;
     case 1: keys_d[0] = key;       break;
     case 2: {
-      UShortArray& key_d0 = keys_d[0];
-      UShortArray& key_d1 = keys_d[1];
-      if (key_d0 != key) {
+      UShortArray& hf_key = keys_d[0];
+      UShortArray& lf_key = keys_d[1];
+      if (hf_key != key) {
 	// Assign HF key
-	key_d0 = key;
+	hf_key = key;
 	// Alter LF key to distinguish a particular model pair that defines a
 	// discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
-	key_d1.resize(key_d1.size() - key.size());
-	key_d1.insert(key_d1.end(), key.begin(), key.end());
+	lf_key.resize(lf_key.size() - key.size());
+	lf_key.insert(lf_key.end(), key.begin(), key.end());
       }
       break;
     }

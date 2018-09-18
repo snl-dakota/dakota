@@ -182,8 +182,9 @@ protected:
   /// configure response mode and truth/surrogate model indices within
   /// hierarchical iteratedModel
   void configure_indices(unsigned short lev, unsigned short form,
-			 bool multilevel, const RealVector& cost,
-			 Real& lev_cost);
+			 bool multilevel);
+  /// return aggregate cost (one or more models) for a level sample
+  Real level_cost(unsigned short lev, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation
   void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
 
@@ -494,6 +495,20 @@ activate_key(unsigned short lev, unsigned short form, bool multilevel)
   UShortArray model_key;
   form_key(lev, form, multilevel, model_key);
   activate_key(model_key); // assign key to uSpaceModel
+}
+
+
+inline Real NonDExpansion::
+level_cost(unsigned short lev, const RealVector& cost)
+{
+  if (cost.empty())
+    return 0.;
+  else {
+    Real lev_cost = cost[lev];
+    if (lev && multilevDiscrepEmulation == DISTINCT_EMULATION)
+      lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
+    return lev_cost;
+  }
 }
 
 

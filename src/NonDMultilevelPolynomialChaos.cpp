@@ -870,7 +870,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   // (discretization levels take precedence)
   unsigned short lev, form;
   size_t num_lev, iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
   RealVector cost;
   bool multilev, optional_cost = (mlmfAllocControl == RIP_SAMPLING),
     recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
@@ -912,7 +912,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
     sum_root_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      configure_indices(lev, form, multilev, cost, lev_cost);
+      configure_indices(lev, form, multilev);
 
       if (iter == 0) { // initial expansion build
 	// Update solution control variable in uSpaceModel to support
@@ -949,7 +949,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	Real& agg_var_l = level_metric[lev];
 	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
 	sum_root_var_cost += std::pow(agg_var_l *
-	  std::pow(lev_cost, kappaEstimatorRate), 1./(kappaEstimatorRate+1.));
+	  std::pow(level_cost(lev, cost), kappaEstimatorRate),
+	  1./(kappaEstimatorRate+1.));
         // MSE reference is ML MC aggregation for pilot(+import) sample:
 	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
 	break;
@@ -1069,15 +1070,12 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
   // instead of L2 fit error).
 
   // update targets based on variance estimates
-  Real new_N_l, lev_cost; size_t lev, num_lev = N_l.size();
-  bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  Real new_N_l; size_t lev, num_lev = N_l.size();
   Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
-		       1./kappaEstimatorRate);
+		       1. / kappaEstimatorRate);
   for (lev=0; lev<num_lev; ++lev) {
-    lev_cost = cost[lev];
-    if (lev && !recursive) lev_cost += cost[lev-1];
-    new_N_l = std::pow(agg_var[lev] / lev_cost, 1./(kappaEstimatorRate+1.))
-            * fact;
+    new_N_l = std::pow(agg_var[lev] / level_cost(lev, cost),
+		       1. / (kappaEstimatorRate+1.)) * fact;
     delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
   }
 }

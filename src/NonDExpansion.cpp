@@ -1143,14 +1143,10 @@ configure_cost(size_t num_lev, bool multilevel, RealVector& cost)
 
 
 void NonDExpansion::
-configure_indices(unsigned short lev, unsigned short form, bool multilevel,
-		  const RealVector& cost, Real& lev_cost)
+configure_indices(unsigned short lev, unsigned short form, bool multilevel)
 {
   // Set active surrogate/truth models within the hierarchical surrogate
   // (iteratedModel)
-
-  bool costs = !cost.empty();
-  lev_cost = (costs) ? cost[lev] : 0.;
 
   /*
   UShortArray truth_key;
@@ -1166,7 +1162,6 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel,
     UShortArray surr_key(truth_key);
     --surr_key.back();// decrement trailing index (lev if multilevel, else form)
     uSpaceModel.surrogate_model_key(surr_key);
-    if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
   activate_key(truth_key);
   */
@@ -1181,9 +1176,7 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel,
     aggregated_models_mode();
     if (multilevel) uSpaceModel.surrogate_model_key(form, lev-1);
     else            uSpaceModel.surrogate_model_key(lev-1);
-    if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
-
   if (multilevel) uSpaceModel.truth_model_key(form, lev);
   else            uSpaceModel.truth_model_key(lev);
 
@@ -1229,12 +1222,11 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
   size_t num_lev; unsigned short form; bool multilev;
-  RealVector cost; Real lev_cost;
   configure_levels(num_lev, form, multilev, true); // MF given precedence
 
   // initial low fidelity/lowest discretization expansion
   unsigned short lev = 0;
-  configure_indices(lev, form, multilev, cost, lev_cost);
+  configure_indices(lev, form, multilev);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
@@ -1249,7 +1241,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // loop over each of the discrepancy levels
   for (lev=1; lev<num_lev; ++lev) {
     // configure hierarchical model indices and activate key in data fit model
-    configure_indices(lev, form, multilev, cost, lev_cost);
+    configure_indices(lev, form, multilev);
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
@@ -1294,14 +1286,16 @@ void NonDExpansion::greedy_multifidelity_expansion()
   configure_levels(num_lev, form, multilev, true); // MF given precedence
   configure_cost(num_lev, multilev, cost);
 
+  // Initialize all levels.  Note: configure_indices() is used for completeness
+  // (activate_key() is sufficient for current grid initialization operations).
   for (lev=0; lev<num_lev; ++lev) {
-    activate_key(lev, form, multilev);
+    configure_indices(lev, form, multilev);//activate_key(lev, form, multilev);
     pre_refinement();
   }
 
   size_t iter = 0,
     max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  Real lev_metric, best_lev_metric = DBL_MAX, lev_cost;
+  Real lev_metric, best_lev_metric = DBL_MAX;
   while ( best_lev_metric > convergenceTol && iter < max_refine ) {
 
     // Generate candidates at each level
@@ -1309,7 +1303,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     best_lev_metric = 0.;
     for (lev=0; lev<num_lev; ++lev) {
       // configure hierarchical model indices and activate key in data fit model
-      configure_indices(lev, form, multilev, cost, lev_cost);
+      configure_indices(lev, form, multilev);
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
@@ -1318,7 +1312,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
       // secondary normalization for relative level cost is required.
-      lev_metric /= lev_cost;
+      lev_metric /= level_cost(lev, cost);
       Cout << "\n<<<<< Level " << lev+1 << " refinement metric = "
 	   << lev_metric << '\n';
 
@@ -1330,7 +1324,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     }
 
     // permanently apply best increment and update references for next increment
-    configure_indices(best_lev, form, multilev, cost, lev_cost);
+    configure_indices(best_lev, form, multilev);
     select_candidate(best_candidate);
     increment_reference_stats(); // update combined reference stats
 
@@ -1343,7 +1337,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Perform final roll-up for each level and then combine levels
   NLev.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev) {
-    activate_key(lev, form, multilev);
+    configure_indices(lev, form, multilev);
     post_refinement(best_lev_metric, true); // increments have been reverted
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }

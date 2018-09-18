@@ -585,4 +585,19 @@ void NonDMultilevelStochCollocation::combined_to_active()
   }
 }
 
+
+void NonDMultilevelStochCollocation::
+print_results(std::ostream& s, short results_state)
+{
+  if (!NLev.empty()) {
+    s << "<<<<< Samples per solution level:\n";
+    print_multilevel_evaluation_summary(s, NLev);
+    s << "<<<<< Equivalent number of high fidelity evaluations: "
+      << equivHFEvals << std::endl;
+  }
+
+  // nothing defined at NonDStochCollocation level
+  NonDExpansion::print_results(s, results_state);
+}
+
 } // namespace Dakota
