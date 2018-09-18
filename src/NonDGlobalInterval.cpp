@@ -107,9 +107,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
       numSamples, seedSpec, rngName, false, mode), false);
     // only use derivatives if the user requested and they are available
-    ActiveSet dace_set = daceIterator.active_set(); // copy
-    dace_set.request_values(dataOrder);
-    daceIterator.active_set(dace_set);
+    daceIterator.active_set_request_values(dataOrder);
 
     // Construct fHatModel using a GP approximation over the active/uncertain
     // vars (same view as iteratedModel: not the typical All view for DACE).

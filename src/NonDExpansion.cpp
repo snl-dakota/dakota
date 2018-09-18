@@ -785,7 +785,7 @@ void NonDExpansion::compute_expansion()
   if (all_vars && numUncertainQuant && secondaryACVarMapTargets.empty()) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
-    const ShortArray& prev_asv = u_space_sampler.active_set().request_vector();
+    const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
     for (i=0; i<numFunctions; ++i)
       // bit-wise AND checks if each sampler_asv bit is present in prev_asv
       if ( (prev_asv[i] & sampler_asv[i]) != sampler_asv[i] )
@@ -2394,9 +2394,7 @@ void NonDExpansion::compute_numerical_statistics()
       cntr += gl_len;
     }
   }
-  ActiveSet sampler_set = expansionSampler.active_set(); // copy
-  sampler_set.request_vector(sampler_asv);
-  expansionSampler.active_set(sampler_set);
+  expansionSampler.active_set_request_vector(sampler_asv);
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   expansionSampler.run(pl_iter);
@@ -2506,8 +2504,6 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 				   RealRealPairArray& min_max_fns)
 {
   // response fn is active for z->p, z->beta*, p->z, or beta*->z
-  //ActiveSet sampler_set = importanceSampler.active_set(); // copy
-  //ShortArray sampler_asv(numFunctions, 0);
 
   const RealMatrix& exp_vars = expansionSampler.all_samples();
   //const IntResponseMap& exp_responses = expansionSampler.all_responses();

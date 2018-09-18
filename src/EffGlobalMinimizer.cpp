@@ -97,9 +97,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
     samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
   // only use derivatives if the user requested and they are available
-  ActiveSet dace_set = dace_iterator.active_set(); // copy
-  dace_set.request_values(dataOrder);
-  dace_iterator.active_set(dace_set);
+  dace_iterator.active_set_request_values(dataOrder);
 
   // Construct f-hat using a GP approximation for each response function over
   // the active/design vars (same view as iteratedModel: not the typical All

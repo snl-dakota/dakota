@@ -290,12 +290,21 @@ public:
   /// set the number of solutions to retain in best variables/response arrays
   void num_final_solutions(size_t num_final);
 
-  /// set the default active set vector (for use with iterators that
-  /// employ evaluate_parameter_sets())
+  /// set the default active set (for use with iterators that employ
+  /// evaluate_parameter_sets())
   void active_set(const ActiveSet& set);
-  /// return the default active set vector (used by iterators that
-  /// employ evaluate_parameter_sets())
+  /// return the default active set (used by iterators that employ
+  /// evaluate_parameter_sets())
   const ActiveSet& active_set() const;
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  void active_set_request_vector(const ShortArray& asv);
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  const ShortArray& active_set_request_vector() const;
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  void active_set_request_values(short asv_val);
 
   /// set subIteratorFlag (and update summaryOutputFlag if needed)
   void sub_iterator_flag(bool si_flag);
@@ -642,6 +651,27 @@ inline void Iterator::active_set(const ActiveSet& set)
 
 inline const ActiveSet& Iterator::active_set() const
 { return (iteratorRep) ? iteratorRep->activeSet : activeSet; }
+
+
+inline void Iterator::active_set_request_vector(const ShortArray& asv)
+{
+  if (iteratorRep) iteratorRep->activeSet.request_vector(asv);
+  else             activeSet.request_vector(asv);
+}
+
+
+inline const ShortArray& Iterator::active_set_request_vector() const
+{
+  return (iteratorRep) ? iteratorRep->activeSet.request_vector()
+                       : activeSet.request_vector();
+}
+
+
+inline void Iterator::active_set_request_values(short asv_val)
+{
+  if (iteratorRep) iteratorRep->activeSet.request_values(asv_val);
+  else             activeSet.request_values(asv_val);
+}
 
 
 inline void Iterator::

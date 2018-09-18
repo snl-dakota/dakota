@@ -179,10 +179,7 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
     // data).  Therefore, SBLM overrides the normal DACE behavior of evaluating
     // the full data set at every point in the experimental design.
     short asv_val = (useDerivsFlag) ? 3 : 1;
-    ActiveSet dace_set
-      = iteratedModel.truth_model().current_response().active_set(); // copy
-    dace_set.request_values(asv_val);
-    dace_iterator.active_set(dace_set);
+    dace_iterator.active_set_request_values(asv_val);
 
     // Extract info on the sampling method type
     //unsigned short sampling_type = dace_iterator.sampling_scheme();

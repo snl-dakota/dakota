@@ -540,17 +540,16 @@ void SurrogateModel::
 asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
 	    ShortArray& combined_asv)
 {
-  if (combined_asv.empty())
-    combined_asv.resize(numFns);
-
   if (actual_asv.empty())
     combined_asv = approx_asv;
   else if (approx_asv.empty())
     combined_asv = actual_asv;
-  else 
+  else {
+    combined_asv.resize(numFns);
     for (size_t i=0; i<numFns; ++i)
       combined_asv[i] = (surrogateFnIndices.count(i)) ?
 	approx_asv[i] : actual_asv[i];
+  }
 }
 
 

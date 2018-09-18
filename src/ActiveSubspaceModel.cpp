@@ -275,12 +275,9 @@ void ActiveSubspaceModel::
 generate_fullspace_samples(unsigned int diff_samples)
 {
   // Rank-revealing phase requires derivatives (for now)
-  ActiveSet dace_set = fullspaceSampler.active_set(); // copy
   // TODO: always gradients only; no functions
   //       analysis_driver needs to parse active_set
-  unsigned short request_value = 3;
-  dace_set.request_values(request_value);
-  fullspaceSampler.active_set(dace_set);
+  fullspaceSampler.active_set_request_values(3);
 
   // Generate the samples.  Have to adjust the base number of samples
   // with sampling_reference() since the number of samples may go down
@@ -1970,10 +1967,7 @@ void ActiveSubspaceModel::build_surrogate()
            << " refinement_samples for building surrogate." << std::endl;
     }
 
-    ActiveSet dace_set = fullspaceSampler.active_set(); // copy
-    unsigned short request_value = 1;
-    dace_set.request_values(request_value);
-    fullspaceSampler.active_set(dace_set);
+    fullspaceSampler.active_set_request_values(1);
     fullspaceSampler.sampling_reference(refinementSamples);
     fullspaceSampler.sampling_reset(refinementSamples, true, false);
 

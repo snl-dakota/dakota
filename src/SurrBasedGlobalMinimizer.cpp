@@ -102,12 +102,8 @@ void SurrBasedGlobalMinimizer::core_run()
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
   // samples are read in from a file rather than obtained from sampling).
-  if (!dace_iterator.is_null()) {
-    short asv_val = 1;
-    ActiveSet dace_set = truth_model.current_response().active_set(); // copy
-    dace_set.request_values(asv_val);
-    dace_iterator.active_set(dace_set);
-  }
+  if (!dace_iterator.is_null())
+    dace_iterator.active_set_request_values(1);
 
   // get data points using sampling, file read, or whatever.
   iteratedModel.build_approximation();

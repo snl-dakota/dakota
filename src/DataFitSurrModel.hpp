@@ -106,10 +106,14 @@ protected:
   /// portion of synchronize_nowait() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize_nowait();
 
-  /// split incoming ASV into actual and approximate requests, managing any
-  /// mismatch in sizes due to response aggregation modes in actualModel
-  void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
-		 ShortArray& approx_asv, bool build_flag);
+  /// map incoming ASV into actual request for surrogate construction, managing
+  /// any mismatch in sizes due to response aggregation modes in actualModel
+  void asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv);
+  /// split incoming ASV into actual and approximate evaluation requests,
+  /// managing any mismatch in sizes due to response aggregation modes in
+  /// actualModel
+  void asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
+		      ShortArray& approx_asv);
 
   /// return daceIterator
   Iterator& subordinate_iterator();
@@ -614,16 +618,6 @@ inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
       if (num_am_resp != num_dace_resp) {
 	ActiveSet new_set(dace_set); // deep copy
 	new_set.reshape(num_am_resp);
-	/*
-	ShortArray new_asv(num_am_resp);
-	if (num_am_resp < num_dace_resp) // truncate ASV
-	  for (size_t i=0; i<num_am_resp; ++i)
-	    new_asv[i] = dace_asv[i];
-	else // recur ASV pattern for aggregated response vector
-	  for (size_t i=0; i<num_am_resp; ++i)
-	    new_asv[i] = dace_asv[i % num_dace_resp];
-	ActiveSet new_set(new_asv, dace_set.derivative_vector());
-	*/
 	daceIterator.active_set(new_set);
       }
     }
