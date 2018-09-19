@@ -19,7 +19,7 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
 
-// We are mixing C and C++ APIs here with an eye to eventually adaopt one or the other - RWH
+// We are mixing C and C++ APIs here with an eye to eventually adopt one or the other - RWH
 #include "H5Cpp.h"      // C++ API
 #include "hdf5.h"       // C   API
 #include "hdf5_hl.h"    // C   H5Lite API
@@ -35,238 +35,258 @@
 namespace Dakota
 {
 
-	//----------------------------------------------------------------
+//----------------------------------------------------------------
 
-	// Some free functions to try to consolidate data type specs
-	inline H5::DataType h5_file_dtype( const Real & )
-	{ return H5::PredType::IEEE_F64LE; }
+// Some free functions to try to consolidate data type specs
+inline H5::DataType h5_file_dtype( const Real & )
+{ return H5::PredType::IEEE_F64LE; }
 
-	inline H5::DataType h5_file_dtype( const int & )
-	{ return H5::PredType::STD_I32LE; }
+inline H5::DataType h5_file_dtype( const int & )
+{ return H5::PredType::STD_I32LE; }
 
-	inline H5::DataType h5_file_dtype( const char * )
-	{
-		H5::StrType str_type(0, H5T_VARIABLE);
-		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
-		return str_type;
-	}
-        inline H5::DataType h5_file_dtype( const String )
-	{
-		H5::StrType str_type(0, H5T_VARIABLE);
-		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
-		return str_type;
-	}
+inline H5::DataType h5_file_dtype( const char * )
+{
+  H5::StrType str_type(0, H5T_VARIABLE);
+  str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+  return str_type;
+}
 
-        inline H5::DataType h5_mem_dtype( const Real & )
-	{ return H5::PredType::NATIVE_DOUBLE; }
+inline H5::DataType h5_file_dtype( const String )
+{
+  H5::StrType str_type(0, H5T_VARIABLE);
+  str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+  return str_type;
+}
 
-	inline H5::DataType h5_mem_dtype( const int & )
-	{ return H5::PredType::NATIVE_INT; }
+inline H5::DataType h5_mem_dtype( const Real & )
+{ return H5::PredType::NATIVE_DOUBLE; }
 
-	inline H5::DataType h5_mem_dtype( const char * )
-	{
-		H5::StrType str_type(0, H5T_VARIABLE);
-		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
-		return str_type;
-	}
-        inline H5::DataType h5_mem_dtype( const String )
-	{
-		H5::StrType str_type(0, H5T_VARIABLE);
-		str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
-		return str_type;
-	}
+inline H5::DataType h5_mem_dtype( const int & )
+{ return H5::PredType::NATIVE_INT; }
+
+inline H5::DataType h5_mem_dtype( const char * )
+{
+  H5::StrType str_type(0, H5T_VARIABLE);
+  str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+  return str_type;
+}
+
+inline H5::DataType h5_mem_dtype( const String )
+{
+  H5::StrType str_type(0, H5T_VARIABLE);
+  str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
+  return str_type;
+}
 
 
-	//----------------------------------------------------------------
+/**
+ * This helper class provides wrapper functions that perform
+ * low-level access operations in HDF5 databases.
+ *
+ * Authors:  J. Adam Stephens, Russell Hooper, Elliott Ridgway
+ */
 
-	class HDF5IOHelper
-	{
+class HDF5IOHelper
+{
+  public:
 
-    public:
+  HDF5IOHelper(const std::string& file_name, bool overwrite = false) :
+    fileName(file_name)
+  {
+    // create or open a file
+    //H5::Exception::dontPrint();
+    if( overwrite )
+      filePtr = std::shared_ptr<H5::H5File>(
+        new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
 
-	HDF5IOHelper(const std::string& file_name, bool overwrite = false) :
-       	fileName(file_name)
-	{
+    try {
+      filePtr = std::shared_ptr<H5::H5File>(
+        new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
+    } catch(const H5::FileIException&) {
+      filePtr = std::shared_ptr<H5::H5File>(
+        new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+    }
 
-		// create or open a file
-		//H5::Exception::dontPrint();
-		if( overwrite )
-			filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+    // Initialize global Link Creation Property List to encode all link
+    // (group, dataset) names in UTF-8
+    linkCreatePL.setCharEncoding(H5T_CSET_UTF8);      
+  }
 
-		try {
-			filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
-		} catch(const H5::FileIException&) {
-			filePtr = std::shared_ptr<H5::H5File>(new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
-		}
+  ~HDF5IOHelper() { }
 
-		// Initialize global Link Creation Property List to enocde all link (group, dataset) names
-		// in UTF-8
-		linkCreatePL.setCharEncoding(H5T_CSET_UTF8);      
-	}
+  //----------------------------------------------------------------
 
-	~HDF5IOHelper() { }
+  template <typename T>
+  const void store_scalar_data(const std::string& dset_name, const T& val)
+  {
+    H5::DataSpace dataspace = H5::DataSpace();
+    
+    // Assume dset_name is syntactically correct - will need some utils - RWH
+    create_groups(dset_name);
+	H5::DataSet dataset(create_dataset(
+      *filePtr, dset_name, h5_file_dtype(val), dataspace));
 
-	//----------------------------------------------------------------
+    dataset.write(&val, h5_mem_dtype(val));
+	return;
+  }
 
-	template <typename T>
-	const void store_scalar_data(const std::string& dset_name, const T& val)
-	{
-		H5::DataSpace dataspace = H5::DataSpace();
-
-		// Assume dset_name is syntactically correct - will need some utils - RWH
-		create_groups(dset_name);
-		H5::DataSet dataset(create_dataset(*filePtr, dset_name, h5_file_dtype(val), dataspace) );
-
-		dataset.write(&val, h5_mem_dtype(val));
-		return;
-	}
-
-	template <typename T>
-	const void read_scalar_data(const std::string& dset_name, T& val)
-	{
-		if( !exists(dset_name) )
-		{
-			Cerr << "\nError: HDF5 file \"" << fileName << "\""
-				 << " does not contain data path \"" << dset_name << "\""
-				 << std::endl;
-			abort_handler(-1);
-		}
+  template <typename T>
+  const void read_scalar_data(const std::string& dset_name, T& val)
+  {
+    if( !exists(dset_name) )
+    {
+      Cerr << "\nError: HDF5 file \"" << fileName << "\""
+           << " does not contain data path \"" << dset_name << "\""
+           << std::endl;
+      abort_handler(-1);
+    }
     // JAS: We need some verification here that the dataset is really a scalar.
-		H5::DataSet dataset = filePtr->openDataSet(dset_name);
-		dataset.read(&val, h5_mem_dtype(val));
+    H5::DataSet dataset = filePtr->openDataSet(dset_name);
+    dataset.read(&val, h5_mem_dtype(val));
 
-		return;
-	}
+    return;
+  }
 
-	//----------------------------------------------------------------
+  //----------------------------------------------------------------
 
-	template <typename T>
-	void store_vector_data(const std::string& dset_name, const std::vector<T>& array) const
-	{
+  template <typename T>
+  void store_vector_data(const std::string& dset_name,
+                         const std::vector<T>& array) const
+  {
     store_vector_data(dset_name, array.data(), array.size());
     return;
-	}
+  }
 
   // Use the same reader for std::vector and SerialDenseVector
-	template <typename T>
-	void read_vector_data(const std::string& dset_name, T& array) const 
-	{
-          if( !exists(dset_name) )
-          {
-            Cerr << "\nError: HDF5 file \"" << fileName << "\""
-              << " does not contain data path \"" << dset_name << "\""
-              << std::endl;
-            abort_handler(-1);
-          }
+  template <typename T>
+  void read_vector_data(const std::string& dset_name, T& array) const 
+  {
+    if( !exists(dset_name) )
+    {
+      Cerr << "\nError: HDF5 file \"" << fileName << "\""
+           << " does not contain data path \"" << dset_name << "\""
+           << std::endl;
+      abort_handler(-1);
+    }
 
-          H5::DataSet dataset = filePtr->openDataSet(dset_name);
+    H5::DataSet dataset = filePtr->openDataSet(dset_name);
 
-          // Get dims and size of dataset
-          assert( dataset.getSpace().isSimple() );
-          int ndims = dataset.getSpace().getSimpleExtentNdims();
-          assert( ndims == 1 );
-          std::vector<hsize_t> dims( ndims, hsize_t(1) );
-          dataset.getSpace().getSimpleExtentDims(dims.data());
-          // Calling resize on a SerialDenseVector is potentially wasteful if it is initially non-zero
-          // length because it copies the existing data to the new buffer. There's probably a better
-          // design that would avoid this issue without duplicating a lot of code for std::vector and 
-          // SDV.
-          array.resize(dims[0]);
-          dataset.read(&array[0], h5_mem_dtype(array[0]));
-          return;
-	}
+    // Get dims and size of dataset
+    assert( dataset.getSpace().isSimple() );
+    int ndims = dataset.getSpace().getSimpleExtentNdims();
+    assert( ndims == 1 );
+    std::vector<hsize_t> dims( ndims, hsize_t(1) );
+    dataset.getSpace().getSimpleExtentDims(dims.data());
 
-	template <typename T> void store_vector_data(
-		const std::string & dset_name,
-		const Teuchos::SerialDenseVector<int,T> & vec )
-	{
-		store_vector_data(dset_name, &vec[0], vec.length());
-		return;
-	}
+    // Calling resize on a SerialDenseVector is potentially wasteful
+    // if it is initially non-zero length because it copies the existing
+    // data to the new buffer. There's probably a better design that
+    // would avoid this issue without duplicating a lot of code for
+    // std::vector and SDV.
+    array.resize(dims[0]);
+    dataset.read(&array[0], h5_mem_dtype(array[0]));
+    return;
+  }
 
-	//------------------------------------------------------------------
+  template <typename T>
+  void store_vector_data( const std::string & dset_name,
+                          const Teuchos::SerialDenseVector<int,T> & vec )
+  {
+    store_vector_data(dset_name, &vec[0], vec.length());
+    return;
+  }
 
-	void attach_scale(
-		const String& dset_name, const String& scale_name,
-		const String& label, const int& dim) const;
+  //------------------------------------------------------------------
 
-        template <typename T>
-        void add_attribute(const String &location, const String &label, const T &value) {
-          if(! exists(location)) {
-              // If it doesn't exist, assume it's a group.
-              create_groups(location, false);
-          }   
+  void attach_scale(const String& dset_name, const String& scale_name,
+                    const String& label, const int& dim) const;
 
-          H5::DataSpace dataspace;
-          H5O_type_t type = filePtr->childObjType(location.c_str());
-          if(type == H5O_TYPE_GROUP) {
-            Cout << location << " is a group" << std::endl;
-            H5::Group group = filePtr->openGroup(location);
-            H5::Attribute attr = group.createAttribute(label, h5_file_dtype(value), dataspace);
-            attr.write(h5_mem_dtype(value), &value);
-          } else if(type == H5O_TYPE_DATASET) {
-            Cout << location << " is a dataset" << std::endl;
-            Cout << "Attribute is (" << label << ", " << value << ")\n";
-            H5::DataSet dataset = filePtr->openDataSet(location);
-            H5::Attribute attr = dataset.createAttribute(label, h5_file_dtype(value), dataspace);
-            attr.write(h5_mem_dtype(value), &value);
-          } else {
-            Cerr << location << " is an HDF5 object of unhandled type." << std::endl;
-          }
-          
-        }
+  template <typename T>
+  void add_attribute(const String &location, const String &label,
+                     const T &value) {
 
-	bool exists(const String location_name) const;
+    if(! exists(location)) {
+      // If it doesn't exist, assume it's a group.
+      create_groups(location, false);
+    }   
 
-	bool is_scale(const H5::DataSet dset) const;
+    H5::DataSpace dataspace;
+    H5O_type_t type = filePtr->childObjType(location.c_str());
+    if(type == H5O_TYPE_GROUP) {
+      Cout << location << " is a group" << std::endl;
+      H5::Group group = filePtr->openGroup(location);
+      H5::Attribute attr =
+        group.createAttribute(label, h5_file_dtype(value), dataspace);
+      attr.write(h5_mem_dtype(value), &value);
+    } else if(type == H5O_TYPE_DATASET) {
+      Cout << location << " is a dataset" << std::endl;
+      Cout << "Attribute is (" << label << ", " << value << ")\n";
+      H5::DataSet dataset = filePtr->openDataSet(location);
+      H5::Attribute attr =
+        dataset.createAttribute(label, h5_file_dtype(value), dataspace);
+      attr.write(h5_mem_dtype(value), &value);
+    } else {
+      Cerr << location << " is an HDF5 object of unhandled type." << std::endl;
+    }
+  }
 
-	H5::Group create_groups(const std::string& name, bool includes_dset=true) const;
+  bool exists(const String location_name) const;
 
-        // JAS: The current code in ResultsDBHDF5 calls store_vector_data and then
-        // attach_scale. This pair of functions may be unneeded.
-	H5::DataSet create_dimension_scale (
-		const H5::H5Location &loc, std::vector<int> dim_sizes, H5::DataType type,
-		std::string label, H5::DSetCreatPropList plist ) const;
+  bool is_scale(const H5::DataSet dset) const;
 
-	H5::DataSet create_1D_dimension_scale (
-		const H5::H5Location &loc, int size, H5::DataType type,
-		std::string label, H5::DSetCreatPropList plist ) const;
+  H5::Group create_groups(const std::string& name,
+                          bool includes_dset=true) const;
 
-	H5::DataSet create_dataset(
-		const H5::H5Location &loc, const std::string &name,
-		const H5::DataType &type, const H5::DataSpace &space,
-                const H5::DSetCreatPropList &plist = H5::DSetCreatPropList()) const;
+  // JAS: The current code in ResultsDBHDF5 calls store_vector_data and then
+  // attach_scale. This pair of functions may be unneeded.
+  H5::DataSet create_dimension_scale ( const H5::H5Location &loc,
+                                       std::vector<int> dim_sizes,
+                                       H5::DataType type,
+                                       std::string label,
+                                       H5::DSetCreatPropList plist ) const;
 
-        // Define globally available custom property lists
-        // JAS: These probably should not be public. The point of this class is to
-        // encapsulate these kinds of low-level details.
-        H5::LinkCreatPropList linkCreatePL;
-        H5::DSetCreatPropList datasetCompactPL;
-	H5::DSetCreatPropList datasetContiguousPL;
+  H5::DataSet create_1D_dimension_scale ( const H5::H5Location &loc,
+                                          int size, H5::DataType type,
+                                          std::string label,
+                                          H5::DSetCreatPropList plist ) const;
+
+  H5::DataSet create_dataset( const H5::H5Location &loc,
+                              const std::string &name,
+                              const H5::DataType &type,
+                              const H5::DataSpace &space,
+                              const H5::DSetCreatPropList &plist =
+                                H5::DSetCreatPropList()) const;
+
+  // Define globally available custom property lists
+  // JAS: These probably should not be public. The point of this class is to
+  // encapsulate these kinds of low-level details.
+  H5::LinkCreatPropList linkCreatePL;
+  H5::DSetCreatPropList datasetCompactPL;
+  H5::DSetCreatPropList datasetContiguousPL;
 
 
-	protected:
+  protected:
 
-	std::string fileName;
+  std::string fileName;
 
-	std::shared_ptr<H5::H5File> filePtr;
+  std::shared_ptr<H5::H5File> filePtr;
 
   template<typename T>
-  void store_vector_data(const String &dset_name, const T *data, const int &len) const {
-      hsize_t dims[1];
-      dims[0] = len;
-      H5::DataSpace dataspace = H5::DataSpace(1, dims);
-      H5::DataType datatype = h5_file_dtype(*data);
-      // Assume dset_name is syntactically correct - will need some utils - RWH
-      create_groups(dset_name);
-      H5::DataSet dataset(create_dataset(*filePtr, dset_name, datatype, dataspace) );
-      dataset.write(data, datatype);
-      return;
-	}
-
-
-	}; // class HDF5IOHelper
-} // namespace Dakota
+  void store_vector_data(const String &dset_name, const T *data,
+                         const int &len) const {
+    hsize_t dims[1];
+    dims[0] = len;
+    H5::DataSpace dataspace = H5::DataSpace(1, dims);
+    H5::DataType datatype = h5_file_dtype(*data);
+    // Assume dset_name is syntactically correct - will need some utils - RWH
+    create_groups(dset_name);
+    H5::DataSet dataset(
+      create_dataset(*filePtr, dset_name, datatype, dataspace) );
+    dataset.write(data, datatype);
+    return;
+  }
+}; // class HDF5IOHelper
+}  // namespace Dakota
 
 #endif // HDF5_IO_HELPER_HPP
 
