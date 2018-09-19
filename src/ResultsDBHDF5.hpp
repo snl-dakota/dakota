@@ -25,6 +25,8 @@ namespace Dakota {
 inline String method_hdf5_link_name(const StrStrSizet& iterator_id) {
   String method_id = iterator_id.get<1>();
 
+  // BMA: Method IDs should never be empty anymore, but verify before
+  // throwing error
   if (method_id.empty())
     method_id = "anonymous";
 

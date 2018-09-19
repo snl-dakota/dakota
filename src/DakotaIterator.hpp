@@ -488,12 +488,32 @@ private:
   /// Used by the envelope to instantiate the correct letter class
   Iterator* get_iterator(const String& method_string, Model& model);
 
+  /// return the next available method ID for no-ID user methods
+  static String user_auto_id();
+
+  /// return the next available method ID for on-the-fly methods
+  static String no_spec_id();
+
   //
   //- Heading: Data
   //
 
-  /// method identifier string from the input file
+  /// method identifier string from the input file, or an
+  /// auto-generated ID, such that each instance of an Iterator has a
+  /// unique ID
   String methodId;
+
+  // Data for numbering methods and their executions
+
+  /// the last used method ID number for no-ID user methods
+  /// (increment before each use)
+  static size_t userAutoIdNum;
+  /// the last used method ID number for on-the-fly instantiations
+  /// (increment before each use)
+  static size_t noSpecIdNum;
+
+  // BMA TODO: might be able to have execNum just be incremented
+  // per-class, instead of on a per-name/id basis
 
   /// an execution number for this instance of the class, unique
   /// across all instances of same methodName/methodId

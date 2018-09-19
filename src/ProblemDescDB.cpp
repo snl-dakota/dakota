@@ -480,7 +480,7 @@ void ProblemDescDB::set_db_list_nodes(const String& method_tag)
   // through: do not update iterators or locks, such that previous
   // specification settings remain active (NO_SPECIFICATION instances
   // within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_ID_")) {
     set_db_method_node(method_tag);
     if (methodDBLocked) {
       modelDBLocked = variablesDBLocked = interfaceDBLocked
@@ -581,7 +581,7 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
   // through: do not update dataMethodIter or methodDBLocked, such that
   // previous specification settings remain active (NO_SPECIFICATION
   // instances within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_ID_")) {
     // set the correct Index values for all Data class lists.
     if (method_tag.empty()) { // no pointer specification
       if (dataMethodList.size() == 1) // no ambiguity if only one spec
