@@ -279,14 +279,9 @@ public:
               const HDF5dss &scales = HDF5dss(),
               const AttributeArray &attrs = AttributeArray())
   {
-#ifdef DAKOTA_HAVE_HDF5
     if (hdf5DBActive)
       hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales, attrs);
-#endif
-
   }
-
-
 
 
   /// allocate an entry with array of StoredType of array_size for

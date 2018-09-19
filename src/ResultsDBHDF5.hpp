@@ -15,6 +15,8 @@
 #define DAKOTA_RESULTS_DB_HDF5_H
 
 #include "ResultsDBBase.hpp"
+// This file requires a complete implementation of HDF5_IO, so can't
+// conditionally compile
 #include "HDF5_IO.hpp"
 
 namespace Dakota {

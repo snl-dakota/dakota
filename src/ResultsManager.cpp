@@ -13,7 +13,9 @@
 
 #include "ResultsManager.hpp"
 #include "ResultsDBAny.hpp"
+#ifdef DAKOTA_HAVE_HDF5
 #include "ResultsDBHDF5.hpp"
+#endif
 
 namespace Dakota {
 
