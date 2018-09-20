@@ -512,11 +512,9 @@ private:
   /// (increment before each use)
   static size_t noSpecIdNum;
 
-  // BMA TODO: might be able to have execNum just be incremented
-  // per-class, instead of on a per-name/id basis
-
-  /// an execution number for this instance of the class, unique
-  /// across all instances of same methodName/methodId
+  /// An execution number for this instance of the class. Now that
+  /// each instance has a unique methodId, this is just a simple
+  /// counter.
   size_t execNum;
 
   /// track the available configurations that have been created

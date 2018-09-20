@@ -173,7 +173,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
   resultsDB(iterator_results_db), methodId(probDescDB.get_string("method.id")),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   if (methodId.empty())
     methodId = user_auto_id();
@@ -202,7 +202,7 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model.output_level()), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId(no_spec_id()),
+  resultsDB(iterator_results_db), methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
@@ -226,7 +226,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId(no_spec_id()),
+  resultsDB(iterator_results_db), methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
@@ -243,7 +243,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
     constructor, assignment operator, and destructor. */
 Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -1045,11 +1045,10 @@ void Iterator::run()
   if (iteratorRep)
     iteratorRep->run(); // envelope fwd to letter
   else {
-    // the same iterator might run multiple times, or need a unique ID due to
-    // name/id duplication, so increment execution number for this name/id pair
-    String method_string = method_enum_to_string(methodName);
-    execNum = ResultsID::instance().increment_id(method_string, method_id());
 
+    ++execNum;
+
+    String method_string = method_enum_to_string(methodName);
     initialize_run();
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";

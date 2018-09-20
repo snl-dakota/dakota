@@ -60,42 +60,6 @@
 
 namespace Dakota {
 
-/// Get a globally unique 1-based execution number for a given
-/// iterator name (combination of methodName and methodID) for use in
-/// results DB.  Each Iterator::run() call creates or increments this
-/// count for its string identifier.
-class ResultsID {
-
-public:
-  /// get the single unique instance of ResultsID
-  static ResultsID& instance();
-  /// explicitly increment the iterator results ID, init to 1 if needed
-  size_t increment_id(const std::string& method_name, 
-		      const std::string& method_id);
-  /// get (possibly creating) a unique iterator results ID for the passed name
-  size_t get_id(const std::string& method_name, 
-		const std::string& method_id);
-  /// get a unique iterator results ID for the passed name 
-  /// (const version errors if not found)
-  size_t get_id(const std::string& method_name, 
-		const std::string& method_id) const;
-
-private:
-  /// Private constructor for ResultsID
-  ResultsID() { /* empty */ }
-  /// Private destructor for ResultsID
-  ~ResultsID() { /* empty */ }
-  /// Private copy constructor for ResultsID
-  ResultsID(ResultsID const&);
-  /// Private assignment operator for ResultsID
-  ResultsID& operator=(ResultsID const&);
-
-  /// storage for the results IDs
-  std::map<std::pair<std::string, std::string>, size_t> idMap;
-
-};
-
-
 /// List of valid names for iterator results
 /** All data in the ResultsNames class is public, basically just a struct */
 class ResultsNames {
