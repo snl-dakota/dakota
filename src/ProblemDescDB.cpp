@@ -272,6 +272,7 @@ void ProblemDescDB::broadcast()
     // to all other ranks.
     if (parallelLib.world_size() > 1) {
       if (parallelLib.world_rank() == 0) {
+	enforce_unique_ids();
 	derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
@@ -296,6 +297,7 @@ void ProblemDescDB::broadcast()
 	   << dataVariablesList << dataInterfaceList << dataResponsesList
 	   << std::endl;
 #endif // DEBUG
+      enforce_unique_ids();
       derived_broadcast();
     }
   }
@@ -3782,6 +3784,61 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
     Cout << "End DAKOTA input file\n";
     Cout << "---------------------\n" << std::endl;
   }
+}
+
+/** Require string idenfitiers id_* to be unique across all blocks of
+    each type (method, model, variables, interface, responses
+
+    For now, this allows duplicate empty ID strings. Would be better
+    to require unique IDs when more than one block of a given type
+    appears in the input file (instead of use-the-last-parsed)
+*/
+void ProblemDescDB::enforce_unique_ids()
+{
+  bool found_error = false;
+  std::multiset<String> block_ids;
+
+  // Lambda to detect duplicate for the passed id, issuing error
+  // message for the specified block_type. Modifies set of block_ids
+  // and found_error status.
+  auto check_unique = [&block_ids, &found_error] (String block_type, String id) {
+    if (!id.empty()) {
+      block_ids.insert(id);
+      // (Only warn once per unique ID name)
+      if (block_ids.count(id) == 2) {
+	Cerr << "Error: id_" << block_type << " '" << id
+	     << "' appears more than once.\n";
+	found_error = true;
+      }
+    }
+  };
+
+  // This could be written more generically if the member was always
+  // called idString instead of a different name (idMethod, idModel,
+  // etc.) for each Data* class...; then the same code could apply to
+  // all data*List
+  for (auto data_cont : dataMethodList)
+    check_unique("method", data_cont.data_rep()->idMethod);
+  block_ids.clear();
+
+  for (auto data_cont : dataModelList)
+    check_unique("model", data_cont.data_rep()->idModel);
+  block_ids.clear();
+
+  for (auto data_cont : dataVariablesList)
+    check_unique("variables", data_cont.data_rep()->idVariables);
+  block_ids.clear();
+
+  for (auto data_cont : dataInterfaceList)
+    check_unique("interface", data_cont.data_rep()->idInterface);
+  block_ids.clear();
+
+  for (auto data_cont : dataResponsesList)
+    check_unique("responses", data_cont.data_rep()->idResponses);
+  block_ids.clear();
+
+  if (found_error)
+    abort_handler(PARSE_ERROR);
 }
 
 } // namespace Dakota
