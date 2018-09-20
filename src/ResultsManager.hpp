@@ -22,42 +22,6 @@
 #include <boost/any.hpp>
 
 
-
-// Design notes (BMA, Fall 2012)
-
-// This API uses concrete data types as underlying out of core DBs may
-// require it
-
-// eventually a set of databases, maybe with a list of what they
-// want notifications about
-
-// Ideally, individual out-of-core databases can choose when to
-// update, for example, HDF might allow continuous insertion, lookup,
-// whereas YAML or XML might only allow dump at end
-
-// Need ability to stream any of the databases, even text?
-
-// Could use observer pattern to notify databases of changes
-
-// Challenge: observer may not work if we don't want to store the new
-// data in-core
-
-// For efficiency, might want to allow posting of views if they'll
-// remain in-scope (dangerous): for now, require out of core for that case
-
-// May want to support heterogeneous storage to core or file, so
-// lookup in core, if fails, lookup in file.
-
-// Any inserted object needs to have associated meta data /
-// attributes; or does it?
-
-// Should we support stored data managed by someone else?
-
-// other formats generated at end, e.g. YAML from file-based HDF5
-
-// TODO: consider whether a factory pattern would be better for the ResultsEntry
-
-
 namespace Dakota {
 
 /// List of valid names for iterator results
@@ -66,100 +30,53 @@ class ResultsNames {
 
 public:
 
-  /// Default constructor initializes all valid names
-  ResultsNames():
-    namesVersion(0),
+  /// Default constructor
+  ResultsNames()  { /* no-op */}
 
-    // optimization
-    best_cv("Best Continuous Variables"),
-    best_div("Best Discrete Integer Variables"),
-    best_dsv("Best Discrete String Variables"),
-    best_drv("Best Discrete Real Variables"),
-    best_fns("Best Functions"),
+  size_t namesVersion = 0; //< Version number of the results names
 
-    // statistics
-    moments_std("Moments: Standard"),
-    moments_central("Moments: Central"),
-    moments_std_num("Moments: Standard: Numerical"),
-    moments_central_num("Moments: Central: Numerical"),
-    moments_std_exp("Moments: Standard: Expansion"),
-    moments_central_exp("Moments: Central: Expansion"),
-    moment_cis("Moment Confidence Intervals"),
-    extreme_values("Extreme Values"),
-    map_resp_prob("Response to Probability Mapping"),
-    map_resp_rel("Response to Reliability Mapping"),
-    map_resp_genrel("Response to Generalized Reliability Mapping"),
-    map_prob_resp("Probability to Response Mapping"),
-    map_rel_resp("Reliability to Response Mapping"),
-    map_genrel_resp("Generalized Reliability to Response Mapping"),
-    pdf_histograms("PDF Histograms"),
-
-    // correlations
-    correl_simple_all("Simple Correlations (All)"),
-    correl_simple_io("Simple Correlations (I/O)"),
-    correl_partial_io("Partial Correlations (I/O)"),
-    correl_simple_rank_all("Simple Rank Correlations (All)"),
-    correl_simple_rank_io("Simple Rank Correlations (I/O)"),	
-    correl_partial_rank_io("Partial Rank Correlations (I/O)"),
-
-    // approximations
-    pce_coeffs("PCE Coefficients: Standardized"),
-    pce_coeff_labels("PCE Coefficient Labels"),
-
-    // labels for variables/resposes
-    cv_labels("Continuous Variable Labels"),
-    div_labels("Discrete Integer Variable Labels"),
-    dsv_labels("Discrete String Variable Labels"),
-    drv_labels("Discrete Real Variable Labels"),
-    fn_labels("Function Labels")
-
-  { /* no-op */}
-
-  size_t namesVersion; //< Revision number Version of the results names
-
-
-  // optimization (all used)
-  std::string best_cv;
-  std::string best_div;
-  std::string best_dsv;
-  std::string best_drv;
-  std::string best_fns;
+  // optimization
+  std::string best_cv = "Best Continuous Variables";
+  std::string best_div = "Best Discrete Integer Variables";
+  std::string best_dsv = "Best Discrete std::string Variables";
+  std::string best_drv = "Best Discrete Real Variables";
+  std::string best_fns = "Best Functions";
 
   // statistics
-  std::string moments_std;              // used
-  std::string moments_central;
-  std::string moments_std_num;
-  std::string moments_central_num;
-  std::string moments_std_exp;
-  std::string moments_central_exp;
-  std::string moment_cis;               // used
-  std::string extreme_values;           // used
-  std::string map_resp_prob;            // used
-  std::string map_resp_rel;             // used
-  std::string map_resp_genrel;          // used
-  std::string map_prob_resp;            // used
-  std::string map_rel_resp;             // used
-  std::string map_genrel_resp;          // used
-  std::string pdf_histograms;           // used
+  std::string moments_std = "Moments: Standard";
+  std::string moments_central = "Moments: Central";
+  std::string moments_std_num = "Moments: Standard: Numerical";
+  std::string moments_central_num = "Moments: Central: Numerical";
+  std::string moments_std_exp = "Moments: Standard: Expansion";
+  std::string moments_central_exp = "Moments: Central: Expansion";
+  std::string moment_cis = "Moment Confidence Intervals";
+  std::string extreme_values = "Extreme Values";
+  std::string map_resp_prob = "Response to Probability Mapping";
+  std::string map_resp_rel = "Response to Reliability Mapping";
+  std::string map_resp_genrel = "Response to Generalized Reliability Mapping";
+  std::string map_prob_resp = "Probability to Response Mapping";
+  std::string map_rel_resp = "Reliability to Response Mapping";
+  std::string map_genrel_resp = "Generalized Reliability to Response Mapping";
+  std::string pdf_histograms = "PDF Histograms";
 
-  // correlations (all used)
-  std::string correl_simple_all;
-  std::string correl_simple_io;
-  std::string correl_partial_io;
-  std::string correl_simple_rank_all;
-  std::string correl_simple_rank_io;
-  std::string correl_partial_rank_io;
+  // correlations
+  std::string correl_simple_all = "Simple Correlations (All)";
+  std::string correl_simple_io = "Simple Correlations (I/O)";
+  std::string correl_partial_io = "Partial Correlations (I/O)";
+  std::string correl_simple_rank_all = "Simple Rank Correlations (All)";
+  std::string correl_simple_rank_io = "Simple Rank Correlations (I/O)";
+  std::string correl_partial_rank_io = "Partial Rank Correlations (I/O)";
 
-  // approximations (all used)
-  std::string pce_coeffs;
-  std::string pce_coeff_labels;
+  // approximations
+  std::string pce_coeffs = "PCE Coefficients: Standardized";
+  std::string pce_coeff_labels = "PCE Coefficient Labels";
 
-  // labels for variables/resposes (all used)
-  std::string cv_labels;
-  std::string div_labels;
-  std::string dsv_labels;
-  std::string drv_labels;
-  std::string fn_labels;
+  // labels for variables/resposes
+  std::string cv_labels = "Continuous Variable Labels";
+  std::string div_labels = "Discrete Integer Variable Labels";
+  std::string dsv_labels = "Discrete std::string Variable Labels";
+  std::string drv_labels = "Discrete Real Variable Labels";
+  std::string fn_labels = "Function Labels";
 };
 
 
@@ -187,7 +104,7 @@ class ResultsManager
 public:
 
   /// default constructor: no databases active until initialize called
-  ResultsManager(): coreDBActive(false), hdf5DBActive(false)
+  ResultsManager()
   { /* no-op*/ }
 
   /// initialize the results manager to manage an in-core database,
@@ -196,8 +113,10 @@ public:
 
   /// whether any databases are active
   bool active() const;
-  bool isCoreDBActive() const;
-  bool isHDF5DBActive() const;
+  /// whether the in-core DB is active
+  bool core_db_active() const;
+  /// whether the HDF5 DB is active
+  bool hdf5_db_active() const;
 
   // TODO: const
   /// Write in-core databases to file
@@ -215,7 +134,7 @@ public:
 	      const StoredType& sent_data,
 	      const MetaDataType metadata = MetaDataType())
   {
-    if (coreDBActive)
+    if (core_db_active())
       baseDB->insert(iterator_id, data_name, sent_data, metadata);
   }
   
@@ -226,11 +145,11 @@ public:
 	      const MetaDataType metadata = MetaDataType())
   {
     std::vector<std::string> vs_labels;
-    if (coreDBActive || hdf5DBActive) {
+    if (core_db_active() || hdf5_db_active()) {
       // convert to standard data type to store
       copy_data(sma_labels, vs_labels);
     }
-   if (coreDBActive)
+   if (core_db_active())
       baseDB->insert(iterator_id, data_name, vs_labels, metadata);
   }
 
@@ -243,7 +162,7 @@ public:
               const HDF5dss &scales = HDF5dss(),
               const AttributeArray &attrs = AttributeArray())
   {
-    if (hdf5DBActive)
+    if (hdf5_db_active())
       hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales, attrs);
   }
 
@@ -257,7 +176,7 @@ public:
 		 size_t array_size,
 		 const MetaDataType metadata = MetaDataType())
   {
-    if (coreDBActive)
+    if (core_db_active())
       baseDB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
 					 metadata);
   }
@@ -271,7 +190,7 @@ public:
 	       size_t index,
 	       const StoredType& sent_data)
   {
-    if (coreDBActive)
+    if (core_db_active())
       baseDB->array_insert<StoredType>(iterator_id, data_name, index, 
 				       sent_data);
   }
@@ -290,7 +209,7 @@ public:
     StringArray sent_data_sa;
     copy_data(sent_data, sent_data_sa);
 
-    if (coreDBActive)
+    if (core_db_active())
       baseDB->array_insert<StoredType>(iterator_id, data_name, index, 
 				       sent_data_sa);
   }
@@ -356,13 +275,8 @@ private:
 
   // TODO: consider removing or renaming flags based on HDF5 needs
 
-  /// whether the in-core database in active
-  bool coreDBActive;
   /// filename for the in-core database
   std::string coreDBFilename;
-
-  /// whether the file database is active
-  bool hdf5DBActive;
 
   /// Attempt at base class use
   std::shared_ptr<ResultsDBBase> baseDB;
@@ -385,6 +299,7 @@ private:
 // * Would probably need partial specialization to actually load the data
 // * Could also use operator[] to index the array
 // * Consider utilib::Any
+// * Would a factory pattern be better for the ResultsEntry?
 
 /// Class to manage in-core vs. file database lookups
 /** ResultsEntry manages database lookups.  If a core database is
@@ -439,7 +354,7 @@ ResultsEntry<StoredType>::
 ResultsEntry(const ResultsManager& results_mgr,
 	     const StrStrSizet& iterator_id,
 	     const std::string& data_name): 
-  coreActive(results_mgr.coreDBActive)
+  coreActive(results_mgr.core_db_active())
 {
   // populate the local dbData object if needed
   if (coreActive)
@@ -461,7 +376,7 @@ ResultsEntry(const ResultsManager& results_mgr,
 	     const StrStrSizet& iterator_id,
 	     const std::string& data_name,
 	     size_t array_index):
-  coreActive(results_mgr.coreDBActive)
+  coreActive(results_mgr.core_db_active())
 {
   // populate the local dbData object if needed
   if (coreActive)

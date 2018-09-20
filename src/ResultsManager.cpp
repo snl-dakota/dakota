@@ -21,13 +21,11 @@ namespace Dakota {
 
 void ResultsManager::initialize(const std::string& base_filename)
 {
-  coreDBActive = true;
   coreDBFilename = base_filename + ".txt";
   baseDB.reset(new ResultsDBAny());
   //coreDB = std::dynamic_pointer_cast<ResultsDBAny>(baseDB);
 
 #ifdef DAKOTA_HAVE_HDF5
-  hdf5DBActive = true;
   bool in_core = false;
   hdf5DB.reset(new ResultsDBHDF5(in_core, base_filename));
 #endif
@@ -35,23 +33,23 @@ void ResultsManager::initialize(const std::string& base_filename)
 
 bool ResultsManager::active() const
 {
-   return (coreDBActive || hdf5DBActive);
+   return (core_db_active() || hdf5_db_active());
 }
 
-bool ResultsManager::isCoreDBActive() const
+bool ResultsManager::core_db_active() const
 {
-  return coreDBActive;
+  return baseDB.get() != nullptr;
 }
 
-bool ResultsManager::isHDF5DBActive() const
+bool ResultsManager::hdf5_db_active() const
 {
-  return hdf5DBActive;
+  return hdf5DB.get() != nullptr;
 }
 
 
 void ResultsManager::write_databases()
 {
-  if (coreDBActive) {
+  if (core_db_active()) {
     //  coreDB->dump_data(Cout);
     //  coreDB->print_data(Cout);
     std::shared_ptr<ResultsDBAny> coreDB = std::dynamic_pointer_cast<ResultsDBAny>(baseDB);
@@ -64,7 +62,7 @@ void ResultsManager::add_metadata_for_method(const StrStrSizet& iterator_id,
                                              const AttributeArray &attrs)  
 {
 #ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
+    if (hdf5_db_active())
       hdf5DB->add_metadata_for_method(iterator_id, attrs);
 #endif
 }
@@ -73,7 +71,7 @@ void ResultsManager::add_metadata_for_execution(const StrStrSizet& iterator_id,
                                                 const AttributeArray &attrs)  
 {
 #ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
+    if (hdf5_db_active())
       hdf5DB->add_metadata_for_execution(iterator_id, attrs);
 #endif
 }
