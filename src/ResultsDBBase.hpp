@@ -33,9 +33,12 @@ namespace Dakota {
 typedef std::pair<boost::any, MetaDataType> ResultsValueType;
 
 
-/** Class: ResultsDBBase
-    Description: A map-based container to store DAKOTA Iterator
-    results in underlying boost::anys, with optional metadata */
+/**
+ * Class: ResultsDBBase
+ *
+ * Description: A map-based container to store DAKOTA Iterator
+ * results in underlying boost::anys, with optional metadata
+ */
 class ResultsDBBase
 {
 
@@ -48,26 +51,26 @@ public:
   /// array across response functions or optimization results sets
   template<typename StoredType>
   void array_allocate(const StrStrSizet& iterator_id,
-		      const std::string& data_name, size_t array_size,
-		      const MetaDataType& metadata);
+                      const std::string& data_name, size_t array_size,
+                      const MetaDataType& metadata);
 
   /// insert sent_data in specified position in previously allocated array
   template<typename StoredType>
   void array_insert(const StrStrSizet& iterator_id,
-		    const std::string& data_name, size_t index,
-		    const StoredType& sent_data);
+                    const std::string& data_name, size_t index,
+                    const StoredType& sent_data);
 
   virtual
   void add_metadata_for_method(
-              const StrStrSizet& iterator_id,
-              const AttributeArray &attrs = AttributeArray()
-              ) = 0;
+                    const StrStrSizet& iterator_id,
+                    const AttributeArray &attrs = AttributeArray()
+                    ) = 0;
 
   virtual
   void add_metadata_for_execution(
-              const StrStrSizet& iterator_id,
-              const AttributeArray &attrs = AttributeArray()
-              ) = 0;
+                    const StrStrSizet& iterator_id,
+                    const AttributeArray &attrs = AttributeArray()
+                    ) = 0;
 
   // TODO: For the following need const/non-const versions and
   // value/ref versions...
@@ -97,10 +100,10 @@ public:
   /// record addition with metadata map
   virtual void 
   insert(const StrStrSizet& iterator_id,
-	 const std::string& data_name,
-	 const boost::any& result,
-	 const MetaDataType& metadata
-	 ) = 0;
+         const std::string& data_name,
+         const boost::any& result,
+         const MetaDataType& metadata
+         ) = 0;
 
   /// record addition with metadata map and scales data
   virtual void
@@ -144,20 +147,20 @@ protected:
 template<typename StoredType>
 void ResultsDBBase::
 array_allocate(const StrStrSizet& iterator_id,
-	       const std::string& data_name, size_t array_size,
-	       const MetaDataType& metadata) 
+               const std::string& data_name, size_t array_size,
+               const MetaDataType& metadata) 
 {
   // add a vector of the StoredType, with metadata
   insert(iterator_id, data_name, std::vector<StoredType>(array_size),
-	 metadata);
+         metadata);
 }
 
 /** insert requires previous allocation, and does not allow metadata update */
 template<typename StoredType>
 void ResultsDBBase::
 array_insert(const StrStrSizet& iterator_id,
-	     const std::string& data_name, size_t index,
-	     const StoredType& sent_data)
+             const std::string& data_name, size_t index,
+             const StoredType& sent_data)
 {
   ResultsKeyType key = make_key(iterator_id, data_name);
 
@@ -166,9 +169,9 @@ array_insert(const StrStrSizet& iterator_id,
 
   if (data_it == iteratorData.end()) {
     Cerr << "\nError: Must allocate array before insert" 
-	 << "\n  Iterator ID: " << iterator_id
-	 << "\n  Data name: " << data_name
-	 << std::endl;
+         << "\n  Iterator ID: " << iterator_id
+         << "\n  Data name: " << data_name
+         << std::endl;
     abort_handler(-1);
   }
   else {
@@ -186,9 +189,7 @@ array_insert(const StrStrSizet& iterator_id,
       abort_handler(-1);
     }
     stored_data[index] = sent_data;
-
-  }  
-
+  }
 }
 
 

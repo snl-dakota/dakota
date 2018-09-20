@@ -20,9 +20,12 @@
 
 namespace Dakota {
 
-/** Class: ResultsDBAny
-    Description: A map-based container to store DAKOTA Iterator
-    results in underlying boost::anys, with optional metadata */
+/**
+ * Class: ResultsDBAny
+ *
+ * Description: A map-based container to store DAKOTA Iterator
+ * results in underlying boost::anys, with optional metadata
+ */
 class ResultsDBAny : public ResultsDBBase
 {
 
@@ -31,12 +34,19 @@ public:
   void add_metadata_for_method(
               const StrStrSizet& iterator_id,
               const AttributeArray &attrs = AttributeArray()) override
-  { std::cout << "ResultsDBAny needs to implement add_metadata_for_method(...)." << std::endl; }
+  {
+    std::cout << "ResultsDBAny needs to implement add_metadata_for_method(...)."
+              << std::endl;
+  }
 
   void add_metadata_for_execution(
               const StrStrSizet& iterator_id,
               const AttributeArray &attrs = AttributeArray()) override
-  { std::cout << "ResultsDBAny needs to implement add_metadata_for_execution(...)." << std::endl; }
+  {
+    std::cout << "ResultsDBAny needs to implement "
+              << "add_metadata_for_execution(...)."
+              << std::endl;
+  }
   
   /// record addition with metadata map
   void 
@@ -54,13 +64,15 @@ public:
          const boost::any& data,
          const HDF5dss &scales = HDF5dss(),
          const AttributeArray &attrs = AttributeArray()) override
-  { std::cout << "ResultsDBAny needs to implement insert(...) w/o metadata." << std::endl; }
+  {
+    std::cout << "ResultsDBAny needs to implement insert(...) w/o metadata."
+              << std::endl;
+  }
 
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
   /// pretty print the data to the passed output stream
-  void
-  print_data(std::ostream& output_stream);
+  void print_data(std::ostream& output_stream);
 
 
 private:
@@ -82,8 +94,7 @@ private:
 		   std::ostream& os);
 
   /// output data to ostream
-  void output_data(const std::vector<RealMatrix>& data, 
-		   std::ostream& os);
+  void output_data(const std::vector<RealMatrix>& data, std::ostream& os);
   /// output data to ostream
   void output_data(const RealMatrix& data, std::ostream& os);
 
