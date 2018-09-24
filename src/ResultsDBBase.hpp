@@ -63,13 +63,13 @@ public:
   virtual
   void add_metadata_for_method(
                     const StrStrSizet& iterator_id,
-                    const AttributeArray &attrs = AttributeArray()
+                    const AttributeArray &attrs
                     ) = 0;
 
   virtual
   void add_metadata_for_execution(
                     const StrStrSizet& iterator_id,
-                    const AttributeArray &attrs = AttributeArray()
+                    const AttributeArray &attrs
                     ) = 0;
 
   // TODO: For the following need const/non-const versions and

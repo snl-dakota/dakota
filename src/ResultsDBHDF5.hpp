@@ -21,48 +21,10 @@
 
 namespace Dakota {
 
-// Helper functions for naming datasets and scales
-
 /// Create a method name (HDF5 link name) from iterator_id
-inline String method_hdf5_link_name(const StrStrSizet& iterator_id) {
-  String method_id = iterator_id.get<1>();
-
-  // BMA: Method IDs should never be empty anymore, but verify before
-  // throwing error
-  if (method_id.empty())
-    method_id = "anonymous";
-
-  String rval = "/methods/" + method_id;
-  return rval;
-}
-
+String method_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create an execution name (HDF5 link name) from iterator_id
-inline String execution_hdf5_link_name(const StrStrSizet& iterator_id) {
-  const size_t& exec_num = iterator_id.get<2>();
-  String rval = method_hdf5_link_name(iterator_id) + "/execution:" +
-    boost::lexical_cast<String>(exec_num);
-  return rval;
-}
-
-/// Create a dataset name from the unique identifiers passed
-inline String dataset_hdf5_link_name(const StrStrSizet& iterator_id,
-                                     const String& result_name,
-                                     const String& response_name)
-{
-  String result_name_wospace(result_name);
-  //    boost::replace_all(data_name_wospace, " ", ":");
-  //boost::erase_all(data_name_wospace, " ");
-  
-  String rval = execution_hdf5_link_name(iterator_id)
-                + '/' + result_name_wospace;
-  // some types of results, like correlation matrices, may
-  // have an empty response name.
-  if(!response_name.empty()) {
-    rval += '/' + response_name;
-  }
-  return rval;
-}
-
+String execution_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create a scale name (hdf5 link name) for a scale
 template<typename ScaleType>
 String scale_hdf5_link_name(const StrStrSizet& iterator_id,
@@ -73,8 +35,8 @@ String scale_hdf5_link_name(const StrStrSizet& iterator_id,
   //    boost::replace_all(data_name_wospace, " ", ":");
   //boost::erase_all(data_name_wospace, " ");
   
-  // When scales are SHARED (by all the resposnes), they are stored under
-  // _scales/label. When they are UNSHARED, they go under _scales/label/response
+  // When scales are SHARED (by all the responses), they are stored under
+  // label. When they are UNSHARED, they go under label/response
 
   String rval = "/_scales" + execution_hdf5_link_name(iterator_id) + '/';
   if(!response_name.empty()) {
@@ -88,7 +50,10 @@ String scale_hdf5_link_name(const StrStrSizet& iterator_id,
 }
 
 
+
 // Visitor classes for processing scales and metadata
+// These are needed by boost::variant to do compile-time checking of
+// types.
 
 class AddAttributeVisitor : public boost::static_visitor <>
 {
@@ -154,16 +119,10 @@ public:
 
 
   /// record addition with metadata map
-  void 
-  insert(const StrStrSizet& iterator_id,
-	 const std::string& data_name,
-	 const boost::any& result,
-	 const MetaDataType& metadata
-	 ) override
-  {
-    std::cout << "ResultsDBHDF5 needs to implement insert(...) with metadata."
-              << std::endl;
-  }
+  void insert(const StrStrSizet& iterator_id,
+	                const std::string& data_name,
+                        const boost::any& result,
+                        const MetaDataType& metadata) override;
 
   /// insert an arbitrary type (eg RealMatrix) with scales
   void insert(const StrStrSizet& iterator_id,
@@ -171,77 +130,15 @@ public:
               const std::string& response_name,
               const boost::any& data,
               const HDF5dss &scales = HDF5dss(),
-              const AttributeArray &attrs = AttributeArray()) override
-  {
-    // Store the results
-    String dset_name =
-      dataset_hdf5_link_name(iterator_id, result_name, response_name);
-    // Need to fix this to use incoming "data"
-    if (data.type() == typeid(std::vector<double>)) {
-      hdf5Stream->store_vector_data(
-        dset_name, boost::any_cast<std::vector<double> >(data));
-    }
-    else if (data.type() == typeid(RealVector)) {
-      hdf5Stream->store_vector_data(
-        dset_name, boost::any_cast<RealVector>(data));
-    }
-    //  ----------------------------
-    //  These are some more types that HDF5 I/O utils will need to support ...
-    //  ----------------------------
-    //else if (data.type() == typeid(std::vector<std::string>)) {
-    //  hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<std::string> >(data));
-    //}
-    //else if (data.type() == typeid(std::vector<RealVector>)) {
-    //  hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<RealVector> >(data));
-    //}
-    //else if (data.type() == typeid(std::vector<RealMatrix>)) {
-    //  hdf5Stream->store_vector_data(dset_name, boost::any_cast<std::vector<RealMatrix> >(data));
-    //}
-    else
-    {
-      Cerr << "Warning: unknown type of any: " << data.type().name()
-           << std::endl;
-      abort_handler(-1);
-    }
+              const AttributeArray &attrs = AttributeArray()) override;
 
-    // Store and attach the dimension scales.
-    // Iteration must be explicit for the dimension scales because they are stored in a
-    // multimap, which is a container of pairs, not of boost::variants
-    for(auto &s : scales) {  // s is a std::pair<int, boost::variant<StringScale, RealScale> >
-      int index = s.first;
-      AttachScaleVisitor visitor(
-        iterator_id, result_name, response_name, index, dset_name, hdf5Stream
-      );
-      boost::apply_visitor(visitor, s.second);
-
-    }
-    // Add metadata to the dataset
-    AddAttributeVisitor attribute_adder(dset_name, hdf5Stream);
-    std::for_each(
-      attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-    );
-  }
-
+  /// Add attributes to the HDF5 method group
   void add_metadata_for_method(const StrStrSizet& iterator_id,
-              const AttributeArray &attrs = AttributeArray()) override
-  {
-    String name = method_hdf5_link_name(iterator_id);
-    AddAttributeVisitor attribute_adder(name, hdf5Stream);
-    std::for_each(
-      attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-    );
-  }
+              const AttributeArray &attrs) override;
 
+  /// Add attributes to the HDF5 execution group
   void add_metadata_for_execution(const StrStrSizet& iterator_id,
-              const AttributeArray &attrs = AttributeArray()) override
-  {
-    String name = execution_hdf5_link_name(iterator_id);
-    AddAttributeVisitor attribute_adder(name, hdf5Stream);
-    std::for_each(
-      attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-    );
-  }
-
+              const AttributeArray &attrs) override;
  
   /// allocate an entry with sized array of the StoredType, e.g.,
   /// array across response functions or optimization results sets

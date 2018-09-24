@@ -33,7 +33,7 @@ public:
 
   void add_metadata_for_method(
               const StrStrSizet& iterator_id,
-              const AttributeArray &attrs = AttributeArray()) override
+              const AttributeArray &attrs) override
   {
     std::cout << "ResultsDBAny needs to implement add_metadata_for_method(...)."
               << std::endl;
@@ -41,7 +41,7 @@ public:
 
   void add_metadata_for_execution(
               const StrStrSizet& iterator_id,
-              const AttributeArray &attrs = AttributeArray()) override
+              const AttributeArray &attrs) override
   {
     std::cout << "ResultsDBAny needs to implement "
               << "add_metadata_for_execution(...)."
