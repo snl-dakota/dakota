@@ -61,7 +61,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  mcmcDerivOrder(1),
+  mcmcDerivOrder(7),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
   scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
@@ -2546,8 +2546,70 @@ void NonDBayesCalibration::calculate_evidence()
     sum_like += std::exp(log_like);
   }
   double evidence = sum_like/num_prior_samples;
-  Cout << "Model evidence = " << evidence << '\n';
+  Cout << "Model evidence calculated via sampling = " << evidence << '\n';
   Cout << "num samples = " << num_prior_samples << '\n';
+
+  Cout << "Starting Laplace approximation of model evidence, first " 
+       << "\nobtain MAP point from pre-solve.\n";
+  const RealVector& map_c_vars
+    = mapOptimizer.variables_results().continuous_variables();
+  //for (size_t j=0; j<numContinuousVars; ++j)
+  //    Cout << "            " << std::setw(12) << map_c_vars[j]; 
+  //Cout << std::endl;
+  //estimate likelihood at MAP point: 
+  residualModel.continuous_variables(map_c_vars);
+  ActiveSet resAS = residualModel.current_response().active_set();
+  resAS.request_values(7);
+  residualModel.evaluate(resAS);
+  RealVector residual = residualModel.current_response().function_values();
+  Real laplace_like = log_likelihood(residual, map_c_vars);
+  //obtain prior density at MAP point: 
+  Real laplace_prior =  nonDBayesInstance->log_prior_density(map_c_vars);
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Residual at MAP point" << residualModel.current_response() << '\n';
+    Cout << "Log_likelihood at MAP Point" << laplace_like << '\n';
+    Cout << "Laplace_prior " << laplace_prior << "\n";
+  }
+  Response nlpost_resp = negLogPostModel.current_response().copy();
+  ActiveSet as2 = nlpost_resp.active_set();
+  as2.request_values(7);
+  nlpost_resp.active_set(as2);
+  neg_log_post_resp_mapping(mapOptimizer.variables_results(), mapOptimizer.variables_results(), residualModel.current_response(), nlpost_resp);
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Negative log posterior function values " << nlpost_resp.function_values() << '\n';
+    Cout << "Negative log posterior Hessian " << nlpost_resp.function_hessian_view(0) << '\n';
+    //Cout << nlpost_resp << '\n';
+  }
+  RealSymMatrix log_hess;
+  nonDBayesInstance->
+    expData.build_hessian_of_sum_square_residuals(residualModel.current_response(), log_hess);
+  // Add the contribution from 1/2*log(det(Cov))
+  nonDBayesInstance->expData.half_log_cov_det_hessian
+    (0, nonDBayesInstance->obsErrorMultiplierMode, 
+    nonDBayesInstance->numContinuousVars, log_hess);
+  // Add the contribution from -log(prior)
+  nonDBayesInstance->augment_hessian_with_log_prior(log_hess, map_c_vars);
+  Cout << "Laplace approximation: negative log posterior Hessian:\n"
+       <<  log_hess << "\n";
+  CovarianceMatrix local_log_post_hess; 
+  // for now, the matrix passed to set_covariance is a RealMatrix, not RealSymMatrix
+  RealMatrix clog_hess(numContinuousVars, numContinuousVars);
+  for (int i=0; i<numContinuousVars; i++) {
+    for (int j=0; j<numContinuousVars; j++) {
+      clog_hess(i,j)=log_hess(i,j);
+    }
+  }
+  try {
+    local_log_post_hess.set_covariance(const_cast<RealMatrix&>(clog_hess)); 
+    Cout << "log determinant post" << local_log_post_hess.log_determinant() <<std::endl; 
+    double lpres= laplace_prior+laplace_like+numContinuousVars*HALF_LOG_2PI-0.5*local_log_post_hess.log_determinant();
+    Cout << "Laplace Model evidence = " << std::exp(lpres) <<  '\n';
+  }
+  catch (const std::runtime_error& re){
+    Cout << "Can't compute model evidence because the Hessian of the negative log posterior distribution " 
+         << "is not positive definite. " << re.what();
+  }
+ 
 }
 
 void NonDBayesCalibration::print_intervals_file
