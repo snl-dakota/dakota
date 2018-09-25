@@ -44,6 +44,9 @@ class ResultsDBBase
 
 public:
 
+  ResultsDBBase(const String& filename) :
+    fileName(filename)
+  { }
   
   // Templated allocation, insertion, and retrieval functions
 
@@ -118,10 +121,13 @@ public:
 
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
-//  /// coarsely dump the data to the passed output stream
-//  void
-//  dump_data(std::ostream& output_stream);
+  /// coarsely dump the data to the passed output stream
+  virtual void
+  print_data(std::ostream& output_stream)
+    { /* no-op */ }
 
+  const String& filename() const
+    { return fileName; }
 
 protected:
 
@@ -136,6 +142,9 @@ protected:
 //  /// cast the pointer to the any data to the requested type
 //  template<typename StoredType>
 //  const StoredType* cast_data_ptr(const boost::any* dataholder) const;
+
+  /// filename for database
+  std::string fileName;
 
   /// core data storage (map from key to value type)
   std::map<ResultsKeyType, ResultsValueType> iteratorData;
@@ -169,11 +178,11 @@ array_insert(const StrStrSizet& iterator_id,
     iteratorData.find(key);
 
   if (data_it == iteratorData.end()) {
-    Cerr << "\nError: Must allocate array before insert" 
+    Cout << "\nWarning: Skipping unallocated array insert for " 
          << "\n  Iterator ID: " << iterator_id
          << "\n  Data name: " << data_name
          << std::endl;
-    abort_handler(-1);
+    //abort_handler(-1);
   }
   else {
 

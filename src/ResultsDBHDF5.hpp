@@ -112,10 +112,9 @@ class ResultsDBHDF5 : public ResultsDBBase
 public:
 
   ResultsDBHDF5(bool in_core, const String& base_filename) :
-    hdf5Stream(new HDF5IOHelper(
-      base_filename + (in_core ? ".tmp.h5" : ".h5"), true) )
-  { 
-  }
+    ResultsDBBase(base_filename + (in_core ? ".tmp.h5" : ".h5")),
+    hdf5Stream(new HDF5IOHelper(fileName, true))
+    { }
 
 
   /// record addition with metadata map

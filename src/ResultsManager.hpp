@@ -113,10 +113,6 @@ public:
 
   /// whether any databases are active
   bool active() const;
-  /// whether the in-core DB is active
-  bool core_db_active() const;
-  /// whether the HDF5 DB is active
-  bool hdf5_db_active() const;
 
   // TODO: const
   /// Write in-core databases to file
@@ -134,8 +130,8 @@ public:
 	      const StoredType& sent_data,
 	      const MetaDataType metadata = MetaDataType())
   {
-    if (core_db_active())
-      baseDB->insert(iterator_id, data_name, sent_data, metadata);
+    for( auto & db : resultsDBs )
+      db->insert(iterator_id, data_name, sent_data, metadata);
   }
   
   // TODO: can't seem to pass SMACV by const ref...
@@ -144,13 +140,15 @@ public:
 	      StringMultiArrayConstView sma_labels,
 	      const MetaDataType metadata = MetaDataType())
   {
-    std::vector<std::string> vs_labels;
-    if (core_db_active() || hdf5_db_active()) {
+    if( active() )
+    {
+      std::vector<std::string> vs_labels;
       // convert to standard data type to store
       copy_data(sma_labels, vs_labels);
+
+      for( auto & db : resultsDBs )
+        db->insert(iterator_id, data_name, vs_labels, metadata);
     }
-   if (core_db_active())
-      baseDB->insert(iterator_id, data_name, vs_labels, metadata);
   }
 
   /// Insert using dimension scales type (HDF5dss in dakota_results_types.hpp)
@@ -163,8 +161,8 @@ public:
               const AttributeArray &attrs = AttributeArray(),
               const bool &transpose = false)
   {
-    if (hdf5_db_active())
-      hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales, attrs, transpose);
+    for( auto & db : resultsDBs )
+      db->insert(iterator_id, result_name, response_name, sent_data, scales, attrs, transpose);
   }
 
 
@@ -177,9 +175,8 @@ public:
 		 size_t array_size,
 		 const MetaDataType metadata = MetaDataType())
   {
-    if (core_db_active())
-      baseDB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
-					 metadata);
+    for( auto & db : resultsDBs )
+      db->array_allocate<StoredType>(iterator_id, data_name, array_size, metadata);
   }
 
   /// insert into a previously allocated array of StoredType at index
@@ -191,9 +188,8 @@ public:
 	       size_t index,
 	       const StoredType& sent_data)
   {
-    if (core_db_active())
-      baseDB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data);
+    for( auto & db : resultsDBs )
+      db->array_insert<StoredType>(iterator_id, data_name, index, sent_data);
   }
 
   /// specialization: insert a SMACV into a previously allocated array
@@ -206,17 +202,19 @@ public:
 	       size_t index,
 	       StringMultiArrayConstView sent_data)
   {
-    // copy the data to native container for storage
-    StringArray sent_data_sa;
-    copy_data(sent_data, sent_data_sa);
+    if( active() ) {
+      // copy the data to native container for storage
+      StringArray sent_data_sa;
+      copy_data(sent_data, sent_data_sa);
 
-    if (core_db_active())
-      baseDB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data_sa);
+      for( auto & db : resultsDBs )
+        db->array_insert<StoredType>(iterator_id, data_name, index, sent_data_sa);
+    }
   }
 
   void add_metadata_for_method(const StrStrSizet& iterator_id,
                                const AttributeArray &attrs);
+
   void add_metadata_for_execution(const StrStrSizet& iterator_id,
                                   const AttributeArray &attrs);
 
@@ -276,18 +274,7 @@ private:
 
   // TODO: consider removing or renaming flags based on HDF5 needs
 
-  /// filename for the in-core database
-  std::string coreDBFilename;
-
-  /// Attempt at base class use
-  std::shared_ptr<ResultsDBBase> baseDB;
-
-  /// In-core database, with option to flush to file at end
-  //std::shared_ptr<ResultsDBAny> coreDB;
-
-  /// File-based database; using shared_ptr due to potentially incomplete type
-  /// and requirements for checked_delete in debug builds
-  std::unique_ptr<ResultsDBBase> hdf5DB;
+  std::vector<std::shared_ptr<ResultsDBBase> > resultsDBs;
 
 };  // class ResultsManager
 

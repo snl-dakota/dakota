@@ -28,7 +28,6 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_results_manager_init) {
   results_manager.initialize(database_name);
 
   TEST_ASSERT( results_manager.active() );
-  TEST_ASSERT( results_manager.hdf5_db_active() );
 }
 
 TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {

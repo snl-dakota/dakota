@@ -21,59 +21,42 @@ namespace Dakota {
 
 void ResultsManager::initialize(const std::string& base_filename)
 {
-  coreDBFilename = base_filename + ".txt";
-  baseDB.reset(new ResultsDBAny());
-  //coreDB = std::dynamic_pointer_cast<ResultsDBAny>(baseDB);
+  resultsDBs.clear();
 
+  // Could allow the various backends to self-register ... RWH
+  resultsDBs.push_back(std::make_shared<ResultsDBAny>(base_filename));
 #ifdef DAKOTA_HAVE_HDF5
-  bool in_core = false;
-  hdf5DB.reset(new ResultsDBHDF5(in_core, base_filename));
+  resultsDBs.push_back(std::make_shared<ResultsDBHDF5>(false /* in_core */, base_filename));
 #endif
 }
 
 bool ResultsManager::active() const
 {
-   return (core_db_active() || hdf5_db_active());
-}
-
-bool ResultsManager::core_db_active() const
-{
-  return baseDB.get() != nullptr;
-}
-
-bool ResultsManager::hdf5_db_active() const
-{
-  return hdf5DB.get() != nullptr;
+   return !resultsDBs.empty();
 }
 
 
 void ResultsManager::write_databases()
 {
-  if (core_db_active()) {
-    //  coreDB->dump_data(Cout);
-    //  coreDB->print_data(Cout);
-    std::shared_ptr<ResultsDBAny> coreDB = std::dynamic_pointer_cast<ResultsDBAny>(baseDB);
-    std::ofstream results_file(coreDBFilename.c_str());
-    coreDB->print_data(results_file);
+  for( auto & db : resultsDBs )
+  {
+    std::ofstream results_file(db->filename().c_str());
+    db->print_data(results_file);
   }
 }
 
 void ResultsManager::add_metadata_for_method(const StrStrSizet& iterator_id,
                                              const AttributeArray &attrs)  
 {
-#ifdef DAKOTA_HAVE_HDF5
-    if (hdf5_db_active())
-      hdf5DB->add_metadata_for_method(iterator_id, attrs);
-#endif
+  for( auto & db : resultsDBs )
+    db->add_metadata_for_method(iterator_id, attrs);
 }
 
 void ResultsManager::add_metadata_for_execution(const StrStrSizet& iterator_id,
                                                 const AttributeArray &attrs)  
 {
-#ifdef DAKOTA_HAVE_HDF5
-    if (hdf5_db_active())
-      hdf5DB->add_metadata_for_execution(iterator_id, attrs);
-#endif
+  for( auto & db : resultsDBs )
+    db->add_metadata_for_execution(iterator_id, attrs);
 }
 
 

@@ -31,6 +31,10 @@ class ResultsDBAny : public ResultsDBBase
 
 public:
 
+  ResultsDBAny(const String& base_filename) :
+    ResultsDBBase( base_filename + ".txt" )
+  { }
+
   void add_metadata_for_method(
               const StrStrSizet& iterator_id,
               const AttributeArray &attrs) override
@@ -73,7 +77,7 @@ public:
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
   /// pretty print the data to the passed output stream
-  void print_data(std::ostream& output_stream);
+  void print_data(std::ostream& output_stream) override;
 
 
 private:
