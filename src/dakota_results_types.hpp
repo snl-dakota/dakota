@@ -285,6 +285,15 @@ struct StringScale {
       [](const String &s) { return s.c_str();});
   }
 
+  StringScale(const std::string & in_label, 
+        std::vector<const char *> in_items,
+        ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    items.resize(in_items.size());
+    std::copy(in_items.begin(), in_items.end(), items.begin()); 
+    scope = in_scope;
+  }
+
   std::string label;
   ScaleScope scope;
   std::vector<const char *> items;

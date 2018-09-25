@@ -130,7 +130,8 @@ public:
               const std::string& response_name,
               const boost::any& data,
               const HDF5dss &scales = HDF5dss(),
-              const AttributeArray &attrs = AttributeArray()) override;
+              const AttributeArray &attrs = AttributeArray(),
+              const bool &transpose = false) override;
 
   /// Add attributes to the HDF5 method group
   void add_metadata_for_method(const StrStrSizet& iterator_id,

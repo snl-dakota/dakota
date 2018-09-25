@@ -112,7 +112,8 @@ public:
          const std::string& response_name,
          const boost::any& data,
          const HDF5dss &scales = HDF5dss(),
-         const AttributeArray &attrs = AttributeArray()
+         const AttributeArray &attrs = AttributeArray(),
+         const bool &transpose = false
          ) = 0;
 
   // NOTE: removed accessors to add metadata only or record w/o metadata

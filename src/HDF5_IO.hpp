@@ -195,6 +195,58 @@ class HDF5IOHelper
     store_vector_data(dset_name, &vec[0], vec.length());
     return;
   }
+  
+  /// Write a Teuchos::SerialDenseMatrix to a dataset
+  template<typename T>
+  void store_matrix_data(const std::string &dset_name, 
+      const Teuchos::SerialDenseMatrix<int,T> & matrix, 
+      const bool &transpose = false) const {
+
+    hsize_t f_dims[2], m_dims[2]; // file and memory dimensions
+    H5::DataSpace f_dataspace, m_dataspace; // file and memory DataSpaces
+    const int &num_cols = matrix.numCols();
+    const int &num_rows = matrix.numRows();
+
+    // Assume dset_name is syntactically correct - will need some utils - RWH
+    create_groups(dset_name);
+    H5::DataType f_datatype = h5_file_dtype(matrix[0][0]); // file datatype
+    H5::DataType m_datatype = h5_mem_dtype(matrix[0][0]);  // memory datatype
+
+    // SerialDenseMatrixes are stored column-major, but HDF5 assumes row-major
+    // storage. If transposed storage is requested, we therefore don't need to 
+    // do anything special to the dataspace
+    if(transpose) {
+      m_dims[0] = f_dims[0] = num_cols;
+      m_dims[1] = f_dims[1] = num_rows;
+      f_dataspace.setExtentSimple(2, f_dims);
+      m_dataspace.setExtentSimple(2, m_dims);
+      H5::DataSet dataset(
+        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+      dataset.write(matrix.values(), m_datatype, m_dataspace, f_dataspace);
+    } else {
+      // to write an un-tranposed matrix, we use HDF5 hyperslab selections to 
+      // sequentially grab rows of the matrix in memory and write them into rows
+      // of the dataset in file. This is a little tricky because rows in memory 
+      // are non-contiguous due to column-major storage of SDMs.
+      m_dims[1] = f_dims[0] = num_rows;
+      m_dims[0] = f_dims[1] = num_cols;
+      f_dataspace.setExtentSimple(2, f_dims);
+      m_dataspace.setExtentSimple(2, m_dims);
+      H5::DataSet dataset(
+        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+      hsize_t m_start[2], f_start[2];
+      m_start[0] = f_start[1] = 0;
+      hsize_t m_count[2] = {hsize_t(num_cols), 1};
+      hsize_t f_count[2] = {1, hsize_t(num_cols)};
+      for(int i = 0; i < num_rows; ++i) {
+        m_start[1] = f_start[0] = i;
+        m_dataspace.selectHyperslab(H5S_SELECT_SET, m_count, m_start);
+        f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+        dataset.write(matrix.values(), m_datatype, m_dataspace, f_dataspace);
+      }
+    }
+    return;
+  }
 
   //------------------------------------------------------------------
 

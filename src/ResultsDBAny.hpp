@@ -63,7 +63,8 @@ public:
          const std::string& response_name,
          const boost::any& data,
          const HDF5dss &scales = HDF5dss(),
-         const AttributeArray &attrs = AttributeArray()) override
+         const AttributeArray &attrs = AttributeArray(),
+         const bool &transpose = false) override
   {
     std::cout << "ResultsDBAny needs to implement insert(...) w/o metadata."
               << std::endl;

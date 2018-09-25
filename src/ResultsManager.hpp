@@ -160,10 +160,11 @@ public:
               const std::string& response_name,
 	      const StoredType& sent_data,
               const HDF5dss &scales = HDF5dss(),
-              const AttributeArray &attrs = AttributeArray())
+              const AttributeArray &attrs = AttributeArray(),
+              const bool &transpose = false)
   {
     if (hdf5_db_active())
-      hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales, attrs);
+      hdf5DB->insert(iterator_id, result_name, response_name, sent_data, scales, attrs, transpose);
   }
 
 

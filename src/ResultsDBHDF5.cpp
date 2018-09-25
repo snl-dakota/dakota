@@ -75,7 +75,8 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
             const std::string& response_name,
             const boost::any& data,
             const HDF5dss &scales,
-            const AttributeArray &attrs) 
+            const AttributeArray &attrs,
+            const bool &transpose) 
 {
   // Store the results
   String dset_name =
@@ -88,6 +89,9 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
   else if (data.type() == typeid(RealVector)) {
     hdf5Stream->store_vector_data(
       dset_name, boost::any_cast<RealVector>(data));
+  }
+  else if (data.type() == typeid(RealMatrix)) {
+    hdf5Stream->store_matrix_data(dset_name, boost::any_cast<RealMatrix>(data), transpose);
   }
   //  ----------------------------
   //  These are some more types that HDF5 I/O utils will need to support ...
@@ -103,7 +107,7 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
   //}
   else
   {
-    Cerr << "Warning: unknown type of any: " << data.type().name()
+    Cerr << "Warning: dset " << dset_name << " of unknown type of any: " << data.type().name()
          << std::endl;
     abort_handler(-1);
   }
