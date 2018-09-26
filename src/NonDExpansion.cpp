@@ -2135,23 +2135,57 @@ void NonDExpansion::archive_moments()
     }
   }
 
-  if (exp_active) {
-    MetaDataType md_moments; 
-    md_moments["Row Labels"] = 
-      make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral"); 
+  // Set moments labels.
+  std::string moment_1 = "Mean";
+  std::string moment_2 = (finalMomentsType == CENTRAL_MOMENTS) ? "Variance" : "Standard Deviation";
+  std::string moment_3 = (finalMomentsType == CENTRAL_MOMENTS) ? "3rd Central" : "Skewness";
+  std::string moment_4 = (finalMomentsType == CENTRAL_MOMENTS) ? "4th Central" : "Kurtosis";
+
+  std::string moment_1_lower = "mean";
+  std::string moment_2_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "variance" : "std_deviation";
+  std::string moment_3_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "3rd_central" : "skewness";
+  std::string moment_4_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "4th_central" : "kurtosis";
+
+  if (exp_active || num_active) {
+    MetaDataType md_moments;
+    md_moments["Row Labels"]
+      = make_metadatavalue(moment_1, moment_2, moment_3, moment_4);
     md_moments["Column Labels"]
-      = make_metadatavalue(iteratedModel.response_labels()); 
-    resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, 
-		     exp_matrix, md_moments); 
-  }
-  if (num_active) {
-    MetaDataType md_moments; 
-    md_moments["Row Labels"] = 
-      make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral"); 
-    md_moments["Column Labels"]
-      = make_metadatavalue(iteratedModel.response_labels()); 
-    resultsDB.insert(run_identifier(), resultsNames.moments_central_num, 
-		     num_matrix, md_moments); 
+      = make_metadatavalue(iteratedModel.response_labels());  
+	  
+    if (exp_active) {
+	  resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
+
+      for (int i = 0; i < iteratedModel.response_labels().size(); ++i) {
+	    HDF5dss scales;
+		scales.emplace(0,
+            StringScale("moments",
+            {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+            ScaleScope::SHARED));
+        // extract column or row of moment_stats
+        resultsDB.insert(run_identifier(), String("exp_moments"),
+            iteratedModel.response_labels()[i],
+            Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&exp_matrix), i),
+            scales);
+      }
+    }
+    if (num_active) {
+      resultsDB.insert(run_identifier(), resultsNames.moments_central_num,
+          num_matrix, md_moments);
+
+      for (int i = 0; i < iteratedModel.response_labels().size(); ++i) {
+        HDF5dss scales;
+        scales.emplace(0,
+            StringScale("moments",
+            {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+            ScaleScope::SHARED));
+        // extract column or row of moment_stats
+        resultsDB.insert(run_identifier(), String("num_moments"),
+            iteratedModel.response_labels()[i],
+            Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&num_matrix), i),
+            scales);
+      }
+    }
   }
 }
 

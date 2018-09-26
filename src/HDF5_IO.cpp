@@ -112,7 +112,8 @@ namespace Dakota
 
   H5::DataSet HDF5IOHelper::create_dataset(
     const H5::H5Location &loc, const std::string &name, 
-    const H5::DataType &type,  const H5::DataSpace &space,                          const H5::DSetCreatPropList &plist) const
+    const H5::DataType &type,  const H5::DataSpace &space,
+    const H5::DSetCreatPropList &plist) const
   {
     hid_t loc_id   = loc.getId();
     hid_t dtype_id = type.getId();
