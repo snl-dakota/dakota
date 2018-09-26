@@ -329,12 +329,13 @@ class HDF5IOHelper
     hsize_t dims[1];
     dims[0] = len;
     H5::DataSpace dataspace = H5::DataSpace(1, dims);
-    H5::DataType datatype = h5_file_dtype(*data);
+    H5::DataType f_datatype = h5_file_dtype(*data);
+    H5::DataType m_datatype = h5_mem_dtype(*data);
     // Assume dset_name is syntactically correct - will need some utils - RWH
     create_groups(dset_name);
     H5::DataSet dataset(
-      create_dataset(*filePtr, dset_name, datatype, dataspace) );
-    dataset.write(data, datatype);
+      create_dataset(*filePtr, dset_name, f_datatype, dataspace) );
+    dataset.write(data, m_datatype);
     return;
   }
 }; // class HDF5IOHelper
