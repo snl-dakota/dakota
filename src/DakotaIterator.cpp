@@ -1776,13 +1776,22 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
     iteratedModel.eval_tag_prefix(eval_id_str);
 }
 
-
+/** Rationale: We'd hope that only one user-specified method would
+    have an empty ID, but the parser doesn't enforce it. It's unlikely
+    two Iterators with empty IDs could ever get constructed, but for
+    now, this is conservative and appends _<num> to NO_ID. Ultimately
+    could be made consistent with interface "NO_ID". */
 String Iterator::user_auto_id()
 {
   // increment and then use the current ID value
-  return String("AUTO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
 }
 
+/** Rationale: For now NOSPEC_ID_ is chosen due to historical
+    id="NO_SPECIFICATION" used for internally-constructed
+    Iterators. Longer-term, consider auto-generating an ID that
+    includes the context from which the method is constructed, e.g.,
+    the parent method or model's ID, together with its name. */
 String Iterator::no_spec_id()
 {
   // increment and then use the current ID value
