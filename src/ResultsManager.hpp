@@ -212,9 +212,11 @@ public:
     }
   }
 
+  /// Associate key:value metadata with all the results and executions of a method
   void add_metadata_for_method(const StrStrSizet& iterator_id,
                                const AttributeArray &attrs);
 
+  /// Associate key:value metadata with all the results for this execution of a method
   void add_metadata_for_execution(const StrStrSizet& iterator_id,
                                   const AttributeArray &attrs);
 

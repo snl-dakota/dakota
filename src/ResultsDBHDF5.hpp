@@ -25,22 +25,21 @@ namespace Dakota {
 String method_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create an execution name (HDF5 link name) from iterator_id
 String execution_hdf5_link_name(const StrStrSizet& iterator_id);
-/// Create a scale name (hdf5 link name) for a scale
+/// Create a scale name (hdf5 link name) for a scale from an iterator_id,
+/// the name of the result, the name of the response (can be empty), and
+/// the scale itself.
 template<typename ScaleType>
 String scale_hdf5_link_name(const StrStrSizet& iterator_id,
                             const String& result_name,
                             const String& response_name,
                             const ScaleType& scale) {
-  String result_name_wospace(result_name);
-  //    boost::replace_all(data_name_wospace, " ", ":");
-  //boost::erase_all(data_name_wospace, " ");
-  
+ 
   // When scales are SHARED (by all the responses), they are stored under
   // label. When they are UNSHARED, they go under label/response
 
   String rval = "/_scales" + execution_hdf5_link_name(iterator_id) + '/';
   if(!response_name.empty()) {
-    rval += result_name_wospace + "/" + scale.label;
+    rval += result_name + "/" + scale.label;
     if(scale.scope == ScaleScope::UNSHARED) 
       rval += '/' + response_name;
   } else { // No response name provided (e.g. correlation matrix)
@@ -51,17 +50,22 @@ String scale_hdf5_link_name(const StrStrSizet& iterator_id,
 
 
 
-// Visitor classes for processing scales and metadata
+// Visitor classes for processing scales and attributes
 // These are needed by boost::variant to do compile-time checking of
 // types.
 
+/// Objects of this class are called by boost::appy_visitor to add attributes
+/// to HDF5 objects
 class AddAttributeVisitor : public boost::static_visitor <>
 {
   public:
+    /// The attributes will be added to the HDF5 object at location, using
+    /// the HDF5IOHelper instance hdf5_stream
     AddAttributeVisitor(const String &location, 
                         const std::shared_ptr<HDF5IOHelper> &hdf5_stream) : 
       location(location), hdf5Stream(hdf5_stream) {};
 
+    /// Called by boost::apply_vistitor to process a ResultAttribute
     template<typename T>
     void operator()(const ResultAttribute<T> & a) const
     {
@@ -69,43 +73,57 @@ class AddAttributeVisitor : public boost::static_visitor <>
     }
 
   private:
+    /// Link name of the HDF5 object to add attributes to
     String location;
+    /// HDF5IOHelper instance
     std::shared_ptr<HDF5IOHelper> hdf5Stream;
     
 };
 
+/// Objects of this class are called by boost::appy_visitor to add dimension
+/// scales (RealScale or StringScale) to HDF5 datasets
 class AttachScaleVisitor : public boost::static_visitor <>
 {
   public:
+    /// Construct with context for attaching the scale, including the iterator id,
+    /// the name of the result and response (can be empty), the dimension and name of
+    /// the dataset to attach the scale to, the HDF5IOHelper instance.
     AttachScaleVisitor(const StrStrSizet& iterator_id,
                        const std::string& result_name,
                        const std::string& response_name,
-                       const int &index,
+                       const int &dim,
                        const String &dset_name,
                        const std::shared_ptr<HDF5IOHelper> &hdf5_stream) :
       iteratorID(iterator_id), resultName(result_name),
-      responseName(response_name), index(index),dsetName(dset_name),
+      responseName(response_name), dimension(dim),dsetName(dset_name),
       hdf5Stream(hdf5_stream) {};
 
+    /// Called by boost::apply_vistitor to process a RealScale or StringScale
     template <typename T>
     void operator()(const T &scale) {
         String name =
           scale_hdf5_link_name(iteratorID, resultName, responseName, scale);
         if(!hdf5Stream->exists(name))
           hdf5Stream->store_vector_data(name, scale.items);
-        hdf5Stream->attach_scale(dsetName, name, scale.label, index);
+        hdf5Stream->attach_scale(dsetName, name, scale.label, dimension);
     }
 
   private:
+    /// Iterator ID for the method and execuation
     StrStrSizet iteratorID;
+    /// Name of the result stored in the dataset
     String resultName;
+    /// Possibly empty name of the response that the result is for
     String responseName;
-    int index;
+    /// Dimension of the dataset to attach the scale to
+    int dimension;
+    /// Name of the dataset to attach the scale to
     String dsetName;
+    /// Instance of HDF5IOHelper
     std::shared_ptr<HDF5IOHelper> hdf5Stream;
 };
 
-
+/// Manage interactions between ResultsManager and the low-level HDFIOHelper class
 class ResultsDBHDF5 : public ResultsDBBase
 {
 
@@ -169,8 +187,7 @@ public:
 
 private:
  
-  /// BMA TODO: would prefer not to have a pointer, but no way to
-  /// default construct an output handler
+  /// Instance of HDF5IOHelper
   std::shared_ptr<HDF5IOHelper> hdf5Stream;
 };
 

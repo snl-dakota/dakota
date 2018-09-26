@@ -116,9 +116,9 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
   // Iteration must be explicit for the dimension scales because they are stored in a
   // multimap, which is a container of pairs, not of boost::variants
   for(auto &s : scales) {  // s is a std::pair<int, boost::variant<StringScale, RealScale> >
-    int index = s.first;
+    int dimension = s.first;
     AttachScaleVisitor visitor(
-      iterator_id, result_name, response_name, index, dset_name, hdf5Stream
+      iterator_id, result_name, response_name, dimension, dset_name, hdf5Stream
     );
     boost::apply_visitor(visitor, s.second);
 
