@@ -4636,7 +4636,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ kde {N_mdm(true,posteriorStatsKDE)} ]
      ]
     [ model_evidence {N_mdm(true,modelEvidence)}
+      [ mc_approx {N_mdm(true,modelEvidMC)} ]
       [ evidence_samples INTEGER {N_mdm(int,evidenceSamples)} ]
+      [ laplace_approx {N_mdm(true,modelEvidLaplace)} ]
      ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}

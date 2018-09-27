@@ -2849,9 +2849,11 @@
 	    <keyword id="kde" name="kde" code="{N_mdm(true,posteriorStatsKDE)}" minOccurs="0" />
 	  </keyword>
           <keyword id="model_evidence" name="model_evidence" code="{N_mdm(true,modelEvidence)}" minOccurs="0">
-            <keyword  id="evidence_samples" name="evidence_samples" code="{N_mdm(int,evidenceSamples)}" label="Evidence samples"  minOccurs="0" >
-	      <param type="INTEGER" />
-            </keyword>
+	    <keyword id="mc_approx" name="mc_approx" code="{N_mdm(true,modelEvidMC)}" minOccurs="0" />
+              <keyword  id="evidence_samples" name="evidence_samples" code="{N_mdm(int,evidenceSamples)}" label="Evidence samples"  minOccurs="0" >
+	        <param type="INTEGER" />
+              </keyword>
+	    <keyword id="laplace_approx" name="laplace_approx" code="{N_mdm(true,modelEvidLaplace)}" minOccurs="0" />
           </keyword>
 	  <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
 	    <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type"  minOccurs="0" default="gaussian process" >

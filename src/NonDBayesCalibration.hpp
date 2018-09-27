@@ -366,8 +366,12 @@ protected:
   /// flag indicating the calculation of the kernel density estimate of the
   /// posteriors
   bool posteriorStatsKDE;
-  /// flag indictaing calculation of the evidence of the model
+  /// flag indicating calculation of the evidence of the model
   bool calModelEvidence;
+  /// flag indicating use of Monte Carlo approximation to calculate evidence
+  bool calModelEvidMC;
+  /// flag indicating use of Laplace approximation to calculate evidence
+  bool calModelEvidLaplace;
   /// number of samples to be used in model evidence calculation
   int evidenceSamples;
   /// flag indicating usage of adaptive posterior refinement; currently makes

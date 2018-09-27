@@ -6850,6 +6850,8 @@ static bool
 	MP_(methodScaling),
 	MP_(methodUseDerivsFlag),
         MP_(modelEvidence),
+        MP_(modelEvidLaplace),
+        MP_(modelEvidMC),
 	MP_(mutualInfoKSG2),
 	MP_(mutationAdaptive),
 	MP_(normalizedCoeffs),
