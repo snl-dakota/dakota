@@ -617,7 +617,7 @@ def dprepro(template, parameters=None, results=None, include=None,
     # Output
     if output is None:
         return output_string
-    elif hasttr(output, "write"):
+    elif hasattr(output, "write"):
         output.write(output_string)
     else:
         with open(output,"w") as f:
