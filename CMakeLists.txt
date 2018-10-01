@@ -469,6 +469,9 @@ if (NOT BUILD_IN_TRILINOS)
       set(Trilinos_GENERATE_REPO_VERSION_FILE OFF CACHE BOOL
         "Dakota disabling generation of TrilinosRepoVersion.txt")
 
+      set(Teuchos_ENABLE_COMPLEX TRUE CACHE BOOL
+	"Pecos requires some complex blas wrappers")
+
       add_subdirectory(packages/external/trilinos)
 
     endif() # Teuchos_DIR
