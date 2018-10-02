@@ -212,7 +212,7 @@ inline ResultsKeyType make_key(const StrStrSizet& iterator_id,
 // axis of a set of data (vector or matrix, currently).
 //
 // Dimension scales are of type multimap<int, boost::variant>
-// (typedef'ed to HDF5dss), with the integer indicating the 
+// (typedef'ed to DimScaleMap), with the integer indicating the 
 // dimenions of the dataset that the scale is associated with, 
 // and the boost::variant containing the scale
 // itself, either a RealScale or a StringScale. These latter
@@ -327,7 +327,7 @@ struct StringScale {
 
 /// Datatype to communicate scales (stored in boost::variant) and their
 /// associated dimension (the int) to the ResultsManager instance.
-typedef std::multimap<int, boost::variant<StringScale, RealScale> > HDF5dss;
+typedef std::multimap<int, boost::variant<StringScale, RealScale> > DimScaleMap;
 
 
 // HDF5 objects can have key:value metadata attached to them. These

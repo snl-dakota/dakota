@@ -535,7 +535,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 			    iterator_results.results_names.correl_simple_all,
 			    simpleCorr, md);
     // HDF5
-    HDF5dss scales;
+    DimScaleMap scales;
     scales.emplace(0, StringScale("factors", combined_desc));
     scales.emplace(1, StringScale("factors", combined_desc));
     iterator_results.insert(run_identifier,String("simple_corr"), String(""), 
@@ -553,7 +553,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 			    iterator_results.results_names.correl_simple_io,
 			    simpleCorr, md);
     // HDF5
-    HDF5dss scales;
+    DimScaleMap scales;
     scales.emplace(0, StringScale("variables", variables_desc));
     scales.emplace(1, StringScale("responses", functions_desc));
     iterator_results.insert(run_identifier,String("simple_corr"), String(""), 
@@ -571,7 +571,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 			    iterator_results.results_names.correl_partial_io,
 			    partialCorr, md);
     // HDF5
-    HDF5dss scales;
+    DimScaleMap scales;
     scales.emplace(0, StringScale("variables", variables_desc));
     for (size_t i=0; i<resp_labels.size(); ++i)
       iterator_results.insert(run_identifier, String("partial_corr"),resp_labels[i],
@@ -592,7 +592,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 			    iterator_results.results_names.correl_simple_rank_all,
 			    simpleRankCorr, md);
     // HDF5
-    HDF5dss scales;
+    DimScaleMap scales;
     scales.emplace(0, StringScale("factors", combined_desc));
     scales.emplace(1, StringScale("factors", combined_desc));
     iterator_results.insert(run_identifier,String("simple_rank_corr"), String(""), 
@@ -610,7 +610,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 			    iterator_results.results_names.correl_simple_rank_io,
 			    simpleRankCorr, md);
     // HDF5
-    HDF5dss scales;
+    DimScaleMap scales;
     scales.emplace(0, StringScale("variables", variables_desc));
     scales.emplace(1, StringScale("responses", functions_desc));
     iterator_results.insert(run_identifier,String("simple_rank_corr"), String(""), 
@@ -630,7 +630,7 @@ archive_correlations(const StrStrSizet& run_identifier,
 			    iterator_results.results_names.correl_partial_rank_io,
 			    partialRankCorr, md);
     // HDF5
-    HDF5dss scales;
+    DimScaleMap scales;
     scales.emplace(0, StringScale("variables", variables_desc));
     for (size_t i=0; i<resp_labels.size(); ++i)
       iterator_results.insert(run_identifier, String("partial_rank_corr"),resp_labels[i],

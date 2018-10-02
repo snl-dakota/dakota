@@ -1433,7 +1433,7 @@ archive_moments(const RealMatrix& moment_stats, short moments_type,
   
   // send to prototype hdf5DB, too
   for(int i = 0; i < labels.size(); ++i) {
-    HDF5dss scales;
+    DimScaleMap scales;
     if(moments_type == CENTRAL_MOMENTS)
       scales.emplace(0, 
                      StringScale("moments",

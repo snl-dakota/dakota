@@ -146,7 +146,7 @@ public:
               const std::string& result_name,
               const std::string& response_name,
               const boost::any& data,
-              const HDF5dss &scales = HDF5dss(),
+              const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),
               const bool &transpose = false) override;
 

@@ -2590,7 +2590,7 @@ void NonD::archive_from_resp(size_t i)
 
   RealMatrix mapping(num_resp_levels, 2);
  
-  HDF5dss scale;
+  DimScaleMap scale;
   scale.emplace(0, RealScale("response_levels", requestedRespLevels[i]));
   const StringArray &labels = iteratedModel.response_labels();
   RealVector *result;
@@ -2634,7 +2634,7 @@ void NonD::archive_to_resp(size_t i)
 {
   if (!resultsDB.active())  return;
 
-  HDF5dss scale;
+  DimScaleMap scale;
   const StringArray &labels = iteratedModel.response_labels();
   size_t j;
   size_t num_prob_levels = requestedProbLevels[i].length();
@@ -2721,7 +2721,7 @@ void NonD::archive_pdf(size_t i) // const
   resultsDB.array_insert<RealMatrix>
     (run_identifier(), resultsNames.pdf_histograms, i, pdf);
 
-  HDF5dss scales;
+  DimScaleMap scales;
   const StringArray &labels = iteratedModel.response_labels();
   scales.emplace(0, RealScale("lower_bounds", &computedPDFAbscissas[i][0], pdf_len, ScaleScope::UNSHARED));
   scales.emplace(0, RealScale("upper_bounds", &computedPDFAbscissas[i][1], pdf_len, ScaleScope::UNSHARED));

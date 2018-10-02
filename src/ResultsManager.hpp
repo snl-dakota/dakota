@@ -151,13 +151,13 @@ public:
     }
   }
 
-  /// Insert using dimension scales type (HDF5dss in dakota_results_types.hpp)
+  /// Insert using dimension scales type (DimScaleMap in dakota_results_types.hpp)
   template<typename StoredType>
   void insert(const StrStrSizet& iterator_id,
               const std::string& result_name,
               const std::string& response_name,
 	      const StoredType& sent_data,
-              const HDF5dss &scales = HDF5dss(),
+              const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),
               const bool &transpose = false)
   {

@@ -2157,7 +2157,7 @@ void NonDExpansion::archive_moments()
 	  resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
 
       for (int i = 0; i < iteratedModel.response_labels().size(); ++i) {
-	    HDF5dss scales;
+	    DimScaleMap scales;
 		scales.emplace(0,
             StringScale("moments",
             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
@@ -2174,7 +2174,7 @@ void NonDExpansion::archive_moments()
           num_matrix, md_moments);
 
       for (int i = 0; i < iteratedModel.response_labels().size(); ++i) {
-        HDF5dss scales;
+        DimScaleMap scales;
         scales.emplace(0,
             StringScale("moments",
             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},

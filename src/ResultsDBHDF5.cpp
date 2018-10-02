@@ -74,7 +74,7 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
             const std::string& result_name,
             const std::string& response_name,
             const boost::any& data,
-            const HDF5dss &scales,
+            const DimScaleMap &scales,
             const AttributeArray &attrs,
             const bool &transpose) 
 {
