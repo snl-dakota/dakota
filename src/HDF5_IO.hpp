@@ -196,7 +196,7 @@ class HDF5IOHelper
     return;
   }
   
-  /// Write a Teuchos::SerialDenseMatrix to a dataset
+  /// Write a 2D dataset from a Teuchos::SerialDenseMatrix
   template<typename T>
   void store_matrix_data(const std::string &dset_name, 
       const Teuchos::SerialDenseMatrix<int,T> & matrix, 
@@ -247,6 +247,55 @@ class HDF5IOHelper
     }
     return;
   }
+
+  /// Write a 2D dataset from a std::vector
+  template<typename T>
+  void store_matrix_data(const std::string &dset_name, 
+      const std::vector<T> &buf, const int & num_cols,
+      const bool &transpose = false) const {
+    
+    hsize_t f_dims[2], m_dims[2]; // file and memory dimensions
+    H5::DataSpace f_dataspace, m_dataspace; // file and memory DataSpaces
+    // TODO: ensure buf size is evenly divisible by number of columns
+    const int num_rows = buf.size()/num_cols;
+
+    // Assume dset_name is syntactically correct - will need some utils - RWH
+    create_groups(dset_name);
+    H5::DataType f_datatype = h5_file_dtype(buf[0]); // file datatype
+    H5::DataType m_datatype = h5_mem_dtype(buf[0]);  // memory datatype
+    
+    if(transpose) {
+      // to write a tranposed matrix, we use HDF5 hyperslab selections to 
+      // sequentially grab rows of the matrix in memory and write them into columns
+      // of the dataset in file. 
+      m_dims[0] = f_dims[1] = num_rows;
+      m_dims[1] = f_dims[0] = num_cols;
+      f_dataspace.setExtentSimple(2, f_dims);
+      m_dataspace.setExtentSimple(2, m_dims);
+      H5::DataSet dataset(
+        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+      hsize_t m_start[2], f_start[2];
+      m_start[1] = f_start[0] = 0; // iterate over rows in memory/columns in the file
+      hsize_t m_count[2] = {1, hsize_t(num_cols)}; 
+      hsize_t f_count[2] = {hsize_t(num_cols), 1};
+      for(int i = 0; i < num_rows; ++i) {
+        m_start[0] = f_start[1] = i;
+        m_dataspace.selectHyperslab(H5S_SELECT_SET, m_count, m_start);
+        f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+        dataset.write(buf.data(), m_datatype, m_dataspace, f_dataspace);
+      }
+    } else {
+      m_dims[0] = f_dims[0] = num_rows;
+      m_dims[1] = f_dims[1] = num_cols;
+      f_dataspace.setExtentSimple(2, f_dims);
+      m_dataspace.setExtentSimple(2, m_dims);
+      H5::DataSet dataset(
+        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+      dataset.write(buf.data(), m_datatype, m_dataspace, f_dataspace);
+    }
+    return;
+  }
+
 
   //------------------------------------------------------------------
 
