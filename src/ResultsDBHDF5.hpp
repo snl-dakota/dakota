@@ -103,9 +103,9 @@ class AttachScaleVisitor : public boost::static_visitor <>
         String name =
           scale_hdf5_link_name(iteratorID, resultName, responseName, scale);
         if(!hdf5Stream->exists(name)) {
-          if(scale.numRows > 1) {
+          if(scale.isMatrix) {
             Teuchos::SerialDenseMatrix<int, Real>scale_matrix(Teuchos::View, scale.items.values(), 
-                sizeof(scale.items[0]), scale.numRows, scale.numCols);
+                sizeof(scale.items[0]), scale.items.length()/scale.numCols, scale.numCols);
             hdf5Stream->store_matrix_data(name, scale_matrix);
           } else
             hdf5Stream->store_vector_data(name, scale.items);
@@ -118,7 +118,7 @@ class AttachScaleVisitor : public boost::static_visitor <>
         String name =
           scale_hdf5_link_name(iteratorID, resultName, responseName, scale);
         if(!hdf5Stream->exists(name)) {
-          if(scale.numRows > 1) 
+          if(scale.isMatrix) 
             hdf5Stream->store_matrix_data(name, scale.items, scale.numCols);
           else
             hdf5Stream->store_vector_data(name, scale.items);

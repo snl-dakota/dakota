@@ -241,7 +241,8 @@ struct RealScale {
           label(label), scope(scope) {
             items = RealVector(Teuchos::View, 
                 *const_cast<RealVector*>(&in_items));
-            numRows = 1; numCols = items.length();
+            numCols = items.length();
+            isMatrix = false;
           }
 
   /// Constructor that takes a RealArray
@@ -251,7 +252,8 @@ struct RealScale {
             items = RealVector(Teuchos::View, 
                 const_cast<Real*>(in_items.data()),
                 in_items.size());
-            numRows = 1; numCols = items.length();
+            numCols = items.length();
+            isMatrix = false;
           }
 
   // Constructor that takes a C-style array
@@ -261,7 +263,8 @@ struct RealScale {
             int len = sizeof(in_items)/sizeof(in_items[0]);
             items = RealVector(Teuchos::View,
                 const_cast<Real*>(in_items), len);
-            numRows = 1; numCols = items.length();
+            numCols = items.length();
+            isMatrix = false;
           }
 
   // Constructor that takes a pointer to Real and length
@@ -270,7 +273,8 @@ struct RealScale {
           label(label), scope(scope) {
             items = RealVector(Teuchos::View,
                 const_cast<Real*>(in_items), len);
-            numRows = 1; numCols = items.length();
+            numCols = items.length();
+            isMatrix = false;
           }
 
   // Name of the scale
@@ -279,10 +283,10 @@ struct RealScale {
   ScaleScope scope;
   // Items in the scale
   RealVector items;
-  /// Number of rows; equals 1 for a 1D scale
-  int numRows;
   /// Number of columns; equals length of scale when 1D
   int numCols;
+  /// 2d or 1d?
+  bool isMatrix;
 };
 
 
@@ -296,7 +300,8 @@ struct StringScale {
     items.resize(len);
     std::copy(in_items, in_items + len, items.begin());
     scope = in_scope;
-    numRows = 1; numCols = len;
+    numCols = len;
+    isMatrix = false;
   }
 
   /// Constructor that takes and initializer list of string literals
@@ -307,7 +312,8 @@ struct StringScale {
     items.resize(in_items.size());
     std::copy(in_items.begin(), in_items.end(), items.begin()); 
     scope = in_scope;
-    numRows = 1; numCols = items.size();
+    numCols = items.size();
+    isMatrix = false;
   }
 
   /// Constructor that takes a vector of strings
@@ -318,7 +324,8 @@ struct StringScale {
     items.resize(in_items.size());
     std::transform(in_items.begin(), in_items.end(), items.begin(), 
       [](const String &s) { return s.c_str();});
-    numRows = 1; numCols = items.size();
+    numCols = items.size();
+    isMatrix = false;
   }
 
   /// Constructor that takes a vector of C-style strings
@@ -329,7 +336,8 @@ struct StringScale {
     items.resize(in_items.size());
     std::copy(in_items.begin(), in_items.end(), items.begin()); 
     scope = in_scope;
-    numRows = 1; numCols = items.size();
+    numCols = items.size();
+    isMatrix = false;
   }
 
   /// Constructor that takes a vector<vector<const char *> > to produce a 2D scale
@@ -337,15 +345,16 @@ struct StringScale {
       std::vector<std::vector<const char *> > in_items,
       ScaleScope in_scope = ScaleScope::UNSHARED) {
     label = in_label;
-    numRows = in_items.size();
+    int num_rows = in_items.size();
     numCols = in_items[0].size(); // TODO: error checking to confirm a "square matrix"
-    items.resize(numRows*numCols);
+    items.resize(num_rows*numCols);
     int offset = 0;
     for(auto &v : in_items) {
       std::copy(v.begin(), v.end(), items.begin() + offset);
       offset += numCols;
     }
     scope = in_scope;
+    isMatrix = true;
   }
 
   /// Scale label
@@ -354,10 +363,10 @@ struct StringScale {
   ScaleScope scope;
   /// Pointers to the strings that make up the scale
   std::vector<const char *> items;
-  /// Number of rows; equals 1 for a 1D scale
-  int numRows;
   /// Number of columns; equals length of scale when 1D
   int numCols;
+  /// 2d or 1d?
+  bool isMatrix;
 };
 
 /// Datatype to communicate scales (stored in boost::variant) and their
