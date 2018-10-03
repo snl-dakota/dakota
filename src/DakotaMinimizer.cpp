@@ -679,23 +679,6 @@ void Minimizer::archive_allocate_best(size_t num_points)
       make_metadatavalue(variables_results().continuous_variable_labels()); 
     resultsDB.array_allocate<RealVector>
       (run_identifier(), resultsNames.best_cv, num_points, md);
-
-    // send to prototype hdf5DB, too
-    DimScaleMap scales;
-    std::vector<std::string> var_labels;
-    for( const auto& label : variables_results().continuous_variable_labels() )
-      var_labels.push_back(label);
-    scales.emplace(0, 
-                   StringScale("Variable_Labels",
-                   var_labels,
-                   ScaleScope::SHARED));
-    // extract column or row of moment_stats
-    resultsDB.insert(run_identifier(),
-        resultsNames.cv_labels, 
-        String("What label is this"), 
-        bestVariablesArray.front().continuous_variables(),
-        scales);
-        //Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&moment_stats), i), scales);
   }
   if (numDiscreteIntVars) {
     // labels
@@ -754,26 +737,114 @@ archive_best(size_t point_index,
 	     const Variables& best_vars, const Response& best_resp)
 {
   // archive the best point in the iterator database
-  if (numContinuousVars)
+  if (numContinuousVars) {
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.best_cv, point_index,
        best_vars.continuous_variables());
-  if (numDiscreteIntVars)
+
+    // send to prototype hdf5DB, too
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().continuous_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+        resultsNames.cv_labels,
+        resultsNames.best_cv,
+        best_vars.continuous_variables(),
+        scales);
+  }
+  if (numDiscreteIntVars) {
     resultsDB.array_insert<IntVector>
       (run_identifier(), resultsNames.best_div, point_index,
        best_vars.discrete_int_variables());
+
+    // send to prototype hdf5DB, too
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().discrete_int_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+        resultsNames.div_labels,
+        resultsNames.best_div,
+        best_vars.discrete_int_variables(),
+        scales);
+  }
   if (numDiscreteStringVars) {
     resultsDB.array_insert<StringArray>
       (run_identifier(), resultsNames.best_dsv, point_index,
        best_vars.discrete_string_variables());
+
+    // send to prototype hdf5DB, too
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().discrete_string_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+        resultsNames.dsv_labels,
+        resultsNames.best_dsv,
+        best_vars.discrete_string_variables(),
+        scales);
   }
-  if (numDiscreteRealVars)
+  if (numDiscreteRealVars) {
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.best_drv, point_index,
        best_vars.discrete_real_variables());
+
+    // send to prototype hdf5DB, too
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().discrete_string_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+        resultsNames.dsv_labels,
+        resultsNames.best_drv,
+        best_vars.discrete_string_variables(),
+        scales);
+  }
+
   resultsDB.array_insert<RealVector>
-    (run_identifier(), resultsNames.best_fns, point_index,
-     best_resp.function_values());
+    (run_identifier(), resultsNames.best_fns, point_index, best_resp.function_values());
+
+  // send to prototype hdf5DB, too
+  DimScaleMap scales;
+  std::vector<std::string> resp_labels;
+  for( const auto& label : response_results().function_labels() )
+    resp_labels.push_back(label);
+
+  scales.emplace(0,
+                 StringScale("Response_Labels",
+                 resp_labels,
+                 ScaleScope::SHARED));
+
+  resultsDB.insert(run_identifier(),
+      resultsNames.fn_labels,
+      resultsNames.best_fns,
+      best_resp.function_values(),
+      scales);
 } 
 
 
