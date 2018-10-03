@@ -679,6 +679,23 @@ void Minimizer::archive_allocate_best(size_t num_points)
       make_metadatavalue(variables_results().continuous_variable_labels()); 
     resultsDB.array_allocate<RealVector>
       (run_identifier(), resultsNames.best_cv, num_points, md);
+
+    // send to prototype hdf5DB, too
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().continuous_variable_labels() )
+      var_labels.push_back(label);
+    scales.emplace(0, 
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+    // extract column or row of moment_stats
+    resultsDB.insert(run_identifier(),
+        resultsNames.cv_labels, 
+        String("What label is this"), 
+        bestVariablesArray.front().continuous_variables(),
+        scales);
+        //Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&moment_stats), i), scales);
   }
   if (numDiscreteIntVars) {
     // labels
