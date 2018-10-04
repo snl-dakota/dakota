@@ -656,8 +656,10 @@ void NonDLHSSampling::post_run(std::ostream& s)
   // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
   if (statsFlag)
-    if(varBasedDecompFlag)
+    if(varBasedDecompFlag) {
       compute_vbd_stats(numSamples, allResponses);
+      archive_sobol_indices();
+    }
     else if(!summaryOutputFlag)
       // To support incremental reporting of statistics, compute_statistics is 
       // iteratively called by print_results. However, when the sampling iterator 
