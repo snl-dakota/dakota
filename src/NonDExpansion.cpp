@@ -2261,7 +2261,7 @@ void NonDExpansion::archive_sobol_indices() {
 	Real sobol; size_t main_cntr = 0;
 	// Store main effects and total effects
         RealArray main_effects, total_effects;
-        StringArray main_scale, total_scale;
+        StringArray scale_labels;
 	for (j=0; j<numContinuousVars; ++j) {
 	  if (dense) // no compressive sensing
 	    sobol = sobol_indices[j+1];
@@ -2272,24 +2272,17 @@ void NonDExpansion::archive_sobol_indices() {
 	    else
 	      { sobol = sobol_indices[it->second]; ++main_cntr; }
 	  }
-	  if (std::abs(sobol) > vbdDropTol) {
+	  if (std::abs(sobol) > vbdDropTol || std::abs(total_indices[j]) > vbdDropTol) {
             main_effects.push_back(sobol);
-            main_scale.push_back(cv_labels[j]);
-          }
-          if (std::abs(total_indices[j]) > vbdDropTol) {
             total_effects.push_back(total_indices[j]);
-            total_scale.push_back(cv_labels[j]);
+            scale_labels.push_back(cv_labels[j]);
           }
 	}
         if(!main_effects.empty()) {
-          DimScaleMap main_scales;
-          main_scales.emplace(0, StringScale("variables", main_scale, ScaleScope::UNSHARED));
-          resultsDB.insert(run_identifier(), String("main_effects"), fn_labels[i], main_effects, main_scales);
-        }
-        if(!total_effects.empty()) {
-          DimScaleMap total_scales;
-          total_scales.emplace(0, StringScale("variables", total_scale, ScaleScope::UNSHARED));
-          resultsDB.insert(run_identifier(), String("total_effects"), fn_labels[i], total_effects, total_scales);
+          DimScaleMap scales;
+          scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
+          resultsDB.insert(run_identifier(), String("main_effects"), fn_labels[i], main_effects, scales);
+          resultsDB.insert(run_identifier(), String("total_effects"), fn_labels[i], total_effects, scales);
         }
 
 	// Print Interaction effects
