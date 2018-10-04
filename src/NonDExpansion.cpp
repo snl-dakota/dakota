@@ -1896,6 +1896,9 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
   }
   if (full_covar_stats)
     compute_off_diagonal_covariance(); // diagonal entries were filled in above
+ 
+  if (vbd_stats)
+    archive_sobol_indices();
 }
 
 
@@ -2189,6 +2192,169 @@ void NonDExpansion::archive_moments()
   }
 }
 
+void NonDExpansion::archive_sobol_indices() {
+
+  // effects are computed per resp fn within compute_statistics()
+  // if vbdFlag and expansion_coefficient_flag
+
+  // this fn called if vbdFlag and prints per resp fn if
+  // expansion_coefficient_flag and non-negligible variance
+ 
+  const StringArray& fn_labels = iteratedModel.response_labels();
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep;
+  // Map from index to variable labels
+  std::map<int, std::vector<const char *> > sobol_labels;
+
+  // Main, total, and each order of interactions are separately inserted 
+  // into resultsDB. orders maps the index of the Sobol' index to its order
+  // to facilitate insertion.
+  std::map<int, int> orders;
+
+  // collect variable descriptors for interactions for (aggregated) sobol index 
+  // map. These will be used as dimension scales.
+  size_t i, j, num_indices;
+  if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
+    // create aggregate interaction labels (once for all response fns)
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    const Pecos::BitArrayULongMap& sobol_map
+      = shared_data_rep->sobol_index_map();
+    for (Pecos::BAULMCIter map_cit=sobol_map.begin();
+	 map_cit!=sobol_map.end(); ++map_cit) { // loop in key sorted order
+      const BitArray& set = map_cit->first;
+      const int &order = set.count();
+      unsigned long index = map_cit->second; // 0-way -> n 1-way -> interaction
+      if (index > numContinuousVars) {       // an interaction
+        if( sobol_labels.find(index) == sobol_labels.end())
+          sobol_labels[index] = std::vector<const char *>();
+        orders[index] = order;
+	for (j=0; j<numContinuousVars; ++j) {
+	  if (set[j])
+	    sobol_labels[index].push_back(cv_labels[j].c_str());
+        }
+      }
+    }
+  }
+
+  // archive sobol indices per response function
+  for (i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep->expansion_coefficient_flag()) {
+      // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
+      // In this case, we cannot screen effectively at this level.
+      bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
+			    respVariance[i]     <= Pecos::SMALL_NUMBER ) ||
+			  ( covarianceControl   == FULL_COVARIANCE &&
+			    respCovariance(i,i) <= Pecos::SMALL_NUMBER ) )
+	              ? false : true;
+      if (well_posed) {
+	const RealVector& total_indices
+	  = poly_approx_rep->total_sobol_indices();
+	const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
+        Pecos::ULongULongMap sparse_sobol_map
+	  = poly_approx_rep->sparse_sobol_index_map();
+	bool dense = sparse_sobol_map.empty();
+	Real sobol; size_t main_cntr = 0;
+	// Store main effects and total effects
+        RealArray main_effects, total_effects;
+        StringArray main_scale, total_scale;
+	for (j=0; j<numContinuousVars; ++j) {
+	  if (dense) // no compressive sensing
+	    sobol = sobol_indices[j+1];
+	  else { // for the compressive sensing case, storage is indirect
+	    Pecos::ULULMIter it = sparse_sobol_map.find(j+1);
+	    if (it == sparse_sobol_map.end())
+	      sobol = 0.;
+	    else
+	      { sobol = sobol_indices[it->second]; ++main_cntr; }
+	  }
+	  if (std::abs(sobol) > vbdDropTol) {
+            main_effects.push_back(sobol);
+            main_scale.push_back(cv_labels[j]);
+          }
+          if (std::abs(total_indices[j]) > vbdDropTol) {
+            total_effects.push_back(total_indices[j]);
+            total_scale.push_back(cv_labels[j]);
+          }
+	}
+        if(!main_effects.empty()) {
+          DimScaleMap main_scales;
+          main_scales.emplace(0, StringScale("variables", main_scale, ScaleScope::UNSHARED));
+          resultsDB.insert(run_identifier(), String("main_effects"), fn_labels[i], main_effects, main_scales);
+        }
+        if(!total_effects.empty()) {
+          DimScaleMap total_scales;
+          total_scales.emplace(0, StringScale("variables", total_scale, ScaleScope::UNSHARED));
+          resultsDB.insert(run_identifier(), String("total_effects"), fn_labels[i], total_effects, total_scales);
+        }
+
+	// Print Interaction effects
+	if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
+          RealArray int_effects;
+          std::vector<std::vector<const char *> > int_scale;
+	  num_indices = sobol_indices.length();
+          // Results file insertions are performed separately for each order. old_order is used
+          // to detect when the order switches to trigger an insertion.
+          int old_order;
+	  if (dense) { // no compressive sensing
+            j = numContinuousVars+1;
+            // make sure index j exists before attempting to set old_order
+            old_order = (j < num_indices) ? orders[j] : 0;
+	    for (; j<num_indices; ++j) {
+              if(orders[j] != old_order && !int_effects.empty() ) {
+                String result_name = String("order_") + std::to_string(old_order) + String("_interactions");
+                DimScaleMap int_scales;
+                int_scales.emplace(0, StringScale("variables", int_scale, ScaleScope::UNSHARED));
+                resultsDB.insert(run_identifier(), result_name, fn_labels[i], int_effects, int_scales); 
+                int_scale.clear();
+                int_effects.clear();                
+              }
+              old_order = orders[j];
+	      if (std::abs(sobol_indices[j]) > vbdDropTol) {// print interaction
+                int_effects.push_back(sobol_indices[j]);
+                int_scale.push_back(sobol_labels[j]);
+              }
+            }
+	  }
+	  else { // for the compressive sensing case, storage is indirect
+	    Pecos::ULULMIter it = ++sparse_sobol_map.begin(); // skip 0-way
+	    std::advance(it, main_cntr);               // advance past 1-way
+            // make sure it->first exists before attempting to set old_order
+            old_order = (it != sparse_sobol_map.end()) ? orders[it->first] : 0;
+	    for (; it!=sparse_sobol_map.end(); ++it) { // 2-way and above
+              if(orders[it->first] != old_order && !int_effects.empty()) {
+                String result_name = String("order_") + std::to_string(old_order) + String("_interactions");
+                DimScaleMap int_scales;
+                int_scales.emplace(0, StringScale("variables", int_scale, ScaleScope::UNSHARED));
+                resultsDB.insert(run_identifier(), result_name, fn_labels[i], int_effects, int_scales); 
+                int_scale.clear();
+                int_effects.clear();
+              }
+              old_order = orders[it->first];
+	      sobol = sobol_indices[it->second];
+	      if (std::abs(sobol) > vbdDropTol) { // print interaction
+                int_effects.push_back(sobol);
+                int_scale.push_back(sobol_labels[it->first]);
+              }
+	    }
+	  }
+          if(!int_effects.empty()) {  // Insert the remaining contents of int_effects, if any
+            String result_name = String("order_") + std::to_string(old_order) + String("_interactions");
+            DimScaleMap int_scales;
+            int_scales.emplace(0, StringScale("variables", int_scale, ScaleScope::UNSHARED));
+            resultsDB.insert(run_identifier(), result_name, fn_labels[i], int_effects, int_scales);
+            int_scale.clear();
+            int_effects.clear();
+          }
+	}
+      }
+    }
+  }
+}
 
 void NonDExpansion::update_final_statistics_gradients()
 {

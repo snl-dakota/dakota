@@ -179,6 +179,9 @@ protected:
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
 
+  /// archive the Sobol' indices to the resultsDB
+  void archive_sobol_indices();
+
   //
   //- Heading: Data
   //
