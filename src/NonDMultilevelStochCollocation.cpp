@@ -454,7 +454,7 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 
 
 Real NonDMultilevelStochCollocation::
-compute_covariance_metric(bool update_ref, bool print_metric)
+compute_covariance_metric(bool revert, bool print_metric)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
 
@@ -462,7 +462,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
     // order to compute change in covariance
     //metric_roll_up();
 
-    Real scale, delta_norm;
+    Real scale, delta_norm;  bool update_ref = !revert;
     switch (covarianceControl) {
     case DIAGONAL_COVARIANCE: {
       compute_delta_variance(update_ref, print_metric);
@@ -489,13 +489,12 @@ compute_covariance_metric(bool update_ref, bool print_metric)
     return (relativeMetric) ? delta_norm / scale : delta_norm;
   }
   else // use default implementation
-    return NonDExpansion::
-      compute_covariance_metric(update_ref, print_metric);
+    return NonDExpansion::compute_covariance_metric(revert, print_metric);
 }
 
 
 Real NonDMultilevelStochCollocation::
-compute_final_statistics_metric(bool update_ref, bool print_metric)
+compute_final_statistics_metric(bool revert, bool print_metric)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     bool beta_map = false, numerical_map = false; size_t i, j, cntr;
@@ -518,12 +517,11 @@ compute_final_statistics_metric(bool update_ref, bool print_metric)
       abort_handler(METHOD_ERROR);      
     }
     else // use default implementation if no beta-mapping increments
-      return NonDExpansion::
-	compute_final_statistics_metric(update_ref, print_metric);
+      return
+	NonDExpansion::compute_final_statistics_metric(revert, print_metric);
   }
   else // use default implementation for Nodal
-    return NonDExpansion::
-      compute_final_statistics_metric(update_ref, print_metric);
+    return NonDExpansion::compute_final_statistics_metric(revert, print_metric);
 }
 
 

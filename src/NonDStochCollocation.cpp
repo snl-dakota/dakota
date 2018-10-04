@@ -369,13 +369,13 @@ void NonDStochCollocation::initialize_u_space_model()
 
 
 Real NonDStochCollocation::
-compute_covariance_metric(bool update_ref, bool print_metric)
+compute_covariance_metric(bool revert, bool print_metric)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
 
     size_t i, j;
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    bool warn_flag = false,
+    bool warn_flag = false, update_ref = !revert,
       all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
       //compute_ref = (relativeMetric || update_ref);
     for (i=0; i<numFunctions; ++i) {
@@ -407,7 +407,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
       if (relativeMetric) // reference covariance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
       // reference covariance gets restored in NonDExpansion::increment_sets()
-      if (update_ref) respVariance += delta_resp_var;
+      if (update_ref)   respVariance += delta_resp_var;
       if (print_metric) print_variance(Cout, delta_resp_var, "Change in");
       break;
     }
@@ -441,7 +441,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
       if (relativeMetric) // reference covariance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
       // reference covariance gets restored in NonDExpansion::increment_sets()
-      if (update_ref) respCovariance += delta_resp_covar;
+      if (update_ref)   respCovariance += delta_resp_covar;
       if (print_metric) print_covariance(Cout, delta_resp_covar, "Change in");
       break;
     }
@@ -450,13 +450,12 @@ compute_covariance_metric(bool update_ref, bool print_metric)
     return (relativeMetric) ? delta_norm / scale : delta_norm;
   }
   else // use default implementation
-    return NonDExpansion::
-      compute_covariance_metric(update_ref, print_metric);
+    return NonDExpansion::compute_covariance_metric(revert, print_metric);
 }
 
 
 Real NonDStochCollocation::
-compute_final_statistics_metric(bool update_ref, bool print_metric)
+compute_final_statistics_metric(bool revert, bool print_metric)
 {
   // combine delta_beta() and delta_z() from HierarchInterpPolyApproximation
   // with default definition of delta-{p,beta*}
@@ -481,7 +480,7 @@ compute_final_statistics_metric(bool update_ref, bool print_metric)
     if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
 
       RealVector delta_final_stats, final_stats_ref;
-      if (!update_ref || print_metric || relativeMetric)
+      if (revert || print_metric || relativeMetric)
 	final_stats_ref = finalStatistics.function_values();
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
         delta_final_stats  = finalStatistics.function_values();     // deep copy
@@ -555,7 +554,7 @@ compute_final_statistics_metric(bool update_ref, bool print_metric)
       write_data(Cout, delta_final_stats);
 #endif // DEBUG
       if (print_metric) print_results(Cout, INTERMEDIATE_RESULTS);
-      if (!update_ref) finalStatistics.function_values(final_stats_ref);
+      if (revert) finalStatistics.function_values(final_stats_ref);
 
       // Deltas for all final stats, including moments:
       //return delta_final_stats.normFrobenius();
@@ -571,12 +570,11 @@ compute_final_statistics_metric(bool update_ref, bool print_metric)
 	return std::sqrt(sum_sq);
     }
     else // use default implementation if no beta-mapping increments
-      return NonDExpansion::
-	compute_final_statistics_metric(update_ref, print_metric);
+      return
+	NonDExpansion::compute_final_statistics_metric(revert, print_metric);
   }
   else // use default implementation for Nodal
-    return NonDExpansion::
-      compute_final_statistics_metric(update_ref, print_metric);
+    return NonDExpansion::compute_final_statistics_metric(revert, print_metric);
 }
 
 } // namespace Dakota

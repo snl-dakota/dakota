@@ -1742,7 +1742,7 @@ void NonDExpansion::annotated_results(short results_state)
 
 /** computes the default refinement metric based on change in respCovariance */
 Real NonDExpansion::
-compute_covariance_metric(bool update_ref, bool print_metric)
+compute_covariance_metric(bool revert, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1754,7 +1754,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
     RealVector resp_var_ref, delta_resp_var = respVariance; // deep copy
-    if (!update_ref) resp_var_ref = respVariance;
+    if (revert) resp_var_ref = respVariance;
     if (relativeMetric)
       scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
 
@@ -1769,7 +1769,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
     Cout << "norm of delta_resp_var = " << delta_norm << std::endl;
 #endif // DEBUG
 
-    if (!update_ref) respVariance = resp_var_ref;
+    if (revert) respVariance = resp_var_ref;
 
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
@@ -1779,7 +1779,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
   }
   case FULL_COVARIANCE: {
     RealSymMatrix resp_covar_ref, delta_resp_covar = respCovariance;// deep copy
-    if (!update_ref) resp_covar_ref = respCovariance;
+    if (revert) resp_covar_ref = respCovariance;
     if (relativeMetric)
       scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
 
@@ -1796,7 +1796,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
     Cout << "norm of delta_resp_covar = " << delta_norm << std::endl;
 #endif // DEBUG
 
-    if (!update_ref) respCovariance = resp_covar_ref;
+    if (revert) respCovariance = resp_covar_ref;
 
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
@@ -1813,7 +1813,7 @@ compute_covariance_metric(bool update_ref, bool print_metric)
 
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
 Real NonDExpansion::
-compute_final_statistics_metric(bool update_ref, bool print_metric)
+compute_final_statistics_metric(bool revert, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1864,7 +1864,7 @@ compute_final_statistics_metric(bool update_ref, bool print_metric)
     }
   }
 
-  if (!update_ref) finalStatistics.function_values(final_stats_ref);
+  if (revert) finalStatistics.function_values(final_stats_ref);
 
   // Risk of zero reference is reduced relative to covariance control, but not
   // eliminated. Trap this and also avoid possible bogus termination from using

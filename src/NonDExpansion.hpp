@@ -109,10 +109,9 @@ protected:
   virtual void archive_coefficients();
 
   /// compute 2-norm of change in response covariance
-  virtual Real compute_covariance_metric(bool update_ref, bool print_metric);
+  virtual Real compute_covariance_metric(bool revert, bool print_metric);
   /// compute 2-norm of change in final statistics
-  virtual Real compute_final_statistics_metric(bool update_ref,
-					       bool print_metric);
+  virtual Real compute_final_statistics_metric(bool revert, bool print_metric);
 
   //
   //- Heading: Virtual function redefinitions

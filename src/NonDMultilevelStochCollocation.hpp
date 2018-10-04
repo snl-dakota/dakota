@@ -62,8 +62,8 @@ protected:
   void core_run();
   void assign_specification_sequence();
   void increment_specification_sequence();
-  Real compute_covariance_metric(bool update_ref, bool print_metric);
-  Real compute_final_statistics_metric(bool update_ref, bool print_metric);
+  Real compute_covariance_metric(bool revert, bool print_metric);
+  Real compute_final_statistics_metric(bool revert, bool print_metric);
   void update_reference_stats();
   void increment_reference_stats();
   void combined_to_active();
