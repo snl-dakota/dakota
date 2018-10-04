@@ -1335,10 +1335,11 @@ void NonDExpansion::greedy_multifidelity_expansion()
   }
 
   // Perform final roll-up for each level and then combine levels
-  NLev.resize(num_lev);
+  NLev.resize(num_lev);  bool reverted;
   for (lev=0; lev<num_lev; ++lev) {
     configure_indices(lev, form, multilev);
-    post_refinement(best_lev_metric, true); // increments have been reverted
+    reverted = (lev != best_lev); // only candidate from best_lev was applied
+    post_refinement(best_lev_metric, reverted);
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   combined_to_active();
