@@ -120,12 +120,14 @@ namespace Dakota
     hid_t space_id = space.getId();
     hid_t lcpl_id  = linkCreatePL.getId();
     hid_t dcpl_id  = plist.getId();
-
-    H5::DataSet dataset( H5Dcreate2(
-      loc_id, name.c_str(), dtype_id, space_id, lcpl_id, dcpl_id, H5P_DEFAULT
-	));
-
-    return dataset;
+    hid_t dset_id =  H5Dcreate2(loc_id, name.c_str(), dtype_id, space_id, 
+        lcpl_id, dcpl_id, H5P_DEFAULT);
+    if(dset_id > 0) {
+      H5::DataSet dataset(dset_id);
+      return dataset;
+    }
+    else
+      throw std::runtime_error(String("Attempt to create HDF5 dataset ") + name + " failed" );
   }
 
   bool HDF5IOHelper::is_scale(const H5::DataSet dset) const
