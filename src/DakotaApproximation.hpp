@@ -224,8 +224,10 @@ public:
   void active_model_key(const UShortArray& sd_key);
   /// reset initial state by removing all model keys for an approximation
   void clear_model_keys();
-  /// clear SurrogateData::{vars,resp}Data
+  /// clear SurrogateData::{vars,resp}Data for all approxDataKeys
   void clear_data();
+  /// clear active approximation data
+  void clear_active_data();
   /// clear inactive approximation data
   void clear_inactive_data();
   /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for active key
@@ -487,30 +489,6 @@ inline void Approximation::pop_count(size_t count, size_t key_index)
 }
 
 
-/** Clear current but preserve hisory for active key (virtual function
-    redefined by {TANA3,QMEA}Approximation to demote current while
-    preserving previous points). */
-inline void Approximation::clear_current_data()
-{
-  if (approxRep) // envelope fwd to letter
-    approxRep->clear_current_data();
-  else // default implementation
-    clear_data();
-}
-
-
-/** Clears out current + history for active key (not virtual). */
-inline void Approximation::clear_data()
-{
-  if (approxRep) approxRep->clear_data();
-  else {
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d)
-      approxData[d].clear_active();
-  }
-}
-
-
 inline void Approximation::active_model_key(const UShortArray& sd_key)
 {
   if (approxRep) approxRep->active_model_key(sd_key);
@@ -528,7 +506,42 @@ inline void Approximation::clear_model_keys()
   else {
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
-      approxData[d].clear_keys();
+      approxData[d].clear_all();
+  }
+}
+
+
+/** Clear current but preserve hisory for active key (virtual function
+    redefined by {TANA3,QMEA}Approximation to demote current while
+    preserving previous points). */
+inline void Approximation::clear_current_data()
+{
+  if (approxRep) // envelope fwd to letter
+    approxRep->clear_current_data();
+  else // default implementation
+    clear_data();
+}
+
+
+/** Clears out current + history for each tracked key (not virtual). */
+inline void Approximation::clear_data()
+{
+  if (approxRep) approxRep->clear_data();
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].clear_data();
+  }
+}
+
+
+inline void Approximation::clear_active_data()
+{
+  if (approxRep) approxRep->clear_active_data();
+  else {
+    size_t d, num_d = approxData.size();
+    for (d=0; d<num_d; ++d)
+      approxData[d].clear_active_data();
   }
 }
 
@@ -539,7 +552,7 @@ inline void Approximation::clear_inactive_data()
   else {
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
-      approxData[d].clear_inactive();
+      approxData[d].clear_inactive_data();
   }
 }
 

@@ -1040,7 +1040,8 @@ void NonDExpansion::decrement_grid()
 void NonDExpansion::push_increment()
 {
   switch (expansionCoeffsApproach) {
-//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+    increment_grid(/***TO DO***/); break; // recompute increment
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1054,7 +1055,8 @@ void NonDExpansion::push_increment()
 void NonDExpansion::pop_increment()
 {
   switch (expansionCoeffsApproach) {
-//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+  case Pecos::QUADRATURE:              case Pecos::CUBATURE:
+    decrement_grid(); break; // recompute decrement
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1068,14 +1070,14 @@ void NonDExpansion::pop_increment()
 void NonDExpansion::merge_grid()
 {
   switch (expansionCoeffsApproach) {
-//case Pecos::QUADRATURE:              case Pecos::CUBATURE:
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();    
-    nond_integration->merge_grid_increment();//TO DO:implement for other drivers
-    nond_integration->update_reference();   // TO DO:implement for other drivers
+    nond_integration->merge_grid_increment();
+    nond_integration->update_reference();
     break;
   }
+  //case Pecos::QUADRATURE: case Pecos::CUBATURE: // no-op
   }
 }
 
@@ -1463,8 +1465,7 @@ void NonDExpansion::update_expansion()
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
       // append new data to the existing approximation and rebuild
       uSpaceModel.append_approximation(true); break;
-    default:
-      // SAMPLING, REGRESSION cases: evaluate + append new data and rebuild
+    default: // SAMPLING, REGRESSION: evaluate + append new data and rebuild
       // > if incremental unsupported, rebuild defaults to build from scratch.
       // > Note: DataFitSurrModel::rebuild_global() utilizes sampling_reset()
       //   and daceIterator.run() to define unstructured sample increment.
