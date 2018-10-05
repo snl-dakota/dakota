@@ -24,12 +24,12 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20180426'
+__version__ = '20180719'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
 DESCRIPTION="""\
-%(prog)s -- python input deck pre-proscessor and template engine.
+%(prog)s -- python-based input deck pre-processor and template engine.
 
 version: __version__
 
@@ -1042,7 +1042,7 @@ def dprepro(include=None, template=None, output=None, fmt='%0.10g', code='%',
         
         include(dict): Items to make available for substitution
         template(str or IO object): Template. If it has .read(), will be 
-            treated like a file. Otherwise, assumed to be the name of a file.
+            treated like a file. Otherwise, assumed to contain a template.
         output(str or IO object): If None (the default), the substituted
             template will be returned as a string. If it has .write(), will
             be treated like a file. Otherwise, assumed to be the name of a file.
@@ -1156,7 +1156,7 @@ class TemplateError(Exception):
 
 def _touni(s, enc=None, err='strict'):
     if enc is None:
-        # This ordering is intension since, anecdotally, some Windows-1252 will
+        # This ordering is intensional since, anecdotally, some Windows-1252 will
         # be decodable as UTF-16. The chardet module is the "correct" answer
         # but we don't want to add the dependency
         enc = ['utf8','Windows-1252','utf16','ISO-8859-1',]
@@ -1402,7 +1402,7 @@ class _StplParser(object):
     # This huge pile of voodoo magic splits python code into 8 different tokens.
     # We use the verbose (?x) regex mode to make this more manageable
 
-    _re_tok = _re_inl = r'''(?mx)(        # verbose and dot-matches-newline mode
+    _re_tok = _re_inl = r'''( # (?mx) will be added below for verbose and dotall mode
         [urbURB]*
         (?:  ''(?!')
             |""(?!")
@@ -1444,6 +1444,11 @@ class _StplParser(object):
     # Match inline statements (may contain python strings)
     _re_inl = r'''%%(inline_start)s((?:%s|[^'"\n]+?)*?)%%(inline_end)s''' % _re_inl
 
+    # Add back in the flags to avoid the deprecation warning
+    # verbose and dot-matches-newline mode
+    _re_tok = '(?mx)' + _re_tok
+    _re_inl = '(?mx)' + _re_inl
+    
     # default_syntax = '{% %} % { }'
 
     def __init__(self, source, syntax=None, encoding='utf8'):

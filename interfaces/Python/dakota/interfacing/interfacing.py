@@ -571,8 +571,8 @@ def dprepro(template, parameters=None, results=None, include=None,
     available under the name DakotaResults.
 
     Arguments:
-        template: If template is a string, it is assumed to be the name of a file 
-            that contains a template. If it's a file-like object, the template will
+        template: If template is a string, it is assumed to contain a template.
+            If it's a file-like object with a .read() method, the template will
             be read from it.
 
     Keyword Args:
@@ -620,7 +620,7 @@ def dprepro(template, parameters=None, results=None, include=None,
     elif hasattr(output, "write"):
         output.write(output_string)
     else:
-        with open(output,"w") as f:
+        with open(output,"w",encoding="utf-8") as f:
             f.write(output_string)
 
 
