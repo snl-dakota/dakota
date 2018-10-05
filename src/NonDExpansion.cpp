@@ -2128,13 +2128,13 @@ void NonDExpansion::archive_moments()
       if (exp_mom)  exp_active = true;
       if (num_int_mom)  num_active = true;
       for (size_t j=0; j<exp_mom; ++j)
-	exp_matrix(j,i) = exp_moments[j];
+        exp_matrix(j,i) = exp_moments[j];
       for (size_t j=exp_mom; j<4; ++j)
-	exp_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
+        exp_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
       for (size_t j=0; j<num_int_mom; ++j)
-	num_matrix(j,i) = num_int_moments[j];
+        num_matrix(j,i) = num_int_moments[j];
       for (size_t j=num_int_mom; j<4; ++j)
-	num_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
+        num_matrix(j,i) = std::numeric_limits<Real>::quiet_NaN();
     }
   }
 
@@ -2146,8 +2146,8 @@ void NonDExpansion::archive_moments()
 
   std::string moment_1_lower = "mean";
   std::string moment_2_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "variance" : "std_deviation";
-  std::string moment_3_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "3rd_central" : "skewness";
-  std::string moment_4_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "4th_central" : "kurtosis";
+  std::string moment_3_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "third_central" : "skewness";
+  std::string moment_4_lower = (finalMomentsType == CENTRAL_MOMENTS) ? "fourth_central" : "kurtosis";
 
   if (exp_active || num_active) {
     MetaDataType md_moments;
@@ -2157,16 +2157,14 @@ void NonDExpansion::archive_moments()
       = make_metadatavalue(iteratedModel.response_labels());  
 	  
     if (exp_active) {
-	  resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
-
+      resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
       for (int i = 0; i < iteratedModel.response_labels().size(); ++i) {
-	    DimScaleMap scales;
-		scales.emplace(0,
-            StringScale("moments",
-            {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
-            ScaleScope::SHARED));
+        DimScaleMap scales;
+        scales.emplace(0, StringScale("moments", 
+                             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
+                             ScaleScope::SHARED));
         // extract column or row of moment_stats
-        resultsDB.insert(run_identifier(), String("exp_moments"),
+        resultsDB.insert(run_identifier(), String("expansion_moments"),
             iteratedModel.response_labels()[i],
             Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&exp_matrix), i),
             scales);
@@ -2175,7 +2173,7 @@ void NonDExpansion::archive_moments()
     if (num_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_num,
           num_matrix, md_moments);
-
+      
       for (int i = 0; i < iteratedModel.response_labels().size(); ++i) {
         DimScaleMap scales;
         scales.emplace(0,
@@ -2183,7 +2181,7 @@ void NonDExpansion::archive_moments()
             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
             ScaleScope::SHARED));
         // extract column or row of moment_stats
-        resultsDB.insert(run_identifier(), String("num_moments"),
+        resultsDB.insert(run_identifier(), String("integration_moments"),
             iteratedModel.response_labels()[i],
             Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&num_matrix), i),
             scales);

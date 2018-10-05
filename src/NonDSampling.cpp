@@ -1437,7 +1437,7 @@ archive_moments(const RealMatrix& moment_stats, short moments_type,
     if(moments_type == CENTRAL_MOMENTS)
       scales.emplace(0, 
                      StringScale("moments",
-                     {"mean", "variance", "3rd_central", "4th_central"},
+                     {"mean", "variance", "third_central", "fourth_central"},
                      ScaleScope::SHARED));
     else
       scales.emplace(0,
@@ -1480,7 +1480,6 @@ archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
     ci(1,0) = moment_conf_ints(1,i);
     ci(0,1) = moment_conf_ints(2,i);
     ci(1,1) = moment_conf_ints(3,i);
-    Cout << ci << std::endl;
     resultsDB.insert(run_identifier(), String("moment_confidence_intervals"), labels[i],
         ci, scales);
   }
