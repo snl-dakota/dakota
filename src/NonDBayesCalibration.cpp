@@ -485,12 +485,15 @@ void NonDBayesCalibration::init_hyper_parameters()
     Emulator:     on by default; can be overridden with "pre_solve none"
     No emulator: off by default; can be activated  with "pre_solve {sqp,nip}"
                  relies on mapOptimizer ctor to enforce min derivative support
+    Calculation of model evidence using Laplace approximation: 
+		 this requires a MAP solve. 
 */
 void NonDBayesCalibration::construct_map_optimizer() 
 {
   if ( mapOptAlgOverride == SUBMETHOD_SQP || 
        mapOptAlgOverride == SUBMETHOD_NIP ||
-       ( emulatorType && mapOptAlgOverride != SUBMETHOD_NONE ) ) {
+       ( emulatorType && mapOptAlgOverride != SUBMETHOD_NONE ) ||
+       ( calModelEvidLaplace ) ) {
 
     size_t num_total_calib_terms = residualModel.num_primary_fns();
     Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
@@ -2545,9 +2548,6 @@ void NonDBayesCalibration::calculate_evidence()
       residualModel.continuous_variables(cont_params);
       residualModel.evaluate();
       RealVector residual = residualModel.current_response().function_values();
-      mcmcModel.continuous_variables(cont_params);
-      mcmcModel.evaluate();
-      RealVector mcmc = mcmcModel.current_response().function_values();
       double log_like = log_likelihood(residual, params);
       sum_like += std::exp(log_like);
     }
@@ -2556,6 +2556,16 @@ void NonDBayesCalibration::calculate_evidence()
     Cout << "num samples = " << num_prior_samples << '\n';
   }
   if (calModelEvidLaplace) {
+    if (obsErrorMultiplierMode > CALIBRATE_NONE) {
+      Cout << "The Laplace approximation of model evidence currently " 
+           << "does not work when error multipliers are specified." << '\n';
+      abort_handler(METHOD_ERROR);
+    } 
+    if (mapOptAlgOverride == SUBMETHOD_NONE) {
+      Cout << "You must specify a pre-solve method for the Laplace approximation" 
+           << " of model evidence. "  << '\n'; 
+      abort_handler(METHOD_ERROR);
+    } 
     Cout << "Starting Laplace approximation of model evidence, first " 
          << "\nobtain MAP point from pre-solve.\n";
     const RealVector& map_c_vars
@@ -2578,7 +2588,8 @@ void NonDBayesCalibration::calculate_evidence()
     ActiveSet as2 = nlpost_resp.active_set();
     as2.request_values(7);
     nlpost_resp.active_set(as2);
-    neg_log_post_resp_mapping(mapOptimizer.variables_results(), mapOptimizer.variables_results(), residualModel.current_response(), nlpost_resp);
+    neg_log_post_resp_mapping(mapOptimizer.variables_results(), mapOptimizer.variables_results(), 
+      residualModel.current_response(), nlpost_resp);
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "Negative log posterior function values " << nlpost_resp.function_values() << '\n';
       Cout << "Negative log posterior Hessian " << nlpost_resp.function_hessian_view(0) << '\n';
