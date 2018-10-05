@@ -162,8 +162,8 @@ public:
 
   /// insert an arbitrary type (eg RealMatrix) with scales
   void insert(const StrStrSizet& iterator_id,
-              const std::string& result_name,
-              const std::string& response_name,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
               const boost::any& data,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),

@@ -154,15 +154,15 @@ public:
   /// Insert using dimension scales type (DimScaleMap in dakota_results_types.hpp)
   template<typename StoredType>
   void insert(const StrStrSizet& iterator_id,
-              const std::string& result_name,
-              const std::string& response_name,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
 	      const StoredType& sent_data,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),
               const bool &transpose = false)
   {
     for( auto & db : resultsDBs )
-      db->insert(iterator_id, result_name, response_name, sent_data, scales, attrs, transpose);
+      db->insert(iterator_id, lvl_1_name, lvl_2_name, sent_data, scales, attrs, transpose);
   }
 
 

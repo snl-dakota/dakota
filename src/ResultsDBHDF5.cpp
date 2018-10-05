@@ -44,15 +44,15 @@ String execution_hdf5_link_name(const StrStrSizet& iterator_id) {
 
 /// Create a dataset name from the unique identifiers passed
 String dataset_hdf5_link_name(const StrStrSizet& iterator_id,
-                                     const String& result_name,
-                                     const String& response_name)
+                                     const String& lvl_1_name,
+                                     const String& lvl_2_name)
 {
   String rval = execution_hdf5_link_name(iterator_id)
-                + '/' + result_name;
+                + '/' + lvl_1_name;
   // some types of results, like correlation matrices, may
-  // have an empty response name.
-  if(!response_name.empty()) {
-    rval += '/' + response_name;
+  // have an empty lvl_2_name.
+  if(!lvl_2_name.empty()) {
+    rval += '/' + lvl_2_name;
   }
   return rval;
 }
@@ -71,8 +71,8 @@ ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
 
 /// insert an arbitrary type (eg RealMatrix) with scales
 void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
-            const std::string& result_name,
-            const std::string& response_name,
+            const std::string& lvl_1_name,
+            const std::string& lvl_2_name,
             const boost::any& data,
             const DimScaleMap &scales,
             const AttributeArray &attrs,
@@ -80,7 +80,7 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
 {
   // Store the results
   String dset_name =
-    dataset_hdf5_link_name(iterator_id, result_name, response_name);
+    dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
   // Need to fix this to use incoming "data"
   if (data.type() == typeid(std::vector<double>)) {
     hdf5Stream->store_vector_data(
@@ -90,6 +90,10 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
     hdf5Stream->store_vector_data(
       dset_name, boost::any_cast<RealVector>(data));
   }
+  else if (data.type() == typeid(IntVector)) {
+    hdf5Stream->store_vector_data(
+      dset_name, boost::any_cast<IntVector>(data));
+   }
   else if (data.type() == typeid(RealMatrix)) {
     hdf5Stream->store_matrix_data(dset_name, boost::any_cast<RealMatrix>(data), transpose);
   }
@@ -118,7 +122,7 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
   for(auto &s : scales) {  // s is a std::pair<int, boost::variant<StringScale, RealScale> >
     int dimension = s.first;
     AttachScaleVisitor visitor(
-      iterator_id, result_name, response_name, dimension, dset_name, hdf5Stream
+      iterator_id, lvl_1_name, lvl_2_name, dimension, dset_name, hdf5Stream
     );
     boost::apply_visitor(visitor, s.second);
 
