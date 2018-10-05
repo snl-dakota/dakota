@@ -1432,6 +1432,8 @@ void NonDExpansion::decrement_order_and_grid()
     no need to update these for an expansion refinement. */
 void NonDExpansion::update_expansion()
 {
+  // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
+
   if (uSpaceModel.push_available()) { // defaults to false
     switch (expansionCoeffsApproach) {
     case Pecos::QUADRATURE:              case Pecos::CUBATURE:
@@ -1444,24 +1446,31 @@ void NonDExpansion::update_expansion()
     }
     uSpaceModel.push_approximation();
   }
-  else
+  else {
     switch (expansionCoeffsApproach) {
     case Pecos::QUADRATURE:              case Pecos::CUBATURE:
     case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
-      // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
       NonDIntegration* nond_int = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_int->evaluate_grid_increment();
-      // append the new data to the existing approximation and rebuild
-      uSpaceModel.append_approximation(true); // rebuild
+      nond_int->evaluate_grid_increment();// TPQ/Cub: not currently an increment
       break;
     }
-    default: // SAMPLING, all REGRESSION cases
-      // if incremental unsupported, rebuild defaults to build from scratch.
-      // Note: DataFitSurrModel::rebuild_global() utilizes sampling_reset()
-      // and daceIterator.run() to define unstructured sample increment.
+    }
+    switch (expansionCoeffsApproach) {
+    case Pecos::QUADRATURE: case Pecos::CUBATURE:
+      // replace the previous data and rebuild (prior to incremental support)
+      uSpaceModel.update_approximation(true); break;
+    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
+      // append new data to the existing approximation and rebuild
+      uSpaceModel.append_approximation(true); break;
+    default:
+      // SAMPLING, REGRESSION cases: evaluate + append new data and rebuild
+      // > if incremental unsupported, rebuild defaults to build from scratch.
+      // > Note: DataFitSurrModel::rebuild_global() utilizes sampling_reset()
+      //   and daceIterator.run() to define unstructured sample increment.
       uSpaceModel.rebuild_approximation(); break;
     }
+  }
 }
 
 

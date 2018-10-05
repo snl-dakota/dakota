@@ -289,6 +289,11 @@ inline void NonDQuadrature::evaluate_grid_increment()
   // IncrementalSparseGridDriver::increment_unique().
   // (Relying on duplicate detection as below is insufficient for rebuilds
   // since the point counts in latest incremental logic are wrong...)
+  //
+  // Note: this would require introduction of collocation indices into
+  // TensorProductDriver as the incremental evaluations in an updated grid
+  // would no longer be in tensor order.  For this reason, rely on duplication
+  // detection for now.
 
   tpqDriver->compute_grid(allSamples);//compute_increment(allSamples);
   evaluate_parameter_sets(iteratedModel, true, false);
