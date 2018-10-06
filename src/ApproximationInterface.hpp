@@ -116,8 +116,8 @@ protected:
   void combined_to_active(bool clear_combined = true);
 
   void clear_inactive();
-  void clear_current_data();
-  void clear_data();
+  void clear_current_active_data();
+  void clear_active_data();
 
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
@@ -414,17 +414,17 @@ inline void ApproximationInterface::clear_inactive()
 }
 
 
-inline void ApproximationInterface::clear_current_data()
+inline void ApproximationInterface::clear_current_active_data()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
-    functionSurfaces[*it].clear_current_data();
+    functionSurfaces[*it].clear_current_active_data();
 }
 
 
-inline void ApproximationInterface::clear_data()
+inline void ApproximationInterface::clear_active_data()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
-    functionSurfaces[*it].clear_data();
+    functionSurfaces[*it].clear_active_data();
 }
 
 

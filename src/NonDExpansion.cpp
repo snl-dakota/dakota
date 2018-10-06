@@ -1041,11 +1041,11 @@ void NonDExpansion::push_increment()
 {
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:              case Pecos::CUBATURE:
-    increment_grid(/***TO DO***/); break; // recompute increment
+    increment_grid(); break; // recompute increment
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_integration->push_grid_increment(); //TO DO:implement for other drivers
+    nond_integration->push_grid_increment();
     break;
   }
   }
@@ -1060,7 +1060,7 @@ void NonDExpansion::pop_increment()
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_integration->pop_grid_increment(); //TO DO:implement for other drivers
+    nond_integration->pop_grid_increment();
     break;
   }
   }

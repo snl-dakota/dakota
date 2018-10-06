@@ -402,11 +402,11 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	 << "ApproximationInterface::update_approximation()." << std::endl;
     abort_handler(-1);
   }
-  // clear SurrogateData::{vars,resp}Data
+  // clear active SurrogateData::{vars,resp}Data
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
-    functionSurfaces[*a_it].clear_data();
-  // replace SurrogateData::{vars,resp}Data
+    functionSurfaces[*a_it].clear_active_data();
+  // replace active SurrogateData::{vars,resp}Data
   if (actualModelCache) {
     PRPCacheCIter p_it; size_t num_cv = samples.numRows();
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
@@ -454,11 +454,11 @@ update_approximation(const VariablesArray& vars_array,
 	 << "ApproximationInterface::update_approximation()." << std::endl;
     abort_handler(-1);
   }
-  // clear SurrogateData::{vars,resp}Data
+  // clear active SurrogateData::{vars,resp}Data
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
-    functionSurfaces[*a_it].clear_data();
-  // replace SurrogateData::{vars,resp}Data
+    functionSurfaces[*a_it].clear_active_data();
+  // replace active SurrogateData::{vars,resp}Data
   if (actualModelCache) {
     PRPCacheCIter p_it;
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {

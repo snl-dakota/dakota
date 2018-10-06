@@ -1319,19 +1319,19 @@ RealArray Interface::challenge_diagnostics(const String& metric_type,
 }
 
 
-void Interface::clear_current_data()
+void Interface::clear_current_active_data()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_current_data();
+    interfaceRep->clear_current_active_data();
   //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
 }
 
 
-void Interface::clear_data()
+void Interface::clear_active_data()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_data();
+    interfaceRep->clear_active_data();
   //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
 }

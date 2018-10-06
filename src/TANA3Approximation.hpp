@@ -64,7 +64,7 @@ protected:
 
   //const RealMatrix& hessian(const Variables& vars);
 
-  void clear_current_data();
+  void clear_current_active_data();
 
 private:
 
@@ -114,7 +114,7 @@ inline TANA3Approximation::~TANA3Approximation()
 
 
 /** Redefine default implementation to support history mechanism. */
-inline void TANA3Approximation::clear_current_data()
+inline void TANA3Approximation::clear_current_active_data()
 {
   Pecos::SurrogateData& approx_data
     = approxData[sharedDataRep->activeDataIndex];

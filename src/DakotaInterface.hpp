@@ -199,9 +199,9 @@ public:
 					  const RealMatrix& challenge_pts);
 
   /// clears current data from an approximation interface
-  virtual void clear_current_data();
+  virtual void clear_current_active_data();
   /// clears all data from an approximation interface
-  virtual void clear_data();
+  virtual void clear_active_data();
 
   /// retrieve the SharedApproxData within an ApproximationInterface
   virtual SharedApproxData& shared_approximation();

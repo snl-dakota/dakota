@@ -83,7 +83,7 @@ public:
   virtual void finalize_coefficients();
 
   /// clear current build data in preparation for next build
-  virtual void clear_current_data();
+  virtual void clear_current_active_data();
 
   /// combine all level approximations into a single aggregate approximation
   virtual void combine_coefficients();
@@ -506,7 +506,7 @@ inline void Approximation::clear_model_keys()
   else {
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
-      approxData[d].clear_all();
+      approxData[d].clear_all(false); // don't re-initialize
   }
 }
 
@@ -514,12 +514,12 @@ inline void Approximation::clear_model_keys()
 /** Clear current but preserve hisory for active key (virtual function
     redefined by {TANA3,QMEA}Approximation to demote current while
     preserving previous points). */
-inline void Approximation::clear_current_data()
+inline void Approximation::clear_current_active_data()
 {
   if (approxRep) // envelope fwd to letter
-    approxRep->clear_current_data();
+    approxRep->clear_current_active_data();
   else // default implementation
-    clear_data();
+    clear_active_data();
 }
 
 
@@ -530,7 +530,7 @@ inline void Approximation::clear_data()
   else {
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
-      approxData[d].clear_data();
+      approxData[d].clear_data(); // re-initializes by default
   }
 }
 
@@ -539,9 +539,10 @@ inline void Approximation::clear_active_data()
 {
   if (approxRep) approxRep->clear_active_data();
   else {
+    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
-      approxData[d].clear_active_data();
+      approxData[d].clear_active_data(keys[d]);
   }
 }
 
@@ -550,6 +551,7 @@ inline void Approximation::clear_inactive_data()
 {
   if (approxRep) approxRep->clear_inactive_data();
   else {
+    // This is used after combination, so can ignore approxDataKeys
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
       approxData[d].clear_inactive_data();
@@ -561,9 +563,10 @@ inline void Approximation::clear_active_popped()
 {
   if (approxRep) approxRep->clear_active_popped();
   else {
+    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
     size_t d, num_d = approxData.size();
     for (d=0; d<num_d; ++d)
-      approxData[d].clear_active_popped();
+      approxData[d].clear_active_popped(keys[d]);
   }
 }
 
