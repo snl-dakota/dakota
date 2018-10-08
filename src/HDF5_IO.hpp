@@ -95,18 +95,18 @@ class HDF5IOHelper
   {
     // create or open a file
     //H5::Exception::dontPrint();
-    if( overwrite )
+    if( overwrite ) {
       filePtr = std::shared_ptr<H5::H5File>(
         new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
-
-    try {
-      filePtr = std::shared_ptr<H5::H5File>(
-        new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
-    } catch(const H5::FileIException&) {
-      filePtr = std::shared_ptr<H5::H5File>(
-        new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+    } else {
+      try {
+        filePtr = std::shared_ptr<H5::H5File>(
+          new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
+      } catch(const H5::FileIException&) {
+        filePtr = std::shared_ptr<H5::H5File>(
+          new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+      }
     }
-
     // Initialize global Link Creation Property List to encode all link
     // (group, dataset) names in UTF-8
     linkCreatePL.setCharEncoding(H5T_CSET_UTF8);      
