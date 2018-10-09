@@ -74,6 +74,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   batchEvals(probDescDB.get_int("method.batch_size")),
   mutualInfoAlg(probDescDB.get_bool("method.nond.mutual_info_ksg2") ?
 		MI_ALG_KSG2 : MI_ALG_KSG1),
+  readFieldCoords(probDescDB.get_bool("responses.read_field_coordinates")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -1199,8 +1200,15 @@ void NonDBayesCalibration::build_model_discrepancy()
   size_t num_field_groups = expData.num_fields();
   if (num_field_groups == 0)
     build_scalar_discrepancy();
-  else
-    build_field_discrepancy();
+  else {
+    if (readFieldCoords)
+      build_field_discrepancy();
+    else {
+      Cout << "You must specify read_field_coodinates in input file in order "
+           << "to calculate model discrepancy\n";
+      abort_handler(METHOD_ERROR);
+    }
+  }
 }
 
 void NonDBayesCalibration::build_scalar_discrepancy()
@@ -2175,7 +2183,7 @@ void NonDBayesCalibration::compute_statistics()
 
   NonDSampling::compute_moments(filtered_chain, chainStats, STANDARD_MOMENTS);
   NonDSampling::compute_moments(filteredFnVals,    fnStats, STANDARD_MOMENTS);
-  if (outputLevel >= NORMAL_OUTPUT)
+  if (!requestedProbLevels[0].empty())
     compute_intervals();
 
   // Print tabular file for the filtered chain

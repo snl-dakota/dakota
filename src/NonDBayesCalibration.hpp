@@ -281,6 +281,8 @@ protected:
 
   // settings specific to model discrepancy
 
+  /// need field coordinates for model discrepancy
+  bool readFieldCoords;
   /// flag whether to calculate model discrepancy
   bool calModelDiscrepancy;
   /// set discrepancy type
