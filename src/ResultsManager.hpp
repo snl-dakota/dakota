@@ -220,6 +220,8 @@ public:
   void add_metadata_for_execution(const StrStrSizet& iterator_id,
                                   const AttributeArray &attrs);
 
+  /// Flush data to the database or disk, if supported
+  void flush();
 
 private:
 

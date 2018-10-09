@@ -198,4 +198,9 @@ namespace Dakota
     );
     return ds_dataset;
   }
+
+  void HDF5IOHelper::flush() {
+    filePtr->flush(H5F_SCOPE_LOCAL);
+  }
+
 }

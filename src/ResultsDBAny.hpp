@@ -76,9 +76,8 @@ public:
 
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
-  /// pretty print the data to the passed output stream
-  void print_data(std::ostream& output_stream) override;
-
+  /// Write data to file
+  void flush();
 
 private:
 

@@ -1074,6 +1074,7 @@ void Iterator::run()
     if (summaryOutputFlag)
       Cout << "\n<<<<< Iterator " << method_string <<" completed.\n";
     finalize_run();
+    resultsDB.flush();
   }
 }
 

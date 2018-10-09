@@ -203,7 +203,8 @@ public:
     abort_handler(-1);
   }
 
-
+  /// Flush HDF5 cache to disk
+  void flush();
 private:
  
   /// Instance of HDF5IOHelper

@@ -154,6 +154,9 @@ void ResultsDBHDF5::add_metadata_for_execution(const StrStrSizet& iterator_id,
   );
 }
 
+void ResultsDBHDF5::flush() {
+  hdf5Stream->flush();
+}
 
 
 } // Dakota namespace

@@ -57,8 +57,9 @@ insert(const StrStrSizet& iterator_id,
 }
 
 
-void ResultsDBAny::print_data(std::ostream& os)
+void ResultsDBAny::flush()
 {
+  std::ofstream os(fileName.c_str());
   std::map<ResultsKeyType, ResultsValueType>::iterator data_it = 
     iteratorData.begin();
   std::map<ResultsKeyType, ResultsValueType>::const_iterator data_end = 

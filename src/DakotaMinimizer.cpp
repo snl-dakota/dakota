@@ -338,8 +338,6 @@ void Minimizer::post_run(std::ostream& s)
     // The remaining final results output varies by iterator branch
     print_results(s);
   }
-
-  resultsDB.write_databases();
 }
 
 

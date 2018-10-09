@@ -36,12 +36,11 @@ bool ResultsManager::active() const
 }
 
 
-void ResultsManager::write_databases()
+void ResultsManager::flush()
 {
   for( auto & db : resultsDBs )
   {
-    std::ofstream results_file(db->filename().c_str());
-    db->print_data(results_file);
+    db->flush();
   }
 }
 
@@ -58,6 +57,5 @@ void ResultsManager::add_metadata_for_execution(const StrStrSizet& iterator_id,
   for( auto & db : resultsDBs )
     db->add_metadata_for_execution(iterator_id, attrs);
 }
-
 
 } // namespace Dakota

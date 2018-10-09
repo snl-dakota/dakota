@@ -75,6 +75,9 @@ public:
                     const AttributeArray &attrs
                     ) = 0;
 
+  /// If supported, flush data to the database or disk
+  virtual
+  void flush() = 0;
   // TODO: For the following need const/non-const versions and
   // value/ref versions...
 
@@ -121,11 +124,7 @@ public:
 
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
-  /// coarsely dump the data to the passed output stream
-  virtual void
-  print_data(std::ostream& output_stream)
-    { /* no-op */ }
-
+  
   const String& filename() const
     { return fileName; }
 

@@ -365,6 +365,9 @@ class HDF5IOHelper
   H5::DSetCreatPropList datasetCompactPL;
   H5::DSetCreatPropList datasetContiguousPL;
 
+  /// Flush cache to file
+  void flush();
+ 
 
   protected:
 
