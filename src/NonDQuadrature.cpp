@@ -396,12 +396,17 @@ void NonDQuadrature::increment_grid(UShortArray& dim_quad_order)
 void NonDQuadrature::
 increment_dimension_quadrature_order(UShortArray& dim_quad_order)
 {
-  // increment uniformly by 1
+  // increment uniformly by 1 (no growth rule is currently enforced,
+  // but could be desirable for weak nesting of symmetric rules)
   for (size_t i=0; i<numContinuousVars; ++i)
     dim_quad_order[i] += 1;
 
-  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
-  else             tpqDriver->quadrature_order(dim_quad_order);
+  if (nestedRules) {
+    tpqDriver->nested_quadrature_order(dim_quad_order);
+    dim_quad_order = tpqDriver->quadrature_order(); // update reference ?
+  }
+  else
+    tpqDriver->quadrature_order(dim_quad_order);
 }
 
 

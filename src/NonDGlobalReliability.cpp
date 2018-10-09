@@ -507,7 +507,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	BoolDequeArray nonlinear_resp_map(1, BoolDeque(1, true));
 	RecastModel* mpp_model_rep = (RecastModel*)mppModel.model_rep();
 	if (ria_flag) {
-	  // Standard RIA : min u'u  s.t. g = z_bar
+	  // Standard RIA : min u'u s.t. g = z_bar
 	  // use RIA evaluators to recast g into global opt subproblem
 	  //primary_resp_map.reshape(1);   // one objective, no contributors
 	  //secondary_resp_map.reshape(1); // one constraint, one contributor
@@ -519,7 +519,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  //  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  //  RIA_objective_eval, RIA_constraint_eval);
 
-	  // EFF formulation : max EFF  s.t. bound constraints
+	  // EFF formulation : max EFF s.t. bound constraints
 	  // use EFF evaluators to recast g into global opt subproblem
 	  primary_resp_map.resize(1);
 	  primary_resp_map[0].resize(1);
@@ -529,7 +529,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    EFF_objective_eval, NULL);
 	}
 	else {
-	  // Standard PMA : min/max g  s.t. u'u = beta_bar^2
+	  // Standard PMA : min/max g s.t. u'u = beta_bar^2
 	  // use PMA evaluators to recast g into global opt subproblem
 	  //void (*set_map) (const ShortArray& recast_asv,
 	  //                 ShortArray& sub_model_asv) =

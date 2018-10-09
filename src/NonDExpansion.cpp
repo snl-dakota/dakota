@@ -872,7 +872,8 @@ void NonDExpansion::refine_expansion()
   // Assign a context-specific default in this case.
   size_t i, iter = 1,
     max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  bool converged = (iter > max_refine);
+  bool  converged = (iter > max_refine),
+    unique_metric = (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT);
 
   // post-process nominal expansion
   if (!converged)
@@ -883,7 +884,9 @@ void NonDExpansion::refine_expansion()
   Real metric;
   while (!converged) {
 
-    core_refinement(metric);
+    // Don't revert refinements.  Defer printing of metric unless it is unique
+    // relative to annotated_refinement_results() (i.e., a hierarchical delta)
+    core_refinement(metric, false, unique_metric);
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
     //if (!converged)
