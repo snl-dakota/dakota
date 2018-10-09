@@ -343,12 +343,12 @@ private:
 				  IntResponseMap& approx_resp_map_rekey);
 
   /// Updates fit arrays for local or multipoint approximations
-  void update_local_multipoint();
+  void update_local_reference();
   /// Builds a local or multipoint approximation using actualModel
   void build_local_multipoint();
 
   /// Updates fit arrays for global approximations
-  void update_global();
+  void update_global_reference();
   /// Builds a global approximation using daceIterator
   void build_global();
   /// Rebuilds a global approximation by generating new data using
@@ -357,8 +357,8 @@ private:
 
   /// Refine the built surrogate until convergence criteria are met
   void refine_surrogate();
-  /// Call build_approximation on the interface, passing appropriate constraints
-  void interface_build_approx();
+  /// Call build_approximation on the approxInterface, passing variable bounds
+  void build_approx_interface();
 
   /// update actualModel with data from constraints/labels/sets
   void init_model(Model& model);
@@ -726,11 +726,9 @@ approximation_coefficients(const RealVectorArray& approx_coeffs,
 
   // Surrogate data is being imported.  Update state to suppress automatic
   // surrogate construction.
-  approxBuilds++;
-  if (strbegins(surrogateType, "global_"))
-    update_global();
-  else
-    update_local_multipoint();
+  ++approxBuilds;
+  if (strbegins(surrogateType, "global_")) update_global_reference();
+  else                                      update_local_reference();
 }
 
 

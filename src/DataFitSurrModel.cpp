@@ -376,28 +376,15 @@ void DataFitSurrModel::build_approximation()
 
   // build a local, multipoint, or global data fit approximation.
   if (strbegins(surrogateType, "local_") ||
-      strbegins(surrogateType, "multipoint_")) {
-    // NOTE: branch used by SBO
-    update_local_multipoint();
+      strbegins(surrogateType, "multipoint_")) { // NOTE: branch used by SBO
+    update_local_reference();
     build_local_multipoint();
-    interface_build_approx();
   }
   else { // global approximation.  NOTE: branch not used by SBO.
-    update_global();
+    update_global_reference();
     build_global();
-    //deltaCorr.compute(...need data...);
-    // could add deltaCorr.compute() here and in HierarchSurrModel::
-    // build_approximation if global approximations had easy access
-    // to the truth/approx responses.  Instead, it is called from
-    // SurrBasedLocalMinimizer using data from the trust region center.
-    if (autoRefine)
-      // BMA TODO: Move this to an external refiner
-      refine_surrogate();
-    else
-      interface_build_approx();
   }
 
-  ++approxBuilds;
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 }
 
@@ -426,28 +413,17 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   // build a local, multipoint, or global data fit approximation.
   if (strbegins(surrogateType, "local_") ||
-      strbegins(surrogateType, "multipoint_")) {
-    // NOTE: branch not used by SBO
-    update_local_multipoint();
-    // anchor is given, so no need for build_local_multipoint
-    interface_build_approx();
+      strbegins(surrogateType, "multipoint_")) { // NOTE: branch not used by SBO
+    update_local_reference();
+    // anchor is given: use lower level components of build_local_multipoint()
+    build_approx_interface();
+    ++approxBuilds;
   }
   else { // global approximation.  NOTE: branch used by SBO.
-    update_global();
+    update_global_reference();
     build_global();
-    //deltaCorr.compute(...need data...);
-    // could add deltaCorr.compute() here and in HierarchSurrModel::
-    // build_approximation if global approximations had easy access
-    // to the truth/approx responses.  Instead, it is called from
-    // SurrBasedLocalMinimizer using data from the trust region center.
-    if (autoRefine)
-      // BMA TODO: Move this to an external refiner
-      refine_surrogate();
-    else
-      interface_build_approx();
   }
 
-  ++approxBuilds;
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 
   // return a bool indicating whether the incoming data defines an embedded
@@ -472,15 +448,12 @@ void DataFitSurrModel::rebuild_approximation()
   // rebuild a local, multipoint, or global data fit approximation
   if (strbegins(surrogateType, "local_") ||
       strbegins(surrogateType, "multipoint_")) {
-    //update_local_multipoint(); // updates from build_approximation() are valid
+    //update_local_reference();//updates from build_approximation() remain valid
     build_local_multipoint(); // no change for build vs. rebuild
-    interface_build_approx();
-    ++approxBuilds;
   }
   else { // global approximation
-    //update_global(); // updates from build_approximation() assumed valid
+    //update_global_reference();// updates from build_approximation remain valid
     rebuild_global();
-    //++approxBuilds; // already incremented by append_approximation(true)
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -849,13 +822,13 @@ void DataFitSurrModel::combined_to_active(bool clear_combined)
 }
 
 
-void DataFitSurrModel::update_local_multipoint()
+void DataFitSurrModel::update_local_reference()
 {
   // Store the actualModel inactive variable values for use in force_rebuild()
   // for determining whether an automatic approximation rebuild is required.
 
   // the actualModel data has been updated by update_model(), which precedes
-  // update_local_multipoint()
+  // update_local_reference()
 
   const Variables& actual_vars = actualModel.current_variables();
   if (actual_vars.view().first >= RELAXED_DESIGN) { // Distinct view
@@ -866,38 +839,14 @@ void DataFitSurrModel::update_local_multipoint()
 }
 
 
-void DataFitSurrModel::interface_build_approx()
-{
-  if (actualModel.is_null())
-    approxInterface.build_approximation(
-      userDefinedConstraints.continuous_lower_bounds(),
-      userDefinedConstraints.continuous_upper_bounds(),
-      userDefinedConstraints.discrete_int_lower_bounds(),
-      userDefinedConstraints.discrete_int_upper_bounds(),
-      userDefinedConstraints.discrete_real_lower_bounds(),
-      userDefinedConstraints.discrete_real_upper_bounds());
-  else { // employ sub-model vars view, if available
-    approxInterface.build_approximation(
-      actualModel.continuous_lower_bounds(),
-      actualModel.continuous_upper_bounds(),
-      actualModel.discrete_int_lower_bounds(),
-      actualModel.discrete_int_upper_bounds(),
-      actualModel.discrete_real_lower_bounds(),
-      actualModel.discrete_real_upper_bounds());
-  }
-  if (exportSurrogate)
-    approxInterface.export_approximation();
-}
-
-
-void DataFitSurrModel::update_global()
+void DataFitSurrModel::update_global_reference()
 {
   // Store the actualModel active variable bounds and inactive variable values
   // for use in force_rebuild() to determine whether an automatic approximation
   // rebuild is required.
 
   // the actualModel data has been updated by update_model(), which precedes
-  // update_global().
+  // update_global_reference().
 
   const Variables& vars = (actualModel.is_null()) ? currentVariables :
     actualModel.current_variables();
@@ -933,6 +882,30 @@ void DataFitSurrModel::update_global()
 }
 
 
+void DataFitSurrModel::build_approx_interface()
+{
+  if (actualModel.is_null())
+    approxInterface.build_approximation(
+      userDefinedConstraints.continuous_lower_bounds(),
+      userDefinedConstraints.continuous_upper_bounds(),
+      userDefinedConstraints.discrete_int_lower_bounds(),
+      userDefinedConstraints.discrete_int_upper_bounds(),
+      userDefinedConstraints.discrete_real_lower_bounds(),
+      userDefinedConstraints.discrete_real_upper_bounds());
+  else { // employ sub-model vars view, if available
+    approxInterface.build_approximation(
+      actualModel.continuous_lower_bounds(),
+      actualModel.continuous_upper_bounds(),
+      actualModel.discrete_int_lower_bounds(),
+      actualModel.discrete_int_upper_bounds(),
+      actualModel.discrete_real_lower_bounds(),
+      actualModel.discrete_real_upper_bounds());
+  }
+  if (exportSurrogate)
+    approxInterface.export_approximation();
+}
+
+
 /** Evaluate the value, gradient, and possibly Hessian needed for a
     local or multipoint approximation using actualModel. */
 void DataFitSurrModel::build_local_multipoint()
@@ -961,6 +934,9 @@ void DataFitSurrModel::build_local_multipoint()
   IntResponsePair curr_resp_pr(actualModel.evaluation_id(),
 			       actualModel.current_response());
   approxInterface.update_approximation(curr_vars, curr_resp_pr);
+
+  build_approx_interface();
+  ++approxBuilds;
 }
 
 
@@ -1081,20 +1057,29 @@ void DataFitSurrModel::build_global()
     // only run the iterator if work to do
     if (new_points) {
       run_dace();
-      append_approximation(false); // append new data sets; don't rebuild
+      append_approximation(false); // append new data sets; defer build
     }
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
   }
 
-  // *******************************
-  // Output counts for data ensemble
-  // *******************************
+  //deltaCorr.compute(...need data...);
+  // could add deltaCorr.compute() here and in HierarchSurrModel::
+  // build_approximation if global approximations had easy access
+  // to the truth/approx responses.  Instead, it is called from
+  // SurrBasedLocalMinimizer using data from the trust region center.
+
+  // **********************************
+  // Now build the global approximation
+  // **********************************
   String anchor_str = (anchor) ? "one" : "no";
   Cout << "Constructing global approximations with " << anchor_str
        << " anchor, " << new_points << " DACE samples, and " << reuse_points
        << " reused points.\n";
+  if (autoRefine) refine_surrogate(); // BMA TODO: Move to an external refiner
+  else            build_approx_interface();
+  ++approxBuilds; // Note: auto-refined surrogate counts as 1 approx build
 }
 
 
@@ -1143,8 +1128,10 @@ void DataFitSurrModel::rebuild_global()
 
     // only run the iterator if work to do
     if (new_points) {
+      // generate new data points
       run_dace(); // *** TO DO: daceIterator.run() is not an incremental build
-      append_approximation(true); // append new data sets and rebuild
+      // append new data sets, rebuild approximation, increment approxBuilds
+      append_approximation(true);
     }
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
@@ -1203,7 +1190,7 @@ void DataFitSurrModel::refine_surrogate()
   total_evals += num_samples;
 
   // build surrogate from initial sample
-  interface_build_approx();
+  build_approx_interface();
   Real2DArray cv_diags = 
     approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
   size_t resp_fns = currentResponse.num_functions();
@@ -1250,7 +1237,7 @@ void DataFitSurrModel::refine_surrogate()
     append_approximation(false); // append new data sets; don't rebuild
 
     // build and check diagnostics
-    interface_build_approx();
+    build_approx_interface();
     Real2DArray cv_diags = 
       approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
     RealArray cv_per_fn(resp_fns);
