@@ -369,19 +369,18 @@ void DataFitSurrModel::build_approximation()
 {
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
 
-  // clear out previous anchor/data points, but preserve history (if multipoint)
-  approxInterface.clear_current_active_data();
   // update actualModel w/ variable values/bounds/labels
   update_model(actualModel);
 
   // build a local, multipoint, or global data fit approximation.
   if (strbegins(surrogateType, "local_") ||
-      strbegins(surrogateType, "multipoint_")) { // NOTE: branch used by SBO
+      strbegins(surrogateType, "multipoint_")) { // NOTE: branch used by TRMM
     update_local_reference();
     build_local_multipoint();
   }
-  else { // global approximation.  NOTE: branch not used by SBO.
+  else { // global approximation.  NOTE: branch not used by TRMM.
     update_global_reference();
+    clear_approx_interface();
     build_global();
   }
 
@@ -396,31 +395,25 @@ void DataFitSurrModel::build_approximation()
 bool DataFitSurrModel::
 build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
-
-  // clear out previous anchor/data points, but preserve history (if multipoint)
-  approxInterface.clear_current_active_data();
-  // update actualModel w/ variable values/bounds/labels
-  update_model(actualModel);
-  // populate/replace the anchor point for the approximation.  When supported by
-  // the surrogate type (local, multipoint, global polynomial regression), this
-  // is enforced as a hard constraint. Otherwise, it is just another data point.
-  approxInterface.update_approximation(vars, response_pr);
-  // TO DO:
+  // Usage notes:
   // > not used by SBLM local/multipoint
   // > used by SBLM global *with* persistent center vars,response
   // > used by NonDLocal *without* persistent vars,response
 
+  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+
+  // update actualModel w/ variable values/bounds/labels
+  update_model(actualModel);
+
   // build a local, multipoint, or global data fit approximation.
   if (strbegins(surrogateType, "local_") ||
-      strbegins(surrogateType, "multipoint_")) { // NOTE: branch not used by SBO
+      strbegins(surrogateType, "multipoint_")) {// NOTE: branch not used by TRMM
     update_local_reference();
-    // anchor is given: use lower level components of build_local_multipoint()
-    build_approx_interface();
-    ++approxBuilds;
+    build_local_multipoint(vars, response_pr);
   }
-  else { // global approximation.  NOTE: branch used by SBO.
+  else { // global approximation.  NOTE: branch used by TRMM.
     update_global_reference();
+    update_approx_interface(vars, response_pr);
     build_global();
   }
 
@@ -882,6 +875,28 @@ void DataFitSurrModel::update_global_reference()
 }
 
 
+void DataFitSurrModel::clear_approx_interface()
+{
+  // fresh build: clear out previous data, but preserve history if needed
+  // (multipoint preserves history for both {build,rebuild}_approximation())
+  approxInterface.clear_current_active_data();
+}
+
+
+void DataFitSurrModel::
+update_approx_interface(const Variables& vars,
+			const IntResponsePair& response_pr)
+{
+  // fresh build: clear out previous data, but preserve history if needed
+  // (multipoint preserves history for both {build,rebuild}_approximation())
+  approxInterface.clear_current_active_data();
+  // populate/replace the anchor data.  When supported by the surrogate type
+  // (local, multipoint, equality-constrained global regression), this is
+  // enforced as a hard constraint. Otherwise, it is just another data point.
+  approxInterface.update_approximation(vars, response_pr);
+}
+
+
 void DataFitSurrModel::build_approx_interface()
 {
   if (actualModel.is_null())
@@ -930,20 +945,29 @@ void DataFitSurrModel::build_local_multipoint()
   set.derivative_vector(actualModel.continuous_variable_ids());
   actualModel.evaluate(set);
 
-  const Variables& curr_vars = actualModel.current_variables();
-  IntResponsePair curr_resp_pr(actualModel.evaluation_id(),
-			       actualModel.current_response());
-  approxInterface.update_approximation(curr_vars, curr_resp_pr);
+  // construct a new approximation using this actualModel evaluation
+  build_local_multipoint(actualModel.current_variables(),
+			 IntResponsePair(actualModel.evaluation_id(),
+					 actualModel.current_response()));
+}
 
+
+void DataFitSurrModel::
+build_local_multipoint(const Variables& vars,
+		       const IntResponsePair& response_pr)
+{
+  // push the anchor data to approxInterface
+  update_approx_interface(vars, response_pr);
+  // construct the new local/multipoint approximation
   build_approx_interface();
   ++approxBuilds;
 }
 
 
-/** Determine points to use in building the approximation and
-    then evaluate them on actualModel using daceIterator.  Any changes
-    to the bounds should be performed by setting them at a higher
-    level (e.g., SurrBasedOptStrategy). */
+/** Determine points to use in building the approximation and then
+    evaluate them on actualModel using daceIterator.  Any changes to
+    the bounds should be performed by setting them at a higher level
+    (e.g., SurrBasedOptStrategy). */
 void DataFitSurrModel::build_global()
 {
   // build_global() follows update_model() so we may use
@@ -1040,7 +1064,7 @@ void DataFitSurrModel::build_global()
       abort_handler(MODEL_ERROR);
     }
   }
-  else { // else use rst info only (no new data)
+  else { // new data
 
     // set DataFitSurrModel parallelism mode to actualModel
     component_parallel_mode(TRUTH_MODEL);
@@ -1112,7 +1136,7 @@ void DataFitSurrModel::rebuild_global()
       abort_handler(MODEL_ERROR);
     }
   }
-  else { // else use rst info only (no new data)
+  else { // new data
 
     // set DataFitSurrModel parallelism mode to actualModel
     component_parallel_mode(TRUTH_MODEL);

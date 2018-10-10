@@ -346,6 +346,9 @@ private:
   void update_local_reference();
   /// Builds a local or multipoint approximation using actualModel
   void build_local_multipoint();
+  /// Builds a local or multipoint approximation using actualModel
+  void build_local_multipoint(const Variables& vars,
+			      const IntResponsePair& response_pr);
 
   /// Updates fit arrays for global approximations
   void update_global_reference();
@@ -357,7 +360,13 @@ private:
 
   /// Refine the built surrogate until convergence criteria are met
   void refine_surrogate();
-  /// Call build_approximation on the approxInterface, passing variable bounds
+
+  /// clear current data from approxInterface
+  void clear_approx_interface();
+  /// update anchor data in approxInterface
+  void update_approx_interface(const Variables& vars,
+			       const IntResponsePair& response_pr);
+  /// build the approxInterface surrogate, passing variable bounds
   void build_approx_interface();
 
   /// update actualModel with data from constraints/labels/sets
