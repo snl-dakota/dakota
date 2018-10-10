@@ -116,6 +116,12 @@ inline TANA3Approximation::~TANA3Approximation()
 /** Redefine default implementation to support history mechanism. */
 inline void TANA3Approximation::clear_current_active_data()
 {
+  size_t d, num_d = approxData.size();
+  const UShort3DArray& keys = sharedDataRep->approxDataKeys;
+  for (d=0; d<num_d; ++d)
+    approxData[d].history_target(1, keys[d]);
+
+  /*
   Pecos::SurrogateData& approx_data
     = approxData[sharedDataRep->activeDataIndex];
   // demote from anchor to regular/previous data
@@ -124,6 +130,7 @@ inline void TANA3Approximation::clear_current_active_data()
   //  previous is deleted and anchor moved to previous
   if (approx_data.points() > 1)
     approx_data.pop_front();
+  */
 }
 
 } // namespace Dakota

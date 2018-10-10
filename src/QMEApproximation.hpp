@@ -115,23 +115,21 @@ inline QMEApproximation::~QMEApproximation()
 /** Redefine default implementation to support history mechanism. */
 inline void QMEApproximation::clear_current_active_data()
 {
-  size_t ndv = sharedDataRep->numVars;
+  size_t ndv = sharedDataRep->numVars, target = ndv+1,
+    d, num_d = approxData.size();
+  const UShort3DArray& keys = sharedDataRep->approxDataKeys;
+  for (d=0; d<num_d; ++d)
+    approxData[d].history_target(target, keys[d]);
+
+  /*
   Pecos::SurrogateData& approx_data
     = approxData[sharedDataRep->activeDataIndex];
   // demote from anchor to regular/previous data
   // (for completeness; no longer uses anchor designation)
   approx_data.clear_anchor_index();
   //  previous is deleted and anchor moved to previous
-  if (approx_data.points() > ndv+1)
+  if (approx_data.points() > target)
     approx_data.pop_front();
-
-  /*
-  approx_data.clear_active_data();
-  if (approx_data.anchor()) { // anchor becomes previous expansion point
-    approx_data.push_back(approx_data.anchor_variables(),
-			  approx_data.anchor_response());
-    approx_data.clear_anchor();
-  }
   */
 }
 
