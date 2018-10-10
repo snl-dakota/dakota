@@ -79,15 +79,19 @@ dakota_add_unit_test(NAME leja_sampling
 
 # Unit test: h5py_hdf5
 if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GREATER 2.6)
-  dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/h5py_hdf5.py
-	  ${CMAKE_CURRENT_BINARY_DIR}/h5py_hdf5.py dakota_unit_test_copied_files)
-  dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/dakota_hdf5_test.in
-	  ${CMAKE_CURRENT_BINARY_DIR}/dakota_hdf5_test.in dakota_unit_test_copied_files)
+  execute_process(COMMAND python -c "import h5py" RESULT_VARIABLE missing_h5py
+	  OUTPUT_QUIET ERROR_QUIET)
+  if(NOT missing_h5py)
+    dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/h5py_hdf5.py
+      ${CMAKE_CURRENT_BINARY_DIR}/h5py_hdf5.py dakota_unit_test_copied_files)
+    dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/dakota_hdf5_test.in
+      ${CMAKE_CURRENT_BINARY_DIR}/dakota_hdf5_test.in dakota_unit_test_copied_files)
 
-  add_test(NAME dakota_h5py_hdf5_test 
-	  COMMAND ${PYTHON_EXECUTABLE} -B h5py_hdf5.py
-	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-  set_property(TEST dakota_h5py_hdf5_test PROPERTY LABELS UnitTest)
+    add_test(NAME dakota_h5py_hdf5_test 
+      COMMAND ${PYTHON_EXECUTABLE} -B h5py_hdf5.py
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    set_property(TEST dakota_h5py_hdf5_test PROPERTY LABELS UnitTest)
+  endif()
 endif()
 
 
