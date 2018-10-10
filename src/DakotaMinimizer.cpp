@@ -735,12 +735,38 @@ archive_best(size_t point_index,
 	     const Variables& best_vars, const Response& best_resp)
 {
   // archive the best point in the iterator database
+  // These API calls triggers the coreDB backend and will likely be removed in the future - RWH
   if (numContinuousVars) {
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.best_cv, point_index,
        best_vars.continuous_variables());
+  }
 
-    // send to prototype hdf5DB, too
+  if (numDiscreteIntVars) {
+    resultsDB.array_insert<IntVector>
+      (run_identifier(), resultsNames.best_div, point_index,
+       best_vars.discrete_int_variables());
+  }
+
+  if (numDiscreteStringVars) {
+    resultsDB.array_insert<StringArray>
+      (run_identifier(), resultsNames.best_dsv, point_index,
+       best_vars.discrete_string_variables());
+  }
+
+  if (numDiscreteRealVars) {
+    resultsDB.array_insert<RealVector>
+      (run_identifier(), resultsNames.best_drv, point_index,
+       best_vars.discrete_real_variables());
+  }
+
+  // coreDB-based API Results output
+  resultsDB.array_insert<RealVector>
+    (run_identifier(), resultsNames.best_fns, point_index, best_resp.function_values());
+
+
+  // These API calls triggers the hdf5DB backend and reflect a different variable output ordering - RWH
+  if (numContinuousVars) {
     DimScaleMap scales;
     std::vector<std::string> var_labels;
     for( const auto& label : variables_results().continuous_variable_labels() )
@@ -752,17 +778,13 @@ archive_best(size_t point_index,
                    ScaleScope::SHARED));
 
     resultsDB.insert(run_identifier(),
-        resultsNames.cv_labels,
-        resultsNames.best_cv,
-        best_vars.continuous_variables(),
-        scales);
+                     resultsNames.cv_labels,
+                     resultsNames.best_cv,
+                     best_vars.continuous_variables(),
+                     scales);
   }
-  if (numDiscreteIntVars) {
-    resultsDB.array_insert<IntVector>
-      (run_identifier(), resultsNames.best_div, point_index,
-       best_vars.discrete_int_variables());
 
-    // send to prototype hdf5DB, too
+  if (numDiscreteIntVars) {
     DimScaleMap scales;
     std::vector<std::string> var_labels;
     for( const auto& label : variables_results().discrete_int_variable_labels() )
@@ -774,17 +796,13 @@ archive_best(size_t point_index,
                    ScaleScope::SHARED));
 
     resultsDB.insert(run_identifier(),
-        resultsNames.div_labels,
-        resultsNames.best_div,
-        best_vars.discrete_int_variables(),
-        scales);
+                     resultsNames.div_labels,
+                     resultsNames.best_div,
+                     best_vars.discrete_int_variables(),
+                     scales);
   }
+
   if (numDiscreteStringVars) {
-    resultsDB.array_insert<StringArray>
-      (run_identifier(), resultsNames.best_dsv, point_index,
-       best_vars.discrete_string_variables());
-
-    // send to prototype hdf5DB, too
     DimScaleMap scales;
     std::vector<std::string> var_labels;
     for( const auto& label : variables_results().discrete_string_variable_labels() )
@@ -796,17 +814,13 @@ archive_best(size_t point_index,
                    ScaleScope::SHARED));
 
     resultsDB.insert(run_identifier(),
-        resultsNames.dsv_labels,
-        resultsNames.best_dsv,
-        best_vars.discrete_string_variables(),
-        scales);
+                     resultsNames.dsv_labels,
+                     resultsNames.best_dsv,
+                     best_vars.discrete_string_variables(),
+                     scales);
   }
+
   if (numDiscreteRealVars) {
-    resultsDB.array_insert<RealVector>
-      (run_identifier(), resultsNames.best_drv, point_index,
-       best_vars.discrete_real_variables());
-
-    // send to prototype hdf5DB, too
     DimScaleMap scales;
     std::vector<std::string> var_labels;
     for( const auto& label : variables_results().discrete_string_variable_labels() )
@@ -818,16 +832,13 @@ archive_best(size_t point_index,
                    ScaleScope::SHARED));
 
     resultsDB.insert(run_identifier(),
-        resultsNames.dsv_labels,
-        resultsNames.best_drv,
-        best_vars.discrete_string_variables(),
-        scales);
+                     resultsNames.dsv_labels,
+                     resultsNames.best_drv,
+                     best_vars.discrete_string_variables(),
+                     scales);
   }
 
-  resultsDB.array_insert<RealVector>
-    (run_identifier(), resultsNames.best_fns, point_index, best_resp.function_values());
-
-  // send to prototype hdf5DB, too
+  // hdf5DB-based API Results output
   DimScaleMap scales;
   std::vector<std::string> resp_labels;
   for( const auto& label : response_results().function_labels() )
@@ -839,10 +850,10 @@ archive_best(size_t point_index,
                  ScaleScope::SHARED));
 
   resultsDB.insert(run_identifier(),
-      resultsNames.fn_labels,
-      resultsNames.best_fns,
-      best_resp.function_values(),
-      scales);
+                   resultsNames.fn_labels,
+                   resultsNames.best_fns,
+                   best_resp.function_values(),
+                   scales);
 } 
 
 

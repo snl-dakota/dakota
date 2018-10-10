@@ -207,7 +207,7 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
-  for (i=0; i<num_best; ++i) { 
+  for (i=0; i<num_best; ++i) {
     // output best variables
     const Variables& best_vars = bestVariablesArray[i];
     s << "<<<<< Best parameters          "; 
