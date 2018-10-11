@@ -109,7 +109,7 @@ public:
 
   /// initialize the results manager to manage an in-core database,
   /// writing to the specified file name
-  void initialize(const std::string& base_filename);
+  void initialize(const std::string& base_filename, bool text, bool hdf5);
 
   /// whether any databases are active
   bool active() const;

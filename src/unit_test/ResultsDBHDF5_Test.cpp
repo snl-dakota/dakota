@@ -25,7 +25,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_results_manager_init) {
   std::string database_name = "database_1";
 
   Dakota::ResultsManager results_manager;
-  results_manager.initialize(database_name);
+  results_manager.initialize(database_name, true, true);
 
   TEST_ASSERT( results_manager.active() );
 }
@@ -34,7 +34,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
   std::string database_name = "database_2";
 
   Dakota::ResultsManager results_manager;
-  results_manager.initialize(database_name);
+  results_manager.initialize(database_name, false, true);
 
   Dakota::HDF5IOHelper helper(database_name + ".h5", false);
   // methods treated like a dataset name

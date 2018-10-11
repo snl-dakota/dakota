@@ -19,15 +19,19 @@
 
 namespace Dakota {
 
-void ResultsManager::initialize(const std::string& base_filename)
+void ResultsManager::initialize(const std::string& base_filename, bool text, bool hdf5)
 {
-  resultsDBs.clear();
-
   // Could allow the various backends to self-register ... RWH
-  resultsDBs.push_back(std::make_shared<ResultsDBAny>(base_filename));
-#ifdef DAKOTA_HAVE_HDF5
-  resultsDBs.push_back(std::make_shared<ResultsDBHDF5>(false /* in_core */, base_filename));
-#endif
+  resultsDBs.clear();
+  if(text)
+    resultsDBs.push_back(std::make_shared<ResultsDBAny>(base_filename));
+  if(hdf5) {
+  #ifdef DAKOTA_HAVE_HDF5
+    resultsDBs.push_back(std::make_shared<ResultsDBHDF5>(false /* in_core */, base_filename));
+  #else
+    Cerr << "WARNING: HDF5 results output was requested, but is not available in this build.\n";
+  #endif
+  }
 }
 
 bool ResultsManager::active() const
