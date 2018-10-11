@@ -196,6 +196,13 @@ class HDF5IOHelper
     return;
   }
   
+  void store_vector_string_data( const std::string & dset_name,
+                                 StringMultiArrayConstView vec )
+  {
+    store_vector_data(dset_name, &vec[0], vec.size());
+    return;
+  }
+  
   /// Write a 2D dataset from a Teuchos::SerialDenseMatrix
   template<typename T>
   void store_matrix_data(const std::string &dset_name, 

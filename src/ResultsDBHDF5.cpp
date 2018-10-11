@@ -94,6 +94,9 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
     hdf5Stream->store_vector_data(
       dset_name, boost::any_cast<IntVector>(data));
    }
+  else if (data.type() == typeid(StringMultiArrayConstView)) {
+    hdf5Stream->store_vector_string_data(dset_name, boost::any_cast<StringMultiArrayConstView>(data));
+  }
   else if (data.type() == typeid(RealMatrix)) {
     hdf5Stream->store_matrix_data(dset_name, boost::any_cast<RealMatrix>(data), transpose);
   }
