@@ -136,8 +136,10 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
   resultsOutputFlag = problem_db.get_bool("environment.results_output");
   resultsOutputFile = problem_db.get_string("environment.results_output_file");
   tabularFormat = problem_db.get_ushort("environment.tabular_format");
-  resultsOutputHDF5 = true;
-  resultsOutputText = true;
+  resultsOutputFormat = problem_db.get_ushort("environment.results_output_format");
+  if(resultsOutputFlag && resultsOutputFormat == 0)
+    resultsOutputFormat = RESULTS_OUTPUT_TEXT;
+  
   int db_write_precision = problem_db.get_int("environment.output_precision");
   if (db_write_precision > 0) {  // assign global write_precision
     if (db_write_precision > 16) {
@@ -197,7 +199,7 @@ push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
   if (!redirCalled) {
     if (resultsOutputFlag)
       iterator_results_db.initialize(resultsOutputFile + file_tag, 
-          resultsOutputText, resultsOutputHDF5); 
+          resultsOutputFormat); 
     redirCalled = true;
   }
 

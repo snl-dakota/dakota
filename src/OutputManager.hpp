@@ -345,13 +345,9 @@ private:
   /// output level (for debugging only; not passed in)
   short outputLevel;
 
-  // For results output
-  /// Output results in HDF5 format
-  bool resultsOutputHDF5;
-  /// Output results in Text format
-  bool resultsOutputText;
-};  // class OutputManager
-
+  /// Output results  format
+  unsigned short resultsOutputFormat;
+};
 
 } //namespace Dakota
 

@@ -1276,9 +1276,11 @@
           <param type="INTEGER" constraint=">= 0" />
         </keyword>
         <keyword  id="results_output" name="results_output" code="{N_stm(true,resultsOutputFlag)}" label="Enable Results Output"  minOccurs="0" default="no results output" complexity="1">
-          <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="Results Output File"  minOccurs="0" default="dakota_results.txt" >
+          <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="Results Output File"  minOccurs="0" default="dakota_results" >
             <param type="OUTPUT_FILE" />
           </keyword>
+          <keyword  id="text" name="text" code="{N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_TEXT)}" label="text"  minOccurs="0" default="text output" />
+	  <keyword  id="hdf5" name="hdf5" code="{N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)}" label="hdf5"  minOccurs="0" default="no HDF5 output" />
         </keyword>        
         <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Enable Graphics Window"  minOccurs="0" default="graphics off" complexity="1"/>
       </group>

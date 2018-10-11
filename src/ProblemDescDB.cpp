@@ -2772,6 +2772,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       // must be sorted by string (key)
         {"post_run_input_format", P postRunInputFormat},
         {"pre_run_output_format", P preRunOutputFormat},
+        {"results_output_format", P resultsOutputFormat},
         {"tabular_format", P tabularFormat}};
     #undef P
 

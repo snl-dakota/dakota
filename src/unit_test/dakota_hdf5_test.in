@@ -2,6 +2,7 @@ environment
   method_pointer 'lps'
   results_output
     results_output_file 'for_h5py'
+    hdf5
 
 method
   id_method 'lps'

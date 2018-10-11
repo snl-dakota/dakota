@@ -26,8 +26,8 @@ DataEnvironmentRep::DataEnvironmentRep():
   graphicsFlag(false), tabularDataFlag(false), 
   tabularDataFile("dakota_tabular.dat"), tabularFormat(TABULAR_ANNOTATED), 
   outputPrecision(0), 
-  resultsOutputFlag(false), resultsOutputFile("dakota_results"), 
-  referenceCount(1)
+  resultsOutputFlag(false), resultsOutputFile("dakota_results"),
+  resultsOutputFormat(0), referenceCount(1)
 { }
 
 
@@ -40,7 +40,7 @@ void DataEnvironmentRep::write(MPIPackBuffer& s) const
     << preRunOutputFormat << postRunInputFormat
     << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
     << outputPrecision
-    << resultsOutputFlag << resultsOutputFile << topMethodPointer;
+    << resultsOutputFlag << resultsOutputFile << resultsOutputFormat << topMethodPointer;
 }
 
 
@@ -53,7 +53,7 @@ void DataEnvironmentRep::read(MPIUnpackBuffer& s)
     >> preRunOutputFormat >> postRunInputFormat
     >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> tabularFormat 
     >> outputPrecision
-    >> resultsOutputFlag >> resultsOutputFile >> topMethodPointer;
+    >> resultsOutputFlag >> resultsOutputFile >> resultsOutputFormat >> topMethodPointer;
 }
 
 
@@ -66,7 +66,7 @@ void DataEnvironmentRep::write(std::ostream& s) const
     << preRunOutputFormat << postRunInputFormat
     << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
     << outputPrecision
-    << resultsOutputFlag << resultsOutputFile << topMethodPointer;
+    << resultsOutputFlag << resultsOutputFile << resultsOutputFormat << topMethodPointer;
 }
 
 

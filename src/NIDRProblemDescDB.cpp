@@ -7507,7 +7507,9 @@ static Env_mp_utype
         MP2s(tabularFormat,TABULAR_HEADER),
         MP2s(tabularFormat,TABULAR_EVAL_ID),
         MP2s(tabularFormat,TABULAR_IFACE_ID),
-        MP2s(tabularFormat,TABULAR_ANNOTATED);
+        MP2s(tabularFormat,TABULAR_ANNOTATED),
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_TEXT),
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5);
 
 static String
         MP_(errorFile),
