@@ -188,10 +188,7 @@ public:
     // otherwise perhaps it should use array_size and maybe even a
     // non-default (HOW? additional args??) constructed StoredType
     // WJB: add a dbg print msg here since NOT sure tested for 'array_size > 1'
-    std::vector<StoredType> initial_array( array_size, StoredType() );
-
-    Cerr << "ResultsDBHDF5::insert is not fully supported.\n";
-    abort_handler(-1);
+    return;
   }
  
   template<typename StoredType>
@@ -199,12 +196,11 @@ public:
 		    const std::string& data_name, size_t index,
 		    const StoredType& stored_data)
   {
-    Cerr << "ResultsDBHDF5::insert is not fully supported.\n";
-    abort_handler(-1);
+    return;
   }
 
   /// Flush HDF5 cache to disk
-  void flush();
+  void flush() const;
 private:
  
   /// Instance of HDF5IOHelper

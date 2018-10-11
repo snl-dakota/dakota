@@ -38,12 +38,16 @@ namespace Dakota
 //----------------------------------------------------------------
 
 // Some free functions to try to consolidate data type specs
+
+/// Return the HDF5 datatype to store a Real
 inline H5::DataType h5_file_dtype( const Real & )
 { return H5::PredType::IEEE_F64LE; }
 
+/// Return the HDF5 datatype to store a int
 inline H5::DataType h5_file_dtype( const int & )
 { return H5::PredType::STD_I32LE; }
 
+/// Return the HDF5 datatype to store a string
 inline H5::DataType h5_file_dtype( const char * )
 {
   H5::StrType str_type(0, H5T_VARIABLE);
@@ -51,6 +55,7 @@ inline H5::DataType h5_file_dtype( const char * )
   return str_type;
 }
 
+/// Return the HDF5 datatype to store a string
 inline H5::DataType h5_file_dtype( const String )
 {
   H5::StrType str_type(0, H5T_VARIABLE);
@@ -58,12 +63,15 @@ inline H5::DataType h5_file_dtype( const String )
   return str_type;
 }
 
+/// Return the HDF5 datatype to read a Real in memory
 inline H5::DataType h5_mem_dtype( const Real & )
 { return H5::PredType::NATIVE_DOUBLE; }
 
+/// Return the HDF5 datatype to read an int in memory
 inline H5::DataType h5_mem_dtype( const int & )
 { return H5::PredType::NATIVE_INT; }
 
+/// Return the HDF5 datatype to read a string in memory
 inline H5::DataType h5_mem_dtype( const char * )
 {
   H5::StrType str_type(0, H5T_VARIABLE);
@@ -71,6 +79,7 @@ inline H5::DataType h5_mem_dtype( const char * )
   return str_type;
 }
 
+/// Return the HDF5 datatype to read a string in memory
 inline H5::DataType h5_mem_dtype( const String )
 {
   H5::StrType str_type(0, H5T_VARIABLE);
@@ -115,7 +124,8 @@ class HDF5IOHelper
   ~HDF5IOHelper() { }
 
   //----------------------------------------------------------------
-
+  
+  /// Store scalar data to a data set
   template <typename T>
   const void store_scalar_data(const std::string& dset_name, const T& val)
   {
@@ -130,6 +140,7 @@ class HDF5IOHelper
 	return;
   }
 
+  /// Read scalar data from a dataset
   template <typename T>
   const void read_scalar_data(const std::string& dset_name, T& val)
   {
@@ -148,7 +159,7 @@ class HDF5IOHelper
   }
 
   //----------------------------------------------------------------
-
+  /// Store vector (1D) information to a dataset
   template <typename T>
   void store_vector_data(const std::string& dset_name,
                          const std::vector<T>& array) const
@@ -157,7 +168,7 @@ class HDF5IOHelper
     return;
   }
 
-  // Use the same reader for std::vector and SerialDenseVector
+  /// Read vector (1D) information from a dataset
   template <typename T>
   void read_vector_data(const std::string& dset_name, T& array) const 
   {
@@ -188,6 +199,7 @@ class HDF5IOHelper
     return;
   }
 
+  /// Store vector (1D) information to a dataset
   template <typename T>
   void store_vector_data( const std::string & dset_name,
                           const Teuchos::SerialDenseVector<int,T> & vec )
@@ -196,6 +208,7 @@ class HDF5IOHelper
     return;
   }
   
+  /// Store vector (1D) information to a dataset
   void store_vector_string_data( const std::string & dset_name,
                                  StringMultiArrayConstView vec )
   {
@@ -203,7 +216,7 @@ class HDF5IOHelper
     return;
   }
   
-  /// Write a 2D dataset from a Teuchos::SerialDenseMatrix
+  /// Store matrix (2D) information to a dataset
   template<typename T>
   void store_matrix_data(const std::string &dset_name, 
       const Teuchos::SerialDenseMatrix<int,T> & matrix, 
@@ -255,7 +268,7 @@ class HDF5IOHelper
     return;
   }
 
-  /// Write a 2D dataset from a std::vector
+  /// Store matrix (2D) information to a dataset
   template<typename T>
   void store_matrix_data(const std::string &dset_name, 
       const std::vector<T> &buf, const int & num_cols,
@@ -306,6 +319,7 @@ class HDF5IOHelper
 
   //------------------------------------------------------------------
 
+  /// attach a dimension scale to a dataset
   void attach_scale(const String& dset_name, const String& scale_name,
                     const String& label, const int& dim) const;
 
@@ -338,26 +352,17 @@ class HDF5IOHelper
     }
   }
 
+  /// Does a location exist?
   bool exists(const String location_name) const;
 
+  /// Is the dataset a dimenions scale?
   bool is_scale(const H5::DataSet dset) const;
 
+  /// Create a group hierarchy (final token optionally a dataset name)
   H5::Group create_groups(const std::string& name,
                           bool includes_dset=true) const;
 
-  // JAS: The current code in ResultsDBHDF5 calls store_vector_data and then
-  // attach_scale. This pair of functions may be unneeded.
-  H5::DataSet create_dimension_scale ( const H5::H5Location &loc,
-                                       std::vector<int> dim_sizes,
-                                       H5::DataType type,
-                                       std::string label,
-                                       H5::DSetCreatPropList plist ) const;
-
-  H5::DataSet create_1D_dimension_scale ( const H5::H5Location &loc,
-                                          int size, H5::DataType type,
-                                          std::string label,
-                                          H5::DSetCreatPropList plist ) const;
-
+  /// Create a dataset with a custom CreatPropList
   H5::DataSet create_dataset( const H5::H5Location &loc,
                               const std::string &name,
                               const H5::DataType &type,
@@ -368,8 +373,12 @@ class HDF5IOHelper
   // Define globally available custom property lists
   // JAS: These probably should not be public. The point of this class is to
   // encapsulate these kinds of low-level details.
+  
+  /// Gobal link creation property list
   H5::LinkCreatPropList linkCreatePL;
+  /// Gobal DataSet creation property list for compact datasets
   H5::DSetCreatPropList datasetCompactPL;
+  /// Gobal DataSet creation property list for contiguous datasets
   H5::DSetCreatPropList datasetContiguousPL;
 
   /// Flush cache to file
@@ -378,10 +387,13 @@ class HDF5IOHelper
 
   protected:
 
+  /// Name of the HDF5 file
   std::string fileName;
 
+  /// Pointer to the HDF5 file object
   std::shared_ptr<H5::H5File> filePtr;
 
+  /// Store vector data using a pointer to the first element and length
   template<typename T>
   void store_vector_data(const String &dset_name, const T *data,
                          const int &len) const {

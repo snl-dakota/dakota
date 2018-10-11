@@ -36,7 +36,7 @@ bool ResultsManager::active() const
 }
 
 
-void ResultsManager::flush()
+void ResultsManager::flush() const
 {
   for( auto & db : resultsDBs )
   {

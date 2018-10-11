@@ -35,6 +35,7 @@ String method_hdf5_link_name(const StrStrSizet& iterator_id) {
   return rval;
 }
 
+// Create an execution name from the unique identifiers passed
 String execution_hdf5_link_name(const StrStrSizet& iterator_id) {
   const size_t& exec_num = iterator_id.get<2>();
   String rval = method_hdf5_link_name(iterator_id) + "/execution:" +
@@ -42,7 +43,7 @@ String execution_hdf5_link_name(const StrStrSizet& iterator_id) {
   return rval;
 }
 
-/// Create a dataset name from the unique identifiers passed
+// Create a dataset name from the unique identifiers passed
 String dataset_hdf5_link_name(const StrStrSizet& iterator_id,
                                      const String& lvl_1_name,
                                      const String& lvl_2_name)
@@ -65,8 +66,7 @@ ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
        const MetaDataType& metadata
        ) 
 {
-  std::cout << "ResultsDBHDF5 needs to implement insert(...) with metadata."
-            << std::endl;
+  return;
 }
 
 /// insert an arbitrary type (eg RealMatrix) with scales
@@ -157,7 +157,7 @@ void ResultsDBHDF5::add_metadata_for_execution(const StrStrSizet& iterator_id,
   );
 }
 
-void ResultsDBHDF5::flush() {
+void ResultsDBHDF5::flush() const {
   hdf5Stream->flush();
 }
 

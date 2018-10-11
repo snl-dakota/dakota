@@ -63,21 +63,21 @@ public:
                     const std::string& data_name, size_t index,
                     const StoredType& sent_data);
 
-  virtual
-  void add_metadata_for_method(
+  /// Add key:value metadata to a method
+  virtual void add_metadata_for_method(
                     const StrStrSizet& iterator_id,
                     const AttributeArray &attrs
                     ) = 0;
 
-  virtual
-  void add_metadata_for_execution(
+  /// Add key:value metadata to an execution
+  virtual void add_metadata_for_execution(
                     const StrStrSizet& iterator_id,
                     const AttributeArray &attrs
                     ) = 0;
 
   /// If supported, flush data to the database or disk
   virtual
-  void flush() = 0;
+  void flush() const = 0;
   // TODO: For the following need const/non-const versions and
   // value/ref versions...
 
@@ -124,7 +124,7 @@ public:
 
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
-  
+  /// Return the filename
   const String& filename() const
     { return fileName; }
 

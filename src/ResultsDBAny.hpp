@@ -35,21 +35,20 @@ public:
     ResultsDBBase( base_filename + ".txt" )
   { }
 
+  /// Add key:value metadata to method
   void add_metadata_for_method(
               const StrStrSizet& iterator_id,
               const AttributeArray &attrs) override
   {
-    std::cout << "ResultsDBAny needs to implement add_metadata_for_method(...)."
-              << std::endl;
+    return;
   }
 
+  /// Add key:value metadata to execution
   void add_metadata_for_execution(
               const StrStrSizet& iterator_id,
               const AttributeArray &attrs) override
   {
-    std::cout << "ResultsDBAny needs to implement "
-              << "add_metadata_for_execution(...)."
-              << std::endl;
+    return;
   }
   
   /// record addition with metadata map
@@ -70,37 +69,36 @@ public:
          const AttributeArray &attrs = AttributeArray(),
          const bool &transpose = false) override
   {
-    std::cout << "ResultsDBAny needs to implement insert(...) w/o metadata."
-              << std::endl;
+    return;
   }
 
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
   /// Write data to file
-  void flush();
+  void flush() const;
 
 private:
 
   /// print metadata to ostream
-  void print_metadata(std::ostream& os, const MetaDataType& md);
+  void print_metadata(std::ostream& os, const MetaDataType& md) const;
 
   /// determine the type of contained data and output it to ostream
-  void extract_data(const boost::any& dataholder, std::ostream& os);
+  void extract_data(const boost::any& dataholder, std::ostream& os) const;
 
   /// output data to ostream
-  void output_data(const std::vector<double>& data, std::ostream& os);
+  void output_data(const std::vector<double>& data, std::ostream& os) const;
   /// output data to ostream
-  void output_data(const std::vector<RealVector>& data, std::ostream& os);
+  void output_data(const std::vector<RealVector>& data, std::ostream& os) const;
   /// output data to ostream
-  void output_data(const std::vector<std::string>& data, std::ostream& os);
+  void output_data(const std::vector<std::string>& data, std::ostream& os) const;
   /// output data to ostream
   void output_data(const std::vector<std::vector<std::string> >& data,
-		   std::ostream& os);
+		   std::ostream& os) const;
 
   /// output data to ostream
-  void output_data(const std::vector<RealMatrix>& data, std::ostream& os);
+  void output_data(const std::vector<RealMatrix>& data, std::ostream& os) const;
   /// output data to ostream
-  void output_data(const RealMatrix& data, std::ostream& os);
+  void output_data(const RealMatrix& data, std::ostream& os) const;
 
 }; // class ResultsDBAny
 

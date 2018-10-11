@@ -114,10 +114,6 @@ public:
   /// whether any databases are active
   bool active() const;
 
-  // TODO: const
-  /// Write in-core databases to file
-  void write_databases();
-
   /// Copy of valid results names for when manager is passed around
   ResultsNames results_names;
 
@@ -151,7 +147,8 @@ public:
     }
   }
 
-  /// Insert using dimension scales type (DimScaleMap in dakota_results_types.hpp)
+  /// Insert using dimension scales and attributes (DimScaleMap and 
+  /// AttributeArray in dakota_results_types.hpp)
   template<typename StoredType>
   void insert(const StrStrSizet& iterator_id,
               const std::string& lvl_1_name,
@@ -221,7 +218,7 @@ public:
                                   const AttributeArray &attrs);
 
   /// Flush data to the database or disk, if supported
-  void flush();
+  void flush() const;
 
 private:
 

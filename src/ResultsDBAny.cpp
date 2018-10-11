@@ -57,10 +57,10 @@ insert(const StrStrSizet& iterator_id,
 }
 
 
-void ResultsDBAny::flush()
+void ResultsDBAny::flush() const
 {
   std::ofstream os(fileName.c_str());
-  std::map<ResultsKeyType, ResultsValueType>::iterator data_it = 
+  std::map<ResultsKeyType, ResultsValueType>::const_iterator data_it = 
     iteratorData.begin();
   std::map<ResultsKeyType, ResultsValueType>::const_iterator data_end = 
     iteratorData.end();
@@ -103,7 +103,7 @@ void ResultsDBAny::flush()
     RealVector (Teuchos::SerialDenseVector<int,double)
     RealMatrix (Teuchos::SerialDenseMatrix<int,double)
 */
-void ResultsDBAny::extract_data(const boost::any& dataholder, std::ostream& os)
+void ResultsDBAny::extract_data(const boost::any& dataholder, std::ostream& os) const
 { 
   // TODO: how to distinguish "array" insert from storing a vector of something
 
@@ -139,7 +139,7 @@ void ResultsDBAny::extract_data(const boost::any& dataholder, std::ostream& os)
 }
 
 
-void ResultsDBAny::print_metadata(std::ostream& os, const MetaDataType& md)
+void ResultsDBAny::print_metadata(std::ostream& os, const MetaDataType& md) const
 {
   MetaDataType::const_iterator md_it  = md.begin();
   MetaDataType::const_iterator md_end = md.end();
@@ -162,14 +162,14 @@ void ResultsDBAny::print_metadata(std::ostream& os, const MetaDataType& md)
 }
 
 
-void ResultsDBAny::output_data(const RealMatrix& data, std::ostream& os)
+void ResultsDBAny::output_data(const RealMatrix& data, std::ostream& os) const
 {
   os << "  Data (RealMatrix):\n";
   write_data(os, data, false, true, true);
 }
 
 void ResultsDBAny::output_data(const std::vector<RealMatrix>& data, 
-				std::ostream& os)
+				std::ostream& os) const
 {
   // TODO: check metadata for set labels
   //  "Array Labels: "
@@ -185,7 +185,7 @@ void ResultsDBAny::output_data(const std::vector<RealMatrix>& data,
 } 
 
 void ResultsDBAny::output_data(const std::vector<double>& data,
-			       std::ostream& os)
+			       std::ostream& os) const
 {
   os << "  Data (vector<double>):\n";
   for (size_t i=0; i<data.size(); ++i) {
@@ -195,7 +195,7 @@ void ResultsDBAny::output_data(const std::vector<double>& data,
 }
 
 void ResultsDBAny::output_data(const std::vector<RealVector>& data,
-			       std::ostream& os)
+			       std::ostream& os) const
 {
   os << "  Data (vector<vector<double>>):\n";
   for (size_t i=0; i<data.size(); ++i) {
@@ -207,7 +207,7 @@ void ResultsDBAny::output_data(const std::vector<RealVector>& data,
 } 
 
 void ResultsDBAny::output_data(const std::vector<std::string>& data,
-			       std::ostream& os)
+			       std::ostream& os) const
 {
   os << "  Data (vector<string>):\n";
   os << "      ";
@@ -222,7 +222,7 @@ void ResultsDBAny::output_data(const std::vector<std::string>& data,
 // array of vector<string>
 void ResultsDBAny::
 output_data(const std::vector<std::vector<std::string> >& data,
-	    std::ostream& os)
+	    std::ostream& os) const
 {
   os << "  Data (vector<vector<string>>):\n";
   for (size_t i=0; i<data.size(); ++i) {
