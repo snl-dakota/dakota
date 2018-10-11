@@ -26,7 +26,7 @@
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
 #include "nested_sampling.hpp"
-
+#include "math_tools.hpp"
 
 namespace Dakota {
 
@@ -952,7 +952,7 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   sampler.set_polynomial_basis( poly_basis );
   sampler.set_total_degree_basis_from_num_samples(numContinuousVars, new_size);
   RealMatrix candidate_samples_matrix;
-  Pecos::convert( candidate_samples, candidate_samples_matrix );
+  Pecos::util::convert( candidate_samples, candidate_samples_matrix );
 
   // Remove any candidate samples already in the initial sample set
   RealMatrix unique_candidate_samples;
@@ -965,9 +965,9 @@ select_refinement_points(const RealVectorArray& candidate_samples,
 				       unique_candidate_samples, 
 				       selected_candidate_indices );
   best_samples.shapeUninitialized( (int)numContinuousVars, (int)batch_size );
-  Pecos::extract_submatrix_from_column_indices( unique_candidate_samples,
-						selected_candidate_indices,
-						best_samples );
+  Pecos::util::extract_submatrix_from_column_indices(unique_candidate_samples,
+						     selected_candidate_indices,
+						     best_samples );
   
   if (outputLevel >= DEBUG_OUTPUT) {
     // write samples to output
@@ -1036,8 +1036,8 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
 	 << A.numCols() << ".\n";
 
   IntVector pivots;
-  Pecos::truncated_pivoted_lu_factorization( A, L_factor, U_factor, pivots,
-					     new_size, numSamplesOnModel);
+  Pecos::util::truncated_pivoted_lu_factorization(A, L_factor, U_factor, pivots,
+						  new_size, numSamplesOnModel);
   if (outputLevel >= DEBUG_OUTPUT)
     { Cout << "Select refinement pts: pivots =\n"; write_data(Cout, pivots); }
 

@@ -9,7 +9,6 @@
 #ifndef SAMPLER_HPP
 #define SAMPLER_HPP
 
-#include "LinearAlgebra.hpp"
 #include "dakota_data_types.hpp"
 #include "BasisPolynomial.hpp"
 
