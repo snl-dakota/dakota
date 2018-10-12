@@ -89,7 +89,8 @@ void abort_handler(int code)
 
   // BMA TODO: do we want to maintain this?
   if (code > 1) // code = 2 (Cntl-C signal), 0 (normal), & -1/1 (abnormal)
-    Cout << "Signal Caught!" << std::endl;
+    Cout << "Dakota abort_handler(): Signal Caught! (code " << code << ")"
+	 << std::endl;
 
   // Clean up
   Cout << std::flush; // flush cout or ofstream redirection
@@ -130,9 +131,8 @@ void abort_throw_or_exit(int dakota_code)
     boost::system::error_code ecode(os_code, boost::system::generic_category());
     throw(boost::system::system_error(ecode, "Dakota aborted"));
   }
-  else {
-    std::exit(os_code);  // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
-  }
+  else
+    std::exit(os_code); // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
 }
 
 
@@ -142,10 +142,10 @@ void register_signal_handlers()
 #if defined(__MINGW32__) || defined(_MSC_VER)
   std::signal(SIGBREAK, Dakota::abort_handler);
 #else
-  std::signal(SIGKILL, Dakota::abort_handler);
+  std::signal(SIGKILL,  Dakota::abort_handler);
 #endif
-  std::signal(SIGTERM, Dakota::abort_handler);
-  std::signal(SIGINT,  Dakota::abort_handler);
+  std::signal(SIGTERM,  Dakota::abort_handler);
+  std::signal(SIGINT,   Dakota::abort_handler);
 }
 
 
@@ -177,8 +177,6 @@ void mpi_debug_hold() {
   std::cin >> test;
 #endif // MPICH2
 #endif // MPI_DEBUG
-
 }
-
 
 } // namespace Dakota
