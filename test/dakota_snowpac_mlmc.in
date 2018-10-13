@@ -13,7 +13,7 @@ method,
 	  seed = 25041981
 #	  max_iterations = 500
 #	  convergence_tolerance = 1e-4
-#	  max_function_evaluations = 500
+	  max_function_evaluations = 250
 	  trust_region
 	    initial_size = 0.10
 	    minimum_size = 1.0e-6
