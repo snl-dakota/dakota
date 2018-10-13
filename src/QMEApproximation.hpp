@@ -118,8 +118,11 @@ inline void QMEApproximation::clear_current_active_data()
   size_t ndv = sharedDataRep->numVars, target = ndv+1,
     d, num_d = approxData.size();
   const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-  for (d=0; d<num_d; ++d)
-    approxData[d].history_target(target, keys[d]);
+  for (d=0; d<num_d; ++d) {
+    Pecos::SurrogateData& approx_data = approxData[d];
+    approx_data.clear_anchor_index();
+    approx_data.history_target(target, keys[d]);
+  }
 
   /*
   Pecos::SurrogateData& approx_data

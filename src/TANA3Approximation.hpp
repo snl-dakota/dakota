@@ -118,8 +118,11 @@ inline void TANA3Approximation::clear_current_active_data()
 {
   size_t d, num_d = approxData.size();
   const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-  for (d=0; d<num_d; ++d)
-    approxData[d].history_target(1, keys[d]);
+  for (d=0; d<num_d; ++d) {
+    Pecos::SurrogateData& approx_data = approxData[d];
+    approx_data.clear_anchor_index();
+    approx_data.history_target(1, keys[d]);
+  }
 
   /*
   Pecos::SurrogateData& approx_data

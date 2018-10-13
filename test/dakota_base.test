@@ -14834,13 +14834,13 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 40
 dakota_nowpac.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 147 total (147 new, 0 duplicate)
+<<<<< Function evaluation summary: 138 total (138 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9999994270e-01 x1
-                      9.9999988545e-01 x2
+                      9.9999989584e-01 x1
+                      9.9999979159e-01 x2
 <<<<< Best objective function  =
-                      3.2834780295e-15
-<<<<< Best data captured at function evaluation 147
+                      1.0849504299e-14
+<<<<< Best data captured at function evaluation 137
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -14854,8 +14854,33 @@ Test Number 1 succeeded
                       7.8235203311e+00
 <<<<< Best constraint values   =
                      -1.6009003571e-02
-                     -1.7763568394e-15
+                     -2.2204460493e-16
 <<<<< Best data captured at function evaluation 38
+Test Number 2 failed with exit code 255
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 37 total (37 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526287824e+01 x1
+                      1.9622825485e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810417e+01
+<<<<< Best constraint values   =
+                      3.8835100412e-01
+                      8.8817841970e-16
+                      3.8005651696e-01
+<<<<< Best data captured at function evaluation 37
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 41 total (41 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.9526288349e+01 x1
+                      1.9622825901e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810417e+01
+<<<<< Best constraint values   =
+                      3.8835104830e-01
+                      2.1262991368e-12
+                      3.8005650579e-01
+<<<<< Best data captured at function evaluation 32
 dakota_optdarts.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
