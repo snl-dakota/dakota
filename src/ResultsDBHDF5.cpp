@@ -58,6 +58,48 @@ String dataset_hdf5_link_name(const StrStrSizet& iterator_id,
   return rval;
 }
 
+void ResultsDBHDF5::allocate_matrix(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              ResultsOutputType stored_type, 
+              int num_rows, int num_cols,
+              const DimScaleMap &scales,
+              const AttributeArray &attrs) {
+  String dset_name = dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
+  IntArray dims = {num_rows, num_cols};
+  hdf5Stream->add_empty_dataset(dset_name, dims, stored_type);
+  attach_scales(dset_name, iterator_id, lvl_1_name, lvl_2_name, scales);
+  add_attributes(dset_name, attrs);
+} 
+
+/// Insert a row or column into a pre-allocated matrix 
+void ResultsDBHDF5:: 
+insert_into_matrix(const StrStrSizet& iterator_id,
+         const std::string& lvl_1_name,
+         const std::string& lvl_2_name,
+         const boost::any& data,
+         const int &index, const bool &row) {
+   // Store the results
+  String dset_name =
+    dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
+  // Need to fix this to use incoming "data"
+  if (data.type() == typeid(std::vector<double>)) {
+    hdf5Stream->store_row_or_column(dset_name, boost::any_cast<std::vector<double> >(data), index, row);
+  }
+  else if (data.type() == typeid(RealVector)) {
+    hdf5Stream->store_row_or_column(dset_name, boost::any_cast<RealVector >(data), index, row);
+  }
+  else if (data.type() == typeid(IntVector)) {
+    hdf5Stream->store_row_or_column(dset_name, boost::any_cast<IntVector >(data), index, row);
+  }
+  else if (data.type() == typeid(StringMultiArrayConstView)) {
+    hdf5Stream->store_row_or_column(dset_name, boost::any_cast<StringMultiArrayConstView>(data), index, row);
+  } else {
+    Cerr << "Warning: dset " << dset_name << " of unknown type of any: " << data.type().name()
+         << std::endl;
+    abort_handler(-1);
+  }
+}
 
 void 
 ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
@@ -118,23 +160,9 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
          << std::endl;
     abort_handler(-1);
   }
+  attach_scales(dset_name, iterator_id, lvl_1_name, lvl_2_name, scales);
+  add_attributes(dset_name, attrs);
 
-  // Store and attach the dimension scales.
-  // Iteration must be explicit for the dimension scales because they are stored in a
-  // multimap, which is a container of pairs, not of boost::variants
-  for(auto &s : scales) {  // s is a std::pair<int, boost::variant<StringScale, RealScale> >
-    int dimension = s.first;
-    AttachScaleVisitor visitor(
-      iterator_id, lvl_1_name, lvl_2_name, dimension, dset_name, hdf5Stream
-    );
-    boost::apply_visitor(visitor, s.second);
-
-  }
-  // Add metadata to the dataset
-  AddAttributeVisitor attribute_adder(dset_name, hdf5Stream);
-  std::for_each(
-    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-  );
 }
 
 void ResultsDBHDF5::add_metadata_for_method(const StrStrSizet& iterator_id,
@@ -156,6 +184,35 @@ void ResultsDBHDF5::add_metadata_for_execution(const StrStrSizet& iterator_id,
     attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
   );
 }
+
+void ResultsDBHDF5::
+attach_scales(const String &dset_name,
+            const StrStrSizet& iterator_id,
+            const std::string& lvl_1_name,
+            const std::string& lvl_2_name,
+            const DimScaleMap &scales) {
+
+  // Store and attach the dimension scales.
+  // Iteration must be explicit for the dimension scales because they are stored in a
+  // multimap, which is a container of pairs, not of boost::variants
+  for(auto &s : scales) {  // s is a std::pair<int, boost::variant<StringScale, RealScale> >
+    int dimension = s.first;
+    AttachScaleVisitor visitor(
+      iterator_id, lvl_1_name, lvl_2_name, dimension, dset_name, hdf5Stream
+    );
+    boost::apply_visitor(visitor, s.second);
+  }
+}
+
+void ResultsDBHDF5::
+add_attributes(const String dset_name, const AttributeArray &attrs) {
+   // Add metadata to the dataset
+  AddAttributeVisitor attribute_adder(dset_name, hdf5Stream);
+  std::for_each(
+    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
+  );
+} 
+
 
 void ResultsDBHDF5::flush() const {
   hdf5Stream->flush();

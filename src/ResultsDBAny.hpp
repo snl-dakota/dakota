@@ -50,7 +50,29 @@ public:
   {
     return;
   }
-  
+ 
+  /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
+  /// rows or columns using insert_into_matrix(...)
+  void allocate_matrix(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              ResultsOutputType stored_type, 
+              int num_rows, int num_cols,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray()) {
+      return;
+   }
+
+  /// Insert a row or column into a pre-allocated matrix 
+  void insert_into_matrix(const StrStrSizet& iterator_id,
+         const std::string& lvl_1_name,
+         const std::string& lvl_2_name,
+         const boost::any& data,
+         const int &index, const bool &row) {
+      return;
+  }
+
+ 
   /// record addition with metadata map
   void 
   insert(const StrStrSizet& iterator_id,

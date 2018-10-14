@@ -31,6 +31,10 @@ namespace Dakota
 {
 
 //----------------------------------------------------------------
+int length(const StringMultiArrayConstView &vec) {
+  return vec.size();
+}
+
 
   void HDF5IOHelper::attach_scale( const String& dset_name,
                                    const String& scale_name,
@@ -128,6 +132,29 @@ namespace Dakota
     }
     else
       throw std::runtime_error(String("Attempt to create HDF5 dataset ") + name + " failed" );
+  }
+
+  void HDF5IOHelper::
+  add_empty_dataset(const String &dset_name, const IntArray &dims, ResultsOutputType stored_type) const
+  {
+    create_groups(dset_name);
+    int rank = dims.size();
+    hsize_t fdims[rank];
+    std::copy(dims.begin(), dims.end(), fdims);
+    H5::DataSpace dataspace = H5::DataSpace(rank, fdims);
+    H5::DataType h5_type;    
+    switch (stored_type) {
+      case ResultsOutputType::REAL:
+        h5_type = h5_file_dtype(double(0.0));
+        break;
+      case ResultsOutputType::INTEGER:
+        h5_type = h5_file_dtype(int(0));
+        break;
+      case ResultsOutputType::STRING:
+        h5_type = h5_file_dtype(String(""));
+        break;
+     }
+     create_dataset(*filePtr, dset_name, h5_type, dataspace);
   }
 
   bool HDF5IOHelper::is_scale(const H5::DataSet dset) const

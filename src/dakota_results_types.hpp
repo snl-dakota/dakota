@@ -396,6 +396,8 @@ typedef std::vector<boost::variant< ResultAttribute<int>,
                                     ResultAttribute<String>,
                                     ResultAttribute<Real> > > AttributeArray;
 
+/// enum for setting type on allocted matrix for Results Output
+enum class ResultsOutputType { REAL, INTEGER, STRING};
 
 }  // namespace Dakota
 

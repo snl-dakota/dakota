@@ -13,6 +13,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
+#include "dakota_results_types.hpp"
 
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/multi_array.hpp>
@@ -87,6 +88,18 @@ inline H5::DataType h5_mem_dtype( const String )
   return str_type;
 }
 
+/// Return the length of seeral types
+template <typename T>
+int length(const std::vector<T> &vec) {
+  return vec.size();
+}
+
+template <typename T>
+int length(const Teuchos::SerialDenseVector<int, T> &vec) {
+  return vec.length();
+}
+
+int length(const StringMultiArrayConstView &vec);
 
 /**
  * This helper class provides wrapper functions that perform
@@ -215,7 +228,7 @@ class HDF5IOHelper
     store_vector_data(dset_name, &vec[0], vec.size());
     return;
   }
-  
+ 
   /// Store matrix (2D) information to a dataset
   template<typename T>
   void store_matrix_data(const std::string &dset_name, 
@@ -316,7 +329,48 @@ class HDF5IOHelper
     return;
   }
 
+  template<typename T>
+  void store_row_or_column(const String &dset_name, const T &data, const int &index, const bool &row) {
+    // 1. open the dataset
+    // 2. discover the rank (must be 2) and dimensions
+    // 3. Raise an error if the dimensions of the dataset and the data don't match
+    // 4. create hyperslab to write a row or column
+    // 5. Write
+    H5::DataSet ds = filePtr->openDataSet(dset_name);
+    H5::DataSpace f_space = ds.getSpace();
+    if(f_space.getSimpleExtentNdims() != 2)
+      throw std::runtime_error(String("Attempt to insert row or column into non-2D dataset ") + 
+                                 dset_name + " failed" );
+    hsize_t dims[2]; // assume rank == 2
+    f_space.getSimpleExtentDims(dims);
+    int len = length(data); // length is a free function defined in HDF5_IO.hpp that is 
+                            // overloaded/templated to return the length of SDVs and std::vectors
+    if(row && dims[1] != len)
+      throw std::runtime_error(String("Attempt to insert row into  ") + 
+                                 dset_name + " failed; length of data is " + 
+                                 std::to_string(len) + " and number of DS columns is " + 
+                                 std::to_string(dims[1]) );
+    else if(!row && dims[0] != len) 
+      throw std::runtime_error(String("Attempt to insert column into  ") + 
+                                 dset_name + " failed; length of data is " + 
+                                 std::to_string(len) + " and number of DS rows is " + 
+                                 std::to_string(dims[0]) );
+    hsize_t f_count[2], f_start[2], m_dim[1]; // f_count and f_start are used to index into the
+                                              // dataset. m_dim is the dimension of the data in memory
+    m_dim[0] = len;
+    H5::DataSpace m_space(1, m_dim);  // memory dataspace.
+    if(row) {
+      f_count[0] = 1; f_count[1] = len;
+      f_start[0] = index; f_start[1] = 0;
+    } else {
+      f_count[0] = len; f_count[1] = 1;
+      f_start[0] = 0; f_start[1] = index;
+    }
+    f_space.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+    ds.write(&data[0], h5_mem_dtype(data[0]), m_space, f_space);
+  }
 
+  void add_empty_dataset(const String &dset_name, const IntArray &dims, ResultsOutputType stored_type) const;
   //------------------------------------------------------------------
 
   /// attach a dimension scale to a dataset

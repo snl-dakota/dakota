@@ -153,13 +153,40 @@ public:
   void insert(const StrStrSizet& iterator_id,
               const std::string& lvl_1_name,
               const std::string& lvl_2_name,
-	      const StoredType& sent_data,
+              const StoredType& sent_data,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),
               const bool &transpose = false)
   {
     for( auto & db : resultsDBs )
       db->insert(iterator_id, lvl_1_name, lvl_2_name, sent_data, scales, attrs, transpose);
+  }
+
+  /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
+  /// rows or columns using insert_into_matrix(...)
+  void allocate_matrix(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              ResultsOutputType stored_type, 
+              const int &num_rows, const int &num_cols,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray())
+  {
+    for( auto & db : resultsDBs )
+      db->allocate_matrix(iterator_id, lvl_1_name, lvl_2_name, stored_type, num_rows, num_cols, 
+                            scales, attrs);
+  }
+  
+  /// Insert a row or column into a matrix that was pre-allocated using allocate_matrix
+  template<typename StoredType>
+  void insert_into_matrix(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              const StoredType &data,
+              const int &index,
+              const bool &row = true) {
+    for( auto & db : resultsDBs )
+      db->insert_into_matrix(iterator_id, lvl_1_name, lvl_2_name, data, index, row);
   }
 
 

@@ -11,7 +11,7 @@
 #include "dakota_global_defs.hpp"
 #include "ResultsManager.hpp"
 #include "HDF5_IO.hpp"
-
+#include <boost/tuple/tuple.hpp>
 #include <iostream>
 #include <math.h>
 #include <memory>
@@ -56,5 +56,30 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
   TEST_ASSERT( helper.exists("/methods/sampling") );
 }
 
+TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into_matrix) {
+  // TODO: This is not a very good test, yet. It passes if no exceptions are throw, but it doesn't read
+  // the matrices back in to confirm that they were written correctly.
+  std::string database_name = "database_3";
+  Dakota::ResultsManager results_manager;
+  results_manager.initialize(database_name, Dakota::RESULTS_OUTPUT_HDF5);
+  Dakota::StrStrSizet iterator_id = boost::make_tuple(std::string("test_method"), 
+                                                        std::string("test_method_id"), 1);
+ 
+   std::vector<double> row0 = {1.0, 2.0, 3.0, 4.0};
+  std::vector<double> row1 = {5.0, 6.0, 7.0, 8.0};
+  Dakota::RealVector row2(4);
+  for(int i = 0; i < 4; ++i)
+    row2[i] = double(i) + 9.0;
+
+  results_manager.allocate_matrix(iterator_id, std::string("row_result"), std::string(""), Dakota::ResultsOutputType::REAL, 3, 4);
+  results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row0, 0); 
+  results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row1, 1); 
+  results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row2, 2); 
+  
+  results_manager.allocate_matrix(iterator_id, std::string("column_result"), std::string(""), Dakota::ResultsOutputType::REAL, 4,3);
+  results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row0, 0, false); 
+  results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row1, 1, false); 
+  results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row2, 2, false); 
+}
 #endif
 // #endif // comment to make this file active

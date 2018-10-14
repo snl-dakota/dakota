@@ -50,6 +50,16 @@ public:
   
   // Templated allocation, insertion, and retrieval functions
 
+  /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
+  /// rows or columns using insert_into_matrix(...)
+  virtual void allocate_matrix(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              ResultsOutputType stored_type, 
+              int num_rows, int num_cols,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray()) = 0;
+
   /// allocate an entry with sized array of the StoredType, e.g.,
   /// array across response functions or optimization results sets
   template<typename StoredType>
@@ -114,13 +124,22 @@ public:
   /// record addition with metadata map and scales data
   virtual void
   insert(const StrStrSizet& iterator_id,
-         const std::string& result_name,
-         const std::string& response_name,
+         const std::string& lvl_1_name,
+         const std::string& lvl_2_name,
          const boost::any& data,
          const DimScaleMap &scales = DimScaleMap(),
          const AttributeArray &attrs = AttributeArray(),
          const bool &transpose = false
          ) = 0;
+
+  /// Insert a row or column into a pre-allocated matrix 
+  virtual void
+  insert_into_matrix(const StrStrSizet& iterator_id,
+         const std::string& lvl_1_name,
+         const std::string& lvl_2_name,
+         const boost::any& data,
+         const int &index, const bool &row) = 0;
+
 
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
