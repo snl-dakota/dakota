@@ -1,6 +1,9 @@
+#@ s*: DakotaConfig=DAKOTA_HAVE_HDF5
+
 environment,
   tabular_data
   results_output
+    hdf5
     results_output_file = 'calib.results'
 
 method,
