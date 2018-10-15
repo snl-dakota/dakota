@@ -735,45 +735,17 @@ archive_best(size_t point_index,
 	     const Variables& best_vars, const Response& best_resp)
 {
   // archive the best point in the iterator database
-  // These API calls trigger the coreDB backend and will likely be removed in the future - RWH
+
   if (numContinuousVars) {
+    // coreDB backend which will likely be removed in the future - RWH
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.best_cv, point_index,
        best_vars.continuous_variables());
-  }
 
-  if (numDiscreteIntVars) {
-    resultsDB.array_insert<IntVector>
-      (run_identifier(), resultsNames.best_div, point_index,
-       best_vars.discrete_int_variables());
-  }
-
-  if (numDiscreteStringVars) {
-    resultsDB.array_insert<StringArray>
-      (run_identifier(), resultsNames.best_dsv, point_index,
-       best_vars.discrete_string_variables());
-  }
-
-  if (numDiscreteRealVars) {
-    resultsDB.array_insert<RealVector>
-      (run_identifier(), resultsNames.best_drv, point_index,
-       best_vars.discrete_real_variables());
-  }
-
-  // coreDB-based API Results output
-  resultsDB.array_insert<RealVector>
-    (run_identifier(), resultsNames.best_fns, point_index, best_resp.function_values());
-
-
-  // These API calls trigger the hdf5DB backend and reflect a different variable output ordering - RWH
-
-  // Interleave continuous and discrete reals
-  if (numContinuousVars || numDiscreteRealVars) {
+    // hdf5DB backend
     DimScaleMap scales;
     std::vector<std::string> var_labels;
     for( const auto& label : variables_results().continuous_variable_labels() )
-      var_labels.push_back(label);
-    for( const auto& label : variables_results().discrete_real_variable_labels() )
       var_labels.push_back(label);
 
     scales.emplace(0,
@@ -781,25 +753,20 @@ archive_best(size_t point_index,
                    var_labels,
                    ScaleScope::SHARED));
 
-    std::string agg_label = resultsNames.cv_labels + " and " + resultsNames.drv_labels;
-    // Should this get moved into a utility or even an option in the lower level HDF5 I/O routines? -- RWH
-    std::replace( agg_label.begin(), agg_label.end(), ' ', '_');
-
-    std::string agg_desc = "Best_Real_Variables";
-
-    // Do a copy for now but could revisit to use a View - RWH
-    std::vector<Real> active_reals(numContinuousVars+numDiscreteRealVars);
-    copy_data_partial(best_vars.continuous_variables(), 0, active_reals, 0, numContinuousVars);
-    copy_data_partial(best_vars.discrete_real_variables(), 0, active_reals, numContinuousVars, numDiscreteRealVars);
-
     resultsDB.insert(run_identifier(),
-                     agg_label,
-                     agg_desc,
-                     active_reals,
+                     resultsNames.cv_labels,
+                     resultsNames.best_cv,
+                     best_vars.continuous_variables(),
                      scales);
   }
 
   if (numDiscreteIntVars) {
+    // coreDB backend which will likely be removed in the future - RWH
+    resultsDB.array_insert<IntVector>
+      (run_identifier(), resultsNames.best_div, point_index,
+       best_vars.discrete_int_variables());
+
+    // hdf5DB backend
     DimScaleMap scales;
     std::vector<std::string> var_labels;
     for( const auto& label : variables_results().discrete_int_variable_labels() )
@@ -818,6 +785,12 @@ archive_best(size_t point_index,
   }
 
   if (numDiscreteStringVars) {
+    // coreDB backend which will likely be removed in the future - RWH
+    resultsDB.array_insert<StringArray>
+      (run_identifier(), resultsNames.best_dsv, point_index,
+       best_vars.discrete_string_variables());
+
+    // hdf5DB backend
     DimScaleMap scales;
     std::vector<std::string> var_labels;
     for( const auto& label : variables_results().discrete_string_variable_labels() )
@@ -835,6 +808,33 @@ archive_best(size_t point_index,
                      scales);
   }
 
+  if (numDiscreteRealVars) {
+    // coreDB backend which will likely be removed in the future - RWH
+    resultsDB.array_insert<RealVector>
+      (run_identifier(), resultsNames.best_drv, point_index,
+       best_vars.discrete_real_variables());
+
+    // hdf5DB backend
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().discrete_real_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+                     resultsNames.drv_labels,
+                     resultsNames.best_drv,
+                     best_vars.discrete_real_variables(),
+                     scales);
+  }
+
+  // coreDB-based API Results output
+  resultsDB.array_insert<RealVector>
+    (run_identifier(), resultsNames.best_fns, point_index, best_resp.function_values());
 
   // hdf5DB-based API Results output
   DimScaleMap scales;
