@@ -65,18 +65,27 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into_matrix) {
   Dakota::StrStrSizet iterator_id = boost::make_tuple(std::string("test_method"), 
                                                         std::string("test_method_id"), 1);
  
-   std::vector<double> row0 = {1.0, 2.0, 3.0, 4.0};
+  std::vector<double> row0 = {1.0, 2.0, 3.0, 4.0};
   std::vector<double> row1 = {5.0, 6.0, 7.0, 8.0};
   Dakota::RealVector row2(4);
   for(int i = 0; i < 4; ++i)
     row2[i] = double(i) + 9.0;
 
-  results_manager.allocate_matrix(iterator_id, std::string("row_result"), std::string(""), Dakota::ResultsOutputType::REAL, 3, 4);
+  Dakota::DimScaleMap scales;
+  scales.emplace(0, Dakota::StringScale("dim_0_test", {"a", "scale", "test"}));
+  scales.emplace(1, Dakota::StringScale("dim_1_test", {"do", "re", "me", "fa"}));
+
+  Dakota::AttributeArray attrs;
+  attrs.push_back(Dakota::ResultAttribute<int>("samples", 5));
+
+  results_manager.allocate_matrix(iterator_id, std::string("row_result"), std::string(""),
+    Dakota::ResultsOutputType::REAL, 3, 4, scales, attrs);
   results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row0, 0); 
   results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row1, 1); 
   results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row2, 2); 
   
-  results_manager.allocate_matrix(iterator_id, std::string("column_result"), std::string(""), Dakota::ResultsOutputType::REAL, 4,3);
+  results_manager.allocate_matrix(iterator_id, std::string("column_result"), std::string(""),
+    Dakota::ResultsOutputType::REAL, 4,3);
   results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row0, 0, false); 
   results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row1, 1, false); 
   results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row2, 2, false); 
