@@ -505,9 +505,6 @@ private:
 
   // Data for numbering methods and their executions
 
-  /// the last used method ID number for no-ID user methods
-  /// (increment before each use)
-  static size_t userAutoIdNum;
   /// the last used method ID number for on-the-fly instantiations
   /// (increment before each use)
   static size_t noSpecIdNum;

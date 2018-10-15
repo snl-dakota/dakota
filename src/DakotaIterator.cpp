@@ -136,7 +136,6 @@ extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
 extern ResultsManager  iterator_results_db;
 
 // Initialization of static method ID counters
-size_t Iterator::userAutoIdNum = 0;
 size_t Iterator::noSpecIdNum = 0;
 
 
@@ -1777,15 +1776,16 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
     iteratedModel.eval_tag_prefix(eval_id_str);
 }
 
-/** Rationale: We'd hope that only one user-specified method would
-    have an empty ID, but the parser doesn't enforce it. It's unlikely
-    two Iterators with empty IDs could ever get constructed, but for
-    now, this is conservative and appends _<num> to NO_ID. Ultimately
-    could be made consistent with interface "NO_ID". */
+/** Rationale: The parser allows multiple user-specified methods with
+    empty (unspecified) ID. However, only a single Iterator with empty
+    ID can be constructed (if it's the only one present, or the "last
+    one parsed"). Therefore decided to prefer NO_ID over NO_ID_<num>
+    for consistency with interface NO_ID convention. */
 String Iterator::user_auto_id()
 {
-  // increment and then use the current ID value
-  return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  // // increment and then use the current ID value
+  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  return String("NO_ID");
 }
 
 /** Rationale: For now NOSPEC_ID_ is chosen due to historical
