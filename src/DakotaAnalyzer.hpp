@@ -138,6 +138,9 @@ protected:
   void compute_vbd_stats(const int num_samples, 
 			 const IntResponseMap& resp_samples);
 
+  /// archive VBD-based Sobol indices
+  void archive_sobol_indices() const;
+
   /// convenience function for reading variables/responses (used in
   /// derived classes post_input)
   void read_variables_responses(int num_evals, size_t num_vars);

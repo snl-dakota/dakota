@@ -123,6 +123,7 @@
 
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 
 //#define REFCOUNT_DEBUG
 
@@ -134,6 +135,10 @@ extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
 extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
 extern ResultsManager  iterator_results_db;
 
+// Initialization of static method ID counters
+size_t Iterator::userAutoIdNum = 0;
+size_t Iterator::noSpecIdNum = 0;
+
 
 /** This constructor builds the base class data for all inherited
     iterators, including meta-iterators.  get_iterator() instantiates
@@ -142,7 +147,8 @@ extern ResultsManager  iterator_results_db;
     the base class constructor calling get_iterator() again).  Since
     the letter IS the representation, its representation pointer is
     set to NULL (an uninitialized pointer causes problems in ~Iterator). */
-Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
+Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
+		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0),
@@ -167,8 +173,11 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<T
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
   resultsDB(iterator_results_db), methodId(probDescDB.get_string("method.id")),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
+  if (methodId.empty())
+    methodId = user_auto_id();
+
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
     // iteratorRep = get_iterator(problem_db);
@@ -184,7 +193,8 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<T
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
+	 std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0),
@@ -192,7 +202,7 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::sha
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model.output_level()), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
+  resultsDB(iterator_results_db), methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
@@ -209,13 +219,14 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::sha
     meta-iterators.  It has no incoming model, so only sets up a
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
-Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<TraitsBase> traits):
+Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
+		   std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib), 
   myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
+  resultsDB(iterator_results_db), methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
@@ -232,7 +243,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_
     constructor, assignment operator, and destructor. */
 Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -1034,11 +1045,10 @@ void Iterator::run()
   if (iteratorRep)
     iteratorRep->run(); // envelope fwd to letter
   else {
-    // the same iterator might run multiple times, or need a unique ID due to
-    // name/id duplication, so increment execution number for this name/id pair
-    String method_string = method_enum_to_string(methodName);
-    execNum = ResultsID::instance().increment_id(method_string, method_id());
 
+    ++execNum;
+
+    String method_string = method_enum_to_string(methodName);
     initialize_run();
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
@@ -1064,6 +1074,7 @@ void Iterator::run()
     if (summaryOutputFlag)
       Cout << "\n<<<<< Iterator " << method_string <<" completed.\n";
     finalize_run();
+    resultsDB.flush();
   }
 }
 
@@ -1764,6 +1775,28 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
     iteratorRep->eval_tag_prefix(eval_id_str);
   else
     iteratedModel.eval_tag_prefix(eval_id_str);
+}
+
+/** Rationale: We'd hope that only one user-specified method would
+    have an empty ID, but the parser doesn't enforce it. It's unlikely
+    two Iterators with empty IDs could ever get constructed, but for
+    now, this is conservative and appends _<num> to NO_ID. Ultimately
+    could be made consistent with interface "NO_ID". */
+String Iterator::user_auto_id()
+{
+  // increment and then use the current ID value
+  return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+}
+
+/** Rationale: For now NOSPEC_ID_ is chosen due to historical
+    id="NO_SPECIFICATION" used for internally-constructed
+    Iterators. Longer-term, consider auto-generating an ID that
+    includes the context from which the method is constructed, e.g.,
+    the parent method or model's ID, together with its name. */
+String Iterator::no_spec_id()
+{
+  // increment and then use the current ID value
+  return String("NOSPEC_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
 }
 
 } // namespace Dakota

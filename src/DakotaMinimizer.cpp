@@ -338,8 +338,6 @@ void Minimizer::post_run(std::ostream& s)
     // The remaining final results output varies by iterator branch
     print_results(s);
   }
-
-  resultsDB.write_databases();
 }
 
 
@@ -737,26 +735,123 @@ archive_best(size_t point_index,
 	     const Variables& best_vars, const Response& best_resp)
 {
   // archive the best point in the iterator database
-  if (numContinuousVars)
+
+  if (numContinuousVars) {
+    // coreDB backend which will likely be removed in the future - RWH
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.best_cv, point_index,
        best_vars.continuous_variables());
-  if (numDiscreteIntVars)
+
+    // hdf5DB backend
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().continuous_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+                     resultsNames.cv_labels,
+                     resultsNames.best_cv,
+                     best_vars.continuous_variables(),
+                     scales);
+  }
+
+  if (numDiscreteIntVars) {
+    // coreDB backend which will likely be removed in the future - RWH
     resultsDB.array_insert<IntVector>
       (run_identifier(), resultsNames.best_div, point_index,
        best_vars.discrete_int_variables());
+
+    // hdf5DB backend
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().discrete_int_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+                     resultsNames.div_labels,
+                     resultsNames.best_div,
+                     best_vars.discrete_int_variables(),
+                     scales);
+  }
+
   if (numDiscreteStringVars) {
+    // coreDB backend which will likely be removed in the future - RWH
     resultsDB.array_insert<StringArray>
       (run_identifier(), resultsNames.best_dsv, point_index,
        best_vars.discrete_string_variables());
+
+    // hdf5DB backend
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().discrete_string_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+                     resultsNames.dsv_labels,
+                     resultsNames.best_dsv,
+                     best_vars.discrete_string_variables(),
+                     scales);
   }
-  if (numDiscreteRealVars)
+
+  if (numDiscreteRealVars) {
+    // coreDB backend which will likely be removed in the future - RWH
     resultsDB.array_insert<RealVector>
       (run_identifier(), resultsNames.best_drv, point_index,
        best_vars.discrete_real_variables());
+
+    // hdf5DB backend
+    DimScaleMap scales;
+    std::vector<std::string> var_labels;
+    for( const auto& label : variables_results().discrete_real_variable_labels() )
+      var_labels.push_back(label);
+
+    scales.emplace(0,
+                   StringScale("Variable_Labels",
+                   var_labels,
+                   ScaleScope::SHARED));
+
+    resultsDB.insert(run_identifier(),
+                     resultsNames.drv_labels,
+                     resultsNames.best_drv,
+                     best_vars.discrete_real_variables(),
+                     scales);
+  }
+
+  // coreDB-based API Results output
   resultsDB.array_insert<RealVector>
-    (run_identifier(), resultsNames.best_fns, point_index,
-     best_resp.function_values());
+    (run_identifier(), resultsNames.best_fns, point_index, best_resp.function_values());
+
+  // hdf5DB-based API Results output
+  DimScaleMap scales;
+  std::vector<std::string> resp_labels;
+  for( const auto& label : response_results().function_labels() )
+    resp_labels.push_back(label);
+
+  scales.emplace(0,
+                 StringScale("Response_Labels",
+                 resp_labels,
+                 ScaleScope::SHARED));
+
+  resultsDB.insert(run_identifier(),
+                   resultsNames.fn_labels,
+                   resultsNames.best_fns,
+                   best_resp.function_values(),
+                   scales);
 } 
 
 

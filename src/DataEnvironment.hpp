@@ -93,7 +93,8 @@ public:
   bool resultsOutputFlag;
   /// named file for results output
   String resultsOutputFile;
-
+  /// Results output format
+  unsigned short resultsOutputFormat;
   /// method identifier for the environment (from the \c top_method_pointer
   /// specification
   String topMethodPointer;

@@ -1430,6 +1430,24 @@ archive_moments(const RealMatrix& moment_stats, short moments_type,
   md_moments["Column Labels"] = make_metadatavalue(labels);
   resultsDB.insert(run_identifier(), resultsNames.moments_std, moment_stats,
 		   md_moments);
+  
+  // send to prototype hdf5DB, too
+  for(int i = 0; i < labels.size(); ++i) {
+    DimScaleMap scales;
+    if(moments_type == CENTRAL_MOMENTS)
+      scales.emplace(0, 
+                     StringScale("moments",
+                     {"mean", "variance", "third_central", "fourth_central"},
+                     ScaleScope::SHARED));
+    else
+      scales.emplace(0,
+                     StringScale("moments", 
+                     {"mean", "std_deviation", "skewness", "kurtosis"},
+                     ScaleScope::SHARED));
+    // extract column or row of moment_stats
+    resultsDB.insert(run_identifier(), String("moments"), labels[i], 
+        Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&moment_stats), i), scales);
+  }
 }
 
 
@@ -1448,6 +1466,23 @@ archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
   md["Column Labels"] = make_metadatavalue(labels);
   resultsDB.insert(run_identifier(), resultsNames.moment_cis,
 		   moment_conf_ints, md);
+  // archive in HDF5. Store in a 2d dataset with mean and var/stdev on the 1st dimension
+  // and lower and upper bounds on the 2nd dimension
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("bounds", {"lower", "upper"})); 
+  if(moments_type == CENTRAL_MOMENTS)
+    scales.emplace(1, StringScale("moments", {"mean", "variance"})); 
+  else
+    scales.emplace(1, StringScale("moments", {"mean", "std_deviation"})); 
+  for(int i = 0; i < labels.size(); ++i) { // loop over responses
+    RealMatrix ci(2,2,false);
+    ci(0,0) = moment_conf_ints(0,i);
+    ci(1,0) = moment_conf_ints(1,i);
+    ci(0,1) = moment_conf_ints(2,i);
+    ci(1,1) = moment_conf_ints(3,i);
+    resultsDB.insert(run_identifier(), String("moment_confidence_intervals"), labels[i],
+        ci, scales);
+  }
 }
 
 

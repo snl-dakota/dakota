@@ -186,8 +186,6 @@ void Analyzer::post_run(std::ostream& s)
     // The remaining final results output varies by iterator branch
     print_results(s);
   }
-
-  resultsDB.write_databases();
 }
 
 
@@ -800,6 +798,54 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
   }
 }
 
+/** printing of variance based decomposition indices. */
+void Analyzer::archive_sobol_indices() const
+{
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+
+  size_t i, k, offset;
+  for (k=0; k<numFunctions; ++k) {
+    RealArray main_effects, total_effects;
+    StringArray scale_labels;
+  
+    for (i=0; i<numContinuousVars; ++i) {
+      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol) {
+        main_effects.push_back(S4[k][i]);
+        total_effects.push_back(T4[k][i]);
+        scale_labels.push_back(cv_labels[i]);
+      }
+    }
+    offset = numContinuousVars;
+    for (i=0; i<numDiscreteIntVars; ++i) {
+      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol) {
+        main_effects.push_back(S4[k][i+offset]);
+        total_effects.push_back(T4[k][i+offset]);
+        scale_labels.push_back(div_labels[i+offset]);
+      }
+    }
+    offset += numDiscreteIntVars;
+    //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
+    //offset += numDiscreteStringVars;
+    for (i=0; i<numDiscreteRealVars; ++i) {
+      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol) {
+        main_effects.push_back(S4[k][i+offset]);
+        total_effects.push_back(T4[k][i+offset]);
+        scale_labels.push_back(drv_labels[i+offset]);
+      }
+    }
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
+    resultsDB.insert(run_identifier(), String("main_effects"), resp_labels[k], main_effects, scales);
+    resultsDB.insert(run_identifier(), String("total_effects"), resp_labels[k], total_effects, scales);
+  }
+}
 
 void Analyzer::compute_best_metrics(const Response& response,
 				    std::pair<Real,Real>& metrics)

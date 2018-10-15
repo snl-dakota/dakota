@@ -261,6 +261,15 @@ public:
 
 
   // -----
+  // Results DB outputs
+  // -----
+
+  /// At runtime, initialize the global ResultsManager, tagging
+  /// filename with MPI worldRank + 1 if needed
+  void init_results_db();
+
+
+  // -----
   // Data to later be made private
   // -----
 
@@ -302,9 +311,6 @@ private:
   /// set of tags for various input/output files (default none)
   StringArray fileTags;
 
-  /// temporary variable to prevent recursive tagging initially
-  bool redirCalled;
-
   /// set of redirections for Dakota::Cout; stores any tagged filename
   /// when there are concurrent Iterators
   ConsoleRedirector coutRedirector;
@@ -345,8 +351,9 @@ private:
   /// output level (for debugging only; not passed in)
   short outputLevel;
 
-};  // class OutputManager
-
+  /// Output results  format
+  unsigned short resultsOutputFormat;
+};
 
 } //namespace Dakota
 

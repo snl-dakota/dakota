@@ -94,6 +94,7 @@ void abort_handler(int code)
   // Clean up
   Cout << std::flush; // flush cout or ofstream redirection
   Cerr << std::flush; // flush cerr or ofstream redirection
+  iterator_results_db.flush(); // flush output files/databases 
 
   if (Dak_pddb) {
     // cleanup parameters/results files

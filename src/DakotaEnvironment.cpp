@@ -406,6 +406,8 @@ void Environment::execute()
 
     probDescDB.lock(); // prevent run-time DB queries
 
+    outputManager.init_results_db();
+
     // set up plotting and data tabulation
     // > MetaIterators delegate graphics initialization
     // > topLevelIterator's methodName must be defined on all ranks

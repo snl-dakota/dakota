@@ -388,7 +388,8 @@ endif(DAKOTA_HAVE_MPI)
 if(DAKOTA_HAVE_HDF5)
   add_definitions("-DDAKOTA_HAVE_HDF5")
   list(APPEND EXT_TPL_INCDIRS ${HDF5_INCLUDE_DIRS})
-  list(APPEND EXT_TPL_LIBS ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES})
+  list(APPEND EXT_TPL_LIBDIRS ${HDF5_LIBRARY_DIRS})
+  list(APPEND EXT_TPL_LIBS ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES})
 endif(DAKOTA_HAVE_HDF5)
 
 
@@ -433,8 +434,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
-  #list(APPEND util_src ResultsDBHDF5.cpp)
-  list(APPEND util_src BinaryIO_Helper.cpp)
+  list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp)
 endif()
 
 if(DAKOTA_DL_SOLVER)

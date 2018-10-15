@@ -22,6 +22,8 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
   [ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
   [ results_output {N_stm(true,resultsOutputFlag)}
     [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]
+    [ text {N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_TEXT)} ]
+    [ hdf5 {N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)} ]
    ]
   [ graphics {N_stm(true,graphicsFlag)} ]
   [ check {N_stm(true,checkFlag)} ]

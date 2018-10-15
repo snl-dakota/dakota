@@ -504,8 +504,28 @@ archive_correlations(const StrStrSizet& run_identifier,
   if (!iterator_results.active())  return;
 
   int num_in_out = numVars + numFns;
+
+  // Get pointers to the variables and response names to create scales
+  std::vector<const char *> combined_desc;
+  for (size_t i=0; i<cv_labels.size(); ++i)
+    combined_desc.push_back(cv_labels[i].c_str());
+  for (size_t i=0; i<div_labels.size(); ++i)
+    combined_desc.push_back(div_labels[i].c_str());
+  for (size_t i=0; i<dsv_labels.size(); ++i)
+    combined_desc.push_back(dsv_labels[i].c_str());
+  for (size_t i=0; i<drv_labels.size(); ++i)
+    combined_desc.push_back(drv_labels[i].c_str());
+  for (size_t i=0; i<resp_labels.size(); ++i)
+    combined_desc.push_back(resp_labels[i].c_str());
+  // Copy the variable and function labels
+  std::vector<const char *> variables_desc(combined_desc.begin(), 
+      combined_desc.begin() + numVars);
+  std::vector<const char *> functions_desc(combined_desc.begin() + numVars, 
+      combined_desc.end());
+
   if (simpleCorr.numRows() == num_in_out &&
       simpleCorr.numCols() == num_in_out) {
+    // CoreDB
     MetaDataType md;
     md["Row labels"] = 
       make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
@@ -514,9 +534,17 @@ archive_correlations(const StrStrSizet& run_identifier,
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_all,
 			    simpleCorr, md);
+    // HDF5
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("factors", combined_desc));
+    scales.emplace(1, StringScale("factors", combined_desc));
+    iterator_results.insert(run_identifier,String("simple_corr"), String(""), 
+        simpleCorr, scales);
+
   }
   else if (simpleCorr.numRows() == numVars &&
 	   simpleCorr.numCols() == numFns) {
+    // CoreDB
     MetaDataType md;
     md["Row labels"] = 
       make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
@@ -524,10 +552,17 @@ archive_correlations(const StrStrSizet& run_identifier,
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_io,
 			    simpleCorr, md);
+    // HDF5
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", variables_desc));
+    scales.emplace(1, StringScale("responses", functions_desc));
+    iterator_results.insert(run_identifier,String("simple_corr"), String(""), 
+        simpleCorr, scales);
   }
 
   if (partialCorr.numRows() == numVars &&
       partialCorr.numCols() == numFns) {
+    // CoreDB
     MetaDataType md;
     md["Row labels"] = 
       make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
@@ -535,12 +570,19 @@ archive_correlations(const StrStrSizet& run_identifier,
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_partial_io,
 			    partialCorr, md);
+    // HDF5
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", variables_desc));
+    for (size_t i=0; i<resp_labels.size(); ++i)
+      iterator_results.insert(run_identifier, String("partial_corr"),resp_labels[i],
+          Teuchos::getCol<int,Real>(Teuchos::View, *const_cast<RealMatrix*>(&partialCorr), i), scales);
   }
   // TODO: metadata
   //  if (numericalIssuesRaw)
 
   if (simpleRankCorr.numRows() == num_in_out &&
       simpleRankCorr.numCols() == num_in_out) {
+    // CoreDB
     MetaDataType md;
     md["Row labels"] = 
       make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
@@ -549,9 +591,17 @@ archive_correlations(const StrStrSizet& run_identifier,
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_rank_all,
 			    simpleRankCorr, md);
+    // HDF5
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("factors", combined_desc));
+    scales.emplace(1, StringScale("factors", combined_desc));
+    iterator_results.insert(run_identifier,String("simple_rank_corr"), String(""), 
+        simpleRankCorr, scales);
+ 
   }
   else if (simpleRankCorr.numRows() == numVars &&
 	   simpleRankCorr.numCols() == numFns) {
+    // CoreDB
     MetaDataType md;
     md["Row labels"] = 
       make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
@@ -559,12 +609,19 @@ archive_correlations(const StrStrSizet& run_identifier,
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_simple_rank_io,
 			    simpleRankCorr, md);
+    // HDF5
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", variables_desc));
+    scales.emplace(1, StringScale("responses", functions_desc));
+    iterator_results.insert(run_identifier,String("simple_rank_corr"), String(""), 
+        simpleRankCorr, scales);
 
 
   }
 
   if (partialRankCorr.numRows() == numVars &&
       partialRankCorr.numCols() == numFns) {
+    // CoreDB
     MetaDataType md;
     md["Row labels"] = 
       make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
@@ -572,6 +629,13 @@ archive_correlations(const StrStrSizet& run_identifier,
     iterator_results.insert(run_identifier, 
 			    iterator_results.results_names.correl_partial_rank_io,
 			    partialRankCorr, md);
+    // HDF5
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", variables_desc));
+    for (size_t i=0; i<resp_labels.size(); ++i)
+      iterator_results.insert(run_identifier, String("partial_rank_corr"),resp_labels[i],
+          Teuchos::getCol<int,Real>(Teuchos::View, *const_cast<RealMatrix*>(&partialRankCorr), i), scales);
+
   }
 }
 

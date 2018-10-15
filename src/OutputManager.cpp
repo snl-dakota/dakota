@@ -40,7 +40,6 @@ void start_dakota_heartbeat(int);
 OutputManager::OutputManager():
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false), 
   worldRank(0), mpirunFlag(false), 
-  redirCalled(false), 
   coutRedirector(dakota_cout, &std::cout), 
   cerrRedirector(dakota_cerr, &std::cerr),
   tabularFormat(TABULAR_ANNOTATED),
@@ -55,7 +54,6 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
 	      bool dakota_mpirun_flag):
   graph2DFlag(false), tabularDataFlag(false), resultsOutputFlag(false),
   worldRank(dakota_world_rank), mpirunFlag(dakota_mpirun_flag), 
-  redirCalled(false), 
   coutRedirector(dakota_cout, &std::cout), 
   cerrRedirector(dakota_cerr, &std::cerr),
   graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
@@ -136,7 +134,10 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
   resultsOutputFlag = problem_db.get_bool("environment.results_output");
   resultsOutputFile = problem_db.get_string("environment.results_output_file");
   tabularFormat = problem_db.get_ushort("environment.tabular_format");
-
+  resultsOutputFormat = problem_db.get_ushort("environment.results_output_format");
+  if(resultsOutputFlag && resultsOutputFormat == 0)
+    resultsOutputFormat = RESULTS_OUTPUT_TEXT;
+  
   int db_write_precision = problem_db.get_int("environment.output_precision");
   if (db_write_precision > 0) {  // assign global write_precision
     if (db_write_precision > 16) {
@@ -191,14 +192,6 @@ push_output_tag(const String& iterator_tag, const ProgramOptions& prog_opts,
 		     prog_opts.read_restart_file() + file_tag,
 		     prog_opts.stop_restart_evals(),
 		     prog_opts.write_restart_file() + file_tag);
-
-  // for now protect results DB from more than one call
-  if (!redirCalled) {
-    if (resultsOutputFlag)
-      iterator_results_db.initialize(resultsOutputFile + file_tag);
-    redirCalled = true;
-  }
-
 }
 
 
@@ -384,6 +377,17 @@ void OutputManager::graphics_counter(int cntr)
 
 int OutputManager::graphics_counter() const
 { return graphicsCntr; }
+
+
+void OutputManager::init_results_db()
+{
+  String file_tag;
+  if (mpirunFlag)
+    file_tag = "." + boost::lexical_cast<String>(worldRank + 1);
+
+  iterator_results_db.initialize(resultsOutputFile + file_tag,
+				 resultsOutputFormat);
+}
 
 
 void OutputManager::read_write_restart(bool restart_requested,
