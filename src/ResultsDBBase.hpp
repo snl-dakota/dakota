@@ -47,8 +47,22 @@ public:
   ResultsDBBase(const String& filename) :
     fileName(filename)
   { }
-  
-  // Templated allocation, insertion, and retrieval functions
+
+  /// Return the filename
+  const String& filename() const
+    { return fileName; }
+
+  /// If supported, flush data to the database or disk
+  virtual
+  void flush() const
+    {return; }
+
+  // TODO: For the following need const/non-const versions and
+  // value/ref versions...
+
+// ##############################################################
+// Methods to support HDF5
+// ##############################################################
 
   /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
   /// rows or columns using insert_into_matrix(...)
@@ -59,6 +73,42 @@ public:
               int num_rows, int num_cols,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray()) = 0;
+
+  /// addition with dimension scales and attributes
+  virtual void
+  insert(const StrStrSizet& iterator_id,
+         const std::string& lvl_1_name,
+         const std::string& lvl_2_name,
+         const boost::any& data,
+         const DimScaleMap &scales = DimScaleMap(),
+         const AttributeArray &attrs = AttributeArray(),
+         const bool &transpose = false
+         ) = 0;
+
+  /// Insert a row or column into a pre-allocated matrix 
+  virtual void
+  insert_into_matrix(const StrStrSizet& iterator_id,
+         const std::string& lvl_1_name,
+         const std::string& lvl_2_name,
+         const boost::any& data,
+         const int &index, const bool &row) = 0;
+
+  /// Add key:value metadata to a method
+  virtual void add_metadata_for_method(
+                    const StrStrSizet& iterator_id,
+                    const AttributeArray &attrs
+                    ) = 0;
+
+  /// Add key:value metadata to an execution
+  virtual void add_metadata_for_execution(
+                    const StrStrSizet& iterator_id,
+                    const AttributeArray &attrs
+                    ) = 0;
+
+
+  // ##############################################################
+  // Methods to support legacy text output
+  // ##############################################################
 
   /// allocate an entry with sized array of the StoredType, e.g.,
   /// array across response functions or optimization results sets
@@ -73,23 +123,13 @@ public:
                     const std::string& data_name, size_t index,
                     const StoredType& sent_data);
 
-  /// Add key:value metadata to a method
-  virtual void add_metadata_for_method(
-                    const StrStrSizet& iterator_id,
-                    const AttributeArray &attrs
-                    ) = 0;
-
-  /// Add key:value metadata to an execution
-  virtual void add_metadata_for_execution(
-                    const StrStrSizet& iterator_id,
-                    const AttributeArray &attrs
-                    ) = 0;
-
-  /// If supported, flush data to the database or disk
-  virtual
-  void flush() const = 0;
-  // TODO: For the following need const/non-const versions and
-  // value/ref versions...
+  /// record addition with metadata map
+  virtual void 
+  insert(const StrStrSizet& iterator_id,
+         const std::string& data_name,
+         const boost::any& result,
+         const MetaDataType& metadata
+         ) = 0;
 
 //  /// return requested data by value in StoredType
 //  template<typename StoredType>
@@ -113,39 +153,7 @@ public:
 //				       const std::string& data_name,
 //				       size_t index) const;
 
-  /// record addition with metadata map
-  virtual void 
-  insert(const StrStrSizet& iterator_id,
-         const std::string& data_name,
-         const boost::any& result,
-         const MetaDataType& metadata
-         ) = 0;
 
-  /// record addition with metadata map and scales data
-  virtual void
-  insert(const StrStrSizet& iterator_id,
-         const std::string& lvl_1_name,
-         const std::string& lvl_2_name,
-         const boost::any& data,
-         const DimScaleMap &scales = DimScaleMap(),
-         const AttributeArray &attrs = AttributeArray(),
-         const bool &transpose = false
-         ) = 0;
-
-  /// Insert a row or column into a pre-allocated matrix 
-  virtual void
-  insert_into_matrix(const StrStrSizet& iterator_id,
-         const std::string& lvl_1_name,
-         const std::string& lvl_2_name,
-         const boost::any& data,
-         const int &index, const bool &row) = 0;
-
-
-  // NOTE: removed accessors to add metadata only or record w/o metadata
-
-  /// Return the filename
-  const String& filename() const
-    { return fileName; }
 
 protected:
 

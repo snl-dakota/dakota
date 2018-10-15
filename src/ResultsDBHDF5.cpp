@@ -101,15 +101,6 @@ insert_into_matrix(const StrStrSizet& iterator_id,
   }
 }
 
-void 
-ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
-       const std::string& data_name,
-       const boost::any& result,
-       const MetaDataType& metadata
-       ) 
-{
-  return;
-}
 
 /// insert an arbitrary type (eg RealMatrix) with scales
 void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
@@ -217,6 +208,5 @@ add_attributes(const String dset_name, const AttributeArray &attrs) {
 void ResultsDBHDF5::flush() const {
   hdf5Stream->flush();
 }
-
 
 } // Dakota namespace

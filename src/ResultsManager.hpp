@@ -114,38 +114,14 @@ public:
   /// whether any databases are active
   bool active() const;
 
-  /// Copy of valid results names for when manager is passed around
-  ResultsNames results_names;
+  /// Flush data to the database or disk, if supported
+  void flush() const;
 
-  // TODO: consider templating on container and scalar type
 
-  /// insert data
-  template<typename StoredType>
-  void insert(const StrStrSizet& iterator_id,
-	      const std::string& data_name,
-	      const StoredType& sent_data,
-	      const MetaDataType metadata = MetaDataType())
-  {
-    for( auto & db : resultsDBs )
-      db->insert(iterator_id, data_name, sent_data, metadata);
-  }
-  
-  // TODO: can't seem to pass SMACV by const ref...
-  void insert(const StrStrSizet& iterator_id,
-	      const std::string& data_name,
-	      StringMultiArrayConstView sma_labels,
-	      const MetaDataType metadata = MetaDataType())
-  {
-    if( active() )
-    {
-      std::vector<std::string> vs_labels;
-      // convert to standard data type to store
-      copy_data(sma_labels, vs_labels);
+  // ##############################################################
+  // Methods to support HDF5
+  // ##############################################################
 
-      for( auto & db : resultsDBs )
-        db->insert(iterator_id, data_name, vs_labels, metadata);
-    }
-  }
 
   /// Insert using dimension scales and attributes (DimScaleMap and 
   /// AttributeArray in dakota_results_types.hpp)
@@ -170,12 +146,7 @@ public:
               ResultsOutputType stored_type, 
               const int &num_rows, const int &num_cols,
               const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray())
-  {
-    for( auto & db : resultsDBs )
-      db->allocate_matrix(iterator_id, lvl_1_name, lvl_2_name, stored_type, num_rows, num_cols, 
-                            scales, attrs);
-  }
+              const AttributeArray &attrs = AttributeArray());
   
   /// Insert a row or column into a matrix that was pre-allocated using allocate_matrix
   template<typename StoredType>
@@ -189,6 +160,21 @@ public:
       db->insert_into_matrix(iterator_id, lvl_1_name, lvl_2_name, data, index, row);
   }
 
+
+  /// Associate key:value metadata with all the results and executions of a method
+  void add_metadata_for_method(const StrStrSizet& iterator_id,
+                               const AttributeArray &attrs);
+
+  /// Associate key:value metadata with all the results for this execution of a method
+  void add_metadata_for_execution(const StrStrSizet& iterator_id,
+                                  const AttributeArray &attrs);
+
+  // ##############################################################
+  // Methods and variables to support legacy text output
+  // ##############################################################
+
+  /// Copy of valid results names for when manager is passed around
+  ResultsNames results_names;
 
   /// allocate an entry with array of StoredType of array_size for
   /// future insertion; likely move to non-templated accessors for these
@@ -236,16 +222,24 @@ public:
     }
   }
 
-  /// Associate key:value metadata with all the results and executions of a method
-  void add_metadata_for_method(const StrStrSizet& iterator_id,
-                               const AttributeArray &attrs);
 
-  /// Associate key:value metadata with all the results for this execution of a method
-  void add_metadata_for_execution(const StrStrSizet& iterator_id,
-                                  const AttributeArray &attrs);
+  /// insert data
+  template<typename StoredType>
+  void insert(const StrStrSizet& iterator_id,
+	      const std::string& data_name,
+	      const StoredType& sent_data,
+	      const MetaDataType metadata = MetaDataType())
+  {
+    for( auto & db : resultsDBs )
+      db->insert(iterator_id, data_name, sent_data, metadata);
+  }
+  
+  // TODO: can't seem to pass SMACV by const ref...
+  void insert(const StrStrSizet& iterator_id,
+	      const std::string& data_name,
+	      StringMultiArrayConstView sma_labels,
+	      const MetaDataType metadata = MetaDataType());
 
-  /// Flush data to the database or disk, if supported
-  void flush() const;
 
 private:
 

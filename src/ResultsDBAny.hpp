@@ -35,42 +35,6 @@ public:
     ResultsDBBase( base_filename + ".txt" )
   { }
 
-  /// Add key:value metadata to method
-  void add_metadata_for_method(
-              const StrStrSizet& iterator_id,
-              const AttributeArray &attrs) override
-  {
-    return;
-  }
-
-  /// Add key:value metadata to execution
-  void add_metadata_for_execution(
-              const StrStrSizet& iterator_id,
-              const AttributeArray &attrs) override
-  {
-    return;
-  }
- 
-  /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
-  /// rows or columns using insert_into_matrix(...)
-  void allocate_matrix(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
-              ResultsOutputType stored_type, 
-              int num_rows, int num_cols,
-              const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray()) {
-      return;
-   }
-
-  /// Insert a row or column into a pre-allocated matrix 
-  void insert_into_matrix(const StrStrSizet& iterator_id,
-         const std::string& lvl_1_name,
-         const std::string& lvl_2_name,
-         const boost::any& data,
-         const int &index, const bool &row) {
-      return;
-  }
 
  
   /// record addition with metadata map
@@ -99,6 +63,45 @@ public:
   /// Write data to file
   void flush() const;
 
+
+  // ##############################################################
+  // Methods to support HDF5 (no-op for Any DB)
+  // ##############################################################
+
+
+  /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
+  /// rows or columns using insert_into_matrix(...)
+  void allocate_matrix(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              ResultsOutputType stored_type, 
+              int num_rows, int num_cols,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray()) {
+      return;
+   }
+
+  /// Insert a row or column into a pre-allocated matrix 
+  void insert_into_matrix(const StrStrSizet& iterator_id,
+         const std::string& lvl_1_name,
+         const std::string& lvl_2_name,
+         const boost::any& data,
+         const int &index, const bool &row) {
+      return;
+  }
+
+  /// Add key:value metadata to method
+  void add_metadata_for_method(
+              const StrStrSizet& iterator_id,
+              const AttributeArray &attrs) override
+  { return; }
+
+  /// Add key:value metadata to execution
+  void add_metadata_for_execution(
+              const StrStrSizet& iterator_id,
+              const AttributeArray &attrs) override
+  { return; }
+ 
 private:
 
   /// print metadata to ostream

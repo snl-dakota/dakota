@@ -153,6 +153,9 @@ public:
     hdf5Stream(new HDF5IOHelper(fileName, true))
     { }
 
+  /// Flush HDF5 cache to disk
+  void flush() const;
+
   /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
   /// rows or columns using insert_into_matrix(...)
   void allocate_matrix(const StrStrSizet& iterator_id,
@@ -171,13 +174,6 @@ public:
          const boost::any& data,
          const int &index, const bool &row);
 
-
-  /// record addition with metadata map
-  void insert(const StrStrSizet& iterator_id,
-	                const std::string& data_name,
-                        const boost::any& result,
-                        const MetaDataType& metadata) override;
-
   /// insert an arbitrary type (eg RealMatrix) with scales
   void insert(const StrStrSizet& iterator_id,
               const std::string& lvl_1_name,
@@ -194,31 +190,32 @@ public:
   /// Add attributes to the HDF5 execution group
   void add_metadata_for_execution(const StrStrSizet& iterator_id,
               const AttributeArray &attrs) override;
- 
+
+  // ##############################################################
+  // Methods to support legacy Any DB (no-op for HDF5)
+  // ##############################################################
+
+  /// record addition with metadata map
+  void insert(const StrStrSizet& iterator_id,
+	                const std::string& data_name,
+                        const boost::any& result,
+                        const MetaDataType& metadata) override
+  { return; }
+
   /// allocate an entry with sized array of the StoredType, e.g.,
   /// array across response functions or optimization results sets
   template<typename StoredType>
   void array_allocate(const StrStrSizet& iterator_id,
 		      const std::string& data_name, size_t array_size,
 		      const MetaDataType& metadata)
-  {
-    // TODO: consider whether alloc should be no-op in this case,
-    // otherwise perhaps it should use array_size and maybe even a
-    // non-default (HOW? additional args??) constructed StoredType
-    // WJB: add a dbg print msg here since NOT sure tested for 'array_size > 1'
-    return;
-  }
+  { return; }
  
   template<typename StoredType>
   void array_insert(const StrStrSizet& iterator_id,
 		    const std::string& data_name, size_t index,
 		    const StoredType& stored_data)
-  {
-    return;
-  }
+  { return; }
 
-  /// Flush HDF5 cache to disk
-  void flush() const;
 private:
 
   void attach_scales(const String &dset_name,
