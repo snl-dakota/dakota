@@ -801,6 +801,9 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
 /** printing of variance based decomposition indices. */
 void Analyzer::archive_sobol_indices() const
 {
+  if(!resultsDB.active())
+    return;
+
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
   StringMultiArrayConstView div_labels
@@ -814,7 +817,6 @@ void Analyzer::archive_sobol_indices() const
   for (k=0; k<numFunctions; ++k) {
     RealArray main_effects, total_effects;
     StringArray scale_labels;
-  
     for (i=0; i<numContinuousVars; ++i) {
       if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol) {
         main_effects.push_back(S4[k][i]);
@@ -824,20 +826,20 @@ void Analyzer::archive_sobol_indices() const
     }
     offset = numContinuousVars;
     for (i=0; i<numDiscreteIntVars; ++i) {
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol) {
+      if (std::abs(S4[k][i+offset]) > vbdDropTol || std::abs(T4[k][i+offset]) > vbdDropTol) {
         main_effects.push_back(S4[k][i+offset]);
         total_effects.push_back(T4[k][i+offset]);
-        scale_labels.push_back(div_labels[i+offset]);
+        scale_labels.push_back(div_labels[i]);
       }
     }
     offset += numDiscreteIntVars;
     //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
     //offset += numDiscreteStringVars;
     for (i=0; i<numDiscreteRealVars; ++i) {
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol) {
+      if (std::abs(S4[k][i+offset]) > vbdDropTol || std::abs(T4[k][i+offset]) > vbdDropTol) {
         main_effects.push_back(S4[k][i+offset]);
         total_effects.push_back(T4[k][i+offset]);
-        scale_labels.push_back(drv_labels[i+offset]);
+        scale_labels.push_back(drv_labels[i]);
       }
     }
     DimScaleMap scales;
