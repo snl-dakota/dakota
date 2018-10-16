@@ -67,6 +67,13 @@ public:
                                size_t num_best, size_t best_index,
                                std::ostream& s);
 
+  /// Archive residuals when calibration terms are used
+  static void archive_best_residuals(const ResultsManager &results_db, 
+                                     const StrStrSizet &iterator_id,
+                                     const int num_fns, 
+                                     const RealVector &best_terms, 
+                                     Real wssr, int best_index);
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -80,15 +87,22 @@ protected:
   //
 
   /// default constructor
-  Minimizer(std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(std::shared_ptr<TraitsBase> traits = 
+      std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard constructor
-  Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(ProblemDescDB& problem_db, Model& model, 
+      std::shared_ptr<TraitsBase> traits =
+      std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(unsigned short method_name, Model& model, 
+      std::shared_ptr<TraitsBase> traits = 
+      std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
   Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
-	    size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+	    size_t num_nln_ineq, size_t num_nln_eq, 
+            std::shared_ptr<TraitsBase> traits = 
+            std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
   ~Minimizer();
@@ -178,13 +192,31 @@ protected:
 			 const RealVector& primary_wts,
 			 RealSymMatrix& obj_hess) const;
 
-  /// allocate results arrays and labels for multipoint storage
-  void archive_allocate_best(size_t num_points);
+  /// top-level archival method
+  virtual void archive_best_results();
 
-  /// archive the best point into the results array
-  void archive_best(size_t index, 
-		    const Variables& best_vars, const Response& best_resp);
- 
+  /// allocate arrays and labels for all final solutions for vars, 
+  /// obj fncs, and constraints. This must be called BEFORE any
+  /// calls to archive_best_variables, archive_best_constraints, and
+  /// archive_best_evaluation_id.
+  void archive_allocate_best(size_t num_points) const;
+
+  /// allocate results arrays for all final soultions for residuals 
+  // and norms
+  void archive_allocate_residuals(size_t num_points) const;
+
+  /// archive best variables for the index'th final solution
+  void archive_best_variables(size_t index) const;
+
+  /// archive the index'th set of objective functions
+  void archive_best_objective_functions(size_t index) const;
+
+  /// archive the index'th set of constraints
+  void archive_best_constraints(size_t index) const;
+  
+  /// archive the evaluation id of the index'th best solution
+  void archive_best_evaluation_id(size_t index, int eval_id) const;
+
   /// Safely resize the best variables array to newsize taking into
   /// account the envelope-letter design pattern and any recasting.
   void resize_best_vars_array(size_t newsize);
@@ -195,6 +227,7 @@ protected:
 
   /// infers MOO/NLS solution from the solution of a single-objective optimizer
   void local_recast_retrieve(const Variables& vars, Response& response) const;
+
 
   //
   //- Heading: Data

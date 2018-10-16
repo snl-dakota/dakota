@@ -17,11 +17,12 @@
 #define DATA_TRANSFORM_MODEL_H
 
 #include "RecastModel.hpp"
-
+#include "dakota_results_types.hpp"
 namespace Dakota {
 
 /// forward declarations
 class ExperimentData;
+class ResultsManager;
 
 // BMA TODO: Consider using separate RecastModel to include hyper-parameters
 
@@ -62,10 +63,31 @@ public:
 
 
   /// manage best responses including residuals and model responses per config
-  void print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
+  void print_best_responses(std::ostream& s, 
+                            const Variables& best_submodel_vars,
                             const Response& best_submodel_resp,
                             size_t num_best, size_t best_ind);
 
+  /// allocate storage for best original model responses (responses not
+  /// differenced with experimental data)
+  void archive_allocate_original(ResultsManager &results_db, 
+                                 StrStrSizet &iterator_id, 
+                                 int num_best);
+
+  /// allocate storage for best residuals. There is a similar function in
+  /// the Minimizer class; that one is used when the user provided no
+  /// calibration data and the model responses are themselves residuals.
+  void archive_allocate_residuals(ResultsManager &results_db,
+                                  StrStrSizet &iterator_id,
+                                  int num_best);
+
+  /// archive best responses 
+  void archive_best_responses(const ResultsManager &results_db,
+                              const StrStrSizet iterator_id,
+                              const Variables& best_submodel_vars,
+                              const Response& best_submodel_resp,
+                              size_t num_best, size_t best_ind);
+                                
 protected:
 
   // ---
@@ -173,10 +195,25 @@ protected:
 
   void print_residual_response(const Response& resid_resp);
 
-  void recover_submodel_responses(std::ostream& s,
+  void recover_submodel_responses(std::ostream& s, 
                                   const Variables& best_submodel_vars,
                                   size_t num_best, size_t best_ind,
                                   Response& residual_resp);
+
+  /// archive original model responses
+  void archive_submodel_responses(const ResultsManager &results_db,
+                                  const StrStrSizet &iterator_id,
+                                  const Variables& best_submodel_vars,
+                                  size_t num_best, size_t best_ind,
+                                  Response& residual_resp);
+
+
+  /// Archive the best model reponses (undifferenced with experimental data) for
+  /// experiment exp_index and final solution soln_index.
+  void archive_best_original(const ResultsManager &results_db, 
+                             const StrStrSizet &iterator_id, 
+                             const RealVector &function_values, 
+                             const int &exp_index, const int &soln_index);
 
   /// Reference to the experiment data used to construct this Model
   const ExperimentData& expData;

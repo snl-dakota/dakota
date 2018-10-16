@@ -24,6 +24,8 @@
 #include "DataTransformModel.hpp"
 #include "ScalingModel.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
+#include "ExperimentData.hpp"
+
 #ifdef __SUNPRO_CC
 #include <math.h>  // for std::log
 #endif // __SUNPRO_CC
@@ -330,6 +332,7 @@ void Minimizer::initialize_run()
 
 void Minimizer::post_run(std::ostream& s)
 {
+  archive_best_results();
   if (summaryOutputFlag) {
     // Print the function evaluation summary for all Iterators
     if (!iteratedModel.is_null())
@@ -662,13 +665,19 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 }
 
 
-void Minimizer::archive_allocate_best(size_t num_points)
+void Minimizer::archive_allocate_best(size_t num_points) const
 {
+  if(!resultsDB.active()) return;
   // allocate arrays for best data (stored as a set even if only one best set)
+  const StrStrSizet &iterator_id = run_identifier();
+  const String &best_vars_label("best_parameters");
+
+  // ## Best Variables 
   if (numContinuousVars) {
+    // ##  legacy text output ##
     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.cv_labels, 
+      (iterator_id, resultsNames.cv_labels, 
        variables_results().continuous_variable_labels());
     // best variables, with labels in metadata
     MetaDataType md;
@@ -676,12 +685,21 @@ void Minimizer::archive_allocate_best(size_t num_points)
     md["Row Labels"] = 
       make_metadatavalue(variables_results().continuous_variable_labels()); 
     resultsDB.array_allocate<RealVector>
-      (run_identifier(), resultsNames.best_cv, num_points, md);
+      (iterator_id, resultsNames.best_cv, num_points, md);
+
+    // ## HDF5 output ##
+    DimScaleMap scales;
+    scales.emplace(1, StringScale("variables",
+          variables_results().continuous_variable_labels()));
+    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("continuous"),
+        ResultsOutputType::REAL, num_points, numContinuousVars, scales);
+    
   }
   if (numDiscreteIntVars) {
+    // ##  legacy text output ##
     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.div_labels, 
+      (iterator_id, resultsNames.div_labels, 
        variables_results().discrete_int_variable_labels());
     // best variables, with labels in metadata
     MetaDataType md;
@@ -689,12 +707,21 @@ void Minimizer::archive_allocate_best(size_t num_points)
     md["Row Labels"] = 
       make_metadatavalue(variables_results().discrete_int_variable_labels()); 
     resultsDB.array_allocate<IntVector>
-      (run_identifier(), resultsNames.best_div, num_points, md);
+      (iterator_id, resultsNames.best_div, num_points, md);
+
+    // ## HDF5 output ##
+    DimScaleMap scales;
+    scales.emplace(1, StringScale("variables",
+          variables_results().discrete_int_variable_labels()));
+    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("discrete_integer"),
+        ResultsOutputType::INTEGER, num_points, numDiscreteIntVars, scales);
+    
   }
   if (numDiscreteStringVars) {
+    // ##  legacy text output ##
     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.dsv_labels, 
+      (iterator_id, resultsNames.dsv_labels, 
        variables_results().discrete_string_variable_labels());
     // best variables, with labels in metadata
     MetaDataType md;
@@ -702,12 +729,20 @@ void Minimizer::archive_allocate_best(size_t num_points)
     md["Row Labels"] = 
       make_metadatavalue(variables_results().discrete_string_variable_labels()); 
     resultsDB.array_allocate<StringArray>
-      (run_identifier(), resultsNames.best_dsv, num_points, md);
+      (iterator_id, resultsNames.best_dsv, num_points, md);
+
+    // ## HDF5 output ##
+    DimScaleMap scales;
+    scales.emplace(1, StringScale("variables",
+          variables_results().discrete_string_variable_labels()));
+    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("discrete_string"),
+        ResultsOutputType::STRING, num_points, numDiscreteStringVars, scales);
   }
   if (numDiscreteRealVars) {
+    // ##  legacy text output ##
     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.drv_labels, 
+      (iterator_id, resultsNames.drv_labels, 
        variables_results().discrete_real_variable_labels());
     // best variables, with labels in metadata
     MetaDataType md;
@@ -715,11 +750,20 @@ void Minimizer::archive_allocate_best(size_t num_points)
     md["Row Labels"] = 
       make_metadatavalue(variables_results().discrete_real_variable_labels()); 
     resultsDB.array_allocate<RealVector>
-      (run_identifier(), resultsNames.best_drv, num_points, md);
+      (iterator_id, resultsNames.best_drv, num_points, md);
+
+    // ## HDF5 output ##
+    DimScaleMap scales;
+    scales.emplace(1, StringScale("variables",
+          variables_results().discrete_real_variable_labels()));
+    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("discrete_real"),
+        ResultsOutputType::REAL, num_points, numDiscreteRealVars, scales);
   }
+  // ## Best Objective functions and constraitns (calibration terms are handled separately)
+
+  // ##  legacy text output ##
   // labels
-  resultsDB.insert
-    (run_identifier(), resultsNames.fn_labels,
+  resultsDB.insert(iterator_id, resultsNames.fn_labels,
      response_results().function_labels());
   // best functions, with labels in metadata
   MetaDataType md;
@@ -727,14 +771,37 @@ void Minimizer::archive_allocate_best(size_t num_points)
   md["Row Labels"] = 
     make_metadatavalue(response_results().function_labels());
   resultsDB.array_allocate<RealVector>
-    (run_identifier(), resultsNames.best_fns, num_points, md);
+    (iterator_id, resultsNames.best_fns, num_points, md);
+
+  // ## HDF5 output ##
+  if(optimizationFlag) {
+    DimScaleMap scales;
+    scales.emplace(1, StringScale(String("objective_functions"),
+          response_results().function_labels(), 0, numUserPrimaryFns)); // subset the labels
+    resultsDB.allocate_matrix(iterator_id, String("best_objective_functions"), String(""),
+        ResultsOutputType::REAL, num_points, numUserPrimaryFns, scales);
+  }
+  if(numNonlinearConstraints) {
+    DimScaleMap scales;
+    scales.emplace(1, StringScale(String("nonlinear_constraints"),
+          response_results().function_labels(), numUserPrimaryFns, numNonlinearConstraints));
+    resultsDB.allocate_matrix(iterator_id, String("best_constraints"), String(""),
+        ResultsOutputType::REAL, num_points, numNonlinearConstraints, scales);
+  }
+
+  // ## best eval ids
+  resultsDB.allocate_vector(iterator_id, String("best_evaluation_ids"),
+      String(""), ResultsOutputType::INTEGER, num_points);
+
 }
 
-void Minimizer::
-archive_best(size_t point_index, 
-	     const Variables& best_vars, const Response& best_resp)
-{
+
+void Minimizer::archive_best_variables(size_t point_index) const {
+  if(!resultsDB.active()) return;
   // archive the best point in the iterator database
+  const Variables &best_vars = bestVariablesArray[point_index];
+  const StrStrSizet &iterator_id = run_identifier();
+  const String &best_var_string("best_parameters");
 
   if (numContinuousVars) {
     // coreDB backend which will likely be removed in the future - RWH
@@ -743,21 +810,11 @@ archive_best(size_t point_index,
        best_vars.continuous_variables());
 
     // hdf5DB backend
-    DimScaleMap scales;
-    std::vector<std::string> var_labels;
-    for( const auto& label : variables_results().continuous_variable_labels() )
-      var_labels.push_back(label);
-
-    scales.emplace(0,
-                   StringScale("Variable_Labels",
-                   var_labels,
-                   ScaleScope::SHARED));
-
-    resultsDB.insert(run_identifier(),
-                     resultsNames.cv_labels,
-                     resultsNames.best_cv,
-                     best_vars.continuous_variables(),
-                     scales);
+    resultsDB.insert_into(iterator_id,
+                                 best_var_string,
+                                 String("continuous"),
+                                 best_vars.continuous_variables(),
+                                 point_index);
   }
 
   if (numDiscreteIntVars) {
@@ -767,21 +824,11 @@ archive_best(size_t point_index,
        best_vars.discrete_int_variables());
 
     // hdf5DB backend
-    DimScaleMap scales;
-    std::vector<std::string> var_labels;
-    for( const auto& label : variables_results().discrete_int_variable_labels() )
-      var_labels.push_back(label);
-
-    scales.emplace(0,
-                   StringScale("Variable_Labels",
-                   var_labels,
-                   ScaleScope::SHARED));
-
-    resultsDB.insert(run_identifier(),
-                     resultsNames.div_labels,
-                     resultsNames.best_div,
-                     best_vars.discrete_int_variables(),
-                     scales);
+    resultsDB.insert_into(iterator_id,
+                                 best_var_string,
+                                 String("discrete_integer"),
+                                 best_vars.discrete_int_variables(),
+                                 point_index);
   }
 
   if (numDiscreteStringVars) {
@@ -791,21 +838,11 @@ archive_best(size_t point_index,
        best_vars.discrete_string_variables());
 
     // hdf5DB backend
-    DimScaleMap scales;
-    std::vector<std::string> var_labels;
-    for( const auto& label : variables_results().discrete_string_variable_labels() )
-      var_labels.push_back(label);
-
-    scales.emplace(0,
-                   StringScale("Variable_Labels",
-                   var_labels,
-                   ScaleScope::SHARED));
-
-    resultsDB.insert(run_identifier(),
-                     resultsNames.dsv_labels,
-                     resultsNames.best_dsv,
-                     best_vars.discrete_string_variables(),
-                     scales);
+    resultsDB.insert_into(iterator_id,
+                                 best_var_string,
+                                 String("discrete_string"),
+                                 best_vars.discrete_string_variables(),
+                                 point_index);
   }
 
   if (numDiscreteRealVars) {
@@ -815,46 +852,84 @@ archive_best(size_t point_index,
        best_vars.discrete_real_variables());
 
     // hdf5DB backend
-    DimScaleMap scales;
-    std::vector<std::string> var_labels;
-    for( const auto& label : variables_results().discrete_real_variable_labels() )
-      var_labels.push_back(label);
-
-    scales.emplace(0,
-                   StringScale("Variable_Labels",
-                   var_labels,
-                   ScaleScope::SHARED));
-
-    resultsDB.insert(run_identifier(),
-                     resultsNames.drv_labels,
-                     resultsNames.best_drv,
-                     best_vars.discrete_real_variables(),
-                     scales);
+    resultsDB.insert_into(iterator_id,
+                                 best_var_string,
+                                 String("discrete_real"),
+                                 best_vars.discrete_real_variables(),
+                                 point_index);
   }
+}
 
+
+void Minimizer::
+archive_best_objective_functions(size_t point_index) const
+{
+  const Response &best_resp = bestResponseArray[point_index];
+  StrStrSizet iterator_id = run_identifier();
   // coreDB-based API Results output
   resultsDB.array_insert<RealVector>
-    (run_identifier(), resultsNames.best_fns, point_index, best_resp.function_values());
+    (iterator_id, resultsNames.best_fns, point_index, best_resp.function_values());
 
   // hdf5DB-based API Results output
-  DimScaleMap scales;
-  std::vector<std::string> resp_labels;
-  for( const auto& label : response_results().function_labels() )
-    resp_labels.push_back(label);
-
-  scales.emplace(0,
-                 StringScale("Response_Labels",
-                 resp_labels,
-                 ScaleScope::SHARED));
-
-  resultsDB.insert(run_identifier(),
-                   resultsNames.fn_labels,
-                   resultsNames.best_fns,
-                   best_resp.function_values(),
-                   scales);
+  const RealVector &fvals = best_resp.function_values();
+  Teuchos::SerialDenseVector<int, Real> primary(Teuchos::View, const_cast<Real*>(&fvals[0]), numUserPrimaryFns);
+  resultsDB.insert_into(iterator_id,
+                        String("best_objective_functions"),
+                        String(""),
+                        primary,
+                        point_index);
 } 
 
+void Minimizer::
+archive_allocate_residuals(size_t num_points) const {
+  if(!resultsDB.active()) return;
+  StrStrSizet iterator_id = run_identifier();
+  resultsDB.allocate_matrix(iterator_id, String("best_residuals"), String(""),
+      ResultsOutputType::REAL, num_points, numUserPrimaryFns); 
 
+    resultsDB.allocate_vector(iterator_id, String("best_norms"), String(""),
+      ResultsOutputType::REAL, num_points); 
+}
+
+/// Archive residuals when calibration terms are used
+void Minimizer::
+archive_best_residuals(const ResultsManager &results_db, 
+                       const StrStrSizet &iterator_id,
+                       const int num_terms, 
+                       const RealVector &best_terms, 
+                       Real wssr, int best_index) {
+  if(!results_db.active()) return;
+  Teuchos::SerialDenseVector<int, Real> residuals(Teuchos::View, 
+                              const_cast<Real*>(&best_terms[0]), 
+                              num_terms);
+  results_db.insert_into(iterator_id, String("best_residuals"),
+                         String(""), residuals, best_index);
+  results_db.insert_into(iterator_id, String("best_norms"),
+                         String(""), wssr, best_index);
+}
+
+void Minimizer::
+archive_best_constraints(size_t point_index) const {
+  if(!resultsDB.active() || !numNonlinearConstraints) return;
+  const Response &best_resp = bestResponseArray[point_index];
+  const RealVector &fvals = best_resp.function_values();
+  Teuchos::SerialDenseVector<int, Real> secondary(Teuchos::View, 
+                              const_cast<Real*>(&fvals[numUserPrimaryFns]), 
+                              numNonlinearConstraints);
+  resultsDB.insert_into(run_identifier(),
+                        String("best_constraints"),
+                        String(""),
+                        secondary,
+                        point_index);
+}
+
+
+void Minimizer::
+archive_best_evaluation_id(size_t i, int eval_id) const {
+  if(!resultsDB.active()) return;
+  resultsDB.insert_into(run_identifier(), String("best_evaluation_ids"),
+      String(""), eval_id, i);
+}
 
 /** Uses data from the innermost model, should any Minimizer recasts be active.
     Called by multipoint return solvers. Do not directly call resize on the 
@@ -937,7 +1012,6 @@ sum_squared_residuals(size_t num_pri_fns, const RealVector& residuals,
 void Minimizer::print_model_resp(size_t num_pri_fns, const RealVector& best_fns,
 				 size_t num_best, size_t best_index,
 				 std::ostream& s)
-
 {
   if (num_pri_fns > 1) s << "<<<<< Best model responses "; 
   else                 s << "<<<<< Best model response "; 
@@ -969,6 +1043,84 @@ void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms,
     << std::setw(write_precision+7) << 0.5*wssr << '\n';
 }
 
+void Minimizer::archive_best_results() {
+
+  if(!resultsDB.active()) return;
+  size_t i, num_best = bestVariablesArray.size();
+  if (num_best != bestResponseArray.size()) {
+    Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  // initialize the results archive for this dataset
+  archive_allocate_best(num_best); // variables, any objective functions and constraints
+
+  StrStrSizet iterator_id = run_identifier();
+  DataTransformModel* dt_model_rep;
+  if(!optimizationFlag)
+   if(calibrationDataFlag) {
+      dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+      dt_model_rep->archive_allocate_original(resultsDB, iterator_id, num_best);
+      // delegate setting up storage for the residuals to the DTM when calibration
+      // data is present.
+      dt_model_rep->archive_allocate_residuals(resultsDB, iterator_id, num_best);
+   }
+   else
+     archive_allocate_residuals(num_best);
+
+  // must search in the inbound Model's space (and even that may not
+  // suffice if there are additional recastings underlying this
+  // Optimizer's Model) to find the function evaluation ID number
+  Model orig_model = original_model();
+  const String& interface_id = orig_model.interface_id();
+  // use asv = 1's
+  ActiveSet search_set(orig_model.num_functions(), numContinuousVars);
+  int eval_id;
+  // -------------------------------------
+  // Single and Multipoint results summary
+  // -------------------------------------
+  for (i=0; i<num_best; ++i) {
+    // output best variables
+    const Variables& best_vars = bestVariablesArray[i];
+    archive_best_variables(i);  
+    // output best response
+    // TODO: based on local_nls_recast due to SurrBasedMinimizer?
+    const RealVector& best_fns = bestResponseArray[i].function_values(); 
+    if (optimizationFlag) 
+      archive_best_objective_functions(i);
+    else {
+      if (calibrationDataFlag) {
+        // TODO: approximate models with interpolation of field data may
+        // not have recovered the correct best residuals
+        dt_model_rep->archive_best_responses(resultsDB, iterator_id, 
+                                           best_vars, bestResponseArray[i],
+                                           num_best, i);
+      }
+      else {
+        // the original model had least squares terms
+        const RealVector& lsq_weights 
+          = orig_model.primary_response_fn_weights();
+        Real wssr =  std::sqrt(sum_squared_residuals(numUserPrimaryFns, best_fns, lsq_weights));
+        archive_best_residuals(resultsDB, iterator_id, numUserPrimaryFns, best_fns, wssr, i);
+      }
+    }
+
+    if (numNonlinearConstraints)  
+      archive_best_constraints(i);
+    // lookup evaluation id where best occurred.  This cannot be catalogued
+    // directly because the optimizers track the best iterate internally and
+    // return the best results after iteration completion.  Therfore, perform a
+    // search in data_pairs to extract the evalId for the best fn eval.
+    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
+                                           best_vars, search_set);
+    if (cache_it == data_pairs.get<hashed>().end()) 
+      eval_id = 0;
+    else 
+      eval_id = cache_it->eval_id();
+    archive_best_evaluation_id(i, eval_id);
+  }
+}
 
 /** Retrieve a MOO/NLS response based on the data returned by a single
     objective optimizer by performing a data_pairs search. This may
@@ -990,5 +1142,6 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   else
     response.update(cache_it->response());
 }
+
 
 } // namespace Dakota

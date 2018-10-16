@@ -775,26 +775,32 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
   for (k=0; k<numFunctions; ++k) {
     s << resp_labels[k] << " Sobol' indices:\n"; 
     s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
-    
-    for (i=0; i<numContinuousVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
-        s << "                     " << std::setw(write_precision+7) << S4[k][i]
-	  << ' ' << std::setw(write_precision+7) << T4[k][i] << ' '
+    Real main, total; 
+    for (i=0; i<numContinuousVars; ++i) {
+      main = S4[k][i]; total = T4[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
+        s << "                     " << std::setw(write_precision+7) << main
+	  << ' ' << std::setw(write_precision+7) << total << ' '
 	  << cv_labels[i] << '\n';
+    }
     offset = numContinuousVars;
-    for (i=0; i<numDiscreteIntVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
+    for (i=0; i<numDiscreteIntVars; ++i) {
+      main = S4[k][i+offset]; total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
-	  << T4[k][i+offset] << ' ' << div_labels[i] << '\n';
+	  << main << ' ' << std::setw(write_precision+7)
+	  << total << ' ' << div_labels[i] << '\n';
+    }
     offset += numDiscreteIntVars;
     //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
     //offset += numDiscreteStringVars;
-    for (i=0; i<numDiscreteRealVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
+    for (i=0; i<numDiscreteRealVars; ++i) {
+      main = S4[k][i+offset]; total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
-          << T4[k][i+offset] << ' ' << drv_labels[i] << '\n';
+	  << main << ' ' << std::setw(write_precision+7)
+          << total << ' ' << drv_labels[i] << '\n';
+    }
   }
 }
 
@@ -818,17 +824,19 @@ void Analyzer::archive_sobol_indices() const
     RealArray main_effects, total_effects;
     StringArray scale_labels;
     for (i=0; i<numContinuousVars; ++i) {
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol) {
-        main_effects.push_back(S4[k][i]);
-        total_effects.push_back(T4[k][i]);
+      Real main = S4[k][i], total = T4[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
         scale_labels.push_back(cv_labels[i]);
       }
     }
     offset = numContinuousVars;
     for (i=0; i<numDiscreteIntVars; ++i) {
-      if (std::abs(S4[k][i+offset]) > vbdDropTol || std::abs(T4[k][i+offset]) > vbdDropTol) {
-        main_effects.push_back(S4[k][i+offset]);
-        total_effects.push_back(T4[k][i+offset]);
+      Real main = S4[k][i+offset], total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
         scale_labels.push_back(div_labels[i]);
       }
     }
@@ -836,9 +844,10 @@ void Analyzer::archive_sobol_indices() const
     //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
     //offset += numDiscreteStringVars;
     for (i=0; i<numDiscreteRealVars; ++i) {
-      if (std::abs(S4[k][i+offset]) > vbdDropTol || std::abs(T4[k][i+offset]) > vbdDropTol) {
-        main_effects.push_back(S4[k][i+offset]);
-        total_effects.push_back(T4[k][i+offset]);
+      Real main = S4[k][i+offset], total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
         scale_labels.push_back(drv_labels[i]);
       }
     }

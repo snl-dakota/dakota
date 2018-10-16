@@ -68,21 +68,32 @@ public:
   // Methods to support HDF5 (no-op for Any DB)
   // ##############################################################
 
+  /// Pre-allocate a vector and (optionally) attach dimension scales and attributes. Insert
+  /// elements using insert_into(...)
+  void allocate_vector(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              ResultsOutputType stored_type, 
+              const int &len,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray()) {
+      return;
+   }
 
   /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
-  /// rows or columns using insert_into_matrix(...)
+  /// rows or columns using insert_into(...)
   void allocate_matrix(const StrStrSizet& iterator_id,
               const std::string& lvl_1_name,
               const std::string& lvl_2_name,
               ResultsOutputType stored_type, 
-              int num_rows, int num_cols,
+              const int &num_rows, const int &num_cols,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray()) {
       return;
    }
 
   /// Insert a row or column into a pre-allocated matrix 
-  void insert_into_matrix(const StrStrSizet& iterator_id,
+  void insert_into(const StrStrSizet& iterator_id,
          const std::string& lvl_1_name,
          const std::string& lvl_2_name,
          const boost::any& data,

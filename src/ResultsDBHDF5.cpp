@@ -58,11 +58,25 @@ String dataset_hdf5_link_name(const StrStrSizet& iterator_id,
   return rval;
 }
 
+void ResultsDBHDF5::allocate_vector(const StrStrSizet& iterator_id,
+              const std::string& lvl_1_name,
+              const std::string& lvl_2_name,
+              ResultsOutputType stored_type, 
+              const int &len,
+              const DimScaleMap &scales,
+              const AttributeArray &attrs) {
+  String dset_name = dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
+  IntArray dims = {len};
+  hdf5Stream->add_empty_dataset(dset_name, dims, stored_type);
+  attach_scales(dset_name, iterator_id, lvl_1_name, lvl_2_name, scales);
+  add_attributes(dset_name, attrs);
+} 
+
 void ResultsDBHDF5::allocate_matrix(const StrStrSizet& iterator_id,
               const std::string& lvl_1_name,
               const std::string& lvl_2_name,
               ResultsOutputType stored_type, 
-              int num_rows, int num_cols,
+              const int &num_rows, const int &num_cols,
               const DimScaleMap &scales,
               const AttributeArray &attrs) {
   String dset_name = dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
@@ -74,7 +88,7 @@ void ResultsDBHDF5::allocate_matrix(const StrStrSizet& iterator_id,
 
 /// Insert a row or column into a pre-allocated matrix 
 void ResultsDBHDF5:: 
-insert_into_matrix(const StrStrSizet& iterator_id,
+insert_into(const StrStrSizet& iterator_id,
          const std::string& lvl_1_name,
          const std::string& lvl_2_name,
          const boost::any& data,
@@ -85,15 +99,18 @@ insert_into_matrix(const StrStrSizet& iterator_id,
   // Need to fix this to use incoming "data"
   if (data.type() == typeid(std::vector<double>)) {
     hdf5Stream->store_row_or_column(dset_name, boost::any_cast<std::vector<double> >(data), index, row);
-  }
-  else if (data.type() == typeid(RealVector)) {
+  } else if (data.type() == typeid(RealVector)) {
     hdf5Stream->store_row_or_column(dset_name, boost::any_cast<RealVector >(data), index, row);
-  }
-  else if (data.type() == typeid(IntVector)) {
+  } else if (data.type() == typeid(IntVector)) {
     hdf5Stream->store_row_or_column(dset_name, boost::any_cast<IntVector >(data), index, row);
-  }
-  else if (data.type() == typeid(StringMultiArrayConstView)) {
+  } else if (data.type() == typeid(StringMultiArrayConstView)) {
     hdf5Stream->store_row_or_column(dset_name, boost::any_cast<StringMultiArrayConstView>(data), index, row);
+  } else if (data.type() == typeid(Real)) {
+    hdf5Stream->store_element(dset_name, boost::any_cast<Real>(data), index);
+  } else if (data.type() == typeid(int)) {
+    hdf5Stream->store_element(dset_name, boost::any_cast<int>(data), index);
+  } else if (data.type() == typeid(String)) {
+    hdf5Stream->store_element(dset_name, boost::any_cast<String>(data), index);
   } else {
     Cerr << "Warning: dset " << dset_name << " of unknown type of any: " << data.type().name()
          << std::endl;

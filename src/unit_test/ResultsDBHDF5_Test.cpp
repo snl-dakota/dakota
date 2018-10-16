@@ -56,7 +56,7 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
   TEST_ASSERT( helper.exists("/methods/sampling") );
 }
 
-TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into_matrix) {
+TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into) {
   // TODO: This is not a very good test, yet. It passes if no exceptions are throw, but it doesn't read
   // the matrices back in to confirm that they were written correctly.
   std::string database_name = "database_3";
@@ -71,24 +71,31 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into_matrix) {
   for(int i = 0; i < 4; ++i)
     row2[i] = double(i) + 9.0;
 
-  Dakota::DimScaleMap scales;
-  scales.emplace(0, Dakota::StringScale("dim_0_test", {"a", "scale", "test"}));
-  scales.emplace(1, Dakota::StringScale("dim_1_test", {"do", "re", "me", "fa"}));
+  Dakota::DimScaleMap m_scales;
+  m_scales.emplace(0, Dakota::StringScale("dim_0_test", {"a", "scale", "test"}));
+  m_scales.emplace(1, Dakota::StringScale("dim_1_test", {"do", "re", "me", "fa"}));
 
   Dakota::AttributeArray attrs;
   attrs.push_back(Dakota::ResultAttribute<int>("samples", 5));
 
   results_manager.allocate_matrix(iterator_id, std::string("row_result"), std::string(""),
-    Dakota::ResultsOutputType::REAL, 3, 4, scales, attrs);
-  results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row0, 0); 
-  results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row1, 1); 
-  results_manager.insert_into_matrix(iterator_id, std::string("row_result"), std::string(""), row2, 2); 
+    Dakota::ResultsOutputType::REAL, 3, 4, m_scales, attrs);
+  results_manager.insert_into(iterator_id, std::string("row_result"), std::string(""), row0, 0); 
+  results_manager.insert_into(iterator_id, std::string("row_result"), std::string(""), row1, 1); 
+  results_manager.insert_into(iterator_id, std::string("row_result"), std::string(""), row2, 2); 
   
   results_manager.allocate_matrix(iterator_id, std::string("column_result"), std::string(""),
     Dakota::ResultsOutputType::REAL, 4,3);
-  results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row0, 0, false); 
-  results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row1, 1, false); 
-  results_manager.insert_into_matrix(iterator_id, std::string("column_result"), std::string(""), row2, 2, false); 
+  results_manager.insert_into(iterator_id, std::string("column_result"), std::string(""), row0, 0, false); 
+  results_manager.insert_into(iterator_id, std::string("column_result"), std::string(""), row1, 1, false); 
+  results_manager.insert_into(iterator_id, std::string("column_result"), std::string(""), row2, 2, false); 
+
+  Dakota::DimScaleMap v_scale;
+  v_scale.emplace(0, Dakota::RealScale("a_scale", {1.0, 2.0, 3.0}));
+  results_manager.allocate_vector(iterator_id, std::string("vector_result"), std::string(""),
+      Dakota::ResultsOutputType::REAL, 3, v_scale);
+  for(int i = 0; i < 3; ++i)
+    results_manager.insert_into(iterator_id, std::string("vector_result"), std::string(""), double(i+5), i);
 }
 #endif
 // #endif // comment to make this file active

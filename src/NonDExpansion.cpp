@@ -2197,7 +2197,8 @@ void NonDExpansion::archive_sobol_indices() {
 
   // this fn called if vbdFlag and prints per resp fn if
   // expansion_coefficient_flag and non-negligible variance
- 
+  if(!resultsDB.active()) return;
+
   const StringArray& fn_labels = iteratedModel.response_labels();
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();

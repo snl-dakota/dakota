@@ -1422,6 +1422,8 @@ void NonDSampling::
 archive_moments(const RealMatrix& moment_stats, short moments_type,
 		const StringArray& labels)
 {
+  if(!resultsDB.active())
+    return;
   // archive the moments to results DB
   MetaDataType md_moments;
   md_moments["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?
@@ -1456,6 +1458,8 @@ archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
 				    short moments_type,
 				    const StringArray& labels)
 {
+  if(!resultsDB.active())
+    return;
   // archive the confidence intervals to results DB
   MetaDataType md;
   md["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?

@@ -20,6 +20,7 @@
 #include "dakota_data_types.hpp"
 #include <boost/any.hpp>
 #include <boost/variant.hpp>
+#include <iostream>
 
 namespace Dakota {
 
@@ -239,43 +240,56 @@ struct RealScale {
   RealScale(const std::string &label, const RealVector &in_items, 
           ScaleScope scope = ScaleScope::UNSHARED) : 
           label(label), scope(scope) {
-            items = RealVector(Teuchos::View, 
-                *const_cast<RealVector*>(&in_items));
-            numCols = items.length();
-            isMatrix = false;
-          }
+    items = RealVector(Teuchos::View, *const_cast<RealVector*>(&in_items));
+    numCols = items.length();
+    isMatrix = false;
+  }
 
   /// Constructor that takes a RealArray
   RealScale(const std::string &label, const RealArray &in_items, 
           ScaleScope scope = ScaleScope::UNSHARED) : 
           label(label), scope(scope) {
-            items = RealVector(Teuchos::View, 
-                const_cast<Real*>(in_items.data()),
-                in_items.size());
-            numCols = items.length();
-            isMatrix = false;
-          }
+    items = RealVector(Teuchos::View, const_cast<Real*>(in_items.data()),
+        in_items.size());
+    numCols = items.length();
+    isMatrix = false;
+  }
 
-  // Constructor that takes a C-style array
+  /// Constructor that takes a C-style array
   RealScale(const std::string &label, const Real in_items[], 
           ScaleScope scope = ScaleScope::UNSHARED) : 
           label(label), scope(scope) {
-            int len = sizeof(in_items)/sizeof(in_items[0]);
-            items = RealVector(Teuchos::View,
-                const_cast<Real*>(in_items), len);
-            numCols = items.length();
-            isMatrix = false;
-          }
+    int len = sizeof(in_items)/sizeof(in_items[0]);
+    items = RealVector(Teuchos::View,
+        const_cast<Real*>(in_items), len);
+    numCols = items.length();
+    isMatrix = false;
+  }
 
-  // Constructor that takes a pointer to Real and length
+  /// Constructor that takes a pointer to Real and length
   RealScale(const std::string &label, const Real *in_items, const int len,
           ScaleScope scope = ScaleScope::UNSHARED) : 
           label(label), scope(scope) {
-            items = RealVector(Teuchos::View,
-                const_cast<Real*>(in_items), len);
-            numCols = items.length();
-            isMatrix = false;
-          }
+    items = RealVector(Teuchos::View,
+        const_cast<Real*>(in_items), len);
+    numCols = items.length();
+    isMatrix = false;
+  }
+
+  /// Constructor that takes an initializer_list.
+  RealScale(const std::string & in_label, 
+        std::initializer_list<Real> in_items,
+        ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    int len = in_items.size();
+    items = RealVector(len);
+    // make a copy. Typically initializer_lists should be short, so this
+    // is excusable.
+    std::copy(in_items.begin(), in_items.end(), &items[0]); 
+    scope = in_scope;
+    numCols = len;
+    isMatrix = false;
+  }
 
   // Name of the scale
   std::string label;
@@ -340,6 +354,32 @@ struct StringScale {
     isMatrix = false;
   }
 
+  /// Constructor that takes a StringMultiArrayConstView
+   StringScale(const std::string & in_label, 
+        const StringMultiArrayConstView in_items,
+        ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    for( const auto & s: in_items)
+      items.push_back(s.c_str());
+    scope = in_scope;
+    numCols = items.size();
+    isMatrix = false;
+  }
+
+  /// Constructor that takes indexes into a StringArray
+  StringScale(const std::string& in_label, const std::vector<String> &in_items,
+          const size_t first, const size_t num, 
+          ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    scope = in_scope;
+    items.resize(num);
+    for(int i = first, j = 0; i < first+num; ++i, ++j)
+      items[j] = in_items[i].c_str();
+    numCols = items.size();
+    isMatrix = false;
+  }
+
+
   /// Constructor that takes a vector<vector<const char *> > to produce a 2D scale
   StringScale(const std::string & in_label,
       std::vector<std::vector<const char *> > in_items,
@@ -356,6 +396,8 @@ struct StringScale {
     scope = in_scope;
     isMatrix = true;
   }
+
+
 
   /// Scale label
   std::string label;

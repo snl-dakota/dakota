@@ -330,11 +330,35 @@ class HDF5IOHelper
   }
 
   template<typename T>
+  void store_element(const String &dset_name, const T &data, const int &index) {
+    // 1. open the dataset
+    // 2. discover the rank (must be 1) and dimensions (must be > index)
+    // 3. Select the elements in the memory and file dataspaces
+    // 4. write
+    H5::DataSet ds = filePtr->openDataSet(dset_name);
+    H5::DataSpace f_space = ds.getSpace();
+    if(f_space.getSimpleExtentNdims() != 1)
+      throw std::runtime_error(String("Attempt to insert element into a non-1D datasset ") +
+                                 dset_name + " failed");
+    hsize_t dim;
+    f_space.getSimpleExtentDims(&dim);
+    if(index < 0 || index >= dim)
+      throw std::runtime_error(String("Attempt to insert element into ") + dset_name +
+                                 " failed; requested index is " + std::to_string(index) +
+                                 " but must be > 0 and < " + std::to_string(dim));
+    hsize_t f_coords[1][1] = {{hsize_t(index)}};
+    f_space.selectElements(H5S_SELECT_SET, 1, &f_coords[0][0]);
+    hsize_t m_coords[1][1]= {{0}};
+    H5::DataSpace m_space;  // memory dataspace (scalar)
+    ds.write(&data, h5_mem_dtype(data), m_space, f_space);
+  }
+
+  template<typename T>
   void store_row_or_column(const String &dset_name, const T &data, const int &index, const bool &row) {
     // 1. open the dataset
     // 2. discover the rank (must be 2) and dimensions
     // 3. Raise an error if the dimensions of the dataset and the data don't match
-    // 4. create hyperslab to write a row or column
+    // 4. create hyperslabs for the memory and file to write a row or column
     // 5. Write
     H5::DataSet ds = filePtr->openDataSet(dset_name);
     H5::DataSpace f_space = ds.getSpace();
@@ -345,16 +369,29 @@ class HDF5IOHelper
     f_space.getSimpleExtentDims(dims);
     int len = length(data); // length is a free function defined in HDF5_IO.hpp that is 
                             // overloaded/templated to return the length of SDVs and std::vectors
-    if(row && dims[1] != len)
-      throw std::runtime_error(String("Attempt to insert row into  ") + 
-                                 dset_name + " failed; length of data is " + 
-                                 std::to_string(len) + " and number of DS columns is " + 
-                                 std::to_string(dims[1]) );
-    else if(!row && dims[0] != len) 
-      throw std::runtime_error(String("Attempt to insert column into  ") + 
-                                 dset_name + " failed; length of data is " + 
-                                 std::to_string(len) + " and number of DS rows is " + 
-                                 std::to_string(dims[0]) );
+    if(row) {
+      if(dims[1] != len)
+        throw std::runtime_error(String("Attempt to insert row into  ") + 
+                                   dset_name + " failed; length of data is " + 
+                                   std::to_string(len) + " and number of DS columns is " + 
+                                   std::to_string(dims[1]) );
+      else if(index >= dims[0] || index < 0)
+        throw std::runtime_error(String("Attempt to insert row into ") +
+                                   dset_name + " failed; requested index is " + 
+                                   std::to_string(index) + " but must be > 0 and < " +
+                                   std::to_string(dims[0]));
+    } else { 
+      if(dims[0] != len)
+        throw std::runtime_error(String("Attempt to insert column into  ") + 
+                                   dset_name + " failed; length of data is " + 
+                                   std::to_string(len) + " and number of DS rows is " + 
+                                   std::to_string(dims[0]) );
+      else if(index >= dims[1] || index < 0)
+        throw std::runtime_error(String("Attempt to insert column into  ") + 
+                                   dset_name + " failed; requested index is " + 
+                                   std::to_string(index) + " but must be > 0 and < " +
+                                   std::to_string(dims[1]));
+    }
     hsize_t f_count[2], f_start[2], m_dim[1]; // f_count and f_start are used to index into the
                                               // dataset. m_dim is the dimension of the data in memory
     m_dim[0] = len;
@@ -389,14 +426,11 @@ class HDF5IOHelper
     H5::DataSpace dataspace;
     H5O_type_t type = filePtr->childObjType(location.c_str());
     if(type == H5O_TYPE_GROUP) {
-      Cout << location << " is a group" << std::endl;
       H5::Group group = filePtr->openGroup(location);
       H5::Attribute attr =
         group.createAttribute(label, h5_file_dtype(value), dataspace);
       attr.write(h5_mem_dtype(value), &value);
     } else if(type == H5O_TYPE_DATASET) {
-      Cout << location << " is a dataset" << std::endl;
-      Cout << "Attribute is (" << label << ", " << value << ")\n";
       H5::DataSet dataset = filePtr->openDataSet(location);
       H5::Attribute attr =
         dataset.createAttribute(label, h5_file_dtype(value), dataspace);
