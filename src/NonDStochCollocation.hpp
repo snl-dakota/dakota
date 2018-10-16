@@ -83,6 +83,11 @@ protected:
   //- Heading: Member functions
   //
 
+  /// helper function to compute deltaRespVariance
+  void compute_delta_variance(bool update_ref, bool print_metric);
+  /// helper function to compute deltaRespCovariance
+  void compute_delta_covariance(bool update_ref, bool print_metric);
+
   /// configure u_space_sampler based on numerical integration specification
   void config_integration(unsigned short quad_order, unsigned short ssg_level,
 			  const RealVector& dim_pref, short u_space_type, 
@@ -97,9 +102,17 @@ protected:
 private:
 
   //
+  //- Heading: Utility functions
+  //
+
+  //
   //- Heading: Data
   //
 
+  /// change in (DIAGONAL) response variance induced by a refinement candidate
+  RealVector deltaRespVariance;
+  /// change in (FULL) response covariance induced by a refinement candidate
+  RealSymMatrix deltaRespCovariance;
 };
 
 } // namespace Dakota

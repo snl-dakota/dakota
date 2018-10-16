@@ -368,81 +368,118 @@ void NonDStochCollocation::initialize_u_space_model()
 }
 
 
+void NonDStochCollocation::
+compute_delta_variance(bool update_ref, bool print_metric)
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+
+  if (deltaRespVariance.empty())
+    deltaRespVariance.sizeUninitialized(numFunctions);
+  for (size_t i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag()) {
+      if (statsType == COMBINED_EXPANSION_STATS)
+	// refinement assessed for impact on combined expansion from roll up
+	deltaRespVariance[i] = (all_vars) ?
+	  pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_i) :
+	  pa_rep_i->delta_combined_covariance(pa_rep_i);
+      else // refinement assessed for impact on the current expansion
+	deltaRespVariance[i] = (all_vars) ?
+	  pa_rep_i->delta_covariance(initialPtU, pa_rep_i) :
+	  pa_rep_i->delta_covariance(pa_rep_i);
+    }
+    else
+      { warn_flag = true; deltaRespVariance[i] = 0.; }
+  }
+
+  if (update_ref)   respVariance += deltaRespVariance;
+  if (print_metric) print_variance(Cout, deltaRespVariance, "Change in");
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDMultilevel"
+	 << "StochCollocation::compute_delta_variance().\n         "
+	 << "Zeroing affected deltaRespVariance terms." << std::endl;
+}
+
+
+void NonDStochCollocation::
+compute_delta_covariance(bool update_ref, bool print_metric)
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  size_t i, j;
+
+  if (deltaRespCovariance.empty())
+    deltaRespCovariance.shapeUninitialized(numFunctions);
+  for (i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag())
+      for (j=0; j<=i; ++j) {
+	PecosApproximation* pa_rep_j
+	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	if (pa_rep_j->expansion_coefficient_flag()) {
+	  if (statsType == COMBINED_EXPANSION_STATS)
+	    // refinement assessed for impact on combined exp from roll up
+	    deltaRespCovariance(i,j) = (all_vars) ?
+	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_combined_covariance(pa_rep_j);
+	  else // refinement assessed for impact on the current expansion
+	    deltaRespCovariance(i,j) = (all_vars) ?
+	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_covariance(pa_rep_j);
+	}
+	else
+	  { warn_flag = true; deltaRespCovariance(i,j) = 0.; }
+      }
+    else {
+      warn_flag = true;
+      for (j=0; j<=i; ++j)
+	deltaRespCovariance(i,j) = 0.;
+    }
+  }
+
+  if (update_ref)   respCovariance += deltaRespCovariance;
+  if (print_metric) print_covariance(Cout, deltaRespCovariance, "Change in");
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDMultilevel"
+	 << "StochCollocation::compute_delta_covariance().\n         "
+	 << "Zeroing affected deltaRespCovariance terms." << std::endl;
+}
+
+
 Real NonDStochCollocation::
 compute_covariance_metric(bool revert, bool print_metric)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
 
-    size_t i, j;
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    bool warn_flag = false, update_ref = !revert,
-      all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-      //compute_ref = (relativeMetric || update_ref);
-    for (i=0; i<numFunctions; ++i) {
-      PecosApproximation* pa_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (!pa_rep_i->expansion_coefficient_flag())
-	{ warn_flag = true; break; }
-    }
-    if (warn_flag)
-      Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
-	   << "Collocation::compute_covariance_metric().\n         "
-	   << "Zeroing affected delta_covariance terms." << std::endl;
+    // Hierarchical SC does not require roll-up of expansion contributions in
+    // order to compute change in covariance
+    //metric_roll_up();
 
-    Real scale, delta_norm;
+    Real scale, delta_norm;  bool update_ref = !revert;
     switch (covarianceControl) {
     case DIAGONAL_COVARIANCE: {
-      RealVector delta_resp_var(numFunctions, false);
-      for (i=0; i<numFunctions; ++i) {
-	PecosApproximation* pa_rep_i
-	  = (PecosApproximation*)poly_approxs[i].approx_rep();
-	if (pa_rep_i->expansion_coefficient_flag())
-	  delta_resp_var[i] = (all_vars) ?
-	    pa_rep_i->delta_covariance(initialPtU, pa_rep_i) :
-	    pa_rep_i->delta_covariance(pa_rep_i);
-	else delta_resp_var[i] = 0.;
-      }
-
-      delta_norm = delta_resp_var.normFrobenius();
-      if (relativeMetric) // reference covariance, bounded from zero
+      compute_delta_variance(update_ref, print_metric);
+      delta_norm = deltaRespVariance.normFrobenius();
+      if (relativeMetric) // norm of reference variance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
-      // reference covariance gets restored in NonDExpansion::increment_sets()
-      if (update_ref)   respVariance += delta_resp_var;
-      if (print_metric) print_variance(Cout, delta_resp_var, "Change in");
       break;
     }
     case FULL_COVARIANCE: {
-      RealSymMatrix delta_resp_covar(numFunctions, false);
-      for (i=0; i<numFunctions; ++i) {
-	PecosApproximation* pa_rep_i
-	  = (PecosApproximation*)poly_approxs[i].approx_rep();
-	if (pa_rep_i->expansion_coefficient_flag())
-	  for (j=0; j<=i; ++j) {
-	    PecosApproximation* pa_rep_j
-	      = (PecosApproximation*)poly_approxs[j].approx_rep();
-	    if (pa_rep_j->expansion_coefficient_flag())
-	      delta_resp_covar(i,j) = (all_vars) ?
-		pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
-		pa_rep_i->delta_covariance(pa_rep_j);
-	    else delta_resp_covar(i,j) = 0.;
-	  }
-	else
-	  for (j=0; j<=i; ++j)
-	    delta_resp_covar(i,j) = 0.;
-      }
-
+      compute_delta_covariance(update_ref, print_metric);
       // Metric scale is determined from reference covariance.  While defining
       // the scale from an updated covariance would eliminate problems with
       // zero covariance for adaptations from level 0, different refinement
       // candidates would score equally at 1 (induced 100% of change in
       // updated covariance) in this initial set of candidates.  Therefore,
       // use reference covariance as the scale and trap covariance underflows.
-      delta_norm = delta_resp_covar.normFrobenius();
-      if (relativeMetric) // reference covariance, bounded from zero
+      delta_norm = deltaRespCovariance.normFrobenius();
+      if (relativeMetric) // norm of reference covariance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
-      // reference covariance gets restored in NonDExpansion::increment_sets()
-      if (update_ref)   respCovariance += delta_resp_covar;
-      if (print_metric) print_covariance(Cout, delta_resp_covar, "Change in");
       break;
     }
     }
