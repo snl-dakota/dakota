@@ -193,7 +193,7 @@ public:
 // -----------------------------------------------------------------
 /** DakotaROLObjective is derived from the ROL objective class.
     It overrides the member functions to provide Dakota-specific
-    implementations of function and gradient evaluations. */ 
+    implementations of function evaluations. */ 
 
 class DakotaROLObjective : public ROL::StdObjective<Real>
 {
@@ -215,11 +215,6 @@ public:
   Real value(const std::vector<Real> &x,
 	     Real &tol) override;
 
-  /// Function to return the response gradient to ROL
-  void gradient(std::vector<Real> &g,
-		const std::vector<Real> &x,
-		Real &tol) override;
-
   //
   //- Heading: Data
   //
@@ -236,7 +231,42 @@ private:
 
 
 // -----------------------------------------------------------------
-/** DakotaROLObjectiveHess is derived from DakotaROLObjective.  It
+/** DakotaROLObjectiveGrad is derived from DakotaROLObjective.  It
+    implements overrides of ROL member functions to provide a
+    Dakota-specific Gradient support for the objective function. This
+    separate class is needed to allow for the option of utilizing
+    ROL's finite-differenced gradients */ 
+
+class DakotaROLObjectiveGrad : public DakotaROLObjective
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// Constructor
+  DakotaROLObjectiveGrad(Model & model);
+
+  /// Destructor
+  virtual ~DakotaROLObjectiveGrad() { }
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  /// Function to return the response gradient to ROL
+  void gradient(std::vector<Real> &g,
+    const std::vector<Real> &x,
+    Real &tol) override;
+
+private:
+
+}; // class DakotaROLObjectiveGrad
+
+
+// -----------------------------------------------------------------
+/** DakotaROLObjectiveHess is derived from DakotaROLObjectiveGrad. It
     implements overrides of ROL member functions to provide a
     Dakota-specific implementation of a Hessian-vector product.  This
     separate class is needed (rather than putting the product into
@@ -244,7 +274,7 @@ private:
     against calling the Hessian-vector product in cases where there
     is not actually a Hessian provided. */ 
 
-class DakotaROLObjectiveHess : public DakotaROLObjective
+class DakotaROLObjectiveHess : public DakotaROLObjectiveGrad
 {
 public:
 
@@ -285,8 +315,7 @@ private:
 /** DakotaROLIneqConstraints is derived from the ROL constraint
     class.  It overrides the member functions to provide
     Dakota-specific implementations of inequality constraint
-    evaluation and the application of the inequality constraint
-    Jacobian to a vector. */
+    evaluation. */
 
 class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
 {
@@ -306,22 +335,8 @@ public:
 
   /// Function to return the constraint value to ROL
   void value(std::vector<Real> &c,
-	     const std::vector<Real> &x,
-	     Real &tol) override;
-
-  /// Function to return the result of applying the constraint
-  /// gradient on an arbitrary vector to ROL
-  void applyJacobian(std::vector<Real> &jv,
-		     const std::vector<Real> &v,
-		     const std::vector<Real> &x,
-		     Real &tol) override;
-
-  /// Function to return the result of applying the constraint adjoint
-  /// to an arbitrary vector to ROL
-  void applyAdjointJacobian(std::vector<Real> &ajv,
-			    const std::vector<Real> &v,
-			    const std::vector<Real> &x,
-			    Real &tol) override;
+       const std::vector<Real> &x,
+       Real &tol) override;
 
 protected:
 
@@ -342,8 +357,53 @@ protected:
 
 
 // -----------------------------------------------------------------
-/** DakotaROLIneqConstraintsHess is derived from
+/** DakotaROLIneqConstraintsGrad is derived from
     DakotaROLIneqConstraints.  It implements overrides of ROL member
+    functions to provide a Dakota-specific application of the
+    inequality constraint Jacobian to a vector.  This
+    separate class is needed to allow for the option of utilizing
+    ROL's finite-differenced gradients */
+
+class DakotaROLIneqConstraintsGrad : public DakotaROLIneqConstraints
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// Constructor
+  DakotaROLIneqConstraintsGrad(Model & model);
+
+  /// Destructor
+  virtual ~DakotaROLIneqConstraintsGrad() { }
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  /// Function to return the result of applying the constraint
+  /// gradient on an arbitrary vector to ROL
+  void applyJacobian(std::vector<Real> &jv,
+         const std::vector<Real> &v,
+         const std::vector<Real> &x,
+         Real &tol) override;
+
+  /// Function to return the result of applying the constraint adjoint
+  /// to an arbitrary vector to ROL
+  void applyAdjointJacobian(std::vector<Real> &ajv,
+          const std::vector<Real> &v,
+          const std::vector<Real> &x,
+          Real &tol) override;
+
+private:
+
+}; // class DakotaROLIneqConstraintsGrad
+
+
+// -----------------------------------------------------------------
+/** DakotaROLIneqConstraintsHess is derived from
+    DakotaROLIneqConstraintsGrad.  It implements overrides of ROL member
     functions to provide a Dakota-specific implementation of a adjoint
     Hessian-vector product for inequality constraints.  This separate
     class is needed (rather than putting the product into
@@ -351,7 +411,7 @@ protected:
     protect against calling the adjoint Hessian-vector product in
     cases where there is not actually a Hessian provided. */
 
-class DakotaROLIneqConstraintsHess : public DakotaROLIneqConstraints
+class DakotaROLIneqConstraintsHess : public DakotaROLIneqConstraintsGrad
 {
 public:
 
@@ -409,20 +469,6 @@ public:
 	     const std::vector<Real> &x,
 	     Real &tol) override;
 
-  /// Function to return the result of applying the constraint
-  /// gradient to an arbitrary vector to ROL
-  void applyJacobian(std::vector<Real> &jv,
-		     const std::vector<Real> &v,
-		     const std::vector<Real> &x,
-		     Real &tol) override;
-
-  /// Function to return the result of applying the constraint adjoint
-  /// to an arbitrary vector to ROL
-  void applyAdjointJacobian(std::vector<Real> &ajv,
-			    const std::vector<Real> &v,
-			    const std::vector<Real> &x,
-			    Real &tol) override;
-
 protected:
 
   //
@@ -442,8 +488,57 @@ protected:
 
 
 // -----------------------------------------------------------------
-/** DakotaROLEqConstraintsHess is derived from
+/** DakotaROLEqConstraintsGrad is derived from
     DakotaROLEqConstraints.  It implements overrides of ROL member
+    functions to provide a Dakota-specific application of the
+    inequality constraint Jacobian to a vector.  This
+    separate class is needed to allow for the option of utilizing
+    ROL's finite-differenced gradients */
+
+class DakotaROLEqConstraintsGrad : public DakotaROLEqConstraints
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// Constructor
+  DakotaROLEqConstraintsGrad(Model & model);
+
+  /// Destructor
+  virtual ~DakotaROLEqConstraintsGrad() { }
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  /// Function to return the result of applying the constraint
+  /// gradient to an arbitrary vector to ROL
+  void applyJacobian(std::vector<Real> &jv,
+         const std::vector<Real> &v,
+         const std::vector<Real> &x,
+         Real &tol) override;
+
+  /// Function to return the result of applying the constraint adjoint
+  /// to an arbitrary vector to ROL
+  void applyAdjointJacobian(std::vector<Real> &ajv,
+          const std::vector<Real> &v,
+          const std::vector<Real> &x,
+          Real &tol) override;
+
+private:
+
+  //
+  //- Heading: Data
+  //
+
+}; // class DakotaROLIneqConstraintsGrad
+
+
+// -----------------------------------------------------------------
+/** DakotaROLEqConstraintsHess is derived from
+    DakotaROLEqConstraintsGrad.  It implements overrides of ROL member
     functions to provide a Dakota-specific implementation of a adjoint
     Hessian-vector product for equality constraints.  This separate
     class is needed (rather than putting the product into
@@ -451,7 +546,7 @@ protected:
     protect against calling the adjoint Hessian-vector product in
     cases where there is not actually a Hessian provided. */
 
-class DakotaROLEqConstraintsHess : public DakotaROLEqConstraints
+class DakotaROLEqConstraintsHess : public DakotaROLEqConstraintsGrad
 {
 public:
 

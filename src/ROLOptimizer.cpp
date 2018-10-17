@@ -216,21 +216,51 @@ void ROLOptimizer::set_problem()
 
   // Create objective function object and give it access to Dakota
   // model.  If there is a Dakota/user-provided Hessian, need to
-  // instantiate the "Hess" version to enable support for it.
-  if (iteratedModel.hessian_type() == "none")
+  // instantiate the "Hess" version to enable support for it. If 
+  // vendor numerical gradients are preferred, instantiate the
+  // "Grad" version
+
+  // Extract gradient type and method for finite-differencing
+  const String& grad_type     = iteratedModel.gradient_type();
+  const String& method_src    = iteratedModel.method_source();
+
+  if ( grad_type == "analytic" || grad_type == "mixed" || 
+       ( grad_type == "numerical" && method_src == "dakota" ) ){
+      if (iteratedModel.hessian_type() == "none")
+        obj.reset(new DakotaROLObjectiveGrad(iteratedModel));
+      else
+        obj.reset(new DakotaROLObjectiveHess(iteratedModel));
+  }
+  else if (grad_type == "none") {
+    Cerr << "\nError: gradient type = none is invalid with ROL.\n"
+         << "Please select numerical, analytic, or mixed gradients." << std::endl;
+    abort_handler(-1);
+  }
+  else { // Vendor numerical gradients
     obj.reset(new DakotaROLObjective(iteratedModel));
-  else
-    obj.reset(new DakotaROLObjectiveHess(iteratedModel));
+  }
+
 
   // If there are equality constraints, create the object and provide
   // the Dakota model.
   if (num_eq_const > 0){
     // create appropriate equality constraint object and give it
     // access to Dakota model
-    if (iteratedModel.hessian_type() == "none")
+    if ( grad_type == "analytic" || grad_type == "mixed" || 
+         ( grad_type == "numerical" && method_src == "dakota" ) ){
+        if (iteratedModel.hessian_type() == "none")
+          eq_const.reset(new DakotaROLEqConstraintsGrad(iteratedModel));
+        else
+          eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
+    }
+    else if (grad_type == "none") {
+      Cerr << "\nError: gradient type = none is invalid with ROL.\n"
+           << "Please select numerical, analytic, or mixed gradients." << std::endl;
+      abort_handler(-1);
+    }
+    else { // Vendor numerical gradients
       eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
-    else
-      eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
+    }
 
     // Initialize Lagrange multipliers for equality constraints.
     Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(num_eq_const,0.0) );
@@ -242,10 +272,21 @@ void ROLOptimizer::set_problem()
   if (num_ineq_const > 0){
     // create appropriate inequality constraint object and give it
     // access to Dakota model
-    if (iteratedModel.hessian_type() == "none")
+    if ( grad_type == "analytic" || grad_type == "mixed" || 
+         ( grad_type == "numerical" && method_src == "dakota" ) ){
+        if (iteratedModel.hessian_type() == "none")
+          ineq_const.reset(new DakotaROLIneqConstraintsGrad(iteratedModel));
+        else
+          ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
+    }
+    else if (grad_type == "none") {
+      Cerr << "\nError: gradient type = none is invalid with ROL.\n"
+           << "Please select numerical, analytic, or mixed gradients." << std::endl;
+      abort_handler(-1);
+    }
+    else { // Vendor numerical gradients
       ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
-    else
-      ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
+    }
 
     // Initial Lagrange multipliers for inequality constraints.
     Teuchos::RCP<std::vector<Real> > imul_rcp = 
@@ -478,10 +519,12 @@ namespace {
     for(size_t i=0; i<num_cv; ++i)
       model.continuous_variable(x[i], i);
 
-    // Evaluate response, gradient, and Hessian; the last only if
-    // provided by Dakota/user.
+    // Evaluate response, gradient, and Hessian, depending on 
+    // what is provided by Dakota/user.
     ActiveSet eval_set(model.current_response().active_set());
-    if (model.hessian_type() == "none")
+    if (model.gradient_type() == "numerical" && model.method_source() == "vendor")
+      eval_set.request_values(AS_FUNC);
+    else if (model.hessian_type() == "none")
       eval_set.request_values(AS_FUNC+AS_GRAD);
     else
       eval_set.request_values(AS_FUNC+AS_GRAD+AS_HESS);
@@ -524,9 +567,19 @@ DakotaROLObjective::value(const std::vector<Real> &x, Real &tol)
 } // objective value
 
 
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLObjectiveGrad class. */
+
+
+// Constructor.
+DakotaROLObjectiveGrad::DakotaROLObjectiveGrad(Model & model) :
+  DakotaROLObjective(model)
+{ }
+
+
 // Compute objective gradient and return to ROL.
 void
-DakotaROLObjective::gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol )
+DakotaROLObjectiveGrad::gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol )
 {
   update_model(dakotaModel, x);
   copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
@@ -535,21 +588,21 @@ DakotaROLObjective::gradient( std::vector<Real> &g, const std::vector<Real> &x, 
 
 
 // -----------------------------------------------------------------
-/** Implementation of the DakotaROLObjective class. */
+/** Implementation of the DakotaROLObjectiveHess class. */
 
 
 // Constructor.
 DakotaROLObjectiveHess::DakotaROLObjectiveHess(Model & model) :
-  DakotaROLObjective(model)
+  DakotaROLObjectiveGrad(model)
 { }
 
 
 // Compute objective Hessian-vector product and return to ROL.
 void
 DakotaROLObjectiveHess::hessVec(std::vector<Real> &hv,
-				const std::vector<Real> &v,
-				const std::vector<Real> &x,
-				Real &tol)
+        const std::vector<Real> &v,
+        const std::vector<Real> &x,
+        Real &tol)
 {
   // Make sure the Hessian has been evaluated and get it from Dakota
   // Response.
@@ -566,9 +619,9 @@ DakotaROLObjectiveHess::hessVec(std::vector<Real> &hv,
 // since no ROL methods currently exposed use it.
 void
 DakotaROLObjectiveHess::invHessVec(std::vector<Real> &h,
-				   const std::vector<Real> &v,
-				   const std::vector<Real> &x,
-				   Real &tol)
+           const std::vector<Real> &v,
+           const std::vector<Real> &x,
+           Real &tol)
 {
   Cerr << "\nError: DakotaROLObjectiveHess::invHessVec is not currently supported."
        << "  logic error.\n";
@@ -609,10 +662,20 @@ DakotaROLIneqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x
 } // ineqConstraints value
 
 
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLIneqConstraintsGrad class. */
+
+
+// Constructor.
+DakotaROLIneqConstraintsGrad::DakotaROLIneqConstraintsGrad(Model & model) :
+  DakotaROLIneqConstraints(model)
+{ }
+
+
 // Multiply a vector by the inequality constraint Jacobian and return
 // to ROL.
 void 
-DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
+DakotaROLIneqConstraintsGrad::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Matrix-vector multiply to apply linear constraint Jacobian.
@@ -631,7 +694,7 @@ DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
 // Multiply a vector by the transpose of the inequality constraint
 // Jacobian and return to ROL.
 void
-DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
+DakotaROLIneqConstraintsGrad::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Must init since are merging the effect of linear and nonlinear
@@ -653,12 +716,12 @@ DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
 
 
 // -----------------------------------------------------------------
-/** Implementation of the DakotaROLIneqConstraintsHess class. */
+/** Implementation of the DakotaROLIneqConstraintsGrad class. */
 
 
 // Constructor.
 DakotaROLIneqConstraintsHess::DakotaROLIneqConstraintsHess(Model & model) :
-  DakotaROLIneqConstraints(model)
+  DakotaROLIneqConstraintsGrad(model)
 { }
 
 
@@ -725,10 +788,21 @@ DakotaROLEqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, 
 } // eqConstraints value
 
 
+
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLEqConstraintsGrad class. */
+
+
+// Constructor.
+DakotaROLEqConstraintsGrad::DakotaROLEqConstraintsGrad(Model & model) :
+  DakotaROLEqConstraints(model)
+{ }
+
+
 // Multiply a vector by the equality constraint Jacobian and return
 // to ROL.
 void
-DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
+DakotaROLEqConstraintsGrad::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Matrix-vector multiply to apply linear constraint Jacobian.
@@ -747,7 +821,7 @@ DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
 // Multiply a vector by the transpose of the equality constraint
 // Jacobian and return to ROL.
 void
-DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
+DakotaROLEqConstraintsGrad::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Must init since are merging the effect of linear and nonlinear
@@ -775,7 +849,7 @@ DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
 
 // Constructor.
 DakotaROLEqConstraintsHess::DakotaROLEqConstraintsHess(Model & model) :
-  DakotaROLEqConstraints(model)
+  DakotaROLEqConstraintsGrad(model)
 { }
 
 
