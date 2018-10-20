@@ -1932,6 +1932,10 @@ void DataFitSurrModel::
 asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
 	       ShortArray& approx_asv)
 {
+  if (actualModel.is_null() || surrogateFnIndices.size() == numFns)
+    { approx_asv = orig_asv; return; } // don't inflate approx_asv
+  // else mixed response set
+
   // DataFitSurrModel consumes replicates from any response aggregations
   // occurring in actualModel
   size_t num_orig = orig_asv.size(), num_actual = actualModel.response_size();
@@ -1940,25 +1944,20 @@ asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
-
-  if (surrogateFnIndices.size() == numFns)
-    approx_asv = orig_asv; // don't inflate approx_asv
-  else { // mixed response set
-    size_t i; int index; short orig_asv_val;
-    for (index=0; index<num_orig; ++index) {
-      orig_asv_val = orig_asv[index];
-      if (orig_asv_val) {
-	if (surrogateFnIndices.count(index)) {
-	  if (approx_asv.empty()) // keep empty if no active requests
-	    approx_asv.assign(num_orig, 0);
-	  approx_asv[index] = orig_asv_val; // don't inflate approx_asv
-	}
-	else {
-	  if (actual_asv.empty()) // keep empty if no active requests
-	    actual_asv.assign(num_actual, 0);
-	  for (i=index; i<num_actual; i+=num_orig) // inflate actual_asv
-	    actual_asv[i] = orig_asv_val;
-	}
+  int index; short orig_asv_val;
+  for (index=0; index<num_orig; ++index) {
+    orig_asv_val = orig_asv[index];
+    if (orig_asv_val) {
+      if (surrogateFnIndices.count(index)) {
+	if (approx_asv.empty()) // keep empty if no active requests
+	  approx_asv.assign(num_orig, 0);
+	approx_asv[index] = orig_asv_val; // don't inflate approx_asv
+      }
+      else {
+	if (actual_asv.empty()) // keep empty if no active requests
+	  actual_asv.assign(num_actual, 0);
+	for (size_t i=index; i<num_actual; i+=num_orig) // inflate actual_asv
+	  actual_asv[i] = orig_asv_val;
       }
     }
   }
