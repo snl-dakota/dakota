@@ -853,8 +853,10 @@ void Analyzer::archive_sobol_indices() const
     }
     DimScaleMap scales;
     scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
-    resultsDB.insert(run_identifier(), String("main_effects"), resp_labels[k], main_effects, scales);
-    resultsDB.insert(run_identifier(), String("total_effects"), resp_labels[k], total_effects, scales);
+    resultsDB.insert(run_identifier(), {String("main_effects"), resp_labels[k]}, 
+                     main_effects, scales);
+    resultsDB.insert(run_identifier(), {String("total_effects"), resp_labels[k]}, 
+                     total_effects, scales);
   }
 }
 

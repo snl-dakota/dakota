@@ -130,8 +130,10 @@ int length(const StringMultiArrayConstView &vec) {
       H5::DataSet dataset(dset_id);
       return dataset;
     }
-    else
+    else {
+      flush();
       throw std::runtime_error(String("Attempt to create HDF5 dataset ") + name + " failed" );
+    }
   }
 
   void HDF5IOHelper::
@@ -170,7 +172,7 @@ int length(const StringMultiArrayConstView &vec) {
     }
   }
 
-  void HDF5IOHelper::flush() {
+  void HDF5IOHelper::flush() const {
     filePtr->flush(H5F_SCOPE_LOCAL);
   }
 

@@ -660,12 +660,15 @@ void NonDLHSSampling::post_run(std::ostream& s)
       compute_vbd_stats(numSamples, allResponses);
       archive_sobol_indices();
     }
-    else if(!summaryOutputFlag)
+    else if(!summaryOutputFlag) {
       // To support incremental reporting of statistics, compute_statistics is 
       // iteratively called by print_results. However, when the sampling iterator 
       // is a subiterator (e.g. in a nested model), print_results isn't called.
       // Compute stats here for all samples.
       compute_statistics(allSamples, allResponses);
+      // JAS TODO
+      archive_results(numSamples); 
+    }
   Analyzer::post_run(s);
  
   if (pcaFlag)
@@ -900,6 +903,7 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
   else if (statsFlag) {
     if(refineSamples.length() == 0) {
       compute_statistics(allSamples, allResponses);
+      archive_results(numSamples);
       int actual_samples = allSamples.numCols();
       print_header_and_statistics(s, actual_samples);
     } else {  // iterate over refinement_samples to generate incremental stats
@@ -911,7 +915,9 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
       copy_data_partial(refineSamples, samples_vec, 1);
       IntResponseMap::iterator start_resp = allResponses.begin();
       IntResponseMap inc_responses; // block of responses for this increment
-      for(const int &inc_size : samples_vec) {
+      for(size_t i = 0; i < samples_vec.size(); ++i) {
+        int inc_size = samples_vec[i];
+        size_t inc_id = i + 1;
         running_total += inc_size;
         RealMatrix inc_samples(Teuchos::View, allSamples, // block of samples for
             allSamples.numRows(), running_total);         // this increment
@@ -921,11 +927,72 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
         // cheap.
         inc_responses.insert(start_resp, end_resp);
         compute_statistics(inc_samples, inc_responses);
+        archive_results(running_total,inc_id);
         print_header_and_statistics(s, running_total);
         start_resp = end_resp;
       }
     }
   }
 }
+
+void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
+  if(epistemicStats)
+    return;
+  // Archive moments
+  if(functionMomentsComputed) {
+    archive_moments(inc_id);
+    archive_moment_confidence_intervals(inc_id);
+    functionMomentsComputed = false; // reset for next increment
+  }
+  // Archive level mappings and pdfs
+  if(totalLevelRequests) {
+    for(int i = 0; i < numFunctions; ++i) {
+      archive_from_resp(i,inc_id);
+      archive_to_resp(i,inc_id);
+      if(pdfOutput && pdfComputed[i]) {
+        archive_pdf(i, inc_id);
+        pdfComputed[i] = false; // reset for next increment
+      }
+    }
+  }
+  // Archive correlations
+  if(!subIteratorFlag) {
+    // Regenerating the labels for every increment is not ideal.
+    StringMultiArrayConstView
+      acv_labels  = iteratedModel.all_continuous_variable_labels(),
+      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
+      adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
+      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
+    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+      drv_start, num_drv;
+    mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+          dsv_start, num_dsv, drv_start, num_drv);
+    StringMultiArrayConstView
+      cv_labels  =
+        acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
+      div_labels =
+        adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
+      dsv_labels =
+        adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
+      drv_labels =
+        adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
+
+    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
+                                      div_labels, dsv_labels, drv_labels,
+                                      iteratedModel.response_labels(),inc_id);   
+  }
+  // Associate number of samples attribute with the increment for incremental samplee
+  AttributeArray ns_attr({ResultAttribute<int>("samples", num_samples)}); 
+  if(inc_id) {
+    StringArray location({String("increment:") + std::to_string(inc_id)});
+    resultsDB.add_metadata_to_object(run_identifier(), location, ns_attr);
+  }
+  // Associate number of samples with the execution on the final increment (or when
+  // there are no increments). 1 must be added to the length of refineSamples to
+  // account for the initial samples 
+  if(inc_id == 0 || inc_id == refineSamples.length() + 1)
+    resultsDB.add_metadata_to_execution(run_identifier(), ns_attr); 
+}
+
 
 } // namespace Dakota

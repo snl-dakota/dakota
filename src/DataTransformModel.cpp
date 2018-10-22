@@ -1053,8 +1053,8 @@ void DataTransformModel::archive_allocate_original(ResultsManager &results_db,
                                   ScaleScope::SHARED)
                   );
     //TODO add scales
-    results_db.allocate_matrix(iterator_id, String("best_model_responses"),
-                               String("experiment:") + std::to_string(i+1),
+    results_db.allocate_matrix(iterator_id, {String("best_model_responses"),
+                               String("experiment:") + std::to_string(i+1)},
                                ResultsOutputType::REAL,
                                num_best, subModel.num_primary_fns(), scales);
   }
@@ -1064,12 +1064,11 @@ void DataTransformModel::archive_allocate_residuals(ResultsManager &results_db,
                                   StrStrSizet &iterator_id,
                                   int num_best) {
   if(!results_db.active())  return;
-  results_db.allocate_matrix(iterator_id, String("best_residuals"),
-                             String(""),
+  results_db.allocate_matrix(iterator_id, {String("best_residuals")},
                              ResultsOutputType::REAL,
                              num_best, num_primary_fns());
 
-  results_db.allocate_vector(iterator_id, String("best_norms"), String(""),
+  results_db.allocate_vector(iterator_id, {String("best_norms")},
                             ResultsOutputType::REAL, num_best); 
 
 }
@@ -1084,8 +1083,8 @@ void DataTransformModel::archive_best_original(const ResultsManager &results_db,
 //  results_db.insert(iterator_id, String("best_model_responses"),
 //                    String("experiment:") + std::to_string(i+1),
 //                   function_values, scales);
-  results_db.insert_into(iterator_id, String("best_model_responses"),
-                         String("experiment:") + std::to_string(exp_index+1),
+  results_db.insert_into(iterator_id, {String("best_model_responses"),
+                         String("experiment:") + std::to_string(exp_index+1)},
                          function_values, soln_index);
 }
 

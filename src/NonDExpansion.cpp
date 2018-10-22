@@ -2164,8 +2164,8 @@ void NonDExpansion::archive_moments()
                              {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
                              ScaleScope::SHARED));
         // extract column or row of moment_stats
-        resultsDB.insert(run_identifier(), String("expansion_moments"),
-            iteratedModel.response_labels()[i],
+        resultsDB.insert(run_identifier(), {String("expansion_moments"),
+            iteratedModel.response_labels()[i]},
             Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&exp_matrix), i),
             scales);
       }
@@ -2181,8 +2181,8 @@ void NonDExpansion::archive_moments()
             {moment_1_lower, moment_2_lower, moment_3_lower, moment_4_lower},
             ScaleScope::SHARED));
         // extract column or row of moment_stats
-        resultsDB.insert(run_identifier(), String("integration_moments"),
-            iteratedModel.response_labels()[i],
+        resultsDB.insert(run_identifier(), {String("integration_moments"),
+            iteratedModel.response_labels()[i]},
             Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&num_matrix), i),
             scales);
       }
@@ -2280,8 +2280,8 @@ void NonDExpansion::archive_sobol_indices() {
         if(!main_effects.empty()) {
           DimScaleMap scales;
           scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
-          resultsDB.insert(run_identifier(), String("main_effects"), fn_labels[i], main_effects, scales);
-          resultsDB.insert(run_identifier(), String("total_effects"), fn_labels[i], total_effects, scales);
+          resultsDB.insert(run_identifier(), {String("main_effects"), fn_labels[i]}, main_effects, scales);
+          resultsDB.insert(run_identifier(), {String("total_effects"), fn_labels[i]}, total_effects, scales);
         }
 
 	// Print Interaction effects
@@ -2301,7 +2301,7 @@ void NonDExpansion::archive_sobol_indices() {
                 String result_name = String("order_") + std::to_string(old_order) + String("_interactions");
                 DimScaleMap int_scales;
                 int_scales.emplace(0, StringScale("variables", int_scale, ScaleScope::UNSHARED));
-                resultsDB.insert(run_identifier(), result_name, fn_labels[i], int_effects, int_scales); 
+                resultsDB.insert(run_identifier(), {result_name, fn_labels[i]}, int_effects, int_scales); 
                 int_scale.clear();
                 int_effects.clear();                
               }
@@ -2322,7 +2322,7 @@ void NonDExpansion::archive_sobol_indices() {
                 String result_name = String("order_") + std::to_string(old_order) + String("_interactions");
                 DimScaleMap int_scales;
                 int_scales.emplace(0, StringScale("variables", int_scale, ScaleScope::UNSHARED));
-                resultsDB.insert(run_identifier(), result_name, fn_labels[i], int_effects, int_scales); 
+                resultsDB.insert(run_identifier(), {result_name, fn_labels[i]}, int_effects, int_scales); 
                 int_scale.clear();
                 int_effects.clear();
               }
@@ -2338,7 +2338,7 @@ void NonDExpansion::archive_sobol_indices() {
             String result_name = String("order_") + std::to_string(old_order) + String("_interactions");
             DimScaleMap int_scales;
             int_scales.emplace(0, StringScale("variables", int_scale, ScaleScope::UNSHARED));
-            resultsDB.insert(run_identifier(), result_name, fn_labels[i], int_effects, int_scales);
+            resultsDB.insert(run_identifier(), {result_name, fn_labels[i]}, int_effects, int_scales);
             int_scale.clear();
             int_effects.clear();
           }

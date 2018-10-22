@@ -691,7 +691,7 @@ void Minimizer::archive_allocate_best(size_t num_points) const
     DimScaleMap scales;
     scales.emplace(1, StringScale("variables",
           variables_results().continuous_variable_labels()));
-    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("continuous"),
+    resultsDB.allocate_matrix(iterator_id, {best_vars_label, String("continuous")},
         ResultsOutputType::REAL, num_points, numContinuousVars, scales);
     
   }
@@ -713,7 +713,7 @@ void Minimizer::archive_allocate_best(size_t num_points) const
     DimScaleMap scales;
     scales.emplace(1, StringScale("variables",
           variables_results().discrete_int_variable_labels()));
-    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("discrete_integer"),
+    resultsDB.allocate_matrix(iterator_id, {best_vars_label, String("discrete_integer")},
         ResultsOutputType::INTEGER, num_points, numDiscreteIntVars, scales);
     
   }
@@ -735,7 +735,7 @@ void Minimizer::archive_allocate_best(size_t num_points) const
     DimScaleMap scales;
     scales.emplace(1, StringScale("variables",
           variables_results().discrete_string_variable_labels()));
-    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("discrete_string"),
+    resultsDB.allocate_matrix(iterator_id, {best_vars_label, String("discrete_string")},
         ResultsOutputType::STRING, num_points, numDiscreteStringVars, scales);
   }
   if (numDiscreteRealVars) {
@@ -756,7 +756,7 @@ void Minimizer::archive_allocate_best(size_t num_points) const
     DimScaleMap scales;
     scales.emplace(1, StringScale("variables",
           variables_results().discrete_real_variable_labels()));
-    resultsDB.allocate_matrix(iterator_id, best_vars_label, String("discrete_real"),
+    resultsDB.allocate_matrix(iterator_id, {best_vars_label, String("discrete_real")},
         ResultsOutputType::REAL, num_points, numDiscreteRealVars, scales);
   }
   // ## Best Objective functions and constraitns (calibration terms are handled separately)
@@ -778,20 +778,20 @@ void Minimizer::archive_allocate_best(size_t num_points) const
     DimScaleMap scales;
     scales.emplace(1, StringScale(String("objective_functions"),
           response_results().function_labels(), 0, numUserPrimaryFns)); // subset the labels
-    resultsDB.allocate_matrix(iterator_id, String("best_objective_functions"), String(""),
+    resultsDB.allocate_matrix(iterator_id, {String("best_objective_functions")},
         ResultsOutputType::REAL, num_points, numUserPrimaryFns, scales);
   }
   if(numNonlinearConstraints) {
     DimScaleMap scales;
     scales.emplace(1, StringScale(String("nonlinear_constraints"),
           response_results().function_labels(), numUserPrimaryFns, numNonlinearConstraints));
-    resultsDB.allocate_matrix(iterator_id, String("best_constraints"), String(""),
+    resultsDB.allocate_matrix(iterator_id, {String("best_constraints")},
         ResultsOutputType::REAL, num_points, numNonlinearConstraints, scales);
   }
 
   // ## best eval ids
-  resultsDB.allocate_vector(iterator_id, String("best_evaluation_ids"),
-      String(""), ResultsOutputType::INTEGER, num_points);
+  resultsDB.allocate_vector(iterator_id, {String("best_evaluation_ids")},
+      ResultsOutputType::INTEGER, num_points);
 
 }
 
@@ -811,8 +811,8 @@ void Minimizer::archive_best_variables(size_t point_index) const {
 
     // hdf5DB backend
     resultsDB.insert_into(iterator_id,
-                                 best_var_string,
-                                 String("continuous"),
+                                 {best_var_string,
+                                 String("continuous")},
                                  best_vars.continuous_variables(),
                                  point_index);
   }
@@ -825,8 +825,8 @@ void Minimizer::archive_best_variables(size_t point_index) const {
 
     // hdf5DB backend
     resultsDB.insert_into(iterator_id,
-                                 best_var_string,
-                                 String("discrete_integer"),
+                                 {best_var_string,
+                                  String("discrete_integer")},
                                  best_vars.discrete_int_variables(),
                                  point_index);
   }
@@ -839,8 +839,8 @@ void Minimizer::archive_best_variables(size_t point_index) const {
 
     // hdf5DB backend
     resultsDB.insert_into(iterator_id,
-                                 best_var_string,
-                                 String("discrete_string"),
+                                 {best_var_string,
+                                 String("discrete_string")},
                                  best_vars.discrete_string_variables(),
                                  point_index);
   }
@@ -853,8 +853,8 @@ void Minimizer::archive_best_variables(size_t point_index) const {
 
     // hdf5DB backend
     resultsDB.insert_into(iterator_id,
-                                 best_var_string,
-                                 String("discrete_real"),
+                                 {best_var_string,
+                                  String("discrete_real")},
                                  best_vars.discrete_real_variables(),
                                  point_index);
   }
@@ -874,8 +874,7 @@ archive_best_objective_functions(size_t point_index) const
   const RealVector &fvals = best_resp.function_values();
   Teuchos::SerialDenseVector<int, Real> primary(Teuchos::View, const_cast<Real*>(&fvals[0]), numUserPrimaryFns);
   resultsDB.insert_into(iterator_id,
-                        String("best_objective_functions"),
-                        String(""),
+                        {String("best_objective_functions")},
                         primary,
                         point_index);
 } 
@@ -884,10 +883,10 @@ void Minimizer::
 archive_allocate_residuals(size_t num_points) const {
   if(!resultsDB.active()) return;
   StrStrSizet iterator_id = run_identifier();
-  resultsDB.allocate_matrix(iterator_id, String("best_residuals"), String(""),
+  resultsDB.allocate_matrix(iterator_id, {String("best_residuals")},
       ResultsOutputType::REAL, num_points, numUserPrimaryFns); 
 
-    resultsDB.allocate_vector(iterator_id, String("best_norms"), String(""),
+    resultsDB.allocate_vector(iterator_id, {String("best_norms")},
       ResultsOutputType::REAL, num_points); 
 }
 
@@ -902,10 +901,10 @@ archive_best_residuals(const ResultsManager &results_db,
   Teuchos::SerialDenseVector<int, Real> residuals(Teuchos::View, 
                               const_cast<Real*>(&best_terms[0]), 
                               num_terms);
-  results_db.insert_into(iterator_id, String("best_residuals"),
-                         String(""), residuals, best_index);
-  results_db.insert_into(iterator_id, String("best_norms"),
-                         String(""), wssr, best_index);
+  results_db.insert_into(iterator_id, {String("best_residuals")},
+                         residuals, best_index);
+  results_db.insert_into(iterator_id, {String("best_norms")},
+                         wssr, best_index);
 }
 
 void Minimizer::
@@ -917,8 +916,7 @@ archive_best_constraints(size_t point_index) const {
                               const_cast<Real*>(&fvals[numUserPrimaryFns]), 
                               numNonlinearConstraints);
   resultsDB.insert_into(run_identifier(),
-                        String("best_constraints"),
-                        String(""),
+                        {String("best_constraints")},
                         secondary,
                         point_index);
 }
@@ -927,8 +925,8 @@ archive_best_constraints(size_t point_index) const {
 void Minimizer::
 archive_best_evaluation_id(size_t i, int eval_id) const {
   if(!resultsDB.active()) return;
-  resultsDB.insert_into(run_identifier(), String("best_evaluation_ids"),
-      String(""), eval_id, i);
+  resultsDB.insert_into(run_identifier(), {String("best_evaluation_ids")},
+      eval_id, i);
 }
 
 /** Uses data from the innermost model, should any Minimizer recasts be active.

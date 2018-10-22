@@ -78,24 +78,24 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into) {
   Dakota::AttributeArray attrs;
   attrs.push_back(Dakota::ResultAttribute<int>("samples", 5));
 
-  results_manager.allocate_matrix(iterator_id, std::string("row_result"), std::string(""),
+  results_manager.allocate_matrix(iterator_id, {std::string("row_result")},
     Dakota::ResultsOutputType::REAL, 3, 4, m_scales, attrs);
-  results_manager.insert_into(iterator_id, std::string("row_result"), std::string(""), row0, 0); 
-  results_manager.insert_into(iterator_id, std::string("row_result"), std::string(""), row1, 1); 
-  results_manager.insert_into(iterator_id, std::string("row_result"), std::string(""), row2, 2); 
+  results_manager.insert_into(iterator_id, {std::string("row_result")},  row0, 0); 
+  results_manager.insert_into(iterator_id, {std::string("row_result")},  row1, 1); 
+  results_manager.insert_into(iterator_id, {std::string("row_result")},  row2, 2); 
   
-  results_manager.allocate_matrix(iterator_id, std::string("column_result"), std::string(""),
+  results_manager.allocate_matrix(iterator_id, {std::string("column_result")},
     Dakota::ResultsOutputType::REAL, 4,3);
-  results_manager.insert_into(iterator_id, std::string("column_result"), std::string(""), row0, 0, false); 
-  results_manager.insert_into(iterator_id, std::string("column_result"), std::string(""), row1, 1, false); 
-  results_manager.insert_into(iterator_id, std::string("column_result"), std::string(""), row2, 2, false); 
+  results_manager.insert_into(iterator_id, {std::string("column_result")},row0, 0, false); 
+  results_manager.insert_into(iterator_id, {std::string("column_result")},row1, 1, false); 
+  results_manager.insert_into(iterator_id, {std::string("column_result")},row2, 2, false); 
 
   Dakota::DimScaleMap v_scale;
   v_scale.emplace(0, Dakota::RealScale("a_scale", {1.0, 2.0, 3.0}));
-  results_manager.allocate_vector(iterator_id, std::string("vector_result"), std::string(""),
+  results_manager.allocate_vector(iterator_id, {std::string("vector_result")},
       Dakota::ResultsOutputType::REAL, 3, v_scale);
   for(int i = 0; i < 3; ++i)
-    results_manager.insert_into(iterator_id, std::string("vector_result"), std::string(""), double(i+5), i);
+    results_manager.insert_into(iterator_id, {std::string("vector_result")}, double(i+5), i);
 }
 #endif
 // #endif // comment to make this file active

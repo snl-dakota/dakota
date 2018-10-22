@@ -67,8 +67,7 @@ public:
   /// Pre-allocate a vector and (optionally) attach dimension scales and attributes. Insert
   /// elements using insert_into(...)
   virtual void allocate_vector(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,
               ResultsOutputType stored_type, 
               const int &len,
               const DimScaleMap &scales = DimScaleMap(),
@@ -77,8 +76,7 @@ public:
   /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
   /// rows or columns using insert_into(...)
   virtual void allocate_matrix(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,
               ResultsOutputType stored_type, 
               const int &num_rows, const int &num_cols,
               const DimScaleMap &scales = DimScaleMap(),
@@ -87,8 +85,7 @@ public:
   /// addition with dimension scales and attributes
   virtual void
   insert(const StrStrSizet& iterator_id,
-         const std::string& lvl_1_name,
-         const std::string& lvl_2_name,
+         const StringArray &location,
          const boost::any& data,
          const DimScaleMap &scales = DimScaleMap(),
          const AttributeArray &attrs = AttributeArray(),
@@ -98,24 +95,27 @@ public:
   /// Insert a row or column into a pre-allocated matrix 
   virtual void
   insert_into(const StrStrSizet& iterator_id,
-         const std::string& lvl_1_name,
-         const std::string& lvl_2_name,
+         const StringArray &location,
          const boost::any& data,
          const int &index, const bool &row) = 0;
 
   /// Add key:value metadata to a method
-  virtual void add_metadata_for_method(
+  virtual void add_metadata_to_method(
                     const StrStrSizet& iterator_id,
                     const AttributeArray &attrs
                     ) = 0;
 
   /// Add key:value metadata to an execution
-  virtual void add_metadata_for_execution(
+  virtual void add_metadata_to_execution(
                     const StrStrSizet& iterator_id,
                     const AttributeArray &attrs
                     ) = 0;
 
-
+  /// Associate key:value metadata with the object at the location
+  virtual void add_metadata_to_object(const StrStrSizet& iterator_id,
+                                      const StringArray &location,
+                                      const AttributeArray &attrs) = 0;
+ 
   // ##############################################################
   // Methods to support legacy text output
   // ##############################################################

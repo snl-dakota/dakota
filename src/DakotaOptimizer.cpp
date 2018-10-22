@@ -203,15 +203,6 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   } 
 
   DataTransformModel* dt_model_rep;
-  //if(!optimizationFlag)
-  // if(calibrationDataFlag) {
-  //    dt_model_rep->archive_allocate_original(resultsDB, iterator_id, num_best);
-      // delegate setting up storage for the residuals to the DTM when calibration
-      // data is present.
-  //     dt_model_rep->archive_allocate_residuals(resultsDB, iterator_id, num_best);
-  // }
-  // else
-  //   archive_allocate_residuals(num_best);
     
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this

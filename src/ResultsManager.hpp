@@ -127,22 +127,20 @@ public:
   /// AttributeArray in dakota_results_types.hpp)
   template<typename StoredType>
   void insert(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,
               const StoredType& sent_data,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),
               const bool &transpose = false)
   {
     for( auto & db : resultsDBs )
-      db->insert(iterator_id, lvl_1_name, lvl_2_name, sent_data, scales, attrs, transpose);
+      db->insert(iterator_id, location, sent_data, scales, attrs, transpose);
   }
 
   /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
   /// rows or columns using insert_into(...)
   void allocate_matrix(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,
               ResultsOutputType stored_type, 
               const int &num_rows, const int &num_cols,
               const DimScaleMap &scales = DimScaleMap(),
@@ -151,8 +149,7 @@ public:
   /// Pre-allocate a vector and (optionally) attach dimension scales and attributes. Insert
   /// elements insert_into(...)
   void allocate_vector(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,
               ResultsOutputType stored_type, 
               const int &len,
               const DimScaleMap &scales = DimScaleMap(),
@@ -161,23 +158,28 @@ public:
   /// Insert a row or column into a matrix that was pre-allocated using allocate_matrix
   template<typename StoredType>
   void insert_into(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,
               const StoredType &data,
               const int &index,
               const bool &row = true) const {
     for( auto & db : resultsDBs )
-      db->insert_into(iterator_id, lvl_1_name, lvl_2_name, data, index, row);
+      db->insert_into(iterator_id, location, data, index, row);
   }
 
 
   /// Associate key:value metadata with all the results and executions of a method
-  void add_metadata_for_method(const StrStrSizet& iterator_id,
+  void add_metadata_to_method(const StrStrSizet& iterator_id,
                                const AttributeArray &attrs);
 
   /// Associate key:value metadata with all the results for this execution of a method
-  void add_metadata_for_execution(const StrStrSizet& iterator_id,
+  void add_metadata_to_execution(const StrStrSizet& iterator_id,
                                   const AttributeArray &attrs);
+
+  /// Associate key:value metadata with the object at the location
+  void add_metadata_to_object(const StrStrSizet& iterator_id,
+                               const StringArray &location,
+                               const AttributeArray &attrs);
+
 
   // ##############################################################
   // Methods and variables to support legacy text output

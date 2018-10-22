@@ -337,15 +337,19 @@ class HDF5IOHelper
     // 4. write
     H5::DataSet ds = filePtr->openDataSet(dset_name);
     H5::DataSpace f_space = ds.getSpace();
-    if(f_space.getSimpleExtentNdims() != 1)
+    if(f_space.getSimpleExtentNdims() != 1) {
+      flush();
       throw std::runtime_error(String("Attempt to insert element into a non-1D datasset ") +
                                  dset_name + " failed");
+    }
     hsize_t dim;
     f_space.getSimpleExtentDims(&dim);
-    if(index < 0 || index >= dim)
+    if(index < 0 || index >= dim) {
+      flush();
       throw std::runtime_error(String("Attempt to insert element into ") + dset_name +
                                  " failed; requested index is " + std::to_string(index) +
                                  " but must be > 0 and < " + std::to_string(dim));
+    }
     hsize_t f_coords[1][1] = {{hsize_t(index)}};
     f_space.selectElements(H5S_SELECT_SET, 1, &f_coords[0][0]);
     hsize_t m_coords[1][1]= {{0}};
@@ -362,35 +366,43 @@ class HDF5IOHelper
     // 5. Write
     H5::DataSet ds = filePtr->openDataSet(dset_name);
     H5::DataSpace f_space = ds.getSpace();
-    if(f_space.getSimpleExtentNdims() != 2)
+    if(f_space.getSimpleExtentNdims() != 2) {
+      flush();
       throw std::runtime_error(String("Attempt to insert row or column into non-2D dataset ") + 
                                  dset_name + " failed" );
+    }
     hsize_t dims[2]; // assume rank == 2
     f_space.getSimpleExtentDims(dims);
     int len = length(data); // length is a free function defined in HDF5_IO.hpp that is 
                             // overloaded/templated to return the length of SDVs and std::vectors
     if(row) {
-      if(dims[1] != len)
+      if(dims[1] != len) {
+        flush();
         throw std::runtime_error(String("Attempt to insert row into  ") + 
                                    dset_name + " failed; length of data is " + 
                                    std::to_string(len) + " and number of DS columns is " + 
                                    std::to_string(dims[1]) );
-      else if(index >= dims[0] || index < 0)
+      } else if(index >= dims[0] || index < 0) {
+        flush();
         throw std::runtime_error(String("Attempt to insert row into ") +
                                    dset_name + " failed; requested index is " + 
                                    std::to_string(index) + " but must be > 0 and < " +
                                    std::to_string(dims[0]));
+      }
     } else { 
-      if(dims[0] != len)
+      if(dims[0] != len) {
+        flush();
         throw std::runtime_error(String("Attempt to insert column into  ") + 
                                    dset_name + " failed; length of data is " + 
                                    std::to_string(len) + " and number of DS rows is " + 
                                    std::to_string(dims[0]) );
-      else if(index >= dims[1] || index < 0)
+      } else if(index >= dims[1] || index < 0) {
+        flush();
         throw std::runtime_error(String("Attempt to insert column into  ") + 
                                    dset_name + " failed; requested index is " + 
                                    std::to_string(index) + " but must be > 0 and < " +
                                    std::to_string(dims[1]));
+      }
     }
     hsize_t f_count[2], f_start[2], m_dim[1]; // f_count and f_start are used to index into the
                                               // dataset. m_dim is the dimension of the data in memory
@@ -470,7 +482,7 @@ class HDF5IOHelper
   H5::DSetCreatPropList datasetContiguousPL;
 
   /// Flush cache to file
-  void flush();
+  void flush() const;
  
 
   protected:

@@ -979,9 +979,9 @@ compute_statistics(const RealMatrix&     vars_samples,
   if (!subIteratorFlag) {
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
     // archive the correlations to the results DB
-    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-				      div_labels, dsv_labels, drv_labels,
-				      iteratedModel.response_labels());
+//    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
+//				      div_labels, dsv_labels, drv_labels,
+//				      iteratedModel.response_labels());
   }
 
   // push results into finalStatistics
@@ -1046,16 +1046,16 @@ compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
   for (i=0, cntr=0; i<numFunctions; ++i) {
     if (finalMomentsType) { // only compute moments if needed
       for (m=0; m<2; ++m, ++cntr) {
-	if (final_asv[cntr] & 1) mom_fns   = true;
-	if (final_asv[cntr] & 2) mom_grads = true;
+        if (final_asv[cntr] & 1) mom_fns   = true;
+        if (final_asv[cntr] & 2) mom_grads = true;
       }
     }
     if (respLevelTarget == RELIABILITIES) {
       num_lev = requestedRespLevels[i].length();
       for (l=0; l<num_lev; ++l, ++cntr) {
-	if (final_asv[cntr] & 1) mom_fns = true;
-	// dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
-	if (final_asv[cntr] & 2) mom_fns = mom_grads = true;
+        if (final_asv[cntr] & 1) mom_fns = true;
+        // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
+        if (final_asv[cntr] & 2) mom_fns = mom_grads = true;
       }
     }
     else
@@ -1082,10 +1082,7 @@ compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
     compute_moments(fn_samples,sample_counts,moment_stats,moments_type,labels);
     compute_moment_confidence_intervals(moment_stats, moment_conf_ints,
 					sample_counts, moments_type);
-    if (resultsDB.active()) {
-      archive_moments(moment_stats, moments_type, labels);
-      archive_moment_confidence_intervals(moment_conf_ints,moments_type,labels);
-    }
+    functionMomentsComputed = true;
   }
 
   if (mom_grads) {
@@ -1419,24 +1416,30 @@ accumulate_moment_gradients(const RealVectorArray& fn_samples,
 
 
 void NonDSampling::
-archive_moments(const RealMatrix& moment_stats, short moments_type,
-		const StringArray& labels)
+archive_moments(size_t inc_id)
 {
-  if(!resultsDB.active())
-    return;
+  if(!resultsDB.active()) return;
+ 
+  const StringArray &labels = iteratedModel.response_labels();
+
   // archive the moments to results DB
   MetaDataType md_moments;
-  md_moments["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?
+  md_moments["Row Labels"] = (finalMomentsType == CENTRAL_MOMENTS) ?
     make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral") :
     make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
   md_moments["Column Labels"] = make_metadatavalue(labels);
-  resultsDB.insert(run_identifier(), resultsNames.moments_std, moment_stats,
+  resultsDB.insert(run_identifier(), resultsNames.moments_std, momentStats,
 		   md_moments);
   
   // send to prototype hdf5DB, too
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("moments");
+  location.push_back("");
   for(int i = 0; i < labels.size(); ++i) {
+    location.back() = labels[i]; 
     DimScaleMap scales;
-    if(moments_type == CENTRAL_MOMENTS)
+    if(finalMomentsType == CENTRAL_MOMENTS)
       scales.emplace(0, 
                      StringScale("moments",
                      {"mean", "variance", "third_central", "fourth_central"},
@@ -1447,45 +1450,50 @@ archive_moments(const RealMatrix& moment_stats, short moments_type,
                      {"mean", "std_deviation", "skewness", "kurtosis"},
                      ScaleScope::SHARED));
     // extract column or row of moment_stats
-    resultsDB.insert(run_identifier(), String("moments"), labels[i], 
-        Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&moment_stats), i), scales);
+    resultsDB.insert(run_identifier(), location, 
+        Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&momentStats), i), scales);
   }
 }
 
 
 void NonDSampling::
-archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
-				    short moments_type,
-				    const StringArray& labels)
+archive_moment_confidence_intervals(size_t inc_id)
 {
   if(!resultsDB.active())
     return;
+
+  const StringArray &labels = iteratedModel.response_labels();
   // archive the confidence intervals to results DB
   MetaDataType md;
-  md["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?
+  md["Row Labels"] = (finalMomentsType == CENTRAL_MOMENTS) ?
     make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
 		       "LowerCI_Variance", "UpperCI_Variance") :
     make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
 		       "LowerCI_StdDev", "UpperCI_StdDev");
   md["Column Labels"] = make_metadatavalue(labels);
   resultsDB.insert(run_identifier(), resultsNames.moment_cis,
-		   moment_conf_ints, md);
+		   momentCIs, md);
   // archive in HDF5. Store in a 2d dataset with mean and var/stdev on the 1st dimension
   // and lower and upper bounds on the 2nd dimension
   DimScaleMap scales;
   scales.emplace(0, StringScale("bounds", {"lower", "upper"})); 
-  if(moments_type == CENTRAL_MOMENTS)
+  if(finalMomentsType == CENTRAL_MOMENTS)
     scales.emplace(1, StringScale("moments", {"mean", "variance"})); 
   else
     scales.emplace(1, StringScale("moments", {"mean", "std_deviation"})); 
+
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("moment_confidence_intervals");
+  location.push_back("");
   for(int i = 0; i < labels.size(); ++i) { // loop over responses
+    location.back() = labels[i];
     RealMatrix ci(2,2,false);
-    ci(0,0) = moment_conf_ints(0,i);
-    ci(1,0) = moment_conf_ints(1,i);
-    ci(0,1) = moment_conf_ints(2,i);
-    ci(1,1) = moment_conf_ints(3,i);
-    resultsDB.insert(run_identifier(), String("moment_confidence_intervals"), labels[i],
-        ci, scales);
+    ci(0,0) = momentCIs(0,i);
+    ci(1,0) = momentCIs(1,i);
+    ci(0,1) = momentCIs(2,i);
+    ci(1,1) = momentCIs(3,i);
+    resultsDB.insert(run_identifier(), location, ci, scales);
   }
 }
 
@@ -1833,11 +1841,6 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	}
       }
     }
-
-    // archive the mappings from response levels
-    archive_from_resp(i);
-    // archive the mappings to response levels
-    archive_to_resp(i);
   }
 
   if (extrapolated_mappings)

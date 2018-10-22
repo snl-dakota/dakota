@@ -255,17 +255,6 @@ struct RealScale {
     isMatrix = false;
   }
 
-  /// Constructor that takes a C-style array
-  RealScale(const std::string &label, const Real in_items[], 
-          ScaleScope scope = ScaleScope::UNSHARED) : 
-          label(label), scope(scope) {
-    int len = sizeof(in_items)/sizeof(in_items[0]);
-    items = RealVector(Teuchos::View,
-        const_cast<Real*>(in_items), len);
-    numCols = items.length();
-    isMatrix = false;
-  }
-
   /// Constructor that takes a pointer to Real and length
   RealScale(const std::string &label, const Real *in_items, const int len,
           ScaleScope scope = ScaleScope::UNSHARED) : 
@@ -307,10 +296,9 @@ struct RealScale {
 /// Data structure for storing string-valued dimension scale
 struct StringScale {
   /// Constructor that takes a C-style array of C-strings
-  StringScale(const std::string& in_label, const char * const in_items[], 
-          ScaleScope in_scope = ScaleScope::UNSHARED) {
+  StringScale(const std::string& in_label, const char * const in_items[],
+          const int &len, ScaleScope in_scope = ScaleScope::UNSHARED) {
     label = in_label;
-    int len = sizeof(in_items)/sizeof(in_items[0]);
     items.resize(len);
     std::copy(in_items, in_items + len, items.begin());
     scope = in_scope;

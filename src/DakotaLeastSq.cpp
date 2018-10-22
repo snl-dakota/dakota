@@ -833,12 +833,12 @@ void LeastSq::archive_best_results() {
   DimScaleMap scales;
   scales.emplace(0, StringScale("variables", cv_labels));
   scales.emplace(1, StringScale("bounds", {"lower", "upper"}));
-  resultsDB.allocate_matrix(run_identifier(), String("confidence_intervals"),
-      String(""), ResultsOutputType::REAL, confBoundsLower.length(),2, scales);
-  resultsDB.insert_into(run_identifier(), String("confidence_intervals"),
-      String(""), confBoundsLower, 0, false);
-  resultsDB.insert_into(run_identifier(), String("confidence_intervals"),
-      String(""), confBoundsUpper, 1, false);
+  resultsDB.allocate_matrix(run_identifier(), {String("confidence_intervals")},
+      ResultsOutputType::REAL, confBoundsLower.length(),2, scales);
+  resultsDB.insert_into(run_identifier(), {String("confidence_intervals")},
+      confBoundsLower, 0, false);
+  resultsDB.insert_into(run_identifier(), {String("confidence_intervals")},
+      confBoundsUpper, 1, false);
 
 }
 

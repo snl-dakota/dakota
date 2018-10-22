@@ -44,58 +44,56 @@ String execution_hdf5_link_name(const StrStrSizet& iterator_id) {
 }
 
 // Create a dataset name from the unique identifiers passed
-String dataset_hdf5_link_name(const StrStrSizet& iterator_id,
-                                     const String& lvl_1_name,
-                                     const String& lvl_2_name)
-{
-  String rval = execution_hdf5_link_name(iterator_id)
-                + '/' + lvl_1_name;
-  // some types of results, like correlation matrices, may
-  // have an empty lvl_2_name.
-  if(!lvl_2_name.empty()) {
-    rval += '/' + lvl_2_name;
-  }
+String object_hdf5_link_name(const StrStrSizet& iterator_id,
+                              const StringArray &location) {
+  String rval = execution_hdf5_link_name(iterator_id);
+
+  for(const String &s : location)
+    rval += "/" + s;
   return rval;
 }
 
 void ResultsDBHDF5::allocate_vector(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,  
               ResultsOutputType stored_type, 
               const int &len,
               const DimScaleMap &scales,
               const AttributeArray &attrs) {
-  String dset_name = dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
+  bool method_exists = method_in_cache(iterator_id);
+  String dset_name = object_hdf5_link_name(iterator_id, location);
   IntArray dims = {len};
   hdf5Stream->add_empty_dataset(dset_name, dims, stored_type);
-  attach_scales(dset_name, iterator_id, lvl_1_name, lvl_2_name, scales);
+  attach_scales(dset_name, iterator_id, location, scales);
   add_attributes(dset_name, attrs);
+  if(!method_exists)
+    add_name_to_method(iterator_id);
 } 
 
 void ResultsDBHDF5::allocate_matrix(const StrStrSizet& iterator_id,
-              const std::string& lvl_1_name,
-              const std::string& lvl_2_name,
+              const StringArray &location,
               ResultsOutputType stored_type, 
               const int &num_rows, const int &num_cols,
               const DimScaleMap &scales,
               const AttributeArray &attrs) {
-  String dset_name = dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
+  bool method_exists = method_in_cache(iterator_id);
+  String dset_name = object_hdf5_link_name(iterator_id, location);
   IntArray dims = {num_rows, num_cols};
   hdf5Stream->add_empty_dataset(dset_name, dims, stored_type);
-  attach_scales(dset_name, iterator_id, lvl_1_name, lvl_2_name, scales);
+  attach_scales(dset_name, iterator_id, location, scales);
   add_attributes(dset_name, attrs);
+  if(!method_exists)
+    add_name_to_method(iterator_id);
 } 
 
 /// Insert a row or column into a pre-allocated matrix 
 void ResultsDBHDF5:: 
 insert_into(const StrStrSizet& iterator_id,
-         const std::string& lvl_1_name,
-         const std::string& lvl_2_name,
+         const StringArray &location,
          const boost::any& data,
          const int &index, const bool &row) {
    // Store the results
   String dset_name =
-    dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
+    object_hdf5_link_name(iterator_id, location);
   // Need to fix this to use incoming "data"
   if (data.type() == typeid(std::vector<double>)) {
     hdf5Stream->store_row_or_column(dset_name, boost::any_cast<std::vector<double> >(data), index, row);
@@ -121,16 +119,16 @@ insert_into(const StrStrSizet& iterator_id,
 
 /// insert an arbitrary type (eg RealMatrix) with scales
 void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
-            const std::string& lvl_1_name,
-            const std::string& lvl_2_name,
+            const StringArray &location,
             const boost::any& data,
             const DimScaleMap &scales,
             const AttributeArray &attrs,
             const bool &transpose) 
 {
+  bool method_exists = method_in_cache(iterator_id);
   // Store the results
   String dset_name =
-    dataset_hdf5_link_name(iterator_id, lvl_1_name, lvl_2_name);
+    object_hdf5_link_name(iterator_id, location);
   // Need to fix this to use incoming "data"
   if (data.type() == typeid(std::vector<double>)) {
     hdf5Stream->store_vector_data(
@@ -168,12 +166,13 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
          << std::endl;
     abort_handler(-1);
   }
-  attach_scales(dset_name, iterator_id, lvl_1_name, lvl_2_name, scales);
+  attach_scales(dset_name, iterator_id, location, scales);
   add_attributes(dset_name, attrs);
-
+  if(!method_exists)
+    add_name_to_method(iterator_id);
 }
 
-void ResultsDBHDF5::add_metadata_for_method(const StrStrSizet& iterator_id,
+void ResultsDBHDF5::add_metadata_to_method(const StrStrSizet& iterator_id,
             const AttributeArray &attrs)
 {
   String name = method_hdf5_link_name(iterator_id);
@@ -183,7 +182,18 @@ void ResultsDBHDF5::add_metadata_for_method(const StrStrSizet& iterator_id,
   );
 }
 
-void ResultsDBHDF5::add_metadata_for_execution(const StrStrSizet& iterator_id,
+void ResultsDBHDF5::add_name_to_method(const StrStrSizet &iterator_id)
+{
+  String link_name = method_hdf5_link_name(iterator_id);
+  AttributeArray attrs({ResultAttribute<String>("method_name", iterator_id.get<0>())});
+  AddAttributeVisitor attribute_adder(link_name, hdf5Stream);
+  std::for_each(
+    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
+  );
+  methodNameCache.insert(iterator_id.get<0>());
+}
+
+void ResultsDBHDF5::add_metadata_to_execution(const StrStrSizet& iterator_id,
             const AttributeArray &attrs) 
 {
   String name = execution_hdf5_link_name(iterator_id);
@@ -193,11 +203,21 @@ void ResultsDBHDF5::add_metadata_for_execution(const StrStrSizet& iterator_id,
   );
 }
 
+  /// Associate key:value metadata with the object at the location
+void ResultsDBHDF5::add_metadata_to_object(const StrStrSizet& iterator_id,
+                                           const StringArray &location,
+                                           const AttributeArray &attrs) {
+  String name = object_hdf5_link_name(iterator_id, location);
+  AddAttributeVisitor attribute_adder(name, hdf5Stream);
+  std::for_each(
+    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
+  );
+} 
+
 void ResultsDBHDF5::
 attach_scales(const String &dset_name,
             const StrStrSizet& iterator_id,
-            const std::string& lvl_1_name,
-            const std::string& lvl_2_name,
+            const StringArray &location,
             const DimScaleMap &scales) {
 
   // Store and attach the dimension scales.
@@ -206,7 +226,7 @@ attach_scales(const String &dset_name,
   for(auto &s : scales) {  // s is a std::pair<int, boost::variant<StringScale, RealScale> >
     int dimension = s.first;
     AttachScaleVisitor visitor(
-      iterator_id, lvl_1_name, lvl_2_name, dimension, dset_name, hdf5Stream
+      iterator_id, location, dimension, dset_name, hdf5Stream
     );
     boost::apply_visitor(visitor, s.second);
   }
@@ -224,6 +244,13 @@ add_attributes(const String dset_name, const AttributeArray &attrs) {
 
 void ResultsDBHDF5::flush() const {
   hdf5Stream->flush();
+}
+
+bool ResultsDBHDF5::method_in_cache(const StrStrSizet &iterator_id) const {
+  if(methodNameCache.find(iterator_id.get<0>()) == methodNameCache.end())
+    return false;
+  else
+    return true;
 }
 
 } // Dakota namespace

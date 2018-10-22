@@ -238,13 +238,14 @@ protected:
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
   /// archive the mappings from specified response levels for specified fn
-  void archive_from_resp(size_t fn_index);
-  /// archive the mappings to computed response levels for specified fn
-  void archive_to_resp(size_t fn_index);
+  void archive_from_resp(size_t fn_index, size_t inc_id = 0);
+  /// archive the mappings to computed response levels for specified fn and
+  /// (optional) increment id.
+  void archive_to_resp(size_t fn_index, size_t inc_id = 0);
   /// allocate results array storage for pdf histograms
   void archive_allocate_pdf();
   /// archive a single pdf histogram for specified function
-  void archive_pdf(size_t fn_index);
+  void archive_pdf(size_t fn_index, size_t inc_id = 0);
 
   //
   //- Heading: Data members
@@ -440,6 +441,9 @@ protected:
   /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
   size_t miPLIndex;
 
+  /// Whether PDF was computed for function i; used to determine whether
+  /// a pdf should be archived
+  BitArray pdfComputed;
 private:
 
   /// convenience function for distributing a vector of levels among multiple
