@@ -163,6 +163,8 @@ inline void NonDSparseGrid::reset()
   // restore user specification state prior to any uniform/adaptive refinement
   ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
+  // clear state to mandate a grid / grid size update
+  ssgDriver->clear_grid();
 }
 
 
