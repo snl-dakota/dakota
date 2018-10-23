@@ -140,13 +140,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       //if (!crossValidNoiseOnly) Cerr << "Warning: \n";
       crossValidation = crossValidNoiseOnly = true;
       // Main accuracy control is shared expansion order / dictionary size
-
-      // TO DO:
-      // 
       break;
-    case ESTIMATOR_VARIANCE:
-      break;
-    case GREEDY_REFINEMENT:
+    default: //case ESTIMATOR_VARIANCE: case GREEDY_REFINEMENT:
       break;
     }
   }
@@ -566,7 +561,7 @@ void NonDMultilevelPolynomialChaos::core_run()
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
-    // algorithms inherited from NonDExpansion:
+    // general-purpose algorithms inherited from NonDExpansion:
     switch (mlmfAllocControl) {
     case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
     default:                   multifidelity_expansion(refineType); break;
@@ -574,10 +569,10 @@ void NonDMultilevelPolynomialChaos::core_run()
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
     switch (mlmfAllocControl) {
-    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
-    case DEFAULT_MLMF_CONTROL: multifidelity_expansion(refineType); break;
-    // specific to this derived class: ESTIMATOR_VARIANCE, RIP_SAMPLING
-    default:                   multilevel_regression();             break;
+    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();  break;
+    // Projection-based approaches would require multifidelity_expansion(),
+    // but these options are currently precluded by the ML PCE specification.
+    default:                   multilevel_regression();           break;
     }
     break;
   default:
@@ -922,8 +917,10 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	if (lev == 0) compute_expansion(); // init + build; not recursive
-	else           update_expansion(); //   just build; not recursive
+	if (lev == 0 || import_pilot)
+	  compute_expansion(); // init + import + build; not recursive
+	else
+	  update_expansion();  // just build; not recursive
 
 	if (import_pilot) { // update counts to include imported data
 	  NLev[lev] = delta_N_l[lev]
@@ -945,7 +942,11 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       }
 
       switch (mlmfAllocControl) {
-      case ESTIMATOR_VARIANCE: {
+      case RIP_SAMPLING: // use RMS of sparsity across QoI
+	if (delta_N_l[lev] > 0)
+	  sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
+	break;
+      default: { //case ESTIMATOR_VARIANCE:
 	Real& agg_var_l = level_metric[lev];
 	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
 	sum_root_var_cost += std::pow(agg_var_l *
@@ -955,15 +956,14 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
 	break;
       }
-      case RIP_SAMPLING: // use RMS of sparsity across QoI
-	if (delta_N_l[lev] > 0)
-	  sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
-	break;
       }
     }
 
     switch (mlmfAllocControl) {
-    case ESTIMATOR_VARIANCE:
+    case RIP_SAMPLING:
+      compute_sample_increment(cardinality, 2., level_metric, NLev, delta_N_l);
+      break;
+    default: //case ESTIMATOR_VARIANCE:
       if (iter == 0) { // eps^2 / 2 = var * relative factor
 	eps_sq_div_2 = estimator_var0 * convergenceTol;
 	if (outputLevel == DEBUG_OUTPUT)
@@ -971,9 +971,6 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       }
       compute_sample_increment(level_metric, cost, sum_root_var_cost,
 			       eps_sq_div_2, NLev, delta_N_l);
-      break;
-    case RIP_SAMPLING:
-      compute_sample_increment(cardinality, 2., level_metric, NLev, delta_N_l);
       break;
     }
     ++iter;
