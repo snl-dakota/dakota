@@ -860,6 +860,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
+  // all stats are level stats
+  statsType = ACTIVE_EXPANSION_STATS;
 
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
@@ -977,18 +979,17 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
     Cout << "\nML PCE iteration " << iter << " sample increments:\n"
 	 << delta_N_l << std::endl;
   }
+  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
-  // compute aggregate expansion and generate its statistics
-  uSpaceModel.combine_approximation();
-
-  // compute equivHFEvals
-  compute_equivalent_cost(NLev, cost);
+  combined_to_active(); // combine PCE terms and promote to active expansion
+  // Final annotated results are computed / printed in core_run()
 }
 
 
 void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 {
   // case ESTIMATOR_VARIANCE:
+  // statsType remains as ACTIVE_EXPANSION_STATS
 
   // control ML using aggregated variance across the vector of QoI
   // (alternate approach: target QoI with largest variance)
@@ -997,7 +998,7 @@ void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     PecosApproximation* poly_approx_q
       = (PecosApproximation*)poly_approxs[qoi].approx_rep();
-    Real var_l = poly_approx_q->variance();
+    Real var_l = poly_approx_q->variance(); // for active level
     agg_var_l += var_l;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Variance(" /*"lev " << lev << ", "*/ << "qoi " << qoi

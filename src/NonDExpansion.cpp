@@ -1347,10 +1347,10 @@ void NonDExpansion::greedy_multifidelity_expansion()
     post_refinement(best_lev_metric, reverted);
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
-  combined_to_active();
   compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
-  // Final annotated results are printed in core_run()
+  combined_to_active(); // combine expansions and promote result to active
+  // Final annotated results are computed / printed in core_run()
 }
 
 

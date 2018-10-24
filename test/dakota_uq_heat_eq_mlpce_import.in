@@ -25,7 +25,7 @@ method,
 	  max_iterations = 0
 #	  convergence_tolerance = .001
 # Set to silent to minimize intermediate output
-	output debug
+#	output debug
 
 model,
 	id_model = 'HIERARCH'
