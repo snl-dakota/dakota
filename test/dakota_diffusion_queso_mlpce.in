@@ -3,7 +3,7 @@
 method,
 	model_pointer = 'HIERARCH'
 	bayes_calibration queso
-	  chain_samples = 2000 seed = 348
+	  chain_samples = 40000 seed = 348
 	  delayed_rejection
 	  emulator
 	    pce expansion_order = 2				#s0
