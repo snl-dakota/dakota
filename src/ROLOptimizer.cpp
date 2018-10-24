@@ -223,6 +223,24 @@ void ROLOptimizer::set_problem()
   // Extract gradient type and method for finite-differencing
   const String& grad_type     = iteratedModel.gradient_type();
   const String& method_src    = iteratedModel.method_source();
+  const String& interval_type = iteratedModel.interval_type();
+
+  if (grad_type == "none") {
+    Cerr << "\nError: gradient type = none is invalid with ROL.\n"
+         << "Please select numerical, analytic, or mixed gradients.\n";
+    abort_handler(-1);
+  }
+  if (grad_type == "numerical" && method_src == "vendor") {
+    // ROL uses one-sided differences for gradient computations
+    if (interval_type == "central") {
+    Cerr << "\nFinite Difference Type = 'central' is invalid with ROL.\n"
+         << "ROL only provides internal support for forward differences.\n";
+    abort_handler(-1);
+    }
+    // Can not control ROL's parameters for finite-differencing
+    Cerr << "\nWarning: ROL's finite difference step size can not be controlled via Dakota.\n"
+         << "The user-provided (or otherwise Dakota default) step size will be ignored.\n";
+  }
 
   if ( grad_type == "analytic" || grad_type == "mixed" || 
        ( grad_type == "numerical" && method_src == "dakota" ) ){
@@ -230,11 +248,6 @@ void ROLOptimizer::set_problem()
         obj.reset(new DakotaROLObjectiveGrad(iteratedModel));
       else
         obj.reset(new DakotaROLObjectiveHess(iteratedModel));
-  }
-  else if (grad_type == "none") {
-    Cerr << "\nError: gradient type = none is invalid with ROL.\n"
-         << "Please select numerical, analytic, or mixed gradients." << std::endl;
-    abort_handler(-1);
   }
   else { // Vendor numerical gradients
     obj.reset(new DakotaROLObjective(iteratedModel));
@@ -252,11 +265,6 @@ void ROLOptimizer::set_problem()
           eq_const.reset(new DakotaROLEqConstraintsGrad(iteratedModel));
         else
           eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
-    }
-    else if (grad_type == "none") {
-      Cerr << "\nError: gradient type = none is invalid with ROL.\n"
-           << "Please select numerical, analytic, or mixed gradients." << std::endl;
-      abort_handler(-1);
     }
     else { // Vendor numerical gradients
       eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
@@ -278,11 +286,6 @@ void ROLOptimizer::set_problem()
           ineq_const.reset(new DakotaROLIneqConstraintsGrad(iteratedModel));
         else
           ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
-    }
-    else if (grad_type == "none") {
-      Cerr << "\nError: gradient type = none is invalid with ROL.\n"
-           << "Please select numerical, analytic, or mixed gradients." << std::endl;
-      abort_handler(-1);
     }
     else { // Vendor numerical gradients
       ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
