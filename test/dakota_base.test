@@ -7135,7 +7135,7 @@ least_sq_term_1  2.5526794964e-02  5.4922367809e-03  6.6989689519e-01 -5.0002652
 least_sq_term_2  1.3448081793e-01  1.7259098823e-02  3.8965885553e-01 -7.6830078559e-01
 least_sq_term_3  2.5526794964e-02  5.4922367810e-03  6.6989689520e-01 -5.0002652278e-01
 Test Number 1 succeeded
-Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
+Coefficients of Polynomial Chaos Expansion for f1:
    2.5082955196e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -9.9173478541e-03   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -2.2079363549e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7334,7 +7334,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    1.8389036099e-04   P0   P0   P0   P0   P0   P0   P1   P0   P2
   -4.7167587994e-06   P0   P0   P0   P0   P0   P0   P0   P1   P2
   -4.1855130183e-05   P0   P0   P0   P0   P0   P0   P0   P0   P3
-Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
+Coefficients of Polynomial Chaos Expansion for f2:
    1.2773154138e-01   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -3.1966090951e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
    3.6195609603e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7533,7 +7533,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
    3.0990248983e-06   P0   P0   P0   P0   P1   P0   P0   P0   P2
    9.5632459947e-06   P0   P0   P0   P0   P0   P1   P0   P0   P2
   -3.2953069118e-05   P0   P0   P0   P0   P0   P0   P0   P0   P3
-Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
+Coefficients of Polynomial Chaos Expansion for f3:
    2.5082955196e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -9.9173478542e-03   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -2.2079363549e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7734,10 +7734,10 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
   -4.1855130119e-05   P0   P0   P0   P0   P0   P0   P0   P0   P3
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5082955196e-02  6.0802406336e-03
-least_sq_term_2  1.2773154138e-01  1.9142978220e-02
-least_sq_term_3  2.5082955196e-02  6.0802406337e-03
-Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
+            f1  2.5082955196e-02  6.0802406336e-03
+            f2  1.2773154138e-01  1.9142978220e-02
+            f3  2.5082955196e-02  6.0802406337e-03
+Coefficients of Polynomial Chaos Expansion for f1:
    1.2875137449e-04   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -7.2836107162e-04   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -5.0802498706e-04   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7788,7 +7788,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
   -1.1141640645e-04   P0   P0   P0   P0   P0   P0   P1   P0   P1
    3.4887198342e-05   P0   P0   P0   P0   P0   P0   P0   P1   P1
    2.6258134685e-05   P0   P0   P0   P0   P0   P0   P0   P0   P2
-Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
+Coefficients of Polynomial Chaos Expansion for f2:
    1.0478085983e-03   P0   P0   P0   P0   P0   P0   P0   P0   P0
    9.0307541059e-03   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -3.5420877348e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7839,7 +7839,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
   -2.6159807792e-04   P0   P0   P0   P0   P0   P0   P1   P0   P1
    1.6850396103e-04   P0   P0   P0   P0   P0   P0   P0   P1   P1
    9.2172799188e-05   P0   P0   P0   P0   P0   P0   P0   P0   P2
-Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
+Coefficients of Polynomial Chaos Expansion for f3:
    1.2875137449e-04   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -7.2836107164e-04   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -5.0802498707e-04   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7892,10 +7892,10 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
    2.6258134699e-05   P0   P0   P0   P0   P0   P0   P0   P0   P2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  1.2875137449e-04  6.2447104677e-04
-least_sq_term_2  1.0478085983e-03  7.4271159716e-03
-least_sq_term_3  1.2875137449e-04  6.2447104677e-04
-Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
+            f1  1.2875137449e-04  6.2447104677e-04
+            f2  1.0478085983e-03  7.4271159716e-03
+            f3  1.2875137449e-04  6.2447104677e-04
+Coefficients of Polynomial Chaos Expansion for f1:
   -2.5220528420e-06   P0   P0   P0   P0   P0   P0   P0   P0   P0
    9.3965472010e-06   P1   P0   P0   P0   P0   P0   P0   P0   P0
    2.3612657083e-05   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7946,7 +7946,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    1.4863974769e-05   P0   P0   P0   P0   P0   P0   P1   P0   P1
   -4.9572152588e-06   P0   P0   P0   P0   P0   P0   P0   P1   P1
   -2.2164302852e-06   P0   P0   P0   P0   P0   P0   P0   P0   P2
-Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
+Coefficients of Polynomial Chaos Expansion for f2:
    1.5061618325e-04   P0   P0   P0   P0   P0   P0   P0   P0   P0
    2.2949741881e-04   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -6.2737423225e-04   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -7997,7 +7997,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
    5.2977972871e-05   P0   P0   P0   P0   P0   P0   P1   P0   P1
    9.9211734572e-05   P0   P0   P0   P0   P0   P0   P0   P1   P1
   -1.4667712526e-04   P0   P0   P0   P0   P0   P0   P0   P0   P2
-Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
+Coefficients of Polynomial Chaos Expansion for f3:
   -2.5220528520e-06   P0   P0   P0   P0   P0   P0   P0   P0   P0
    9.3965472348e-06   P1   P0   P0   P0   P0   P0   P0   P0   P0
    2.3612657049e-05   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8050,10 +8050,10 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
   -2.2164303087e-06   P0   P0   P0   P0   P0   P0   P0   P0   P2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1 -2.5220528420e-06  5.4411791846e-05
-least_sq_term_2  1.5061618325e-04  1.1073480822e-03
-least_sq_term_3 -2.5220528520e-06  5.4411791831e-05
-Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
+            f1 -2.5220528420e-06  5.4411791846e-05
+            f2  1.5061618325e-04  1.1073480822e-03
+            f3 -2.5220528520e-06  5.4411791831e-05
+Coefficients of Polynomial Chaos Expansion for f1:
   -5.6972124762e-07   P0   P0   P0   P0   P0   P0   P0   P0   P0
    1.6168492185e-06   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -1.4407465108e-06   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8063,7 +8063,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    2.1308882409e-06   P0   P0   P0   P0   P0   P1   P0   P0   P0
    4.4839395457e-06   P0   P0   P0   P0   P0   P0   P1   P0   P0
   -9.1861387359e-07   P0   P0   P0   P0   P0   P0   P0   P0   P1
-Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
+Coefficients of Polynomial Chaos Expansion for f2:
   -1.2082691104e-05   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -3.5631962171e-05   P1   P0   P0   P0   P0   P0   P0   P0   P0
    3.2101635485e-05   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8073,7 +8073,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
   -2.2029299345e-06   P0   P0   P0   P0   P0   P0   P1   P0   P0
   -1.0718914402e-05   P0   P0   P0   P0   P0   P0   P0   P1   P0
    1.2168543990e-05   P0   P0   P0   P0   P0   P0   P0   P0   P1
-Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
+Coefficients of Polynomial Chaos Expansion for f3:
   -5.6972126396e-07   P0   P0   P0   P0   P0   P0   P0   P0   P0
    1.6168502769e-06   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -1.4407463164e-06   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8085,10 +8085,10 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
   -9.1861319392e-07   P0   P0   P0   P0   P0   P0   P0   P0   P1
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1 -5.6972124762e-07  3.4941279961e-06
-least_sq_term_2 -1.2082691104e-05  1.1826153955e-04
-least_sq_term_3 -5.6972126396e-07  3.4941285468e-06
-Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
+            f1 -5.6972124762e-07  3.4941279961e-06
+            f2 -1.2082691104e-05  1.1826153955e-04
+            f3 -5.6972126396e-07  3.4941285468e-06
+Coefficients of Polynomial Chaos Expansion for f1:
    1.1252808612e-08   P0   P0   P0   P0   P0   P0   P0   P0   P0
    7.1053302479e-09   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -6.0166093932e-09   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8098,7 +8098,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    6.3152424737e-08   P0   P0   P0   P0   P0   P1   P0   P0   P0
    9.6172587728e-09   P0   P0   P0   P0   P0   P0   P1   P0   P0
    2.4901289679e-08   P0   P0   P0   P0   P0   P0   P0   P0   P1
-Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
+Coefficients of Polynomial Chaos Expansion for f2:
   -8.0268835629e-08   P0   P0   P0   P0   P0   P0   P0   P0   P0
    2.0680842969e-08   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -2.3199551056e-06   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8108,7 +8108,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
    7.8870268603e-07   P0   P0   P0   P0   P0   P0   P1   P0   P0
   -1.3661768253e-06   P0   P0   P0   P0   P0   P0   P0   P1   P0
    5.0506577262e-06   P0   P0   P0   P0   P0   P0   P0   P0   P1
-Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
+Coefficients of Polynomial Chaos Expansion for f3:
    1.1254302283e-08   P0   P0   P0   P0   P0   P0   P0   P0   P0
    7.1102780917e-09   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -6.0088444099e-09   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8120,10 +8120,10 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
    2.4900291778e-08   P0   P0   P0   P0   P0   P0   P0   P0   P1
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  1.1252808612e-08  4.9384235579e-08
-least_sq_term_2 -8.0268835629e-08  3.9565591273e-06
-least_sq_term_3  1.1254302283e-08  4.9378832343e-08
-Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
+            f1  1.1252808612e-08  4.9384235579e-08
+            f2 -8.0268835629e-08  3.9565591273e-06
+            f3  1.1254302283e-08  4.9378832343e-08
+Coefficients of Polynomial Chaos Expansion for f1:
    2.5208626050e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -1.0634688424e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -2.6937954480e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8323,7 +8323,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    1.8389036099e-04   P0   P0   P0   P0   P0   P0   P1   P0   P2
   -4.7167587994e-06   P0   P0   P0   P0   P0   P0   P0   P1   P2
   -4.1855130183e-05   P0   P0   P0   P0   P0   P0   P0   P0   P3
-Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
+Coefficients of Polynomial Chaos Expansion for f2:
    1.2891780320e-01   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -2.2741450707e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -5.2011932643e-04   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8526,7 +8526,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
    3.0990248983e-06   P0   P0   P0   P0   P1   P0   P0   P0   P2
    9.5632459947e-06   P0   P0   P0   P0   P0   P1   P0   P0   P2
   -3.2953069118e-05   P0   P0   P0   P0   P0   P0   P0   P0   P3
-Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
+Coefficients of Polynomial Chaos Expansion for f3:
    2.5208626051e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -1.0634688418e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -2.6937954401e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -8728,9 +8728,9 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
   -4.1855130119e-05   P0   P0   P0   P0   P0   P0   P0   P0   P3
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5208626050e-02  6.5869572252e-03
-least_sq_term_2  1.2891780320e-01  1.3752176610e-02
-least_sq_term_3  2.5208626051e-02  6.5869572211e-03
+            f1  2.5208626050e-02  6.5869572252e-03
+            f2  1.2891780320e-01  1.3752176610e-02
+            f3  2.5208626051e-02  6.5869572211e-03
 <<<<< Function evaluation summary: 434 total (375 new, 59 duplicate)
 <<<<< Best parameters          =
                      -1.5834572811e-03 uuv_1
@@ -8761,54 +8761,54 @@ Sample moment statistics for each posterior variable:
          uuv_9 -5.5117349194e-03  5.4054819828e-01  7.1535113487e-03 -1.0666890619e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.4660686565e-02  5.8557711067e-03  8.0046375468e-01 -5.9573725939e-02
-least_sq_term_2  1.2756665725e-01  1.2365997918e-02  8.8202126388e-01 -2.1844700863e-01
-least_sq_term_3  2.4660686566e-02  5.8557711030e-03  8.0046375534e-01 -5.9573725097e-02
+            f1  2.4660686565e-02  5.8557711067e-03  8.0046375468e-01 -5.9573725939e-02
+            f2  1.2756665725e-01  1.2365997918e-02  8.8202126388e-01 -2.1844700863e-01
+            f3  2.4660686566e-02  5.8557711030e-03  8.0046375534e-01 -5.9573725097e-02
 Test Number 2 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5146121230e-02  6.1213417206e-03  7.4792790586e-01 -2.2943529290e-01
-least_sq_term_2  1.2775234301e-01  1.9133754327e-02  4.1656905856e-01 -8.3305156054e-01
-least_sq_term_3  2.5146121230e-02  6.1213417206e-03  7.4792790586e-01 -2.2943529290e-01
+            f1  2.5146121230e-02  6.1213417206e-03  7.4792790586e-01 -2.2943529290e-01
+            f2  1.2775234301e-01  1.9133754327e-02  4.1656905856e-01 -8.3305156054e-01
+            f3  2.5146121230e-02  6.1213417206e-03  7.4792790586e-01 -2.2943529290e-01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  1.2804737972e-04  5.7565432716e-04  1.1501615189e+00  6.1078947136e-01
-least_sq_term_2  1.1409185304e-03  7.6390307139e-03 -4.9969056602e-01 -4.8302448107e-01
-least_sq_term_3  1.2804737969e-04  5.7565432718e-04  1.1501615189e+00  6.1078947128e-01
+            f1  1.2804737972e-04  5.7565432716e-04  1.1501615189e+00  6.1078947136e-01
+            f2  1.1409185304e-03  7.6390307139e-03 -4.9969056602e-01 -4.8302448107e-01
+            f3  1.2804737969e-04  5.7565432718e-04  1.1501615189e+00  6.1078947128e-01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1 -7.6932565968e-07  5.3641746859e-05 -2.8058991045e-01 -1.4644901738e+00
-least_sq_term_2  1.4304479921e-04  1.1155220019e-03  1.1337155517e-01 -9.2646502232e-01
-least_sq_term_3 -7.6932592345e-07  5.3641746808e-05 -2.8058989661e-01 -1.4644901754e+00
+            f1 -7.6932565968e-07  5.3641746859e-05 -2.8058991045e-01 -1.4644901738e+00
+            f2  1.4304479921e-04  1.1155220019e-03  1.1337155517e-01 -9.2646502232e-01
+            f3 -7.6932592345e-07  5.3641746808e-05 -2.8058989661e-01 -1.4644901754e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  8.1267272522e-08  3.0909962940e-06 -7.7243409417e-02 -2.3457730363e+00
-least_sq_term_2  4.4144520760e-06  8.1926287250e-05 -1.8368460609e-01 -2.3766629495e+00
-least_sq_term_3  8.1267310126e-08  3.0909963532e-06 -7.7243327565e-02 -2.3457731330e+00
+            f1  8.1267272522e-08  3.0909962940e-06 -7.7243409417e-02 -2.3457730363e+00
+            f2  4.4144520760e-06  8.1926287250e-05 -1.8368460609e-01 -2.3766629495e+00
+            f3  8.1267310126e-08  3.0909963532e-06 -7.7243327565e-02 -2.3457731330e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1 -2.0348397940e-09  3.2518676115e-08  1.3537013163e-01 -1.3762816589e+00
-least_sq_term_2  1.3598813083e-07  1.2758223858e-06 -2.6038670869e-01 -1.2146904069e+00
-least_sq_term_3 -2.0409952846e-09  3.2519248364e-08  1.3583895533e-01 -1.3760935502e+00
+            f1 -2.0348397940e-09  3.2518676115e-08  1.3537013163e-01 -1.3762816589e+00
+            f2  1.3598813083e-07  1.2758223858e-06 -2.6038670869e-01 -1.2146904069e+00
+            f3 -2.0409952846e-09  3.2519248364e-08  1.3583895533e-01 -1.3760935502e+00
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    2.5273478517e-02  6.5974430765e-03  7.8289970193e-01 -1.3703695833e-01
-  integration:  2.5273478517e-02  6.5974430765e-03  7.8289970193e-01 -1.3703695833e-01
-  expansion:    1.2904085678e-01  1.3500457304e-02  7.2579798616e-01 -5.9402615102e-01
-  integration:  1.2904085678e-01  1.3500457304e-02  7.2579798616e-01 -5.9402615103e-01
+  expansion:    2.5273478517e-02  6.5974430765e-03  7.8289970192e-01 -1.3703695834e-01
+  integration:  2.5273478517e-02  6.5974430765e-03  7.8289970193e-01 -1.3703695834e-01
+  expansion:    1.2904085678e-01  1.3500457304e-02  7.2579798617e-01 -5.9402615102e-01
+  integration:  1.2904085678e-01  1.3500457304e-02  7.2579798616e-01 -5.9402615102e-01
   expansion:    2.5273478510e-02  6.5974430769e-03  7.8289970144e-01 -1.3703695907e-01
   integration:  2.5273478510e-02  6.5974430769e-03  7.8289970144e-01 -1.3703695907e-01
 <<<<< Function evaluation summary: 2391 total (1955 new, 436 duplicate)
 <<<<< Best parameters          =
-                      2.1747766978e-03 uuv_1
-                     -4.6796388069e-01 uuv_2
-                     -1.6709209155e-01 uuv_3
-                     -9.5283545501e-02 uuv_4
-                     -4.8459313842e-02 uuv_5
-                     -2.8678448839e-02 uuv_6
-                     -1.4799731689e-02 uuv_7
-                     -7.8575107052e-03 uuv_8
-                     -2.8877213467e-03 uuv_9
+                      2.1747766971e-03 uuv_1
+                     -4.6796388070e-01 uuv_2
+                     -1.6709209153e-01 uuv_3
+                     -9.5283545493e-02 uuv_4
+                     -4.8459313835e-02 uuv_5
+                     -2.8678448817e-02 uuv_6
+                     -1.4799731692e-02 uuv_7
+                     -7.8575107123e-03 uuv_8
+                     -2.8877213484e-03 uuv_9
 <<<<< Best misfit              =
                       3.6522423530e-08
 <<<<< Best log prior           =
@@ -8817,22 +8817,22 @@ Moment statistics for each response function:
                      -7.9554194903e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  5.3395399717e-02  5.2344478211e-01 -1.0149607751e-01 -9.7620479293e-01
-         uuv_2 -1.1848175147e-02  5.4586181108e-01  8.9188448203e-03 -1.0703034933e+00
-         uuv_3  8.6150033372e-04  5.3003296187e-01  3.6475432591e-02 -1.0064606341e+00
-         uuv_4 -5.3353852612e-03  5.5075661529e-01  6.3825394762e-03 -1.1390432357e+00
-         uuv_5  4.0111736289e-02  5.3509055526e-01 -5.4371588465e-02 -1.0267224976e+00
-         uuv_6  2.3224848024e-04  5.2214395099e-01 -1.7909712256e-02 -1.0081714860e+00
-         uuv_7 -4.6777018972e-03  5.4795263312e-01  5.7993733402e-02 -1.0970869209e+00
-         uuv_8 -1.0838724956e-02  5.2739565425e-01  1.3035070870e-02 -1.0214758293e+00
-         uuv_9  6.3365622269e-03  5.3484293284e-01 -3.1447758559e-03 -1.0323202268e+00
+         uuv_1  5.3395399716e-02  5.2344478211e-01 -1.0149607751e-01 -9.7620479293e-01
+         uuv_2 -1.1848175154e-02  5.4586181108e-01  8.9188448203e-03 -1.0703034933e+00
+         uuv_3  8.6150034897e-04  5.3003296187e-01  3.6475432591e-02 -1.0064606341e+00
+         uuv_4 -5.3353852530e-03  5.5075661529e-01  6.3825394762e-03 -1.1390432357e+00
+         uuv_5  4.0111736295e-02  5.3509055526e-01 -5.4371588465e-02 -1.0267224976e+00
+         uuv_6  2.3224850256e-04  5.2214395099e-01 -1.7909712256e-02 -1.0081714860e+00
+         uuv_7 -4.6777019007e-03  5.4795263312e-01  5.7993733402e-02 -1.0970869209e+00
+         uuv_8 -1.0838724963e-02  5.2739565425e-01  1.3035070870e-02 -1.0214758293e+00
+         uuv_9  6.3365622252e-03  5.3484293284e-01 -3.1447758559e-03 -1.0323202268e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.4491852348e-02  5.8798693839e-03  9.8837738735e-01  6.3838594530e-01
-least_sq_term_2  1.2718142869e-01  1.1899649440e-02  9.7996597256e-01  2.1182526215e-01
-least_sq_term_3  2.4491852343e-02  5.8798693843e-03  9.8837738676e-01  6.3838594394e-01
+            f1  2.4491852348e-02  5.8798693839e-03  9.8837738735e-01  6.3838594530e-01
+            f2  1.2718142869e-01  1.1899649440e-02  9.7996597256e-01  2.1182526215e-01
+            f3  2.4491852343e-02  5.8798693843e-03  9.8837738675e-01  6.3838594394e-01
 Test Number 3 succeeded
-Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
+Coefficients of Polynomial Chaos Expansion for f1:
    2.5267541222e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -1.0640531908e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -2.7110766987e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -9254,7 +9254,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
   -1.3031127406e-05   P0   P1   P0   P0   P0   P0   P0   P0   P3
   -1.6995240616e-06   P0   P0   P1   P0   P0   P0   P0   P0   P3
   -1.1660786970e-05   P0   P0   P0   P1   P0   P0   P0   P0   P3
-Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
+Coefficients of Polynomial Chaos Expansion for f2:
    1.2892905781e-01   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -2.2623888456e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -4.7052656557e-04   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -9661,7 +9661,7 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_2:
   -1.1499720348e-05   P0   P0   P0   P1   P0   P0   P0   P0   P3
    1.7489932087e-06   P0   P0   P0   P0   P0   P0   P1   P0   P3
   -1.3250306887e-06   P0   P0   P0   P0   P0   P0   P0   P1   P3
-Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
+Coefficients of Polynomial Chaos Expansion for f3:
    2.5267541222e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
   -1.0640531908e-02   P1   P0   P0   P0   P0   P0   P0   P0   P0
   -2.7110766989e-03   P0   P1   P0   P0   P0   P0   P0   P0   P0
@@ -10086,42 +10086,42 @@ Coefficients of Polynomial Chaos Expansion for least_sq_term_3:
 <<<<< Equivalent number of high fidelity evaluations: 2.9467285156e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5267541222e-02  6.5891011847e-03
-least_sq_term_2  1.2892905781e-01  1.3541589182e-02
-least_sq_term_3  2.5267541222e-02  6.5891011849e-03
+            f1  2.5267541222e-02  6.5891011847e-03
+            f2  1.2892905781e-01  1.3541589182e-02
+            f3  2.5267541222e-02  6.5891011849e-03
 <<<<< Function evaluation summary: 788 total (788 new, 0 duplicate)
 <<<<< Best parameters          =
-                     -4.1301989388e-04 uuv_1
-                     -6.4362641699e-01 uuv_2
-                      4.6505651453e-01 uuv_3
-                     -4.6925600185e-01 uuv_4
-                      3.3766671197e-01 uuv_5
-                     -2.7162498191e-01 uuv_6
-                     -4.6935633869e-01 uuv_7
-                      8.4268134345e-01 uuv_8
-                     -6.9507514573e-01 uuv_9
+                     -1.0903573982e-04 uuv_1
+                     -6.4370257067e-01 uuv_2
+                      4.6498292369e-01 uuv_3
+                     -4.6930980881e-01 uuv_4
+                      3.3763009171e-01 uuv_5
+                     -2.7163897805e-01 uuv_6
+                     -4.6929533048e-01 uuv_7
+                      8.4269202025e-01 uuv_8
+                     -6.9508773704e-01 uuv_9
 <<<<< Best misfit              =
-                      3.6415603866e-10
+                      3.4176594887e-10
 <<<<< Best log prior           =
                      -6.2383246250e+00
 <<<<< Best log posterior       =
                      -7.9554194542e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1 -2.8356838137e-02  5.2948921713e-01  5.3806137955e-02 -1.0006095958e+00
-         uuv_2 -2.1447230351e-02  5.4815980284e-01  4.4917379236e-02 -1.1208680744e+00
-         uuv_3  1.1360817639e-02  5.3584451930e-01 -3.5628189277e-02 -1.0288444305e+00
-         uuv_4 -9.2789278264e-03  5.2632475057e-01 -8.2208256033e-03 -1.0193166147e+00
-         uuv_5  2.6473965781e-02  5.5244078038e-01 -6.9495839442e-02 -1.1222867730e+00
-         uuv_6  1.7086548848e-02  5.2858079241e-01 -2.7189236696e-02 -9.9643437414e-01
-         uuv_7  5.6096252855e-05  5.3744993972e-01  4.4973709164e-02 -1.1084953697e+00
-         uuv_8  1.9434962179e-02  5.4046212358e-01 -7.3312470265e-02 -1.0338422780e+00
-         uuv_9  3.7336860997e-03  5.2993299218e-01  1.4172781922e-02 -1.0491643858e+00
+         uuv_1 -3.8906560601e-02  5.3154410551e-01  5.3246202526e-02 -1.0434724636e+00
+         uuv_2 -1.7651526599e-02  5.2209116991e-01  4.9434110867e-02 -9.7890308692e-01
+         uuv_3 -2.2038331071e-02  5.3800918458e-01  8.2326607271e-02 -1.0248208014e+00
+         uuv_4 -2.5049193564e-02  5.4367128699e-01  3.8973273510e-02 -1.0949464281e+00
+         uuv_5  5.0589567620e-03  5.3739119315e-01 -3.7714980478e-02 -1.0675586800e+00
+         uuv_6  2.6142355285e-02  5.3564846077e-01 -4.0459210654e-02 -1.0091408493e+00
+         uuv_7  1.8838049404e-03  5.3285612266e-01  1.0564025073e-02 -1.0786581902e+00
+         uuv_8  4.9590569661e-02  5.3351308913e-01 -1.2178924410e-01 -1.0090085769e+00
+         uuv_9 -1.9815206228e-02  5.2589901083e-01  1.1239738577e-02 -1.0151790249e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5337317043e-02  6.0144065334e-03  7.6189474097e-01  3.9835263968e-02
-least_sq_term_2  1.2895553558e-01  1.2492015772e-02  7.3074801846e-01 -4.0033033675e-01
-least_sq_term_3  2.5337317042e-02  6.0144065336e-03  7.6189474115e-01  3.9835264116e-02
+            f1  2.5508258866e-02  6.1252271590e-03  7.6701828096e-01  1.1673651720e-02
+            f2  1.2923053309e-01  1.2647673940e-02  7.0856731470e-01 -4.7458154322e-01
+            f3  2.5508258866e-02  6.1252271596e-03  7.6701828118e-01  1.1673651879e-02
 dakota_dll.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
