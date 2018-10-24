@@ -321,13 +321,13 @@ private:
   /// model evaluation due to variable ASV content)
   IntIntMap subIteratorIdMap;
   /// number of sub-iterator response functions prior to mapping
-  size_t numSubIterFns;
+  size_t numSubIterFns = 0;
   /// number of top-level inequality constraints mapped from the
   /// sub-iteration results
-  size_t numSubIterMappedIneqCon;
+  size_t numSubIterMappedIneqCon = 0;
   /// number of top-level equality constraints mapped from the
   /// sub-iteration results
-  size_t numSubIterMappedEqCon;
+  size_t numSubIterMappedEqCon = 0;
 
   // Attributes pertaining to optionalInterface:
   //
@@ -344,13 +344,13 @@ private:
   IntIntMap optInterfaceIdMap;
   /// number of primary response functions (objective/least squares/generic
   /// functions) resulting from optional interface evaluations
-  size_t numOptInterfPrimary;
+  size_t numOptInterfPrimary = 0;
   /// number of inequality constraints resulting from optional
   /// interface evaluations
-  size_t numOptInterfIneqCon;
+  size_t numOptInterfIneqCon = 0;
   /// number of equality constraints resulting from the optional
   /// interface evaluations
-  size_t numOptInterfEqCon;
+  size_t numOptInterfEqCon = 0;
 
   // Attributes pertaining to variables mapping
   //
@@ -424,13 +424,13 @@ private:
   // specific for now -> generalize for UOO and others):
   //
   /// whether identity response mapping is active
-  bool identityRespMap;
+  bool identityRespMap = false;
   /// number of sub-iterator results functions mapped to nested model
   /// primary functions (cached for use with identity case)
-  size_t subIterMappedPri;
+  size_t subIterMappedPri = 0;
   /// number of sub-iterator results functions mapped to nested model
   /// secondary functions (cached for use with identity case)
-  size_t subIterMappedSec;
+  size_t subIterMappedSec = 0;
   /// "primary" response_mapping matrix applied to the sub-iterator response
   /// functions.  For OUU, the matrix is applied to UQ statistics to create
   /// contributions to the top-level objective functions/least squares/
