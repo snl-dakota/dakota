@@ -150,8 +150,8 @@ void register_signal_handlers()
 
 
 /** See details in code for details, depending on MPI implementation in use. */
-void mpi_debug_hold() {
-
+void mpi_debug_hold()
+{
 #ifdef MPI_DEBUG
   // hold parallel job prior to MPI_Init() in order to attach debugger to
   // master process.  Then step past ParallelLibrary instantiation and attach

@@ -1237,9 +1237,10 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   while (componentParallelMode) {
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode) {
-      UShortArray model_key(0,0);
       // use a quick size estimation for recv buffer i/o size bcast
       MPIPackBuffer send_buff;
+       // Note: LF approxDataKeys get appended but not model keys
+      UShortArray model_key(2,0);
       send_buff << model_key << responseMode;
       int buffer_len = send_buff.size();
       // receive model state from HierarchSurrModel::component_parallel_mode()
