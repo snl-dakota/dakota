@@ -1,3 +1,6 @@
+#@ s1: TimeoutAbsolute=3600
+#@ s1: TimeoutDelay=1200
+
 environment,
 	output_precision = 16
 
@@ -5,17 +8,16 @@ method,
 	model_pointer = 'HIERARCH'
         multifidelity_polynomial_chaos
 	  allocation_control greedy
-	  p_refinement dimension_adaptive generalized		#s0,#s1
-	    sparse_grid_level_sequence = 0 unrestricted		#s0,#s1
-#	  p_refinement uniform	       	 			#s2,#s3
-#	    expansion_order_sequence = 0			#s2
-#	    collocation_ratio = .9  seed = 160415		#s2
-#	    orthogonal_matching_pursuit				#s2
-#	    sparse_grid_level_sequence = 0 unrestricted		#s3
-	    convergence_tolerance 1.e-6				#s0
-#	    convergence_tolerance 1.e-8				#s1
-#	    convergence_tolerance 5.e-3				#s2
-#	    convergence_tolerance 5.e-4				#s3
+	  p_refinement dimension_adaptive generalized		#s0
+	    sparse_grid_level_sequence = 0 unrestricted		#s0
+	    convergence_tolerance 1.e-8				#s0
+#	  p_refinement uniform	       	 			#s1,#s2
+#	    expansion_order_sequence = 0			#s1
+#	    collocation_ratio = .9  seed = 160415		#s1
+#	    orthogonal_matching_pursuit				#s1
+#	    convergence_tolerance 1.e-1				#s1
+#	    sparse_grid_level_sequence = 0 unrestricted		#s2
+#	    convergence_tolerance 1.e-3				#s2
 #	    max_refinement_iterations 100
 	output silent
 #	variance_based_decomp
