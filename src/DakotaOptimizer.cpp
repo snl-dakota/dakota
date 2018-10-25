@@ -221,7 +221,6 @@ void Optimizer::print_results(std::ostream& s, short results_state)
     s << "<<<<< Best parameters          "; 
     if (num_best > 1) s << "(set " << i+1 << ") "; 
     s << "=\n" << best_vars;
-    archive_best_variables(i);  
     // output best response
     // TODO: based on local_nls_recast due to SurrBasedMinimizer?
     const RealVector& best_fns = bestResponseArray[i].function_values(); 
@@ -231,7 +230,6 @@ void Optimizer::print_results(std::ostream& s, short results_state)
       else                       s << "<<<<< Best objective function  "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
       write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns); 
-      archive_best_objective_functions(i);
     }
     else {
       if (calibrationDataFlag) {

@@ -147,6 +147,8 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
   }
   else if (data.type() == typeid(RealMatrix)) {
     hdf5Stream->store_matrix_data(dset_name, boost::any_cast<RealMatrix>(data), transpose);
+  } else if (data.type() == typeid(Real)) {
+    hdf5Stream->store_scalar_data(dset_name, boost::any_cast<Real>(data));
   }
   //  ----------------------------
   //  These are some more types that HDF5 I/O utils will need to support ...

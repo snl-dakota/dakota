@@ -68,19 +68,6 @@ public:
                             const Response& best_submodel_resp,
                             size_t num_best, size_t best_ind);
 
-  /// allocate storage for best original model responses (responses not
-  /// differenced with experimental data)
-  void archive_allocate_original(ResultsManager &results_db, 
-                                 StrStrSizet &iterator_id, 
-                                 int num_best);
-
-  /// allocate storage for best residuals. There is a similar function in
-  /// the Minimizer class; that one is used when the user provided no
-  /// calibration data and the model responses are themselves residuals.
-  void archive_allocate_residuals(ResultsManager &results_db,
-                                  StrStrSizet &iterator_id,
-                                  int num_best);
-
   /// archive best responses 
   void archive_best_responses(const ResultsManager &results_db,
                               const StrStrSizet iterator_id,
@@ -213,8 +200,15 @@ protected:
   void archive_best_original(const ResultsManager &results_db, 
                              const StrStrSizet &iterator_id, 
                              const RealVector &function_values, 
-                             const int &exp_index, const int &soln_index);
+                             const int &exp_index, const int &num_best,
+                             const int &best_index);
 
+  void archive_best_residuals(const ResultsManager &results_db, 
+                              const StrStrSizet &iterator_id,
+                              const int num_fns, 
+                              const RealVector &best_terms, 
+                              const Real wssr, const int num_points,
+                              const int point_index);
   /// Reference to the experiment data used to construct this Model
   const ExperimentData& expData;
 

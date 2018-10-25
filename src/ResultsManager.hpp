@@ -131,7 +131,7 @@ public:
               const StoredType& sent_data,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),
-              const bool &transpose = false)
+              const bool &transpose = false) const
   {
     for( auto & db : resultsDBs )
       db->insert(iterator_id, location, sent_data, scales, attrs, transpose);

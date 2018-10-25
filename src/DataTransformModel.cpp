@@ -1043,49 +1043,52 @@ recover_submodel_responses(std::ostream& s,
   scale_response(subModel.current_variables(), currentVariables, residual_resp);
 }
 
-void DataTransformModel::archive_allocate_original(ResultsManager &results_db, 
-                                                StrStrSizet &iterator_id, 
-                                                int num_best) {
+void DataTransformModel::
+archive_best_residuals(const ResultsManager &results_db, 
+                              const StrStrSizet &iterator_id,
+                              const int num_terms,
+                              const RealVector &best_terms, 
+                              const Real wssr, const int num_points,
+                              const int point_index) {
   if(!results_db.active()) return;
-  for(int i = 0; i < expData.num_experiments(); ++i) {
-    DimScaleMap scales;
-    scales.emplace(1, StringScale("responses", subModel.response_labels(), 
-                                  ScaleScope::SHARED)
-                  );
-    //TODO add scales
-    results_db.allocate_matrix(iterator_id, {String("best_model_responses"),
-                               String("experiment:") + std::to_string(i+1)},
-                               ResultsOutputType::REAL,
-                               num_best, subModel.num_primary_fns(), scales);
+  
+  StringArray residuals_location;
+  StringArray norm_location;
+  if(num_points > 1) {
+    String set_string = String("set:") + std::to_string(point_index+1);
+    residuals_location.push_back(set_string);
+    norm_location.push_back(set_string);
   }
-
-}
-void DataTransformModel::archive_allocate_residuals(ResultsManager &results_db,
-                                  StrStrSizet &iterator_id,
-                                  int num_best) {
-  if(!results_db.active())  return;
-  results_db.allocate_matrix(iterator_id, {String("best_residuals")},
-                             ResultsOutputType::REAL,
-                             num_best, num_primary_fns());
-
-  results_db.allocate_vector(iterator_id, {String("best_norms")},
-                            ResultsOutputType::REAL, num_best); 
-
+  residuals_location.push_back("best_residuals");
+  norm_location.push_back("best_norm");
+  Teuchos::SerialDenseVector<int, Real> residuals(Teuchos::View, 
+                              const_cast<Real*>(&best_terms[0]), 
+                              num_terms);
+  results_db.insert(iterator_id, residuals_location, residuals);
+  results_db.insert(iterator_id, norm_location, wssr);
 }
 
 void DataTransformModel::archive_best_original(const ResultsManager &results_db, 
                                                const StrStrSizet &iterator_id, 
                                                const RealVector &function_values, 
-                                               const int &exp_index, const int &soln_index) {
+                                               const int &exp_index,
+                                               const int &num_best, 
+                                               const int &best_index) {
   if(!results_db.active())  return;
-//  DimScaleMap scales;
-//  scales.emplace(1, StringScale("responses", function_labels, ScaleScope::SHARED));
-//  results_db.insert(iterator_id, String("best_model_responses"),
-//                    String("experiment:") + std::to_string(i+1),
-//                   function_values, scales);
-  results_db.insert_into(iterator_id, {String("best_model_responses"),
-                         String("experiment:") + std::to_string(exp_index+1)},
-                         function_values, soln_index);
+  
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("responses", subModel.response_labels(), 
+                                ScaleScope::SHARED)
+                );
+
+  StringArray location;
+  if(num_best > 1)
+    location.push_back(String("set:") + std::to_string(best_index+1));
+  location.push_back("best_model_responses");
+  if(expData.num_config_vars())
+    location.push_back(String("experiment:") + std::to_string(exp_index+1));
+    
+  results_db.insert(iterator_id, location, function_values, scales);
 }
 
 
@@ -1145,7 +1148,7 @@ archive_submodel_responses(const ResultsManager &results_db,
       expData.form_residuals(model_resp, i, residual_resp);
       archive_best_original(results_db, iterator_id, 
                              model_resp.function_values(), 
-                             i, best_ind);
+                             i, num_best, best_ind);
     }
   }
 
@@ -1154,9 +1157,6 @@ archive_submodel_responses(const ResultsManager &results_db,
   // recast variables space
   scale_response(subModel.current_variables(), currentVariables, residual_resp);
 }
-
-
-
 
 /// archive best responses 
 void DataTransformModel::
@@ -1176,7 +1176,7 @@ archive_best_responses(const ResultsManager &results_db,
   // print the original userModel Responses
   if (expData.config_vars().size() == 0) {
     const RealVector& best_fns = best_submodel_resp.function_values();
-    archive_best_original(results_db, iterator_id, best_fns, 0, best_ind);
+    archive_best_original(results_db, iterator_id, best_fns, 0, num_best, best_ind);
     // form residuals from model responses and apply covariance
     short dt_verbosity = output_level();
     output_level(SILENT_OUTPUT);
@@ -1198,8 +1198,8 @@ archive_best_responses(const ResultsManager &results_db,
                        );
   // Currently only the weighted residuals are archived. This differs from what's printed
   // to the console (see print_best_responses() above).
-  Minimizer::archive_best_residuals(results_db, iterator_id, num_primary_fns(), 
-      resid_fns, wssr, best_ind);
+  archive_best_residuals(results_db, iterator_id, num_primary_fns(), 
+      resid_fns, wssr, num_best, best_ind);
 
 }
 }  // namespace Dakota
