@@ -731,7 +731,7 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
     abort_handler(-1);
   }
 
-  Cout << std::setw(20) << metric_type << std::setw(20) << approx_diag << '\n';
+  Cout << std::setw(20) << metric_type << "  " << approx_diag << '\n';
   return approx_diag;
 }
 
