@@ -15,7 +15,7 @@ method,
 #	    expansion_order_sequence = 0			#s1
 #	    collocation_ratio = .9  seed = 160415		#s1
 #	    orthogonal_matching_pursuit				#s1
-#	    convergence_tolerance 1.e-1				#s1
+#	    convergence_tolerance 1.e-2				#s1
 #	    sparse_grid_level_sequence = 0 unrestricted		#s2
 #	    convergence_tolerance 1.e-3				#s2
 #	    max_refinement_iterations 100
