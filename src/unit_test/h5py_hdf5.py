@@ -148,12 +148,13 @@ class Moments(unittest.TestCase):
         console_moments = self._moments
         expected_num_execs = len(console_moments)
         expected_descriptors = set(console_moments[0].keys())
+        expected_executions = set("execution:%d" % (i+1,) for i in range(len(console_moments)))
         with h5py.File("for_h5py.h5","r") as h:
             ## Verify the presence of all the execution data
             # execution:N
             self.assertEqual(expected_num_execs, len(list(h["/methods/aleatory/"].keys())))
-            for i, n in enumerate(h["/methods/aleatory/"].keys()):
-                self.assertEqual("execution:%d" %(i+1,), n)
+            for n in h["/methods/aleatory/"].keys():
+                self.assertTrue(n in expected_executions)
             # descriptors
             hdf5_descriptors = set(h["/methods/aleatory/execution:1/moments/"].keys())
             self.assertEqual(expected_descriptors, hdf5_descriptors)
