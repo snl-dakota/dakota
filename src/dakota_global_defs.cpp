@@ -87,9 +87,10 @@ void abort_handler(int code)
   //       difficult to debug within GDB.
   //abort();
 
-  // BMA TODO: do we want to maintain this?
+  // BMA TODO: Do we want to maintain this?
+  // BMA NOTE: If so, on Unix, could use strsignal() to get a friendly name.
   if (code > 1) // code = 2 (Cntl-C signal), 0 (normal), & -1/1 (abnormal)
-    Cout << "Signal Caught!" << std::endl;
+    Cout << "\nDakota caught signal " << code << std::endl;
 
   // Clean up
   Cout << std::flush; // flush cout or ofstream redirection
@@ -143,6 +144,7 @@ void register_signal_handlers()
 #if defined(__MINGW32__) || defined(_MSC_VER)
   std::signal(SIGBREAK, Dakota::abort_handler);
 #else
+  // BMA: SIGKILL can't be caught; consider removing:
   std::signal(SIGKILL, Dakota::abort_handler);
 #endif
   std::signal(SIGTERM, Dakota::abort_handler);
