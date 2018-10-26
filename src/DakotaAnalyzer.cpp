@@ -221,6 +221,45 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
 
   if (!asynch_flag && log_resp_flag) allResponses.clear();
 
+  // Let's try to allocate resultsDB stuff here - RWH
+  if(resultsDB.active())
+  {
+    StringMultiArrayConstView cv_labels
+                = iteratedModel.continuous_variable_labels();
+    StringMultiArrayConstView div_labels
+                = iteratedModel.discrete_int_variable_labels();
+    StringMultiArrayConstView dsv_labels
+                = iteratedModel.discrete_string_variable_labels();
+    StringMultiArrayConstView drv_labels
+                = iteratedModel.discrete_real_variable_labels();
+
+    const StringArray& resp_labels 
+                = iteratedModel.response_labels();
+
+    //StringArray scale_labels;
+    //for (i=0; i<numContinuousVars; ++i)
+    //  scale_labels.push_back(cv_labels[i]);
+
+    //DimScaleMap scales;
+    //scales.emplace(0, StringScale("continuous_variables", scale_labels, ScaleScope::UNSHARED));
+
+    //resultsDB.allocate_vector(run_identifier(), {std::string("continuous_variable_labels")},
+    //    Dakota::ResultsOutputType::REAL, numFunctions, scales);
+
+    resultsDB.allocate_matrix(run_identifier(), {std::string("continuous_variables")},
+        Dakota::ResultsOutputType::REAL, num_evals, numContinuousVars);
+    resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_integer_variables")},
+        Dakota::ResultsOutputType::INTEGER, num_evals, numDiscreteIntVars);
+    if( numDiscreteStringVars )
+      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_string_variables")},
+          Dakota::ResultsOutputType::STRING, num_evals, numDiscreteStringVars);
+    resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_real_variables")},
+        Dakota::ResultsOutputType::REAL, num_evals, numDiscreteRealVars);
+
+    resultsDB.allocate_matrix(run_identifier(), {std::string("responses")},
+        Dakota::ResultsOutputType::REAL, num_evals, numFunctions);
+  }
+
   // Loop over parameter sets and compute responses.  Collect data
   // and track best evaluations based on flags.
   for (i=0; i<num_evals; i++) {
@@ -245,6 +284,23 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
       if (log_resp_flag) // log response data
         allResponses[eval_id] = resp.copy();
     }
+
+    // Let's try to write resultsDB stuff here - RWH
+    if(resultsDB.active())
+    {
+      const RealVector& c_vars  = iteratedModel.continuous_variables();
+      const IntVector & di_vars = iteratedModel.discrete_int_variables();
+      StringMultiArrayConstView ds_vars = iteratedModel.discrete_string_variables();
+      const RealVector& dr_vars = iteratedModel.discrete_real_variables();
+      //const RealVector& resp    = iteratedModel.current_response().function_values();
+
+      resultsDB.insert_into(run_identifier(), {String("continuous_variables")},       c_vars,  i);
+      resultsDB.insert_into(run_identifier(), {String("discrete_integer_variables")}, di_vars, i);
+      if( numDiscreteStringVars )
+        resultsDB.insert_into(run_identifier(), {String("discrete_string_variables")},  ds_vars, i);
+      resultsDB.insert_into(run_identifier(), {String("discrete_real_variables")},    dr_vars, i);
+      //resultsDB.insert_into(run_identifier(), {String("responses")},                  resp,    i);
+    }
   }
 
   // synchronize asynchronous evaluations
@@ -255,11 +311,17 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
     if (log_best_flag) { // update best variables/response
       IntRespMCIter r_cit;
       if (compactMode)
-	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-	  update_best(allSamples[i], r_cit->first, r_cit->second);
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+          update_best(allSamples[i], r_cit->first, r_cit->second);
       else
-	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-	  update_best(allVariables[i], r_cit->first, r_cit->second);
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+          update_best(allVariables[i], r_cit->first, r_cit->second);
+      if(resultsDB.active())
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+        {
+          const RealVector& resp_vec = r_cit->second.function_values();
+          resultsDB.insert_into(run_identifier(), {String("responses")}, resp_vec, (r_cit->first-1));
+        }
     }
   }
 }
