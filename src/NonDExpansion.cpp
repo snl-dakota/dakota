@@ -924,16 +924,10 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    increment_grid(); // recompute anisotropy
     update_expansion();
     metric = compute_covariance_metric(revert, print_metric);
-    if (revert) {
-      decrement_grid();
-      pop_increment();
-      uSpaceModel.pop_approximation(true);// store increment to use in restore
-    }
-    else
-      merge_grid();
+    if (revert) pop_increment();
+    else        merge_grid();
     break;
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: // SSG only
     // Dimension adaptive refinement using generalized sparse grids.
@@ -963,9 +957,7 @@ void NonDExpansion::post_refinement(Real& metric, bool reverted)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     if (reverted && uSpaceModel.push_available()) {
-      increment_grid(false); // don't update anisotropy weights
       push_increment();
-      uSpaceModel.push_approximation();
       merge_grid();
     }
     break;
@@ -1024,14 +1016,12 @@ void NonDExpansion::increment_grid(bool update_anisotropy)
 
 void NonDExpansion::decrement_grid()
 {
+  NonDIntegration* nond_integration = (NonDIntegration*)
+    uSpaceModel.subordinate_iterator().iterator_rep();
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:              case Pecos::CUBATURE:
-  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
-    NonDIntegration* nond_integration = (NonDIntegration*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
+  case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
     nond_integration->decrement_grid();  break;
-  }
   case Pecos::ORTHOG_LEAST_INTERPOLATION: // case Pecos::SAMPLING:
     break;
   default: // regression cases
@@ -1042,9 +1032,9 @@ void NonDExpansion::decrement_grid()
 
 void NonDExpansion::push_increment()
 {
+  increment_grid(false); // don't recompute anisotropy
+
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE:              case Pecos::CUBATURE:
-    increment_grid(); break; // recompute increment
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1052,14 +1042,16 @@ void NonDExpansion::push_increment()
     break;
   }
   }
+
+  uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
 }
 
 
 void NonDExpansion::pop_increment()
 {
+  decrement_grid();
+
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE:              case Pecos::CUBATURE:
-    decrement_grid(); break; // recompute decrement
   case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1067,6 +1059,8 @@ void NonDExpansion::pop_increment()
     break;
   }
   }
+
+  uSpaceModel.pop_approximation(true);// store increment to use in restore
 }
 
   
@@ -1376,9 +1370,7 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     // increment the grid and, if needed, the expansion order.
     // can ignore best_candidate (only one candidate for now).
-    increment_grid(false); // don't recompute anisotropy
     push_increment();
-    uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
     merge_grid(); // adopt incremented state as new reference
     break;
   }
@@ -1438,6 +1430,8 @@ void NonDExpansion::decrement_order_and_grid()
 void NonDExpansion::update_expansion()
 {
   // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
+
+  increment_grid(); // recompute anisotropy
 
   if (uSpaceModel.push_available()) { // defaults to false
     switch (expansionCoeffsApproach) {
