@@ -220,6 +220,33 @@ std::ostream& operator<<(std::ostream& s, const std::set<T>& data)
 }
 
 
+/// global MPIUnpackBuffer extraction operator for std::vector
+/// (specialization of ContainerT template in MPIPackBuffer.hpp)
+template <typename T>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::vector<T>& data)
+{
+  size_t i, len;
+  s >> len;
+  data.resize(len);
+  for (i=0; i<len; ++i)
+    s >> data[i];
+  return s;
+}
+
+
+/// global MPIPackBuffer insertion operator for std::vector
+/// (specialization of ContainerT template in MPIPackBuffer.hpp)
+template <typename T>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::vector<T>& data)
+{
+  size_t i, len = data.size();
+  s << len;
+  for (i=0; i<len; ++i)
+    s << data[i];
+  return s;
+}
+
+
 /// global MPIUnpackBuffer extraction operator for std::set
 template <typename T>
 MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::set<T>& data)
