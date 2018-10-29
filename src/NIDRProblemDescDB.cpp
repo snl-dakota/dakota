@@ -6177,10 +6177,11 @@ check_descriptor_format(const StringArray& labels) {
         break;
       }
     }
-    if(isfloat(*li)) {
+    if(isfloat(*li)) 
       Squawk("Descriptor \"%s\" is invalid: floating point numbers not permitted",
           li->c_str());
-    }
+    if(li->empty())
+      Squawk("Empty variable or response descriptors are not permitted");
   }
 }
 
