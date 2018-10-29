@@ -1202,4 +1202,9 @@ archive_best_responses(const ResultsManager &results_db,
       resid_fns, wssr, num_best, best_ind);
 
 }
+
+int DataTransformModel::num_config_vars() const {
+  return expData.num_config_vars();
+}
+
 }  // namespace Dakota

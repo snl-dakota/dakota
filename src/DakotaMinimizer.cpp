@@ -665,66 +665,71 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 }
 
 
-void Minimizer::archive_best_variables() const {
+void Minimizer::archive_best_variables(const bool active_only) const {
   if(!resultsDB.active()) return;
   // archive the best point in the iterator database
   const StrStrSizet &iterator_id = run_identifier();
   const size_t num_points = bestVariablesArray.size();
 
-  const auto & cv_labels = variables_results().continuous_variable_labels();
-  const auto & div_labels = variables_results().discrete_int_variable_labels();
-  const auto & dsv_labels = variables_results().discrete_string_variable_labels();
-  const auto & drv_labels = variables_results().discrete_real_variable_labels();
+  
+  const auto & cv_labels = (active_only) ? 
+                           variables_results().continuous_variable_labels() :
+                           variables_results().all_continuous_variable_labels();
+  const auto & div_labels = (active_only) ?
+                           variables_results().discrete_int_variable_labels() :
+                           variables_results().all_discrete_int_variable_labels();
+  const auto & dsv_labels = (active_only) ?
+                           variables_results().discrete_string_variable_labels() :
+                           variables_results().all_discrete_string_variable_labels();
+  const auto & drv_labels = (active_only) ? 
+                           variables_results().discrete_real_variable_labels() :
+                           variables_results().all_discrete_real_variable_labels();
   // ##  legacy text output ##
   if(numContinuousVars) {
     // labels
     resultsDB.insert
-      (iterator_id, resultsNames.cv_labels, 
-       variables_results().continuous_variable_labels());
+      (iterator_id, resultsNames.cv_labels, cv_labels);
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().continuous_variable_labels()); 
+      make_metadatavalue(cv_labels); 
     resultsDB.array_allocate<RealVector>
       (iterator_id, resultsNames.best_cv, num_points, md);
   } 
   if (numDiscreteIntVars) {
      // labels
     resultsDB.insert
-      (iterator_id, resultsNames.div_labels, 
-       variables_results().discrete_int_variable_labels());
+      (iterator_id, resultsNames.div_labels, div_labels);
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().discrete_int_variable_labels()); 
+      make_metadatavalue(div_labels); 
     resultsDB.array_allocate<IntVector>
       (iterator_id, resultsNames.best_div, num_points, md);
   }
   if (numDiscreteStringVars) {
     // labels
     resultsDB.insert
-      (iterator_id, resultsNames.dsv_labels, 
-       variables_results().discrete_string_variable_labels());
+      (iterator_id, resultsNames.dsv_labels, dsv_labels);
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().discrete_string_variable_labels()); 
+      make_metadatavalue(dsv_labels); 
     resultsDB.array_allocate<StringArray>
       (iterator_id, resultsNames.best_dsv, num_points, md);
   }
   if (numDiscreteRealVars) {
     // labels
     resultsDB.insert
-      (iterator_id, resultsNames.drv_labels, 
-       variables_results().discrete_real_variable_labels());
+      (iterator_id, resultsNames.drv_labels, drv_labels); 
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().discrete_real_variable_labels()); 
+      make_metadatavalue(drv_labels);
     resultsDB.array_allocate<RealVector>
       (iterator_id, resultsNames.best_drv, num_points, md);
   }
@@ -758,7 +763,10 @@ void Minimizer::archive_best_variables() const {
 
       // hdf5DB backend
       location[r_index] = "continuous";
-      resultsDB.insert(iterator_id, location, best_vars.continuous_variables(), cv_scale);
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.continuous_variables(), cv_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_continuous_variables(), cv_scale);
     }
 
     if (numDiscreteIntVars) {
@@ -769,7 +777,10 @@ void Minimizer::archive_best_variables() const {
 
       // hdf5DB backend
       location[r_index] = "discrete_integer";
-      resultsDB.insert(iterator_id, location, best_vars.discrete_int_variables(), div_scale);
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.discrete_int_variables(), div_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_discrete_int_variables(), div_scale);
     }
 
     if (numDiscreteStringVars) {
@@ -780,7 +791,10 @@ void Minimizer::archive_best_variables() const {
 
       // hdf5DB backend
       location[r_index] = "discrete_string";
-      resultsDB.insert(iterator_id, location, best_vars.discrete_string_variables(), dsv_scale);
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.discrete_string_variables(), dsv_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_discrete_string_variables(), dsv_scale);
     }
 
     if (numDiscreteRealVars) {
@@ -791,7 +805,10 @@ void Minimizer::archive_best_variables() const {
 
       // hdf5DB backend
       location[r_index] = "discrete_real";
-      resultsDB.insert(iterator_id, location, best_vars.discrete_real_variables(), drv_scale);
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.discrete_real_variables(), drv_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_discrete_real_variables(), drv_scale);
     }
     point_index++;
   }
@@ -1020,9 +1037,6 @@ void Minimizer::archive_best_results() {
     abort_handler(-1);
   }
 
-  // initialize the results archive for this dataset
-  // archive_allocate_best(num_best); // variables, any objective functions and constraints
-
   StrStrSizet iterator_id = run_identifier();
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this
@@ -1032,28 +1046,27 @@ void Minimizer::archive_best_results() {
   // use asv = 1's
   ActiveSet search_set(orig_model.num_functions(), numContinuousVars);
   int eval_id;
-  // -------------------------------------
-  // Single and Multipoint results summary
-  // -------------------------------------
-  archive_best_variables();  
+
   if(numNonlinearConstraints)
     archive_best_constraints();
-  if(optimizationFlag)
+  if(optimizationFlag) {
     archive_best_objective_functions();
-  else if(!calibrationDataFlag) {
+    archive_best_variables();
+  } else if(!calibrationDataFlag) {
     // the original model had least squares terms
     archive_best_residuals();
-  } else { //calibration with data 
+    archive_best_variables();
+  } else { //calibration with data
+    DataTransformModel* dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+    if(dt_model_rep->num_config_vars())
+      archive_best_variables(true);
+    else
+      archive_best_variables();
     for (i=0; i<num_best; ++i) {
-      // output best variables
       const Variables& best_vars = bestVariablesArray[i];
       // output best response
-      // TODO: based on local_nls_recast due to SurrBasedMinimizer?
       const RealVector& best_fns = bestResponseArray[i].function_values(); 
       if (!optimizationFlag && calibrationDataFlag) {
-          // TODO: approximate models with interpolation of field data may
-          // not have recovered the correct best residuals
-          DataTransformModel* dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
           dt_model_rep->archive_best_responses(resultsDB, iterator_id, 
                                              best_vars, bestResponseArray[i],
                                              num_best, i);

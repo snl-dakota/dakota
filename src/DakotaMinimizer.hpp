@@ -190,7 +190,7 @@ protected:
   virtual void archive_best_results();
 
   /// archive best variables for the index'th final solution
-  void archive_best_variables() const;
+  void archive_best_variables(const bool active_only = false) const;
 
   /// archive the index'th set of objective functions
   void archive_best_objective_functions() const;

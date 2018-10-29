@@ -74,7 +74,10 @@ public:
                               const Variables& best_submodel_vars,
                               const Response& best_submodel_resp,
                               size_t num_best, size_t best_ind);
-                                
+
+  /// return number of configuration variables
+  int num_config_vars() const;
+
 protected:
 
   // ---
