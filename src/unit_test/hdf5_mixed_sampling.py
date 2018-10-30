@@ -1,138 +1,9 @@
-from __future__ import print_function
-import subprocess
+#!/usr/bin/env python
 import unittest
 import h5py
-import numpy as np
+import h5py_console_extract as hce
 
-# This test must:
-# 1. extract various results from console output
-# 2. compare them to results in an hdf5 file
-
-
-def extract_moments():
-    """Extract the moments from the global __OUTPUT
-
-    Returns: The moments structured as a list of dictionaries.
-        The items in the list are for executions, and the 
-        key, value pairs in the dictionary are the response
-        descriptors and an numpy array of the moments
-    """
-    global __OUTPUT
-    moments = []
-    lines_iter = iter(__OUTPUT)
-    for line in lines_iter:
-        if line.startswith("Sample moment statistics"):
-            next(lines_iter)
-            moments.append({})
-            moments_line = next(lines_iter)
-            while moments_line != '':
-                tokens = moments_line.split()
-                resp_desc = tokens[0]
-                moments_values = np.array([float(t) for t in tokens[1:]])
-                moments[-1][resp_desc] = moments_values
-                moments_line = next(lines_iter)
-    return moments
-
-def extract_pdfs():
-    """Extract the PDFs from the global __OUTPUT
-
-    Returns: The PDFs with lower and upper bins structured
-        as a list of dictionaries. The items in the list
-        are for executions, and the key, value pairs in the
-        dictionaries are the response descriptors and 2D lists
-        of the lower and upper bounds and the densities
-        with dimension (num_bins, 3)
-    """
-    global __OUTPUT
-    pdfs = []
-    lines_iter = iter(__OUTPUT)
-    for line in lines_iter:
-        if line.startswith("Probability Density Function (PDF)"):
-            pdfs.append({})
-            nline = next(lines_iter) # get either 'PDF for <descriptor>:" or a blank line
-            while nline != '':  # Loop over the responses
-                desc = nline.split()[-1][:-1]
-                pdf_for_resp = []
-                next(lines_iter)  # Skip heading "Bin Lower..."
-                next(lines_iter)  # Skip heading "----..."
-                nline = next(lines_iter) # Get the first line of data for this response
-                while not nline.startswith("PDF for") and nline != '':  # loop over data
-                    values = [float(t) for t in nline.split()]
-                    pdf_for_resp.append(values)
-                    nline = next(lines_iter)
-                pdfs[-1][desc] = pdf_for_resp
-    return pdfs
-
-def extract_level_mapping_row(line):
-    """Tokenize one row of a level mappings table.
-
-    line: String containing a row
-
-    returns: A list of length 4 containing the table entries. 
-        Blank table entries contain None.
-    """
-    tokens = line.split(None, 1)
-    tlen = len(tokens[0])
-    precision = tlen - 7 if tokens[0] is '-' else tlen - 6
-    width = precision + 7
-
-    result = 4*[None]
-    for i in range(0, 4):
-        begin = i*(width + 2)
-        try:
-            result[i] = float(line[begin:begin + width+2])
-        except (IndexError, ValueError):
-            pass
-    return result
-
-def extract_level_mappings():
-    """Extract the level mappings from the global __OUTPUT
-
-    Returns: The level mappings are structured as a list of 
-        dictionaries. The items in the list are for executions, 
-        and the key, value pairs in the dictionaries are the 
-        response descriptors and 2D lists of the mappings. The
-        lists are (num_rows, 4), with None stored in empty
-        elements.
-    """
-
-    global __OUTPUT
-    mappings = []
-    lines_iter = iter(__OUTPUT)
-    for line in lines_iter:
-        if line.startswith("Level mappings for each"):
-            mappings.append({})
-            nline = next(lines_iter) # get either 'PDF for <descriptor>:" or a blank line
-            while not nline.startswith('--'):  # Loop over the responses
-                desc = nline.split()[-1][:-1]
-                mappings_for_resp = []
-                next(lines_iter)  # Skip heading "Response Level.."
-                next(lines_iter)  # Skip heading "----..."
-                nline = next(lines_iter) # Get the first line of data for this response
-                while not nline.startswith("Cumulative Distribution") and not nline.startswith('--'):  # loop over data
-                    values = extract_level_mapping_row(nline)
-                    mappings_for_resp.append(values)
-                    nline = next(lines_iter)
-                mappings[-1][desc] = mappings_for_resp
-    return mappings
-
-
-def run_dakota(input_file):
-    """Run Dakota on the input_file
-
-    input_file: string containing a path to the input file
-
-    returns: Dakota stdout as a list of strings with newlines
-        stripped.
-    """
-    output = subprocess.check_output(["../dakota",input_file], stderr=subprocess.STDOUT)
-    output = output.split('\n')
-    return output
-
-
-## Capture the output here, once.
-__OUTPUT = run_dakota("dakota_hdf5_test.in")
-
+_TEST_NAME = "mixed_sampling"
 
 class Moments(unittest.TestCase):
 
@@ -141,7 +12,8 @@ class Moments(unittest.TestCase):
         try:
             self._moments
         except AttributeError:
-            self._moments = extract_moments()
+            self._moments = hce.extract_moments()
+            self._cis = hce.extract_moment_confidence_intervals()
 
     def test_structure(self):
         # Verify the structure (execution id, descriptors)
@@ -149,7 +21,7 @@ class Moments(unittest.TestCase):
         expected_num_execs = len(console_moments)
         expected_descriptors = set(console_moments[0].keys())
         expected_executions = set("execution:%d" % (i+1,) for i in range(len(console_moments)))
-        with h5py.File("for_h5py.h5","r") as h:
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
             ## Verify the presence of all the execution data
             # execution:N
             self.assertEqual(expected_num_execs, len(list(h["/methods/aleatory/"].keys())))
@@ -169,7 +41,7 @@ class Moments(unittest.TestCase):
         expected_descriptors = set(console_moments[0].keys())
         expected_num_execs = len(console_moments)
 
-        with h5py.File("for_h5py.h5","r") as h:
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
             # moments and scales
             for i in range(expected_num_execs):
                 for r in expected_descriptors:
@@ -181,12 +53,33 @@ class Moments(unittest.TestCase):
                     for es, s in zip(expected_scale, hdf5_moments.dims[0][0]):
                         self.assertEqual(es,s)
 
+    def test_moment_confidence_intervals(self):
+        console_cis = self._cis
+        expected_scale_labels = ['bounds', 'moments']
+        expected_scales = [["lower", "upper"], ['mean', 'std_deviation']]
+        expected_descriptors = set(console_cis[0].keys())
+        expected_num_execs = len(console_cis)
+
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            # CIs and scales
+            for i, ci in enumerate(console_cis):
+                hdf_cis = h["/methods/aleatory/execution:%d/moment_confidence_intervals/" % (i+1,)]
+                for r in expected_descriptors:
+                    self.assertEqual(expected_scale_labels[0], list(hdf_cis[r].dims[0].keys())[0])
+                    self.assertEqual(expected_scale_labels[1], list(hdf_cis[r].dims[1].keys())[0])
+                    for j in range(2):
+                        for k in range(2):
+                            self.assertAlmostEqual(ci[r][j][k], hdf_cis[r][j,k])
+                    for j in range(2):
+                        self.assertEqual(expected_scales[0][j], hdf_cis[r].dims[0][0][j])
+                        self.assertEqual(expected_scales[1][j], hdf_cis[r].dims[1][0][j])
+
 class PDFs(unittest.TestCase):
     def setUp(self):
         try:
             self._pdfs
         except AttributeError:
-            self._pdfs = extract_pdfs()
+            self._pdfs = hce.extract_pdfs()
 
     def test_pdfs(self):
         console_pdfs = self._pdfs
@@ -194,7 +87,7 @@ class PDFs(unittest.TestCase):
         expected_descriptors = set(console_pdfs[0].keys())
         expected_num_execs = len(console_pdfs)
 
-        with h5py.File("for_h5py.h5","r") as h:
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
             # pdfs and scales
             for i in range(expected_num_execs):
                 for r in expected_descriptors:
@@ -217,7 +110,7 @@ class LevelMappings(unittest.TestCase):
         try:
             self._mappings
         except AttributeError:
-            self._mappings = extract_level_mappings()
+            self._mappings = hce.extract_level_mappings()
 
     def test_level_mappings(self):
         console_mappings = self._mappings
@@ -244,7 +137,7 @@ class LevelMappings(unittest.TestCase):
         #    from the hdf5 file. These are easier because we know which columns to find the data and
         #    scales in.
                 
-        with h5py.File("for_h5py.h5","r") as h:
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
             for i in range(expected_num_execs):
                 for r in expected_descriptors:
                     # Create a set of the results present in the HDF5 file for convenience
@@ -297,20 +190,7 @@ class LevelMappings(unittest.TestCase):
                                 self.assertEqual(cr[j+1], s)
                             begin += num_hdf5_rows
 
-
-
-
-                        
-
-
-
-
-                        
-
-
-
-
-
 if __name__ == '__main__':
+    hce.run_dakota("dakota_hdf5_" + _TEST_NAME + ".in")
     unittest.main()
 
