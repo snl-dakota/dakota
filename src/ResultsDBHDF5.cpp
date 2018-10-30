@@ -21,8 +21,23 @@
 #include "ResultsDBHDF5.hpp"
 
 namespace Dakota { 
-// Helper functions for naming datasets and scales
 
+// Output file version: Major.minor.patch
+// - Increment the patch version when making an update that does not change 
+//   the content or layout of the output
+// - Increment the minor version for an update that adds content to the file
+// - Increment the major version for an update that changes the layout of 
+//   existing content (i.e. could break existing user-created tools that consume
+//   the output file)
+//
+// When incrementing the the major version, reset the minor and patch levels to 
+// 0. Similarly, when incrementing the minor version, reset the patch level to 
+// 0.
+
+const std::string ResultsDBHDF5::outputVersion = "1.0.0";
+
+
+// Helper functions for naming datasets and scales
 String method_hdf5_link_name(const StrStrSizet& iterator_id) {
   String method_id = iterator_id.get<1>();
 
@@ -178,10 +193,7 @@ void ResultsDBHDF5::add_metadata_to_method(const StrStrSizet& iterator_id,
             const AttributeArray &attrs)
 {
   String name = method_hdf5_link_name(iterator_id);
-  AddAttributeVisitor attribute_adder(name, hdf5Stream);
-  std::for_each(
-    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-  );
+  add_attributes(name, attrs);
 }
 
 void ResultsDBHDF5::add_name_to_method(const StrStrSizet &iterator_id)
@@ -199,21 +211,18 @@ void ResultsDBHDF5::add_metadata_to_execution(const StrStrSizet& iterator_id,
             const AttributeArray &attrs) 
 {
   String name = execution_hdf5_link_name(iterator_id);
-  AddAttributeVisitor attribute_adder(name, hdf5Stream);
-  std::for_each(
-    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-  );
+  add_attributes(name, attrs);
 }
 
-  /// Associate key:value metadata with the object at the location
 void ResultsDBHDF5::add_metadata_to_object(const StrStrSizet& iterator_id,
                                            const StringArray &location,
                                            const AttributeArray &attrs) {
   String name = object_hdf5_link_name(iterator_id, location);
-  AddAttributeVisitor attribute_adder(name, hdf5Stream);
-  std::for_each(
-    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-  );
+  add_attributes(name, attrs);
+} 
+
+void ResultsDBHDF5::add_metadata_to_study(const AttributeArray &attrs) {
+  add_attributes(String("/"), attrs);
 } 
 
 void ResultsDBHDF5::
@@ -235,9 +244,9 @@ attach_scales(const String &dset_name,
 }
 
 void ResultsDBHDF5::
-add_attributes(const String dset_name, const AttributeArray &attrs) {
+add_attributes(const String &linkname, const AttributeArray &attrs) {
    // Add metadata to the dataset
-  AddAttributeVisitor attribute_adder(dset_name, hdf5Stream);
+  AddAttributeVisitor attribute_adder(linkname, hdf5Stream);
   std::for_each(
     attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
   );

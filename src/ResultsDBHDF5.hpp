@@ -19,6 +19,7 @@
 // This file requires a complete implementation of HDF5_IO, so can't
 // conditionally compile
 #include "HDF5_IO.hpp"
+#include "DakotaBuildInfo.hpp"
 
 namespace Dakota {
 
@@ -148,8 +149,15 @@ public:
   // will need to be initialized from the file.
   ResultsDBHDF5(bool in_core, const String& base_filename) :
     ResultsDBBase(base_filename + (in_core ? ".tmp.h5" : ".h5")),
-    hdf5Stream(new HDF5IOHelper(fileName, true))
-    { }
+    hdf5Stream(new HDF5IOHelper(fileName, true)) {
+
+    AttributeArray root_attrs = {
+        ResultAttribute<String>("dakota_version", DakotaBuildInfo::get_release_num()),
+        ResultAttribute<String>("dakota_revision", DakotaBuildInfo::get_rev_number()),
+        ResultAttribute<String>("output_version", ResultsDBHDF5::outputVersion)
+      };
+    add_attributes("/", root_attrs);
+  }
 
   /// Flush HDF5 cache to disk
   void flush() const;
@@ -199,6 +207,10 @@ public:
   void add_metadata_to_object(const StrStrSizet& iterator_id,
                               const StringArray &location,
                               const AttributeArray &attrs) override; 
+
+  /// Associate key:value metadata with the study
+  void add_metadata_to_study(const AttributeArray &attrs) override; 
+
   // ##############################################################
   // Methods to support legacy Any DB (no-op for HDF5)
   // ##############################################################
@@ -226,15 +238,23 @@ public:
 
 private:
 
+  /// Version of the output file. See comments near the definition in
+  /// ResultsDBHDF5.cpp.
+  static const std::string outputVersion;
+
+  /// Attach a scale to a dataset
   void attach_scales(const String &dset_name,
             const StrStrSizet& iterator_id,
             const StringArray &location,
             const DimScaleMap &scales);
 
-  void add_attributes(const String dset_name, const AttributeArray &attrs);
+  /// Add attributes to the object with linkname.
+  void add_attributes(const String &linkname, const AttributeArray &attrs);
 
+  /// Add the name (Dakota keyword) as metadata to a method group
   void add_name_to_method(const StrStrSizet &iterator_id);
 
+  /// Check whether the name has already been added to a  method group 
   bool method_in_cache(const StrStrSizet &iterator_id) const;
 
   /// Cached method names; used to know which methods have already had their 

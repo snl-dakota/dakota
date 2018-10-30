@@ -14,6 +14,9 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "ProgramOptions.hpp"
+#include "dakota_results_types.hpp"
+#include "ResultsManager.hpp"
+
 #ifdef DAKOTA_UTILIB
 #include <utilib/exception_mngr.h>
 #include "utilib/seconds.h"
@@ -36,7 +39,7 @@ namespace Dakota {
 extern MPIManager     dummy_mpi_mgr; // defined in dakota_global_defs.cpp
 extern ProgramOptions dummy_prg_opt; // defined in dakota_global_defs.cpp
 extern OutputManager  dummy_out_mgr; // defined in dakota_global_defs.cpp
-
+extern ResultsManager iterator_results_db; // defined in DakotaIterator.cpp
 
 /** This constructor is used for creation of the global dummy_lib
     object, which is used to satisfy initialization requirements when
@@ -1239,7 +1242,8 @@ void ParallelLibrary::output_timers()
 {
   if (!outputTimings)
     return;
-
+  
+  AttributeArray time_attrs;
   // Compute elapsed times.
   // TODO: sometimes totalCPU is zero, but parent is zero;
   //       need to consistently use system or utilib for this computation
@@ -1258,15 +1262,21 @@ void ParallelLibrary::output_timers()
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
 	   << "DAKOTA master processor execution time in seconds:\n"
 	   << "  Total CPU        = " << std::setw(10) << totalCPU;
-      
+      time_attrs.push_back(ResultAttribute<Real>("total_cpu_time", totalCPU));
 #ifdef DAKOTA_UTILIB
       Real initWC = totalWC - runWC;
       Cout << " [parent   = " << std::setw(10) << parentCPU << ", child = " 
 	   << std::setw(10) << childCPU << "]\n  Total wall clock = " << std::setw(10)
 	   << totalWC << " [MPI_Init = " << std::setw(10) << initWC 
 	   << ", run   = " << std::setw(10) << runWC << "]" << std::endl;
+      time_attrs.push_back(ResultAttribute<Real>("parent_cpu_time", parentCPU));
+      time_attrs.push_back(ResultAttribute<Real>("child_cpu_time", childCPU));
+      time_attrs.push_back(ResultAttribute<Real>("total_wallclock_time", totalWC));
+      time_attrs.push_back(ResultAttribute<Real>("mpi_init_wallclock_time", initWC));
+      time_attrs.push_back(ResultAttribute<Real>("run_wallclock_time", runWC));
 #else
       Cout << "\n  MPI wall clock = " << std::setw(10) << runWC << std::endl;
+      time_attrs.push_back(ResultAttribute<Real>("mpi_wallclock_time", runWC));
 #endif // DAKOTA_UTILIB
     }
 #endif // DAKOTA_HAVE_MPI
@@ -1275,14 +1285,19 @@ void ParallelLibrary::output_timers()
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
 	   << "DAKOTA execution time in seconds:\n  Total CPU        = " 
 	   << std::setw(10) << totalCPU;
+      time_attrs.push_back(ResultAttribute<Real>("total_cpu_time", totalCPU));
 #ifdef DAKOTA_UTILIB
       Cout << " [parent = " << std::setw(10) << parentCPU << ", child = "
 	   << std::setw(10) << childCPU << "]\n  Total wall clock = "
 	   << std::setw(10) << totalWC << std::endl;
+      time_attrs.push_back(ResultAttribute<Real>("parent_cpu_time", parentCPU));
+      time_attrs.push_back(ResultAttribute<Real>("child_cpu_time", childCPU));
+      time_attrs.push_back(ResultAttribute<Real>("total_wallclock_time", totalWC));
 #else
       Cout << std::endl;
 #endif // DAKOTA_UTILIB
   }
+  iterator_results_db.add_metadata_to_study(time_attrs);
 }
 
 } // namespace Dakota

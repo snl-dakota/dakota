@@ -112,7 +112,7 @@ public:
 
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
-  void parse_inputs(const ProgramOptions& prog_opts,
+  void parse_inputs(ProgramOptions& prog_opts,
 		    DbCallbackFunctionPtr callback = NULL,
 		    void* callback_data = NULL);
   /// performs check_input, broadcast, and post_process, but for now,

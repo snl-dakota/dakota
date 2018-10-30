@@ -180,6 +180,9 @@ public:
                                const StringArray &location,
                                const AttributeArray &attrs);
 
+  /// Associate key:value metadata with the object at the location
+  void add_metadata_to_study(const AttributeArray &attrs);
+
 
   // ##############################################################
   // Methods and variables to support legacy text output

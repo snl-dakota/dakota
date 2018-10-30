@@ -116,6 +116,9 @@ public:
                                       const StringArray &location,
                                       const AttributeArray &attrs) = 0;
  
+  /// Associate key:value metadata to the study
+  virtual void add_metadata_to_study(const AttributeArray &attrs) = 0;
+
   // ##############################################################
   // Methods to support legacy text output
   // ##############################################################

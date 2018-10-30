@@ -76,6 +76,12 @@ void ResultsManager::add_metadata_to_object(const StrStrSizet& iterator_id,
     db->add_metadata_to_object(iterator_id, location, attrs);
 }
 
+void ResultsManager::add_metadata_to_study(const AttributeArray &attrs)  
+{
+  for( auto & db : resultsDBs )
+    db->add_metadata_to_study(attrs);
+}
+
 void ResultsManager::allocate_vector(const StrStrSizet& iterator_id,
               const StringArray &location,
               ResultsOutputType stored_type, 

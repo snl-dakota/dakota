@@ -268,6 +268,8 @@ public:
   /// filename with MPI worldRank + 1 if needed
   void init_results_db();
 
+  /// Archive the input file to the results database
+  void archive_input(const ProgramOptions &prog_opts) const;
 
   // -----
   // Data to later be made private

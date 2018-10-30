@@ -116,6 +116,10 @@ public:
                               const AttributeArray &attrs) override
   { return; }
  
+  /// Associate key:value metadata with the study
+  void add_metadata_to_study(const AttributeArray &attrs) override
+  { return; }
+
 private:
 
   /// print metadata to ostream

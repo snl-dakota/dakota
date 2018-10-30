@@ -56,7 +56,7 @@ public:
 
   /// Dakota input file base name (no tag)
   const String& input_file() const;
-  /// alternate Dakota input string literal
+  /// alternate Dakota input string literal; also set when input is read from stdin
   const String& input_string() const;
   /// is input echo specified?
   bool echo_input() const;
