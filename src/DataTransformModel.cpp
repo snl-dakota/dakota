@@ -56,6 +56,9 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 
   // register state variables as inactive vars if config vars are present
   // BMA TODO: correctly manage the view if relaxed, also review recursion
+
+  // BMA NOTE: This will change the inactive view of any Variables object
+  // sharing the same SharedVariables data as the subModel's Variables
   size_t num_config_vars = expData.num_config_vars();
   if (num_config_vars > 0) {
     subModel.inactive_view(MIXED_STATE);
@@ -969,7 +972,14 @@ recover_submodel_responses(std::ostream& s,
   if (num_best > 1) s << "(set " << best_ind+1 << ") "; s << "\n";
 
   // first try cache lookup
-  Variables lookup_vars = best_submodel_vars.copy();
+
+  // Have to make sure the Variables object is in the right mode for
+  // inactive operations. Make a deep copy of the SharedVariablesData
+  // to avoid corrupting any inbound Variables information... (const
+  // doesn't protect the SVD)
+  Variables lookup_vars = best_submodel_vars.copy(true);
+  lookup_vars.inactive_view(MIXED_STATE);
+
   String interface_id = subModel.interface_id();
   Response lookup_resp = subModel.current_response().copy();
   ActiveSet lookup_as = lookup_resp.active_set();
@@ -1100,7 +1110,14 @@ archive_submodel_responses(const ResultsManager &results_db,
                            Response& residual_resp)
 {
   // first try cache lookup
-  Variables lookup_vars = best_submodel_vars.copy();
+
+  // Have to make sure the Variables object is in the right mode for
+  // inactive operations. Make a deep copy of the SharedVariablesData
+  // to avoid corrupting any inbound Variables information... (const
+  // doesn't protect the SVD)
+  Variables lookup_vars = best_submodel_vars.copy(true);
+  lookup_vars.inactive_view(MIXED_STATE);
+
   String interface_id = subModel.interface_id();
   Response lookup_resp = subModel.current_response().copy();
   ActiveSet lookup_as = lookup_resp.active_set();
