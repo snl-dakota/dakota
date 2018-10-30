@@ -1049,6 +1049,10 @@ void NonDExpansion::push_increment()
 
 void NonDExpansion::pop_increment()
 {
+  // reverse order from update_expansion() / push_increment()
+  // (allows grid increment to be queried while popping expansion data)
+  uSpaceModel.pop_approximation(true);// store increment to use in restore
+
   decrement_grid();
 
   switch (expansionCoeffsApproach) {
@@ -1059,8 +1063,6 @@ void NonDExpansion::pop_increment()
     break;
   }
   }
-
-  uSpaceModel.pop_approximation(true);// store increment to use in restore
 }
 
   
@@ -1583,8 +1585,8 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
-    uSpaceModel.pop_approximation(true); // store SDP set for use in restore
-    nond_sparse->decrement_set();
+    uSpaceModel.pop_approximation(true); // store data for use in push,finalize
+    nond_sparse->decrement_set(); // store data for use in restore_set()
 
     if (apply_best) { // if not previously reverted, revert now
       if (totalLevelRequests)        finalStatistics.function_values(stats_ref);
