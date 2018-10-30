@@ -218,9 +218,20 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   for (i=0; i<num_best; ++i) {
     // output best variables
     const Variables& best_vars = bestVariablesArray[i];
-    s << "<<<<< Best parameters          "; 
-    if (num_best > 1) s << "(set " << i+1 << ") "; 
-    s << "=\n" << best_vars;
+    if (expData.config_vars().size() == 0) {
+      s << "<<<<< Best parameters          ";
+      if (num_best > 1) s << "(set " << i+1 << ") ";
+      s << "=\n" << best_vars;
+    }
+    else {
+      if (num_best > 1)
+	s << "<<<<< Best parameters (set " << i+1
+	  << ", experiment config variables omitted) =\n";
+      else
+	s << "<<<<< Best parameters (experiment config variables omitted) =\n";
+      best_vars.write(s, ACTIVE_VARS);
+    }
+
     // output best response
     // TODO: based on local_nls_recast due to SurrBasedMinimizer?
     const RealVector& best_fns = bestResponseArray[i].function_values(); 

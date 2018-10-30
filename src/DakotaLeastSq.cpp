@@ -230,7 +230,6 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     s << "<<<<< Best parameters          =\n" << best_vars;
   else {
     s << "<<<<< Best parameters (experiment config variables omitted) =\n";
-    bool active_only = true;
     best_vars.write(s, ACTIVE_VARS);
   }
 

@@ -4228,13 +4228,9 @@ least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596
 Information gained from prior to posterior = 3.9196284455e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 2060 total (2060 new, 0 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters (experiment config variables omitted) =
                       2.8916091328e+07 E
                       2.5746941568e+00 w
-                      3.0000000000e+00 t
-                      4.0000000000e+04 R
-                      5.0000000000e+02 X
-                      1.0000000000e+03 Y
 <<<<< Best configuration variables (experiment 1) =
                       3.0000000000e+00 t
                       4.2000000000e+04 R
