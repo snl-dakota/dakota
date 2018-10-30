@@ -257,6 +257,47 @@ void ParamStudy::pre_run()
 
 void ParamStudy::core_run()
 {
+  // Let's try to allocate resultsDB stuff here - RWH
+  if(resultsDB.active())
+  {
+    size_t num_evals = (compactMode) ? allSamples.numCols() : allVariables.size();
+
+    StringMultiArrayConstView cv_labels
+                = iteratedModel.continuous_variable_labels();
+    StringMultiArrayConstView div_labels
+                = iteratedModel.discrete_int_variable_labels();
+    StringMultiArrayConstView dsv_labels
+                = iteratedModel.discrete_string_variable_labels();
+    StringMultiArrayConstView drv_labels
+                = iteratedModel.discrete_real_variable_labels();
+
+    const StringArray& resp_labels 
+                = iteratedModel.response_labels();
+
+    //StringArray scale_labels;
+    //for (i=0; i<numContinuousVars; ++i)
+    //  scale_labels.push_back(cv_labels[i]);
+
+    //DimScaleMap scales;
+    //scales.emplace(0, StringScale("continuous_variables", scale_labels, ScaleScope::UNSHARED));
+
+    //resultsDB.allocate_vector(run_identifier(), {std::string("continuous_variable_labels")},
+    //    Dakota::ResultsOutputType::REAL, numFunctions, scales);
+
+    resultsDB.allocate_matrix(run_identifier(), {std::string("continuous_variables")},
+        Dakota::ResultsOutputType::REAL, num_evals, numContinuousVars);
+    resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_integer_variables")},
+        Dakota::ResultsOutputType::INTEGER, num_evals, numDiscreteIntVars);
+    if( numDiscreteStringVars )
+      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_string_variables")},
+          Dakota::ResultsOutputType::STRING, num_evals, numDiscreteStringVars);
+    resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_real_variables")},
+        Dakota::ResultsOutputType::REAL, num_evals, numDiscreteRealVars);
+
+    resultsDB.allocate_matrix(run_identifier(), {std::string("responses")},
+        Dakota::ResultsOutputType::REAL, num_evals, numFunctions);
+  }
+
   // perform the evaluations; multidim exception
   bool log_resp_flag = (methodName == MULTIDIM_PARAMETER_STUDY)
     ? (!subIteratorFlag) : false;
@@ -264,6 +305,33 @@ void ParamStudy::core_run()
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
+void ParamStudy::archive_model_variables(const Model& model, size_t idx) const
+{
+  // Let's try to write resultsDB stuff here - RWH
+  if(resultsDB.active())
+  {
+    const RealVector& c_vars  = model.continuous_variables();
+    const IntVector & di_vars = model.discrete_int_variables();
+    StringMultiArrayConstView ds_vars = model.discrete_string_variables();
+    const RealVector& dr_vars = model.discrete_real_variables();
+
+    resultsDB.insert_into(run_identifier(), {String("continuous_variables")},       c_vars,  idx);
+    resultsDB.insert_into(run_identifier(), {String("discrete_integer_variables")}, di_vars, idx);
+    if( numDiscreteStringVars )
+      resultsDB.insert_into(run_identifier(), {String("discrete_string_variables")},  ds_vars, idx);
+    resultsDB.insert_into(run_identifier(), {String("discrete_real_variables")},    dr_vars, idx);
+  }
+}
+
+void ParamStudy::archive_model_response(const Response& response, size_t idx) const
+{
+  // Let's try to write resultsDB stuff here - RWH
+  if(resultsDB.active())
+  {
+    const RealVector& resp_vec = response.function_values();
+    resultsDB.insert_into(run_identifier(), {String("responses")}, resp_vec, idx);
+  }
+}
 
 void ParamStudy::post_input()
 {

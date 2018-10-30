@@ -58,6 +58,9 @@ public:
   void post_input();
   void post_run(std::ostream& s);
 
+  void archive_model_variables(const Model&, size_t idx) const override;
+  void archive_model_response(const Response&, size_t idx) const override;
+
 protected:
 
 private:

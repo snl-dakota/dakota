@@ -246,6 +246,8 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
       if (log_resp_flag) // log response data
         allResponses[eval_id] = resp.copy();
     }
+
+    archive_model_variables(iteratedModel, i);
   }
   // synchronize asynchronous evaluations
   if (asynch_flag) {
@@ -260,6 +262,9 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
       else
         for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
           update_best(allVariables[i], r_cit->first, r_cit->second);
+      if(resultsDB.active())
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+          archive_model_response(r_cit->second, r_cit->first-1);
     }
   }
 }
