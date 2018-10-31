@@ -946,6 +946,7 @@ public:
     dataVarsRep->numContinuousIntervalUncVars +
     dataVarsRep->numDiscreteIntervalUncVars +
     dataVarsRep->numDiscreteUncSetIntVars +
+    dataVarsRep->numDiscreteUncSetStrVars +
     dataVarsRep->numDiscreteUncSetRealVars; }
   /// return total number of uncertain variables
   size_t uncertain() { return aleatory_uncertain() + epistemic_uncertain(); }
@@ -959,13 +960,16 @@ public:
   size_t continuous_variables() { return dataVarsRep->numContinuousDesVars +
     uncertain() + dataVarsRep->numContinuousStateVars; }
   /// return total number of discrete variables
-  // BMA TODO: should point histogram be included here?
+
+  // BMA TODO: Should point histogram, and other discrete uncertain variables, be
+  // included here? Not updating as this function is not currently used.
   size_t discrete_variables()   { return dataVarsRep->numDiscreteDesRangeVars +
     dataVarsRep->numDiscreteDesSetIntVars +
     dataVarsRep->numDiscreteDesSetStrVars +
     dataVarsRep->numDiscreteDesSetRealVars +
     dataVarsRep->numDiscreteStateRangeVars +
     dataVarsRep->numDiscreteStateSetIntVars +
+    dataVarsRep->numDiscreteStateSetStrVars +
     dataVarsRep->numDiscreteStateSetRealVars; }
   /// return total number of variables
   size_t total_variables() { return design() + uncertain() + state(); }
