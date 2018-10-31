@@ -2560,8 +2560,8 @@ void NonDBayesCalibration::calculate_evidence()
       sum_like += std::exp(log_like);
     }
     double evidence = sum_like/num_prior_samples;
-    Cout << "Model evidence calculated via sampling = " << evidence << '\n';
-    Cout << "num samples = " << num_prior_samples << '\n';
+    Cout << "Model evidence (Monte Carlo) = " << evidence << '\n';
+    //Cout << "num samples = " << num_prior_samples << '\n';
   }
   if (calModelEvidLaplace) {
     if (obsErrorMultiplierMode > CALIBRATE_NONE) {
@@ -2626,7 +2626,7 @@ void NonDBayesCalibration::calculate_evidence()
       local_log_post_hess.set_covariance(const_cast<RealMatrix&>(clog_hess)); 
       Cout << "log determinant post" << local_log_post_hess.log_determinant() <<std::endl; 
       double lpres= laplace_prior+laplace_like+numContinuousVars*HALF_LOG_2PI-0.5*local_log_post_hess.log_determinant();
-      Cout << "Laplace Model evidence = " << std::exp(lpres) <<  '\n';
+      Cout << "Model evidence (Laplace) = " << std::exp(lpres) <<  '\n';
     }
     catch (const std::runtime_error& re){
       Cout << "Can't compute model evidence because the Hessian of the negative log posterior distribution " 
