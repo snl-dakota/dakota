@@ -21756,6 +21756,8 @@ Sample moment statistics for each response function:
             f2  2.2503829439e-01  3.7545319340e-01  4.2746331081e-01 -7.7186365326e-01
 Information gained from prior to posterior = 5.0049245705e+00
 Test Number 1 succeeded
+Model evidence (Monte Carlo) = 5.4439141944e-03
+Model evidence (Laplace) = 6.1903418610e-03
 <<<<< Function evaluation summary: 4290 total (4288 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.9991512536e-01 x1
