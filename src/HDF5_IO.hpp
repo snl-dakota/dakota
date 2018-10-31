@@ -118,15 +118,12 @@ class HDF5IOHelper
     // create or open a file
     //H5::Exception::dontPrint();
     if( overwrite ) {
-      filePtr = std::shared_ptr<H5::H5File>(
-        new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+      h5File = H5::H5File(fileName.c_str(), H5F_ACC_TRUNC);
     } else {
       try {
-        filePtr = std::shared_ptr<H5::H5File>(
-          new H5::H5File(fileName.c_str(), H5F_ACC_RDWR));
+        h5File = H5::H5File(fileName.c_str(), H5F_ACC_RDWR);
       } catch(const H5::FileIException&) {
-        filePtr = std::shared_ptr<H5::H5File>(
-          new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC));
+        h5File = H5::H5File(fileName.c_str(), H5F_ACC_TRUNC);
       }
     }
     // Initialize global Link Creation Property List to encode all link
@@ -147,7 +144,7 @@ class HDF5IOHelper
     // Assume dset_name is syntactically correct - will need some utils - RWH
     create_groups(dset_name);
 	H5::DataSet dataset(create_dataset(
-      *filePtr, dset_name, h5_file_dtype(val), dataspace));
+        h5File, dset_name, h5_file_dtype(val), dataspace));
 
     dataset.write(&val, h5_mem_dtype(val));
 	return;
@@ -165,7 +162,7 @@ class HDF5IOHelper
       abort_handler(-1);
     }
     // JAS: We need some verification here that the dataset is really a scalar.
-    H5::DataSet dataset = filePtr->openDataSet(dset_name);
+    H5::DataSet dataset = h5File.openDataSet(dset_name);
     dataset.read(&val, h5_mem_dtype(val));
 
     return;
@@ -193,7 +190,7 @@ class HDF5IOHelper
       abort_handler(-1);
     }
 
-    H5::DataSet dataset = filePtr->openDataSet(dset_name);
+    H5::DataSet dataset = h5File.openDataSet(dset_name);
 
     // Get dims and size of dataset
     assert( dataset.getSpace().isSimple() );
@@ -254,7 +251,7 @@ class HDF5IOHelper
       f_dataspace.setExtentSimple(2, f_dims);
       m_dataspace.setExtentSimple(2, m_dims);
       H5::DataSet dataset(
-        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+        create_dataset(h5File, dset_name, f_datatype, f_dataspace) );
       dataset.write(matrix.values(), m_datatype, m_dataspace, f_dataspace);
     } else {
       // to write an un-tranposed matrix, we use HDF5 hyperslab selections to 
@@ -266,7 +263,7 @@ class HDF5IOHelper
       f_dataspace.setExtentSimple(2, f_dims);
       m_dataspace.setExtentSimple(2, m_dims);
       H5::DataSet dataset(
-        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+        create_dataset(h5File, dset_name, f_datatype, f_dataspace) );
       hsize_t m_start[2], f_start[2];
       m_start[0] = f_start[1] = 0;
       hsize_t m_count[2] = {hsize_t(num_cols), 1};
@@ -306,7 +303,7 @@ class HDF5IOHelper
       f_dataspace.setExtentSimple(2, f_dims);
       m_dataspace.setExtentSimple(2, m_dims);
       H5::DataSet dataset(
-        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+        create_dataset(h5File, dset_name, f_datatype, f_dataspace) );
       hsize_t m_start[2], f_start[2];
       m_start[1] = f_start[0] = 0; // iterate over rows in memory/columns in the file
       hsize_t m_count[2] = {1, hsize_t(num_cols)}; 
@@ -323,7 +320,7 @@ class HDF5IOHelper
       f_dataspace.setExtentSimple(2, f_dims);
       m_dataspace.setExtentSimple(2, m_dims);
       H5::DataSet dataset(
-        create_dataset(*filePtr, dset_name, f_datatype, f_dataspace) );
+        create_dataset(h5File, dset_name, f_datatype, f_dataspace) );
       dataset.write(buf.data(), m_datatype, m_dataspace, f_dataspace);
     }
     return;
@@ -335,7 +332,7 @@ class HDF5IOHelper
     // 2. discover the rank (must be 1) and dimensions (must be > index)
     // 3. Select the elements in the memory and file dataspaces
     // 4. write
-    H5::DataSet ds = filePtr->openDataSet(dset_name);
+    H5::DataSet ds = h5File.openDataSet(dset_name);
     H5::DataSpace f_space = ds.getSpace();
     if(f_space.getSimpleExtentNdims() != 1) {
       flush();
@@ -364,7 +361,7 @@ class HDF5IOHelper
     // 3. Raise an error if the dimensions of the dataset and the data don't match
     // 4. create hyperslabs for the memory and file to write a row or column
     // 5. Write
-    H5::DataSet ds = filePtr->openDataSet(dset_name);
+    H5::DataSet ds = h5File.openDataSet(dset_name);
     H5::DataSpace f_space = ds.getSpace();
     if(f_space.getSimpleExtentNdims() != 2) {
       flush();
@@ -436,14 +433,14 @@ class HDF5IOHelper
     }   
 
     H5::DataSpace dataspace;
-    H5O_type_t type = filePtr->childObjType(location.c_str());
+    H5O_type_t type = h5File.childObjType(location.c_str());
     if(type == H5O_TYPE_GROUP) {
-      H5::Group group = filePtr->openGroup(location);
+      H5::Group group = h5File.openGroup(location);
       H5::Attribute attr =
         group.createAttribute(label, h5_file_dtype(value), dataspace);
       attr.write(h5_mem_dtype(value), &value);
     } else if(type == H5O_TYPE_DATASET) {
-      H5::DataSet dataset = filePtr->openDataSet(location);
+      H5::DataSet dataset = h5File.openDataSet(location);
       H5::Attribute attr =
         dataset.createAttribute(label, h5_file_dtype(value), dataspace);
       attr.write(h5_mem_dtype(value), &value);
@@ -490,8 +487,8 @@ class HDF5IOHelper
   /// Name of the HDF5 file
   std::string fileName;
 
-  /// Pointer to the HDF5 file object
-  std::shared_ptr<H5::H5File> filePtr;
+  /// HDF5 file object
+  H5::H5File h5File;
 
   /// Store vector data using a pointer to the first element and length
   template<typename T>
@@ -505,7 +502,7 @@ class HDF5IOHelper
     // Assume dset_name is syntactically correct - will need some utils - RWH
     create_groups(dset_name);
     H5::DataSet dataset(
-      create_dataset(*filePtr, dset_name, f_datatype, dataspace) );
+      create_dataset(h5File, dset_name, f_datatype, dataspace) );
     dataset.write(data, m_datatype);
     return;
   }

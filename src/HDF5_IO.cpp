@@ -43,8 +43,8 @@ int length(const StringMultiArrayConstView &vec) {
   {
     create_groups(dset_name);
 
-    H5::DataSet scale_ds(filePtr->openDataSet(scale_name));
-    H5::DataSet ds(filePtr->openDataSet(dset_name));
+    H5::DataSet scale_ds(h5File.openDataSet(scale_name));
+    H5::DataSet ds(h5File.openDataSet(dset_name));
     if(!is_scale(scale_ds)) {
       H5DSset_scale(scale_ds.getId(), label.c_str() );
     }
@@ -64,7 +64,7 @@ int length(const StringMultiArrayConstView &vec) {
     for( size_t i=1; i<objects.size(); ++i ) {
       full_path += '/' + objects[i];
       // if doesn't exist, add
-      if(!filePtr->exists(full_path.c_str())) {
+      if(!h5File.exists(full_path.c_str())) {
         return false;
       }
     }
@@ -96,9 +96,9 @@ int length(const StringMultiArrayConstView &vec) {
       full_path += '/' + groups[i];
 
       // if doesn't exist, add
-      bool grpexists = filePtr->exists(full_path.c_str());
+      bool grpexists = h5File.exists(full_path.c_str());
       if( !grpexists ) {
-        new_group = filePtr->createGroup(full_path.c_str(), linkCreatePL);
+        new_group = h5File.createGroup(full_path.c_str(), linkCreatePL);
         /* Add Exception handling
         if (create_status < 0)
         {
@@ -156,7 +156,7 @@ int length(const StringMultiArrayConstView &vec) {
         h5_type = h5_file_dtype(String(""));
         break;
      }
-     create_dataset(*filePtr, dset_name, h5_type, dataspace);
+     create_dataset(h5File, dset_name, h5_type, dataspace);
   }
 
   bool HDF5IOHelper::is_scale(const H5::DataSet dset) const
@@ -173,7 +173,7 @@ int length(const StringMultiArrayConstView &vec) {
   }
 
   void HDF5IOHelper::flush() const {
-    filePtr->flush(H5F_SCOPE_LOCAL);
+    h5File.flush(H5F_SCOPE_LOCAL);
   }
 
 }
