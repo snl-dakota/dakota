@@ -161,8 +161,8 @@ void read_header_tabular(std::istream& input_stream,
 			 unsigned short tabular_format);
 
 /// read leading columns [ int eval_id [ String iface_id ] ]
-int read_leading_columns(std::istream& input_stream,
-			 unsigned short tabular_format);
+void read_leading_columns(std::istream& input_stream,
+			  unsigned short tabular_format);
 /// read leading columns [ int eval_id [ String iface_id ] ]
 void read_leading_columns(std::istream& input_stream,
 			  unsigned short tabular_format,

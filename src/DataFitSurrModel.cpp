@@ -1859,7 +1859,8 @@ import_points(unsigned short tabular_format, bool active_only)
     Cout << "Surrogate model retrieving points with " << num_vars
 	 << " variables and " << numFns << " response functions from file "
 	 << importPointsFile << '\n';
-  // Preserves eval and interface ids, if annotated format
+  // Preserves eval and interface ids in the PRPList, if annotated format
+  // If no eval ID, will number successively from 1
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
   TabularIO::read_data_tabular(importPointsFile, 
