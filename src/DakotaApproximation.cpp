@@ -303,9 +303,6 @@ void Approximation::build()
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
 void Approximation::
 export_model(const String& fn_label, const String& export_prefix, 
 	     const unsigned short export_format)
@@ -316,9 +313,6 @@ export_model(const String& fn_label, const String& export_prefix,
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
 void Approximation::rebuild()
 {
   if (approxRep)
@@ -328,9 +322,6 @@ void Approximation::rebuild()
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
 void Approximation::pop_data(bool save_data)
 {
   if (approxRep) approxRep->pop_data(save_data);
@@ -343,9 +334,6 @@ void Approximation::pop_data(bool save_data)
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
 void Approximation::push_data()
 {
   if (approxRep) approxRep->push_data();
@@ -369,9 +357,6 @@ void Approximation::push_data()
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
 void Approximation::finalize_data()
 {
   // finalization has to apply restorations in the correct order
