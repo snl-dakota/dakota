@@ -294,7 +294,8 @@ void read_header_tabular(std::istream& input_stream,
 }
 
 
-/** reads eval and interface ids */
+/** reads eval and interface ids; if no eval ID to read due to format,
+    increment the passed eval ID */
 void read_leading_columns(std::istream& input_stream,
 			  unsigned short tabular_format,
 			  int& eval_id, String& iface_id)
@@ -302,7 +303,7 @@ void read_leading_columns(std::istream& input_stream,
   if (tabular_format & TABULAR_EVAL_ID)
     input_stream >> eval_id;
   else
-    eval_id = 0;
+    ++eval_id;
 
   if (tabular_format & TABULAR_IFACE_ID) {
     input_stream >> iface_id;
@@ -315,14 +316,14 @@ void read_leading_columns(std::istream& input_stream,
 }
 
 
-/** discards the interface data, which should be used for validation */
-int read_leading_columns(std::istream& input_stream,
+/** Discards the (eval ID and) interface data, which should be used
+    for validation */
+void read_leading_columns(std::istream& input_stream,
 			    unsigned short tabular_format)
 {
-  int     eval_id; // returned
+  int     eval_id; // discarded
   String iface_id; // discarded
   read_leading_columns(input_stream, tabular_format, eval_id, iface_id);
-  return eval_id;
 }
 
 
@@ -571,7 +572,8 @@ void read_data_tabular(const std::string& input_filename,
 		       bool active_only)
 {
   std::ifstream data_stream;
-  int eval_id; String iface_id;
+  int eval_id = 0;  // number the evals starting from 1 if not contained in file
+  String iface_id;
   open_file(data_stream, input_filename, context_message);
 
   read_header_tabular(data_stream, tabular_format);

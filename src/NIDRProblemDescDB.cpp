@@ -119,23 +119,15 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
 
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)
-  if (!dakota_input_file.empty()) {
-
-    Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
-    if (dakota_input_file.size() == 1 && dakota_input_file[0] == '-')
-      nidrin = stdin;
-    else if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
-      botch("cannot open \"%s\"", dakota_input_file.c_str());
-
-  } 
-  else if (!dakota_input_string.empty()) {
-
+  if(!dakota_input_string.empty()) {
     Cout << "Using provided Dakota input string" << std::endl;
     // BMA TODO: output the string contents if verbose
     nidr_set_input_string(dakota_input_string.c_str());
-
-  }
-  else {
+  } else if (!dakota_input_file.empty()) {
+      Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
+      if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
+        botch("cannot open \"%s\"", dakota_input_file.c_str());
+  } else {
     Cerr << "\nError: NIDR parser called with no input." << std::endl;
     abort_handler(PARSE_ERROR);
   }

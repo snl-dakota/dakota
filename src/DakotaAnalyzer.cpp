@@ -699,6 +699,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
+  // This reader will either get the eval ID from the file, or number
+  // the IDs starting from 1
   TabularIO::read_data_tabular(filename, "post-run input", vars, resp,
 			       import_prp_list, tabular_format, verbose,
 			       active_only);
@@ -742,7 +744,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     // update allVariables,allSamples
     if (compactMode) variables_to_sample(iter_vars, allSamples[i]);
     else             allVariables[i] = iter_vars;
-    // update allResponses
+    // update allResponses (requires unique eval IDs)
     allResponses[pr.eval_id()] = iter_resp;
 
     // mirror any post-processing in Analyzer::evaluate_parameter_sets()

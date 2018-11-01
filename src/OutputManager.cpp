@@ -389,6 +389,31 @@ void OutputManager::init_results_db()
 				 resultsOutputFormat);
 }
 
+void OutputManager::archive_input(const ProgramOptions &prog_opts) const {
+  // Not strictly necessary to check, but it avoids potentially reading the
+  // input file into memory needlessly.
+  if(!iterator_results_db.active()) return;
+  const String& dakota_input_file = prog_opts.input_file();
+  const String& dakota_input_string = prog_opts.input_string();
+  AttributeArray input_attr;
+
+  if(!dakota_input_string.empty()) {
+    input_attr.push_back(ResultAttribute<String>("input", dakota_input_string));
+    iterator_results_db.add_metadata_to_study(input_attr);
+  } else if(!dakota_input_file.empty()) {
+      std::ifstream inputstream(dakota_input_file.c_str());
+      if (!inputstream.good()) {
+	Cerr << "\nError: Could not open input file '" << dakota_input_file 
+	     << "' for reading." << std::endl;
+	abort_handler(IO_ERROR);
+      }
+      std::stringstream input_sstr;
+      input_sstr << inputstream.rdbuf();
+      input_attr.push_back(ResultAttribute<String>("input", input_sstr.str()));
+      iterator_results_db.add_metadata_to_study(input_attr);
+  } 
+}
+
 
 void OutputManager::read_write_restart(bool restart_requested,
 				       bool read_restart_flag,

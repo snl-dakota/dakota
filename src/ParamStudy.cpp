@@ -284,15 +284,18 @@ void ParamStudy::core_run()
     //resultsDB.allocate_vector(run_identifier(), {std::string("continuous_variable_labels")},
     //    Dakota::ResultsOutputType::REAL, numFunctions, scales);
 
-    resultsDB.allocate_matrix(run_identifier(), {std::string("continuous_variables")},
-        Dakota::ResultsOutputType::REAL, num_evals, numContinuousVars);
-    resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_integer_variables")},
-        Dakota::ResultsOutputType::INTEGER, num_evals, numDiscreteIntVars);
+    if( numContinuousVars )
+      resultsDB.allocate_matrix(run_identifier(), {std::string("continuous_variables")},
+          Dakota::ResultsOutputType::REAL, num_evals, numContinuousVars);
+    if( numDiscreteIntVars )
+      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_integer_variables")},
+          Dakota::ResultsOutputType::INTEGER, num_evals, numDiscreteIntVars);
     if( numDiscreteStringVars )
       resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_string_variables")},
           Dakota::ResultsOutputType::STRING, num_evals, numDiscreteStringVars);
-    resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_real_variables")},
-        Dakota::ResultsOutputType::REAL, num_evals, numDiscreteRealVars);
+    if( numDiscreteRealVars )
+      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_real_variables")},
+          Dakota::ResultsOutputType::REAL, num_evals, numDiscreteRealVars);
 
     resultsDB.allocate_matrix(run_identifier(), {std::string("responses")},
         Dakota::ResultsOutputType::REAL, num_evals, numFunctions);
@@ -315,11 +318,14 @@ void ParamStudy::archive_model_variables(const Model& model, size_t idx) const
     StringMultiArrayConstView ds_vars = model.discrete_string_variables();
     const RealVector& dr_vars = model.discrete_real_variables();
 
-    resultsDB.insert_into(run_identifier(), {String("continuous_variables")},       c_vars,  idx);
-    resultsDB.insert_into(run_identifier(), {String("discrete_integer_variables")}, di_vars, idx);
+    if( numContinuousVars )
+      resultsDB.insert_into(run_identifier(), {String("continuous_variables")},       c_vars,  idx);
+    if( numDiscreteIntVars )
+      resultsDB.insert_into(run_identifier(), {String("discrete_integer_variables")}, di_vars, idx);
     if( numDiscreteStringVars )
       resultsDB.insert_into(run_identifier(), {String("discrete_string_variables")},  ds_vars, idx);
-    resultsDB.insert_into(run_identifier(), {String("discrete_real_variables")},    dr_vars, idx);
+    if( numDiscreteRealVars )
+      resultsDB.insert_into(run_identifier(), {String("discrete_real_variables")},    dr_vars, idx);
   }
 }
 

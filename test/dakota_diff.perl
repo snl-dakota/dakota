@@ -674,9 +674,9 @@ sub compare_output {
 
     # MV
     elsif ( ( ($t_val) = $test =~
-	      /^\s*(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+|Information gained from prior to posterior|Mutual information)\s+=\s+($e)$/ ) &&
+	      /^\s*(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+|Information gained from prior to posterior|Mutual information|Model evidence \([\w\s]+\))\s+=\s+($e)$/ ) &&
 	    ( ($b_val) = $base =~
-	      /^\s*(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+|Information gained from prior to posterior|Mutual information)\s+=\s+($e)$/ ) ) {
+	      /^\s*(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+|Information gained from prior to posterior|Mutual information|Model evidence \([\w\s]+\))\s+=\s+($e)$/ ) ) {
       if ( diff($t_val, $b_val) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;

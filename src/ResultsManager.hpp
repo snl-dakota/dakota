@@ -117,6 +117,9 @@ public:
   /// Flush data to the database or disk, if supported
   void flush() const;
 
+  /// Close the database, if supported. This removes it from the active
+  /// list of databases.
+  void close();
 
   // ##############################################################
   // Methods to support HDF5
@@ -179,6 +182,9 @@ public:
   void add_metadata_to_object(const StrStrSizet& iterator_id,
                                const StringArray &location,
                                const AttributeArray &attrs);
+
+  /// Associate key:value metadata with the object at the location
+  void add_metadata_to_study(const AttributeArray &attrs);
 
 
   // ##############################################################
@@ -255,6 +261,10 @@ public:
 
 private:
 
+  std::vector<std::unique_ptr<ResultsDBBase> > resultsDBs;
+
+  ResultsManager(const ResultsManager&) {return;}
+
 //  /// retrieve in-core entry given by id and name
 //  template<typename StoredType>
 //  StoredType core_lookup(const StrStrSizet& iterator_id,
@@ -308,7 +318,6 @@ private:
 
   // TODO: consider removing or renaming flags based on HDF5 needs
 
-  std::vector<std::shared_ptr<ResultsDBBase> > resultsDBs;
 
 };  // class ResultsManager
 

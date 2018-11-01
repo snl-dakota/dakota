@@ -184,7 +184,7 @@ ProblemDescDB::~ProblemDescDB()
     DB setup phase 2: optionally insert additional data via late sets.
     Rank 0 only. */
 void ProblemDescDB::
-parse_inputs(const ProgramOptions& prog_opts, 
+parse_inputs(ProgramOptions& prog_opts, 
 	     DbCallbackFunctionPtr callback, void *callback_data)
 {
   if (dbRep) {
@@ -207,6 +207,14 @@ parse_inputs(const ProgramOptions& prog_opts,
 	abort_handler(PARSE_ERROR);
       }
 
+      // Read the input from stdin if the user provided "-" as the filename
+      if(prog_opts.input_file() == "-") {
+        Cout << "Reading Dakota input from standard input" << std::endl;
+        String stdin_string(std::istreambuf_iterator<char>(std::cin),
+            std::istreambuf_iterator<char>());
+        prog_opts.input_string(stdin_string);
+      }
+      
       if (prog_opts.echo_input())
 	echo_input_file(prog_opts);
 
@@ -3741,10 +3749,22 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 {
   const String& dakota_input_file = prog_opts.input_file();
-  if (!dakota_input_file.empty()) {
-    bool input_is_stdin = 
-      ( dakota_input_file.size() == 1 && dakota_input_file[0] == '-');
-    if (!input_is_stdin) {
+  const String& dakota_input_string = prog_opts.input_string();
+  if (!dakota_input_string.empty()) {
+    size_t header_len = 23;
+    std::string header(header_len, '-');
+    Cout << header << '\n';
+    Cout << "Begin DAKOTA input file\n";
+    if(dakota_input_file == "-")
+      Cout << "(from standard input)\n";
+    else
+      Cout << "(from string)\n";
+    Cout << header << std::endl;
+    Cout << prog_opts.input_string() << std::endl;
+    Cout << "---------------------\n";
+    Cout << "End DAKOTA input file\n";
+    Cout << "---------------------\n" << std::endl;
+  } else if(!dakota_input_file.empty()) {
       std::ifstream inputstream(dakota_input_file.c_str());
       if (!inputstream.good()) {
 	Cerr << "\nError: Could not open input file '" << dakota_input_file 
@@ -3773,19 +3793,6 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
       Cout << "---------------------\n";
       Cout << "End DAKOTA input file\n";
       Cout << "---------------------\n" << std::endl;
-    }
-  }
-  else if (!prog_opts.input_string().empty()) {
-    size_t header_len = 23;
-    std::string header(header_len, '-');
-    Cout << header << '\n';
-    Cout << "Begin DAKOTA input file\n";
-    Cout << "(from string)\n"; 
-    Cout << header << std::endl;
-    Cout << prog_opts.input_string() << std::endl;
-    Cout << "---------------------\n";
-    Cout << "End DAKOTA input file\n";
-    Cout << "---------------------\n" << std::endl;
   }
 }
 

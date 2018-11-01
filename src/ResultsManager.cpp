@@ -24,10 +24,10 @@ void ResultsManager::initialize(const std::string& base_filename, const unsigned
   // Could allow the various backends to self-register ... RWH
   resultsDBs.clear();
   if(format & RESULTS_OUTPUT_TEXT)
-    resultsDBs.push_back(std::make_shared<ResultsDBAny>(base_filename));
+    resultsDBs.push_back(std::unique_ptr<ResultsDBAny>(new ResultsDBAny(base_filename)));
   if(format & RESULTS_OUTPUT_HDF5) {
   #ifdef DAKOTA_HAVE_HDF5
-    resultsDBs.push_back(std::make_shared<ResultsDBHDF5>(false /* in_core */, base_filename));
+    resultsDBs.push_back(std::unique_ptr<ResultsDBHDF5>(new ResultsDBHDF5(false /* in_core */, base_filename)));
   #else
     Cerr << "WARNING: HDF5 results output was requested, but is not available in this build.\n";
   #endif
@@ -43,9 +43,11 @@ bool ResultsManager::active() const
 void ResultsManager::flush() const
 {
   for( auto & db : resultsDBs )
-  {
     db->flush();
-  }
+}
+
+void ResultsManager::close() {
+  resultsDBs.clear();
 }
 
 // ##############################################################
@@ -74,6 +76,12 @@ void ResultsManager::add_metadata_to_object(const StrStrSizet& iterator_id,
 {
   for( auto & db : resultsDBs )
     db->add_metadata_to_object(iterator_id, location, attrs);
+}
+
+void ResultsManager::add_metadata_to_study(const AttributeArray &attrs)  
+{
+  for( auto & db : resultsDBs )
+    db->add_metadata_to_study(attrs);
 }
 
 void ResultsManager::allocate_vector(const StrStrSizet& iterator_id,
