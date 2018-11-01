@@ -267,7 +267,7 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
     if(resultsDB.active()) {
       IntRespMCIter r_cit;
       for(r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
-        archive_model_response(r_cit->second, (r_cit->first-1)%num_evals);
+        archive_model_response(r_cit->second, std::distance(resp_map.begin(), r_cit));
     }
   }
 }
