@@ -130,7 +130,7 @@ protected:
   void pop(bool save_surr_data);
 
   bool push_available();
-  size_t retrieval_index(const UShortArray& key);
+  size_t candidate_index(const UShortArray& key);
   void pre_push();
   void post_push();
 
@@ -211,8 +211,8 @@ inline bool SharedPecosApproxData::push_available()
 { return pecosSharedDataRep->push_available(); }
 
 
-inline size_t SharedPecosApproxData::retrieval_index(const UShortArray& key)
-{ return pecosSharedDataRep->retrieval_index(key); }
+inline size_t SharedPecosApproxData::candidate_index(const UShortArray& key)
+{ return pecosSharedDataRep->candidate_index(key); }
 
 
 inline void SharedPecosApproxData::pre_push()

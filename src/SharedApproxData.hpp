@@ -102,7 +102,7 @@ public:
   /// queries availability of pushing data associated with a trial set
   virtual bool push_available();
   /// return index of trial set within popped bookkeeping sets
-  virtual size_t retrieval_index(const UShortArray& key);
+  virtual size_t candidate_index(const UShortArray& key);
   /// push a previous state of the shared approximation data 
   virtual void pre_push();
   /// clean up popped bookkeeping following push 
