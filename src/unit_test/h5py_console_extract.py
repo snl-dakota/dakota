@@ -1,5 +1,6 @@
 from __future__ import print_function
 import subprocess
+import re
 import numpy as np
 
 ## Capture the output here, once.
@@ -222,6 +223,92 @@ def extract_partial_rank_correlations():
 def extract_partial_correlations():
     return extract_partial_correlations_helper("pearson")
 
+def extract_best_helper(result, labeled=False):
+    """Extract the best parameters/residuals/objectives/constraints
+
+    Return as a list of lists. The outer list may be over 
+      executions solution sets. (TODO: This may not be expressive enough, 
+      because there could be multiple executions and multiple sets). If
+      the result is labeled (with variable or response descriptors), the inner
+      lists contain tuples of (label, value) are returned.
+    """
+    heading = "<<<<< Best " + result
+    best = []
+    lines_iter = iter(_OUTPUT)
+    for line in lines_iter:
+        if line.startswith(heading):
+            nline = next(lines_iter) # the first variable
+            best_set = []
+            while(nline[0] != "<"):
+                # variables may be float, int, or string valued. Try to convert.
+                # String variables can contain whitespace, so split from the right
+                # to separate the variable descriptor from the value.
+                if labeled:
+                    val, label = nline.rsplit(None,1)
+                    try:
+                        val = int(val)
+                    except ValueError:
+                        try:
+                            val = float(val)
+                        except ValueError:
+                            pass
+                    best_set.append( (label, val) )
+                else:
+                    best_set.append(float(nline))
+                nline = next(lines_iter)
+            best.append(best_set)
+    return best
+
+def extract_best_parameters():
+    return extract_best_helper("parameters", True)
+
+def extract_best_residuals():
+    return extract_best_helper("residual terms", False)
+
+def extract_best_objectives():
+    return extract_best_helper("objective", False)
+
+def extract_best_constraints():
+    return extract_best_helper("constraint", False)
+
+def extract_best_parameter_confidence_intervals():
+    """Extract parameter confidence intervals
+
+    Return as a list of dictionaries. The keys of the dictionaries are variable
+      descriptors, and the values are tuples of lower and upper bounds
+    """
+    line_re = re.compile(r"\s+(.+?):\s+\[\s+(.+?),\s+(.+)\s+\]")
+    cis = []
+    lines_iter = iter(_OUTPUT)
+    for line in lines_iter:
+        if line.startswith("Confidence Intervals on Cal"):
+            nline = next(lines_iter) # the first variable
+            ci = {}
+            while(nline):
+                m = line_re.match(nline)
+                ci[m.group(1)] = (float(m.group(2)), float(m.group(3)))
+                nline = next(lines_iter)
+            cis.append(ci)
+    return cis
+
+def extract_best_residual_norms():
+    """Extract norm
+
+    Returns a list of norms
+    """
+    norms = []
+    lines_iter = iter(_OUTPUT)
+    for line in lines_iter:
+        if line.startswith("<<<<< Best residual norm"):
+            norm = line.split()[5]
+            # strip off the semicolon
+            norm = norm[:-1]
+            norms.append(float(norm))
+    return norms
+
+
+
+              
 def run_dakota(input_file):
     """Run Dakota on the input_file and capture output
 
