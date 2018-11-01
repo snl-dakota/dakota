@@ -65,7 +65,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
     int num_state_vars =
       subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
     if (num_state_vars != num_config_vars) {
-      Cerr << "\nError: (DataTransformModel) Number of continuous state "
+      Cerr << "\nError: (DataTransformModel) Number of state "
 	   << "variables = " << num_state_vars << " must match\n       number "
 	   << "of configuration variables = " << num_config_vars << "\n";
       abort_handler(-1);
@@ -1095,9 +1095,11 @@ void DataTransformModel::archive_best_original(const ResultsManager &results_db,
   if(num_best > 1)
     location.push_back(String("set:") + std::to_string(best_index+1));
   location.push_back("best_model_responses");
-  if(expData.num_config_vars())
+  if(expData.num_config_vars()) {
     location.push_back(String("experiment:") + std::to_string(exp_index+1));
-    
+    location.push_back("responses");
+  }
+
   results_db.insert(iterator_id, location, function_values, scales);
 }
 
@@ -1115,6 +1117,8 @@ archive_submodel_responses(const ResultsManager &results_db,
   // inactive operations. Make a deep copy of the SharedVariablesData
   // to avoid corrupting any inbound Variables information... (const
   // doesn't protect the SVD)
+  
+
   Variables lookup_vars = best_submodel_vars.copy(true);
   lookup_vars.inactive_view(MIXED_STATE);
 
@@ -1166,6 +1170,11 @@ archive_submodel_responses(const ResultsManager &results_db,
       archive_best_original(results_db, iterator_id, 
                              model_resp.function_values(), 
                              i, num_best, best_ind);
+      if(expData.num_config_vars() != 0)
+        archive_best_config_variables(results_db, iterator_id, 
+                                     lookup_vars, i, 
+                                     num_best, best_ind);
+
     }
   }
 
@@ -1218,6 +1227,64 @@ archive_best_responses(const ResultsManager &results_db,
   archive_best_residuals(results_db, iterator_id, num_primary_fns(), 
       resid_fns, wssr, num_best, best_ind);
 
+}
+
+/// Archive best configuration variables
+void DataTransformModel::
+archive_best_config_variables(const ResultsManager &results_db, 
+                              const StrStrSizet &iterator_id,
+                              const Variables &vars,
+                              const int &exp_index,
+                              const int &num_best, 
+                              const int &best_index) {
+
+  if(!results_db.active())  return;
+  // When using configuration variables, all inactive variables are
+  // expected to be config vars.
+
+  const auto & cv_labels = vars.inactive_continuous_variable_labels();
+  const auto & div_labels = vars.inactive_discrete_int_variable_labels();
+  const auto & dsv_labels = vars.inactive_discrete_string_variable_labels();
+  const auto & drv_labels = vars.inactive_discrete_real_variable_labels();
+
+  StringArray location;
+  size_t d_index = 2;
+  if(num_best > 1) {
+    location.push_back(String("set:") + std::to_string(best_index+1));
+    d_index = 3;
+    
+  }
+  location.push_back("best_model_responses");
+  location.push_back(String("experiment:") + std::to_string(exp_index+1));
+  location.push_back(""); // placeholder for variable domain
+  if(cv_labels.size()) {
+    location[d_index] = "continuous_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", cv_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_continuous_variables(), scales);
+  }
+  if(div_labels.size()) {
+    location[d_index] = "discrete_integer_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", div_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_discrete_int_variables(), scales);
+  }
+  if(dsv_labels.size()) {
+    location[d_index] = "discrete_string_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", dsv_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_discrete_string_variables(), scales);
+  }
+  if(drv_labels.size()) {
+    location[d_index] = "discrete_real_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", drv_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_discrete_real_variables(), scales);
+  }
 }
 
 int DataTransformModel::num_config_vars() const {

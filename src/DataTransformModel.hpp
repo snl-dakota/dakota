@@ -205,7 +205,15 @@ protected:
                              const RealVector &function_values, 
                              const int &exp_index, const int &num_best,
                              const int &best_index);
+  
+  /// Archive the best configuration variables associated with each model response 
+  void archive_best_config_variables(const ResultsManager &results_db, 
+                             const StrStrSizet &iterator_id, 
+                             const Variables &vars,
+                             const int &exp_index, const int &num_best,
+                             const int &best_index);
 
+  /// Archive the best residuals
   void archive_best_residuals(const ResultsManager &results_db, 
                               const StrStrSizet &iterator_id,
                               const int num_fns, 
