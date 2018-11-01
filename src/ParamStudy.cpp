@@ -257,50 +257,8 @@ void ParamStudy::pre_run()
 
 void ParamStudy::core_run()
 {
-  // Let's try to allocate resultsDB stuff here - RWH
-  if(resultsDB.active())
-  {
-    size_t num_evals = (compactMode) ? allSamples.numCols() : allVariables.size();
 
-    StringMultiArrayConstView cv_labels
-                = iteratedModel.continuous_variable_labels();
-    StringMultiArrayConstView div_labels
-                = iteratedModel.discrete_int_variable_labels();
-    StringMultiArrayConstView dsv_labels
-                = iteratedModel.discrete_string_variable_labels();
-    StringMultiArrayConstView drv_labels
-                = iteratedModel.discrete_real_variable_labels();
-
-    const StringArray& resp_labels 
-                = iteratedModel.response_labels();
-
-    //StringArray scale_labels;
-    //for (i=0; i<numContinuousVars; ++i)
-    //  scale_labels.push_back(cv_labels[i]);
-
-    //DimScaleMap scales;
-    //scales.emplace(0, StringScale("continuous_variables", scale_labels, ScaleScope::UNSHARED));
-
-    //resultsDB.allocate_vector(run_identifier(), {std::string("continuous_variable_labels")},
-    //    Dakota::ResultsOutputType::REAL, numFunctions, scales);
-
-    if( numContinuousVars )
-      resultsDB.allocate_matrix(run_identifier(), {std::string("continuous_variables")},
-          Dakota::ResultsOutputType::REAL, num_evals, numContinuousVars);
-    if( numDiscreteIntVars )
-      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_integer_variables")},
-          Dakota::ResultsOutputType::INTEGER, num_evals, numDiscreteIntVars);
-    if( numDiscreteStringVars )
-      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_string_variables")},
-          Dakota::ResultsOutputType::STRING, num_evals, numDiscreteStringVars);
-    if( numDiscreteRealVars )
-      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_real_variables")},
-          Dakota::ResultsOutputType::REAL, num_evals, numDiscreteRealVars);
-
-    resultsDB.allocate_matrix(run_identifier(), {std::string("responses")},
-        Dakota::ResultsOutputType::REAL, num_evals, numFunctions);
-  }
-
+  archive_allocate_sets();
   // perform the evaluations; multidim exception
   bool log_resp_flag = (methodName == MULTIDIM_PARAMETER_STUDY)
     ? (!subIteratorFlag) : false;
@@ -337,6 +295,55 @@ void ParamStudy::archive_model_response(const Response& response, size_t idx) co
     const RealVector& resp_vec = response.function_values();
     resultsDB.insert_into(run_identifier(), {String("responses")}, resp_vec, idx);
   }
+}
+
+void ParamStudy::archive_allocate_sets() const {
+  if(resultsDB.active())
+  {
+    size_t num_evals = (compactMode) ? allSamples.numCols() : allVariables.size();
+
+    StringMultiArrayConstView cv_labels
+                = iteratedModel.continuous_variable_labels();
+    StringMultiArrayConstView div_labels
+                = iteratedModel.discrete_int_variable_labels();
+    StringMultiArrayConstView dsv_labels
+                = iteratedModel.discrete_string_variable_labels();
+    StringMultiArrayConstView drv_labels
+                = iteratedModel.discrete_real_variable_labels();
+
+    const StringArray& resp_labels 
+                = iteratedModel.response_labels();
+
+    if( numContinuousVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", cv_labels));
+      resultsDB.allocate_matrix(run_identifier(), {std::string("continuous_variables")},
+          Dakota::ResultsOutputType::REAL, num_evals, numContinuousVars, scales);
+    }
+    if( numDiscreteIntVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", div_labels));
+      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_integer_variables")},
+          Dakota::ResultsOutputType::INTEGER, num_evals, numDiscreteIntVars, scales);
+    }
+    if( numDiscreteStringVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", dsv_labels));
+      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_string_variables")},
+          Dakota::ResultsOutputType::STRING, num_evals, numDiscreteStringVars, scales);
+    }
+    if( numDiscreteRealVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", drv_labels));
+      resultsDB.allocate_matrix(run_identifier(), {std::string("discrete_real_variables")},
+          Dakota::ResultsOutputType::REAL, num_evals, numDiscreteRealVars, scales);
+    }
+    DimScaleMap scales;
+    scales.emplace(1, StringScale("responses", resp_labels));
+    resultsDB.allocate_matrix(run_identifier(), {std::string("responses")},
+        Dakota::ResultsOutputType::REAL, num_evals, numFunctions, scales);
+  }
+
 }
 
 void ParamStudy::post_input()

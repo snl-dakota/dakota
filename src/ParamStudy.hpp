@@ -58,11 +58,14 @@ public:
   void post_input();
   void post_run(std::ostream& s);
 
+  /// Archive variables for parameter set idx
   void archive_model_variables(const Model&, size_t idx) const override;
+  /// Archive responses for parameter set idx
   void archive_model_response(const Response&, size_t idx) const override;
 
 protected:
-
+  /// Allocate space to archive parameters and responses
+  void archive_allocate_sets() const;
 private:
 
   //
