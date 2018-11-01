@@ -1,12 +1,12 @@
 Blurb::
-Calculate model evidence (marginal likelihood of model) when using Bayesian MCMC methods
+Calculate model evidence (marginal likelihood of model) when using Bayesian methods
 
 Description::
-Model evidence is used in Bayesian model selection.  It is 
-defined as the probability of the data given the model, and 
+Model evidence is used in Bayesian model selection and model averaging. 
+It is defined as the probability of the data given the model, and 
 is calculated by averaging the likelihood of the model parameters 
 over all values of the model parameters according to their prior 
-distributions.  In Dakota, one must calculate the 
+distributions. In Dakota, one must calculate the 
 model evidence separately for each model and perform the normalization 
 to obtain the posterior model plausibility for each model. 
 

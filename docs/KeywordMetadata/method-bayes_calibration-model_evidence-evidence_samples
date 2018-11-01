@@ -5,14 +5,14 @@ Description::
 The \c mc_approx keyword for model evidence indicates that 
 sample values will be generated from the prior distribution,
 and then the simulation model will be evaluated at these 
-sample values to obtain a likelihood.  The average of the 
-likelihood weighted by the prior is the model evidence. 
-The accuracy of this approximation depends on the 
+sample values to obtain corresponding likelihood values. 
+The average of the likelihood weighted by the prior is the 
+model evidence. The accuracy of this approximation depends on the 
 number of samples taken, which is specified by 
 the \c evidence_samples keyword. 
 Note that each sample specified by the \c evidence_samples keyword 
 will require an evaluation of the simulation model to compute the 
-corresponding likelihood.   So, this may become costly for expensive 
+corresponding likelihood. So, this may become costly for expensive 
 simulations.  Additionally, many prior samples will have very low 
 (near zero) likelihood, so millions of samples may be required for 
 accurate computation of the integral which defines model evidence. 

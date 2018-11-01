@@ -10,7 +10,8 @@ Gaussian and is given by a formula which involves the likelihood
 at the MAP point, the prior density at the MAP point, and the 
 Hessian of the log-posterior at the MAP point.  The formula is 
 given in the Dakota User's manual.  This method is efficient 
-at estimating the model evidence but it does require a MAP 
+at estimating the model evidence for posterior densities with weak
+non-Gaussian characteristics but it does require a MAP 
 solve (so \c pre-solve should be specified) and it does 
 require gradient and Hessians of the response to be on. 
 
