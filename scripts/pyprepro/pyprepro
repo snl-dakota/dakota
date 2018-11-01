@@ -24,7 +24,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20180719'
+__version__ = '20181017'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -287,7 +287,7 @@ def _parse_cli(argv,positional_include=False):
         addvar = addvar.split('=',2)
         if len(addvar) != 2:
             sys.stderr.write('ERROR: --var must be of the form `--var "var=value"`\n')
-            sys.exit()
+            sys.exit(1)
         key,val = addvar
         
         key = key.strip()
@@ -324,9 +324,8 @@ def _pyprepro_cli(argv):
     except (NameError,BlockCharacterError) as E:
         if DEBUGCLI:
             raise
-            
-        sys.stderr.write('Error occurred:\n  ' + E.args[0] + '\n')        
-        sys.exit(2)
+        sys.stderr.write(_error_msg(E))        
+        sys.exit(1)
     
     if args.outfile is None:
         sys.stdout.write(output)
@@ -702,6 +701,21 @@ def _delim_capture(txt,delim,sub=None):
         
     return captured,''.join(outtxt)
 
+def _error_msg(E):
+    msg = []
+    err = E.__class__.__name__
+    msg.append('Exception: {0}'.format(err))
+    if hasattr(E,'filename'):
+        msg.append('Filename: {0}'.format(E.filename))
+    if hasattr(E,'lineno'):
+        msg.append('Line Number: {0}'.format(E.lineno))
+#     if hasattr(E,'offset'): # Not reliable
+#         msg.append('Column: {0}'.format(E.offset))
+    if hasattr(E,'args') and len(E.args)>0:
+        msg.append('Message: {0}'.format(E.args[0]))
+    
+    msg = 'Error occurred\n' + '\n'.join('    ' + l for l in msg) + '\n'
+    return msg
 ###### Functions for inside templates  
 
 def _vartxt(env,return_values=True,comment=None):
@@ -999,9 +1013,9 @@ def _dprepro_cli(argv):
     else:
         try:
             params, results = di.read_parameters_file(parameters_file=args.include,results_file=di.UNNAMED)
-        except di.ParamsFormatError as e:
-            sys.stderr.write("Error occurred: " + e.args[0] + "\n")
-            sys.exit(2)
+        except di.ParamsFormatError as E:
+            sys.stderr.write(_error_msg(E))
+            sys.exit(1)
 
         env["DakotaParams"] = params
         for d, v in params.items():
@@ -1025,8 +1039,8 @@ def _dprepro_cli(argv):
         if DEBUGCLI:
             raise
             
-        sys.stderr.write('Error occurred:\n  ' + E.args[0] + '\n')        
-        sys.exit(2)
+        sys.stderr.write(_error_msg(E))        
+        sys.exit(1)
     
     if args.outfile is None:
         sys.stdout.write(output)
@@ -1631,11 +1645,10 @@ def _template(tpl, env=None, return_env=False):
             return rendered
         return rendered,env
     except Exception as E:
-        if CLI_MODE and DEBUGCLI:
-            err = E.__class__.__name__
-            desc = unicode(E)
-            sys.stderr.write('Error occurred:\n  {0}: {1}\n'.format(err,desc))        
-            sys.exit(2)
+        if CLI_MODE and not DEBUGCLI:
+            msg = _error_msg(E)
+            sys.stderr.write(msg)        
+            sys.exit(1)
         else:
             raise
 ########################### six extracted codes ###########################
@@ -1688,6 +1701,7 @@ else:
 INIT_VARS = set(_template('BLA',return_env=True)[-1].keys())
 
 def main():
+    global CLI_MODE
     CLI_MODE = True 
     cmdname = sys.argv[0].lower()
     path, execname = os.path.split(cmdname)
