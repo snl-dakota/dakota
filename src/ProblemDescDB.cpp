@@ -210,8 +210,12 @@ parse_inputs(ProgramOptions& prog_opts,
       // Read the input from stdin if the user provided "-" as the filename
       if(prog_opts.input_file() == "-") {
         Cout << "Reading Dakota input from standard input" << std::endl;
-        String stdin_string(std::istreambuf_iterator<char>(std::cin),
-            std::istreambuf_iterator<char>());
+        String stdin_string;
+        char in = std::cin.get();
+        while(std::cin.good()) {
+          stdin_string.push_back(in);
+          in = std::cin.get();
+        }
         prog_opts.input_string(stdin_string);
       }
       
