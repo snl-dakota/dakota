@@ -9,7 +9,7 @@
 //- Class:       ROLOptimizer
 //- Description: Wrapper class for ROL
 //- Owner:       Moe Khalil
-//- Checked by:
+//- Checked by:  Patty Hough, Russell Hooper, Brian Adams
 //- Version: $Id$
 
 // Dakota headers
@@ -35,7 +35,7 @@
 // - ROLOptimizer implementation
 //
 
-// An compile unit (this source file) variable used to toggle tabular data
+// A compile unit (this source file) variable used to toggle tabular data
 // output when dealing with sequential duplicates - ROL specific
 namespace {
   bool orig_auto_graphics_flag = false;
@@ -101,12 +101,6 @@ void ROLOptimizer::core_run()
   rol_cout.flush();
   opt_solver.reset(true);
 
-  // TODO: print termination criteria (based on Step or AlgorithmState?)
-  // TODO: If memory serves me correctly, Russell implementd a
-  // function at the DakotaOptimizer level that sets all the final
-  // values.  It was based on APPS, but we should revisit to figure
-  // out how this compares and if it makes sense to merge them.
-
   // Copy ROL solution to Dakota bestVariablesArray
   Variables& best_vars = bestVariablesArray.front();
   RealVector& cont_vars = best_vars.continuous_variables_view();
@@ -152,11 +146,6 @@ void ROLOptimizer::set_problem()
   // inequality constraints as required by ROL for good performance.
   Real rol_inf = ROL::ROL_INF<Real>();
   Real rol_ninf = ROL::ROL_NINF<Real>();
-
-  // TODO: Seems like we should be able to use traits to determine
-  // when we need to provide the sum rather than making the user do
-  // it.  Also, same comment about class data as below.  What do we
-  // want/need to do about these member variables anyway?
 
   size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
   size_t num_ineq_const = numLinearIneqConstraints + 
@@ -214,12 +203,6 @@ void ROLOptimizer::set_problem()
     bnd.reset( new ROL::Bounds<Real>(lowerBounds, upperBounds) );
   }
 
-  // Create objective function object and give it access to Dakota
-  // model.  If there is a Dakota/user-provided Hessian, need to
-  // instantiate the "Hess" version to enable support for it. If 
-  // vendor numerical gradients are preferred, instantiate the
-  // "Grad" version
-
   // Extract gradient type and method for finite-differencing
   const String& grad_type     = iteratedModel.gradient_type();
   const String& method_src    = iteratedModel.method_source();
@@ -234,14 +217,20 @@ void ROLOptimizer::set_problem()
     // ROL uses one-sided differences for gradient computations
     if (interval_type == "central") {
     Cerr << "\nFinite Difference Type = 'central' is invalid with ROL.\n"
-         << "ROL only provides internal support for forward differences.\n";
+      << "ROL only provides internal support for forward differences.\n";
     abort_handler(-1);
     }
     // Can not control ROL's parameters for finite-differencing
-    Cerr << "\nWarning: ROL's finite difference step size can not be controlled via Dakota.\n"
-         << "The user-provided (or otherwise Dakota default) step size will be ignored.\n";
+    Cerr << "\nWarning: ROL's finite difference step size can not be "
+      << "controlled via Dakota.\nThe user-provided (or otherwise Dakota "
+      << "default) step size will be ignored.\n";
   }
 
+  // Create objective function object and give it access to Dakota
+  // model.  If there is a Dakota/user-provided Hessian, need to
+  // instantiate the "Hess" version to enable support for it. If 
+  // vendor numerical gradients are preferred, instantiate the
+  // parent version
   if ( grad_type == "analytic" || grad_type == "mixed" || 
        ( grad_type == "numerical" && method_src == "dakota" ) ){
       if (iteratedModel.hessian_type() == "none")
@@ -249,13 +238,16 @@ void ROLOptimizer::set_problem()
       else
         obj.reset(new DakotaROLObjectiveHess(iteratedModel));
   }
-  else { // Vendor numerical gradients
+  else {
+    // Vendor numerical gradients
     obj.reset(new DakotaROLObjective(iteratedModel));
   }
 
-
   // If there are equality constraints, create the object and provide
-  // the Dakota model.
+  // the Dakota model. If there is a Dakota/user-provided Hessian, need
+  // to instantiate the "Hess" version to enable support for it. If 
+  // vendor numerical gradients are preferred, instantiate the
+  // parent version
   if (num_eq_const > 0){
     // create appropriate equality constraint object and give it
     // access to Dakota model
@@ -266,17 +258,22 @@ void ROLOptimizer::set_problem()
         else
           eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
     }
-    else { // Vendor numerical gradients
+    else {
+      // Vendor numerical gradients
       eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
     }
 
     // Initialize Lagrange multipliers for equality constraints.
-    Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(num_eq_const,0.0) );
+    Teuchos::RCP<std::vector<Real> > emul_rcp = 
+      Teuchos::rcp( new std::vector<Real>(num_eq_const, 0.0) );
     emul.reset(new ROL::StdVector<Real>(emul_rcp) );
   }
 
   // If there are inequality constraints, create the object and provide
   // the Dakota model. (Order: [linear_ineq, nonlinear_ineq])
+  // If there is a Dakota/user-provided Hessian, need to instantiate
+  // the "Hess" version to enable support for it. If vendor numerical
+  // gradients are preferred, instantiate the parent version
   if (num_ineq_const > 0){
     // create appropriate inequality constraint object and give it
     // access to Dakota model
@@ -287,13 +284,14 @@ void ROLOptimizer::set_problem()
         else
           ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
     }
-    else { // Vendor numerical gradients
+    else {
+      // Vendor numerical gradients
       ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
     }
 
     // Initial Lagrange multipliers for inequality constraints.
     Teuchos::RCP<std::vector<Real> > imul_rcp = 
-      Teuchos::rcp( new std::vector<Real>(num_ineq_const,0.0) );
+      Teuchos::rcp( new std::vector<Real>(num_ineq_const, 0.0) );
     imul.reset(new ROL::StdVector<Real>(imul_rcp) );
   
     // Create ROL inequality constraint bound vectors.
@@ -301,11 +299,6 @@ void ROLOptimizer::set_problem()
       ineq_l_rcp(new std::vector<Real>(num_ineq_const, 0.0));
     Teuchos::RCP<std::vector<Real> >
       ineq_u_rcp(new std::vector<Real>(num_ineq_const, 0.0));
-
-    // TODO: Seems like we should be able to pull this into the
-    // adapters and use traits to determine what to populate the
-    // bounds vectors with...similar to get_bounds for the bound
-    // constraints above.
 
     // Get the inequality bounds from Dakota and transfer them into
     // the ROL vectors. 
@@ -346,7 +339,7 @@ void ROLOptimizer::initialize_run()
   Optimizer::initialize_run();
 
   // Needed to make ROL output to tabular data consistent with other Opt TPLs
-  // NOTE: This cannot be set in the consructr (or helper functions associated
+  // NOTE: This cannot be set in the consructor (or helper functions associated
   //       with the contructor) because some variables get assigned by base 
   //       class constructors and are not available until all have completed.
   orig_auto_graphics_flag = iteratedModel.auto_graphics();
@@ -366,7 +359,8 @@ void ROLOptimizer::reset_solver_options(const Teuchos::ParameterList & params)
 // ProblemDescDB and therefore should be called at construct time.
 void ROLOptimizer::set_rol_parameters()
 {
-  // PRECEDENCE 1: hard-wired default settings
+  // PRECEDENCE 1: hard-wired default settings per ROL developers'
+  // suggestions
 
   // If the user has specified "no_hessians", tell ROL to use its own
   // Hessian approximation.
@@ -380,21 +374,25 @@ void ROLOptimizer::set_rol_parameters()
   // Set the solver based on the type of problem.
   if (problemType == TYPE_U){
     optSolverParams.sublist("Step").set("Type","Trust Region");
-    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+    optSolverParams.sublist("Step").sublist("Trust Region").
+      set("Subproblem Solver", "Truncated CG");
   }
   else if (problemType == TYPE_B){
     optSolverParams.sublist("Step").set("Type","Trust Region");
-    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+    optSolverParams.sublist("Step").sublist("Trust Region").
+      set("Subproblem Solver", "Truncated CG");
   }
   else if (problemType == TYPE_E){
     optSolverParams.sublist("Step").set("Type","Composite Step");
   }
   else if (problemType == TYPE_EB){
     optSolverParams.sublist("Step").set("Type","Augmented Lagrangian");
-    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+    optSolverParams.sublist("Step").sublist("Trust Region").
+      set("Subproblem Solver", "Truncated CG");
     // The default choice of Kelley-Sachs was performing lots of fn
     // evals for smoothing, so ROL developers recommend Coleman-Li.
-    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Model", "Coleman-Li");
+    optSolverParams.sublist("Step").sublist("Trust Region").
+      set("Subproblem Model", "Coleman-Li");
 
     // Turns off adaptively choosing initial penalty parameters
     // New ROL capabaility that results in slower convergence overall
@@ -429,32 +427,6 @@ void ROLOptimizer::set_rol_parameters()
   optSolverParams.sublist("Status Test").
     set("Step Tolerance", probDescDB.get_real("method.variable_tolerance"));
   optSolverParams.sublist("Status Test").set("Iteration Limit", maxIterations);
-
-  // BMA: We aren't yet using ROL's Trust Region Step, but Patty
-  // called out these settings that we'll want to map
-
-  // TODO: how to map Dakota vector to ROL scalar?
-  // const RealVector& tr_init_size =
-  //   probDescDB.get_rv("method.trust_region.initial_size");
-  // if (!tr_init_size.empty())
-  //   optSolverParams.sublist("Step").sublist("Trust Region").
-  //      set("Initial Radius", tr_init_size[0]);
-
-  // optSolverParams.sublist("Step").sublist("Trust Region").
-  //   set("Radius Shrinking Threshold",
-  // 	probDescDB.get_real("method.trust_region.contract_threshold"));
-  // optSolverParams.sublist("Step").sublist("Trust Region").
-  //   set("Radius Growing Threshold",
-  // 	probDescDB.get_real("method.trust_region.expand_threshold"));
-  // optSolverParams.sublist("Step").sublist("Trust Region").
-  //   set("Radius Shrinking Rate (Negative rho)",
-  // 	probDescDB.get_real("method.trust_region.contraction_factor"));
-  // optSolverParams.sublist("Step").sublist("Trust Region").
-  //   set("Radius Shrinking Rate (Positive rho)",
-  // 	probDescDB.get_real("method.trust_region.contraction_factor"));
-  // optSolverParams.sublist("Step").sublist("Trust Region").
-  //   set("Radius Growing Rate",
-  // 	probDescDB.get_real("method.trust_region.expansion_factor"));
 
   // PRECEDENCE 3: power-user advanced options
 
@@ -516,7 +488,6 @@ namespace {
     else
       prev_x = x;
 
-    // CLEAN-UP: Use an adapter.
     // Set the model variables to the current values.
     size_t num_cv = model.cv();
     for(size_t i=0; i<num_cv; ++i)
@@ -552,13 +523,6 @@ namespace {
 DakotaROLObjective::DakotaROLObjective(Model & model) :
   dakotaModel(model)
 { }
-
-
-// CLEAN-UP: Can we hide the model details in a data adapter for the
-// objective and gradient evaluations?  Because of the way ROL appears
-// to handle constraints, may not be a big deal for this wrapper, but
-// it will likely simplify things in other wrappers.
-
 
 // Compute objective value and return to ROL.
 Real
@@ -650,10 +614,6 @@ DakotaROLIneqConstraints::DakotaROLIneqConstraints(Model & model) :
 void
 DakotaROLIneqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
 {
-  // CLEAN-UP: Should look into whether or not it makes sense to use
-  // traits to determine how to pack these and just return one vector
-  // of constraint values?
-
   // Evaluate nonlinear constraints.
   update_model(dakotaModel, x);
 

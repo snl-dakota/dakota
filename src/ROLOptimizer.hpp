@@ -9,7 +9,7 @@
 //- Class:       ROLOptimizer
 //- Description: Wrapper class for ROL
 //- Owner:       Moe Khalil
-//- Checked by:
+//- Checked by:  Patty Hough, Russell Hooper, Brian Adams
 //- Version: $Id$
 
 /** The ROLOptimizer class provides a wrapper for the Rapid
@@ -39,10 +39,6 @@ namespace Dakota {
   // Problem type: 1=unconstrained, 2=bound constrained,
   //               3=equality constrained,
   //               4=equality and bound constrained
-
-  // CLEAN-UP: Problem type is applicable to other TPLs.  May want to
-  // figure out how to generalize and elevate it, much like traits,
-  // for broader use.  Maybe evaluation type too.
 
   enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
   enum {TYPE_U=1, TYPE_B=2, TYPE_E=3, TYPE_EB=4};
@@ -133,12 +129,6 @@ protected:
     supports by overriding the default traits accessors in
     TraitsBase. */
 
-// TODO (traits): Now that we understand how ROL works, we should do a
-// sanity check to make sure these still make sense.  We should also
-// revisit the Traits base class to see if there's anything that needs
-// to be changed or added.  BMA TODO: Traits should indicate that ROL
-// requires gradients Also need to include Hessian support
-
 class ROLTraits: public TraitsBase
 {
 public:
@@ -159,10 +149,6 @@ public:
   //
   //- Heading: Virtual member function redefinitions
   //
-
-  // CLEAN-UP: Is this still needed?  Is it used for unit testing?
-  /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
 
   /// Return flag indicating ROL supports continuous variables
   bool supports_continuous_variables() { return true; }
@@ -203,7 +189,6 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // TODO (Moe): Do we need a destructor?
   /// Constructor
   DakotaROLObjective(Model & model);
 
@@ -218,9 +203,6 @@ public:
   //
   //- Heading: Data
   //
-
-  // TODO (adapters): Would be nice to ultimately get rid of this via
-  // adapters.  May take a little thought and work, so defer for now.
 
   /// Dakota problem data provided by user
   Model & dakotaModel;
@@ -325,7 +307,6 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // TODO (Moe): Do we need a destructor?
   /// Constructor
   DakotaROLIneqConstraints(Model & model);
 
@@ -343,9 +324,6 @@ protected:
   //
   //- Heading: Data
   //
-
-  // TODO (adapters): Would be nice to ultimately get rid of these via
-  // adapters.  May take a little thought and work, so defer for now.
 
   /// Dakota problem data provided by user
   Model & dakotaModel;
@@ -456,7 +434,6 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // TODO (Moe): Do we need a destructor?
   /// Constructor
   DakotaROLEqConstraints(Model & model);
 
@@ -474,9 +451,6 @@ protected:
   //
   //- Heading: Data
   //
-
-  // TODO (adapters): Would be nice to ultimately get rid of these via
-  // adapters.  May take a little thought and work, so defer for now.
 
   /// Dakota problem data provided by user
   Model & dakotaModel;
@@ -594,7 +568,6 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // TODO (Brian): Do we need a destructor?
   /// Constructor
   explicit PrefixingLineFilter(const std::string& prefix_in):
     linePrefix(prefix_in)
