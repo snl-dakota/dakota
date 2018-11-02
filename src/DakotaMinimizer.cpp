@@ -864,6 +864,20 @@ archive_best_residuals() const {
       = original_model().primary_response_fn_weights();
   const StrStrSizet &iterator_id = run_identifier();
   size_t num_points = bestResponseArray.size();
+
+  // ##  legacy text output ##
+  // labels
+  resultsDB.insert(iterator_id, resultsNames.fn_labels,
+     response_results().function_labels());
+  // best functions, with labels in metadata
+  MetaDataType md;
+  md["Array Spans"] = make_metadatavalue("Best Sets");
+  md["Row Labels"] = 
+    make_metadatavalue(response_results().function_labels());
+  resultsDB.array_allocate<RealVector>
+    (iterator_id, resultsNames.best_fns, num_points, md);
+
+  // HDF5 setup
   StringArray residuals_location;
   StringArray norm_location;
   if(num_points > 1) {
@@ -886,6 +900,9 @@ archive_best_residuals() const {
                                 numUserPrimaryFns);
     resultsDB.insert(iterator_id, residuals_location, residuals);
     resultsDB.insert(iterator_id, norm_location, wssr);
+    // coreDB
+    resultsDB.array_insert<RealVector>
+            (iterator_id, resultsNames.best_fns, point_index, resp.function_values());
     point_index++;
   }
 }
