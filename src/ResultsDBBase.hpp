@@ -216,15 +216,7 @@ array_insert(const StrStrSizet& iterator_id,
   std::map<ResultsKeyType, ResultsValueType>::iterator data_it = 
     iteratorData.find(key);
 
-  if (data_it == iteratorData.end()) {
-    Cout << "\nWarning: Skipping unallocated array insert for " 
-         << "\n  Iterator ID: " << iterator_id
-         << "\n  Data name: " << data_name
-         << std::endl;
-    //abort_handler(-1);
-  }
-  else {
-
+  if (data_it != iteratorData.end()) {
     // update the any contained in the result set, which is a vector
     // of the StoredType
     ResultsValueType& result_value = data_it->second;
