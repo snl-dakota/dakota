@@ -1497,6 +1497,23 @@ archive_moment_confidence_intervals(size_t inc_id)
   }
 }
 
+void NonDSampling::
+archive_extreme_responses(size_t inc_id) {
+  const StringArray &labels = iteratedModel.response_labels();
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("extreme_responses");
+  location.push_back("");
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("extremes", {"minimum", "maximum"})); 
+  for(int i = 0; i < labels.size(); ++i) { // loop over responses
+    location.back() = labels[i];
+    RealVector extreme_values(2);
+    extreme_values[0] = extremeValues[i].first;
+    extreme_values[1] = extremeValues[i].second;
+    resultsDB.insert(run_identifier(), location, extreme_values, scales);
+  }
+}
 
 int NonDSampling::
 compute_wilks_sample_size(unsigned short order, Real alpha, Real beta,
