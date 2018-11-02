@@ -137,7 +137,7 @@ class HDF5IOHelper
   
   /// Store scalar data to a data set
   template <typename T>
-  const void store_scalar_data(const std::string& dset_name, const T& val)
+  void store_scalar_data(const std::string& dset_name, const T& val)
   {
     H5::DataSpace dataspace = H5::DataSpace();
     
