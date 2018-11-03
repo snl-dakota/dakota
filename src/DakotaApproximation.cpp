@@ -27,7 +27,7 @@
 #include "DakotaGraphics.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
-#define DEBUG
+//#define DEBUG
 
 
 namespace Dakota {
@@ -376,7 +376,7 @@ void Approximation::finalize_data()
 	for (p=0; p<num_popped; ++p) {
 #ifdef DEBUG
 	  // Note: popped sets are not explicitly added in computed_trial_sets()
-	  //       order as in IncrementalSparseGridDriver::finalize_sets().
+	  //       order as in {Incr,Hierarch}SparseGridDriver::finalize_sets().
 	  //       However, poppedLevMultiIndex et al. become ordered due to
 	  //       enumeration of ordered active_multi_index().  Rather than
 	  //       incurring additional overhead by mapping indices, the
