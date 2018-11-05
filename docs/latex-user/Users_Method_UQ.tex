@@ -2869,14 +2869,15 @@ so millions of samples may be required for accurate computation of the integral.
 \item Laplace approximation.  This approach is based on the Laplace approximation, 
 as outlined in~\cite{Wasserman}.  It has the assumption that the posterior distribution 
 is nearly Gaussian, which is not always a safe assumption. 
-Then, with maximum a posteriori (MAP) point $\hat{\boldsymbol{\theta_i}}$, 
+Then, with maximum a posteriori (MAP) point $\hat{\boldsymbol{\theta}}$, 
 the Laplace approximation of model evidence is: 
   
 \begin{equation}
-\int \pi(D|\boldsymbol{\theta_i},M_i)\pi_{prior}(\boldsymbol{\theta_i}|M_i)d \boldsymbol{\theta_i} \approx \pi(D|\hat{\boldsymbol{\theta_i}},M_i)\pi(\hat{\boldsymbol{\theta_i}}|M_i)(2\pi)^{N_i/2}{\|\det(H(\hat{\boldsymbol{\theta_i}}))\|}^{-1/2}
+\int \pi(D|\boldsymbol{\theta_i},M_i)\pi_{prior}(\boldsymbol{\theta_i}|M_i)d \boldsymbol{\theta_i} \approx \pi(D|\hat{\boldsymbol{\theta}},M_i)\pi(\hat{\boldsymbol{\theta}}|M_i)(2\pi)^{N_i/2}{\|\det(H(\hat{\boldsymbol{\theta}}))\|}^{-1/2}
 \end{equation}
 where $N_i$ is the number of unknown parameters in the i-th model and 
-$H$ is the negative Hessian of the log-posterior evaluated at the MAP point. 
+$H$ is the negative Hessian of the log-posterior evaluated at the MAP point 
+$\hat{\boldsymbol{\theta}}$. 
 Therefore, this implementation only requires the evaluation of the model likelihood 
 and the Hessian of the log-posterior density at the MAP point. 
 
