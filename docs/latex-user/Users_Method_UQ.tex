@@ -2963,8 +2963,10 @@ explicitly list desired prediction configuration locations within the input
 file following the \texttt{prediction\_configs} keyword, or in an external
 file to be read in with the \texttt{import\_prediction\_configs} option. If 
 none of these three options is selected, Dakota will automatically calculate
-corrected model predictions at ten configurations, spread uniformly in the
-configuration variable domain. 
+corrected model predictions at ten configurations in the scalar response case, 
+with the predictions spread uniformly in the configuration variable domain. In 
+the case of field responses, corrected model predictions are calculated for each
+value of the input configuration variable(s).
 
 Calculations corresponding to each prediction configuration and to each
 observable will be output to tabular files. The responses from the discrepancy
