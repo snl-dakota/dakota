@@ -34,7 +34,7 @@ namespace Dakota {
 // 0. Similarly, when incrementing the minor version, reset the patch level to 
 // 0.
 
-const std::string ResultsDBHDF5::outputVersion = "1.0.0";
+const std::string ResultsDBHDF5::outputVersion = "1.1.0";
 
 
 // Helper functions for naming datasets and scales
@@ -199,12 +199,14 @@ void ResultsDBHDF5::add_metadata_to_method(const StrStrSizet& iterator_id,
 void ResultsDBHDF5::add_name_to_method(const StrStrSizet &iterator_id)
 {
   String link_name = method_hdf5_link_name(iterator_id);
-  AttributeArray attrs({ResultAttribute<String>("method_name", iterator_id.get<0>())});
+  //AttributeArray attrs({ResultAttribute<String>("method_name", iterator_id.get<0>())});
+  String method_name = iterator_id.get<0>();
+  String method_id = iterator_id.get<1>();
+  size_t exec_id = iterator_id.get<2>();
+  AttributeArray attrs({ResultAttribute<String>("method_name",method_name)});
   AddAttributeVisitor attribute_adder(link_name, hdf5Stream);
-  std::for_each(
-    attrs.begin(), attrs.end(), boost::apply_visitor(attribute_adder)
-  );
-  methodNameCache.insert(iterator_id.get<0>());
+  add_attributes(link_name, attrs);
+  methodIdCache.insert(method_id);
 }
 
 void ResultsDBHDF5::add_metadata_to_execution(const StrStrSizet& iterator_id,
@@ -258,10 +260,12 @@ void ResultsDBHDF5::flush() const {
 }
 
 bool ResultsDBHDF5::method_in_cache(const StrStrSizet &iterator_id) const {
-  if(methodNameCache.find(iterator_id.get<0>()) == methodNameCache.end())
-    return false;
-  else
+  String method_id = iterator_id.get<1>();
+  String method_name = iterator_id.get<0>();
+  if(methodIdCache.find(method_id) != methodIdCache.end()) 
     return true;
+  else 
+    return false;
 }
 
 } // Dakota namespace

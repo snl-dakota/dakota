@@ -257,9 +257,9 @@ private:
   /// Check whether the name has already been added to a  method group 
   bool method_in_cache(const StrStrSizet &iterator_id) const;
 
-  /// Cached method names; used to know which methods have already had their 
+  /// Cached method Ids; used to know which methods have already had their 
   /// method_name attribute set. Hopefully faster than querying the HDF5 file.
-  std::set<String> methodNameCache;
+  std::set<String> methodIdCache;
   /// Instance of HDF5IOHelper (probably doesn't need to be a pointer)
   std::shared_ptr<HDF5IOHelper> hdf5Stream;
 };
