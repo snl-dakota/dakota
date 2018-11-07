@@ -15,7 +15,7 @@ to obtain the posterior model plausibility for each model.
 When specifying \c model_evidence, there are two methods of 
 calculating it.  One or both may be specified.  They 
 include the Monte Carlo approximation, given by \c mc_approx 
-and the Laplace approximation, given by \laplace_approx.  \mc_approx 
+and the Laplace approximation, given by \c laplace_approx.  \c mc_approx 
 is the default approach. 
 
 <b> Expected Output </b>

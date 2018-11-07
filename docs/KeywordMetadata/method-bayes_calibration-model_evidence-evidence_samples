@@ -19,7 +19,7 @@ accurate computation of the integral which defines model evidence.
 
 <b> Default Behavior </b>
 
-If \c evidence_samples is not specified with \mc_approx, Dakota 
+If \c evidence_samples is not specified with \c mc_approx, Dakota 
 uses the number of chain samples from the MCMC (\c chain_samples) 
 as the number of samples to use for calculating the model evidence. 
 

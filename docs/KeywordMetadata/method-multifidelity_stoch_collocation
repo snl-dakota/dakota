@@ -12,8 +12,8 @@ into several constituent expansions, one per model form or solution
 control level.  In a bi-fidelity case with low-fidelity (LF) and
 high-fidelity (HF) models and an additive discrepancy approach, we have:
 
-\f[R = \sum_{i=1}^{N_p^{LF}} r^{LF}_i \L_i(\xi)
-     + \sum_{i=1}^{N_p^{HF}} \delta_i \L_i(\xi) \f]
+\f[R = \sum_{i=1}^{N_p^{LF}} r^{LF}_i L_i(\xi)
+     + \sum_{i=1}^{N_p^{HF}} \delta_i L_i(\xi) \f]
 
 where \f$\delta_i\f$ is a coefficient for the discrepancy expansion.
 

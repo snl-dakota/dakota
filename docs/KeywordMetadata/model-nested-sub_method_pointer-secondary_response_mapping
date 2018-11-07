@@ -1,11 +1,12 @@
-Blurb::
-Secondary mappning of sub-model responses to top-level responses
+Blurb:: Mapping of sub-method results to top-level secondary responses
+
 Description::
-The \c primary_variable_mapping, \c secondary_variable_mapping, 
-\c primary_response_mapping, and \c secondary_response_mapping keywords control
-how top-level variables and responses are mapped to variables
-and responses in the sub-model. Their usage is explained on
-the parent keyword (\c sub_method_pointer) page. 
+Matrix that specifies how sub-method results (statistics, best
+parameters, etc.)  map to top-level nested model secondary responses
+(nonlinear inequality or equality constraints). Its usage is
+explained in detail on the parent keyword (\c sub_method_pointer)
+page.
+
 Topics::
 Examples::
 Theory::
