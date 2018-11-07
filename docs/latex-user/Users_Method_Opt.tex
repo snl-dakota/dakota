@@ -1386,12 +1386,12 @@ functions using, for example, a parameter study method. Central
 differencing, in general, will produce more reliable gradients than
 forward differencing, but at roughly twice the expense.
 
-ROL has traditionally been applied to problems with analytic gradients 
-(and Hessians) but can can be used with Dakota-provided 
-finite-differencing approximations to the gradient of both objective 
-and constraints.  However, a user employing these is advised to use 
-alternative optimizers such as DOT until performance of ROL improves 
-in future releases.
+ROL has traditionally been developed and applied to problems with 
+analytic gradients (and Hessians). Nonetheless, ROL can be used with 
+Dakota-provided finite-differencing approximations to the gradient of both 
+objective and constraints. However, a user relying on such approximations 
+is advised to resort to alternative optimizers such as DOT until performance 
+of ROL improves in future releases.
 
 We offer the following recommendations in deciding upon a 
 suitable gradient-based method for a given problem
