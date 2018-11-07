@@ -54,8 +54,8 @@ may then specify new or "prediction" configurations at which the corrected
 model \f$M(\theta^*, x_{new}) + \delta(x_{new})\f$ should be calculated, using
 one of the \c num_prediction_configs, \c prediction_configs, or
 \c import_prediction_configs keywords. If none of these keywords is specified,
-the number of prediction configurations is set to 10. The corresponding 
-prediction variances are also calculated, according to
+the number of prediction configurations is set to 10 for scalar responses. 
+The corresponding prediction variances are also calculated, according to
 
 \f[
 \Sigma_{total}(x) = \Sigma_{\delta}(x) + \sigma^2_{exp}I.
@@ -64,8 +64,19 @@ prediction variances are also calculated, according to
 Here, \f$\Sigma_{\delta}(x)\f$ is the (co)variance calculated from the
 Gaussian process or polynomial regression model, and \f$\sigma^2_{exp}\f$ is 
 the maximum variance, taken over all configuration variables for that 
-observation. Further details can be found in the Dakota User's and Theory 
+observation. In the case of field responses, the default prediction 
+configurations are set equal to the input configurations, and the variance 
+information contains only the variance calculated from the Gaussian process 
+correction model. Further details can be found in the Dakota User's and Theory 
 Manuals.
+
+<b> Usage Tips </b>
+
+For field responses, the keyword \ref 
+responses-calibration_terms-field_calibration_terms-read_field_coordinates
+<i>must</i> be specified when computing the model discrepancy. See \ref 
+responses-calibration_terms-field_calibration_terms for more information 
+regarding options for calibration with field responses.
 
 <b> Expected Output </b>
 

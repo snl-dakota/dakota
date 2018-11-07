@@ -103,6 +103,9 @@ public:
   /// archive moment confidence intervals in results DB
   void archive_moment_confidence_intervals(size_t inc_id = 0);
 
+  /// archive extreme values (epistemic result) in results DB
+  void archive_extreme_responses(size_t inc_id = 0);
+
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z as well as PDFs
   void compute_level_mappings(const IntResponseMap& samples);

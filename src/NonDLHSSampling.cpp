@@ -897,7 +897,6 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
   if (!numResponseFunctions) // DACE mode w/ opt or NLS
     Analyzer::print_results(s, results_state);
-
   if (varBasedDecompFlag)
     print_sobol_indices(s);
   else if (statsFlag) {
@@ -936,22 +935,24 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 }
 
 void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
-  if(epistemicStats)
-    return;
+  if(epistemicStats) {
+    archive_extreme_responses(inc_id);
+  } else {
   // Archive moments
-  if(functionMomentsComputed) {
-    archive_moments(inc_id);
-    archive_moment_confidence_intervals(inc_id);
-    functionMomentsComputed = false; // reset for next increment
-  }
-  // Archive level mappings and pdfs
-  if(totalLevelRequests) {
-    for(int i = 0; i < numFunctions; ++i) {
-      archive_from_resp(i,inc_id);
-      archive_to_resp(i,inc_id);
-      if(pdfOutput && pdfComputed[i]) {
-        archive_pdf(i, inc_id);
-        pdfComputed[i] = false; // reset for next increment
+    if(functionMomentsComputed) {
+      archive_moments(inc_id);
+      archive_moment_confidence_intervals(inc_id);
+      functionMomentsComputed = false; // reset for next increment
+    }
+    // Archive level mappings and pdfs
+    if(totalLevelRequests) {
+      for(int i = 0; i < numFunctions; ++i) {
+        archive_from_resp(i,inc_id);
+        archive_to_resp(i,inc_id);
+        if(pdfOutput && pdfComputed[i]) {
+          archive_pdf(i, inc_id);
+          pdfComputed[i] = false; // reset for next increment
+        }
       }
     }
   }
