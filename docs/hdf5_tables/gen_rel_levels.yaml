@@ -1,0 +1,13 @@
+name: Generalized Reliability Levels
+dataset:
+  description: "Response levels corresponding to user-specified generalized reliability levels"
+  location: "gen_reliability_levels/<response descriptor>"
+  shape: "1-dimensional: number of requested levels for the response"
+  type: Real
+scales:
+  - dimension: 0
+    type: Real
+    label: gen_reliability_levels
+    contents: User-specified generalized reliability levels
+    literal_contents: False
+

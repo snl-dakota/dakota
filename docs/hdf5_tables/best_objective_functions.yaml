@@ -1,0 +1,13 @@
+name: Best Objective Functions
+dataset:
+  description: "Best objective functions discovered by optimization"
+  location: "best_objective_functions"
+  shape: "1-dimensional: number of objective functions"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: responses
+    contents: Response descriptors
+    literal_contents: False
+

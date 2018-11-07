@@ -1,0 +1,12 @@
+name: Extreme Responses
+dataset:
+  description: 1st through 4th moments for each response
+  location: "extreme_responses/<response descriptor>"
+  shape: '2'
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: extremes
+    contents: minimum, maximum
+

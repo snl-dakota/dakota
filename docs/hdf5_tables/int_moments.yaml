@@ -1,0 +1,19 @@
+name: Integration Moments
+dataset:
+  description: Moments obtained via integration
+  location: "integration_moments/<response descriptor>"
+  shape: '4'
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: moments
+    contents: mean, std_deviation, skewness, kurtosis
+    notes: Only for standard moments
+  - dimension: 0
+    type: String
+    label: moments
+    contents: mean, variance, third_central, fourth_central
+    literal_contents: True
+    notes: Only for central moments
+

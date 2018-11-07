@@ -1,0 +1,7 @@
+name: Best Residual Norm
+dataset:
+  description: "Norm of best residuals discovered"
+  location: "best_norm"
+  shape: "Scalar"
+  type: Real
+

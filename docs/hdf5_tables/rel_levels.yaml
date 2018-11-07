@@ -1,0 +1,13 @@
+name: Reliability Levels
+dataset:
+  description: "Response levels corresponding to user-specified reliability levels"
+  location: "reliability_levels/<response descriptor>"
+  shape: "1-dimensional: number of requested levels for the response"
+  type: Real
+scales:
+  - dimension: 0
+    type: Real
+    label: reliability_levels
+    contents: User-specified reliability levels
+    literal_contents: False
+
