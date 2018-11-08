@@ -1,7 +1,8 @@
 name: Best Parameters
 dataset:
   description: "Best parameters discovered by optimization or calibration"
-  location: "best_parameters/{continuous, discrete_integer, discrete_string, discrete_real}"
+  location: "[set:<N>]/best_parameters/{continuous, discrete_integer, discrete_string, discrete_real}"
+  notes: "The [set:<N>] group is present only when multiple final solutions are reported."
   shape: "2-dimensional: number of evaluations by number of variables"
   type: Real, String, or Integer, as applicable
 scales:

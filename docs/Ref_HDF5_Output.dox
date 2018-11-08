@@ -1,12 +1,13 @@
-<!-------------------------------------------->
+\<!-------------------------------------------->
 
 
 \page hdf5_output Dakota HDF5 Output
 
 Beginning with release 6.9, %Dakota can write many method 
-results such as correlation matrices or the best parameters 
-discovered by an optimization to disk in HDF5 format. Many 
-users may find accessing their results in HDF5  more convenient 
+results such as the correlation matrices computed by 
+\ref method-sampling studies and the best parameters 
+discovered by optimization methods to disk in **HDF5**. Many 
+users may find this newly supported format more convenient 
 than scraping or copying and pasting from Dakota's console
 output.
 
@@ -14,10 +15,10 @@ To enable HDF5 output, the \ref environment-results_output
 keyword with the \ref environment-results_output-hdf5 option 
 must be added to the Dakota input file. In additon, Dakota must 
 have been built with HDF5 support. HDF5 support is considered a 
-somewhat experimental feature in this release, and therefore binaries
-provided on the Download page of the Dakota website do not
-have HDF5 support; building from source is necessary. See the
-instructions on the Dakota website.
+somewhat experimental feature in this release, and therefore HDF5
+is not enabled in binaries provided on the Download page of the Dakota 
+website; building from source is necessary. See the instructions on 
+the Dakota website.
 
 \section hdf5_output-description HDF5 Concepts
 
@@ -27,28 +28,31 @@ libraries are maintained by the [HDF Group](https://hdfgroup.org).
 
 In HDF5, data are stored in multidimensional arrays called *datasets*. 
 Datasets are organized hierarchically in *groups*, which also can 
-contain other groups. Datasets and 
-groups are conceptually similar to files and directories in 
-a filesystem. In fact, every HDF5 file 
+contain other groups. Datasets and groups are conceptually similar 
+to files and directories in a filesystem. In fact, every HDF5 file 
 contains at least one group, the root group, denoted "/", and
-groups and datasets are accessed using slash delimited absolute or
-relative paths.
+groups and datasets are referred to using slash-delimited absolute or
+relative paths, which are more accurately called *link names*.
 
-TODO: Insert an image
+\image html hdf5_layout.png "Example HDF5 Layout"
 
-A goal of HDF5 is for data to be "self-documenting" through the 
+
+
+HDF5 has as one goal that data be "self-documenting" through the 
 use of metadata. %Dakota output files include two kinds of
 metadata.
-- Dimension Scales: Each dimension of a dataset may have zero or more
+- **Dimension Scales**. Each dimension of a dataset may have zero or more
   scales, which are themselves datasets. Scales are often used to 
   provide, for example, labels analogous to column headings 
-  in a table (see the dimension scales that %Dakota applies to response
-  moments) or numerical values of an indepenent variable (user-specified
-  probability levels in level mappings).
-- Attributes: key:value pairs that annotate a group or dataset. The keys
-  are always string valued, and (in Dakota output) the values can be string,
-  integer, or real. %Dakota stores the number of samples that were requested 
-  in a \c sampling study in an attribute called 'sampling'.
+  in a table (see the dimension scales that %Dakota applies to 
+  \ref hdf5_results-sampling_moments "moments") or numerical values 
+  of an indepenent variable (user-specified probability levels in 
+  \ref hdf5_results-level_mappings "level mappings").
+- **Attributes**. key:value pairs that annotate a group or dataset. A key
+  is always a character string, such as \c dakota_version, and (in Dakota 
+  output) the value can be a string-, integer-, or real-valued scalar. 
+  %Dakota stores the number of samples that were requested 
+  in a \c sampling study in the attribute 'samples'.
 
 \section hdf5_output-accessing Accessing Results
 
@@ -59,54 +63,61 @@ the \c h5py module for Python. Examples that demonstrate using \c h5py
 to access and use Dakota HDF5 output may be found in the Dakota installation
 at \c share/dakota/examples/hdf5.
 
-\section hdf5_results Dakota Results
+\section hdf5_results Organization of Results
 
 Currently, complete or nearly complete coverage of results from sampling, 
 optimization and calibration methods, parameter studies, and stochastic 
 expansions exists. Coverage will continue to expand in future releases 
-to include not only the results of all methods, but other Dakota output 
-such as interface evaluations and model tranformations.
+to include not only the results of all methods, but other potentially useful
+information such as interface evaluations and model tranformations.
 
-All methods write results to groups and datasets within this path structure:
+Methods in Dakota have a character string ID and are executed by Dakota one or
+more times. (Methods are executed more than once in studies that
+include a \ref model-nested "nested model", for example.) The ID may be provided by 
+the user in the input file using the \ref method-id_method keyword, or it may be
+automatically generated by Dakota. Dakota uses the label \c NO_ID for methods
+that are specified in the input file without an \c id_method, and \c NOSPEC_ID_\<N\> 
+for methods that it generates for its own internal use. The \<N\> in the latter 
+case is an incrementing integer that begins at 1.
+
+The results for the \<N\>th execution of a method that has the label \c \<method_id\> 
+are stored in the group
 
     /methods/<method_id>/execution:<N>/
 
-The \c /methods group is always present, if a method added results to the output.
-The next portion fo the path, `<method_id>`, is the "name" of the method 
-block specified by the user with the \ref method-id_method keyword. If the user
-provided no name, Dakota uses `NO_ID`. Dakota often automatically generates method 
-blocks for its own internal use; the results of these are stored using the name
-NOSPEC_ID_*N*, where N is an incrementing integer that begins with 1.
+The \c /methods group is always present in Dakota HDF5 files, provided at
+least one method added results to the output. (In a future Dakota release, the top
+level groups \c /interfaces and \c /models will be added.) The group \c execution:1
+also is always present, even if there is only a single execution.
 
-The final portion of the path above, `execution:<N>`, separates the results of
-multiple executions of the same method from one another. In simple Dakota studies, 
-only a single execution group, `execution:1`, will be present. But in more 
-complex studies such as those involving \ref model-nested models, the inner method 
-may be executed multiple times, and multiple execution subgroups (`execution:1`, 
-`execution:2`, ...) will exist.
-
-The **Expected Output** section of each \ref method's keyword documentation 
-indicates the kinds of output, if any, it can write to HDF5. These are 
-typically in the form of bulleted lists with clariying notes that refer 
-back to the sections that follow. Each type of result has a table that 
-describes the datasets where results are stored. The tables include: 
+The groups and datasets for each type of result that Dakota is currently capable
+of storing are described in the following sections. Every dataset is documented
+in its own table. These tables include: 
 
 - A brief *description* of the dataset.
-- The *location* of the dataset expressed as a path relative to the one just described.
-  The path may include both literal text that is always present and replacement text 
-  such as \<*response descriptor*\> or \<*variable descriptor*\>, which indicate that 
-  the name of a Dakota response or variable makes up a portion of the path.
-- The *shape* of the dataset; that is, the number of dimensions
-  and the size of each dimension.
+- The *location* of the dataset relative to `/methods/<method_id>/execution:<N>`.
+  This path may include both literal text that is always present and replacement text.
+  Replacement text is \<*enclosed in angle brackets and italicized*\>. Two examples of 
+  replacement text are \<*response descriptor*\> and  \<*variable descriptor*\>, which 
+  indicate that the name of a Dakota response or variable makes up a portion of the path.
+- Clarifying *notes*, where appropriate.
+- The *type* (String, Integer, or Real) of the information in the dataset.
+- The *shape* of the dataset; that is, the number of dimensions and the size of each 
+  dimension.
 - A description of the dataset's *scales*, which includes
-  * The *dimension* of the dataset that the scale belongs to.
-  * The type (String, Integer, or Real) of the information in the scale.
-  * The *label* or name of the scale.
-  * The *contents* of the scale. Contents that appear in plaintext are literal and will
+  + The *dimension* of the dataset that the scale belongs to.
+  + The *type* (String, Integer, or Real) of the information in the scale.
+  + The *label* or name of the scale.
+  + The *contents* of the scale. Contents that appear in plaintext are literal and will
     always be present in a scale. Italicized text describes content that varies.
-  * *notes* that provide further clarification about the scale.
+  + *notes* that provide further clarification about the scale.
 - A description of the dataset's *attributes*, which are key:value pairs that provide
   helpful context for the dataset.
+
+The **Expected Output** section of each \ref method's keyword documentation 
+indicates the kinds of output, if any, that method currently can write to HDF5. These 
+are typically in the form of bulleted lists with clariying notes that refer 
+back to the sections that follow.
 
 \subsection hdf5_results-metadata Study Metadata
 
@@ -118,9 +129,9 @@ attributes of the top-level HDF5 root group ("/"). These include:
 \subsection hdf5_results-variables A Note about Variables Storage
 
 Variables in most Dakota output (e.g. tabular data files) and input (e.g. imported
-data to construct surrogates) are listed in "input spec" order. (Variables are listed
-in the \ref variables keyword section by input spec order.) They are first
-ordered by function:
+data to construct surrogates) are listed in "input spec" order. (The \ref variables 
+keyword section is arranged by input spec order.) In this ordering, they are sorted
+first by function:
 1. Design
 2. Aleatory
 3. Epistemic
@@ -132,12 +143,12 @@ And within each of these categories, they are sorted by domain:
 3. Discrete string
 4. Discrete real
 
-A shortcoming of HDF5 is that datasets are homogenous; for example, string- and 
+A shortcoming of HDF5 is that datasets are homogeneous; for example, string- and 
 real-valued data cannot readily be stored in the same dataset. As a result,
-Dakota has chosen to flip "input spec" order when storing variable information
-in HDF5 and sort first by domain, then by function. When applicable, there may
-be as many as four datasets to store variable information, one to store continuous 
-variables, another to store discrete integer variables, and so on. Within these, 
+Dakota has chosen to flip "input spec" order for HDF5 and sort first by domain, then 
+by function when storing variable information. When applicable, there may
+be as many as four datasets to store variable information: one to store continuous 
+variables, another to store discrete integer variables, and so on. Within each of these, 
 variables will be ordered by function.
 
 \subsection hdf5_results-sampling_moments Sampling Moments
@@ -147,7 +158,7 @@ variance) of all responses, as well as 95% lower and upper confidence
 intervals for the 1st and 2nd moments. These are stored as described below.
 When \ref method-sampling is used in incremental mode by specifying
 \ref method-sampling-refinement_samples, all results, including the \c moments group,
-are placed within groups named \c increment:<<i>N</i>>, where <i>N</i> indicates
+are placed within groups named \c increment:\<N\>, where \<N\> indicates
 the increment number beginning with 1.
 
 \htmlinclude sampling_moments.html
@@ -159,7 +170,7 @@ the increment number beginning with 1.
 A few different methods produce information about the correlations between
 pairs of variables and responses (collectively: factors). The four tables
 in this section describe how correlation information is stored. One important
-note is that HDF5 has no special, native type for symmetric matices, and so
+note is that HDF5 has no special, native type for symmetric matrices, and so
 the simple correlations and simple rank correlations are stored in dense 2D
 datasets.
 
@@ -190,7 +201,7 @@ reliability, or generalized reliability to response, or vice versa).
 <br>
 \htmlinclude response_levels.html
  
-\subsection hdf5_results-vbd Variance-based Decomposition (Sobol' Indices)
+\subsection hdf5_results-vbd Variance-Based Decomposition (Sobol' Indices)
 Dakota's \ref method-sampling method can produce main and total effects; stochastic
 expansions (\ref method-polynomial_chaos, \ref method-stoch_collocation) additionally
 can produce interaction effects.
@@ -241,8 +252,8 @@ in separate groups.
 Dakota's optimization and calibration methods report the parameters at the best point
 (or points, for multiple \ref method-final_solutions "final solutions") discovered. These
 are stored using the scheme decribed in the \ref hdf5_results-variables "variables" section. When 
-more than one solution is reported, the best parameters are nested in groups named `set:<N>`, 
-where `N` is a integer numbering the set and beginning with 1.
+more than one solution is reported, the best parameters are nested in groups named \c set:\<N\>, 
+where \<N\> is a integer numbering the set and beginning with 1.
 
 State (and other inactive variables) are reported when using
 \ref responses-objective_functions "objective functions" and for some 
@@ -255,8 +266,8 @@ variables in a calibration, state variables are suppressed.
 
 Dakota's optimization methods report the objective functions at the best point (or points,
 for multiple \ref method-final_solutions "final solutions") discovered. When 
-more than one solution is reported, the best objective functions are nested in groups named `set:<N>`, 
-where `N` is a integer numbering the set and beginning with 1.
+more than one solution is reported, the best objective functions are nested in groups named \c set:\<N\>, 
+where \<N\> is a integer numbering the set and beginning with 1.
 
 \htmlinclude best_objective_functions.html
 
@@ -264,13 +275,13 @@ where `N` is a integer numbering the set and beginning with 1.
 
 Dakota's optimization and calibration methods report the nonlinear constraints at the best 
 point (or points, for multiple \ref method-final_solutions "final solutions") discovered. When 
-more than one solution is reported, the best constraints are nested in groups named `set:<N>`, 
+more than one solution is reported, the best constraints are nested in groups named \c set:\<N\>, 
 where `N` is a integer numbering the set and beginning with 1.
 
 
 \htmlinclude best_constraints.html
 
-\subsection hdf5_results-residuals Calibration
+\subsection hdf5_results-calibration Calibration
 
 When using \ref responses-calibration_terms "calibration terms" with an optimization method, or 
 when using a nonlinear least squares method such as \ref method-nl2sol, Dakota reports residuals
@@ -281,14 +292,14 @@ and residual norms for the best point (or points, for multiple
 <br>
 \htmlinclude best_residual_norm.html
 
-\subsection hdf5_results-best_model_responses Best Model Responses
+\subsection hdf5_results-calibration-no_config Best Model Responses (without configuration variables)
 
-When performing calibration with experimental data (but with no configruation variables),
+When performing calibration with experimental data (but no configruation variables),
 Dakota records, in addition to the best residuals, the best original model resposnes.
 
 \htmlinclude best_model_responses.html
 
-\subsection hdf5_results-best_experiment Best Model Responses (with configuration variables)
+\subsection hdf5_results-calibration-config Best Model Responses (with configuration variables)
 
 When performing calibration with experimental data that includes configuration variables, Dakota
 reports the best model responses for each experiment. These results include the configuration 

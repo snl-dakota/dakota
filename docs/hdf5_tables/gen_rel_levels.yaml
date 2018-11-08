@@ -1,7 +1,8 @@
 name: Generalized Reliability Levels
 dataset:
   description: "Response levels corresponding to user-specified generalized reliability levels"
-  location: "gen_reliability_levels/<response descriptor>"
+  location: "[increment:<N>]/gen_reliability_levels/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
   shape: "1-dimensional: number of requested levels for the response"
   type: Real
 scales:

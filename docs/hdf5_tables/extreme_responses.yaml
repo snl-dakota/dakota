@@ -1,7 +1,8 @@
 name: Extreme Responses
 dataset:
-  description: 1st through 4th moments for each response
-  location: "extreme_responses/<response descriptor>"
+  description: The sample minimum and maximum  of each response
+  location: "[increment:<N>]/extreme_responses/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
   shape: '2'
   type: Real
 scales:

@@ -1,7 +1,8 @@
 name: Probability Density
 dataset:
   description: "Probability density of a response"
-  location: "probability_density/<response descriptor>"
+  location: "[increment:<N>]/probability_density/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
   shape: "1-dimensional: number of bins in probability density"
   type: Real
 scales:

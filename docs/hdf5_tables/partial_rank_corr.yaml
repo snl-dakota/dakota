@@ -1,7 +1,8 @@
 name: Partial Rank Correlations
 dataset:
   description: Partial Rank correlations
-  location: "partial_rank_correlations/<response descriptor>"
+  location: "[increment:<N>]/partial_rank_correlations/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
   shape: "1-dimensional: number of variables"
   type: Real
 scales:

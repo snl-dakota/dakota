@@ -1,8 +1,9 @@
 name: Moments
 dataset:
   description: 1st through 4th moments for each response
-  location: "moments/<response descriptor>"
-  shape: '4'
+  location: "[increment:<N>]/moments/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
+  shape: "1-dimensional: length of 4"
   type: Real
 scales:
   - dimension: 0

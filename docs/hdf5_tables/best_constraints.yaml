@@ -1,7 +1,8 @@
 name: Best Nonlinear Constraints
 dataset:
   description: "Best nonlinear constraints discovered by optimization or calibration"
-  location: "best_constraints"
+  location: "[set:<N>]/best_constraints"
+  notes: "The [set:<N>] group is present only when multiple final solutions are reported."
   shape: "1-dimensional: number of nonlinear constraints"
   type: Real
 scales:

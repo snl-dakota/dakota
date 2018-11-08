@@ -6,8 +6,9 @@ import html
 import sys
 
 left_column_width=2
-dataset_widths = [15, 83]
-scale_widths = [2, 6, 12, 10, 12, 38, 20]
+dataset_widths = [8, 90]
+
+scale_widths = [left_column_width, dataset_widths[0], 8, 8, 12, 38, 24]
 
 def table_heading(name):
     return """<table  class="spec-table">
@@ -32,7 +33,7 @@ def scales_heading(length):
     tokens.insert(3, length+1)
     return """<tr>
  <th width="%d%%" class="border-heavy-right" rowspan="%d"></th>
- <th width="%d%%" rowspan="%d"><b>Scales</b> </th>
+ <th width="%d%%" rowspan="%d" valign="middle"><b>Scales</b> </th>
  <th width="%d%%">Dimension </th>
  <th width="%d%%">Type </th>
  <th width="%d%%">Label </th>
@@ -69,6 +70,10 @@ if __name__ == "__main__":
         print(table_heading(data["name"]), file=f)
         print(dataset_row("Description", data["dataset"]["description"]), file=f)
         print(dataset_row("Location", data["dataset"]["location"]), file=f)
+        try:
+            print(dataset_row("Notes", data["dataset"]["notes"]),file=f)
+        except KeyError:
+            pass
         print(dataset_row("Shape", data["dataset"]["shape"]),file=f)
         print(dataset_row("Type", data["dataset"]["type"]),file=f)
         try:

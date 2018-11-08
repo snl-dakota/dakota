@@ -2,7 +2,7 @@ name: Moment Confidence Intervals
 dataset:
   description: Lower and upper 95% confidence intervals on the 1st and 2nd moments
   location: "moment_confidence_intervals/<response descriptor>"
-  shape: 2x2
+  shape: "2-dimensional: 2x2"
   type: Real
 scales:
   - dimension: 0
