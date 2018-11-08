@@ -1,0 +1,27 @@
+environment
+  results_output
+    hdf5
+    
+method
+  id_method 'my_sampling'
+  sampling
+    seed 1337
+    samples 5
+    refinement_samples 5 10 20 40 80 160
+    probability_levels 0.90
+
+variables
+  normal_uncertain 4
+    descriptors 'x1' 'x2' 'x3' 'x4'
+    means 1.0 1.0 1.0 1.0
+    std_deviations 2.0 2.0 2.0 2.0
+
+responses
+  response_functions 1
+    descriptors 'f'
+  no_gradients
+  no_hessians
+  
+interface
+  direct
+    analysis_drivers 'text_book'
