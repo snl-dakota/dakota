@@ -19,7 +19,7 @@ dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 8)
+set(Dakota_VERSION_MINOR 9)
 set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
@@ -28,8 +28,8 @@ set(Dakota_VERSION_TRIPLE
 
 # --- Release time toggle 
 # Toggle this to append to the version number for stable
-#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
-set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
+set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
+#set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
