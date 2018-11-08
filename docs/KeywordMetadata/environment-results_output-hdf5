@@ -13,7 +13,7 @@ With \c hdf5 selected, the default name of the output file is
 \c dakota_results.h5. This can be changed using the \c results_output_file 
 keyword.
 
-Topics:: results_output
+Topics:: dakota_output
 
 Examples::
 
