@@ -20,6 +20,15 @@ contained in the variables specification.
 A list parameter study produces a set of responses for each parameter
 set that is specified.
 
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-pstudies
+
+
 <b> Usage Tips </b>
 
 \li This parameter study simply

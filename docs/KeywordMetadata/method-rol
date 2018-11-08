@@ -22,6 +22,16 @@ approximations to the gradient of both objective and constraints.  However,
 a user employing these is advised to use alternative optimizers such as DOT
 until performance of ROL improves in future releases.
 
+<b>Expected HDF5 Output</b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-best_params
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified)
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified)
+
 
 Topics:: local_optimization_methods
 Examples::

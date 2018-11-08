@@ -52,6 +52,23 @@ estimate the corresponding response value.
 \c distribution is used to specify whether the statistic values are 
 from cumulative or complementary cumulative functions.
 
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- When \ref method-sampling-variance_based_decomp is enabled
+  - \ref hdf5_results-vbd 
+- For aleatory UQ studies
+  - \ref hdf5_results-pdf
+  - \ref hdf5_results-level_mappings
+  - \ref hdf5_results-sampling_moments
+  - \ref hdf5_results-correlations
+- For epistemic UQ studies
+  - \ref hdf5_results-extreme_responses
+  - \ref hdf5_results-correlations
+
 <b> Usage Tips </b>
 
 \c sampling is a robust approach to doing sensitivity analysis and

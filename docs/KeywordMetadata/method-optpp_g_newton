@@ -12,6 +12,18 @@ residuals, i.e., perfect fits.)
 
 See \ref topic-package_optpp for info related to all \c optpp methods.
 
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
+- \ref hdf5_results-lsq_confidence_intervals (when 
+\ref responses-calibration_terms-calibration_data-num_experiments equals 1) 
+
 Topics::	package_optpp, local_optimization_methods
 Examples::
 Theory::

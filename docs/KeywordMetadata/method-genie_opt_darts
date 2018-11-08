@@ -8,6 +8,17 @@ To refine a cell, OPT-Darts first adds a new sample within it via spoke-dart sam
 
 OPT-Darts is the first exact stochastic Lipschitzian optimization technique that combines the benefits of guaranteed convergence in [Jones et al. 1993] and high dimensional efficiency in [Spall 2005]. Computing blue noise and Voronoi regions has been intractable in high dimensions, and are being done within OPT-Darts using Spoke-Darts.
 
+<b>Expected HDF5 Output</b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-best_params
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified)
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified)
+
+
 Topics::
 Examples::
 Theory::

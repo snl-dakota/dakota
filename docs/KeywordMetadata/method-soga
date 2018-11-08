@@ -38,7 +38,7 @@ repeated assessment of the algorithm's progress in solving the
 problem, until some criterion is met.
 
 
-<b> Outputs </b>
+<b> Expected Outputs </b>
 The \c soga method respects the \c output method independent control
 to vary the amount of information presented to the user during
 execution.
@@ -46,6 +46,17 @@ execution.
 The final results are written to the Dakota tabular output. Additional
 information is also available - see the \c log_file and \c
 print_each_pop keywords.
+
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
 Topics::	package_jega, global_optimization_methods
 Examples::

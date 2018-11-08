@@ -225,7 +225,7 @@ Stochastic expansion methods can obtain moments two ways.
 for each response.
 \htmlinclude extreme_responses.html
 
-\subsection hdf5_results-pstudies Parameter Studies
+\subsection hdf5_results-pstudies Parameter Sets
 
 All parameter studies (\ref method-vector_parameter_study, \ref method-list_parameter_study,
 \ref method-multidim_parameter_study, \ref method-centered_parameter_study) record tables of
@@ -238,7 +238,9 @@ In the tabular-like listing, variables are stored according to the scheme descri
 
 \htmlinclude parameter_sets.html
 
-Centered paramter studies also store "slices" of the tabular data that make evaluating the
+\subsection hdf5_results-var_slices Variable Slices
+
+Centered paramter studies store "slices" of the tabular data that make evaluating the
 effects of each variable on each response more convenient. The steps for each individual 
 variable, including the initial or center point, and corresponding responses are stored 
 in separate groups.
@@ -291,6 +293,13 @@ and residual norms for the best point (or points, for multiple
 \htmlinclude best_residuals.html
 <br>
 \htmlinclude best_residual_norm.html
+
+\subsection hdf5_results-parameter_confidence_intervals Parameter Confidence Intervals
+
+Least squares methods (\ref method-nl2sol, \ref method-nlssol_sqp, \ref method-optpp_g_newton)
+compute confidence intervals on the calibration parameters.
+
+\htmlinclude lsq_confidence_intervals.html
 
 \subsection hdf5_results-calibration-no_config Best Model Responses (without configuration variables)
 
