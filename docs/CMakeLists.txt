@@ -27,9 +27,10 @@ list_filter_emacs_backups(ref_kw_md)
 file(GLOB ref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
 list_filter_emacs_backups(ref_topic_md)
 file(GLOB ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
+file(GLOB ref_hdf5 RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "hdf5_tables/*.html")
 file(GLOB ref_images RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images/*")
 list_filter_emacs_backups(ref_images)
-set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox}
+set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox} ${ref_hdf5}
   ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref 
   ${ref_images} header-ref.html header-ref.tex Dakota.bib)
 
@@ -70,7 +71,7 @@ add_custom_command(
     dakota-input-summary
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
-    ${ref_dox}
+    ${ref_dox} ${ref_hdf5}
   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
   ARGS ${CMAKE_CURRENT_SOURCE_DIR} 
   ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
