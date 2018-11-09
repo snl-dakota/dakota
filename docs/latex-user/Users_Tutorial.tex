@@ -150,8 +150,9 @@ environment statements and execution times.
 
 The output file is much more extensive, because it
 contains information on every function evaluation (See Figure
-\ref{tutorial:quickstart:rosenbrock_multidim:output}). It is 
-organized into three basic parts:
+\ref{tutorial:quickstart:rosenbrock_multidim:output}). Excluding the
+copy of the input file at the beginning and timing information at the end,
+the file is organized into three basic parts:
 \begin{enumerate}
 \item Information on the problem
 \begin{quote}
@@ -687,6 +688,11 @@ in the \path{dakota/share/dakota/examples/users} directory, with
 shows example results from this sampling method.  Note that your
 results will differ from those in this file if your \texttt{seed}
 value differs or if no \texttt{seed} is specified.
+
+In addition to the output files discussed in the previous examples, several
+\path{LHS*.out} files are generated. They are a byproduct of a software
+package, LHS~\cite{Swi04}, that Dakota utilizes to generate random samples and
+can be ignored.
 
 As shown in Figure~\ref{tutorial:results_mc}, 
 the statistical data on the 200 Monte Carlo samples is printed at the
