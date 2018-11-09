@@ -294,7 +294,7 @@ and residual norms for the best point (or points, for multiple
 <br>
 \htmlinclude best_residual_norm.html
 
-\subsection hdf5_results-parameter_confidence_intervals Parameter Confidence Intervals
+\subsection hdf5_results-lsq_confidence_intervals Parameter Confidence Intervals
 
 Least squares methods (\ref method-nl2sol, \ref method-nlssol_sqp, \ref method-optpp_g_newton)
 compute confidence intervals on the calibration parameters.
