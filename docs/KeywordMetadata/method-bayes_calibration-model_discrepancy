@@ -91,6 +91,7 @@ variances will be exported to \c dakota_discrepancy_variance_tabular.dat
 or the file specified with \c export_corrected_variance_file. 
 
 Examples::
+Extensive examples can be found in the Dakota User's and Theory Manuals.
 The input files below illustrate the options available to \c model_discrepancy
 
 \verbatim
