@@ -280,6 +280,13 @@ relies on secant updates for the Hessian, with the an approximation to
 the Hessian matrix at each iteration provided using only values of the 
 gradient at current and previous iterates.
 
+Note that ROL has been developed for, and mostly applied to, problems 
+with analytic gradients/Hessians. Nonetheless, ROL can be used with 
+Dakota-, or vendor-, provided finite-differencing approximations to the 
+gradient of the objective function. However, a user relying on such 
+approximations is advised to resort to alternative optimizers that 
+exhibit better performance in those scenarios.
+
 \subsubsection{Methods for Bound-Constrained Problems}
 \label{opt:methods:gradient:bound_constrained}
 
@@ -289,8 +296,10 @@ in Dakota. For conjugate gradient methods, the Fletcher-Reeves
 conjugate gradient method (\texttt{conmin\_frcg} and 
 \texttt{dot\_frcg}~\cite{Van95}) and ROL's trust-region method with 
 truncated conjugate gradient subproblem solver (\texttt{rol}) are 
-available. DOT (\texttt{dot\_bfgs}) provides a quasi-Newton method for 
-such problems. \emph{We here provide a caution regarding 
+available. Note that ROL exhibits slow/erratic convergence 
+when finite-differencing approximations to the gradient of objective 
+function are used. DOT (\texttt{dot\_bfgs}) provides a quasi-Newton 
+method for such problems. \emph{We here provide a caution regarding 
 \texttt{dot\_frcg}.  In DOT Version 4.20, we have noticed inconsistent 
 behavior of this algorithm across different versions of Linux. Our 
 best assessment is that it is due to different treatments of 
@@ -321,12 +330,14 @@ constraints, the intermediate iterates may not.} SQP methods available
 in Dakota include \texttt{dot\_sqp}, \texttt{nlpql\_sqp}, and
 \texttt{npsol\_sqp}~\cite{Gil86}. The particular implementation in
 \texttt{nlpql\_sqp}~\cite{Sch04} uses a variant with distributed and
-non-monotone line search.  Thus, this variant is designed to be more
+non-monotone line search. Thus, this variant is designed to be more
 robust in the presence of inaccurate or noisy gradients common in many
 engineering applications. ROL's composite-step method (\texttt{rol}), 
 utilizing SQP with trust regions, for equality-constrained problems is 
-another option. Also available is a method related to SQP: sequential 
-linear programming (\texttt{dot\_slp}).
+another option (Note that ROL exhibits slow/erratic convergence 
+when finite-differencing approximations to the gradient of objective and 
+constraints are used). Also available is a method related to SQP: 
+sequential linear programming (\texttt{dot\_slp}).
 
 Newton Methods can be applied to nonlinear optimization problems
 with nonlinear constraints. The subproblems associated with these
@@ -357,7 +368,11 @@ The augmented Lagrangian method provides a strategy to handle equality
 and inequality constraints by introducing the augmented Lagrangian 
 function, combining the use of Lagrange multipliers and a quadratic 
 penalty term. It is implemented in ROL (\texttt{rol}) exhibiting 
-scalable performance for large-scale problems.
+scalable performance for large-scale problems. As previously stated, 
+ROL exhibits slow/erratic convergence when finite-differencing 
+approximations to the gradient of objective function and/or constraints 
+are used. Users are advised to resort to alternative optimizers until 
+performance of ROL improves in future releases.
 
 \subsubsection{Example}
 \label{opt:methods:gradient:example}
@@ -1396,14 +1411,17 @@ of ROL improves in future releases.
 We offer the following recommendations in deciding upon a 
 suitable gradient-based method for a given problem
 \begin{itemize}
-\item For {\bf unonstrained and bound-constrained problems}, conjugate 
+\item For {\bf unconstrained and bound-constrained problems}, conjugate 
 gradient-based methods exhibit the best scalability for large-scale 
 problems (1,000+ variables). These include the Polak-Ribiere conjugate 
 gradient method (\texttt{optpp\_cg}), ROL's trust-region method with 
 truncated conjugate gradient subproblem solver (\texttt{rol}), and the 
 Fletcher-Reeves conjugate gradient method (\texttt{conmin\_frcg} and 
 \texttt{dot\_frcg}). These methods also provide good performance for 
-small- to intermediate-sized problems.
+small- to intermediate-sized problems. Note that due to performance 
+issues, users relying on finite-differencing approximations to the gradient 
+of the objective function are advised to resort to alternative optimizers 
+such as DOT until performance of ROL improves in future releases.
 \item For {\bf constrained problems}, with large number of constraints 
 with respect to number of variables, Method of Feasible Directions 
 methods (\texttt{conmin\_mfd} and \texttt{dot\_mmfd}) and Sequential 

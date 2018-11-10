@@ -35,9 +35,9 @@ zero as the current parameter value goes to zero.
 
 ROL's finite difference step size can not be controlled via Dakota.
 Therefore, \c fd_step_size will be ignored when ROL's finite
-differencing routines are used. ROL's differencing intervals are
-computed by multiplying the current parameter value with the
-square root of machine precision.
+differencing routines are used (vendor FD gradients are specified).
+ROL's differencing intervals are computed by multiplying the current
+parameter value with the square root of machine precision.
 
 Topics::	
 Examples::
