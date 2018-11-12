@@ -348,7 +348,7 @@ void Approximation::push_data()
 	// activated through the Model.  Surrogate model key is only used for
 	// enumerating SurrogateData updates using approxDataKeys.
 	const UShortArray& truth_key = keys_d[0];
-	size_t r_index = sharedDataRep->candidate_index(truth_key);
+	size_t r_index = sharedDataRep->push_index(truth_key);
 	// preserves active state
 	approx_data.push(keys_d, r_index); // preserves active state
       }

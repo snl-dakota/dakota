@@ -1553,7 +1553,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     Cout << "\n>>>>> Evaluating trial index set:\n" << *cit;
     nond_sparse->increment_set(*cit);
     if (uSpaceModel.push_available()) {    // has been active previously
-      nond_sparse->restore_set();
+      nond_sparse->push_set();
       uSpaceModel.push_approximation();
     }
     else {                                    // a new active set
@@ -1586,7 +1586,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
 
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store data for use in push,finalize
-    nond_sparse->decrement_set(); // store data for use in restore_set()
+    nond_sparse->decrement_set(); // store data for use in push_set()
 
     if (apply_best) { // if not previously reverted, revert now
       if (totalLevelRequests)        finalStatistics.function_values(stats_ref);

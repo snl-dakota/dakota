@@ -85,15 +85,15 @@ public:
   void initialize_sets();
   /// invokes SparseGridDriver::update_reference()
   void update_reference();
-  /// invokes SparseGridDriver::push_trial_set()
+  /// invokes SparseGridDriver::increment_smolyak_multi_index()
   void increment_set(const UShortArray& set);
   /// invokes SparseGridDriver::unique_trial_points()
   int increment_size() const;
-  /// invokes SparseGridDriver::restore_set()
-  void restore_set();
+  /// invokes SparseGridDriver::push_set()
+  void push_set();
   /// invokes SparseGridDriver::compute_trial_grid()
   void evaluate_set();
-  /// invokes SparseGridDriver::pop_trial_set()
+  /// invokes SparseGridDriver::pop_set()
   void decrement_set();
   /// invokes SparseGridDriver::update_sets()
   void update_sets(const UShortArray& set_star);
@@ -185,15 +185,15 @@ inline void NonDSparseGrid::update_reference()
 
 
 inline void NonDSparseGrid::increment_set(const UShortArray& set)
-{ ssgDriver->push_trial_set(set); }
+{ ssgDriver->increment_smolyak_multi_index(set); }
 
 
 inline int NonDSparseGrid::increment_size() const
 { return ssgDriver->unique_trial_points(); }
 
 
-inline void NonDSparseGrid::restore_set()
-{ ssgDriver->restore_set(); }
+inline void NonDSparseGrid::push_set()
+{ ssgDriver->push_set(); }
 
 
 inline void NonDSparseGrid::evaluate_set()
@@ -205,7 +205,7 @@ inline void NonDSparseGrid::evaluate_set()
 
 
 inline void NonDSparseGrid::decrement_set()
-{ ssgDriver->pop_trial_set(); }
+{ ssgDriver->pop_set(); }
 
 
 inline void NonDSparseGrid::update_sets(const UShortArray& set_star)

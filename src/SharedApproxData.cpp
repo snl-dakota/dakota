@@ -485,15 +485,15 @@ bool SharedApproxData::push_available()
 }
 
 
-size_t SharedApproxData::candidate_index(const UShortArray& key)
+size_t SharedApproxData::push_index(const UShortArray& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: candidate_index() not available for this approximation "
-	 << "type." << std::endl;
+    Cerr << "Error: push_index() not available for this approximation type."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
-  return dataRep->candidate_index(key);
+  return dataRep->push_index(key);
 }
 
 

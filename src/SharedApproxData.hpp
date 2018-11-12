@@ -101,8 +101,8 @@ public:
   virtual void pop(bool save_surr_data);
   /// queries availability of pushing data associated with a trial set
   virtual bool push_available();
-  /// return index of trial set within popped bookkeeping sets
-  virtual size_t candidate_index(const UShortArray& key);
+  /// return index for restoring trial set within stored data sets
+  virtual size_t push_index(const UShortArray& key);
   /// push a previous state of the shared approximation data 
   virtual void pre_push();
   /// clean up popped bookkeeping following push 
