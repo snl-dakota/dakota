@@ -107,8 +107,8 @@ public:
   virtual void pre_push();
   /// clean up popped bookkeeping following push 
   virtual void post_push();
-  /// return index of i-th trailing trial set within restorable bookkeeping sets
-  virtual size_t finalization_index(size_t i, const UShortArray& key);
+  /// return index of i-th trial set within restorable bookkeeping sets
+  virtual size_t finalize_index(size_t i, const UShortArray& key);
   /// finalize the shared approximation data following a set of increments
   virtual void pre_finalize();
   /// clean up popped bookkeeping following aggregation

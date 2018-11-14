@@ -521,15 +521,15 @@ void SharedApproxData::post_push()
 }
 
 
-size_t SharedApproxData::finalization_index(size_t i, const UShortArray& key)
+size_t SharedApproxData::finalize_index(size_t i, const UShortArray& key)
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: finalization_index() not available for this approximation "
-	 << "type." << std::endl;
+    Cerr << "Error: finalize_index() not available for this approximation type."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
-  return dataRep->finalization_index(i, key);
+  return dataRep->finalize_index(i, key);
 }
 
 

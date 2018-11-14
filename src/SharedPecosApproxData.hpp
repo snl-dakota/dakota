@@ -134,7 +134,7 @@ protected:
   void pre_push();
   void post_push();
 
-  size_t finalization_index(size_t i, const UShortArray& key);
+  size_t finalize_index(size_t i, const UShortArray& key);
   void pre_finalize();
   void post_finalize();
 
@@ -211,8 +211,16 @@ inline bool SharedPecosApproxData::push_available()
 { return pecosSharedDataRep->push_available(); }
 
 
+/** In Pecos, SharedPolyApproxData::push_index() is for internal use as
+    it can be either a flattened (ISGDriver) or level-specific index
+    (HSGDriver), as convenient for combined or hierarchical data
+    restoration.  SharedPolyApproxData::{restore,finalize}_index() are
+    intended for external use and will map from push_index() to provide
+    a consistent (flattened) representation.  Dakota, however, does not
+    make this distinction and uses {push,finalize}_index() semantics
+    for consistency with {push,finalize}_data(). */
 inline size_t SharedPecosApproxData::push_index(const UShortArray& key)
-{ return pecosSharedDataRep->push_index(key); }
+{ return pecosSharedDataRep->restore_index(key); }
 
 
 inline void SharedPecosApproxData::pre_push()
@@ -224,8 +232,8 @@ inline void SharedPecosApproxData::post_push()
 
 
 inline size_t SharedPecosApproxData::
-finalization_index(size_t i, const UShortArray& key)
-{ return pecosSharedDataRep->finalization_index(i, key); }
+finalize_index(size_t i, const UShortArray& key)
+{ return pecosSharedDataRep->finalize_index(i, key); }
 
 
 inline void SharedPecosApproxData::pre_finalize()

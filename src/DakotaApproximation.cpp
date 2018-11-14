@@ -374,23 +374,8 @@ void Approximation::finalize_data()
 	const UShortArray& truth_key = keys_d[0];
 	size_t num_popped = approx_data.popped_sets(truth_key);
 	for (p=0; p<num_popped; ++p) {
-#ifdef DEBUG
-	  // Note: popped sets are not explicitly added in computed_trial_sets()
-	  //       order as in {Incr,Hierarch}SparseGridDriver::finalize_sets().
-	  //       However, poppedLevMultiIndex et al. become ordered due to
-	  //       enumeration of ordered active_multi_index().  Rather than
-	  //       incurring additional overhead by mapping indices, the
-	  //       compile-time verification below can provide spot checking.
-	  f_index = sharedDataRep->finalization_index(p, truth_key);
-	  if (f_index != p)  {
-	    PCerr << "Error: Approximation::finalize_data() found index "
-		  << "mismatch (" << f_index << ", " << p << ")." << std::endl;
-	    abort_handler(APPROX_ERROR);
-	  }
+	  f_index = sharedDataRep->finalize_index(p, truth_key);
 	  approx_data.push(keys_d, f_index, false);
-#else
-	  approx_data.push(keys_d, p, false);
-#endif // DEBUG
 	}
       }
     }
