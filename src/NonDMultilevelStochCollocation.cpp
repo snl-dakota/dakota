@@ -455,7 +455,8 @@ void NonDMultilevelStochCollocation::combined_to_active()
     uSpaceModel.combined_to_active(false);
     // don't force update to active statistics; allow hybrid approach where
     // combined can still be used when needed (integrate_response_moments())
-    //statsType = ACTIVE_EXPANSION_STATS;
+    //statsType = ACTIVE_EXPANSION_STATS; // don't restore for greedy_mf_exp()
+    statsType = COMBINED_EXPANSION_STATS; // override for mf_exp()
     break;
   }
 }

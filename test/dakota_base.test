@@ -26478,6 +26478,32 @@ f1 Sobol' indices:
                       9.0059938570e-01  9.0059938570e-01 x1
                       9.9400614296e-02  9.9400614296e-02 x2
                       3.5765813857e-32 x1 x2 
+Test Number 22 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1  3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9141169062e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1  3.6360000000e+01  6.9283186994e+01 -1.9232500335e-01 -1.3331777867e+00
+<<<<< Function evaluation summary (LOFI_FN): 50 total (45 new, 5 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 5 total (5 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
+Test Number 23 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1  3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9480351934e+02
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1  3.6360000000e+01  6.9283186994e+01  1.5396392053e+00  5.3335110933e+00
+<<<<< Function evaluation summary (LOFI_FN): 64 total (43 new, 21 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 21 total (21 new, 0 duplicate)
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+  integration:  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
 dakota_scaling.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (13 new, 2 duplicate)

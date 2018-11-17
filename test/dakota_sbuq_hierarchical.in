@@ -50,7 +50,7 @@ method,
 #	  quadrature_order_sequence  = 1		#s7,#s9
 #	  sparse_grid_level_sequence = 10 5		#s10
 #	  piecewise use_derivatives			#s10
-	  variance_based_decomp
+	  variance_based_decomp				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#p0,#p1,#p2,#p3
 
 model,
 	id_model = 'SURROGATE'
