@@ -147,6 +147,7 @@ DataMethodRep::DataMethodRep():
   adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
   posteriorStatsKL(false), posteriorStatsMutual(false),
   posteriorStatsKDE(false), modelEvidence(false),
+  modelEvidMC(false), modelEvidLaplace(false),
   preSolveMethod(SUBMETHOD_DEFAULT), priorPropCovMult(1.0),
   proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
@@ -298,7 +299,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << modelEvidence << preSolveMethod << proposalCovType << priorPropCovMult
+    << modelEvidence << modelEvidLaplace << modelEvidMC 
+    << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
@@ -451,7 +453,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
-    >> modelEvidence >> preSolveMethod >> proposalCovType >> priorPropCovMult
+    >> modelEvidence >> modelEvidLaplace >> modelEvidMC 
+    >> preSolveMethod >> proposalCovType >> priorPropCovMult
     >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
     >> advancedOptionsFilename >> quesoOptionsFilename >> fitnessMetricType
@@ -604,7 +607,8 @@ void DataMethodRep::write(std::ostream& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << modelEvidence << preSolveMethod << proposalCovType << priorPropCovMult
+    << modelEvidence << modelEvidLaplace << modelEvidMC 
+    << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType

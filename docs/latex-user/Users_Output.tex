@@ -10,7 +10,8 @@ generates tabular output useful for data analysis and visualization
 with external tools.  Unix versions of Dakota have an optional basic
 graphical output capability that can be useful as a monitoring tool.
 The Dakota GUI increasingly provides replacement visualization
-facilities.
+facilities, and a nascent capability to write results to HDF5 has
+been added.
 
 \section{Standard Output}\label{output:standard}
 
@@ -372,6 +373,29 @@ approach where every function evaluation, even the ones from finite
 differencing, can be saved to a file in tabular format by using the
 Dakota restart utility.
 
+\section{HDF5 Output}\label{output:hdf5}
+
+Beginning with release 6.9, Dakota can write many method results such as the 
+correlation matrices computed by sampling studies and the best parameters 
+discovered by optimization methods to disk in HDF5 format. HDF5 is widely used 
+in scientific software for efficiently storing and organizing data. The HDF5 
+standard and libraries are maintained by the HDF Group (https://hdfgroup.org).
+Many users may find this newly supported format more convenient than scraping 
+or copying and pasting from Dakota's console output.
+
+Currently, a large subset of Dakota's method results are
+written to HDF5. Additional method results will continue to be added in future
+releases, and Dakota will also store other potentially useful information in 
+HDF5, such as evaluations on interfaces and model transformations.
+
+To enable HDF5 output, Dakota must have been built with HDF5 support. HDF5 
+support is considered a somewhat experimental feature in this release, and therefore 
+HDF5 is not enabled in binaries provided on the Download page of the Dakota
+website; building from source is necessary. See the instructions on
+the Dakota website.
+
+For a more complete description of Dakota's HDF5 capapbility, see the "Dakota
+HDF5 Output" section of the Dakota Reference Manual~\cite{RefMan}.
 
 \section{Graphics Output}\label{output:graphics}
 

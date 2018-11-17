@@ -505,6 +505,7 @@ protected:
   void configure_constraint_maps();
   //void mapped_function_values(const RealVector& function_vals); // use constraints and traits for format
   //const Real& mapped_function_value(size_t i) const;
+
   
   //
   //- Heading: Data

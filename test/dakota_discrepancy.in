@@ -1,0 +1,64 @@
+#@ *: Label=Experimental
+#@ *: DakotaConfig=HAVE_QUESO
+#@ s0: ReqFiles=dakota_discrepancy.dat
+#@ s1: ReqFiles=dakota_discrepancy.dat
+#@ s2: ReqFiles=dakota_discrepancy.dat
+#@ s3: ReqFiles=dakota_discrepancy.dat,dakota_discrep_pred_configs.txt
+#@ s4: ReqFiles=oscillatorB.coords,experiment.1.config,oscillatorB.1.dat,oscillatorB.1.coords
+# As of Dakota 6.9, calibrated model discrepancy information is output to file.
+# Thus, this test does not check the correctness of the discrepancy calculation;
+# it tests that the model discrepancy function and all of its keywords are 
+# called and execute.
+
+environment
+        tabular_data
+
+method,
+          bayes_calibration queso 
+          chain_samples = 60	
+          seed   = 1337                          
+          model_discrepancy     
+#            num_prediction_configs = 7 #s1
+#            prediction_configs = 3 5   #s2
+#            import_prediction_configs = 'dakota_discrep_pred_configs.txt' #s3
+#              freeform #s3
+#            discrepancy_type   #s1,#s2,#s3
+#              gaussian_process  #s1,#s2
+#              polynomial       #s3
+#              correction_order         #s1,#s2,#s3
+#                constant               #s1
+#                linear                 #s2
+#                quadratic              #s3
+          #output debug
+
+variables,
+          continuous_state = 1  
+            initial_state    5  
+            lower_bounds 0.1    
+            upper_bounds 10     
+	  uniform_uncertain = 2			
+  	    upper_bounds   0.5   0.5    
+  	    lower_bounds   0.1   0.1    
+  	    descriptors   'x1' 'x2'     
+
+interface,
+        direct	
+	  analysis_driver = 'damped_oscillator'
+
+responses,
+        calibration_terms = 1             	
+#        calibration_data		#s4	
+        calibration_data_file = 'dakota_discrepancy.dat' #s0,#s1,#s2,#s3
+          freeform                      #s0,#s1,#s2,#s3
+#        num_experiments = 1       #s4
+        num_experiments = 5             #s0,#s1,#s2,#s3
+        num_config_variables = 1                  
+        variance_type = 'none'
+#        field_calibration_terms = 1            #s4	
+#        lengths = 50                           #s4
+#        num_coordinates_per_field = 1          #s4
+#         read_field_coordinates                #s4
+#	response_descriptors = 'oscillatorB'    #s4
+#	interpolate                            #s4
+        no_gradients                         
+	no_hessians             

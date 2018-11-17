@@ -1909,8 +1909,12 @@ JEGAOptimizer::JEGAOptimizer(
             default: jegaLev = ldefault();
         }
 
+	// We use JEGA as a library, so want signals to raise up to
+	// us, lest they get ignored:
+	const bool jega_register_signals = false;
         JEGA::FrontEnd::Driver::InitializeJEGA(
-            "JEGAGlobal.log", jegaLev, rSeed
+	    "JEGAGlobal.log", jegaLev, rSeed, JEGA::Logging::Logger::ABORT,
+	    jega_register_signals
             );
     }
 

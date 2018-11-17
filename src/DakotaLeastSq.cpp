@@ -215,11 +215,12 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   //    for scaling/weighting): DakotaLeastSq::print_results
 
   // TODO: Need to add residual norm to baselines
-
+  
   // archive the single best point
   size_t num_best = 1, best_ind = 0;
-  archive_allocate_best(num_best);
-  archive_best(best_ind, bestVariablesArray.front(), bestResponseArray.front());
+  int eval_id;
+  //if(!calibrationDataFlag)
+  //  archive_allocate_residuals(num_best);
 
   // Print best calibration parameters.  Include any inactive
   // variables unless they are used as experiment configuration
@@ -229,7 +230,6 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     s << "<<<<< Best parameters          =\n" << best_vars;
   else {
     s << "<<<<< Best parameters (experiment config variables omitted) =\n";
-    bool active_only = true;
     best_vars.write(s, ACTIVE_VARS);
   }
 
@@ -246,8 +246,8 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     // interpolation cases as well.
     DataTransformModel* dt_model_rep =
       static_cast<DataTransformModel*>(dataTransformModel.model_rep());
-    dt_model_rep->print_best_responses(s, best_vars, bestResponseArray.front(),
-                                       num_best, best_ind);
+    dt_model_rep->print_best_responses(s, best_vars, 
+                                       bestResponseArray.front(), num_best, best_ind);
   }
   else {
     // otherwise the residuals worked on are same size/type as the
@@ -289,10 +289,12 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   activeSet.request_values(1);
   PRPCacheHIter cache_it = lookup_by_val(data_pairs,
     iteratedModel.interface_id(), best_vars, activeSet);
-  if (cache_it == data_pairs.get<hashed>().end())
+  if (cache_it == data_pairs.get<hashed>().end()) {
     s << "<<<<< Best data not found in evaluation cache\n\n";
+    eval_id = 0;
+  }
   else {
-    int eval_id = cache_it->eval_id();
+    eval_id = cache_it->eval_id();
     if (eval_id > 0)
       s << "<<<<< Best data captured at function evaluation " << eval_id
 	<< "\n\n";
@@ -309,10 +311,9 @@ void LeastSq::print_results(std::ostream& s, short results_state)
 
   if (!confBoundsLower.empty() && !confBoundsUpper.empty()) {
     // BMA: Not sure this warning is needed
-    if (expData.num_experiments() > 1) {
+    if (expData.num_experiments() > 1) 
       s << "Warning: Confidence intervals may be inaccurate when "
         << "num_experiments > 1\n";
-    }
 
     s << "Confidence Intervals on Calibrated Parameters:\n";
 
@@ -820,6 +821,24 @@ void LeastSq::get_confidence_intervals(const Variables& native_vars,
     confBoundsLower[j] = native_cv[j] - tdist * standard_error[j];
     confBoundsUpper[j] = native_cv[j] + tdist * standard_error[j];
   }
+}
+
+void LeastSq::archive_best_results() {
+  Minimizer::archive_best_results();
+  if(!resultsDB.active() || expData.num_experiments() > 1) return;
+
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("variables", cv_labels));
+  scales.emplace(1, StringScale("bounds", {"lower", "upper"}));
+  resultsDB.allocate_matrix(run_identifier(), {String("confidence_intervals")},
+      ResultsOutputType::REAL, confBoundsLower.length(),2, scales);
+  resultsDB.insert_into(run_identifier(), {String("confidence_intervals")},
+      confBoundsLower, 0, false);
+  resultsDB.insert_into(run_identifier(), {String("confidence_intervals")},
+      confBoundsUpper, 1, false);
+
 }
 
 } // namespace Dakota

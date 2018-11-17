@@ -4226,6 +4226,38 @@ Sample moment statistics for each response function:
 least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
 Information gained from prior to posterior = 3.9196284455e+00
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 2060 total (2060 new, 0 duplicate)
+<<<<< Best parameters (experiment config variables omitted) =
+                      2.8916091328e+07 E
+                      2.5746941568e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -1.0218391665e+03 least_sq_term_1
+                      1.5157123564e-01 least_sq_term_2
+<<<<< Best configuration variables (experiment 2) =
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      8.7460737513e+03 least_sq_term_1
+                      6.6481437035e-01 least_sq_term_2
+<<<<< Best residual terms =
+                     -1.2756896974e+01
+                     -5.4645507028e+00
+                      2.1210276733e+01
+                      1.2809469648e+01
+<<<<< Best residual terms =
+                     -1.2756896974e+01
+                     -5.4645507028e+00
+                      2.1210276733e+01
+                      1.2809469648e+01
+<<<<< Best data not found in evaluation cache
 dakota_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
@@ -10119,9 +10151,149 @@ Sample moment statistics for each posterior variable:
          uuv_9  8.9263306124e-03  5.3695282404e-01 -2.4880902043e-02 -1.0594526090e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.5015512027e-02  5.9695543624e-03  8.0845370299e-01  8.1877556428e-02
-            f2  1.2830389135e-01  1.2340237704e-02  7.7843658222e-01 -2.9997033718e-01
-            f3  2.5015512027e-02  5.9695543625e-03  8.0845370325e-01  8.1877556809e-02
+least_sq_term_1  2.5057429102e-02  5.9072009168e-03  7.7816106844e-01  3.9493812159e-02
+least_sq_term_2  1.2834948592e-01  1.2114422537e-02  7.8324554687e-01 -2.2613212083e-01
+least_sq_term_3  2.5057429102e-02  5.9072009172e-03  7.7816106865e-01  3.9493812389e-02
+dakota_discrepancy.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 570 total (570 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 567 total (567 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 562 total (561 new, 1 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 563 total (561 new, 2 duplicate)
+<<<<< Best parameters          =
+                      1.0296688990e-01 x1
+                      1.4754579920e-01 x2
+<<<<< Best misfit              =
+                      1.0749626112e-01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.8696074634e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  1.7987909654e-01  1.1392520750e-01  1.6236307029e+00  1.2510053683e+00
+            x2  1.5781078334e-01  2.3848851894e-02  4.0526017993e+00  2.1483906580e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1 -1.5372555671e+00  1.3385789307e+00 -8.6928482957e-01 -7.6472547547e-01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 105 total (104 new, 1 duplicate)
+<<<<< Best parameters          =
+                      4.9425344097e-01 x1
+                      2.5551502236e-01 x2
+<<<<< Best misfit              =
+                      2.0634827555e+01
+<<<<< Best log prior           =
+                      1.8325814637e+00
+<<<<< Best log posterior       =
+                     -2.3396938757e+01
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  4.4551964859e-01  3.7859340308e-02 -1.4489884085e+00  3.0966090212e+00
+            x2  2.4603082494e-01  2.8315582355e-02  8.4306487437e-02 -3.2141938112e-01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ oscillatorB_1  5.2106416974e-01  1.0493909586e-03 -9.6245562304e-02 -3.4878817335e-01
+ oscillatorB_2  6.9072480019e-01  3.9302921797e-03 -1.6957822306e-01 -4.5976614018e-01
+ oscillatorB_3  1.1198846963e+00  9.6903460364e-03 -1.5587261668e-01 -7.5030785438e-01
+ oscillatorB_4  1.8428065812e+00  2.1776548567e-02  1.2787308506e-01 -7.2079355810e-01
+ oscillatorB_5  2.8138668033e+00  4.3439200307e-02  3.5549078663e-01 -4.4732553065e-01
+ oscillatorB_6  3.9177678135e+00  7.6044069736e-02  4.3427105616e-01 -3.2183977874e-01
+ oscillatorB_7  4.9913540921e+00  1.1901826883e-01  4.0569653685e-01 -3.7485516112e-01
+ oscillatorB_8  5.8533613228e+00  1.7018770827e-01  3.0938220510e-01 -5.2673238972e-01
+ oscillatorB_9  6.3371985724e+00  2.2638915320e-01  1.7680227817e-01 -6.8619132596e-01
+oscillatorB_10  6.3214105754e+00  2.8426863302e-01  4.0104452729e-02 -7.7284520968e-01
+oscillatorB_11  5.7528618910e+00  3.4104635201e-01 -6.5685396865e-02 -7.4169282585e-01
+oscillatorB_12  4.6588630088e+00  3.9497619682e-01 -1.1075383839e-01 -6.1061025708e-01
+oscillatorB_13  3.1462332206e+00  4.4527382077e-01 -8.7369470356e-02 -4.5477909901e-01
+oscillatorB_14  1.3873850664e+00  4.9147543953e-01 -2.3479629911e-02 -3.3863474135e-01
+oscillatorB_15 -4.0441034666e-01  5.3249795894e-01  2.4528642719e-02 -2.3203440061e-01
+oscillatorB_16 -2.0066869613e+00  5.6591468939e-01  1.0557970099e-03 -1.1773109224e-02
+oscillatorB_17 -3.2213725093e+00  5.8789971158e-01 -1.2088944586e-01  4.3970113624e-01
+oscillatorB_18 -3.9049782457e+00  5.9393303930e-01 -3.3426142594e-01  1.1436855392e+00
+oscillatorB_19 -3.9905891786e+00  5.7999250226e-01 -6.1104925708e-01  2.0137964966e+00
+oscillatorB_20 -3.4981391374e+00  5.4383052891e-01 -9.1706952186e-01  2.8915008672e+00
+oscillatorB_21 -2.5312980545e+00  4.8603346013e-01 -1.2172192522e+00  3.5669430039e+00
+oscillatorB_22 -1.2614088147e+00  4.1077478338e-01 -1.4654390649e+00  3.7564457924e+00
+oscillatorB_23  9.9045483441e-02  3.2648492503e-01 -1.5646707920e+00  3.0866219434e+00
+oscillatorB_24  1.3293089969e+00  2.4711363043e-01 -1.2663369764e+00  1.5001212379e+00
+oscillatorB_25  2.2344174785e+00  1.9365289464e-01 -2.3468445859e-01  5.2508131643e-01
+oscillatorB_26  2.6751283627e+00  1.8388491185e-01  9.3839843891e-01  7.1847878448e-01
+oscillatorB_27  2.5890328516e+00  2.0495519057e-01  1.6315477192e+00  3.2856733080e+00
+oscillatorB_28  1.9995524289e+00  2.2800301312e-01  2.1382283153e+00  7.3044986718e+00
+oscillatorB_29  1.0114286728e+00  2.3625538339e-01  2.5707877893e+00  1.0909662654e+01
+oscillatorB_30 -2.0655874057e-01  2.2471389185e-01  2.9678472544e+00  1.4081426484e+01
+oscillatorB_31 -1.4489007644e+00  1.9529161522e-01  3.3541267505e+00  1.7187948965e+01
+oscillatorB_32 -2.5063721742e+00  1.5445527524e-01  3.6865411061e+00  2.0195758073e+01
+oscillatorB_33 -3.1995316219e+00  1.1271119612e-01  3.5314633861e+00  2.0333794816e+01
+oscillatorB_34 -3.4074187080e+00  8.5690180294e-02  1.5368488349e+00  9.2260542109e+00
+oscillatorB_35 -3.0869204189e+00  8.6381034383e-02 -4.4066439774e-01  9.2799329488e-01
+oscillatorB_36 -2.2797555415e+00  1.0429191816e-01 -5.4901813871e-01  5.7814216603e-01
+oscillatorB_37 -1.1059829364e+00  1.2379011845e-01 -5.0997732645e-01  5.2942195058e-01
+oscillatorB_38  2.5493116187e-01  1.4042889484e-01 -5.9237251953e-01  4.9478694459e-01
+oscillatorB_39  1.5924864456e+00  1.5559326454e-01 -6.9327917998e-01  2.8240483475e-01
+oscillatorB_40  2.6984711559e+00  1.7088394492e-01 -6.0800189474e-01 -4.9025856358e-02
+oscillatorB_41  3.3999614227e+00  1.8517990218e-01 -2.4042016003e-01 -5.6092064016e-02
+oscillatorB_42  3.5867762548e+00  1.9485445081e-01  2.9564426176e-01  4.1826785671e-01
+oscillatorB_43  3.2290432819e+00  1.9600669352e-01  8.1653779170e-01  1.0425478626e+00
+oscillatorB_44  2.3820927364e+00  1.8686735860e-01  1.1549171173e+00  1.3423922834e+00
+oscillatorB_45  1.1778990209e+00  1.6974159282e-01  1.1192389638e+00  9.6798439869e-01
+oscillatorB_46 -1.9558559300e-01  1.5248483821e-01  5.3549528775e-01  1.0870165698e-02
+oscillatorB_47 -1.5239476313e+00  1.4721793797e-01 -2.8051903406e-01 -6.8188970865e-01
+oscillatorB_48 -2.6000233080e+00  1.6058224716e-01 -7.6614715627e-01  2.4953399885e-01
+oscillatorB_49 -3.2564840350e+00  1.8521758601e-01 -1.1474618525e+00  2.7550859794e+00
+oscillatorB_50 -3.3921534463e+00  2.0804155327e-01 -1.5594162330e+00  5.2302280965e+00
 dakota_dll.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
@@ -21597,6 +21769,28 @@ Sample moment statistics for each response function:
             f1 -2.2302344395e-01  7.3243886033e-01 -7.8991184313e-02 -2.4912824383e-01
             f2  2.2503829439e-01  3.7545319340e-01  4.2746331081e-01 -7.7186365326e-01
 Information gained from prior to posterior = 5.0049245705e+00
+Test Number 1 succeeded
+Model evidence (Monte Carlo) = 5.4439141944e-03
+Model evidence (Laplace) = 6.1903418610e-03
+<<<<< Function evaluation summary: 4290 total (4288 new, 2 duplicate)
+<<<<< Best parameters          =
+                      9.9991512536e-01 x1
+                      9.9973343023e-01 x2
+<<<<< Best misfit              =
+                      9.4476381507e-07
+<<<<< Best log prior           =
+                     -2.7725887222e+00
+<<<<< Best log posterior       =
+                     -3.9173195529e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            x1  5.0659506143e-01  4.7344444221e-01 -4.4162546229e-01 -6.4463529586e-01
+            x2  4.7015699325e-01  4.5046332147e-01  7.7862506973e-01 -4.3751549380e-01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1 -1.0519128048e-01  6.3577660675e-01 -2.7072523893e-01 -2.2021726067e-02
+            f2  4.9340493857e-01  4.7344444221e-01  4.4162546229e-01 -6.4463529586e-01
+Information gained from prior to posterior = 2.2738476145e+00
 dakota_rosenbrock_users.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
@@ -30787,9 +30981,9 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029894e+00  Max = 2.9298000001e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF12n  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -30797,14 +30991,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF12n  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF12n -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -30812,7 +31006,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF12n -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -30822,9 +31016,9 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192029890e+00  Max = 2.9298000000e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF2ln  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -30832,14 +31026,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF2ln  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF2ln -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -30847,7 +31041,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF2ln -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -30855,9 +31049,9 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029894e+00  Max = 2.9298000001e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF2ln  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -30865,14 +31059,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF2ln  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF2ln -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -30880,7 +31074,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF2ln -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -30889,9 +31083,9 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192031619e+00  Max = 2.9298000000e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF2ln  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -30899,14 +31093,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF2ln  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF2ln -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -30914,7 +31108,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF2ln -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -30922,9 +31116,9 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029894e+00  Max = 2.9298000001e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF2ln  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -30932,14 +31126,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF2ln  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF2ln -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -30947,7 +31141,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF2ln -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -30957,9 +31151,9 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192029890e+00  Max = 2.9298000000e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF2ln  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -30967,14 +31161,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF2ln  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF2ln -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -30982,7 +31176,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF2ln -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -30990,9 +31184,9 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary (I1): 25 total (25 new, 0 duplicate)
 text_book:  Min = 1.8192029894e+00  Max = 2.9298000001e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF2ln  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -31000,14 +31194,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF2ln  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF2ln -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -31015,7 +31209,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF2ln -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -31024,9 +31218,9 @@ Test Number 9 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 text_book:  Min = 1.8192031619e+00  Max = 2.9298000000e+04
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln  1.48874e-02  1.00000e+00
+       TF2ln  1.48874e-02  1.00000e+00
    ModelForm -9.24410e-02  3.66533e-02  1.00000e+00
       hpu_r1  4.20116e-02 -4.46218e-02 -3.50122e-02  1.00000e+00
       hpu_r2  1.60644e-02 -1.71463e-02 -2.45060e-01  1.37257e-01  1.00000e+00
@@ -31034,14 +31228,14 @@ Simple Correlation Matrix among all inputs and outputs:
 Partial Correlation Matrix between input and output:
                 text_book
        TF1ln  7.92225e-03
-       TF1ln  2.23192e-02
+       TF2ln  2.23192e-02
    ModelForm -1.48830e-01
       hpu_r1  6.54565e-01
       hpu_r2  6.45646e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm       hpu_r1       hpu_r2    text_book
+                    TF1ln        TF2ln    ModelForm       hpu_r1       hpu_r2    text_book
        TF1ln  1.00000e+00
-       TF1ln -5.00000e-02  1.00000e+00
+       TF2ln -5.00000e-02  1.00000e+00
    ModelForm -1.07971e-01  1.25359e-02  1.00000e+00
       hpu_r1  8.55416e-03 -2.83843e-02 -5.98908e-02  1.00000e+00
       hpu_r2 -5.05473e-03  1.67195e-02 -2.30161e-01  1.30307e-01  1.00000e+00
@@ -31049,7 +31243,7 @@ Simple Rank Correlation Matrix among all inputs and outputs:
 Partial Rank Correlation Matrix between input and output:
                 text_book
        TF1ln -1.94461e-02
-       TF1ln -3.24601e-03
+       TF2ln -3.24601e-03
    ModelForm -8.51414e-03
       hpu_r1  7.66491e-01
       hpu_r2  8.16235e-01
@@ -70118,23 +70312,23 @@ Sample moment statistics for each response function:
    3.0000000000e-05   3.1220000000e-01
    4.0000000000e-05   3.3560000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
+       TF2ln -3.37845e-05  1.00000e+00
 response_fn_1 -4.61960e-01 -1.90700e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
              response_fn_1
        TF1ln -4.70602e-01
-       TF1ln -2.15036e-01
+       TF2ln -2.15036e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
+       TF2ln  3.43526e-03  1.00000e+00
 response_fn_1 -4.58343e-01 -2.00773e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1
        TF1ln -4.67168e-01
-       TF1ln -2.24128e-01
+       TF2ln -2.24128e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
@@ -70156,23 +70350,23 @@ Sample moment statistics for each response function:
    3.0000000000e-05   6.7500000000e-01
    4.0000000000e-05   7.2600000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
+       TF2ln -3.37845e-05  1.00000e+00
 response_fn_1 -6.07487e-02  2.59464e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
              response_fn_1
        TF1ln -6.28939e-02
-       TF1ln  2.59942e-01
+       TF2ln  2.59942e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
+       TF2ln  3.43526e-03  1.00000e+00
 response_fn_1 -7.01116e-02  3.25963e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1
        TF1ln -7.53471e-02
-       TF1ln  3.27010e-01
+       TF2ln  3.27010e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
@@ -70194,23 +70388,23 @@ Sample moment statistics for each response function:
    3.0000000000e-05   6.2460000000e-01
    4.0000000000e-05   6.9380000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
+       TF2ln -3.37845e-05  1.00000e+00
 response_fn_1  3.89871e-02  3.39572e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
              response_fn_1
        TF1ln  4.14623e-02
-       TF1ln  3.39832e-01
+       TF2ln  3.39832e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
+       TF2ln  3.43526e-03  1.00000e+00
 response_fn_1  2.67685e-02  1.68659e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1
        TF1ln  2.65699e-02
-       TF1ln  1.68629e-01
+       TF2ln  1.68629e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
@@ -70232,48 +70426,48 @@ Sample moment statistics for each response function:
    3.0000000000e-05   5.1660000000e-01
    4.0000000000e-05   5.7280000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
+       TF2ln -3.37845e-05  1.00000e+00
 response_fn_1 -1.04565e-03 -8.45679e-02  1.00000e+00
 Partial Correlation Matrix between input and output:
              response_fn_1
        TF1ln -1.05227e-03
-       TF1ln -8.45679e-02
+       TF2ln -8.45679e-02
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
+       TF2ln  3.43526e-03  1.00000e+00
 response_fn_1 -1.52047e-03 -1.74672e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1
        TF1ln -9.34798e-04
-       TF1ln -1.74668e-01
+       TF2ln -1.74668e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
 response_fn_1:  Min = -8.8320584818e-02  Max = 2.5603280657e+02
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm response_fn_1
+                    TF1ln        TF2ln    ModelForm response_fn_1
        TF1ln  1.00000e+00
-       TF1ln  5.21092e-05  1.00000e+00
+       TF2ln  5.21092e-05  1.00000e+00
    ModelForm  9.86778e-03  1.55960e-03  1.00000e+00
 response_fn_1  5.15419e-03 -3.32466e-04  8.17847e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
              response_fn_1
        TF1ln -5.06787e-03
-       TF1ln -2.79422e-03
+       TF2ln -2.79422e-03
    ModelForm  8.17848e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln    ModelForm response_fn_1
+                    TF1ln        TF2ln    ModelForm response_fn_1
        TF1ln  1.00000e+00
-       TF1ln -5.18345e-03  1.00000e+00
+       TF2ln -5.18345e-03  1.00000e+00
    ModelForm  5.88310e-03  3.15767e-03  1.00000e+00
 response_fn_1  5.11011e-02  7.77019e-02  9.58123e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1
        TF1ln  1.65870e-01
-       TF1ln  2.64973e-01
+       TF2ln  2.64973e-01
    ModelForm  9.61784e-01
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
@@ -70323,23 +70517,23 @@ Sample moment statistics for each response function:
    3.0000000000e-05   6.2460000000e-01
    4.0000000000e-05   6.9380000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
+       TF2ln -3.37845e-05  1.00000e+00
 response_fn_1  3.89871e-02  3.39572e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
              response_fn_1
        TF1ln  4.14623e-02
-       TF1ln  3.39832e-01
+       TF2ln  3.39832e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF1ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
+       TF2ln  3.43526e-03  1.00000e+00
 response_fn_1  2.67685e-02  1.68659e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1
        TF1ln  2.65699e-02
-       TF1ln  1.68629e-01
+       TF2ln  1.68629e-01
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
@@ -70361,23 +70555,23 @@ Sample moment statistics for each response function:
    3.0000000000e-05   6.2460000000e-01
    4.0000000000e-05   6.9380000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
+       TF2ln -3.37845e-05  1.00000e+00
 response_fn_1  3.89871e-02  3.39572e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
              response_fn_1
        TF1ln  4.14623e-02
-       TF1ln  3.39832e-01
+       TF2ln  3.39832e-01
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
+                    TF1ln        TF2ln response_fn_1
        TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
+       TF2ln  3.43526e-03  1.00000e+00
 response_fn_1  2.67685e-02  1.68659e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1
        TF1ln  2.65699e-02
-       TF1ln  1.68629e-01
+       TF2ln  1.68629e-01
 dakota_uq_textbook_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 250 total (250 new, 0 duplicate)

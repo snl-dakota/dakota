@@ -1,0 +1,13 @@
+name: Best Configuration Variables for Experiment
+dataset:
+  description: "Configuration variables associated with experiment N"
+  location: "best_model_responses/experiment:<N>/{continuous_config_variables, discrete_integer_config_variables, discrete_string_config_variables, discrete_real_config_variables}"
+  shape: "1-dimensional: number of variables"
+  type: Real, String, or Integer, as applicable
+scales:
+  - dimension: 0
+    type: String
+    label: variables
+    contents: Variable descriptors
+    literal_contents: False
+

@@ -119,23 +119,15 @@ derived_parse_inputs(const ProgramOptions& prog_opts)
 
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)
-  if (!dakota_input_file.empty()) {
-
-    Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
-    if (dakota_input_file.size() == 1 && dakota_input_file[0] == '-')
-      nidrin = stdin;
-    else if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
-      botch("cannot open \"%s\"", dakota_input_file.c_str());
-
-  } 
-  else if (!dakota_input_string.empty()) {
-
+  if(!dakota_input_string.empty()) {
     Cout << "Using provided Dakota input string" << std::endl;
     // BMA TODO: output the string contents if verbose
     nidr_set_input_string(dakota_input_string.c_str());
-
-  }
-  else {
+  } else if (!dakota_input_file.empty()) {
+      Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
+      if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
+        botch("cannot open \"%s\"", dakota_input_file.c_str());
+  } else {
     Cerr << "\nError: NIDR parser called with no input." << std::endl;
     abort_handler(PARSE_ERROR);
   }
@@ -1708,6 +1700,64 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 
 
 void NIDRProblemDescDB::
+check_descriptors_for_repeats(const StringArray& labels) {
+  StringArray sorted(labels.size());
+  std::copy(labels.begin(), labels.end(), sorted.begin());
+  // error if descriptors are repeated
+  std::sort(sorted.begin(), sorted.end());
+  StringArray::iterator sorted_i = 
+    std::adjacent_find(sorted.begin(), sorted.end());
+  if(sorted_i != sorted.end())
+    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str()); 
+}
+
+void NIDRProblemDescDB::
+check_descriptors_for_repeats(const StringArray &cd_labels,
+                               const StringArray &ddr_labels,
+                               const StringArray &ddsi_labels,
+                               const StringArray &ddss_labels,
+                               const StringArray &ddsr_labels,
+                               const StringArray &cs_labels,
+                               const StringArray &dsr_labels,
+                               const StringArray &dssi_labels,
+                               const StringArray &dsss_labels,
+                               const StringArray &dssr_labels,
+                               const StringArray &cau_labels,
+                               const StringArray &diau_labels,
+                               const StringArray &dsau_labels,
+                               const StringArray &drau_labels,
+                               const StringArray &ceu_labels,
+                               const StringArray &dieu_labels,
+                               const StringArray &dseu_labels,
+                               const StringArray &dreu_labels) {
+  StringArray sorted;
+  std::copy(cd_labels.begin(),   cd_labels.end(),   std::back_inserter(sorted));
+  std::copy(ddr_labels.begin(),  ddr_labels.end(),  std::back_inserter(sorted));
+  std::copy(ddsi_labels.begin(), ddsi_labels.end(), std::back_inserter(sorted));
+  std::copy(ddss_labels.begin(), ddss_labels.end(), std::back_inserter(sorted));
+  std::copy(ddsr_labels.begin(), ddsr_labels.end(), std::back_inserter(sorted));
+  std::copy(cs_labels.begin(),   cs_labels.end(),   std::back_inserter(sorted));
+  std::copy(dsr_labels.begin(),  dsr_labels.end(),  std::back_inserter(sorted));
+  std::copy(dssi_labels.begin(), dssi_labels.end(), std::back_inserter(sorted));
+  std::copy(dsss_labels.begin(), dsss_labels.end(), std::back_inserter(sorted));
+  std::copy(dssr_labels.begin(), dssr_labels.end(), std::back_inserter(sorted));
+  std::copy(cau_labels.begin(),  cau_labels.end(),  std::back_inserter(sorted));
+  std::copy(diau_labels.begin(), diau_labels.end(), std::back_inserter(sorted));
+  std::copy(dsau_labels.begin(), dsau_labels.end(), std::back_inserter(sorted));
+  std::copy(drau_labels.begin(), drau_labels.end(), std::back_inserter(sorted));
+  std::copy(ceu_labels.begin(),  ceu_labels.end(),  std::back_inserter(sorted));
+  std::copy(dieu_labels.begin(), dieu_labels.end(), std::back_inserter(sorted));
+  std::copy(dseu_labels.begin(), dseu_labels.end(), std::back_inserter(sorted));
+  std::copy(dreu_labels.begin(), dreu_labels.end(), std::back_inserter(sorted));
+  std::sort(sorted.begin(), sorted.end());
+  StringArray::iterator sorted_i = 
+    std::adjacent_find(sorted.begin(), sorted.end());
+  if(sorted_i != sorted.end())
+    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str()); 
+}
+
+
+void NIDRProblemDescDB::
 check_responses(std::list<DataResponses>* drl)
 {
   // TO DO: move Schk from below?
@@ -1717,10 +1767,10 @@ check_responses(std::list<DataResponses>* drl)
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; ++It) {
     const DataResponsesRep* drr = It->data_rep();
-    check_descriptors(drr->responseLabels);
+    check_descriptor_format(drr->responseLabels);
+    check_descriptors_for_repeats(drr->responseLabels);
   }
 }
-
 
 void NIDRProblemDescDB::
 make_response_defaults(std::list<DataResponses>* drl)
@@ -6107,7 +6157,7 @@ static void flatten_int_intervals(const IntIntPairRealMapArray& iiprma,
 
 
 void NIDRProblemDescDB::
-check_descriptors(const StringArray& labels) {
+check_descriptor_format(const StringArray& labels) {
   StringArray::const_iterator li = labels.begin();
   String::const_iterator si;
   for(; li != labels.end(); ++li) {
@@ -6119,10 +6169,11 @@ check_descriptors(const StringArray& labels) {
         break;
       }
     }
-    if(isfloat(*li)) {
+    if(isfloat(*li)) 
       Squawk("Descriptor \"%s\" is invalid: floating point numbers not permitted",
           li->c_str());
-    }
+    if(li->empty())
+      Squawk("Empty variable or response descriptors are not permitted");
   }
 }
 
@@ -6337,24 +6388,43 @@ check_variables(std::list<DataVariables>* dvl)
   std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
   for(; It != Ite; ++It) {
     const DataVariablesRep* dvr = It->data_rep();
-    check_descriptors(dvr->continuousDesignLabels);
-    check_descriptors(dvr->discreteDesignRangeLabels);
-    check_descriptors(dvr->discreteDesignSetIntLabels);
-    check_descriptors(dvr->discreteDesignSetStrLabels);
-    check_descriptors(dvr->discreteDesignSetRealLabels);
-    check_descriptors(dvr->continuousStateLabels);
-    check_descriptors(dvr->discreteStateRangeLabels);
-    check_descriptors(dvr->discreteStateSetIntLabels);
-    check_descriptors(dvr->discreteStateSetStrLabels);
-    check_descriptors(dvr->discreteStateSetRealLabels);
-    check_descriptors(dvr->continuousAleatoryUncLabels);
-    check_descriptors(dvr->discreteIntAleatoryUncLabels);
-    check_descriptors(dvr->discreteStrAleatoryUncLabels);
-    check_descriptors(dvr->discreteRealAleatoryUncLabels);
-    check_descriptors(dvr->continuousEpistemicUncLabels);
-    check_descriptors(dvr->discreteIntEpistemicUncLabels);
-    check_descriptors(dvr->discreteStrEpistemicUncLabels);
-    check_descriptors(dvr->discreteRealEpistemicUncLabels);
+    check_descriptor_format(dvr->continuousDesignLabels);
+    check_descriptor_format(dvr->discreteDesignRangeLabels);
+    check_descriptor_format(dvr->discreteDesignSetIntLabels);
+    check_descriptor_format(dvr->discreteDesignSetStrLabels);
+    check_descriptor_format(dvr->discreteDesignSetRealLabels);
+    check_descriptor_format(dvr->continuousStateLabels);
+    check_descriptor_format(dvr->discreteStateRangeLabels);
+    check_descriptor_format(dvr->discreteStateSetIntLabels);
+    check_descriptor_format(dvr->discreteStateSetStrLabels);
+    check_descriptor_format(dvr->discreteStateSetRealLabels);
+    check_descriptor_format(dvr->continuousAleatoryUncLabels);
+    check_descriptor_format(dvr->discreteIntAleatoryUncLabels);
+    check_descriptor_format(dvr->discreteStrAleatoryUncLabels);
+    check_descriptor_format(dvr->discreteRealAleatoryUncLabels);
+    check_descriptor_format(dvr->continuousEpistemicUncLabels);
+    check_descriptor_format(dvr->discreteIntEpistemicUncLabels);
+    check_descriptor_format(dvr->discreteStrEpistemicUncLabels);
+    check_descriptor_format(dvr->discreteRealEpistemicUncLabels);
+
+    check_descriptors_for_repeats(dvr->continuousDesignLabels,
+                                  dvr->discreteDesignRangeLabels,
+                                  dvr->discreteDesignSetIntLabels,
+                                  dvr->discreteDesignSetStrLabels,
+                                  dvr->discreteDesignSetRealLabels,
+                                  dvr->continuousStateLabels,
+                                  dvr->discreteStateRangeLabels,
+                                  dvr->discreteStateSetIntLabels,
+                                  dvr->discreteStateSetStrLabels,
+                                  dvr->discreteStateSetRealLabels,
+                                  dvr->continuousAleatoryUncLabels,
+                                  dvr->discreteIntAleatoryUncLabels,
+                                  dvr->discreteStrAleatoryUncLabels,
+                                  dvr->discreteRealAleatoryUncLabels,
+                                  dvr->continuousEpistemicUncLabels,
+                                  dvr->discreteIntEpistemicUncLabels,
+                                  dvr->discreteStrEpistemicUncLabels,
+                                  dvr->discreteRealEpistemicUncLabels);
   }
 }
 
@@ -6850,6 +6920,8 @@ static bool
 	MP_(methodScaling),
 	MP_(methodUseDerivsFlag),
         MP_(modelEvidence),
+        MP_(modelEvidLaplace),
+        MP_(modelEvidMC),
 	MP_(mutualInfoKSG2),
 	MP_(mutationAdaptive),
 	MP_(normalizedCoeffs),
@@ -7513,7 +7585,9 @@ static Env_mp_utype
         MP2s(tabularFormat,TABULAR_HEADER),
         MP2s(tabularFormat,TABULAR_EVAL_ID),
         MP2s(tabularFormat,TABULAR_IFACE_ID),
-        MP2s(tabularFormat,TABULAR_ANNOTATED);
+        MP2s(tabularFormat,TABULAR_ANNOTATED),
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_TEXT),
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5);
 
 static String
         MP_(errorFile),

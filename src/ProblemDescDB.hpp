@@ -112,7 +112,7 @@ public:
 
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
-  void parse_inputs(const ProgramOptions& prog_opts,
+  void parse_inputs(ProgramOptions& prog_opts,
 		    DbCallbackFunctionPtr callback = NULL,
 		    void* callback_data = NULL);
   /// performs check_input, broadcast, and post_process, but for now,
@@ -433,13 +433,16 @@ private:
   /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,
   /// and dataResponsesList.  Used by manage_inputs().
   void receive_db_buffer();
-
   /// helper function for determining whether an interface specification
   /// should be active, based on model type
   bool model_has_interface(DataModelRep* model_rep) const;
 
   /// echo the (potentially) specified input file or string to stdout
   void echo_input_file(const ProgramOptions& prog_opts);
+
+  /// require user-specified block identifiers to be unique
+  void enforce_unique_ids();
+
 
   //
   //- Heading: Data

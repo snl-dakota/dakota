@@ -19,7 +19,7 @@ dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 8)
+set(Dakota_VERSION_MINOR 9)
 set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
@@ -321,18 +321,10 @@ endif()
 # and test subdirectories
 option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 if(DAKOTA_HAVE_HDF5)
-  find_package(HDF5 REQUIRED COMPONENTS "C;HL")
-
-  if(NOT HDF5_FOUND)
-    message( SEND_ERROR "Dakota cannot write BINARY ResultsDB without HDF5 -
-             ${HDF5_hdf5_FOUND}" )
-  endif() # HDF5_FOUND
-
-  #message( "Using pre-installed HDF5 in ${FIND_PACKAGE_MESSAGE_DETAILS_HDF5}" )
-
-  #find_package(ZLIB REQUIRED)
-  #message( "Using pre-installed ZLIB in ${ZLIB_LIBRARIES}" )
-
+	find_package(HDF5 REQUIRED COMPONENTS "C;HL;CXX")
+  if(HDF5_VERSION VERSION_LESS "1.10")
+    message( SEND_ERROR "Found HDF5 version ${HDF5_VERSION}. Minimum required is 1.10.")
+  endif()
 endif() # DAKOTA_HAVE_HDF5
 
 # Mandate a system or user-provided Boost, including some libraries
@@ -468,6 +460,9 @@ if (NOT BUILD_IN_TRILINOS)
 
       set(Trilinos_GENERATE_REPO_VERSION_FILE OFF CACHE BOOL
         "Dakota disabling generation of TrilinosRepoVersion.txt")
+
+      set(Teuchos_ENABLE_COMPLEX TRUE CACHE BOOL
+	"Pecos requires some complex blas wrappers")
 
       add_subdirectory(packages/external/trilinos)
 

@@ -1,0 +1,13 @@
+name: Main Effects
+dataset:
+  description: First-order Sobol' indices
+  location: "main_effects/<response descriptor>"
+  shape: "1-dimensional: number of variables"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: variables
+    contents: Variable descriptors
+    literal_contents: False
+

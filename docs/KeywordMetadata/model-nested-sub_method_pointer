@@ -53,7 +53,7 @@ epistemic and mixed aleatory/epistemic UQ using interval estimation methods: low
 epistemic and mixed aleatory/epistemic UQ using evidence methods: for each response function, lower and upper interval bounds (belief and plausibility) for all probability/reliability/generalized reliability/response level results computed from any user-specified \c response_levels, \c probability_levels, \c reliability_levels, and/or \c gen_reliability_levels, in that order. 
 parameter studies and design of experiments: for optimization and least squares response data sets, the best solution found (lowest constraint violation if infeasible, lowest composite objective function if feasible). For generic response data sets, a best solution metric is not defined, so the sub-iterator response vector is empty in this case. 
 
-The \c primary_response_mapping matrix maps sub-iterator results into top-level objective functions, least squares terms, or generic response functions, depending on the declared top-level response set. The \c secondary_response_mapping matrix maps sub-iterator results into top-level nonlinear inequality and equality constraints.
+The \c primary_response_mapping matrix maps sub-iterator results into top-level objective functions, least squares terms, or generic response functions, depending on the declared top-level response set. The \c secondary_response_mapping matrix maps sub-iterator results into top-level nonlinear inequality and equality constraints. Alternately, if all the responses of the sub-iterator are to be mapped one-to-one to the top-level nested model responses \ref model-nested-sub_method_pointer-identity_response_mapping may be specified instead.
 
 <b>Summary</b>
 
@@ -208,14 +208,16 @@ into another top-level nonlinear constraint, where these top-level nonlinear
 constraints may be inequality or equality, as dictated by the top-level response
 specification.
 
-Note that a common case is for each sub-iterator
-result to be mapped to a unique outer loop response (for example, in
-the nested UQ case where one wants to determine an interval on each
-inner loop statistic). In these simple cases, the response mapping
-would define an identity matrix. <!-- That is, the primary response
-mapping will have N rows and N columns corresponding to the N
-sub-iterator response values, and the mapping matrix will have a value
-of one along the diagonal and zeros elsewhere. -->
+Note that a common case is for each sub-iterator result to be mapped
+to a unique outer loop response (for example, in the nested UQ case
+where one wants to determine an interval on each inner loop
+statistic). In these simple cases, the response mapping would define
+an identity matrix and \ref
+model-nested-sub_method_pointer-identity_response_mapping may instead
+be specified. <!-- That is, the primary response mapping will have N
+rows and N columns corresponding to the N sub-iterator response
+values, and the mapping matrix will have a value of one along the
+diagonal and zeros elsewhere. -->
 
 
 

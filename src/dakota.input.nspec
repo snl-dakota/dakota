@@ -22,6 +22,8 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
   [ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
   [ results_output {N_stm(true,resultsOutputFlag)}
     [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]
+    [ text {N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_TEXT)} ]
+    [ hdf5 {N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)} ]
    ]
   [ graphics {N_stm(true,graphicsFlag)} ]
   [ check {N_stm(true,checkFlag)} ]
@@ -4650,7 +4652,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ kde {N_mdm(true,posteriorStatsKDE)} ]
      ]
     [ model_evidence {N_mdm(true,modelEvidence)}
+      [ mc_approx {N_mdm(true,modelEvidMC)} ]
       [ evidence_samples INTEGER {N_mdm(int,evidenceSamples)} ]
+      [ laplace_approx {N_mdm(true,modelEvidLaplace)} ]
      ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}

@@ -123,6 +123,9 @@ enum { TABULAR_NONE = 0, TABULAR_HEADER = 1,
        // default for tabular files is fully annotated as of Dakota 6.1
        TABULAR_ANNOTATED = TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID };
 
+/// Results output format
+enum { RESULTS_OUTPUT_TEXT = 1, RESULTS_OUTPUT_HDF5 = 2};
+
 /// options for results file format
 enum {FLEXIBLE_RESULTS, LABELED_RESULTS};
 

@@ -1,0 +1,22 @@
+name: Moment Confidence Intervals
+dataset:
+  description: Lower and upper 95% confidence intervals on the 1st and 2nd moments
+  location: "moment_confidence_intervals/<response descriptor>"
+  shape: "2-dimensional: 2x2"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: bounds
+    contents: lower, upper
+  - dimension: 1
+    type: String
+    label: moments
+    contents: mean, std_deviation
+    notes: Only for standard moments
+  - dimension: 1
+    type: String
+    label: moments
+    contents: mean, variance
+    notes: Only for central moments
+

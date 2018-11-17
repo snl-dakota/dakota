@@ -1719,8 +1719,8 @@ by calling the \texttt{dprepro} function:
 	\emph{output=None}, \emph{fmt='\%0.10g'}, \emph{code='\%'}, \emph{code\_block='\{\% \%\}'},
 		\emph{inline='\{ \}'}, \emph{warn=True}){}
 
-If \emph{template} is a string, it is assumed to be the name of a file that
-contains a template. If it is a file-like object (that has a \texttt{.read()}
+If \emph{template} is a string, it is assumed to contain a template. If it 
+is a file-like object (that has a \texttt{.read()}
 method), the template will be read from it. (Templates that are already in
 string form can be passed in by first wrapping them in a \texttt{StringIO}
 object.)
@@ -2456,7 +2456,7 @@ A B
 \subsubsection{Custom Functions}\label{interfaces:custom-functions}
 
 Arbitrary functions can be defined using either \texttt{def} or
-\texttt{lambda}. The latter is restricted to a single argument.
+\texttt{lambda}. 
 
 Consider the following: (note, we use indentation here for readability
 but indentation \emph{is ignored} and the function definition is

@@ -102,6 +102,10 @@ private:
 				    const Response& unweighted_response,
 				    Response& weighted_response);
 
+  void archive_best_results();
+  /// Write the confidence intervals to the results output
+//  void archive_confidence_intervals();
+
   //
   //- Heading: Data
   //

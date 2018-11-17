@@ -186,8 +186,6 @@ void Analyzer::post_run(std::ostream& s)
     // The remaining final results output varies by iterator branch
     print_results(s);
   }
-
-  resultsDB.write_databases();
 }
 
 
@@ -223,6 +221,7 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
 
   if (!asynch_flag && log_resp_flag) allResponses.clear();
 
+
   // Loop over parameter sets and compute responses.  Collect data
   // and track best evaluations based on flags.
   for (i=0; i<num_evals; i++) {
@@ -246,9 +245,11 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
         update_best(model.current_variables(), eval_id, resp);
       if (log_resp_flag) // log response data
         allResponses[eval_id] = resp.copy();
+      archive_model_response(resp, i);
     }
-  }
 
+    archive_model_variables(model, i);
+  }
   // synchronize asynchronous evaluations
   if (asynch_flag) {
     const IntResponseMap& resp_map = model.synchronize();
@@ -257,11 +258,16 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
     if (log_best_flag) { // update best variables/response
       IntRespMCIter r_cit;
       if (compactMode)
-	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-	  update_best(allSamples[i], r_cit->first, r_cit->second);
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+          update_best(allSamples[i], r_cit->first, r_cit->second);
       else
-	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-	  update_best(allVariables[i], r_cit->first, r_cit->second);
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+          update_best(allVariables[i], r_cit->first, r_cit->second);
+    }
+    if(resultsDB.active()) {
+      IntRespMCIter r_cit;
+      for(r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
+        archive_model_response(r_cit->second, std::distance(resp_map.begin(), r_cit));
     }
   }
 }
@@ -696,6 +702,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
+  // This reader will either get the eval ID from the file, or number
+  // the IDs starting from 1
   TabularIO::read_data_tabular(filename, "post-run input", vars, resp,
 			       import_prp_list, tabular_format, verbose,
 			       active_only);
@@ -739,7 +747,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     // update allVariables,allSamples
     if (compactMode) variables_to_sample(iter_vars, allSamples[i]);
     else             allVariables[i] = iter_vars;
-    // update allResponses
+    // update allResponses (requires unique eval IDs)
     allResponses[pr.eval_id()] = iter_resp;
 
     // mirror any post-processing in Analyzer::evaluate_parameter_sets()
@@ -777,29 +785,90 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
   for (k=0; k<numFunctions; ++k) {
     s << resp_labels[k] << " Sobol' indices:\n"; 
     s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
-    
-    for (i=0; i<numContinuousVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
-        s << "                     " << std::setw(write_precision+7) << S4[k][i]
-	  << ' ' << std::setw(write_precision+7) << T4[k][i] << ' '
+    Real main, total; 
+    for (i=0; i<numContinuousVars; ++i) {
+      main = S4[k][i]; total = T4[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
+        s << "                     " << std::setw(write_precision+7) << main
+	  << ' ' << std::setw(write_precision+7) << total << ' '
 	  << cv_labels[i] << '\n';
+    }
     offset = numContinuousVars;
-    for (i=0; i<numDiscreteIntVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
+    for (i=0; i<numDiscreteIntVars; ++i) {
+      main = S4[k][i+offset]; total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
-	  << T4[k][i+offset] << ' ' << div_labels[i] << '\n';
+	  << main << ' ' << std::setw(write_precision+7)
+	  << total << ' ' << div_labels[i] << '\n';
+    }
     offset += numDiscreteIntVars;
     //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
     //offset += numDiscreteStringVars;
-    for (i=0; i<numDiscreteRealVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
+    for (i=0; i<numDiscreteRealVars; ++i) {
+      main = S4[k][i+offset]; total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
-          << T4[k][i+offset] << ' ' << drv_labels[i] << '\n';
+	  << main << ' ' << std::setw(write_precision+7)
+          << total << ' ' << drv_labels[i] << '\n';
+    }
   }
 }
 
+/** printing of variance based decomposition indices. */
+void Analyzer::archive_sobol_indices() const
+{
+  if(!resultsDB.active())
+    return;
+
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+
+  size_t i, k, offset;
+  for (k=0; k<numFunctions; ++k) {
+    RealArray main_effects, total_effects;
+    StringArray scale_labels;
+    for (i=0; i<numContinuousVars; ++i) {
+      Real main = S4[k][i], total = T4[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(cv_labels[i]);
+      }
+    }
+    offset = numContinuousVars;
+    for (i=0; i<numDiscreteIntVars; ++i) {
+      Real main = S4[k][i+offset], total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(div_labels[i]);
+      }
+    }
+    offset += numDiscreteIntVars;
+    //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
+    //offset += numDiscreteStringVars;
+    for (i=0; i<numDiscreteRealVars; ++i) {
+      Real main = S4[k][i+offset], total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(drv_labels[i]);
+      }
+    }
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
+    resultsDB.insert(run_identifier(), {String("main_effects"), resp_labels[k]}, 
+                     main_effects, scales);
+    resultsDB.insert(run_identifier(), {String("total_effects"), resp_labels[k]}, 
+                     total_effects, scales);
+  }
+}
 
 void Analyzer::compute_best_metrics(const Response& response,
 				    std::pair<Real,Real>& metrics)

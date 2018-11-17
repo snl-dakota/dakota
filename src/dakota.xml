@@ -1292,9 +1292,11 @@
           <param type="INTEGER" constraint=">= 0" />
         </keyword>
         <keyword  id="results_output" name="results_output" code="{N_stm(true,resultsOutputFlag)}" label="Enable Results Output"  minOccurs="0" default="no results output" complexity="1">
-          <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="Results Output File"  minOccurs="0" default="dakota_results.txt" >
+          <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="Results Output File"  minOccurs="0" default="dakota_results" >
             <param type="OUTPUT_FILE" />
           </keyword>
+          <keyword  id="text" name="text" code="{N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_TEXT)}" label="text"  minOccurs="0" default="text output" />
+	  <keyword  id="hdf5" name="hdf5" code="{N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)}" label="hdf5"  minOccurs="0" default="no HDF5 output" />
         </keyword>        
         <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Enable Graphics Window"  minOccurs="0" default="graphics off" complexity="1"/>
       </group>
@@ -2868,9 +2870,11 @@
 	    <keyword id="kde" name="kde" code="{N_mdm(true,posteriorStatsKDE)}" minOccurs="0" />
 	  </keyword>
           <keyword id="model_evidence" name="model_evidence" code="{N_mdm(true,modelEvidence)}" minOccurs="0">
-            <keyword  id="evidence_samples" name="evidence_samples" code="{N_mdm(int,evidenceSamples)}" label="Evidence samples"  minOccurs="0" >
-	      <param type="INTEGER" />
-            </keyword>
+	    <keyword id="mc_approx" name="mc_approx" code="{N_mdm(true,modelEvidMC)}" minOccurs="0" />
+              <keyword  id="evidence_samples" name="evidence_samples" code="{N_mdm(int,evidenceSamples)}" label="Evidence samples"  minOccurs="0" >
+	        <param type="INTEGER" />
+              </keyword>
+	    <keyword id="laplace_approx" name="laplace_approx" code="{N_mdm(true,modelEvidLaplace)}" minOccurs="0" />
           </keyword>
 	  <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
 	    <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type"  minOccurs="0" default="gaussian process" >

@@ -2818,6 +2818,71 @@ deviation approximately 0.1.
   \label{fig:uq:obs_err_mult}
 \end{figure}
 
+\subsection{Model Evidence} 
+In some situations, there are multiple models that may represent a phenomenon 
+and the user is left with the task to determine which is most appropriate given 
+the available data. In this case, Bayesian model selection may help.  Suppose that 
+the user has a set of models, $\mathcal{M}$={$M_1,M_2...M_m$} from which to 
+choose.  In the Bayesian setting, the parameters of each of these models may be 
+updated according to Bayes' rule: 
+\begin{equation}
+\pi_{post}(\boldsymbol{\theta_i}|D,M_i)=\pi_{prior}(\boldsymbol{\theta_i}|M_i)\frac{\pi(D|\boldsymbol{\theta_i},M_i)}{\pi(D|M_i)}
+\end{equation}
+where the dependence on the model has been made explicit.  The denominator is used
+as the likelihood of a specific model of interest in a version of Bayes' rule which calculates 
+the posterior model plausibility as: 
+\begin{equation}
+\pi_{post}(M_i|D)=\pi_{prior}(M_i)\frac{\pi(D|M_i)}{\pi(D)}
+\label{eq:model_plausibility}
+\end{equation}
+In this equation, the posterior model probability given the data is 
+also referred to as model plausibility.  The prior model plausibility, 
+$\pi(M_i)$, is usually taken to be uniform, meaning equally likely for all 
+models, but it does not have to be.  $\pi(D)$ is a normalizing factor such 
+that the sum of all model plausibilities is 1.  In this context, model selection 
+involves choosing the model with the highest posterior model plausibility. 
+Model evidence is defined as the likelihood in 
+Equation~\ref{eq:model_plausibility}, denoted by $\pi(D|M_i)$.  Model evidence 
+is determined by averaging the likelihood of its model parameters over all possible 
+values of the model parameters, according to their prior distributions.  It is 
+also called the marginal likelihood of the model.  Model evidence 
+is defined as: 
+\begin{equation}
+\pi(D|M_i)=\int \pi(D|\boldsymbol{\theta_i},M_i)\pi_{prior}(\boldsymbol{\theta_i}|M_i)d \boldsymbol{\theta_i}
+\label{eq:uq:model_evidence}
+\end{equation}
+
+There are many ways to calculate model evidence. There are currently two methods 
+implemented in Dakota. The user first specifies \texttt{model\_evidence}, then either 
+\texttt{mc\_approx} and/or \texttt{laplace\_approx} depending on the
+method(s) used to calculate model evidence.
+\begin{enumerate}
+\item Monte Carlo approximation.  This involves sampling from the prior 
+distribution of the parameters, calculating the corresponding likelihood values 
+at those samples, and  estimating the integral given in Eq.~\ref{eq:uq:model_evidence} 
+by brute force.  The number of samples used in the sampling of the integral is 
+determined by \texttt{evidence\_samples}. Although this method is easy, 
+it is not efficient because each sample of the prior density requires 
+an evaluation of the simulation model to compute the corresponding likelihood.  
+Additionally, many prior samples will have very low (near zero) likelihood, 
+so millions of samples may be required for accurate computation of the integral. 
+\item Laplace approximation.  This approach is based on the Laplace approximation, 
+as outlined in~\cite{Wasserman}.  It has the assumption that the posterior distribution 
+is nearly Gaussian, which is not always a safe assumption. 
+Then, with maximum a posteriori (MAP) point $\hat{\boldsymbol{\theta}}$, 
+the Laplace approximation of model evidence is: 
+  
+\begin{equation}
+\int \pi(D|\boldsymbol{\theta_i},M_i)\pi_{prior}(\boldsymbol{\theta_i}|M_i)d \boldsymbol{\theta_i} \approx \pi(D|\hat{\boldsymbol{\theta}},M_i)\pi(\hat{\boldsymbol{\theta}}|M_i)(2\pi)^{N_i/2}{\|\det(H(\hat{\boldsymbol{\theta}}))\|}^{-1/2}
+\end{equation}
+where $N_i$ is the number of unknown parameters in the i-th model and 
+$H$ is the negative Hessian of the log-posterior evaluated at the MAP point 
+$\hat{\boldsymbol{\theta}}$. 
+Therefore, this implementation only requires the evaluation of the model likelihood 
+and the Hessian of the log-posterior density at the MAP point. 
+
+\end{enumerate}
+
 \subsection{Model Discrepancy}
 %kam
 Whether in a Bayesian setting or otherwise, the goal of model calibration
@@ -2899,8 +2964,10 @@ explicitly list desired prediction configuration locations within the input
 file following the \texttt{prediction\_configs} keyword, or in an external
 file to be read in with the \texttt{import\_prediction\_configs} option. If 
 none of these three options is selected, Dakota will automatically calculate
-corrected model predictions at ten configurations, spread uniformly in the
-configuration variable domain. 
+corrected model predictions at ten configurations in the scalar response case, 
+with the predictions spread uniformly in the configuration variable domain. In 
+the case of field responses, corrected model predictions are calculated for each
+value of the input configuration variable(s).
 
 Calculations corresponding to each prediction configuration and to each
 observable will be output to tabular files. The responses from the discrepancy

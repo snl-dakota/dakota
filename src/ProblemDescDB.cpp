@@ -184,7 +184,7 @@ ProblemDescDB::~ProblemDescDB()
     DB setup phase 2: optionally insert additional data via late sets.
     Rank 0 only. */
 void ProblemDescDB::
-parse_inputs(const ProgramOptions& prog_opts, 
+parse_inputs(ProgramOptions& prog_opts, 
 	     DbCallbackFunctionPtr callback, void *callback_data)
 {
   if (dbRep) {
@@ -207,6 +207,18 @@ parse_inputs(const ProgramOptions& prog_opts,
 	abort_handler(PARSE_ERROR);
       }
 
+      // Read the input from stdin if the user provided "-" as the filename
+      if(prog_opts.input_file() == "-") {
+        Cout << "Reading Dakota input from standard input" << std::endl;
+        String stdin_string;
+        char in = std::cin.get();
+        while(std::cin.good()) {
+          stdin_string.push_back(in);
+          in = std::cin.get();
+        }
+        prog_opts.input_string(stdin_string);
+      }
+      
       if (prog_opts.echo_input())
 	echo_input_file(prog_opts);
 
@@ -272,6 +284,7 @@ void ProblemDescDB::broadcast()
     // to all other ranks.
     if (parallelLib.world_size() > 1) {
       if (parallelLib.world_rank() == 0) {
+	enforce_unique_ids();
 	derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
@@ -296,6 +309,7 @@ void ProblemDescDB::broadcast()
 	   << dataVariablesList << dataInterfaceList << dataResponsesList
 	   << std::endl;
 #endif // DEBUG
+      enforce_unique_ids();
       derived_broadcast();
     }
   }
@@ -480,7 +494,7 @@ void ProblemDescDB::set_db_list_nodes(const String& method_tag)
   // through: do not update iterators or locks, such that previous
   // specification settings remain active (NO_SPECIFICATION instances
   // within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_ID_")) {
     set_db_method_node(method_tag);
     if (methodDBLocked) {
       modelDBLocked = variablesDBLocked = interfaceDBLocked
@@ -581,7 +595,7 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
   // through: do not update dataMethodIter or methodDBLocked, such that
   // previous specification settings remain active (NO_SPECIFICATION
   // instances within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_ID_")) {
     // set the correct Index values for all Data class lists.
     if (method_tag.empty()) { // no pointer specification
       if (dataMethodList.size() == 1) // no ambiguity if only one spec
@@ -2771,6 +2785,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       // must be sorted by string (key)
         {"post_run_input_format", P postRunInputFormat},
         {"pre_run_output_format", P preRunOutputFormat},
+        {"results_output_format", P resultsOutputFormat},
         {"tabular_format", P tabularFormat}};
     #undef P
 
@@ -3053,8 +3068,10 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"import_approx_active_only", P importApproxActive},
 	{"import_build_active_only", P importBuildActive},
+        {"laplace_approx", P modelEvidLaplace},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
+        {"mc_approx", P modelEvidMC},
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
         {"model_evidence", P modelEvidence},
 	{"mutation_adaptive", P mutationAdaptive},
@@ -3737,10 +3754,22 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 {
   const String& dakota_input_file = prog_opts.input_file();
-  if (!dakota_input_file.empty()) {
-    bool input_is_stdin = 
-      ( dakota_input_file.size() == 1 && dakota_input_file[0] == '-');
-    if (!input_is_stdin) {
+  const String& dakota_input_string = prog_opts.input_string();
+  if (!dakota_input_string.empty()) {
+    size_t header_len = 23;
+    std::string header(header_len, '-');
+    Cout << header << '\n';
+    Cout << "Begin DAKOTA input file\n";
+    if(dakota_input_file == "-")
+      Cout << "(from standard input)\n";
+    else
+      Cout << "(from string)\n";
+    Cout << header << std::endl;
+    Cout << prog_opts.input_string() << std::endl;
+    Cout << "---------------------\n";
+    Cout << "End DAKOTA input file\n";
+    Cout << "---------------------\n" << std::endl;
+  } else if(!dakota_input_file.empty()) {
       std::ifstream inputstream(dakota_input_file.c_str());
       if (!inputstream.good()) {
 	Cerr << "\nError: Could not open input file '" << dakota_input_file 
@@ -3769,20 +3798,62 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
       Cout << "---------------------\n";
       Cout << "End DAKOTA input file\n";
       Cout << "---------------------\n" << std::endl;
+  }
+}
+
+/** Require string idenfitiers id_* to be unique across all blocks of
+    each type (method, model, variables, interface, responses
+
+    For now, this allows duplicate empty ID strings. Would be better
+    to require unique IDs when more than one block of a given type
+    appears in the input file (instead of use-the-last-parsed)
+*/
+void ProblemDescDB::enforce_unique_ids()
+{
+  bool found_error = false;
+  std::multiset<String> block_ids;
+
+  // Lambda to detect duplicate for the passed id, issuing error
+  // message for the specified block_type. Modifies set of block_ids
+  // and found_error status.
+  auto check_unique = [&block_ids, &found_error] (String block_type, String id) {
+    if (!id.empty()) {
+      block_ids.insert(id);
+      // (Only warn once per unique ID name)
+      if (block_ids.count(id) == 2) {
+	Cerr << "Error: id_" << block_type << " '" << id
+	     << "' appears more than once.\n";
+	found_error = true;
+      }
     }
-  }
-  else if (!prog_opts.input_string().empty()) {
-    size_t header_len = 23;
-    std::string header(header_len, '-');
-    Cout << header << '\n';
-    Cout << "Begin DAKOTA input file\n";
-    Cout << "(from string)\n"; 
-    Cout << header << std::endl;
-    Cout << prog_opts.input_string() << std::endl;
-    Cout << "---------------------\n";
-    Cout << "End DAKOTA input file\n";
-    Cout << "---------------------\n" << std::endl;
-  }
+  };
+
+  // This could be written more generically if the member was always
+  // called idString instead of a different name (idMethod, idModel,
+  // etc.) for each Data* class...; then the same code could apply to
+  // all data*List
+  for (auto data_cont : dataMethodList)
+    check_unique("method", data_cont.data_rep()->idMethod);
+  block_ids.clear();
+
+  for (auto data_cont : dataModelList)
+    check_unique("model", data_cont.data_rep()->idModel);
+  block_ids.clear();
+
+  for (auto data_cont : dataVariablesList)
+    check_unique("variables", data_cont.data_rep()->idVariables);
+  block_ids.clear();
+
+  for (auto data_cont : dataInterfaceList)
+    check_unique("interface", data_cont.data_rep()->idInterface);
+  block_ids.clear();
+
+  for (auto data_cont : dataResponsesList)
+    check_unique("responses", data_cont.data_rep()->idResponses);
+  block_ids.clear();
+
+  if (found_error)
+    abort_handler(PARSE_ERROR);
 }
 
 } // namespace Dakota

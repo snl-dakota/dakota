@@ -99,12 +99,12 @@ public:
 					   short moments_type);
 
   /// archive moment statistics in results DB
-  void archive_moments(const RealMatrix& moment_stats, short moments_type,
-		       const StringArray& labels);
+  void archive_moments(size_t inc_id = 0);
   /// archive moment confidence intervals in results DB
-  void archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
-					   short moments_type,
-					   const StringArray& labels);
+  void archive_moment_confidence_intervals(size_t inc_id = 0);
+
+  /// archive extreme values (epistemic result) in results DB
+  void archive_extreme_responses(size_t inc_id = 0);
 
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z as well as PDFs
@@ -369,13 +369,17 @@ protected:
   /// Minimum and maximum values of response functions for epistemic
   /// calculations (calculated in compute_intervals()),
   RealRealPairArray extremeValues;
+  
+  /// Function moments have been computed; used to determine whether
+  /// to archive the moments
+  bool functionMomentsComputed;
 
 private:
 
   //
   //- Heading: Data
   //
-
+  
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;
 

@@ -1,0 +1,14 @@
+name: Response Levels
+dataset:
+  description: "Probability, reliability, or generalized reliability levels corresponding to user-specified response levels"
+  location: "[increment:<N>]/response_levels/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
+  shape: "1-dimensional: number of requested levels for the response"
+  type: Real
+scales:
+  - dimension: 0
+    type: Real
+    label: response_levels
+    contents: User-specified response levels
+    literal_contents: False
+

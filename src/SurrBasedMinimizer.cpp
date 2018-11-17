@@ -853,15 +853,11 @@ void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
     abort_handler(-1); 
   } 
 
-  // initialize the results archive for this dataset
-  archive_allocate_best(num_best);
-
   const String& interface_id = (methodName == SURROGATE_BASED_LOCAL ||
 				methodName == SURROGATE_BASED_GLOBAL) ?
     iteratedModel.truth_model().interface_id() : iteratedModel.interface_id();
   int eval_id;
   activeSet.request_values(1);
-
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
@@ -875,11 +871,14 @@ void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
     if (optimizationFlag) {
       if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions ";
       else                       s << "<<<<< Best objective function  ";
+      if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
+      write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
     }
-    else
-      s << "<<<<< Best residual terms      ";
-    if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
-    write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
+    else 
+      print_residuals(numUserPrimaryFns, best_fns,
+                              RealVector(),
+                              num_best, i,
+                              s);
     size_t num_cons = numFunctions - numUserPrimaryFns;
     if (num_cons) {
       s << "<<<<< Best constraint values   ";
@@ -892,8 +891,10 @@ void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
     // search in data_pairs to extract the evalId for the best fn eval.
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
 					   bestVariablesArray[i], activeSet);
-    if (cache_it == data_pairs.get<hashed>().end())
+    if (cache_it == data_pairs.get<hashed>().end()) {
       s << "<<<<< Best data not found in evaluation cache\n\n";
+      eval_id = 0;
+    }
     else {
       eval_id = cache_it->eval_id();
       if (eval_id > 0)
@@ -904,10 +905,6 @@ void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
 	  << "\n      but retrieved from restart archive with evaluation id "
 	  << -eval_id << "\n\n";
     }
-
-    // pass data to the results archive
-    archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
-
   }
 }
 

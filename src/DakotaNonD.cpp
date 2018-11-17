@@ -2232,6 +2232,7 @@ compute_densities(const RealRealPairArray& min_max_fns,
   Real z, min, max, prev_r, prev_p, new_r, new_p, last_r;
   std::map<Real, Real> cdf_map;
   std::map<Real, Real>::iterator it, it_last;
+  pdfComputed.resize(numFunctions, false);
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -2250,48 +2251,48 @@ compute_densities(const RealRealPairArray& min_max_fns,
     if (all_levels_computed) {
       for (j=0; j<rl_len; ++j) {
         z = comp_rlev_i[j]; // request may be outside extreme values
-	cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
+        cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
       }
       if (!prob_refinement || !rl_len) { // don't combine refined/unrefined
-	size_t total_len = rl_len + pl_len + bl_len + gl_len;
-	for (j=rl_len; j<total_len; ++j) {
-	  z = comp_rlev_i[j];
-	  //if (z >= min && z <= max) // exclude any extrapolations outside bnds
-	    cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
-	}
+        size_t total_len = rl_len + pl_len + bl_len + gl_len;
+        for (j=rl_len; j<total_len; ++j) {
+          z = comp_rlev_i[j];
+          //if (z >= min && z <= max) // exclude any extrapolations outside bnds
+          cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
+        }
       }
     }
     else {
       switch (respLevelTarget) {
-      case PROBABILITIES:
-	for (j=0; j<rl_len; ++j) {
-	  z = req_rlev_i[j]; // request may be outside extreme values
-	  cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
-	}
-	break;
-    //case RELIABILITIES: // exclude reliability level mappings from cdf_map
-      case GEN_RELIABILITIES:
-	for (j=0; j<rl_len; ++j) {
-	  z = req_rlev_i[j]; // request may be outside extreme values
-	  Real g_cdf = (cdfFlag) ? comp_glev_i[j] : -comp_glev_i[j];
-	  cdf_map[z] = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
-	}
-	break;
+        case PROBABILITIES:
+        for (j=0; j<rl_len; ++j) {
+          z = req_rlev_i[j]; // request may be outside extreme values
+          cdf_map[z] = (cdfFlag) ? comp_plev_i[j] : 1.-comp_plev_i[j];
+        }
+        break;
+        //case RELIABILITIES: // exclude reliability level mappings from cdf_map
+        case GEN_RELIABILITIES:
+        for (j=0; j<rl_len; ++j) {
+          z = req_rlev_i[j]; // request may be outside extreme values
+          Real g_cdf = (cdfFlag) ? comp_glev_i[j] : -comp_glev_i[j];
+          cdf_map[z] = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
+        }
+        break;
       }
       if (!prob_refinement || !rl_len) { // don't combine refined/unrefined
-	for (j=0; j<pl_len; ++j) {
-	  z = comp_rlev_i[j];
-	  //if (z >= min && z <= max) // exclude any extrapolations outside bnds
-	    cdf_map[z] = (cdfFlag) ? req_plev_i[j] : 1.-req_plev_i[j];
-	}
-	// exclude reliability level mappings from cdf_map
-	for (j=0, cntr=pl_len+bl_len; j<gl_len; ++j, ++cntr) {
-	  z = comp_rlev_i[cntr];
-	  //if (z >= min && z <= max) {//exclude any extrapolations outside bnds
-	    Real g_cdf = (cdfFlag) ? req_glev_i[j] : -req_glev_i[j];
-	    cdf_map[z] = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
-	  //}
-	}
+        for (j=0; j<pl_len; ++j) {
+          z = comp_rlev_i[j];
+          //if (z >= min && z <= max) // exclude any extrapolations outside bnds
+          cdf_map[z] = (cdfFlag) ? req_plev_i[j] : 1.-req_plev_i[j];
+        }
+        // exclude reliability level mappings from cdf_map
+        for (j=0, cntr=pl_len+bl_len; j<gl_len; ++j, ++cntr) {
+          z = comp_rlev_i[cntr];
+          //if (z >= min && z <= max) {//exclude any extrapolations outside bnds
+          Real g_cdf = (cdfFlag) ? req_glev_i[j] : -req_glev_i[j];
+          cdf_map[z] = Pecos::NormalRandomVariable::std_cdf(-g_cdf);
+            //}
+        }
       }
     }
 
@@ -2305,27 +2306,26 @@ compute_densities(const RealRealPairArray& min_max_fns,
       RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
       RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
       if (min < prev_r) { // first bin accumulates p0 over [min,lev0]
-	offset   = 1;   prev_p   = it->second;
-	abs_i[0] = min;	ord_i[0] = prev_p/(prev_r - min);
+        offset   = 1;   prev_p   = it->second;
+        abs_i[0] = min;	ord_i[0] = prev_p/(prev_r - min);
       }
       else { // first bin accumulates p0+p1 over [lev0,lev1]
-	offset   = 0;   prev_p   = 0.;
+        offset   = 0;   prev_p   = 0.;
       }
       for (j=0; j<core_pdf_bins; ++j) {
-	++it; new_r = it->first; new_p = it->second;
-	abs_i[j+offset] = prev_r;
-	ord_i[j+offset] = (new_p - prev_p) / (new_r - prev_r);
-	prev_r = new_r; prev_p = new_p;
+        ++it; new_r = it->first; new_p = it->second;
+        abs_i[j+offset] = prev_r;
+        ord_i[j+offset] = (new_p - prev_p) / (new_r - prev_r);
+        prev_r = new_r; prev_p = new_p;
       }
       if (max > last_r) {
-	abs_i[pdf_size-1] = last_r;
-	ord_i[pdf_size-1] = (1. - it_last->second)/(max - last_r);
-	abs_i[pdf_size]   = max;  // no ordinate for final abscissa
+        abs_i[pdf_size-1] = last_r;
+        ord_i[pdf_size-1] = (1. - it_last->second)/(max - last_r);
+        abs_i[pdf_size]   = max;  // no ordinate for final abscissa
       }
       else
-	abs_i[pdf_size] = last_r; // no ordinate for final abscissa
-
-      archive_pdf(i);
+        abs_i[pdf_size] = last_r; // no ordinate for final abscissa
+    pdfComputed[i] = true;
     }
   }
 }
@@ -2579,7 +2579,7 @@ void NonD::archive_allocate_mappings()
 
 
 // archive the mappings from response levels
-void NonD::archive_from_resp(size_t i)
+void NonD::archive_from_resp(size_t i, size_t inc_id)
 {
   // only insert if active and response levels specified
   size_t num_resp_levels = requestedRespLevels[i].length(); 
@@ -2589,7 +2589,12 @@ void NonD::archive_from_resp(size_t i)
   std::string data_name;
 
   RealMatrix mapping(num_resp_levels, 2);
-  
+ 
+  DimScaleMap scale;
+  scale.emplace(0, RealScale("response_levels", requestedRespLevels[i]));
+  const StringArray &labels = iteratedModel.response_labels();
+  RealVector *result;
+
   // TODO: could use SetCol?
   switch (respLevelTarget) { 
   case PROBABILITIES:
@@ -2598,6 +2603,7 @@ void NonD::archive_from_resp(size_t i)
       mapping(j, 0) = requestedRespLevels[i][j];
       mapping(j, 1) = computedProbLevels[i][j];
     }
+    result = &computedProbLevels[i]; 
     break;
   case RELIABILITIES:
     data_name = resultsNames.map_resp_rel;
@@ -2605,6 +2611,7 @@ void NonD::archive_from_resp(size_t i)
       mapping(j, 0) = requestedRespLevels[i][j];
       mapping(j, 1) = computedRelLevels[i][j];
     }
+    result = &computedRelLevels[i];
     break;
   case GEN_RELIABILITIES: 
     data_name = resultsNames.map_resp_genrel;
@@ -2612,18 +2619,36 @@ void NonD::archive_from_resp(size_t i)
       mapping(j, 0) = requestedRespLevels[i][j];
       mapping(j, 1) = computedGenRelLevels[i][j];
     }
+    result = &computedGenRelLevels[i];
     break;
   }
+
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back(String("response_levels"));
+  location.push_back(labels[i]);
+
+  resultsDB.insert(run_identifier(), location, *result, scale); 
 
   resultsDB.array_insert<RealMatrix>(run_identifier(), data_name, i, mapping);
 }
 
 
 // archive the mappings to response levels
-void NonD::archive_to_resp(size_t i)
+void NonD::archive_to_resp(size_t i, size_t inc_id)
 {
   if (!resultsDB.active())  return;
 
+  DimScaleMap scale;
+  const StringArray &labels = iteratedModel.response_labels();
+  StringArray location;
+  size_t r_index = 0;
+  if(inc_id) {
+    location.push_back(String("increment:") + std::to_string(inc_id));
+    r_index = 1;
+  }
+  location.push_back(String(""));
+  location.push_back(labels[i]);
   size_t j;
   size_t num_prob_levels = requestedProbLevels[i].length();
   if (num_prob_levels > 0) {
@@ -2635,6 +2660,10 @@ void NonD::archive_to_resp(size_t i)
     resultsDB.
       array_insert<RealMatrix>(run_identifier(), 
 			       resultsNames.map_prob_resp, i, mapping);
+    location[r_index] = String("probability_levels");
+     scale.emplace(0, RealScale("probability_levels", requestedProbLevels[i]));
+    RealVector result(Teuchos::View, &computedRespLevels[i][0], num_prob_levels);
+    resultsDB.insert(run_identifier(), location, result, scale);
   } 
   size_t num_rel_levels = requestedRelLevels[i].length();
   size_t offset = num_prob_levels; 
@@ -2647,6 +2676,11 @@ void NonD::archive_to_resp(size_t i)
     resultsDB.
       array_insert<RealMatrix>(run_identifier(), 
 			       resultsNames.map_rel_resp, i, mapping);
+
+    scale.emplace(0, RealScale("reliability_levels", requestedRelLevels[i]));
+    RealVector result(Teuchos::View, &computedRespLevels[i][0] + offset, num_rel_levels);
+    location[r_index] = String("reliability_levels");
+    resultsDB.insert(run_identifier(), location, result, scale);
   } 
   size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
   offset += num_rel_levels; 
@@ -2659,6 +2693,12 @@ void NonD::archive_to_resp(size_t i)
     resultsDB.
       array_insert<RealMatrix>(run_identifier(), 
 			       resultsNames.map_genrel_resp, i, mapping);
+
+    scale.emplace(0, RealScale("gen_reliability_levels", requestedGenRelLevels[i]));
+    RealVector result(Teuchos::View, &computedRespLevels[i][0] + offset, num_gen_rel_levels);
+    location[r_index] = String("gen_reliability_levels");
+    resultsDB.insert(run_identifier(), location, result, scale);
+
   } 
 }
 
@@ -2677,7 +2717,7 @@ void NonD::archive_allocate_pdf() // const
 }
 
 
-void NonD::archive_pdf(size_t i) // const
+void NonD::archive_pdf(size_t i, size_t inc_id) // const
 {
   if (!resultsDB.active()) return;
 
@@ -2691,6 +2731,16 @@ void NonD::archive_pdf(size_t i) // const
   
   resultsDB.array_insert<RealMatrix>
     (run_identifier(), resultsNames.pdf_histograms, i, pdf);
+
+  const StringArray &labels = iteratedModel.response_labels();
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("probability_density");
+  location.push_back(labels[i]);
+  DimScaleMap scales;
+  scales.emplace(0, RealScale("lower_bounds", &computedPDFAbscissas[i][0], pdf_len, ScaleScope::UNSHARED));
+  scales.emplace(0, RealScale("upper_bounds", &computedPDFAbscissas[i][1], pdf_len, ScaleScope::UNSHARED));
+  resultsDB.insert(run_identifier(),location, computedPDFOrdinates[i], scales);
 }
 
 } // namespace Dakota

@@ -17,11 +17,12 @@
 #define DATA_TRANSFORM_MODEL_H
 
 #include "RecastModel.hpp"
-
+#include "dakota_results_types.hpp"
 namespace Dakota {
 
 /// forward declarations
 class ExperimentData;
+class ResultsManager;
 
 // BMA TODO: Consider using separate RecastModel to include hyper-parameters
 
@@ -62,9 +63,20 @@ public:
 
 
   /// manage best responses including residuals and model responses per config
-  void print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
+  void print_best_responses(std::ostream& s, 
+                            const Variables& best_submodel_vars,
                             const Response& best_submodel_resp,
                             size_t num_best, size_t best_ind);
+
+  /// archive best responses 
+  void archive_best_responses(const ResultsManager &results_db,
+                              const StrStrSizet iterator_id,
+                              const Variables& best_submodel_vars,
+                              const Response& best_submodel_resp,
+                              size_t num_best, size_t best_ind);
+
+  /// return number of configuration variables
+  int num_config_vars() const;
 
 protected:
 
@@ -173,11 +185,41 @@ protected:
 
   void print_residual_response(const Response& resid_resp);
 
-  void recover_submodel_responses(std::ostream& s,
+  void recover_submodel_responses(std::ostream& s, 
                                   const Variables& best_submodel_vars,
                                   size_t num_best, size_t best_ind,
                                   Response& residual_resp);
 
+  /// archive original model responses
+  void archive_submodel_responses(const ResultsManager &results_db,
+                                  const StrStrSizet &iterator_id,
+                                  const Variables& best_submodel_vars,
+                                  size_t num_best, size_t best_ind,
+                                  Response& residual_resp);
+
+
+  /// Archive the best model reponses (undifferenced with experimental data) for
+  /// experiment exp_index and final solution soln_index.
+  void archive_best_original(const ResultsManager &results_db, 
+                             const StrStrSizet &iterator_id, 
+                             const RealVector &function_values, 
+                             const int &exp_index, const int &num_best,
+                             const int &best_index);
+  
+  /// Archive the best configuration variables associated with each model response 
+  void archive_best_config_variables(const ResultsManager &results_db, 
+                             const StrStrSizet &iterator_id, 
+                             const Variables &vars,
+                             const int &exp_index, const int &num_best,
+                             const int &best_index);
+
+  /// Archive the best residuals
+  void archive_best_residuals(const ResultsManager &results_db, 
+                              const StrStrSizet &iterator_id,
+                              const int num_fns, 
+                              const RealVector &best_terms, 
+                              const Real wssr, const int num_points,
+                              const int point_index);
   /// Reference to the experiment data used to construct this Model
   const ExperimentData& expData;
 

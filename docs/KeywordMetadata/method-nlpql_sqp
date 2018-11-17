@@ -16,6 +16,17 @@ verbosity are mapped to NLPQL controls MAXIT and IPRINT, respectively.
 The maximum number of function evaluations is enforced within the
 NLPQLPOptimizer class.
 
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
+
 Topics::	package_nlpql, sequential_quadratic_programming, local_optimization_methods
 Examples::
 Theory::

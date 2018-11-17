@@ -15,6 +15,7 @@
 #include "ExperimentData.hpp"
 #include "DakotaMinimizer.hpp"
 #include "PRPMultiIndex.hpp"
+#include "ResultsManager.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -54,13 +55,16 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 
   // register state variables as inactive vars if config vars are present
   // BMA TODO: correctly manage the view if relaxed, also review recursion
+
+  // BMA NOTE: This will change the inactive view of any Variables object
+  // sharing the same SharedVariables data as the subModel's Variables
   size_t num_config_vars = expData.num_config_vars();
   if (num_config_vars > 0) {
     subModel.inactive_view(MIXED_STATE);
     int num_state_vars =
       subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
     if (num_state_vars != num_config_vars) {
-      Cerr << "\nError: (DataTransformModel) Number of continuous state "
+      Cerr << "\nError: (DataTransformModel) Number of state "
 	   << "variables = " << num_state_vars << " must match\n       number "
 	   << "of configuration variables = " << num_config_vars << "\n";
       abort_handler(-1);
@@ -690,14 +694,16 @@ void DataTransformModel::collect_residuals(bool collect_all)
 {
   recastResponseMap.clear();
 
-  BOOST_FOREACH(IntIntResponseMapMap::value_type& cr_pair, cachedResp) {
-    int recast_id = cr_pair.first;  // (.second is a subModel IntResponseMap)
+  //BOOST_FOREACH(IntIntResponseMapMap::value_type& cr_pair, cachedResp) 
+  IntIntResponseMapMap::iterator cr_pair = cachedResp.begin();
+  while(cr_pair != cachedResp.end()) {
+    int recast_id = cr_pair->first;  // (.second is a subModel IntResponseMap)
     size_t num_exp = expData.num_experiments();
 
     // the blocking synch case requires all data present
-    if (collect_all && cr_pair.second.size() != num_exp) {
+    if (collect_all && cr_pair->second.size() != num_exp) {
       Cerr << "\nError (DataTransformModel): Sub-model returned " 
-           << cr_pair.second.size() << "evaluations,\n  but have " << num_exp 
+           << cr_pair->second.size() << "evaluations,\n  but have " << num_exp 
            << " experiment configurations.\n";
       abort_handler(-1);
     }
@@ -705,7 +711,7 @@ void DataTransformModel::collect_residuals(bool collect_all)
     // populate recastResponseMap with any recast evals that have all
     // their configs complete (only complete/clear those with finished
     // experiment configs)
-    if (cr_pair.second.size() == num_exp) {
+    if (cr_pair->second.size() == num_exp) {
 
       IntASMIter s_it = recastSetMap.find(recast_id);
       IntVarsMIter v_it = recastVarsMap.find(recast_id);
@@ -713,21 +719,21 @@ void DataTransformModel::collect_residuals(bool collect_all)
       recastResponseMap[recast_id] = currentResponse.copy();
       recastResponseMap[recast_id].active_set(s_it->second);
 
-      transform_response_map(cr_pair.second, v_it->second,
+      transform_response_map(cr_pair->second, v_it->second,
                              recastResponseMap[recast_id]);
 
       // cleanup (could do clear() at end)
       recastVarsMap.erase(v_it);
       recastSetMap.erase(s_it);
-      // BMA TODO: consider iterator here instead of value?
-      cachedResp.erase(cr_pair.first);
-
       // BMA TODO:
       //RecastModel::transform_secondary_response();
-
+      // BMA TODO: consider iterator here instead of value?
+      cr_pair++;      
+      cachedResp.erase(recast_id);
       print_residual_response(recastResponseMap[recast_id]);
+    } else {
+      cr_pair++;
     }
-
   }
 }
 
@@ -904,7 +910,8 @@ void DataTransformModel::print_residual_response(const Response& resid_resp)
 
 
 void DataTransformModel::
-print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
+print_best_responses(std::ostream& s, 
+                     const Variables& best_submodel_vars,
                      const Response& best_submodel_resp,
                      size_t num_best, size_t best_ind)
 {
@@ -922,7 +929,6 @@ print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
     const RealVector& best_fns = best_submodel_resp.function_values();
     Minimizer::print_model_resp(subModel.num_primary_fns(), best_fns, num_best,
                                 best_ind, s);
-
     // form residuals from model responses and apply covariance
     short dt_verbosity = output_level();
     output_level(SILENT_OUTPUT);
@@ -931,8 +937,8 @@ print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
     output_level(dt_verbosity);
   }
   else {
-    recover_submodel_responses(s, best_submodel_vars, num_best, best_ind,
-                               residual_resp);
+    recover_submodel_responses(s, best_submodel_vars, 
+                               num_best, best_ind, residual_resp);
   }
 
   const RealVector& resid_fns = residual_resp.function_values();
@@ -953,7 +959,8 @@ print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
 
 // The core of this can be modular on the Model (and static)
 void DataTransformModel::
-recover_submodel_responses(std::ostream& s, const Variables& best_submodel_vars,
+recover_submodel_responses(std::ostream& s, 
+                           const Variables& best_submodel_vars,
                            size_t num_best, size_t best_ind,
                            Response& residual_resp)
 {
@@ -964,7 +971,14 @@ recover_submodel_responses(std::ostream& s, const Variables& best_submodel_vars,
   if (num_best > 1) s << "(set " << best_ind+1 << ") "; s << "\n";
 
   // first try cache lookup
-  Variables lookup_vars = best_submodel_vars.copy();
+
+  // Have to make sure the Variables object is in the right mode for
+  // inactive operations. Make a deep copy of the SharedVariablesData
+  // to avoid corrupting any inbound Variables information... (const
+  // doesn't protect the SVD)
+  Variables lookup_vars = best_submodel_vars.copy(true);
+  lookup_vars.inactive_view(MIXED_STATE);
+
   String interface_id = subModel.interface_id();
   Response lookup_resp = subModel.current_response().copy();
   ActiveSet lookup_as = lookup_resp.active_set();
@@ -1038,5 +1052,242 @@ recover_submodel_responses(std::ostream& s, const Variables& best_submodel_vars,
   scale_response(subModel.current_variables(), currentVariables, residual_resp);
 }
 
+void DataTransformModel::
+archive_best_residuals(const ResultsManager &results_db, 
+                              const StrStrSizet &iterator_id,
+                              const int num_terms,
+                              const RealVector &best_terms, 
+                              const Real wssr, const int num_points,
+                              const int point_index) {
+  if(!results_db.active()) return;
+  
+  StringArray residuals_location;
+  StringArray norm_location;
+  if(num_points > 1) {
+    String set_string = String("set:") + std::to_string(point_index+1);
+    residuals_location.push_back(set_string);
+    norm_location.push_back(set_string);
+  }
+  residuals_location.push_back("best_residuals");
+  norm_location.push_back("best_norm");
+  Teuchos::SerialDenseVector<int, Real> residuals(Teuchos::View, 
+                              const_cast<Real*>(&best_terms[0]), 
+                              num_terms);
+  results_db.insert(iterator_id, residuals_location, residuals);
+  results_db.insert(iterator_id, norm_location, wssr);
+}
+
+void DataTransformModel::archive_best_original(const ResultsManager &results_db, 
+                                               const StrStrSizet &iterator_id, 
+                                               const RealVector &function_values, 
+                                               const int &exp_index,
+                                               const int &num_best, 
+                                               const int &best_index) {
+  if(!results_db.active())  return;
+  
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("responses", subModel.response_labels(), 
+                                ScaleScope::SHARED)
+                );
+
+  StringArray location;
+  if(num_best > 1)
+    location.push_back(String("set:") + std::to_string(best_index+1));
+  location.push_back("best_model_responses");
+  if(expData.num_config_vars()) {
+    location.push_back(String("experiment:") + std::to_string(exp_index+1));
+    location.push_back("responses");
+  }
+
+  results_db.insert(iterator_id, location, function_values, scales);
+}
+
+
+void DataTransformModel::
+archive_submodel_responses(const ResultsManager &results_db, 
+                           const StrStrSizet &iterator_id,
+                           const Variables& best_submodel_vars,
+                           size_t num_best, size_t best_ind,
+                           Response& residual_resp)
+{
+  // first try cache lookup
+
+  // Have to make sure the Variables object is in the right mode for
+  // inactive operations. Make a deep copy of the SharedVariablesData
+  // to avoid corrupting any inbound Variables information... (const
+  // doesn't protect the SVD)
+  
+
+  Variables lookup_vars = best_submodel_vars.copy(true);
+  lookup_vars.inactive_view(MIXED_STATE);
+
+  String interface_id = subModel.interface_id();
+  Response lookup_resp = subModel.current_response().copy();
+  ActiveSet lookup_as = lookup_resp.active_set();
+  lookup_as.request_values(1);
+  lookup_resp.active_set(lookup_as);
+  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
+
+  // use model_resp to populate residuals as we go
+  Response model_resp;
+  size_t num_exp = expData.num_experiments();
+  for (size_t i=0; i<num_exp; ++i) {
+
+    //      Model::inactive_variables(expData.config_vars()[i], subModel);
+    Model::inactive_variables(expData.config_vars()[i], subModel, lookup_vars);
+
+    bool lookup_failure = false;
+    // BMA: why is this necessary?  Should have a reference to same object as PRP
+    lookup_pr.variables(lookup_vars);
+    PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+    if (cache_it == data_pairs.get<hashed>().end()) {
+
+      // If model is a data fit surrogate, re-evaluate it if needed.
+      // Didn't use != "hierarchical" in case other surrogate types are added.
+      if ( subModel.model_type() == "surrogate" &&
+           (strbegins(subModel.surrogate_type(), "global_") ||
+            strbegins(subModel.surrogate_type(), "local_") ||
+            strbegins(subModel.surrogate_type(), "multipoint_")) ) {
+        // TODO: Want to make this a quiet evaluation, but not easy to
+        // propagate to the interface?!?
+        //subModel.ouput_level(SILENT_OUTPUT); // and need restore
+        subModel.current_variables() = lookup_vars;
+        subModel.evaluate(lookup_resp.active_set());
+        model_resp = subModel.current_response();
+
+        // TODO: There are other cases where re-evaluate would be
+        // safe, like a recast of a simulation model that has caching
+        // enabled, but don't treat that for now.
+      }
+    }
+    else {
+      model_resp = cache_it->response();
+    }
+
+    if (!lookup_failure) {
+      expData.form_residuals(model_resp, i, residual_resp);
+      archive_best_original(results_db, iterator_id, 
+                             model_resp.function_values(), 
+                             i, num_best, best_ind);
+      if(expData.num_config_vars() != 0)
+        archive_best_config_variables(results_db, iterator_id, 
+                                     lookup_vars, i, 
+                                     num_best, best_ind);
+
+    }
+  }
+
+  // TODO: this won't scale properly if hyper-parameters are
+  // calibrated; would need the error multipliers, which are in the
+  // recast variables space
+  scale_response(subModel.current_variables(), currentVariables, residual_resp);
+}
+
+/// archive best responses 
+void DataTransformModel::
+archive_best_responses(const ResultsManager &results_db,
+                       const StrStrSizet iterator_id,
+                       const Variables& best_submodel_vars,
+                       const Response& best_submodel_resp,
+                       size_t num_best, size_t best_ind) {
+
+  // BMA TODO: Why copying the response, why not just update dataTransformModel?
+  Response residual_resp(current_response().copy());
+  // only transform residuals, not derivatives
+  ActiveSet fn_only_as = residual_resp.active_set();
+  fn_only_as.request_values(1);
+  residual_resp.active_set(fn_only_as);
+
+  // print the original userModel Responses
+  if (expData.config_vars().size() == 0) {
+    const RealVector& best_fns = best_submodel_resp.function_values();
+    archive_best_original(results_db, iterator_id, best_fns, 0, num_best, best_ind);
+    // form residuals from model responses and apply covariance
+    short dt_verbosity = output_level();
+    output_level(SILENT_OUTPUT);
+    data_transform_response(best_submodel_vars, best_submodel_resp,
+                            residual_resp);
+    output_level(dt_verbosity);
+  }
+  else {
+    archive_submodel_responses(results_db, iterator_id, best_submodel_vars, 
+                               num_best, best_ind, residual_resp);
+  }
+
+  const RealVector& resid_fns = residual_resp.function_values();
+  // print_residuals will archive the residuals. for now, skip archiving the un-weighted
+  // ones by passing in an uninitialized ResultsManager.
+  const RealVector& lsq_weights = Model::primary_response_fn_weights();
+  Real wssr = std::sqrt(Minimizer::sum_squared_residuals(num_primary_fns(), 
+                                                         resid_fns, lsq_weights)
+                       );
+  // Currently only the weighted residuals are archived. This differs from what's printed
+  // to the console (see print_best_responses() above).
+  archive_best_residuals(results_db, iterator_id, num_primary_fns(), 
+      resid_fns, wssr, num_best, best_ind);
+
+}
+
+/// Archive best configuration variables
+void DataTransformModel::
+archive_best_config_variables(const ResultsManager &results_db, 
+                              const StrStrSizet &iterator_id,
+                              const Variables &vars,
+                              const int &exp_index,
+                              const int &num_best, 
+                              const int &best_index) {
+
+  if(!results_db.active())  return;
+  // When using configuration variables, all inactive variables are
+  // expected to be config vars.
+
+  const auto & cv_labels = vars.inactive_continuous_variable_labels();
+  const auto & div_labels = vars.inactive_discrete_int_variable_labels();
+  const auto & dsv_labels = vars.inactive_discrete_string_variable_labels();
+  const auto & drv_labels = vars.inactive_discrete_real_variable_labels();
+
+  StringArray location;
+  size_t d_index = 2;
+  if(num_best > 1) {
+    location.push_back(String("set:") + std::to_string(best_index+1));
+    d_index = 3;
+    
+  }
+  location.push_back("best_model_responses");
+  location.push_back(String("experiment:") + std::to_string(exp_index+1));
+  location.push_back(""); // placeholder for variable domain
+  if(cv_labels.size()) {
+    location[d_index] = "continuous_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", cv_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_continuous_variables(), scales);
+  }
+  if(div_labels.size()) {
+    location[d_index] = "discrete_integer_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", div_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_discrete_int_variables(), scales);
+  }
+  if(dsv_labels.size()) {
+    location[d_index] = "discrete_string_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", dsv_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_discrete_string_variables(), scales);
+  }
+  if(drv_labels.size()) {
+    location[d_index] = "discrete_real_config_variables";
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", drv_labels));
+    results_db.insert(iterator_id, location, 
+        vars.inactive_discrete_real_variables(), scales);
+  }
+}
+
+int DataTransformModel::num_config_vars() const {
+  return expData.num_config_vars();
+}
 
 }  // namespace Dakota

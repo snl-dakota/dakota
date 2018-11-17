@@ -493,9 +493,9 @@ model output. In each case, the truth falls within the prediction intervals.
 \begin{center}
 \includegraphics[width=0.6\textwidth]{images/moddiscrep_correctedlowmidhigh.png}
 \end{center}
-\label{fig:md_pred}
 \vspace{-0.5cm}
 \caption{The graphs of $y(t,x)$ for $x = 7.5, 12.5, 17.5$ are compared to the corrected model and its prediction intervals. The uncorrected model is also shown to illustrate its inadequacy.}
+\label{fig:md_pred}
 \end{figure}
 
 \subsection{Field Responses Example}
@@ -536,7 +536,8 @@ calibration data and the resulting calibrated model are shown in
 Figure~\ref{fig:mat_uncorr}. With experimental data, the observations may not 
 be taken at the same independent field coordinates, so the keyword 
 \texttt{interpolate} can be used in the \texttt{responses} block of the Dakota 
-input file. The uncorrected model does not adequately capture the experimental.
+input file. The uncorrected model does not adequately capture the experimental
+data.
 
 \begin{figure}[b!]
 \begin{center}

@@ -61,7 +61,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  mcmcDerivOrder(1),
+  mcmcDerivOrder(7),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
   scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
@@ -74,6 +74,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   batchEvals(probDescDB.get_int("method.batch_size")),
   mutualInfoAlg(probDescDB.get_bool("method.nond.mutual_info_ksg2") ?
 		MI_ALG_KSG2 : MI_ALG_KSG1),
+  readFieldCoords(probDescDB.get_bool("responses.read_field_coordinates")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -117,6 +118,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.posterior_stats.mutual_info")),
   posteriorStatsKDE(probDescDB.get_bool("method.posterior_stats.kde")),
   calModelEvidence(probDescDB.get_bool("method.model_evidence")),
+  calModelEvidMC(probDescDB.get_bool("method.mc_approx")),
+  calModelEvidLaplace(probDescDB.get_bool("method.laplace_approx")),
   evidenceSamples(probDescDB.get_int("method.evidence_samples")),
   subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
   exportMCMCFilename(
@@ -483,12 +486,15 @@ void NonDBayesCalibration::init_hyper_parameters()
     Emulator:     on by default; can be overridden with "pre_solve none"
     No emulator: off by default; can be activated  with "pre_solve {sqp,nip}"
                  relies on mapOptimizer ctor to enforce min derivative support
+    Calculation of model evidence using Laplace approximation: 
+		 this requires a MAP solve. 
 */
 void NonDBayesCalibration::construct_map_optimizer() 
 {
   if ( mapOptAlgOverride == SUBMETHOD_SQP || 
        mapOptAlgOverride == SUBMETHOD_NIP ||
-       ( emulatorType && mapOptAlgOverride != SUBMETHOD_NONE ) ) {
+       ( emulatorType && mapOptAlgOverride != SUBMETHOD_NONE ) ||
+       ( calModelEvidLaplace ) ) {
 
     size_t num_total_calib_terms = residualModel.num_primary_fns();
     Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
@@ -1194,8 +1200,15 @@ void NonDBayesCalibration::build_model_discrepancy()
   size_t num_field_groups = expData.num_fields();
   if (num_field_groups == 0)
     build_scalar_discrepancy();
-  else
-    build_field_discrepancy();
+  else {
+    if (readFieldCoords)
+      build_field_discrepancy();
+    else {
+      Cout << "You must specify read_field_coodinates in input file in order "
+           << "to calculate model discrepancy\n";
+      abort_handler(METHOD_ERROR);
+    }
+  }
 }
 
 void NonDBayesCalibration::build_scalar_discrepancy()
@@ -2170,7 +2183,7 @@ void NonDBayesCalibration::compute_statistics()
 
   NonDSampling::compute_moments(filtered_chain, chainStats, STANDARD_MOMENTS);
   NonDSampling::compute_moments(filteredFnVals,    fnStats, STANDARD_MOMENTS);
-  if (outputLevel >= NORMAL_OUTPUT)
+  if (!requestedProbLevels[0].empty())
     compute_intervals();
 
   // Print tabular file for the filtered chain
@@ -2524,30 +2537,102 @@ calculate_kde()
 
 void NonDBayesCalibration::calculate_evidence()
 {
-  //int num_prior_samples = chainSamples; //KAM: replace later
-  int num_prior_samples = (evidenceSamples>0) ? evidenceSamples : chainSamples;
-  int num_params = numContinuousVars + numHyperparams;
-  // Draw samples from prior distribution 
-  RealMatrix prior_dist_samples(num_params, num_prior_samples);
-  prior_sample_matrix(prior_dist_samples);
-  // Calculate likelihood for each sample
-  double sum_like = 0.;
-  for (int i = 0; i < num_prior_samples; i++) {
-    RealVector params = Teuchos::getCol(Teuchos::View, prior_dist_samples, i);
-    RealVector cont_params = params;
-    cont_params.resize(numContinuousVars);  
-    residualModel.continuous_variables(cont_params);
-    residualModel.evaluate();
-    RealVector residual = residualModel.current_response().function_values();
-    mcmcModel.continuous_variables(cont_params);
-    mcmcModel.evaluate();
-    RealVector mcmc = mcmcModel.current_response().function_values();
-    double log_like = log_likelihood(residual, params);
-    sum_like += std::exp(log_like);
+  // set default to MC approximation if neither method specified
+  if (!calModelEvidMC && !calModelEvidLaplace)
+    calModelEvidMC = true;
+  if (calModelEvidMC) {
+    //int num_prior_samples = chainSamples; //KAM: replace later
+    int num_prior_samples = (evidenceSamples>0) ? evidenceSamples : chainSamples;
+    int num_params = numContinuousVars + numHyperparams;
+    // Draw samples from prior distribution 
+    RealMatrix prior_dist_samples(num_params, num_prior_samples);
+    prior_sample_matrix(prior_dist_samples);
+    // Calculate likelihood for each sample
+    double sum_like = 0.;
+    for (int i = 0; i < num_prior_samples; i++) {
+      RealVector params = Teuchos::getCol(Teuchos::View, prior_dist_samples, i);
+      RealVector cont_params = params;
+      cont_params.resize(numContinuousVars);  
+      residualModel.continuous_variables(cont_params);
+      residualModel.evaluate();
+      RealVector residual = residualModel.current_response().function_values();
+      double log_like = log_likelihood(residual, params);
+      sum_like += std::exp(log_like);
+    }
+    double evidence = sum_like/num_prior_samples;
+    Cout << "Model evidence (Monte Carlo) = " << evidence << '\n';
+    //Cout << "num samples = " << num_prior_samples << '\n';
   }
-  double evidence = sum_like/num_prior_samples;
-  Cout << "Model evidence = " << evidence << '\n';
-  Cout << "num samples = " << num_prior_samples << '\n';
+  if (calModelEvidLaplace) {
+    if (obsErrorMultiplierMode > CALIBRATE_NONE) {
+      Cout << "The Laplace approximation of model evidence currently " 
+           << "does not work when error multipliers are specified." << '\n';
+      abort_handler(METHOD_ERROR);
+    } 
+    if (mapOptAlgOverride == SUBMETHOD_NONE) {
+      Cout << "You must specify a pre-solve method for the Laplace approximation" 
+           << " of model evidence. "  << '\n'; 
+      abort_handler(METHOD_ERROR);
+    } 
+    Cout << "Starting Laplace approximation of model evidence, first " 
+         << "\nobtain MAP point from pre-solve.\n";
+    const RealVector& map_c_vars
+      = mapOptimizer.variables_results().continuous_variables();
+    //estimate likelihood at MAP point: 
+    residualModel.continuous_variables(map_c_vars);
+    ActiveSet resAS = residualModel.current_response().active_set();
+    resAS.request_values(7);
+    residualModel.evaluate(resAS);
+    RealVector residual = residualModel.current_response().function_values();
+    Real laplace_like = log_likelihood(residual, map_c_vars);
+    //obtain prior density at MAP point: 
+    Real laplace_prior =  nonDBayesInstance->log_prior_density(map_c_vars);
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Residual at MAP point" << residualModel.current_response() << '\n';
+      Cout << "Log_likelihood at MAP Point" << laplace_like << '\n';
+      Cout << "Laplace_prior " << laplace_prior << "\n";
+    }
+    Response nlpost_resp = negLogPostModel.current_response().copy();
+    ActiveSet as2 = nlpost_resp.active_set();
+    as2.request_values(7);
+    nlpost_resp.active_set(as2);
+    neg_log_post_resp_mapping(mapOptimizer.variables_results(), mapOptimizer.variables_results(), 
+      residualModel.current_response(), nlpost_resp);
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Negative log posterior function values " << nlpost_resp.function_values() << '\n';
+      Cout << "Negative log posterior Hessian " << nlpost_resp.function_hessian_view(0) << '\n';
+      //Cout << nlpost_resp << '\n';
+    }
+    RealSymMatrix log_hess;
+    nonDBayesInstance->
+      expData.build_hessian_of_sum_square_residuals(residualModel.current_response(), log_hess);
+    // Add the contribution from 1/2*log(det(Cov))
+    nonDBayesInstance->expData.half_log_cov_det_hessian
+      (0, nonDBayesInstance->obsErrorMultiplierMode, 
+      nonDBayesInstance->numContinuousVars, log_hess);
+    // Add the contribution from -log(prior)
+    nonDBayesInstance->augment_hessian_with_log_prior(log_hess, map_c_vars);
+    Cout << "Laplace approximation: negative log posterior Hessian:\n"
+         <<  log_hess << "\n";
+    CovarianceMatrix local_log_post_hess; 
+    // for now, the matrix passed to set_covariance is a RealMatrix, not RealSymMatrix
+    RealMatrix clog_hess(numContinuousVars, numContinuousVars);
+    for (int i=0; i<numContinuousVars; i++) {
+      for (int j=0; j<numContinuousVars; j++) {
+        clog_hess(i,j)=log_hess(i,j);
+      }
+    }
+    try {
+      local_log_post_hess.set_covariance(const_cast<RealMatrix&>(clog_hess)); 
+      Cout << "log determinant post" << local_log_post_hess.log_determinant() <<std::endl; 
+      double lpres= laplace_prior+laplace_like+numContinuousVars*HALF_LOG_2PI-0.5*local_log_post_hess.log_determinant();
+      Cout << "Model evidence (Laplace) = " << std::exp(lpres) <<  '\n';
+    }
+    catch (const std::runtime_error& re){
+      Cout << "Can't compute model evidence because the Hessian of the negative log posterior distribution " 
+           << "is not positive definite. " << re.what();
+    }
+  }
 }
 
 void NonDBayesCalibration::print_intervals_file
