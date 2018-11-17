@@ -10151,9 +10151,9 @@ Sample moment statistics for each posterior variable:
          uuv_9  8.9263306124e-03  5.3695282404e-01 -2.4880902043e-02 -1.0594526090e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  2.5057429102e-02  5.9072009168e-03  7.7816106844e-01  3.9493812159e-02
-least_sq_term_2  1.2834948592e-01  1.2114422537e-02  7.8324554687e-01 -2.2613212083e-01
-least_sq_term_3  2.5057429102e-02  5.9072009172e-03  7.7816106865e-01  3.9493812389e-02
+            f1  2.5015512027e-02  5.9695543624e-03  8.0845370299e-01  8.1877556428e-02
+            f2  1.2830389135e-01  1.2340237704e-02  7.7843658222e-01 -2.9997033718e-01
+            f3  2.5015512027e-02  5.9695543625e-03  8.0845370325e-01  8.1877556809e-02
 dakota_discrepancy.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 570 total (570 new, 0 duplicate)
@@ -49525,7 +49525,7 @@ Moment statistics for each response function:
    1.0000000000e+03                     -1.0000000000e+50
 Moment statistics for each response function:
                             Mean          Variance        3rdCentral        4thCentral
- response_fn_1  1.0000000000e+00  0.0000000000e+00 6.7923649565e+199 3.0376012267e-152
+ response_fn_1  1.0000000000e+00  0.0000000000e+00 7.7770240471e+160  5.1460260857e+58
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01                      1.0000000000e+50
