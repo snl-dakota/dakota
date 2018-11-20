@@ -548,8 +548,22 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 		pa_rep_i->delta_beta(cdfFlag, requestedRespLevels[i][j]);
 	      sum_sq += delta * delta;
 	      ref = final_stats_ref[cntr];
-	      if (relativeMetric) scale_sq += ref * ref;
-	      if (print_metric) finalStatistics.function_value(ref+delta, cntr);
+	      if (std::abs(ref) == Pecos::LARGE_NUMBER) { // dummy beta value
+		// do not increment scale for this ref --> may result in
+		// SMALL_NUMBER scaling below if no meaningful refs exist
+		if (print_metric) { // *** TO DO: compute (mu1 - z_bar)/sigma1
+		  computedRelLevels[i][j] = delta;             // placeholder
+		  finalStatistics.function_value(delta, cntr); // placeholder
+		}
+	      }
+	      else {
+		if (relativeMetric) scale_sq += ref * ref;
+		if (print_metric) {
+		  Real beta1 = ref + delta;
+		  computedRelLevels[i][j] = beta1;
+		  finalStatistics.function_value(beta1, cntr);
+		}
+	      }
 	    }
 	  else
 	    for (j=0; j<rl_len; ++j, ++cntr) {
@@ -569,7 +583,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	    sum_sq += delta * delta;
 	    ref = final_stats_ref[cntr];
 	    if (relativeMetric) scale_sq += ref * ref;
-	    if (print_metric) finalStatistics.function_value(ref+delta, cntr);
+	    if (print_metric) {
+	      Real z1 = ref + delta;
+	      computedRespLevels[i][j+pl_len] = z1;
+	      finalStatistics.function_value(z1, cntr);
+	    }
 	  }
 	  for (j=0; j<gl_len; ++j, ++cntr) {
 	    delta = delta_final_stats[cntr]; sum_sq += delta * delta;
@@ -590,6 +608,8 @@ compute_final_statistics_metric(bool revert, bool print_metric)
       Cout << "In compute_final_statistics_metric(), delta_final_stats =\n";
       write_data(Cout, delta_final_stats);
 #endif // DEBUG
+      // *** TO DO: restrict this print to delta levels
+      // --> emulate compute_delta_covariance() with specialized print_metric
       if (print_metric) print_results(Cout, INTERMEDIATE_RESULTS);
       if (revert) finalStatistics.function_values(final_stats_ref);
 
