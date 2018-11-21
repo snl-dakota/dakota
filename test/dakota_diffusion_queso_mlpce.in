@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_QUESO
+#@ s2: TimeoutDelay=180
 
 method,
 	model_pointer = 'HIERARCH'
