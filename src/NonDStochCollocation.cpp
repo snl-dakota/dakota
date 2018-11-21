@@ -516,8 +516,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
     }
     if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
 
-      RealVector delta_final_stats, final_stats_ref, final_stats_new;
-      if (relativeMetric || numerical_map)
+      RealVector delta_final_stats, final_stats_new,
 	final_stats_ref = finalStatistics.function_values();
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
 	compute_statistics(false);                        // intermediate stats
