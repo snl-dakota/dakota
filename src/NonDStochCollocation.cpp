@@ -524,8 +524,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	delta_final_stats = final_stats_new = finalStatistics.function_values();
 	delta_final_stats -= final_stats_ref; // compute delta
       }
-      else
-        delta_final_stats.size(finalStatistics.num_functions()); // init to 0
+      else {
+	size_t num_stats = finalStatistics.num_functions();
+        delta_final_stats.size(num_stats);            // init to 0
+        if (!revert) final_stats_new.size(num_stats); // init to 0
+      }
 
       bool warn_flag = false,
 	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
