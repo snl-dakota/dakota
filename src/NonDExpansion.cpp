@@ -3152,7 +3152,8 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
 
   s << "-----------------------------------------------------------------------"
     << "------\nStatistics derived analytically from polynomial expansion:\n";
-  print_moments(s);
+  if (full_data || !totalLevelRequests)
+    print_moments(s);
   if ( full_data || ( !totalLevelRequests &&
        refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ) )
     print_covariance(s);
