@@ -370,38 +370,6 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
 }
 
 
-Real NonDMultilevelStochCollocation::
-compute_final_statistics_metric(bool revert, bool print_metric)
-{
-  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
-    bool beta_map = false, numerical_map = false; size_t i, j, cntr;
-    for (i=0; i<numFunctions; ++i) {
-      if ( !requestedRelLevels[i].empty() || ( !requestedRespLevels[i].empty()
-	   && respLevelTarget == RELIABILITIES ) )
-	beta_map = true;
-      if ( !requestedProbLevels[i].empty() || !requestedGenRelLevels[i].empty()
-	   || ( !requestedRespLevels[i].empty() &&
-		respLevelTarget != RELIABILITIES ) )
-	numerical_map = true;
-    }
-    if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
-
-      // *** TO DO: update NonDStochCollocation::compute_final_stats_metric()
-      // ***        to compute delta's relative to combined stats
-
-      Cerr << "Error: NonDMultilevelStochCollocation::compute_final_statistics"
-	   << "_metric() not yet implemented." << std::endl;
-      abort_handler(METHOD_ERROR);      
-    }
-    else // use default implementation if no beta-mapping increments
-      return
-	NonDExpansion::compute_final_statistics_metric(revert, print_metric);
-  }
-  else // use default implementation for Nodal
-    return NonDExpansion::compute_final_statistics_metric(revert, print_metric);
-}
-
-
 void NonDMultilevelStochCollocation::update_reference_stats()
 {
   switch (expansionBasisType) {

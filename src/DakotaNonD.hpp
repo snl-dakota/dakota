@@ -83,7 +83,9 @@ public:
   /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
   void print_level_mappings(std::ostream& s, String qoi_type,
 			    const StringArray& qoi_labels) const;
-
+  /// print level mapping statistics using optional pre-pend
+  void print_level_mappings(std::ostream& s, const RealVector& level_stats,
+			    const String& prepend = "");
 
   //
   //- Heading: Virtual member function redefinitions

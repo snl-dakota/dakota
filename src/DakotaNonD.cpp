@@ -2342,8 +2342,7 @@ print_level_mappings(std::ostream& s, String qoi_type,
   // reliabilities resulting from number of std devs separating mean & target
   s << std::scientific << std::setprecision(write_precision)
     << "\nLevel mappings for each " << qoi_type << ":\n";
-  size_t i;
-  for (i=0; i<numFunctions; ++i)
+  for (size_t i=0; i<numFunctions; ++i)
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty()) {
       print_level_map(s, i, qoi_labels[i]);
@@ -2351,6 +2350,58 @@ print_level_mappings(std::ostream& s, String qoi_type,
       if (outputLevel >= VERBOSE_OUTPUT)
 	level_mappings_file(i, qoi_labels[i]);
     }
+}
+
+
+void NonD::
+print_level_mappings(std::ostream& s, const RealVector& final_stats,
+		     const String& prepend)
+{
+  if (final_stats.empty()) // equivalent to !totalLevelMappings
+    return;
+
+  if (prepend.empty())   s << "\nLevel mappings for each response function:\n";
+  else s << '\n' << prepend << " level mappings for each response function:\n";
+
+  size_t i, j, cntr,
+    width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
+  const StringArray& qoi_labels = iteratedModel.response_labels();
+  for (i=0, cntr=0; i<numFunctions; ++i) {
+    cntr += 2; // skip moments
+    if (cdfFlag) s << "Cumulative Distribution Function (CDF) for ";
+    else s << "Complementary Cumulative Distribution Function (CCDF) for ";
+    s << qoi_labels[i] << ":\n     Response Level  Probability Level  "
+      << "Reliability Index  General Rel Index\n     --------------  "
+      << "-----------------  -----------------  -----------------\n";
+    const RealVector& req_z_levs = requestedRespLevels[i];
+    size_t num_z_levs = req_z_levs.length();
+    for (j=0; j<num_z_levs; ++j, ++cntr) {
+      s << "  " << std::setw(width) << req_z_levs[j] << "  ";
+      switch (respLevelTarget) {
+      case PROBABILITIES:
+	s << std::setw(width) << final_stats[cntr] << '\n'; break;
+      case RELIABILITIES:
+	s << std::setw(w2p2)  << final_stats[cntr] << '\n'; break;
+      case GEN_RELIABILITIES:
+	s << std::setw(w3p4)  << final_stats[cntr] << '\n'; break;
+      }
+    }
+    const RealVector& req_p_levs = requestedProbLevels[i];
+    size_t num_p_levs = req_p_levs.length();
+    for (j=0; j<num_p_levs; ++j, ++cntr)
+      s << "  " << std::setw(width) << final_stats[cntr]
+	<< "  "	<< std::setw(width) << req_p_levs[j] << '\n';
+    const RealVector& req_b_levs = requestedRelLevels[i];
+    size_t num_b_levs = req_b_levs.length();
+    for (j=0; j<num_b_levs; ++j, ++cntr)
+      s << "  " << std::setw(width) << final_stats[cntr]
+	<< "  "	<< std::setw(w2p2)  << req_b_levs[j] << '\n';
+    const RealVector& req_g_levs = requestedGenRelLevels[i];
+    size_t num_g_levs = req_g_levs.length();
+    for (j=0; j<num_g_levs; ++j, ++cntr)
+      s << "  " << std::setw(width) << final_stats[cntr]
+	<< "  "	<< std::setw(w3p4)  << req_g_levs[j] << '\n';
+  }
 }
 
 
