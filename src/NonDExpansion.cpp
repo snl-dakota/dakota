@@ -1762,6 +1762,8 @@ compute_covariance_metric(bool revert, bool print_metric)
   Real scale;
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
+    // Note that the sense/sign of delta_resp_var is unimportant as it is only
+    // used for the norm calculation --> more convenient to compute ref - new:
     RealVector resp_var_ref, delta_resp_var = respVariance; // deep copy
     if (revert) resp_var_ref = respVariance;
     if (relativeMetric)
@@ -1787,6 +1789,8 @@ compute_covariance_metric(bool revert, bool print_metric)
     break;
   }
   case FULL_COVARIANCE: {
+    // Note that the sense/sign of delta_resp_covar is unimportant as it is only
+    // used for the norm calculation --> more convenient to compute ref - new:
     RealSymMatrix resp_covar_ref, delta_resp_covar = respCovariance;// deep copy
     if (revert) resp_covar_ref = respCovariance;
     if (relativeMetric)
@@ -1842,9 +1846,8 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 #endif // DEBUG
 
   // sum up only the level mapping stats (don't mix with mean and variance due
-  // to scaling issues)
-  // TO DO: if the level mappings are of mixed type, then would need to scale
-  //        with a target value or measure norm of relative change.
+  // to scaling issues).  Note: if the level mappings are of mixed type, then
+  // would need to scale with a target value or measure norm of relative change.
   Real sum_sq = 0., scale_sq = 0.;
   size_t i, j, cntr = 0, num_lev_i, moment_offset = (finalMomentsType) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
@@ -1853,7 +1856,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
        2003.  However, their approach uses a hierarchical integral contribution
        evaluation which is less prone to roundoff (and is refined to very tight
        tolerances in the paper).
-    if (!finalMomentsType) { Cerr << ; abort_handler(METHOD_ERROR); }
+    if (!finalMomentsType) { Cerr << "Error: "; abort_handler(METHOD_ERROR); }
     sum_sq += std::pow(delta_final_stats[cntr], 2.); // mean
     cntr += moment_offset + requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +

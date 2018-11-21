@@ -494,16 +494,16 @@ compute_covariance_metric(bool revert, bool print_metric)
 Real NonDStochCollocation::
 compute_final_statistics_metric(bool revert, bool print_metric)
 {
+  // Focus only on level mappings and neglect moment deltas
+
   // combine delta_beta() and delta_z() from HierarchInterpPolyApproximation
   // with default definition of delta-{p,beta*}
 
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
-    // Note: from a generality perspective, it would be desirable to map through
-    // support for delta_mean() and delta_std_deviation().  But how to manage
-    // user requests (w/o nested response mappings)?  Since delta in response
-    // covariance (the default metric) is preferred to either delta-sigma or
-    // delta-mu, we will omit mean/std deviation for now.  With a finer-grained
-    // adaptivity specification, they could be readily added to the logic below.
+    // Note: it would be desirable to include support for all active statistics,
+    // including delta_mean() and delta_std_deviation().  With access to nested
+    // response mappings passed down from an outer context, a more comprehensive
+    // set of stats could be supported in the logic below.
     bool beta_map = false, numerical_map = false; size_t i, j, cntr;
     for (i=0; i<numFunctions; ++i) {
       if ( !requestedRelLevels[i].empty() || ( !requestedRespLevels[i].empty()
@@ -516,13 +516,13 @@ compute_final_statistics_metric(bool revert, bool print_metric)
     }
     if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
 
-      RealVector delta_final_stats, final_stats_ref;
-      if (revert || print_metric || relativeMetric)
+      RealVector delta_final_stats, final_stats_ref, final_stats_new;
+      if (relativeMetric || numerical_map)
 	final_stats_ref = finalStatistics.function_values();
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
-        delta_final_stats  = finalStatistics.function_values();     // deep copy
-	compute_statistics(false);                         // intermediate stats
-	delta_final_stats -= finalStatistics.function_values(); // compute delta
+	compute_statistics(false);                        // intermediate stats
+	delta_final_stats = final_stats_new = finalStatistics.function_values();
+	delta_final_stats -= final_stats_ref; // compute delta
       }
       else
         delta_final_stats.size(finalStatistics.num_functions()); // init to 0
@@ -530,7 +530,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
       bool warn_flag = false,
 	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-      Real delta, ref, sum_sq = 0., scale_sq = 0.;
+      Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
 	size_t rl_len = requestedRespLevels[i].length(),
 	       pl_len = requestedProbLevels[i].length(),
@@ -542,14 +542,36 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	if (pa_rep_i->expansion_coefficient_flag()) {
 	  if (respLevelTarget == RELIABILITIES)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
-	      delta = delta_final_stats[cntr] = (all_vars) ?
-		pa_rep_i->delta_beta(initialPtU, cdfFlag,
-				     requestedRespLevels[i][j]) :
-		pa_rep_i->delta_beta(cdfFlag, requestedRespLevels[i][j]);
+	      z_bar = requestedRespLevels[i][j];
+	      if (statsType == COMBINED_EXPANSION_STATS)
+		delta = delta_final_stats[cntr] = (all_vars) ?
+		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
+		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
+	      else
+		delta = delta_final_stats[cntr] = (all_vars) ?
+		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
+		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
-	      ref = final_stats_ref[cntr];
-	      if (relativeMetric) scale_sq += ref * ref;
-	      if (print_metric) finalStatistics.function_value(ref+delta, cntr);
+	      ref = final_stats_ref[cntr]; 
+	      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
+		// ref is undefined and delta neglects term; must compute new
+		if (!revert) {
+		  if (statsType == COMBINED_EXPANSION_STATS)
+		    final_stats_new[cntr] = (all_vars) ?
+		      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
+		      pa_rep_i->combined_beta(cdfFlag, z_bar);
+		  else
+		    final_stats_new[cntr] = (all_vars) ?
+		      pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
+		      pa_rep_i->beta(cdfFlag, z_bar);
+		}
+		// do not increment scale for dummy beta value --> may result
+		// in SMALL_NUMBER scaling below if no meaningful refs exist
+	      }
+	      else { // ref and delta are valid --> update scale and new
+		if (relativeMetric) scale_sq += ref * ref;
+		if (!revert) final_stats_new[cntr] = ref + delta;
+	      }
 	    }
 	  else
 	    for (j=0; j<rl_len; ++j, ++cntr) {
@@ -563,13 +585,19 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	      { ref = final_stats_ref[cntr]; scale_sq += ref * ref; }
 	  }
 	  for (j=0; j<bl_len; ++j, ++cntr) {
-	    delta = delta_final_stats[cntr] = (all_vars) ?
-	      pa_rep_i->delta_z(initialPtU, cdfFlag, requestedRelLevels[i][j]) :
-	      pa_rep_i->delta_z(cdfFlag, requestedRelLevels[i][j]);
+	    beta_bar = requestedRelLevels[i][j];
+	    if (statsType == COMBINED_EXPANSION_STATS)
+	      delta = delta_final_stats[cntr] = (all_vars) ?
+		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
+		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);
+	    else
+	      delta = delta_final_stats[cntr] = (all_vars) ?
+		pa_rep_i->delta_z(initialPtU, cdfFlag, beta_bar) :
+		pa_rep_i->delta_z(cdfFlag, beta_bar);
 	    sum_sq += delta * delta;
 	    ref = final_stats_ref[cntr];
 	    if (relativeMetric) scale_sq += ref * ref;
-	    if (print_metric) finalStatistics.function_value(ref+delta, cntr);
+	    if (!revert) final_stats_new[cntr] = ref + delta;
 	  }
 	  for (j=0; j<gl_len; ++j, ++cntr) {
 	    delta = delta_final_stats[cntr]; sum_sq += delta * delta;
@@ -586,17 +614,16 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	Cerr << "Warning: expansion coefficients unavailable in "
 	     << "NonDStochCollocation::compute_final_statistics_metric().\n"
 	     << "         Omitting affected final statistics." << std::endl;
-#ifdef DEBUG
-      Cout << "In compute_final_statistics_metric(), delta_final_stats =\n";
-      write_data(Cout, delta_final_stats);
-#endif // DEBUG
-      if (print_metric) print_results(Cout, INTERMEDIATE_RESULTS);
-      if (revert) finalStatistics.function_values(final_stats_ref);
 
-      // Deltas for all final stats, including moments:
-      //return delta_final_stats.normFrobenius();
+      // As for compute_delta_covariance(), print level mapping deltas:
+      if (print_metric)
+	print_level_mappings(Cout, delta_final_stats, "Change in");
+      // Final stats: revert to previous or promote to new
+      if (!revert)
+	finalStatistics.function_values(final_stats_new);
+      else if (numerical_map) // revert from final_stats_new to final_stats_ref
+	finalStatistics.function_values(final_stats_ref);
 
-      // Neglect moment deltas (level mappings only):
       // Metric scale is determined from reference stats, not updated stats,
       // as consistent with compute_covariance_metric() above.
       if (relativeMetric) {
