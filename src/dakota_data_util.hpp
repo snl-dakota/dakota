@@ -8,7 +8,7 @@
 
 #ifndef DAKOTA_DATA_UTIL_H
 #define DAKOTA_DATA_UTIL_H
-
+#include <exception>
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr
 #include "dakota_data_types.hpp"
@@ -1061,10 +1061,11 @@ const ScalarType& set_index_to_value(OrdinalType index,
 				     const std::set<ScalarType>& values)
 {
   // TO DO: conditional activation for automatic bounds checking
-  if (index < 0 || index >= values.size()) {
-    Cerr << "\nError: index out of range in set_index_to_value()" << std::endl;
-    abort_handler(-1);
-  }
+  if (index < 0 || index >= values.size()) 
+    throw std::out_of_range(String("Error: index ") + std::to_string(index) +  
+        " must be between 0 and " + std::to_string(values.size() - 1) + 
+        " in set_index_to_value()");
+  
   typename std::set<ScalarType>::const_iterator cit = values.begin();
   std::advance(cit, index);
   return *cit;

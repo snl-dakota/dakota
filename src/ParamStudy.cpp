@@ -9,7 +9,7 @@
 //- Class:       ParamStudy
 //- Description: Implementation code for the ParamStudy class
 //- Owner:       Mike Eldred
-
+#include <exception>
 #include "dakota_system_defs.hpp"
 #include "dakota_tabular_io.hpp"
 #include "ParamStudy.hpp"
@@ -783,15 +783,22 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
 	//  err = true;
 	//}
 	// if set indices:
-	list_div_i[j]
-	  = set_index_to_value(div_combined[j], dsi_values[dsi_cntr]);
+        try {
+          list_div_i[j]
+            = set_index_to_value(div_combined[j], dsi_values[dsi_cntr]);
+        } catch(std::out_of_range e) {
+          Cerr << e.what() << " for variable '" 
+            << iteratedModel.discrete_int_variable_labels()[j] << "' in method '" 
+            << method_id() << "'\n";
+          abort_handler(-1);
+        }
 	++dsi_cntr;
       }
       else // range values
 	list_div_i[j] = div_combined[j];
     }
 
-    for (j=0; j<numDiscreteStringVars; ++j)
+    for (j=0; j<numDiscreteStringVars; ++j) {
       // if set values:
       //if (set_value_to_index(list_dsv_i[j], dss_values[j]) == _NPOS) {
       //  Cerr << "\nError: list value " << list_dsv_i[j] << " not admissible "
@@ -799,10 +806,18 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       //  err = true;
       //}
       // if set indices:
-      list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
+      try {
+          list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
+      } catch(std::out_of_range e) {
+          Cerr << e.what() << " for variable '" 
+            << iteratedModel.discrete_string_variable_labels()[j] << "' in method '" 
+            << method_id() << "'\n";
+          abort_handler(-1);
+      }
+    }
 
     if (numDiscreteRealVars) list_drv_i.sizeUninitialized(numDiscreteRealVars);
-    for (j=0; j<numDiscreteRealVars; ++j)
+    for (j=0; j<numDiscreteRealVars; ++j) {
       // if set values:
       //if (set_value_to_index(list_drv_i[j], dsr_values[j]) == _NPOS) {
       //  Cerr << "\nError: list value " << list_drv_i[j] << " not admissible "
@@ -810,7 +825,15 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       //  err = true;
       //}
       // if set indices:
-      list_drv_i[j] = set_index_to_value(drv_indices[j], dsr_values[j]);
+      try {
+          list_drv_i[j] = set_index_to_value(drv_indices[j], dsr_values[j]);
+      } catch (std::out_of_range e) {
+          Cerr << e.what() << " for variable '" 
+            << iteratedModel.discrete_real_variable_labels()[j] << "' in method '" 
+            << method_id() << "'\n";
+          abort_handler(-1);
+      }
+    }
   }
 
 #ifdef DEBUG
