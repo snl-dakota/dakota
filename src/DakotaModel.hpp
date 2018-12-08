@@ -273,19 +273,6 @@ public:
   virtual void combine_approximation();
   /// promote the combined approximation into the active approximation
   virtual void combined_to_active(bool clear_combined = true);
-
-  /*
-  /// move the current approximation into storage for later combination;
-  /// the index of the stored set can be passed to allow replacement instead
-  /// of augmentation (default is push_back)
-  virtual void store_approximation(size_t index = _NPOS);
-  /// return an approximation from storage; the index identifies a
-  /// particular stored data set (default is pop_back from stored)
-  virtual void restore_approximation(size_t index = _NPOS);
-  /// remove a stored approximation, due to redundancy with the current
-  /// approximation, prior to combination (default for no index is pop_back)
-  virtual void remove_stored_approximation(size_t index = _NPOS);
-  */
   /// clear inactive approximations (finalization + combination completed)
   virtual void clear_inactive();
 
