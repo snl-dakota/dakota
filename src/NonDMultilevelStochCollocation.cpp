@@ -410,6 +410,7 @@ void NonDMultilevelStochCollocation::increment_reference_stats()
 }
 
 
+/*
 void NonDMultilevelStochCollocation::combined_to_active()
 {
   switch (expansionBasisType) {
@@ -428,6 +429,7 @@ void NonDMultilevelStochCollocation::combined_to_active()
     break;
   }
 }
+*/
 
 
 void NonDMultilevelStochCollocation::

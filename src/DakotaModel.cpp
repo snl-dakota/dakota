@@ -3288,47 +3288,6 @@ void Model::combined_to_active(bool clear_combined)
 }
 
 
-/*
-void Model::store_approximation(size_t index)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->store_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
-	 << "() function.\n       This model does not support approximation "
-	 << "storage." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-void Model::restore_approximation(size_t index)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->restore_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
-	 << "approximation() function.\n       This model does not support "
-	 << "approximation restoration." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-void Model::remove_stored_approximation(size_t index)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->remove_stored_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual remove_stored_"
-	 << "approximation() function.\n       This model does not support "
-	 << "approximation storage." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-*/
-
-
 void Model::clear_inactive()
 {
   if (modelRep) // envelope fwd to letter
