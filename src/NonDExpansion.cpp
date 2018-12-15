@@ -925,7 +925,11 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     update_expansion();
-    metric = compute_covariance_metric(revert, print_metric);
+    // Note: covariance metric seems more self-consistent for Sobol'-weighted
+    // adaptivity, but allow final stats adaptation if mappings are used
+    metric = (totalLevelRequests) ?
+      compute_final_statistics_metric(revert, print_metric) :
+      compute_covariance_metric(revert, print_metric);
     if (revert) pop_increment();
     else        merge_grid();
     break;
