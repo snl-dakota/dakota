@@ -39,7 +39,7 @@ namespace Dakota {
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
-  statsType(ACTIVE_EXPANSION_STATS),
+  statsType(Pecos::ACTIVE_EXPANSION_STATS),
   multilevDiscrepEmulation(
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
   numUncertainQuant(0), numSamplesOnModel(0),
@@ -83,7 +83,8 @@ NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
-  expansionBasisType(Pecos::DEFAULT_BASIS), statsType(ACTIVE_EXPANSION_STATS),
+  expansionBasisType(Pecos::DEFAULT_BASIS),
+  statsType(Pecos::ACTIVE_EXPANSION_STATS),
   multilevDiscrepEmulation(DEFAULT_EMULATION), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
   nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
@@ -166,11 +167,7 @@ void NonDExpansion::initialize_response_covariance()
 {
   // if diagonal only, utilize a vector (or sparse matrix) to optimize
   // both computational performance and memory footprint)
-  bool refine_by_covar = (refineControl == Pecos::UNIFORM_CONTROL ||
-    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ||
-    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY ||
-    ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
-      !totalLevelRequests ) );
+  bool refine_by_covar = (totalLevelRequests == 0);
   switch (covarianceControl) {
   case DEFAULT_COVARIANCE: // assign context-specific default
     if (refine_by_covar)      covarianceControl = FULL_COVARIANCE;
@@ -433,11 +430,26 @@ void NonDExpansion::initialize_u_space_model()
   // Note: passing outputLevel again is redundant with DataFitSurrModel ctor.
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
+  short refine_metric = Pecos::NO_METRIC;
+  if (refineControl) {
+    // communicate refinement metric to Pecos (determines internal bookkeeping
+    // requirements for some PolyApproximation types)
+    if (totalLevelRequests) {
+      refine_metric = Pecos::LEVEL_STATS_METRIC;
+      for (size_t i=0; i<numFunctions; ++i)
+	if ( !requestedRelLevels[i].empty() ||
+	     ( respLevelTarget == RELIABILITIES &&
+	       !requestedRespLevels[i].empty() ) )
+	  { refine_metric = Pecos::MIXED_STATS_METRIC; break; }
+    }
+    else
+      refine_metric = Pecos::COVARIANCE_METRIC;
+  }
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
-    refineControl, maxRefineIterations, maxSolverIterations,
-    convergenceTol, softConvLimit);
+    refineControl, refine_metric, statsType, maxRefineIterations,
+    maxSolverIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
 
   // if all variables mode, initialize key to random variable subset
@@ -1221,8 +1233,9 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
-  // if refine_type, refine independently based on individual expansion metrics
-  statsType = ACTIVE_EXPANSION_STATS;
+  // don't update statsType: employ either the default (ACTIVE) or the type
+  // from an outer routine (COMBINED from greedy_multifidelity_expansion())
+  //statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
@@ -1273,15 +1286,14 @@ void NonDExpansion::greedy_multifidelity_expansion()
 {
   // clear any persistent state from previous (e.g., for OUU)
   NLev.clear();
+  // refine based on metrics from combined expansions
+  statistics_type(Pecos::COMBINED_EXPANSION_STATS);
 
   // Generate MF reference expansion that is starting pt for greedy refinement:
   // > Only generate combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}; active
   //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
   // > suppress individual refinement
   multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
-
-  // refine based on metrics from combined expansions
-  statsType = COMBINED_EXPANSION_STATS;
   // update combined reference stats (can't increment as no deltas available)
   update_reference_stats();
 
@@ -1478,6 +1490,17 @@ void NonDExpansion::update_expansion()
 }
 
 
+void NonDExpansion::statistics_type(short stats_type)
+{
+  if (statsType != stats_type) {
+    statsType = stats_type;
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    shared_data_rep->refinement_statistics_type(stats_type);
+  }
+}
+
+
 void NonDExpansion::update_reference_stats()
 {
   // default implementation (used by greedy_multifidelity_expansion())
@@ -1504,7 +1527,7 @@ void NonDExpansion::combined_to_active()
   // migrate combined{MultiIndex,ExpCoeff{s,Grads}} to current active
   uSpaceModel.combined_to_active();
   // update approach for computing statistics
-  statsType = ACTIVE_EXPANSION_STATS;
+  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 }
 
 
@@ -1908,7 +1931,7 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
 
   size_t i;
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
-    combined_stats = (statsType == COMBINED_EXPANSION_STATS);
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
@@ -2145,16 +2168,12 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
 
   // define flags for limiting unneeded computation (matched in print_results())
   bool full_stats  = (results_state == FINAL_RESULTS),
-    combined_stats = (statsType == COMBINED_EXPANSION_STATS);
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   bool local_grad_stats = (full_stats && !subIteratorFlag &&
     outputLevel >= NORMAL_OUTPUT);
   bool vbd_stats = ( vbdFlag && ( full_stats ||
     refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ) );
-  bool refine_by_covar = (refineControl == Pecos::UNIFORM_CONTROL ||
-    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ||
-    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY ||
-    ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
-      !totalLevelRequests ) );
+  bool refine_by_covar = (totalLevelRequests == 0); // *** TO DO: mixed refinement stats (beta level mappings)
   bool full_covar_stats = ( covarianceControl == FULL_COVARIANCE &&
 			    ( full_stats || refine_by_covar ) );
 

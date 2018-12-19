@@ -381,7 +381,7 @@ compute_delta_variance(bool update_ref, bool print_metric)
     PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (pa_rep_i->expansion_coefficient_flag()) {
-      if (statsType == COMBINED_EXPANSION_STATS)
+      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	// refinement assessed for impact on combined expansion from roll up
 	deltaRespVariance[i] = (all_vars) ?
 	  pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_i) :
@@ -422,7 +422,7 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 	PecosApproximation* pa_rep_j
 	  = (PecosApproximation*)poly_approxs[j].approx_rep();
 	if (pa_rep_j->expansion_coefficient_flag()) {
-	  if (statsType == COMBINED_EXPANSION_STATS)
+	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	    // refinement assessed for impact on combined exp from roll up
 	    deltaRespCovariance(i,j) = (all_vars) ?
 	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
@@ -545,7 +545,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	  if (respLevelTarget == RELIABILITIES)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
 	      z_bar = requestedRespLevels[i][j];
-	      if (statsType == COMBINED_EXPANSION_STATS)
+	      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 		delta = delta_final_stats[cntr] = (all_vars) ?
 		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
@@ -558,7 +558,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
 		// ref is undefined and delta neglects term; must compute new
 		if (!revert) {
-		  if (statsType == COMBINED_EXPANSION_STATS)
+		  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 		    final_stats_new[cntr] = (all_vars) ?
 		      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
 		      pa_rep_i->combined_beta(cdfFlag, z_bar);
@@ -588,7 +588,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	  }
 	  for (j=0; j<bl_len; ++j, ++cntr) {
 	    beta_bar = requestedRelLevels[i][j];
-	    if (statsType == COMBINED_EXPANSION_STATS)
+	    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	      delta = delta_final_stats[cntr] = (all_vars) ?
 		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);

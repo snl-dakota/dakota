@@ -18,7 +18,6 @@
 
 namespace Dakota {
 
-
 /// Base class for polynomial chaos expansions (PCE) and stochastic
 /// collocation (SC)
 
@@ -217,6 +216,9 @@ protected:
   void push_increment();
   /// helper function to manage different pop increment cases
   void pop_increment();
+
+  /// update statsType, here and in Pecos::ExpansionConfigOptions
+  void statistics_type(short stats_type);
 
   /// perform any required expansion roll-ups prior to metric computation
   void metric_roll_up();
@@ -518,7 +520,7 @@ inline void NonDExpansion::metric_roll_up()
 {
   // greedy_ML-MF expansions assess level candidates using combined stats
   // --> roll up approx for combined stats
-  if (statsType == COMBINED_EXPANSION_STATS)
+  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
     uSpaceModel.combine_approximation();
 }
 
@@ -555,9 +557,9 @@ inline void NonDExpansion::compute_off_diagonal_covariance()
   // See also full_covar_stats logic in compute_analytic_statistics() ...
 
   switch (statsType) {
-  case ACTIVE_EXPANSION_STATS:
+  case Pecos::ACTIVE_EXPANSION_STATS:
     compute_active_off_diagonal_covariance();   break;
-  case COMBINED_EXPANSION_STATS:
+  case Pecos::COMBINED_EXPANSION_STATS:
     compute_combined_off_diagonal_covariance(); break;
   }
 }
@@ -569,13 +571,13 @@ inline void NonDExpansion::compute_covariance()
   // multifidelity_expansion() is outer loop:
   // > use of refine_expansion(): refine individually based on level covariance
   // > after combine_approx(), combined_to_active() enables use of active covar
-  case ACTIVE_EXPANSION_STATS:
+  case Pecos::ACTIVE_EXPANSION_STATS:
     compute_active_covariance();   break;
   // greedy_multifidelity_expansion() (multifidelity_expansion() on inner loop):
   // > roll up effect of level candidate on combined multilevel covariance,
   //   avoiding combined_to_active() promotion until end
   // > limited stats support for combinedExpCoeffs: only compute_covariance()
-  case COMBINED_EXPANSION_STATS:
+  case Pecos::COMBINED_EXPANSION_STATS:
     compute_combined_covariance(); break;
   }
 }

@@ -46,14 +46,19 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   // NonDIntegration ctor
   check_variables(natafTransform.x_random_variables());
 
+  short refine_control
+    = probDescDB.get_short("method.nond.expansion_refinement_control");
+  short refine_metric = (refine_control) ? Pecos::COVARIANCE_METRIC :
+    Pecos::NO_METRIC;
+  short refine_stats  = (refine_control) ? Pecos::ACTIVE_EXPANSION_STATS :
+    Pecos::NO_EXPANSION_STATS;
   Pecos::ExpansionConfigOptions ec_options(Pecos::QUADRATURE,
     probDescDB.get_short("method.nond.expansion_basis_type"),
     iteratedModel.correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
     outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
     probDescDB.get_ushort("method.nond.vbd_interaction_order"),
-    probDescDB.get_short("method.nond.expansion_refinement_control"),
-    //maxIterations,
+    refine_control, refine_metric, refine_stats,
     probDescDB.get_int("method.nond.max_refinement_iterations"),
     probDescDB.get_int("method.nond.max_solver_iterations"), convergenceTol,
     probDescDB.get_ushort("method.soft_convergence_limit"));

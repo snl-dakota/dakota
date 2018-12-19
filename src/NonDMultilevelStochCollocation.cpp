@@ -238,6 +238,12 @@ void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
 
 void NonDMultilevelStochCollocation::initialize_u_space_model()
 {
+  // For greedy ML, activate combined stats now for propagation to Pecos
+  // > don't call statistics_type() as ExpansionConfigOptions not initialized
+  if (mlmfAllocControl == GREEDY_REFINEMENT)
+    statsType = Pecos::COMBINED_EXPANSION_STATS;
+
+  // initializes ExpansionConfigOptions, among other things
   NonDStochCollocation::initialize_u_space_model();
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
@@ -424,8 +430,8 @@ void NonDMultilevelStochCollocation::combined_to_active()
     uSpaceModel.combined_to_active(false);
     // don't force update to active statistics; allow hybrid approach where
     // combined can still be used when needed (integrate_response_moments())
-    //statsType = ACTIVE_EXPANSION_STATS; // don't restore for greedy_mf_exp()
-    statsType = COMBINED_EXPANSION_STATS; // override for mf_exp()
+    //statistics_type(Pecos::ACTIVE_EXPANSION_STATS); // don't restore
+    statistics_type(Pecos::COMBINED_EXPANSION_STATS); // override
     break;
   }
 }

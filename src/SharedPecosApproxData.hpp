@@ -110,6 +110,9 @@ public:
   /// Pecos::SharedRegressOrthogPolyApproxData
   void configuration_options(const Pecos::RegressionConfigOptions& rc_options);
 
+  /// update ExpansionConfigOptions::refineStatsType
+  void refinement_statistics_type(short stats_type);
+
 protected:
 
   //
@@ -397,6 +400,10 @@ configuration_options(const Pecos::RegressionConfigOptions& rc_options)
   ((Pecos::SharedRegressOrthogPolyApproxData*)pecosSharedDataRep)->
     configuration_options(rc_options);
 }
+
+
+inline void SharedPecosApproxData::refinement_statistics_type(short stats_type)
+{ pecosSharedDataRep->refinement_statistics_type(stats_type); }
 
 
 inline Pecos::SharedBasisApproxData& SharedPecosApproxData::pecos_shared_data()

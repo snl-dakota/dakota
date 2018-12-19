@@ -380,6 +380,12 @@ void NonDMultilevelPolynomialChaos::assign_hierarchical_response_mode()
 
 void NonDMultilevelPolynomialChaos::initialize_u_space_model()
 {
+  // For greedy ML, activate combined stats now for propagation to Pecos
+  // > don't call statistics_type() as ExpansionConfigOptions not initialized
+  if (mlmfAllocControl == GREEDY_REFINEMENT)
+    statsType = Pecos::COMBINED_EXPANSION_STATS;
+
+  // initializes ExpansionConfigOptions, among other things
   NonDPolynomialChaos::initialize_u_space_model();
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
@@ -861,7 +867,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
   // all stats are level stats
-  statsType = ACTIVE_EXPANSION_STATS;
+  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
@@ -989,7 +995,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 {
   // case ESTIMATOR_VARIANCE:
-  // statsType remains as ACTIVE_EXPANSION_STATS
+  // statsType remains as Pecos::ACTIVE_EXPANSION_STATS
 
   // control ML using aggregated variance across the vector of QoI
   // (alternate approach: target QoI with largest variance)

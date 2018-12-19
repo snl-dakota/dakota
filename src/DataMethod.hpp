@@ -125,8 +125,6 @@ enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
 // define special values for covarianceControl
 enum { DEFAULT_COVARIANCE, NO_COVARIANCE, DIAGONAL_COVARIANCE,
        FULL_COVARIANCE };
-// define special values for type of expansion stats
-enum { NO_EXPANSION_STATS=0, ACTIVE_EXPANSION_STATS, COMBINED_EXPANSION_STATS };
 // define special values for probability integration refinement
 enum { NO_INT_REFINE=0, IS, AIS, MMAIS };
 // define special values for responseLevelTarget
