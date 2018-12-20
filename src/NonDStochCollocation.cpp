@@ -365,6 +365,30 @@ void NonDStochCollocation::initialize_u_space_model()
 
   // perform last due to numSamplesOnModel update
   NonDExpansion::initialize_u_space_model();
+
+  // initialize product accumulators with PolynomialApproximation pointers
+  // used in covariance calculations
+  if ( iteratedModel.surrogate_type() == "hierarchical" && //refineControl &&
+       ( refineMetric == Pecos::COVARIANCE_METRIC ||
+	 refineMetric == Pecos::MIXED_STATS_METRIC ) )
+      initialize_covariance();
+}
+
+
+void NonDStochCollocation::initialize_covariance()
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  size_t i, j;
+  for (i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    pa_rep_i->clear_covariance_pointers();
+    for (j=0; j<=i; ++j) {
+      PecosApproximation* pa_rep_j
+	= (PecosApproximation*)poly_approxs[j].approx_rep();
+      pa_rep_i->initialize_covariance(pa_rep_j);
+    }
+  }
 }
 
 

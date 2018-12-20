@@ -333,6 +333,9 @@ protected:
   /// DIMENSION_ADAPTIVE_CONTROL_SOBOL, DIMENSION_ADAPTIVE_CONTROL_DECAY, or
   /// DIMENSION_ADAPTIVE_CONTROL_GENERALIZED
   short refineControl;
+  /// refinement metric: NO_METRIC, COVARIANCE_METRIC, LEVEL_STATS_METRIC,
+  /// or MIXED_STATS_METRIC
+  short refineMetric;
 
   /// enumeration for controlling response covariance calculation and
   /// output: {DEFAULT,DIAGONAL,FULL}_COVARIANCE

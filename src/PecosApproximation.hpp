@@ -86,6 +86,11 @@ public:
   /// invoke Pecos::PolynomialApproximation::allocate_arrays()
   void allocate_arrays();
 
+  /// initialize covariance accumulators with pointers to other QoI
+  void initialize_covariance(PecosApproximation* pecos_approx_2);
+  /// clear covariance pointers to other QoI
+  void clear_covariance_pointers();
+
   /// return the mean of the expansion, where all active variables are random
   Real mean();
   /// return the mean of the expansion for a given parameter vector,
@@ -348,6 +353,15 @@ dimension_decay_rates() const
 
 inline void PecosApproximation::allocate_arrays()
 { polyApproxRep->allocate_arrays(); }
+
+
+inline void PecosApproximation::
+initialize_covariance(PecosApproximation* pecos_approx_2)
+{ polyApproxRep->initialize_covariance(pecos_approx_2->polyApproxRep); }
+
+
+inline void PecosApproximation::clear_covariance_pointers()
+{ polyApproxRep->clear_covariance_pointers(); }
 
 
 inline Real PecosApproximation::mean()

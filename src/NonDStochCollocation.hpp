@@ -83,6 +83,10 @@ protected:
   //- Heading: Member functions
   //
 
+  /// initialize covariance pairings by passing all pointers for
+  /// approximation j to approximation i
+  void initialize_covariance();
+
   /// helper function to compute deltaRespVariance
   void compute_delta_variance(bool update_ref, bool print_metric);
   /// helper function to compute deltaRespCovariance

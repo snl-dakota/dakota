@@ -50,6 +50,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
   refineControl(
     probDescDB.get_short("method.nond.expansion_refinement_control")),
+  refineMetric(Pecos::NO_METRIC),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   maxRefineIterations(
     probDescDB.get_int("method.nond.max_refinement_iterations")),
@@ -89,8 +90,8 @@ NonDExpansion(unsigned short method_name, Model& model,
   numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
   nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
-  softConvLimit(3), maxRefineIterations(100), maxSolverIterations(-1),
-  ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
+  refineMetric(Pecos::NO_METRIC), softConvLimit(3), maxRefineIterations(100),
+  maxSolverIterations(-1), ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
   vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
@@ -430,25 +431,24 @@ void NonDExpansion::initialize_u_space_model()
   // Note: passing outputLevel again is redundant with DataFitSurrModel ctor.
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  short refine_metric = Pecos::NO_METRIC;
   if (refineControl) {
     // communicate refinement metric to Pecos (determines internal bookkeeping
     // requirements for some PolyApproximation types)
     if (totalLevelRequests) {
-      refine_metric = Pecos::LEVEL_STATS_METRIC;
+      refineMetric = Pecos::LEVEL_STATS_METRIC;
       for (size_t i=0; i<numFunctions; ++i)
 	if ( !requestedRelLevels[i].empty() ||
 	     ( respLevelTarget == RELIABILITIES &&
 	       !requestedRespLevels[i].empty() ) )
-	  { refine_metric = Pecos::MIXED_STATS_METRIC; break; }
+	  { refineMetric = Pecos::MIXED_STATS_METRIC; break; }
     }
     else
-      refine_metric = Pecos::COVARIANCE_METRIC;
+      refineMetric = Pecos::COVARIANCE_METRIC;
   }
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
-    refineControl, refine_metric, statsType, maxRefineIterations,
+    refineControl, refineMetric, statsType, maxRefineIterations,
     maxSolverIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
 
