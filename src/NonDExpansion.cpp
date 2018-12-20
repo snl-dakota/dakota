@@ -1233,9 +1233,8 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
-  // don't update statsType: employ either the default (ACTIVE) or the type
-  // from an outer routine (COMBINED from greedy_multifidelity_expansion())
-  //statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
+  // refinements track impact only with respect to the current level expansion
+  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
@@ -1286,14 +1285,14 @@ void NonDExpansion::greedy_multifidelity_expansion()
 {
   // clear any persistent state from previous (e.g., for OUU)
   NLev.clear();
-  // refine based on metrics from combined expansions
-  statistics_type(Pecos::COMBINED_EXPANSION_STATS);
 
   // Generate MF reference expansion that is starting pt for greedy refinement:
   // > Only generate combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}; active
   //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
   // > suppress individual refinement
   multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
+  // refine based on metrics from combined expansions
+  statistics_type(Pecos::COMBINED_EXPANSION_STATS);
   // update combined reference stats (can't increment as no deltas available)
   update_reference_stats();
 
