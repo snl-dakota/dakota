@@ -382,8 +382,8 @@ void NonDMultilevelPolynomialChaos::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
-  if (mlmfAllocControl == GREEDY_REFINEMENT)
-    statsType = Pecos::COMBINED_EXPANSION_STATS;
+  //if (mlmfAllocControl == GREEDY_REFINEMENT)
+  //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
   NonDPolynomialChaos::initialize_u_space_model();

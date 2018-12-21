@@ -1493,9 +1493,33 @@ void NonDExpansion::statistics_type(short stats_type)
 {
   if (statsType != stats_type) {
     statsType = stats_type;
+
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->refinement_statistics_type(stats_type);
+
+    // *** TO DO: clean up this logic
+    //
+    // expType{1,2}Coeffs and combinedType{1,2}Coeffs are distinct, but there
+    // is only one set of prodType{1,2}Coeffs accumulators, which must span all
+    // unique covariance pairs.  Therefore, when changing between active and
+    // combined stats, the products must be re-initialized.
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    PecosApproximation* poly_approx_rep
+      = (PecosApproximation*)poly_approxs[0].approx_rep();
+    // check if either unused or cleared by combined_to_active()
+    if (poly_approx_rep->product_interpolants()) {
+      size_t i, num_lev;  unsigned short lev, form;  bool multilev;
+      configure_levels(num_lev, form, multilev, true); // MF given precedence
+      // Note: this would be overkill after promoting combined to active
+      for (lev=0; lev<num_lev; ++lev) {
+	configure_indices(lev, form, multilev);
+	for (i=0; i<numFunctions; ++i) {
+	  poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+	  poly_approx_rep->initialize_products();
+	}
+      }
+    }
   }
 }
 

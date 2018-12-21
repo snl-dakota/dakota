@@ -90,6 +90,11 @@ public:
   void initialize_covariance(PecosApproximation* pecos_approx_2);
   /// clear covariance pointers to other QoI
   void clear_covariance_pointers();
+  /// initialize covariance accumulators (also reinitialize after change
+  /// in stats type)
+  void initialize_products();
+  /// query whether product interpolants are defined (non-empty)
+  bool product_interpolants();
 
   /// return the mean of the expansion, where all active variables are random
   Real mean();
@@ -362,6 +367,14 @@ initialize_covariance(PecosApproximation* pecos_approx_2)
 
 inline void PecosApproximation::clear_covariance_pointers()
 { polyApproxRep->clear_covariance_pointers(); }
+
+
+inline void PecosApproximation::initialize_products()
+{ polyApproxRep->initialize_products(); }
+
+
+inline bool PecosApproximation::product_interpolants()
+{ return polyApproxRep->product_interpolants(); }
 
 
 inline Real PecosApproximation::mean()
