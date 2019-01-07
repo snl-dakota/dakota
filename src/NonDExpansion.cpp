@@ -1881,11 +1881,12 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
-  // perform any roll-ups of expansion contributions, prior to metric compute
-  metric_roll_up();
-
+  // cache previous statistics
   RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
 
+  // perform any roll-ups of expansion contributions, prior to metric compute
+  metric_roll_up();
+  // compute/print new statistics
   compute_statistics(INTERMEDIATE_RESULTS);
   if (print_metric) print_results(Cout, INTERMEDIATE_RESULTS);
   const RealVector& final_stats_new = finalStatistics.function_values();

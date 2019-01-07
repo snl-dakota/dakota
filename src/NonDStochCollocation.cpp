@@ -484,26 +484,26 @@ compute_covariance_metric(bool revert, bool print_metric)
     // order to compute change in covariance
     //metric_roll_up();
 
+    // Metric scale is determined from reference covariance.  While defining
+    // the scale from an updated covariance would eliminate problems with zero
+    // covariance for adaptations from level 0, different refinement candidates
+    // would score equally at 1 (induced 100% of change in updated covariance)
+    // in this initial set of candidates.  Therefore, use reference covariance
+    // as the scale and mitigate underflow of its norm.
     Real scale, delta_norm;  bool update_ref = !revert;
     switch (covarianceControl) {
     case DIAGONAL_COVARIANCE: {
-      compute_delta_variance(update_ref, print_metric);
-      delta_norm = deltaRespVariance.normFrobenius();
       if (relativeMetric) // norm of reference variance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
+      compute_delta_variance(update_ref, print_metric);
+      delta_norm = deltaRespVariance.normFrobenius();
       break;
     }
     case FULL_COVARIANCE: {
-      compute_delta_covariance(update_ref, print_metric);
-      // Metric scale is determined from reference covariance.  While defining
-      // the scale from an updated covariance would eliminate problems with
-      // zero covariance for adaptations from level 0, different refinement
-      // candidates would score equally at 1 (induced 100% of change in
-      // updated covariance) in this initial set of candidates.  Therefore,
-      // use reference covariance as the scale and trap covariance underflows.
-      delta_norm = deltaRespCovariance.normFrobenius();
       if (relativeMetric) // norm of reference covariance, bounded from zero
 	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
+      compute_delta_covariance(update_ref, print_metric);
+      delta_norm = deltaRespCovariance.normFrobenius();
       break;
     }
     }
@@ -543,7 +543,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
       RealVector delta_final_stats, final_stats_new,
 	final_stats_ref = finalStatistics.function_values();
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
-	compute_statistics(false);                        // intermediate stats
+	compute_statistics(false); // intermediate stats
 	delta_final_stats = final_stats_new = finalStatistics.function_values();
 	delta_final_stats -= final_stats_ref; // compute delta
       }
@@ -578,7 +578,9 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
-	      ref = final_stats_ref[cntr]; 
+	      ref = final_stats_ref[cntr];
+	      // *** TO DO: also recompute for Pecos::HIPA::delta_beta_map()
+	      //            exceptions (sigma{old,new} = 0)
 	      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
 		// ref is undefined and delta neglects term; must compute new
 		if (!revert) {
