@@ -368,9 +368,9 @@ void NonDStochCollocation::initialize_u_space_model()
 
   // initialize product accumulators with PolynomialApproximation pointers
   // used in covariance calculations
-  if ( iteratedModel.surrogate_type() == "hierarchical" && //refineControl &&
-       ( refineMetric == Pecos::COVARIANCE_METRIC ||
-	 refineMetric == Pecos::MIXED_STATS_METRIC ) )
+  if ( expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT &&
+       refineControl && ( refineMetric == Pecos::COVARIANCE_METRIC ||
+			  refineMetric == Pecos::MIXED_STATS_METRIC ) )
       initialize_covariance();
 }
 
