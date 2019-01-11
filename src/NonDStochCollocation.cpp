@@ -579,8 +579,9 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
 	      ref = final_stats_ref[cntr];
-	      // *** TO DO: also recompute for Pecos::HIPA::delta_beta_map()
-	      //            exceptions (sigma{old,new} = 0)
+	      // Note: this captures the more likely of the Pecos::
+	      // HierarchInterpPolyApproximation::delta_beta_map() exceptions
+	      // (sigma_ref = 0), but not rare case of sigma_new = 0 by itself.
 	      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
 		// ref is undefined and delta neglects term; must compute new
 		if (!revert) {
