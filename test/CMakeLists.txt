@@ -136,8 +136,8 @@ function(dakota_app_test _test_name _last_subtest)
       ${_test_name}
       SUBTEST 0
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
-      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove ${_diffs_filename}
-      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
+      APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -154,7 +154,7 @@ function(dakota_app_test _test_name _last_subtest)
         add_application_test(
     	${_test_name}
   	SUBTEST ${st_num}
-    	APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+	APPLICATION COMMAND ${PERL_EXECUTABLE}
             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
               --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
               --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -175,8 +175,8 @@ function(dakota_app_test _test_name _last_subtest)
     add_application_test(
       ${_test_name}
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
-      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove ${_diffs_filename}
-      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
+      APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
