@@ -1209,10 +1209,15 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
 
 void NonDPolynomialChaos::print_results(std::ostream& s, short results_state)
 {
-  if (outputLevel >= NORMAL_OUTPUT)
-    print_coefficients(s);
-  if (!expansionExportFile.empty() && results_state == FINAL_RESULTS)
-    export_coefficients();
+  switch (results_state) {
+  case REFINEMENT_RESULTS:  case INTERMEDIATE_RESULTS:
+    if (outputLevel == DEBUG_OUTPUT)   print_coefficients(s);
+    break;
+  case FINAL_RESULTS:
+    if (outputLevel >= NORMAL_OUTPUT)  print_coefficients(s);
+    if (!expansionExportFile.empty())  export_coefficients();
+    break;
+  }
 
   NonDExpansion::print_results(s, results_state);
 }

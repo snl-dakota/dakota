@@ -594,9 +594,10 @@ void NonDMultilevelPolynomialChaos::core_run()
   else             Cout <<    "Multilevel UQ: ";
   Cout << "approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";
-  annotated_results(); // full set of statistics and debug traces (default)
-  if (!summaryOutputFlag) // post_run() output is suppressed, leading to
-    print_results(Cout);  // intermediate output wth no final output
+  compute_statistics(FINAL_RESULTS);
+  // Override summaryOutputFlag control (see Analyzer::post_run()) for ML case
+  // to avoid intermediate output with no final output
+  if (!summaryOutputFlag) print_results(Cout, FINAL_RESULTS);
 
   // clean up for re-entrancy of ML PCE
   uSpaceModel.clear_inactive();
@@ -1134,16 +1135,20 @@ scale_profile(const SizetArray& cardinality, Real factor, RealVector& new_N_l)
 void NonDMultilevelPolynomialChaos::
 print_results(std::ostream& s, short results_state)
 {
-  if (outputLevel >= NORMAL_OUTPUT)
-    print_coefficients(s);
-  if (!expansionExportFile.empty())
-    export_coefficients();
-
-  if (!NLev.empty()) {
-    s << "<<<<< Samples per solution level:\n";
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << std::endl;
+  switch (results_state) {
+  case REFINEMENT_RESULTS:  case INTERMEDIATE_RESULTS:
+    if (outputLevel == DEBUG_OUTPUT)   print_coefficients(s);
+    break;
+  case FINAL_RESULTS:
+    if (outputLevel >= NORMAL_OUTPUT)  print_coefficients(s);
+    if (!expansionExportFile.empty())  export_coefficients();
+    if (!NLev.empty()) {
+      s << "<<<<< Samples per solution level:\n";
+      print_multilevel_evaluation_summary(s, NLev);
+      s << "<<<<< Equivalent number of high fidelity evaluations: "
+	<< equivHFEvals << std::endl;
+    }
+    break;
   }
 
   // skip over NonDPolynomialChaos::print_results()

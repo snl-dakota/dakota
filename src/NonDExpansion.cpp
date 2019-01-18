@@ -543,6 +543,8 @@ construct_expansion_sampler(const String& import_approx_file,
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, false); // suppress PDFs (managed locally)
+    // also suppress final moments
+    exp_sampler_rep->final_moments_type(NO_MOMENTS);
 
     bool imp_sampling = false;
     if (integrationRefine && respLevelTarget != RELIABILITIES)
@@ -574,6 +576,7 @@ construct_expansion_sampler(const String& import_approx_file,
 	cdfFlag, false); // suppress PDFs (managed locally)
       // needed if export_approx_points_file:
       imp_sampler_rep->initialize_random_variables(natafTransform);// shared rep
+      //imp_sampler_rep->final_moments_type(NO_MOMENTS); // already off for AIS
     }
   }
   // publish output verbosity
@@ -595,29 +598,16 @@ void NonDExpansion::core_run()
   if (refineType)
     refine_expansion(); // uniform/adaptive p-/h-refinement
   
-  annotated_results(); // full set of statistics and debug traces (default)
+  compute_statistics(FINAL_RESULTS);
+  // Note: print_results() called by Analyzer::post_run()
   ++numUncertainQuant;
-}
-
-
-void NonDExpansion::update_final_statistics()
-{
-  // aleatory final stats & their grads are updated directly within
-  // compute_statistics() (NonD::update_aleatory_final_statistics() is awkward
-  // for NonDExpansion since Pecos manages the moment arrays), such that all
-  // that remains are system final stats and additional gradient scaling.
-  if (respLevelTargetReduce) {
-    update_system_final_statistics();
-    update_system_final_statistics_gradients();
-  }
-  update_final_statistics_gradients();
 }
 
 
 void NonDExpansion::initialize_expansion()
 {
-  // update ranVar info to capture any distribution param insertions
-  initialize_random_variable_parameters();
+  initialize_random_variable_parameters();//capture any distrib param insertions
+  if (totalLevelRequests) initialize_level_mappings(); // size computed*Levels
   resize_final_statistics_gradients(); // finalStats ASV available at run time
   transform_correlations();
 
@@ -882,28 +872,28 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // DataMethod default for maxRefineIterations is -1, indicating no user spec.
   // Assign a context-specific default in this case.
-  size_t i, iter = 1,
+  size_t  iter = 1,
     max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  bool  converged = (iter > max_refine),
-    unique_metric = (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT);
+  bool converged = (iter > max_refine);  Real metric;
 
-  // post-process nominal expansion
-  if (!converged)
-    annotated_refinement_results(true); // includes initialization of traces
+  // post-process nominal expansion, updating reference stats for refinement
+  if (!converged) {
+    compute_statistics(INTERMEDIATE_RESULTS);
+    print_results(Cout, INTERMEDIATE_RESULTS);
+  }
 
   pre_refinement();
 
-  Real metric;
   while (!converged) {
 
-    // Don't revert refinements.  Defer printing of metric unless it is unique
-    // relative to annotated_refinement_results() (i.e., a hierarchical delta)
-    core_refinement(metric, false, unique_metric);
+    // Don't revert refinements.  Print refinement metrics.
+    core_refinement(metric, false, true);
+
+    compute_statistics(REFINEMENT_RESULTS);
+    print_results(Cout, REFINEMENT_RESULTS);
+    Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
-    //if (!converged)
-      annotated_refinement_results(false); // no initialization of traces
-    Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
   }
 
   post_refinement(metric);
@@ -938,10 +928,15 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     update_expansion();
     // Note: covariance metric seems more self-consistent for Sobol'-weighted
-    // adaptivity, but allow final stats adaptation if mappings are used
-    metric = (totalLevelRequests) ?
-      compute_final_statistics_metric(revert, print_metric) :
-      compute_covariance_metric(revert, print_metric);
+    // aniso refinement, but allow final stats adaptation if mappings are used
+    switch (refineMetric) {
+    case Pecos::COVARIANCE_METRIC:
+      metric = compute_covariance_metric(revert, print_metric);      break;
+    //case Pecos::MIXED_STATS_METRIC: // TO DO
+    //  compute_mixed_metric() or compute_final_statistics_metric(); break;
+    default: //case Pecos::LEVEL_STATS_METRIC:
+      metric = compute_level_mappings_metric(revert, print_metric);  break;
+    }
     if (revert) pop_increment();
     else        merge_grid();
     break;
@@ -1248,11 +1243,10 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
     refine_expansion(); // uniform/adaptive refinement
-  // output and capture low fidelity results
+  compute_statistics(INTERMEDIATE_RESULTS);
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
-       << "\n--------------------------------------\n\n";
-  annotated_results(false); // intermediate results
+       << "\n--------------------------------------\n";
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // loop over each of the discrepancy levels
@@ -1266,11 +1260,10 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
     compute_expansion();  // nominal discrepancy expansion from input spec
     if (refine_type)
       refine_expansion(); // uniform/adaptive refinement
-
+    compute_statistics(INTERMEDIATE_RESULTS);
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
-	 << "\n-------------------------------------------\n\n";
-    annotated_results(false); // intermediate results
+	 << "\n-------------------------------------------\n";
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
@@ -1531,7 +1524,7 @@ void NonDExpansion::update_reference_stats()
   compute_covariance();
 
   // TO DO: unify with multifidelity_expansion() operations (+ output headers?)
-  //annotated_results(false); --> general metrics
+  //compute_statistics(INTERMEDIATE_RESULTS);
   //print_results(Cout, INTERMEDIATE_RESULTS);
 }
 
@@ -1585,13 +1578,18 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
   std::set<UShortArray>::const_iterator cit, cit_star;
   Real delta; delta_star = -DBL_MAX;
   RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
-  bool apply_best = !revert;
+  bool apply_best = !revert,
+       full_covar = (covarianceControl == FULL_COVARIANCE);
 
-  if (apply_best) { // store reference points for efficient restoration
-    if (totalLevelRequests)     stats_ref = finalStatistics.function_values();
-    else if (covarianceControl == FULL_COVARIANCE) covar_ref = respCovariance;
-    else                                           stats_ref = respVariance;
-  }
+  if (apply_best) // store reference points for efficient restoration
+    switch (refineMetric) {
+    case Pecos::COVARIANCE_METRIC:
+      if (full_covar) covar_ref = respCovariance;
+      else            stats_ref = respVariance;
+      break;
+    default:
+      pull_level_mappings(stats_ref);      break;
+    }
 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
@@ -1612,9 +1610,14 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     }
 
     // assess effect of increment (non-negative norm); restore ref once done
-    delta = (totalLevelRequests) ?
-      compute_final_statistics_metric(revert, print_metric) :
-      compute_covariance_metric(revert, print_metric);
+    switch (refineMetric) {
+    case Pecos::COVARIANCE_METRIC:
+      delta = compute_covariance_metric(revert, print_metric);       break;
+    //case Pecos::MIXED_STATS_METRIC: // TO DO
+    //  compute_mixed_metric() or compute_final_statistics_metric(); break;
+    default: //case Pecos::LEVEL_STATS_METRIC:
+      delta = compute_level_mappings_metric(revert, print_metric);   break;
+    }
     // normalize effect of increment based on cost (# of collocation pts).
     // Note: increment size must be nonzero since growth restriction is
     // precluded for generalized sparse grids.
@@ -1624,25 +1627,30 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
       cit_star = cit; delta_star = delta;
       // partial results tracking avoids need to recompute statistics
       // on the selected index set
-      if (apply_best) {
-	if (totalLevelRequests) stats_star = finalStatistics.function_values();
-	else if (covarianceControl == FULL_COVARIANCE)
-	                        covar_star = respCovariance;
-	else                    stats_star = respVariance;
-      }
+      if (apply_best)
+	switch (refineMetric) {
+	case Pecos::COVARIANCE_METRIC:
+	  if (full_covar) covar_star = respCovariance;
+	  else            stats_star = respVariance;
+	  break;
+	default:
+	  pull_level_mappings(stats_star);     break;
+	}
     }
-    //annotated_index_set_results(); // old data if reverted above
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store data for use in push,finalize
     nond_sparse->decrement_set(); // store data for use in push_set()
-
-    if (apply_best) { // if not previously reverted, revert now
-      if (totalLevelRequests)        finalStatistics.function_values(stats_ref);
-      else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_ref;
-      else                                             respVariance = stats_ref;
-    }
+    if (apply_best) // if not previously reverted, revert now
+      switch (refineMetric) {
+      case Pecos::COVARIANCE_METRIC:
+	if (full_covar) respCovariance = covar_ref;
+	else            respVariance   = stats_ref;
+	break;
+      default:
+	push_level_mappings(stats_ref);        break;
+      }
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
@@ -1653,9 +1661,14 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     nond_sparse->update_sets(*cit_star);
     uSpaceModel.push_approximation();
     nond_sparse->update_reference();
-    if (totalLevelRequests)         finalStatistics.function_values(stats_star);
-    else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_star;
-    else                                             respVariance = stats_star;
+    switch (refineMetric) {
+    case Pecos::COVARIANCE_METRIC:
+      if (full_covar) respCovariance = covar_star;
+      else            respVariance   = stats_star;
+      break;
+    default:
+      push_level_mappings(stats_star);        break;
+    }
   }
 
   return index_star;
@@ -1672,130 +1685,6 @@ void NonDExpansion::finalize_sets(bool converged_within_tol, bool reverted)
   nond_sparse->finalize_sets(output_sets, converged_within_tol, reverted);
   uSpaceModel.finalize_approximation();
   nond_sparse->update_reference(); // for completeness
-}
-
-
-/*
-void NonDExpansion::annotated_index_set_results()
-{
-  switch (refineControl) {
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
-    if (totalLevelRequests) { // both covariance and full results available
-      if (outputLevel == DEBUG_OUTPUT)
-	print_results(Cout, INTERMEDIATE_RESULTS);
-      //else print_covariance(Cout);
-    }
-    else { // only covariance available, compute full results if needed
-      if (outputLevel == DEBUG_OUTPUT) {
-	compute_statistics(INTERMEDIATE_RESULTS);
-	print_results(Cout, INTERMEDIATE_RESULTS);
-      }
-      else
-	print_covariance(Cout);
-    }
-    break;
-  }
-}
-*/
-
-
-void NonDExpansion::annotated_refinement_results(bool initialize)
-{
-#ifdef CONVERGENCE_DATA
-  // full results compute/print mirroring Analyzer::post_run(),
-  // allowing output level to be set low in performance testing
-  compute_statistics(INTERMEDIATE_RESULTS);
-  iteratedModel.print_evaluation_summary(Cout);
-  NonDExpansion::print_results(Cout, INTERMEDIATE_RESULTS);
-  if ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
-       ( expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
-	 expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ) ) {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_sparse->print_smolyak_multi_index();
-  }
-#else
-  switch (refineControl) {
-  case Pecos::UNIFORM_CONTROL:
-    // In these cases, metric calculations already performed are still valid
-    if (outputLevel == DEBUG_OUTPUT) { // compute/print all stats
-      compute_statistics(INTERMEDIATE_RESULTS);
-      print_results(Cout, INTERMEDIATE_RESULTS);
-    }
-    else // compute/print subset of stats required for convergence assessment
-      { if (initialize) compute_covariance(); print_covariance(Cout); }
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    // In these cases, metric calculations already performed are still valid
-    if (outputLevel == DEBUG_OUTPUT) { // compute/print all stats
-      compute_statistics(INTERMEDIATE_RESULTS);
-      print_results(Cout, INTERMEDIATE_RESULTS);
-    }
-    else // compute/print subset of stats required for convergence assessment
-      { if (initialize) compute_covariance(); print_covariance(Cout); }
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
-    // In this case, the last index set calculation may not be the selected
-    // index set. However, in the case where of non-debug output, we are using
-    // partial results updating to eliminate the need to recompute stats for
-    // the selected index set. This case also differs from other refinement
-    // cases above in that annotated_index_set_results() has already provided
-    // per increment output, so we do not push output if non-debug.
-    if (totalLevelRequests) {
-      //if (initialize || outputLevel == DEBUG_OUTPUT) {
-      //  compute_statistics(INTERMEDIATE_RESULTS);
-      //  print_results(Cout, INTERMEDIATE_RESULTS);
-      //}
-      if (initialize || outputLevel == DEBUG_OUTPUT)
-	compute_statistics(INTERMEDIATE_RESULTS);
-      if (outputLevel == DEBUG_OUTPUT)
-	print_results(Cout, INTERMEDIATE_RESULTS);
-      // else no output!
-    }
-    else {
-      if (outputLevel == DEBUG_OUTPUT) {
-	compute_statistics(INTERMEDIATE_RESULTS);
-	print_results(Cout, INTERMEDIATE_RESULTS);
-      }
-      else if (initialize)
-	{ compute_covariance(); print_covariance(Cout); }
-      // else no output!
-    }
-    break;
-  }
-#endif // CONVERGENCE_DATA
-}
-
-
-void NonDExpansion::annotated_results(short results_state)
-{
-#ifdef CONVERGENCE_DATA
-  // output fine-grained data on generalized index sets
-  if ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
-       ( expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
-	 expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ) ) {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_sparse->print_smolyak_multi_index();
-  }
-  // output spectral data for multilevel/multifidelity UQ. For finer grain data,
-  // activate DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp
-  if (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS ||
-      methodName ==    MULTILEVEL_POLYNOMIAL_CHAOS) {
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep;
-    for (size_t i=0; i<numFunctions; ++i) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      Cout << "Variable decay rates for response function " << i+1 << ":\n"
-	   << poly_approx_rep->dimension_decay_rates();
-    }
-  }
-#endif // CONVERGENCE_DATA
-
-  compute_statistics(results_state); // full or intermediate set of statistics
-  if (results_state == FINAL_RESULTS)
-    update_final_statistics(); // augment updates from compute_statistics()
 }
 
 
@@ -1876,6 +1765,61 @@ compute_covariance_metric(bool revert, bool print_metric)
 
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
 Real NonDExpansion::
+compute_level_mappings_metric(bool revert, bool print_metric)
+{
+  // default implementation for use when direct (hierarchical) calculation
+  // of increments is not available
+
+  // cache previous statistics
+  RealVector level_maps_ref;  pull_level_mappings(level_maps_ref);
+
+  // perform any roll-ups of expansion contributions, prior to metric compute
+  metric_roll_up();
+  // compute/print new statistics
+  compute_level_mappings();
+  if (print_metric) print_level_mappings(Cout);
+  RealVector level_maps_new;  pull_level_mappings(level_maps_new);
+
+#ifdef DEBUG
+  Cout << "level_maps_ref:\n" << level_maps_ref
+       << "level_maps_new:\n" << level_maps_new << std::endl;
+#endif // DEBUG
+
+  // sum up only the level mapping stats (don't mix with mean and variance due
+  // to scaling issues).  Note: if the level mappings are of mixed type, then
+  // would need to scale with a target value or measure norm of relative change.
+  Real sum_sq = 0., scale_sq = 0.;
+  size_t i, j, cntr = 0, num_lev_i;
+  for (i=0; i<numFunctions; ++i) {
+
+    // simple approach takes 2-norm of level mappings (no relative scaling),
+    // which should be fine for mappings that are not of mixed type
+    num_lev_i = requestedRespLevels[i].length() +
+      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+      requestedGenRelLevels[i].length();
+    for (j=0; j<num_lev_i; ++j, ++cntr) {
+      Real ref  = level_maps_ref[cntr], delta = level_maps_new[cntr] - ref;
+      if (relativeMetric) scale_sq += ref * ref;
+      sum_sq += delta * delta;
+    }
+  }
+
+  if (revert) push_level_mappings(level_maps_ref);
+
+  // Risk of zero reference is reduced relative to covariance control, but not
+  // eliminated. Trap this and also avoid possible bogus termination from using
+  // absolute change compared against relative conv tol.
+  if (relativeMetric) {
+    Real scale = std::max(Pecos::SMALL_NUMBER, std::sqrt(scale_sq));
+    return std::sqrt(sum_sq) / scale;
+  }
+  else
+    return std::sqrt(sum_sq);
+}
+
+
+/** computes a "goal-oriented" refinement metric employing finalStatistics */
+Real NonDExpansion::
 compute_final_statistics_metric(bool revert, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
@@ -1887,8 +1831,8 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   // perform any roll-ups of expansion contributions, prior to metric compute
   metric_roll_up();
   // compute/print new statistics
-  compute_statistics(INTERMEDIATE_RESULTS);
-  if (print_metric) print_results(Cout, INTERMEDIATE_RESULTS);
+  compute_statistics(FINAL_RESULTS); // no finalStats for REFINEMENT_RESULTS
+  if (print_metric) print_results(Cout, FINAL_RESULTS);
   const RealVector& final_stats_new = finalStatistics.function_values();
 
 #ifdef DEBUG
@@ -1914,9 +1858,8 @@ compute_final_statistics_metric(bool revert, bool print_metric)
       requestedGenRelLevels[i].length();
     */
 
-    // simple approach takes 2-norm of level mappings (no relative scaling),
-    // which should be fine for mappings that are not of mixed type
-    cntr += moment_offset; // skip moments
+    // *** TO DO: support mixed metrics based on finalStats ASV ***
+    cntr += moment_offset; // skip moments if final_stats
     num_lev_i = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
@@ -1960,21 +1903,12 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-
-    // InterpPolyApproximation::compute_*_effects() assumes moments are
-    // available and compute_statistics() has not been called if !DEBUG_OUTPUT
-    if (outputLevel < DEBUG_OUTPUT) {
-      if (all_vars)
-	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
-      else
-	poly_approx_rep->compute_moments(false, combined_stats);
-    }
-
     if (!vbdOrderLimit) // no order limit --> component used within total
       poly_approx_rep->compute_component_effects();
     poly_approx_rep->compute_total_effects(); // from scratch or using component
+
     // Note: response functions for which negligible variance is detected have
-    // their totalSobolIndices assigned to zero.  This avoid corrupting the
+    // their totalSobolIndices assigned to zero.  This avoids corrupting the
     // aggregation, although the scaling that follows could be improved to
     // divide by the number of nonzero contributions (avg_sobol is currently
     // used only in a relative sense, so this is low priority).
@@ -2146,30 +2080,66 @@ void NonDExpansion::compute_combined_off_diagonal_covariance()
     log results within final_stats for use in OUU. */
 void NonDExpansion::compute_statistics(short results_state)
 {
-  // initialize computed*Levels and expGradsMeanX
-  if (totalLevelRequests)
-    initialize_level_mappings();
-
   // restore variable settings following build/refine: supports local
   // sensitivities, expansion/importance sampling for all vars mode
   // (uses ALEATORY_UNCERTAIN sampling mode), and external uses of the
   // emulator model (emulator-based inference).
   uSpaceModel.continuous_variables(initialPtU);
 
-  // -----------------------------
-  // Calculate analytic statistics
-  // -----------------------------
-  compute_analytic_statistics(results_state); // stats derived from exp coeffs
+  switch (results_state) {
+  case REFINEMENT_RESULTS:
+    // compute_{covariance,level_mapping,final_statistics}_metric must perform
+    // the necessary computations for resolving delta.normFrobenius()
+    //switch (refineMetric) {
+    //case Pecos::COVARIANCE_METRIC:
+    //  compute_covariance();                         break;
+    //case Pecos::MIXED_STATS_METRIC:
+    //  compute_moments(); compute_level_mappings();  break;
+    //case Pecos::LEVEL_STATS_METRIC:
+    //  compute_level_mappings();                     break;
+    //}
 
-  // ------------------------------
-  // Calculate numerical statistics
-  // ------------------------------
-  if (!expansionSampler.is_null()) // statistics from sampling on the expansion
-    compute_numerical_statistics();
+    // mirror requirements for additional diagnostics in print_results()
+    //switch (refineControl) {
+    //case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
+      // print_smolyak_multi_index() requires nothing additional
+      //break;
+    //case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+      // dimension_decay_rates() output only requires coefficients + basis norms
+      //break;
+    //case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+      // print_sobol_indices() requires compute_sobol_indices(), but
+      // increment_grid() --> reduce_total_sobol_sets() takes care of this
+      //compute_sobol_indices();
+      //break;
+    //}
+    break;
+  case INTERMEDIATE_RESULTS:
+    switch (refineMetric) {
+    case Pecos::NO_METRIC: // possible for multifidity_expansion()
+      compute_moments(); if (totalLevelRequests) compute_level_mappings();
+      break;
+    case Pecos::COVARIANCE_METRIC:
+      compute_covariance();                         break;
+    case Pecos::MIXED_STATS_METRIC:
+      compute_moments(); compute_level_mappings();  break;
+    case Pecos::LEVEL_STATS_METRIC:
+      compute_level_mappings();                     break;
+    }
+    break;
+  case FINAL_RESULTS:
+    // -----------------------------
+    // Calculate analytic statistics: includes derivs + finalStats updating
+    // -----------------------------
+    compute_analytic_statistics(); // stats derived from exp coeffs
+    // ------------------------------
+    // Calculate numerical statistics: with finalStats updating (no derivs)
+    // ------------------------------
+    compute_numerical_statistics(); // stats from sampling on expansion
 
-  // archive the active variables with the results
-  if (results_state == FINAL_RESULTS) {
-    if (resultsDB.active()) {
+    // update finalStatistics and archive results
+    update_final_statistics(); // augments updates embedded above
+    if (resultsDB.active()) { // archive the active variables with the results
       resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
 		       iteratedModel.continuous_variable_labels());
       resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
@@ -2177,12 +2147,178 @@ void NonDExpansion::compute_statistics(short results_state)
     }
     archive_moments();
     archive_coefficients();
+    if (vbdFlag) archive_sobol_indices();
+    break;
   }
 }
 
 
-void NonDExpansion::compute_analytic_statistics(short results_state)
+void NonDExpansion::compute_level_mappings()
 {
+  // for use with incremental results states (combines code from
+  // compute_analytic_statistics() and compute_numerical_statistics(),
+  // which support the final results state)
+
+  // perform sampling on expansion for any numerical level mappings
+  RealVector  exp_sampler_stats;  RealVectorArray imp_sampler_stats;
+  RealRealPairArray min_max_fns;  ShortArray            sampler_asv;
+  define_sampler_asv(sampler_asv);
+  if (non_zero(sampler_asv)) {
+    run_sampler(sampler_asv, exp_sampler_stats);
+    refine_sampler(imp_sampler_stats, min_max_fns);
+  }
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+
+  // flags for limiting unneeded computation (matched in print_results())
+  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
+       combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS),
+       z_to_beta = (respLevelTarget == RELIABILITIES),
+       imp_sampling = !importanceSampler.is_null();
+
+  // loop over response fns and compute/store analytic stats/stat grads
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  Real mu, var, sigma, p, z_bar, beta_bar;
+  size_t i, j, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
+    moment_offset = (finalMomentsType) ? 2 : 0, sampler_moment_offset = 0;
+  if (exp_sampler_rep != NULL && exp_sampler_rep->final_moments_type())
+    sampler_moment_offset = 2;
+  PecosApproximation* poly_approx_rep;
+  for (i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    rl_len = requestedRespLevels[i].length();
+    pl_len = requestedProbLevels[i].length();
+    bl_len = requestedRelLevels[i].length();
+    gl_len = requestedGenRelLevels[i].length();
+    cntr += moment_offset;
+    // sampler_cntr tracks only the numerical stats (analytic level mappings
+    // and final moments are suppressed in construct_expansion_sampler())
+    sampler_cntr += sampler_moment_offset;
+
+    // Note: corresponding logic in NonDExpansion::compute_expansion() defines
+    // expansionCoeffFlag as needed to support final data requirements.
+    // If not full stats, suppress secondary moment calculations.
+    bool moments_flag = false;
+    if (z_to_beta) {
+      size_t offset = cntr;
+      for (j=0; j<rl_len; ++j)
+	if (final_asv[j+offset] & 1)
+	  { moments_flag = true; break; }
+    }
+    if (!moments_flag) {
+      size_t offset = cntr + rl_len + pl_len;
+      for (j=0; j<bl_len; ++j)
+	if (final_asv[j+offset] & 1)
+	  { moments_flag = true; break; }
+    }
+    if (moments_flag) {
+      if (all_vars)
+	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
+      else
+	poly_approx_rep->compute_moments(false, combined_stats);
+
+      const RealVector& moments = poly_approx_rep->moments(); // virtual
+      mu = moments[0]; var = moments[1]; // Pecos provides central moments
+
+      if (var >= 0.)
+	sigma = std::sqrt(var);
+      else { // negative variance can happen with SC on sparse grids
+	Cerr << "Warning: stochastic expansion variance is negative in "
+	     << "computation of std deviation.\n         Setting std "
+	     << "deviation to zero." << std::endl;
+	sigma = 0.;
+      }
+    }
+
+    if (z_to_beta) {
+      for (j=0; j<rl_len; ++j, ++cntr) // don't increment sampler_cntr
+	if (final_asv[cntr] & 1) {
+	  z_bar = requestedRespLevels[i][j];
+	  if (sigma > Pecos::SMALL_NUMBER)
+	    computedRelLevels[i][j] = (cdfFlag) ?
+	      (mu - z_bar)/sigma : (z_bar - mu)/sigma;
+	  else
+	    computedRelLevels[i][j] =
+	      ( (cdfFlag && mu <= z_bar) || (!cdfFlag && mu > z_bar) ) ?
+	      -Pecos::LARGE_NUMBER : Pecos::LARGE_NUMBER;
+	}
+    }
+    else {
+      for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
+	if (final_asv[cntr] & 1) {
+	  p = (imp_sampling) ? imp_sampler_stats[i][j]
+	                     : exp_sampler_stats[sampler_cntr];
+	  if (respLevelTarget == PROBABILITIES)
+	    computedProbLevels[i][j] = p;
+	  else if (respLevelTarget == GEN_RELIABILITIES)
+	    computedGenRelLevels[i][j]
+	      = -Pecos::NormalRandomVariable::inverse_std_cdf(p);
+	}
+      }
+    }
+
+    for (j=0; j<pl_len; ++j, ++cntr, ++sampler_cntr)
+      if (final_asv[cntr] & 1)
+	computedRespLevels[i][j] = exp_sampler_stats[sampler_cntr];
+
+    for (j=0; j<bl_len; ++j, ++cntr) // don't increment sampler_cntr
+      if (final_asv[cntr] & 1) {
+        beta_bar = requestedRelLevels[i][j];
+	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
+	  mu - beta_bar * sigma : mu + beta_bar * sigma;
+      }
+
+    for (j=0; j<gl_len; ++j, ++cntr, ++sampler_cntr)
+      if (final_asv[cntr] & 1)
+	computedRespLevels[i][j+pl_len+bl_len]
+	  = exp_sampler_stats[sampler_cntr];
+  }
+}
+
+
+void NonDExpansion::compute_moments()
+{
+  // for use with incremental results states
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
+  PecosApproximation* poly_approx_rep;
+  for (size_t i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep->expansion_coefficient_flag()) {
+      if (all_vars)
+	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
+      else
+	poly_approx_rep->compute_moments(false, combined_stats);
+    }
+  }
+}
+
+
+void NonDExpansion::compute_sobol_indices()
+{
+  // for use with incremental results states
+
+  if (!vbdFlag) return;
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep;
+  for (size_t i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep->expansion_coefficient_flag()) {
+      poly_approx_rep->compute_component_effects(); // main or main+interaction
+      poly_approx_rep->compute_total_effects();     // total
+    }
+  }
+}
+
+
+void NonDExpansion::compute_analytic_statistics()
+{
+  // for use with FINAL_RESULTS state
+
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
@@ -2190,16 +2326,9 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
     num_final_grad_vars = final_dvv.size(), total_offset,
     moment_offset = (finalMomentsType) ? 2 : 0;
 
-  // define flags for limiting unneeded computation (matched in print_results())
-  bool full_stats  = (results_state == FINAL_RESULTS),
-    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
-  bool local_grad_stats = (full_stats && !subIteratorFlag &&
-    outputLevel >= NORMAL_OUTPUT);
-  bool vbd_stats = ( vbdFlag && ( full_stats ||
-    refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ) );
-  bool refine_by_covar = (totalLevelRequests == 0); // *** TO DO: mixed refinement stats (beta level mappings)
-  bool full_covar_stats = ( covarianceControl == FULL_COVARIANCE &&
-			    ( full_stats || refine_by_covar ) );
+  // flags for limiting unneeded computation (matched in print_results())
+  bool   combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
+  bool local_grad_stats = (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT);
 
   if (local_grad_stats && expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
@@ -2226,9 +2355,9 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
     // If not full stats, suppress secondary moment calculations.
     if (poly_approx_rep->expansion_coefficient_flag()) {
       if (all_vars)
-	poly_approx_rep->compute_moments(initialPtU,full_stats,combined_stats);
+	poly_approx_rep->compute_moments(initialPtU, true, combined_stats);
       else
-	poly_approx_rep->compute_moments(full_stats,combined_stats);
+	poly_approx_rep->compute_moments(true, combined_stats);
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
       mu = moments[0]; var = moments[1]; // Pecos provides central moments
@@ -2410,89 +2539,52 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
     }
 
     // *** global sensitivities:
-    if (vbd_stats && poly_approx_rep->expansion_coefficient_flag()) {
+    if (vbdFlag && poly_approx_rep->expansion_coefficient_flag()) {
       poly_approx_rep->compute_component_effects(); // main or main+interaction
       poly_approx_rep->compute_total_effects();     // total
     }
   }
-  if (full_covar_stats)
+
+  if (covarianceControl == FULL_COVARIANCE)
     compute_off_diagonal_covariance(); // diagonal entries were filled in above
- 
-  if (vbd_stats)
-    archive_sobol_indices();
 }
 
 
 void NonDExpansion::compute_numerical_statistics()
 {
+  // for use with FINAL_RESULTS state
+
+  if (expansionSampler.is_null()) return;
+
+  RealVector  exp_sampler_stats;  RealVectorArray imp_sampler_stats;
+  RealRealPairArray min_max_fns;  ShortArray            sampler_asv;
+  define_sampler_asv(sampler_asv);
+  run_sampler(sampler_asv, exp_sampler_stats);
+  refine_sampler(imp_sampler_stats, min_max_fns);
+
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  size_t i, j, cntr, sampler_cntr;
-  Real p, gen_beta, z;
-
-  bool list_sampling = (expansionSampler.method_name() == LIST_SAMPLING);
-  ShortArray sampler_asv;
-  if (list_sampling)
-    sampler_asv.assign(numFunctions, 1);
-  else {
-    sampler_asv.assign(numFunctions, 0); cntr = 0;
-    // response fn is active for z->p, z->beta*, p->z, or beta*->z
-    size_t moment_offset = (finalMomentsType) ? 2 : 0;
-    for (i=0; i<numFunctions; ++i) {
-      cntr += moment_offset;
-      size_t rl_len = requestedRespLevels[i].length();
-      if (respLevelTarget != RELIABILITIES)
-	for (j=0; j<rl_len; ++j)
-	  if (final_asv[cntr+j] & 1)
-	    { sampler_asv[i] |= 1; break; }
-      cntr += rl_len;
-      size_t pl_len = requestedProbLevels[i].length();
-      for (j=0; j<pl_len; ++j)
-	if (final_asv[cntr+j] & 1)
-	  { sampler_asv[i] |= 1; break; }
-      cntr += pl_len + requestedRelLevels[i].length();
-      size_t gl_len = requestedGenRelLevels[i].length();
-      for (j=0; j<gl_len; ++j)
-	if (final_asv[cntr+j] & 1)
-	  { sampler_asv[i] |= 1; break; }
-      cntr += gl_len;
-    }
-  }
-  expansionSampler.active_set_request_vector(sampler_asv);
-
-  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  expansionSampler.run(pl_iter);
+  bool list_sampling = (expansionSampler.method_name() == LIST_SAMPLING),
+        imp_sampling = !importanceSampler.is_null();
   NonDSampling* exp_sampler_rep
     = (NonDSampling*)expansionSampler.iterator_rep();
-  if (list_sampling) // full set of numerical statistics, including PDFs
-    exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
-					expansionSampler.all_responses());
-  else { // augment moment-based with sampling-based mappings (PDFs suppressed)
-    exp_sampler_rep->compute_level_mappings(expansionSampler.all_responses());
-    exp_sampler_rep->update_final_statistics();
-  }
-  const RealVector& exp_sampler_stats
-    = expansionSampler.response_results().function_values();
- 
-  // Update probability estimates with importance sampling, if requested.
-  RealVectorArray imp_sampler_stats; RealRealPairArray min_max_fns;
-  bool imp_sampling = !importanceSampler.is_null();
-  if (imp_sampling)
-    compute_numerical_stat_refinements(imp_sampler_stats, min_max_fns);
-  else if (pdfOutput) // NonDSampling::extremeValues not avail (pdfOutput off)
-    exp_sampler_rep->compute_intervals(min_max_fns);
+  size_t i, j, cntr = 0, sampler_cntr = 0,
+    moment_offset = (finalMomentsType) ? 2 : 0,
+    sampler_moment_offset = (exp_sampler_rep->final_moments_type()) ? 2 : 0;
+  Real p, gen_beta, z;
 
   // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
   // are not recomputed since empty level arrays are passed in construct_
   // expansion_sampler() and these levels are omitted from sampler_cntr.
   archive_allocate_mappings();
-  cntr = sampler_cntr = 0;
-  size_t moment_offset = (finalMomentsType) ? 2 : 0,
-    sampler_moment_offset = (exp_sampler_rep->final_moments_type()) ? 2 : 0;
+
   for (i=0; i<numFunctions; ++i) {
-    cntr += moment_offset; sampler_cntr += sampler_moment_offset;
+    cntr += moment_offset;
+    // sampler_cntr tracks only the numerical stats (analytic level mappings
+    // and final moments are suppressed in construct_expansion_sampler())
+    sampler_cntr += sampler_moment_offset;
 
     if (respLevelTarget == RELIABILITIES)
-      cntr += requestedRespLevels[i].length();
+      cntr += requestedRespLevels[i].length(); // don't increment sampler_cntr
     else {
       size_t rl_len = requestedRespLevels[i].length();
       for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
@@ -2535,7 +2627,7 @@ void NonDExpansion::compute_numerical_statistics()
     }
 
     size_t bl_len = requestedRelLevels[i].length();
-    cntr += bl_len;
+    cntr += bl_len; // don't increment sampler_cntr
 
     size_t gl_len = requestedGenRelLevels[i].length();
     for (j=0; j<gl_len; ++j, ++cntr, ++sampler_cntr) {
@@ -2574,16 +2666,21 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
     = expansionSampler.response_results().function_values();
   int exp_cv = exp_vars.numRows();
 
-  size_t i, j, sampler_cntr = 0;
-  imp_sampler_stats.resize(numFunctions);
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
   NonDAdaptImpSampling* imp_sampler_rep
     = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+
+  size_t i, j, exp_sampler_cntr = 0;
+  imp_sampler_stats.resize(numFunctions);
   bool x_data_flag = false;
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  size_t sampler_moment_offset
-    = (imp_sampler_rep->final_moments_type()) ? 2 : 0;
+  size_t exp_sampler_moment_offset
+    = (exp_sampler_rep->final_moments_type()) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
-    sampler_cntr += sampler_moment_offset;
+    // exp_sampler_cntr tracks only the numerical stats (analytic level mappings
+    // and final moments are suppressed in construct_expansion_sampler())
+    exp_sampler_cntr += exp_sampler_moment_offset;
     size_t rl_len = requestedRespLevels[i].length();
     if (rl_len && respLevelTarget != RELIABILITIES) {
       imp_sampler_stats[i].resize(rl_len);
@@ -2599,11 +2696,11 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 	initial_points[m] = sdv_array[m].continuous_variables(); // view OK
       for (m=0; m<numSamplesOnExpansion; ++m)
 	copy_data(exp_vars[m], exp_cv, initial_points[m+num_data_pts]);
-      for (j=0; j<rl_len; ++j, ++sampler_cntr) {
+      for (j=0; j<rl_len; ++j, ++exp_sampler_cntr) {
 	//Cout << "Initial estimate of p to seed "
-	//     << exp_sampler_stats[sampler_cntr] << '\n';
+	//     << exp_sampler_stats[exp_sampler_cntr] << '\n';
 	imp_sampler_rep->initialize(initial_points, x_data_flag, i, 
-	  exp_sampler_stats[sampler_cntr], requestedRespLevels[i][j]);
+	  exp_sampler_stats[exp_sampler_cntr], requestedRespLevels[i][j]);
           
 	importanceSampler.run(pl_iter);
 
@@ -2613,13 +2710,85 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 	imp_sampler_stats[i][j] = imp_sampler_rep->final_probability();
       }
     }
-    // sampler_cntr offset by moments, rl_len for p, pl_len, and gl_len
-    sampler_cntr += requestedProbLevels[i].length()
-                 +  requestedGenRelLevels[i].length();
+    // exp_sampler_cntr offset by moments, rl_len for p, pl_len, and gl_len
+    exp_sampler_cntr += requestedProbLevels[i].length()
+                     +  requestedGenRelLevels[i].length();
   }
   // update min_max_fns for use in defining bounds for outer PDF bins
   if (pdfOutput)
     min_max_fns = imp_sampler_rep->extreme_values();
+}
+
+
+void NonDExpansion::define_sampler_asv(ShortArray& sampler_asv)
+{
+  if (expansionSampler.method_name() == LIST_SAMPLING)
+    sampler_asv.assign(numFunctions, 1);
+  else {
+    sampler_asv.assign(numFunctions, 0);
+    // response fn is active for z->p, z->beta*, p->z, or beta*->z
+    const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+    size_t i, j, cntr = 0, moment_offset = (finalMomentsType) ? 2 : 0;
+    for (i=0; i<numFunctions; ++i) {
+      cntr += moment_offset;
+      size_t rl_len = requestedRespLevels[i].length();
+      if (respLevelTarget != RELIABILITIES)
+	for (j=0; j<rl_len; ++j)
+	  if (final_asv[cntr+j] & 1)
+	    { sampler_asv[i] |= 1; break; }
+      cntr += rl_len;
+      size_t pl_len = requestedProbLevels[i].length();
+      for (j=0; j<pl_len; ++j)
+	if (final_asv[cntr+j] & 1)
+	  { sampler_asv[i] |= 1; break; }
+      cntr += pl_len + requestedRelLevels[i].length();
+      size_t gl_len = requestedGenRelLevels[i].length();
+      for (j=0; j<gl_len; ++j)
+	if (final_asv[cntr+j] & 1)
+	  { sampler_asv[i] |= 1; break; }
+      cntr += gl_len;
+    }
+  }
+}
+
+
+void NonDExpansion::
+run_sampler(const ShortArray& sampler_asv, RealVector& exp_sampler_stats)
+{
+  if (expansionSampler.is_null()) return;
+
+  expansionSampler.active_set_request_vector(sampler_asv);
+
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  expansionSampler.run(pl_iter);
+
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+  if (expansionSampler.method_name() == LIST_SAMPLING)
+    // full set of numerical statistics, including PDFs
+    exp_sampler_rep->compute_statistics(expansionSampler.all_samples(),
+					expansionSampler.all_responses());
+  else { // augment moment-based with sampling-based mappings (PDFs suppressed)
+    exp_sampler_rep->compute_level_mappings(expansionSampler.all_responses());
+    exp_sampler_rep->update_final_statistics();
+  }
+  exp_sampler_stats = expansionSampler.response_results().function_values();
+}
+
+
+void NonDExpansion::
+refine_sampler(RealVectorArray& imp_sampler_stats,
+	       RealRealPairArray& min_max_fns)
+{
+  // Update probability estimates with importance sampling, if requested.
+  if (!importanceSampler.is_null())
+    compute_numerical_stat_refinements(imp_sampler_stats, min_max_fns);
+  else if (pdfOutput && !expansionSampler.is_null()) {
+    // NonDSampling::extremeValues not avail (pdfOutput off)
+    NonDSampling* exp_sampler_rep
+      = (NonDSampling*)expansionSampler.iterator_rep();
+    exp_sampler_rep->compute_intervals(min_max_fns);
+  }
 }
 
 
@@ -2707,6 +2876,7 @@ void NonDExpansion::archive_moments()
     }
   }
 }
+
 
 void NonDExpansion::archive_sobol_indices() {
 
@@ -2865,6 +3035,7 @@ void NonDExpansion::archive_sobol_indices() {
     }
   }
 }
+
 
 void NonDExpansion::update_final_statistics_gradients()
 {
@@ -3191,57 +3362,106 @@ void NonDExpansion::print_local_sensitivity(std::ostream& s)
 
 void NonDExpansion::print_results(std::ostream& s, short results_state)
 {
-  bool full_data = (results_state == FINAL_RESULTS);
-  s << std::scientific << std::setprecision(write_precision);
-
   // Print analytic moments and local and global sensitivities, defined from
   // expansion coefficients
 
-  s << "-----------------------------------------------------------------------"
-    << "------\nStatistics derived analytically from polynomial expansion:\n";
-  if (full_data || !totalLevelRequests)
+  s << std::scientific << std::setprecision(write_precision);
+  switch (results_state) {
+  case REFINEMENT_RESULTS: {
+    //if (outputLevel == DEBUG_OUTPUT) {
+      //iteratedModel.print_evaluation_summary(s); // add to incremental output
+      // full results compute/print (mirroring Analyzer::post_run()) allows
+      // output level to be set low in performance testing
+      // ...
+    //}
+
+    // Output of the relevant refinement metrics occurs in
+    // compute_{covariance,level_mapping,final_statistics}_metric();
+    // additional refinement control diagnostics are output here:
+    switch (refineControl) {
+    case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
+      if (outputLevel == DEBUG_OUTPUT) {
+	// output fine-grained data on generalized index sets
+	NonDSparseGrid* nond_sparse
+	  = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+	nond_sparse->print_smolyak_multi_index();
+      }
+      break;
+    case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+      if (outputLevel >= NORMAL_OUTPUT) {
+	// output spectral data for ML-MF UQ (for finer grain data, activate
+	// DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp).
+	std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+	PecosApproximation* poly_approx_rep;
+	for (size_t i=0; i<numFunctions; ++i) {
+	  poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+	  s << "Variable decay rates for response function " << i+1 << ":\n"
+	    << poly_approx_rep->dimension_decay_rates();
+	}
+      }
+      break;
+    case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+      if (outputLevel >= NORMAL_OUTPUT)
+	print_sobol_indices(s); // requires compute_statistics()
+      break;
+    }
+    break;
+  }
+  case INTERMEDIATE_RESULTS: {
+    switch (refineMetric) {
+    case Pecos::NO_METRIC:
+      print_moments(s); if (totalLevelRequests) print_level_mappings(s); break;
+    case Pecos::COVARIANCE_METRIC:
+      print_covariance(s);                                               break;
+    case Pecos::MIXED_STATS_METRIC:
+      print_moments(s); print_level_mappings(s);                         break;
+    case Pecos::LEVEL_STATS_METRIC:
+      print_level_mappings(s);                                           break;
+    }
+    break;
+  }
+  case FINAL_RESULTS: {
+    s << "\n-------------------------------------------------------------------"
+      << "----------\nStatistics derived analytically from polynomial expansion"
+      << ":\n";
     print_moments(s);
-  if ( full_data || ( !totalLevelRequests &&
-       refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ) )
     print_covariance(s);
+    if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT)
+      print_local_sensitivity(s);
+    if (vbdFlag) print_sobol_indices(s);
 
-  if ( full_data && !subIteratorFlag && outputLevel >= NORMAL_OUTPUT )
-    print_local_sensitivity(s);
-  if ( vbdFlag && ( full_data ||
-		    refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ) )
-    print_sobol_indices(s);
-
-  // Print level mapping statistics (typically from sampling on expansion)
-
-  NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
-  bool exp_sampling = (exp_sampler_rep != NULL),
-      list_sampling = (exp_sampling &&
-		       exp_sampler_rep->method_name() == LIST_SAMPLING);
-  if (list_sampling) {
-    // all stats are delegated since local moments are not relevant in this case
+    // Print level mapping statistics (typically from sampling on expansion)
+    NonDSampling* exp_sampler_rep
+      = (NonDSampling*)expansionSampler.iterator_rep();
+    bool exp_sampling = (exp_sampler_rep != NULL),
+        list_sampling = (exp_sampling &&
+			 exp_sampler_rep->method_name() == LIST_SAMPLING);
+    if (list_sampling) {
+      // all stats delegated since local moments are not relevant in this case
+      s << "-------------------------------------------------------------------"
+	<< "----------\nStatistics based on " << numSamplesOnExpansion
+	<< " imported samples performed on polynomial expansion:\n";
+      exp_sampler_rep->print_statistics(s);
+    }
+    else if (totalLevelRequests) {
+      s << "-------------------------------------------------------------------"
+	<< "----------\nStatistics based on ";
+      if (exp_sampling)
+	s << numSamplesOnExpansion << " samples performed on polynomial "
+	  << "expansion:\n";
+      else
+	s << "projection of analytic moments:\n";
+      // no stats are delegated since we mix numerical stats with local analytic
+      // moment-based projections (more accurate than sample moment-based
+      // projections).  In addition, we may have local probability refinements.
+      print_level_mappings(s);
+      print_system_mappings(s); // works off of finalStatistics -> no delegation
+    }
     s << "---------------------------------------------------------------------"
-      << "--------\nStatistics based on " << numSamplesOnExpansion
-      << " imported samples performed on polynomial expansion:\n";
-    exp_sampler_rep->print_statistics(s);
+      << "--------" << std::endl;
+    break;
   }
-  else if (totalLevelRequests) {
-    s << "---------------------------------------------------------------------"
-      << "--------\nStatistics based on ";
-    if (exp_sampling)
-      s << numSamplesOnExpansion << " samples performed on polynomial "
-	<< "expansion:\n";
-    else
-      s << "projection of analytic moments:\n";
-    // no stats are delegated since we mix numerical stats with local analytic
-    // moment-based projections (more accurate than sample moment-based
-    // projections).  In addition, we may have local probability refinements.
-    print_level_mappings(s);
-    print_system_mappings(s); // works off of finalStatistics -> no delegation
   }
-
-  s << "-----------------------------------------------------------------------"
-    << "------" << std::endl;
 }
 
 } // namespace Dakota

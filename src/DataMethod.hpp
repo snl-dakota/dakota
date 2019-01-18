@@ -105,8 +105,10 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
 enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
        DEBUG_OUTPUT };
 // define special values for printing of different results states
-enum { NO_RESULTS, //REFINEMENT_RESULTS, ITERATION_RESULTS,
-       INTERMEDIATE_RESULTS, FINAL_RESULTS };
+enum { NO_RESULTS=0,        // suppress all results
+       REFINEMENT_RESULTS,  // results following a (minor) refinement iteration
+       INTERMEDIATE_RESULTS,// results following a (major) alg stage/model level
+       FINAL_RESULTS };     // final UQ results (throttled if subIterator)
 
 // define special values for Iterator and Interface scheduling
 enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING, 

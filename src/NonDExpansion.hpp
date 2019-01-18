@@ -110,6 +110,8 @@ protected:
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric(bool revert, bool print_metric);
   /// compute 2-norm of change in final statistics
+  virtual Real compute_level_mappings_metric(bool revert, bool print_metric);
+  /// compute 2-norm of change in final statistics
   virtual Real compute_final_statistics_metric(bool revert, bool print_metric);
 
   //
@@ -246,13 +248,20 @@ protected:
   /// using the combined expansion coefficients
   void compute_combined_off_diagonal_covariance();
 
-  /// calculate analytic and numerical statistics from the expansion
-  void compute_statistics(short results_state = FINAL_RESULTS);
+  /// compute expansion moments; this uses a lightweight approach for
+  /// incremental statistics (no additional moments; no finalStatistics update)
+  void compute_moments();
+  /// compute all analytic/numerical level mappings; this uses a lightweight
+  /// approach for incremental statistics (no derivatives, no finalStatistics
+  /// update)
+  void compute_level_mappings();
+  /// compute Sobol' indices for main, interaction, and total effects; this
+  /// is intended for incremental statistics
+  void compute_sobol_indices();
 
-  /// manage computing of results and debugging outputs, for either the final
-  /// set of results (full statistics) or an intermediate set of results
-  /// (reduced set of core results used for levels/fidelities, etc.)
-  void annotated_results(short results_state = FINAL_RESULTS);
+  /// calculate analytic and numerical statistics from the expansion,
+  /// supporting {REFINEMENT,INTERMEDIATE,FINAL}_RESULTS modes
+  void compute_statistics(short results_state = FINAL_RESULTS);
 
   /// print resp{Variance,Covariance}
   void print_covariance(std::ostream& s);
@@ -381,25 +390,32 @@ private:
   void select_candidate(size_t best_candidate);
 
   /// analytic portion of compute_statistics() from post-processing of
-  /// expansion coefficients
-  void compute_analytic_statistics(short results_state = FINAL_RESULTS);
-  /// numerical portion of compute_statistics() from sampling on the expansion
+  /// expansion coefficients (used for FINAL_RESULTS)
+  void compute_analytic_statistics();
+  /// numerical portion of compute_statistics() from sampling on the
+  /// expansion (used for FINAL_RESULTS)
   void compute_numerical_statistics();
   /// refinements to numerical probability statistics from importanceSampler
   void compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 					  RealRealPairArray& min_max_fns);
 
+  /// helper to define the expansionSampler's data requests when sampling on
+  /// the expansion
+  void define_sampler_asv(ShortArray& sampler_asv);
+  /// helper to run the expansionSampler and compute its statistics
+  void run_sampler(const ShortArray& sampler_asv,
+		   RealVector& exp_sampler_stats);
+  /// helper to refine the results from expansionSampler with importance
+  /// sampling (for probability levels) or bounds post-processing (for PDFs)
+  void refine_sampler(RealVectorArray& imp_sampler_stats,
+		      RealRealPairArray& min_max_fns);
+  
   /// print expansion and numerical moments
   void print_moments(std::ostream& s);
   /// print global sensitivity indices
   void print_sobol_indices(std::ostream& s);
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
-
-  // manage print of results following a generalized index set increment
-  //void annotated_index_set_results();
-  /// manage print of results following a refinement increment
-  void annotated_refinement_results(bool initialize);
 
   //
   //- Heading: Data
@@ -583,6 +599,20 @@ inline void NonDExpansion::compute_covariance()
   case Pecos::COMBINED_EXPANSION_STATS:
     compute_combined_covariance(); break;
   }
+}
+
+
+inline void NonDExpansion::update_final_statistics()
+{
+  // aleatory final stats & their grads are updated directly within
+  // compute_statistics() (NonD::update_aleatory_final_statistics() is awkward
+  // for NonDExpansion since Pecos manages the moment arrays), such that all
+  // that remains are system final stats and additional gradient scaling.
+  if (respLevelTargetReduce) {
+    update_system_final_statistics();
+    update_system_final_statistics_gradients();
+  }
+  update_final_statistics_gradients();
 }
 
 

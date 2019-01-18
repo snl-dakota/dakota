@@ -160,6 +160,18 @@ bool operator!=(typename boost::multi_array<T, 1>::template
 // miscellaneous numerical utilities
 // ---------------------------------
 
+/// checks for any non-zero value in std::vector(); useful for determining
+/// whether an array of request codes (e.g., an ASV) has any actionable content
+template <typename OrdinalType>
+bool non_zero(const std::vector<OrdinalType>& vec)
+{
+  size_t i, len = vec.size();
+  for (i=0; i<len; ++i)
+    if (vec[i] != 0)
+      return true;
+  return false; // includes case of empty vector (no actions)
+}
+
 /// Computes relative change between RealVectors using Euclidean L2 norm
 Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv);
 

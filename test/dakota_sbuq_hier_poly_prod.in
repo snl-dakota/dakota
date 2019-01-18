@@ -38,7 +38,7 @@ method,
 #	  dimension_adaptive p_refinement generalized	#s2,#s5
 #	  sparse_grid_level_sequence = 0  	#s1,#s2,#s4,#s5
 #	  quadrature_order_sequence  = 1	#s7,#s9
-#	  sparse_grid_level_sequence = 5 2	#s10
+#	  sparse_grid_level_sequence = 5 3	#s10
 #	  piecewise use_derivatives		#s10
 	  variance_based_decomp
 
@@ -51,13 +51,13 @@ model,
 #	    first_order				#s10
 
 variables,
-# Numerical issues with div by 0 at x=0:
+# Numerical issues with div by 0 at x1=x2=0 and for piecewise at x1=1,x2=2:
 #	normal_uncertain = 2
 #      	  means             =  0.   0.
 #	  std_deviations    =  1.   1.
 	uniform_uncertain = 2
-	  lower_bounds      =  1.   1.
-	  upper_bounds	    =  5.   5.
+	  lower_bounds      =  2.   2.
+	  upper_bounds	    =  6.   6.
 	  descriptors       = 'x1' 'x2'
 
 responses,

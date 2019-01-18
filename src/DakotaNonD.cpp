@@ -1886,6 +1886,62 @@ void NonD::initialize_final_statistics()
 }
 
 
+void NonD::pull_level_mappings(RealVector& level_maps)
+{
+  level_maps.sizeUninitialized(totalLevelRequests);
+
+  size_t i, j, num_lev, cntr = 0;
+  for (i=0; i<numFunctions; ++i) {
+    num_lev = requestedRespLevels[i].length();
+    switch (respLevelTarget) {
+    case PROBABILITIES:
+      for (j=0; j<num_lev; ++j, ++cntr)
+	level_maps[cntr] = computedProbLevels[i][j];
+      break;
+    case RELIABILITIES:
+      for (j=0; j<num_lev; ++j, ++cntr)
+	level_maps[cntr] = computedRelLevels[i][j];
+      break;
+    case GEN_RELIABILITIES:
+      for (j=0; j<num_lev; ++j, ++cntr)
+	level_maps[cntr] = computedGenRelLevels[i][j];
+      break;
+    }
+    num_lev = requestedProbLevels[i].length() + requestedRelLevels[i].length()
+            + requestedGenRelLevels[i].length();
+    for (j=0; j<num_lev; ++j, ++cntr)
+      level_maps[cntr] = computedRespLevels[i][j];
+  }
+}
+
+
+void NonD::push_level_mappings(const RealVector& level_maps)
+{
+  size_t i, j, num_lev, cntr = 0;
+  for (i=0; i<numFunctions; ++i) {
+    num_lev = requestedRespLevels[i].length();
+    switch (respLevelTarget) {
+    case PROBABILITIES:
+      for (j=0; j<num_lev; ++j, ++cntr)
+	computedProbLevels[i][j] = level_maps[cntr];
+      break;
+    case RELIABILITIES:
+      for (j=0; j<num_lev; ++j, ++cntr)
+	computedRelLevels[i][j] = level_maps[cntr];
+      break;
+    case GEN_RELIABILITIES:
+      for (j=0; j<num_lev; ++j, ++cntr)
+	computedGenRelLevels[i][j] = level_maps[cntr];
+      break;
+    }
+    num_lev = requestedProbLevels[i].length() + requestedRelLevels[i].length()
+            + requestedGenRelLevels[i].length();
+    for (j=0; j<num_lev; ++j, ++cntr)
+      computedRespLevels[i][j] = level_maps[cntr];
+  }
+}
+
+
 void NonD::
 load_pilot_sample(const SizetArray& pilot_spec, SizetArray& delta_N_l)
 {
