@@ -2410,11 +2410,10 @@ print_level_mappings(std::ostream& s, String qoi_type,
 
 
 void NonD::
-print_level_mappings(std::ostream& s, const RealVector& final_stats,
-		     const String& prepend)
+print_level_mappings(std::ostream& s, const RealVector& level_maps,
+		     bool moment_offset, const String& prepend)
 {
-  if (final_stats.empty()) // equivalent to !totalLevelMappings
-    return;
+  if (level_maps.empty()) return;
 
   if (prepend.empty())   s << "\nLevel mappings for each response function:\n";
   else s << '\n' << prepend << " level mappings for each response function:\n";
@@ -2423,7 +2422,7 @@ print_level_mappings(std::ostream& s, const RealVector& final_stats,
     width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
   const StringArray& qoi_labels = iteratedModel.response_labels();
   for (i=0, cntr=0; i<numFunctions; ++i) {
-    cntr += 2; // skip moments
+    if (moment_offset) cntr += 2; // skip over moments, if present
     if (cdfFlag) s << "Cumulative Distribution Function (CDF) for ";
     else s << "Complementary Cumulative Distribution Function (CCDF) for ";
     s << qoi_labels[i] << ":\n     Response Level  Probability Level  "
@@ -2435,27 +2434,27 @@ print_level_mappings(std::ostream& s, const RealVector& final_stats,
       s << "  " << std::setw(width) << req_z_levs[j] << "  ";
       switch (respLevelTarget) {
       case PROBABILITIES:
-	s << std::setw(width) << final_stats[cntr] << '\n'; break;
+	s << std::setw(width) << level_maps[cntr] << '\n'; break;
       case RELIABILITIES:
-	s << std::setw(w2p2)  << final_stats[cntr] << '\n'; break;
+	s << std::setw(w2p2)  << level_maps[cntr] << '\n'; break;
       case GEN_RELIABILITIES:
-	s << std::setw(w3p4)  << final_stats[cntr] << '\n'; break;
+	s << std::setw(w3p4)  << level_maps[cntr] << '\n'; break;
       }
     }
     const RealVector& req_p_levs = requestedProbLevels[i];
     size_t num_p_levs = req_p_levs.length();
     for (j=0; j<num_p_levs; ++j, ++cntr)
-      s << "  " << std::setw(width) << final_stats[cntr]
+      s << "  " << std::setw(width) << level_maps[cntr]
 	<< "  "	<< std::setw(width) << req_p_levs[j] << '\n';
     const RealVector& req_b_levs = requestedRelLevels[i];
     size_t num_b_levs = req_b_levs.length();
     for (j=0; j<num_b_levs; ++j, ++cntr)
-      s << "  " << std::setw(width) << final_stats[cntr]
+      s << "  " << std::setw(width) << level_maps[cntr]
 	<< "  "	<< std::setw(w2p2)  << req_b_levs[j] << '\n';
     const RealVector& req_g_levs = requestedGenRelLevels[i];
     size_t num_g_levs = req_g_levs.length();
     for (j=0; j<num_g_levs; ++j, ++cntr)
-      s << "  " << std::setw(width) << final_stats[cntr]
+      s << "  " << std::setw(width) << level_maps[cntr]
 	<< "  "	<< std::setw(w3p4)  << req_g_levs[j] << '\n';
   }
 }

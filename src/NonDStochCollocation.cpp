@@ -643,9 +643,10 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 	     << "NonDStochCollocation::compute_level_mappings_metric().\n"
 	     << "         Omitting affected level mappings." << std::endl;
 
-      // As for compute_delta_covariance(), print level mapping deltas:
+      // As for compute_delta_covariance(), print level mapping deltas
+      // (without a moment offset as for final_stats):
       if (print_metric)
-	print_level_mappings(Cout, delta_level_maps, "Change in");
+	print_level_mappings(Cout, delta_level_maps, false, "Change in");
       // Level mappings: revert to previous or promote to new
       if (revert) push_level_mappings(level_maps_ref); // restore reference
       else        push_level_mappings(level_maps_new); // publish delta updates
@@ -801,8 +802,10 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	     << "         Omitting affected final statistics." << std::endl;
 
       // As for compute_delta_covariance(), print level mapping deltas:
-      if (print_metric)
-	print_level_mappings(Cout, delta_final_stats, "Change in");
+      if (print_metric) {
+        bool moments = (finalMomentsType > NO_MOMENTS);
+	print_level_mappings(Cout, delta_final_stats, moments, "Change in");
+      }
       // Final stats: revert to previous or promote to new
       if (!revert)
 	finalStatistics.function_values(final_stats_new);
