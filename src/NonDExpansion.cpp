@@ -933,7 +933,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     case Pecos::COVARIANCE_METRIC:
       metric = compute_covariance_metric(revert, print_metric);      break;
     //case Pecos::MIXED_STATS_METRIC: // TO DO
-    //  compute_mixed_metric() or compute_final_statistics_metric(); break;
+    //  compute_mixed_metric(); [retire compute_final_stats_metric()] break;
     default: //case Pecos::LEVEL_STATS_METRIC:
       metric = compute_level_mappings_metric(revert, print_metric);  break;
     }
@@ -1614,7 +1614,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     case Pecos::COVARIANCE_METRIC:
       delta = compute_covariance_metric(revert, print_metric);       break;
     //case Pecos::MIXED_STATS_METRIC: // TO DO
-    //  compute_mixed_metric() or compute_final_statistics_metric(); break;
+    //  compute_mixed_metric(); [retire compute_final_stats_metric()] break;
     default: //case Pecos::LEVEL_STATS_METRIC:
       delta = compute_level_mappings_metric(revert, print_metric);   break;
     }
@@ -1763,7 +1763,7 @@ compute_covariance_metric(bool revert, bool print_metric)
 }
 
 
-/** computes a "goal-oriented" refinement metric employing finalStatistics */
+/** computes a "goal-oriented" refinement metric employing computed*Levels */
 Real NonDExpansion::
 compute_level_mappings_metric(bool revert, bool print_metric)
 {
@@ -1798,7 +1798,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
     for (j=0; j<num_lev_i; ++j, ++cntr) {
-      Real ref  = level_maps_ref[cntr], delta = level_maps_new[cntr] - ref;
+      Real ref = level_maps_ref[cntr], delta = level_maps_new[cntr] - ref;
       if (relativeMetric) scale_sq += ref * ref;
       sum_sq += delta * delta;
     }
@@ -1818,7 +1818,8 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 }
 
 
-/** computes a "goal-oriented" refinement metric employing finalStatistics */
+/*
+// computes a "goal-oriented" refinement metric employing finalStatistics
 Real NonDExpansion::
 compute_final_statistics_metric(bool revert, bool print_metric)
 {
@@ -1827,6 +1828,8 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 
   // cache previous statistics
   RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
+  // *** Note: this requires that the reference includes FINAL_RESULTS,
+  // *** which is not currently true (only INTERMEDIATE_RESULTS)
 
   // perform any roll-ups of expansion contributions, prior to metric compute
   metric_roll_up();
@@ -1847,16 +1850,15 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   size_t i, j, cntr = 0, num_lev_i, moment_offset = (finalMomentsType) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
 
-    /* this modification can be used to mirror the metrics in Gerstner & Griebel
-       2003.  However, their approach uses a hierarchical integral contribution
-       evaluation which is less prone to roundoff (and is refined to very tight
-       tolerances in the paper).
-    if (!finalMomentsType) { Cerr << "Error: "; abort_handler(METHOD_ERROR); }
-    sum_sq += std::pow(delta_final_stats[cntr], 2.); // mean
-    cntr += moment_offset + requestedRespLevels[i].length() +
-      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
-      requestedGenRelLevels[i].length();
-    */
+    // This modification can be used to mirror the metrics in Gerstner & Griebel
+    // 2003.  However, their approach uses a hierarchical integral contribution
+    // evaluation which is less prone to roundoff (and is refined to very tight
+    // tolerances in the paper).
+    //if (!finalMomentsType) { Cerr << "Error: "; abort_handler(METHOD_ERROR); }
+    //sum_sq += std::pow(delta_final_stats[cntr], 2.); // mean
+    //cntr += moment_offset + requestedRespLevels[i].length() +
+    //  requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+    //  requestedGenRelLevels[i].length();
 
     // *** TO DO: support mixed metrics based on finalStats ASV ***
     cntr += moment_offset; // skip moments if final_stats
@@ -1882,6 +1884,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   else
     return std::sqrt(sum_sq);
 }
+*/
 
 
 void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)

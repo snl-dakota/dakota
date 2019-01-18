@@ -111,8 +111,8 @@ protected:
   virtual Real compute_covariance_metric(bool revert, bool print_metric);
   /// compute 2-norm of change in final statistics
   virtual Real compute_level_mappings_metric(bool revert, bool print_metric);
-  /// compute 2-norm of change in final statistics
-  virtual Real compute_final_statistics_metric(bool revert, bool print_metric);
+  // compute 2-norm of change in final statistics
+  //virtual Real compute_final_statistics_metric(bool revert,bool print_metric);
 
   //
   //- Heading: Virtual function redefinitions
