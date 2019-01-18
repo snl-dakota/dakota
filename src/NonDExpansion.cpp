@@ -2119,11 +2119,14 @@ void NonDExpansion::compute_statistics(short results_state)
     break;
   case INTERMEDIATE_RESULTS:
     switch (refineMetric) {
-    case Pecos::NO_METRIC: // possible for multifidity_expansion()
+    case Pecos::NO_METRIC: // possible for multifidelity_expansion()
       compute_moments(); if (totalLevelRequests) compute_level_mappings();
       break;
     case Pecos::COVARIANCE_METRIC:
-      compute_covariance();                         break;
+      compute_moments(); // no additional cost (mean,variance reused)
+      if (covarianceControl == FULL_COVARIANCE)
+	compute_off_diagonal_covariance();
+      break;
     case Pecos::MIXED_STATS_METRIC:
       compute_moments(); compute_level_mappings();  break;
     case Pecos::LEVEL_STATS_METRIC:
@@ -2295,6 +2298,12 @@ void NonDExpansion::compute_moments()
 	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
       else
 	poly_approx_rep->compute_moments(false, combined_stats);
+
+      // extract variance (Pecos provides central moments)
+      if (covarianceControl ==  DIAGONAL_COVARIANCE)
+	respVariance[i]      = poly_approx_rep->moments()[1];
+      else if (covarianceControl == FULL_COVARIANCE)
+	respCovariance(i,i)  = poly_approx_rep->moments()[1];
     }
   }
 }
@@ -3415,7 +3424,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
     case Pecos::NO_METRIC:
       print_moments(s); if (totalLevelRequests) print_level_mappings(s); break;
     case Pecos::COVARIANCE_METRIC:
-      print_covariance(s);                                               break;
+      print_moments(s); print_covariance(s);                             break;
     case Pecos::MIXED_STATS_METRIC:
       print_moments(s); print_level_mappings(s);                         break;
     case Pecos::LEVEL_STATS_METRIC:
@@ -3424,9 +3433,9 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
     break;
   }
   case FINAL_RESULTS: {
-    s << "\n-------------------------------------------------------------------"
-      << "----------\nStatistics derived analytically from polynomial expansion"
-      << ":\n";
+    s << "---------------------------------------------------------------------"
+      << "--------\nStatistics derived analytically from polynomial expansion:"
+      << '\n';
     print_moments(s);
     print_covariance(s);
     if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT)

@@ -268,10 +268,40 @@ void SharedResponseData::reshape(size_t num_fns)
     //}
 
     // reshape function labels
-    srdRep->functionLabels.resize(num_fns);
-    build_labels(srdRep->functionLabels, "f");
+    reshape_labels(srdRep->functionLabels, num_fns);
     // update scalar counts (update of field counts requires addtnl data)
     srdRep->numScalarResponses = num_fns - num_field_functions();
+  }
+}
+
+
+void SharedResponseData::
+reshape_labels(StringArray& resp_labels, size_t num_new)
+{
+  // Replicate or prune response labels to meet new size.
+  // Could consider adding / deleting additional level annotation,
+  // e.g. "response_fn_i" --> "response_fn_i_lev_j".
+  size_t num_curr = resp_labels.size();
+  bool overwrite = false;
+  if (num_new > num_curr) {
+    if (num_new % num_curr) // not a growth factor
+      overwrite = true;
+    else { // inflate using set replication (no added annotation)
+      resp_labels.resize(num_new);
+      for (size_t i=num_curr; i<num_new; ++i)
+	resp_labels[i] = resp_labels[i % num_curr];
+    }
+  }
+  else if (num_curr > num_new) {
+    if (num_curr % num_new)
+      overwrite = true;
+    else // deflate by concatenation (no annotation to remove)
+      resp_labels.resize(num_new);
+  }
+
+  if (overwrite) { // last resort
+    resp_labels.resize(num_new);
+    build_labels(resp_labels, "f");
   }
 }
 

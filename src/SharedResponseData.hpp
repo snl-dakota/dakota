@@ -236,6 +236,8 @@ public:
   SharedResponseData copy() const;
   /// reshape the data, disconnecting a shared rep if necessary
   void reshape(size_t num_fns);
+  /// reshape the response labels using inflation/deflation if possible
+  void reshape_labels(StringArray& resp_labels, size_t num_fns);
 
   /// return true if empty handle with null representation
   bool is_null() const;
