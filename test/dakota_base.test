@@ -52003,6 +52003,9 @@ Moment statistics for each response function:
   integration:  4.0000000000e-01  3.7712361663e-01  9.7907092780e-01  3.9366515837e-01
 dakota_uq_rosenbrock_adapt_exp.in
 Test Number 0 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  3.1117783411e+02
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.5566666667e+02   P0   P0
@@ -52040,8 +52043,38 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 1 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  3.1117783411e+02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.4643288072e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.4643288072e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0259831510e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.5566666667e+02   P0   P0
@@ -52079,11 +52112,14 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.5123068614e-01
 Test Number 2 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  3.1117783411e+02
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.5566666667e+02   P0   P0
@@ -52113,8 +52149,38 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 3 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  3.1117783411e+02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.4643288072e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.4643288072e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0259831510e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    4.5566666667e+02   P0   P0
@@ -52144,11 +52210,14 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.5123068614e-01
 Test Number 4 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  1.0555925140e+02  5.1027789884e+00 -3.0687940258e+01
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52158,8 +52227,38 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 5 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  1.0555925140e+02  5.1027789884e+00 -3.0687940258e+01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      4.3166909639e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      4.3166909639e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3642483964e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52169,11 +52268,14 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.5123068614e-01
 Test Number 6 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  1.0555925140e+02  5.1027789884e+00 -3.0687940258e+01
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52183,8 +52285,38 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 7 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  1.0555925140e+02  5.1027789884e+00 -3.0687940258e+01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      4.3166909639e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      4.3166909639e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3642483964e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.8102196823e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5123068614e-01
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52194,11 +52326,14 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
                       2.9636448672e-01  5.0253108617e-01 x2
-                      2.0616659946e-01 x1 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.5123068614e-01
 Test Number 8 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0030000000e+03  6.0200664448e+02  6.6222241832e-05 -1.9999117042e+00
 <<<<< Function evaluation summary: 401 total (401 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52208,8 +52343,221 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.8833005303e-01  7.0591589058e-01 x1
                       2.9408410942e-01  5.1166994697e-01 x2
-                      2.1758583755e-01 x1 x2
+                      2.1758583755e-01 x1 x2 
 Test Number 9 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0030000000e+03  6.0200664448e+02  6.6222241832e-05 -1.9999117042e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.6660945676e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.4616426885e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.7193922979e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.1837091368e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0464292746e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.8022164402e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3829660626e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.2999770965e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1005407559e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.2439715129e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.4516656696e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.6303082484e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.2990847557e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5793164242e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.9578251056e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.3917543819e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.0183594761e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2986126954e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.8486595941e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.6105765767e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.4319007452e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.3857338293e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.5830143854e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1819061830e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1666728403e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4449502579e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1319579661e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6884989006e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.9700875416e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2327286853e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6343365085e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4541207241e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4302717436e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.8143717136e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.3782744965e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2180904038e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5158866015e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1678456621e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1625046494e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2737504503e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2214551966e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2107651640e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5501697485e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.3012069227e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4955865076e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4797979415e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4781204131e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5889607128e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4820158141e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6461770269e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4258003238e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4241367291e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5336500148e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6322931947e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5792093267e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5721414729e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5703775968e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6909181982e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5566516814e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5053650447e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4985015850e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6117122237e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4849248526e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4353079276e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4804248781e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5366909250e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4218619114e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4180980462e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4176833357e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4707994639e-01
 <<<<< Function evaluation summary: 257 total (257 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52219,11 +52567,14 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9449186920e-01  7.0898126693e-01 x1
                       2.9101873307e-01  5.0550813080e-01 x2
-                      2.1448939774e-01 x1 x2
+                      2.1448939774e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.4210858092e-01
 Test Number 10 succeeded
+Moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  4.0233333333e+02 -5.6106044444e+05 -1.4473781286e+09 -2.6696996979e+12
 <<<<< Function evaluation summary: 273 total (273 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52233,8 +52584,227 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9690703296e-01  7.0470301625e-01 x1
                       2.9529698375e-01  5.0309296704e-01 x2
-                      2.0779598328e-01 x1 x2
+                      2.0779598328e-01 x1 x2 
 Test Number 11 succeeded
+Moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  4.0233333333e+02 -5.6106044444e+05 -1.4473781286e+09 -2.6696996979e+12
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0000000000e+50
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0000000000e+50
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0000000000e+50
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      2.1811745466e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      2.0644651962e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      2.1744435578e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.4269454969e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3931679699e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.4250816423e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3998707586e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3911356968e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3914332071e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3679638098e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3660413472e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3663228012e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3663960991e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3659214622e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3644072392e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3644803317e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3642877839e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.7432861423e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.1628204449e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.3628518998e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.1625646271e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.6346799502e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6571171180e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.1596264882e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.6345425850e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.3699602458e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6842904708e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.3544555733e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.6330248647e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6840770565e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2811218971e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2579926231e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.6816491729e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2578127924e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.9154095097e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5511936871e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1662096588e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.2557878112e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.9152539599e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1675948661e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1675948661e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.8358809440e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      6.9135193817e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1674216713e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4495478632e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.0791574614e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.1654761398e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4493534154e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5253926148e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.3504044636e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4471532285e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.3502176762e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4232316592e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4232316592e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.3481093423e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4230392648e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4982673523e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4208637059e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4980690646e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5173845255e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4958228096e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5171847173e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5149202166e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5147206155e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4893904959e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5147652659e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4891929222e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5084386565e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4892372042e-01
 <<<<< Function evaluation summary: 273 total (273 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52244,7 +52814,7 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       4.9690703296e-01  7.0470301625e-01 x1
                       2.9529698375e-01  5.0309296704e-01 x2
-                      2.0779598328e-01 x1 x2
+                      2.0779598328e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.5080850560e-01
@@ -52443,24 +53013,36 @@ Moment statistics for each response function:
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 dakota_uq_rosenbrock_adapt_sc.in
 Test Number 0 succeeded
+Moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  1.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
 <<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
   integration:  4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
 Test Number 1 succeeded
+Moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  1.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
   integration:  4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
 Test Number 2 succeeded
+Moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  1.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
 <<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
   integration:  4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
 Test Number 3 succeeded
+Moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  1.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -52577,6 +53159,113 @@ Moment statistics for each response function:
    5.0000000000e+02                     -7.3089744884e-02
    1.0000000000e+03                     -8.9741017591e-01
 Test Number 5 succeeded
+Moment statistics for each response function:
+                            Mean          Variance        3rdCentral        4thCentral
+ response_fn_1  1.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      1.0000000000e+50
+   1.0000000000e+00                     -1.0000000000e+50
+   5.0000000000e+01                     -1.0000000000e+50
+   1.0000000000e+02                     -1.0000000000e+50
+   5.0000000000e+02                     -1.0000000000e+50
+   1.0000000000e+03                     -1.0000000000e+50
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      1.1255807182e+00
+   1.0000000000e+00                      1.1180339887e+00
+   5.0000000000e+01                      7.0715649788e-01
+   1.0000000000e+02                      2.8789375210e-01
+   5.0000000000e+02                     -3.0662082141e+00
+   1.0000000000e+03                     -7.2588356720e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      1.1211292195e+00
+   1.0000000000e+00                      1.1179978976e+00
+   5.0000000000e+01                      9.4751481567e-01
+   1.0000000000e+02                      7.7355248721e-01
+   5.0000000000e+02                     -6.1814614046e-01
+   1.0000000000e+03                     -2.3577694250e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      1.1255807182e+00
+   1.0000000000e+00                      1.1180339887e+00
+   5.0000000000e+01                      7.0715649788e-01
+   1.0000000000e+02                      2.8789375210e-01
+   5.0000000000e+02                     -3.0662082141e+00
+   1.0000000000e+03                     -7.2588356720e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      4.3157436287e+00
+   1.0000000000e+00                      4.3072176114e+00
+   5.0000000000e+01                      3.8430233380e+00
+   1.0000000000e+02                      3.3693557122e+00
+   5.0000000000e+02                     -4.1998529496e-01
+   1.0000000000e+03                     -5.1566615538e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      4.3157436287e+00
+   1.0000000000e+00                      4.3072176114e+00
+   5.0000000000e+01                      3.8430233380e+00
+   1.0000000000e+02                      3.3693557122e+00
+   5.0000000000e+02                     -4.1998529496e-01
+   1.0000000000e+03                     -5.1566615538e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      8.8082862032e-01
+   1.0000000000e+00                      8.7908848915e-01
+   5.0000000000e+01                      7.8434801415e-01
+   1.0000000000e+02                      6.8767406006e-01
+   5.0000000000e+02                     -8.5717572623e-02
+   1.0000000000e+03                     -1.0524571135e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      1.3639490002e+00
+   1.0000000000e+00                      1.3612544350e+00
+   5.0000000000e+01                      1.2145503280e+00
+   1.0000000000e+02                      1.0648522596e+00
+   5.0000000000e+02                     -1.3273228728e-01
+   1.0000000000e+03                     -1.6297129709e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      8.8082862032e-01
+   1.0000000000e+00                      8.7908848915e-01
+   5.0000000000e+01                      7.8434801415e-01
+   1.0000000000e+02                      6.8767406006e-01
+   5.0000000000e+02                     -8.5717572623e-02
+   1.0000000000e+03                     -1.0524571135e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      7.5106582206e-01
+   1.0000000000e+00                      7.4958204528e-01
+   5.0000000000e+01                      6.6879864304e-01
+   1.0000000000e+02                      5.8636659994e-01
+   5.0000000000e+02                     -7.3089744884e-02
+   1.0000000000e+03                     -8.9741017591e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      7.5106582206e-01
+   1.0000000000e+00                      7.4958204528e-01
+   5.0000000000e+01                      6.6879864304e-01
+   1.0000000000e+02                      5.8636659994e-01
+   5.0000000000e+02                     -7.3089744884e-02
+   1.0000000000e+03                     -8.9741017591e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      7.5106582206e-01
+   1.0000000000e+00                      7.4958204528e-01
+   5.0000000000e+01                      6.6879864304e-01
+   1.0000000000e+02                      5.8636659994e-01
+   5.0000000000e+02                     -7.3089744884e-02
+   1.0000000000e+03                     -8.9741017591e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      7.5106582206e-01
+   1.0000000000e+00                      7.4958204528e-01
+   5.0000000000e+01                      6.6879864304e-01
+   1.0000000000e+02                      5.8636659994e-01
+   5.0000000000e+02                     -7.3089744884e-02
+   1.0000000000e+03                     -8.9741017591e-01
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
