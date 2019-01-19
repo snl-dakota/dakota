@@ -555,10 +555,9 @@ void SeqHybridMetaIterator::print_results(std::ostream& s, short results_state)
 	if (!vars.is_null())
 	  s << "<<<<< Best parameters          (set " << cntr+1 << ") =\n"
 	    << vars;
-	if (!resp.is_null()) {
-	  s << "<<<<< Best response functions  (set " << cntr+1 << ") =\n";
-	  write_data(s, resp.function_values());
-	}
+	if (!resp.is_null())
+	  s << "<<<<< Best response functions  (set " << cntr+1 << ") =\n"
+	    << resp.function_values();
       }
     }
   }

@@ -982,8 +982,7 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   
   if (outputLevel >= DEBUG_OUTPUT) {
     // write samples to output
-    Cout << "Select refinement pts: best_samples =\n";
-    write_data(Cout, best_samples);
+    Cout << "Select refinement pts: best_samples =\n" << best_samples;
 
     // write samples to file
     std::ofstream export_file_stream;
@@ -1050,7 +1049,7 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
   Pecos::util::truncated_pivoted_lu_factorization(A, L_factor, U_factor, pivots,
 						  new_size, numSamplesOnModel);
   if (outputLevel >= DEBUG_OUTPUT)
-    { Cout << "Select refinement pts: pivots =\n"; write_data(Cout, pivots); }
+    Cout << "Select refinement pts: pivots =\n" << pivots;
 
   // On return, pivots is size new_size and contains indices of rows of A.
   // Entries i=numSamplesOnModel to i<new_size identify points to select to
@@ -1065,10 +1064,8 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
     for (j=0; j<numContinuousVars; ++j)
       b_col[j] = selected_rv[j];
   }
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Select refinement pts: best_samples =\n";
-    write_data(Cout, best_samples);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Select refinement pts: best_samples =\n" << best_samples;
 }
 
 

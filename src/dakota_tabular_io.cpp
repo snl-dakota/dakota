@@ -684,13 +684,12 @@ void read_data_tabular(const std::string& input_filename,
       // read the (required) coefficients of length num_fns
       read_rv = std::numeric_limits<Real>::quiet_NaN();
       if (input_stream >> read_rv) {
-	if (verbose) { Cout << "read:\n"; write_data(Cout, read_rv); }
+	if (verbose) Cout << "read:\n" << read_rv;
 	rva.push_back(read_rv);
       }
       else {
 	Cerr << "\nError (" << context_message << "): unexpected row read "
-	     << "error in file " << input_filename << ".\nread:\n";
-	write_data(Cerr, read_rv);
+	     << "error in file " << input_filename << ".\nread:\n" << read_rv;
 	abort_handler(-1);
       }
       input_stream >> std::ws; // advance to next input for EOF detection

@@ -384,9 +384,9 @@ void NonDGlobalInterval::post_process_run_results(bool maximize)
   Real fn_star = resp_star.function_value(0), fn_conv, dist_conv;
 
   Cout << "\nResults of interval optimization:\nFinal point             =\n";
-  if (vars_star.cv())  write_data(Cout,  c_vars_star);
-  if (vars_star.div()) write_data(Cout, di_vars_star);
-  if (vars_star.drv()) write_data(Cout, dr_vars_star);
+  if (vars_star.cv())  Cout <<  c_vars_star;
+  if (vars_star.div()) Cout << di_vars_star;
+  if (vars_star.drv()) Cout << dr_vars_star;
   if (eifFlag)
     Cout << "Expected Improvement    =\n                     "
 	 << std::setw(write_precision+7) << -fn_star << '\n';

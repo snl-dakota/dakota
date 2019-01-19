@@ -1994,8 +1994,8 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
   //    min_eigval = std::min( eigenvalues[i], min_eigval );
 
 #ifdef DEBUG
-  Cout << "eigenvalues from symmetric_eigenvalue_decomposition:\n";
-  write_data(Cout, eigenvalues);
+  Cout << "eigenvalues from symmetric_eigenvalue_decomposition:\n"
+       << eigenvalues;
 #endif
 
   /*
@@ -2052,16 +2052,13 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 			       prior_chol_fact, covariance);
 
   if (output_lev > NORMAL_OUTPUT) {
-    Cout << "Hessian of negative log-likelihood (from misfit):\n";
-    write_data(Cout, hessian, true, true, true);
+    Cout << "Hessian of negative log-likelihood (from misfit):\n" << hessian;
     //Cout << "2x2 determinant = " << hessian(0,0) * hessian(1,1) -
     //  hessian(0,1) * hessian(1,0) << '\n';
 
-    //Cout << "Cholesky factor of prior covariance:\n";
-    //write_data(Cout, prior_chol_fact, true, true, true);
+    //Cout << "Cholesky factor of prior covariance:\n" << prior_chol_fact;
 
-    Cout << "Prior-preconditioned misfit Hessian:\n";
-    write_data(Cout, LT_H_L, true, true, true);
+    Cout << "Prior-preconditioned misfit Hessian:\n" << LT_H_L;
     //Cout << "2x2 determinant = " << LT_H_L(0,0) * LT_H_L(1,1) -
     //  LT_H_L(0,1) * LT_H_L(1,0) << '\n';
     if (num_neglect)
@@ -2069,8 +2066,8 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
            << " eigenvalues based on " << eigenval_tol << " tolerance.\n";
   }
   if (output_lev > NORMAL_OUTPUT) {
-    Cout << "Positive definite covariance from inverse of Hessian:\n";
-    write_data(Cout, covariance, true, true, true);
+    Cout << "Positive definite covariance from inverse of Hessian:\n"
+	 << covariance;
     //Cout << "2x2 determinant = " << covariance(0,0) * covariance(1,1) -
     //  covariance(0,1) * covariance(1,0) << '\n';
   }
@@ -2127,10 +2124,8 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
        nonDBayesInstance->numContinuousVars, log_grad);
     // Add the contribution from -log(prior)
     nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
-    if (output_flag) {
-      Cout << "MAP pre-solve: negative log posterior gradient:\n";
-      write_data(Cout, log_grad);
-    }
+    if (output_flag)
+      Cout << "MAP pre-solve: negative log posterior gradient:\n" << log_grad;
   }
 
   if (nlpost_req & 4) {
@@ -2145,10 +2140,8 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
        nonDBayesInstance->numContinuousVars, log_hess);
     // Add the contribution from -log(prior)
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
-    if (output_flag) {
-      Cout << "MAP pre-solve: negative log posterior Hessian:\n";
-      write_data(Cout, log_hess);
-    }
+    if (output_flag)
+      Cout << "MAP pre-solve: negative log posterior Hessian:\n" << log_hess;
   }
 
   //Cout << "nlpost_resp:\n" << nlpost_resp;
@@ -2312,24 +2305,19 @@ void NonDBayesCalibration::compute_intervals()
       Pred_interval_minima[i] = Pred_ave[i] - 2*Pred_stdevs[i];
       Pred_interval_maxima[i] = Pred_ave[i] + 2*Pred_stdevs[i];
       interval_stream << std::setw(width) << resp[i] << " ";
-      interval_stream << Pred_interval_minima[i]<< ", "<<Pred_interval_maxima[i] 
-	         << '\n';
+      interval_stream << Pred_interval_minima[i] << ", "
+		      << Pred_interval_maxima[i] << '\n';
     }
   }
-    interval_stream << "\n";
+  interval_stream << "\n";
   // Calculate intervals with sorting - print to screen and interval file
   size_t num_levels = 0;
-  for(int i = 0; i < numFunctions; ++i){
+  for(int i = 0; i < numFunctions; ++i)
     num_levels += requestedProbLevels[i].length();
-  }
-  if (num_levels > 0){
+  if (num_levels > 0)
     print_intervals_file(interval_stream, filtered_fn_vals_transpose, 
       			   predVals, num_filtered, num_concatenated);
-  }
-#ifdef DEBUG
-  if (expData.variance_active())
-    write_data(interval_stream, predVals);
-#endif
+
   interval_stream << "acceptedVals = " << acceptedFnVals << '\n';
   interval_stream << "predVals = " << predVals << '\n';
 }

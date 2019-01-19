@@ -245,8 +245,8 @@ void Minimizer::update_from_model(const Model& model)
   size_t i;
   const RealVector& c_l_bnds = model.continuous_lower_bounds();
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
-  //Cout << "Continuous lower bounds:\n"; write_data(Cout, c_l_bnds);
-  //Cout << "Continuous upper bounds:\n"; write_data(Cout, c_u_bnds);
+  //Cout << "Continuous lower bounds:\n" << c_l_bnds
+  //     << "Continuous upper bounds:\n" << c_u_bnds;
   for (i=0; i<numContinuousVars; ++i)
     if (c_l_bnds[i] > -bigRealBoundSize || c_u_bnds[i] < bigRealBoundSize)
       { boundConstraintFlag = true; break; }

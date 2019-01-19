@@ -290,12 +290,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 	// update number of successful samples for each QoI
 	//if (iter == 0) accumulate_offsets(mu_hat[lev]);
 	accumulate_ml_Ysums(sum_Y, sum_YY, lev, mu_hat[lev], N_l[lev]);
-	if (outputLevel == DEBUG_OUTPUT) {
-	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n";
-	  write_data(Cout, sum_Y[1]); write_data(Cout, sum_Y[2]);
-	  write_data(Cout, sum_Y[3]); write_data(Cout, sum_Y[4]);
-	  write_data(Cout, sum_YY);   Cout << std::endl;
-	}
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
+	       << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
 	// update raw evaluation counts
 	raw_N_l[lev] += numSamples;
 
@@ -426,12 +423,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 	//if (iter == 0) accumulate_offsets(mu_hat[lev]);
 	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev,
 			    mu_hat[lev], N_l[lev]);
-	if (outputLevel == DEBUG_OUTPUT) {
-	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n";
-	  write_data(Cout, sum_Ql[1]);   write_data(Cout, sum_Ql[2]);
-	  write_data(Cout, sum_Qlm1[1]); write_data(Cout, sum_Qlm1[2]);
-	  Cout << std::endl;
-	}
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
+	       << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
 	// update raw evaluation counts
 	raw_N_l[lev] += numSamples;
 
@@ -724,13 +718,11 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 				sum_L_refined, sum_H, sum_LL, sum_LH,
 				sum_HH, lev, mu_L_hat, mu_H_hat,
 				N_lf[lev], N_hf[lev]);
-	  if (outputLevel == DEBUG_OUTPUT) {
+	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (L_shared[1,2], L_refined[1,2], LH[1,2])"
-		 << ":\n";
-	    write_data(Cout,sum_L_shared[1]); write_data(Cout,sum_L_shared[2]);
-	    write_data(Cout,sum_L_refined[1]);write_data(Cout,sum_L_refined[2]);
-	    write_data(Cout,sum_LH[1]);       write_data(Cout,sum_LH[2]);
-	  }
+		 << ":\n" << sum_L_shared[1] << sum_L_shared[2]
+		 << sum_L_refined[1] << sum_L_refined[2]
+		 << sum_LH[1] << sum_LH[2];
 	  // update raw evaluation counts
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
@@ -748,11 +740,9 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	  RealMatrix& sum_HH1 = sum_HH[1];
 	  accumulate_ml_Ysums(sum_H, sum_HH1, lev, mu_H_hat,
 			      N_hf[lev]); // sum_Y for lev>0
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (H[1], H[2], HH):\n";
-	    write_data(Cout, sum_H[1]); write_data(Cout, sum_H[2]);
-	    write_data(Cout, sum_HH1);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (H[1], H[2], HH):\n"
+		 << sum_H[1] << sum_H[2] << sum_HH1;
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -792,11 +782,9 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
 	  accumulate_mlcv_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (L_refined[1,2]):\n";
-	    write_data(Cout, sum_L_refined[1]);
-	    write_data(Cout, sum_L_refined[2]);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (L_refined[1,2]):\n"
+		 << sum_L_refined[1] << sum_L_refined[2];
 	}
       }
     }
@@ -960,13 +948,10 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 				sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
 				sum_Hlm1_Hlm1, lev, mu_L_hat, mu_H_hat,
 				N_lf[lev], N_hf[lev]);
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (Ll[1,2], L_refined[1,2], Hl[1,2]):\n";
-	    write_data(Cout, sum_Ll[1]); write_data(Cout, sum_Ll[2]);
-	    write_data(Cout, sum_Ll_refined[1]);
-	    write_data(Cout, sum_Ll_refined[2]);
-	    write_data(Cout, sum_Hl[1]); write_data(Cout, sum_Hl[2]);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (Ll[1,2], L_refined[1,2], Hl[1,2]):\n"
+		 << sum_Ll[1] << sum_Ll[2] << sum_Ll_refined[1]
+		 << sum_Ll_refined[2] << sum_Hl[1] << sum_Hl[2];
 	  // update raw evaluation counts
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
@@ -988,11 +973,9 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	  RealMatrix& sum_HH1 = sum_Hl_Hl[1];
 	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, mu_H_hat,
 			      N_hf[lev]); // sum_Y for lev>0
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n";
-	    write_data(Cout, sum_Hl[1]); write_data(Cout, sum_Hl[2]);
-	    write_data(Cout, sum_HH1);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n"
+		 << sum_Hl[1] << sum_Hl[2] << sum_HH1;
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -1040,11 +1023,9 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
 	  accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (L_refined[1,2]):\n";
-	    write_data(Cout, sum_Ll_refined[1]);
-	    write_data(Cout, sum_Ll_refined[2]);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (L_refined[1,2]):\n"
+		 << sum_Ll_refined[1] << sum_Ll_refined[2];
 	}
       }
     }
@@ -1267,7 +1248,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
 	++num_Q[qoi];
       }
     }
-    //Cout << r_it->first << ": "; write_data(Cout, sum_Q[1]);
+    //Cout << r_it->first << ": " << sum_Q[1];
   }
 }
 
@@ -1335,8 +1316,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	  ++num_Q[qoi];
 	}
       }
-      //Cout << r_it->first << ": ";
-      //write_data(Cout, sum_Ql[1]); write_data(Cout, sum_Qlm1[1]);
+      //Cout << r_it->first << ": " << sum_Ql[1] << sum_Qlm1[1];
     }
   }
 }
@@ -1582,8 +1562,7 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	  ++num_Q[qoi];
 	}
       }
-      //Cout << r_it->first << ": ";
-      //write_data(Cout, sum_Ql[1]); write_data(Cout, sum_Qlm1[1]);
+      //Cout << r_it->first << ": " << sum_Ql[1] << sum_Qlm1[1];
     }
   }
 }
@@ -1632,7 +1611,7 @@ accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 	  ++num_Y[qoi];
 	}
       }
-      //Cout << r_it->first << ": "; write_data(Cout, sum_Y[1]);
+      //Cout << r_it->first << ": " << sum_Y[1];
     }
   }
 }

@@ -258,8 +258,7 @@ void NonDLocalInterval::post_process_cell_results(bool maximize)
   const Variables&    vars_star = minMaxOptimizer.variables_results();
   const RealVector& c_vars_star = vars_star.continuous_variables();
   Cout << "\nResults of local gradient-based optimization:\n"
-       << "Final point             =\n";
-  write_data(Cout, c_vars_star);
+       << "Final point             =\n" << c_vars_star;
 
   const RealVector& fns_star_approx
     = minMaxOptimizer.response_results().function_values();

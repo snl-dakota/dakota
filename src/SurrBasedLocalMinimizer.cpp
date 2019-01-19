@@ -1297,10 +1297,10 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
       }
 
       // output of slacks required for postprocessing SBLM runs in Matlab
-      Cout << "\n<<<<< nonlinIneqLowerBndsSlack =\n";
-      write_data(Cout, nonlinIneqLowerBndsSlack);
-      Cout << "\n<<<<< nonlinIneqUpperBndsSlack =\n";
-      write_data(Cout, nonlinIneqUpperBndsSlack);
+      Cout << "\n<<<<< nonlinIneqLowerBndsSlack =\n"
+	   << nonlinIneqLowerBndsSlack
+	   << "\n<<<<< nonlinIneqUpperBndsSlack =\n"
+	   << nonlinIneqUpperBndsSlack;
     }
 
     // initialize equality constraint slack vectors
@@ -1315,8 +1315,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	  nonlinEqTargetsSlack[i] = nln_eq_con - tgt; // *** constraint tol?
       }
       // output of slacks required for postprocessing SBLM runs in Matlab
-      Cout << "\n<<<<< nonlinEqTargetsSlack =\n";
-      write_data(Cout, nonlinEqTargetsSlack);
+      Cout << "\n<<<<< nonlinEqTargetsSlack =\n" << nonlinEqTargetsSlack;
     }
 
     // initialize constraint relaxation parameters

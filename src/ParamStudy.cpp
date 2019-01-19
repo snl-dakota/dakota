@@ -839,23 +839,17 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
 #ifdef DEBUG
   Cout << "distribute_list_of_points():\n";
   for (i=0; i<numEvals; ++i) {
-    if (numContinuousVars) {
-      Cout << "Eval " << i << " continuous:\n";
-      write_data(Cout, listCVPoints[i]);
-    }
-    if (numDiscreteIntVars) {
-      Cout << "Eval " << i << " discrete int:\n";
-      write_data(Cout, listDIVPoints[i]);
-    }
+    if (numContinuousVars)
+      Cout << "Eval " << i << " continuous:\n" << listCVPoints[i];
+    if (numDiscreteIntVars)
+      Cout << "Eval " << i << " discrete int:\n" << listDIVPoints[i];
     if (numDiscreteStringVars) {
       Cout << "Eval " << i << " discrete string:\n";
       write_data(Cout,
 	listDSVPoints[boost::indices[i][idx_range(0, numDiscreteStringVars)]]);
     }
-    if (numDiscreteRealVars) {
-      Cout << "Eval " << i << " discrete real:\n";
-      write_data(Cout, listDRVPoints[i]);
-    }
+    if (numDiscreteRealVars)
+      Cout << "Eval " << i << " discrete real:\n" << listDRVPoints[i];
   }
 #endif // DEBUG
 
@@ -935,32 +929,25 @@ void ParamStudy::distribute_partitions()
 
 #ifdef DEBUG
   Cout << "distribute_partitions():\n";
-  if (numContinuousVars) {
-    Cout << "c_vars:\n";             write_data(Cout, c_vars);
-    Cout << "c_l_bnds:\n";           write_data(Cout, c_l_bnds);
-    Cout << "c_u_bnds:\n";           write_data(Cout, c_u_bnds);
-    Cout << "initialCVPoint:\n";     write_data(Cout, initialCVPoint);
-    Cout << "contStepVector:\n";     write_data(Cout, contStepVector);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "di_vars:\n";            write_data(Cout, di_vars);
-    Cout << "di_l_bnds:\n";          write_data(Cout, di_l_bnds);
-    Cout << "di_u_bnds:\n";          write_data(Cout, di_u_bnds);
-    Cout << "initialDIVPoint:\n";    write_data(Cout, initialDIVPoint);
-    Cout << "discIntStepVector:\n";  write_data(Cout, discIntStepVector);
-  }
+  if (numContinuousVars)
+    Cout << "c_vars:\n"   << c_vars   << "c_l_bnds:\n"       << c_l_bnds
+	 << "c_u_bnds:\n" << c_u_bnds << "initialCVPoint:\n" << initialCVPoint
+	 << "contStepVector:\n" << contStepVector;
+  if (numDiscreteIntVars)
+    Cout << "di_vars:\n" << di_vars << "di_l_bnds:\n" << di_l_bnds
+	 << "di_u_bnds:\n" << di_u_bnds
+	 << "initialDIVPoint:\n" << initialDIVPoint
+	 << "discIntStepVector:\n" << discIntStepVector;
   if (numDiscreteStringVars) {
     Cout << "ds_vars:\n";              write_data(Cout, ds_vars);
     Cout << "initialDSVPoint:\n";      write_data(Cout, initialDSVPoint);
     Cout << "discStringStepVector:\n"; write_data(Cout, discStringStepVector);
   }
-  if (numDiscreteRealVars) {
-    Cout << "dr_vars:\n";            write_data(Cout, dr_vars);
-    Cout << "dr_l_bnds:\n";          write_data(Cout, dr_l_bnds);
-    Cout << "dr_u_bnds:\n";          write_data(Cout, dr_u_bnds);
-    Cout << "initialDRVPoint:\n";    write_data(Cout, initialDRVPoint);
-    Cout << "discRealStepVector:\n"; write_data(Cout, discRealStepVector);
-  }
+  if (numDiscreteRealVars)
+    Cout << "dr_vars:\n" << dr_vars << "dr_l_bnds:\n" << dr_l_bnds
+	 << "dr_u_bnds:\n" << dr_u_bnds
+	 << "initialDRVPoint:\n" << initialDRVPoint
+	 << "discRealStepVector:\n" << discRealStepVector;
 #endif // DEBUG
 }
 
@@ -1020,22 +1007,16 @@ void ParamStudy::final_point_to_step_vector()
 
 #ifdef DEBUG
   Cout << "final_point_to_step_vector():\n";
-  if (numContinuousVars) {
-    Cout << "continuous step vector:\n";
-    write_data(Cout, contStepVector);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "discrete int step vector:\n";
-    write_data(Cout, discIntStepVector);
-  }
+  if (numContinuousVars)
+    Cout << "continuous step vector:\n" contStepVector;
+  if (numDiscreteIntVars)
+    Cout << "discrete int step vector:\n" << discIntStepVector;
   if (numDiscreteStringVars) {
     Cout << "discrete string step vector:\n";
     write_data(Cout, discStringStepVector);
   }
-  if (numDiscreteRealVars) {
-    Cout << "discrete real step vector:\n";
-    write_data(Cout, discRealStepVector);
-  }
+  if (numDiscreteRealVars)
+    Cout << "discrete real step vector:\n" << discRealStepVector;
 #endif // DEBUG
 }
 

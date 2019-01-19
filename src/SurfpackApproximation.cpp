@@ -983,8 +983,7 @@ add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
     anchor_data_order |= 2;
     copy_data(anchor_grad, gradient);
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-      Cout << "Anchor gradient:\n";
-      write_data(Cout, anchor_grad);
+      Cout << "Anchor gradient:\n" << anchor_grad;
     }
   }
 

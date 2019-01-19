@@ -2191,8 +2191,8 @@ void NonD::update_system_final_statistics_gradients()
 	index += rl_len + requestedProbLevels[s].length() +
 	  requestedRelLevels[s].length() + requestedGenRelLevels[s].length();
 #ifdef DEBUG
-	Cout << "component gradient " << s+1 << ":\n";
-	write_data(Cout, component_grad[s]); Cout << '\n';
+	Cout << "component gradient " << s+1 << ":\n"
+	     << component_grad[s] << '\n';
 #endif // DEBUG
       }
       // Compute system probability

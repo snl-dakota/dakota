@@ -360,8 +360,8 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   store_ranks(increm_samples, increm_ranks);
 
 #ifdef DEBUG
-  Cout << "increm_sample\n"; write_data(Cout, increm_samples, false);
-  Cout << "increm_ranks\n" << increm_ranks;
+  Cout << "increm_sample\n" << increm_samples
+       << "increm_ranks\n"  << increm_ranks;
 #endif // DEBUG
 
   // Calculate the combined ranks of continuous vars, populating sampleRanks
@@ -408,8 +408,7 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
 
 #ifdef DEBUG
   Cout << "rank_combined\n" << sampleRanks << '\n';// updated by SET_GET_RANKS
-  Cout << "Full sample set allSamples\n" ; 
-  write_data(Cout,allSamples,false,true,true); 
+  Cout << "Full sample set allSamples\n" << allSamples; 
 #endif //DEBUG
 
 }

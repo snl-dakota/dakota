@@ -1714,9 +1714,9 @@ compute_covariance_metric(bool revert, bool print_metric)
     Real delta_norm = delta_resp_var.normFrobenius();
 
 #ifdef DEBUG
-    Cout << "resp_var_ref:\n"; write_data(Cout, resp_var_ref);
-    Cout << "respVariance:\n"; write_data(Cout, respVariance);
-    Cout << "norm of delta_resp_var = " << delta_norm << std::endl;
+    Cout << "resp_var_ref:\n" << resp_var_ref
+	 << "respVariance:\n" << respVariance
+	 << "norm of delta_resp_var = " << delta_norm << std::endl;
 #endif // DEBUG
 
     if (revert) respVariance = resp_var_ref;
@@ -1741,11 +1741,9 @@ compute_covariance_metric(bool revert, bool print_metric)
     Real delta_norm = delta_resp_covar.normFrobenius();
 
 #ifdef DEBUG
-    Cout << "resp_covar_ref:\n";
-    write_data(Cout, resp_covar_ref, false, true, true);
-    Cout << "respCovariance:\n";
-    write_data(Cout, respCovariance, false, true, true);
-    Cout << "norm of delta_resp_covar = " << delta_norm << std::endl;
+    Cout << "resp_covar_ref:\n" << resp_covar_ref
+	 << "respCovariance:\n" << respCovariance
+	 << "norm of delta_resp_covar = " << delta_norm << std::endl;
 #endif // DEBUG
 
     if (revert) respCovariance = resp_covar_ref;
@@ -1927,8 +1925,7 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
     if (std::abs(avg_sobol[i]) < pref_tol)
       avg_sobol[i] = 0.;
 #ifdef DEBUG
-  Cout << "avg_sobol truncated at " << pref_tol << ":\n";
-  write_data(Cout, avg_sobol);
+  Cout << "avg_sobol truncated at " << pref_tol << ":\n" << avg_sobol;
 #endif // DEBUG
 }
 
@@ -1960,7 +1957,7 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
       min_decay[j] = decay_tol;
 
 #ifdef DEBUG
-  Cout << "min_decay:\n"; write_data(Cout, min_decay);
+  Cout << "min_decay:\n" << min_decay;
 #endif // DEBUG
 }
 
@@ -2546,7 +2543,7 @@ void NonDExpansion::compute_analytic_statistics()
       //RealSymMatrix exp_hess_x;
       //natafTransform.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_means,
       //                                 x_dvv, cv_ids);
-      write_data(Cout, exp_hess_u); //exp_hess_x
+      Cout << exp_hess_u; //exp_hess_x
 #endif // TEST_HESSIANS
     }
 
@@ -3241,7 +3238,7 @@ print_covariance(std::ostream& s, const RealSymMatrix& resp_covar,
   if (!resp_covar.empty()) {
     if (prepend.empty())   s << "\nCovariance matrix for response functions:\n";
     else s << '\n' << prepend << " covariance matrix for response functions:\n";
-    write_data(s, resp_covar);
+    s << resp_covar;
   }
 }
 

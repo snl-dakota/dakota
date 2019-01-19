@@ -348,10 +348,9 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       //for (j=0; j<i; j++)
       //  hess_f(j, i) = hess_f(i, j); // fill in symmetric values
     }
-    if (snllLSqInstance->outputLevel > NORMAL_OUTPUT) {
-      Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n";
-      write_data(Cout, hess_f);
-    }
+    if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
+      Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n"
+	   << hess_f;
     result_mode |= OPTPP::NLPHessian;
   }
   Cout << std::endl;

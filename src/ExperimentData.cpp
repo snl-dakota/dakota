@@ -380,9 +380,8 @@ void ExperimentData::load_data(const std::string& context_message)
       if (numConfigVars > 0)
 	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
 	     << allConfigVars[i];
-      Cout << "  Experiment " << i+1 << " data values:"<< "\n";
-      write_data(Cout, allExperiments[i].function_values());
-      Cout << '\n';
+      Cout << "  Experiment " << i+1 << " data values:"<< "\n"
+	   << allExperiments[i].function_values() << '\n';
     }
   }
 

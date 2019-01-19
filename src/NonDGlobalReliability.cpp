@@ -578,8 +578,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  expected_feasibility(g_hat_fns, vars_star) :
 	  expected_improvement(g_hat_fns, vars_star);
     
-	Cout << "\nResults of EGRA iteration:\nFinal point (u-space)   =\n";
-	write_data(Cout, c_vars_u);
+	Cout << "\nResults of EGRA iteration:\nFinal point (u-space)   =\n"
+	     << c_vars_u;
 	size_t wpp7 = write_precision+7;
 	if (ria_flag) {
 	  Cout << "Expected Feasibility    =\n                     "

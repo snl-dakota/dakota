@@ -919,8 +919,8 @@ void NonDLocalReliability::mpp_search()
         const Response&  resp_star = mppOptimizer.response_results();
 	const RealVector& fns_star = resp_star.function_values();
         Cout << "\nResults of MPP optimization:\nInitial point (u-space) =\n"
-             << initialPtU << "Final point (u-space)   =\n";
-	write_data(Cout, vars_star.continuous_variables());
+             << initialPtU << "Final point (u-space)   =\n"
+	     << vars_star.continuous_variables();
 	if (ria_flag)
 	  Cout << "RIA optimum             =\n                     "
 	       << std::setw(write_precision+7) << fns_star[0] << " [u'u]\n"
@@ -1968,14 +1968,10 @@ PMA_objective_eval(const Variables& sub_model_vars,
 #ifdef DEBUG
   if (asv_val & 1)
     Cout << "PMA_objective_eval(): sub-model function = " << fn << std::endl;
-  if (asv_val & 2) { // dG/du: no additional transformation needed
-    Cout << "PMA_objective_eval(): sub-model gradient:\n";
-    write_data(Cout, fn_grad_u);
-  }
-  if (asv_val & 4) { // d^2G/du^2: no additional transformation needed
-    Cout << "PMA_objective_eval(): sub-model Hessian:\n";
-    write_data(Cout, fn_hess_u);
-  }
+  if (asv_val & 2) // dG/du: no additional transformation needed
+    Cout << "PMA_objective_eval(): sub-model gradient:\n" << fn_grad_u;
+  if (asv_val & 4) // d^2G/du^2: no additional transformation needed
+    Cout << "PMA_objective_eval(): sub-model Hessian:\n" << fn_hess_u;
 #endif // DEBUG
 }
 
@@ -2082,8 +2078,7 @@ PMA2_constraint_eval(const Variables& sub_model_vars,
     for (i=0; i<num_vars; ++i)
       grad_f[i] = factor * u[i];
 #ifdef DEBUG
-    Cout << "In PMA2_constraint_eval, gradient of beta*:\n";
-    write_data(Cout, grad_f);
+    Cout << "In PMA2_constraint_eval, gradient of beta*:\n" << grad_f;
 #endif
   }
   if (asv_val & 4) {
@@ -2338,7 +2333,7 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
     Cout << '\n';
 #ifdef DEBUG
   if (integrationOrder == 2 && curvatureDataAvailable)
-    { Cout << "In probability(), kappaU:\n"; write_data(Cout, kappaU); }
+    Cout << "In probability(), kappaU:\n" << kappaU;
 #endif
 
   return p;

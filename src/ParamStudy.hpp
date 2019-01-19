@@ -344,22 +344,11 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
 
 #ifdef DEBUG
   Cout << "distribute():\n";
-  if (numContinuousVars) {
-    Cout << "continuous vector:\n";
-    write_data(Cout, c_data);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "discrete int vector:\n";
-    write_data(Cout, di_data);
-  }
-  if (numDiscreteStringVars) {
-    Cout << "discrete string vector:\n";
-    write_data(Cout, ds_data);
-  }
-  if (numDiscreteRealVars) {
-    Cout << "discrete real vector:\n";
-    write_data(Cout, dr_data);
-  }
+  if (numContinuousVars)   Cout << "continuous vector:\n"    << c_data;
+  if (numDiscreteIntVars)  Cout << "discrete int vector:\n"  << di_data;
+  if (numDiscreteStringVars)
+    { Cout << "discrete string vector:\n"; write_data(Cout, ds_data); }
+  if (numDiscreteRealVars) Cout << "discrete real vector:\n" << dr_data;
 #endif // DEBUG
 
   return false;
@@ -439,22 +428,11 @@ distribute(const std::vector<ScalarType>& all_data,
 
 #ifdef DEBUG
   Cout << "distribute():\n";
-  if (numContinuousVars) {
-    Cout << "continuous array:\n";
-    write_data(Cout, c_data);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "discrete int array:\n";
-    write_data(Cout, di_data);
-  }
-  if (numDiscreteStringVars) {
-    Cout << "discrete string array:\n";
-    write_data(Cout, ds_data);
-  }
-  if (numDiscreteRealVars) {
-    Cout << "discrete real array:\n";
-    write_data(Cout, dr_data);
-  }
+  if (numContinuousVars)   Cout << "continuous array:\n"    << c_data;
+  if (numDiscreteIntVars)  Cout << "discrete int array:\n"  << di_data;
+  if (numDiscreteStringVars)
+    { Cout << "discrete string array:\n"; write_data(Cout, ds_data); }
+  if (numDiscreteRealVars) Cout << "discrete real array:\n" << dr_data;
 #endif // DEBUG
 
   return false;

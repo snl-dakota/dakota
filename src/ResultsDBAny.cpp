@@ -199,8 +199,7 @@ void ResultsDBAny::output_data(const std::vector<RealVector>& data,
 {
   os << "  Data (vector<vector<double>>):\n";
   for (size_t i=0; i<data.size(); ++i) {
-    os << "      Array Entry " << i+1 << ":\n";
-    write_data(os, data[i]);
+    os << "      Array Entry " << i+1 << ":\n" << data[i];
     // std::ostream_iterator<double> spacedelimited(os, " ");
     // std::copy(data.begin(), data.end(), spacedelimited);
   }

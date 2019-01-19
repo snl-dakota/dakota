@@ -444,10 +444,8 @@ void AdaptedBasisModel::identify_subspace()
   A = RealMatrix(reducedRank, numFullspaceVars);
   */
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: rotation matrix is:\n";
-    write_data(Cout, rotationMatrix, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: rotation matrix is:\n" << rotationMatrix;
   Cout << "\n****************************************************************"
        << "**********\nAdapted Basis Model: Build Statistics"
        << "\nsubspace size: " << reducedRank << "\n**************************"
@@ -609,10 +607,8 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   const RealVector& sd_x = native_params.normal_std_deviations();
   const RealSymMatrix& correl_x = native_params.uncertain_correlations();
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: correl_x = \n";
-    write_data(Cout, correl_x, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: correl_x = \n" << correl_x;
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
@@ -648,12 +644,9 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: A = \n";
-    write_data(Cout, rotationMatrix, true, true, true);
-    Cout << "\nAdapted Basis Model: V_x =\n";
-    write_data(Cout, V_x, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: A = \n" << rotationMatrix
+	 << "\nAdapted Basis Model: V_x =\n" << V_x;
 
   // compute V_y = U^T * V_x * U
   alpha = 1.0;
@@ -665,10 +658,8 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
                alpha, UTVx, rotationMatrix, beta);
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: V_y = \n";
-    write_data(Cout, V_y, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: V_y = \n" << V_y;
 
   // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
@@ -689,10 +680,8 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
     for (int col=0; col<reducedRank; ++col)
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: correl_y = \n";
-    write_data(Cout, correl_y, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: correl_y = \n" << correl_y;
 
   reduced_dist_params.uncertain_correlations(correl_y);
 
