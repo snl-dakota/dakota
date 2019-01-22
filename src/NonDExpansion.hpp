@@ -319,8 +319,16 @@ protected:
   bool relativeMetric;
 
   /// flag for indicating state of \c nested and \c non_nested overrides of
-  /// default rule nesting, which depends on the type of integration driver
+  /// default rule nesting, which depends on the type of integration driver;
+  /// this is defined in construct_{quadrature,sparse_grid}(), such that
+  /// override attributes (defined in ctors) must be used upstream
   bool nestedRules;
+  /// user override of default rule nesting: NO_NESTING_OVERRIDE,
+  /// NESTED, or NON_NESTED
+  short ruleNestingOverride;
+  /// user override of default rule growth: NO_GROWTH_OVERRIDE,
+  /// RESTRICTED, or UNRESTRICTED
+  short ruleGrowthOverride;
 
   /// flag for \c piecewise specification, indicating usage of local
   /// basis polynomials within the stochastic expansion
@@ -420,13 +428,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// user override of default rule nesting: NO_NESTING_OVERRIDE,
-  /// NESTED, or NON_NESTED
-  short ruleNestingOverride;
-  /// user override of default rule growth: NO_GROWTH_OVERRIDE,
-  /// RESTRICTED, or UNRESTRICTED
-  short ruleGrowthOverride;
 
   /// Iterator used for sampling on the uSpaceModel to generate approximate
   /// probability/reliability/response level statistics.  Currently this is

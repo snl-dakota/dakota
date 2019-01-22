@@ -188,12 +188,21 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
   // -------------------------
   if (quad_order != USHRT_MAX) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
+    // TensorProductDriver does not currently support a hierarchical grid via
+    // increment_grid(), etc., although default rule type is set to nested
+    // within NonDExpansion::construct_quadrature() for refinement cases
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref);
   }
   else if (ssg_level != USHRT_MAX) {
     switch (expansionBasisType) {
     case Pecos::HIERARCHICAL_INTERPOLANT:
+      // Note: nestedRules not defined until construct_sparse_grid()
+      if (ruleNestingOverride == Pecos::NON_NESTED) {
+	Cerr << "Error: hierarchical interpolants currently require nested "
+	     << "rules.  Please remove \"non_nested\" override." << std::endl;
+	abort_handler(-1);
+      }
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
       break;
     case Pecos::NODAL_INTERPOLANT:
@@ -201,7 +210,12 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 	Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
       break;
     case Pecos::DEFAULT_BASIS:
-      if ( u_space_type == STD_UNIFORM_U && nestedRules &&// TO DO:retire nested
+      // hierarchical interpolation currently requires nested rules, which
+      // are fairly limited outside of CC, F2, Gauss-Patterson --> use Nodal
+      // as default unless conditions are just right.
+      // Note: nestedRules not defined until construct_sparse_grid()
+      if ( u_space_type == STD_UNIFORM_U &&
+	   ruleNestingOverride != Pecos::NON_NESTED &&//TO DO: remove constraint
 	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
 	     refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL ) ) {
 	expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
