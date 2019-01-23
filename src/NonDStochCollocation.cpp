@@ -214,10 +214,8 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
       // are fairly limited outside of CC, F2, Gauss-Patterson --> use Nodal
       // as default unless conditions are just right.
       // Note: nestedRules not defined until construct_sparse_grid()
-      if ( u_space_type == STD_UNIFORM_U &&
-	   ruleNestingOverride != Pecos::NON_NESTED &&//TO DO: remove constraint
-	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
-	     refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL ) ) {
+      if (u_space_type == STD_UNIFORM_U && refineControl &&
+	  ruleNestingOverride != Pecos::NON_NESTED) {//TO DO: rm this constraint
 	expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
 	expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
       }
@@ -385,7 +383,7 @@ void NonDStochCollocation::initialize_u_space_model()
   if ( expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT &&
        refineControl && ( refineMetric == Pecos::COVARIANCE_METRIC ||
 			  refineMetric == Pecos::MIXED_STATS_METRIC ) )
-      initialize_covariance();
+    initialize_covariance();
 }
 
 
