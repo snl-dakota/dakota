@@ -1491,8 +1491,22 @@ void NonDExpansion::statistics_type(short stats_type)
       uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->refinement_statistics_type(stats_type);
 
-    // *** TO DO: clean up this logic
-    //
+    // Changing stats type does *not* invalidate prodType{1,2}Coeffs since it
+    // is defined only for expType{1,2}Coeffs (supporting delta_*() use cases),
+    // but combined_to_active *does* for the active model index.
+    // HIPA::combined_to_active() clears all prodType{1,2}Coeffs, such that
+    // product_interpolants() will evaluate to false and new interpolants are
+    // generated when needed (TO DO: any redundancy?).
+
+    /*
+    // For invalidation of current product interpolant data, we do not have
+    // to have full knowledge of all model keys coming from NonDExpansion;
+    // re-initializing the current defined model keys is enough.
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    for (i=0; i<numFunctions; ++i)
+      ((PecosApproximation*)poly_approxs[i].approx_rep())
+	->initialize_products(); // must modify fn to enumerate all model keys
+
     // expType{1,2}Coeffs and combinedType{1,2}Coeffs are distinct, but there
     // is only one set of prodType{1,2}Coeffs accumulators, which must span all
     // unique covariance pairs.  Therefore, when changing between active and
@@ -1513,6 +1527,7 @@ void NonDExpansion::statistics_type(short stats_type)
 	}
       }
     }
+    */
   }
 }
 
