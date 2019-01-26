@@ -886,8 +886,6 @@ void NonDExpansion::refine_expansion()
 
     // Don't revert refinements.  Print refinement metrics.
     core_refinement(metric, false, true);
-
-    update_reference_statistics(REFINEMENT_RESULTS); // minor debug output
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
@@ -949,6 +947,9 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     candidate = increment_sets(metric, revert, print_metric);
     break;
   }
+  if (print_metric)
+    print_results(Cout, REFINEMENT_RESULTS); // augment metric output
+
   return candidate;
 }
 
@@ -1325,7 +1326,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
       if (lev_metric > best_lev_metric) {
 	best_lev_metric = lev_metric;
 	best_lev = lev;	best_candidate = lev_candidate;
-	promote_level_candidate();
+	statsStar = levelStatsStar;
       }
     }
 
@@ -1382,8 +1383,8 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   }
 
   // rather than another round of metric_roll_up()/compute_statistics()/
-  // print_statistics(), 
-  push_candidate();
+  // print_statistics()
+  push_candidate(statsStar);
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // For distinct discrepancy, promotion of best candidate does not invalidate
@@ -1593,7 +1594,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
        full_covar = (covarianceControl == FULL_COVARIANCE);
 
   if (apply_best) // store reference points for efficient restoration
-    pull_reference();
+    pull_reference(stats_ref);
 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
@@ -1630,14 +1631,15 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     if (delta > delta_star) {
       cit_star = cit; delta_star = delta;
       // partial results tracking avoids recomputing stats for selected trial
-      if (apply_best) pull_level_candidate();
+      if (apply_best) pull_candidate(levelStatsStar);
     }
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store data for use in push,finalize
     nond_sparse->decrement_set(); // store data for use in push_set()
-    if (apply_best) push_reference(); // else reverted above (compute_*_metric)
+    if (apply_best) // else already reverted above in compute_*_metric()
+      push_reference(stats_ref);
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
@@ -1647,7 +1649,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     nond_sparse->update_sets(*cit_star);
     uSpaceModel.push_approximation();
     nond_sparse->update_reference();
-    push_level_candidate();
+    push_candidate(levelStatsStar);
   }
 
   return index_star;

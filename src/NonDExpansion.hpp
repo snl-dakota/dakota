@@ -276,17 +276,15 @@ protected:
   /// archive the Sobol' indices to the resultsDB
   void archive_sobol_indices();
 
-  void pull_reference();
-  void push_reference();
-  virtual void pull_level_candidate();
-  virtual void push_level_candidate();
-  void promote_level_candidate();
-  virtual void push_candidate();
+  void pull_reference(RealVector& stats_ref);
+  void push_reference(const RealVector& stats_ref);
+  virtual void pull_candidate(RealVector& stats_star);
+  virtual void push_candidate(const RealVector& stats_star);
 
-  /// pull lower triangle of respCovariance into stats vector
-  virtual void pull_covariance(RealVector& stats);
-  /// push stats vector into lower triangle of respCovariance
-  virtual void push_covariance(const RealVector& stats);
+  /// pull lower triangle of symmetric matrix into vector
+  void pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec);
+  /// push vector into lower triangle of symmetric matrix
+  void push_lower_triangle(const RealVector& vec, RealSymMatrix& mat);
 
   //
   //- Heading: Data
@@ -354,6 +352,9 @@ protected:
       aleatory expansion statistics with respect to these variables. */
   bool useDerivs;
 
+  /// stores the initial variables data in u-space
+  RealVector initialPtU;
+
   /// refinement type: NO_REFINEMENT, P_REFINEMENT, or H_REFINEMENT
   short refineType;
   /// refinement control: NO_CONTROL, UNIFORM_CONTROL, LOCAL_ADAPTIVE_CONTROL,
@@ -378,11 +379,6 @@ protected:
   /// vector of response variances (diagonal response covariance option)
   RealVector respVariance;
 
-  /// stores the initial variables data in u-space
-  RealVector initialPtU;
-
-  /// reference stats prior to applying refinement candidates
-  RealVector statsRef;
   /// stats of the best candidate for the current level
   RealVector levelStatsStar;
   /// stats of the best candidate across all levels
@@ -620,96 +616,85 @@ inline void NonDExpansion::compute_covariance()
 }
 
 
-inline void NonDExpansion::pull_covariance(RealVector& stats)
+inline void NonDExpansion::
+pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec)
 {
-  size_t i, j, cntr = 0, num_v = respCovariance.numRows(),
-    num_stats = num_v*(num_v+1)/2; // (n^2+n)/2
-  stats.sizeUninitialized(num_stats);
-  for (i=0; i<num_v; ++i)
+  size_t i, j, cntr = 0, num_r = mat.numRows(),
+    vec_len = num_r*(num_r+1)/2; // (n^2+n)/2
+  if (vec.empty()) vec.sizeUninitialized(vec_len);
+  for (i=0; i<num_r; ++i)
     for (j=0; j<=i; ++j, ++cntr)
-      stats[cntr] = respCovariance(i,j); // pull from lower triangle
+      vec[cntr] = mat(i,j); // pull from lower triangle
 }
 
 
-inline void NonDExpansion::push_covariance(const RealVector& stats)
+inline void NonDExpansion::
+push_lower_triangle(const RealVector& vec, RealSymMatrix& mat)
 {
-  size_t i, j, cntr = 0, num_v = respCovariance.numRows();
-  if (stats.length() != num_v*(num_v+1)/2) {
+  size_t i, j, cntr = 0, num_r = mat.numRows();
+  if (vec.length() != num_r*(num_r+1)/2) {
     Cerr << "Error: inconsistent vector length in NonDExpansion::"
-	 << "push_covariance()" << std::endl;
+	 << "push_lower_triangle()" << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  for (i=0; i<num_v; ++i)
+  for (i=0; i<num_r; ++i)
     for (j=0; j<=i; ++j, ++cntr)
-      respCovariance(i,j) = stats[cntr]; // push to lower triangle
+      mat(i,j) = vec[cntr]; // push to lower triangle
 }
 
 
-inline void NonDExpansion::pull_reference()
+inline void NonDExpansion::pull_reference(RealVector& stats_ref)
 {
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE) pull_covariance(statsRef);
-    else statsRef = respVariance;
+    if (covarianceControl == FULL_COVARIANCE)
+      pull_lower_triangle(respCovariance, stats_ref);
+    else stats_ref = respVariance;
     break;
   default:
-    pull_level_mappings(statsRef);  break;
+    pull_level_mappings(stats_ref);  break;
   }
 }
 
 
-inline void NonDExpansion::push_reference()
+inline void NonDExpansion::push_reference(const RealVector& stats_ref)
 {
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE) push_covariance(statsRef);
-    else respVariance = statsRef;
+    if (covarianceControl == FULL_COVARIANCE)
+      push_lower_triangle(stats_ref, respCovariance);
+    else respVariance = stats_ref;
     break;
   default:
-    push_level_mappings(statsRef);  break;
+    push_level_mappings(stats_ref);  break;
   }
 }
 
 
-inline void NonDExpansion::pull_level_candidate()
+inline void NonDExpansion::pull_candidate(RealVector& stats_star)
 {
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE) pull_covariance(levelStatsStar);
-    else levelStatsStar = respVariance;
+    if (covarianceControl == FULL_COVARIANCE)
+      pull_lower_triangle(respCovariance, stats_star);
+    else stats_star = respVariance;
     break;
   default:
-    pull_level_mappings(levelStatsStar);  break;
+    pull_level_mappings(stats_star);  break;
   }
 }
 
 
-inline void NonDExpansion::push_level_candidate()
+inline void NonDExpansion::push_candidate(const RealVector& stats_star)
 {
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE) push_covariance(levelStatsStar);
-    else respVariance = levelStatsStar;
+    if (covarianceControl == FULL_COVARIANCE)
+      push_lower_triangle(stats_star, respCovariance);
+    else respVariance = stats_star;
     break;
   default:
-    push_level_mappings(levelStatsStar);  break;
-  }
-}
-
-
-inline void NonDExpansion::promote_level_candidate()
-{ statsStar = levelStatsStar; }
-
-
-inline void NonDExpansion::push_candidate()
-{
-  switch (refineMetric) {
-  case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE) push_covariance(statsStar);
-    else respVariance = statsStar;
-    break;
-  default:
-    push_level_mappings(statsStar);  break;
+    push_level_mappings(stats_star);  break;
   }
 }
 

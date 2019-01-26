@@ -81,6 +81,9 @@ protected:
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
   //void update_reference_statistics(short results_state);
 
+  void pull_candidate(RealVector& stats_star);
+  void push_candidate(const RealVector& stats_star);
+
   //
   //- Heading: Member functions
   //
@@ -120,6 +123,43 @@ private:
   /// change in (FULL) response covariance induced by a refinement candidate
   RealSymMatrix deltaRespCovariance;
 };
+
+
+inline void NonDStochCollocation::pull_candidate(RealVector& stats_star)
+{
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
+    switch (refineMetric) {
+    case Pecos::COVARIANCE_METRIC:
+      if (covarianceControl == FULL_COVARIANCE)
+	pull_lower_triangle(deltaRespCovariance, stats_star);
+      else stats_star = deltaRespVariance;
+      break;
+    default:
+      pull_level_mappings(stats_star);  break; // *** TO DO: manage deltas, manage numerical exceptions --> recomputations
+    }
+  else
+    NonDExpansion::pull_candidate(stats_star);
+}
+
+
+inline void NonDStochCollocation::push_candidate(const RealVector& stats_star)
+{
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
+    switch (refineMetric) {
+    case Pecos::COVARIANCE_METRIC:
+      if (covarianceControl == FULL_COVARIANCE) {
+	push_lower_triangle(stats_star, deltaRespCovariance);
+	respCovariance += deltaRespCovariance;
+      }
+      else
+	respVariance += stats_star;
+      break;
+    default:
+      push_level_mappings(stats_star);  break; // *** TO DO: manage deltas, manage numerical exceptions --> recomputations
+    }
+  else
+    NonDExpansion::push_candidate(stats_star);
+}
 
 } // namespace Dakota
 
