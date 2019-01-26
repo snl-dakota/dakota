@@ -99,9 +99,7 @@ protected:
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
   /// update reference statistics used as refinement metrics
-  virtual void update_reference_stats();
-  /// update reference statistics used as refinement metrics
-  virtual void increment_reference_stats();
+  virtual void update_reference_statistics(short results_state);
   /// combine coefficients, promote to active, and update statsType
   virtual void combined_to_active();
   /// archive expansion coefficients, as supported by derived instance
@@ -278,6 +276,18 @@ protected:
   /// archive the Sobol' indices to the resultsDB
   void archive_sobol_indices();
 
+  void pull_reference();
+  void push_reference();
+  virtual void pull_level_candidate();
+  virtual void push_level_candidate();
+  void promote_level_candidate();
+  virtual void push_candidate();
+
+  /// pull lower triangle of respCovariance into stats vector
+  virtual void pull_covariance(RealVector& stats);
+  /// push stats vector into lower triangle of respCovariance
+  virtual void push_covariance(const RealVector& stats);
+
   //
   //- Heading: Data
   //
@@ -370,6 +380,13 @@ protected:
 
   /// stores the initial variables data in u-space
   RealVector initialPtU;
+
+  /// reference stats prior to applying refinement candidates
+  RealVector statsRef;
+  /// stats of the best candidate for the current level
+  RealVector levelStatsStar;
+  /// stats of the best candidate across all levels
+  RealVector statsStar;
 
 private:
 
@@ -603,6 +620,100 @@ inline void NonDExpansion::compute_covariance()
 }
 
 
+inline void NonDExpansion::pull_covariance(RealVector& stats)
+{
+  size_t i, j, cntr = 0, num_v = respCovariance.numRows(),
+    num_stats = num_v*(num_v+1)/2; // (n^2+n)/2
+  stats.sizeUninitialized(num_stats);
+  for (i=0; i<num_v; ++i)
+    for (j=0; j<=i; ++j, ++cntr)
+      stats[cntr] = respCovariance(i,j); // pull from lower triangle
+}
+
+
+inline void NonDExpansion::push_covariance(const RealVector& stats)
+{
+  size_t i, j, cntr = 0, num_v = respCovariance.numRows();
+  if (stats.length() != num_v*(num_v+1)/2) {
+    Cerr << "Error: inconsistent vector length in NonDExpansion::"
+	 << "push_covariance()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=0; i<num_v; ++i)
+    for (j=0; j<=i; ++j, ++cntr)
+      respCovariance(i,j) = stats[cntr]; // push to lower triangle
+}
+
+
+inline void NonDExpansion::pull_reference()
+{
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC:
+    if (covarianceControl == FULL_COVARIANCE) pull_covariance(statsRef);
+    else statsRef = respVariance;
+    break;
+  default:
+    pull_level_mappings(statsRef);  break;
+  }
+}
+
+
+inline void NonDExpansion::push_reference()
+{
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC:
+    if (covarianceControl == FULL_COVARIANCE) push_covariance(statsRef);
+    else respVariance = statsRef;
+    break;
+  default:
+    push_level_mappings(statsRef);  break;
+  }
+}
+
+
+inline void NonDExpansion::pull_level_candidate()
+{
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC:
+    if (covarianceControl == FULL_COVARIANCE) pull_covariance(levelStatsStar);
+    else levelStatsStar = respVariance;
+    break;
+  default:
+    pull_level_mappings(levelStatsStar);  break;
+  }
+}
+
+
+inline void NonDExpansion::push_level_candidate()
+{
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC:
+    if (covarianceControl == FULL_COVARIANCE) push_covariance(levelStatsStar);
+    else respVariance = levelStatsStar;
+    break;
+  default:
+    push_level_mappings(levelStatsStar);  break;
+  }
+}
+
+
+inline void NonDExpansion::promote_level_candidate()
+{ statsStar = levelStatsStar; }
+
+
+inline void NonDExpansion::push_candidate()
+{
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC:
+    if (covarianceControl == FULL_COVARIANCE) push_covariance(statsStar);
+    else respVariance = statsStar;
+    break;
+  default:
+    push_level_mappings(statsStar);  break;
+  }
+}
+
+
 inline void NonDExpansion::update_final_statistics()
 {
   // aleatory final stats & their grads are updated directly within
@@ -630,14 +741,14 @@ check_dimension_preference(const RealVector& dim_pref) const
       Cerr << "Error: length of dimension preference specification (" << len
 	   << ") is inconsistent with continuous expansion variables ("
 	   << numContinuousVars << ")." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
     else
       for (size_t i=0; i<len; ++i)
 	if (dim_pref[i] < 0.) { // allow zero preference
 	  Cerr << "Error: bad dimension preference value (" << dim_pref[i]
 	       << ")." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(METHOD_ERROR);
 	}
   }
 }

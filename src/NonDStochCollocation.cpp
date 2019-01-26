@@ -840,6 +840,45 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   else // use default implementation for Nodal
     return NonDExpansion::compute_final_statistics_metric(revert, print_metric);
 }
+
+
+void NonDStochCollocation::
+update_reference_statistics(short results_state)
+{
+  switch (results_state) {
+  case REFINEMENT_RESULTS: // prune ref update if not strictly required
+    // *** With new fall throughs in compute/print, retire this specialization?
+    // *** In hierarchical SC, may have effect of replacing += accumulations
+    //     with direct eval of combinedExpT{1,2}Coeffs after candidate selection
+    //     --> useful for recovering from delta_*() exception handling?
+    switch (expansionBasisType) {
+    case Pecos::NODAL_INTERPOLANT: // need reference response stats
+      NonDExpansion::update_reference_statistics(results_state); break;
+    case Pecos::HIERARCHICAL_INTERPOLANT:
+      if (relativeMetric) // reference (co)var used for relative scaling
+	NonDExpansion::update_reference_statistics(results_state);
+      //else no-op: response (co)variance reference not required
+
+      // *** Seems redundant with compute_covariance_metric()
+      // *** previously in increment_reference_statistics()
+      //if (relativeMetric) {//ref (co)var used for scaling -> accumulate deltas
+        //bool output_delta = (outputLevel > NORMAL_OUTPUT);
+	// deltas must be recomputed for selected candidate
+	//if (covarianceControl == DIAGONAL_COVARIANCE)
+	//  compute_delta_variance(true, output_delta);
+	//else if (covarianceControl == FULL_COVARIANCE)
+	//  compute_delta_covariance(true, output_delta);
+      //}
+
+      break;
+    }
+    break;
+  default:
+    // INTERMEDIATE_RESULTS: stick with default implementation for stats output
+    // FINAL_RESULTS: not used
+    NonDExpansion::update_reference_statistics(results_state); break;
+  }
+}
 */
 
 } // namespace Dakota

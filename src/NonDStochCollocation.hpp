@@ -79,6 +79,7 @@ protected:
   Real compute_covariance_metric(bool revert, bool print_metric);
   Real compute_level_mappings_metric(bool revert, bool print_metric);
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
+  //void update_reference_statistics(short results_state);
 
   //
   //- Heading: Member functions
