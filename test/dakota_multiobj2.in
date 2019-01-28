@@ -1,5 +1,8 @@
 #@ s*: Label=FastTest
-#@ *: DakotaConfig=HAVE_NPSOL
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_ROL
+#@ s3: DakotaConfig=HAVE_ROL
 # DAKOTA INPUT FILE - dakota_multiobj2.in
 
 # Constrained multiobjective optimization using the Cylinder Head problem.
