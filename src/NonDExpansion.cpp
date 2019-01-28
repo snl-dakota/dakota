@@ -1588,13 +1588,10 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   std::set<UShortArray>::const_iterator cit, cit_star;
-  Real delta; delta_star = -DBL_MAX;
-  RealSymMatrix covar_ref;  RealVector stats_ref;
-  bool apply_best = !revert,
-       full_covar = (covarianceControl == FULL_COVARIANCE);
+  RealVector stats_ref;  Real delta; delta_star = -DBL_MAX;
+  bool full_covar = (covarianceControl == FULL_COVARIANCE);
 
-  if (apply_best) // store reference points for efficient restoration
-    pull_reference(stats_ref);
+  pull_reference(stats_ref);
 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
@@ -1614,14 +1611,15 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
       uSpaceModel.append_approximation(true); // rebuild
     }
 
-    // assess effect of increment (non-negative norm); restore ref once done
+    // assess effect of increment (non-negative norm)
+    // defer reverting to reference to simplify best candidate tracking
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC:
-      delta = compute_covariance_metric(revert, print_metric);       break;
+      delta = compute_covariance_metric(false, print_metric);      break;
     //case Pecos::MIXED_STATS_METRIC: // TO DO
     //  compute_mixed_metric(); [retire compute_final_stats_metric()] break;
     default: //case Pecos::LEVEL_STATS_METRIC:
-      delta = compute_level_mappings_metric(revert, print_metric);   break;
+      delta = compute_level_mappings_metric(false, print_metric);  break;
     }
     // normalize effect of increment based on cost (# of collocation pts).
     // Note: increment size must be nonzero since growth restriction is
@@ -1629,23 +1627,22 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     delta /= nond_sparse->increment_size();
     // track best increment evaluated thus far
     if (delta > delta_star) {
-      cit_star = cit; delta_star = delta;
-      // partial results tracking avoids recomputing stats for selected trial
-      if (apply_best) pull_candidate(levelStatsStar);
+      cit_star = cit;  delta_star = delta;
+      pull_candidate(levelStatsStar); // avoid extra compute_statistics() calls
     }
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store data for use in push,finalize
     nond_sparse->decrement_set(); // store data for use in push_set()
-    if (apply_best) // else already reverted above in compute_*_metric()
+    if (revert || cit != --active_mi.end()) // else overwritten by push below
       push_reference(stats_ref);
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
   size_t index_star = find_index(active_mi, *cit_star);
 
-  if (apply_best) { // permanently apply best increment and update references
+  if (!revert) { // permanently apply best increment and update references
     nond_sparse->update_sets(*cit_star);
     uSpaceModel.push_approximation();
     nond_sparse->update_reference();
