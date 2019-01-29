@@ -220,6 +220,10 @@ public:
   void standardize_moments(const Pecos::RealVector& central_moments,
 			   Pecos::RealVector& std_moments);
 
+  /// clear tracking of computed moments, due to a change that invalidates
+  /// previous results
+  void clear_computed_bits();
+
   /// construct the Vandermonde matrix "A" for PCE regression for Ax = b
   void build_linear_system(RealMatrix& A, const UShort2DArray& multi_index);
   // add chain (allSamples): A size = num current+num chain by P,
@@ -656,6 +660,10 @@ inline void PecosApproximation::combine_coefficients()
 inline void PecosApproximation::
 combined_to_active_coefficients(bool clear_combined)
 { pecosBasisApprox.combined_to_active(clear_combined); }
+
+
+inline void PecosApproximation::clear_computed_bits()
+{ polyApproxRep->clear_computed_bits(); }
 
 
 inline void PecosApproximation::clear_inactive_coefficients()

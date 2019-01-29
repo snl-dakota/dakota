@@ -1493,6 +1493,13 @@ void NonDExpansion::statistics_type(short stats_type)
       uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->refinement_statistics_type(stats_type);
 
+    // poly_approxs share computed* trackers between active and combined stats
+    // --> clear these trackers
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    for (size_t i=0; i<numFunctions; ++i)
+      ((PecosApproximation*)poly_approxs[i].approx_rep())
+	->clear_computed_bits();
+
     // Changing stats type does *not* invalidate prodType{1,2}Coeffs since it
     // is defined only for expType{1,2}Coeffs (supporting delta_*() use cases),
     // but combined_to_active *does* for the active model index.
@@ -1503,32 +1510,11 @@ void NonDExpansion::statistics_type(short stats_type)
     /*
     // For invalidation of current product interpolant data, we do not have
     // to have full knowledge of all model keys coming from NonDExpansion;
-    // re-initializing the current defined model keys is enough.
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    // re-initializing the current model keys is enough.
     for (i=0; i<numFunctions; ++i)
       ((PecosApproximation*)poly_approxs[i].approx_rep())
-	->initialize_products(); // must modify fn to enumerate all model keys
-
-    // expType{1,2}Coeffs and combinedType{1,2}Coeffs are distinct, but there
-    // is only one set of prodType{1,2}Coeffs accumulators, which must span all
-    // unique covariance pairs.  Therefore, when changing between active and
-    // combined stats, the products must be re-initialized.
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep
-      = (PecosApproximation*)poly_approxs[0].approx_rep();
-    // check if either unused or cleared by combined_to_active()
-    if (poly_approx_rep->product_interpolants()) {
-      size_t i, num_lev;  unsigned short lev, form;  bool multilev;
-      configure_levels(num_lev, form, multilev, true); // MF given precedence
-      // Note: this would be overkill after promoting combined to active
-      for (lev=0; lev<num_lev; ++lev) {
-	configure_indices(lev, form, multilev);
-	for (i=0; i<numFunctions; ++i) {
-	  poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-	  poly_approx_rep->initialize_products();
-	}
-      }
-    }
+	->initialize_products(); // modify to enumerate all model keys; rename
+	                         // existing to initialize_active_products()
     */
   }
 }
