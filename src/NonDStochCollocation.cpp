@@ -404,6 +404,39 @@ void NonDStochCollocation::initialize_covariance()
 }
 
 
+void NonDStochCollocation::compute_delta_mean(bool update_ref)
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+
+  if (deltaMean.empty()) deltaMean.sizeUninitialized(numFunctions);
+  for (size_t i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag()) {
+      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	// refinement assessed for impact on combined expansion from roll up
+	deltaMean[i] = (all_vars) ? pa_rep_i->delta_combined_mean(initialPtU) :
+	  pa_rep_i->delta_combined_mean();
+      else // refinement assessed for impact on the current expansion
+	deltaMean[i] = (all_vars) ? pa_rep_i->delta_mean(initialPtU) :
+	  pa_rep_i->delta_mean();
+    }
+    else
+      { warn_flag = true; deltaMean[i] = 0.; }
+  }
+
+  if (update_ref) respVariance += deltaMean;
+  // no use for printing mean values by themselves:
+  //if (print_metric) print_mean(Cout, deltaMean, "Change in");
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonD"
+	 << "StochCollocation::compute_delta_mean().\n         "
+	 << "Zeroing affected deltaMean terms." << std::endl;
+}
+
+
 void NonDStochCollocation::
 compute_delta_variance(bool update_ref, bool print_metric)
 {
@@ -420,12 +453,11 @@ compute_delta_variance(bool update_ref, bool print_metric)
       if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	// refinement assessed for impact on combined expansion from roll up
 	deltaRespVariance[i] = (all_vars) ?
-	  pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_i) :
-	  pa_rep_i->delta_combined_covariance(pa_rep_i);
+	  pa_rep_i->delta_combined_variance(initialPtU) :
+	  pa_rep_i->delta_combined_variance();
       else // refinement assessed for impact on the current expansion
 	deltaRespVariance[i] = (all_vars) ?
-	  pa_rep_i->delta_covariance(initialPtU, pa_rep_i) :
-	  pa_rep_i->delta_covariance(pa_rep_i);
+	  pa_rep_i->delta_variance(initialPtU) : pa_rep_i->delta_variance();
     }
     else
       { warn_flag = true; deltaRespVariance[i] = 0.; }
@@ -434,8 +466,8 @@ compute_delta_variance(bool update_ref, bool print_metric)
   if (update_ref)   respVariance += deltaRespVariance;
   if (print_metric) print_variance(Cout, deltaRespVariance, "Change in");
   if (warn_flag)
-    Cerr << "Warning: expansion coefficients unavailable in NonDMultilevel"
-	 << "StochCollocation::compute_delta_variance().\n         "
+    Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
+	 << "Collocation::compute_delta_variance().\n         "
 	 << "Zeroing affected deltaRespVariance terms." << std::endl;
 }
 
@@ -481,8 +513,8 @@ compute_delta_covariance(bool update_ref, bool print_metric)
   if (update_ref)   respCovariance += deltaRespCovariance;
   if (print_metric) print_covariance(Cout, deltaRespCovariance, "Change in");
   if (warn_flag)
-    Cerr << "Warning: expansion coefficients unavailable in NonDMultilevel"
-	 << "StochCollocation::compute_delta_covariance().\n         "
+    Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
+	 << "Collocation::compute_delta_covariance().\n         "
 	 << "Zeroing affected deltaRespCovariance terms." << std::endl;
 }
 
@@ -540,6 +572,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
     // including delta_mean() and delta_std_deviation().  With access to nested
     // response mappings passed down from an outer context, a more comprehensive
     // set of stats could be supported in the logic below.
+
     bool beta_map = false, numerical_map = false; size_t i, j, cntr;
     for (i=0; i<numFunctions; ++i) {
       if (!requestedRelLevels[i].empty()) beta_map = true;
@@ -555,6 +588,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
       RealVector delta_level_maps, level_maps_new, level_maps_ref;
       pull_level_mappings(level_maps_ref);
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
+	metric_roll_up(); // TO DO: support combined exp in numerical stats
 	compute_level_mappings();// TO DO: compute_numerical_level_mappings()
 	pull_level_mappings(level_maps_new);
 	delta_level_maps  = level_maps_new;
@@ -840,45 +874,38 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   else // use default implementation for Nodal
     return NonDExpansion::compute_final_statistics_metric(revert, print_metric);
 }
-
-
-void NonDStochCollocation::
-update_reference_statistics(short results_state)
-{
-  switch (results_state) {
-  case REFINEMENT_RESULTS: // prune ref update if not strictly required
-    // *** With new fall throughs in compute/print, retire this specialization?
-    // *** In hierarchical SC, may have effect of replacing += accumulations
-    //     with direct eval of combinedExpT{1,2}Coeffs after candidate selection
-    //     --> useful for recovering from delta_*() exception handling?
-    switch (expansionBasisType) {
-    case Pecos::NODAL_INTERPOLANT: // need reference response stats
-      NonDExpansion::update_reference_statistics(results_state); break;
-    case Pecos::HIERARCHICAL_INTERPOLANT:
-      if (relativeMetric) // reference (co)var used for relative scaling
-	NonDExpansion::update_reference_statistics(results_state);
-      //else no-op: response (co)variance reference not required
-
-      // *** Seems redundant with compute_covariance_metric()
-      // *** previously in increment_reference_statistics()
-      //if (relativeMetric) {//ref (co)var used for scaling -> accumulate deltas
-        //bool output_delta = (outputLevel > NORMAL_OUTPUT);
-	// deltas must be recomputed for selected candidate
-	//if (covarianceControl == DIAGONAL_COVARIANCE)
-	//  compute_delta_variance(true, output_delta);
-	//else if (covarianceControl == FULL_COVARIANCE)
-	//  compute_delta_covariance(true, output_delta);
-      //}
-
-      break;
-    }
-    break;
-  default:
-    // INTERMEDIATE_RESULTS: stick with default implementation for stats output
-    // FINAL_RESULTS: not used
-    NonDExpansion::update_reference_statistics(results_state); break;
-  }
-}
 */
+
+
+/** Calculate analytic and numerical statistics from the expansion and
+    log results within final_stats for use in OUU. */
+void NonDStochCollocation::compute_statistics(short results_state)
+{
+  // restore variable settings following build/refine: supports local
+  // sensitivities, expansion/importance sampling for all vars mode
+  // (uses ALEATORY_UNCERTAIN sampling mode), and external uses of the
+  // emulator model (emulator-based inference).
+  //uSpaceModel.continuous_variables(initialPtU);
+
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
+    // specialize base implementation since metric_roll_up() is not used and
+    // extra stats that require roll-up no longer come for free
+    switch (results_state) {
+    case REFINEMENT_RESULTS:
+      // compute_{covariance,level_mapping,final_statistics}_metric() performs
+      // only the necessary computations for resolving delta.norm()
+
+      // augment delta covar -> ref covar with delta_mean -> ref mean;
+      // > supports base compute/print requirements without incurring overhead
+      //   of metric_roll_up(), avoiding need to more broadly redefine
+      //   compute_statistics(), print_results(), pull_*(), push_*() to
+      //   exclude compute_moments()
+      compute_delta_mean(true); // update ref
+      break;
+    //case INTERMEDIATE_RESULTS:  case FINAL_RESULTS:  break;
+    }
+
+  NonDExpansion::compute_statistics(results_state);
+}
 
 } // namespace Dakota

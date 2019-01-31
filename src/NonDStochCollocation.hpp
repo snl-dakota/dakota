@@ -79,7 +79,8 @@ protected:
   Real compute_covariance_metric(bool revert, bool print_metric);
   Real compute_level_mappings_metric(bool revert, bool print_metric);
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
-  //void update_reference_statistics(short results_state);
+
+  void compute_statistics(short results_state = FINAL_RESULTS);
 
   void pull_candidate(RealVector& stats_star);
   void push_candidate(const RealVector& stats_star);
@@ -92,6 +93,8 @@ protected:
   /// approximation j to approximation i
   void initialize_covariance();
 
+  /// helper function to compute deltaRespVariance
+  void compute_delta_mean(bool update_ref);
   /// helper function to compute deltaRespVariance
   void compute_delta_variance(bool update_ref, bool print_metric);
   /// helper function to compute deltaRespCovariance
@@ -118,6 +121,8 @@ private:
   //- Heading: Data
   //
 
+  /// change in response means induced by a refinement candidate
+  RealVector deltaMean;
   /// change in (DIAGONAL) response variance induced by a refinement candidate
   RealVector deltaRespVariance;
   /// change in (FULL) response covariance induced by a refinement candidate

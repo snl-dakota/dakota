@@ -98,8 +98,6 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
-  /// update reference statistics used as refinement metrics
-  virtual void update_reference_statistics(short results_state);
   /// combine coefficients, promote to active, and update statsType
   virtual void combined_to_active();
   /// archive expansion coefficients, as supported by derived instance
@@ -111,6 +109,14 @@ protected:
   virtual Real compute_level_mappings_metric(bool revert, bool print_metric);
   // compute 2-norm of change in final statistics
   //virtual Real compute_final_statistics_metric(bool revert,bool print_metric);
+
+  /// calculate analytic and numerical statistics from the expansion,
+  /// supporting {REFINEMENT,INTERMEDIATE,FINAL}_RESULTS modes
+  virtual void compute_statistics(short results_state = FINAL_RESULTS);
+  /// extract statistics from native stats arrays for a selected candidate
+  virtual void pull_candidate(RealVector& stats_star);
+  /// restore statistics into native stats arrays for a selected candidate
+  virtual void push_candidate(const RealVector& stats_star);
 
   //
   //- Heading: Virtual function redefinitions
@@ -218,7 +224,7 @@ protected:
   void pop_increment();
 
   /// update statsType, here and in Pecos::ExpansionConfigOptions
-  void statistics_type(short stats_type);
+  void statistics_type(short stats_type, bool clear_bits = true);
 
   /// perform any required expansion roll-ups prior to metric computation
   void metric_roll_up();
@@ -257,10 +263,6 @@ protected:
   /// is intended for incremental statistics
   void compute_sobol_indices();
 
-  /// calculate analytic and numerical statistics from the expansion,
-  /// supporting {REFINEMENT,INTERMEDIATE,FINAL}_RESULTS modes
-  void compute_statistics(short results_state = FINAL_RESULTS);
-
   /// print resp{Variance,Covariance}
   void print_covariance(std::ostream& s);
   /// print resp_var (response variance vector) using optional pre-pend
@@ -278,13 +280,13 @@ protected:
 
   void pull_reference(RealVector& stats_ref);
   void push_reference(const RealVector& stats_ref);
-  virtual void pull_candidate(RealVector& stats_star);
-  virtual void push_candidate(const RealVector& stats_star);
 
   /// pull lower triangle of symmetric matrix into vector
-  void pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec);
+  void pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec,
+			   size_t offset = 0);
   /// push vector into lower triangle of symmetric matrix
-  void push_lower_triangle(const RealVector& vec, RealSymMatrix& mat);
+  void push_lower_triangle(const RealVector& vec, RealSymMatrix& mat,
+			   size_t offset = 0);
 
   //
   //- Heading: Data
@@ -617,86 +619,38 @@ inline void NonDExpansion::compute_covariance()
 
 
 inline void NonDExpansion::
-pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec)
+pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec, size_t offset)
 {
-  size_t i, j, cntr = 0, num_r = mat.numRows(),
-    vec_len = num_r*(num_r+1)/2; // (n^2+n)/2
-  if (vec.empty()) vec.sizeUninitialized(vec_len);
-  for (i=0; i<num_r; ++i)
+  size_t i, j, cntr = offset, nr = mat.numRows(),
+    sm_len = (nr*nr + nr)/2, vec_len = offset + sm_len;
+  if (vec.length() != vec_len) vec.resize(vec_len);
+  for (i=0; i<nr; ++i)
     for (j=0; j<=i; ++j, ++cntr)
       vec[cntr] = mat(i,j); // pull from lower triangle
 }
 
 
 inline void NonDExpansion::
-push_lower_triangle(const RealVector& vec, RealSymMatrix& mat)
+push_lower_triangle(const RealVector& vec, RealSymMatrix& mat, size_t offset)
 {
-  size_t i, j, cntr = 0, num_r = mat.numRows();
-  if (vec.length() != num_r*(num_r+1)/2) {
+  size_t i, j, cntr = offset, nr = mat.numRows();
+  if (vec.length() != offset + (nr*nr + nr)/2) {
     Cerr << "Error: inconsistent vector length in NonDExpansion::"
 	 << "push_lower_triangle()" << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  for (i=0; i<num_r; ++i)
+  for (i=0; i<nr; ++i)
     for (j=0; j<=i; ++j, ++cntr)
       mat(i,j) = vec[cntr]; // push to lower triangle
 }
 
 
-inline void NonDExpansion::pull_reference(RealVector& stats_ref)
-{
-  switch (refineMetric) {
-  case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE)
-      pull_lower_triangle(respCovariance, stats_ref);
-    else stats_ref = respVariance;
-    break;
-  default:
-    pull_level_mappings(stats_ref);  break;
-  }
-}
-
-
-inline void NonDExpansion::push_reference(const RealVector& stats_ref)
-{
-  switch (refineMetric) {
-  case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE)
-      push_lower_triangle(stats_ref, respCovariance);
-    else respVariance = stats_ref;
-    break;
-  default:
-    push_level_mappings(stats_ref);  break;
-  }
-}
-
-
 inline void NonDExpansion::pull_candidate(RealVector& stats_star)
-{
-  switch (refineMetric) {
-  case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE)
-      pull_lower_triangle(respCovariance, stats_star);
-    else stats_star = respVariance;
-    break;
-  default:
-    pull_level_mappings(stats_star);  break;
-  }
-}
+{ pull_reference(stats_star); } // default implementation: candidate same as ref
 
 
 inline void NonDExpansion::push_candidate(const RealVector& stats_star)
-{
-  switch (refineMetric) {
-  case Pecos::COVARIANCE_METRIC:
-    if (covarianceControl == FULL_COVARIANCE)
-      push_lower_triangle(stats_star, respCovariance);
-    else respVariance = stats_star;
-    break;
-  default:
-    push_level_mappings(stats_star);  break;
-  }
-}
+{ push_reference(stats_star); } // default implementation: candidate same as ref
 
 
 inline void NonDExpansion::update_final_statistics()

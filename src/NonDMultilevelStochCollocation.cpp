@@ -391,8 +391,8 @@ void NonDMultilevelStochCollocation::combined_to_active()
     uSpaceModel.combined_to_active(false);
     // don't force update to active statistics; allow hybrid approach where
     // combined can still be used when needed (integrate_response_moments())
-    //statistics_type(Pecos::ACTIVE_EXPANSION_STATS); // don't restore
-    statistics_type(Pecos::COMBINED_EXPANSION_STATS); // override
+    //statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false); // don't restore
+    statistics_type(Pecos::COMBINED_EXPANSION_STATS, false); // override
     break;
   }
 }
