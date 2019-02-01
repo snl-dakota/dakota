@@ -1665,6 +1665,7 @@ compute_covariance_metric(bool revert, bool print_metric)
   // of increments is not available
 
   // perform any roll-ups of expansion contributions, prior to metric compute
+  // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
   metric_roll_up();
 
   // Relative to computing the covariance matrix, computing mean values
@@ -1753,6 +1754,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
   RealVector level_maps_ref;  pull_level_mappings(level_maps_ref);
 
   // perform any roll-ups of expansion contributions, prior to metric compute
+  // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
   metric_roll_up();
 
   // compute/print new statistics
