@@ -103,6 +103,9 @@ protected:
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
+  /// perform any required expansion roll-ups prior to metric computation
+  virtual void metric_roll_up();
+
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric(bool revert, bool print_metric);
   /// compute 2-norm of change in final statistics
@@ -225,9 +228,6 @@ protected:
 
   /// update statsType, here and in Pecos::ExpansionConfigOptions
   void statistics_type(short stats_type, bool clear_bits = true);
-
-  /// perform any required expansion roll-ups prior to metric computation
-  void metric_roll_up();
 
   /// calculate the response covariance (diagonal or full matrix) for
   /// the expansion indicated by statsType
@@ -553,8 +553,9 @@ level_cost(unsigned short lev, const RealVector& cost)
 
 inline void NonDExpansion::metric_roll_up()
 {
-  // greedy_ML-MF expansions assess level candidates using combined stats
-  // --> roll up approx for combined stats
+  // greedy_multifidelity_expansion() assesses level candidates using combined
+  // stat metrics, which by default require expansion combination (overridden
+  // for hierarchical SC)
   if (statsType == Pecos::COMBINED_EXPANSION_STATS)
     uSpaceModel.combine_approximation();
 }

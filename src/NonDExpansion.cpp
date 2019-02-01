@@ -878,7 +878,7 @@ void NonDExpansion::refine_expansion()
 
   // post-process nominal expansion, updating reference stats for refinement
   if (!converged) {
-    //metric_roll_up(); // refine_expansion() operates on active expansions
+    metric_roll_up(); // for completeness (no-op for ACTIVE_EXPANSION_STATS)
     compute_statistics(INTERMEDIATE_RESULTS);
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
@@ -925,6 +925,10 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     update_expansion();
 
+    // combine expansions if necessary for stats computation:
+    // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
+    metric_roll_up();
+    // assess increment by computing refinement metric:
     // Note: covariance metric seems more self-consistent for Sobol'-weighted
     // aniso refinement, but allow final stats adaptation if mappings are used
     switch (refineMetric) {
@@ -1289,11 +1293,12 @@ void NonDExpansion::greedy_multifidelity_expansion()
   multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
   // refine based on metrics from combined expansions
   statistics_type(Pecos::COMBINED_EXPANSION_STATS);
-  // update combined reference stats
+  // combine expansions (unconditionally) for refinement reference
+  uSpaceModel.combine_approximation();
+  // compute/print combined reference stats
   Cout << "\n----------------------------------------------------"
        << "\nMultifidelity UQ: statistics from combined expansion"
        << "\n----------------------------------------------------\n";
-  metric_roll_up(); // combine expansions
   compute_statistics(INTERMEDIATE_RESULTS);
   print_results(Cout, INTERMEDIATE_RESULTS);
 
@@ -1599,8 +1604,11 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
       uSpaceModel.append_approximation(true); // rebuild
     }
 
-    // assess effect of increment (non-negative norm)
-    // defer reverting to reference to simplify best candidate tracking
+    // combine expansions if necessary for stats computation:
+    // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
+    metric_roll_up();
+    // assess increment by computing refinement metric:
+    // defer revert --> simplifies best candidate tracking to follow
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC:
       delta = compute_covariance_metric(false, print_metric);      break;
@@ -1663,10 +1671,6 @@ compute_covariance_metric(bool revert, bool print_metric)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
-
-  // perform any roll-ups of expansion contributions, prior to metric compute
-  // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
-  metric_roll_up();
 
   // Relative to computing the covariance matrix, computing mean values
   // within compute_moments() adds little to no additional cost
@@ -1753,10 +1757,6 @@ compute_level_mappings_metric(bool revert, bool print_metric)
   // cache previous statistics
   RealVector level_maps_ref;  pull_level_mappings(level_maps_ref);
 
-  // perform any roll-ups of expansion contributions, prior to metric compute
-  // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
-  metric_roll_up();
-
   // compute/print new statistics
   compute_level_mappings();
   if (print_metric) print_level_mappings(Cout);
@@ -1812,9 +1812,6 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
   // *** Note: this requires that the reference includes FINAL_RESULTS,
   // *** which is not currently true (only INTERMEDIATE_RESULTS)
-
-  // perform any roll-ups of expansion contributions, prior to metric compute
-  metric_roll_up();
 
   // compute/print new statistics
   compute_statistics(FINAL_RESULTS); // no finalStats for REFINEMENT_RESULTS

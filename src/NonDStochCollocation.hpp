@@ -51,6 +51,7 @@ public:
   //
 
   bool resize();
+  void metric_roll_up();
 
 protected:
 
@@ -128,6 +129,17 @@ private:
   /// change in (FULL) response covariance induced by a refinement candidate
   RealSymMatrix deltaRespCovariance;
 };
+
+
+inline void NonDStochCollocation::metric_roll_up()
+{
+  // PCE and Nodal SC require combined expansion coefficients for computing
+  // combined stat metrics, but Hierarchical SC can efficiently compute
+  // deltas based only on active expansions (no combination required)
+  if (statsType == Pecos::COMBINED_EXPANSION_STATS &&
+      expansionBasisType == Pecos::NODAL_INTERPOLANT)
+    uSpaceModel.combine_approximation();
+}
 
 
 inline void NonDStochCollocation::pull_candidate(RealVector& stats_star)
