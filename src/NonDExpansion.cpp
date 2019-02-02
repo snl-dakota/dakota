@@ -1672,8 +1672,8 @@ compute_covariance_metric(bool revert, bool print_metric)
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
-  // Relative to computing the covariance matrix, computing mean values
-  // within compute_moments() adds little to no additional cost
+  // Relative to computing the variance vector/covariance matrix, computing
+  // mean values within compute_moments() adds little to no additional cost
   // > minor exception: PCE covariance does not require mean estimation but
   //   returning 1st coeff (and augmenting if all vars) is cheap
   // > {push,pull} of {reference,candidate} statistics to avoid recomputation
@@ -1692,7 +1692,7 @@ compute_covariance_metric(bool revert, bool print_metric)
       scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
 
     compute_moments(); // little to no additional cost (see above)
-    //compute_covariance(); // now augmented with mean values
+    //compute_covariance(); // minimal variance computation
     if (print_metric) print_covariance(Cout);
     delta_resp_var -= respVariance;           // compute change
     Real delta_norm = delta_resp_var.normFrobenius();
@@ -1721,7 +1721,7 @@ compute_covariance_metric(bool revert, bool print_metric)
 
     compute_moments(); // little to no additional cost (see above)
     compute_off_diagonal_covariance();
-    //compute_covariance(); // now augmented with mean values
+    //compute_covariance(); // minimal covariance computation
     if (print_metric) print_covariance(Cout);
     delta_resp_covar -= respCovariance;              // compute change
     Real delta_norm = delta_resp_covar.normFrobenius();

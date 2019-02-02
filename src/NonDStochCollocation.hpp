@@ -81,7 +81,7 @@ protected:
   Real compute_level_mappings_metric(bool revert, bool print_metric);
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
 
-  void compute_statistics(short results_state = FINAL_RESULTS);
+  //void compute_statistics(short results_state = FINAL_RESULTS);
 
   void pull_candidate(RealVector& stats_star);
   void push_candidate(const RealVector& stats_star);
@@ -123,7 +123,7 @@ private:
   //
 
   /// change in response means induced by a refinement candidate
-  RealVector deltaMean;
+  RealVector deltaRespMean;
   /// change in (DIAGONAL) response variance induced by a refinement candidate
   RealVector deltaRespVariance;
   /// change in (FULL) response covariance induced by a refinement candidate
@@ -139,43 +139,8 @@ inline void NonDStochCollocation::metric_roll_up()
   if (statsType == Pecos::COMBINED_EXPANSION_STATS &&
       expansionBasisType == Pecos::NODAL_INTERPOLANT)
     uSpaceModel.combine_approximation();
-}
-
-
-inline void NonDStochCollocation::pull_candidate(RealVector& stats_star)
-{
-  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
-    switch (refineMetric) {
-    case Pecos::COVARIANCE_METRIC:
-      if (covarianceControl == FULL_COVARIANCE)
-	pull_lower_triangle(deltaRespCovariance, stats_star);
-      else stats_star = deltaRespVariance;
-      break;
-    default:
-      pull_level_mappings(stats_star);  break; // *** TO DO: manage deltas, manage numerical exceptions --> recomputations
-    }
-  else
-    NonDExpansion::pull_candidate(stats_star);
-}
-
-
-inline void NonDStochCollocation::push_candidate(const RealVector& stats_star)
-{
-  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
-    switch (refineMetric) {
-    case Pecos::COVARIANCE_METRIC:
-      if (covarianceControl == FULL_COVARIANCE) {
-	push_lower_triangle(stats_star, deltaRespCovariance);
-	respCovariance += deltaRespCovariance;
-      }
-      else
-	respVariance += stats_star;
-      break;
-    default:
-      push_level_mappings(stats_star);  break; // *** TO DO: manage deltas, manage numerical exceptions --> recomputations
-    }
-  else
-    NonDExpansion::push_candidate(stats_star);
+  // TO DO: case of level mappings for numerical stats --> sampling on
+  //        combined expansion
 }
 
 } // namespace Dakota
