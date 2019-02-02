@@ -154,6 +154,12 @@ TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sym)
 
 //----------------------------------------------------------------
 
+// This will go away once we update Trilinos with the needed swap utility 
+
+// leave off by default until Teuchos accepts patch file(s)
+//#define TEUCHOS_SWAP
+#ifdef TEUCHOS_SWAP
+
 TEUCHOS_UNIT_TEST(data_conversion, mat_swap)
 {
   RealMatrix mat( 5, 5 );
@@ -164,10 +170,10 @@ TEUCHOS_UNIT_TEST(data_conversion, mat_swap)
   mat_swap.random();
   RealMatrix copy_mat_swap(Teuchos::Copy, mat_swap);
 
-  Cout <<  "swap() -- swap the values and attributes of two matrices ";
+  //Cout <<  "swap() -- swap the values and attributes of two matrices ";
   mat_swap.swap(mat);
   bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
-  Cout << "shallow swap results -- "<< (op_result ? "successful" : "failed" )<<std::endl;
+  //Cout << "shallow swap results -- "<< (op_result ? "successful" : "failed" )<<std::endl;
   if( !op_result )
     TEST_ASSERT( false );
 }
@@ -189,6 +195,8 @@ TEUCHOS_UNIT_TEST(data_conversion, sym_mat_swap)
   if( !op_result )
     TEST_ASSERT( false );
 }
+
+#endif
 
 //----------------------------------------------------------------
 
