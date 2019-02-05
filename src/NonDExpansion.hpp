@@ -259,7 +259,10 @@ protected:
   /// approach for incremental statistics (no derivatives, no finalStatistics
   /// update)
   void compute_level_mappings();
-  /// compute Sobol' indices for main, interaction, and total effects; this
+  /// compute only numerical level mappings; this uses a lightweight approach
+  /// for incremental statistics (no derivatives, no finalStatistics update)
+  void compute_numerical_level_mappings();
+ /// compute Sobol' indices for main, interaction, and total effects; this
   /// is intended for incremental statistics
   void compute_sobol_indices();
 

@@ -2265,6 +2265,72 @@ void NonDExpansion::compute_level_mappings()
 }
 
 
+void NonDExpansion::compute_numerical_level_mappings()
+{
+  // for use with incremental results states (combines code from
+  // compute_analytic_statistics() and compute_numerical_statistics(),
+  // which support the final results state)
+
+  // perform sampling on expansion for any numerical level mappings
+  RealVector  exp_sampler_stats;  RealVectorArray imp_sampler_stats;
+  RealRealPairArray min_max_fns;  ShortArray            sampler_asv;
+  define_sampler_asv(sampler_asv);
+  if (non_zero(sampler_asv)) {
+    run_sampler(sampler_asv, exp_sampler_stats);
+    refine_sampler(imp_sampler_stats, min_max_fns);
+  }
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+
+  // flags for limiting unneeded computation (matched in print_results())
+  bool z_to_beta = (respLevelTarget == RELIABILITIES),
+       imp_sampling = !importanceSampler.is_null();
+
+  // loop over response fns and compute/store analytic stats/stat grads
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  size_t i, j, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
+    moment_offset = (finalMomentsType) ? 2 : 0, sampler_moment_offset = 0;
+  if (exp_sampler_rep != NULL && exp_sampler_rep->final_moments_type())
+    sampler_moment_offset = 2;
+
+  for (i=0; i<numFunctions; ++i) {
+    rl_len = requestedRespLevels[i].length();
+    pl_len = requestedProbLevels[i].length();
+    bl_len = requestedRelLevels[i].length();
+    gl_len = requestedGenRelLevels[i].length();
+    cntr         +=         moment_offset;
+    sampler_cntr += sampler_moment_offset;
+
+    if (z_to_beta)
+      cntr += rl_len; // don't increment sampler_cntr
+    else {
+      for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
+	if (final_asv[cntr] & 1) {
+	  Real p = (imp_sampling) ? imp_sampler_stats[i][j]
+	                          : exp_sampler_stats[sampler_cntr];
+	  if (respLevelTarget == PROBABILITIES)
+	    computedProbLevels[i][j] = p;
+	  else if (respLevelTarget == GEN_RELIABILITIES)
+	    computedGenRelLevels[i][j]
+	      = -Pecos::NormalRandomVariable::inverse_std_cdf(p);
+	}
+      }
+    }
+
+    for (j=0; j<pl_len; ++j, ++cntr, ++sampler_cntr)
+      if (final_asv[cntr] & 1)
+	computedRespLevels[i][j] = exp_sampler_stats[sampler_cntr];
+
+    cntr += requestedRelLevels[i].length(); // don't increment sampler_cntr
+
+    for (j=0; j<gl_len; ++j, ++cntr, ++sampler_cntr)
+      if (final_asv[cntr] & 1)
+	computedRespLevels[i][j+pl_len+bl_len]
+	  = exp_sampler_stats[sampler_cntr];
+  }
+}
+
+
 void NonDExpansion::compute_moments()
 {
   // for use with incremental results states

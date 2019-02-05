@@ -84,7 +84,7 @@ protected:
   //void compute_statistics(short results_state = FINAL_RESULTS);
 
   void pull_candidate(RealVector& stats_star);
-  void push_candidate(const RealVector& stats_star);
+  //void push_candidate(const RealVector& stats_star);
 
   //
   //- Heading: Member functions
@@ -100,6 +100,11 @@ protected:
   void compute_delta_variance(bool update_ref, bool print_metric);
   /// helper function to compute deltaRespCovariance
   void compute_delta_covariance(bool update_ref, bool print_metric);
+
+  /// compute only analytic level mappings; this uses a lightweight approach
+  /// for incremental statistics (no derivatives, no finalStatistics update)
+  void analytic_level_mappings(const RealVector& level_maps_ref,
+			       RealVector& level_maps_new);
 
   /// configure u_space_sampler based on numerical integration specification
   void config_integration(unsigned short quad_order, unsigned short ssg_level,
@@ -128,6 +133,8 @@ private:
   RealVector deltaRespVariance;
   /// change in (FULL) response covariance induced by a refinement candidate
   RealSymMatrix deltaRespCovariance;
+  /// change in response means induced by a refinement candidate
+  RealVector deltaLevelMaps;
 };
 
 
