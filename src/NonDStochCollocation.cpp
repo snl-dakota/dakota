@@ -632,7 +632,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 	      ref = level_maps_ref[cntr];
 	      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
 		// ref is undefined and delta neglects term;
-		// recompute new w/o delta in analytic_level_mappings()
+		// recompute new w/o delta in analytic_delta_level_mappings()
 
 		// do not increment scale for dummy beta value --> may result
 		// in SMALL_NUMBER scaling below if no meaningful refs exist
@@ -687,7 +687,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 
       // Level mappings: promote to new or revert to previous (if required)
       if (!revert) { // retain updated values
-        analytic_level_mappings(level_maps_ref, level_maps_new);
+        analytic_delta_level_mappings(level_maps_ref, level_maps_new);
 	push_level_mappings(level_maps_new);
       }
       else if (numerical_map) // restore ref values that were overwritten
@@ -931,7 +931,8 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
     }
     default:
       pull_level_mappings(stats_star); // pull updated numerical stats
-      analytic_level_mappings(stats_star, stats_star); // increment analytic portion (current stats_star defines ref and becomes new for these entries)
+      analytic_delta_level_mappings(stats_star, stats_star); // update analytic
+                 // (stats_star provides ref and becomes new for these entries)
       break;
     }
 
@@ -1065,8 +1066,8 @@ level_mappings_from_delta(const RealVector& level_maps_ref,
     analytic level stats either using ref+delta or, if ref is invalid,
     though recomputation. */
 void NonDStochCollocation::
-analytic_level_mappings(const RealVector& level_maps_ref,
-			RealVector& level_maps_new)
+analytic_delta_level_mappings(const RealVector& level_maps_ref,
+			      RealVector& level_maps_new)
 {
   // preserve existing as this may be an overlay
   if (level_maps_new.length() != totalLevelRequests)
