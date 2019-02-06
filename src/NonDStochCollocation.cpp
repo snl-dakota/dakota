@@ -423,15 +423,20 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
       else // refinement assessed for impact on the current expansion
 	deltaRespMean[i] = (all_vars) ?
 	  pa_rep_i->delta_mean(initialPtU) : pa_rep_i->delta_mean();
+
+      if (update_ref) {
+	Real new_mean = pa_rep_i->moment(0) + deltaRespMean[i];
+	pa_rep_i->moment(new_mean, 0);
+      }
     }
     else
       { warn_flag = true; deltaRespMean[i] = 0.; }
   }
 
-  //if (update_ref) respMean += deltaRespMean; // *** TO DO
-
-  // no use for printing mean values by themselves:
+  // no current need for printing mean values by themselves:
   //if (print_metric) print_mean(Cout, deltaRespMean, "Change in");
+  // mean values not tracked outside PolynomialApproximation:
+  //if (update_ref)   respMean += deltaRespMean;
   if (warn_flag)
     Cerr << "Warning: expansion coefficients unavailable in NonD"
 	 << "StochCollocation::compute_delta_mean().\n         "
@@ -898,7 +903,6 @@ void NonDStochCollocation::compute_statistics(short results_state)
 
   NonDExpansion::compute_statistics(results_state);
 }
-*/
 
 
 void NonDStochCollocation::pull_candidate(RealVector& stats_star)
@@ -916,7 +920,7 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
       // pull means
       for (size_t i=0; i<numFunctions; ++i) {
 	poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-	stats_star[i] = poly_approx_rep->moments()[0] + deltaRespMean[i];
+	stats_star[i] = poly_approx_rep->moment(0) + deltaRespMean[i];
       }
       // pull resp{V,Cov}ariance
       if (full_covar) {
@@ -935,129 +939,8 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
                  // (stats_star provides ref and becomes new for these entries)
       break;
     }
-
-    /* If pulling deltas:
-    switch (refineMetric) {
-    case Pecos::COVARIANCE_METRIC: {
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-      PecosApproximation* poly_approx_rep;
-      bool full_covar = (covarianceControl == FULL_COVARIANCE);
-      size_t vec_len = (full_covar) ?
-	(numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
-      if (stats_star.length() != vec_len) stats_star.sizeUninitialized(vec_len);
-      // pull means
-      copy_data_partial(deltaRespMean, stats_star, 0);
-      // pull resp{V,Cov}ariance
-      if (full_covar)
-	pull_lower_triangle(deltaRespCovariance, stats_star, numFunctions);
-      else
-	copy_data_partial(deltaRespVariance, stats_star, numFunctions);
-      break;
-    }
-    default:
-      //pull_level_mappings(stats_star); // fine for reference, but not deltas
-      copy_data(deltaLevelMaps, stats_star);
-      break;
-    }
-    */
   else
     NonDExpansion::pull_candidate(stats_star);
-}
-
-
-/* Too far downstream -- forces use of deltaLevelMaps for numerical stats
-void NonDStochCollocation::push_candidate(const RealVector& stats_star)
-{
-  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
-    switch (refineMetric) {
-    case Pecos::COVARIANCE_METRIC: {
-      bool full_covar = (covarianceControl == FULL_COVARIANCE);
-      // push deltaResp{Mean,Variance,Covariance} and update
-      // resp{Mean,Variance,Covariance}
-      copy_data_partial(stats_star, (size_t)0, numFunctions, deltaRespMean);
-      //respMean += deltaRespMean; // not currently tracked outside of Pecos
-      if (full_covar) {
-	push_lower_triangle(stats_star, deltaRespCovariance, numFunctions);
-	respCovariance += deltaRespCovariance;
-      }
-      else {
-	copy_data_partial(stats_star, numFunctions, numFunctions,
-			  deltaRespVariance);
-	respVariance += deltaRespVariance; // could be tracked by Pecos alone
-      }	
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-      PecosApproximation* poly_approx_rep;
-      RealVector means(numFunctions, false), ref_mom(2, false);
-      for (size_t i=0; i<numFunctions; ++i) {
-	poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-	ref_mom[0] = poly_approx_rep->moments()[0] + deltaRespMean[i];
-	ref_mom[1] = (full_covar) ? respCovariance(i,i) : respVariance[i];
-	poly_approx_rep->moments(ref_mom);
-      }
-      break;
-    }
-    default: {
-      copy_data(stats_star, deltaLevelMaps); // get delta metric
-      // manage numerical exceptions and need for any recomputations
-      RealVector level_maps_ref, level_maps;
-      pull_level_mappings(level_maps_ref);   // pull current reference
-      level_mappings_from_delta(level_maps_ref, level_maps);
-      push_level_mappings(level_maps);       // push updated reference
-      break;
-    }
-    }
-  else
-    NonDExpansion::push_candidate(stats_star);
-}
-*/
-
-
-/** In this function, we update all of level_maps_new, either using
-    ref+delta or, if ref is invalid, though recomputation.
-Real NonDStochCollocation::
-level_mappings_from_delta(const RealVector& level_maps_ref,
-			  RealVector& level_maps_new)
-{
-  level_maps_new  = level_maps_ref;
-  level_maps_new += deltaLevelMaps;
-
-  // replace entries above via recomputation if any numerical exceptions
-  // invalidate ref or delta
-  if (respLevelTarget != RELIABILITIES) return;
-
-  size_t i, j, cntr, rl_len;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
-  for (i=0, cntr=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
-
-    // recompute new if numerical exceptions prevent new = ref + delta
-    rl_len = requestedRespLevels[i].length();
-    for (j=0; j<rl_len; ++j, ++cntr) {
-      // Note: this captures the more likely of the Pecos::
-      // HierarchInterpPolyApproximation::delta_beta_map() exceptions
-      // (sigma_ref = 0), but not rare case of sigma_new = 0 by itself.
-      ref = level_maps_ref[cntr];
-      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
-	// ref is undefined and delta neglects term; must compute new
-	z_bar = requestedRespLevels[i][j];
-	if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-	  level_maps_new[cntr] = (all_vars) ?
-	    pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
-	    pa_rep_i->combined_beta(cdfFlag, z_bar);
-	else
-	  level_maps_new[cntr] = (all_vars) ?
-	    pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
-	    pa_rep_i->beta(cdfFlag, z_bar);
-      }
-      else // ref and delta are valid
-	level_maps_new[cntr] = ref + deltaLevelMaps[cntr];
-    }
-    cntr += requestedProbLevels[i].length() + requestedRelLevels[i].length()
-         +  requestedGenRelLevels[i].length();
-  }
 }
 */
 

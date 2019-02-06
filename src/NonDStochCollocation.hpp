@@ -82,9 +82,7 @@ protected:
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
 
   //void compute_statistics(short results_state = FINAL_RESULTS);
-
-  void pull_candidate(RealVector& stats_star);
-  //void push_candidate(const RealVector& stats_star);
+  //void pull_candidate(RealVector& stats_star);
 
   //
   //- Heading: Member functions

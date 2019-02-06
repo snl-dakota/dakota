@@ -1840,7 +1840,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
     //  requestedProbLevels[i].length() + requestedRelLevels[i].length() +
     //  requestedGenRelLevels[i].length();
 
-    // *** TO DO: support mixed metrics based on finalStats ASV ***
+    // *** TO DO: support mixed metrics based on finalStats ASV
     cntr += moment_offset; // skip moments if final_stats
     num_lev_i = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
@@ -2320,9 +2320,9 @@ void NonDExpansion::compute_moments()
 
       // extract variance (Pecos provides central moments)
       if (covarianceControl == DIAGONAL_COVARIANCE)
-	respVariance[i]      = poly_approx_rep->moments()[1];
+	respVariance[i]      = poly_approx_rep->moment(1);
       else if (covarianceControl == FULL_COVARIANCE)
-	respCovariance(i,i)  = poly_approx_rep->moments()[1];
+	respCovariance(i,i)  = poly_approx_rep->moment(1);
     }
   }
 }
@@ -2764,7 +2764,7 @@ void NonDExpansion::pull_reference(RealVector& stats_ref)
     // pull means
     for (size_t i=0; i<numFunctions; ++i) {
       poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      stats_ref[i] = poly_approx_rep->moments()[0];
+      stats_ref[i] = poly_approx_rep->moment(0);
     }
     // pull resp{V,Cov}ariance
     if (full_covar)

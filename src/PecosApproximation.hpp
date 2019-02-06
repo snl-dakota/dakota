@@ -241,6 +241,10 @@ public:
   const RealVector& moments() const;
   /// set Pecos::PolynomialApproximation::moments()
   void moments(const RealVector& mom);
+  /// return Pecos::PolynomialApproximation::moment(i)
+  Real moment(size_t i) const;
+  /// set Pecos::PolynomialApproximation::moment(i)
+  void moment(Real mom, size_t i);
   /// return Pecos::PolynomialApproximation::expansionMoments
   const RealVector& expansion_moments() const;
   /// return Pecos::PolynomialApproximation::numericalMoments
@@ -612,6 +616,14 @@ inline const RealVector& PecosApproximation::moments() const
 
 inline void PecosApproximation::moments(const RealVector& mom)
 { polyApproxRep->moments(mom); }
+
+
+inline Real PecosApproximation::moment(size_t i) const
+{ return polyApproxRep->moment(i); }
+
+
+inline void PecosApproximation::moment(Real mom, size_t i)
+{ polyApproxRep->moment(mom, i); }
 
 
 inline const RealVector& PecosApproximation::expansion_moments() const
