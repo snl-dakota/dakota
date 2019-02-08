@@ -2785,19 +2785,18 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
   case Pecos::COVARIANCE_METRIC: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     PecosApproximation* poly_approx_rep;
-    RealVector means(numFunctions, false), ref_mom(2, false);
     bool full_covar = (covarianceControl == FULL_COVARIANCE);
-    // push means and resp{V,Cov}ariance
-    copy_data_partial(stats_ref, (size_t)0, numFunctions, means);
+    // push resp{V|Cov}ariance
     if (full_covar)
       push_lower_triangle(stats_ref, respCovariance, numFunctions);
     else
       copy_data_partial(stats_ref, numFunctions, numFunctions, respVariance);
+    // push Pecos::{expansion|numerical}Moments
     for (size_t i=0; i<numFunctions; ++i) {
-      ref_mom[0] = means[i];
-      ref_mom[1] = (full_covar) ? respCovariance(i,i) : respVariance[i];
       poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      poly_approx_rep->moments(ref_mom);
+      poly_approx_rep->moment(stats_ref[i], 0); // mean values
+      if (full_covar) poly_approx_rep->moment(respCovariance(i,i), 1);
+      else            poly_approx_rep->moment(respVariance[i],     1);
     }
     break;
   }
