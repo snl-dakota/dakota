@@ -251,7 +251,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   case FULL_TENSOR:
     Cout << "Total number of integration points: " << num_quad_points << '\n';
     // Compute the tensor-product grid and store in allSamples
-    tpqDriver->compute_grid(allSamples);
+    tpqDriver->compute_grid();
+    allSamples = tpqDriver->variable_sets(); // copy
     if (outputLevel > NORMAL_OUTPUT)
       print_points_weights("dakota_quadrature_tabular.dat");
     break;
@@ -262,7 +263,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
     Cout << "Filtered to " << numSamples
 	 << " samples with max product weight.\n";
     // Compute the tensor-product grid and store in allSamples
-    tpqDriver->compute_grid(allSamples);
+    tpqDriver->compute_grid();
+    allSamples = tpqDriver->variable_sets(); // copy
     // retain a subset of the minimal order tensor grid
     filter_parameter_sets();
     break;
