@@ -155,9 +155,7 @@ void NonDCubature::get_parameter_sets(Model& model)
        << "\nTotal number of integration points: " << num_cub_points << '\n';
 
   // Compute the cubature grid and store in allSamples
-  cubDriver->compute_grid();
-  allSamples = cubDriver->variable_sets(); // copy
-
+  cubDriver->compute_grid(allSamples);
   if (outputLevel > NORMAL_OUTPUT)
     print_points_weights("dakota_cubature_tabular.dat");
 }

@@ -295,8 +295,7 @@ inline void NonDQuadrature::evaluate_grid_increment()
   // would no longer be in tensor order.  For this reason, rely on duplication
   // detection for now.
 
-  tpqDriver->compute_grid();//Driver->compute_increment(allSamples);
-  allSamples = tpqDriver->variable_sets(); // copy
+  tpqDriver->compute_grid(allSamples);//Driver->compute_increment(allSamples);
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }
