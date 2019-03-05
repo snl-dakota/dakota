@@ -464,6 +464,9 @@ if (NOT BUILD_IN_TRILINOS)
       set(Teuchos_ENABLE_COMPLEX TRUE CACHE BOOL
 	"Pecos requires some complex blas wrappers")
 
+      set(Teuchos_HIDE_DEPRECATED_CODE TRUE CACHE BOOL
+        "Teuchos deprecated code clashes with operator<< in Dakota")
+
       add_subdirectory(packages/external/trilinos)
 
     endif() # Teuchos_DIR

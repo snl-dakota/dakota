@@ -154,12 +154,6 @@ TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sym)
 
 //----------------------------------------------------------------
 
-// This will go away once we update Trilinos with the needed swap utility 
-
-// leave off by default until Teuchos accepts patch file(s)
-//#define TEUCHOS_SWAP
-#ifdef TEUCHOS_SWAP
-
 TEUCHOS_UNIT_TEST(data_conversion, mat_swap)
 {
   RealMatrix mat( 5, 5 );
@@ -195,8 +189,6 @@ TEUCHOS_UNIT_TEST(data_conversion, sym_mat_swap)
   if( !op_result )
     TEST_ASSERT( false );
 }
-
-#endif
 
 //----------------------------------------------------------------
 

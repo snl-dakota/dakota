@@ -10,6 +10,7 @@
 #define DAKOTA_DATA_TYPES_H
 
 #include "dakota_system_defs.hpp"
+#include "Teuchos_config.h"
 #include "Teuchos_SerialDenseVector.hpp"
 #include <boost/multi_array.hpp>
 #include <boost/dynamic_bitset.hpp>
