@@ -17,6 +17,7 @@
 #include "DataFitSurrModel.hpp"
 #include "RecastModel.hpp"
 #include "DataTransformModel.hpp"
+#include "ScalingModel.hpp"
 #include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLHSSampling.hpp"
