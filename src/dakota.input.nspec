@@ -4731,6 +4731,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+    [ scaling {N_mdm(true,methodScaling)} ]
    )
   |
   ( dace {N_mdm(utype,methodName_DACE)}
