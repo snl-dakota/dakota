@@ -933,11 +933,11 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // aniso refinement, but allow final stats adaptation if mappings are used
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC:
-      metric = compute_covariance_metric(revert, print_metric);      break;
+      metric = compute_covariance_metric(false, print_metric);      break;
     //case Pecos::MIXED_STATS_METRIC: // TO DO
     //  compute_mixed_metric(); [retire compute_final_stats_metric()] break;
     default: //case Pecos::LEVEL_STATS_METRIC:
-      metric = compute_level_mappings_metric(revert, print_metric);  break;
+      metric = compute_level_mappings_metric(false, print_metric);  break;
     }
     compute_statistics(REFINEMENT_RESULTS); // augment compute_*_metric()
     if (print_metric) print_results(Cout, REFINEMENT_RESULTS); // augment output
