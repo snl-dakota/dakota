@@ -410,6 +410,10 @@ protected:
   //- Heading: Member functions
   //
 
+  /// helper to compute the recast response order during member initialization
+  // TODO: Move to Response?
+  static short response_order(const Model& sub_model);
+
   /// initialize currentVariables and related info from the passed
   /// size/type info
   bool init_variables(const SizetArray& vars_comps_totals,

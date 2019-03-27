@@ -238,6 +238,18 @@ init_maps(const Sizet2DArray& vars_map_indices,
 }
 
 
+short RecastModel::response_order(const Model& sub_model)
+{
+  const Response& curr_resp = sub_model.current_response();
+
+  short recast_resp_order = 1; // recast resp order to be same as original resp
+  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
+
+  return recast_resp_order;
+}
+
+
 bool RecastModel::
 init_variables(const SizetArray& vars_comps_totals,
 	       const BitArray& all_relax_di, const BitArray& all_relax_dr)

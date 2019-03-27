@@ -208,17 +208,6 @@ secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                       native_fns, num_primary_fns());
 }
 
-short ScalingModel::response_order(const Model& sub_model)
-{
-  const Response& curr_resp = sub_model.current_response();
-
-  short recast_resp_order = 1; // recast resp order to be same as original resp
-  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
-  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
-
-  return recast_resp_order;
-} 
-
 
 /** Initialize scaling types, multipliers, and offsets.  Update the
     iteratedModel appropriately */
