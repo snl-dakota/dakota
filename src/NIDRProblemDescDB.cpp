@@ -1680,9 +1680,9 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 	    "nonlinear_inequality", aln_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 	    "nonlinear_equality", aln_scaletypes);
-  if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
-    squawk("Specify calibration weights or experimental errors, not both.");
-  }
+  // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
+  //   squawk("Specify calibration weights or experimental errors, not both.");
+  // }
   if ((n = dr->responseLabels.size()) > 0) {
     if (!(k = dr->numResponseFunctions)) {
       if (!(k = dr->numObjectiveFunctions))

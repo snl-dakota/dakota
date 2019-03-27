@@ -215,6 +215,9 @@ protected:
   /// Wrap iteratedModel in a RecastModel that performs response scaling
   void scale_model();
 
+  /// Wrap iteratedModel in a RecastModel that weights the residuals
+  void weight_model();
+
   //
   //- Heading: Data
   //
@@ -477,11 +480,14 @@ protected:
   Real kl_est;	
   void print_kl(std::ostream& stream);		
 
-  /// whether Iterator-level scaling is active
+  /// whether response scaling is active
   bool scaleFlag;
-  /// Shallow copy of the scaling transformation model, when present
-  /// (cached in case further wrapped by other transformations)
-  Model scalingModel;
+  // /// Shallow copy of the scaling transformation model, when present
+  // /// (cached in case further wrapped by other transformations)
+  // Model scalingModel;
+
+  /// whether weight scaling is active
+  bool weightFlag;
 
 private:
 
