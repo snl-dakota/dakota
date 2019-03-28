@@ -234,7 +234,7 @@ inline void NonDSparseGrid::pop_grid_increment()
 
 
 inline void NonDSparseGrid::merge_grid_increment()
-{ ssgDriver->merge_increment(); }
+{ ssgDriver->merge_unique(); }
 
 
 inline int NonDSparseGrid::num_samples() const

@@ -7,17 +7,17 @@ environment,
 method,
 	model_pointer = 'HIERARCH'
         multifidelity_stoch_collocation
-	  hierarchical
+	  hierarchical						#s0,#s1
 	  allocation_control greedy
-	  p_refinement dimension_adaptive generalized		#s0
-	    sparse_grid_level_sequence = 0 unrestricted		#s0
-	    convergence_tolerance 1.e-8				#s0
-#	  p_refinement uniform	       	 			#s1
-#	    sparse_grid_level_sequence = 0 unrestricted		#s1
-#	    convergence_tolerance 1.e-3				#s1
+	  p_refinement dimension_adaptive generalized		#s0,#s2
+	    sparse_grid_level_sequence = 0 unrestricted		#s0,#s2
+	    convergence_tolerance 1.e-8				#s0,#s2
+#	  p_refinement uniform	       	 			#s1,#s3
+#	    sparse_grid_level_sequence = 0 unrestricted		#s1,#s3
+#	    convergence_tolerance 1.e-3				#s1,#s3
 #	    max_refinement_iterations 100
-#	output silent
-#	variance_based_decomp
+	output silent
+	variance_based_decomp					#s0,#s2
 
 model,
 	id_model = 'HIERARCH'

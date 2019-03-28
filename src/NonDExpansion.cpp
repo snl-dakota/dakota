@@ -878,6 +878,7 @@ void NonDExpansion::refine_expansion()
 
   // post-process nominal expansion, updating reference stats for refinement
   if (!converged) {
+    metric_roll_up(); // for completeness (no-op for ACTIVE_EXPANSION_STATS)
     compute_statistics(INTERMEDIATE_RESULTS);
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
@@ -886,11 +887,7 @@ void NonDExpansion::refine_expansion()
 
   while (!converged) {
 
-    // Don't revert refinements.  Print refinement metrics.
-    core_refinement(metric, false, true);
-
-    compute_statistics(REFINEMENT_RESULTS);
-    print_results(Cout, REFINEMENT_RESULTS);
+    core_refinement(metric, false, true); // don't revert, print metrics
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
@@ -927,16 +924,26 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     update_expansion();
+
+    // combine expansions if necessary for stats computation:
+    // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
+    metric_roll_up();
+    // assess increment by computing refinement metric:
+    // defer revert (pass false) -> simplifies best candidate tracking to follow
     // Note: covariance metric seems more self-consistent for Sobol'-weighted
     // aniso refinement, but allow final stats adaptation if mappings are used
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC:
-      metric = compute_covariance_metric(revert, print_metric);      break;
+      metric = compute_covariance_metric(false, print_metric);      break;
     //case Pecos::MIXED_STATS_METRIC: // TO DO
     //  compute_mixed_metric(); [retire compute_final_stats_metric()] break;
     default: //case Pecos::LEVEL_STATS_METRIC:
-      metric = compute_level_mappings_metric(revert, print_metric);  break;
+      metric = compute_level_mappings_metric(false, print_metric);  break;
     }
+    compute_statistics(REFINEMENT_RESULTS); // augment compute_*_metric()
+    if (print_metric) print_results(Cout, REFINEMENT_RESULTS); // augment output
+    pull_candidate(levelStatsStar); // pull compute_*_metric() + augmented stats
+
     if (revert) pop_increment();
     else        merge_grid();
     break;
@@ -952,6 +959,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     candidate = increment_sets(metric, revert, print_metric);
     break;
   }
+
   return candidate;
 }
 
@@ -967,10 +975,8 @@ void NonDExpansion::post_refinement(Real& metric, bool reverted)
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    if (reverted && uSpaceModel.push_available()) {
-      push_increment();
-      merge_grid();
-    }
+    if (reverted && uSpaceModel.push_available())
+      select_increment_candidate();
     break;
   }
 }
@@ -1243,10 +1249,10 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
     refine_expansion(); // uniform/adaptive refinement
-  compute_statistics(INTERMEDIATE_RESULTS);
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
        << "\n--------------------------------------\n";
+  compute_statistics(INTERMEDIATE_RESULTS);
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // loop over each of the discrepancy levels
@@ -1260,10 +1266,10 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
     compute_expansion();  // nominal discrepancy expansion from input spec
     if (refine_type)
       refine_expansion(); // uniform/adaptive refinement
-    compute_statistics(INTERMEDIATE_RESULTS);
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n";
+    compute_statistics(INTERMEDIATE_RESULTS);
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
@@ -1286,12 +1292,19 @@ void NonDExpansion::greedy_multifidelity_expansion()
   multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
   // refine based on metrics from combined expansions
   statistics_type(Pecos::COMBINED_EXPANSION_STATS);
-  // update combined reference stats (can't increment as no deltas available)
-  update_reference_stats();
+  // combine expansions (unconditionally) for refinement reference
+  uSpaceModel.combine_approximation();
+  // compute/print combined reference stats
+  Cout << "\n----------------------------------------------------"
+       << "\nMultifidelity UQ: statistics from combined expansion"
+       << "\n----------------------------------------------------\n";
+  compute_statistics(INTERMEDIATE_RESULTS);
+  print_results(Cout, INTERMEDIATE_RESULTS);
 
   // Initialize again (or must propagate settings from mf_expansion())
   size_t num_lev, best_lev, lev_candidate, best_candidate;
-  unsigned short lev, form; bool multilev; RealVector cost;
+  unsigned short lev, form; RealVector cost;
+  bool multilev, full_covar = (covarianceControl == FULL_COVARIANCE);
   configure_levels(num_lev, form, multilev, true); // MF given precedence
   configure_cost(num_lev, multilev, cost);
 
@@ -1329,18 +1342,20 @@ void NonDExpansion::greedy_multifidelity_expansion()
       if (lev_metric > best_lev_metric) {
 	best_lev_metric = lev_metric;
 	best_lev = lev;	best_candidate = lev_candidate;
+	statsStar = levelStatsStar;
       }
     }
 
     // permanently apply best increment and update references for next increment
     configure_indices(best_lev, form, multilev);
     select_candidate(best_candidate);
-    increment_reference_stats(); // update combined reference stats
+    push_candidate(statsStar);// update stats from best candidate (no recompute)
 
     ++iter;
     Cout << "\n<<<<< Iteration " << iter
 	 << " completed: selected refinement indices = level " << best_lev+1
 	 << " candidate " << best_candidate+1 << '\n';
+    print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
   // Perform final roll-up for each level and then combine levels
@@ -1369,20 +1384,12 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
     std::set<UShortArray>::const_iterator best_cit = active_mi.begin();
     std::advance(best_cit, best_candidate);
-    // See also bottom of NonDExpansion::increment_sets()
-    nond_sparse->update_sets(*best_cit);
-    uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
-    nond_sparse->update_reference();
+    select_index_set_candidate(best_cit);
     break;
   }
-  case Pecos::UNIFORM_CONTROL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::UNIFORM_CONTROL:  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    // increment the grid and, if needed, the expansion order.
-    // can ignore best_candidate (only one candidate for now).
-    push_increment();
-    merge_grid(); // adopt incremented state as new reference
-    break;
+    select_increment_candidate();  break;
   }
 
   // For distinct discrepancy, promotion of best candidate does not invalidate
@@ -1393,6 +1400,26 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
   //  for (lev=best_lev+1; lev<num_lev; ++lev)
   //    uSpaceModel.clear_popped();
+}
+
+
+void NonDExpansion::
+select_index_set_candidate(std::set<UShortArray>::const_iterator cit_star)
+{
+  NonDSparseGrid* nond_sparse
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+  nond_sparse->update_sets(*cit_star);
+  uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
+  nond_sparse->update_reference();
+}
+
+
+void NonDExpansion::select_increment_candidate()
+{
+  // increment the grid and, if needed, the expansion order.
+  // can ignore best_candidate (only one candidate for now).
+  push_increment();
+  merge_grid(); // adopt incremented state as new reference
 }
 
 
@@ -1482,7 +1509,7 @@ void NonDExpansion::update_expansion()
 }
 
 
-void NonDExpansion::statistics_type(short stats_type)
+void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
 {
   if (statsType != stats_type) {
     statsType = stats_type;
@@ -1491,46 +1518,33 @@ void NonDExpansion::statistics_type(short stats_type)
       uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->refinement_statistics_type(stats_type);
 
-    // *** TO DO: clean up this logic
-    //
-    // expType{1,2}Coeffs and combinedType{1,2}Coeffs are distinct, but there
-    // is only one set of prodType{1,2}Coeffs accumulators, which must span all
-    // unique covariance pairs.  Therefore, when changing between active and
-    // combined stats, the products must be re-initialized.
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep
-      = (PecosApproximation*)poly_approxs[0].approx_rep();
-    // check if either unused or cleared by combined_to_active()
-    if (poly_approx_rep->product_interpolants()) {
-      size_t i, num_lev;  unsigned short lev, form;  bool multilev;
-      configure_levels(num_lev, form, multilev, true); // MF given precedence
-      // Note: this would be overkill after promoting combined to active
-      for (lev=0; lev<num_lev; ++lev) {
-	configure_indices(lev, form, multilev);
-	for (i=0; i<numFunctions; ++i) {
-	  poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-	  poly_approx_rep->initialize_products();
-	}
-      }
+    // poly_approxs share computed* trackers between active and combined stats
+    // --> clear these trackers
+    if (clear_bits) {
+      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      for (size_t i=0; i<numFunctions; ++i)
+	((PecosApproximation*)poly_approxs[i].approx_rep())
+	  ->clear_computed_bits();
     }
+
+    /*
+    // Changing stats type does *not* invalidate prodType{1,2}Coeffs since it
+    // is defined only for expType{1,2}Coeffs (supporting delta_*() use cases),
+    // but combined_to_active *does* for the active model index.
+    // HIPA::combined_to_active() clears all prodType{1,2}Coeffs, such that
+    // product_interpolants() will evaluate to false and new interpolants are
+    // generated when needed (TO DO: any redundancy?).
+
+    // For invalidation of current product interpolant data, we do not have
+    // to have full knowledge of all model keys coming from NonDExpansion;
+    // re-initializing the current model keys is enough.
+    for (i=0; i<numFunctions; ++i)
+      ((PecosApproximation*)poly_approxs[i].approx_rep())
+	->initialize_products(); // modify to enumerate all model keys; rename
+	                         // existing to initialize_active_products()
+    */
   }
 }
-
-
-void NonDExpansion::update_reference_stats()
-{
-  // default implementation (used by greedy_multifidelity_expansion())
-  metric_roll_up();
-  compute_covariance();
-
-  // TO DO: unify with multifidelity_expansion() operations (+ output headers?)
-  //compute_statistics(INTERMEDIATE_RESULTS);
-  //print_results(Cout, INTERMEDIATE_RESULTS);
-}
-
-
-void NonDExpansion::increment_reference_stats()
-{ update_reference_stats(); } // default implementation
 
 
 void NonDExpansion::combined_to_active()
@@ -1542,8 +1556,9 @@ void NonDExpansion::combined_to_active()
   uSpaceModel.combine_approximation();
   // migrate combined{MultiIndex,ExpCoeff{s,Grads}} to current active
   uSpaceModel.combined_to_active();
-  // update approach for computing statistics
-  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
+  // update approach for computing statistics; don't clear bits as
+  // combined_to_active() can transfer bits from combined to active
+  statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false);
 }
 
 
@@ -1576,20 +1591,10 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   std::set<UShortArray>::const_iterator cit, cit_star;
-  Real delta; delta_star = -DBL_MAX;
-  RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
-  bool apply_best = !revert,
-       full_covar = (covarianceControl == FULL_COVARIANCE);
+  RealVector stats_ref;  Real delta; delta_star = -DBL_MAX;
+  bool full_covar = (covarianceControl == FULL_COVARIANCE);
 
-  if (apply_best) // store reference points for efficient restoration
-    switch (refineMetric) {
-    case Pecos::COVARIANCE_METRIC:
-      if (full_covar) covar_ref = respCovariance;
-      else            stats_ref = respVariance;
-      break;
-    default:
-      pull_level_mappings(stats_ref);      break;
-    }
+  pull_reference(stats_ref);
 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
@@ -1609,68 +1614,48 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
       uSpaceModel.append_approximation(true); // rebuild
     }
 
-    // assess effect of increment (non-negative norm); restore ref once done
+    // combine expansions if necessary for stats computation:
+    // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
+    metric_roll_up();
+    // assess increment by computing refinement metric:
+    // defer revert (pass false) -> simplifies best candidate tracking to follow
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC:
-      delta = compute_covariance_metric(revert, print_metric);       break;
+      delta = compute_covariance_metric(false, print_metric);      break;
     //case Pecos::MIXED_STATS_METRIC: // TO DO
     //  compute_mixed_metric(); [retire compute_final_stats_metric()] break;
     default: //case Pecos::LEVEL_STATS_METRIC:
-      delta = compute_level_mappings_metric(revert, print_metric);   break;
+      delta = compute_level_mappings_metric(false, print_metric);  break;
     }
+    compute_statistics(REFINEMENT_RESULTS);        // augment compute_*_metric()
+    if (print_metric) print_results(Cout, REFINEMENT_RESULTS); // augment output
+
     // normalize effect of increment based on cost (# of collocation pts).
-    // Note: increment size must be nonzero since growth restriction is
-    // precluded for generalized sparse grids.
+    // Note: increment size is nonzero since growth restriction is precluded
+    //       for generalized sparse grids.
     delta /= nond_sparse->increment_size();
+    Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
     // track best increment evaluated thus far
     if (delta > delta_star) {
-      cit_star = cit; delta_star = delta;
-      // partial results tracking avoids need to recompute statistics
-      // on the selected index set
-      if (apply_best)
-	switch (refineMetric) {
-	case Pecos::COVARIANCE_METRIC:
-	  if (full_covar) covar_star = respCovariance;
-	  else            stats_star = respVariance;
-	  break;
-	default:
-	  pull_level_mappings(stats_star);     break;
-	}
+      cit_star = cit;  delta_star = delta;
+      pull_candidate(levelStatsStar); // pull comp_*_metric() + augmented stats
     }
-    Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store data for use in push,finalize
     nond_sparse->decrement_set(); // store data for use in push_set()
-    if (apply_best) // if not previously reverted, revert now
-      switch (refineMetric) {
-      case Pecos::COVARIANCE_METRIC:
-	if (full_covar) respCovariance = covar_ref;
-	else            respVariance   = stats_ref;
-	break;
-      default:
-	push_level_mappings(stats_ref);        break;
-      }
+    if (revert || cit != --active_mi.end()) // else overwritten by push below
+      push_reference(stats_ref);
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
-  size_t index_star = find_index(active_mi, *cit_star);
 
-  if (apply_best) {
-    // permanently apply best increment and update references for next increment
-    nond_sparse->update_sets(*cit_star);
-    uSpaceModel.push_approximation();
-    nond_sparse->update_reference();
-    switch (refineMetric) {
-    case Pecos::COVARIANCE_METRIC:
-      if (full_covar) respCovariance = covar_star;
-      else            respVariance   = stats_star;
-      break;
-    default:
-      push_level_mappings(stats_star);        break;
-    }
+  if (!revert) { // permanently apply best increment and update references
+    select_index_set_candidate(cit_star);
+    push_candidate(levelStatsStar);
   }
 
+  size_t index_star = find_index(active_mi, *cit_star);
   return index_star;
 }
 
@@ -1695,8 +1680,14 @@ compute_covariance_metric(bool revert, bool print_metric)
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
-  // perform any roll-ups of expansion contributions, prior to metric compute
-  metric_roll_up();
+  // Relative to computing the variance vector/covariance matrix, computing
+  // mean values within compute_moments() adds little to no additional cost
+  // > minor exception: PCE covariance does not require mean estimation but
+  //   returning 1st coeff (and augmenting if all vars) is cheap
+  // > {push,pull} of {reference,candidate} statistics to avoid recomputation
+  //   means that prints of INTERMEDIATE results can be based on restoration
+  //   of REFINEMENT results, so this simplifies the bridge between the two.
+  // > Note: redundant moment estimations are protected by computed bits.
 
   Real scale;
   switch (covarianceControl) {
@@ -1708,7 +1699,8 @@ compute_covariance_metric(bool revert, bool print_metric)
     if (relativeMetric)
       scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
 
-    compute_covariance();                     // update
+    compute_moments(); // little to no additional cost (see above)
+    //compute_covariance(); // minimal variance computation
     if (print_metric) print_covariance(Cout);
     delta_resp_var -= respVariance;           // compute change
     Real delta_norm = delta_resp_var.normFrobenius();
@@ -1735,7 +1727,9 @@ compute_covariance_metric(bool revert, bool print_metric)
     if (relativeMetric)
       scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
 
-    compute_covariance();                            // update
+    compute_moments(); // little to no additional cost (see above)
+    compute_off_diagonal_covariance();
+    //compute_covariance(); // minimal covariance computation
     if (print_metric) print_covariance(Cout);
     delta_resp_covar -= respCovariance;              // compute change
     Real delta_norm = delta_resp_covar.normFrobenius();
@@ -1771,8 +1765,6 @@ compute_level_mappings_metric(bool revert, bool print_metric)
   // cache previous statistics
   RealVector level_maps_ref;  pull_level_mappings(level_maps_ref);
 
-  // perform any roll-ups of expansion contributions, prior to metric compute
-  metric_roll_up();
   // compute/print new statistics
   compute_level_mappings();
   if (print_metric) print_level_mappings(Cout);
@@ -1829,8 +1821,6 @@ compute_final_statistics_metric(bool revert, bool print_metric)
   // *** Note: this requires that the reference includes FINAL_RESULTS,
   // *** which is not currently true (only INTERMEDIATE_RESULTS)
 
-  // perform any roll-ups of expansion contributions, prior to metric compute
-  metric_roll_up();
   // compute/print new statistics
   compute_statistics(FINAL_RESULTS); // no finalStats for REFINEMENT_RESULTS
   if (print_metric) print_results(Cout, FINAL_RESULTS);
@@ -1858,7 +1848,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
     //  requestedProbLevels[i].length() + requestedRelLevels[i].length() +
     //  requestedGenRelLevels[i].length();
 
-    // *** TO DO: support mixed metrics based on finalStats ASV ***
+    // *** TO DO: support mixed metrics based on finalStats ASV
     cntr += moment_offset; // skip moments if final_stats
     num_lev_i = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
@@ -2084,20 +2074,12 @@ void NonDExpansion::compute_statistics(short results_state)
   // sensitivities, expansion/importance sampling for all vars mode
   // (uses ALEATORY_UNCERTAIN sampling mode), and external uses of the
   // emulator model (emulator-based inference).
-  uSpaceModel.continuous_variables(initialPtU);
+  //uSpaceModel.continuous_variables(initialPtU);
 
   switch (results_state) {
   case REFINEMENT_RESULTS:
-    // compute_{covariance,level_mapping,final_statistics}_metric must perform
-    // the necessary computations for resolving delta.normFrobenius()
-    //switch (refineMetric) {
-    //case Pecos::COVARIANCE_METRIC:
-    //  compute_covariance();                         break;
-    //case Pecos::MIXED_STATS_METRIC:
-    //  compute_moments(); compute_level_mappings();  break;
-    //case Pecos::LEVEL_STATS_METRIC:
-    //  compute_level_mappings();                     break;
-    //}
+    // compute_{covariance,level_mapping,final_statistics}_metric() performs
+    // the necessary computations for resolving delta.norm()
 
     // mirror requirements for additional diagnostics in print_results()
     //switch (refineControl) {
@@ -2114,10 +2096,15 @@ void NonDExpansion::compute_statistics(short results_state)
       //break;
     //}
     break;
-  case INTERMEDIATE_RESULTS:
+  case INTERMEDIATE_RESULTS: {
+    bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
     switch (refineMetric) {
     case Pecos::NO_METRIC: // possible for multifidelity_expansion()
-      compute_moments(); if (totalLevelRequests) compute_level_mappings();
+      compute_moments();
+      if (totalLevelRequests) {
+	if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+	compute_level_mappings();
+      }
       break;
     case Pecos::COVARIANCE_METRIC:
       compute_moments(); // no additional cost (mean,variance reused)
@@ -2125,12 +2112,18 @@ void NonDExpansion::compute_statistics(short results_state)
 	compute_off_diagonal_covariance();
       break;
     case Pecos::MIXED_STATS_METRIC:
-      compute_moments(); compute_level_mappings();  break;
+      if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+      compute_moments(); compute_level_mappings();
+      break;
     case Pecos::LEVEL_STATS_METRIC:
-      compute_level_mappings();                     break;
+      if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+      compute_level_mappings();
+      break;
     }
     break;
+  }
   case FINAL_RESULTS:
+    uSpaceModel.continuous_variables(initialPtU); // see top comment
     // -----------------------------
     // Calculate analytic statistics: includes derivs + finalStats updating
     // -----------------------------
@@ -2162,42 +2155,29 @@ void NonDExpansion::compute_level_mappings()
   // compute_analytic_statistics() and compute_numerical_statistics(),
   // which support the final results state)
 
-  // perform sampling on expansion for any numerical level mappings
-  RealVector  exp_sampler_stats;  RealVectorArray imp_sampler_stats;
-  RealRealPairArray min_max_fns;  ShortArray            sampler_asv;
-  define_sampler_asv(sampler_asv);
-  if (non_zero(sampler_asv)) {
-    run_sampler(sampler_asv, exp_sampler_stats);
-    refine_sampler(imp_sampler_stats, min_max_fns);
-  }
-  NonDSampling* exp_sampler_rep
-    = (NonDSampling*)expansionSampler.iterator_rep();
+  // start with numerical, then overlay analytic below
+  compute_numerical_level_mappings();
 
   // flags for limiting unneeded computation (matched in print_results())
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
        combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS),
-       z_to_beta = (respLevelTarget == RELIABILITIES),
-       imp_sampling = !importanceSampler.is_null();
+       z_to_beta = (respLevelTarget == RELIABILITIES);
 
   // loop over response fns and compute/store analytic stats/stat grads
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   Real mu, var, sigma, p, z_bar, beta_bar;
-  size_t i, j, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
-    moment_offset = (finalMomentsType) ? 2 : 0, sampler_moment_offset = 0;
-  if (exp_sampler_rep != NULL && exp_sampler_rep->final_moments_type())
-    sampler_moment_offset = 2;
+  size_t i, j, rl_len, pl_len, bl_len, cntr = 0,
+    moment_offset = (finalMomentsType) ? 2 : 0;
+
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     rl_len = requestedRespLevels[i].length();
     pl_len = requestedProbLevels[i].length();
     bl_len = requestedRelLevels[i].length();
-    gl_len = requestedGenRelLevels[i].length();
+
     cntr += moment_offset;
-    // sampler_cntr tracks only the numerical stats (analytic level mappings
-    // and final moments are suppressed in construct_expansion_sampler())
-    sampler_cntr += sampler_moment_offset;
 
     // Note: corresponding logic in NonDExpansion::compute_expansion() defines
     // expansionCoeffFlag as needed to support final data requirements.
@@ -2235,7 +2215,7 @@ void NonDExpansion::compute_level_mappings()
     }
 
     if (z_to_beta) {
-      for (j=0; j<rl_len; ++j, ++cntr) // don't increment sampler_cntr
+      for (j=0; j<rl_len; ++j, ++cntr)
 	if (final_asv[cntr] & 1) {
 	  z_bar = requestedRespLevels[i][j];
 	  if (sigma > Pecos::SMALL_NUMBER)
@@ -2247,11 +2227,66 @@ void NonDExpansion::compute_level_mappings()
 	      -Pecos::LARGE_NUMBER : Pecos::LARGE_NUMBER;
 	}
     }
+    else
+      cntr += rl_len;
+
+    cntr += pl_len;
+
+    for (j=0; j<bl_len; ++j, ++cntr)
+      if (final_asv[cntr] & 1) {
+        beta_bar = requestedRelLevels[i][j];
+	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
+	  mu - beta_bar * sigma : mu + beta_bar * sigma;
+      }
+
+    cntr += requestedGenRelLevels[i].length();
+  }
+}
+
+
+void NonDExpansion::compute_numerical_level_mappings()
+{
+  // for use with incremental results states (combines code from
+  // compute_analytic_statistics() and compute_numerical_statistics(),
+  // which support the final results state)
+
+  // perform sampling on expansion for any numerical level mappings
+  RealVector  exp_sampler_stats;  RealVectorArray imp_sampler_stats;
+  RealRealPairArray min_max_fns;  ShortArray            sampler_asv;
+  define_sampler_asv(sampler_asv);
+  if (non_zero(sampler_asv)) {
+    run_sampler(sampler_asv, exp_sampler_stats);
+    refine_sampler(imp_sampler_stats, min_max_fns);
+  }
+  NonDSampling* exp_sampler_rep
+    = (NonDSampling*)expansionSampler.iterator_rep();
+
+  // flags for limiting unneeded computation (matched in print_results())
+  bool z_to_beta = (respLevelTarget == RELIABILITIES),
+       imp_sampling = !importanceSampler.is_null();
+
+  // loop over response fns and compute/store analytic stats/stat grads
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  size_t i, j, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
+    moment_offset = (finalMomentsType) ? 2 : 0, sampler_moment_offset = 0;
+  if (exp_sampler_rep != NULL && exp_sampler_rep->final_moments_type())
+    sampler_moment_offset = 2;
+
+  for (i=0; i<numFunctions; ++i) {
+    rl_len = requestedRespLevels[i].length();
+    pl_len = requestedProbLevels[i].length();
+    bl_len = requestedRelLevels[i].length();
+    gl_len = requestedGenRelLevels[i].length();
+
+    cntr  += moment_offset;  sampler_cntr += sampler_moment_offset;
+
+    if (z_to_beta)
+      cntr += rl_len; // don't increment sampler_cntr
     else {
       for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
 	if (final_asv[cntr] & 1) {
-	  p = (imp_sampling) ? imp_sampler_stats[i][j]
-	                     : exp_sampler_stats[sampler_cntr];
+	  Real p = (imp_sampling) ? imp_sampler_stats[i][j]
+	                          : exp_sampler_stats[sampler_cntr];
 	  if (respLevelTarget == PROBABILITIES)
 	    computedProbLevels[i][j] = p;
 	  else if (respLevelTarget == GEN_RELIABILITIES)
@@ -2265,12 +2300,7 @@ void NonDExpansion::compute_level_mappings()
       if (final_asv[cntr] & 1)
 	computedRespLevels[i][j] = exp_sampler_stats[sampler_cntr];
 
-    for (j=0; j<bl_len; ++j, ++cntr) // don't increment sampler_cntr
-      if (final_asv[cntr] & 1) {
-        beta_bar = requestedRelLevels[i][j];
-	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
-	  mu - beta_bar * sigma : mu + beta_bar * sigma;
-      }
+    cntr += bl_len; // don't increment sampler_cntr
 
     for (j=0; j<gl_len; ++j, ++cntr, ++sampler_cntr)
       if (final_asv[cntr] & 1)
@@ -2297,10 +2327,10 @@ void NonDExpansion::compute_moments()
 	poly_approx_rep->compute_moments(false, combined_stats);
 
       // extract variance (Pecos provides central moments)
-      if (covarianceControl ==  DIAGONAL_COVARIANCE)
-	respVariance[i]      = poly_approx_rep->moments()[1];
+      if (covarianceControl == DIAGONAL_COVARIANCE)
+	respVariance[i]      = poly_approx_rep->moment(1);
       else if (covarianceControl == FULL_COVARIANCE)
-	respCovariance(i,i)  = poly_approx_rep->moments()[1];
+	respCovariance(i,i)  = poly_approx_rep->moment(1);
     }
   }
 }
@@ -2726,6 +2756,61 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
   // update min_max_fns for use in defining bounds for outer PDF bins
   if (pdfOutput)
     min_max_fns = imp_sampler_rep->extreme_values();
+}
+
+
+void NonDExpansion::pull_reference(RealVector& stats_ref)
+{
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC: {
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    PecosApproximation* poly_approx_rep;
+    bool full_covar = (covarianceControl == FULL_COVARIANCE);
+    size_t vec_len = (full_covar) ?
+      (numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
+    if (stats_ref.length() != vec_len) stats_ref.sizeUninitialized(vec_len);
+    // pull means
+    for (size_t i=0; i<numFunctions; ++i) {
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      stats_ref[i] = poly_approx_rep->moment(0);
+    }
+    // pull resp{V,Cov}ariance
+    if (full_covar)
+      pull_lower_triangle(respCovariance, stats_ref, numFunctions);
+    else
+      copy_data_partial(respVariance, stats_ref, numFunctions);
+    break;
+  }
+  default:
+    pull_level_mappings(stats_ref);  break;
+  }
+}
+
+
+void NonDExpansion::push_reference(const RealVector& stats_ref)
+{
+  switch (refineMetric) {
+  case Pecos::COVARIANCE_METRIC: {
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    PecosApproximation* poly_approx_rep;
+    bool full_covar = (covarianceControl == FULL_COVARIANCE);
+    // push resp{V|Cov}ariance
+    if (full_covar)
+      push_lower_triangle(stats_ref, respCovariance, numFunctions);
+    else
+      copy_data_partial(stats_ref, numFunctions, numFunctions, respVariance);
+    // push Pecos::{expansion|numerical}Moments
+    for (size_t i=0; i<numFunctions; ++i) {
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      poly_approx_rep->moment(stats_ref[i], 0); // mean values
+      if (full_covar) poly_approx_rep->moment(respCovariance(i,i), 1);
+      else            poly_approx_rep->moment(respVariance[i],     1);
+    }
+    break;
+  }
+  default:
+    push_level_mappings(stats_ref);  break;
+  }
 }
 
 
@@ -3371,18 +3456,19 @@ void NonDExpansion::print_local_sensitivity(std::ostream& s)
 
 void NonDExpansion::print_results(std::ostream& s, short results_state)
 {
-  // Print analytic moments and local and global sensitivities, defined from
-  // expansion coefficients
-
-  s << std::scientific << std::setprecision(write_precision);
   switch (results_state) {
   case REFINEMENT_RESULTS: {
-    //if (outputLevel == DEBUG_OUTPUT) {
-      //iteratedModel.print_evaluation_summary(s); // add to incremental output
-      // full results compute/print (mirroring Analyzer::post_run()) allows
-      // output level to be set low in performance testing
-      // ...
-    //}
+    // augment refinement output from compute_*_metric() [print_metric=true]
+    if (outputLevel == DEBUG_OUTPUT) {
+      //iteratedModel.print_evaluation_summary(s);
+      switch (refineMetric) {
+    //case Pecos::NO_METRIC: // not an option for refinement
+      case Pecos::COVARIANCE_METRIC:
+      case Pecos::MIXED_STATS_METRIC:
+    //case Pecos::LEVEL_STATS_METRIC: // moments only computed if beta mappings
+	print_moments(s); break;
+      }
+    }
 
     // Output of the relevant refinement metrics occurs in
     // compute_{covariance,level_mapping,final_statistics}_metric();
@@ -3411,7 +3497,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
       break;
     case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
       if (outputLevel >= NORMAL_OUTPUT)
-	print_sobol_indices(s); // requires compute_statistics()
+	print_sobol_indices(s); // from reduce_total_sobol_sets()
       break;
     }
     break;

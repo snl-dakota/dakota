@@ -377,46 +377,6 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
 }
 
 
-void NonDMultilevelStochCollocation::update_reference_stats()
-{
-  switch (expansionBasisType) {
-  case Pecos::NODAL_INTERPOLANT: // need reference response stats
-    NonDExpansion::update_reference_stats(); break;
-  case Pecos::HIERARCHICAL_INTERPOLANT:
-    if (relativeMetric) // reference (co)var used for relative scaling
-      NonDExpansion::update_reference_stats();
-    //else no-op: response (co)variance reference not required
-    break;
-  }
-}
-
-
-void NonDMultilevelStochCollocation::increment_reference_stats()
-{
-  switch (expansionBasisType) {
-  case Pecos::NODAL_INTERPOLANT: // need reference response stats
-    update_reference_stats(); break;
-  case Pecos::HIERARCHICAL_INTERPOLANT:
-    // TO DO: add support for updating final_stats from increment and
-    // unify with multifidelity_expansion() operations
-
-    // Note: this function used for greedy MF refinement, augmenting the case
-    // of update_ref in compute_covariance_metric()
-
-    if (relativeMetric) { // ref (co)var used for scaling --> accumulate deltas
-      bool output_delta = (outputLevel > NORMAL_OUTPUT);
-      // deltas must be recomputed for selected candidate
-      if (covarianceControl == DIAGONAL_COVARIANCE)
-	compute_delta_variance(true, output_delta);
-      else if (covarianceControl == FULL_COVARIANCE)
-	compute_delta_covariance(true, output_delta);
-    }
-    //else no-op: response (co)variance reference not required
-    break;
-  }
-}
-
-
 /*
 void NonDMultilevelStochCollocation::combined_to_active()
 {
@@ -426,13 +386,13 @@ void NonDMultilevelStochCollocation::combined_to_active()
   case Pecos::HIERARCHICAL_INTERPOLANT:
     uSpaceModel.combine_approximation();
     // copy combined to active, but retain combined for use in hybrid stats.
-    // *** TO DO ***: This is a short term solution; best solution may be to
-    //                support complete set of stats using the combined data.
+    // *** This is a short term solution; best solution may be to
+    //     support complete set of stats using the combined data.
     uSpaceModel.combined_to_active(false);
     // don't force update to active statistics; allow hybrid approach where
     // combined can still be used when needed (integrate_response_moments())
-    //statistics_type(Pecos::ACTIVE_EXPANSION_STATS); // don't restore
-    statistics_type(Pecos::COMBINED_EXPANSION_STATS); // override
+    //statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false); // don't restore
+    statistics_type(Pecos::COMBINED_EXPANSION_STATS, false); // override
     break;
   }
 }
