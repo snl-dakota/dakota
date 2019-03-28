@@ -8,6 +8,9 @@
 #@ s16: DakotaConfig=HAVE_NPSOL
 #@ s17: DakotaConfig=HAVE_NPSOL
 #@ s20: DakotaConfig=HAVE_NPSOL
+#@ s25: DakotaConfig=HAVE_ROL
+#@ s26: DakotaConfig=HAVE_ROL
+#@ s27: DakotaConfig=HAVE_ROL
 #@ s12: TimeoutDelay=360
 #@ s13: TimeoutDelay=400
 

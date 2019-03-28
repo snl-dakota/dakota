@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_NPSOL
 ## DAKOTA INPUT FILE - dakota_svanberg_sbo_vlb5.in
 #                      lower bound on x5 prevents hard convergence unless Lagrange multiplier accounts for bounds
 #  The Svanberg five-segment beam has a linear objective and a nonlinear constraint:

@@ -994,7 +994,6 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
   RealMatrix sim_grads = sim_resp.function_gradients_view();
   RealSymMatrixArray sim_hessians = sim_resp.function_hessians_view();
 
-  size_t i, j;
   const IntVector& sim_field_lens = sim_resp.field_lengths();
 
   short asv = total_asv[exp_ind];
@@ -1004,38 +1003,37 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 
   if (!interpolateFlag) {
 
-    for (i=0; i<exp_resid_size; i++){
+    for (size_t i=0; i<exp_resid_size; i++){
       exp_residuals[i] =
 	sim_fns[i] - allExperiments[exp_ind].function_value(i);
+     }
+    // populate only the part of the gradients/Hessians for this
+    // experiment, for the active submodel derivative variables
+    if ( asv & 2 ){
+      size_t num_sm_cv = sim_grads.numRows();
+      RealMatrix resid_grads
+	(gradients_view(residual_resp.function_gradients(), exp_ind));
+      resid_grads = 0.0;
+      for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind)
+	for (size_t i=0; i<num_sm_cv; ++i)
+	  resid_grads(i, r_ind) = sim_grads(i, r_ind);
+    }
 
-      // populate only the part of the gradients/Hessians for this
-      // experiment, for the active submodel derivative variables
-      if ( asv & 2 ){
-	size_t num_sm_cv = sim_grads.numRows();
-	RealMatrix resid_grads
-	  (gradients_view(residual_resp.function_gradients(), exp_ind));
-	resid_grads = 0.0;
-	for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind)
-	  for (size_t i=0; i<num_sm_cv; ++i)
-	    resid_grads(i, r_ind) = sim_grads(i, r_ind);
-      }
-
-      if ( asv & 4 ) {
-	size_t num_sm_cv = sim_grads.numRows();
-	RealSymMatrixArray resid_hess
-	  (hessians_view(residual_resp.function_hessians(), exp_ind));
-	for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind) {
-	  resid_hess[r_ind] = 0.0;
-	  for (size_t i=0; i<num_sm_cv; ++i)
-	    for (size_t j=0; j<num_sm_cv; ++j)
-	      resid_hess[r_ind](i,j) = sim_hessians[r_ind](i,j);
-	}
+    if ( asv & 4 ) {
+      size_t num_sm_cv = sim_grads.numRows();
+      RealSymMatrixArray resid_hess
+	(hessians_view(residual_resp.function_hessians(), exp_ind));
+      for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind) {
+	resid_hess[r_ind] = 0.0;
+	for (size_t i=0; i<num_sm_cv; ++i)
+	  for (size_t j=0; j<num_sm_cv; ++j)
+	    resid_hess[r_ind](i,j) = sim_hessians[r_ind](i,j);
       }
     }
 
   } else {   
 
-    for (i=0; i<num_scalars(); i++) {
+    for (size_t i=0; i<num_scalars(); i++) {
       exp_residuals[i] = sim_fns[i] - allExperiments[exp_ind].function_value(i);
       // BMA: Looked like gradients and Hessians of the scalars weren't
       // populated, so added:
@@ -1077,9 +1075,9 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
       // compute the residuals, i.e. subtract the experiment data values
       // from the (interpolated) simulation values.
       size_t cntr = num_scalars();
-      for (i=0; i<num_fields(); i++){
+      for (size_t i=0; i<num_fields(); i++){
 	size_t num_field_fns = field_data_view(i,exp_ind).length();
-	for (j=0; j<num_field_fns; j++, cntr++)
+	for (size_t j=0; j<num_field_fns; j++, cntr++)
 	  exp_residuals[cntr] -= field_data_view(i,exp_ind)[j];
       }
       if (outputLevel >= DEBUG_OUTPUT) 

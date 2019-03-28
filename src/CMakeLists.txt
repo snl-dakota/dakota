@@ -405,16 +405,16 @@ function(CheckPackage package)
 endfunction(CheckPackage)
 
 
-CheckPackage(PECOS)
-list(APPEND DAKOTA_PKG_LIBS ${Pecos_LINK_LIBRARIES})
-list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 if(HAVE_PECOS)
+  add_definitions("-DHAVE_${package}")
   list(APPEND DAKOTA_INCDIRS ${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/util/src
     ${Pecos_SOURCE_DIR}/src ${VPISparseGrid_SOURCE_DIR}/src)
+  list(APPEND DAKOTA_PKG_LIBS ${Pecos_LINK_LIBRARIES})
+  list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 else()
   message(FATAL_ERROR
     "DAKOTA cannot currently be configured without PECOS: ${Pecos_SOURCE_DIR}")
-endif(HAVE_PECOS)
+endif()
 
 
 ## DAKOTA library sources.  Depend on NIDR_keywds.hpp to force generation

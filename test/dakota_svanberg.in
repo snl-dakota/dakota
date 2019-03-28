@@ -2,6 +2,7 @@
 #@ s2: DakotaConfig=HAVE_DOT
 #@ s3: DakotaConfig=HAVE_NLPQL
 #@ s4: DakotaConfig=HAVE_NPSOL
+#@ s6: DakotaConfig=HAVE_ROL
 ## DAKOTA INPUT FILE - dakota_svanberg.in
 #  The Svanberg five-segment beam has a linear objective and a nonlinear constraint:
 #  Svanberg, Krister, "The Method of Moving Asymptotes--A New Method for
