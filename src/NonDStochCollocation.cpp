@@ -456,21 +456,25 @@ compute_delta_variance(bool update_ref, bool print_metric)
   for (size_t i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
+    Real& delta = deltaRespVariance[i];
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	// refinement assessed for impact on combined expansion from roll up
-	deltaRespVariance[i] = (all_vars) ?
-	  pa_rep_i->delta_combined_variance(initialPtU) :
+	delta = (all_vars) ? pa_rep_i->delta_combined_variance(initialPtU) :
 	  pa_rep_i->delta_combined_variance();
       else // refinement assessed for impact on the current expansion
-	deltaRespVariance[i] = (all_vars) ?
-	  pa_rep_i->delta_variance(initialPtU) : pa_rep_i->delta_variance();
+	delta = (all_vars) ? pa_rep_i->delta_variance(initialPtU) :
+	  pa_rep_i->delta_variance();
+
+      if (update_ref) {
+	respVariance[i] += delta;
+	pa_rep_i->moment(respVariance[i], 1);
+      }
     }
     else
-      { warn_flag = true; deltaRespVariance[i] = 0.; }
+      { warn_flag = true; delta = 0.; }
   }
 
-  if (update_ref)   respVariance += deltaRespVariance;
   if (print_metric) print_variance(Cout, deltaRespVariance, "Change in");
   if (warn_flag)
     Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
@@ -492,24 +496,31 @@ compute_delta_covariance(bool update_ref, bool print_metric)
   for (i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (pa_rep_i->expansion_coefficient_flag())
+    if (pa_rep_i->expansion_coefficient_flag()) {
       for (j=0; j<=i; ++j) {
 	PecosApproximation* pa_rep_j
 	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	Real& delta = deltaRespCovariance(i,j);
 	if (pa_rep_j->expansion_coefficient_flag()) {
 	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	    // refinement assessed for impact on combined exp from roll up
-	    deltaRespCovariance(i,j) = (all_vars) ?
+	    delta = (all_vars) ?
 	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
 	      pa_rep_i->delta_combined_covariance(pa_rep_j);
 	  else // refinement assessed for impact on the current expansion
-	    deltaRespCovariance(i,j) = (all_vars) ?
+	    delta = (all_vars) ?
 	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
 	      pa_rep_i->delta_covariance(pa_rep_j);
+
+	  if (update_ref) {
+	    respCovariance(i,j) += delta;
+	    if (i == j) pa_rep_i->moment(respCovariance(i,i), 1);
+	  }
 	}
 	else
-	  { warn_flag = true; deltaRespCovariance(i,j) = 0.; }
+	  { warn_flag = true; delta = 0.; }
       }
+    }
     else {
       warn_flag = true;
       for (j=0; j<=i; ++j)
@@ -517,7 +528,6 @@ compute_delta_covariance(bool update_ref, bool print_metric)
     }
   }
 
-  if (update_ref)   respCovariance += deltaRespCovariance;
   if (print_metric) print_covariance(Cout, deltaRespCovariance, "Change in");
   if (warn_flag)
     Cerr << "Warning: expansion coefficients unavailable in NonDStoch"

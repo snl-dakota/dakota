@@ -414,6 +414,12 @@ private:
 
   /// promote selected candidate into reference grid + expansion
   void select_candidate(size_t best_candidate);
+  /// promote selected index set candidate into reference grid + expansion
+  void select_index_set_candidate(
+    std::set<UShortArray>::const_iterator cit_star);
+  /// promote selected refinement increment candidate into reference
+  /// grid + expansion
+  void select_increment_candidate();
 
   /// analytic portion of compute_statistics() from post-processing of
   /// expansion coefficients (used for FINAL_RESULTS)

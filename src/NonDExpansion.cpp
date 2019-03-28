@@ -929,6 +929,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
     metric_roll_up();
     // assess increment by computing refinement metric:
+    // defer revert (pass false) -> simplifies best candidate tracking to follow
     // Note: covariance metric seems more self-consistent for Sobol'-weighted
     // aniso refinement, but allow final stats adaptation if mappings are used
     switch (refineMetric) {
@@ -974,10 +975,8 @@ void NonDExpansion::post_refinement(Real& metric, bool reverted)
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    if (reverted && uSpaceModel.push_available()) {
-      push_increment();
-      merge_grid();
-    }
+    if (reverted && uSpaceModel.push_available())
+      select_increment_candidate();
     break;
   }
 }
@@ -1350,6 +1349,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     // permanently apply best increment and update references for next increment
     configure_indices(best_lev, form, multilev);
     select_candidate(best_candidate);
+    push_candidate(statsStar);// update stats from best candidate (no recompute)
 
     ++iter;
     Cout << "\n<<<<< Iteration " << iter
@@ -1384,23 +1384,13 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
     std::set<UShortArray>::const_iterator best_cit = active_mi.begin();
     std::advance(best_cit, best_candidate);
-    // See also bottom of NonDExpansion::increment_sets()
-    nond_sparse->update_sets(*best_cit);
-    uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
-    nond_sparse->update_reference();
+    select_index_set_candidate(best_cit);
     break;
   }
-  case Pecos::UNIFORM_CONTROL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::UNIFORM_CONTROL:  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    // increment the grid and, if needed, the expansion order.
-    // can ignore best_candidate (only one candidate for now).
-    push_increment();
-    merge_grid(); // adopt incremented state as new reference
-    break;
+    select_increment_candidate();  break;
   }
-  // update refinement statistics from best candidate (not recomputed)
-  push_candidate(statsStar);
 
   // For distinct discrepancy, promotion of best candidate does not invalidate
   // coefficient increments for other levels, as they are separate functions.
@@ -1410,6 +1400,26 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
   //  for (lev=best_lev+1; lev<num_lev; ++lev)
   //    uSpaceModel.clear_popped();
+}
+
+
+void NonDExpansion::
+select_index_set_candidate(std::set<UShortArray>::const_iterator cit_star)
+{
+  NonDSparseGrid* nond_sparse
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+  nond_sparse->update_sets(*cit_star);
+  uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
+  nond_sparse->update_reference();
+}
+
+
+void NonDExpansion::select_increment_candidate()
+{
+  // increment the grid and, if needed, the expansion order.
+  // can ignore best_candidate (only one candidate for now).
+  push_increment();
+  merge_grid(); // adopt incremented state as new reference
 }
 
 
@@ -1608,7 +1618,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
     metric_roll_up();
     // assess increment by computing refinement metric:
-    // defer revert --> simplifies best candidate tracking to follow
+    // defer revert (pass false) -> simplifies best candidate tracking to follow
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC:
       delta = compute_covariance_metric(false, print_metric);      break;
@@ -1639,15 +1649,13 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
-  size_t index_star = find_index(active_mi, *cit_star);
 
   if (!revert) { // permanently apply best increment and update references
-    nond_sparse->update_sets(*cit_star);
-    uSpaceModel.push_approximation();
-    nond_sparse->update_reference();
+    select_index_set_candidate(cit_star);
     push_candidate(levelStatsStar);
   }
 
+  size_t index_star = find_index(active_mi, *cit_star);
   return index_star;
 }
 
@@ -3450,12 +3458,17 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
 {
   switch (results_state) {
   case REFINEMENT_RESULTS: {
-    //if (outputLevel == DEBUG_OUTPUT) {
-      //iteratedModel.print_evaluation_summary(s); // add to incremental output
-      // full results compute/print (mirroring Analyzer::post_run()) allows
-      // output level to be set low in performance testing
-      // ...
-    //}
+    // augment refinement output from compute_*_metric() [print_metric=true]
+    if (outputLevel == DEBUG_OUTPUT) {
+      //iteratedModel.print_evaluation_summary(s);
+      switch (refineMetric) {
+    //case Pecos::NO_METRIC: // not an option for refinement
+      case Pecos::COVARIANCE_METRIC:
+      case Pecos::MIXED_STATS_METRIC:
+    //case Pecos::LEVEL_STATS_METRIC: // moments only computed if beta mappings
+	print_moments(s); break;
+      }
+    }
 
     // Output of the relevant refinement metrics occurs in
     // compute_{covariance,level_mapping,final_statistics}_metric();
