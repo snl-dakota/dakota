@@ -8,7 +8,7 @@
 
 //- Class:	 NonDMUQBayesCalibration
 //- Description: Derived class for MUQ-based Bayesian inference
-//- Owner:       Tim Wildey
+//- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
 

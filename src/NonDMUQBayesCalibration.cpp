@@ -8,7 +8,7 @@
 
 //- Class:	 NonDMUQBayesCalibration
 //- Description: Derived class for Bayesian inference using MUQ
-//- Owner:       Tim Wildey
+//- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
 
@@ -40,11 +40,11 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   //////////////////////
   // DEFINE THE GRAPH //
   //////////////////////
-  workGraph.AddNode(theta,     "Parameters");
-  workGraph.AddNode(like,      "Likelihood");
-  workGraph.AddNode(prior,     "Prior");
-  workGraph.AddNode(post,      "Posterior");
-  workGraph.AddNode(fwd_model, "Forward Model");
+  workGraph.AddNode(thetaPtr,      "Parameters");
+  workGraph.AddNode(likelihoodPtr, "Likelihood");
+  workGraph.AddNode(priorPtr,      "Prior");
+  workGraph.AddNode(postPtr,       "Posterior");
+  workGraph.AddNode(modelPtr,      "Forward Model"); // ***
 
   // Define graph: prior(theta) dependent on theta
   workGraph.AddEdge("Parameters", 0, "Prior", 0); // 0 = index of input,output
@@ -60,8 +60,10 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   //workGraph.AddEdge("Data", 0, "Likelihood", 1); // if Approach 1
 
   // Define graph: posterior dependent on prior and likelihood;
-  workGraph.AddEdge("Prior", 0, "Posterior", 0);
+  workGraph.AddEdge("Prior",      0, "Posterior", 0);
   workGraph.AddEdge("Likelihood", 0, "Posterior", 1);
+
+  // More advanced graphs could be considered for, e.g.., Model selection.....
 
   ///////////////////////////////
   // DEFINE THE DESIRED OUTPUT //
