@@ -22,7 +22,7 @@
 #include "DakotaConstraints.hpp"
 //#include "DakotaInterface.hpp"
 #include "DakotaResponse.hpp"
-#include "DistributionParams.hpp"
+#include "MultivariateDistribution.hpp"
 
 namespace Pecos { class SurrogateData; /* forward declarations */ }
 
@@ -726,18 +726,12 @@ public:
   /// discrete set real variables (aggregated in activeDiscSetRealValues)
   const RealSetArray& discrete_set_real_values(short active_view);
 
-  /// return aleatDistParams
-  Pecos::AleatoryDistParams& aleatory_distribution_parameters();
-  /// return aleatDistParams
-  const Pecos::AleatoryDistParams& aleatory_distribution_parameters() const;
-  /// set aleatDistParams
-  void aleatory_distribution_parameters(const Pecos::AleatoryDistParams& adp);
-  /// return epistDistParams
-  Pecos::EpistemicDistParams& epistemic_distribution_parameters();
-  /// return epistDistParams
-  const Pecos::EpistemicDistParams& epistemic_distribution_parameters() const;
-  /// set epistDistParams
-  void epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp);
+  /// return xDist
+  Pecos::MultivariateDistribution& multivariate_distribution();
+  /// return xDist
+  const Pecos::MultivariateDistribution& multivariate_distribution() const;
+  /// set xDist
+  void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
 
   // LABELS and TAGS
 
@@ -1400,10 +1394,9 @@ protected:
   /// values corresponding to a discrete state real set variable
   RealSetArray discreteStateSetRealValues;
 
-  /// container for aleatory random variable distribution parameters
-  Pecos::AleatoryDistParams aleatDistParams;
-  /// container for epistemic random variable distribution parameters
-  Pecos::EpistemicDistParams epistDistParams;
+  /// the multivariate random variable distribution (in user-defined
+  /// probability space)
+  Pecos::MultivariateDistribution xDist;
 
   /// array of flags (one per primary function) for switching the
   /// sense to maximize the primary function (default is minimize)
@@ -2283,37 +2276,20 @@ inline const RealSetArray& Model::discrete_set_real_values()
 }
 
 
-inline Pecos::AleatoryDistParams& Model::aleatory_distribution_parameters()
-{ return (modelRep) ? modelRep->aleatDistParams : aleatDistParams; }
+inline Pecos::MultivariateDistribution& Model::multivariate_distribution()
+{ return (modelRep) ? modelRep->xDist : xDist; }
 
 
-inline const Pecos::AleatoryDistParams& Model::
-aleatory_distribution_parameters() const
-{ return (modelRep) ? modelRep->aleatDistParams : aleatDistParams; }
-
-
-inline void Model::
-aleatory_distribution_parameters(const Pecos::AleatoryDistParams& adp)
-{
-  if (modelRep) modelRep->aleatDistParams = adp;
-  else          aleatDistParams = adp;
-}
-
-
-inline Pecos::EpistemicDistParams& Model::epistemic_distribution_parameters()
-{ return (modelRep) ? modelRep->epistDistParams : epistDistParams; }
-
-
-inline const Pecos::EpistemicDistParams& Model::
-epistemic_distribution_parameters() const
-{ return (modelRep) ? modelRep->epistDistParams : epistDistParams; }
+inline const Pecos::MultivariateDistribution& Model::
+multivariate_distribution() const
+{ return (modelRep) ? modelRep->xDist : xDist; }
 
 
 inline void Model::
-epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp)
+multivariate_distribution(const Pecos::MultivariateDistribution& dist)
 {
-  if (modelRep) modelRep->epistDistParams = edp;
-  else          epistDistParams = edp;
+  if (modelRep) modelRep->xDist = dist;
+  else          xDist = dist;
 }
 
 
