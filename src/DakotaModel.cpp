@@ -460,120 +460,293 @@ void Model::assign_rep(Model* model_rep, bool ref_count_incr)
 }
 
 
-void Model::
-load_distribution_parameters(Pecos::MultivariateDistribution& mv_dist)
+/** Build ProbabilityTransformation::ranVar arrays containing the
+    uncertain variable distribution types and their corresponding
+    means/standard deviations.  This function is used when the Model
+    variables are in x-space. */
+void NonD::initialize_distribution()
 {
-  // passing ran var type is problematic in cases like {,BOUNDED_}NORMAL
-  mv_dist.parameters(Pecos::N_MEAN,
+  // Notes:
+  // > Model base instantiates the x-space MultivariateDistribution, while
+  //   derived ProbabilityTransformModel manages a ProbabilityTransform -->
+  //   pass in shallow copy of x-space dist and create a u-space dist.
+  // > NonD::initialize_random_variable_types(u_space_type) gets split into
+  //   two parts: define x-space, then later define u-space from x-space.
+
+  ShortArray rv_types(probDescDB.get_sizet("variables.uncertain"));
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
+
+  // Continuous aleatory
+
+  size_t num_rv = probDescDB.get_sizet("variables.normal_uncertain"),
+       start_rv = 0;
+  const RealVector& n_l_bnds
+    = probDescDB.get_rv("variables.normal_uncertain.lower_bounds");
+  const RealVector& n_u_bnds
+    = probDescDB.get_rv("variables.normal_uncertain.upper_bounds");
+  bool l_bnds = !n_l_bnds.empty(), u_bnds = !n_u_bnds.empty();
+  if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
+    assign_value(rv_types, Pecos::NORMAL, start_rv, num_rv);
+  else
+    for (i=0; i<num_rv; ++i)
+      rv_types[i] = ( ( l_bnds && n_l_bnds[i] > -dbl_inf ) ||
+		      ( u_bnds && n_u_bnds[i] <  dbl_inf ) ) ?
+	Pecos::BOUNDED_NORMAL : Pecos::NORMAL;
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
+  const RealVector& ln_l_bnds
+    = probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds");
+  const RealVector& ln_u_bnds
+    = probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
+  l_bnds = !ln_l_bnds.empty();  u_bnds = !ln_u_bnds.empty();
+  if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
+    assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
+  else
+    for (i=0; i<num_rv; ++i)
+      rv_types[start_rv+i] = ( ( l_bnds && ln_l_bnds[i] > 0. ) ||
+			       ( u_bnds && ln_u_bnds[i] < dbl_inf ) ) ?
+	Pecos::BOUNDED_LOGNORMAL : Pecos::LOGNORMAL;
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
+  assign_value(rv_types, Pecos::UNIFORM, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
+  assign_value(rv_types, Pecos::LOGUNIFORM, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
+  assign_value(rv_types, Pecos::TRIANGULAR, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
+  assign_value(rv_types, Pecos::EXPONENTIAL, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.beta_uncertain");
+  assign_value(rv_types, Pecos::BETA, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
+  assign_value(rv_types, Pecos::GAMMA, start_rv, num_rv);
+
+  // Inverse gamma is not part of variable spec (calibration hyperparameter)
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
+  assign_value(rv_types, Pecos::GUMBEL, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
+  assign_value(rv_types, Pecos::FRECHET, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
+  assign_value(rv_types, Pecos::WEIBULL, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
+  assign_value(rv_types, Pecos::HISTOGRAM_BIN, start_rv, num_rv);
+
+  // Discrete aleatory
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
+  assign_value(rv_types, Pecos::POISSON, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
+  assign_value(rv_types, Pecos::BINOMIAL, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
+  assign_value(rv_types, Pecos::NEGATIVE_BINOMIAL, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
+  assign_value(rv_types, Pecos::GEOMETRIC, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
+  assign_value(rv_types, Pecos::HYPERGEOMETRIC, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
+  assign_value(rv_types, Pecos::HISTOGRAM_PT_INT, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_string");
+  assign_value(rv_types, Pecos::HISTOGRAM_PT_STRING, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
+  assign_value(rv_types, Pecos::HISTOGRAM_PT_REAL, start_rv, num_rv);
+
+  // Continuous epistemic
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
+  assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL, start_rv, num_rv);
+
+  // Discrete epistemic
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
+  assign_value(rv_types, Pecos::DISCRETE_INTERVAL, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
+  assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
+  assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
+
+  start_rv += num_rv;
+  num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
+  assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
+
+
+  mv_dist.initialize(rv_types);
+
+  /*
+  size_t i, av_cntr = 0, num_active_vars = iteratedModel.cv();
+  ShortArray x_types(num_active_vars);
+  Pecos::AleatoryDistParams& adp
+    = iteratedModel.aleatory_distribution_parameters();
+
+  for (i=0; i<numContDesVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::CONTINUOUS_DESIGN;
+
+  // ...
+
+  for (i=0; i<numContStateVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::CONTINUOUS_STATE;
+
+  natafTransform.initialize_random_variable_types(x_types);
+  */
+}
+
+
+void Model::
+initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist)
+{
+  // RV type is could be {,BOUNDED_}NORMAL, so use count-based API
+  size_t num_n = probDescDB.get_sizet("variables.normal_uncertain");
+  mv_dist.parameters(0, num_n, Pecos::N_MEAN,
     probDescDB.get_rv("variables.normal_uncertain.means"));
-  mv_dist.parameters(Pecos::N_STD_DEV,
+  mv_dist.parameters(0, num_n, Pecos::N_STD_DEV,
     probDescDB.get_rv("variables.normal_uncertain.std_deviations"));
-  mv_dist.parameters(Pecos::N_LWR_BND,
+  mv_dist.parameters(0, num_n, Pecos::N_LWR_BND,
     probDescDB.get_rv("variables.normal_uncertain.lower_bounds"));
-  mv_dist.parameters(Pecos::N_UPR_BND,
+  mv_dist.parameters(0, num_n, Pecos::N_UPR_BND,
     probDescDB.get_rv("variables.normal_uncertain.upper_bounds"));
   //N_LOCATION,N_SCALE not mapped from ProblemDescDB
 
-  mv_dist.parameters(Pecos::LN_MEAN,
+  // RV type could be {,BOUNDED_}LOGNORMAL, so use count-based API
+  size_t num_ln = probDescDB.get_sizet("variables.lognormal_uncertain");
+  mv_dist.parameters(num_n, num_ln, Pecos::LN_MEAN,
     probDescDB.get_rv("variables.lognormal_uncertain.means"));
-  mv_dist.parameters(Pecos::LN_STD_DEV,
+  mv_dist.parameters(num_n, num_ln, Pecos::LN_STD_DEV,
     probDescDB.get_rv("variables.lognormal_uncertain.std_deviations"));
-  mv_dist.parameters(Pecos::LN_LAMBDA,
+  mv_dist.parameters(num_n, num_ln, Pecos::LN_LAMBDA,
     probDescDB.get_rv("variables.lognormal_uncertain.lambdas"));
-  mv_dist.parameters(Pecos::LN_ZETA,
+  mv_dist.parameters(num_n, num_ln, Pecos::LN_ZETA,
     probDescDB.get_rv("variables.lognormal_uncertain.zetas"));
-  mv_dist.parameters(Pecos::LN_ERR_FACT,
+  mv_dist.parameters(num_n, num_ln, Pecos::LN_ERR_FACT,
     probDescDB.get_rv("variables.lognormal_uncertain.error_factors"));
-  mv_dist.parameters(Pecos::LN_LWR_BND,
+  mv_dist.parameters(num_n, num_ln, Pecos::LN_LWR_BND,
     probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds"));
-  mv_dist.parameters(Pecos::LN_UPR_BND,
+  mv_dist.parameters(num_n, num_ln, Pecos::LN_UPR_BND,
     probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds"));
 
-  mv_dist.parameters(Pecos::U_LWR_BND,
+  mv_dist.parameters(Pecos::UNIFORM, Pecos::U_LWR_BND,
     probDescDB.get_rv("variables.uniform_uncertain.lower_bounds"));
-  mv_dist.parameters(Pecos::U_UPR_BND,
+  mv_dist.parameters(Pecos::UNIFORM, Pecos::U_UPR_BND,
     probDescDB.get_rv("variables.uniform_uncertain.upper_bounds"));
   //U_LOCATION,U_SCALE not mapped from ProblemDescDB
 
-  mv_dist.parameters(Pecos::LU_LWR_BND,
+  mv_dist.parameters(Pecos::LOGUNIFORM, Pecos::LU_LWR_BND,
     probDescDB.get_rv("variables.loguniform_uncertain.lower_bounds"));
-  mv_dist.parameters(Pecos::LU_UPR_BND,
+  mv_dist.parameters(Pecos::LOGUNIFORM, Pecos::LU_UPR_BND,
     probDescDB.get_rv("variables.loguniform_uncertain.upper_bounds"));
 
-  mv_dist.parameters(Pecos::T_MODE,
+  mv_dist.parameters(Pecos::TRIANGULAR, Pecos::T_MODE,
     probDescDB.get_rv("variables.triangular_uncertain.modes"));
-  mv_dist.parameters(Pecos::T_LWR_BND,
+  mv_dist.parameters(Pecos::TRIANGULAR, Pecos::T_LWR_BND,
     probDescDB.get_rv("variables.triangular_uncertain.lower_bounds"));
-  mv_dist.parameters(Pecos::T_UPR_BND,
+  mv_dist.parameters(Pecos::TRIANGULAR, Pecos::T_UPR_BND,
     probDescDB.get_rv("variables.triangular_uncertain.upper_bounds"));
   //T_LOCATION,T_SCALE not mapped from ProblemDescDB
 
-  mv_dist.parameters(Pecos::E_BETA,
+  mv_dist.parameters(Pecos::EXPONENTIAL, Pecos::E_BETA,
     probDescDB.get_rv("variables.exponential_uncertain.betas"));
 
-  mv_dist.parameters(Pecos::BE_ALPHA,
+  mv_dist.parameters(Pecos::BETA, Pecos::BE_ALPHA,
     probDescDB.get_rv("variables.beta_uncertain.alphas"));
-  mv_dist.parameters(Pecos::BE_BETA,
+  mv_dist.parameters(Pecos::BETA, Pecos::BE_BETA,
     probDescDB.get_rv("variables.beta_uncertain.betas"));
-  mv_dist.parameters(Pecos::BE_LWR_BND,
+  mv_dist.parameters(Pecos::BETA, Pecos::BE_LWR_BND,
     probDescDB.get_rv("variables.beta_uncertain.lower_bounds"));
-  mv_dist.parameters(Pecos::BE_UPR_BND,
+  mv_dist.parameters(Pecos::BETA, Pecos::BE_UPR_BND,
     probDescDB.get_rv("variables.beta_uncertain.upper_bounds"));
 
-  mv_dist.parameters(Pecos::GA_ALPHA,
+  mv_dist.parameters(Pecos::GAMMA, Pecos::GA_ALPHA,
     probDescDB.get_rv("variables.gamma_uncertain.alphas"));
-  mv_dist.parameters(Pecos::GA_BETA,
+  mv_dist.parameters(Pecos::GAMMA, Pecos::GA_BETA,
     probDescDB.get_rv("variables.gamma_uncertain.betas"));
 
-  mv_dist.parameters(Pecos::GU_ALPHA,
+  // Inverse gamma is not part of variable spec (calibration hyperparameter)
+
+  mv_dist.parameters(Pecos::GUMBEL, Pecos::GU_ALPHA,
     probDescDB.get_rv("variables.gumbel_uncertain.alphas"));
-  mv_dist.parameters(Pecos::GU_BETA,
+  mv_dist.parameters(Pecos::GUMBEL, Pecos::GU_BETA,
     probDescDB.get_rv("variables.gumbel_uncertain.betas"));
 
-  mv_dist.parameters(Pecos::F_ALPHA,
+  mv_dist.parameters(Pecos::FRECHET, Pecos::F_ALPHA,
     probDescDB.get_rv("variables.frechet_uncertain.alphas"));
-  mv_dist.parameters(Pecos::F_BETA,
+  mv_dist.parameters(Pecos::FRECHET, Pecos::F_BETA,
     probDescDB.get_rv("variables.frechet_uncertain.betas"));
 
-  mv_dist.parameters(Pecos::W_ALPHA,
+  mv_dist.parameters(Pecos::WEIBULL, Pecos::W_ALPHA,
     probDescDB.get_rv("variables.weibull_uncertain.alphas"));
-  mv_dist.parameters(Pecos::W_BETA,
+  mv_dist.parameters(Pecos::WEIBULL, Pecos::W_BETA,
     probDescDB.get_rv("variables.weibull_uncertain.betas"));
 
-  mv_dist.parameters(Pecos::H_BIN_PAIRS,
+  mv_dist.parameters(Pecos::HISTOGRAM_BIN, Pecos::H_BIN_PAIRS,
     probDescDB.get_rrma("variables.histogram_uncertain.bin_pairs"));
 
-  // Inverse gamma is not part of spec / contained in problem DB
-
-  mv_dist.parameters(Pecos::P_LAMBDA,
+  mv_dist.parameters(Pecos::POISSON, Pecos::P_LAMBDA,
     probDescDB.get_rv("variables.poisson_uncertain.lambdas"));
 
-  mv_dist.parameters(Pecos::BI_P_PER_TRIAL,
+  mv_dist.parameters(Pecos::BINOMIAL, Pecos::BI_P_PER_TRIAL,
     probDescDB.get_rv("variables.binomial_uncertain.prob_per_trial"));
-  mv_dist.parameters(Pecos::BI_TRIALS,
+  mv_dist.parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS,
     probDescDB.get_iv("variables.binomial_uncertain.num_trials"));//*** template for iv
 
-  mv_dist.parameters(Pecos::NBI_P_PER_TRIAL,
+  mv_dist.parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_P_PER_TRIAL,
     probDescDB.get_rv("variables.negative_binomial_uncertain.prob_per_trial"));
-  mv_dist.parameters(Pecos::NBI_TRIALS,
+  mv_dist.parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS,
     probDescDB.get_iv("variables.negative_binomial_uncertain.num_trials"));//*** template for iv
 
-  mv_dist.parameters(Pecos::GE_P_PER_TRIAL,
+  mv_dist.parameters(Pecos::GEOMETRIC, Pecos::GE_P_PER_TRIAL,
     probDescDB.get_rv("variables.geometric_uncertain.prob_per_trial"));
 
-  mv_dist.parameters(Pecos::HGE_TOT_POP,
+  mv_dist.parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_TOT_POP,
     probDescDB.get_iv("variables.hypergeometric_uncertain.total_population"));
-  mv_dist.parameters(Pecos::HGE_SEL_POP,
+  mv_dist.parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_SEL_POP,
     probDescDB.get_iv(
       "variables.hypergeometric_uncertain.selected_population"));//*** template for iv
-  mv_dist.parameters(Pecos::HGE_FAILED,
+  mv_dist.parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_FAILED,
     probDescDB.get_iv("variables.hypergeometric_uncertain.num_drawn"));//*** template for iv
 
-  mv_dist.parameters(Pecos::H_PT_INT_PAIRS,
+  mv_dist.parameters(Pecos::HISTOGRAM_PT_INT, Pecos::H_PT_INT_PAIRS,
     probDescDB.get_irma("variables.histogram_uncertain.point_int_pairs"));//*** template for irma
-  mv_dist.parameters(Pecos::H_PT_STR_PAIRS,
+  mv_dist.parameters(Pecos::HISTOGRAM_PT_STRING, Pecos::H_PT_STR_PAIRS,
     probDescDB.get_srma("variables.histogram_uncertain.point_string_pairs"));//*** template for srma
-  mv_dist.parameters(Pecos::H_PT_REAL_PAIRS,
+  mv_dist.parameters(Pecos::HISTOGRAM_PT_REAL, Pecos::H_PT_REAL_PAIRS,
     probDescDB.get_rrma("variables.histogram_uncertain.point_real_pairs"));//*** template for rrma
 
   mv_dist.correlations(

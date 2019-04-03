@@ -316,6 +316,28 @@ inline void build_labels_partial(StringArray& label_array,
 }
 
 
+// --------------------------
+// templated assign functions
+// --------------------------
+
+/// assign a value to an arbitrary vector
+template <typename vecType, typename valueType>
+void assign_value(vecType& target, valueType val)
+{
+  size_t i, len = target.size();
+  for (i=0; i<len; ++i)
+    target[i] = val;
+}
+
+/// assign a value to a portion of an arbitrary vector
+template <typename vecType, typename valueType>
+void assign_value(vecType& target, valueType val, size_t start, size_t len)
+{
+  size_t i, end = start_idx + len;
+  for (i=start; i<end; ++i)
+    target[i] = val;
+}
+
 // ----------------------------
 // non-templated copy functions
 // ----------------------------

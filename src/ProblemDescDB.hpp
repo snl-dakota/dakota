@@ -497,7 +497,6 @@ private:
   ProblemDescDB* dbRep;
   /// number of objects sharing dbRep
   int referenceCount;
-
 };
 
 
