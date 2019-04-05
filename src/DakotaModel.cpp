@@ -122,7 +122,8 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
-  load_distribution_parameters(xDist);
+  initialize_distribution(xDist);
+  initialize_distribution_parameters(xDist);
 
   // Define primaryRespFnSense BoolDeque from DB StringArray
   StringArray db_sense
@@ -464,7 +465,7 @@ void Model::assign_rep(Model* model_rep, bool ref_count_incr)
     uncertain variable distribution types and their corresponding
     means/standard deviations.  This function is used when the Model
     variables are in x-space. */
-void NonD::initialize_distribution()
+void Model::initialize_distribution(Pecos::MultivariateDistribution& mv_dist)
 {
   // Notes:
   // > Model base instantiates the x-space MultivariateDistribution, while
@@ -633,7 +634,9 @@ void NonD::initialize_distribution()
 void Model::
 initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist)
 {
-  // RV type is could be {,BOUNDED_}NORMAL, so use count-based API
+  // Continuous aleatory
+
+  // RV type could be {,BOUNDED_}NORMAL, so use count-based API
   size_t num_n = probDescDB.get_sizet("variables.normal_uncertain");
   mv_dist.parameters(0, num_n, Pecos::N_MEAN,
     probDescDB.get_rv("variables.normal_uncertain.means"));
@@ -718,18 +721,20 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist)
   mv_dist.parameters(Pecos::HISTOGRAM_BIN, Pecos::H_BIN_PAIRS,
     probDescDB.get_rrma("variables.histogram_uncertain.bin_pairs"));
 
+  // Discrete aleatory
+
   mv_dist.parameters(Pecos::POISSON, Pecos::P_LAMBDA,
     probDescDB.get_rv("variables.poisson_uncertain.lambdas"));
 
   mv_dist.parameters(Pecos::BINOMIAL, Pecos::BI_P_PER_TRIAL,
     probDescDB.get_rv("variables.binomial_uncertain.prob_per_trial"));
   mv_dist.parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS,
-    probDescDB.get_iv("variables.binomial_uncertain.num_trials"));//*** template for iv
+    probDescDB.get_iv("variables.binomial_uncertain.num_trials"));
 
   mv_dist.parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_P_PER_TRIAL,
     probDescDB.get_rv("variables.negative_binomial_uncertain.prob_per_trial"));
   mv_dist.parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS,
-    probDescDB.get_iv("variables.negative_binomial_uncertain.num_trials"));//*** template for iv
+    probDescDB.get_iv("variables.negative_binomial_uncertain.num_trials"));
 
   mv_dist.parameters(Pecos::GEOMETRIC, Pecos::GE_P_PER_TRIAL,
     probDescDB.get_rv("variables.geometric_uncertain.prob_per_trial"));
@@ -738,29 +743,39 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist)
     probDescDB.get_iv("variables.hypergeometric_uncertain.total_population"));
   mv_dist.parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_SEL_POP,
     probDescDB.get_iv(
-      "variables.hypergeometric_uncertain.selected_population"));//*** template for iv
+      "variables.hypergeometric_uncertain.selected_population"));
   mv_dist.parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_FAILED,
-    probDescDB.get_iv("variables.hypergeometric_uncertain.num_drawn"));//*** template for iv
+    probDescDB.get_iv("variables.hypergeometric_uncertain.num_drawn"));
 
   mv_dist.parameters(Pecos::HISTOGRAM_PT_INT, Pecos::H_PT_INT_PAIRS,
-    probDescDB.get_irma("variables.histogram_uncertain.point_int_pairs"));//*** template for irma
+    probDescDB.get_irma("variables.histogram_uncertain.point_int_pairs"));
   mv_dist.parameters(Pecos::HISTOGRAM_PT_STRING, Pecos::H_PT_STR_PAIRS,
-    probDescDB.get_srma("variables.histogram_uncertain.point_string_pairs"));//*** template for srma
+    probDescDB.get_srma("variables.histogram_uncertain.point_string_pairs"));
   mv_dist.parameters(Pecos::HISTOGRAM_PT_REAL, Pecos::H_PT_REAL_PAIRS,
-    probDescDB.get_rrma("variables.histogram_uncertain.point_real_pairs"));//*** template for rrma
+    probDescDB.get_rrma("variables.histogram_uncertain.point_real_pairs"));
 
   mv_dist.correlations(
     probDescDB.get_rsm("variables.uncertain.correlation_matrix"));
 
-  /*
-  epistDistParams(
-    probDescDB.get_rrrma("variables.continuous_interval_uncertain.basic_probs"),
-    probDescDB.get_iirma("variables.discrete_interval_uncertain.basic_probs"),
-    probDescDB.get_irma("variables.discrete_uncertain_set_int.values_probs"),
-    probDescDB.get_srma("variables.discrete_uncertain_set_string.values_probs"),
-    probDescDB.get_rrma("variables.discrete_uncertain_set_real.values_probs"));
-  */
+  // Continuous epistemic
 
+  mv_dist.parameters(Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
+    Pecos::CIU_BASIC_PROBS, probDescDB.get_rrrma(
+      "variables.continuous_interval_uncertain.basic_probs"));
+
+  // Discrete epistemic
+
+  mv_dist.parameters(Pecos::DISCRETE_INTERVAL_UNCERTAIN, Pecos::DIU_BASIC_PROBS,
+    probDescDB.get_iirma("variables.discrete_interval_uncertain.basic_probs"));
+  mv_dist.parameters(Pecos::DISCRETE_UNCERTAIN_SET_INT,
+    Pecos::DUSIV_VALUES_PROBS, probDescDB.get_irma(
+      "variables.discrete_uncertain_set_int.values_probs"));
+  mv_dist.parameters(Pecos::DISCRETE_UNCERTAIN_SET_STRING,
+    Pecos::DUSSV_VALUES_PROBS, probDescDB.get_srma(
+      "variables.discrete_uncertain_set_string.values_probs"));
+  mv_dist.parameters(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+    Pecos::DUSRV_VALUES_PROBS, probDescDB.get_rrma(
+      "variables.discrete_uncertain_set_real.values_probs"));
 }
 
 
