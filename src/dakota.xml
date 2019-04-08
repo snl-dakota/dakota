@@ -4313,6 +4313,7 @@
       </keyword>
       <keyword  id="continuous_interval_uncertain" name="continuous_interval_uncertain" code="{N_vam(pintz,numContinuousIntervalUncVars)}" label="continuous interval uncertain variables"  minOccurs="0" group="Epistemic Uncertain" default="no continuous interval uncertain variables" >
         <alias name="interval_uncertain"/>
+        <!-- <alias name="continuous_uncertain_range"/> Interval consists of multiple BPA ranges -->
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="num_intervals" name="num_intervals" code="{N_vam(newiarray,Var_Info_nCI)}" label="number of intervals defined for each continuous interval variable"  minOccurs="0" default="Equal apportionment of intervals among variables" >
           <alias name="iuv_num_intervals"/>
@@ -4338,7 +4339,7 @@
         </keyword>
       </keyword>
       <keyword  id="discrete_interval_uncertain" name="discrete_interval_uncertain" code="{N_vam(pintz,numDiscreteIntervalUncVars)}" label="Discrete interval uncertain variables"  minOccurs="0" group="Epistemic Uncertain" default="No discrete interval uncertain variables" >
-        <alias name="discrete_uncertain_range"/>
+        <!-- <alias name="discrete_uncertain_range"/> Interval consists of multiple BPA ranges -->
         <param type="INTEGER" constraint="> 0" />
         <keyword  id="num_intervals1" name="num_intervals" code="{N_vam(newiarray,Var_Info_nDI)}" label="Number of intervals defined for each interval variable"  minOccurs="0" default="Equal apportionment of intervals among variables" >
           <param type="INTEGERLIST" constraint="LEN discrete_interval_uncertain" />

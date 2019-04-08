@@ -533,7 +533,7 @@ void Model::initialize_distribution(Pecos::MultivariateDistribution& mv_dist)
   num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
   assign_value(rv_types, Pecos::GAMMA, start_rv, num_rv);
 
-  // Inverse gamma is not part of variable spec (calibration hyperparameter)
+  // Note: Inv gamma is not part of variable spec (calibration hyperparameter)
 
   start_rv += num_rv;
   num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
@@ -589,25 +589,25 @@ void Model::initialize_distribution(Pecos::MultivariateDistribution& mv_dist)
 
   start_rv += num_rv;
   num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
-  assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL, start_rv, num_rv);
+  assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL_UNCERTAIN, start_rv,num_rv);
 
   // Discrete epistemic
 
   start_rv += num_rv;
   num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
-  assign_value(rv_types, Pecos::DISCRETE_INTERVAL, start_rv, num_rv);
+  assign_value(rv_types, Pecos::DISCRETE_INTERVAL_UNCERTAIN, start_rv, num_rv);
 
   start_rv += num_rv;
   num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
-  assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
+  assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_INT, start_rv, num_rv);
 
   start_rv += num_rv;
   num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
-  assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
+  assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_STRING, start_rv,num_rv);
 
   start_rv += num_rv;
   num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
-  assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
+  assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_REAL, start_rv, num_rv);
 
 
   mv_dist.initialize(rv_types);

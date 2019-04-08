@@ -5622,7 +5622,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
     [ initial_point REALLIST LEN continuous_interval_uncertain {N_vam(rvec,continuousIntervalUncVars)} ]
     [ descriptors ALIAS iuv_descriptors STRINGLIST LEN continuous_interval_uncertain {N_vae(ceulbl,CEUVar_interval)} ]
    ]
-  [ discrete_interval_uncertain ALIAS discrete_uncertain_range INTEGER > 0 {N_vam(pintz,numDiscreteIntervalUncVars)}
+  [ discrete_interval_uncertain INTEGER > 0 {N_vam(pintz,numDiscreteIntervalUncVars)}
     [ num_intervals INTEGERLIST LEN discrete_interval_uncertain {N_vam(newiarray,Var_Info_nDI)} ]
     [ interval_probabilities ALIAS interval_probs ALIAS range_probabilities ALIAS range_probs REALLIST {N_vam(newrvec,Var_Info_DIp)} ]
     lower_bounds INTEGERLIST {N_vam(newivec,Var_Info_DIlb)}
