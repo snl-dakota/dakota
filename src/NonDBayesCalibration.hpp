@@ -444,9 +444,6 @@ protected:
   void compute_prediction_vals(RealMatrix& filtered_fn_vals,
       			       RealMatrix& PredVals, int num_filtered,
 			       size_t num_exp, size_t num_concatenated);
-  void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
-  void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
-      			  RealVector& std_devs);
   void print_intervals_file(std::ostream& stream, RealMatrix& functionvalsT,
   			      RealMatrix& predvalsT, int length, 
 			      size_t aug_length);

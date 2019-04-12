@@ -40,6 +40,7 @@
 #include "dakota_data_util.hpp"
 //#include "dakota_tabular_io.hpp"
 #include "DiscrepancyCorrection.hpp"
+#include "bayes_calibration_utils.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -2358,41 +2359,6 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
     for (s=0; s<num_filtered; ++s, ++cntr)
       for (r=0; r<numFunctions; ++r)
 	predVals(r,cntr) = filtered_fn_vals(r,s) + lhs_normal_samples(r,s);
-  }
-}
-
-void NonDBayesCalibration::
-compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
-{
-  int num_cols = matrix.numCols();
-  int num_rows = matrix.numRows();
-
-  avg_vals.resize(num_cols);
-  
-  RealVector ones_vec(num_rows);
-  ones_vec.putScalar(1.0);
- 
-  for(int i=0; i<num_cols; ++i){
-    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
-    avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
-  }
-}
-
-void NonDBayesCalibration::
-compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_devs)
-{
-  int num_cols = matrix.numCols();
-  int num_rows = matrix.numRows();
-
-  std_devs.resize(num_cols);
-  RealVector res_vec(num_rows);
-
-  for(int i=0; i<num_cols; ++i){
-    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
-    for(int j = 0; j<num_rows; ++j){
-      res_vec(j) = col_vec(j) - avg_vals(i);
-    }
-    std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
   }
 }
 
