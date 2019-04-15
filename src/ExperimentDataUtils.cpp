@@ -231,11 +231,16 @@ CovarianceMatrix::~CovarianceMatrix(){}
 void CovarianceMatrix::copy( const CovarianceMatrix &source ){
   numDOF_=source.numDOF_;
   covIsDiagonal_ = source.covIsDiagonal_;
-  if ( source.covDiagonal_.length() > 0 )
-    covDiagonal_=source.covDiagonal_;
+  if ( source.covDiagonal_.length() > 0 ) {
+    // use assign instead of operator= to disconnect any Teuchos::View
+    covDiagonal_.sizeUninitialized(source.covDiagonal_.length());
+    covDiagonal_.assign(source.covDiagonal_);
+  }
   else if ( source.covMatrix_.numRows() > 0 )
   {
-    covMatrix_ = source.covMatrix_;
+    // use assign instead of operator= to disconnect any Teuchos::View
+    covMatrix_.shapeUninitialized(source.covMatrix_.numRows());
+    covMatrix_.assign(source.covMatrix_);
     // Copy covariance matrix cholesky factor from source.
     // WARNING: Using Teuchos::SerialDenseSpdSolver prevents copying of
     // covariance cholesky factor so it must be done again here.
@@ -251,6 +256,7 @@ CovarianceMatrix& CovarianceMatrix::operator=( const CovarianceMatrix &source ){
     return(*this); // Special case of source same as target
   
   copy( source );
+  return *this;
 }
 
 void CovarianceMatrix::dense_covariance(RealSymMatrix &cov) const
@@ -524,6 +530,9 @@ Real CovarianceMatrix::log_determinant() const
 
 ExperimentCovariance & ExperimentCovariance::operator=(const ExperimentCovariance& source)
 {
+  if(this == &source)
+    return *this; // Special case of source same as target
+
   numBlocks_ = source.numBlocks_;
   numDOF_ = source.numDOF_;
   covMatrices_.resize(source.covMatrices_.size());

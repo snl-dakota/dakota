@@ -96,7 +96,7 @@ namespace {
 
   //----------------------------------
 
-  bool check_variable_consistency( unsigned short methodName,
+  void check_variable_consistency( unsigned short methodName,
                                    std::shared_ptr<TraitsBase> traits,
                                    Teuchos::FancyOStream &out,
                                    bool & success )
