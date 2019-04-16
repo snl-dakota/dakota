@@ -332,14 +332,6 @@ endif() # DAKOTA_HAVE_HDF5
 set(dakota_boost_components
   "filesystem;program_options;regex;serialization;system")
 
-# Acro requires the signals library in addition
-option(HAVE_ACRO "Build the ACRO package." ON)
-if(HAVE_ACRO)
-  list(APPEND dakota_boost_components "signals")
-  # Acro uses Boost.Signals (deprecated) instead of Boost.Signals2
-  add_definitions("-DBOOST_SIGNALS_NO_DEPRECATION_WARNING")
-endif()
-
 # Queso requires the program_options library in addition
 option(HAVE_QUESO "Build the QUESO package." OFF)
 option(HAVE_QUESO_GPMSA "Use the QUESO GPMSA package when QUESO enabled." ON)

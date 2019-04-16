@@ -1,4 +1,5 @@
 # CMakeLists.txt for DAKOTA packages
+option(HAVE_ACRO "Build the ACRO package." ON)
 option(HAVE_AMPL "Build the AMPL package." ON)
 option(HAVE_CONMIN "Build the CONMIN package." ON)
 option(HAVE_DDACE "Build the DDACE package." ON)
