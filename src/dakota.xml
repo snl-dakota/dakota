@@ -2962,6 +2962,7 @@
 	  &default_convergence_tolerance;
 	  &default_max_iterations;
 	  &method_optional_model_pointer;
+      &default_scaling;
 	</keyword>
 	<!-- END Bayesian Calibration-->
 

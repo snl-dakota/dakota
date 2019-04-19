@@ -1680,6 +1680,8 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 	    "nonlinear_inequality", aln_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 	    "nonlinear_equality", aln_scaletypes);
+  // The following check was relevant prior to refactoring the way transformations
+  // are applied (now in a layered manner)
   // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
   //   squawk("Specify calibration weights or experimental errors, not both.");
   // }
