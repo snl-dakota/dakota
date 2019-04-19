@@ -156,7 +156,6 @@ void NonDCubature::get_parameter_sets(Model& model)
 
   // Compute the cubature grid and store in allSamples
   cubDriver->compute_grid(allSamples);
-
   if (outputLevel > NORMAL_OUTPUT)
     print_points_weights("dakota_cubature_tabular.dat");
 }

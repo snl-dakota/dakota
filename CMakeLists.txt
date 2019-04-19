@@ -461,8 +461,9 @@ if (NOT BUILD_IN_TRILINOS)
       set(Trilinos_GENERATE_REPO_VERSION_FILE OFF CACHE BOOL
         "Dakota disabling generation of TrilinosRepoVersion.txt")
 
-      set(Teuchos_ENABLE_COMPLEX TRUE CACHE BOOL
-	"Pecos requires some complex blas wrappers")
+      # BMA: Since Pecos surrogates not using complex yet, disabled this
+      ##set(Trilinos_ENABLE_COMPLEX_DOUBLE TRUE CACHE BOOL
+      ##  "Pecos requires some complex blas wrappers")
 
       set(Teuchos_HIDE_DEPRECATED_CODE TRUE CACHE BOOL
         "Teuchos deprecated code clashes with operator<< in Dakota")

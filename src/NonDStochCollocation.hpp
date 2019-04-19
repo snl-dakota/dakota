@@ -51,6 +51,7 @@ public:
   //
 
   bool resize();
+  void metric_roll_up();
 
 protected:
 
@@ -80,6 +81,9 @@ protected:
   Real compute_level_mappings_metric(bool revert, bool print_metric);
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
 
+  //void compute_statistics(short results_state = FINAL_RESULTS);
+  //void pull_candidate(RealVector& stats_star);
+
   //
   //- Heading: Member functions
   //
@@ -89,9 +93,16 @@ protected:
   void initialize_covariance();
 
   /// helper function to compute deltaRespVariance
+  void compute_delta_mean(bool update_ref);
+  /// helper function to compute deltaRespVariance
   void compute_delta_variance(bool update_ref, bool print_metric);
   /// helper function to compute deltaRespCovariance
   void compute_delta_covariance(bool update_ref, bool print_metric);
+
+  /// update analytic level mappings; this uses a lightweight approach
+  /// for incremental statistics (no derivatives, no finalStatistics update)
+  void analytic_delta_level_mappings(const RealVector& level_maps_ref,
+				     RealVector& level_maps_new);
 
   /// configure u_space_sampler based on numerical integration specification
   void config_integration(unsigned short quad_order, unsigned short ssg_level,
@@ -114,11 +125,28 @@ private:
   //- Heading: Data
   //
 
+  /// change in response means induced by a refinement candidate
+  RealVector deltaRespMean;
   /// change in (DIAGONAL) response variance induced by a refinement candidate
   RealVector deltaRespVariance;
   /// change in (FULL) response covariance induced by a refinement candidate
   RealSymMatrix deltaRespCovariance;
+  /// change in response means induced by a refinement candidate
+  RealVector deltaLevelMaps;
 };
+
+
+inline void NonDStochCollocation::metric_roll_up()
+{
+  // PCE and Nodal SC require combined expansion coefficients for computing
+  // combined stat metrics, but Hierarchical SC can efficiently compute
+  // deltas based only on active expansions (no combination required)
+  if (statsType == Pecos::COMBINED_EXPANSION_STATS &&
+      expansionBasisType == Pecos::NODAL_INTERPOLANT)
+    uSpaceModel.combine_approximation();
+  // TO DO: case of level mappings for numerical stats --> sampling on
+  //        combined expansion
+}
 
 } // namespace Dakota
 
