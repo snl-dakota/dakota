@@ -276,6 +276,7 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
+# TODO: Update to use CMake BLAS/LAPACK probes and properly use their output
 if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
   # Historically on MSVC, tried to use CMake config file approach first.  
   # Could probably just use the Unix logic below instead...
