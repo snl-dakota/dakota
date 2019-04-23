@@ -1374,6 +1374,7 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
+  /*
   /// array of IntSet's, each containing the set of allowable integer
   /// values corresponding to a discrete design integer set variable
   IntSetArray discreteDesignSetIntValues;
@@ -1393,6 +1394,7 @@ protected:
   /// array of RealSet's, each containing the set of allowable real
   /// values corresponding to a discrete state real set variable
   RealSetArray discreteStateSetRealValues;
+  */
 
   /// the multivariate random variable distribution (in user-defined
   /// probability space)

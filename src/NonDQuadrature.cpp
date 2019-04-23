@@ -299,8 +299,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
       Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
       if (!randomSeed) randomSeed = generate_system_seed();
       lhs.seed(randomSeed);
-      lhs.generate_unique_index_samples(index_l_bnds, index_u_bnds, numSamples,
-					sorted_samples);
+      lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds, numSamples,
+					 sorted_samples, true); // backfill
 
       // convert multi-index samples into allSamples
       for (i=0; i<numSamples; ++i){

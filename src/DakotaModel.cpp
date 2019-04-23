@@ -92,6 +92,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
   outputLevel(problem_db.get_short("method.output")),
+  /*
   discreteDesignSetIntValues(
     problem_db.get_isa("variables.discrete_design_set_int.values")),
   discreteDesignSetStringValues(
@@ -104,6 +105,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     problem_db.get_ssa("variables.discrete_state_set_string.values")),
   discreteStateSetRealValues(
     problem_db.get_rsa("variables.discrete_state_set_real.values")),
+  */
   primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
   hierarchicalTagging(probDescDB.get_bool("model.hierarchical_tags")),
   scalingOpts(probDescDB.get_sa("variables.continuous_design.scale_types"),
@@ -501,7 +503,7 @@ void Model::initialize_distribution(Pecos::MultivariateDistribution& mv_dist)
   const RealVector& ln_u_bnds
     = probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
   l_bnds = !ln_l_bnds.empty();  u_bnds = !ln_u_bnds.empty();
-  if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
+  if (!l_bnds && !u_bnds) // won't happen: parser -> 0/inf
     assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
   else
     for (i=0; i<num_rv; ++i)
@@ -619,12 +621,16 @@ void Model::initialize_distribution(Pecos::MultivariateDistribution& mv_dist)
     = iteratedModel.aleatory_distribution_parameters();
 
   for (i=0; i<numContDesVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::CONTINUOUS_DESIGN;
+    x_types[av_cntr] = Pecos::CONTINUOUS_RANGE;
+  for (i=0; i<numDiscRangeDesVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::DISCRETE_RANGE;
 
   // ...
 
   for (i=0; i<numContStateVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::CONTINUOUS_STATE;
+    x_types[av_cntr] = Pecos::CONTINUOUS_RANGE;
+  for (i=0; i<numDiscRangeStateVars; ++i, ++av_cntr)
+    x_types[av_cntr] = Pecos::DISCRETE_RANGE;
 
   natafTransform.initialize_random_variable_types(x_types);
   */
