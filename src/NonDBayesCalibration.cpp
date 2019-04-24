@@ -17,6 +17,8 @@
 #include "DataFitSurrModel.hpp"
 #include "RecastModel.hpp"
 #include "DataTransformModel.hpp"
+#include "ScalingModel.hpp"
+#include "WeightingModel.hpp"
 #include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLHSSampling.hpp"
@@ -124,7 +126,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
   exportMCMCFilename(
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
-  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format"))
+  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format")),
+  scaleFlag(probDescDB.get_bool("method.scaling")),
+  weightFlag(!iteratedModel.primary_response_fn_weights().empty())
 {
   if (randomSeed != 0)
     Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
@@ -219,6 +223,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
+
+  if (scaleFlag)
+    scale_model();
+  if (weightFlag)
+    weight_model();
 }
 
 
@@ -3230,5 +3239,42 @@ void NonDBayesCalibration::print_kl(std::ostream& s)
   s << "Information gained from prior to posterior = " << kl_est;
   s << '\n';
 }
+
+/** Wrap the residualModel in a scaling transformation, such that
+    residualModel now contains a scaling recast model. */
+void NonDBayesCalibration::scale_model()
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initializing scaling transformation" << std::endl;
+
+  // residualModel becomes the sub-model of a RecastModel:
+  residualModel.assign_rep(new ScalingModel(residualModel), false);
+  // scalingModel = residualModel;
+}
+
+
+/** Setup Recast for weighting model.  The weighting transformation
+    doesn't resize, and makes no vars, active set or secondary
+    mapping.  All indices are one-to-one mapped (no change in
+    counts). */
+void NonDBayesCalibration::weight_model()
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initializing weighting transformation" << std::endl;
+
+  // we assume sqrt(w_i) will be applied to each residual, therefore:
+  const RealVector& lsq_weights = residualModel.primary_response_fn_weights();
+  for (int i=0; i<lsq_weights.length(); ++i)
+    if (lsq_weights[i] < 0) {
+      Cerr << "\nError: Calibration term weights must be nonnegative. Specified "
+     << "weights are:\n" << lsq_weights << '\n';
+      abort_handler(-1);
+    }
+
+  // TODO: pass sqrt to WeightingModel
+  residualModel.assign_rep(new WeightingModel(residualModel), false);
+}
+
+
 
 } // namespace Dakota
