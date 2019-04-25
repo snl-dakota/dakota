@@ -333,7 +333,7 @@ void assign_value(vecType& target, valueType val)
 template <typename vecType, typename valueType>
 void assign_value(vecType& target, valueType val, size_t start, size_t len)
 {
-  size_t i, end = start_idx + len;
+  size_t i, end = start + len;
   for (i=start; i<end; ++i)
     target[i] = val;
 }

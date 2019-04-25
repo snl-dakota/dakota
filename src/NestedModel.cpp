@@ -15,7 +15,6 @@
 #include "ProblemDescDB.hpp"
 #include "dakota_system_defs.hpp"
 #include "pecos_global_defs.hpp"
-#include "DistributionParams.hpp"
 
 static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -722,7 +721,8 @@ void NestedModel::update_sub_iterator()
 	Cerr << "Info: Sub-method returns these results:\n"
 	     << subIterator.response_results().function_labels() << "\n";
       else
-	Cerr << "Info: Re-run with 'output verbose' to list the sub-method results.\n";
+	Cerr << "Info: Re-run with 'output verbose' to list the sub-method "
+	     << "results.\n";
       found_error = true;
     }
     if (found_error)
@@ -811,8 +811,6 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
     = subModel.all_discrete_string_variable_types();
   UShortMultiArrayConstView submodel_a_dr_types
     = subModel.all_discrete_real_variable_types();
-  Pecos::AleatoryDistParams& submodel_adp
-    = subModel.aleatory_distribution_parameters();
 
   size_t ac_index1 = active1ACVarMapIndices[curr_index]
       = find_index(subModel.all_continuous_variable_labels(), map1),
@@ -855,9 +853,9 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       unsigned short type = submodel_a_c_types[ac_index1];
       if (type == CONTINUOUS_DESIGN) {
 	if (map2 == "lower_bound")
-	  active2ACVarMapTargets[curr_index] = Pecos::CDV_LWR_BND;
+	  active2ACVarMapTargets[curr_index] = Pecos::CR_LWR_BND;
 	else if (map2 == "upper_bound")
-	  active2ACVarMapTargets[curr_index] = Pecos::CDV_UPR_BND;
+	  active2ACVarMapTargets[curr_index] = Pecos::CR_UPR_BND;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "continuous design variables." << std::endl;
@@ -885,51 +883,16 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       }
       else if (type == LOGNORMAL_UNCERTAIN) {
 	// TO DO: 3 parameter lognormal adds a location parameter
-	if (map2 == "mean") {
-	  if (submodel_adp.lognormal_means().empty()) {
-	    Cerr << "\nError: cannot insert mean without lognormal means "
-		 << "specification." << std::endl;
-	    abort_handler(MODEL_ERROR);
-	  }
-	  else
-	    active2ACVarMapTargets[curr_index] = Pecos::LN_MEAN;
-	}
-	else if (map2 == "std_deviation") {
-	  if (submodel_adp.lognormal_std_deviations().empty()) {
-	    Cerr << "\nError: cannot insert std_deviation without lognormal "
-		 << "std_deviations specification." << std::endl;
-	    abort_handler(MODEL_ERROR);
-	  }
-	  else
-	    active2ACVarMapTargets[curr_index] = Pecos::LN_STD_DEV;
-	}
-	else if (map2 == "lambda") {
-	  if (submodel_adp.lognormal_lambdas().empty()) {
-	    Cerr << "\nError: cannot insert lambda without lognormal lambdas "
-		 << "specification." << std::endl;
-	    abort_handler(MODEL_ERROR);
-	  }
-	  else
+	if (map2 == "mean")
+	  active2ACVarMapTargets[curr_index] = Pecos::LN_MEAN;
+	else if (map2 == "std_deviation")
+	  active2ACVarMapTargets[curr_index] = Pecos::LN_STD_DEV;
+	else if (map2 == "lambda")
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_LAMBDA;
-	}
-	else if (map2 == "zeta") {
-	  if (submodel_adp.lognormal_zetas().empty()) {
-	    Cerr << "\nError: cannot insert zeta without lognormal zetas "
-		 << "specification." << std::endl;
-	    abort_handler(MODEL_ERROR);
-	  }
-	  else
-	    active2ACVarMapTargets[curr_index] = Pecos::LN_ZETA;
-	}
-	else if (map2 == "error_factor") {
-	  if (submodel_adp.lognormal_error_factors().empty()) {
-	    Cerr << "\nError: cannot insert error_factor without lognormal "
-		 << "error_factors specification." << std::endl;
-	    abort_handler(MODEL_ERROR);
-	  }
-	  else
-	    active2ACVarMapTargets[curr_index] = Pecos::LN_ERR_FACT;
-	}
+	else if (map2 == "zeta")
+	  active2ACVarMapTargets[curr_index] = Pecos::LN_ZETA;
+	else if (map2 == "error_factor")
+	  active2ACVarMapTargets[curr_index] = Pecos::LN_ERR_FACT;
 	else if (map2 == "lower_bound")
 	  active2ACVarMapTargets[curr_index] = Pecos::LN_LWR_BND;
 	else if (map2 == "upper_bound")
@@ -1060,9 +1023,9 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       }
       else if (type == CONTINUOUS_STATE) {
 	if (map2 == "lower_bound")
-	  active2ACVarMapTargets[curr_index] = Pecos::CSV_LWR_BND;
+	  active2ACVarMapTargets[curr_index] = Pecos::CR_LWR_BND;
 	else if (map2 == "upper_bound")
-	  active2ACVarMapTargets[curr_index] = Pecos::CSV_UPR_BND;
+	  active2ACVarMapTargets[curr_index] = Pecos::CR_UPR_BND;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "continuous state variables." << std::endl;
@@ -1210,9 +1173,9 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
       unsigned short type = submodel_a_di_types[adi_index1];
       if (type == DISCRETE_DESIGN_RANGE) {
 	if (map2 == "lower_bound")
-	  active2ADIVarMapTargets[curr_index] = Pecos::DDRIV_LWR_BND;
+	  active2ADIVarMapTargets[curr_index] = Pecos::DR_LWR_BND;
 	else if (map2 == "upper_bound")
-	  active2ADIVarMapTargets[curr_index] = Pecos::DDRIV_UPR_BND;
+	  active2ADIVarMapTargets[curr_index] = Pecos::DR_UPR_BND;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "discrete design range variables." << std::endl;
@@ -1243,7 +1206,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	else if (map2 == "selected_population")
 	  active2ADIVarMapTargets[curr_index] = Pecos::HGE_SEL_POP;
 	else if (map2 == "num_drawn")
-	  active2ADIVarMapTargets[curr_index] = Pecos::HGE_FAILED;
+	  active2ADIVarMapTargets[curr_index] = Pecos::HGE_DRAWN;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "hypergeometric uncertain variables." << std::endl;
@@ -1252,9 +1215,9 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
       }
       else if (type == DISCRETE_STATE_RANGE) {
 	if (map2 == "lower_bound")
-	  active2ADIVarMapTargets[curr_index] = Pecos::DSRIV_LWR_BND;
+	  active2ADIVarMapTargets[curr_index] = Pecos::DR_LWR_BND;
 	else if (map2 == "upper_bound")
-	  active2ADIVarMapTargets[curr_index] = Pecos::DSRIV_UPR_BND;
+	  active2ADIVarMapTargets[curr_index] = Pecos::DR_UPR_BND;
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "discrete state range variables." << std::endl;
@@ -2987,29 +2950,33 @@ size_t NestedModel::cdrv_index_map(size_t cdrv_index, const Variables& vars)
 
 size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
 {
-  if (sacvm_target == Pecos::CDV_LWR_BND ||
-      sacvm_target == Pecos::CDV_UPR_BND ||
-      sacvm_target == Pecos::CSV_LWR_BND ||
-      sacvm_target == Pecos::CSV_UPR_BND)
+  if (sacvm_target == Pecos::CR_LWR_BND ||
+      sacvm_target == Pecos::CR_UPR_BND)
     return pacvm_index; // no offset since all_continuous_* used to update
   else {
     const SharedVariablesData& submodel_svd
       = subModel.current_variables().shared_data();
-    size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
+    size_t num_rv, num_cdv, num_ddiv, num_ddsv, num_ddrv,
+           num_nuv = 0, num_lnuv = 0,  num_uuv = 0, num_luuv = 0, num_tuv = 0,
+           num_euv = 0, num_beuv = 0, num_gauv = 0, num_guuv = 0, num_fuv = 0;
     submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    Pecos::AleatoryDistParams& submodel_adp
-      = subModel.aleatory_distribution_parameters();
-    size_t num_nuv = submodel_adp.normal_means().length(),
-      num_lnuv  = std::max(submodel_adp.lognormal_means().length(),
-			   submodel_adp.lognormal_lambdas().length()),
-      num_uuv   = submodel_adp.uniform_lower_bounds().length(),
-      num_luuv  = submodel_adp.loguniform_lower_bounds().length(),
-      num_tuv   = submodel_adp.triangular_modes().length(),
-      num_euv   = submodel_adp.exponential_betas().length(),
-      num_beuv  = submodel_adp.beta_alphas().length(),
-      num_gauv  = submodel_adp.gamma_alphas().length(),
-      num_guuv  = submodel_adp.gumbel_alphas().length(),
-      num_fuv   = submodel_adp.frechet_alphas().length();
+    MarginalsCorrDistribution* mvd_rep
+      = (MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    const ShortArray& rv_types = mvd_rep->types(); num_rv = rv_types.size();
+    for (i=0; i<num_rv; ++i)
+      switch (rv_types[i]) {
+      case NORMAL:    case BOUNDED_NORMAL:    ++num_nuv;  break;
+      case LOGNORMAL: case BOUNDED_LOGNORMAL: ++num_lnuv; break;
+      case UNIFORM:                           ++num_uuv;  break;
+      case LOGUNIFORM:                        ++num_luuv; break;
+      case TRIANGULAR:                        ++num_tuv;  break;
+      case EXPONENTIAL:                       ++num_euv;  break;
+      case BETA:                              ++num_beuv; break;
+      case GAMMA:                             ++num_gauv; break;
+      case GUMBEL:                            ++num_guuv; break;
+      case FRECHET:                           ++num_fuv;  break;
+    //case WEIBULL:                           ++num_wuv;  break;
+      }
 
     size_t dist_index = pacvm_index - num_cdv;
     switch (sacvm_target) {
@@ -3059,23 +3026,25 @@ size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
 
 size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
 {
-  if (sadivm_target == Pecos::DDRIV_LWR_BND ||
-      sadivm_target == Pecos::DDRIV_UPR_BND ||
-      sadivm_target == Pecos::DSRIV_LWR_BND ||
-      sadivm_target == Pecos::DSRIV_UPR_BND)
+  if (sadivm_target == Pecos::DR_LWR_BND || sadivm_target == Pecos::DR_UPR_BND)
     return padivm_index; // no offset since all_discrete_int_* used to update
   else {
     const SharedVariablesData& submodel_svd
       = subModel.current_variables().shared_data();
-    size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
+    size_t num_rv, num_cdv, num_ddiv, num_ddsv, num_ddrv,
+           num_puv = 0, num_biuv = 0, num_nbiuv = 0, num_geuv = 0;
     submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    Pecos::AleatoryDistParams& submodel_adp
-      = subModel.aleatory_distribution_parameters();
-    size_t num_puv = submodel_adp.poisson_lambdas().length(),
-      num_biuv = submodel_adp.binomial_probability_per_trial().length(),
-      num_nbiuv
-        = submodel_adp.negative_binomial_probability_per_trial().length(),
-      num_geuv = submodel_adp.geometric_probability_per_trial().length();
+    MarginalsCorrDistribution* mvd_rep
+      = (MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    const ShortArray& rv_types = mvd_rep->types(); num_rv = rv_types.size();
+    for (i=0; i<num_rv; ++i)
+      switch (rv_types[i]) {
+      case POISSON:           ++num_puv;   break;
+      case BINOMIAL:          ++num_biuv;  break;
+      case NEGATIVE_BINOMIAL: ++num_nbiuv; break;
+      case GEOMETRIC:         ++num_luuv;  break;
+    //case HYPERGEOMETRIC:    ++num_hgeuv; break;
+      }
 
     size_t dist_index = padivm_index - num_ddiv;
     switch (sadivm_target) {
@@ -3086,7 +3055,7 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
       dist_index -= num_puv + num_biuv;                        break;
     case Pecos::GE_P_PER_TRIAL: 
       dist_index -= num_puv + num_biuv + num_nbiuv;            break;
-    case Pecos::HGE_TOT_POP: case Pecos::HGE_SEL_POP: case Pecos::HGE_FAILED:
+    case Pecos::HGE_TOT_POP: case Pecos::HGE_SEL_POP: case Pecos::HGE_DRAWN:
       dist_index -= num_puv + num_biuv + num_nbiuv + num_geuv; break;
     case Pecos::NO_TARGET: default:
       Cerr << "\nError: secondary mapping target unmatched for discrete "
@@ -3102,8 +3071,7 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
 size_t NestedModel::sm_adsv_index_map(size_t padsvm_index, short sadsvm_target)
 {
   //switch (sadsvm_target) {
-  //case Pecos::DDSSV_LWR_BND: case Pecos::DDSSV_UPR_BND:
-  //case Pecos::DSSSV_LWR_BND: case Pecos::DSSSV_UPR_BND:
+  //case Pecos::DSS_LWR_BND: case Pecos::DSS_UPR_BND:
   //  return padsvm_index; break;
   //case Pecos::DAUSV_DISTRIBUTION_PARAMETER:
   //  const SharedVariablesData& submodel_svd
@@ -3125,8 +3093,7 @@ size_t NestedModel::sm_adsv_index_map(size_t padsvm_index, short sadsvm_target)
 size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
 {
   //switch (sadrvm_target) {
-  //case Pecos::DDSRV_LWR_BND: case Pecos::DDSRV_UPR_BND:
-  //case Pecos::DSSRV_LWR_BND: case Pecos::DSSRV_UPR_BND:
+  //case Pecos::DSR_LWR_BND: case Pecos::DSR_UPR_BND:
   //  return padrvm_index; break;
   //case Pecos::DAURV_DISTRIBUTION_PARAMETER:
   //  const SharedVariablesData& submodel_svd
@@ -3148,173 +3115,125 @@ size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
 void NestedModel::
 real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 {
-  Pecos::AleatoryDistParams& submodel_adp
-    = subModel.aleatory_distribution_parameters();
-  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  MarginalsCorrDistribution* mvd_rep
+    = (MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views...)
 
   switch (svm_target) {
-  case Pecos::CDV_LWR_BND: case Pecos::CSV_LWR_BND:
-    subModel.all_continuous_lower_bound(r_var, mapped_index); break;
-  case Pecos::CDV_UPR_BND: case Pecos::CSV_UPR_BND:
-    subModel.all_continuous_upper_bound(r_var, mapped_index); break;
+  case Pecos::CR_LWR_BND:
+    subModel.all_continuous_lower_bound(r_var, mapped_index);
+    if (active_rv) mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+    break;
+  case Pecos::CR_UPR_BND:
+    subModel.all_continuous_upper_bound(r_var, mapped_index);
+    if (active_rv) mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+    break;
+  case Pecos::N_MEAN:     case Pecos::N_STD_DEV:  case Pecos::N_LWR_BND:
+  case Pecos::N_UPR_BND:  case Pecos::LN_MEAN:    case Pecos::LN_STD_DEV:
+  case Pecos::LN_LAMBDA:  case Pecos::LN_ZETA:    case Pecos::LN_ERR_FACT:
+  case Pecos::LN_LWR_BND: case Pecos::LN_UPR_BND: case Pecos::U_LWR_BND:
+  case Pecos::U_UPR_BND:  case Pecos::LU_LWR_BND: case Pecos::LU_UPR_BND:
+  case Pecos::T_MODE:     case Pecos::T_LWR_BND:  case Pecos::T_UPR_BND:
+  case Pecos::E_BETA:     case Pecos::BE_ALPHA:   case Pecos::BE_BETA:
+  case Pecos::BE_LWR_BND: case Pecos::BE_UPR_BND: case Pecos::GA_ALPHA:
+  case Pecos::GA_BETA:    case Pecos::GU_ALPHA:   case Pecos::GU_BETA:
+  case Pecos::F_ALPHA:    case Pecos::F_BETA:     case Pecos::W_ALPHA:
+  case Pecos::W_BETA:     case Pecos::P_LAMBDA:   case Pecos::BI_P_PER_TRIAL:
+  case Pecos::NBI_P_PER_TRIAL: case Pecos::GE_P_PER_TRIAL:
+    mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+    break;
   // N_{MEAN,STD_DEV,LWR_BND,UPR_BND} change individual dist parameters only.
   // N_{LOCATION,SCALE} change multiple parameters to accomplish a translation
   // or scaling.  They are mapped to a convenient definition believed to be the
   // most natural for a user, where the definition changes from distribution to
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Normal, location & scale are mean & std deviation.
-  case Pecos::N_MEAN:
-    submodel_adp.normal_mean(r_var, mapped_index); break;
-  case Pecos::N_STD_DEV:
-    submodel_adp.normal_std_deviation(r_var, mapped_index); break;
-  case Pecos::N_LWR_BND:
-    submodel_adp.normal_lower_bound(r_var, mapped_index); break;
-  case Pecos::N_UPR_BND:
-    submodel_adp.normal_upper_bound(r_var, mapped_index); break;
   case Pecos::N_LOCATION: { // a translation with no change in shape/scale
-    Real mean = submodel_adp.normal_mean(mapped_index), delta = r_var - mean,
-	l_bnd = submodel_adp.normal_lower_bound(mapped_index),
-	u_bnd = submodel_adp.normal_upper_bound(mapped_index);
+    Real mean;  mvd_rep->pull_parameter(mapped_index, Pecos::N_MEAN,    mean);
+    Real l_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::N_LWR_BND, l_bnd);
+    Real u_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::N_UPR_BND, u_bnd);
+    Real delta = r_var - mean;
     // translate: change bounds by same amount as mean
-    submodel_adp.normal_mean(r_var, mapped_index);
+    mvd_rep->push_parameter(mapped_index, Pecos::N_MEAN, r_var);
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
     if (l_bnd > -dbl_inf)
-      submodel_adp.normal_lower_bound(l_bnd + delta, mapped_index);
+      mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND, l_bnd + delta);
     if (u_bnd <  dbl_inf)
-      submodel_adp.normal_upper_bound(u_bnd + delta, mapped_index);
+      mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND, u_bnd + delta);
     break;
   }
   case Pecos::N_SCALE: { // change in shape/scale without translation
-    Real mean = submodel_adp.normal_mean(mapped_index),
-        stdev = submodel_adp.normal_std_deviation(mapped_index),
-	l_bnd = submodel_adp.normal_lower_bound(mapped_index),
-	u_bnd = submodel_adp.normal_upper_bound(mapped_index);
+    Real mean;  mvd_rep->pull_parameter(mapped_index, Pecos::N_MEAN,    mean);
+    Real stdev; mvd_rep->pull_parameter(mapped_index, Pecos::N_STD_DEV, stdev);
+    Real l_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::N_LWR_BND, l_bnd);
+    Real u_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::N_UPR_BND, u_bnd);
     // scale: preserve number of std deviations where l,u bound occurs
-    submodel_adp.normal_std_deviation(r_var, mapped_index);
+    mvd_rep->push_parameter(mapped_index, Pecos::N_STD_DEV, r_var);
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
     if (l_bnd > -dbl_inf) {
       Real num_sig_l = (mean - l_bnd) / stdev;
-      submodel_adp.normal_lower_bound(mean - num_sig_l * r_var, mapped_index);
+      mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND,
+			      mean - num_sig_l * r_var);
     }
     if (u_bnd <  dbl_inf) {
       Real num_sig_u = (u_bnd - mean) / stdev;
-      submodel_adp.normal_upper_bound(mean + num_sig_u * r_var, mapped_index);
+      mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND,
+			      mean + num_sig_u * r_var);
     }
     break;
   }
-  case Pecos::LN_MEAN:
-    submodel_adp.lognormal_mean(r_var, mapped_index); break;
-  case Pecos::LN_STD_DEV:
-    submodel_adp.lognormal_std_deviation(r_var, mapped_index); break;
-  case Pecos::LN_LAMBDA:
-    submodel_adp.lognormal_lambda(r_var, mapped_index); break;
-  case Pecos::LN_ZETA:
-    submodel_adp.lognormal_zeta(r_var, mapped_index); break;
-  case Pecos::LN_ERR_FACT:
-    submodel_adp.lognormal_error_factor(r_var, mapped_index); break;
-  case Pecos::LN_LWR_BND:
-    submodel_adp.lognormal_lower_bound(r_var, mapped_index); break;
-  case Pecos::LN_UPR_BND:
-    submodel_adp.lognormal_upper_bound(r_var, mapped_index); break;
   // U_{LWR_BND,UPR_BND} change individual dist parameters only.
   // U_{LOCATION,SCALE} change multiple parameters to accomplish a translation
   // or scaling.  They are mapped to a convenient definition believed to be the
   // most natural for a user, where the definition changes from distribution to
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Uniform, location & scale are center & range.
-  case Pecos::U_LWR_BND:
-    submodel_adp.uniform_lower_bound(r_var, mapped_index); break;
-  case Pecos::U_UPR_BND:
-    submodel_adp.uniform_upper_bound(r_var, mapped_index); break;
   case Pecos::U_LOCATION: {
     // translate: change both bounds by same amount
-    Real l_bnd = submodel_adp.uniform_lower_bound(mapped_index),
-	 u_bnd = submodel_adp.uniform_upper_bound(mapped_index),
-        center = (u_bnd + l_bnd) / 2., delta = r_var - center;
-    submodel_adp.uniform_lower_bound(l_bnd + delta, mapped_index);
-    submodel_adp.uniform_upper_bound(u_bnd + delta, mapped_index);
+    Real l_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::U_LWR_BND, l_bnd);
+    Real u_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::U_UPR_BND, u_bnd);
+    Real center = (u_bnd + l_bnd) / 2., delta = r_var - center;
+    mvd_rep->push_parameter(mapped_index, Pecos::U_LWR_BND, l_bnd + delta);
+    mvd_rep->push_parameter(mapped_index, Pecos::U_UPR_BND, u_bnd + delta);
     break;
   }
   case Pecos::U_SCALE: {
     // scale: move bounds in/out by same amount about consistent center
-    Real l_bnd = submodel_adp.uniform_lower_bound(mapped_index),
-	 u_bnd = submodel_adp.uniform_upper_bound(mapped_index),
-	center = (u_bnd + l_bnd) / 2., half_range = r_var / 2.;
-    submodel_adp.uniform_lower_bound(center - half_range, mapped_index);
-    submodel_adp.uniform_upper_bound(center + half_range, mapped_index);
+    Real l_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::U_LWR_BND, l_bnd);
+    Real u_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::U_UPR_BND, u_bnd);
+    Real center = (u_bnd + l_bnd) / 2., half_range = r_var / 2.;
+    mvd_rep->push_parameter(mapped_index, Pecos::U_LWR_BND, center-half_range);
+    mvd_rep->push_parameter(mapped_index, Pecos::U_UPR_BND, center+half_range);
     break;
   }
-  case Pecos::LU_LWR_BND:
-    submodel_adp.loguniform_lower_bound(r_var, mapped_index); break;
-  case Pecos::LU_UPR_BND:
-    submodel_adp.loguniform_upper_bound(r_var, mapped_index); break;
   // T_{MODE,LWR_BND,UPR_BND} change individual dist parameters only.
   // T_{LOCATION,SCALE} change multiple parameters to accomplish a translation
   // or scaling.  They are mapped to a convenient definition believed to be the
   // most natural for a user, where the definition changes from distribution to
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Triangular, location & scale are mode & range.
-  case Pecos::T_MODE:
-    submodel_adp.triangular_mode(r_var, mapped_index); break;
-  case Pecos::T_LWR_BND:
-    submodel_adp.triangular_lower_bound(r_var, mapped_index); break;
-  case Pecos::T_UPR_BND:
-    submodel_adp.triangular_upper_bound(r_var, mapped_index); break;
   case Pecos::T_LOCATION: {
     // translate: change mode and both bounds by same amount
-    Real mode = submodel_adp.triangular_mode(mapped_index),
-        l_bnd = submodel_adp.triangular_lower_bound(mapped_index),
-        u_bnd = submodel_adp.triangular_upper_bound(mapped_index),
-        delta = r_var - mode;
-    submodel_adp.triangular_mode(r_var, mapped_index);
-    submodel_adp.triangular_lower_bound(l_bnd + delta, mapped_index);
-    submodel_adp.triangular_upper_bound(u_bnd + delta, mapped_index);
+    Real  mode; mvd_rep->pull_parameter(mapped_index, Pecos::T_MODE,    mode);
+    Real l_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::T_LWR_BND, l_bnd);
+    Real u_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::T_UPR_BND, u_bnd);
+    Real delta = r_var - mode;
+    mvd_rep->push_parameter(mapped_index, Pecos::T_MODE,    r_var);
+    mvd_rep->push_parameter(mapped_index, Pecos::T_LWR_BND, l_bnd + delta);
+    mvd_rep->push_parameter(mapped_index, Pecos::T_UPR_BND, u_bnd + delta);
     break;
   }
   case Pecos::T_SCALE: {
     // scale: preserve L/M/U proportions while scaling range
-    Real mode = submodel_adp.triangular_mode(mapped_index),
-        l_bnd = submodel_adp.triangular_lower_bound(mapped_index),
-	u_bnd = submodel_adp.triangular_upper_bound(mapped_index),
-        range = u_bnd - l_bnd, perc_l = (mode - l_bnd) / range,
+    Real  mode; mvd_rep->pull_parameter(mapped_index, Pecos::T_MODE,    mode);
+    Real l_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::T_LWR_BND, l_bnd);
+    Real u_bnd; mvd_rep->pull_parameter(mapped_index, Pecos::T_UPR_BND, u_bnd);
+    Real range = u_bnd - l_bnd, perc_l = (mode - l_bnd) / range,
        perc_u = (u_bnd - mode) / range;
-    submodel_adp.triangular_lower_bound(mode - perc_l * r_var, mapped_index);
-    submodel_adp.triangular_upper_bound(mode + perc_u * r_var, mapped_index);
+    mvd_rep->push_parameter(mapped_index, Pecos::T_LWR_BND, mode-perc_l*r_var);
+    mvd_rep->push_parameter(mapped_index, Pecos::T_UPR_BND, mode+perc_u*r_var);
     break;
   }
-  case Pecos::E_BETA:
-    submodel_adp.exponential_beta(r_var, mapped_index); break;
-  case Pecos::BE_ALPHA:
-    submodel_adp.beta_alpha(r_var, mapped_index); break;
-  case Pecos::BE_BETA:
-    submodel_adp.beta_beta(r_var, mapped_index); break;
-  case Pecos::BE_LWR_BND:
-    submodel_adp.beta_lower_bound(r_var, mapped_index); break;
-  case Pecos::BE_UPR_BND:
-    submodel_adp.beta_upper_bound(r_var, mapped_index); break;
-  case Pecos::GA_ALPHA:
-    submodel_adp.gamma_alpha(r_var, mapped_index); break;
-  case Pecos::GA_BETA:
-    submodel_adp.gamma_beta(r_var, mapped_index); break;
-  case Pecos::GU_ALPHA:
-    submodel_adp.gumbel_alpha(r_var, mapped_index); break;
-  case Pecos::GU_BETA:
-    submodel_adp.gumbel_beta(r_var, mapped_index); break;
-  case Pecos::F_ALPHA:
-    submodel_adp.frechet_alpha(r_var, mapped_index); break;
-  case Pecos::F_BETA:
-    submodel_adp.frechet_beta(r_var, mapped_index); break;
-  case Pecos::W_ALPHA:
-    submodel_adp.weibull_alpha(r_var, mapped_index); break;
-  case Pecos::W_BETA:
-    submodel_adp.weibull_beta(r_var, mapped_index); break;
-  case Pecos::P_LAMBDA:
-    submodel_adp.poisson_lambda(r_var, mapped_index); break;
-  case Pecos::BI_P_PER_TRIAL:
-    submodel_adp.binomial_probability_per_trial(r_var, mapped_index); break;
-  case Pecos::NBI_P_PER_TRIAL:
-    submodel_adp.negative_binomial_probability_per_trial(r_var, mapped_index);
-    break;
-  case Pecos::GE_P_PER_TRIAL:
-    submodel_adp.geometric_probability_per_trial(r_var, mapped_index); break;
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for real value "
 	 << "insertion in NestedModel::real_variable_mapping()." << std::endl;
@@ -3327,24 +3246,20 @@ void NestedModel::
 integer_variable_mapping(const int& i_var, size_t mapped_index,
 			 short svm_target)
 {
-  Pecos::AleatoryDistParams& submodel_adp
-    = subModel.aleatory_distribution_parameters();
+  bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views...)
 
   switch (svm_target) {
-  case Pecos::DDRIV_LWR_BND: case Pecos::DSRIV_LWR_BND:
-    subModel.all_discrete_int_lower_bound(i_var, mapped_index); break;
-  case Pecos::DDRIV_UPR_BND: case Pecos::DSRIV_UPR_BND:
-    subModel.all_discrete_int_upper_bound(i_var, mapped_index); break;
-  case Pecos::BI_TRIALS:
-    submodel_adp.binomial_num_trials(i_var, mapped_index); break;
-  case Pecos::NBI_TRIALS:
-    submodel_adp.negative_binomial_num_trials(i_var, mapped_index); break;
-  case Pecos::HGE_TOT_POP:
-    submodel_adp.hypergeometric_total_population(i_var, mapped_index); break;
-  case Pecos::HGE_SEL_POP:
-    submodel_adp.hypergeometric_selected_population(i_var, mapped_index); break;
-  case Pecos::HGE_FAILED:
-    submodel_adp.hypergeometric_num_drawn(i_var, mapped_index); break;
+  case Pecos::DR_LWR_BND:
+    subModel.all_discrete_int_lower_bound(i_var, mapped_index);
+    if (active_rv) mvd_rep->push_parameter(mapped_index, DR_LWR_BND, i_var);
+    break;
+  case Pecos::DR_UPR_BND:
+    subModel.all_discrete_int_upper_bound(i_var, mapped_index);
+    if (active_rv) mvd_rep->push_parameter(mapped_index, DR_UPR_BND, i_var);
+    break;
+  case Pecos::BI_TRIALS:    case Pecos::NBI_TRIALS:
+  case Pecos::HGE_TOT_POP:  case Pecos::HGE_SEL_POP:  case Pecos::HGE_DRAWN:
+    mvd_rep->push_parameter(mapped_index, svm_target, i_var); break;
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for integer value "
 	 << "insertion in NestedModel::integer_variable_mapping()" << std::endl;

@@ -3422,7 +3422,7 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<int>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -3548,7 +3548,7 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
       // for string-valued histograms, mean and stddev are of
       // zero-based indices from beginning of the map
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<String>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -3667,7 +3667,7 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<Real>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
