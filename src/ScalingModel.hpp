@@ -66,6 +66,8 @@ public:
 			   int start_offset, int num_responses,
 			   bool response_unscale = true) const;
   
+  ActiveSet default_active_set();
+
 protected:
 
   // ---

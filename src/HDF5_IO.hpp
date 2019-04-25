@@ -48,6 +48,10 @@ inline H5::DataType h5_file_dtype( const Real & )
 inline H5::DataType h5_file_dtype( const int & )
 { return H5::PredType::STD_I32LE; }
 
+/// Return the HDF5 datatype to store a int
+inline H5::DataType h5_file_dtype( const size_t & )
+{ return H5::PredType::STD_I32LE; }
+
 /// Return the HDF5 datatype to store a string
 inline H5::DataType h5_file_dtype( const char * )
 {
@@ -71,6 +75,14 @@ inline H5::DataType h5_mem_dtype( const Real & )
 /// Return the HDF5 datatype to read an int in memory
 inline H5::DataType h5_mem_dtype( const int & )
 { return H5::PredType::NATIVE_INT; }
+
+/// Return the HDF5 datatype to read a size_t in memory
+inline H5::DataType h5_mem_dtype( const size_t & )
+{ return H5::PredType::NATIVE_ULONG; }
+
+/// Return the HDF5 datatype to read a size_t in memory
+inline H5::DataType h5_mem_dtype( const short & )
+{ return H5::PredType::NATIVE_SHORT; }
 
 /// Return the HDF5 datatype to read a string in memory
 inline H5::DataType h5_mem_dtype( const char * )
@@ -110,6 +122,34 @@ int length(const StringMultiArrayConstView &vec);
 
 class HDF5IOHelper
 {
+  /* The names of member functions for reading and writing data follow a loose
+   * convention.
+   * WRITING
+   *  - Create and write a dataset all at once -
+   *   store_scalar
+   *   store_vector
+   *   store_matrix
+   *  - Place data into an existing higher dimensional dataset (call create_empty_dataset first)
+   *   set_scalar (in a 1D dataset)
+   *   set_vector (in a 2D dataset)
+   *   set_matrix (in a 3D dataset)
+   *   set_vector_matrix (in a 4D dataset)
+   *  - Append data into a dataset with an unlimited 0th dimension (call create_empty_dataset first)
+   *   append_scalar (to a 1D dataset)
+   *   append_vector (to a 2D dataset)
+   *   append_matrix (to a 3D dataset)
+   *   append_vector_matrix (to a 4D dataset)
+   * READING
+   *  - Read an entire dataset
+   *   read_scalar
+   *   read_vector
+   *   read_matrix
+   *  - Read a slice (all diemnsions after 0)
+   *   get_scalar (from 1D dataset)
+   *   get_vector (from 2D dataset)
+   *   get_matrix (from 3D dataset)
+   *   get_vector_matrix (from 4D dataset)
+   */
   public:
 
   HDF5IOHelper(const std::string& file_name, bool overwrite = false) :
@@ -131,104 +171,53 @@ class HDF5IOHelper
     linkCreatePL.setCharEncoding(H5T_CSET_UTF8);      
   }
 
-  ~HDF5IOHelper() { }
 
   //----------------------------------------------------------------
-  
   /// Store scalar data to a data set
   template <typename T>
-  void store_scalar_data(const std::string& dset_name, const T& val)
+  void store_scalar(const std::string& dset_name, const T& val)
   {
     H5::DataSpace dataspace = H5::DataSpace();
     
     // Assume dset_name is syntactically correct - will need some utils - RWH
     create_groups(dset_name);
-	H5::DataSet dataset(create_dataset(
+    H5::DataSet dataset(create_dataset(
         h5File, dset_name, h5_file_dtype(val), dataspace));
 
     dataset.write(&val, h5_mem_dtype(val));
 	return;
   }
 
-  /// Read scalar data from a dataset
-  template <typename T>
-  const void read_scalar_data(const std::string& dset_name, T& val)
-  {
-    if( !exists(dset_name) )
-    {
-      Cerr << "\nError: HDF5 file \"" << fileName << "\""
-           << " does not contain data path \"" << dset_name << "\""
-           << std::endl;
-      abort_handler(-1);
-    }
-    // JAS: We need some verification here that the dataset is really a scalar.
-    H5::DataSet dataset = h5File.openDataSet(dset_name);
-    dataset.read(&val, h5_mem_dtype(val));
-
-    return;
-  }
-
   //----------------------------------------------------------------
   /// Store vector (1D) information to a dataset
   template <typename T>
-  void store_vector_data(const std::string& dset_name,
+  void store_vector(const std::string& dset_name,
                          const std::vector<T>& array) const
   {
-    store_vector_data(dset_name, array.data(), array.size());
-    return;
-  }
-
-  /// Read vector (1D) information from a dataset
-  template <typename T>
-  void read_vector_data(const std::string& dset_name, T& array) const 
-  {
-    if( !exists(dset_name) )
-    {
-      Cerr << "\nError: HDF5 file \"" << fileName << "\""
-           << " does not contain data path \"" << dset_name << "\""
-           << std::endl;
-      abort_handler(-1);
-    }
-
-    H5::DataSet dataset = h5File.openDataSet(dset_name);
-
-    // Get dims and size of dataset
-    assert( dataset.getSpace().isSimple() );
-    int ndims = dataset.getSpace().getSimpleExtentNdims();
-    assert( ndims == 1 );
-    std::vector<hsize_t> dims( ndims, hsize_t(1) );
-    dataset.getSpace().getSimpleExtentDims(dims.data());
-
-    // Calling resize on a SerialDenseVector is potentially wasteful
-    // if it is initially non-zero length because it copies the existing
-    // data to the new buffer. There's probably a better design that
-    // would avoid this issue without duplicating a lot of code for
-    // std::vector and SDV.
-    array.resize(dims[0]);
-    dataset.read(&array[0], h5_mem_dtype(array[0]));
+    store_vector(dset_name, array.data(), array.size());
     return;
   }
 
   /// Store vector (1D) information to a dataset
   template <typename T>
-  void store_vector_data( const std::string & dset_name,
+  void store_vector( const std::string & dset_name,
                           const Teuchos::SerialDenseVector<int,T> & vec )
   {
-    store_vector_data(dset_name, &vec[0], vec.length());
+    store_vector(dset_name, &vec[0], vec.length());
     return;
   }
   
   /// Store vector (1D) information to a dataset
-  void store_vector_string_data( const std::string & dset_name,
+  void store_vector(const std::string & dset_name,
                                  StringMultiArrayConstView vec )
   {
-    store_vector_data(dset_name, &vec[0], vec.size());
+    store_vector(dset_name, &vec[0], vec.size());
     return;
   }
  
   /// Store matrix (2D) information to a dataset
   template<typename T>
-  void store_matrix_data(const std::string &dset_name, 
+  void store_matrix(const std::string &dset_name, 
       const Teuchos::SerialDenseMatrix<int,T> & matrix, 
       const bool &transpose = false) const {
 
@@ -258,17 +247,21 @@ class HDF5IOHelper
       // sequentially grab rows of the matrix in memory and write them into rows
       // of the dataset in file. This is a little tricky because rows in memory 
       // are non-contiguous due to column-major storage of SDMs.
+      // Reminder: To understan what this code is doing, it helps to take out a
+      // sheet of paper and draw the file dataset and the matrix, with the matrix
+      // transposed because SDMs are stored column-major, and then think about
+      // how the data has to move.
       m_dims[1] = f_dims[0] = num_rows;
       m_dims[0] = f_dims[1] = num_cols;
       f_dataspace.setExtentSimple(2, f_dims);
       m_dataspace.setExtentSimple(2, m_dims);
       H5::DataSet dataset(
         create_dataset(h5File, dset_name, f_datatype, f_dataspace) );
-      hsize_t m_start[2], f_start[2];
+      hsize_t m_start[2], f_start[2]; // "start" in the C++ API is "offset" in the C API.
       m_start[0] = f_start[1] = 0;
       hsize_t m_count[2] = {hsize_t(num_cols), 1};
       hsize_t f_count[2] = {1, hsize_t(num_cols)};
-      for(int i = 0; i < num_rows; ++i) {
+      for(int i = 0; i < num_rows; ++i) { // iterate over rows of the matrix; columns of the dataset
         m_start[1] = f_start[0] = i;
         m_dataspace.selectHyperslab(H5S_SELECT_SET, m_count, m_start);
         f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
@@ -280,7 +273,7 @@ class HDF5IOHelper
 
   /// Store matrix (2D) information to a dataset
   template<typename T>
-  void store_matrix_data(const std::string &dset_name, 
+  void store_matrix(const std::string &dset_name, 
       const std::vector<T> &buf, const int & num_cols,
       const bool &transpose = false) const {
     
@@ -326,13 +319,24 @@ class HDF5IOHelper
     return;
   }
 
+
   template<typename T>
-  void store_element(const String &dset_name, const T &data, const int &index) {
+  void set_scalar(const String &dset_name, const T &data, const int &index) {
+    auto ds_iter = datasetCache.find(dset_name);
+    if( ds_iter != datasetCache.end())
+      set_scalar(dset_name, ds_iter->second, data, index);
+    else {
+      H5::DataSet ds = h5File.openDataSet(dset_name);
+      set_scalar(dset_name, ds, data, index);
+    }
+  }
+
+  template<typename T>
+  void set_scalar(const String &dset_name, H5::DataSet &ds, const T &data, const int &index) {
     // 1. open the dataset
     // 2. discover the rank (must be 1) and dimensions (must be > index)
     // 3. Select the elements in the memory and file dataspaces
     // 4. write
-    H5::DataSet ds = h5File.openDataSet(dset_name);
     H5::DataSpace f_space = ds.getSpace();
     if(f_space.getSimpleExtentNdims() != 1) {
       flush();
@@ -347,21 +351,30 @@ class HDF5IOHelper
                                  " failed; requested index is " + std::to_string(index) +
                                  " but must be > 0 and < " + std::to_string(dim));
     }
-    hsize_t f_coords[1][1] = {{hsize_t(index)}};
-    f_space.selectElements(H5S_SELECT_SET, 1, &f_coords[0][0]);
-    hsize_t m_coords[1][1]= {{0}};
+    hsize_t f_coords = hsize_t(index);
+    f_space.selectElements(H5S_SELECT_SET, 1, &f_coords);
     H5::DataSpace m_space;  // memory dataspace (scalar)
     ds.write(&data, h5_mem_dtype(data), m_space, f_space);
   }
 
   template<typename T>
-  void store_row_or_column(const String &dset_name, const T &data, const int &index, const bool &row) {
+  void set_vector(const String &dset_name, const T &data, const int &index, const bool &row = true) {
+    auto ds_iter = datasetCache.find(dset_name);
+    if( ds_iter != datasetCache.end())
+      set_vector(dset_name, ds_iter->second, data, index, row);
+    else {
+      H5::DataSet ds = h5File.openDataSet(dset_name);
+      set_vector(dset_name, ds, data, index, row);
+    }
+  }
+
+  template<typename T>
+  void set_vector(const String &dset_name, H5::DataSet &ds, const T &data, const int &index, const bool &row = true) {
     // 1. open the dataset
     // 2. discover the rank (must be 2) and dimensions
     // 3. Raise an error if the dimensions of the dataset and the data don't match
     // 4. create hyperslabs for the memory and file to write a row or column
     // 5. Write
-    H5::DataSet ds = h5File.openDataSet(dset_name);
     H5::DataSpace f_space = ds.getSpace();
     if(f_space.getSimpleExtentNdims() != 2) {
       flush();
@@ -416,7 +429,565 @@ class HDF5IOHelper
     ds.write(&data[0], h5_mem_dtype(data[0]), m_space, f_space);
   }
 
-  void add_empty_dataset(const String &dset_name, const IntArray &dims, ResultsOutputType stored_type) const;
+  template<typename T>
+  void set_matrix(const String &dset_name, 
+                     const Teuchos::SerialDenseMatrix<int, T> &data,
+                     const int &index,
+                     const bool &transpose = false) {
+    auto ds_iter = datasetCache.find(dset_name);
+    if( ds_iter != datasetCache.end())
+      set_matrix(dset_name, ds_iter->second, data, index, transpose);
+    else {
+      H5::DataSet ds = h5File.openDataSet(dset_name);
+      set_matrix(dset_name, ds, data, index, transpose);
+    }
+  }
+
+  template<typename T>
+  void set_matrix(const String &dset_name, H5::DataSet &ds, 
+                     const Teuchos::SerialDenseMatrix<int, T> &data,
+                     const int &index,
+                     const bool &transpose = false) {
+    // 1. open the dataset
+    // 2. discover the rank (must be 3) and dimensions
+    // 3. index must be < first dimension
+    // 3. Other dimensions of the dataset and the data must match
+    // 4. Set up to do a transposed or un-transposed write
+    // 5. Write
+    const int &num_cols = data.numCols();
+    const int &num_rows = data.numRows();
+
+    H5::DataSpace m_dataspace, f_dataspace = ds.getSpace();
+    if(f_dataspace.getSimpleExtentNdims() != 3) {
+      flush();
+      throw std::runtime_error(String("Attempt to insert matrix into non-3D dataset ") + 
+                                 dset_name + " failed" );
+    }
+    hsize_t f_dims[3], m_dims[2]; // file and memory dimensions
+    f_dataspace.getSimpleExtentDims(f_dims);
+    if(index >= f_dims[0]) {
+      flush();
+      throw std::runtime_error(String("Attempt to insert matrix into  ") + 
+                               dset_name + " failed; requested index greater than 0th dimension " +
+                               "of dataset.");
+    }
+    if(transpose && !(f_dims[2] == num_rows && f_dims[1] == num_cols) ||
+      !transpose && !(f_dims[1] == num_rows && f_dims[2] == num_cols) ) {
+      flush();
+      throw std::runtime_error(String("Attempt to insert matrix into  ") + 
+                               dset_name + " failed; matrix dimensions do not match " +
+                               "dataset dimensions.");
+ 
+    }
+    H5::DataType f_datatype = h5_file_dtype(data[0][0]); // file datatype
+    H5::DataType m_datatype = h5_mem_dtype(data[0][0]);  // memory datatype
+
+    if(transpose) {
+      // SerialDenseMatrixes are stored column-major, but HDF5 assumes row-major
+      // storage. If transposed storage is requested, we therefore don't need to 
+      // do anything special to the dataspace
+      m_dims[0] = num_rows;
+      m_dims[1] = num_cols;
+      m_dataspace.setExtentSimple(2, m_dims);
+      hsize_t f_start[3] = {hsize_t(index), 0, 0};
+      hsize_t f_count[3] = {1, hsize_t(num_cols), hsize_t(num_rows)};
+      f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+      ds.write(data.values(), m_datatype, m_dataspace, f_dataspace);
+    } else {
+      // to write an un-tranposed matrix, we use HDF5 hyperslab selections to 
+      // sequentially grab rows of the matrix in memory and write them into rows
+      // of the dataset in file. This is a little tricky because rows in memory 
+      // are non-contiguous due to column-major storage of SDMs.
+      // Reminder: To understan what this code is doing, it helps to take out a
+      // sheet of paper and draw the file dataset and the matrix, with the matrix
+      // transposed because SDMs are stored column-major, and then think about
+      // how the data has to move.
+      
+      m_dims[1] = num_rows;
+      m_dims[0] = num_cols;
+      m_dataspace.setExtentSimple(2, m_dims);
+      hsize_t m_start[2], f_start[3]; // "start" in the C++ API is "offset" in the C API.
+      f_start[0] = index;
+      m_start[0] = f_start[2] = 0;
+      hsize_t m_count[2] = {hsize_t(num_cols), 1};
+      hsize_t f_count[3] = {1, 1, hsize_t(num_cols)};
+      for(int i = 0; i < num_rows; ++i) { // iterate over rows of the matrix; columns of the dataset
+        m_start[1] = f_start[1] = i;
+        m_dataspace.selectHyperslab(H5S_SELECT_SET, m_count, m_start);
+        f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+        ds.write(data.values(), m_datatype, m_dataspace, f_dataspace);
+      }
+    }
+  } 
+
+  template<typename T>
+  void set_vector_matrix(const String &dset_name, 
+                     const std::vector<Teuchos::SerialDenseMatrix<int, T> > &data,
+                     const int &index,
+                     const bool &transpose = false) {
+    auto ds_iter = datasetCache.find(dset_name);
+    if( ds_iter != datasetCache.end())
+      set_vector_matrix(dset_name, ds_iter->second, data, index, transpose);
+    else {
+      H5::DataSet ds = h5File.openDataSet(dset_name);
+      set_vector_matrix(dset_name, ds, data, index, transpose);
+    }
+  }
+
+  template<typename T>
+  void set_vector_matrix(const String &dset_name, H5::DataSet &ds, 
+                     const std::vector<Teuchos::SerialDenseMatrix<int, T> > &data,
+                     const int &index,
+                     const bool &transpose = false) {
+    // 1. open the dataset
+    // 2. discover the rank (must be 4) and dimensions
+    // 3. index must be < first dimension
+    // 3. Other dimensions of the dataset and the data must match
+    // 4. Set up to do a transposed or un-transposed write
+    // 5. Write
+    const int &num_cols = data[0].numCols();
+    const int &num_rows = data[0].numRows();
+
+    H5::DataSpace m_dataspace, f_dataspace = ds.getSpace();
+    if(f_dataspace.getSimpleExtentNdims() != 4) {
+      flush();
+      throw std::runtime_error(String("Attempt to insert vector-matrix into non-4D dataset ") + 
+                                 dset_name + " failed" );
+    }
+    hsize_t f_dims[4], m_dims[2]; // file and memory dimensions
+    f_dataspace.getSimpleExtentDims(f_dims);
+    if(index >= f_dims[0]) {
+      flush();
+      throw std::runtime_error(String("Attempt to insert vector-matrix into  ") + 
+                               dset_name + " failed; requested index greater than 0th dimension " +
+                               "of dataset.");
+    }
+    if(transpose && !(f_dims[3] == num_rows && f_dims[2] == num_cols) ||
+      !transpose && !(f_dims[2] == num_rows && f_dims[3] == num_cols) ) {
+      flush();
+      throw std::runtime_error(String("Attempt to insert vector-matrix into  ") + 
+                               dset_name + " failed; matrix dimensions do not match " +
+                               "dataset dimensions.");
+ 
+    }
+    H5::DataType f_datatype = h5_file_dtype(data[0](0,0)); // file datatype
+    H5::DataType m_datatype = h5_mem_dtype(data[0](0,0));  // memory datatype
+
+    if(transpose) {
+      // SerialDenseMatrixes are stored column-major, but HDF5 assumes row-major
+      // storage. If transposed storage is requested, we therefore don't need to 
+      // do anything special to the dataspace
+      m_dims[0] = num_rows;
+      m_dims[1] = num_cols;
+      m_dataspace.setExtentSimple(2, m_dims);
+      hsize_t f_start[4] = {hsize_t(index), 0, 0, 0};
+      hsize_t f_count[4] = {1, 1, hsize_t(num_cols), hsize_t(num_rows)};
+      for(f_start[1] = 0; f_start[1] < data.size(); ++f_start[1]) {
+        const auto & matrix = data[f_start[1]];
+        f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+        ds.write(matrix.values(), m_datatype, m_dataspace, f_dataspace);
+      }
+    } else {
+      // to write an un-tranposed matrix, we use HDF5 hyperslab selections to 
+      // sequentially grab rows of the matrix in memory and write them into rows
+      // of the dataset in file. This is a little tricky because rows in memory 
+      // are non-contiguous due to column-major storage of SDMs.
+      // Reminder: To understan what this code is doing, it helps to take out a
+      // sheet of paper and draw the file dataset and the matrix, with the matrix
+      // transposed because SDMs are stored column-major, and then think about
+      // how the data has to move.
+      
+      m_dims[1] = num_rows;
+      m_dims[0] = num_cols;
+      m_dataspace.setExtentSimple(2, m_dims);
+      hsize_t m_start[2] = {0,0}; // "start" in the C++ API is "offset" in the C API.
+      hsize_t f_start[4] = {hsize_t(index), 0, 0, 0};
+      hsize_t m_count[2] = {hsize_t(num_cols), 1};
+      hsize_t f_count[4] = {1, 1, 1, hsize_t(num_cols)};
+      for(f_start[1] = 0; f_start[1] < data.size(); ++f_start[1]) {
+        for(int i = 0; i < num_rows; ++i) { // iterate over rows of the matrix; columns of the dataset
+          const auto & matrix = data[f_start[1]];
+          m_start[1] = f_start[2] = i;
+          m_dataspace.selectHyperslab(H5S_SELECT_SET, m_count, m_start);
+          f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+          ds.write(matrix.values(), m_datatype, m_dataspace, f_dataspace);
+        }
+      }
+    }
+  } 
+
+  /// Append along the 0th dimension and return the index
+  int append_empty(const String &dset_name) {
+    H5::DataSet &ds = datasetCache[dset_name];
+    H5::DataSpace f_space = ds.getSpace();
+    hsize_t rank = f_space.getSimpleExtentNdims();
+    hsize_t dim[rank], maxdim[rank];
+    f_space.getSimpleExtentDims(dim, maxdim);
+    if(maxdim[0] != H5S_UNLIMITED) {
+      flush();
+      throw std::runtime_error(String("Attempt to append empty 'element' to a fixed-sized datasset ") +
+                                 dset_name + " failed");
+    }
+    ++dim[0];
+    ds.extend(dim);
+    return dim[0]-1;
+  }
+
+  /// Append an element to a 1D dataset
+  template<typename T>
+  void append_scalar(const String &dset_name, const T&data) {
+    // 1. Open the dataset
+    // 2. Discover the rank (must be 1) and current shape
+    // 3. Extend the dataset
+    // 5. write
+    
+    H5::DataSet &ds = datasetCache[dset_name];
+    H5::DataSpace f_space = ds.getSpace();
+    if(f_space.getSimpleExtentNdims() != 1) {
+      flush();
+      throw std::runtime_error(String("Attempt to append element to a non-1D datasset ") +
+                                 dset_name + " failed");
+    }
+    hsize_t dim, maxdim;
+    f_space.getSimpleExtentDims(&dim, &maxdim);
+    if(maxdim != H5S_UNLIMITED) {
+      flush();
+      throw std::runtime_error(String("Attempt to append element to a fixed-sized datasset ") +
+                                 dset_name + " failed");
+    }
+    ++dim;
+    ds.extend(&dim);
+    set_scalar(dset_name, ds, data, dim-1);
+  }
+  /// Append a vector as a row or column to a 2D dataset
+  template<typename T>
+  void append_vector(const String &dset_name, const T &data, const bool &row = true) {
+    // 1. open the dataset
+    // 2. discover the rank (must be 2) and dimensions
+    // 3. Raise an error if the dataset can't be extended
+    // 4. Extend
+    // 4. Write
+    H5::DataSet ds = datasetCache[dset_name];
+    H5::DataSpace f_space = ds.getSpace();
+    if(f_space.getSimpleExtentNdims() != 2) {
+      flush();
+      throw std::runtime_error(String("Attempt to append row or column into non-2D dataset ") + 
+                                 dset_name + " failed" );
+    }
+    hsize_t dims[2], maxdims[2]; // assume rank == 2
+    f_space.getSimpleExtentDims(dims, maxdims);
+    int len = length(data); // length is a free function defined in HDF5_IO.hpp that is 
+                            // overloaded/templated to return the length of SDVs and std::vectors
+    int index;
+    if(row) {
+       if(maxdims[0] != H5S_UNLIMITED) {
+          flush();
+          throw std::runtime_error(String("Attempt to append row to  ") + 
+                                     dset_name + " failed; dimensions are fixed.");
+       }
+       index = dims[0]++;
+    } else {
+      if(maxdims[1] != H5S_UNLIMITED) {
+        flush();
+        throw std::runtime_error(String("Attempt to append column to  ") + 
+                                   dset_name + " failed; dimensions are fixed.");
+      }
+      index = dims[1]++;      
+    }
+    ds.extend(dims); 
+    set_vector(dset_name, ds, data, index, row); 
+  }
+
+  /// Append a SerialDenseMatrix to a 3D dataset. The dataset will be expanded along the 0th
+  /// dimension. By default, the shape of the matrix, (nrows, ncols), must match the size of the 1st 
+  /// and 2nd dimensions of the dataset. For transpose=true, the reverse must be true. 
+  template<typename T>
+  void append_matrix(const String &dset_name, 
+                     const Teuchos::SerialDenseMatrix<int, T> &data,
+                     const bool &transpose = false) {
+    // 1. open the dataset
+    // 2. discover the rank (must be 3) and dimensions
+    // 3. Raise an error if the dataset can't be extended
+    // 4. Extend
+    // 4. Write
+    H5::DataSet &ds = datasetCache[dset_name];
+    H5::DataSpace f_space = ds.getSpace();
+    if(f_space.getSimpleExtentNdims() != 3) {
+      flush();
+      throw std::runtime_error(String("Attempt to append matrix to non-3D dataset ") + 
+                                 dset_name + " failed" );
+    }
+    hsize_t dims[3], maxdims[3]; // assume rank == 3
+    f_space.getSimpleExtentDims(dims, maxdims);
+    if(maxdims[0] != H5S_UNLIMITED) {
+      flush();
+      throw std::runtime_error(String("Attempt to append matrix to  ") + 
+                                   dset_name + " failed; dimensions are fixed.");
+    }
+    int expected_nrows = (transpose) ? dims[2] : dims[1];
+    int expected_ncols = (transpose) ? dims[1] : dims[2];
+
+    if(data.numRows() != expected_nrows || data.numCols() != expected_ncols) {
+        flush();
+        throw std::runtime_error(String("Attempt to append matrix to ") +
+                                 dset_name + " failed; matrix and dataset " +
+                                 "dimensions do not match");
+    }    
+    ++dims[0];
+    ds.extend(dims);
+    // Write. See store_matrix for an example of what to do about the transpose.
+    set_matrix(dset_name, ds, data, dims[0]-1, transpose);
+  }
+
+  /// Append a std::vector of  SerialDenseMatrix's to a 4D dataset. The dataset 
+  /// will be expanded along the 0th dimension. By default, the size of the vector
+  /// must equal the size of the 1st dimension of the dataset, andthe shape of the 
+  /// SDMs (nrows, ncols), must match the sizes of the 2nd 
+  /// and 2nd dimensions of the dataset. For transpose=true, the reverse must 
+  ///  be true of the SDMs.
+  template<typename T>
+  void append_vector_matrix(const String &dset_name, 
+                     const std::vector<Teuchos::SerialDenseMatrix<int, T> > &data,
+                     const bool &transpose = false) {
+    // 1. open the dataset
+    // 2. discover the rank (must be 4) and dimensions
+    // 3. Raise an error if the dataset can't be extended
+    // 4. Extend
+    // 4. Write
+    H5::DataSet &ds = datasetCache[dset_name];
+    H5::DataSpace f_space = ds.getSpace();
+    if(f_space.getSimpleExtentNdims() != 4) {
+      flush();
+      throw std::runtime_error(String("Attempt to append vector-matrix to non-4D dataset ") + 
+                                 dset_name + " failed" );
+    }
+    hsize_t dims[4], maxdims[4];
+    f_space.getSimpleExtentDims(dims, maxdims);
+    if(maxdims[0] != H5S_UNLIMITED) {
+      flush();
+      throw std::runtime_error(String("Attempt to append vector-matrix to  ") + 
+                                   dset_name + " failed; dimensions are fixed.");
+    }
+    int expected_nrows = (transpose) ? dims[3] : dims[2];
+    int expected_ncols = (transpose) ? dims[2] : dims[3];
+    for(const auto &m : data) {
+      if(m.numRows() != expected_nrows || m.numCols() != expected_ncols) {
+          flush();
+          throw std::runtime_error(String("Attempt to append vector-matrix to ") +
+                                   dset_name + " failed; matrix and dataset " +
+                                   "dimensions do not match");
+      }
+    }
+    ++dims[0];
+    ds.extend(dims);
+    // Write. See store_matrix for an example of what to do about the transpose.
+    set_vector_matrix(dset_name, ds, data, dims[0]-1, transpose);
+  }
+
+
+  /// Read scalar data from a dataset
+  template <typename T>
+  const void read_scalar(const std::string& dset_name, T& val)
+  {
+    if( !exists(dset_name) )
+    {
+      Cerr << "\nError: HDF5 file \"" << fileName << "\""
+           << " does not contain data path \"" << dset_name << "\""
+           << std::endl;
+      abort_handler(-1);
+    }
+    // JAS: We need some verification here that the dataset is really a scalar.
+    H5::DataSet dataset = h5File.openDataSet(dset_name);
+    dataset.read(&val, h5_mem_dtype(val));
+
+    return;
+  }
+
+  /// Read vector (1D) information from a dataset
+  template <typename T>
+  void read_vector(const std::string& dset_name, T& array) const 
+  {
+    if( !exists(dset_name) )
+    {
+      Cerr << "\nError: HDF5 file \"" << fileName << "\""
+           << " does not contain data path \"" << dset_name << "\""
+           << std::endl;
+      abort_handler(-1);
+    }
+
+    H5::DataSet dataset = h5File.openDataSet(dset_name);
+
+    // Get dims and size of dataset
+    assert( dataset.getSpace().isSimple() );
+    int ndims = dataset.getSpace().getSimpleExtentNdims();
+    assert( ndims == 1 );
+    std::vector<hsize_t> dims( ndims, hsize_t(1) );
+    dataset.getSpace().getSimpleExtentDims(dims.data());
+
+    // Calling resize on a SerialDenseVector is potentially wasteful
+    // if it is initially non-zero length because it copies the existing
+    // data to the new buffer. There's probably a better design that
+    // would avoid this issue without duplicating a lot of code for
+    // std::vector and SDV.
+    array.resize(dims[0]);
+    dataset.read(&array[0], h5_mem_dtype(array[0]));
+    return;
+  }
+
+
+
+  /// Read matrix (2D) information from a dataset
+  /// Currently this involves a wasteful copy to do the transpose and
+  /// is intended only for purposes of testing
+  template <typename T>
+  void read_matrix(const std::string &dset_name, 
+      Teuchos::SerialDenseMatrix<int,T> & matrix, 
+      const bool &transpose = false) const {
+    if( !exists(dset_name) )
+    {
+      Cerr << "\nError: HDF5 file \"" << fileName << "\""
+           << " does not contain data path \"" << dset_name << "\""
+           << std::endl;
+      abort_handler(-1);
+    }
+
+    H5::DataSet dataset = h5File.openDataSet(dset_name);
+
+    // Get dims and size of dataset
+    assert( dataset.getSpace().isSimple() );
+    int ndims = dataset.getSpace().getSimpleExtentNdims();
+    assert( ndims == 2 );
+    std::vector<hsize_t> dims(ndims);
+    dataset.getSpace().getSimpleExtentDims(dims.data());
+
+    if(transpose) {
+      matrix.shape(dims[1], dims[0]);
+      dataset.read(&matrix(0,0), h5_mem_dtype(matrix(0,0)));
+    } else {
+      Teuchos::SerialDenseMatrix<int, T> tmp(dims[1], dims[0]);
+      dataset.read(tmp.values(), h5_mem_dtype(tmp(0,0)));
+      matrix.shapeUninitialized(dims[0], dims[1]);
+      for(int ii = 0; ii < dims[0]; ++ii) 
+        for(int jj = 0; jj < dims[1]; ++jj) 
+          matrix(ii,jj) = tmp(jj,ii);
+      
+    }
+    return;
+  }
+
+  /// Get the matrix (2D) at the index into the 0th dimension of the 3D
+  /// dataset at dsetname. 
+  /// Currently this involves a wasteful copy to do the transpose and
+  /// is intended only for purposes of testing
+  template <typename T>
+  void get_matrix(const std::string &dset_name, 
+      Teuchos::SerialDenseMatrix<int,T> & matrix,
+      const int &index, const bool &transpose = false) const {
+    if( !exists(dset_name) )
+    {
+      Cerr << "\nError: HDF5 file \"" << fileName << "\""
+           << " does not contain data path \"" << dset_name << "\""
+           << std::endl;
+      abort_handler(-1);
+    }
+
+    H5::DataSet dataset = h5File.openDataSet(dset_name);
+    H5::DataSpace f_dataspace = dataset.getSpace();
+    // Get dims and size of dataset
+    int ndims = f_dataspace.getSimpleExtentNdims();
+    assert( ndims == 3 );
+    std::vector<hsize_t> dims(ndims);
+    f_dataspace.getSimpleExtentDims(dims.data());
+    if(index >= dims[0] || index < 0) {
+      flush();
+      throw  std::runtime_error(String("Error while getting matrix ") + 
+            "slice from 3D dataset " + dset_name + ": index out of range.");
+    }
+    hsize_t f_start[3] = {hsize_t(index), 0, 0};
+    hsize_t f_count[3] = {1, dims[1], dims[2]};
+    f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+    // We must create a memory dataspace because if we used the "default",
+    // it would be assumed to have the same dimensionality, offset, and count 
+    // as the file dataspace
+    hsize_t m_dims[2] = {dims[2], dims[1]};
+    H5::DataSpace m_dataspace(2, m_dims);
+    if(transpose) {
+      matrix.shape(dims[2], dims[1]);
+      dataset.read(&matrix(0,0), h5_mem_dtype(matrix(0,0)), m_dataspace, f_dataspace);
+    } else {
+      Teuchos::SerialDenseMatrix<int, T> tmp(dims[2], dims[1]);
+      dataset.read(tmp.values(), h5_mem_dtype(tmp(0,0)), m_dataspace, f_dataspace);
+      matrix.shapeUninitialized(dims[1], dims[2]);
+      for(int ii = 0; ii < dims[1]; ++ii) 
+        for(int jj = 0; jj < dims[2]; ++jj) 
+          matrix(ii,jj) = tmp(jj,ii);
+    }
+    return;
+  }
+
+  /// Read the 3D slice at the index into the 0th dimension of the 4D dataset at ds_name. 
+  /// Currently this involves a wasteful copy to do the transpose and
+  /// is intended only for purposes of testing
+  template <typename T>
+  void get_vector_matrix(const std::string &dset_name, 
+      std::vector<Teuchos::SerialDenseMatrix<int,T> >& data,
+      const int &index, const bool &transpose = false) const {
+    if( !exists(dset_name) )
+    {
+      Cerr << "\nError: HDF5 file \"" << fileName << "\""
+           << " does not contain data path \"" << dset_name << "\""
+           << std::endl;
+      abort_handler(-1);
+    }
+
+    H5::DataSet dataset = h5File.openDataSet(dset_name);
+    H5::DataSpace f_dataspace = dataset.getSpace();
+    // Get dims and size of dataset
+    int ndims = f_dataspace.getSimpleExtentNdims();
+    assert( ndims == 4 );
+    std::vector<hsize_t> dims(ndims);
+    f_dataspace.getSimpleExtentDims(dims.data());
+    if(index >= dims[0] || index < 0) {
+      flush();
+      throw  std::runtime_error(String("Error while getting vector-matrix ") + 
+            "slice from 4D dataset " + dset_name + ": index out of range.");
+    }
+    data.resize(dims[1]);
+    hsize_t f_start[4] = {hsize_t(index), 0, 0, 0};
+    hsize_t f_count[4] = {1, 1, dims[2], dims[3]};
+    f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+    // We must create a memory dataspace because if we used the "default",
+    // it would be assumed to have the same dimensionality, offset, and count 
+    // as the file dataspace
+    hsize_t m_dims[2] = {dims[3], dims[2]};
+    H5::DataSpace m_dataspace(2, m_dims);
+    if(transpose) {
+      for(f_start[1] = 0; f_start[1] < dims[1]; ++f_start[1]) {
+        auto &matrix = data[f_start[1]];
+        matrix.shape(dims[3], dims[2]);
+        f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+        dataset.read(matrix.values(), h5_mem_dtype(matrix(0,0)), m_dataspace, f_dataspace);
+      }
+    } else {
+      Teuchos::SerialDenseMatrix<int, T> tmp(dims[3], dims[2]);
+      for(f_start[1] = 0; f_start[1] < dims[1]; ++f_start[1]) {
+        auto &matrix = data[f_start[1]];
+        f_dataspace.selectHyperslab(H5S_SELECT_SET, f_count, f_start);
+        dataset.read(tmp.values(), h5_mem_dtype(tmp(0,0)), m_dataspace, f_dataspace);
+        matrix.shapeUninitialized(dims[2], dims[3]);
+        for(int ii = 0; ii < dims[2]; ++ii) 
+          for(int jj = 0; jj < dims[3]; ++jj) 
+            matrix(ii,jj) = tmp(jj,ii);
+      }
+    }
+    return;
+  }
+
+
+
+  void report_num_open();
+  void create_empty_dataset(const String &dset_name, const IntArray &dims, 
+                         ResultsOutputType stored_type, int chunk_size=0);
   //------------------------------------------------------------------
 
   /// attach a dimension scale to a dataset
@@ -464,8 +1035,13 @@ class HDF5IOHelper
                               const std::string &name,
                               const H5::DataType &type,
                               const H5::DataSpace &space,
-                              const H5::DSetCreatPropList &plist =
-                                H5::DSetCreatPropList()) const;
+                              const H5::DSetCreatPropList &create_plist =
+                                H5::DSetCreatPropList(),
+                              const H5::DSetAccPropList &access_plist =
+                                H5::DSetAccPropList() ) const;
+  /// Create a soft link
+  void create_softlink(const String &link_location, const String &source_location); 
+  
 
   // Define globally available custom property lists
   // JAS: These probably should not be public. The point of this class is to
@@ -481,6 +1057,7 @@ class HDF5IOHelper
   /// Flush cache to file
   void flush() const;
  
+  ~HDF5IOHelper() {}; 
 
   protected:
 
@@ -492,7 +1069,7 @@ class HDF5IOHelper
 
   /// Store vector data using a pointer to the first element and length
   template<typename T>
-  void store_vector_data(const String &dset_name, const T *data,
+  void store_vector(const String &dset_name, const T *data,
                          const int &len) const {
     hsize_t dims[1];
     dims[0] = len;
@@ -506,6 +1083,11 @@ class HDF5IOHelper
     dataset.write(data, m_datatype);
     return;
   }
+
+  std::map<String, H5::DataSet> datasetCache;
+
+  H5::DataSet open_dataset(const String &ds_name);
+
 }; // class HDF5IOHelper
 }  // namespace Dakota
 

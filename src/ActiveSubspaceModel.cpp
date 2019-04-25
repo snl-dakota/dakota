@@ -59,7 +59,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 {
   asmInstance = this;
   modelType = "active_subspace";
-
+  modelId = String("RECAST_") + root_model_id() + "_ACTIVE_SUBSPACE";
   // Set seed of bootstrap sampler:
   BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
 
@@ -102,7 +102,7 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
   refinementSamples(0), subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
   modelType = "active_subspace";
-
+  modelId = String("RECAST_") + root_model_id() + "ACTIVE_SUBSPACE";
   outputLevel = output_level;
 
   componentParallelMode = CONFIG_PHASE;

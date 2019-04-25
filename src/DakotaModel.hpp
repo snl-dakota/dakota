@@ -39,6 +39,7 @@ class ParallelLibrary;
 class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
+class EvaluationStore;
 
 /// Simple container for user-provided scaling data, possibly expanded by replicates through the models
 class ScalingOptions {
@@ -426,6 +427,9 @@ public:
 
   /// set the warm start flag (warmStartFlag)
   virtual void warm_start_flag(const bool flag);
+
+  /// Declare a model's sources to the evaluationsDB
+  virtual void declare_sources();
 
   //
   //- Heading: Member functions
@@ -1140,6 +1144,15 @@ public:
   static void evaluate(const RealMatrix& samples_matrix,
 		       Model& model, RealMatrix& resp_matrix);
 
+  /// Return the model ID of the "innermost" model. 
+  /// For all derived Models except RecastModels, return modelId.
+  /// The RecastModel override returns the root_model_id() of the
+  /// subModel.
+  virtual String root_model_id();
+
+
+  virtual ActiveSet default_active_set();
+
 protected:
 
   //
@@ -1162,9 +1175,22 @@ protected:
   Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 	ParallelLibrary& parallel_lib);
 
+
+  /// return the next available model ID for no-ID user methods
+  static String user_auto_id();
+
+  /// return the next available model ID for on-the-fly methods
+  static String no_spec_id();
+
+  /// Whether to write model evals to the evaluations DB
+  EvaluationsDBState modelEvaluationsDBState;
+  /// Whether to write interface evals to the evaluations DB
+  EvaluationsDBState interfEvaluationsDBState;
   //
   //- Heading: Virtual functions
   //
+
+
 
   /// portion of evaluate() specific to derived model classes
   virtual void derived_evaluate(const ActiveSet& set);
@@ -1247,6 +1273,18 @@ protected:
 			  IntResponseMap& cached_resp_map, 
 			  bool deep_copy_resp = false);
   */
+
+  /// Return the interface flag for the EvaluationsDB state
+  EvaluationsDBState evaluations_db_state(const Interface &interface);
+  /// Return the model flag for the EvaluationsDB state
+  EvaluationsDBState evaluations_db_state(const Model &model);
+
+
+  /// Store the response portion of an interface evaluation. Called from rekey_response_map 
+  void asynch_eval_store(const Interface &interface, const int &id, const Response &response);
+  /// Exists to support storage of interface evaluations. No-op so that
+  ///  rekey_response_map<Model> can be generated.
+  void asynch_eval_store(const Model &model, const int &id, const Response &response);
 
   /// rekey returned jobs matched in id_map into resp_map_rekey;
   /// unmatched jobs are cached within the meta_object
@@ -1421,6 +1459,9 @@ protected:
 
   /// cached evalTag Prefix from parents to use at evaluate time
   String evalTagPrefix;
+
+  /// reference to the global evaluation database
+  EvaluationStore &evaluationsDB;
 
 private:
  
@@ -1598,6 +1639,10 @@ private:
   Model* modelRep;
   /// number of objects sharing modelRep
   int referenceCount;
+
+  /// the last used model ID number for on-the-fly instantiations
+  /// (increment before each use)
+  static size_t noSpecIdNum;
 };
 
 
@@ -3626,6 +3671,8 @@ rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
     if (id_it != id_map.end()) {
       resp_map_rekey[id_it->second] = (deep_copy_resp) ?
 	r_cit->second.copy() : r_cit->second;
+      if(evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
+        asynch_eval_store(meta_object, id_it->first, r_cit->second);
       id_map.erase(id_it);
       ++r_cit;
     }
