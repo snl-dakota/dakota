@@ -21,9 +21,6 @@ void batch_means_interval(RealMatrix& mcmc_matrix, RealMatrix& interval_matrix,
   int num_samples = mcmc_matrix.numCols();
   int batch_size = sqrt(num_samples);
   int num_batches = num_samples/batch_size; // What about when this doesn't divide evenly? Do we put the extras in the last batch? 
-  std::cout << "num_samples = " << num_samples << std::endl;
-  std::cout << "batch_size = " << batch_size << std::endl;
-  std::cout << "num_batches = " << num_batches << std::endl;
 
   // Compute statistic for whole chain
   //accumulator_set<RealVector, stats<tag::mean> > acc;
@@ -65,17 +62,18 @@ void batch_means_interval(RealMatrix& mcmc_matrix, RealMatrix& interval_matrix,
   Real scale = batch_size/(num_batches - 1);
   for (int i = 0; i < num_qoi; i++) {
     approx_var_chain[i] = scale*approx_var_chain[i];
-    std::cout << "approx_var_chain_" << i << " = " << approx_var_chain[i] << std::endl;
   }
 
   // Calculate interval
   // currently assume the same quantile for all components
   boost::math::students_t t_dist(num_samples-1);
-  Real t_star = quantile(complement(t_dist, alpha/2));
+  Real t_star = quantile(complement(t_dist, (1-alpha)/2));
   RealVector interval_i(2);
   for (int i = 0; i < num_qoi; i++) {
     Real half_width = t_star*std::sqrt(approx_var_chain[i]/num_samples);
     interval_i[0] = func_totalchain[i] - half_width;
+    if (moment == 2 && interval_i[0] < 0) 
+      interval_i[0] = 0; // variance must be positive
     interval_i[1] = func_totalchain[i] + half_width;
     Teuchos::setCol(interval_i, i, interval_matrix);
   }
