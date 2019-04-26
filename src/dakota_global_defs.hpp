@@ -191,4 +191,11 @@ void mpi_debug_hold();
 
 } // namespace Dakota
 
+/// Return type for EvaluationStore::model_allocate and interface_allocate
+/// UNITIALIZED: Model constructor has this as its default
+/// ACTIVE: The database is open and this model or interface should write to it
+/// INACTIVE: The database is either closed, or this model or interface should not
+///           write to it.
+enum class EvaluationsDBState {UNINITIALIZED, ACTIVE, INACTIVE};
+
 #endif // DAKOTA_GLOBAL_DEFS_H

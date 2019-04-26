@@ -430,11 +430,11 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
-    predator_prey.cpp
+    predator_prey.cpp EvaluationStore.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
-  list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp)
+  list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp )
 endif()
 
 if(DAKOTA_DL_SOLVER)

@@ -27,7 +27,7 @@ namespace Dakota {
 class ProblemDescDB;
 class Variables;
 class Response;
-
+class EvaluationStore;
 
 /// Base class for the iterator class hierarchy.
 
@@ -477,6 +477,9 @@ protected:
 
   /// reference to the global iterator results database
   ResultsManager& resultsDB;
+  /// reference to the global evaluation database
+  EvaluationStore& evaluationsDB;
+
   /// valid names for iterator results
   ResultsNames resultsNames;
 

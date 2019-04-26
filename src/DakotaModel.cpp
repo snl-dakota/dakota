@@ -25,6 +25,7 @@
 #include "RandomFieldModel.hpp"
 #include "DakotaGraphics.hpp"
 #include "pecos_stat_util.hpp"
+#include "EvaluationStore.hpp"
 
 //#define REFCOUNT_DEBUG
 
@@ -36,6 +37,7 @@ namespace Dakota
 extern PRPCache        data_pairs;
 extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
 extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
+extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
 // minimize dakota_restart_util object file dependencies
@@ -52,6 +54,10 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
                            ///< function return by reference when a real
                            ///< Iterator instance is unavailable
 
+// Initialization of static model ID counters
+size_t Model::noSpecIdNum = 0;
+
+
 
 /** This constructor builds the base class data for all inherited
     models.  get_model() instantiates a derived class and the derived
@@ -67,6 +73,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     problem_db.get_response(SIMULATION_RESPONSE, currentVariables)),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(problem_db, currentVariables.shared_data()),
+  evaluationsDB(evaluation_store_db),
   modelType(problem_db.get_string("model.type")),
   surrogateType(problem_db.get_string("model.surrogate.type")),
   gradientType(problem_db.get_string("responses.gradient_type")),
@@ -170,10 +177,14 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
               probDescDB.get_rv("variables.linear_inequality_scales"),
               probDescDB.get_sa("variables.linear_equality_scale_types"),
               probDescDB.get_rv("variables.linear_equality_scales")),
+  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
+  if(modelId.empty())
+    modelId = user_auto_id();
   // Define primaryRespFnSense BoolDeque from DB StringArray
   StringArray db_sense
     = problem_db.get_sa("responses.primary_response_fn_sense");
@@ -281,13 +292,13 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       const SharedResponseData& srd, const ActiveSet& set, short output_level):
   currentVariables(svd), numDerivVars(set.derivative_vector().size()),
   currentResponse(srd, set), numFns(set.request_vector().size()),
-  userDefinedConstraints(svd), fdGradStepType("relative"),
-  fdHessStepType("relative"), warmStartFlag(false), supportsEstimDerivs(true),
-  probDescDB(problem_db), parallelLib(parallel_lib),
+  userDefinedConstraints(svd), evaluationsDB(evaluation_store_db),
+  fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
+  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(output_level), hierarchicalTagging(false),
-  modelId("NO_SPECIFICATION"), modelEvalCntr(0), estDerivsFlag(false),
+  modelId(no_spec_id()), modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   modelRep(NULL), referenceCount(1)
 {
@@ -306,12 +317,16 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
-  warmStartFlag(false), supportsEstimDerivs(true),
-  probDescDB(problem_db), parallelLib(parallel_lib),
+  warmStartFlag(false), supportsEstimDerivs(true), probDescDB(problem_db), 
+  parallelLib(parallel_lib), evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
-  modelId("NO_SPECIFICATION"), modelEvalCntr(0), estDerivsFlag(false),
+  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  modelId("NO_SPECIFICATION"), /* this will be changed by the constructors of
+                                 RecastModel and its derived classes */
+  modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   modelRep(NULL), referenceCount(1)
 {
@@ -330,7 +345,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
     constructor, assignment operator, and destructor. */
 Model::Model():
   modelRep(NULL), referenceCount(1), probDescDB(dummy_db),
-  parallelLib(dummy_lib)
+  parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(), modelRep = NULL" << std::endl;
@@ -343,7 +358,8 @@ Model::Model():
     execute get_model, since Model(BaseConstructor, problem_db)
     builds the actual base class data for the derived models. */
 Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
-  parallelLib(problem_db.parallel_library()), referenceCount(1)
+  parallelLib(problem_db.parallel_library()), evaluationsDB(evaluation_store_db),
+  referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(ProblemDescDB&) called to instantiate envelope."
@@ -395,7 +411,7 @@ Model* Model::get_model(ProblemDescDB& problem_db)
 /** Copy constructor manages sharing of modelRep and incrementing
     of referenceCount. */
 Model::Model(const Model& model): probDescDB(model.problem_description_db()),
-  parallelLib(probDescDB.parallel_library())
+  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db)
 {
   // Increment new (no old to decrement)
   modelRep = model.modelRep;
@@ -585,9 +601,20 @@ void Model::evaluate()
   else { // letter
     ++modelEvalCntr;
 
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+     modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+    
     // Define default ActiveSet for iterators which don't pass one
     ActiveSet temp_set = currentResponse.active_set(); // copy
     temp_set.request_values(1); // function values only
+
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          temp_set, currentVariables);
 
     if (derived_master_overload()) {
       // prevents error of trying to run a multiproc. direct job on the master
@@ -602,6 +629,8 @@ void Model::evaluate()
       output_mgr.add_datapoint(currentVariables, interface_id(), 
 			       currentResponse);
     }
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
   }
 }
 
@@ -612,6 +641,17 @@ void Model::evaluate(const ActiveSet& set)
     modelRep->evaluate(set);
   else { // letter
     ++modelEvalCntr;
+
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          set, currentVariables);
 
     // Derivative estimation support goes here and is not replicated in the
     // default asv version of evaluate -> a good reason for using an
@@ -649,6 +689,9 @@ void Model::evaluate(const ActiveSet& set)
       output_mgr.add_datapoint(currentVariables, interface_id(), 
 			       currentResponse);
     }
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
+
   }
 }
 
@@ -660,10 +703,20 @@ void Model::evaluate_nowait()
   else { // letter
     ++modelEvalCntr;
 
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
     // Define default ActiveSet for iterators which don't pass one
     ActiveSet temp_set = currentResponse.active_set(); // copy
     temp_set.request_values(1); // function values only
 
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          temp_set, currentVariables);
     // perform an asynchronous parameter-to-response mapping
     derived_evaluate_nowait(temp_set);
 
@@ -683,6 +736,18 @@ void Model::evaluate_nowait(const ActiveSet& set)
     modelRep->evaluate_nowait(set);
   else { // letter
     ++modelEvalCntr;
+
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          set, currentVariables);
+
     // derived evaluation_id() not yet incremented (for first of several if est
     // derivs); want the key for id map to be the first raw eval of the set
     rawEvalIdMap[derived_evaluation_id() + 1] = modelEvalCntr;
@@ -815,6 +880,8 @@ const IntResponseMap& Model::synchronize()
     cachedResponseMap.clear();
 
     // return final map
+    for(const auto  &id_r : responseMap)
+      evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
     return responseMap;
   }
 }
@@ -891,6 +958,8 @@ const IntResponseMap& Model::synchronize_nowait()
     // using Model::cache_unmatched_response().
     responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
     cachedResponseMap.clear();
+    for(const auto  &id_r : responseMap)
+      evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
 
     return responseMap;
   }
@@ -3788,6 +3857,10 @@ void Model::warm_start_flag(const bool flag)
   else          warmStartFlag = flag;
 }
 
+void Model::declare_sources() {
+  if(modelRep) modelRep->declare_sources();
+  else return;
+}
 
 void Model::
 set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
@@ -4063,6 +4136,29 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // else default is nothing additional beyond free_communicators()
 }
 
+ActiveSet Model::default_active_set() {
+  if(modelRep) {
+    return modelRep->default_active_set();
+  } else {
+   // This member function is called from Model::evaluate(_no_wait), and the 
+   // ActiveSet that is returned is used to allocate evaluation storage in HDF5.
+
+    ActiveSet set(numFns, numDerivVars);
+    set.derivative_vector(currentVariables.continuous_variable_ids());
+    ShortArray asv(numFns, 1);
+   
+    if(gradientType != "none" && (gradientType == "analytic" || supportsEstimDerivs))
+        for(auto &a : asv)
+          a |=  2;
+
+    if(hessianType != "none" && (hessianType == "analytic" || supportsEstimDerivs))
+        for(auto &a : asv)
+          a |=  4;
+
+    set.request_vector(asv);
+    return set;
+  }
+}
 
 void Model::inactive_view(short view, bool recurse_flag)
 {
@@ -4775,5 +4871,65 @@ void Model::evaluate(const RealMatrix& samples_matrix,
   }
 }
 
+// Called from rekey_response_map to allow Models to store their interfaces asynchronous
+// evaluations. When the meta_object is a model, no action is performed.
+void Model::asynch_eval_store(const Model &model, const int &id, const Response &response) {
+  return;
+}
+
+// Called from rekey_response_map to allow Models to store their interfaces asynchronous
+// evaluations. I strongly suspect that there's a better design for this.
+void Model::asynch_eval_store(const Interface &interface, const int &id, const Response &response) {
+  evaluationsDB.store_interface_response(modelId, interface.interface_id(), id, response);
+}
+
+/// Return the interface flag for the EvaluationsDB state
+EvaluationsDBState Model::evaluations_db_state(const Interface &interface) {
+  return interfEvaluationsDBState;
+}
+  /// Return the model flag for the EvaluationsDB state
+EvaluationsDBState Model::evaluations_db_state(const Model &model) {
+  // always return INACTIVE because models don't store evaluations of their
+  // submodels
+  return EvaluationsDBState::INACTIVE;
+}
+
+/** Rationale: The parser allows multiple user-specified models with
+    empty (unspecified) ID. However, only a single Model with empty
+    ID can be constructed (if it's the only one present, or the "last
+    one parsed"). Therefore decided to prefer NO_MODEL_ID over 
+    NO_MODEL_ID_<num> for (some) consistency with interface 
+    NO_ID convention. _MODEL_ was inserted in the middle to distinguish
+    "anonymous" MODELS from methods and interfaces in the hdf5 output. 
+    Note that this function is not used to name recast models; see their 
+    constructors for how its done. */
+String Model::user_auto_id()
+{
+  // // increment and then use the current ID value
+  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  return String("NO_MODEL_ID");
+}
+
+/** Rationale: For now NOSPEC_MODEL_ID_ is chosen due to historical
+    id="NO_SPECIFICATION" used for internally-constructed
+    Models. Longer-term, consider auto-generating an ID that
+    includes the context from which the method is constructed, e.g.,
+    the parent method or model's ID, together with its name. 
+    Note that this function is not used to name recast models; see 
+    their constructors for how its done.
+**/
+    String Model::no_spec_id()
+{
+  // increment and then use the current ID value
+  return String("NOSPEC_MODEL_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+}
+
+// This is overridden by RecastModel so that it and its derived classes return 
+// the root_model_id() of their subModels. The base Model class version terminates
+// the "recursion" for models of other types.
+String Model::root_model_id() {
+  if(modelRep) return modelRep->root_model_id();
+  else return modelId;
+}
 
 } // namespace Dakota

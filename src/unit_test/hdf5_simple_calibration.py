@@ -8,7 +8,7 @@ _TEST_NAME = "simple_calibration"
 class Structure(unittest.TestCase):
     def test_structure(self):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
-            exec_group = h["/methods/NO_ID/execution:1/"]
+            exec_group = h["/methods/NO_METHOD_ID/execution:1/"]
             contents = set(exec_group.keys())
             self.assertEqual(len(contents), 5) # correct number of groups
             self.assertTrue("best_residuals" in contents)
@@ -39,7 +39,7 @@ class Results(unittest.TestCase):
         console_params = self._params[0]
         expected_descriptors = set(var[0] for var in console_params)
         with h5py.File(_TEST_NAME + ".h5","r") as h:
-            params = h["/methods/NO_ID/execution:1/best_parameters/continuous"]
+            params = h["/methods/NO_METHOD_ID/execution:1/best_parameters/continuous"]
             # Descriptors match
             h5_descriptors = set(params.dims[0][0][:])
             self.assertEqual(expected_descriptors, h5_descriptors)
@@ -51,7 +51,7 @@ class Results(unittest.TestCase):
         self.assertEqual(len(self._residuals), 1)
         console_residuals = self._residuals[0]
         with h5py.File(_TEST_NAME + ".h5","r") as h:
-            h5_residuals = h["/methods/NO_ID/execution:1/best_residuals"]
+            h5_residuals = h["/methods/NO_METHOD_ID/execution:1/best_residuals"]
             self.assertEqual(len(console_residuals), h5_residuals.shape[0])
             for c_r, h_r in zip(console_residuals, h5_residuals.value):
                 self.assertAlmostEqual(c_r, h_r)
@@ -60,7 +60,7 @@ class Results(unittest.TestCase):
         self.assertEqual(len(self._constraints), 1)
         console_constraints = self._constraints[0]
         with h5py.File(_TEST_NAME + ".h5","r") as h:
-            h5_constraints = h["/methods/NO_ID/execution:1/best_constraints"]
+            h5_constraints = h["/methods/NO_METHOD_ID/execution:1/best_constraints"]
             self.assertEqual(len(console_constraints), h5_constraints.shape[0])
             for c_c, h_c in zip(console_constraints, h5_constraints.value):
                 self.assertAlmostEqual(c_c, h_c)
@@ -70,14 +70,14 @@ class Results(unittest.TestCase):
         console_norm = self._norms[0]
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             self.assertAlmostEqual(console_norm,
-                    h["/methods/NO_ID/execution:1/best_norm"].value)
+                    h["/methods/NO_METHOD_ID/execution:1/best_norm"].value)
 
     def test_parameter_confidence_intervals(self):
         self.assertEqual(len(self._cis), 1)
         console_ci = self._cis[0]
         expected_descriptors = set(console_ci.keys())
         with h5py.File(_TEST_NAME + ".h5","r") as h:
-            h5_ci = h["/methods/NO_ID/execution:1/confidence_intervals"]
+            h5_ci = h["/methods/NO_METHOD_ID/execution:1/confidence_intervals"]
             self.assertEqual(expected_descriptors, set(h5_ci.dims[0][0][:]))
             self.assertEqual(len(console_ci), h5_ci.shape[0])
             for i, d in enumerate(h5_ci.dims[0][0]):

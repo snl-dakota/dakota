@@ -13,6 +13,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "RecastModel.hpp"
+#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -107,6 +108,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   init_constraints(secondaryRespMapIndices.size(), 
 		   recast_secondary_offset, reshape_vars);
 
+  modelId = String("RECAST_") + root_model_id() + "_RECAST";
 }
 
 
@@ -143,6 +145,7 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   init_sizes(vars_comps_totals, all_relax_di, all_relax_dr,
 	     num_recast_primary_fns, num_recast_secondary_fns,
 	     recast_secondary_offset, recast_resp_order);
+  modelId = String("RECAST_") + root_model_id() + "_RECAST";
 }
 
 
@@ -157,6 +160,7 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
   
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
+  modelId = String("RECAST_") + root_model_id() + "_RECAST";
 }
 
 
@@ -174,6 +178,7 @@ RecastModel::RecastModel(const Model& sub_model):
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
   numFns = sub_model.response_size();
+  modelId = String("RECAST_") + root_model_id() + "_RECAST";
 }
 
 
@@ -1122,5 +1127,35 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 
   return eval_found;
 }
+
+String RecastModel::root_model_id() {
+  return subModel.root_model_id();
+}
+
+ActiveSet RecastModel::default_active_set() {
+  // The "base class" implementation assumes that supportsEstimDerivs is false
+  // and that gradients/hessians, if available, are computed by a submodel and
+  // hence can be provided by this model.
+  ActiveSet set(numFns, numDerivVars);
+  set.derivative_vector(currentVariables.continuous_variable_ids());
+  ShortArray asv(numFns, 1);
+
+  if(gradientType != "none")// && (gradientType == "analytic" || supportsEstimDerivs))
+      for(auto &a : asv)
+        a |=  2;
+
+  if(hessianType != "none") // && (hessianType == "analytic" || supportsEstimDerivs))
+      for(auto &a : asv)
+        a |=  4;
+
+  set.request_vector(asv);
+  return set;
+}
+
+void RecastModel::declare_sources() {
+  evaluationsDB.declare_source(modelId, modelType, subModel.model_id(), subModel.model_type());
+}
+
+
 
 } // namespace Dakota

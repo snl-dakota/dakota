@@ -215,9 +215,6 @@ protected:
 
   /// the index of the active analysis driver within analysisDrivers
   size_t analysisDriverIndex;
-  /// the set of optional analysis components used by the analysis drivers
-  /// (from the analysis_components interface specification)
-  String2DArray analysisComponents;
 
 private:
   /// map labels in src to var_t in dest

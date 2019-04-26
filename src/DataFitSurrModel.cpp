@@ -22,7 +22,7 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/rolling_mean.hpp>
-
+#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: DataFitSurrModel.cpp 7034 2010-10-22 20:16:32Z mseldre $";
 
@@ -1004,6 +1004,7 @@ void DataFitSurrModel::build_global()
     // bounds, any recastings within the model recursion must be managed.
     String am_interface_id;
     if (!actualModel.is_null()) am_interface_id = actualModel.interface_id();
+    if(am_interface_id.empty()) am_interface_id = "NO_ID";
     ModelLRevIter ml_rit; PRPCacheCIter prp_iter;
     Variables db_vars; Response db_resp;
     bool map_to_iter_space = recastings();
@@ -1479,18 +1480,39 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
     //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     //parallelLib.parallel_configuration_iterator(modelPCIter);
+    if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+      interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
+          approxInterface.interface_id(), currentVariables, currentResponse,
+          default_interface_active_set(), approxInterface.analysis_components());
+    
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet approx_set = set;
       approx_set.request_vector(approx_asv);
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
-      approxInterface.map(currentVariables, approx_set, approx_response); break;
+      approxInterface.map(currentVariables, approx_set, approx_response);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_set, currentVariables);
+        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_response);
+      }
+      break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approx_response = currentResponse.copy(); // TO DO
-      approxInterface.map(currentVariables, set, approx_response);        break;
+      approxInterface.map(currentVariables, set, approx_response);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), set, currentVariables);
+        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_response);
+      }
+      break;
     }
+
     //parallelLib.parallel_configuration_iterator(pc_iter); // restore
+
 
     // export data (optional)
     if (!exportPointsFile.empty())
@@ -1595,6 +1617,12 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       break;
     }
 
+    if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.interface_allocate(modelId, approxInterface.interface_id(),
+                                       currentVariables, currentResponse, 
+                                       default_interface_active_set(), 
+                                       approxInterface.analysis_components());
+
     // compute the approximate response
     // don't need to set component parallel mode since this only queues the job
     switch (responseMode) {
@@ -1602,10 +1630,16 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       ActiveSet approx_set = set;
       approx_set.request_vector(approx_asv);
       approxInterface.map(currentVariables, approx_set, currentResponse, true);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_set, currentVariables);
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approxInterface.map(currentVariables,        set, currentResponse, true);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), set, currentVariables);
       break;
     }
 
@@ -2013,15 +2047,15 @@ import_points(unsigned short tabular_format, bool active_only)
     //  int first_id = data_pairs.front().evaluation_id();
     //  if (first_id < 0) cache_id = first_id - 1;
     //}
-
     /// process arrays of data from TabularIO::read_data_tabular() above
     for (prp_it =import_prp_list.begin();
 	 prp_it!=import_prp_list.end(); ++prp_it) {
       ParamResponsePair& pr = *prp_it;
       //if ( (tabular_format & TABULAR_EVAL_ID) == 0 )  // not imported
       pr.eval_id(0); // always override eval id to 0 for imported data
-      if ( (tabular_format & TABULAR_IFACE_ID) == 0 )// not imported: dangerous!
-	pr.interface_id(am_iface_id); // assign best guess / default
+      if ( (tabular_format & TABULAR_IFACE_ID) == 0  && !am_iface_id.empty()) {// not imported: dangerous!
+          pr.interface_id(am_iface_id); // assign best guess / default
+      }
 
       if (restart) parallelLib.write_restart(pr); // preserve eval id
       if (cache)   data_pairs.insert(pr); // duplicate ids OK for PRPCache
@@ -2452,5 +2486,75 @@ void DataFitSurrModel::update_from_model(const Model& model)
     userDefinedConstraints.nonlinear_eq_constraint_targets(
       model.nonlinear_eq_constraint_targets());
 }
+
+void DataFitSurrModel::declare_sources() {
+
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    if(actualModel.is_null() || surrogateFnIndices.size() == numFns) {
+      evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+        "interface");
+    } else if(surrogateFnIndices.empty()) { // don't know if this can happen.
+      evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    } else {
+      evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+        "interface");
+      evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    }
+    break;
+  case BYPASS_SURROGATE:
+    evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    break;
+  case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+    evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+        "interface");
+    break;
+  }
+
+}
+
+ActiveSet DataFitSurrModel::default_interface_active_set() {
+  // The ApproximationInterface may provide just a subset
+  // of the responses, with the balance coming from the
+  // actualModel.
+  ActiveSet set(numFns, numDerivVars);
+  ShortArray asv(numFns);
+  const bool has_gradients = gradientType != "none" && 
+    (gradientType == "analytic" || supportsEstimDerivs);
+  const bool has_hessians = hessianType != "none" && 
+    (hessianType == "analytic" || supportsEstimDerivs);
+  // Most frequent case: build surrogates for all responses
+  if(responseMode == MODEL_DISCREPANCY || 
+     responseMode == AGGREGATED_MODELS ||
+     actualModel.is_null() ||
+     surrogateFnIndices.size() == numFns) {
+    std::fill(asv.begin(), asv.end(), 1);
+    if(has_gradients)
+      for(auto &a : asv)
+        a |=  2;
+    if(has_hessians)
+       for(auto &a : asv)
+         a |=  4;
+  } else {
+    std::fill(asv.begin(), asv.end(), 0);
+    for(int i = 0; i < numFns; ++i) {
+      if(surrogateFnIndices.count(i)) {
+        asv[i] = 1;
+        if(has_gradients)
+          asv[i] |= 2;
+        if(has_hessians)
+          asv[i] |= 4;
+      }
+    }
+  }
+  set.request_vector(asv);
+  return set;
+}
+
 
 } // namespace Dakota

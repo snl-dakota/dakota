@@ -29,7 +29,7 @@ ProbabilityTransformModel(const Model& x_model,
 {
   ptmInstance = this;
   modelType = "probability_transform";
-
+  modelId = String("RECAST_") + root_model_id() + "PROBABILITY_TRANSFORM";
   numContinuousVars = subModel.cv();
   numDiscreteIntVars = subModel.div();
   numDiscreteStringVars = subModel.dsv();

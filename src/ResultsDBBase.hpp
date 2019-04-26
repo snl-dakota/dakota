@@ -44,14 +44,6 @@ class ResultsDBBase
 
 public:
 
-  ResultsDBBase(const String& filename) :
-    fileName(filename)
-  { }
-
-  /// Return the filename
-  const String& filename() const
-    { return fileName; }
-
   /// If supported, flush data to the database or disk
   virtual
   void flush() const
@@ -181,9 +173,6 @@ protected:
 //  /// cast the pointer to the any data to the requested type
 //  template<typename StoredType>
 //  const StoredType* cast_data_ptr(const boost::any* dataholder) const;
-
-  /// filename for database
-  std::string fileName;
 
   /// core data storage (map from key to value type)
   std::map<ResultsKeyType, ResultsValueType> iteratorData;

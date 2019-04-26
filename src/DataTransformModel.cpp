@@ -53,6 +53,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 {
   dtModelInstance = this;
 
+  modelId = String("RECAST_") + root_model_id() + "_DATA_TRANSFORM";
   // register state variables as inactive vars if config vars are present
   // BMA TODO: correctly manage the view if relaxed, also review recursion
 
