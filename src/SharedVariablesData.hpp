@@ -254,7 +254,6 @@ private:
   /// DiscreteReal to Continuous) for all specified discrete real variables
   /// Note: container will be empty when not relaxing variables
   BitArray allRelaxedDiscreteReal;
-
 };
 
 

@@ -1075,17 +1075,18 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
 			    RealVector& fd_lb, RealVector& fd_ub) const
 {
   // Are derivatives w.r.t. active or inactive variables?
+  active_derivs = inactive_derivs = false;
   if (original_dvv == currentVariables.continuous_variable_ids()) {
     active_derivs = true;
-    copy_data(currentVariables.continuous_variables(), x0); // view->copy
+    copy_data(currentVariables.continuous_variables(), x0);        // view->copy
   }
   else if (original_dvv ==
 	   currentVariables.inactive_continuous_variable_ids()) {
     inactive_derivs = true;
-    copy_data(currentVariables.inactive_continuous_variables(), x0);// vw->cpy
+    copy_data(currentVariables.inactive_continuous_variables(), x0);//view->copy
   }
   else // general derivatives
-    copy_data(currentVariables.all_continuous_variables(), x0); // view->copy
+    copy_data(currentVariables.all_continuous_variables(), x0);    // view->copy
 
   // define c_l_bnds, c_u_bnds, cv_ids, cv_types
   const RealVector& c_l_bnds = (active_derivs) ? continuous_lower_bounds() :
@@ -1104,18 +1105,40 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
       all_continuous_variable_types() );
 
   // if not respecting bounds, leave at +/- infinity
+  size_t num_deriv_vars = original_dvv.size();
+  fd_lb.resize(num_deriv_vars);  fd_ub.resize(num_deriv_vars);
   Real dbl_inf = std::numeric_limits<Real>::infinity();
-  fd_lb = -dbl_inf;
-  fd_ub =  dbl_inf;
-  if (!ignoreBounds) { // manage global/inferred vs. distribution bounds
-    size_t num_deriv_vars = original_dvv.size();
+  if (ignoreBounds)
+    { fd_lb = -dbl_inf;  fd_ub = dbl_inf; }
+  else { // manage global/inferred vs. distribution bounds
+    Pecos::MarginalsCorrDistribution* mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
     for (size_t j=0; j<num_deriv_vars; j++) {
-      size_t xj_index = find_index(cv_ids, original_dvv[j]);
-      fd_lb[j] = finite_difference_lower_bound(cv_types, c_l_bnds, xj_index);
-      fd_ub[j] = finite_difference_upper_bound(cv_types, c_u_bnds, xj_index);
+      size_t cv_index = find_index(cv_ids, original_dvv[j]);
+      switch (cv_types[cv_index]) {
+      case NORMAL_UNCERTAIN: {    // +/-infinity or user-specified
+	size_t rv_index = original_dvv[j] - 1;// id to index (full variable set)
+	fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_LWR_BND);
+	fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_UPR_BND);
+	break;
+      }
+      case LOGNORMAL_UNCERTAIN: { // 0/inf or user-specified
+	size_t rv_index = original_dvv[j] - 1;// id to index (full variable set)
+	fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_LWR_BND);
+	fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_UPR_BND);
+	break;
+      }
+      case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN:
+      case FRECHET_UNCERTAIN:     case WEIBULL_UNCERTAIN:
+	fd_lb[j] = c_l_bnds[cv_index]; fd_ub[j] = dbl_inf;            break;
+      case GUMBEL_UNCERTAIN:
+	fd_lb[j] = -dbl_inf;           fd_ub[j] = dbl_inf;            break;
+      default:
+	fd_lb[j] = c_l_bnds[cv_index]; fd_ub[j] = c_u_bnds[cv_index]; break;
+      }
     }
   }
-  
+
   return cv_ids;
 }
 
@@ -1698,13 +1721,9 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   }
   if (fd_grad_flag || fd_hess_flag) {
 
-    // define x0 and mode flags
-    bool active_derivs = false;    // derivatives w.r.t. active vars
-    bool inactive_derivs = false;  // derivs w.r.t. inactive vars
-    RealVector x0;
-
     // define lower/upper bounds for finite differencing and cv_ids
-    RealVector fd_lb(num_deriv_vars), fd_ub(num_deriv_vars);
+    RealVector x0, fd_lb, fd_ub;
+    bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
     SizetMultiArrayConstView cv_ids = 
       initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
 			   fd_lb, fd_ub);
@@ -2867,57 +2886,6 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 }
 
 
-Real Model::
-finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
-			      const RealVector& global_c_l_bnds,
-			      size_t cv_index) const
-{
-  // replace inferred lower bounds for unbounded distributions
-  switch (cv_types[cv_index]) {
-  case NORMAL_UNCERTAIN: {    // -infinity or user-specified
-    size_t n_index = cv_index -
-      find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
-    return aleatDistParams.normal_lower_bound(n_index);    break;
-  }
-  case LOGNORMAL_UNCERTAIN: { // 0 or user-specified
-    size_t ln_index = cv_index -
-      find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
-    return aleatDistParams.lognormal_lower_bound(ln_index); break;
-  }
-  case GUMBEL_UNCERTAIN:      // -infinity
-    return -std::numeric_limits<Real>::infinity();  break;
-  default:
-    return global_c_l_bnds[cv_index];               break;
-  }
-}
-
-
-Real Model::
-finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
-			      const RealVector& global_c_u_bnds,
-			      size_t cv_index) const
-{
-  // replace inferred upper bounds for unbounded/semi-bounded distributions
-  switch (cv_types[cv_index]) {
-  case NORMAL_UNCERTAIN: {    // infinity or user-specified
-    size_t n_index = cv_index -
-      find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
-    return aleatDistParams.normal_upper_bound(n_index);    break;
-  }
-  case LOGNORMAL_UNCERTAIN: { // infinity or user-specified
-    size_t ln_index = cv_index -
-      find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
-    return aleatDistParams.lognormal_upper_bound(ln_index); break;
-  }
-  case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN: // infinity
-  case GUMBEL_UNCERTAIN:      case FRECHET_UNCERTAIN: case WEIBULL_UNCERTAIN:
-    return std::numeric_limits<Real>::infinity();   break;
-  default:
-    return global_c_u_bnds[cv_index];               break;
-  }
-}
-
-
 /** Splits asv_in total request into map_asv_out, fd_grad_asv_out,
     fd_hess_asv_out, and quasi_hess_asv_out as governed by the
     responses specification.  If the returned use_est_deriv is true,
@@ -3015,13 +2983,9 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
   if (fd_grad_flag && !ignoreBounds) { // protect call to forward_grad_step
     size_t num_deriv_vars = orig_dvv.size();
 
-    // define x0 and mode flags
-    bool active_derivs = false;    // derivatives w.r.t. active vars
-    bool inactive_derivs = false;  // derivs w.r.t. inactive vars
-    RealVector x0;
-
     // define lower/upper bounds for finite differencing and cv_ids
-    RealVector fd_lb(num_deriv_vars), fd_ub(num_deriv_vars);
+    RealVector x0, fd_lb, fd_ub;
+    bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
     SizetMultiArrayConstView cv_ids = 
       initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
 			   fd_lb, fd_ub);

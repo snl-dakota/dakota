@@ -1475,17 +1475,6 @@ private:
   void update_quasi_hessians(const Variables& vars, Response& new_response,
 			     const ActiveSet& original_set);
 
-  /// return the lower bound for a finite difference offset, drawn from
-  /// global or distribution bounds
-  Real finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
-				     const RealVector& global_c_l_bnds,
-				     size_t cv_index) const;
-  /// return the upper bound for a finite difference offset, drawn from
-  /// global or distribution bounds
-  Real finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
-				     const RealVector& global_c_u_bnds,
-				     size_t cv_index) const;
-
   /// Coordinates usage of estimate_derivatives() calls based on asv_in
   bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out, 
 		  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
