@@ -36,22 +36,22 @@ outputHeader = """
 def abort(message):
     """Print message to STDERR and quit with returncode 1"""
     sys.stdout.flush()
-    print >> sys.stderr, "\n", message
+    print(sys.stderr + "\n" + message)
     sys.exit(1)
 # Write out header and invocation time
-print outputHeader
-print "Time at invocation:", str(datetime.datetime.now())
+print(outputHeader)
+print("Time at invocation:" + str(datetime.datetime.now()))
 # Get user's input filename from command line args and read in
 if len(sys.argv) != 2:
     abort("ERROR: Expected (only) name of input file on command " \
             "line.\nSyntax:   %s <filename>\n" % sys.argv[0])
 try:
-    print "Attempting to read input file................................................",
+    print("Attempting to read input file................................................"),
     with open(sys.argv[1],"r") as ifp:
         rawInput = ifp.readlines()
 except IOError:
     abort("ERROR: Unable to open %s for reading." % sys.argv[1])
-print "OK"
+print("OK")
 # Parse the input data
 params = {} # will hold user's parameters, keyword:value 
 errors = [] # Append parse errors to this list
@@ -81,7 +81,7 @@ for i, line in enumerate(rawInput):
         errors.append("Line %3d: Conversion of '%s' to float failed." %(i+1, value))
         continue
     # Do not permit repeated keywords
-    if params.has_key(key):
+    if key in params:
         errors.append("Line %3d: Keyword '%s' appears more than once time." %(i+1, key))
         continue
     # All tests pass. Store keyword:value pair.
@@ -95,41 +95,39 @@ for k in requiredParams:
         errors.append("Required keyword '%s' not found." % k)
 
 # Parsing complete. Output input file for reference, then list of errors
-print "Echo user input file %s " % sys.argv[1]
-print "--------------------------------------------------------------------------------"
+print("Echo user input file %s " % sys.argv[1])
+print("--------------------------------------------------------------------------------")
 for i, line in enumerate(rawInput):
-    print "%3d: %s" %(i+1,line),
-print "--------------------------------------------------------------------------------"
-print "Parsing input file, checking for errors......................................",
+    print("%3d: %s" %(i+1,line)),
+print("--------------------------------------------------------------------------------")
+print("Parsing input file, checking for errors......................................"),
 if errors:
-    print "\n",
-    errors = "The following errors were encountered while parsing the " + \
-            "input file:\n --" + "\n --".join(errors)
+    errors = "The following errors were encountered while parsing the input file:\n --" + "\n --".join(errors)
     abort(errors)
-print "OK"
+print("OK")
 
 # Confirm that thickness, width, young's modulus, and length have physical values
-print "Confirming feasability of inputs.............................................",
+print("Confirming feasability of inputs.............................................")
 for k in ("length", "thickness", "width", "youngs_modulus","density","length"):
     if params[k] <= 0.0:
         abort("ERROR: Keyword '%s' must be > 0.0" % k)
-print "OK"
-print "Initializing simulation...................................................... OK"
-print "Reticulating splines......................................................... OK"
-print "Sequencing particles......................................................... OK"
-print "Splatting transforms......................................................... OK"
-print "Beginning simulation............................................................"
-print "................................................................................"
-print ".................Running........................................................"
-print "..............................................Running..........................."
-print "...............................Patience........................................."
-print ".......................................................Almost there............."
-print ".........Almost there..................................................... DONE!"
-print """                          ____                  ____      
+print("OK")
+print("Initializing simulation...................................................... OK")
+print("Reticulating splines......................................................... OK")
+print("Sequencing particles......................................................... OK")
+print("Splatting transforms......................................................... OK")
+print("Beginning simulation............................................................")
+print("................................................................................")
+print(".................Running........................................................")
+print("..............................................Running...........................")
+print("...............................Patience.........................................")
+print(".......................................................Almost there.............")
+print(".........Almost there..................................................... DONE!")
+print("""                          ____                  ____      
                          / __ \___  _______  __/ / /______
                         / /_/ / _ \/ ___/ / / / / __/ ___/
                        / _, _/  __(__  ) /_/ / / /_(__  ) 
-                      /_/ |_|\___/____/\__,_/_/\__/____/ """
+                      /_/ |_|\___/____/\__,_/_/\__/____/ """)
 # Compute QoIs
 area = params["thickness"] * params["width"] 
 mass = area * params["density"] * params["length"] / 12**3.0
@@ -142,22 +140,22 @@ displacement = 4.0*params["length"]**3.0/(area*params["youngs_modulus"]) * \
           )
 
 # Output all results
-print "--------------------------------------------------------------------------------"
-print "Output Section: MASS"
-print "Based on user inputs, estimated cantilever beam mass is:"
-print "%30.8e (lb)" % mass
-print "--------------------------------------------------------------------------------"
-print "Output Section: STRESS"
-print "Based on user inputs, estimated cantilever beam stress is:"
-print "%30.8e (lb/in^2)" % stress
-print "--------------------------------------------------------------------------------"
-print "Output Section: DISPLACEMENT"
-print "Based on user inputs, estimated cantilever beam displacement is:"
-print "%30.8e (in)" % displacement
-print "--------------------------------------------------------------------------------"
-print "END OF RESULTS, Shutdown beginning"
-print "Removing all temporary files................................................. OK"
-print "Deallocating memory.......................................................... OK"
-print "Deleting satellite telemetry................................................. OK"
-print "DONE"
+print("--------------------------------------------------------------------------------")
+print("Output Section: MASS")
+print("Based on user inputs, estimated cantilever beam mass is:")
+print("%30.8e (lb)" % mass)
+print("--------------------------------------------------------------------------------")
+print("Output Section: STRESS")
+print("Based on user inputs, estimated cantilever beam stress is:")
+print("%30.8e (lb/in^2)" % stress)
+print("--------------------------------------------------------------------------------")
+print("Output Section: DISPLACEMENT")
+print("Based on user inputs, estimated cantilever beam displacement is:")
+print("%30.8e (in)" % displacement)
+print("--------------------------------------------------------------------------------")
+print("END OF RESULTS, Shutdown beginning")
+print("Removing all temporary files................................................. OK")
+print("Deallocating memory.......................................................... OK")
+print("Deleting satellite telemetry................................................. OK")
+print("DONE")
 
