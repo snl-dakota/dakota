@@ -621,15 +621,17 @@ class HDF5IOHelper
     H5::DataSet &ds = datasetCache[dset_name];
     H5::DataSpace f_space = ds.getSpace();
     hsize_t rank = f_space.getSimpleExtentNdims();
-    hsize_t dim[rank], maxdim[rank];
-    f_space.getSimpleExtentDims(dim, maxdim);
-    if(maxdim[0] != H5S_UNLIMITED) {
+    //hsize_t dim[rank], maxdim[rank];
+    //f_space.getSimpleExtentDims(dim, maxdim);
+    std::unique_ptr<hsize_t[]> dim(new hsize_t[rank]), maxdim(new hsize_t[rank]);
+	f_space.getSimpleExtentDims(dim.get(), maxdim.get());
+	if(maxdim[0] != H5S_UNLIMITED) {
       flush();
       throw std::runtime_error(String("Attempt to append empty 'element' to a fixed-sized datasset ") +
                                  dset_name + " failed");
     }
     ++dim[0];
-    ds.extend(dim);
+    ds.extend(dim.get());
     return dim[0]-1;
   }
 

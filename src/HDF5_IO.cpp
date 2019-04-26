@@ -157,8 +157,10 @@ int length(const StringMultiArrayConstView &vec) {
     }
     hsize_t element_size = h5_type.getSize();
     int rank = dims.size();
-    hsize_t fdims[rank];
-    std::copy(dims.begin(), dims.end(), fdims);
+    //hsize_t fdims[rank];
+    //std::copy(dims.begin(), dims.end(), fdims);
+	std::unique_ptr<hsize_t[]> fdims(new hsize_t[rank]);
+	std::copy(dims.begin(), dims.end(), fdims.get());
     /* This block of code allows any dimenion to be unlimited 
     if( std::find(dims.begin(), dims.end(), 0) != dims.end() ) { // dataset with unlmited dimension
       hsize_t chunks[rank];
@@ -182,20 +184,24 @@ int length(const StringMultiArrayConstView &vec) {
         throw std::runtime_error(String("Invalid dimensions supplied to HDF5IOHelper::") +
             "create_empty_dataset() for dataset " + dset_name);
       }
-      hsize_t chunks[rank];
-      hsize_t maxdims[rank];
-      std::copy(dims.begin(), dims.end(), chunks);
-      std::copy(dims.begin(), dims.end(), maxdims);
-      maxdims[0] = H5S_UNLIMITED;
+      //hsize_t chunks[rank];
+      //hsize_t maxdims[rank];
+      //std::copy(dims.begin(), dims.end(), chunks);
+      //std::copy(dims.begin(), dims.end(), maxdims);
+	  std::unique_ptr<hsize_t[]> chunks(new hsize_t[rank]), maxdims(new hsize_t[rank]);
+	  std::copy(dims.begin(), dims.end(), chunks.get());
+	  std::copy(dims.begin(), dims.end(), maxdims.get());
+
+	  maxdims[0] = H5S_UNLIMITED;
       int num_layer_elements = std::accumulate(++dims.begin(), dims.end(), 1, std::multiplies<int>() );
       int layer_size = element_size*num_layer_elements;
       int chunk0 = chunk_size/layer_size;
       chunks[0] = (chunk0) ? chunk0 : 1;
       int actual_chunksize = element_size * std::accumulate(&chunks[0], &chunks[rank], 1, 
                                                             std::multiplies<int>() );
-      H5::DataSpace dataspace = H5::DataSpace(rank, fdims, maxdims);
+      H5::DataSpace dataspace = H5::DataSpace(rank, fdims.get(), maxdims.get());
       H5::DSetCreatPropList create_plist;
-      create_plist.setChunk(rank, chunks);
+      create_plist.setChunk(rank, chunks.get());
       H5::DSetAccPropList access_plist;
       // See the C API documentation for H5P_set_chunk_cache for guidance
       const size_t cache_size = 20*actual_chunksize;
@@ -205,7 +211,7 @@ int length(const StringMultiArrayConstView &vec) {
        
       datasetCache[dset_name] =  create_dataset(h5File, dset_name, h5_type, dataspace, create_plist, access_plist);
     } else { // fixed size
-      H5::DataSpace dataspace = H5::DataSpace(rank, fdims);
+      H5::DataSpace dataspace = H5::DataSpace(rank, fdims.get());
       create_dataset(h5File, dset_name, h5_type, dataspace);
     }
   }
