@@ -182,6 +182,12 @@ private:
   void unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
 	      ActiveSet& set, int& eval_id);
 
+  /// compute variable mapping indices corresponding to map1 and update
+  /// inactive view if necessary
+  void resolve_map1(const String& map1, size_t& ac_index1, size_t& adi_index1,
+		    size_t& ads_index1, size_t& adr_index1, size_t curr_index,
+		    short& inactive_sm_view);
+
   /// for a named real mapping, resolve primary index and secondary target
   void resolve_real_variable_mapping(const String& map1, const String& map2,
 				     size_t curr_index,
