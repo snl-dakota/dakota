@@ -1208,15 +1208,13 @@ protected:
   /// based on ie_pl settings
   void set_ie_asynchronous_mode(int max_eval_concurrency);
 
-  /// set the current value of each string variable offset + i to the
-  /// longest string value found in the admissible string set ssa[i]
-  void string_variable_max(const StringSetArray& ssa, size_t offset, 
-			   Variables& vars);
-
-  /// set the current value of each string variable offset + i to the
-  /// longest string value found in the admissible string map srma[i]
-  void string_variable_max(const StringRealMapArray& srma, size_t offset, 
-			   Variables& vars);
+  /// assign all of the longest possible string values into vars
+  void assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
+			  Variables& vars);
+  /// return iterator for longest string value found in string set
+  SSCIter max_string(const StringSet& ss);
+  /// return iterator for longest string value found in string map
+  SRMCIter max_string(const StringRealMap& srm);
 
   /// Initialize data needed for computing finite differences
   /// (active/inactive, center point, and bounds)
@@ -3505,6 +3503,26 @@ inline bool Model::is_null() const
 
 inline Model* Model::model_rep() const
 { return modelRep; }
+
+
+inline SSCIter Model::max_string(const StringSet& ss)
+{
+  SSCIter ss_it = ss.begin(),  max_it = ss_it;  ++ss_it;
+  for (; ss_it!=ss.end(); ++ss_it)
+    if (ss_it->size() > max_it->size())
+      max_it = ss_it;
+  return max_it;
+}
+
+
+inline SRMCIter Model::max_string(const StringRealMap& srm)
+{
+  SRMCIter srm_it = srm.begin(),  max_it = srm_it;  ++srm_it;
+  for (; srm_it!=srm.end(); ++srm_it)
+    if (srm_it->first.size() > max_it->first.size())
+      max_it = srm_it;
+  return max_it;
+}
 
 
 inline void Model::
