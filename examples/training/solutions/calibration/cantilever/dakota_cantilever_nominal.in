@@ -25,10 +25,16 @@ responses
    no_gradients no_hessians
 
 interface
+  # For Windows:
+  # analysis_drivers 'powershell.exe -File driver.ps1'
+  # For Linux/Mac:
   analysis_drivers 'driver.sh'
   fork
     work_directory named 'workdir/run'
       directory_tag directory_save
+      # For Windows:
+      # copy_files 'cantilever.template' 'cantilever' 'driver.ps1'
+      # For Linux/Mac:	  
       link_files 'cantilever.template' 'cantilever'
     parameters_file 'params.in'
     results_file 'results.out'

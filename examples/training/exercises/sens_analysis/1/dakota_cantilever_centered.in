@@ -13,6 +13,9 @@ variables
     descriptors    'w'   't'  'L'   'p'  'E'    'X'  'Y'
 
 interface
+  # For Windows:
+  # analysis_drivers 'powershell.exe -File driver.ps1'
+  # For Linux/Mac:
   analysis_drivers = 'driver.sh'
     fork
 
