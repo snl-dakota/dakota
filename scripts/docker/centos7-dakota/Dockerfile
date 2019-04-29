@@ -57,6 +57,12 @@ cmake3.x86_64
 
 RUN yum -y update 
 
+
+## Could sync sems TPLs into RHEL7 docker, for now trying this HDF5 binary
+RUN mkdir /opt/hdf5/
+ADD ./hdf5-1.10.4-linux-centos7-x86_64-gcc485-shared.tar.gz /opt/hdf5/
+RUN mv /opt/hdf5/hdf5-1.10.4-linux-centos7-x86_64-gcc485-shared /opt/hdf5/1.10.4
+
 # ==========================================================================
 # Finish construction
 #   - create workspace directory

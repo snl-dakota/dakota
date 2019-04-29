@@ -58,9 +58,9 @@ namespace {
     return diff_max;
   }
 
-  const size_t VEC_SIZE = 5;
-  const size_t MAT_ROWS = 3;
-  const size_t MAT_COLS = 4;
+  const int VEC_SIZE = 5;
+  const int MAT_ROWS = 3;
+  const int MAT_COLS = 4;
 
 } // anonymous namespace
 
