@@ -36,11 +36,11 @@ outputHeader = """
 def abort(message):
     """Print message to STDERR and quit with returncode 1"""
     sys.stdout.flush()
-    print(sys.stderr + "\n" + message)
+    print(sys.stderr, "\n", message)
     sys.exit(1)
 # Write out header and invocation time
 print(outputHeader)
-print("Time at invocation:" + str(datetime.datetime.now()))
+print("Time at invocation:", str(datetime.datetime.now()))
 # Get user's input filename from command line args and read in
 if len(sys.argv) != 2:
     abort("ERROR: Expected (only) name of input file on command " \
