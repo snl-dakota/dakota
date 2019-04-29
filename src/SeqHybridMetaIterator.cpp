@@ -16,6 +16,7 @@
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "dakota_data_io.hpp"
+#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: SeqHybridMetaIterator.cpp 6972 2010-09-17 22:18:50Z briadam $";
 
@@ -538,6 +539,11 @@ update_local_results(PRPArray& prp_results, int job_id)
   }
 }
 
+void SeqHybridMetaIterator::declare_sources() {
+  for(const auto & si : selectedIterators)
+    evaluationsDB.declare_source(method_id(), "metaiterator",
+        si.method_id(), "iterator");
+}
 
 void SeqHybridMetaIterator::print_results(std::ostream& s, short results_state)
 {

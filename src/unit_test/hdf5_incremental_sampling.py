@@ -23,11 +23,11 @@ class Moments(unittest.TestCase):
         expected_incr = set("increment:%d" % (i+1,) for i in range(len(console_moments)))
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             ## Verify the presence of all the increment data
-            self.assertEqual(expected_num_incr, len(list(h["/methods/sampling/execution:1/"].keys())))
-            for n in h["/methods/sampling/execution:1"].keys():
+            self.assertEqual(expected_num_incr, len(list(h["/methods/sampling/results/execution:1/"].keys())))
+            for n in h["/methods/sampling/results/execution:1"].keys():
                 self.assertTrue(n in expected_incr)
             # descriptors
-            hdf5_descriptors = set(h["/methods/sampling/execution:1/increment:1/moments/"].keys())
+            hdf5_descriptors = set(h["/methods/sampling/results/execution:1/increment:1/moments/"].keys())
             self.assertEqual(expected_descriptors, hdf5_descriptors)
 
     def test_moments(self):
@@ -44,7 +44,7 @@ class Moments(unittest.TestCase):
             # moments and scales
             for i in range(expected_num_incr):
                 for r in expected_descriptors:
-                    hdf5_moments = h["/methods/sampling/execution:1/increment:%d/moments/%s" % (i+1, r)]
+                    hdf5_moments = h["/methods/sampling/results/execution:1/increment:%d/moments/%s" % (i+1, r)]
                     for j in range(4):
                         self.assertAlmostEqual(console_moments[i][r][j], hdf5_moments[j])
                     scale_label = list(hdf5_moments.dims[0].keys())[0]
@@ -62,7 +62,7 @@ class Moments(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             # CIs and scales
             for i, ci in enumerate(console_cis):
-                hdf_cis = h["/methods/sampling/execution:1/increment:%d/moment_confidence_intervals/" % (i+1,)]
+                hdf_cis = h["/methods/sampling/results/execution:1/increment:%d/moment_confidence_intervals/" % (i+1,)]
                 for r in expected_descriptors:
                     self.assertEqual(expected_scale_labels[0], list(hdf_cis[r].dims[0].keys())[0])
                     self.assertEqual(expected_scale_labels[1], list(hdf_cis[r].dims[1].keys())[0])
@@ -90,7 +90,7 @@ class PDFs(unittest.TestCase):
             # pdfs and scales
             for i in range(expected_num_incr):
                 for r in expected_descriptors:
-                    hdf5_pdf = h["/methods/sampling/execution:1/increment:%d/probability_density/%s" % (i+1, r)]
+                    hdf5_pdf = h["/methods/sampling/results/execution:1/increment:%d/probability_density/%s" % (i+1, r)]
                     console_pdf = console_pdfs[i][r]
                     # same number of bins
                     self.assertEqual(len(console_pdf), len(hdf5_pdf))
@@ -144,20 +144,20 @@ class LevelMappings(unittest.TestCase):
                     for result_type in ('response_levels', 'probability_levels', 
                             'reliability_levels', 'gen_reliability_levels'):
                         try:
-                            h["/methods/sampling/execution:1/increment:%d/%s/%s" % (i+1, result_type, r)]
+                            h["/methods/sampling/results/execution:1/increment:%d/%s/%s" % (i+1, result_type, r)]
                             has_result.add(result_type)
                         except (KeyError, ValueError):
                             pass
                     # Verify the dimension scale label of the datasets
                     for label in has_result:
                         self.assertEqual(label,
-                            h["/methods/sampling/execution:1/increment:%d/%s/%s" % (i+1, label, r)].dims[0].keys()[0])
+                            h["/methods/sampling/results/execution:1/increment:%d/%s/%s" % (i+1, label, r)].dims[0].keys()[0])
 
                     # compare the total number of results in the console and hdf5 file
                     num_console_rows = len(console_mappings[i][r])
                     num_hdf5_rows = 0
                     for result_type in has_result:
-                        num_hdf5_rows += len(h["/methods/sampling/execution:1/increment:%d/%s/%s" % (i+1, result_type, r)])
+                        num_hdf5_rows += len(h["/methods/sampling/results/execution:1/increment:%d/%s/%s" % (i+1, result_type, r)])
                     self.assertEqual(num_console_rows, num_hdf5_rows)
                     # Verify any response_levels
                     num_response_levels = 0
@@ -168,7 +168,7 @@ class LevelMappings(unittest.TestCase):
                                 console_ri = j+1
                                 break
                         # Loop over the response_levels and verify the user request and computed values
-                        response_ds = h["/methods/sampling/execution:1/increment:%d/response_levels/%s" % (i+1, r)]
+                        response_ds = h["/methods/sampling/results/execution:1/increment:%d/response_levels/%s" % (i+1, r)]
                         num_response_levels = len(response_ds)
                         for j in range(num_response_levels):
                             self.assertAlmostEqual(console_mappings[i][r][j][console_ri], response_ds[j])
@@ -179,7 +179,7 @@ class LevelMappings(unittest.TestCase):
                     begin = num_response_levels
                     for j, result_type in enumerate(('probability_levels', 'reliability_levels', 'gen_reliability_levels')):
                         if result_type in has_result:
-                            response_ds =  h["/methods/sampling/execution:1/increment:%d/%s/%s" % (i+1, result_type, r)]
+                            response_ds =  h["/methods/sampling/results/execution:1/increment:%d/%s/%s" % (i+1, result_type, r)]
                             num_hdf5_rows = len(response_ds)
                             end = begin+num_hdf5_rows
                             for cr, hr, s in zip(console_mappings[i][r][begin:end], response_ds, response_ds.dims[0][0]):
@@ -205,7 +205,7 @@ class Correlations(unittest.TestCase):
         # 1. dimenions of the matrices match
         # 2. factors match
         # 3. Elements match
-        exec_linkname = "/methods/sampling/execution:1"
+        exec_linkname = "/methods/sampling/results/execution:1"
         incr_linkname_prefix =  exec_linkname + "/increment:%d"
         if corr_type == "pearson":
             console_corrs = self._simple
@@ -247,7 +247,7 @@ class Correlations(unittest.TestCase):
         # 1. dimenions of the matrices match
         # 2. factors match
         # 3. Elements match
-        exec_linkname = "/methods/sampling/execution:1"
+        exec_linkname = "/methods/sampling/results/execution:1"
         incr_linkname_prefix =  exec_linkname + "/increment:%d"
         if corr_type == "pearson":
             console_corrs = self._partial

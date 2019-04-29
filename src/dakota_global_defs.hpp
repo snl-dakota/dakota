@@ -62,6 +62,20 @@ enum {
   OTHER_ERROR     = -1  // the historical Dakota default error
 };
 
+/// enum for selecting the models that store evaluations
+enum { 
+      MODEL_EVAL_STORE_TOP_METHOD = 0,
+      MODEL_EVAL_STORE_NONE,
+      MODEL_EVAL_STORE_ALL,
+      MODEL_EVAL_STORE_ALL_METHODS};
+
+/// enum for selecting the interfaces that store evaluations
+enum {
+      INTERF_EVAL_STORE_SIMULATION = 0,
+      INTERF_EVAL_STORE_NONE,
+      INTERF_EVAL_STORE_ALL};
+
+
 /// enum for dakota abort behaviors
 enum {ABORT_EXITS, ABORT_THROWS};
 

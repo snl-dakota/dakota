@@ -23,7 +23,24 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
   [ results_output {N_stm(true,resultsOutputFlag)}
     [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]
     [ text {N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_TEXT)} ]
-    [ hdf5 {N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)} ]
+    [ hdf5 {N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)}
+      [ model_selection {0}
+        top_method {N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_TOP_METHOD)}
+        |
+        none {N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_NONE)}
+        |
+        all_methods {N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_ALL_METHODS)}
+        |
+        all {N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_ALL)}
+       ]
+      [ interface_selection {0}
+        none {N_stm(utype,interfEvalsSelection_INTERF_EVAL_STORE_NONE)}
+        |
+        simulation {N_stm(utype,interfEvalsSelection_INTERF_EVAL_STORE_SIMULATION)}
+        |
+        all {N_stm(utype,interfEvalsSelection_INTERF_EVAL_STORE_ALL)}
+       ]
+     ]
    ]
   [ graphics {N_stm(true,graphicsFlag)} ]
   [ check {N_stm(true,checkFlag)} ]

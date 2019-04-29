@@ -387,6 +387,8 @@ void Environment::construct()
   // Instantiate topLevelIterator in parallel
   // (invoke ProblemDescDB ctor chain on all processors)
   IteratorScheduler::init_iterator(probDescDB, topLevelIterator, w_pl_iter);
+  // Notfiy the iterator that it is the top level
+  topLevelIterator.top_level(true);
 }
 
 

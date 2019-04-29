@@ -1440,7 +1440,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     parallelLib.parallel_configuration_iterator(modelPCIter);
     if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
-          interface_id(), currentVariables, optInterfaceResponse, 
+          interface_id(), "simulation", currentVariables, optInterfaceResponse, 
           default_interface_active_set(), optionalInterface.analysis_components());
 
     optionalInterface.map(currentVariables, opt_interface_set,
@@ -1554,7 +1554,7 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
     // don't need to set component parallel mode since this only queues the job
     if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, interface_id(), 
-          currentVariables, optInterfaceResponse, default_interface_active_set(),
+          "simulation", currentVariables, optInterfaceResponse, default_interface_active_set(),
           optionalInterface.analysis_components());
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse, true);

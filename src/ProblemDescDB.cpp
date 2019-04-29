@@ -2794,6 +2794,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataEnvironmentRep::
     static KW<unsigned short, DataEnvironmentRep> UShde[] = { 
       // must be sorted by string (key)
+        {"interface_evals_selection", P interfEvalsSelection},
+        {"model_evals_selection", P modelEvalsSelection},
         {"post_run_input_format", P postRunInputFormat},
         {"pre_run_output_format", P preRunOutputFormat},
         {"results_output_format", P resultsOutputFormat},

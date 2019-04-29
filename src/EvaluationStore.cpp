@@ -51,10 +51,10 @@ bool EvaluationStore::active() {
 }
 
 // Declare a source for the mdoel or iterator. 
-// Permissible values of owner_type are "iterator", "nested", "surrogate",
-// "recast", and "simulation".
+// Permissible values of owner_type are "iterator",
+//  "nested", "surrogate", "recast", and "simulation".
 // Permissible values of source_type are "iterator", "nested", "surrogate",
-// "recast", "simulation", and "interface".
+// "recast", "simulation", "interface", and "approximation".
 void EvaluationStore::
 declare_source(const String &owner_id, const String &owner_type,
                const String &source_id, const String &source_type) {
@@ -68,29 +68,51 @@ declare_source(const String &owner_id, const String &owner_type,
   // TODO: Report/raise some kind of error for invalid owner or source strings
 
   if(owner_type == "iterator") {
-    link_location = String("/methods/") + owner_id + "/model";
-    source_location = String("/models/") + source_type + "/" + source_id;
-  } else { // owner is a model
-    link_location = String("/models/") + owner_type + "/" + owner_id + "/sources/" + source_id;
-    if(source_type == "iterator")
+    link_location = String("/methods/") + owner_id + "/sources/" + source_id;
+    if(source_type == "iterator") { // always link iterator sources
       source_location = String("/methods/") + source_id;
-    else if(source_type == "interface")
+      hdf5Stream->create_softlink(link_location, source_location);
+    } else { // source is a model
+      if( (modelSelection == MODEL_EVAL_STORE_TOP_METHOD && owner_id == topLevelMethodId) || 
+           modelSelection == MODEL_EVAL_STORE_ALL_METHODS )
+        sourceModels.emplace(source_id);
+      if(model_active(source_id)) { // Only link if evals for this model will be stored
+        source_location = String("/models/") + source_type + "/" + source_id; 
+        hdf5Stream->create_softlink(link_location, source_location);
+      }
+    } 
+  } else { // owner is a model. Assume it should be stored.
+    link_location = String("/models/") + owner_type + "/" + owner_id + "/sources/" + source_id;
+    if(source_type == "iterator") {
+      source_location = String("/methods/") + source_id;
+      hdf5Stream->create_softlink(link_location, source_location);
+    } else if(source_type == "interface" && interface_active(source_type)) {
       source_location = String("/interfaces/") + source_id + "/" + owner_id;
-    else // source is a model
+      hdf5Stream->create_softlink(link_location, source_location);
+    }
+    else if(model_active(source_id)) { // source is a model
       source_location = String("/models/") + source_type + "/" + source_id;
+      hdf5Stream->create_softlink(link_location, source_location);
+    }
   }
   // group creation step not needed for soft links
-  //hdf5Stream->reate_groups(source_location, false); // create the source group, in case it doesn't exist
-  hdf5Stream->create_softlink(link_location, source_location);
 #endif
 }
 
+EvaluationsDBState EvaluationStore::iterator_allocate(const String &iterator_id,
+    const bool &top_level) {
+  if(!active())
+    return EvaluationsDBState::INACTIVE;
+  if(top_level)
+    topLevelMethodId = iterator_id;
+  return EvaluationsDBState::ACTIVE;
+}
 
 /// Allocate storage for model evaluations
 EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const String &model_type, 
                     const Variables &variables, const Response &response,
                     const ActiveSet &set) {
-  if(!active())
+  if(! (active() && model_active(model_id)))
     return EvaluationsDBState::INACTIVE;
 #ifdef DAKOTA_HAVE_HDF5
   //Cout << "EvaluationStore::model_allocate()\nmodel_id: " << model_id << "\nmodel_type: " << model_type << std::endl;
@@ -113,9 +135,9 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
 
 /// Allocate storage for evalulations of interface+model pairs
 EvaluationsDBState EvaluationStore::interface_allocate(const String &model_id, const String &interface_id,
-                    const Variables &variables, const Response &response,
+                    const String &interface_type, const Variables &variables, const Response &response,
                     const ActiveSet &set, const String2DArray &an_comp) {
-  if(!active())
+  if(!(active() && interface_active(interface_type)))
     return EvaluationsDBState::INACTIVE;
 #ifdef DAKOTA_HAVE_HDF5
   //Cout << "EvaluationStore::interface_allocate()\ninterface_id: " << interface_id << "\nmodel_id: " << model_id << std::endl;
@@ -555,8 +577,31 @@ void EvaluationStore::store_metadata(const String &root_group, const ActiveSet &
 #endif
 }
 
+void EvaluationStore::model_selection(const unsigned short &selection) {
+  modelSelection = selection;
+}
 
+void EvaluationStore::interface_selection(const unsigned short &selection) {
+  interfaceSelection = selection;
+}
 
+bool EvaluationStore::model_active(const String &model_id) {
+  if(modelSelection == MODEL_EVAL_STORE_ALL)
+    return true;
+  else if(modelSelection == MODEL_EVAL_STORE_NONE)
+    return false;
+  else // MODEL_EVAL_STORE_TOP_METHOD and ALL_METHODS
+    return sourceModels.find(model_id) != sourceModels.end();
+}
+
+bool EvaluationStore::interface_active(const String &iface_type) {
+  if(interfaceSelection == INTERF_EVAL_STORE_ALL)
+    return true;
+  else if(interfaceSelection == INTERF_EVAL_STORE_NONE)
+    return false;
+  else if(iface_type != "approximation") // simulation only 
+    return true;
+}
 
 } // Dakota namespace
 
