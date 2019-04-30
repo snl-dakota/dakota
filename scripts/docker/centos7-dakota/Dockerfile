@@ -29,9 +29,13 @@ openmpi.x86_64 \
 openmpi-devel.x86_64 \
 perl.x86_64 \
 python.x86_64 \
-epel-release.noarch
+epel-release.noarch \
+ed \
+vim-enhanced
 
 # (EPEL needed for CMake 3.x)
+# ed needed to fix HDF5
+# vim needed for developer sanity
 
 RUN yum -y update && yum -y install \
 cmake3.x86_64
@@ -62,6 +66,7 @@ RUN yum -y update
 RUN mkdir /opt/hdf5/
 ADD ./hdf5-1.10.4-linux-centos7-x86_64-gcc485-shared.tar.gz /opt/hdf5/
 RUN mv /opt/hdf5/hdf5-1.10.4-linux-centos7-x86_64-gcc485-shared /opt/hdf5/1.10.4
+RUN cd /opt/hdf5/1.10.4/bin && ./h5redeploy -prefix=/opt/hdf5/1.10.4 -force && cd -
 
 # ==========================================================================
 # Finish construction

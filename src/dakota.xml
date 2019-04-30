@@ -1296,7 +1296,26 @@
             <param type="OUTPUT_FILE" />
           </keyword>
           <keyword  id="text" name="text" code="{N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_TEXT)}" label="text"  minOccurs="0" default="text output" />
-	  <keyword  id="hdf5" name="hdf5" code="{N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)}" label="hdf5"  minOccurs="0" default="no HDF5 output" />
+	  <keyword  id="hdf5" name="hdf5" code="{N_stm(augment_utype,resultsOutputFormat_RESULTS_OUTPUT_HDF5)}" label="hdf5"  minOccurs="0" default="no HDF5 output">
+
+               <keyword id="model_selection" name="model_selection" code="{0}" label="Model Selection" minOccurs="0" maxOccurs="1" group="Model Evaluation Storage Selection" complexity="1">
+               <oneOf label="Model Evaluation Storage Selection" >
+		       <keyword  id="top_method" name="top_method" code="{N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_TOP_METHOD)}" label="top_method"  default="top_method" />
+		       <keyword  id="none" name="none" code="{N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_NONE)}" label="none"  default="top_method" />
+       		       <keyword  id="all_methods" name="all_methods" code="{N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_ALL_METHODS)}" label="all_methods"  default="top_method" />
+       		       <keyword  id="all" name="all" code="{N_stm(utype,modelEvalsSelection_MODEL_EVAL_STORE_ALL)}" label="all"  default="top_method" />
+	       </oneOf>
+               </keyword>
+
+               <keyword id="interface_selection" name="interface_selection" code="{0}" label="Interface Selection" minOccurs="0" maxOccurs="1" group="Interface Evaluation Storage Selection" complexity="1">
+               <oneOf label="Interface Evaluation Storage Selection" >
+		       <keyword  id="none" name="none" code="{N_stm(utype,interfEvalsSelection_INTERF_EVAL_STORE_NONE)}" label="none"  default="simulation" />
+		       <keyword  id="simulation" name="simulation" code="{N_stm(utype,interfEvalsSelection_INTERF_EVAL_STORE_SIMULATION)}" label="simulation"  default="simulation" />
+		       <keyword  id="all" name="all" code="{N_stm(utype,interfEvalsSelection_INTERF_EVAL_STORE_ALL)}" label="all"  default="top_simulation" />
+	       </oneOf>
+	       </keyword>
+
+          </keyword>        
         </keyword>        
         <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Enable Graphics Window"  minOccurs="0" default="graphics off" complexity="1"/>
       </group>

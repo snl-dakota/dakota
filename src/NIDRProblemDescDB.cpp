@@ -7589,7 +7589,14 @@ static Env_mp_utype
         MP2s(tabularFormat,TABULAR_IFACE_ID),
         MP2s(tabularFormat,TABULAR_ANNOTATED),
         MP2s(resultsOutputFormat,RESULTS_OUTPUT_TEXT),
-        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5);
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_TOP_METHOD),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_NONE),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL_METHODS),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_SIMULATION),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_NONE),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_ALL);
 
 static String
         MP_(errorFile),

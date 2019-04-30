@@ -174,7 +174,8 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   // "normal" is the default for no user specification.  Note that iterators
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
    methodId(probDescDB.get_string("method.id")),
   execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
@@ -205,8 +206,8 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model.output_level()), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
-  methodId(no_spec_id()), execNum(0),
+  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
@@ -229,8 +230,9 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
   myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
+  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false), topLevel(false),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
@@ -248,6 +250,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
     constructor, assignment operator, and destructor. */
 Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
   execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
@@ -311,6 +314,12 @@ bool Iterator::resize()
   }
 }
 
+void Iterator::declare_sources() {
+  evaluationsDB.declare_source(method_id(), 
+                               "iterator",
+                               iterated_model().model_id(),
+                               iterated_model().model_type());
+}
 
 /** Used only by the envelope constructor to initialize iteratorRep to
     the appropriate derived type, as given by the DB's method_name.
@@ -1055,6 +1064,13 @@ void Iterator::run()
 
     ++execNum;
 
+    if(evaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      evaluationsDBState = evaluationsDB.iterator_allocate(method_id(), top_level());
+      if(evaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
+
     String method_string = method_enum_to_string(methodName);
     initialize_run();
     if (summaryOutputFlag)
@@ -1220,6 +1236,15 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
  }
 }
 
+bool Iterator::top_level() {
+  if(iteratorRep) return iteratorRep->top_level();
+  else return topLevel;
+}
+
+void Iterator::top_level(const bool &flag) {
+  if(iteratorRep) iteratorRep->top_level(flag);
+  else topLevel = flag;
+}
 
 void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {

@@ -89,6 +89,7 @@ protected:
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
 
+  void declare_sources();
 private:
 
   //

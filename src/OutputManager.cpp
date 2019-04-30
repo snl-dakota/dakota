@@ -142,6 +142,8 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
   tabularDataFile = problem_db.get_string("environment.tabular_graphics_file");
   resultsOutputFlag = problem_db.get_bool("environment.results_output");
   resultsOutputFile = problem_db.get_string("environment.results_output_file");
+  modelEvalsSelection = problem_db.get_ushort("environment.model_evals_selection");
+  interfEvalsSelection = problem_db.get_ushort("environment.interface_evals_selection");
   tabularFormat = problem_db.get_ushort("environment.tabular_format");
   resultsOutputFormat = problem_db.get_ushort("environment.results_output_format");
   if(resultsOutputFlag && resultsOutputFormat == 0)
@@ -410,6 +412,8 @@ void OutputManager::init_results_db()
     iterator_results_db.add_database(std::move(db_ptr));
     // initialize EvaluationStore
     evaluation_store_db.set_database(hdf5_helper_ptr);
+    evaluation_store_db.model_selection(modelEvalsSelection);
+    evaluation_store_db.interface_selection(interfEvalsSelection);
   #else
     Cerr << "WARNING: HDF5 results output was requested, but is not available in this build.\n";
   #endif

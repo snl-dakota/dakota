@@ -222,7 +222,7 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
   ++simModelEvalCntr;
   if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
-          interface_id(), currentVariables, currentResponse, 
+          interface_id(), "simulation", currentVariables, currentResponse, 
           default_interface_active_set(), userDefinedInterface.analysis_components());
   userDefinedInterface.map(currentVariables, set, currentResponse);
   if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
@@ -241,7 +241,7 @@ inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
   ++simModelEvalCntr;
   if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
     interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, interface_id(),
-        currentVariables, currentResponse, default_interface_active_set(), 
+        "simulation", currentVariables, currentResponse, default_interface_active_set(), 
         userDefinedInterface.analysis_components());
   userDefinedInterface.map(currentVariables, set, currentResponse, true);
   if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) 

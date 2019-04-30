@@ -1482,7 +1482,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     //parallelLib.parallel_configuration_iterator(modelPCIter);
     if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
-          approxInterface.interface_id(), currentVariables, currentResponse,
+          approxInterface.interface_id(), "approximation", currentVariables, currentResponse,
           default_interface_active_set(), approxInterface.analysis_components());
     
     switch (responseMode) {
@@ -1619,7 +1619,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
     if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.interface_allocate(modelId, approxInterface.interface_id(),
-                                       currentVariables, currentResponse, 
+                                       "approximation", currentVariables, currentResponse, 
                                        default_interface_active_set(), 
                                        approxInterface.analysis_components());
 
@@ -2493,13 +2493,13 @@ void DataFitSurrModel::declare_sources() {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if(actualModel.is_null() || surrogateFnIndices.size() == numFns) {
       evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
-        "interface");
+        "approximation");
     } else if(surrogateFnIndices.empty()) { // don't know if this can happen.
       evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
         actualModel.model_type());
     } else {
       evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
-        "interface");
+        "approximation");
       evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
         actualModel.model_type());
     }
@@ -2512,7 +2512,7 @@ void DataFitSurrModel::declare_sources() {
     evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
         actualModel.model_type());
     evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
-        "interface");
+        "approximation");
     break;
   }
 

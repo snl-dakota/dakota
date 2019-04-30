@@ -642,7 +642,7 @@ append_approximation(const VariablesArray& vars_array,
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
         if(actualModelInterfaceId.empty()) {
-          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+          ParamResponsePair search_pr(vars_array[i], "NO_ID",
 				    r_it->second);
           p_it = lookup_by_ids(data_pairs, ids, search_pr);
         } else {

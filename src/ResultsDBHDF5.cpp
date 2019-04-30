@@ -46,7 +46,7 @@ String method_hdf5_link_name(const StrStrSizet& iterator_id) {
   if (method_id.empty())
     method_id = "anonymous";
 
-  String rval = "/methods/" + method_id;
+  String rval = "/methods/" + method_id + "/results";
   return rval;
 }
 

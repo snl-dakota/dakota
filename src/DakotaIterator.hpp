@@ -205,6 +205,9 @@ public:
   /// reinitializes iterator based on new variable size
   virtual bool resize();
 
+  /// Declare sources to the evaluations database
+  virtual void declare_sources();
+
   //
   //- Heading: Member functions
   //
@@ -343,6 +346,12 @@ public:
   //virtual void operator++();  // increment operator
   //virtual void operator--();  // decrement operator
 
+  /// Return whether the iterator is the top level iterator
+  bool top_level();
+
+  /// Set the iterator's top level flag
+  void top_level(const bool &tflag);
+
 protected:
 
   //
@@ -480,6 +489,9 @@ protected:
   /// reference to the global evaluation database
   EvaluationStore& evaluationsDB;
 
+  /// State of evaluations DB for this iterator
+  EvaluationsDBState evaluationsDBState;
+
   /// valid names for iterator results
   ResultsNames resultsNames;
 
@@ -487,6 +499,10 @@ protected:
   /// or child thereof
   std::shared_ptr<TraitsBase> methodTraits;
 
+  /// Whether this is the top level iterator
+  bool topLevel;
+
+  
 private:
 
   //
