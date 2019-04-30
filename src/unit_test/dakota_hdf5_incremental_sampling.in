@@ -1,7 +1,10 @@
 environment
+  tabular_data
+    tabular_data_file 'incremental_sampling.dat'
   results_output
     results_output_file 'incremental_sampling'
     hdf5
+      interface_selection none
 
 method
   id_method 'sampling'

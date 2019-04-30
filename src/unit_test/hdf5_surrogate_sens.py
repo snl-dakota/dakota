@@ -1,0 +1,239 @@
+#!/usr/bin/env python
+import unittest
+import h5py
+import h5py_console_extract as hce
+
+_TEST_NAME = "surrogate_sens"
+
+class Moments(unittest.TestCase):
+
+    def setUp(self):
+        # This method will be called once for each test, so cache the moments
+        try:
+            self._moments
+        except AttributeError:
+            self._moments = hce.extract_moments()
+            self._cis = hce.extract_moment_confidence_intervals()
+
+    def test_moments(self):
+        # Extract the moments from Dakota console output and compare
+        # them to the hdf5 output. Both the moments themselves and
+        # the dimension scales are compared.
+        console_moments = self._moments
+        expected_scale_label = 'moments'
+        expected_scale = ['mean', 'std_deviation', 'skewness', 'kurtosis']
+        expected_descriptors = set(console_moments[0].keys())
+        expected_num_incr = len(console_moments)
+
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            # moments and scales
+            for i in range(expected_num_incr):
+                for r in expected_descriptors:
+                    hdf5_moments = h["/methods/sampling/results/execution:1/moments/%s" % r]
+                    for j in range(4):
+                        self.assertAlmostEqual(console_moments[i][r][j], hdf5_moments[j])
+                    scale_label = list(hdf5_moments.dims[0].keys())[0]
+                    self.assertEqual(expected_scale_label, scale_label)
+                    for es, s in zip(expected_scale, hdf5_moments.dims[0][0]):
+                        self.assertEqual(es,s)
+
+    def test_moment_confidence_intervals(self):
+        console_cis = self._cis
+        expected_scale_labels = ['bounds', 'moments']
+        expected_scales = [["lower", "upper"], ['mean', 'std_deviation']]
+        expected_descriptors = set(console_cis[0].keys())
+        expected_num_incr = len(console_cis)
+
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            # CIs and scales
+            for i, ci in enumerate(console_cis):
+                hdf_cis = h["/methods/sampling/results/execution:1/moment_confidence_intervals/"]
+                for r in expected_descriptors:
+                    self.assertEqual(expected_scale_labels[0], list(hdf_cis[r].dims[0].keys())[0])
+                    self.assertEqual(expected_scale_labels[1], list(hdf_cis[r].dims[1].keys())[0])
+                    for j in range(2):
+                        for k in range(2):
+                            self.assertAlmostEqual(ci[r][j][k], hdf_cis[r][j,k])
+                    for j in range(2):
+                        self.assertEqual(expected_scales[0][j], hdf_cis[r].dims[0][0][j])
+                        self.assertEqual(expected_scales[1][j], hdf_cis[r].dims[1][0][j])
+
+class Correlations(unittest.TestCase):
+    def setUp(self):
+        try:
+            self._simple
+        except AttributeError:
+            self._simple = hce.extract_simple_correlations()
+            self._simple_rank = hce.extract_simple_rank_correlations()
+            self._partial = hce.extract_partial_correlations()
+            self._partial_rank = hce.extract_partial_rank_correlations()
+
+    def correlation_helper(self, corr_type=None):
+        # Verify the following:
+        # 0. Expected number of increments are present
+        # 1. dimenions of the matrices match
+        # 2. factors match
+        # 3. Elements match
+        exec_linkname = "/methods/sampling/results/execution:1"
+        if corr_type == "pearson":
+            console_corrs = self._simple
+            dataset_linkname = "/simple_correlations"
+        else:
+            console_corrs = self._simple_rank
+            dataset_linkname = "/simple_rank_correlations"
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            # Check number and names of increment groups
+            for i, corr in enumerate(console_corrs):
+                # Dimensionality of datasets
+                hdf_simple = h[exec_linkname+dataset_linkname]
+                self.assertEqual(len(corr[1]), hdf_simple.shape[0])
+                self.assertEqual(len(corr[1][0]), hdf_simple.shape[1])
+                # factors
+                hdf_factors = hdf_simple.dims[0][0][:]
+                for cf, hf in zip(corr[0], hdf_factors):
+                    self.assertEqual(cf, hf)
+                # elements
+                n = len(corr[1])
+                for i in range(n):
+                    for j in range(n):
+                        self.assertAlmostEqual(corr[1][i][j], hdf_simple[i,j], 5)
+        
+    def test_simple_correlations(self):
+        self.correlation_helper("pearson")
+
+    def test_simple_rank_correlations(self):
+        self.correlation_helper("spearman")
+
+    def partial_correlation_helper(self, corr_type=None):
+        # Verify the following:
+        # 0. Expected number of increments are present
+        # 1. dimenions of the matrices match
+        # 2. factors match
+        # 3. Elements match
+        exec_linkname = "/methods/sampling/results/execution:1"
+        if corr_type == "pearson":
+            console_corrs = self._partial
+            dataset_linkname = "/partial_correlations"
+        else:
+            console_corrs = self._partial_rank
+            dataset_linkname = "/partial_rank_correlations"
+        expected_num_incr = len(console_corrs)
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            for i, corr in enumerate(console_corrs):
+                # Dimensionality of datasets
+                hdf_partial = h[exec_linkname+dataset_linkname]
+                # verify same responses are present in both
+                self.assertEqual(set(corr.keys()), set(hdf_partial.keys()))
+                # for each response, verify data are the same length, factors are same,
+                # and data are the same
+                for resp in corr.keys():
+                    self.assertEqual(len(corr[resp][1]), hdf_partial[resp].shape[0])
+                    for cf, hf in zip(corr[resp][0], hdf_partial[resp].dims[0][0][:]):
+                        self.assertEqual(cf, hf)
+                    for cd, hd in zip(corr[resp][1], hdf_partial[resp]):
+                        self.assertAlmostEqual(cd, hd, 5)
+
+    def test_partial_correlations(self):
+        self.partial_correlation_helper("pearson")
+
+    def test_partial_rank_correlations(self):
+        self.partial_correlation_helper("spearman")
+
+class EvaluationsStructure(unittest.TestCase):
+
+    def test_interface_presence(self):
+        expected_interfaces = {"NO_ID":["truth_m"],
+                               "APPROX_INTERFACE":["surr"]}
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            self.assertItemsEqual(expected_interfaces.keys(), h["/interfaces"].keys())
+            for k, g in h["/interfaces"].items():
+                self.assertItemsEqual(expected_interfaces[k], g.keys())
+
+    def test_model_presence(self):
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            with self.assertRaises((KeyError,ValueError)):
+                h["/models/"]
+
+    def test_sources(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            with self.assertRaises((KeyError,ValueError)):
+                h["/methods/sampling/sources/"]
+            with self.assertRaises((KeyError,ValueError)):
+                h["/models/dace/sources/"]
+
+class TabularData(unittest.TestCase):
+    def test_tabular_data(self):
+        # normally we'd compare to the top method's model, but models are turned off
+        # for this test. Instead we'll compare to the approx interface. No recasts
+        # occur in this test, so they should be the same.
+        tdata = hce.read_tabular_data(_TEST_NAME + ".dat")
+        metadata = ["%eval_id", "interface"]
+        variables = ["x1", "x2","x3"]
+        responses = ["f"]
+        descriptors = metadata + variables + responses
+        self.assertItemsEqual(descriptors, tdata.keys())
+
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/interfaces/APPROX_INTERFACE/surr/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps = h["/interfaces/APPROX_INTERFACE/surr/responses/functions"]
+            # Responses
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, tr, hr in zip(tdata["%eval_id"],tdata[r], hresps[:,i]):
+                    self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s'" % r, places=9)
+
+class RestartData(unittest.TestCase):
+    def test_restart_data(self):
+        rdata = hce.read_restart_file(_TEST_NAME + ".rst")
+        variables = ["x1", "x2","x3"]
+        responses = ["f"]
+        self.assertItemsEqual(variables, rdata["variables"]["continuous"].keys())
+        self.assertItemsEqual(responses, rdata["response"].keys())
+        
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/interfaces/NO_ID/truth_m/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps_f = h["/interfaces/NO_ID/truth_m/responses/functions"]
+            hresps_g = h["/interfaces/NO_ID/truth_m/responses/gradients"]
+            hasv = h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]
+
+            # ASV
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]):
+                for r_a, h_a in zip(r_asv, h_asv):
+                    self.assertEqual(r_a, h_a)
+            #DVV
+            dvv_lookup = h["/interfaces/NO_ID/truth_m/metadata/derivative_variables_vector"].dims[1][1]
+            for r_dvv, h_dvv in zip(rdata["dvv"], h["/interfaces/NO_ID/truth_m/metadata/derivative_variables_vector"]):
+                h_dvv_ids = []
+                for dvv_id, dvv_bool in zip(dvv_lookup, h_dvv):
+                    if dvv_bool == 1:
+                        h_dvv_ids.append(dvv_id)
+                self.assertItemsEqual(r_dvv, h_dvv_ids)
+            # Responses
+            self.assertItemsEqual(responses, hresps_f.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, a, tr, hf, hg in zip(rdata["eval_id"], hasv, rdata["response"][r], hresps_f[:,i], hresps_g[:,i,:]):
+                    if a & 1:
+                        self.assertAlmostEqual(tr["function"], hf, 
+                                msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
+                    if a & 2:
+                        self.assertEqual(len(tr["gradient"]), len(hg), msg="Lengths of gradients " +
+                                "for '%s' for eval %d are inconsistent" % (r, eid))
+                        for c1, c2 in zip(tr["gradient"], hg):
+                            self.assertAlmostEqual(c1, c2, places=9, msg="Gradients differ for " +
+                                "'%s' in eval %d" %(r, eid))
+
+
+if __name__ == '__main__':
+    hce.run_dakota("dakota_hdf5_" + _TEST_NAME + ".in")
+    unittest.main()
+

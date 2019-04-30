@@ -1,0 +1,54 @@
+environment
+  tabular_data
+    tabular_data_file 'surrogate_sens.dat'
+  results_output
+    results_output_file 'surrogate_sens'
+    hdf5
+      interface_selection all
+      model_selection none
+  write_restart 'surrogate_sens.rst'
+  method_pointer 'sampling'
+
+method
+  id_method 'sampling'
+  model_pointer 'surr'
+  sampling
+    seed 1337
+    samples 20
+  output verbose
+
+model
+  id_model 'surr'
+    surrogate global gaussian_process surfpack
+    dace_method_pointer 'dace'
+    use_derivatives
+
+method
+  id_method 'dace'
+  sampling seed 1234 samples 40
+  model_pointer 'truth_m'
+
+model
+  id_model 'truth_m'
+  simulation
+
+variables
+  uniform_uncertain 2
+    descriptors 'x1' 'x2'
+    lower_bounds 0.0 0.0
+    upper_bounds 1.0 1.0
+  continuous_state 1
+    descriptors 'x3'
+
+responses
+  id_responses 'sim_r'
+  response_functions 1
+   descriptors 'f'
+   analytic_gradients no_hessians
+
+interface
+  direct
+   analysis_drivers 'text_book'
+
+   
+  
