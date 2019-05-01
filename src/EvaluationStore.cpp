@@ -58,9 +58,9 @@ bool EvaluationStore::active() {
 void EvaluationStore::
 declare_source(const String &owner_id, const String &owner_type,
                const String &source_id, const String &source_type) {
+#ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-#ifdef DAKOTA_HAVE_HDF5
   // Location of source model or interface evals or method results
   String source_location;
   // Location of the link to the source
@@ -95,7 +95,8 @@ declare_source(const String &owner_id, const String &owner_type,
       hdf5Stream->create_softlink(link_location, source_location);
     }
   }
-  // group creation step not needed for soft links
+#else
+  return;
 #endif
 }
 
@@ -112,9 +113,9 @@ EvaluationsDBState EvaluationStore::iterator_allocate(const String &iterator_id,
 EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const String &model_type, 
                     const Variables &variables, const Response &response,
                     const ActiveSet &set) {
+#ifdef DAKOTA_HAVE_HDF5
   if(! (active() && model_active(model_id)))
     return EvaluationsDBState::INACTIVE;
-#ifdef DAKOTA_HAVE_HDF5
   //Cout << "EvaluationStore::model_allocate()\nmodel_id: " << model_id << "\nmodel_type: " << model_type << std::endl;
   allocatedModels.emplace(model_id);
   const auto & ds_pair = modelDefaultSets.emplace(model_id, DefaultSet(set));
@@ -130,6 +131,8 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   allocate_response(root_group, response, default_set);
   allocate_metadata(root_group, variables, response, default_set);
   return EvaluationsDBState::ACTIVE;
+#else
+  return EvaluationsDBState::INACTIVE;
 #endif
 }
 
@@ -137,9 +140,9 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
 EvaluationsDBState EvaluationStore::interface_allocate(const String &model_id, const String &interface_id,
                     const String &interface_type, const Variables &variables, const Response &response,
                     const ActiveSet &set, const String2DArray &an_comp) {
+#ifdef DAKOTA_HAVE_HDF5
   if(!(active() && interface_active(interface_type)))
     return EvaluationsDBState::INACTIVE;
-#ifdef DAKOTA_HAVE_HDF5
   //Cout << "EvaluationStore::interface_allocate()\ninterface_id: " << interface_id << "\nmodel_id: " << model_id << std::endl;
   allocatedInterfaces.emplace(make_pair(model_id, interface_id));
   const auto & ds_pair = interfaceDefaultSets.emplace(std::make_pair(model_id, interface_id), DefaultSet(set));
@@ -155,15 +158,17 @@ EvaluationsDBState EvaluationStore::interface_allocate(const String &model_id, c
   allocate_response(root_group, response, default_set);
   allocate_metadata(root_group, variables, response, default_set, an_comp);
   return EvaluationsDBState::ACTIVE;
+#else
+  return EvaluationsDBState::INACTIVE;
 #endif
 }
 
 /// Store a model evaluation
 void EvaluationStore::store_model_variables(const String &model_id, const String &model_type, 
                             const int &eval_id, const ActiveSet &set, const Variables &variables) {
+#ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-#ifdef DAKOTA_HAVE_HDF5
   //Cout << "EvaluationStore::store_model_variables()\nmodel_id: " << 
   //  model_id << "\nmodel_type: " << model_type << 
   //  "\neval_id: " << eval_id << std::endl;
@@ -184,33 +189,34 @@ void EvaluationStore::store_model_variables(const String &model_id, const String
   if( default_set_s.numHessians ) 
     hdf5Stream->append_empty(root_group + "responses/hessians");
   modelResponseIndexCache.emplace(std::make_tuple(model_id, eval_id), resp_idx);
+#else
+  return;
 #endif
 }
 
 /// Store a response for model evaluation
 void EvaluationStore::store_model_response(const String &model_id, const String &model_type, 
                             const int &eval_id, const Response &response) {
+#ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-#ifdef DAKOTA_HAVE_HDF5
   std::tuple<String, int> key(model_id, eval_id);
   int response_index = modelResponseIndexCache[key];
   String root_group = create_model_root(model_id, model_type);
   store_response(root_group, response_index, response, modelDefaultSets[model_id]);
   auto cache_entry = modelResponseIndexCache.find(key);
   modelResponseIndexCache.erase(cache_entry);
+#else
+  return;
 #endif
 }
 
 /// Store variables for an interface+model evaluation
 void EvaluationStore::store_interface_variables(const String &model_id, const String &interface_id, 
                             const int &eval_id, const ActiveSet &set, const Variables &variables) {
+#ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-#ifdef DAKOTA_HAVE_HDF5
-  //Cout << "EvaluationStore::store_interface_variables()\nmodel_id: " << 
-  //  model_id << "\ninterface_id: " << interface_id << 
-  //  "\neval_id: " << eval_id << std::endl;
   String root_group = create_interface_root(model_id, interface_id);
   String scale_root = create_scale_root(root_group);
   const auto set_key = std::make_pair(model_id, interface_id);
@@ -227,21 +233,25 @@ void EvaluationStore::store_interface_variables(const String &model_id, const St
   if( default_set_s.numHessians) 
     hdf5Stream->append_empty(root_group + "responses/hessians");
   interfaceResponseIndexCache.emplace(std::make_tuple(model_id, interface_id, eval_id), resp_idx);
+#else
+  return;
 #endif
 }
 
 /// Store a response for an interface+model evaluation
 void EvaluationStore::store_interface_response(const String &model_id, const String &interface_id, 
                             const int &eval_id, const Response &response) {
+#ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-#ifdef DAKOTA_HAVE_HDF5
   std::tuple<String, String, int> key(model_id, interface_id, eval_id);
   int response_index = interfaceResponseIndexCache[key];
   String root_group = create_interface_root(model_id, interface_id);
   store_response(root_group, response_index, response, interfaceDefaultSets[std::make_pair(model_id, interface_id)]);
   auto cache_entry = interfaceResponseIndexCache.find(key);
   interfaceResponseIndexCache.erase(cache_entry);
+#else
+  return;
 #endif
 }
 
@@ -309,6 +319,8 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
     hdf5Stream->attach_scale(data_name, eval_ids, "evaluation_ids", 0);
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
   }
+#else
+  return;
 #endif
 }
 
@@ -372,6 +384,8 @@ void EvaluationStore::allocate_response(const String &root_group, const Response
       hdf5Stream->attach_scale(hessians_name, hessian_labels_name, "responses", 1);
     }
   }
+#else
+  return;
 #endif
 }
 /// Allocate storage for metadata
@@ -422,6 +436,8 @@ void EvaluationStore::allocate_metadata(const String &root_group, const Variable
       all_comps.insert(all_comps.end(), v.begin(), v.end());
     hdf5Stream->store_vector(metadata_root, all_comps);
   }
+#else
+  return;
 #endif
 }
 
@@ -441,6 +457,8 @@ void EvaluationStore::store_variables(const String &root_group, const Variables 
   if(variables.adrv())
     hdf5Stream->append_vector(variables_root+"discrete_real",
         variables.all_discrete_real_variables());
+#else
+  return;
 #endif
 }
 
@@ -534,6 +552,8 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
       hdf5Stream->set_vector_matrix(hessians_name, full_hessians, resp_idx, true /*transpose */);
     }
   } 
+#else
+  return;
 #endif
 }
 
@@ -574,6 +594,8 @@ void EvaluationStore::store_metadata(const String &root_group, const ActiveSet &
     }
     hdf5Stream->append_vector(metadata_root + "derivative_variables_vector", dvv_row);
   }
+#else
+  return;
 #endif
 }
 
@@ -599,7 +621,9 @@ bool EvaluationStore::interface_active(const String &iface_type) {
     return true;
   else if(interfaceSelection == INTERF_EVAL_STORE_NONE)
     return false;
-  else if(iface_type != "approximation") // simulation only 
+  else if(iface_type == "approximation") // simulation only 
+    return false;
+  else
     return true;
 }
 
