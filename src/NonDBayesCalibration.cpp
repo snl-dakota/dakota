@@ -118,6 +118,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   posteriorStatsMutual(
     probDescDB.get_bool("method.posterior_stats.mutual_info")),
   posteriorStatsKDE(probDescDB.get_bool("method.posterior_stats.kde")),
+  chainDiagnostics(probDescDB.get_bool("method.chain_diagnostics")),
+  chainDiagnosticsCI(probDescDB.get_bool("method.chain_diagnostics.confidence_intervals")),
   calModelEvidence(probDescDB.get_bool("method.model_evidence")),
   calModelEvidMC(probDescDB.get_bool("method.mc_approx")),
   calModelEvidLaplace(probDescDB.get_bool("method.laplace_approx")),
@@ -2741,6 +2743,9 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
   NonDSampling::print_moments(s, fnStats, RealMatrix(), 
       "response function", STANDARD_MOMENTS, resp_labels, false); 
   
+  // Print chain diagnostics for variables
+  if (chainDiagnostics)
+    print_chain_diagnostics(s);
   // Print credibility and prediction intervals to screen
   if (requestedProbLevels[0].length() > 0 && outputLevel >= NORMAL_OUTPUT) {
     int num_filtered = filteredFnVals.numCols();
@@ -3195,6 +3200,63 @@ void NonDBayesCalibration::print_kl(std::ostream& s)
 {
   s << "Information gained from prior to posterior = " << kl_est;
   s << '\n';
+}
+
+void NonDBayesCalibration::print_chain_diagnostics(std::ostream& s)
+{
+  s << "\nChain diagnostics\n";
+  if (chainDiagnosticsCI)
+    print_batch_means_intervals(s);
+}
+
+void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
+{
+  size_t width = write_precision+7;
+  Real alpha = 0.95;
+  int num_vars = acceptanceChain.numRows();
+  StringArray var_labels;
+  copy_data(residualModel.continuous_variable_labels(),	var_labels);
+  RealMatrix variables_interval_mat;
+  RealMatrix variables_batch_means;
+  batch_means_interval(acceptanceChain, variables_interval_mat,
+                       variables_batch_means, 1, alpha);
+  int num_responses = acceptedFnVals.numRows();
+  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  RealMatrix responses_interval_mat;
+  RealMatrix responses_batch_means;
+  batch_means_interval(acceptedFnVals, responses_interval_mat,
+                       responses_batch_means, 1, alpha);
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    for (int i = 0; i < num_vars; i++) {
+      s << "\tBatch means for variable ";
+      s << var_labels[i] << '\n';
+      const RealVector& col_vec = Teuchos::getCol(Teuchos::View,
+                                  variables_batch_means, i);
+      s << col_vec ;
+    }
+    for (int i = 0; i < num_responses; i++) {
+      s << "\tBatch means for variable ";
+      s << resp_labels[i] << '\n';
+      const RealVector& col_vec = Teuchos::getCol(Teuchos::View,
+                                  responses_batch_means, i);
+      s << col_vec ;
+    }
+  }
+
+  s << "\t95% Confidence Intervals\n";
+  for (int i = 0; i < num_vars; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         variables_interval_mat, i);
+    s << '\t' << std::setw(width) << var_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  for (int i = 0; i < num_responses; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         responses_interval_mat, i);
+    s << '\t' << std::setw(width) << resp_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
 }
 
 } // namespace Dakota

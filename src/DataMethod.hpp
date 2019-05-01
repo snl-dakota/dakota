@@ -984,9 +984,14 @@ public:
   /// flag indicating the calculation of mutual information between prior
   /// and posterior in Bayesian methods 
   bool posteriorStatsMutual;
-  /// flat indicating calculation of kernel density estimate of posterior 
+  /// flag indicating calculation of kernel density estimate of posterior 
   /// distributions
   bool posteriorStatsKDE;
+  /// flag indicating calculation of chain diagnostics
+  bool chainDiagnostics;
+  /// flag indicating calculation of confidence intervals as a chain
+  /// diagnositc
+  bool chainDiagnosticsCI;
   /// flag indicating calculation of the evidence of the model
   bool modelEvidence;
   /// flag indicating use of Monte Carlo approximation for evidence calc.

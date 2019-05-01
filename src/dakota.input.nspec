@@ -4651,6 +4651,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ kde {N_mdm(true,posteriorStatsKDE)} ]
      ]
+    [ chain_diagnostics {N_mdm(true,chainDiagnostics)}
+      [ confidence_intervals {N_mdm(true,chainDiagnosticsCI)} ]
+     ]
     [ model_evidence {N_mdm(true,modelEvidence)}
       [ mc_approx {N_mdm(true,modelEvidMC)} ]
       [ evidence_samples INTEGER {N_mdm(int,evidenceSamples)} ]

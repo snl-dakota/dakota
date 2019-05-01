@@ -15,12 +15,14 @@ using namespace boost::math;
 namespace Dakota {
 
 void batch_means_interval(RealMatrix& mcmc_matrix, RealMatrix& interval_matrix,
-                          int moment, Real alpha)
+                          RealMatrix& means_matrix, int moment, Real alpha)
 {
   int num_qoi = mcmc_matrix.numRows();
   int num_samples = mcmc_matrix.numCols();
   int batch_size = sqrt(num_samples);
   int num_batches = num_samples/batch_size; // What about when this doesn't divide evenly? Do we put the extras in the last batch? 
+  interval_matrix.reshape(2, num_qoi);
+  means_matrix.reshape(num_batches, num_qoi);
 
   // Compute statistic for whole chain
   //accumulator_set<RealVector, stats<tag::mean> > acc;
@@ -40,10 +42,11 @@ void batch_means_interval(RealMatrix& mcmc_matrix, RealMatrix& interval_matrix,
 
   // Compute statistic for batches
   RealVector approx_var_chain(num_qoi);
+  RealMatrix means_matrix_t(num_qoi, num_batches);
   for (int i = 0; i < num_batches; i++) {
     RealMatrix batch_j_matrix(Teuchos::View, mcmc_matrix_transpose,
                               batch_size, num_qoi, i*batch_size, 0);
-    RealVector mean_subchain(int(batch_j_matrix.numCols()));
+    RealVector mean_subchain(num_qoi);
     compute_col_means(batch_j_matrix, mean_subchain);
     RealVector func_subchain(num_qoi);
     if (moment == 1)
@@ -56,7 +59,10 @@ void batch_means_interval(RealMatrix& mcmc_matrix, RealMatrix& interval_matrix,
     }
     for (int j = 0; j < num_qoi; j++) 
       approx_var_chain[j] += pow(func_subchain[j] - func_totalchain[j],2);
+    Teuchos::setCol(func_subchain, i, means_matrix_t);
   }
+  RealMatrix means_matrix_tt(means_matrix_t, Teuchos::TRANS);
+  means_matrix = means_matrix_tt;
 
   // Calculate approximate variance
   Real scale = batch_size/(num_batches - 1);

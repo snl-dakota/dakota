@@ -6901,6 +6901,8 @@ static bool
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
 	MP_(calModelDiscrepancy),
+	MP_(chainDiagnostics),
+	MP_(chainDiagnosticsCI),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(crossValidNoiseOnly),

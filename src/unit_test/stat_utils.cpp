@@ -94,7 +94,8 @@ TEUCHOS_UNIT_TEST(stat_utils, batch_means_mean)
   }
   RealMatrix interval_matrix;
   interval_matrix.shapeUninitialized(2,1);
-  batch_means_interval(Xmatrix, interval_matrix, 1, 0.95);
+  RealMatrix means_matrix;
+  batch_means_interval(Xmatrix, interval_matrix, means_matrix, 1, 0.95);
 
   Real gold_lower_int = -6.3120595090e-02;
   Real gold_upper_int = 8.1516649910e-02;
@@ -115,7 +116,8 @@ TEUCHOS_UNIT_TEST(stat_utils, batch_means_variance)
   }
   RealMatrix interval_matrix;
   interval_matrix.shapeUninitialized(2,1);
-  batch_means_interval(Xmatrix, interval_matrix, 2, 0.95);
+  RealMatrix means_matrix;
+  batch_means_interval(Xmatrix, interval_matrix, means_matrix, 2, 0.95);
 
   Real gold_lower_int = 9.1432956019e-01;
   Real gold_upper_int = 1.0688302101e+00;

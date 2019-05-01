@@ -146,8 +146,8 @@ DataMethodRep::DataMethodRep():
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
   posteriorStatsKL(false), posteriorStatsMutual(false),
-  posteriorStatsKDE(false), modelEvidence(false),
-  modelEvidMC(false), modelEvidLaplace(false),
+  posteriorStatsKDE(false), chainDiagnostics(false), chainDiagnosticsCI(false),
+  modelEvidence(false), modelEvidMC(false), modelEvidLaplace(false),
   preSolveMethod(SUBMETHOD_DEFAULT), priorPropCovMult(1.0),
   proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
@@ -299,6 +299,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
+    << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC 
     << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod
@@ -453,6 +454,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
+    >> chainDiagnostics >> chainDiagnosticsCI
     >> modelEvidence >> modelEvidLaplace >> modelEvidMC 
     >> preSolveMethod >> proposalCovType >> priorPropCovMult
     >> proposalCovUpdatePeriod
@@ -607,6 +609,7 @@ void DataMethodRep::write(std::ostream& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
+    << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC 
     << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod

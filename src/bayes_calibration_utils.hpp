@@ -11,6 +11,6 @@
 namespace Dakota {
 
 void batch_means_interval(RealMatrix& mcmc_matrix, RealMatrix& interval_matrix,
-                          int moment, Real alpha);
+                          RealMatrix& means_matrix, int moment, Real alpha);
 
 } // namespace Dakota
