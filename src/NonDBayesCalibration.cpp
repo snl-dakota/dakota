@@ -3213,47 +3213,76 @@ void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
 {
   size_t width = write_precision+7;
   Real alpha = 0.95;
+  
   int num_vars = acceptanceChain.numRows();
   StringArray var_labels;
   copy_data(residualModel.continuous_variable_labels(),	var_labels);
-  RealMatrix variables_interval_mat;
-  RealMatrix variables_batch_means;
-  batch_means_interval(acceptanceChain, variables_interval_mat,
-                       variables_batch_means, 1, alpha);
+  RealMatrix variables_mean_interval_mat, variables_mean_batch_means;
+  batch_means_interval(acceptanceChain, variables_mean_interval_mat,
+                       variables_mean_batch_means, 1, alpha);
+  RealMatrix variables_var_interval_mat, variables_var_batch_means;
+  batch_means_interval(acceptanceChain, variables_var_interval_mat,
+                       variables_var_batch_means, 2, alpha);
+  
   int num_responses = acceptedFnVals.numRows();
   StringArray resp_labels = mcmcModel.current_response().function_labels();
-  RealMatrix responses_interval_mat;
-  RealMatrix responses_batch_means;
-  batch_means_interval(acceptedFnVals, responses_interval_mat,
-                       responses_batch_means, 1, alpha);
+  RealMatrix responses_mean_interval_mat, responses_mean_batch_means;
+  batch_means_interval(acceptedFnVals, responses_mean_interval_mat,
+                       responses_mean_batch_means, 1, alpha);
+  RealMatrix responses_var_interval_mat, responses_var_batch_means;
+  batch_means_interval(acceptedFnVals, responses_var_interval_mat,
+                       responses_var_batch_means, 2, alpha);
 
   if (outputLevel >= DEBUG_OUTPUT) {
     for (int i = 0; i < num_vars; i++) {
-      s << "\tBatch means for variable ";
+      s << "\tBatch means of mean for variable ";
       s << var_labels[i] << '\n';
-      const RealVector& col_vec = Teuchos::getCol(Teuchos::View,
-                                  variables_batch_means, i);
-      s << col_vec ;
+      const RealVector& mean_vec = Teuchos::getCol(Teuchos::View,
+                                  variables_mean_batch_means, i);
+      s << mean_vec ;
+      s << "\tBatch means of variance for variable ";
+      const RealVector& var_vec = Teuchos::getCol(Teuchos::View,
+                                  variables_var_batch_means, i);
+      s << var_labels[i] << '\n';
+      s << var_vec ;
     }
     for (int i = 0; i < num_responses; i++) {
-      s << "\tBatch means for variable ";
+      s << "\tBatch means of mean for response ";
       s << resp_labels[i] << '\n';
-      const RealVector& col_vec = Teuchos::getCol(Teuchos::View,
-                                  responses_batch_means, i);
-      s << col_vec ;
+      const RealVector mean_vec = Teuchos::getCol(Teuchos::View,
+                                  responses_mean_batch_means, i);
+      s << mean_vec ;
+      s << "\tBatch means of variance for response ";
+      s << resp_labels[i] << '\n';
+      const RealVector var_vec = Teuchos::getCol(Teuchos::View, 
+                                 responses_var_batch_means, i);
+      s << var_vec ;
     }
   }
 
-  s << "\t95% Confidence Intervals\n";
+  s << "\t95% Confidence Intervals of means\n";
   for (int i = 0; i < num_vars; i++) {
     RealVector col_vec = Teuchos::getCol(Teuchos::View,
-                                         variables_interval_mat, i);
+                                         variables_mean_interval_mat, i);
     s << '\t' << std::setw(width) << var_labels[i]
       << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
   }
   for (int i = 0; i < num_responses; i++) {
     RealVector col_vec = Teuchos::getCol(Teuchos::View,
-                                         responses_interval_mat, i);
+                                         responses_mean_interval_mat, i);
+    s << '\t' << std::setw(width) << resp_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  s << "\t95% Confidence Intervals of variances\n";
+  for (int i = 0; i < num_vars; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         variables_var_interval_mat, i);
+    s << '\t' << std::setw(width) << var_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  for (int i = 0; i < num_responses; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         responses_var_interval_mat, i);
     s << '\t' << std::setw(width) << resp_labels[i]
       << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
   }

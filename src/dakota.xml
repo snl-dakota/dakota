@@ -2869,11 +2869,9 @@
 	    </keyword>
 	    <keyword id="kde" name="kde" code="{N_mdm(true,posteriorStatsKDE)}" minOccurs="0" />
 	  </keyword>
-          <!--KAM-->
 	  <keyword id="chain_diagnostics" name="chain_diagnostics" code="{N_mdm(true,chainDiagnostics)}" minOccurs="0">
 	    <keyword id="confidence_intervals" name="confidence_intervals" code="{N_mdm(true,chainDiagnosticsCI)}" minOccurs="0" />
           </keyword>
-          <!--KAM-->
           <keyword id="model_evidence" name="model_evidence" code="{N_mdm(true,modelEvidence)}" minOccurs="0">
 	    <keyword id="mc_approx" name="mc_approx" code="{N_mdm(true,modelEvidMC)}" minOccurs="0" />
               <keyword  id="evidence_samples" name="evidence_samples" code="{N_mdm(int,evidenceSamples)}" label="Evidence samples"  minOccurs="0" >
