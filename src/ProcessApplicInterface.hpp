@@ -234,9 +234,6 @@ private:
   //- Heading: Data
   //
 
-  /// the set of optional analysis components used by the analysis drivers
-  /// (from the analysis_components interface specification)
-  String2DArray analysisComponents;
 };
 
 

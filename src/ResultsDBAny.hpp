@@ -31,12 +31,8 @@ class ResultsDBAny : public ResultsDBBase
 
 public:
 
-  ResultsDBAny(const String& base_filename) :
-    ResultsDBBase( base_filename + ".txt" )
-  { }
+  ResultsDBAny(const String &filename) : fileName(filename) {}; 
 
-
- 
   /// record addition with metadata map
   void 
   insert(const StrStrSizet& iterator_id,
@@ -143,6 +139,8 @@ private:
   /// output data to ostream
   void output_data(const RealMatrix& data, std::ostream& os) const;
 
+  /// name of database file
+  String fileName;
 }; // class ResultsDBAny
 
 

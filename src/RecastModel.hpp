@@ -179,12 +179,18 @@ public:
 
   /// override the submodel's derivative estimation behavior
   void submodel_supports_derivative_estimation(bool sed_flag);
+  
+  String root_model_id();
+
+  ActiveSet default_active_set();
+  void declare_sources();
 
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -409,6 +415,10 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// helper to compute the recast response order during member initialization
+  // TODO: Move to Response?
+  static short response_order(const Model& sub_model);
 
   /// initialize currentVariables and related info from the passed
   /// size/type info

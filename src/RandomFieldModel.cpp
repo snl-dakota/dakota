@@ -28,7 +28,7 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
 {
   rfmInstance = this;
   modelType = "random_field";
-
+  modelId = String("RECAST_") + root_model_id() + "_RANDOM_FIELD";
   init_dace_iterator(problem_db);
 
   validate_inputs();

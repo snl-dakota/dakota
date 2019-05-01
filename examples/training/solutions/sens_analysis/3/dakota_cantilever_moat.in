@@ -15,8 +15,10 @@ variables
     descriptors    'w'  't'  'L'   'p'    'E'   'X'  'Y'
 
 interface
-  analysis_drivers = 'driver.sh'
+  # analysis_drivers 'powershell.exe -File driver.ps1' # For Windows
+  analysis_drivers = 'driver.sh'                       # For Linux/Mac
     fork
+      # aprepro # For Windows
 
 responses
   response_functions = 3

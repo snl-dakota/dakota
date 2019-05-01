@@ -276,6 +276,7 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
+# TODO: Update to use CMake BLAS/LAPACK probes and properly use their output
 if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
   # Historically on MSVC, tried to use CMake config file approach first.  
   # Could probably just use the Unix logic below instead...
@@ -330,14 +331,6 @@ endif() # DAKOTA_HAVE_HDF5
 # Mandate a system or user-provided Boost, including some libraries
 set(dakota_boost_components
   "filesystem;program_options;regex;serialization;system")
-
-# Acro requires the signals library in addition
-option(HAVE_ACRO "Build the ACRO package." ON)
-if(HAVE_ACRO)
-  list(APPEND dakota_boost_components "signals")
-  # Acro uses Boost.Signals (deprecated) instead of Boost.Signals2
-  add_definitions("-DBOOST_SIGNALS_NO_DEPRECATION_WARNING")
-endif()
 
 # Queso requires the program_options library in addition
 option(HAVE_QUESO "Build the QUESO package." OFF)
@@ -461,8 +454,9 @@ if (NOT BUILD_IN_TRILINOS)
       set(Trilinos_GENERATE_REPO_VERSION_FILE OFF CACHE BOOL
         "Dakota disabling generation of TrilinosRepoVersion.txt")
 
-      set(Teuchos_ENABLE_COMPLEX TRUE CACHE BOOL
-	"Pecos requires some complex blas wrappers")
+      # BMA: Since Pecos surrogates not using complex yet, disabled this
+      ##set(Trilinos_ENABLE_COMPLEX_DOUBLE TRUE CACHE BOOL
+      ##  "Pecos requires some complex blas wrappers")
 
       set(Teuchos_HIDE_DEPRECATED_CODE TRUE CACHE BOOL
         "Teuchos deprecated code clashes with operator<< in Dakota")

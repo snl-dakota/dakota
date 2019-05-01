@@ -227,6 +227,9 @@ public:
   /// retrieve the analysis drivers specification for application interfaces
   virtual const StringArray& analysis_drivers() const;
 
+  /// retrieve the analysis components, if available
+  virtual const String2DArray & analysis_components() const;
+
   /// return flag indicating usage of the global evaluation cache
   virtual bool evaluation_cache() const;
   /// return flag indicating usage of the restart file
@@ -234,6 +237,7 @@ public:
 
   /// clean up any interface parameter/response files when aborting
   virtual void file_cleanup() const;
+
 
   //
   //- Heading: Set and Inquire functions
@@ -404,6 +408,8 @@ protected:
   /// whether to append the interface ID to the prefix during map (default true)
   bool appendIfaceId;
 
+  /// Analysis components for interface types that support them
+  String2DArray analysisComponents;
 private:
 
   //
@@ -417,9 +423,20 @@ private:
   /// evaluation call to make
   int algebraic_function_type(String);
 
+  /// return the next available interface ID for no-ID user methods
+  static String user_auto_id();
+
+  /// return the next available interface ID for on-the-fly methods
+  static String no_spec_id();
+
+
   //
   //- Heading: Data
   //
+
+  /// the last used interface ID number for on-the-fly instantiations
+  /// (increment before each use)
+  static size_t noSpecIdNum;
 
   /// set of variable tags from AMPL stub.col
   StringArray algebraicVarTags;

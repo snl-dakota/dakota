@@ -212,6 +212,12 @@ protected:
                                         const Response& model_resp,
                                         Response& nlpost_resp);
 
+  /// Wrap iteratedModel in a RecastModel that performs response scaling
+  void scale_model();
+
+  /// Wrap iteratedModel in a RecastModel that weights the residuals
+  void weight_model();
+
   //
   //- Heading: Data
   //
@@ -477,6 +483,15 @@ protected:
   void print_kl(std::ostream& stream);		
   void print_chain_diagnostics(std::ostream& s);
   void print_batch_means_intervals(std::ostream& s); 
+
+  /// whether response scaling is active
+  bool scaleFlag;
+  // /// Shallow copy of the scaling transformation model, when present
+  // /// (cached in case further wrapped by other transformations)
+  // Model scalingModel;
+
+  /// whether weight scaling is active
+  bool weightFlag;
 
 private:
 

@@ -66,10 +66,9 @@ public:
 			   int start_offset, int num_responses,
 			   bool response_unscale = true) const;
   
-protected:
+  ActiveSet default_active_set();
 
-  /// helper to compute the recast response order during member initialization
-  static short response_order(const Model& sub_model);
+protected:
 
   // ---
   // Scaling initialization helper functions

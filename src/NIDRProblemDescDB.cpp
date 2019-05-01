@@ -1680,9 +1680,11 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 	    "nonlinear_inequality", aln_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 	    "nonlinear_equality", aln_scaletypes);
-  if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
-    squawk("Specify calibration weights or experimental errors, not both.");
-  }
+  // The following check was relevant prior to refactoring the way transformations
+  // are applied (now in a layered manner)
+  // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
+  //   squawk("Specify calibration weights or experimental errors, not both.");
+  // }
   if ((n = dr->responseLabels.size()) > 0) {
     if (!(k = dr->numResponseFunctions)) {
       if (!(k = dr->numObjectiveFunctions))
@@ -7589,7 +7591,14 @@ static Env_mp_utype
         MP2s(tabularFormat,TABULAR_IFACE_ID),
         MP2s(tabularFormat,TABULAR_ANNOTATED),
         MP2s(resultsOutputFormat,RESULTS_OUTPUT_TEXT),
-        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5);
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_TOP_METHOD),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_NONE),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL_METHODS),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_SIMULATION),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_NONE),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_ALL);
 
 static String
         MP_(errorFile),

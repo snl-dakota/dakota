@@ -374,9 +374,15 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
     else { // non-unique eval ids from restart/file import
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
-      ParamResponsePair search_pr(vars, actualModelInterfaceId,
-				  response_pr.second);
-      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      if(actualModelInterfaceId.empty()) {
+        ParamResponsePair search_pr(vars, "NO_ID",
+  				  response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      } else {
+        ParamResponsePair search_pr(vars, actualModelInterfaceId,
+  				  response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      }
     }
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, true);
@@ -423,9 +429,15 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
-	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        if(actualModelInterfaceId.empty()) {
+	  ParamResponsePair search_pr(actualModelVars, "NO_ID",
+	  			    r_it->second);
+	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+	  ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+	  			    r_it->second);
+	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
@@ -474,9 +486,15 @@ update_approximation(const VariablesArray& vars_array,
       else { // nonunique eval ids from restart/file import
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
-	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(vars_array[i], "NO_ID",
 				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+				    r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
@@ -513,9 +531,15 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
     else { // nonunique eval ids from restart/file import
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
-      ParamResponsePair search_pr(vars, actualModelInterfaceId,
+      if(actualModelInterfaceId.empty()) {
+        ParamResponsePair search_pr(vars, "NO_ID",
 				  response_pr.second);
-      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      } else {
+        ParamResponsePair search_pr(vars, actualModelInterfaceId,
+				  response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      }
     }
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, false);
@@ -561,9 +585,15 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
-	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(actualModelVars, "NO_ID",
 				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+				    r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
@@ -611,9 +641,15 @@ append_approximation(const VariablesArray& vars_array,
       else { // nonunique eval ids from restart/file import
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
-	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(vars_array[i], "NO_ID",
 				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+				    r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);

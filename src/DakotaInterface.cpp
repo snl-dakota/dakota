@@ -49,6 +49,9 @@
 
 namespace Dakota {
 
+// Initialization of static interface ID counters
+size_t Interface::noSpecIdNum = 0;
+
 
 /** This constructor is the one which must build the base class data for all
     inherited interfaces.  get_interface() instantiates a derived class letter
@@ -59,7 +62,10 @@ namespace Dakota {
     pointer causes problems in ~Interface). */
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_ushort("interface.type")),
-  interfaceId(problem_db.get_string("interface.id")), algebraicMappings(false),
+  interfaceId(problem_db.get_string("interface.id")), 
+  analysisComponents(
+    problem_db.get_s2a("interface.application.analysis_components")),
+  algebraicMappings(false),
   coreMappings(true), outputLevel(problem_db.get_short("method.output")),
   currEvalId(0), fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT),
   evalIdCntr(0), newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0),
@@ -71,7 +77,8 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
 #endif // DEBUG
-
+  if(interfaceId.empty())
+      interfaceId = user_auto_id();
   // Process the algebraic_mappings file (an AMPL .nl file) to get the number
   // of variables/responses (currently, the tags are converted to index arrays
   // at evaluation time, using the passed vars and response).
@@ -166,7 +173,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
 
 Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
-  interfaceId("NO_SPECIFICATION"), algebraicMappings(false), coreMappings(true),
+  interfaceId(no_spec_id()), algebraicMappings(false), coreMappings(true),
   outputLevel(output_level), currEvalId(0), 
   fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
   newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
@@ -494,14 +501,14 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 
     // standard evaluation summary
     if (minimal_header) {
-      if (interfaceId.empty())
+      if (interfaceId.empty() || interfaceId == "NO_ID")
 	s << "  Interface evaluations";
       else
 	s << "  " << interfaceId << " evaluations";
     }
     else {
       s << "<<<<< Function evaluation summary";
-      if (!interfaceId.empty())
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
 	s << " (" << interfaceId << ')';
     }
     int     fn_evals = (relative_count) ? evalIdCntr - evalIdRefPt
@@ -1435,6 +1442,12 @@ const StringArray& Interface::analysis_drivers() const
   return interfaceRep->analysis_drivers();
 }
 
+const String2DArray & Interface::analysis_components() const
+{
+  if(interfaceRep)
+    return interfaceRep->analysis_components();
+  return analysisComponents;
+}
 
 bool Interface::evaluation_cache() const
 {
@@ -1461,4 +1474,29 @@ void Interface::file_cleanup() const
   // else no-op
 }
 
+/** Rationale: The parser allows multiple user-specified interfaces with
+    empty (unspecified) ID. However, only a single Interface with empty
+    ID can be constructed (if it's the only one present, or the "last
+    one parsed"). Therefore decided to prefer NO_ID over NO_ID_<num>
+    for consistency with interface NO_ID convention. Additionally, NO_ID
+    is preferred over NO_INTERFACE_ID (contrast with Iterator and Model)
+    to preserve backward compatibility
+ */
+String Interface::user_auto_id()
+{
+  // // increment and then use the current ID value
+  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  return String("NO_ID");
+}
+
+/** Rationale: For now NOSPEC_ID_ is chosen due to historical
+    id="NO_SPECIFICATION" used for internally-constructed
+    Iterators. Longer-term, consider auto-generating an ID that
+    includes the context from which the method is constructed, e.g.,
+    the parent method or model's ID, together with its name. */
+String Interface::no_spec_id()
+{
+  // increment and then use the current ID value
+  return String("NOSPEC_INTERFACE_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+}
 } // namespace Dakota

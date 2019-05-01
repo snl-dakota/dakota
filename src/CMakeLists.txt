@@ -430,11 +430,11 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
-    predator_prey.cpp bayes_calibration_utils.cpp
+    predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
-  list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp)
+  list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp )
 endif()
 
 if(DAKOTA_DL_SOLVER)
@@ -459,8 +459,8 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 ## Model sources.
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
-  ScalingModel.cpp SurrogateModel.cpp DataFitSurrModel.cpp HierarchSurrModel.cpp
-  ActiveSubspaceModel.cpp RandomFieldModel.cpp DiscrepancyCorrection.cpp
+  ScalingModel.cpp WeightingModel.cpp SurrogateModel.cpp DataFitSurrModel.cpp
+  HierarchSurrModel.cpp ActiveSubspaceModel.cpp RandomFieldModel.cpp DiscrepancyCorrection.cpp
   AdaptedBasisModel.cpp)
 
 ## Constraint sources.

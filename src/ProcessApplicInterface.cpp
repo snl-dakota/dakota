@@ -113,9 +113,7 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   dirSave(problem_db.get_bool("interface.dirSave")),
   linkFiles(problem_db.get_sa("interface.linkFiles")),
   copyFiles(problem_db.get_sa("interface.copyFiles")),
-  templateReplace(problem_db.get_bool("interface.templateReplace")),
-  analysisComponents(
-    problem_db.get_s2a("interface.application.analysis_components"))
+  templateReplace(problem_db.get_bool("interface.templateReplace"))
 {
   // When using work directory, relative analysis drivers starting
   // with . or .. may need to be converted to absolute so they work
@@ -912,5 +910,6 @@ void ProcessApplicInterface::reset_process_environment()
     WorkdirHelper::reset();
   }
 }
+
 
 } // namespace Dakota

@@ -11,6 +11,8 @@
 //- Owner:       Brian Adams
 //- Checked by:
 
+#include <memory>
+#include <utility>
 #include <boost/algorithm/string/predicate.hpp>
 #include "dakota_global_defs.hpp"
 #include "OutputManager.hpp"
@@ -22,7 +24,13 @@
 #include "ResultsManager.hpp"
 #include "DakotaBuildInfo.hpp"
 #include "dakota_tabular_io.hpp"
+#include "ResultsDBAny.hpp"
+#include "EvaluationStore.hpp"
 
+#ifdef DAKOTA_HAVE_HDF5
+#include "HDF5_IO.hpp"
+#include "ResultsDBHDF5.hpp"
+#endif
 //#define OUTMGR_DEBUG 1
 
 namespace Dakota {
@@ -30,6 +38,7 @@ namespace Dakota {
 // Note: MSVC requires these externs defined outside any function
 extern PRPCache data_pairs;
 extern ResultsManager iterator_results_db;
+extern EvaluationStore evaluation_store_db;
 
 // BMA TODO: consider removing or reimplementing
 /** Heartbeat function provided by dakota_filesystem_utils; pass
@@ -133,6 +142,8 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
   tabularDataFile = problem_db.get_string("environment.tabular_graphics_file");
   resultsOutputFlag = problem_db.get_bool("environment.results_output");
   resultsOutputFile = problem_db.get_string("environment.results_output_file");
+  modelEvalsSelection = problem_db.get_ushort("environment.model_evals_selection");
+  interfEvalsSelection = problem_db.get_ushort("environment.interface_evals_selection");
   tabularFormat = problem_db.get_ushort("environment.tabular_format");
   resultsOutputFormat = problem_db.get_ushort("environment.results_output_format");
   if(resultsOutputFlag && resultsOutputFormat == 0)
@@ -385,8 +396,28 @@ void OutputManager::init_results_db()
   if (mpirunFlag)
     file_tag = "." + boost::lexical_cast<String>(worldRank + 1);
 
-  iterator_results_db.initialize(resultsOutputFile + file_tag,
-				 resultsOutputFormat);
+  String filename = resultsOutputFile+file_tag;
+
+  iterator_results_db.clear_databases();
+  if(resultsOutputFormat & RESULTS_OUTPUT_TEXT) {
+    std::unique_ptr<ResultsDBAny> db_ptr(new ResultsDBAny(filename + ".txt"));
+    iterator_results_db.add_database(std::move(db_ptr));
+  }
+  if(resultsOutputFormat & RESULTS_OUTPUT_HDF5) {
+  #ifdef DAKOTA_HAVE_HDF5
+    // HDF5IOHelper object shared by ResultsManager and EvaluationStore
+    std::shared_ptr<HDF5IOHelper> hdf5_helper_ptr(new HDF5IOHelper(filename + ".h5", true /* overwrite */));
+    // 
+    std::unique_ptr<ResultsDBHDF5> db_ptr(new ResultsDBHDF5(false /* in_core = false */, hdf5_helper_ptr));
+    iterator_results_db.add_database(std::move(db_ptr));
+    // initialize EvaluationStore
+    evaluation_store_db.set_database(hdf5_helper_ptr);
+    evaluation_store_db.model_selection(modelEvalsSelection);
+    evaluation_store_db.interface_selection(interfEvalsSelection);
+  #else
+    Cerr << "WARNING: HDF5 results output was requested, but is not available in this build.\n";
+  #endif
+  }
 }
 
 void OutputManager::archive_input(const ProgramOptions &prog_opts) const {
