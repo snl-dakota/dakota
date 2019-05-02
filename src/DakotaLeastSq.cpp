@@ -392,7 +392,7 @@ void LeastSq::post_run(std::ostream& s)
     // BMA TODO: Don't really need this whole response object
     // Could just cache the evalId here.. via cacheiter.
     Model orig_model = original_model();
-    Response found_resp(orig_model.current_response());
+    Response found_resp(orig_model.current_response().copy());
     ActiveSet search_set(found_resp.active_set());
     search_set.request_values(0);
     for (size_t i=0; i<numUserPrimaryFns; ++i)
@@ -430,7 +430,7 @@ void LeastSq::post_run(std::ostream& s)
     // cached by the solver and unscaled if needed below
     // BMA TODO: Don't really need this whole response object
     // Could just cache the evalId here.. via cacheiter.
-    Response found_resp(iteratedModel.current_response());
+    Response found_resp(iteratedModel.current_response().copy());
     ActiveSet search_set(found_resp.active_set());
     search_set.request_values(0);
     for (size_t i=0; i<numLeastSqTerms; ++i)
@@ -454,7 +454,7 @@ void LeastSq::post_run(std::ostream& s)
   // stores the gradients.  Try to lookup first.
   // We want the gradient of the transformed residuals
   // w.r.t. the original variables, so use the iteratedModel
-  Response found_resp(iteratedModel.current_response());
+  Response found_resp(iteratedModel.current_response().copy());
   ActiveSet search_set(found_resp.active_set());
   search_set.request_values(0);
   for (size_t i=0; i<numLeastSqTerms; ++i)

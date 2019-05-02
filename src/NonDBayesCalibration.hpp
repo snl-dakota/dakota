@@ -374,6 +374,11 @@ protected:
   /// flag indicating the calculation of the kernel density estimate of the
   /// posteriors
   bool posteriorStatsKDE;
+  /// flag indicating calculation of chain diagnostics
+  bool chainDiagnostics;
+  /// flag indicating calculation of confidence intervals as a chain
+  /// diagnositc
+  bool chainDiagnosticsCI;
   /// flag indicating calculation of the evidence of the model
   bool calModelEvidence;
   /// flag indicating use of Monte Carlo approximation to calculate evidence
@@ -450,9 +455,6 @@ protected:
   void compute_prediction_vals(RealMatrix& filtered_fn_vals,
       			       RealMatrix& PredVals, int num_filtered,
 			       size_t num_exp, size_t num_concatenated);
-  void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
-  void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
-      			  RealVector& std_devs);
   void print_intervals_file(std::ostream& stream, RealMatrix& functionvalsT,
   			      RealMatrix& predvalsT, int length, 
 			      size_t aug_length);
@@ -479,6 +481,8 @@ protected:
 		IntVector& k, double eps);
   Real kl_est;	
   void print_kl(std::ostream& stream);		
+  void print_chain_diagnostics(std::ostream& s);
+  void print_batch_means_intervals(std::ostream& s); 
 
   /// whether response scaling is active
   bool scaleFlag;

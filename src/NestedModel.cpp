@@ -3409,7 +3409,8 @@ string_variable_mapping(const String& s_var, size_t mapped_index,
 
 ActiveSet NestedModel::default_interface_active_set() {
   size_t num_fun = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
-  ActiveSet set(num_fun, numDerivVars);
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
   ShortArray asv(num_fun, 1);
   if(optInterfGradientType == "analytic") {
     for(auto &a : asv)

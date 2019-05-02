@@ -84,9 +84,102 @@ class Results(unittest.TestCase):
                 for j in range(2):
                     self.assertAlmostEqual(console_ci[d][j], h5_ci[i,j])
 
+class EvaluationsStructure(unittest.TestCase):
 
+    def test_interface_presence(self):
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            h["/interfaces/NO_ID/NO_MODEL_ID"]
 
+    def test_model_presence(self):
+        expected_model_types = ["simulation"] #, "recast"]
+        expected_sim_models = ["NO_MODEL_ID"]
+        #expected_recast_models = ["RECAST_NO_MODEL_ID_DATA_TRANSFORM"]
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            model_types = [k for k in h["/models"]]
+            self.assertItemsEqual(expected_model_types, model_types)
+            sim_models = [k for k in h["/models/simulation"]]
+            self.assertItemsEqual(expected_sim_models, sim_models)
+            #recast_models = [k for k in h["/models/recast"]]
+            #self.assertItemsEqual(expected_recast_models, recast_models)
 
+    def test_sources(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Methods
+            method_sources = [k for k in h["/methods/NO_METHOD_ID/sources/"]]
+            #self.assertItemsEqual(method_sources,["RECAST_NO_MODEL_ID_DATA_TRANSFORM"])
+            self.assertItemsEqual(method_sources,["NO_MODEL_ID"])
+            # Models
+            #model_sources = [k for k in h["/models/recast/RECAST_NO_MODEL_ID_DATA_TRANSFORM/sources/"]]
+            #self.assertItemsEqual(model_sources,["NO_MODEL_ID"])
+            model_sources = [k for k in h["/models/simulation/NO_MODEL_ID/sources/"]]
+            self.assertItemsEqual(model_sources,["NO_ID"])
+
+    def test_gradient_presence(self):
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            h["/models/simulation/NO_MODEL_ID/responses/gradients"]
+
+class TabularData(unittest.TestCase):
+    def test_tabular_data(self):
+        tdata = hce.read_tabular_data(_TEST_NAME + ".dat")
+        metadata = ["%eval_id", "interface"]
+        variables = ["x1", "x2", "Y"]
+        responses = ['displacement01', 'displacement02', 'g']        
+        descriptors = metadata + variables + responses
+        self.assertItemsEqual(descriptors, tdata.keys())
+
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/models/simulation/NO_MODEL_ID/variables/continuous"]
+            hasv = h["/models/simulation/NO_MODEL_ID/metadata/active_set_vector"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            hindex = 0
+            for i, eid in enumerate(tdata["%eval_id"]):
+                while not all((a & 1 for a in hasv[hindex,:])):
+                    hindex += 1
+                for vi, v in enumerate(variables):
+                    tv = tdata[v][i]
+                    hv = hvars[hindex,vi]
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+                hindex += 1
+                    
+            # Responses
+            hresps = h["/models/simulation/NO_MODEL_ID/responses/functions"]
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            hindex = 0
+            for i, eid in enumerate(tdata["%eval_id"]):
+                while not all((a & 1 for a in hasv[hindex,:])):
+                    hindex += 1
+                for ri, r in enumerate(responses):
+                    tr = tdata[r][i]
+                    hr = hresps[hindex,ri]
+                    self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
+                hindex += 1
+ 
+class RestartData(unittest.TestCase):
+    def test_restart_data(self):
+        rdata = hce.read_restart_file(_TEST_NAME + ".rst")
+        variables = ["x1", "x2", "Y"]
+        responses = ['displacement01', 'displacement02', 'g']        
+        self.assertItemsEqual(variables, rdata["variables"]["continuous"].keys())
+        self.assertItemsEqual(responses, rdata["response"].keys())
+        
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/interfaces/NO_ID/NO_MODEL_ID/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps = h["/interfaces/NO_ID/NO_MODEL_ID/responses/functions"]
+            # Responses
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
+                    self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
+            # ASV
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/NO_MODEL_ID/metadata/active_set_vector"]):
+                for r_a, h_a in zip(r_asv, h_asv):
+                    self.assertEqual(r_a, h_a)
 
 
 if __name__ == '__main__':

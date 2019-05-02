@@ -38,7 +38,7 @@ ScalingModel(Model& sub_model):
 
   scaleModelInstance = this;
 
-  modelId = String("RECAST_") + root_model_id() + "_SCALING";
+  modelId = RecastModel::recast_model_id(root_model_id(), "SCALING");
   // RecastModel is constructed, then later initialized because scaled
   // properties need to be set on the RecastModel, like bounds, but
   // the nonlinearity of the mapping is determined by the scales
@@ -1254,8 +1254,8 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
 ActiveSet ScalingModel::default_active_set() {
   // A ScalingModel has the same number of responses as its
   // submodel. It is also assumed to have supportEstimDerivs == true
-  ActiveSet set(numFns, numDerivVars);
-  set.derivative_vector(currentVariables.continuous_variable_ids());
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
   // The ScalingModel can return at least everything that the submodel can.
   ShortArray asv(subModel.default_active_set().request_vector());
 

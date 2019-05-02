@@ -282,6 +282,48 @@ class Correlations(unittest.TestCase):
     def test_partial_rank_correlations(self):
         self.partial_correlation_helper("spearman")
 
+class EvaluationsStructure(unittest.TestCase):
+
+    def test_interface_presence(self):
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            with self.assertRaises((KeyError,ValueError)):
+                h["/interfaces"]
+
+    def test_model_presence(self):
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            h["/models/simulation/NO_MODEL_ID/"]
+
+    def test_sources(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            method_sources = [k for k in h["/methods/sampling/sources/"]]
+            self.assertItemsEqual(method_sources,["NO_MODEL_ID"])
+            with self.assertRaises((KeyError,ValueError)):
+                h["/models/simulation/NO_MODEL_ID/sources/"]
+
+class TabularData(unittest.TestCase):
+    def test_tabular_data(self):
+        tdata = hce.read_tabular_data(_TEST_NAME + ".dat")
+        metadata = ["%eval_id", "interface"]
+        variables = ["x1", "x2", "x3"]
+        responses = ["f", "c"]
+        descriptors = metadata + variables + responses
+        self.assertItemsEqual(descriptors, tdata.keys())
+
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/models/simulation/NO_MODEL_ID/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps = h["/models/simulation/NO_MODEL_ID/responses/functions"]
+            # Responses
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, tr, hr in zip(tdata["%eval_id"],tdata[r], hresps[:,i]):
+                    self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s'" % r, places=9)
+
+
 if __name__ == '__main__':
     hce.run_dakota("dakota_hdf5_" + _TEST_NAME + ".in")
     unittest.main()

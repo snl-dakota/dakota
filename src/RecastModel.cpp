@@ -26,6 +26,8 @@ namespace Dakota {
 #define SUB_MODEL 2
 //#define DEBUG
 
+// init static var
+StringStringPairIntMap RecastModel::recastModelIdCounters;
 
 /** Default recast model constructor.  Requires full definition of the
     transformation; if any mappings are NULL, they are assumed to
@@ -108,7 +110,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   init_constraints(secondaryRespMapIndices.size(), 
 		   recast_secondary_offset, reshape_vars);
 
-  modelId = String("RECAST_") + root_model_id() + "_RECAST";
+  modelId = RecastModel::recast_model_id(root_model_id(), "SCALING");
 }
 
 
@@ -145,7 +147,7 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   init_sizes(vars_comps_totals, all_relax_di, all_relax_dr,
 	     num_recast_primary_fns, num_recast_secondary_fns,
 	     recast_secondary_offset, recast_resp_order);
-  modelId = String("RECAST_") + root_model_id() + "_RECAST";
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
@@ -160,7 +162,7 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
   
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
-  modelId = String("RECAST_") + root_model_id() + "_RECAST";
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
@@ -178,7 +180,7 @@ RecastModel::RecastModel(const Model& sub_model):
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
   numFns = sub_model.response_size();
-  modelId = String("RECAST_") + root_model_id() + "_RECAST";
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
@@ -254,6 +256,15 @@ short RecastModel::response_order(const Model& sub_model)
   return recast_resp_order;
 }
 
+String RecastModel::recast_model_id(const String &root_id, const String &type) {
+  auto key = std::make_pair(root_id, type);
+  int id;
+  if(recastModelIdCounters.find(key) == recastModelIdCounters.end())
+    recastModelIdCounters[key] = id = 1;
+  else
+    id = ++recastModelIdCounters[key];
+  return String("RECAST_") + root_id + "_" + type + "_" + std::to_string(id);
+}
 
 bool RecastModel::
 init_variables(const SizetArray& vars_comps_totals,
@@ -1136,8 +1147,8 @@ ActiveSet RecastModel::default_active_set() {
   // The "base class" implementation assumes that supportsEstimDerivs is false
   // and that gradients/hessians, if available, are computed by a submodel and
   // hence can be provided by this model.
-  ActiveSet set(numFns, numDerivVars);
-  set.derivative_vector(currentVariables.continuous_variable_ids());
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
   ShortArray asv(numFns, 1);
 
   if(gradientType != "none")// && (gradientType == "analytic" || supportsEstimDerivs))

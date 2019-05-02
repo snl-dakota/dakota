@@ -10,6 +10,7 @@
 #include "NonDBayesCalibration.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
+#include "bayes_calibration_utils.hpp"
 
 #include <string>
 
@@ -78,6 +79,50 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg2)
 
   Real gold_mi = -0.0561375;
   TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
+}
+
+//------------------------------------
+
+TEUCHOS_UNIT_TEST(stat_utils, batch_means_mean)
+{
+  // Read in matrices 
+  std::ifstream infile1("stat_util_test_files/Matrix1.txt");
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(1,1000);
+  for (int i = 0; i < 1000; ++i){
+    infile1 >> Xmatrix[i][0];
+  }
+  RealMatrix interval_matrix;
+  interval_matrix.shapeUninitialized(2,1);
+  RealMatrix means_matrix;
+  batch_means_interval(Xmatrix, interval_matrix, means_matrix, 1, 0.95);
+
+  Real gold_lower_int = -6.3120595090e-02;
+  Real gold_upper_int = 8.1516649910e-02;
+  TEST_FLOATING_EQUALITY(interval_matrix[0][0], gold_lower_int, 1.e-5);
+  TEST_FLOATING_EQUALITY(interval_matrix[0][1], gold_upper_int, 1.e-5);
+}
+
+//------------------------------------
+
+TEUCHOS_UNIT_TEST(stat_utils, batch_means_variance)
+{
+  // Read in matrices 
+  std::ifstream infile1("stat_util_test_files/Matrix1.txt");
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(1,1000);
+  for (int i = 0; i < 1000; ++i){
+    infile1 >> Xmatrix[i][0];
+  }
+  RealMatrix interval_matrix;
+  interval_matrix.shapeUninitialized(2,1);
+  RealMatrix means_matrix;
+  batch_means_interval(Xmatrix, interval_matrix, means_matrix, 2, 0.95);
+
+  Real gold_lower_int = 9.1432956019e-01;
+  Real gold_upper_int = 1.0688302101e+00;
+  TEST_FLOATING_EQUALITY(interval_matrix[0][0], gold_lower_int, 1.e-5);
+  TEST_FLOATING_EQUALITY(interval_matrix[0][1], gold_upper_int, 1.e-5);
 }
 
 //------------------------------------

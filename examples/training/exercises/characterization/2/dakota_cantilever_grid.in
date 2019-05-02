@@ -20,16 +20,13 @@ variables
     descriptors     = 'p'   'E'   'X'  'Y'
 
 interface
-  # For Windows:
-  # analysis_drivers 'powershell.exe -File driver.ps1'
-  # For Linux/Mac:
-  analysis_drivers 'driver.sh'
+  # analysis_drivers 'powershell.exe -File driver.ps1' # For Windows
+  analysis_drivers 'driver.sh' # For Linux/Mac
     fork
+      # aprepro # For Windows
       work_directory named = 'workdir'
-	    # For Windows:
-        # copy_files 'cantilever.template' 'cantilever' 'driver.ps1'
-        # For Linux/Mac:
-        link_files 'cantilever.template' 'cantilever'
+	    # copy_files 'cantilever.template' 'cantilever' 'driver.ps1' # For Windows
+        link_files 'cantilever.template' 'cantilever'                # For Linux/Mac
   asynchronous evaluation_concurrency = 4
 
 responses

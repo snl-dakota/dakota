@@ -2522,7 +2522,8 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
   // The ApproximationInterface may provide just a subset
   // of the responses, with the balance coming from the
   // actualModel.
-  ActiveSet set(numFns, numDerivVars);
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
   ShortArray asv(numFns);
   const bool has_gradients = gradientType != "none" && 
     (gradientType == "analytic" || supportsEstimDerivs);

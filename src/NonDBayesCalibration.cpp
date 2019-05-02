@@ -42,6 +42,7 @@
 #include "dakota_data_util.hpp"
 //#include "dakota_tabular_io.hpp"
 #include "DiscrepancyCorrection.hpp"
+#include "bayes_calibration_utils.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -119,6 +120,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   posteriorStatsMutual(
     probDescDB.get_bool("method.posterior_stats.mutual_info")),
   posteriorStatsKDE(probDescDB.get_bool("method.posterior_stats.kde")),
+  chainDiagnostics(probDescDB.get_bool("method.chain_diagnostics")),
+  chainDiagnosticsCI(probDescDB.get_bool("method.chain_diagnostics.confidence_intervals")),
   calModelEvidence(probDescDB.get_bool("method.model_evidence")),
   calModelEvidMC(probDescDB.get_bool("method.mc_approx")),
   calModelEvidLaplace(probDescDB.get_bool("method.laplace_approx")),
@@ -2370,41 +2373,6 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   }
 }
 
-void NonDBayesCalibration::
-compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
-{
-  int num_cols = matrix.numCols();
-  int num_rows = matrix.numRows();
-
-  avg_vals.resize(num_cols);
-  
-  RealVector ones_vec(num_rows);
-  ones_vec.putScalar(1.0);
- 
-  for(int i=0; i<num_cols; ++i){
-    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
-    avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
-  }
-}
-
-void NonDBayesCalibration::
-compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_devs)
-{
-  int num_cols = matrix.numCols();
-  int num_rows = matrix.numRows();
-
-  std_devs.resize(num_cols);
-  RealVector res_vec(num_rows);
-
-  for(int i=0; i<num_cols; ++i){
-    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
-    for(int j = 0; j<num_rows; ++j){
-      res_vec(j) = col_vec(j) - avg_vals(i);
-    }
-    std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
-  }
-}
-
 /** Print tabular file with filtered chain, function values, and pred values */
 void NonDBayesCalibration::
 export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
@@ -2784,6 +2752,9 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
   NonDSampling::print_moments(s, fnStats, RealMatrix(), 
       "response function", STANDARD_MOMENTS, resp_labels, false); 
   
+  // Print chain diagnostics for variables
+  if (chainDiagnostics)
+    print_chain_diagnostics(s);
   // Print credibility and prediction intervals to screen
   if (requestedProbLevels[0].length() > 0 && outputLevel >= NORMAL_OUTPUT) {
     int num_filtered = filteredFnVals.numCols();
@@ -3240,6 +3211,92 @@ void NonDBayesCalibration::print_kl(std::ostream& s)
   s << '\n';
 }
 
+void NonDBayesCalibration::print_chain_diagnostics(std::ostream& s)
+{
+  s << "\nChain diagnostics\n";
+  if (chainDiagnosticsCI)
+    print_batch_means_intervals(s);
+}
+
+void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
+{
+  size_t width = write_precision+7;
+  Real alpha = 0.95;
+  
+  int num_vars = acceptanceChain.numRows();
+  StringArray var_labels;
+  copy_data(residualModel.continuous_variable_labels(),	var_labels);
+  RealMatrix variables_mean_interval_mat, variables_mean_batch_means;
+  batch_means_interval(acceptanceChain, variables_mean_interval_mat,
+                       variables_mean_batch_means, 1, alpha);
+  RealMatrix variables_var_interval_mat, variables_var_batch_means;
+  batch_means_interval(acceptanceChain, variables_var_interval_mat,
+                       variables_var_batch_means, 2, alpha);
+  
+  int num_responses = acceptedFnVals.numRows();
+  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  RealMatrix responses_mean_interval_mat, responses_mean_batch_means;
+  batch_means_interval(acceptedFnVals, responses_mean_interval_mat,
+                       responses_mean_batch_means, 1, alpha);
+  RealMatrix responses_var_interval_mat, responses_var_batch_means;
+  batch_means_interval(acceptedFnVals, responses_var_interval_mat,
+                       responses_var_batch_means, 2, alpha);
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    for (int i = 0; i < num_vars; i++) {
+      s << "\tBatch means of mean for variable ";
+      s << var_labels[i] << '\n';
+      const RealVector& mean_vec = Teuchos::getCol(Teuchos::View,
+                                  variables_mean_batch_means, i);
+      s << mean_vec ;
+      s << "\tBatch means of variance for variable ";
+      const RealVector& var_vec = Teuchos::getCol(Teuchos::View,
+                                  variables_var_batch_means, i);
+      s << var_labels[i] << '\n';
+      s << var_vec ;
+    }
+    for (int i = 0; i < num_responses; i++) {
+      s << "\tBatch means of mean for response ";
+      s << resp_labels[i] << '\n';
+      const RealVector mean_vec = Teuchos::getCol(Teuchos::View,
+                                  responses_mean_batch_means, i);
+      s << mean_vec ;
+      s << "\tBatch means of variance for response ";
+      s << resp_labels[i] << '\n';
+      const RealVector var_vec = Teuchos::getCol(Teuchos::View, 
+                                 responses_var_batch_means, i);
+      s << var_vec ;
+    }
+  }
+
+  s << "\t95% Confidence Intervals of means\n";
+  for (int i = 0; i < num_vars; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         variables_mean_interval_mat, i);
+    s << '\t' << std::setw(width) << var_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  for (int i = 0; i < num_responses; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         responses_mean_interval_mat, i);
+    s << '\t' << std::setw(width) << resp_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  s << "\t95% Confidence Intervals of variances\n";
+  for (int i = 0; i < num_vars; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         variables_var_interval_mat, i);
+    s << '\t' << std::setw(width) << var_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  for (int i = 0; i < num_responses; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         responses_var_interval_mat, i);
+    s << '\t' << std::setw(width) << resp_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+}
+
 /** Wrap the residualModel in a scaling transformation, such that
     residualModel now contains a scaling recast model. */
 void NonDBayesCalibration::scale_model()
@@ -3274,7 +3331,5 @@ void NonDBayesCalibration::weight_model()
   // TODO: pass sqrt to WeightingModel
   residualModel.assign_rep(new WeightingModel(residualModel), false);
 }
-
-
 
 } // namespace Dakota

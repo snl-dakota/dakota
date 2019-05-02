@@ -190,6 +190,98 @@ class LevelMappings(unittest.TestCase):
                                 self.assertEqual(cr[j+1], s)
                             begin += num_hdf5_rows
 
+class EvaluationsStructure(unittest.TestCase):
+
+    def test_interface_presence(self):
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            h["/interfaces/NO_ID/sim_m"]
+
+    def test_model_presence(self):
+        expected_model_types = ["simulation", "nested"]
+        expected_sim_models = ["sim_m"]
+        expected_nested_models = ["nested_m"]
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            model_types = [k for k in h["/models"]]
+            self.assertItemsEqual(expected_model_types, model_types)
+            sim_models = [k for k in h["/models/simulation"]]
+            self.assertItemsEqual(expected_sim_models, sim_models)
+            nested_models = [k for k in h["/models/nested"]]
+            self.assertItemsEqual(expected_nested_models, nested_models)
+
+    def test_sources(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Methods
+            method_sources = [k for k in h["/methods/lps/sources/"]]
+            self.assertItemsEqual(method_sources,["nested_m"])
+            method_sources = [k for k in h["/methods/aleatory/sources/"]]
+            self.assertItemsEqual(method_sources,["sim_m"])
+            # Models
+            model_sources = [k for k in h["/models/nested/nested_m/sources/"]]
+            self.assertItemsEqual(model_sources,["aleatory"])
+            model_sources = [k for k in h["/models/simulation/sim_m/sources/"]]
+            self.assertItemsEqual(model_sources,["NO_ID"])
+
+class TabularData(unittest.TestCase):
+    def test_tabular_data(self):
+        tdata = hce.read_tabular_data(_TEST_NAME + ".dat")
+        metadata = ["%eval_id", "interface"]
+        variables = ["x3"]
+        responses = ['f_mean',
+                     'f_stddev', 
+                     'f_p1',
+                     'f_p2',
+                     'f_p3',
+                     'f_r1',
+                     'c_mean', 
+                     'c_stddev',
+                     'c_p1',
+                     'c_p2',
+                     'c_p3',
+                     'c_r1']
+        descriptors = metadata + variables + responses
+        self.assertItemsEqual(descriptors, tdata.keys())
+
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/models/nested/nested_m/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps = h["/models/nested/nested_m/responses/functions"]
+            # Responses
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, tr, hr in zip(tdata["%eval_id"], tdata[r], hresps[:,i]):
+                    self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
+
+class RestartData(unittest.TestCase):
+    def test_restart_data(self):
+        rdata = hce.read_restart_file(_TEST_NAME + ".rst")
+        variables = ["x1", "x2", "x3"]
+        responses = ["f", "c"]
+        self.assertItemsEqual(variables, rdata["variables"]["continuous"].keys())
+        self.assertItemsEqual(responses, rdata["response"].keys())
+        
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/interfaces/NO_ID/sim_m/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps = h["/interfaces/NO_ID/sim_m/responses/functions"]
+            # Responses
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
+                    self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
+            # ASV
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/sim_m/metadata/active_set_vector"]):
+                for r_a, h_a in zip(r_asv, h_asv):
+                    self.assertEqual(r_a, h_a)
+
+
 if __name__ == '__main__':
     hce.run_dakota("dakota_hdf5_" + _TEST_NAME + ".in")
     unittest.main()

@@ -341,7 +341,9 @@ short Variables::method_map(short view_spec, bool relaxed) const
   default:
     Cerr << "Error: unsupported view selection in Variables::method_map()"
 	 << std::endl;
-    abort_handler(-1);                                      break;
+    abort_handler(-1);
+    return EMPTY_VIEW;
+    break;
   }
 }
 

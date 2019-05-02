@@ -3072,6 +3072,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataMethodRep> Bdme[] = {	
       // must be sorted by string (key)
 	{"backfill", P backfillFlag},
+        {"chain_diagnostics", P chainDiagnostics},
+        {"chain_diagnostics.confidence_intervals", P chainDiagnosticsCI},
 	{"coliny.constant_penalty", P constantPenalty},
 	{"coliny.expansion", P expansionFlag},
 	{"coliny.randomize", P randomizeOrderFlag},

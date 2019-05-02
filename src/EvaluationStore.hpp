@@ -31,8 +31,11 @@ class HDF5IOHelper;
 // Hold the default/maximal ActiveSet for a model or interface+model
 struct DefaultSet {
     ActiveSet set;
+    /// number of functions in the active set
     size_t numFunctions;
+    /// number of gradients in the active set
     size_t numGradients;
+    /// number of hessians in the active set
     size_t numHessians;
     DefaultSet(const ActiveSet &in_set);
     DefaultSet() {};
