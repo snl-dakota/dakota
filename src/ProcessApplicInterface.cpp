@@ -90,6 +90,19 @@
 
 namespace Dakota {
 
+// Regular expressions used to substitute the names of parameters and resutls
+// files into driver strings
+boost::regex PARAMS_TOKEN("\\{PARAMETERS\\}");
+boost::regex RESULTS_TOKEN("\\{RESULTS\\}");
+
+/// Substitute parameters and results file names into driver strings
+String substitute_params_and_results(const String &driver, const String &params, const String &results) {
+  String params_subbed  = boost::regex_replace(driver, PARAMS_TOKEN,  params);
+  String results_subbed = boost::regex_replace(params_subbed, RESULTS_TOKEN,  results);
+  return results_subbed;  
+}
+
+
 ProcessApplicInterface::
 ProcessApplicInterface(const ProblemDescDB& problem_db):
   ApplicationInterface(problem_db), 

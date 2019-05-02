@@ -26,6 +26,11 @@ namespace bfs = boost::filesystem;
 
 namespace Dakota {
 
+
+/// Substitute parameters and results file names into driver strings
+String substitute_params_and_results(const String &driver, const String &params, const String &results);
+
+
 /// Triplet of filesystem paths: e.g., params, results, workdir 
 typedef boost::tuple<bfs::path, bfs::path, bfs::path> PathTriple;
 
