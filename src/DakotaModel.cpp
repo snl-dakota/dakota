@@ -4143,8 +4143,8 @@ ActiveSet Model::default_active_set() {
    // This member function is called from Model::evaluate(_no_wait), and the 
    // ActiveSet that is returned is used to allocate evaluation storage in HDF5.
 
-    ActiveSet set(numFns, numDerivVars);
-    set.derivative_vector(currentVariables.continuous_variable_ids());
+    ActiveSet set; 
+    set.derivative_vector(currentVariables.all_continuous_variable_ids());
     ShortArray asv(numFns, 1);
    
     if(gradientType != "none" && (gradientType == "analytic" || supportsEstimDerivs))

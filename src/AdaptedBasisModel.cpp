@@ -27,7 +27,7 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
 {
   abmInstance = this;
   modelType = "adapted_basis";
-  modelId = String("RECAST_") + root_model_id() + "_ADAPTED_BASIS";
+  modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
   componentParallelMode = CONFIG_PHASE;
     

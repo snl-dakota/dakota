@@ -205,30 +205,39 @@ class RestartData(unittest.TestCase):
             hresps_f = h["/interfaces/NO_ID/truth_m/responses/functions"]
             hresps_g = h["/interfaces/NO_ID/truth_m/responses/gradients"]
             hasv = h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]
+            hdvv = h["/interfaces/NO_ID/truth_m/metadata/derivative_variables_vector"]
 
             # ASV
             for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]):
                 for r_a, h_a in zip(r_asv, h_asv):
                     self.assertEqual(r_a, h_a)
             #DVV
-            dvv_lookup = h["/interfaces/NO_ID/truth_m/metadata/derivative_variables_vector"].dims[1][1]
-            for r_dvv, h_dvv in zip(rdata["dvv"], h["/interfaces/NO_ID/truth_m/metadata/derivative_variables_vector"]):
+            dvv_lookup = hdvv.dims[1][1]
+            for r_dvv, h_dvv in zip(rdata["dvv"],hdvv):
                 h_dvv_ids = []
                 for dvv_id, dvv_bool in zip(dvv_lookup, h_dvv):
                     if dvv_bool == 1:
                         h_dvv_ids.append(dvv_id)
                 self.assertItemsEqual(r_dvv, h_dvv_ids)
             # Responses
+            # extract the portion of the gradient corresponding to the DVV
+            def extract_gradient(full_grad, dvv):
+                grad = []
+                for d, g in zip(dvv, full_grad):
+                    if d == 1:
+                        grad.append(g)
+                return grad
             self.assertItemsEqual(responses, hresps_f.dims[1][0][:])
             for i, r in enumerate(responses):
-                for eid, a, tr, hf, hg in zip(rdata["eval_id"], hasv, rdata["response"][r], hresps_f[:,i], hresps_g[:,i,:]):
+                for eid, a, d, tr, hf, hg in zip(rdata["eval_id"], hasv, hdvv, rdata["response"][r], hresps_f[:,i], hresps_g[:,i,:]):
                     if a & 1:
                         self.assertAlmostEqual(tr["function"], hf, 
                                 msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
                     if a & 2:
-                        self.assertEqual(len(tr["gradient"]), len(hg), msg="Lengths of gradients " +
+                        extracted_hg = extract_gradient(hg, d)
+                        self.assertEqual(len(tr["gradient"]), len(extracted_hg), msg="Lengths of gradients " +
                                 "for '%s' for eval %d are inconsistent" % (r, eid))
-                        for c1, c2 in zip(tr["gradient"], hg):
+                        for c1, c2 in zip(tr["gradient"], extracted_hg):
                             self.assertAlmostEqual(c1, c2, places=9, msg="Gradients differ for " +
                                 "'%s' in eval %d" %(r, eid))
 

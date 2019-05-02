@@ -448,8 +448,8 @@ void SimulationModel::eval_tag_prefix(const String& eval_id_str)
 */
 ActiveSet SimulationModel::default_interface_active_set() {
   // compute the default active set for the user-defined interface
-  ActiveSet set(numFns, numDerivVars);
-  set.derivative_vector(currentVariables.continuous_variable_ids());
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
   ShortArray asv(numFns, 1);
   if(gradientType == "analytic") {
     for(auto &a : asv)

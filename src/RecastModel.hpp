@@ -420,6 +420,9 @@ protected:
   // TODO: Move to Response?
   static short response_order(const Model& sub_model);
 
+  /// Generate a model id for recast models
+  static String recast_model_id(const String &root_id, const String &type);
+
   /// initialize currentVariables and related info from the passed
   /// size/type info
   bool init_variables(const SizetArray& vars_comps_totals,
@@ -465,6 +468,9 @@ protected:
   IntResponseMap recastResponseMap;
   /// mapping from subModel evaluation ids to RecastModel evaluation ids
   IntIntMap recastIdMap;
+  /// Counters for naming RecastModels
+  static StringStringPairIntMap recastModelIdCounters;
+
 
 private:
 
@@ -561,6 +567,7 @@ private:
 			     const Variables& sub_model_vars,
 			     const Response& recast_resp,
 			     Response& sub_model_resp);
+
 };
 
 
