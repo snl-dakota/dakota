@@ -153,8 +153,7 @@ DataMethodRep::DataMethodRep():
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
   burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
-  //numPredConfigs (BMA TODO this is not initialized...)
-  importPredConfigFormat(TABULAR_ANNOTATED),
+  numPredConfigs(0), importPredConfigFormat(TABULAR_ANNOTATED),
   modelDiscrepancyType("global_kriging"),
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
