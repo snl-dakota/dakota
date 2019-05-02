@@ -989,7 +989,8 @@ class HDF5IOHelper
 
   void report_num_open();
   void create_empty_dataset(const String &dset_name, const IntArray &dims, 
-                         ResultsOutputType stored_type, int chunk_size=0);
+                         ResultsOutputType stored_type, int chunk_size=0, 
+                         const void *fill_val = NULL);
   //------------------------------------------------------------------
 
   /// attach a dimension scale to a dataset

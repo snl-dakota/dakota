@@ -12,6 +12,7 @@
 #include <memory>
 #include <algorithm>
 #include <tuple>
+#include <cmath>
 #include "EvaluationStore.hpp"
 #ifdef DAKOTA_HAVE_HDF5
 #include "HDF5_IO.hpp"
@@ -22,6 +23,8 @@
 #include "dakota_data_types.hpp"
 
 namespace Dakota {
+
+const Real DSET_FILL_VAL = NAN; // not a number, constant defined in <cmath>
 
 DefaultSet::DefaultSet(const ActiveSet &in_set) : set(in_set) {
   const ShortArray &asv = set.request_vector();
@@ -125,7 +128,7 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   // Create evaluation ID dataset, which is attached as a scale to many datasets
   String eval_ids_scale = scale_root + "evaluation_ids";
   hdf5Stream->create_empty_dataset(eval_ids_scale, {0}, 
-      ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
+      ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
   
   allocate_variables(root_group, variables);
   allocate_response(root_group, response, default_set);
@@ -152,7 +155,7 @@ EvaluationsDBState EvaluationStore::interface_allocate(const String &model_id, c
   // Create evaluation ID dataset, which is attached as a scale to many datasets
   String eval_ids_scale = scale_root + "evaluation_ids";
   hdf5Stream->create_empty_dataset(eval_ids_scale, {0}, 
-      ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
+      ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
   
   allocate_variables(root_group, variables);
   allocate_response(root_group, response, default_set);
@@ -339,7 +342,7 @@ void EvaluationStore::allocate_response(const String &root_group, const Response
   // Create functions dataset
   String functions_name = response_root_group + "functions";
   hdf5Stream->create_empty_dataset(functions_name, {0, num_functions}, 
-      ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
+      ResultsOutputType::REAL, HDF5_CHUNK_SIZE, &DSET_FILL_VAL);
   hdf5Stream->attach_scale(functions_name, eval_ids, "evaluation_ids", 0);
   hdf5Stream->attach_scale(functions_name, function_labels_name, "responses", 1);
   // Create gradients dataset, if needed
@@ -351,7 +354,7 @@ void EvaluationStore::allocate_response(const String &root_group, const Response
     Cout << "EvaluationStore::allocate_response() for " << root_group << ", dvv_length: " << dvv_length << std::endl;
     String gradients_name = response_root_group + "gradients";
     hdf5Stream->create_empty_dataset(gradients_name, {0, num_gradients, dvv_length},
-      ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
+      ResultsOutputType::REAL, HDF5_CHUNK_SIZE, &DSET_FILL_VAL);
     hdf5Stream->attach_scale(gradients_name, eval_ids, "evaluation_ids", 0);
     if(num_gradients == num_functions)
       hdf5Stream->attach_scale(gradients_name, function_labels_name, "resposnes", 1);
@@ -370,7 +373,7 @@ void EvaluationStore::allocate_response(const String &root_group, const Response
     int dvv_length = set_s.set.derivative_vector().size();
     String hessians_name = response_root_group + "hessians";
     hdf5Stream->create_empty_dataset(hessians_name, {0, num_hessians, dvv_length, dvv_length},
-      ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
+      ResultsOutputType::REAL, HDF5_CHUNK_SIZE, &DSET_FILL_VAL);
     hdf5Stream->attach_scale(hessians_name, eval_ids, "evaluation_ids", 0);
     if(num_hessians == num_functions)
       hdf5Stream->attach_scale(hessians_name, function_labels_name, "resposnes", 1);
@@ -477,8 +480,25 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
   // function values
   bool has_functions = bool(default_set_s.numFunctions); 
   String functions_name = response_root + "functions";
-  if(has_functions)
-    hdf5Stream->set_vector(functions_name, response.function_values(), resp_idx);
+  if(has_functions) { 
+    // because of NaN fill value, we have to do some legwork. If all of the function
+    // values are set, we can write them all without making a copy. If some of them are
+    // set, we have to make a copy (initizlied to NaN and write just the values that are
+    // present. If none are set, we do nothing, because tThe dataset by default has NaN
+    // fill values.
+    const RealVector &f = response.function_values();
+    int num1 = std::count_if(asv.begin(), asv.end(), [](const short &a){return a & 1;});
+    if(num1 == num_functions) {
+      hdf5Stream->set_vector(functions_name, f, resp_idx);
+    } else if(num1 > 0) {
+      RealVector f_copy(num_functions, false /*don't zero out */);
+      f_copy = DSET_FILL_VAL;
+      for(int i = 0; i < num_functions; ++i) {
+        if(asv[i] & 1) f_copy[i] = f[i];
+      }
+      hdf5Stream->set_vector(functions_name, f_copy, resp_idx);
+    } //else, none are set, do nothing.
+  }
   // Gradients. Gradients and hessians are more complicated than function values for two reasons.
   // 1) The dataset was allocated to accomodate the maximum dvv length, and the current
   //    dvv length may be shorter
@@ -487,6 +507,8 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
   //    response.
   const int &num_gradients = default_set_s.numGradients;
   String gradients_name = response_root + "gradients";
+  IntVector dvv_idx; // indexes into the full gradient matrix of the deriv vars. Declare at this scope
+                     // so it can be reused for Hessian storage, if needed
   if(num_gradients && std::any_of(asv.begin(), asv.end(), [](const short &a){return a & 2;})) {
     // First do the simple case where the dvv is the same length as default dvv and gradients are 
     // not mixed.
@@ -502,14 +524,18 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
       const int num_default_gradients = gradient_idxs.size();
       //Cout << "EvaluationStore::store_response(), num_default_gradients: " << num_default_gradients << std::endl;
       //Cout << "EvaluationStore::store_response(), num_default_deriv_vars: " << num_default_deriv_vars << std::endl;
-      RealMatrix full_gradients(num_default_deriv_vars, num_default_gradients);
+      RealMatrix full_gradients(num_default_deriv_vars, num_default_gradients, false /*don't zero out*/);
+      full_gradients = DSET_FILL_VAL;
+      dvv_idx.resize(dvv.size());
+      for(int i = 0; i < dvv.size(); ++i)
+        dvv_idx[i] = find_index(default_dvv, dvv[i]);
       for(int i = 0; i < num_default_gradients; ++i) {
         const RealVector col = response.function_gradient_view(gradient_idxs[i]);
         for(int j = 0; j < dvv.size(); ++j) {
-          int dvv_j = find_index(default_dvv, dvv[j]);
+          // int dvv_j = find_index(default_dvv, dvv[j]);
           //Cout << "EvaluationStore::store_responses(), dvv[j]: " << dvv[j] << std::endl;
           //Cout << "EvaluationStore::store_responses(), dvv_j: " << dvv_j << std::endl;
-          full_gradients(dvv_j, i) = col(j);
+          full_gradients(dvv_idx[j], i) = col(j);
         }
       }
       hdf5Stream->set_matrix(gradients_name, full_gradients, resp_idx, true /*transpose */);
@@ -526,7 +552,7 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
     if(dvv.size() == num_default_deriv_vars && num_hessians == num_functions) {
       RealMatrixArray full_hessians;
       for(const auto &m : response.function_hessians()) {
-        RealMatrix full_hessian(num_default_deriv_vars, num_default_deriv_vars);
+        RealMatrix full_hessian(num_default_deriv_vars, num_default_deriv_vars, false /*don't zero out*/);
         for(int i = 0; i < num_default_deriv_vars; ++i) {
           full_hessian(i, i) = m(i, i);
           for(int j = i+1; j < num_default_deriv_vars; ++j) {
@@ -544,14 +570,19 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
           hessian_idxs.push_back(i);    
       int num_default_hessians = hessian_idxs.size();
       RealMatrixArray full_hessians;  //(num_default_deriv_vars, num_default_gradients);
+      if(dvv_idx.empty()) { // not yet populated by gradient storage block
+        for(int i = 0; i < dvv.size(); ++i)
+          dvv_idx[i] = find_index(default_dvv, dvv[i]);
+      }
       for(int mi = 0; mi < num_default_hessians; ++mi) {
-        RealMatrix full_hessian(num_default_deriv_vars, num_default_deriv_vars);
+        RealMatrix full_hessian(num_default_deriv_vars, num_default_deriv_vars, false /*don't zero out*/);
+        full_hessian = DSET_FILL_VAL;
         const RealSymMatrix &resp_hessian = response.function_hessian_view(hessian_idxs[mi]);
         for(int i = 0; i < dvv.size(); ++i) {
-          int dvv_i = find_index(default_dvv, dvv[i]);
+          const int &dvv_i = dvv_idx[i];
           full_hessian(dvv_i, dvv_i) = resp_hessian(i,i);
           for(int j = i+1; j < dvv.size(); ++j) {
-            int dvv_j = find_index(default_dvv, dvv[j]);
+            const int &dvv_j = dvv_idx[j];
             full_hessian(dvv_j, dvv_i) = full_hessian(dvv_i, dvv_j) = resp_hessian(i, j);
           }
         }

@@ -140,19 +140,23 @@ int length(const StringMultiArrayConstView &vec) {
 
   void HDF5IOHelper::
   create_empty_dataset(const String &dset_name, const IntArray &dims, 
-                    ResultsOutputType stored_type, int chunk_size) 
+                    ResultsOutputType stored_type, int chunk_size, 
+                    const void* fill_val) 
   {
     create_groups(dset_name);
-    H5::DataType h5_type;
+    H5::DataType h5_type, fill_type;
     switch (stored_type) {
       case ResultsOutputType::REAL:
         h5_type = h5_file_dtype(double(0.0));
+        fill_type = h5_mem_dtype(double(0.0));
         break;
       case ResultsOutputType::INTEGER:
         h5_type = h5_file_dtype(int(0));
+        fill_type = h5_mem_dtype(int(0));
         break;
       case ResultsOutputType::STRING:
         h5_type = h5_file_dtype(String(""));
+        fill_type = h5_mem_dtype(String(""));
         break;
     }
     hsize_t element_size = h5_type.getSize();
@@ -202,6 +206,8 @@ int length(const StringMultiArrayConstView &vec) {
       H5::DataSpace dataspace = H5::DataSpace(rank, fdims.get(), maxdims.get());
       H5::DSetCreatPropList create_plist;
       create_plist.setChunk(rank, chunks.get());
+      if(fill_val)
+        create_plist.setFillValue(fill_type, fill_val);
       H5::DSetAccPropList access_plist;
       // See the C API documentation for H5P_set_chunk_cache for guidance
       const size_t cache_size = 20*actual_chunksize;
