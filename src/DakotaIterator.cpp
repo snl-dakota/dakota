@@ -99,6 +99,7 @@
 #ifdef HAVE_ROL
 #include "ROLOptimizer.hpp"
 #endif
+#include "DemoOptimizer.hpp"
 #ifdef HAVE_JEGA
 #include "JEGAOptimizer.hpp"
 #endif
@@ -582,6 +583,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case ROL:
     return new ROLOptimizer(problem_db, model); break;
 #endif
+  case DEMO_TPL:
+    return new DemoTPLOptimizer(problem_db, model); break;
   default:
     switch (method_name) {
     case NPSOL_SQP: case NLPQL_SQP:
@@ -949,6 +952,7 @@ static UShortStrBimap method_map =
   (PSUADE_MOAT,                     "psuade_moat")
   (NCSU_DIRECT,                     "ncsu_direct")
   (ROL,                             "rol")
+  (DEMO_TPL,                        "demo_tpl")
   ;
 
 

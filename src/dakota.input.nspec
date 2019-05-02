@@ -502,6 +502,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
+  ( demo_tpl {N_mdm(utype,methodName_DEMO_TPL)}
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+   )
+  |
   ( rol {N_mdm(utype,methodName_ROL)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]

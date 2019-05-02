@@ -7171,6 +7171,7 @@ static Method_mp_utype
 	MP2s(methodName,MULTI_START),
   MP2s(methodName,NCSU_DIRECT),
   MP2s(methodName,ROL),
+  MP2s(methodName,DEMO_TPL),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
