@@ -1381,6 +1381,8 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     // convert incoming candidate index to selected trial set
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    // active_mi index -> iterator mapping has not been invalidated
+    // since candidate selection was previously deferred
     const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
     std::set<UShortArray>::const_iterator best_cit = active_mi.begin();
     std::advance(best_cit, best_candidate);
@@ -1408,7 +1410,7 @@ select_index_set_candidate(std::set<UShortArray>::const_iterator cit_star)
 {
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-  nond_sparse->update_sets(*cit_star);
+  nond_sparse->update_sets(*cit_star); // invalidates cit_star
   uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
   nond_sparse->update_reference();
 }
@@ -1588,19 +1590,18 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
 {
   Cout << "\n>>>>> Begin evaluation of active index sets.\n";
 
-  NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-  std::set<UShortArray>::const_iterator cit, cit_star;
-  RealVector stats_ref;  Real delta; delta_star = -DBL_MAX;
-  bool full_covar = (covarianceControl == FULL_COVARIANCE);
-
+  RealVector stats_ref;
   pull_reference(stats_ref);
 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
   // eventually be inexpensive since each point set is only evaluated once).
+  NonDSparseGrid* nond_sparse
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
-  for (cit=active_mi.begin(); cit!=active_mi.end(); ++cit) {
+  std::set<UShortArray>::const_iterator cit, cit_star = active_mi.end();
+  Real delta; delta_star = -DBL_MAX;  size_t index = 0, index_star = _NPOS;
+  for (cit=active_mi.begin(); cit!=active_mi.end(); ++cit, ++index) {
 
     // increment grid with current candidate
     Cout << "\n>>>>> Evaluating trial index set:\n" << *cit;
@@ -1637,7 +1638,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
     // track best increment evaluated thus far
     if (delta > delta_star) {
-      cit_star = cit;  delta_star = delta;
+      cit_star = cit;  delta_star = delta;  index_star = index;
       pull_candidate(levelStatsStar); // pull comp_*_metric() + augmented stats
     }
 
@@ -1651,11 +1652,9 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
        << "\n<<<<< Index set selection:\n" << *cit_star;
 
   if (!revert) { // permanently apply best increment and update references
-    select_index_set_candidate(cit_star);
+    select_index_set_candidate(cit_star); // invalidates cit_star
     push_candidate(levelStatsStar);
   }
-
-  size_t index_star = find_index(active_mi, *cit_star);
   return index_star;
 }
 
