@@ -750,6 +750,7 @@ if(HAVE_DEMO_TPL)
   set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS demo_tpl)
   list(APPEND EXPORT_TARGETS demo_tpl)
+  add_definitions("-DHAVE_DEMO_TPL")
 endif(HAVE_DEMO_TPL)
 
 CheckPackage(PSUADE)

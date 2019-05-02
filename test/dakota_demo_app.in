@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_DEMO_TPL
 
 method,
     demo_tpl
