@@ -5645,7 +5645,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   static IntArray   *Var_Info::* Ia_delete[]
     = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, 
 	AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss, AVI ndusr, 
-	AVI ndssi, AVI ndssr };
+	AVI ndssi, AVI ndsss, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp,
 	AVI DSIp, AVI DSSp, AVI DSRp,
@@ -5654,9 +5654,10 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 	AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
-    = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
+    = { AVI ddsi, AVI DIlb, AVI DIub, AVI hpia, AVI dusi, AVI dssi,
+        AVI ddsia, AVI ddssa, AVI ddsra };
   static StringArray *Var_Info::* Sa_delete[]
-    = { AVI ddss, AVI duss, AVI dsss };
+    = { AVI ddss, AVI hpsa, AVI duss, AVI dsss };
 #undef AVI
 
   Var_Info *vi = (Var_Info*)v;
