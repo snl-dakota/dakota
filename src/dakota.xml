@@ -1730,6 +1730,9 @@
 
         <keyword  id="demo_tpl" name="demo_tpl" code="{N_mdm(utype,methodName_DEMO_TPL)}" label="demo_tpl" help="" minOccurs="1" group="Optimization: Local" >
 	  &default_max_iterations;
+	  <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	    <param type="INPUT_FILE" />
+	  </keyword>
         </keyword>
 
 

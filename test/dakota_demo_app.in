@@ -1,7 +1,9 @@
 #@ *: DakotaConfig=HAVE_DEMO_TPL
+#@ s1: ReqFiles=demo_tpl.opts
 
 method,
     demo_tpl
+#    options_file = "demo_tpl.opts"     #s1
 
 variables,
     continuous_design = 3
