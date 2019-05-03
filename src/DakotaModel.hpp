@@ -709,7 +709,6 @@ public:
   // define and return discreteRealSets
   //const BitArray& discrete_real_sets();
 
-  /*
   /// return the sets of values available for each of the active
   /// discrete set integer variables (aggregated in activeDiscSetIntValues)
   const IntSetArray& discrete_set_int_values();
@@ -728,7 +727,6 @@ public:
   /// return the sets of values available for each of the active
   /// discrete set real variables (aggregated in activeDiscSetRealValues)
   const RealSetArray& discrete_set_real_values(short active_view);
-  */
 
   /// return xDist
   Pecos::MultivariateDistribution& multivariate_distribution();
@@ -2252,7 +2250,6 @@ inline const BitArray& Model::discrete_int_sets()
 }
 
 
-/*
 inline const IntSetArray& Model::discrete_set_int_values()
 {
   if (modelRep)
@@ -2281,7 +2278,6 @@ inline const RealSetArray& Model::discrete_set_real_values()
   else
     return discrete_set_real_values(currentVariables.view().first);
 }
-*/
 
 
 inline Pecos::MultivariateDistribution& Model::multivariate_distribution()

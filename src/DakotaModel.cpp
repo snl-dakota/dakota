@@ -4733,10 +4733,17 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
   // TO DO: return if already defined by a previous invocation
 
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
-  case MIXED_DESIGN:
-    return discreteDesignSetIntValues; break;
+  case MIXED_DESIGN: {
+    size_t num_rv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
+         start_rv = svd.vc_lookup(CONTINUOUS_DESIGN)
+                  + svd.vc_lookup(DISCRETE_DESIGN_RANGE);
+    mvd_rep->pull_parameters<IntSet>(start_rv, num_rv, Pecos::DSI_VALUES,
+				     activeDiscSetIntValues);
+    break;
+  }
   case MIXED_ALEATORY_UNCERTAIN: {
     IntRealMapArray h_pt_prs;
     mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
@@ -4771,98 +4778,124 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
       map_keys_to_set(deusi_vals_probs[i],activeDiscSetIntValues[i+num_dausiv]);
     break;
   }
-  case MIXED_STATE:
-    return discreteStateSetIntValues; break;
+  case MIXED_STATE: {
+    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0,
+      num_rv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv
+      + svd.vc_lookup(CONTINUOUS_STATE) + svd.vc_lookup(DISCRETE_STATE_RANGE);
+    mvd_rep->pull_parameters<IntSet>(start_rv, num_rv, Pecos::DSI_VALUES,
+				     activeDiscSetIntValues);
+    break;
+  }
   case MIXED_ALL: {
     IntRealMapArray h_pt_prs, deusi_vals_probs;
     mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
       Pecos::H_PT_INT_PAIRS, h_pt_prs);
     mvd_rep->pull_parameters<IntRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_INT,
       Pecos::DUSI_VALUES_PROBS, deusi_vals_probs);
-    size_t i, offset, num_ddsiv = discreteDesignSetIntValues.size(),
-      num_dausiv = h_pt_prs.size(), num_deusiv = deusi_vals_probs.size(),
-      num_dssiv  = discreteStateSetIntValues.size();
-    activeDiscSetIntValues.resize(num_ddsiv  + num_dausiv +
-				  num_deusiv + num_dssiv);
-    for (i=0; i<num_ddsiv; ++i)
-      activeDiscSetIntValues[i] = discreteDesignSetIntValues[i];
-    offset = num_ddsiv;
-    for (i=0; i<num_dausiv; ++i)
-      map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[i+offset]);
-    offset += num_dausiv;
-    for (i=0; i<num_deusiv; ++i)
-      map_keys_to_set(deusi_vals_probs[i], activeDiscSetIntValues[i+offset]);
-    offset += num_deusiv;
-    for (i=0; i<num_dssiv; ++i)
-      activeDiscSetIntValues[i+offset] = discreteStateSetIntValues[i];
+    size_t i, di_cntr = 0, num_ddsi = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
+      num_dausi = h_pt_prs.size(), num_deusi = deusi_vals_probs.size(),
+      num_dssi  = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    activeDiscSetIntValues.resize(num_ddsi + num_dausi + num_deusi + num_dssi);
+    size_t num_cv, num_div, num_dsv, num_drv;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    size_t rv_cntr = num_cv + num_div - num_ddsi;
+    for (i=0; i<num_ddsi; ++i, ++rv_cntr, ++di_cntr)
+      mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+				      activeDiscSetIntValues[di_cntr]);
+    rv_cntr += num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_dausi; ++i, ++di_cntr)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[di_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_deusi; ++i, ++di_cntr)
+      map_keys_to_set(deusi_vals_probs[i], activeDiscSetIntValues[di_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv +
+      svd.vc_lookup(CONTINUOUS_STATE) + svd.vc_lookup(DISCRETE_STATE_RANGE);
+    for (i=0; i<num_dssi; ++i, ++rv_cntr, ++di_cntr)
+      mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+				      activeDiscSetIntValues[di_cntr]);
     break;
   }
   default: { // RELAXED_*
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
-    const SizetArray& all_totals = svd.components_totals();
+    const BitArray&    all_relax_di = svd.all_relaxed_discrete_int();
+    const SizetArray&    all_totals = svd.components_totals();
     const SizetArray& active_totals = svd.active_components_totals();
-    size_t i, di_cntr = 0, ardi_cntr = 0;
+    size_t i, num_cv, num_div, num_dsv, num_drv,
+           di_cntr = 0, ardi_cntr = 0, rv_cntr = 0;      
     // discrete design
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DDIV]) {
-      size_t num_ddsiv = discreteDesignSetIntValues.size(),
-	num_ddriv = all_totals[TOTAL_DDIV] - num_ddsiv;
-      for (i=0; i<num_ddriv; ++i, ++ardi_cntr)
+      size_t num_ddsi = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
+	     num_ddri = num_div - num_ddsi;
+      rv_cntr = num_cv;
+      for (i=0; i<num_ddri; ++i, ++ardi_cntr, ++rv_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;
-      for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  activeDiscSetIntValues[di_cntr] = discreteDesignSetIntValues[i];
-	  ++di_cntr;
-	}
+      for (i=0; i<num_ddsi; ++i, ++ardi_cntr, ++rv_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+					  activeDiscSetIntValues[di_cntr++]);
+      rv_cntr += num_dsv + num_drv;
     }
-    else ardi_cntr += all_totals[TOTAL_DDIV];
+    else {
+      ardi_cntr += num_div;
+      rv_cntr   += num_cv + num_div + num_dsv + num_drv;
+    }
     // discrete aleatory uncertain
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DAUIV]) {
       IntRealMapArray h_pt_prs;
       mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
         Pecos::H_PT_INT_PAIRS, h_pt_prs);
-      size_t num_dausiv = h_pt_prs.size(),
-	num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv; 
-      for (i=0; i<num_dauriv; ++i, ++ardi_cntr)
+      size_t num_dausi = h_pt_prs.size(), num_dauri = num_div - num_dausi; 
+      for (i=0; i<num_dauri; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;
-      for (i=0; i<num_dausiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[di_cntr]);
-	  ++di_cntr;
-	}
+      for (i=0; i<num_dausi; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[di_cntr++]);
     }
-    else ardi_cntr += all_totals[TOTAL_DAUIV];
+    else
+      ardi_cntr += num_div;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete epistemic uncertain
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DEUIV]) {
       IntRealMapArray deusi_vals_probs;
       mvd_rep->pull_parameters<IntRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_INT,
         Pecos::DUSI_VALUES_PROBS, deusi_vals_probs);
-      size_t num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
-	     num_deusiv = deusi_vals_probs.size();
-      for (i=0; i<num_deuriv; ++i, ++ardi_cntr)
+      size_t num_deuri = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+	     num_deusi = deusi_vals_probs.size();
+      for (i=0; i<num_deuri; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;
-      for (i=0; i<num_deusiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  map_keys_to_set(deusi_vals_probs[i], activeDiscSetIntValues[di_cntr]);
-	  ++di_cntr;
-	}
+      for (i=0; i<num_deusi; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  map_keys_to_set(deusi_vals_probs[i],
+			  activeDiscSetIntValues[di_cntr++]);
     }
-    else ardi_cntr += all_totals[TOTAL_DEUIV];
+    else
+      ardi_cntr += num_div;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete state
     if (active_totals[TOTAL_DSIV]) {
-      size_t num_dssiv = discreteStateSetIntValues.size(),
-	num_dsriv = all_totals[TOTAL_DSIV] - num_dssiv;
-      for (i=0; i<num_dsriv; ++i, ++ardi_cntr)
+      size_t num_dssi = svd.vc_lookup(DISCRETE_STATE_SET_INT),
+	     num_dsri = all_totals[TOTAL_DSIV] - num_dssi;
+      rv_cntr += all_totals[TOTAL_CSV];
+      for (i=0; i<num_dsri; ++i, ++ardi_cntr, ++rv_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;                  // leave bit as false
-      for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  activeDiscSetIntValues[di_cntr] = discreteStateSetIntValues[i];
-	  ++di_cntr;
-	}
+      for (i=0; i<num_dssi; ++i, ++ardi_cntr, ++rv_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+					  activeDiscSetIntValues[di_cntr++]);
     }
     break;
   }
@@ -4879,27 +4912,35 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
 
   // TO DO: return if already defined (previous call)
 
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
-  case MIXED_DESIGN: case RELAXED_DESIGN:
-    return discreteDesignSetStringValues; break;
+  case MIXED_DESIGN: case RELAXED_DESIGN: {
+    size_t num_cv, num_div, num_dsv, num_drv;      
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    mvd_rep->pull_parameters<StringSet>(num_cv + num_div, num_dsv,
+      Pecos::DSS_VALUES, activeDiscSetStringValues);
+    break;
+  }
   case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN: {
     StringRealMapArray h_pt_prs;
     mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
       Pecos::H_PT_STR_PAIRS, h_pt_prs);
-    size_t i, num_daussv = h_pt_prs.size();
-    activeDiscSetStringValues.resize(num_daussv);
-    for (i=0; i<num_daussv; ++i)
+    size_t i, num_dauss = h_pt_prs.size();
+    activeDiscSetStringValues.resize(num_dauss);
+    for (i=0; i<num_dauss; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i]);
     break;
   }
   case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
     StringRealMapArray deuss_vals_probs;
     mvd_rep->pull_parameters<StringRealMap>(
-      Pecos::DISCRETE_UNCERTAIN_SET_STRING,
-      Pecos::DUSS_VALUES_PROBS, deuss_vals_probs);
-    size_t i, num_deussv = deuss_vals_probs.size();
-    activeDiscSetStringValues.resize(num_deussv);
-    for (i=0; i<num_deussv; ++i)
+      Pecos::DISCRETE_UNCERTAIN_SET_STRING, Pecos::DUSS_VALUES_PROBS,
+      deuss_vals_probs);
+    size_t i, num_deuss = deuss_vals_probs.size();
+    activeDiscSetStringValues.resize(num_deuss);
+    for (i=0; i<num_deuss; ++i)
       map_keys_to_set(deuss_vals_probs[i], activeDiscSetStringValues[i]);
     break;
   }
@@ -4910,40 +4951,62 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
     mvd_rep->pull_parameters<StringRealMap>(
       Pecos::DISCRETE_UNCERTAIN_SET_STRING,
       Pecos::DUSS_VALUES_PROBS, deuss_vals_probs);
-    size_t i, num_daussv = h_pt_prs.size(),num_deussv = deuss_vals_probs.size();
-    activeDiscSetStringValues.resize(num_daussv+num_deussv);
-    for (i=0; i<num_daussv; ++i)
+    size_t i, num_dauss = h_pt_prs.size(), num_deuss = deuss_vals_probs.size();
+    activeDiscSetStringValues.resize(num_dauss + num_deuss);
+    for (i=0; i<num_dauss; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i]);
-    for (i=0; i<num_deussv; ++i)
+    for (i=0; i<num_deuss; ++i)
       map_keys_to_set(deuss_vals_probs[i],
-		      activeDiscSetStringValues[i+num_daussv]);
+		      activeDiscSetStringValues[i+num_dauss]);
     break;
   }
-  case MIXED_STATE: case RELAXED_STATE:
-    return discreteStateSetStringValues; break;
+  case MIXED_STATE: case RELAXED_STATE: {
+    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div;
+    mvd_rep->pull_parameters<StringSet>(start_rv, num_dsv, Pecos::DSS_VALUES,
+					activeDiscSetStringValues);
+    break;
+  }
   case MIXED_ALL: case RELAXED_ALL: {
     StringRealMapArray h_pt_prs, deuss_vals_probs;
     mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
       Pecos::H_PT_STR_PAIRS, h_pt_prs);
     mvd_rep->pull_parameters<StringRealMap>(
-      Pecos::DISCRETE_UNCERTAIN_SET_STRING,
-      Pecos::DUSS_VALUES_PROBS, deuss_vals_probs);
-    size_t i, offset, num_ddssv = discreteDesignSetStringValues.size(),
-      num_daussv = h_pt_prs.size(), num_deussv = deuss_vals_probs.size(),
-      num_dsssv = discreteStateSetStringValues.size();
-    activeDiscSetStringValues.resize(num_ddssv  + num_daussv +
-				     num_deussv + num_dsssv);
-    for (i=0; i<num_ddssv; ++i)
-      activeDiscSetStringValues[i] = discreteDesignSetStringValues[i];
-    offset = num_ddssv;
-    for (i=0; i<num_daussv; ++i)
-      map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i+offset]);
-    offset += num_daussv;
-    for (i=0; i<num_deussv; ++i)
-      map_keys_to_set(deuss_vals_probs[i], activeDiscSetStringValues[i+offset]);
-    offset += num_deussv;
-    for (i=0; i<num_dsssv; ++i)
-      activeDiscSetStringValues[i+offset] = discreteStateSetStringValues[i];
+      Pecos::DISCRETE_UNCERTAIN_SET_STRING, Pecos::DUSS_VALUES_PROBS,
+      deuss_vals_probs);
+    size_t i, ds_cntr = 0,
+      num_ddss  = svd.vc_lookup(DISCRETE_DESIGN_SET_STRING),
+      num_dauss = h_pt_prs.size(), num_deuss= deuss_vals_probs.size(),
+      num_dsss  = svd.vc_lookup(DISCRETE_STATE_SET_STRING);
+    activeDiscSetStringValues.resize(num_ddss + num_dauss +
+				     num_deuss + num_dsss);
+    size_t num_cv, num_div, num_dsv, num_drv;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    size_t rv_cntr = num_cv + num_div;
+    for (i=0; i<num_ddss; ++i, ++rv_cntr, ++ds_cntr)
+      mvd_rep->pull_parameter<StringSet>(rv_cntr, Pecos::DSS_VALUES,
+					 activeDiscSetStringValues[ds_cntr]);
+    rv_cntr += num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_dauss; ++i, ++ds_cntr)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[ds_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_deuss; ++i, ++ds_cntr)
+      map_keys_to_set(deuss_vals_probs[i], activeDiscSetStringValues[ds_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    rv_cntr += num_cv + num_div;
+    for (i=0; i<num_dsss; ++i, ++rv_cntr, ++ds_cntr)
+      mvd_rep->pull_parameter<StringSet>(rv_cntr, Pecos::DSS_VALUES,
+					 activeDiscSetStringValues[ds_cntr]);
     break;
   }
   }
@@ -4959,16 +5022,24 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
 
   // TO DO: return if already defined (previous call)
 
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
-  case MIXED_DESIGN:
-    return discreteDesignSetRealValues; break;
+  case MIXED_DESIGN: {
+    size_t num_cv, num_div, num_dsv, num_drv;      
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    mvd_rep->pull_parameters<RealSet>(num_cv + num_div + num_dsv, num_drv,
+      Pecos::DSR_VALUES, activeDiscSetRealValues);
+    break;
+  }
   case MIXED_ALEATORY_UNCERTAIN: {
     RealRealMapArray h_pt_prs;
     mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
       Pecos::H_PT_REAL_PAIRS, h_pt_prs);
-    size_t i, num_dausrv = h_pt_prs.size();
-    activeDiscSetRealValues.resize(num_dausrv);
-    for (i=0; i<num_dausrv; ++i)
+    size_t i, num_dausr = h_pt_prs.size();
+    activeDiscSetRealValues.resize(num_dausr);
+    for (i=0; i<num_dausr; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[i]);
     break;
   }
@@ -4976,9 +5047,9 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
     RealRealMapArray deusr_vals_probs;
     mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
       Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
-    size_t i, num_deusrv = deusr_vals_probs.size();
-    activeDiscSetRealValues.resize(num_deusrv);
-    for (i=0; i<num_deusrv; ++i)
+    size_t i, num_deusr = deusr_vals_probs.size();
+    activeDiscSetRealValues.resize(num_deusr);
+    for (i=0; i<num_deusr; ++i)
       map_keys_to_set(deusr_vals_probs[i], activeDiscSetRealValues[i]);
     break;
   }
@@ -4988,91 +5059,115 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
       Pecos::H_PT_REAL_PAIRS, h_pt_prs);
     mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
       Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
-    size_t i, num_dausrv = h_pt_prs.size(),num_deusrv = deusr_vals_probs.size();
-    activeDiscSetRealValues.resize(num_dausrv+num_deusrv);
-    for (i=0; i<num_dausrv; ++i)
+    size_t i, num_dausr = h_pt_prs.size(), num_deusr = deusr_vals_probs.size();
+    activeDiscSetRealValues.resize(num_dausr + num_deusr);
+    for (i=0; i<num_dausr; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[i]);
-    for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(deusr_vals_probs[i],
-		      activeDiscSetRealValues[i+num_dausrv]);
+    for (i=0; i<num_deusr; ++i)
+      map_keys_to_set(deusr_vals_probs[i],activeDiscSetRealValues[i+num_dausr]);
     break;
   }
-  case MIXED_STATE:
-    return discreteStateSetRealValues; break;
+  case MIXED_STATE: {
+    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv;
+    mvd_rep->pull_parameters<RealSet>(start_rv, num_drv, Pecos::DSR_VALUES,
+				      activeDiscSetRealValues);
+    break;
+  }
   case MIXED_ALL: {
     RealRealMapArray h_pt_prs, deusr_vals_probs;
     mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
       Pecos::H_PT_REAL_PAIRS, h_pt_prs);
     mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
       Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
-    size_t i, offset, num_ddsiv = discreteDesignSetRealValues.size(),
-      num_dausrv = h_pt_prs.size(), num_deusrv = deusr_vals_probs.size(),
-      num_dssiv = discreteStateSetRealValues.size();
-    activeDiscSetRealValues.resize(num_ddsiv  + num_dausrv +
-				   num_deusrv + num_dssiv);
-    for (i=0; i<num_ddsiv; ++i)
-      activeDiscSetRealValues[i] = discreteDesignSetRealValues[i];
-    offset = num_ddsiv;
-    for (i=0; i<num_dausrv; ++i)
-      map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[i+offset]);
-    offset += num_dausrv;
-    for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(deusr_vals_probs[i], activeDiscSetRealValues[i+offset]);
-    offset += num_deusrv;
-    for (i=0; i<num_dssiv; ++i)
-      activeDiscSetRealValues[i+offset] = discreteStateSetRealValues[i];
+    size_t i, dr_cntr = 0, num_dausr = h_pt_prs.size(),
+      num_deusr = deusr_vals_probs.size(),
+      num_dssr  = svd.vc_lookup(DISCRETE_STATE_SET_REAL);
+    size_t num_cv, num_div, num_dsv, num_drv;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    activeDiscSetRealValues.resize(num_drv + num_dausr + num_deusr + num_dssr);
+    size_t rv_cntr = num_cv + num_div + num_dsv;
+    for (i=0; i<num_drv; ++i, ++rv_cntr, ++dr_cntr)
+      mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+				       activeDiscSetRealValues[dr_cntr]);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_dausr; ++i, ++dr_cntr)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[dr_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_deusr; ++i, ++dr_cntr)
+      map_keys_to_set(deusr_vals_probs[i], activeDiscSetRealValues[dr_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    rv_cntr += num_cv + num_div + num_dsv;
+    for (i=0; i<num_drv; ++i, ++rv_cntr, ++dr_cntr)
+      mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+				       activeDiscSetRealValues[dr_cntr]);
     break;
   }
   default: { // RELAXED_*
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
-    const SizetArray& all_totals = svd.components_totals();
+    const BitArray&    all_relax_dr = svd.all_relaxed_discrete_real();
+    const SizetArray&    all_totals = svd.components_totals();
     const SizetArray& active_totals = svd.active_components_totals();
-    size_t i, dr_cntr = 0, ardr_cntr = 0;
+    size_t i, num_cv, num_div, num_dsv, num_drv,
+           dr_cntr = 0, ardr_cntr = 0, rv_cntr = 0;
     // discrete design
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DDRV]) {
-      size_t num_ddsrv = discreteDesignSetRealValues.size();
-      for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  activeDiscSetRealValues[dr_cntr] = discreteDesignSetRealValues[i];
-	  ++dr_cntr;
-	}
+      rv_cntr = num_cv + num_div + num_dsv;
+      for (i=0; i<num_drv; ++i, ++ardr_cntr, ++rv_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+					   activeDiscSetRealValues[dr_cntr++]);
     }
-    else ardr_cntr += all_totals[TOTAL_DDRV];
+    else {
+      ardr_cntr += num_drv;
+      rv_cntr   += num_cv + num_div + num_dsv + num_drv;
+    }
     // discrete aleatory uncertain
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DAURV]) {
       RealRealMapArray h_pt_prs;
       mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
         Pecos::H_PT_REAL_PAIRS, h_pt_prs);
-      size_t num_dausrv = h_pt_prs.size(); 
-      for (i=0; i<num_dausrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[dr_cntr]);
-	  ++dr_cntr;
-	}
+      size_t num_dausr = h_pt_prs.size(); 
+      for (i=0; i<num_dausr; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[dr_cntr++]);
     }
-    else ardr_cntr += all_totals[TOTAL_DAURV];
+    else
+      ardr_cntr += num_drv;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete epistemic uncertain
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DEURV]) {
       RealRealMapArray deusr_vals_probs;
       mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
         Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
-      size_t num_deusrv = deusr_vals_probs.size();
-      for (i=0; i<num_deusrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  map_keys_to_set(deusr_vals_probs[i],activeDiscSetRealValues[dr_cntr]);
-	  ++dr_cntr;
-	}
+      size_t num_deusr = deusr_vals_probs.size();
+      for (i=0; i<num_deusr; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  map_keys_to_set(deusr_vals_probs[i],
+			  activeDiscSetRealValues[dr_cntr++]);
     }
-    else ardr_cntr += all_totals[TOTAL_DEURV];
+    else
+      ardr_cntr += num_drv;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete state
     if (active_totals[TOTAL_DSRV]) {
-      size_t num_dssrv = discreteStateSetRealValues.size();
-      for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  activeDiscSetRealValues[dr_cntr] = discreteStateSetRealValues[i];
-	  ++dr_cntr;
-	}
+      svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+      rv_cntr += num_cv + num_div + num_dsv;
+      for (i=0; i<num_drv; ++i, ++ardr_cntr, ++rv_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+					   activeDiscSetRealValues[dr_cntr++]);
     }
     break;
   }
