@@ -129,8 +129,10 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
     return EvaluationsDBState::INACTIVE;
   //Cout << "EvaluationStore::model_allocate()\nmodel_id: " << model_id << "\nmodel_type: " << model_type << std::endl;
   allocatedModels.emplace(model_id);
+  //Cout << "EvaluationStore::model_allocate(), response.num_functions(): " << response.num_functions() << std::endl;
   const auto & ds_pair = modelDefaultSets.emplace(model_id, DefaultSet(set));
   const DefaultSet &default_set = (*ds_pair.first).second;
+  //Cout << "EvaluationStore::model_allocate(), default_set.numFunctions: " << default_set.numFunctions << std::endl;
   String root_group = create_model_root(model_id, model_type);
   String scale_root = create_scale_root(root_group);
   // Create evaluation ID dataset, which is attached as a scale to many datasets
@@ -184,13 +186,14 @@ void EvaluationStore::store_model_variables(const String &model_id, const String
   //  model_id << "\nmodel_type: " << model_type << 
   //  "\neval_id: " << eval_id << std::endl;
   const DefaultSet &default_set_s = modelDefaultSets[model_id]; 
-  if(set.request_vector().size() != default_set_s.set.request_vector().size()) {
+  if(set.request_vector().size() != default_set_s.numFunctions) {
     if(resizedModels.find(model_id) == resizedModels.end()) {
       resizedModels.insert(model_id);
       Cerr << "Warning: Number of functions provided to HDF5 database by model\n" 
-        << "\n  '" << model_id << "'\n\nhas changed since the study began. This behavior \n"
-        << "currently is not supported. Storage will be skipped.";
+        << "\n  '" << model_id << "'\n\nhas changed since the study began. This behavior currently is\n"
+        << "not supported. Storage will be skipped.\n";
     }
+    modelResponseIndexCache.emplace(std::make_tuple(model_id, eval_id), -1);
     return;
   }
   resizedModels.erase(model_id);
@@ -221,20 +224,13 @@ void EvaluationStore::store_model_response(const String &model_id, const String 
 #ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
+  const DefaultSet &default_set_s = modelDefaultSets[model_id];
   std::tuple<String, int> key(model_id, eval_id);
-  // If the key isn't found, it's (in theory) because 
-  const auto &index_itr = modelResponseIndexCache.find(key);
-  if(index_itr == modelResponseIndexCache.end()) {
-    if(resizedModels.find(model_id) == resizedModels.end())
-      Cerr << "Warning: EvaluationStore::store_model_response() couldn't find a "
-        << "matching response index for evaluation " << eval_id << " of model '" 
-        << model_id << "'!\n";
+  int response_index = modelResponseIndexCache[key];
+  if(response_index == -1)
     return;
-  }
-  int response_index = index_itr->second;
-  
   String root_group = create_model_root(model_id, model_type);
-  store_response(root_group, response_index, response, modelDefaultSets[model_id]);
+  store_response(root_group, response_index, response, default_set_s);
   auto cache_entry = modelResponseIndexCache.find(key);
   modelResponseIndexCache.erase(cache_entry);
 #else
@@ -310,45 +306,57 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
   if(variables.acv()) {
     String data_name = variables_root_group + "continuous";
     String labels_name = variables_scale_root + "continuous_descriptors";
+    String ids_name = variables_scale_root + "continuous_ids";
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.acv())}, 
         ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
                              variables.all_continuous_variable_labels());
     hdf5Stream->attach_scale(data_name, eval_ids, "evaluation_ids", 0);
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
+    hdf5Stream->store_vector(ids_name, variables.all_continuous_variable_ids());
+    hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
   }
 
   if(variables.adiv()) {
     String data_name = variables_root_group + "discrete_integer";
     String labels_name = variables_scale_root + "discrete_integer_descriptors";
+    String ids_name = variables_scale_root + "discrete_integer_ids";
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.adiv())}, 
         ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
                              variables.all_discrete_int_variable_labels());
     hdf5Stream->attach_scale(data_name, eval_ids, "evaluation_ids", 0);
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
+    hdf5Stream->store_vector(ids_name, variables.all_discrete_int_variable_ids());
+    hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
   }
 
   if(variables.adsv()) {
     String data_name = variables_root_group + "discrete_string";
     String labels_name = variables_scale_root + "discrete_string_descriptors";
+    String ids_name = variables_scale_root + "discrete_string_ids";
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.adsv())}, 
         ResultsOutputType::STRING, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
                              variables.all_discrete_string_variable_labels());
     hdf5Stream->attach_scale(data_name, eval_ids, "evaluation_ids", 0);
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
+    hdf5Stream->store_vector(ids_name, variables.all_discrete_string_variable_ids());
+    hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
   }
 
   if(variables.adrv()) {
     String data_name = variables_root_group + "discrete_real";
     String labels_name = variables_scale_root + "discrete_real_descriptors";
+    String ids_name = variables_scale_root + "discrete_real_ids";
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.adrv())}, 
         ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
                              variables.all_discrete_real_variable_labels());
     hdf5Stream->attach_scale(data_name, eval_ids, "evaluation_ids", 0);
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
+    hdf5Stream->store_vector(ids_name, variables.all_discrete_real_variable_ids());
+    hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
   }
 #else
   return;
@@ -363,7 +371,7 @@ void EvaluationStore::allocate_response(const String &root_group, const Response
   String scale_root = create_scale_root(root_group);
   String response_scale_root = scale_root + "responses/";
   String eval_ids = scale_root + "evaluation_ids";
-  int num_functions = int(response.num_functions());
+  int num_functions = int(set_s.numFunctions);
   // Store function labels
   String function_labels_name = response_scale_root + "function_descriptors";
   hdf5Stream->store_vector(function_labels_name, response.function_labels());

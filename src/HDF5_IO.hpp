@@ -215,6 +215,14 @@ class HDF5IOHelper
     return;
   }
  
+  /// Store vector (1D) information to a dataset
+  void store_vector(const std::string & dset_name,
+                                 SizetMultiArrayConstView vec )
+  {
+    store_vector(dset_name, &vec[0], vec.size());
+    return;
+  }
+ 
   /// Store matrix (2D) information to a dataset
   template<typename T>
   void store_matrix(const std::string &dset_name, 
