@@ -503,7 +503,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( demo_tpl {N_mdm(utype,methodName_DEMO_TPL)}
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
+    [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
     [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
    )
   |
