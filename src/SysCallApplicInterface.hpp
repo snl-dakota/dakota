@@ -60,9 +60,6 @@ protected:
   //- Heading: Data
   //
 
-  // Used for parameter and response storage and token substitution.
-  std::vector<std::string> argList;
-
 private:
 
   //
@@ -81,13 +78,6 @@ private:
   void spawn_analysis_to_shell(int analysis_id, bool block_flag);
   /// spawn the output filter portion of a function evaluation
   void spawn_output_filter_to_shell(bool block_flag);
-
-  /// set argList for execution of the input filter
-  void ifilter_argument_list();
-  /// set argList for execution of the output filter
-  void ofilter_argument_list();
-  /// set argList for execution of the specified analysis driver
-  void driver_argument_list(int analysis_id);
 
   //
   //- Heading: Data
@@ -146,40 +136,6 @@ set_communicators_checks(int max_eval_concurrency)
   bool warn = false;
   if (check_multiprocessor_analysis(warn))
     abort_handler(-1);
-}
-
-// TODO (emridgw) These inline functions are duplicated in
-// ProcessHandleApplicInterface.hpp.  One of the two sets of
-// functions should ideally be pushed up into the parent
-// ProcessApplicInterface.hpp.
-inline void SysCallApplicInterface::ifilter_argument_list()
-{
-  argList[0] = iFilterName;
-  argList[1] = paramsFileName;
-  argList[2] = resultsFileName;
-}
-
-
-inline void SysCallApplicInterface::ofilter_argument_list()
-{
-  argList[0] = oFilterName;
-  argList[1] = paramsFileName;
-  argList[2] = resultsFileName;
-}
-
-
-inline void SysCallApplicInterface::driver_argument_list(int analysis_id)
-{
-  std::string tag_str = "." + std::to_string(analysis_id);
-  argList[0] = programNames[analysis_id-1];
-  argList[1] = (multipleParamsFiles) ? paramsFileName+tag_str : paramsFileName;
-  argList[2] = (programNames.size() > 1) ? resultsFileName+tag_str :
-    resultsFileName;
-
-#ifdef DEBUG
-  Cout << "argList: " << argList[0] << ' ' << argList[1] << ' ' << argList[2]
-       << std::endl;
-#endif
 }
 
 } // namespace Dakota
