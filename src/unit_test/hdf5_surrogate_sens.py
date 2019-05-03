@@ -143,7 +143,7 @@ class EvaluationsStructure(unittest.TestCase):
 
     def test_interface_presence(self):
         expected_interfaces = {"NO_ID":["truth_m"],
-                               "APPROX_INTERFACE":["surr"]}
+                               "APPROX_INTERFACE_1":["surr"]}
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             self.assertItemsEqual(expected_interfaces.keys(), h["/interfaces"].keys())
             for k, g in h["/interfaces"].items():
@@ -175,12 +175,12 @@ class TabularData(unittest.TestCase):
 
         with h5py.File(_TEST_NAME + ".h5", "r") as h:
             # Variables
-            hvars = h["/interfaces/APPROX_INTERFACE/surr/variables/continuous"]
+            hvars = h["/interfaces/APPROX_INTERFACE_1/surr/variables/continuous"]
             self.assertItemsEqual(variables, hvars.dims[1][0][:])
             for i, v in enumerate(variables):
                 for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
                     self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
-            hresps = h["/interfaces/APPROX_INTERFACE/surr/responses/functions"]
+            hresps = h["/interfaces/APPROX_INTERFACE_1/surr/responses/functions"]
             # Responses
             self.assertItemsEqual(responses, hresps.dims[1][0][:])
             for i, r in enumerate(responses):

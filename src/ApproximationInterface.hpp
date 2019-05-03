@@ -179,6 +179,8 @@ private:
   //- Heading: Data
   //
 
+  /// counter for giving unique names to approximation interfaces
+  static size_t approxIdNum;
   /// for incomplete approximation sets, this array specifies the
   /// response function subset that is approximated
   IntSet approxFnIndices;
