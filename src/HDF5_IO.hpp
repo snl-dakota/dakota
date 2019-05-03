@@ -197,8 +197,8 @@ class HDF5IOHelper
   void set_vector(const String &dset_name, const T &data, const int &index, const bool &row = true); 
   
   /// Set a row or column of Strings in a 2D dataset at index using its name
-  //void set_vector(const String &dset_name, H5::DataSet &ds, StringMultiArrayConstView data, 
-  //    const int &index, const bool &row = true);
+  void set_vector(const String &dset_name, H5::DataSet &ds, StringMultiArrayConstView data, 
+      const int &index, const bool &row = true);
 
   /// Set a row or column in a 2D dataset at index using the dataset object
   template<typename T>
@@ -329,6 +329,10 @@ class HDF5IOHelper
                                 H5::DSetCreatPropList(),
                               const H5::DSetAccPropList &access_plist =
                                 H5::DSetAccPropList() ) const;
+
+  /// Create a group
+  H5::Group create_group( const H5::H5Location &loc,
+                              const std::string &name) const;
   /// Create a soft link
   void create_softlink(const String &link_location, const String &source_location); 
   

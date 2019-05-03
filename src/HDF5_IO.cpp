@@ -91,23 +91,20 @@ bool HDF5IOHelper::exists(const String location_name) const
   return true;
 }
 
-/*
+
 void HDF5IOHelper::set_vector(const String &dset_name, H5::DataSet &ds, 
   StringMultiArrayConstView data, const int &index, const bool &row) {
   
-  // For mysterious reasons, this overload does not seem to be required with HDF5 1.10.4
-  // and GCC 5.3. Conceivably non-default dataspaces trigger a code path in HDF5 that
-  // avoids the bug. I'll leave it here, commented out, in case it's needed later.
-  //
-  // For more information, see the comments on the String * version of
-  //  HDF5IOHelper::store_vector.
+  // See coment comment on the String * version of  
+  // HDF5IOHelper::store_vector for an explanation of why this
+  // overload is needed.
 
   std::vector<const char *> ptrs_to_data(data.size());
   std::transform(data.begin(), data.end(), ptrs_to_data.begin(),
       [](const String &s){return s.c_str();});
   set_vector(dset_name, ds, ptrs_to_data, index, row);
 }
-*/
+
 
 /// Store vector (1D) information to a dataset
 void HDF5IOHelper::store_vector(const std::string & dset_name,
@@ -265,6 +262,24 @@ H5::DataSet HDF5IOHelper::create_dataset(
   else {
     flush();
     throw std::runtime_error(String("Attempt to create HDF5 dataset ") + name + " failed" );
+  }
+}
+
+H5::Group HDF5IOHelper::create_group(const H5::H5Location &loc, const std::string &name) const {
+  hid_t loc_id   = loc.getId();
+  hid_t lcpl_id  = linkCreatePL.getId();
+  hid_t gcpl_id  = H5Pcreate(H5P_GROUP_CREATE);
+  H5Pset_link_creation_order(gcpl_id, H5P_CRT_ORDER_TRACKED);
+  hid_t group_id =  H5Gcreate2(loc_id, name.c_str(), lcpl_id, gcpl_id, H5P_DEFAULT);
+  H5Pclose(gcpl_id);
+  if(group_id > 0) {
+    H5::Group group(group_id);
+    H5Gclose(group_id);
+    return group;
+  }
+  else {
+    flush();
+    throw std::runtime_error(String("Attempt to create HDF5 group ") + name + " failed" );
   }
 }
 
