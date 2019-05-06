@@ -326,6 +326,10 @@ if(DAKOTA_HAVE_HDF5)
   if(HDF5_VERSION VERSION_LESS "1.10.2")
     message( SEND_ERROR "Found HDF5 version ${HDF5_VERSION}. Minimum required is 1.10.")
   endif()
+  if(WIN32)
+    find_package(ZLIB REQUIRED) 
+    message(STATUS "Found Win32 ZLIB libraries: ${ZLIB_LIBRARIES}")
+  endif()
 endif() # DAKOTA_HAVE_HDF5
 
 # Mandate a system or user-provided Boost, including some libraries
