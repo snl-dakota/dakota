@@ -900,12 +900,14 @@ void ParamStudy::distribute_partitions()
     part = discIntVarPartitions[i];
     if (part) {
       initialDIVPoint[i] = di_l_bnds[i];
-      int range = (di_set_bits[i]) ? dsi_values[dsi_cntr++].size() - 1 :
+      int range = (di_set_bits[i]) ? dsi_values[dsi_cntr].size() - 1 :
 	                             di_u_bnds[i] - di_l_bnds[i];
       discIntStepVector[i] = integer_step(range, part);
     }
     else
       { initialDIVPoint[i] = di_vars[i]; discIntStepVector[i] = 0; }
+    // must increment the discrete set integer counter even if no partition:
+    if (di_set_bits[i]) ++dsi_cntr;
   }
   for (i=0; i<numDiscreteStringVars; ++i) {
     part = discStringVarPartitions[i];
@@ -1008,7 +1010,7 @@ void ParamStudy::final_point_to_step_vector()
 #ifdef DEBUG
   Cout << "final_point_to_step_vector():\n";
   if (numContinuousVars)
-    Cout << "continuous step vector:\n" contStepVector;
+    Cout << "continuous step vector:\n" << contStepVector;
   if (numDiscreteIntVars)
     Cout << "discrete int step vector:\n" << discIntStepVector;
   if (numDiscreteStringVars) {

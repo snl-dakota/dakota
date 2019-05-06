@@ -25,6 +25,8 @@ namespace Dakota {
 
 extern PRPCache data_pairs;
 
+size_t ApproximationInterface::approxIdNum = 0;
+
 ApproximationInterface::
 ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
@@ -44,7 +46,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   // be incorrect since there is no longer an approximation interface
   // specification (assign_rep() is used from DataFitSurrModel).
   // Override these inherited settings.
-  interfaceId = "APPROX_INTERFACE"; interfaceType = APPROX_INTERFACE;
+  interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);
+  interfaceType = APPROX_INTERFACE;
   algebraicMappings = false; // for now; *** TO DO ***
 
   // process approxFnIndices.  IntSets are sorted and unique.  Error checking
@@ -133,7 +136,8 @@ ApproximationInterface(const String& approx_type,
   actualModelVars(am_vars.copy()),
   actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
 {
-  interfaceId = "APPROX_INTERFACE"; interfaceType = APPROX_INTERFACE;
+  interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);
+  interfaceType = APPROX_INTERFACE;
 
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars

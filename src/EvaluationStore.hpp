@@ -157,6 +157,10 @@ class EvaluationStore {
     /// TOP_METHOD or ALL_METHODS model evals are stored.
     std::set<String> sourceModels;
 
+    /// Ids of models that have tried to store a different number of functions than
+    /// were initially allocated.
+    std::set<String> resizedModels;
+
 }; // class EvaluationStore
 
 } // Dakota namespace
