@@ -2818,6 +2818,21 @@ deviation approximately 0.1.
   \label{fig:uq:obs_err_mult}
 \end{figure}
 
+\subsection{Scaling and Weighting of Residuals}
+
+Dakota's scaling options, described in
+Section~\ref{opt:additional:scaling}, can be used on Bayesian
+calibration problems, using the \texttt{calibration\_term\_scales}
+keyword, to scale the residuals between the data points and the model
+predictions, if desired. Additionally, Bayesian calibration
+residuals-squared can be weighted via the \texttt{calibration\_terms
+weights} specification. Neither set of weights nor scales are adjusted
+during calibration.  When response scaling is active, it is applied
+after error variance weighting and before \texttt{weights}
+application. The \texttt{calibration\_terms} keyword documentation in
+the Dakota Reference Manual~\cite{RefMan} has more detail about
+weighting and scaling of the residual terms.
+
 \subsection{Model Evidence} 
 In some situations, there are multiple models that may represent a phenomenon 
 and the user is left with the task to determine which is most appropriate given 
