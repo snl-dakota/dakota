@@ -298,6 +298,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(output_level), hierarchicalTagging(false),
+  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   modelRep(NULL), referenceCount(1)
