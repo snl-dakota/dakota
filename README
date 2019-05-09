@@ -63,9 +63,6 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
 		    (including any source, test, unit_test, example,
 		     script, build system, or other files not
 		     specifically marked)
-  pyprepro          MIT License [SNL]
-    bottlepy/bottle MIT License (modern stle with sublicense)
-    pypi/six        MIT License (modern stle with sublicense)
   acro              Revised BSD License [SNL]
     (including colin, dummy, interfaces, pebbl, scolib, utilib)
     tpl
@@ -85,6 +82,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   dream		    GNU Lesser General Public License (LGPL)
   fftw	    	    GNU General Public License (GPL; disabled by default)
   FSUDace	    GNU Lesser General Public License (LGPL)
+  HDF5              BSD-style Open Source License (variant)
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
@@ -98,6 +96,9 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
   PSUADE	    GNU Lesser General Public License (LGPL)
+  pyprepro          MIT License [SNL]
+    bottlepy/bottle MIT License (modern stle with sublicense)
+    pypi/six        MIT License (modern stle with sublicense)
   queso		    GNU Lesser General Public License (LGPL)
   sciplot	    GNU Library General Public License (old LGPL)
   surfpack	    GNU Lesser General Public License (LGPL) [SNL]
