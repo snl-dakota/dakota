@@ -43,18 +43,18 @@ numerical results: the reduction of the variance (for a fixed computational cost
 is a very effective way of improving the quality of the MC prediction. 
 
 \section{Control variate Monte Carlo} \label{uq:sampling:controlvariate}
-A closer inspection of Eq.~\ref{EQ: variance MC} indicates that only an increase in the number of simulations $N$ 
+A closer inspection of Eq.~\eqref{EQ: variance MC} indicates that only an increase in the number of simulations $N$ 
 might reduce the overall variance, since $\mathbb{V}ar\left({Q}\right)$ is an intrinsic property of the model under analysis. However, 
 more sophisticated  techniques have been proposed to accelerate the convergence of a MC simulation. For instance, an incomplete list 
 of these techniques can include stratified sampling, importance sampling, Latin hypercube, deterministic Sobol' 
 sequences and control variates. In particular, the control variate approach, is based on the idea of replacing
 the RV $Q$ with a different one which has the same expected value, but with a smaller variance.
-The goal is to reduce the numerator in Eq.~\ref{EQ: variance MC}, and hence the value of the estimator variance without
+The goal is to reduce the numerator in Eq.~\eqref{EQ: variance MC}, and hence the value of the estimator variance without
 requiring a larger number of simulations.
 In a practical setting, the control variate makes use of an auxiliary functional $G=G(\boldsymbol{\xi})$ for which the 
 expected value is known. Indeed, the alternative estimator can be defined as
 \begin{equation} \label{EQ: control variate}
-\hat{Q}_N^{MCCV} =  \hat{Q}_N^{MC} - \beta \left( \hat{G}_N^{MC} - \mathbb{E}\left[Q\right] \right).
+\hat{Q}_N^{MCCV} =  \hat{Q}_N^{MC} - \beta \left( \hat{G}_N^{MC} - \mathbb{E}\left[G\right] \right).
 \end{equation}
 The MC control variate estimator $\hat{Q}_N^{MCCV}$ is unbiased (irrespective of the value of the parameter 
 $\beta \in \mathbb{R}$), but its variance now has a more complex dependence not only 
@@ -268,8 +268,8 @@ Formally the two formulations are completely equivalent if $Y_\ell^{\mathrm{HF}}
 Equation~\eqref{EQ: MLMF estimator} and they can be linked through the two ratios
   \begin{equation}
  \begin{split}
- \theta_{\ell} &= \dfrac{  \mathrm{Cov}\left(  Y^{\mathrm{LF}}_{\ell},\mathring{Y}^{\mathrm{LF}}_{\ell} \right)   }
-                        {  \mathrm{Cov}\left( Y^{\mathrm{LF}}_{\ell},Y^{\mathrm{LF}}_{\ell} \right)  } \\
+ \theta_{\ell} &= \dfrac{  \mathrm{Cov}\left(  Y^{\mathrm{HF}}_{\ell},\mathring{Y}^{\mathrm{LF}}_{\ell} \right)   }
+                        {  \mathrm{Cov}\left( Y^{\mathrm{HF}}_{\ell},Y^{\mathrm{LF}}_{\ell} \right)  } \\
  \quad \tau_{\ell}  &= \dfrac{  \mathbb{V}ar\left(  \mathring{Y}^{\mathrm{LF}}_{\ell} \right)  }{ \mathbb{V}ar\left( Y^{\mathrm{LF}}_{\ell} \right) },
  \end{split}
 \end{equation}
