@@ -83,6 +83,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   fftw	    	    GNU General Public License (GPL; disabled by default)
   FSUDace	    GNU Lesser General Public License (LGPL)
   HDF5              BSD-style Open Source License (variant)
+    zlib            ZLib License
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
