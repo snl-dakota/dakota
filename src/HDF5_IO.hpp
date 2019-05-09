@@ -114,6 +114,16 @@ int length(const Teuchos::SerialDenseVector<int, T> &vec) {
 /// Return the length of a StringMultiArrayConstView
 int length(const StringMultiArrayConstView &vec);
 
+/// Return a vector of pointers to strings
+template<typename T>
+std::vector<const char *> pointers_to_strings(const T &data) {
+  std::vector<const char *> ptrs_to_data(data.size());
+  std::transform(data.begin(), data.end(), ptrs_to_data.begin(),
+      [](const String &s){return s.c_str();});
+  return ptrs_to_data;
+}
+
+
 /**
  * This helper class provides wrapper functions that perform
  * low-level access operations in HDF5 databases.
@@ -158,6 +168,8 @@ class HDF5IOHelper
   /// Store scalar data to a data set
   template <typename T>
   void store_scalar(const std::string& dset_name, const T& val);
+  /// Store string scalar data to a data set
+  void store_scalar(const std::string& dset_name, const String& val);
   /// Store vector (1D) information to a dataset
   template <typename T>
   void store_vector(const std::string& dset_name,
@@ -169,11 +181,11 @@ class HDF5IOHelper
  
   /// Store vector (1D) information to a dataset
   void store_vector(const std::string & dset_name,
-                                 StringMultiArrayConstView vec );
+                                 const StringMultiArrayConstView &vec );
 
   /// Store vector (1D) information to a dataset
   void store_vector(const std::string & dset_name,
-                                 SizetMultiArrayConstView vec );
+                                 const SizetMultiArrayConstView &vec );
  
   /// Store matrix (2D) information to a dataset
   template<typename T>
@@ -185,6 +197,10 @@ class HDF5IOHelper
   void store_matrix(const std::string &dset_name, 
       const std::vector<T> &buf, const int & num_cols,
       const bool &transpose = false) const;
+  /// Store matrix (2D) information to a dataset
+  void store_matrix(const std::string &dset_name, 
+      const std::vector<String> &buf, const int & num_cols,
+      const bool &transpose = false) const;
 
   /// Set a scalar in a 1D dataset at index using its name
   template<typename T>
@@ -192,14 +208,18 @@ class HDF5IOHelper
   /// Set a scalar in a 1D dataset at index using the dataset object
   template<typename T>
   void set_scalar(const String &dset_name, H5::DataSet &ds, const T &data, const int &index);
+  /// Set a scalar in a 1D dataset at index using the dataset object
+  void set_scalar(const String &dset_name, H5::DataSet &ds, const String &data, const int &index);
+  
   /// Set a row or column in a 2D dataset at index using its name
   template<typename T>
   void set_vector(const String &dset_name, const T &data, const int &index, const bool &row = true); 
-  
-  /// Set a row or column of Strings in a 2D dataset at index using its name
-  void set_vector(const String &dset_name, H5::DataSet &ds, StringMultiArrayConstView data, 
+  /// Set a row or column of Strings in a 2D dataset at index using the dataset object
+  void set_vector(const String &dset_name, H5::DataSet &ds, const StringMultiArrayConstView &data, 
       const int &index, const bool &row = true);
-
+  /// Set a row or column of Strings in a 2D dataset at index using the dataset object
+  void set_vector(const String &dset_name, H5::DataSet &ds, const std::vector<String> &data, 
+      const int &index, const bool &row = true);
   /// Set a row or column in a 2D dataset at index using the dataset object
   template<typename T>
   void set_vector(const String &dset_name, H5::DataSet &ds, const T &data, const int &index, const bool &row = true);
@@ -236,14 +256,23 @@ class HDF5IOHelper
                      const std::vector<Teuchos::SerialDenseMatrix<int, T> > &data,
                      const int &index,
                      const bool &transpose = false);
+  
   /// Append an empty "layer" to the 0th dimension and return its index
   int append_empty(const String &dset_name);
+  
   /// Append a scalar to a 1D dataset
   template<typename T>
   void append_scalar(const String &dset_name, const T&data); 
+  /// Append a scalar to a 1D dataset
+  void append_scalar(const String &dset_name, const String &data); 
+  
   /// Append a vector as a row or column to a 2D dataset
   template<typename T>
   void append_vector(const String &dset_name, const T &data, const bool &row = true);
+  /// Append a vector as a row or column to a 2D dataset
+  void append_vector(const String &dset_name, const std::vector<String> &data, const bool &row = true);
+  /// Append a vector as a row or column to a 2D dataset
+  void append_vector(const String &dset_name, const StringMultiArrayConstView &data, const bool &row = true);
   /// Append a SerialDenseMatrix to a 3D dataset. The dataset will be expanded along the 0th
   /// dimension. By default, the shape of the matrix, (nrows, ncols), must match the size of the 1st 
   /// and 2nd dimensions of the dataset. For transpose=true, the reverse must be true. 
@@ -265,6 +294,8 @@ class HDF5IOHelper
   /// Read scalar data from a dataset
   template <typename T>
   void read_scalar(const std::string& dset_name, T& val);
+  /// Read scalar data from a dataset
+  void read_scalar(const std::string& dset_name, String& val);
   /// Read vector (1D) information from a dataset
   template <typename T>
   void read_vector(const std::string& dset_name, T& array) const; 
@@ -310,6 +341,9 @@ class HDF5IOHelper
   template <typename T>
   void add_attribute(const String &location, const String &label,
                      const T &value); 
+  /// Add an attribute to a group or dataset
+  void add_attribute(const String &location, const String &label,
+                     const String &value); 
   /// Does a group or dataset exist?
   bool exists(const String location_name) const;
 
@@ -360,6 +394,10 @@ class HDF5IOHelper
 
   /// HDF5 file object
   H5::H5File h5File;
+
+  /// create an attribute at the location and return it
+  template <typename T>
+  H5::Attribute create_attribute(const String &location, const String &label, const T &data);
 
   /// Store vector data using a pointer to the first element and length
   template<typename T>
@@ -965,8 +1003,7 @@ void HDF5IOHelper::append_vector_matrix(const String &dset_name,
 
 /// Read scalar data from a dataset
 template <typename T>
-void HDF5IOHelper::read_scalar(const std::string& dset_name, T& val)
-{
+void HDF5IOHelper::read_scalar(const std::string& dset_name, T& val) {
   if( !exists(dset_name) )
   {
     Cerr << "\nError: HDF5 file \"" << fileName << "\""
@@ -1166,27 +1203,8 @@ void HDF5IOHelper::get_vector_matrix(const std::string &dset_name,
 template <typename T>
 void HDF5IOHelper::add_attribute(const String &location, const String &label,
                    const T &value) {
-
-  if(! exists(location)) {
-    // If it doesn't exist, assume it's a group.
-    create_groups(location, false);
-  }   
-
-  H5::DataSpace dataspace;
-  H5O_type_t type = h5File.childObjType(location.c_str());
-  if(type == H5O_TYPE_GROUP) {
-    H5::Group group = h5File.openGroup(location);
-    H5::Attribute attr =
-      group.createAttribute(label, h5_file_dtype(value), dataspace);
-    attr.write(h5_mem_dtype(value), &value);
-  } else if(type == H5O_TYPE_DATASET) {
-    H5::DataSet dataset = h5File.openDataSet(location);
-    H5::Attribute attr =
-      dataset.createAttribute(label, h5_file_dtype(value), dataspace);
-    attr.write(h5_mem_dtype(value), &value);
-  } else {
-    Cerr << location << " is an HDF5 object of unhandled type." << std::endl;
-  }
+  H5::Attribute attr = create_attribute(location, label, value);
+  attr.write(h5_mem_dtype(value), &value);
 }
 
 /// Store vector data using a pointer to the first element and length
@@ -1204,6 +1222,27 @@ void HDF5IOHelper::store_vector(const String &dset_name, const T *data,
     create_dataset(h5File, dset_name, f_datatype, dataspace) );
   dataset.write(data, m_datatype);
   return;
+}
+
+template<typename T>
+H5::Attribute HDF5IOHelper::create_attribute(const String &location, const String &label,
+                                             const T &value) {
+  if(! exists(location)) {
+    // If it doesn't exist, assume it's a group.
+    create_groups(location, false);
+  }   
+
+  H5O_type_t type = h5File.childObjType(location.c_str());
+  if(type == H5O_TYPE_GROUP) {
+    H5::Group group = h5File.openGroup(location);
+    return group.createAttribute(label, h5_file_dtype(value), H5::DataSpace());
+  } else if(type == H5O_TYPE_DATASET) {
+    H5::DataSet dataset = h5File.openDataSet(location);
+    return dataset.createAttribute(label, h5_file_dtype(value), H5::DataSpace());
+  } else {
+    flush();
+    throw std::runtime_error(String("HDF5 object at ") + location + " is of unhandled type.");
+  }
 }
 
 

@@ -91,24 +91,69 @@ bool HDF5IOHelper::exists(const String location_name) const
   return true;
 }
 
+void HDF5IOHelper::store_scalar(const std::string& dset_name, const String& val) {
+  store_scalar(dset_name, val.c_str());
+}
 
+/// Store matrix (2D) information to a dataset
+void HDF5IOHelper::store_matrix(const std::string &dset_name, 
+      const std::vector<String> &buf, const int & num_cols,
+      const bool &transpose) const {
+  std::vector<const char *> ptrs_to_buf = pointers_to_strings(buf);
+  store_matrix(dset_name, ptrs_to_buf, num_cols, transpose);
+}
+
+/// Set a scalar in a 1D dataset at index using an object
+void HDF5IOHelper::set_scalar(const String &dset_name, H5::DataSet &ds, 
+                              const String &data, const int &index) {
+  set_scalar(dset_name, ds, data.c_str(), index);
+}
+
+// There should be some template magic to combine this and the next
+// case
 void HDF5IOHelper::set_vector(const String &dset_name, H5::DataSet &ds, 
-  StringMultiArrayConstView data, const int &index, const bool &row) {
+  const StringMultiArrayConstView &data, const int &index, const bool &row) {
   
   // See coment comment on the String * version of  
   // HDF5IOHelper::store_vector for an explanation of why this
   // overload is needed.
 
-  std::vector<const char *> ptrs_to_data(data.size());
-  std::transform(data.begin(), data.end(), ptrs_to_data.begin(),
-      [](const String &s){return s.c_str();});
+  std::vector<const char *> ptrs_to_data = pointers_to_strings(data);
   set_vector(dset_name, ds, ptrs_to_data, index, row);
+}
+
+void HDF5IOHelper::set_vector(const String &dset_name, H5::DataSet &ds, 
+  const std::vector<String> &data, const int &index, const bool &row) {
+  
+  // See coment comment on the String * version of  
+  // HDF5IOHelper::store_vector for an explanation of why this
+  // overload is needed.
+
+  std::vector<const char *> ptrs_to_data = pointers_to_strings(data);
+  set_vector(dset_name, ds, ptrs_to_data, index, row);
+}
+
+/// Append a scalar to a 1D dataset
+void HDF5IOHelper::append_scalar(const String &dset_name, const String &data) {
+  append_scalar(dset_name, data.c_str());
+}
+
+/// Append a vector as a row or column to a 2D dataset
+void HDF5IOHelper::append_vector(const String &dset_name, const std::vector<String> &data, const bool &row) {
+  std::vector<const char *> ptrs_to_data = pointers_to_strings(data);
+  append_vector(dset_name, ptrs_to_data, row);
+}
+
+/// Append a vector as a row or column to a 2D dataset
+void HDF5IOHelper::append_vector(const String &dset_name, const StringMultiArrayConstView &data, const bool &row) {
+  std::vector<const char *> ptrs_to_data = pointers_to_strings(data);
+  append_vector(dset_name, ptrs_to_data, row);
 }
 
 
 /// Store vector (1D) information to a dataset
 void HDF5IOHelper::store_vector(const std::string & dset_name,
-                               StringMultiArrayConstView vec )
+                               const StringMultiArrayConstView &vec )
 {
   store_vector(dset_name, &vec[0], vec.size());
   return;
@@ -116,7 +161,7 @@ void HDF5IOHelper::store_vector(const std::string & dset_name,
 
 /// Store vector (1D) information to a dataset
 void HDF5IOHelper::store_vector(const std::string & dset_name,
-                               SizetMultiArrayConstView vec )
+                               const SizetMultiArrayConstView &vec )
 {
   store_vector(dset_name, &vec[0], vec.size());
   return;
@@ -147,6 +192,21 @@ void HDF5IOHelper::store_vector(const String &dset_name, const String *data,
   return;
 }
 
+  
+void HDF5IOHelper::read_scalar(const std::string& dset_name, String& val) {
+  if( !exists(dset_name) )
+  {
+    Cerr << "\nError: HDF5 file \"" << fileName << "\""
+         << " does not contain data path \"" << dset_name << "\""
+         << std::endl;
+    abort_handler(-1);
+  }
+  // JAS: We need some verification here that the dataset is really a scalar, has the right
+  // type, etc..
+  H5::DataSet dataset = h5File.openDataSet(dset_name);
+  dataset.read(val, h5_mem_dtype(val));
+  return;
+}
 /// Read vector (1D) String information from a dataset
 void HDF5IOHelper::read_vector(const std::string& dset_name, StringArray& array) const 
 {
@@ -404,6 +464,11 @@ void HDF5IOHelper::report_num_open() {
     Cout << "Count of type " << i << " is " << cnt << std::endl;
 
   }
+}
+
+void HDF5IOHelper::add_attribute(const String &location, const String &label,
+                     const String &value) {
+  add_attribute(location, label, value.c_str());
 }
 
 /*  H5::DataSet HDF5IOHelper::open_dataset(const String &dset_name) {
