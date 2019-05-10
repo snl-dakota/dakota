@@ -19,7 +19,7 @@ dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 9)
+set(Dakota_VERSION_MINOR 10)
 set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
@@ -28,14 +28,14 @@ set(Dakota_VERSION_TRIPLE
 
 # --- Release time toggle 
 # Toggle this to append to the version number for stable
-#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
-set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
+set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
+#set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
-set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
+set(Dakota_RELEASE_DATE "May 15 2019")    # Versioned release date Mmm dd yyyy
+#set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
 # Dakota version to use for naming archives
 set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
@@ -389,8 +389,13 @@ set(ExportTarget DakotaTargets CACHE STRING
 option(HAVE_ROL "Build the ROL package." ON)
 if (NOT BUILD_IN_TRILINOS)
 
-  # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
-  find_package(Trilinos QUIET)
+  # Workaround to skip finding system Trilinos until this probe is
+  # simplified and follows find_package semantics. Double negative to
+  # preserve historical behavior without overcomplicating things.
+  if(NOT DAKOTA_NO_FIND_TRILINOS)
+    # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
+    find_package(Trilinos QUIET)
+  endif()
 
   if(Trilinos_FOUND)
     if(Trilinos_DIR)
@@ -398,6 +403,13 @@ if (NOT BUILD_IN_TRILINOS)
 	"Dakota using previously specified Trilinos in ${Trilinos_DIR}")
     else()
       message(STATUS "Dakota using external Trilinos")
+    endif()
+    # TODO: Make this a hard error and check for version during find_package
+    if(DEFINED Trilinos_VERSION AND Trilinos_VERSION VERSION_LESS 12.16)
+      message(WARNING
+	"Dakota requires Trilinos 12.16 or newer; found ${Trilinos_VERSION}"
+	"Hint: Set DAKOTA_NO_FIND_TRILINOS:BOOL=TRUE to use Dakota's copy"
+	)
     endif()
   else()
 
