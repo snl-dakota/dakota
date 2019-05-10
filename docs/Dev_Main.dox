@@ -573,6 +573,9 @@ Additional development resources include:
 \li Project web pages are maintained at http://dakota.sandia.gov/ including
     links to frequently asked questions, documentation, publications, mailing 
     lists, and other resources.
+\li A Quickstart for bringing a new Third-Party Library (TPL) into Dakota
+    can be found in the Dakota source tree under
+    $DAKOTA_SRC/packages/external/demo_tpl/README.md .
 
 */
 
