@@ -17,8 +17,9 @@ asymptotically valid interval estimator,
 \f]
 
 where \f$\bar{g}_{n}\f$ is the moment (i.e. mean or variance), \f$t_{*}\f$ is
-the \f$t\f$-value for the 95th quantile, \f$n\f$ is the sample size, and
-\f$\hat{\sigma}_{n}\f$ is approximated using batch means estimation. The 
+the Student's \f$t\f$-value for the 95th quantile, \f$n\f$ is the sample size, and
+\f$\hat{\sigma}_{n}\f$ is an estimate of the
+standard error whose square is obtained using batch means estimation. The 
 Markov chain produced during calibration is broken up into "batches," the
 sample moment is calculated for each batch, and \f$\hat{\sigma}_{n}\f$ is an
 unbiased estimate of the standard deviation in these batch moment calculations.
