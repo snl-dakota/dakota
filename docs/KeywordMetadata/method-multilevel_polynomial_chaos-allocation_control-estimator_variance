@@ -17,13 +17,38 @@ estimator variance:
 for free parameters \f$\gamma\f$ and \f$\kappa\f$, with default values
 that may be overridden as part of this specification block.
 
+This approach is supported for regression-based PCE approaches
+(over-determined least squares, under-determined compressed
+sensing, or othogonal least interpolation).
+
 In practice, it can be challenging to estimate a smooth convergence
 rate for estimator variance in the presence of abrupt transitions in
-the quality of sparse recoveries.  Greedy refinement is generally preferred.
+the quality of sparse recoveries.  As a result, sample allocation by
+greedy refinement is generally preferred.
 
 Topics::
 
 Examples::
+
+This example starts with sparse recovery for a second-order candidate
+expansion at each level.  As the number of samples is adapted for
+each level, as dictated by the convergence of the estimator variance,
+the candidate expansion order is incremented as needed
+in order to synchronize with the specified collocation ratio.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multilevel_polynomial_chaos
+	  orthogonal_matching_pursuit
+	  expansion_order_sequence = 2
+	  pilot_samples = 10
+	  collocation_ratio = .9
+	  allocation_control
+	    estimator_variance estimator_rate = 2.5
+	  seed = 1237
+	  convergence_tolerance = .01
+\endverbatim
 
 Theory::
 
