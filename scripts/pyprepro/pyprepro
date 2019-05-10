@@ -24,7 +24,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20181017'
+__version__ = '20181203'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -302,6 +302,12 @@ def _parse_cli(argv,positional_include=False):
     # Read stdin if needed
     if args.infile == '-':
         args.infile = _touni(sys.stdin.read())
+    elif not os.path.isfile(args.infile):
+        # pyprepro function can take an input file or text but the CLI
+        # should always be a file
+        print('ERROR: `infile` must be a file or `-` to read from stdin',file=sys.stderr)
+        sys.exit(1)
+    
     
     return args,env
 
@@ -708,7 +714,7 @@ def _error_msg(E):
     if hasattr(E,'filename'):
         msg.append('Filename: {0}'.format(E.filename))
     if hasattr(E,'lineno'):
-        msg.append('Line Number: {0}'.format(E.lineno))
+        msg.append('Approximate Line Number: {0}'.format(E.lineno))
 #     if hasattr(E,'offset'): # Not reliable
 #         msg.append('Column: {0}'.format(E.offset))
     if hasattr(E,'args') and len(E.args)>0:
