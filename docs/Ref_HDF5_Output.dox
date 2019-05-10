@@ -336,8 +336,8 @@ information is provided concerning input keywords that control which components 
 \subsection hdf5_evaluations-hdf5_eval_sources Sources of Evaluation Data
 
 Evaluation data are produced by only two kinds of components in %Dakota: **models** and **interfaces**.
-The purpose of this subsection is to provide a basic description of models and interfaces aimed at
-equipping users to manage and understand HDF5-format evaluation data.
+The purpose of this subsection is to provide a basic description of models and interfaces for 
+the purpose of equipping users to manage and understand HDF5-format evaluation data.
 
 Because interfaces and models must be specified in even simple Dakota studies, most novice users 
 of %Dakota will have some familiarity with these concepts. However, the exact nature of the
@@ -404,7 +404,7 @@ Because \ref environment-tabular_data "tabular data" was requested in the enviro
 evaluations will be reported to a tabular file. The interface's evaluations could be dumped from
 the restart file using \c dakota_restart_util.
 
-If we compared theese evaluation histories from 'sim' and 'tb', we would see that they are identical to one another.
+If we compared these evaluation histories from 'sim' and 'tb', we would see that they are identical to one another.
 The model 'sim' is a mere "middle man" whose only responsibility is passing variables from the method down 
 to the interface, executing the interface, and passing responses back up to the method. However, this is not always
 the case.
@@ -443,7 +443,7 @@ to the tabular file, and historically were avialable only in the console output.
 access to both the "raw" evaluations performed by the interface and higher level model evaluations
 that include estimated gradients.
 
-This pair of examples hopefully provides a basic understanding of the flow evaluation data between a method, model,
+This pair of examples hopefully provides a basic understanding of the flow of evaluation data between a method, model,
 and interface, and explains why models and interfaces are producers of evaluation data.
 
 Next consider a somewhat more complex study that includes a %Dakota model of type \ref model-surrogate. A surrogate model 
@@ -452,17 +452,17 @@ which Dakota implicitly creates without the direct knowledge of the user. Approx
 for the various kinds of surrogates Dakota can use, such as \ref model-surrogate-global-gaussian_process 
 "gaussian processes".
 
-A Dakota model of type global surrogate may construct the actual underlying model(s) that it evaluates via its
-approximation interface from training data produced by a user-specified 
-\ref model-surrogate-global-dace_method_pointer "dace method". The dace method will have its own model 
-(typically of type single/simulation), which will have a user-specified interface.
+A Dakota model of type global surrogate may use a user-specified \ref model-surrogate-global-dace_method_pointer "dace method"
+to construct the actual underlying model(s) that it evaluates via its approximation interface. The dace method will 
+have its own model (typically of type single/simulation), which will have a user-specified interface.
 
 In this more complicated case there are at least four components that produce evaluation data: (1) the surrogate model
 and (2) its approximation interface, and (3) the dace method's model and (4) its interface. Although only components 
-(1), (3), and (4) are user-specified, evaluation data produced by (2) may be written to HDF5. (As explained below, 
-only evaluations performed by the surrogate model and the dace interface will be recorded by default, but 
-\ref environment-results_output-hdf5 sub-keywords provide overrides and finer-grained control.) This is an example where "extra" and 
-potentially confusing data appears in Dakota's output due to an auto-generated component.
+(1), (3), and (4) are user-specified, evaluation data produced by (2) may be written to HDF5, as well. (As 
+\ref hdf5_evaluations-selection "explained below", only evaluations performed by the surrogate model and the dace 
+interface will be recorded by default. This can be overriden using \ref environment-results_output-hdf5 sub-keywords.) 
+This is an example where "extra" and potentially confusing data appears in Dakota's output due to an auto-generated 
+component.
 
 An important family of implicitly-created models is the *recast* models, which have the responsibility of transforming 
 variables and responses. One type of recast called a *data transform model* is responsible for computing residuals when a 
@@ -477,7 +477,7 @@ The innermost model in the recursion often will be the simulation or surrogate m
 
 This subsection describes how evaluation data produced by models and interfaces are organized at high level. A
 detailed description of the datasets and subgroups that contain evaluation data for a specific model or interface
-is given in the next section.
+is given in the \ref hdf5_evaluations-low_level "next subsection".
 
 Two top level groups contain evaluation data, \c /interfaces and \c /models.
 
@@ -515,11 +515,10 @@ In this string:
   wrap the same underlying model.
 
 The model's evaluations may be the result of combining information from multiple sources. A simulation/single model will 
-receive all the information it requires from its interface, but more complicated model types may draw use information not only
+receive all the information it requires from its interface, but more complicated model types may use information not only
 from interfaces, but also other models and the results of method executions. Nested models, for instance, receive information 
-from a submethod (the mean from a sampling study, for instance) and potentially also an 
-\ref model-nested-optional_interface_pointer "optional interface". Surrogate models receive information from their 
-approxiamtion interfaces and potentially from a dace method.
+from a submethod (the mean of a response from a sampling study, for instance) and potentially also an 
+\ref model-nested-optional_interface_pointer "optional interface".
 
 The sources of a model's evaluations may be roughly identified by examining the contents of that models' \c sources group. 
 The \c sources group contains softlinks (note: softlinks are an HDF5 feature analogous to soft or symbolic links on many
@@ -611,7 +610,7 @@ dataset that is present only when the user specified analysis components, and it
 
 \htmlinclude evaluation_an_comps_table.html
 
-\subsection hdf5_evaluations-Selecting Models and Interfaces to Store
+\subsection hdf5_evaluations-selection Selecting Models and Interfaces to Store
 
 When HDF5 output is enabled (by including the \ref environment-results_output-hdf5 keyword), then by default 
 evaluation data for the following components will be stored:

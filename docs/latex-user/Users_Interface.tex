@@ -2064,6 +2064,46 @@ Returns:
 Note that escaping the trailing delimiter (e.g.
 \texttt{\textbackslash{}\}}) is optional.
 
+\subsubsection{Whitespace Control}\label{interfaces:whitespace-control}
+
+Expressions span the entire line, which can possibly introduce undesired white space. 
+Ending a line with \texttt{\textbackslash\textbackslash} will prevent the additional space. Consider the following:
+\begin{verbatim}
+BLOCK \\
+{%
+if True:
+    block = 10
+else:
+    block = 20
+end
+%}
+{block}
+\end{verbatim}
+
+Which renders as:
+\begin{verbatim}
+BLOCK 10
+\end{verbatim}
+
+Without the trailing \texttt{\textbackslash\textbackslash}, the result would instead be:
+\begin{verbatim}
+BLOCK
+10
+\end{verbatim}
+This can also be abused to allow spacing. Consider the following:
+
+\begin{verbatim}
+I want this to \\
+%
+render as \\
+%
+one line
+\end{verbatim}
+Since the \texttt{\%} symbolize a code block (empty in this case), it will render
+\begin{verbatim}
+I want this to render as one line
+\end{verbatim}
+
 \subsubsection{Immutable Variables}\label{interfaces:immutable-variables}
 
 Variables can be fixed such that they cannot be redefined (without
