@@ -115,10 +115,12 @@ initialize_solution_control(const String& control, const RealVector& cost)
 
   // get size of corresponding set values
   size_t i, num_lev;
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE:
-    //solnCntlSetIndex = solnCntlADVIndex;
+    //solnCntlRVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
     num_lev =
       userDefinedConstraints.all_discrete_int_upper_bounds()[solnCntlADVIndex] -
       userDefinedConstraints.all_discrete_int_lower_bounds()[solnCntlADVIndex];
@@ -201,8 +203,8 @@ initialize_solution_control(const String& control, const RealVector& cost)
   if (lev_index == USHRT_MAX) { // just return quietly to simplify calling code
     return;                     // (rather than always checking index validity)
 
-    //Cerr << "Error: USHRT_MAX passed to SimulationModel::solution_level_index"
-    //     << "()." << std::endl;
+    //Cerr << "Error: USHRT_MAX passed to SimulationModel::"
+    //     << "solution_level_index()." << std::endl;
     //abort_handler(MODEL_ERROR);
   }
 
@@ -210,6 +212,8 @@ initialize_solution_control(const String& control, const RealVector& cost)
   std::advance(c_cit, lev_index);
   size_t val_index = c_cit->second;
 
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {
@@ -219,65 +223,48 @@ initialize_solution_control(const String& control, const RealVector& cost)
     break;
   }
   //////////////////////////////
-  case DISCRETE_DESIGN_SET_INT: {
-    ISCIter is_cit = discreteDesignSetIntValues[solnCntlSetIndex].begin();
-    std::advance(is_cit, val_index);
-    currentVariables.all_discrete_int_variable(*is_cit, solnCntlADVIndex);
+  case DISCRETE_DESIGN_SET_INT: case DISCRETE_STATE_SET_INT: {
+    IntSet is = mvd_rep->
+      pull_parameter<IntSet>(solnCntlRVIndex, Pecos::DSI_VALUES);
+    ISIter is_it = is.begin();  std::advance(is_it, val_index);
+    currentVariables.all_discrete_int_variable(*is_it, solnCntlADVIndex);
     break;
   }
-  case DISCRETE_DESIGN_SET_STRING: {
-    SSCIter ss_cit = discreteDesignSetStringValues[solnCntlSetIndex].begin();
-    std::advance(ss_cit, val_index);
-    currentVariables.all_discrete_string_variable(*ss_cit, solnCntlADVIndex);
+  case DISCRETE_DESIGN_SET_STRING: case DISCRETE_STATE_SET_STRING: {
+    StringSet ss = mvd_rep->
+      pull_parameter<StringSet>(solnCntlRVIndex, Pecos::DSS_VALUES);
+    SSCIter ss_it = ss.begin();  std::advance(ss_it, val_index);
+    currentVariables.all_discrete_string_variable(*ss_it, solnCntlADVIndex);
     break;
   }
-  case DISCRETE_DESIGN_SET_REAL: {
-    RSCIter rs_cit = discreteDesignSetRealValues[solnCntlSetIndex].begin();
-    std::advance(rs_cit, val_index);
-    currentVariables.all_discrete_real_variable(*rs_cit, solnCntlADVIndex);
+  case DISCRETE_DESIGN_SET_REAL: case DISCRETE_STATE_SET_REAL: {
+    RealSet rs = mvd_rep->
+      pull_parameter<RealSet>(solnCntlRVIndex, Pecos::DSR_VALUES);
+    RSIter rs_it = rs.begin();  std::advance(rs_it, val_index);
+    currentVariables.all_discrete_real_variable(*rs_it, solnCntlADVIndex);
     break;
   }
   //////////////////////////////
   case DISCRETE_UNCERTAIN_SET_INT: {
-    IRMCIter ir_cit = epistDistParams.discrete_set_int_values_probabilities()
-      [solnCntlSetIndex].begin();
-    std::advance(ir_cit, val_index);
-    currentVariables.all_discrete_int_variable(ir_cit->first, solnCntlADVIndex);
+    IntRealMap irm = mvd_rep->
+      pull_parameter<IntRealMap>(solnCntlRVIndex, Pecos::DUSI_VALUES_PROBS);
+    IRMIter ir_it = irm.begin();  std::advance(ir_it, val_index);
+    currentVariables.all_discrete_int_variable(ir_it->first, solnCntlADVIndex);
     break;
   }
   case DISCRETE_UNCERTAIN_SET_STRING: {
-    SRMCIter sr_cit = epistDistParams.discrete_set_string_values_probabilities()
-      [solnCntlSetIndex].begin();
-    std::advance(sr_cit, val_index);
-    currentVariables.all_discrete_string_variable(sr_cit->first,
+    StringRealMap srm = mvd_rep->
+      pull_parameter<StringRealMap>(solnCntlRVIndex, Pecos::DUSS_VALUES_PROBS);
+    SRMIter sr_it = srm.begin();  std::advance(sr_cit, val_index);
+    currentVariables.all_discrete_string_variable(sr_it->first,
 						  solnCntlADVIndex);
     break;
   }
   case DISCRETE_UNCERTAIN_SET_REAL: {
-    RRMCIter rr_cit = epistDistParams.discrete_set_real_values_probabilities()
-      [solnCntlSetIndex].begin();
-    std::advance(rr_cit, val_index);
-    currentVariables.all_discrete_real_variable(rr_cit->first,
-						solnCntlADVIndex);
-    break;
-  }
-  //////////////////////////////
-  case DISCRETE_STATE_SET_INT: {
-    ISCIter is_cit = discreteStateSetIntValues[solnCntlSetIndex].begin();
-    std::advance(is_cit, val_index);
-    currentVariables.all_discrete_int_variable(*is_cit, solnCntlADVIndex);
-    break;
-  }
-  case DISCRETE_STATE_SET_STRING: {
-    SSCIter ss_cit = discreteStateSetStringValues[solnCntlSetIndex].begin();
-    std::advance(ss_cit, val_index);
-    currentVariables.all_discrete_string_variable(*ss_cit, solnCntlADVIndex);
-    break;
-  }
-  case DISCRETE_STATE_SET_REAL: {
-    RSCIter rs_cit = discreteStateSetRealValues[solnCntlSetIndex].begin();
-    std::advance(rs_cit, val_index);
-    currentVariables.all_discrete_real_variable(*rs_cit, solnCntlADVIndex);
+    RealRealMap rrm = mvd_rep->
+      pull_parameter<RealRealMap>(solnCntlRVIndex, Pecos::DUSR_VALUES_PROBS);
+    RRMIter rr_it = rrm.begin();  std::advance(rr_cit, val_index);
+    currentVariables.all_discrete_real_variable(rr_it->first, solnCntlADVIndex);
     break;
   }
   }
@@ -289,6 +276,8 @@ initialize_solution_control(const String& control, const RealVector& cost)
 unsigned short SimulationModel::solution_level_index() const
 {
   size_t val_index;
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {
@@ -299,56 +288,41 @@ unsigned short SimulationModel::solution_level_index() const
     break;
   }
   //////////////////////////////
-  case DISCRETE_DESIGN_SET_INT:
+  case DISCRETE_DESIGN_SET_INT: case DISCRETE_STATE_SET_INT:
     val_index = set_value_to_index(
       currentVariables.all_discrete_int_variables()[solnCntlADVIndex],
-      discreteDesignSetIntValues[solnCntlSetIndex]);
+      mvd_rep->pull_parameter<IntSet>(solnCntlRVIndex, Pecos::DSI_VALUES));
     break;
-  case DISCRETE_DESIGN_SET_STRING:
+  case DISCRETE_DESIGN_SET_STRING: case DISCRETE_STATE_SET_STRING:
     val_index = set_value_to_index(
       currentVariables.all_discrete_string_variables()[solnCntlADVIndex],
-      discreteDesignSetStringValues[solnCntlSetIndex]);
+      mvd_rep->pull_parameter<StringSet>(solnCntlRVIndex, Pecos::DSS_VALUES));
     break;
-  case DISCRETE_DESIGN_SET_REAL:
+  case DISCRETE_DESIGN_SET_REAL: case DISCRETE_STATE_SET_REAL:
     val_index = set_value_to_index(
       currentVariables.all_discrete_real_variables()[solnCntlADVIndex],
-      discreteDesignSetRealValues[solnCntlSetIndex]);
+      mvd_rep->pull_parameter<RealSet>(solnCntlRVIndex, Pecos::DSR_VALUES));
     break;
   //////////////////////////////
   case DISCRETE_UNCERTAIN_SET_INT:
     val_index = map_key_to_index(
       currentVariables.all_discrete_int_variables()[solnCntlADVIndex],
-      epistDistParams.discrete_set_int_values_probabilities()
-        [solnCntlSetIndex]);
+      mvd_rep->pull_parameter<IntRealMap>(solnCntlRVIndex,
+					  Pecos::DUSI_VALUES_PROBS));
     break;
   case DISCRETE_UNCERTAIN_SET_STRING:
     val_index = map_key_to_index(
       currentVariables.all_discrete_string_variables()[solnCntlADVIndex],
-      epistDistParams.discrete_set_string_values_probabilities()
-        [solnCntlSetIndex]);
+      mvd_rep->pull_parameter<StringRealMap>(solnCntlRVIndex,
+					     Pecos::DUSS_VALUES_PROBS));
     break;
   case DISCRETE_UNCERTAIN_SET_REAL:
     val_index = map_key_to_index(
       currentVariables.all_discrete_real_variables()[solnCntlADVIndex],
-      epistDistParams.discrete_set_real_values_probabilities()
-        [solnCntlSetIndex]);
+      mvd_rep->pull_parameter<RealRealMap>(solnCntlRVIndex,
+					   Pecos::DUSR_VALUES_PROBS));
     break;
   //////////////////////////////
-  case DISCRETE_STATE_SET_INT:
-    val_index = set_value_to_index(
-      currentVariables.all_discrete_int_variables()[solnCntlADVIndex],
-      discreteStateSetIntValues[solnCntlSetIndex]);
-    break;
-  case DISCRETE_STATE_SET_STRING:
-    val_index = set_value_to_index(
-      currentVariables.all_discrete_string_variables()[solnCntlADVIndex],
-      discreteStateSetStringValues[solnCntlSetIndex]);
-    break;
-  case DISCRETE_STATE_SET_REAL:
-    val_index = set_value_to_index(
-      currentVariables.all_discrete_real_variables()[solnCntlADVIndex],
-      discreteStateSetRealValues[solnCntlSetIndex]);
-    break;
   default: // EMPTY_TYPE (no solution_level_control provided)
     return USHRT_MAX; break;
   }
