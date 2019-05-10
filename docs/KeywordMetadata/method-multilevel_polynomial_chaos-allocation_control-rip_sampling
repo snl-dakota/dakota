@@ -1,0 +1,25 @@
+Blurb:: Sample allocation based on restricted isometry property (RIP) within multilevel polynomial chaos
+
+Description:: 
+Multilevel polynomial chaos with compressed sensing may allocate the
+number of samples per level based on the restricted isometry property
+(RIP), applied to recovery at level \f$l\f$:
+
+\f[ N_l \geq s_l log^3(s_l) L_l log(C_l) \f]
+
+for sparsity \f$s\f$, cardinality \f$C\f$, and mutual coherence \f$L\f$.
+The adaptive algorithm starts from a pilot sample, shapes the profile
+based on observed sparsity, and iterates until convergence.  In practice,
+RIP sampling levels are quite conservative, and a collocation ratio
+constraint (\f$N_l \leq r C_l\f$) must be enforced on the profile.
+
+This capability is EXPERIMENTAL.  Greedy refinement is generally preferred.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+See_Also::
