@@ -27,6 +27,7 @@ namespace Dakota {
 /** ProcessHandleApplicInterface is subclassed for fork/execvp/waitpid
     (Unix) and spawnvp (Windows). */
 
+
 class ProcessHandleApplicInterface: public ProcessApplicInterface
 {
 public:
@@ -137,6 +138,8 @@ private:
   //- Heading: Data
   //
 
+  // Used for substitution of parameter input files and result output files
+  // for analysis drivers.
 };
 
 

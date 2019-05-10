@@ -150,6 +150,34 @@ TEUCHOS_UNIT_TEST(hdf5_cpp, stdvec)
   TEST_COMPARE_ARRAYS( vec_out, test_vec );
 }
 
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(hdf5_cpp, stdstringvec)
+{
+  const std::string file_name("hdf5_basic_stdstringvec.h5");
+  const std::string ds_name("/Level_One/level_two/2/b/SomeStdStringVectorData");
+
+  std::vector<String> vec_out(VEC_SIZE);
+  for(int i = 0; i < VEC_SIZE; ++i) 
+    vec_out[i] = String("foo_") + std::to_string(i);
+
+  // Write data
+  {
+    HDF5IOHelper h5_io(file_name, /* overwrite */ true);
+    h5_io.store_vector(ds_name, vec_out);
+  }
+
+  // Read data
+  std::vector<String> test_vec(VEC_SIZE);
+  {
+    HDF5IOHelper h5_io(file_name);
+    h5_io.read_vector(ds_name, test_vec);
+  }
+  TEST_EQUALITY( test_vec.size(), vec_out.size() );
+  TEST_COMPARE_ARRAYS( vec_out, test_vec );
+}
+
+
 TEUCHOS_UNIT_TEST(hdf5_cpp, element_store)
 {
   const std::string file_name("hdf5_element_store.h5");

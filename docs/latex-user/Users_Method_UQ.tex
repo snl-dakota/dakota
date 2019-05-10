@@ -2775,6 +2775,61 @@ variables and the resulting model responses. Finally, if one wants to
 see the likelihood of each point, specifying verbose output in the
 method section will result in the likelihoods being printed.
 
+\subsection{Chain Diagnostics}
+
+The convergence of the chain produced by MCMC may require many
+thousands of steps, if not millions, as discussed earlier in this
+section. Assessing the convergence of MCMC chains is an active area of
+research, and the implementation of metrics for chain convergence is
+undergoing active development in Dakota, and can be triggered during a
+Bayesian calibration study through the use of the keyword
+\texttt{chain\_diagnostics}. 
+
+As of Dakota 6.10,  \texttt{confidence\_intervals} is the only
+diagnostic implemented. 
+
+Suppose $g$ is a function that represents some characteristic (e.g.
+moment) of an underlying distribution, such as the mean or variance.
+Then under the standard assumptions of an MCMC chain,  the true value
+can be approximated by taking the ensemble mean over the MCMC chain.
+The confidence interval for the true moment calculated using the
+asymptotically valid interval estimator is given by~\cite{Fle10}
+\begin{equation}
+  \bar{g}_{n} \pm t_{*} \frac{\hat{\sigma}_{n}}{\sqrt{n}},
+\end{equation}
+where $\bar{g}_{n}$ is the estimated moment (i.e. mean or variance),
+$t_{*}$ is the Student's $t$-value for the 95th quantile, $n$ is the
+MCMC chain length, and $\hat{\sigma}_{n}$ is an estimate of the
+standard error whose square is obtained using batch means estimation.
+To obtain the estimate $\hat{\sigma}_{n}$, the Markov chain produced
+during calibration is broken up into ``batches," the sample moment is
+calculated for each batch, and $\hat{\sigma}_{n}$ is subsequently
+obtained as an unbiased estimate of the standard deviation in the
+moment calculations over the batches. The confidence intervals
+produced are 95\% confidence intervals, and they are calculated for
+the mean and variance (first and second moments) for each parameter
+and each response. Further details regarding the default settings for
+these calculations can be found in the Dakota Theory
+Manual~\cite{TheoMan}. 
+
+Confidence intervals may be used as a chain diagnostic by setting
+fixed-width stopping rules~\cite{Rob18}. For example, if the interval
+width is below some threshold value, that may indicate that enough
+samples have been drawn. Common choices for the threshold value
+include:
+\begin{itemize}
+  \item Fixed width: $\epsilon$
+  \item Relative magnitude: $\epsilon \| \bar{g}_{n} \|$
+  \item Relative standard deviation: $\epsilon \| \hat{\sigma}_{n} \|$
+\end{itemize}
+If the chosen threshold is exceeded, \texttt{samples} may need to be
+increased, say by 10\%, and the diagnostics reevaluated for signs of
+chain convergence. Furthermore, if \texttt{output} is set to
+\texttt{debug}, the sample moment for each batch (for each parameter
+and response) is output to the screen. The user can then analyze the
+convergence of these batch means in order to deduce whether the MCMC
+chain has converged.
+
 \subsection{Calibrating the Observation Error Model}
 
 As discussed in Section~\ref{input:calib_data}, Dakota accepts user
@@ -2817,6 +2872,21 @@ deviation approximately 0.1.
     both..}
   \label{fig:uq:obs_err_mult}
 \end{figure}
+
+\subsection{Scaling and Weighting of Residuals}
+
+Dakota's scaling options, described in
+Section~\ref{opt:additional:scaling}, can be used on Bayesian
+calibration problems, using the \texttt{calibration\_term\_scales}
+keyword, to scale the residuals between the data points and the model
+predictions, if desired. Additionally, Bayesian calibration
+residuals-squared can be weighted via the \texttt{calibration\_terms
+weights} specification. Neither set of weights nor scales are adjusted
+during calibration.  When response scaling is active, it is applied
+after error variance weighting and before \texttt{weights}
+application. The \texttt{calibration\_terms} keyword documentation in
+the Dakota Reference Manual~\cite{RefMan} has more detail about
+weighting and scaling of the residual terms.
 
 \subsection{Model Evidence} 
 In some situations, there are multiple models that may represent a phenomenon 

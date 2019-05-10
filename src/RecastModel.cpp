@@ -110,7 +110,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   init_constraints(secondaryRespMapIndices.size(), 
 		   recast_secondary_offset, reshape_vars);
 
-  modelId = RecastModel::recast_model_id(root_model_id(), "SCALING");
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 

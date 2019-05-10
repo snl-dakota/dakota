@@ -81,6 +81,7 @@ public:
 
   const Model& algorithm_space_model() const;
 
+  void declare_sources();
 private:
 
   //

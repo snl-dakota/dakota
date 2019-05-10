@@ -863,89 +863,127 @@ void SharedVariablesDataRep::initialize_all_types()
 
 void SharedVariablesDataRep::initialize_all_ids()
 {
-  size_t i, id, acv_cntr = 0, adiv_cntr = 0, adrv_cntr = 0,
+  size_t i = 0, id = 1, // identifiers are 1-based (indices are 0-based)
+    // counters for id insertion
+    acv_cntr = 0, adiv_cntr = 0, adsv_cntr = 0, adrv_cntr = 0,
+    // counters for relax BitArrays
+    relax_int_cntr = 0, relax_real_cntr = 0,
+
     num_cdv   = variablesCompsTotals[TOTAL_CDV],
     num_ddiv  = variablesCompsTotals[TOTAL_DDIV],
     num_ddsv  = variablesCompsTotals[TOTAL_DDSV],
     num_ddrv  = variablesCompsTotals[TOTAL_DDRV],
+
     num_cauv  = variablesCompsTotals[TOTAL_CAUV],
     num_dauiv = variablesCompsTotals[TOTAL_DAUIV],
     num_dausv = variablesCompsTotals[TOTAL_DAUSV],
     num_daurv = variablesCompsTotals[TOTAL_DAURV],
+
     num_ceuv  = variablesCompsTotals[TOTAL_CEUV],
     num_deuiv = variablesCompsTotals[TOTAL_DEUIV],
     num_deusv = variablesCompsTotals[TOTAL_DEUSV],
     num_deurv = variablesCompsTotals[TOTAL_DEURV],
+
     num_csv   = variablesCompsTotals[TOTAL_CSV],
     num_dsiv  = variablesCompsTotals[TOTAL_DSIV],
     num_dssv  = variablesCompsTotals[TOTAL_DSSV],
     num_dsrv  = variablesCompsTotals[TOTAL_DSRV],
-    num_acv   = num_cdv + num_cauv + num_ceuv + num_csv;
+
+    num_acv    = num_cdv  + num_cauv  + num_ceuv  + num_csv,
+    num_adiv   = num_ddiv + num_dauiv + num_deuiv + num_dsiv,
+    num_adsv   = num_ddsv + num_dausv + num_deusv + num_dssv,
+    num_adrv   = num_ddrv + num_daurv + num_deurv + num_dsrv;
 
   // aggregateBitArrays defined over all discrete int,real
   bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
-  if (relax) // include discrete design/uncertain/state
+  if (relax) {
+    // include relaxed discrete int/real design/uncertain/state in continuous
     num_acv += allRelaxedDiscreteInt.count() + allRelaxedDiscreteReal.count();
+    // omit relaxed discrete int/real design/uncertain/state from discrete counts
+    num_adiv -= allRelaxedDiscreteInt.count();
+    num_adrv -= allRelaxedDiscreteReal.count();
+  }
+
   allContinuousIds.resize(boost::extents[num_acv]);
+  allDiscreteIntIds.resize(boost::extents[num_adiv]);
+  allDiscreteStringIds.resize(boost::extents[num_adsv]);
+  allDiscreteRealIds.resize(boost::extents[num_adrv]);
 
   // DESIGN
-  id = 1; // identifiers are 1-based (indices are 0-based)
-  for (i=0; i<num_cdv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_ddiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_ddsv;
-    for (i=0; i<num_ddrv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
-  else
-    id += num_ddiv + num_ddsv + num_ddrv;
+  for (i=0; i<num_cdv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_ddiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_ddsv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_ddrv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 
   // ALEATORY UNCERTAIN
-  for (i=0; i<num_cauv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_dauiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_dausv;
-    for (i=0; i<num_daurv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
-  else
-    id += num_dauiv + num_dausv + num_daurv;
+  for (i=0; i<num_cauv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_dauiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_dausv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_daurv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 
   // EPISTEMIC UNCERTAIN
-  for (i=0; i<num_ceuv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_deuiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_deusv;
-    for (i=0; i<num_deurv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
-  else
-    id += num_deuiv + num_deusv + num_deurv;
+  for (i=0; i<num_ceuv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_deuiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_deusv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_deurv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 
   // STATE
-  for (i=0; i<num_csv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_dsiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_dssv;
-    for (i=0; i<num_dsrv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
+  for (i=0; i<num_csv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_dsiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_dssv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_dsrv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 }
 
 
