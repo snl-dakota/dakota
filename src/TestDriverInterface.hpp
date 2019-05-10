@@ -138,6 +138,11 @@ private:
   //  and error terms
   int bayes_linear();
 
+  // Problem 18 from http://infinity77.net/global_optimization/test_functions_1d.html
+  int problem18();
+  double problem18_f(const double &x);
+  double problem18_g(const double &x);
+
   /// utility to combine components of separable fns
   void separable_combine(Real mult_scale_factor, std::vector<Real> & w,
 			 std::vector<Real> & d1w, std::vector<Real> & d2w);

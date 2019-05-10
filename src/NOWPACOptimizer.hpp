@@ -39,6 +39,7 @@ public:
 		std::vector<double> &noise,// 1 obj + len-1 nln ineq constr <= 0
 		void *param); // general pass through from NOWPAC
 
+  double evaluate_samples ( std::vector<double> const &samples, const unsigned int index, void *param );
   // TO DO: queue() + synchronize()
 
   void allocate_constraints();
@@ -129,7 +130,7 @@ scale(const RealVector& unscaled_x, RealArray& scaled_x) const
     scaled_x.resize(num_v);
   for (v=0; v<num_v; ++v)
     scaled_x[v] = (  unscaled_x[v] - lowerBounds[v] )
-                / ( upperBounds[v] - lowerBounds[v] );
+                / ( upperBounds[v] - lowerBounds[v] ) * 2. - 1;
 }
 
 
@@ -141,7 +142,7 @@ unscale(const RealArray& scaled_x, RealVector& unscaled_x) const
     unscaled_x.sizeUninitialized(num_v);
   for (v=0; v<num_v; ++v)
     unscaled_x[v] = lowerBounds[v]
-                  + scaled_x[v] * ( upperBounds[v] - lowerBounds[v] );
+                  + 0.5 * (scaled_x[v] + 1.) * ( upperBounds[v] - lowerBounds[v] );
 }
 
 /**

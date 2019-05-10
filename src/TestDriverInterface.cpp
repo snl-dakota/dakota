@@ -101,6 +101,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["predator_prey"]          = PREDATOR_PREY;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
+  driverTypeMap["problem18"]              = PROBLEM18;
 
   // convert strings to enums for analysisDriverTypes, iFilterType, oFilterType
   analysisDriverTypes.resize(numAnalysisDrivers);
@@ -147,9 +148,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     switch (analysisDriverTypes[i]) {
     case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
     case ROSENBROCK:   case LF_ROSENBROCK:    case EXTRA_LF_ROSENBROCK:
-    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK:
+    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK: case PROBLEM18:
     case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
-    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
+    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE: 
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
@@ -198,6 +199,9 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["H"]  = VAR_H;  //varTypeMap["b"] = VAR_b;
       varTypeMap["d"]  = VAR_d;  //varTypeMap["h"] = VAR_h;
       varTypeMap["F0"] = VAR_F0; //varTypeMap["E"] = VAR_E; break;
+    //case PROBLEM18:
+      varTypeMap["x"] = VAR_x; varTypeMap["xi"] = VAR_xi; varTypeMap["Af"] = VAR_Af; 
+      varTypeMap["Ac"] = VAR_Ac;
     //}
   }
 }
@@ -330,6 +334,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = aniso_quad_form(); break;
   case BAYES_LINEAR: 
     fail_code = bayes_linear(); break;
+  case PROBLEM18:
+    fail_code = problem18(); break;
   default: {
     Cerr << "Error: analysis_driver '" << ac_name << "' is not available in "
 	 << "the direct interface." << std::endl;
@@ -4275,6 +4281,60 @@ int TestDriverInterface::bayes_linear()
    
   return 0;
 }  
+
+int TestDriverInterface::problem18(){
+  // This test driver implements the 1D optimization benchmark problem 18 from 
+  // http://infinity77.net/global_optimization/test_functions_1d.html
+  // as a benchmark function to test the MLMC approach with SNOWPAC
+
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: problem18 direct fn does not support "
+   << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  //if (numVars < 1 || numVars > 500 || numADIV || numADRV) {
+  //  Cerr << "Error: Bad variable types in problem18 fn."
+  // << std::endl;
+  //  abort_handler(INTERFACE_ERROR);
+  //} Unsure about this yet
+  if (numFns < 1) {
+    Cerr << "Error: Bad number of functions in problem18 direct fn."
+   << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: Gradients and Hessians not supported in problem18 "
+   << "direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  std::map<var_t, Real>::iterator x_iter = xCM.find(VAR_x);
+  Real x = (x_iter == xCM.end()) ? 0.5 : x_iter->second; // x
+
+  std::map<var_t, Real>::iterator xi_iter = xCM.find(VAR_xi);
+  Real xi = (xi_iter == xCM.end()) ? 0. : xi_iter->second; // RV xi
+
+  std::map<var_t, Real>::iterator Af_iter = xCM.find(VAR_Af);
+  Real Af = (Af_iter == xCM.end()) ? 1. : Af_iter->second; // Correlation Af for objective
+
+  std::map<var_t, Real>::iterator Ac_iter = xCM.find(VAR_Ac);
+  Real Ac = (Ac_iter == xCM.end()) ? 1. : Ac_iter->second; // Correlation Ac for constraint
+
+  fnVals[0] = problem18_f(x) + Af * xi * xi * xi;
+  fnVals[1] = problem18_g(x) - problem18_f(x) + Ac * xi * xi * xi;
+
+  return 0;
+}
+
+double TestDriverInterface::problem18_f(const double &x){
+  return x <= 3. ?
+         (x - 2.) * (x - 2.) :
+         2. * std::log(x - 2.) + 1;
+}
+
+double TestDriverInterface::problem18_g(const double &x){
+  return (2. * std::log(3.5 - 2))/(3.5 - 1) * x + 1 - (2. *std::log(3.5 - 2))/(3.5 - 1);
+}
 
 
 /// this function combines N 1D functions and their derivatives to compute a N-D separable function and its derivatives, logic is general enough to support different 1D functions in different dimensions (can mix and match)

@@ -2035,7 +2035,7 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
 	  sum += term * term;
 	}
       }
-      mapped_errors[i] = std::sqrt(sum);
+      mapped_errors[i] = 2 * std::sqrt(sum);
     }
   }
 
@@ -2056,7 +2056,7 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
 	  sum += term * term;
 	}
       }
-      mapped_errors[m_index] = std::sqrt(sum);
+      mapped_errors[m_index] = 2 * std::sqrt(sum);
     }
   }
 }
