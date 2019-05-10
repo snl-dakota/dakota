@@ -10,7 +10,6 @@ import os
 import sys
 import shlex
 import shutil
-import random
 
 # Find the best implementation available on this platform
 try:
@@ -22,10 +21,9 @@ except ImportError:
         from io import StringIO
 
 sys.dont_write_bytecode = True
-PY3 = False
+
 if sys.version_info >= (3,):
     unicode = str
-    PY3 = True
     from itertools import zip_longest
 else:
     from itertools import izip_longest as zip_longest
@@ -463,13 +461,6 @@ class invocation_and_options(unittest.TestCase):
                 read('test_output/cli_var.inp.4'),
                 read('test_gold/cli_var.gold.4')))
 
-    def test_cli_no_infile(self):
-        cmd = 'fake_file_' + ''.join(random.choice('123456789') for _ in range(10))
-        with CLI_Error() as E:
-            pyprepro._pyprepro_cli(shsplit(cmd))
-        self.assert_(E.exit_code != 0)
-        self.assert_(E.stderr.strip() == 'ERROR: `infile` must be a file or `-` to read from stdin')
-            
     def test_change_code_delims(self):
         """
         Test changing the code delimiters. Also test when you do *not* do it
@@ -897,18 +888,6 @@ class misc(unittest.TestCase):
         self.assert_(compare_lines(output2,gold2))
         self.assert_(compare_lines(output3,gold2))
 
-    def test_white_space(self):
-        """
-        Check that trialing \\ before a code block works as expected
-        """
-        # Test via the command line since python (not pyprepro) gets wonky around
-        # some of the strings
-        cmd = ' --no-warn test_files/white_space.inp test_output/white_space.out'
-        pyprepro._pyprepro_cli(shsplit(cmd))
-        
-        self.assert_(compare_lines(read('test_output/white_space.out'),
-                                   read('test_gold/white_space.gold')))
-    
     def test_division(self):
         """
         Make sure 3/2 == 1.5
@@ -925,7 +904,7 @@ class misc(unittest.TestCase):
         self.assert_(pyprepro.pyprepro('test nothing').strip() == 'test nothing')
     
 class error_capture(unittest.TestCase):
-    def test_name(self):
+    def name(self):
         """
         Test that it fails when presented with an undefined variable
         """
@@ -933,9 +912,6 @@ class error_capture(unittest.TestCase):
         {param1 = 10}
         {param2}
         """
-        if sys.version_info < (2,7):
-            print('Skipping error_capture tests for 2.6',file=sys.stderr)
-            return
 
         with open('_testin.inp','w') as F:
             F.write(input)
@@ -964,15 +940,13 @@ Error occurred
         # Via module
         self.assertRaises(NameError,pyprepro.pyprepro,input) # Should fail
     
-    def test_syntax(self):
+    def syntax(self):
         input="""\
         This should throw a SyntaxError on line 4
 
         Error Statement: {'{0}'.format('hi'}
         """
-        if sys.version_info < (2,7):
-            print('Skipping error_capture tests for 2.6',file=sys.stderr)
-            return
+
         with open('_testin.inp','w') as F:
             F.write(input)
 
@@ -986,9 +960,10 @@ Error occurred
 Error occurred
     Exception: SyntaxError
     Filename: {}
-    Approximate Line Number: 4
-    Message: {}
-'''.format(os.path.abspath('_testin.inp'),'invalid syntax' if not PY3 else 'unexpected EOF while parsing')
+    Line Number: 4
+    Message: invalid syntax
+'''.format(os.path.abspath('_testin.inp'))
+        #import ipdb;ipdb.set_trace()
         self.assert_(compare_lines(stderr,gold))
         
         # Also test when it is called
