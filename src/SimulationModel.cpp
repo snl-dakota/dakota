@@ -123,62 +123,36 @@ initialize_solution_control(const String& control, const RealVector& cost)
       userDefinedConstraints.all_discrete_int_upper_bounds()[solnCntlADVIndex] -
       userDefinedConstraints.all_discrete_int_lower_bounds()[solnCntlADVIndex];
     break;
-  case DISCRETE_DESIGN_SET_INT:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_int_variable_types(),
-		 DISCRETE_DESIGN_SET_INT);
-    num_lev = discreteDesignSetIntValues[solnCntlSetIndex].size();
+  case DISCRETE_DESIGN_SET_INT: case DISCRETE_STATE_SET_INT:
+    //size_t rv_index = solnCntlADVIndex + svd.vc_lookup(CONTINUOUS_DESIGN);
+    solnCntlRVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
+    num_lev = mvd_rep->pull_parameter<IntSet>(solnCntlRVIndex,
+	      Pecos::DSI_VALUES).size();
     break;
-  case DISCRETE_DESIGN_SET_STRING:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_string_variable_types(),
-		 DISCRETE_DESIGN_SET_STRING);
-    num_lev = discreteDesignSetStringValues[solnCntlSetIndex].size();
+  case DISCRETE_DESIGN_SET_STRING: case DISCRETE_STATE_SET_STRING:
+    solnCntlRVIndex = svd.adsv_index_to_all_index(solnCntlADVIndex);
+    num_lev = mvd_rep->pull_parameter<StringSet>(solnCntlRVIndex,
+	      Pecos::DSS_VALUES).size();
     break;
-  case DISCRETE_DESIGN_SET_REAL:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_real_variable_types(),
-		 DISCRETE_DESIGN_SET_REAL);
-    num_lev = discreteDesignSetRealValues[solnCntlSetIndex].size();
+  case DISCRETE_DESIGN_SET_REAL: case DISCRETE_STATE_SET_REAL:
+    solnCntlRVIndex = svd.adrv_index_to_all_index(solnCntlADVIndex);
+    num_lev = mvd_rep->pull_parameter<RealSet>(solnCntlRVIndex,
+	      Pecos::DSR_VALUES).size();
     break;
   case DISCRETE_UNCERTAIN_SET_INT:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_int_variable_types(),
-		 DISCRETE_UNCERTAIN_SET_INT);
-    num_lev = epistDistParams.discrete_set_int_values_probabilities()
-      [solnCntlSetIndex].size();
+    solnCntlRVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
+    num_lev = mvd_rep->pull_parameter<IntRealMap>(solnCntlRVIndex,
+	      Pecos::DUSI_VALUES_PROBS).size();
     break;
   case DISCRETE_UNCERTAIN_SET_STRING:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_string_variable_types(),
-		 DISCRETE_UNCERTAIN_SET_STRING);
-    num_lev = epistDistParams.discrete_set_string_values_probabilities()
-      [solnCntlSetIndex].size();
+    solnCntlRVIndex = svd.adsv_index_to_all_index(solnCntlADVIndex);
+    num_lev = mvd_rep->pull_parameter<StringRealMap>(solnCntlRVIndex,
+	      Pecos::DUSS_VALUES_PROBS).size();
     break;
   case DISCRETE_UNCERTAIN_SET_REAL:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_real_variable_types(),
-		 DISCRETE_UNCERTAIN_SET_REAL);
-    num_lev = epistDistParams.discrete_set_real_values_probabilities()
-      [solnCntlSetIndex].size();
-    break;
-  case DISCRETE_STATE_SET_INT:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_int_variable_types(),
-		 DISCRETE_STATE_SET_INT);
-    num_lev = discreteStateSetIntValues[solnCntlSetIndex].size();
-    break;
-  case DISCRETE_STATE_SET_STRING:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_string_variable_types(),
-		 DISCRETE_STATE_SET_STRING);
-    num_lev = discreteStateSetStringValues[solnCntlSetIndex].size();
-    break;
-  case DISCRETE_STATE_SET_REAL:
-    solnCntlSetIndex = solnCntlADVIndex -
-      find_index(currentVariables.all_discrete_real_variable_types(),
-		 DISCRETE_STATE_SET_REAL);
-    num_lev = discreteStateSetRealValues[solnCntlSetIndex].size();
+    solnCntlRVIndex = svd.adrv_index_to_all_index(solnCntlADVIndex);
+    num_lev = mvd_rep->pull_parameter<RealRealMap>(solnCntlRVIndex,
+	      Pecos::DUSR_VALUES_PROBS).size();
     break;
   default:
     Cerr << "Error: unsupported variable type in SimulationModel::"

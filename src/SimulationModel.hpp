@@ -170,7 +170,7 @@ private:
   /// index of the discrete set variable (within its type array, managing
   /// offset when solnCntlVarType is a subset of all discrete variables)
   /// that controls the set/range of solution levels
-  size_t solnCntlSetIndex;
+  size_t solnCntlRVIndex; //solnCntlSetIndex;
   /// sorted array of relative costs associated with a set of solution levels
   std::map<Real, size_t> solnCntlCostMap;
 
