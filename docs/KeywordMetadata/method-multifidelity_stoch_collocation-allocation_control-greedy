@@ -29,7 +29,7 @@ uniform refinement of the current sparse grid level.
 \verbatim
 method,
 	model_pointer = 'HIERARCH'
-        multifidelity_stoch_collocation
+	multifidelity_stoch_collocation
 	  nodal
 	  allocation_control greedy
 	  p_refinement uniform
@@ -50,7 +50,7 @@ rapidly with random dimension and grid level.
 \verbatim
 method,
 	model_pointer = 'HIERARCH'
-        multifidelity_stoch_collocation
+	multifidelity_stoch_collocation
 	  hierarchical
 	  allocation_control greedy
 	  p_refinement dimension_adaptive generalized
