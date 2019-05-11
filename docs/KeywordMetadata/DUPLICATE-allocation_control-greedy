@@ -8,7 +8,7 @@ of the model hierarchy being approximated can generate one or more
 candidates for refinement.  These candidates are competed against each
 other within a unified competition, and the candidate that induces the
 largest change in the statistical QoI (response covariance by default,
-or results of any \f$z/p/\beta/\beta^*$ level mappings when specified),
+or results of any \f$z/p/\beta/\beta^*\f$ level mappings when specified),
 normalized by relative cost of evaluating the candidate, is selected
 and then used to generate additional candidates for consideration at
 its model level.
