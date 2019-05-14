@@ -187,7 +187,7 @@ void NOWPACOptimizer::core_run()
   //////////////////////////////////////////////////////////////////////////
   // start optimization (on output: bbdata contains data that allows warmstart
   // and enables post-processing to get model values, gradients and hessians)
-  nowpacSolver.optimize(x_star, fn_star, bb_data);
+  nowpacSolver.optimize(x_star, obj_star, bb_data);
   if (outputLevel >= DEBUG_OUTPUT) {
     // create post-processing object to compute surrogate models
     PostProcessModels<> PPD( bb_data );
@@ -218,9 +218,6 @@ void NOWPACOptimizer::core_run()
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star[0] : obj_star[0];
 
     // objective and mapped nonlinear inequalities returned from optimize()
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-      -fn_star[0] : fn_star[0];
     const SizetList& nln_ineq_map_indices
       = nowpacEvaluator.nonlinear_inequality_mapping_indices();
     const RealList&  nln_ineq_map_mult
@@ -233,7 +230,7 @@ void NOWPACOptimizer::core_run()
 	 m_iter  = nln_ineq_map_mult.begin(),
 	 o_iter  = nln_ineq_map_offsets.begin();
 	 i_iter != nln_ineq_map_indices.end(); ++i_iter, ++m_iter, ++o_iter)
-      best_fns[(*i_iter)+1] = (fn_star[++cntr] - (*o_iter))/(*m_iter);
+      best_fns[(*i_iter)+1] = (obj_star[++cntr] - (*o_iter))/(*m_iter);
     /*
     size_t i, offset = iteratedModel.num_nonlinear_ineq_constraints() + 1,
       num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
