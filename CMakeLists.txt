@@ -322,13 +322,9 @@ endif()
 # and test subdirectories
 option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 if(DAKOTA_HAVE_HDF5)
-	find_package(HDF5 REQUIRED COMPONENTS "C;HL;CXX")
+  find_package(HDF5 REQUIRED COMPONENTS "C;HL;CXX")
   if(HDF5_VERSION VERSION_LESS "1.10.4")
     message( SEND_ERROR "Found HDF5 version ${HDF5_VERSION}. Minimum required is 1.10.4")
-  endif()
-  if(WIN32)
-    find_package(ZLIB REQUIRED) 
-    message(STATUS "Found Win32 ZLIB libraries: ${ZLIB_LIBRARIES}")
   endif()
 endif() # DAKOTA_HAVE_HDF5
 
