@@ -390,7 +390,7 @@ option(HAVE_ROL "Build the ROL package." ON)
 if (NOT BUILD_IN_TRILINOS)
 
   # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
-  find_package(Trilinos QUIET)
+  #find_package(Trilinos QUIET)
 
   if(Trilinos_FOUND)
     if(Trilinos_DIR)
