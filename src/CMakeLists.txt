@@ -859,7 +859,9 @@ endif()
 if(HAVE_NOWPAC)
   # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
   # and installed before building Dakota sources
+  if(NOT HAVE_EXTERNAL_NOWPAC)
   add_dependencies(dakota_src EIGEN NLOPT)
+  endif()
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
