@@ -154,7 +154,7 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
 {
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
-  
+
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 }
@@ -170,7 +170,7 @@ RecastModel::RecastModel(const Model& sub_model):
 { 
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
-  
+
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
   numFns = sub_model.response_size();
@@ -790,23 +790,15 @@ void RecastModel::update_from_model(Model& model)
     currentVariables.all_discrete_real_variable_labels(
       model.all_discrete_real_variable_labels());
 
-    if (!model.discrete_design_set_int_values().empty())
-      discreteDesignSetIntValues = model.discrete_design_set_int_values();
-    if (!model.discrete_design_set_string_values().empty())
-      discreteDesignSetStringValues = model.discrete_design_set_string_values();
-    if (!model.discrete_design_set_real_values().empty())
-      discreteDesignSetRealValues = model.discrete_design_set_real_values();
-
     // uncertain variable distribution data
-    aleatDistParams.update(model.aleatory_distribution_parameters());
-    epistDistParams.update(model.epistemic_distribution_parameters());
-
-    if (!model.discrete_state_set_int_values().empty())
-      discreteStateSetIntValues = model.discrete_state_set_int_values();
-    if (!model.discrete_state_set_string_values().empty())
-      discreteStateSetStringValues = model.discrete_state_set_string_values();
-    if (!model.discrete_state_set_real_values().empty())
-      discreteStateSetRealValues = model.discrete_state_set_real_values();
+    // > deep dist data copies were used previously for DistributionParams
+    //xDist.update(model.multivariate_distribution());
+    // Current approach: rep is shared
+    // > tramples an xDist construction from Model(BaseConstructor) ....
+    // > populates xDist for Model(LightWtBaseConstructor)
+    // > reassignments protected by smart ptr management
+    // Note: becomes less important w/ broader use of ProbabilityTransformModel
+    xDist = subModel.multivariate_distribution(); // shared rep
 
     // linear constraints
     if (model.num_linear_ineq_constraints()) {

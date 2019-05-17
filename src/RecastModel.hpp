@@ -76,9 +76,9 @@ public:
 					  const Response& sub_model_response,
 					  Response& recast_response));
 
-  /// alternate constructor; uses provided sizes to construct
-  /// Variables, Response and Constraints so Model can be passed to an
-  /// Iterator; requires subsequent init_maps() call.
+  /// alternate constructor; uses provided sizes to construct Variables,
+  /// Response and Constraints so Model can be passed to an Iterator;
+  /// requires subsequent init_maps() call.
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
@@ -86,8 +86,7 @@ public:
 	      short recast_resp_order);
 
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
-  /// mappings to be initialized later; only initializes based on
-  /// sub-model
+  /// mappings to be initialized later; only initializes based on sub-model
   RecastModel(ProblemDescDB& problem_db, const Model& sub_model);
 
   /// lightest constructor used when transform sizes aren't known at
