@@ -365,7 +365,9 @@ void NonDBayesCalibration::construct_mcmc_model()
       empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
-    natafTransform = se_rep->variable_transformation();   // shared rep
+    ProbabilityTransformModel* pt_model
+      = (ProbabilityTransformModel*)mcmcModel.model_rep();
+    natafTransform = pt_rep->probability_transformation(); // shared rep
     break;
   }
 

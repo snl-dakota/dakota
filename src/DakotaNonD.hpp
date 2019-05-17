@@ -39,29 +39,6 @@ public:
   //- Heading: Member functions
   //
 
-  /// initialize natafTransform based on distribution data from iteratedModel
-  void initialize_random_variables(short u_space_type);
-  /// alternate form: initialize natafTransform based on incoming data
-  void initialize_random_variables(
-    const Pecos::ProbabilityTransformation& transform, bool deep_copy = false);
-
-  /// instantiate natafTransform
-  void initialize_random_variable_transformation();
-  /// initializes ranVarTypesX within natafTransform (u-space not needed)
-  void initialize_random_variable_types();
-  /// initializes ranVarTypesX and ranVarTypesU within natafTransform
-  void initialize_random_variable_types(short u_space_type);
-  /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
-  /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
-  void initialize_random_variable_parameters();
-  /// propagate iteratedModel correlations to natafTransform
-  void initialize_random_variable_correlations();
-  /// verify that correlation warping is supported by Nataf for given
-  /// variable types
-  void verify_correlation_support(short u_space_type);
-  /// perform correlation warping for variable types supported by Nataf
-  void transform_correlations();
-
   /// set requestedRespLevels, requestedProbLevels, requestedRelLevels,
   /// requestedGenRelLevels, respLevelTarget, cdfFlag, and pdfOutput
   /// (used in combination with alternate ctors)
@@ -106,9 +83,6 @@ public:
   short final_moments_type() const;
   /// set finalMomentsType
   void final_moments_type(short type);
-
-  /// return natafTransform
-  Pecos::ProbabilityTransformation& variable_transformation();
 
 protected:
 
@@ -217,30 +191,12 @@ protected:
   /// recast x_model from x-space to u-space to create u_model
   void transform_model(Model& x_model, Model& u_model,
 		       bool truncated_bounds = false, Real bound = 10.);
+
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
 		     unsigned short sample_type, int num_samples, int seed,
 		     const String& rng, bool vary_pattern,
 		     short sampling_vars_mode = ACTIVE);
-
-  /// static function for RecastModels used for forward mapping of u-space
-  /// variables from NonD Iterators to x-space variables for Model evaluations
-  static void vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars);
-  /// static function for RecastModels used for inverse mapping of x-space
-  /// variables from data import to u-space variables for NonD Iterators
-  static void vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars);
-
-  /// static function for RecastModels used to map u-space ActiveSets
-  /// from NonD Iterators to x-space ActiveSets for Model evaluations
-  static void set_u_to_x_mapping(const Variables& u_vars,
-				 const ActiveSet& u_set, ActiveSet& x_set);
-
-  /// static function for RecastModels used to map x-space responses from
-  /// Model evaluations to u-space responses for return to NonD Iterator.
-  static void resp_x_to_u_mapping(const Variables& x_vars,
-				  const Variables& u_vars,
-				  const Response& x_response,
-				  Response& u_response);
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
@@ -267,10 +223,6 @@ protected:
   static NonD* nondInstance;
   /// pointer containing previous value of nondInstance
   NonD* prevNondInstance;
-
-  /// Nonlinear variable transformation that encapsulates the required
-  /// data for performing transformations from X -> Z -> U and back.
-  Pecos::ProbabilityTransformation natafTransform;
 
   // The following variable counts reflect the native Model space, which could
   // correspond to either X or U space.  If a specific X or U variables count
@@ -383,14 +335,12 @@ protected:
   /// total number of uncertain variables (native space)
   size_t numUncertainVars;
 
-  /// flag for computing interval-type metrics instead of integrated
-  /// metrics If any epistemic variables are active in a metric
-  /// evaluation, then this flag is set.
+  /// flag for computing interval-type metrics instead of integrated metrics
+  /// If any epistemic vars are active in a metric evaluation, then flag is set.
   bool epistemicStats;
 
-  /// standardized or central moments of response functions, as determined
-  /// by finalMomentsType.  Calculated in compute_moments()) and indexed
-  /// as (moment,fn).
+  /// standardized or central resp moments, as determined by finalMomentsType.
+  /// Calculated in compute_moments()) and indexed as (moment,fn).
   RealMatrix momentStats;
 
   // map response level z -> probability level p, reliability level beta,
@@ -455,6 +405,7 @@ protected:
   /// Whether PDF was computed for function i; used to determine whether
   /// a pdf should be archived
   BitArray pdfComputed;
+
 private:
 
   /// convenience function for distributing a vector of levels among multiple
@@ -467,10 +418,6 @@ private:
   /// Print level mapping for a single response function to ostream
   void print_level_map(std::ostream& s, size_t fn_index,
 		       const String& qoi_label) const;
-
-  /// convert from Pecos To Dakota variable enumeration type for continuous
-  /// aleatory uncertain variables used in variable transformations
-  unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
 
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
@@ -491,8 +438,13 @@ inline NonD::~NonD()
 { }
 
 
-inline void NonD::transform_correlations()
-{ natafTransform.transform_correlations(); }
+void NonD::
+transform_model(Model& x_model, Model& u_model,
+		bool truncated_bounds, Real bound)
+{
+  u_model.assign_rep(new
+    ProbabilityTransformModel(x_model, truncated_bounds, bound), false);
+}
 
 
 inline void NonD::distribution_parameter_derivatives(bool dist_param_derivs)
@@ -513,10 +465,6 @@ inline short NonD::final_moments_type() const
 
 inline void NonD::final_moments_type(short type)
 { finalMomentsType = type; }
-
-
-inline Pecos::ProbabilityTransformation& NonD::variable_transformation()
-{ return natafTransform; }
 
 
 inline void NonD::initialize_run()
@@ -554,24 +502,6 @@ inline void NonD::print_level_mappings(std::ostream& s) const
 
 inline void NonD::print_densities(std::ostream& s) const
 { print_densities(s, "response function", iteratedModel.response_labels()); }
-
-
-/** Map the variables from iterator space (u) to simulation space (x). */
-inline void NonD::
-vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
-{
-  nondInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
-					    x_vars.continuous_variables_view());
-}
-
-
-/** Map the variables from simulation space (x) to iterator space (u). */
-inline void NonD::
-vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
-{
-  nondInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
-					    u_vars.continuous_variables_view());
-}
 
 
 inline bool NonD::homogeneous(const SizetArray& N_l) const

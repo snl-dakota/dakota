@@ -55,6 +55,9 @@ public:
   //- Heading: Member functions
   //
 
+  /// return natafTransform
+  Pecos::ProbabilityTransformation& probability_transformation();
+
   /// perform correlation warping for variable types supported by Nataf
   void transform_correlations();
 
@@ -67,26 +70,23 @@ protected:
   /// set distParamDerivs
   void distribution_parameter_derivatives(bool dist_param_derivs);
 
+  /// initialize natafTransform based on distribution data from iteratedModel
+  void initialize_random_variables(short u_space_type);
   /// alternate form: initialize natafTransform based on incoming data
   void initialize_random_variables(
     const Pecos::ProbabilityTransformation& transform, bool deep_copy = false);
 
   /// instantiate natafTransform
   void initialize_random_variable_transformation();
-
   /// initializes ranVarTypesX within natafTransform (u-space not needed)
   void initialize_random_variable_types();
-
   /// initializes ranVarTypesX and ranVarTypesU within natafTransform
   void initialize_random_variable_types(short u_space_type);
-
   /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
   /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
   void initialize_random_variable_parameters();
-
   /// propagate iteratedModel correlations to natafTransform
   void initialize_random_variable_correlations();
-
   /// verify that correlation warping is supported by Nataf for given
   /// variable types
   void verify_correlation_support(short u_space_type);
@@ -98,7 +98,7 @@ protected:
   /// aleatory uncertain variables used in variable transformations
   unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
 
-
+  /// 
   void initialize_sizes();
 
   /// static function for RecastModels used for forward mapping of u-space
@@ -121,6 +121,7 @@ protected:
                                   Response& u_response);
 
 private:
+
   /// Nonlinear variable transformation that encapsulates the required
   /// data for performing transformations from X -> Z -> U and back.
   Pecos::ProbabilityTransformation natafTransform;
@@ -249,7 +250,6 @@ private:
 
   /// boolean flag to indicate truncated bounds
   bool truncatedBounds;
-
   /// bound value
   Real boundVal;
 
@@ -281,6 +281,17 @@ inline bool ProbabilityTransformModel::resize_pending() const
 { return subModel.resize_pending(); }
 
 
+inline void ProbabilityTransformModel::
+initialize_random_variables(short u_space_type)
+{
+  initialize_random_variable_transformation();
+  initialize_random_variable_types(u_space_type);
+  initialize_random_variable_parameters();
+  initialize_random_variable_correlations();
+  verify_correlation_support(u_space_type);
+}
+
+
 inline void ProbabilityTransformModel::transform_correlations()
 { natafTransform.transform_correlations(); }
 
@@ -295,7 +306,7 @@ inline void ProbabilityTransformModel::
 vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 {
   ptmInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
-      x_vars.continuous_variables_view());
+					   x_vars.continuous_variables_view());
 }
 
 
@@ -304,8 +315,13 @@ inline void ProbabilityTransformModel::
 vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 {
   ptmInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
-      u_vars.continuous_variables_view());
+					   u_vars.continuous_variables_view());
 }
+
+
+inline Pecos::ProbabilityTransformation& ProbabilityTransformModel::
+probability_transformation()
+{ return natafTransform; }
 
 } // namespace Dakota
 
