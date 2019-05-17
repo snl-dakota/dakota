@@ -120,6 +120,16 @@ private:
 			 size_t& num_cv, size_t& num_div, size_t& num_dsv,
 			 size_t& num_drv) const;
 
+  /// convert index within all discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adiv_index_to_all_index(size_t adiv_index);
+  /// convert index within all discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adsv_index_to_all_index(size_t adsv_index);
+  /// convert index within all discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adrv_index_to_all_index(size_t adrv_index);
+
   /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels,
   /// with or without discrete relaxation
   void size_all_labels();
@@ -413,6 +423,104 @@ state_counts(size_t& num_csv,  size_t& num_dsiv,
 }
 
 
+inline size_t SharedVariablesDataRep::adiv_index_to_all_index(size_t adiv_index)
+{
+  size_t offset = variablesCompsTotals[TOTAL_CDV],
+         bound  = variablesCompsTotals[TOTAL_DDIV];
+  if (adiv_index < bound)
+    return offset + adiv_index;
+  offset += variablesCompsTotals[TOTAL_DDSV] + variablesCompsTotals[TOTAL_DDRV]
+         +  variablesCompsTotals[TOTAL_CAUV];
+  bound  += variablesCompsTotals[TOTAL_DAUIV];
+  if (adiv_index < bound)
+    return offset + adiv_index;
+  offset += variablesCompsTotals[TOTAL_DAUSV]
+         +  variablesCompsTotals[TOTAL_DAURV]
+         +  variablesCompsTotals[TOTAL_CEUV];
+  bound  += variablesCompsTotals[TOTAL_DEUIV];
+  if (adiv_index < bound)
+    return offset + adiv_index;
+  offset += variablesCompsTotals[TOTAL_DEUSV]
+         +  variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_CSV];
+  bound  += variablesCompsTotals[TOTAL_DSIV];
+  if (adiv_index < bound)
+    return offset + adiv_index;
+  else {
+    Cerr << "Error: ADIV index out of range in SharedVariablesDataRep::"
+	 << "adiv_index_to_all_index()" << std::endl;
+    abort_handler(VARS_ERROR);
+    return _NPOS;
+  }
+}
+
+
+inline size_t SharedVariablesDataRep::adsv_index_to_all_index(size_t adsv_index)
+{
+  size_t offset = variablesCompsTotals[TOTAL_CDV]
+                + variablesCompsTotals[TOTAL_DDIV],
+         bound  = variablesCompsTotals[TOTAL_DDSV];
+  if (adsv_index < bound)
+    return offset + adsv_index;
+  offset += variablesCompsTotals[TOTAL_DDRV]
+         +  variablesCompsTotals[TOTAL_CAUV]
+         +  variablesCompsTotals[TOTAL_DAUIV];
+  bound  += variablesCompsTotals[TOTAL_DAUSV];
+  if (adsv_index < bound)
+    return offset + adsv_index;
+  offset += variablesCompsTotals[TOTAL_DAURV]
+         +  variablesCompsTotals[TOTAL_CEUV]
+         +  variablesCompsTotals[TOTAL_DEUIV];
+  bound  += variablesCompsTotals[TOTAL_DEUSV];
+  if (adsv_index < bound)
+    return offset + adsv_index;
+  offset += variablesCompsTotals[TOTAL_DEURV] + variablesCompsTotals[TOTAL_CSV]
+         +  variablesCompsTotals[TOTAL_DSIV];
+  bound  += variablesCompsTotals[TOTAL_DSSV];
+  if (adsv_index < bound)
+    return offset + adsv_index;
+  else {
+    Cerr << "Error: ADSV index out of range in SharedVariablesDataRep::"
+	 << "adsv_index_to_all_index()" << std::endl;
+    abort_handler(VARS_ERROR);
+    return _NPOS;
+  }
+}
+
+
+inline size_t SharedVariablesDataRep::adrv_index_to_all_index(size_t adrv_index)
+{
+  size_t offset
+    = variablesCompsTotals[TOTAL_CDV] + variablesCompsTotals[TOTAL_DDIV]
+    + variablesCompsTotals[TOTAL_DDSV],
+    bound  = variablesCompsTotals[TOTAL_DDRV];
+  if (adrv_index < bound)
+    return offset + adrv_index;
+  offset += variablesCompsTotals[TOTAL_CAUV]
+         +  variablesCompsTotals[TOTAL_DAUIV]
+         +  variablesCompsTotals[TOTAL_DAUSV];
+  bound  += variablesCompsTotals[TOTAL_DAURV];
+  if (adrv_index < bound)
+    return offset + adrv_index;
+  offset +=  variablesCompsTotals[TOTAL_CEUV]
+         +  variablesCompsTotals[TOTAL_DEUIV]
+         +  variablesCompsTotals[TOTAL_DEUSV];
+  bound  += variablesCompsTotals[TOTAL_DEURV];
+  if (adrv_index < bound)
+    return offset + adrv_index;
+  offset += variablesCompsTotals[TOTAL_CSV]
+         +  variablesCompsTotals[TOTAL_DSIV] + variablesCompsTotals[TOTAL_DSSV];
+  bound  += variablesCompsTotals[TOTAL_DSRV];
+  if (adrv_index < bound)
+    return offset + adrv_index;
+  else {
+    Cerr << "Error: ADRV index out of range in SharedVariablesDataRep::"
+	 << "adrv_index_to_all_index()" << std::endl;
+    abort_handler(VARS_ERROR);
+    return _NPOS;
+  }
+}
+
+
 inline void SharedVariablesDataRep::size_all_labels()
 {
   size_t num_acv, num_adiv, num_adsv, num_adrv;
@@ -536,6 +644,16 @@ public:
   /// SharedVariablesDataRep::allRelaxedDiscrete{Int,Real}
   void state_counts(size_t& num_csv,  size_t& num_dsiv,
 		    size_t& num_dssv, size_t& num_dsrv) const;
+
+  /// convert index within all discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adiv_index_to_all_index(size_t adiv_index);
+  /// convert index within all discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adsv_index_to_all_index(size_t adsv_index);
+  /// convert index within all discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adrv_index_to_all_index(size_t adrv_index);
 
   /// initialize start index and counts for active variables
   void initialize_active_start_counts();
@@ -840,6 +958,18 @@ inline void SharedVariablesData::
 state_counts(size_t& num_csv, size_t& num_dsiv, size_t& num_dssv,
 	     size_t& num_dsrv) const
 { svdRep->state_counts(num_csv, num_dsiv, num_dssv, num_dsrv); }
+
+
+inline size_t SharedVariablesData::adiv_index_to_all_index(size_t adiv_index)
+{ svdRep->adiv_index_to_all_index(adiv_index); }
+
+
+inline size_t SharedVariablesData::adsv_index_to_all_index(size_t adsv_index)
+{ svdRep->adsv_index_to_all_index(adsv_index); }
+
+
+inline size_t SharedVariablesData::adrv_index_to_all_index(size_t adrv_index)
+{ svdRep->adrv_index_to_all_index(adrv_index); }
 
 
 inline void SharedVariablesData::initialize_active_start_counts()

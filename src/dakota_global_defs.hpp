@@ -51,15 +51,17 @@ extern double HALF_LOG_2PI;
 /// These need to be in range [-63, -1], so exit code (256+enum) is in
 /// [193, 255].  See RATIONALE in dakota_global_defs.cpp.
 enum {
-  APPROX_ERROR    = -8, // error with Approximation
-  METHOD_ERROR    = -7, // error with Iterator/MetaIterator
-  MODEL_ERROR     = -6, // error within Model recursion
-  IO_ERROR        = -5, // error with core file I/O
-  INTERFACE_ERROR = -4, // error with map invocation (user workflow/driver): 
-                        // analysis driver, if/of
+  VARS_ERROR      = -10, // error with Variables
+  RESP_ERROR      = -9,  // error with Response
+  APPROX_ERROR    = -8,  // error with Approximation
+  METHOD_ERROR    = -7,  // error with Iterator/MetaIterator
+  MODEL_ERROR     = -6,  // error within Model
+  IO_ERROR        = -5,  // error with core file I/O
+  INTERFACE_ERROR = -4,  // error with map invocation (user workflow/driver): 
+                         // analysis driver, if/of
   CONSTRUCT_ERROR = -3,
   PARSE_ERROR     = -2,
-  OTHER_ERROR     = -1  // the historical Dakota default error
+  OTHER_ERROR     = -1   // the historical Dakota default error
 };
 
 /// enum for dakota abort behaviors
