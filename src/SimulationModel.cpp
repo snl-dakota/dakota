@@ -14,6 +14,7 @@
 #include "dakota_system_defs.hpp"
 #include "SimulationModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "MarginalsCorrDistribution.hpp"
 
 static const char rcsId[]="@(#) $Id: SimulationModel.cpp 6492 2009-12-19 00:04:28Z briadam $";
 
@@ -29,7 +30,7 @@ namespace Dakota {
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   userDefinedInterface(problem_db.get_interface()),
-  solnCntlVarType(EMPTY_TYPE), solnCntlADVIndex(0), solnCntlSetIndex(0),
+  solnCntlVarType(EMPTY_TYPE), solnCntlADVIndex(0), solnCntlRVIndex(0),
   simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE;
@@ -117,6 +118,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   size_t i, num_lev;
   Pecos::MarginalsCorrDistribution* mvd_rep
     = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE:
@@ -255,7 +257,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   case DISCRETE_UNCERTAIN_SET_STRING: {
     StringRealMap srm = mvd_rep->
       pull_parameter<StringRealMap>(solnCntlRVIndex, Pecos::DUSS_VALUES_PROBS);
-    SRMIter sr_it = srm.begin();  std::advance(sr_cit, val_index);
+    SRMIter sr_it = srm.begin();  std::advance(sr_it, val_index);
     currentVariables.all_discrete_string_variable(sr_it->first,
 						  solnCntlADVIndex);
     break;
@@ -263,7 +265,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   case DISCRETE_UNCERTAIN_SET_REAL: {
     RealRealMap rrm = mvd_rep->
       pull_parameter<RealRealMap>(solnCntlRVIndex, Pecos::DUSR_VALUES_PROBS);
-    RRMIter rr_it = rrm.begin();  std::advance(rr_cit, val_index);
+    RRMIter rr_it = rrm.begin();  std::advance(rr_it, val_index);
     currentVariables.all_discrete_real_variable(rr_it->first, solnCntlADVIndex);
     break;
   }

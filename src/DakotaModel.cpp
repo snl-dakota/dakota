@@ -4471,7 +4471,7 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 {
   Pecos::MarginalsCorrDistribution* mvd_rep
     = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
-  const SharedVariablesData svd = vars.shared_data();
+  const SharedVariablesData& svd = vars.shared_data();
   StringSet ss; StringRealMap srm; size_t rv, start_rv, end_rv, adsv_index;
 
   // discrete design set string

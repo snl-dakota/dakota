@@ -122,13 +122,13 @@ private:
 
   /// convert index within all discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
-  size_t adiv_index_to_all_index(size_t adiv_index);
+  size_t adiv_index_to_all_index(size_t adiv_index) const;
   /// convert index within all discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
-  size_t adsv_index_to_all_index(size_t adsv_index);
+  size_t adsv_index_to_all_index(size_t adsv_index) const;
   /// convert index within all discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
-  size_t adrv_index_to_all_index(size_t adrv_index);
+  size_t adrv_index_to_all_index(size_t adrv_index) const;
 
   /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels,
   /// with or without discrete relaxation
@@ -423,7 +423,8 @@ state_counts(size_t& num_csv,  size_t& num_dsiv,
 }
 
 
-inline size_t SharedVariablesDataRep::adiv_index_to_all_index(size_t adiv_index)
+inline size_t SharedVariablesDataRep::
+adiv_index_to_all_index(size_t adiv_index) const
 {
   size_t offset = variablesCompsTotals[TOTAL_CDV],
          bound  = variablesCompsTotals[TOTAL_DDIV];
@@ -454,7 +455,8 @@ inline size_t SharedVariablesDataRep::adiv_index_to_all_index(size_t adiv_index)
 }
 
 
-inline size_t SharedVariablesDataRep::adsv_index_to_all_index(size_t adsv_index)
+inline size_t SharedVariablesDataRep::
+adsv_index_to_all_index(size_t adsv_index) const
 {
   size_t offset = variablesCompsTotals[TOTAL_CDV]
                 + variablesCompsTotals[TOTAL_DDIV],
@@ -487,7 +489,8 @@ inline size_t SharedVariablesDataRep::adsv_index_to_all_index(size_t adsv_index)
 }
 
 
-inline size_t SharedVariablesDataRep::adrv_index_to_all_index(size_t adrv_index)
+inline size_t SharedVariablesDataRep::
+adrv_index_to_all_index(size_t adrv_index) const
 {
   size_t offset
     = variablesCompsTotals[TOTAL_CDV] + variablesCompsTotals[TOTAL_DDIV]
@@ -647,13 +650,13 @@ public:
 
   /// convert index within all discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
-  size_t adiv_index_to_all_index(size_t adiv_index);
+  size_t adiv_index_to_all_index(size_t adiv_index) const;
   /// convert index within all discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
-  size_t adsv_index_to_all_index(size_t adsv_index);
+  size_t adsv_index_to_all_index(size_t adsv_index) const;
   /// convert index within all discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
-  size_t adrv_index_to_all_index(size_t adrv_index);
+  size_t adrv_index_to_all_index(size_t adrv_index) const;
 
   /// initialize start index and counts for active variables
   void initialize_active_start_counts();
@@ -960,15 +963,18 @@ state_counts(size_t& num_csv, size_t& num_dsiv, size_t& num_dssv,
 { svdRep->state_counts(num_csv, num_dsiv, num_dssv, num_dsrv); }
 
 
-inline size_t SharedVariablesData::adiv_index_to_all_index(size_t adiv_index)
+inline size_t SharedVariablesData::
+adiv_index_to_all_index(size_t adiv_index) const
 { svdRep->adiv_index_to_all_index(adiv_index); }
 
 
-inline size_t SharedVariablesData::adsv_index_to_all_index(size_t adsv_index)
+inline size_t SharedVariablesData::
+adsv_index_to_all_index(size_t adsv_index) const
 { svdRep->adsv_index_to_all_index(adsv_index); }
 
 
-inline size_t SharedVariablesData::adrv_index_to_all_index(size_t adrv_index)
+inline size_t SharedVariablesData::
+adrv_index_to_all_index(size_t adrv_index) const
 { svdRep->adrv_index_to_all_index(adrv_index); }
 
 
