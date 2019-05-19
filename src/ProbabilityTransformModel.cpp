@@ -23,25 +23,28 @@ ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 
 
 ProbabilityTransformModel::
-ProbabilityTransformModel(const Model& x_model, bool truncated_bounds,
-			  Real bound) :
+ProbabilityTransformModel(const Model& x_model, short u_space_type,
+			  bool truncated_bounds, Real bound) :
   RecastModel(x_model), distParamDerivs(false),
   truncatedBounds(truncated_bounds), boundVal(bound), mappingInitialized(false)
 {
   ptmInstance = this; // *** TO DO: assign at run time, not construct time ***
   modelType = "probability_transform";
 
+  /*
   numContinuousVars     = subModel.cv();
   numDiscreteIntVars    = subModel.div();
   numDiscreteStringVars = subModel.dsv();
   numDiscreteRealVars   = subModel.drv();
 
   initialize_sizes();
+  */
 
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(STD_NORMAL_U);
-  initialize_random_variable_correlations();
-
+  // Perform portions of initialize_transformation() at construct time
+  initialize_distribution_transformation(u_space_type);
+  initialize_distribution_correlations();
+  // defer parameter updates
+  
   size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
   SizetArray recast_vars_comps_total; // default: no change in cauv total
@@ -115,7 +118,7 @@ bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
 
   bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
-  initialize_random_variable_parameters();
+  initialize_distribution_parameters();
   transform_correlations();
 
   transform_model(truncatedBounds, boundVal);
@@ -143,6 +146,7 @@ bool ProbabilityTransformModel::finalize_mapping()
 }
 
 
+/*
 void ProbabilityTransformModel::initialize_sizes()
 {
   // initialize sizes to zero:
@@ -190,7 +194,7 @@ void ProbabilityTransformModel::initialize_sizes()
                                   numDiscStringAleatUncVars,
                                   numDiscRealAleatUncVars);
     numAleatoryUncVars = numContAleatUncVars       + numDiscIntAleatUncVars
-                         + numDiscStringAleatUncVars + numDiscRealAleatUncVars;
+                       + numDiscStringAleatUncVars + numDiscRealAleatUncVars;
   }
 
   // update sizes for epistemic uncertain variables
@@ -214,7 +218,7 @@ void ProbabilityTransformModel::initialize_sizes()
                                    numDiscStringEpistUncVars,
                                    numDiscRealEpistUncVars);
     numEpistemicUncVars = numContEpistUncVars       + numDiscIntEpistUncVars
-                          + numDiscStringEpistUncVars + numDiscRealEpistUncVars;
+                        + numDiscStringEpistUncVars + numDiscRealEpistUncVars;
   }
 
   // default mode definition (can be overridden in derived classes, e.g.,
@@ -230,7 +234,7 @@ void ProbabilityTransformModel::initialize_sizes()
     svd.design_counts(numContDesVars, numDiscIntDesVars, numDiscStringDesVars,
                       numDiscRealDesVars);
     numDesignVars = numContDesVars       + numDiscIntDesVars
-                    + numDiscStringDesVars + numDiscRealDesVars;
+                  + numDiscStringDesVars + numDiscRealDesVars;
   }
 
   // update sizes for state variables (if active)
@@ -239,7 +243,7 @@ void ProbabilityTransformModel::initialize_sizes()
     svd.state_counts(numContStateVars, numDiscIntStateVars,
                      numDiscStringStateVars, numDiscRealStateVars);
     numStateVars = numContStateVars       + numDiscIntStateVars
-                   + numDiscStringStateVars + numDiscRealStateVars;
+                 + numDiscStringStateVars + numDiscRealStateVars;
   }
 
   if ( !numUncertainVars && !numDesignVars && !numStateVars ) {
@@ -260,19 +264,24 @@ void ProbabilityTransformModel::initialize_sizes()
   if (err_flag)
     abort_handler(MODEL_ERROR);
 }
+*/
 
 
 void ProbabilityTransformModel::
 transform_model(bool truncated_bounds, Real bound)
 {
+  // Note: ctor has called initialize_distribution_
+  // {transformation,types,correlations}().  Defining the transformation is
+  // deferred until Model::initialize_mapping() to allow for problem resizing.
+
   ///////////////////////
   // Perform recasting //
   ///////////////////////
 
   size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
   const std::vector<Pecos::RandomVariable>& x_ran_vars
-    = natafTransform.x_random_variables();
-  const Pecos::ShortArray& u_types = natafTransform.u_types();
+    = xDist.random_variables();
+  const Pecos::ShortArray& u_types = uDist.types();
   short x_type, u_type;
 
   // Update continuous aleatory variable types (needed for Model::
@@ -280,17 +289,10 @@ transform_model(bool truncated_bounds, Real bound)
   for (i=numContDesVars; i<num_cdv_cauv; ++i)
     continuous_variable_type(pecos_to_dakota_variable_type(u_types[i]), i);
 
+  /*
   /////////////////////////////////////////////////////////////////
   // Populate aleatory distribution params for transformed space //
   /////////////////////////////////////////////////////////////////
-
-  // *** Note ***: For use with REGRESSION approaches, variable ordering in
-  // get_parameter_sets() does not use x_types/u_types as in NonDQuadrature/
-  // NonDSparseGrid and thus a possibility for future ordering errors exists.
-  // Currently, Design/State -> Uniform is handled separately via global bounds
-  // and no current x->u selection in initialize_random_variable_types()
-  // causes an ordering discrepancy.  If a future mapping causes an ordering
-  // inconsistency, this could be handled above via the RecastModel vars_map.
   size_t num_u_nuv = 0, num_u_bnuv = 0, num_u_lnuv = 0, num_u_blnuv = 0,
          num_u_uuv = 0, num_u_luuv = 0, num_u_tuv = 0, num_u_euv = 0,
          num_u_buv = 0, num_u_gauv = 0, num_u_guuv = 0, num_u_fuv = 0,
@@ -312,10 +314,7 @@ transform_model(bool truncated_bounds, Real bound)
     case Pecos::WEIBULL:            ++num_u_wuv;    break;
     case Pecos::HISTOGRAM_BIN:      ++num_u_hbuv;   break;
     }
-  const Pecos::AleatoryDistParams& x_adp
-    = subModel.aleatory_distribution_parameters();
-  Pecos::AleatoryDistParams&       u_adp
-    = aleatory_distribution_parameters();
+
   Real dbl_inf = std::numeric_limits<Real>::infinity();
   if (num_u_nuv || num_u_bnuv) {
     size_t num_total_nuv = num_u_nuv + num_u_bnuv;
@@ -413,6 +412,7 @@ transform_model(bool truncated_bounds, Real bound)
   }
   if (num_u_hbuv)
     u_adp.histogram_bin_pairs(x_adp.histogram_bin_pairs());
+  */
 
   //////////////////////////////////////////////////////////////////
   // Populate epistemic distribution params for transformed space //
@@ -577,11 +577,11 @@ transform_model(bool truncated_bounds, Real bound)
     directly.  This allows for the use of inverse transformations to
     return the transformed space variables to their original states. */
 void ProbabilityTransformModel::
-initialize_random_variables(const Pecos::ProbabilityTransformation& transform,
+initialize_transformation(const Pecos::ProbabilityTransformation& transform,
                             bool deep_copy)
 {
   if (deep_copy) {
-    initialize_random_variable_transformation();
+    initialize_nataf();
     natafTransform.copy(transform);
     // TO DO: deep copy of randomVarsX not yet implemented in
     // Pecos::ProbabilityTransformation::copy()
@@ -589,6 +589,7 @@ initialize_random_variables(const Pecos::ProbabilityTransformation& transform,
   else
     natafTransform = transform; // shared rep
 
+  /*
   // infer numCont{Des,Interval,State}Vars, but don't update continuous
   // aleatory uncertain counts (these may be u-space counts).
   const std::vector<Pecos::RandomVariable>& x_ran_vars
@@ -603,13 +604,7 @@ initialize_random_variables(const Pecos::ProbabilityTransformation& transform,
     else if (x_type == Pecos::CONTINUOUS_STATE)    ++numContStateVars;
   }
   numContEpistUncVars = numContIntervalVars;
-}
-
-
-void ProbabilityTransformModel::initialize_random_variable_transformation()
-{
-  if (natafTransform.is_null())
-    natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
+  */
 }
 
 
@@ -618,7 +613,7 @@ void ProbabilityTransformModel::initialize_random_variable_transformation()
     means/standard deviations.  This function is used when the Model
     variables are in x-space. */
 void ProbabilityTransformModel::
-initialize_random_variable_types(short u_space_type)
+initialize_distribution_transformation(short u_space_type)
 {
   // u_space_type is an enumeration for type of u-space transformation:
   // > if STD_NORMAL_U (reliability, AIS, and Wiener PCE/SC), then u-space is
@@ -630,407 +625,118 @@ initialize_random_variable_types(short u_space_type)
   // > if EXTENDED_U (PCE/SC with Askey plus numerically-generated polynomials),
   //   then u-space involves at most linear scaling to std distributions.
 
-  size_t i, av_cntr = 0, num_active_vars = subModel.cv() + subModel.div()
-    + subModel.dsv() + subModel.drv();
-  ShortArray x_types(num_active_vars), u_types(num_active_vars);
-  bool err_flag = false;
-
-  for (i=0; i<numContDesVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::CONTINUOUS_DESIGN;
-    u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
-  }
-  Pecos::AleatoryDistParams& adp
-    = subModel.aleatory_distribution_parameters();
-  const RealVector& n_l_bnds = adp.normal_lower_bounds();
-  const RealVector& n_u_bnds = adp.normal_upper_bounds();
-  Real dbl_inf = std::numeric_limits<Real>::infinity();
-  for (i=0; i<numNormalVars; ++i, ++av_cntr) {
-    if (n_l_bnds[i] > -dbl_inf || n_u_bnds[i] < dbl_inf) {
-      x_types[av_cntr] = Pecos::BOUNDED_NORMAL;
-      switch (u_space_type) {
-      case STD_NORMAL_U:  case ASKEY_U:
-        u_types[av_cntr] = Pecos::STD_NORMAL;      break;
-      case STD_UNIFORM_U:
-        u_types[av_cntr] = Pecos::STD_UNIFORM;     break;
-      case EXTENDED_U:
-        u_types[av_cntr] = Pecos::BOUNDED_NORMAL;  break;
+  const Pecos::ShortArray& x_types = xDist.types();  ShortArray u_types;
+  switch (u_space_type) {
+  case STD_NORMAL_U:  case STD_UNIFORM_U:
+    for (i=0; i<num_rv; ++i)
+      switch (x_types[i]) {
+      case Pecos::DISCRETE_RANGE:      case Pecos::DISCRETE_SET_INT:
+      case Pecos::DISCRETE_SET_STRING: case Pecos::DISCRETE_SET_REAL:
+      case Pecos::POISSON:             case Pecos::BINOMIAL:
+      case Pecos::NEGATIVE_BINOMIAL:   case Pecos::GEOMETRIC:
+      case Pecos::HYPERGEOMETRIC:      case Pecos::HISTOGRAM_PT_INT:
+      case Pecos::HISTOGRAM_PT_STRING: case Pecos::HISTOGRAM_PT_REAL:
+      case Pecos::DISCRETE_INTERVAL_UNCERTAIN:
+      case Pecos::DISCRETE_UNCERTAIN_SET_INT:
+      case Pecos::DISCRETE_UNCERTAIN_SET_STRING:
+      case Pecos::DISCRETE_UNCERTAIN_SET_REAL:
+	err_flag = true;                 break;
+      case Pecos::CONTINUOUS_RANGE: case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	u_types[i] = Pecos::STD_UNIFORM; break;	
+      default:
+	u_types[i] = (u_space_type == STD_UNIFORM_U)
+	           ? Pecos::STD_UNIFORM : Pecos::STD_NORMAL;
+	break;
       }
-    }
-    else {
-      x_types[av_cntr] = Pecos::NORMAL;
-      switch (u_space_type) {
-      case STD_NORMAL_U:  case ASKEY_U:  case EXTENDED_U:
-        u_types[av_cntr] = Pecos::STD_NORMAL;      break;
-      case STD_UNIFORM_U:
-        u_types[av_cntr] = Pecos::STD_UNIFORM;     break;
+    break;
+  case ASKEY_U:
+    for (i=0; i<num_rv; ++i)
+      switch (x_types[i]) {
+      case Pecos::NORMAL:           case Pecos::BOUNDED_NORMAL:
+      case Pecos::LOGNORMAL:        case Pecos::BOUNDED_LOGNORMAL:
+      case Pecos::GUMBEL:           case Pecos::FRECHET:
+      case Pecos::WEIBULL:
+	u_types[i] = Pecos::STD_NORMAL;      break;
+      case Pecos::UNIFORM:          case Pecos::LOGUNIFORM:
+      case Pecos::TRIANGULAR:       case Pecos::HISTOGRAM_BIN:
+      case Pecos::CONTINUOUS_RANGE: case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	u_types[i] = Pecos::STD_UNIFORM;     break;
+      case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
+      case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
+      case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
+      // TO DO: discrete types
+      default:                 u_types[i] = x_types[i];             break;
       }
-    }
-  }
-  const RealVector& ln_l_bnds = adp.lognormal_lower_bounds();
-  const RealVector& ln_u_bnds = adp.lognormal_upper_bounds();
-  for (i=0; i<numLognormalVars; ++i, ++av_cntr) {
-    if (ln_l_bnds[i] > 0. || ln_u_bnds[i] < dbl_inf) {
-      x_types[av_cntr] = Pecos::BOUNDED_LOGNORMAL;
-      switch (u_space_type) {
-      case STD_NORMAL_U:  case ASKEY_U:
-        u_types[av_cntr] = Pecos::STD_NORMAL;         break;
-      case STD_UNIFORM_U:
-        u_types[av_cntr] = Pecos::STD_UNIFORM;        break;
-      case EXTENDED_U:
-        u_types[av_cntr] = Pecos::BOUNDED_LOGNORMAL;  break;
+    break;
+  case EXTENDED_U:
+    for (i=0; i<num_rv; ++i)
+      switch (x_types[i]) {
+      case Pecos::NORMAL:      u_types[i] = Pecos::STD_NORMAL;      break;
+      case Pecos::UNIFORM:     u_types[i] = Pecos::STD_UNIFORM;     break;
+      case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
+      case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
+      case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
+      default:                 u_types[i] = x_types[i];             break;
       }
-    }
-    else {
-      x_types[av_cntr] = Pecos::LOGNORMAL;
-      switch (u_space_type) {
-      case STD_NORMAL_U:  case ASKEY_U:
-        u_types[av_cntr] = Pecos::STD_NORMAL;         break;
-      case STD_UNIFORM_U:
-        u_types[av_cntr] = Pecos::STD_UNIFORM;        break;
-      case EXTENDED_U:
-        u_types[av_cntr] = Pecos::LOGNORMAL;          break;
-      }
-    }
-  }
-  for (i=0; i<numUniformVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::UNIFORM;
-    switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case ASKEY_U:  case EXTENDED_U:  case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    }
-  }
-  for (i=0; i<numLoguniformVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::LOGUNIFORM;
-    switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case ASKEY_U:  case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case EXTENDED_U:
-      u_types[av_cntr] = Pecos::LOGUNIFORM;           break;
-    }
-  }
-  for (i=0; i<numTriangularVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::TRIANGULAR;
-    switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case ASKEY_U:  case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case EXTENDED_U:
-      u_types[av_cntr] = Pecos::TRIANGULAR;           break;
-    }
-  }
-  for (i=0; i<numExponentialVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::EXPONENTIAL;
-    switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case ASKEY_U:  case EXTENDED_U:
-      u_types[av_cntr] = Pecos::STD_EXPONENTIAL;      break;
-    }
-  }
-  for (i=0; i<numBetaVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::BETA;
-    switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case ASKEY_U:  case EXTENDED_U:
-      u_types[av_cntr] = Pecos::STD_BETA;             break;
-    }
-  }
-  for (i=0; i<numGammaVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::GAMMA;
-    switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case ASKEY_U:  case EXTENDED_U:
-      u_types[av_cntr] = Pecos::STD_GAMMA;            break;
-    }
-  }
-  for (i=0; i<numGumbelVars; ++i, ++av_cntr) { // 2-sided distribution
-    x_types[av_cntr] = Pecos::GUMBEL;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case ASKEY_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case EXTENDED_U:
-      u_types[av_cntr] = Pecos::GUMBEL;               break;
-    }
-  }
-  for (i=0; i<numFrechetVars; ++i, ++av_cntr) { // 1-sided distribution
-    x_types[av_cntr] = Pecos::FRECHET;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case ASKEY_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case EXTENDED_U:
-      u_types[av_cntr] = Pecos::FRECHET;              break;
-    }
-  }
-  for (i=0; i<numWeibullVars; ++i, ++av_cntr) { // 1-sided distribution
-    x_types[av_cntr] = Pecos::WEIBULL;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case ASKEY_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case EXTENDED_U:
-      u_types[av_cntr] = Pecos::WEIBULL;              break;
-    }
-  }
-  for (i=0; i<numHistogramBinVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::HISTOGRAM_BIN;
-    switch (u_space_type) {
-    case STD_NORMAL_U:
-      u_types[av_cntr] = Pecos::STD_NORMAL;           break;
-    case ASKEY_U:  case STD_UNIFORM_U:
-      u_types[av_cntr] = Pecos::STD_UNIFORM;          break;
-    case EXTENDED_U:
-      u_types[av_cntr] = Pecos::HISTOGRAM_BIN;        break;
-    }
+    break;
   }
 
-  // discrete int aleatory uncertain
-  for (i=0; i<numPoissonVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::POISSON;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case STD_UNIFORM_U:
-      err_flag = true;                                break;
-    case ASKEY_U:  case EXTENDED_U:
-      u_types[av_cntr] = Pecos::POISSON;              break;
-    }
-  }
-  for (i=0; i<numBinomialVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::BINOMIAL;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case STD_UNIFORM_U:
-      err_flag = true;                                break;
-    case ASKEY_U:  case EXTENDED_U:
-      u_types[av_cntr] = Pecos::BINOMIAL;             break;
-    }
-  }
-  for (i=0; i<numNegBinomialVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case STD_UNIFORM_U:
-      err_flag = true;                                break;
-    case ASKEY_U:  case EXTENDED_U:
-      u_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;    break;
-    }
-  }
-  for (i=0; i<numGeometricVars; ++i, ++av_cntr){
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::GEOMETRIC;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case STD_UNIFORM_U:
-      err_flag = true;                                break;
-    case ASKEY_U:  case EXTENDED_U:
-     u_types[av_cntr] = Pecos::GEOMETRIC;             break;
-    }
-  }
-  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
-    switch (u_space_type) {
-    case STD_NORMAL_U:  case STD_UNIFORM_U:
-      err_flag = true;                                break;
-    case ASKEY_U:  case EXTENDED_U:
-      u_types[av_cntr] = Pecos::HYPERGEOMETRIC;       break;
-    }
-  }
-  for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
-
-  // discrete string aleatory uncertain
-  for (i=0; i<numHistogramPtStringVars; ++i, ++av_cntr)
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_STRING;
-
-  // discrete real aleatory uncertain
-  for (i=0; i<numHistogramPtRealVars; ++i, ++av_cntr)
-    x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_REAL;
-
-  // continuous epistemic uncertain
-  for (i=0; i<numContIntervalVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::CONTINUOUS_INTERVAL;
-    u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
-  }
-
-  // discrete int epistemic uncertain
-
-  // discrete string epistemic uncertain
-
-  // discrete real epistemic uncertain
-
-  for (i=0; i<numContStateVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::CONTINUOUS_STATE;
-    u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
-  }
-
+  uDist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
+  Pecos::MarginalsCorrDistribution* u_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)uDist.multivar_dist_rep();
   if (err_flag) {
     Cerr << "Error: unsupported mapping in ProbabilityTransformModel::"
-         << "initialize_random_variable_types()." << std::endl;
+         << "initialize_transformed_distribution()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   else
-    natafTransform.initialize_random_variable_types(x_types, u_types);
+    u_dist_rep->initialize_types(u_types, xDist.active_variables());
 }
 
 
-/** Build ProbabilityTransformation::ranVar arrays containing the
-    uncertain variable distribution types and their corresponding
-    means/standard deviations.  This function is used when the Model
-    variables are in x-space. */
-void ProbabilityTransformModel::initialize_random_variable_types()
+void ProbabilityTransformModel::initialize_transformed_parameters()
 {
-  size_t i, av_cntr = 0, num_active_vars = subModel.cv();
-  ShortArray x_types(num_active_vars);
-  Pecos::AleatoryDistParams& adp
-    = subModel.aleatory_distribution_parameters();
-  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  // Note: similar in intent to Model::initialize_distribution_parameters(),
+  // but logic is sufficiently different to warrant a separate fn.
 
-  for (i=0; i<numContDesVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::CONTINUOUS_DESIGN;
+  Pecos::MarginalsCorrDistribution* u_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)uDist.multivar_dist_rep();
 
-  const RealVector& n_l_bnds = adp.normal_lower_bounds();
-  const RealVector& n_u_bnds = adp.normal_upper_bounds();
-  for (i=0; i<numNormalVars; ++i, ++av_cntr)
-    x_types[av_cntr] = (n_l_bnds[i] > -dbl_inf || n_u_bnds[i] < dbl_inf) ?
-      Pecos::BOUNDED_NORMAL : Pecos::NORMAL;
+  const std::vector<Pecos::RandomVariable>& x_rv = xDist.random_variables();
+  std::vector<Pecos::RandomVariable>&       u_rv = uDist.random_variables();
+  const Pecos::ShortArray& u_types = uDist.types();
 
-  const RealVector& ln_l_bnds = adp.lognormal_lower_bounds();
-  const RealVector& ln_u_bnds = adp.lognormal_upper_bounds();
-  for (i=0; i<numLognormalVars; ++i, ++av_cntr)
-    x_types[av_cntr] = (ln_l_bnds[i] > 0. || ln_u_bnds[i] < dbl_inf) ?
-      Pecos::BOUNDED_LOGNORMAL : Pecos::LOGNORMAL;
+  for (i=0; i<num_rv; ++i)
+    switch (u_types[i]) {
+    case Pecos::STD_NORMAL:       case Pecos::STD_UNIFORM:
+    case Pecos::STD_EXPONENTIAL:  case Pecos::STD_BETA:
+    case Pecos::STD_GAMMA:
+      break; // default uDist values are STD (and differ from xDist values)
+    default:
+      u_rv[i].copy_parameters(x_rv[i]); break;
 
-  for (i=0; i<numUniformVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::UNIFORM;
+    /*			      
+    case BOUNDED_NORMAL: case LOGNORMAL: case BOUNDED_LOGNORMAL:
+    case LOGUNIFORM: case TRIANGULAR: case GUMBEL: case FRECHET:
+    case WEIBULL: case HISTOGRAM_BIN:
+    case Pecos::DISCRETE_RANGE:      case Pecos::DISCRETE_SET_INT:
+    case Pecos::DISCRETE_SET_STRING: case Pecos::DISCRETE_SET_REAL:
+    case Pecos::POISSON:             case Pecos::BINOMIAL:
+    case Pecos::NEGATIVE_BINOMIAL:   case Pecos::GEOMETRIC:
+    case Pecos::HYPERGEOMETRIC:      case Pecos::HISTOGRAM_PT_INT:
+    case Pecos::HISTOGRAM_PT_STRING: case Pecos::HISTOGRAM_PT_REAL:
+    case Pecos::DISCRETE_INTERVAL_UNCERTAIN:
+    case Pecos::DISCRETE_UNCERTAIN_SET_INT:
+    case Pecos::DISCRETE_UNCERTAIN_SET_STRING:
+    case Pecos::DISCRETE_UNCERTAIN_SET_REAL:
 
-  for (i=0; i<numLoguniformVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::LOGUNIFORM;
-
-  for (i=0; i<numTriangularVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::TRIANGULAR;
-
-  for (i=0; i<numExponentialVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::EXPONENTIAL;
-
-  for (i=0; i<numBetaVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::BETA;
-
-  for (i=0; i<numGammaVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::GAMMA;
-
-  for (i=0; i<numGumbelVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::GUMBEL;
-
-  for (i=0; i<numFrechetVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::FRECHET;
-
-  for (i=0; i<numWeibullVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::WEIBULL;
-
-  for (i=0; i<numHistogramBinVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::HISTOGRAM_BIN;
-
-
-  // discrete int aleatory uncertain
-  for (i=0; i<numPoissonVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::POISSON;
-  for (i=0; i<numBinomialVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::BINOMIAL;
-  for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
-  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::GEOMETRIC;
-  for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
-  for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
-
-  // discrete string aleatory uncertain
-  for (i=0; i<numHistogramPtStringVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::HISTOGRAM_PT_STRING;
-
-  // discrete real aleatory uncertain
-  for (i=0; i<numHistogramPtRealVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::HISTOGRAM_PT_REAL;
-
-  // continuous epistemic uncertain
-  for (i=0; i<numContIntervalVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::CONTINUOUS_INTERVAL;
-
-  // discrete int epistemic uncertain
-
-  // discrete string epistemic uncertain
-
-  // discrete real epistemic uncertain
-
-  for (i=0; i<numContStateVars; ++i, ++av_cntr)
-    x_types[av_cntr] = Pecos::CONTINUOUS_STATE;
-
-  natafTransform.initialize_random_variable_types(x_types);
-}
-
-
-/** Build ProbabilityTransformation::ranVar arrays containing the
-    uncertain variable distribution types and their corresponding
-    means/standard deviations.  This function is used when the Model
-    variables are in x-space. */
-void ProbabilityTransformModel::initialize_random_variable_parameters()
-{
-  // Be consistent with active view logic.  Active counts are sufficient
-  // for now, but could formalize with active view check as in model ctors.
-  //short active_view = subModel.current_variables().view().first;
-  // Note: {Aleatory,Epistemic}DistParams handles always have reps, so
-  // default constructed objects are safe to interrogate for empty arrays.
-  const Pecos::AleatoryDistParams&  adp = (numAleatoryUncVars)  ?
-    subModel.aleatory_distribution_parameters()  : Pecos::AleatoryDistParams();
-  const Pecos::EpistemicDistParams& edp = (numEpistemicUncVars) ?
-    subModel.epistemic_distribution_parameters() : Pecos::EpistemicDistParams();
-
-  RealVector cd_l_bnds, cd_u_bnds, cs_l_bnds, cs_u_bnds;
-  const RealVector& c_l_bnds = subModel.continuous_lower_bounds();
-  const RealVector& c_u_bnds = subModel.continuous_upper_bounds();
-  if (numContDesVars) {
-    cd_l_bnds = RealVector(Teuchos::View, c_l_bnds.values(), numContDesVars);
-    cd_u_bnds = RealVector(Teuchos::View, c_u_bnds.values(), numContDesVars);
-  }
-  if (numContStateVars) {
-    size_t csv_start = numContinuousVars - numContStateVars;
-    cs_l_bnds	= RealVector(Teuchos::View,
-      const_cast<Real*>(&c_l_bnds[csv_start]), numContStateVars);
-    cs_u_bnds = RealVector(Teuchos::View,
-      const_cast<Real*>(&c_u_bnds[csv_start]), numContStateVars);
-  }
-  natafTransform.initialize_random_variable_parameters(cd_l_bnds, cd_u_bnds,
-						       adp, edp,
-						       cs_l_bnds, cs_u_bnds);
-}
-
-
-void ProbabilityTransformModel::initialize_random_variable_correlations()
-{
-  const RealSymMatrix& uncertain_corr
-    = subModel.aleatory_distribution_parameters().uncertain_correlations();
-
-  if (!uncertain_corr.empty()) {
-    natafTransform.initialize_random_variable_correlations(uncertain_corr);
-    if (numContDesVars || numContEpistUncVars || numContStateVars)
-      // expand ProbabilityTransformation::corrMatrixX to include design,
-      // epistemic, state vars.  TO DO: propagate through model recursion?
-      natafTransform.reshape_correlation_matrix(numContDesVars,
-          numContAleatUncVars, numContEpistUncVars+numContStateVars);
-  }
+      u_dist_rep->push_parameter(i, Pecos::_,
+				 x_dist_rep->pull_parameter(i, Pecos::_));
+      u_dist_rep->push_parameter(i, Pecos::_,
+				 x_dist_rep->pull_parameter(i, Pecos::_));
+      break;
+    */
+    }
 }
 
 

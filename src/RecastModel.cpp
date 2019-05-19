@@ -243,7 +243,7 @@ init_variables(const SizetArray& vars_comps_totals,
 	       const BitArray& all_relax_di, const BitArray& all_relax_dr)
 {
   const Variables& sub_model_vars = subModel.current_variables();
-  const SharedVariablesData& svd = sub_model_vars.shared_data();
+  const SharedVariablesData&  svd = sub_model_vars.shared_data();
 
   // BMA: We actually don't allow the case of a change in
   // vars_comp_totals, but no mapping, but have to allow it here in

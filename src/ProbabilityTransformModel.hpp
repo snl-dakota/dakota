@@ -71,22 +71,19 @@ protected:
   void distribution_parameter_derivatives(bool dist_param_derivs);
 
   /// initialize natafTransform based on distribution data from iteratedModel
-  void initialize_random_variables(short u_space_type);
+  void initialize_transformation(short u_space_type);
   /// alternate form: initialize natafTransform based on incoming data
-  void initialize_random_variables(
+  void initialize_transformation(
     const Pecos::ProbabilityTransformation& transform, bool deep_copy = false);
 
-  /// instantiate natafTransform
-  void initialize_random_variable_transformation();
-  /// initializes ranVarTypesX within natafTransform (u-space not needed)
-  void initialize_random_variable_types();
-  /// initializes ranVarTypesX and ranVarTypesU within natafTransform
-  void initialize_random_variable_types(short u_space_type);
-  /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
-  /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
-  void initialize_random_variable_parameters();
-  /// propagate iteratedModel correlations to natafTransform
-  void initialize_random_variable_correlations();
+  /// instantiate and initialize natafTransform
+  void initialize_nataf();
+  /// instantiate and initialize uDist
+  void initialize_distribution_transformation();
+  // initialize distibution parameters within natafTransform
+  //void initialize_distribution_parameters();
+  // propagate iteratedModel correlations to natafTransform
+  //void initialize_distribution_correlations();
   /// verify that correlation warping is supported by Nataf for given
   /// variable types
   void verify_correlation_support(short u_space_type);
@@ -98,8 +95,7 @@ protected:
   /// aleatory uncertain variables used in variable transformations
   unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
 
-  /// 
-  void initialize_sizes();
+  //void initialize_sizes();
 
   /// static function for RecastModels used for forward mapping of u-space
   /// variables from NonD Iterators to x-space variables for Model evaluations
@@ -122,10 +118,15 @@ protected:
 
 private:
 
+  /// the multivariate random variable distribution in transformed
+  /// probability space
+  Pecos::MultivariateDistribution uDist;
+
   /// Nonlinear variable transformation that encapsulates the required
   /// data for performing transformations from X -> Z -> U and back.
   Pecos::ProbabilityTransformation natafTransform;
 
+  /*
   // The following variable counts reflect the native Model space, which could
   // correspond to either X or U space.  If a specific X or U variables count
   // is needed, then natafTransform.ranVarTypesX/U.count() should be used.
@@ -242,6 +243,12 @@ private:
   /// total number of uncertain variables (native space)
   size_t numUncertainVars;
 
+  /// flag for computing interval-type metrics instead of integrated
+  /// metrics If any epistemic variables are active in a metric
+  /// evaluation, then this flag is set.
+  bool epistemicStats;
+  */
+
   /// flags calculation of derivatives with respect to distribution
   /// parameters s within resp_x_to_u_mapping() using the chain rule
   /// df/dx dx/ds.  The default is to calculate derivatives with respect
@@ -252,11 +259,6 @@ private:
   bool truncatedBounds;
   /// bound value
   Real boundVal;
-
-  /// flag for computing interval-type metrics instead of integrated
-  /// metrics If any epistemic variables are active in a metric
-  /// evaluation, then this flag is set.
-  bool epistemicStats;
 
   /// "primary" all continuous variable mapping indices flowed down
   /// from higher level iteration
@@ -281,13 +283,25 @@ inline bool ProbabilityTransformModel::resize_pending() const
 { return subModel.resize_pending(); }
 
 
-inline void ProbabilityTransformModel::
-initialize_random_variables(short u_space_type)
+inline void ProbabilityTransformModel::initialize_nataf()
 {
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(u_space_type);
-  initialize_random_variable_parameters();
-  initialize_random_variable_correlations();
+  if (natafTransform.is_null()) {
+    natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
+    natafTransform.x_distribution(xDist);
+    natafTransform.u_distribution(uDist);
+  }
+}
+
+
+inline void ProbabilityTransformModel::
+initialize_transformation(short u_space_type)
+{
+  if (uDist.is_null())
+    initialize_distribution_transformation(u_space_type);
+  initialize_transformed_parameters();
+  initialize_nataf();
+  //initialize_distribution_parameters();
+  //initialize_distribution_correlations();
   verify_correlation_support(u_space_type);
 }
 

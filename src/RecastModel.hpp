@@ -104,11 +104,11 @@ public:
 
   /// update recast sizes and size Variables and Response members
   /// after alternate construction
-  void 
-  init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-	     const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
-	     size_t num_recast_secondary_fns, size_t recast_secondary_offset,
-	     short recast_resp_order);
+  void init_sizes(const SizetArray& vars_comps_totals,
+		  const BitArray& all_relax_di, const BitArray& all_relax_dr,
+		  size_t num_recast_primary_fns,
+		  size_t num_recast_secondary_fns,
+		  size_t recast_secondary_offset, short recast_resp_order);
 
   /// initialize recast indices and map callbacks after alternate
   /// construction

@@ -93,20 +93,6 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
   outputLevel(problem_db.get_short("method.output")),
-  /*
-  discreteDesignSetIntValues(
-    problem_db.get_isa("variables.discrete_design_set_int.values")),
-  discreteDesignSetStringValues(
-    problem_db.get_ssa("variables.discrete_design_set_string.values")),
-  discreteDesignSetRealValues(
-    problem_db.get_rsa("variables.discrete_design_set_real.values")),
-  discreteStateSetIntValues(
-    problem_db.get_isa("variables.discrete_state_set_int.values")),
-  discreteStateSetStringValues(
-    problem_db.get_ssa("variables.discrete_state_set_string.values")),
-  discreteStateSetRealValues(
-    problem_db.get_rsa("variables.discrete_state_set_real.values")),
-  */
   primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
   hierarchicalTagging(probDescDB.get_bool("model.hierarchical_tags")),
   scalingOpts(probDescDB.get_sa("variables.continuous_design.scale_types"),
@@ -476,7 +462,7 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // > Model base instantiates the x-space MultivariateDistribution, while
   //   derived ProbabilityTransformModel manages a ProbabilityTransform
   //   (which makes a shallow copy of x-dist and creates a u-dist).
-  // > NonD::initialize_random_variable_types(u_space_type) gets split into
+  // > NonD::initialize_distribution_types(u_space_type) gets split into
   //   two parts: define x-space, then later define u-space from x-space.
   // > This fn houses data for discrete design/state and must now be invoked
   //   in non-UQ contexts.  *** TO DO ***
@@ -730,6 +716,7 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
     //start_rv += num_rv;
   }
 
+  mv_dist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
   Pecos::MarginalsCorrDistribution* mvd_rep
     = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
   mvd_rep->initialize_types(rv_types, active_vars);
