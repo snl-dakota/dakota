@@ -594,6 +594,24 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY vbd_expansion '
+      	     <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition (VBD)"  minOccurs="0" default="no variance-based decomposition" >
+	       <keyword  id="interaction_order" name="interaction_order" code="{N_mdm(ushint,vbdOrder)}" label="Restriction of order of VBD interations"  minOccurs="0" default="Unrestricted (VBD includes all interaction orders present in the expansion)" >
+		 <param type="INTEGER" constraint="> 0" />
+	       </keyword>
+	       <keyword  id="drop_tolerance" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="VBD tolerance for omitting small indices"  minOccurs="0" default="All VBD indices displayed" >
+		 <param type="REAL" />
+	       </keyword>
+	     </keyword>
+	     ' >
+
+    <!ENTITY method_seed '
+	     <keyword  id="seed1" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	       <param type="INTEGER" constraint="> 0" />
+	     </keyword>
+	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
+	     ' >
+
     <!ENTITY expansion_options '
       	     <!-- Old reference default; samples = 0 -->
 	     <keyword  id="samples_on_emulator6" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator"  minOccurs="0" >
@@ -605,11 +623,8 @@
 		 <keyword  id="lhs" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
 		 <keyword  id="random1" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
 	       </oneOf>
-	     </keyword>
-	     <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
-	       <param type="INTEGER" constraint="> 0" />
-	     </keyword>
-	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
+             </keyword>
+             &method_seed;
 	     <keyword  id="probability_refinement" name="probability_refinement" code="{0}" label="Importance sampling refinement"  minOccurs="0" default="no refinement">
 	       <!-- TODO: consider removing this alias: -->
 	       <alias name="sample_refinement"/>
@@ -623,14 +638,7 @@
 	       </keyword>
 	     </keyword>
 	     &default_final_moments;
-	     <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition (VBD)"  minOccurs="0" default="no variance-based decomposition" >
-	       <keyword  id="interaction_order" name="interaction_order" code="{N_mdm(ushint,vbdOrder)}" label="Restriction of order of VBD interations"  minOccurs="0" default="Unrestricted (VBD includes all interaction orders present in the expansion)" >
-		 <param type="INTEGER" constraint="> 0" />
-	       </keyword>
-	       <keyword  id="drop_tolerance" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="VBD tolerance for omitting small indices"  minOccurs="0" default="All VBD indices displayed" >
-		 <param type="REAL" />
-	       </keyword>
-	     </keyword>
+	     &vdb_expansion;
 	     <optional>
 	       <oneOf label="Covariance Type">
 		 <keyword  id="diagonal_covariance" name="diagonal_covariance" code="{N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}" label="diagonal_covariance"   default="diagonal_covariance for response vector > 10; else full_covariance" />
@@ -2254,6 +2262,47 @@
 	  &method_optional_model_pointer;
         </keyword>
 
+        <keyword  id="function_train" name="function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+          <alias name="function_train_uq"/> <!-- TO DO: model_based_uq ?  Similar to NonDSampling applied to a generic SurrogateModel? -->
+          <keyword  id="samples_on_emulator6" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" >
+            <alias name="samples" />
+            <param type="INTEGER" />
+          </keyword>
+          &method_seed;
+          &default_max_refinement_iterations;
+          &default_convergence_tolerance;
+          &import_build;
+          &vbd_expansion;
+          <keyword  id="model_param_spec" name="model_param_spec" code="{N_mdm(str,modelParamSpec)}" label="Model Parameters for UQ" help="" minOccurs="1" >
+            <param type="STRING" in_taglist="model" />
+          </keyword>
+          <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
+            <param type="INTEGER" constraint=">= 0" />
+          </keyword>
+        </keyword>
+
+        <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+	  <!--
+          <keyword  id="samples_on_emulator6" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" >
+            <alias name="samples" />
+            <param type="INTEGER" />
+            </keyword>
+	  -->
+          &method_seed;
+          &default_max_refinement_iterations;
+          &default_convergence_tolerance;
+          &import_build;
+          &vbd_expansion;
+          <keyword  id="model_param_spec" name="model_param_spec" code="{N_mdm(str,modelParamSpec)}" label="Model Parameters for UQ" help="" minOccurs="1" >
+            <param type="STRING" in_taglist="model" />
+          </keyword>
+	  <!--
+          <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
+            <param type="INTEGER" constraint=">= 0" />
+          </keyword>
+	  -->
+        </keyword>
+
 	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
 	  <alias name="nond_polynomial_chaos"/>
 	  &pce_refinement;
@@ -2371,10 +2420,7 @@
 	    <alias name="initial_samples" />
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
-	    <param type="INTEGER" constraint="> 0" />
-	  </keyword>
-	  <keyword  id="fixed_seed2" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
+	  &method_seed;
 	  <!-- BMA: May want to restore these if it's a helper iterator, e.g., for subspace methods 
 	       &default_max_iterations;
 	       &default_convergence_tolerance;
@@ -2437,10 +2483,7 @@
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  minOccurs="1" group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
-	    <param type="INTEGER" constraint="> 0" />
-	  </keyword>
-	  <keyword  id="fixed_seed3" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
+	  &method_seed;
 	  &ml_pilot_samples;
 	  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">
@@ -3002,9 +3045,7 @@
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
-	    <param type="INTEGER" constraint="> 0" />
-	  </keyword>
+	  &method_seed;
 	  <keyword  id="main_effects" name="main_effects" code="{N_mdm(true,mainEffectsFlag)}" label="Main effects"  minOccurs="0" default="No main_effects" />
 	  <keyword  id="quality_metrics" name="quality_metrics" code="{N_mdm(true,volQualityFlag)}" label="Quality metrics"  minOccurs="0" default="No quality_metrics" />
 	  <keyword  id="variance_based_decomp3" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition"  minOccurs="0" default="no variance-based decomposition" >
@@ -3012,7 +3053,6 @@
 	      <param type="REAL" />
 	    </keyword>
 	  </keyword>
-	  <keyword  id="fixed_seed4" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="Fixed seed flag"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
 	  <keyword  id="symbols" name="symbols" code="{N_mdm(int,numSymbols)}" label="Number of symbols"  minOccurs="0" default="default for sampling algorithm" >
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3023,9 +3063,7 @@
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
 	    <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
-	    <param type="INTEGER" constraint="> 0" />
-	  </keyword>
+	  &method_seed;
 	  <keyword  id="latinize" name="latinize" code="{N_mdm(true,latinizeFlag)}" label="Latinization of samples"  minOccurs="0" default="No latinization" />
 	  <keyword  id="quality_metrics1" name="quality_metrics" code="{N_mdm(true,volQualityFlag)}" label="Quality metrics"  minOccurs="0" default="No quality_metrics" />
 	  <keyword  id="variance_based_decomp4" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition"  minOccurs="0" default="no variance-based decomposition" >
@@ -3033,7 +3071,6 @@
 	      <param type="REAL" />
 	    </keyword>
 	  </keyword>
-	  <keyword  id="fixed_seed5" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="Fixed seed flag"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
 	  <keyword  id="trial_type" name="trial_type" code="{0}" label="Trial type"  minOccurs="0" default="random" >
 	    <oneOf label="Trial Type">
 	      <keyword  id="grid1" name="grid" code="{N_mdm(lit,trialType_grid)}" label="grid"   />
@@ -3362,6 +3399,7 @@
 		    </keyword>
                   </oneOf>
                 </keyword>
+
                 <keyword  id="mars" name="mars" code="{N_mom(lit,surrogateType_global_mars)}" label="Multivariate Adaptive Regression Spline (MARS)"  minOccurs="1" >
                   <keyword  id="max_bases" name="max_bases" code="{N_mom(shint,marsMaxBases)}" label="Maximum Number of Bases"  minOccurs="0" default="" >
                     <param type="INTEGER" />
@@ -3374,6 +3412,7 @@
                   </keyword>
 		  &model_partial_surfpack_export_format;
 	        </keyword>
+
                 <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving Least Squares"  minOccurs="1" >
                   <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Polynomial Order for Bases"  minOccurs="0" default="" >
 		    <alias name="poly_order"/>
@@ -3383,7 +3422,43 @@
                     <param type="INTEGER" />
                   </keyword>
                   &model_partial_surfpack_export_format;
-               </keyword>
+                </keyword>
+
+		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
+		  <!-- TO DO -->
+		  &default_max_iterations;
+		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		    <param type="REAL" />
+		  </keyword>
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		    <param type="REAL" />
+		  </keyword>
+		  <keyword  id="start_order" name="start_order" code="{N_mom(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="max_rank" name="max_rank" code="{N_mom(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="max_num" name="max_num" code="{N_mom(sizet,maxNum)}" label="Maximum number of polynomials" help="" minOccurs="0" default="5">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="start_rank" name="start_rank" code="{N_mom(sizet,startRank)}" label="Starting rank for approximation" help="" minOccurs="0" default="2">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="rank_adapt" name="rank_adapt" code="{N_mom(sizet,rankAdapt)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="0">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="verbosity" name="verbosity" code="{N_mom(sizet,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="cross_maxiter" name="cross_maxiter" code="{N_mom(sizet,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		</keyword>
+
                 <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial Neural Network"  minOccurs="1" >
                   <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="Maximum Number of Nodes"  minOccurs="0" default="numTrainingData - 1">
 		    <alias name="nodes"/>
@@ -3396,7 +3471,8 @@
                     <param type="INTEGER" />
                   </keyword>
                   &model_full_surfpack_export_format;
-               </keyword>
+                </keyword>
+
                 <!-- #	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
                      #	    | interpolation_polynomial {N_mom(lit,surrogateType_global_interpolation_polynomial)}
                  -->
@@ -3415,6 +3491,7 @@
                   </keyword>
                   &model_full_surfpack_export_format;
                 </keyword>
+
                 <keyword  id="polynomial" name="polynomial" code="{N_mom(lit,surrogateType_global_polynomial)}" label="Polynomial"  minOccurs="1" >
                   <oneOf label="Polynomial Order">
                     <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Basis Order"  >

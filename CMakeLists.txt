@@ -38,6 +38,7 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
 # Dakota version to use for naming archives
+
 set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
 
 # Dakota version to use in source/docs (could use for tarball names?)

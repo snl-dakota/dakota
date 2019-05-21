@@ -2301,6 +2301,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"advanced_options_file", P advancedOptionsFilename},
 	{"asynch_pattern_search.merit_function", P meritFunction},
 	{"batch_selection", P batchSelectionType},
+    {"c3function_train.model_param_spec", P modelParamSpec},
 	{"coliny.beta_solver_name", P betaSolverName},
 	{"coliny.division", P boxDivision},
 	{"coliny.exploratory_moves", P exploratoryMoves},
@@ -2538,6 +2539,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"active_subspace.cv.relative_tolerance", P relTolerance},
       {"active_subspace.truncation_method.energy.truncation_tolerance", P truncationTolerance},
       {"adapted_basis.collocation_ratio", P adaptedBasisCollocRatio},
+      {"c3function_train.rounding_tolerance", P roundingTolerance},
+      {"c3function_train.solver_tolerance", P solverTolerance},
       {"convergence_tolerance", P convergenceTolerance},
       {"surrogate.discont_grad_thresh", P discontGradThresh},
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
@@ -2637,11 +2640,12 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"active_subspace.dimension", P subspaceDimension},
-	{"initial_samples", P initialSamples},
-	{"max_function_evals", P maxFunctionEvals},
-	{"max_iterations", P maxIterations},
-	{"nested.iterator_servers", P subMethodServers},
-	{"nested.processors_per_iterator", P subMethodProcs},
+
+        {"initial_samples", P initialSamples},
+        {"max_function_evals", P maxFunctionEvals},
+        {"max_iterations", P maxIterations},
+        {"nested.iterator_servers", P subMethodServers},
+        {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
         {"soft_convergence_limit", P softConvergenceLimit},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
@@ -2911,6 +2915,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<size_t, DataMethodRep> Szdmo[] = { 
       // must be sorted by string (key)
+    {"c3function_train.num_samples_for_construction", P numSamplesForConstruct},
 	{"final_solutions", P numFinalSolutions},
 	{"jega.num_cross_points", P numCrossPoints},
 	{"jega.num_designs", P numDesigns},
@@ -2928,6 +2933,28 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     KW<size_t, DataMethodRep> *kw;
     if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "model."))) {
+    if (dbRep->modelDBLocked)
+	Locked_db();
+    #define P &DataModelRep::
+    static KW<size_t, DataModelRep> Szmo[] = {	
+      // must be sorted by string (key)
+      // must be sorted by string (key)
+        {"c3function_train.cross_maxiter", P crossMaxIter},
+        {"c3function_train.kick_rank", P kickRank},
+        {"c3function_train.max_num", P maxNum},
+      	{"c3function_train.max_rank", P maxRank},
+        {"c3function_train.rank_adapt", P rankAdapt},
+        {"c3function_train.start_order", P startOrder},
+        {"c3function_train.start_rank", P startRank},
+        {"c3function_train.verbosity", P verbosity}
+    };
+    #undef P
+
+    KW<size_t, DataModelRep> *kw;
+    if ((kw = (KW<size_t, DataModelRep>*)Binsearch(Szmo, L)))
+	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)

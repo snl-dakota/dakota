@@ -109,7 +109,26 @@ public:
   virtual const RealSymMatrix& hessian(const RealVector& c_vars);
   /// retrieve the variance of the predicted value for a given parameter vector
   virtual Real prediction_variance(const RealVector& c_vars);
+
+  /// Statistics
+  virtual Real mean();                            
+  virtual Real mean(const RealVector &);          
+  virtual const RealVector& mean_gradient();      
+  virtual const RealVector& mean_gradient(const RealVector &, const SizetArray &);     
+  virtual Real variance();
+  virtual Real variance(const RealVector&);           
+  virtual const RealVector& variance_gradient();      
+  virtual const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
     
+  virtual Real covariance(Approximation *);                    // covariance between two functions
+  virtual Real covariance(const RealVector&, Approximation *); // covariance with respect so subset
+  virtual void compute_moments();
+  virtual void compute_moments(const Pecos::RealVector&);
+  virtual const RealVector& moments() const;
+
+  virtual void compute_component_effects();
+  virtual void compute_total_effects();    
+
 
   /// check if diagnostics are available for this approximation type
   virtual bool diagnostics_available();
@@ -160,6 +179,18 @@ public:
 
   /// return the number of constraints to be enforced via an anchor point
   virtual int num_constraints() const;
+
+  // *** Additions for C3 ***
+  /// clear current build data in preparation for next build
+  virtual void clear_current();
+
+  virtual void eval_flag(bool);
+  virtual void gradient_flag(bool);
+  virtual void expansion_coefficient_flag(bool);
+  virtual bool expansion_coefficient_flag() const;    
+  virtual void expansion_gradient_flag(bool);
+  virtual bool expansion_gradient_flag() const;
+  // ************************
 
   //
   //- Heading: Member functions
@@ -522,6 +553,77 @@ inline void Approximation::clear_current_active_data()
     clear_active_data();
 }
 
+inline void Approximation::eval_flag(bool flag)
+{
+  if (approxRep){
+    approxRep->eval_flag(flag);
+  }
+  else{
+      Cerr << "Error: eval_flag() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+inline void Approximation::gradient_flag(bool flag)
+{
+  if (approxRep){
+    approxRep->gradient_flag(flag);
+  }
+  else{
+      Cerr << "Error: gradient_flag() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+inline void Approximation::expansion_coefficient_flag(bool flag)
+{
+  if (approxRep){
+    approxRep->expansion_coefficient_flag(flag);
+  }
+  else{
+      Cerr << "Error: expansion_coefficient_flag() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+inline void Approximation::expansion_gradient_flag(bool flag)
+{
+  if (approxRep){
+    approxRep->expansion_gradient_flag(flag);
+  }
+  else{
+      Cerr << "Error: expansion_gradient_flag() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+inline bool Approximation::expansion_coefficient_flag() const
+{
+    if (approxRep){
+        return approxRep->expansion_coefficient_flag();
+    }
+    else{
+        Cerr << "Error: expansion_coefficient_flag() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+}
+
+inline bool Approximation::expansion_gradient_flag() const
+{
+    if (!approxRep) {
+        Cerr << "Error: expansion_gradient_flag() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->expansion_gradient_flag();
+}    
+    
 
 /** Clears out current + history for each tracked key (not virtual). */
 inline void Approximation::clear_data()

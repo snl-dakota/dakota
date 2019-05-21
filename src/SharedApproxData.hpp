@@ -45,6 +45,7 @@ class SharedApproxData
   friend class VPSApproximation;
   friend class SurfpackApproximation;
   friend class PecosApproximation;
+  friend class C3Approximation;
 
 public:
 
