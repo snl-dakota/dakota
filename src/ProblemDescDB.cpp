@@ -2301,7 +2301,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"advanced_options_file", P advancedOptionsFilename},
 	{"asynch_pattern_search.merit_function", P meritFunction},
 	{"batch_selection", P batchSelectionType},
-    {"c3function_train.model_param_spec", P modelParamSpec},
 	{"coliny.beta_solver_name", P betaSolverName},
 	{"coliny.division", P boxDivision},
 	{"coliny.exploratory_moves", P exploratoryMoves},
@@ -2915,7 +2914,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<size_t, DataMethodRep> Szdmo[] = { 
       // must be sorted by string (key)
-    {"c3function_train.num_samples_for_construction", P numSamplesForConstruct},
 	{"final_solutions", P numFinalSolutions},
 	{"jega.num_cross_points", P numCrossPoints},
 	{"jega.num_designs", P numDesigns},
@@ -2941,14 +2939,13 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     static KW<size_t, DataModelRep> Szmo[] = {	
       // must be sorted by string (key)
       // must be sorted by string (key)
-        {"c3function_train.cross_maxiter", P crossMaxIter},
+        {"c3function_train.max_cross_iterations", P crossMaxIter},
         {"c3function_train.kick_rank", P kickRank},
-        {"c3function_train.max_num", P maxNum},
+        {"c3function_train.max_order", P maxOrder},
       	{"c3function_train.max_rank", P maxRank},
-        {"c3function_train.rank_adapt", P rankAdapt},
         {"c3function_train.start_order", P startOrder},
-        {"c3function_train.start_rank", P startRank},
-        {"c3function_train.verbosity", P verbosity}
+        {"c3function_train.start_rank", P startRank}//,
+      //{"c3function_train.verbosity", P verbosity}
     };
     #undef P
 
@@ -3165,6 +3162,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"active_subspace.truncation_method.constantine", P subspaceIdConstantine},
 	{"active_subspace.truncation_method.cv", P subspaceIdCV},
 	{"active_subspace.truncation_method.energy", P subspaceIdEnergy},
+        {"c3function_train.adapt_rank", P adaptRank},
 	{"hierarchical_tags", P hierarchicalTags},
 	{"nested.identity_resp_map", P identityRespMap},
 	{"surrogate.auto_refine", P autoRefine},

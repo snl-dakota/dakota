@@ -763,10 +763,10 @@ public:
 
   // NonD C3 Function Train
 
-  /// pointer to model parameters for UQ
-  String modelParamSpec;
-  /// Number of LHS used for construction
-  size_t numSamplesForConstruct; // *** numBuildSamples ?
+  // pointer to model parameters for UQ
+  //String modelParamSpec;
+  // Number of LHS used for construction
+  //size_t numSamplesForConstruct;
     
   // NonD & DACE
 

@@ -83,26 +83,28 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-    struct OneApproxOpts ** oneApproxOpts;
-    struct MultiApproxOpts * approxOpts;
+  struct OneApproxOpts ** oneApproxOpts;
+  struct MultiApproxOpts * approxOpts;
 
-    std::vector<struct OneApproxOpts **> storeOne;
-    std::vector<struct MultiApproxOpts *> storeMulti;
+  std::vector<struct OneApproxOpts **> storeOne;
+  std::vector<struct MultiApproxOpts *> storeMulti;
 
-    size_t maxNum;
-    size_t startOrder;
-    size_t startRank;
-    size_t rankAdapt; // 0 no, 1 yes
-    double roundingTol;
-    size_t maxRank;
-    size_t crossMaxIter;
-    double convergenceTol;
-    size_t maxIterations;
-    size_t kickRank;
-    size_t verbose;
+  size_t startOrder;
+  size_t maxOrder;
 
-  // void build();
-  // void rebuild();
+  size_t startRank;
+  size_t kickRank;
+  size_t maxRank;
+  bool adaptRank; // converted to size_t (0 no, 1 yes) for C3
+
+  double roundingTol;
+  double solverTol;
+  size_t maxIterations;
+  size_t crossMaxIter;
+  size_t verbose;
+
+  //void build();
+  //void rebuild();
 
 private:
 
@@ -113,8 +115,8 @@ private:
   //
   //- Heading: Data
   //
-    int constructed;
- 
+
+  int constructed;
 };
 
 

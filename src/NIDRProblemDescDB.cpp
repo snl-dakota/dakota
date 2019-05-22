@@ -6905,8 +6905,7 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-    MP_(subModelPointer),
-    MP_(modelParamSpec);
+    MP_(subModelPointer);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -7019,8 +7018,7 @@ static size_t
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
-  	MP_(numPredConfigs),
-    MP_(numSamplesForConstruct);
+  	MP_(numPredConfigs);
 
 
 static Method_mp_type
@@ -7206,6 +7204,7 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTIFIDELITY_FUNCTION_TRAIN),
 	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
 	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
@@ -7435,6 +7434,7 @@ static StringArray
         MP_(secondaryVarMaps);
 
 static bool
+        MP_(adaptRank),
 	MP_(autoRefine),
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
@@ -7490,12 +7490,11 @@ static int
 static size_t
     MP_(crossMaxIter),
     MP_(kickRank),
-    MP_(maxNum),        
+    MP_(maxOrder),        
     MP_(maxRank),
-    MP_(rankAdapt),
     MP_(startOrder),
-    MP_(startRank),
-    MP_(verbosity);
+    MP_(startRank);
+//  MP_(verbosity);
     
 #undef MP2s
 #undef MP2

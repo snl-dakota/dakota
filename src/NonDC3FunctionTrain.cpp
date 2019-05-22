@@ -133,38 +133,38 @@ void NonDC3FunctionTrain::initialize_u_space_model()
                                    iteratedModel.aleatory_distribution_parameters());
 
   size_t model_index    = probDescDB.get_db_model_node(); // for restoration
-  String model_ptr_name  = probDescDB.get_string("method.c3function_train.model_param_spec");
+  String model_ptr_name = probDescDB.get_string("method.c3function_train.model_param_spec");
   // String model_ptr_name  = "FT";
   probDescDB.set_db_model_nodes(model_ptr_name);
 
-  size_t maxnum       = probDescDB.get_sizet("model.c3function_train.max_num");
-  size_t maximum_rank = probDescDB.get_sizet("model.c3function_train.max_rank");
   size_t start_order  = probDescDB.get_sizet("model.c3function_train.start_order");
-  size_t initial_rank = probDescDB.get_sizet("model.c3function_train.start_rank");
-  size_t rank_adapt   = probDescDB.get_sizet("model.c3function_train.rank_adapt");
-  size_t crossMaxIter = probDescDB.get_sizet("model.c3function_train.cross_maxiter");
-  double convergence_tol = probDescDB.get_real("model.c3function_train.solver_tolerance");
-  double rounding_tol    = probDescDB.get_real("model.c3function_train.rounding_tolerance");
-  // int    maximum_iters   = probDescDB.get_int("model.max_iterations");
-  size_t kickrank        = probDescDB.get_sizet("model.c3function_train.kick_rank");
-  size_t verbose         = probDescDB.get_sizet("model.c3function_train.verbosity");
+  size_t max_order    = probDescDB.get_sizet("model.c3function_train.max_order");
+  size_t start_rank   = probDescDB.get_sizet("model.c3function_train.start_rank");
+  size_t kick_rank    = probDescDB.get_sizet("model.c3function_train.kick_rank");
+  size_t max_rank     = probDescDB.get_sizet("model.c3function_train.max_rank");
+  bool   adapt_rank   = probDescDB.get_bool("model.c3function_train.adapt_rank");
+  size_t cross_max_iter = probDescDB.get_sizet("model.c3function_train.max_cross_iterations");
+  double solver_tol   = probDescDB.get_real("model.c3function_train.solver_tolerance");
+  double rounding_tol = probDescDB.get_real("model.c3function_train.rounding_tolerance");
+  //size_t max_iters  = probDescDB.get_int("model.max_iterations");
+  size_t verbose      = probDescDB.get_sizet("model.c3function_train.verbosity");
   
   probDescDB.set_db_model_nodes(model_index); // restore
 
-  shared_data_rep->set_parameter("maximum_num_param",&maxnum);
-  shared_data_rep->set_parameter("maximum_rank"     ,&maximum_rank);
-  shared_data_rep->set_parameter("start_poly_order" ,&start_order);
-  shared_data_rep->set_parameter("initial_ranks",  &initial_rank);
-  shared_data_rep->set_parameter("rank_adapt",     &rank_adapt);
-  shared_data_rep->set_parameter("maximum_cross_approximation_iters", &crossMaxIter);
-  shared_data_rep->set_parameter("convergence_tol",&convergence_tol);
-  shared_data_rep->set_parameter("rounding_tol",   &rounding_tol);
-  // shared_data_rep->set_parameter("maximum_iters",   &maximum_iters);
-  shared_data_rep->set_parameter("kickrank",       &kickrank);
-  shared_data_rep->set_parameter("verbose",        &verbose);
+  shared_data_rep->set_parameter("start_poly_order",&start_order);
+  shared_data_rep->set_parameter("max_poly_order",  &max_order);
+  shared_data_rep->set_parameter("start_rank",      &start_rank);
+  shared_data_rep->set_parameter("kick_rank",       &kickrank);
+  shared_data_rep->set_parameter("max_rank",        &max_rank);
+  shared_data_rep->set_parameter("adapt_rank",      &adapt_rank);
+  shared_data_rep->set_parameter("solver_tol",      &solver_tol);
+  shared_data_rep->set_parameter("rounding_tol",    &rounding_tol);
+  shared_data_rep->set_parameter("max_cross_iterations", &cross_max_iter);
+  //shared_data_rep->set_parameter("max_iterations", &max_iters);
+  shared_data_rep->set_parameter("verbose",         &verbose);
 
-  std::cout << "convergence_tol = " << convergence_tol << "\n";
-  std::cout << "rank_adapt = " << rank_adapt << "\n";
+  std::cout << "solver_tol = " << solver_tol << "\n";
+  std::cout << "adapt_rank = " << adapt_rank << "\n";
   
   // // if all variables mode, initialize key to random variable subset
   // NOT SURE WHAT TO DO BELOW --AG
