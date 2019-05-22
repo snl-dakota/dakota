@@ -613,19 +613,20 @@ endif()
 CheckPackage(C3)
 if(HAVE_C3)
   list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp)
-  list(APPEND DAKOTA_INCDIRS
-    ${C3_SOURCE_DIR}/include
-    ${C3_SOURCE_DIR}/src/lib_stringmanip
-    ${C3_SOURCE_DIR}/src/lib_array
-    ${C3_SOURCE_DIR}/src/lib_linalg
-    ${C3_SOURCE_DIR}/src/lib_quadrature
-    ${C3_SOURCE_DIR}/src/lib_optimization
-    ${C3_SOURCE_DIR}/src/lib_funcs
-    ${C3_SOURCE_DIR}/src/lib_clinalg
-    ${C3_SOURCE_DIR}/src/lib_probability
-    ${C3_SOURCE_DIR}/src/lib_superlearn
-    ${C3_SOURCE_DIR}/src/lib_interface
-    )
+  # BMA: disabled these includes as we aren't including c3.h
+  ##list(APPEND DAKOTA_INCDIRS
+  ##  ${C3_SOURCE_DIR}/include
+  ##  ${C3_SOURCE_DIR}/src/lib_stringmanip
+  ##  ${C3_SOURCE_DIR}/src/lib_array
+  ##  ${C3_SOURCE_DIR}/src/lib_linalg
+  ##  ${C3_SOURCE_DIR}/src/lib_quadrature
+  ##  ${C3_SOURCE_DIR}/src/lib_optimization
+  ##  ${C3_SOURCE_DIR}/src/lib_funcs
+  ##  ${C3_SOURCE_DIR}/src/lib_clinalg
+  ##  ${C3_SOURCE_DIR}/src/lib_probability
+  ##  ${C3_SOURCE_DIR}/src/lib_superlearn
+  ##  ${C3_SOURCE_DIR}/src/lib_interface
+  ##  )
   list(APPEND DAKOTA_PKG_LIBS c3)
 endif()
 
