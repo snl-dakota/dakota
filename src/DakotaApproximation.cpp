@@ -20,10 +20,10 @@
 #include "QMEApproximation.hpp"
 #include "PecosApproximation.hpp"
 #include "GaussProcApproximation.hpp"
-#include "VPSApproximation.hpp"
-#ifdef HAVE_FUNCTION_TRAIN
+#ifdef HAVE_C3
 #include "C3Approximation.hpp"
-#endif // HAVE_FUNCTION_TRAIN
+#endif
+#include "VPSApproximation.hpp"
 #ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.hpp"
 #endif // HAVE_SURFPACK
@@ -143,10 +143,10 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
       return new PecosApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "global_gaussian")
       return new GaussProcApproximation(problem_db, shared_data, approx_label);
-#ifdef HAVE_FUNCTION_TRAIN
+#ifdef HAVE_C3
     else if (approx_type == "function_train")
       return new C3Approximation(problem_db, shared_data, approx_label);
-#endif // HAVE_FUNCTION_TRAIN
+#endif
 #ifdef HAVE_SURFPACK
     else if (approx_type == "global_polynomial"     ||
 	     approx_type == "global_kriging"        ||
@@ -202,10 +202,10 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(shared_data);
-#ifdef HAVE_FUNCTION_TRAIN
+#ifdef HAVE_C3
   else if (approx_type == "function_train")
     approx = new C3Approximation(shared_data);
-#endif // HAVE_FUNCTION_TRAIN
+#endif
   else if (approx_type == "global_gaussian")
     approx = new GaussProcApproximation(shared_data);
   else if (approx_type == "global_voronoi_surrogate")
