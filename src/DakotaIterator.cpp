@@ -453,8 +453,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_FUNCTION_TRAIN
   case C3_FUNCTION_TRAIN:
     return new NonDC3FunctionTrain(problem_db, model); break;
-  case MULTIFIDELITY_FUNCTION_TRAIN:
-    return new NonDMultilevelFunctionTrain(problem_db, model); break;
+  //case MULTIFIDELITY_FUNCTION_TRAIN:
+  //  return new NonDMultilevelFunctionTrain(problem_db, model); break;
 #endif
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification

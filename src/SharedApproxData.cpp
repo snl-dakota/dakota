@@ -14,7 +14,9 @@
 #include "SharedApproxData.hpp"
 #include "ProblemDescDB.hpp"
 #include "SharedPecosApproxData.hpp"
+#ifdef HAVE_FUNCTION_TRAIN
 #include "SharedC3ApproxData.hpp"
+#endif // HAVE_FUNCTION_TRAIN
 #ifdef HAVE_SURFPACK
 #include "SharedSurfpackApproxData.hpp"
 #endif // HAVE_SURFPACK
@@ -196,10 +198,10 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
   if (strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial"))
     return new SharedPecosApproxData(problem_db, num_vars);
+#ifdef HAVE_FUNCTION_TRAIN
   else if (strends(approx_type,"function_train"))
-  {
     return new SharedC3ApproxData(problem_db,num_vars);
-  }
+#endif // HAVE_FUNCTION_TRAIN
   //else if (approx_type == "global_gaussian")
   //  return new SharedGaussProcApproxData(problem_db, num_vars);
 #ifdef HAVE_SURFPACK
@@ -261,11 +263,11 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
       strends(approx_type, "_interpolation_polynomial"))
     approx = new SharedPecosApproxData(approx_type, approx_order, num_vars,
 				       data_order, output_level);
+#ifdef HAVE_FUNCTION_TRAIN
   else if (strends(approx_type,"function_train"))
-  {
     approx = new SharedC3ApproxData(approx_type, approx_order, num_vars,
-				       data_order, output_level);
-  }
+				    data_order, output_level);
+#endif // HAVE_FUNCTION_TRAIN
   //else if (approx_type == "global_gaussian")
   //  approx = new SharedGaussProcApproxData(num_vars, data_order,output_level);
 #ifdef HAVE_SURFPACK

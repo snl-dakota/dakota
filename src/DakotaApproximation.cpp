@@ -20,8 +20,10 @@
 #include "QMEApproximation.hpp"
 #include "PecosApproximation.hpp"
 #include "GaussProcApproximation.hpp"
-#include "C3Approximation.hpp"
 #include "VPSApproximation.hpp"
+#ifdef HAVE_FUNCTION_TRAIN
+#include "C3Approximation.hpp"
+#endif // HAVE_FUNCTION_TRAIN
 #ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.hpp"
 #endif // HAVE_SURFPACK
@@ -141,9 +143,10 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
       return new PecosApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "global_gaussian")
       return new GaussProcApproximation(problem_db, shared_data, approx_label);
-    else if (approx_type == "function_train"){
+#ifdef HAVE_FUNCTION_TRAIN
+    else if (approx_type == "function_train")
       return new C3Approximation(problem_db, shared_data, approx_label);
-    }
+#endif // HAVE_FUNCTION_TRAIN
 #ifdef HAVE_SURFPACK
     else if (approx_type == "global_polynomial"     ||
 	     approx_type == "global_kriging"        ||
@@ -199,8 +202,10 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(shared_data);
+#ifdef HAVE_FUNCTION_TRAIN
   else if (approx_type == "function_train")
     approx = new C3Approximation(shared_data);
+#endif // HAVE_FUNCTION_TRAIN
   else if (approx_type == "global_gaussian")
     approx = new GaussProcApproximation(shared_data);
   else if (approx_type == "global_voronoi_surrogate")
@@ -919,6 +924,81 @@ int Approximation::recommended_points(bool constraint_flag) const
       (int)std::ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
   }
 }
+
+
+/*
+void Approximation::eval_flag(bool flag)
+{
+  if (approxRep){
+    approxRep->eval_flag(flag);
+  }
+  else{
+      Cerr << "Error: eval_flag() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+void Approximation::gradient_flag(bool flag)
+{
+  if (approxRep){
+    approxRep->gradient_flag(flag);
+  }
+  else{
+      Cerr << "Error: gradient_flag() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+}
+*/
+
+
+void Approximation::expansion_coefficient_flag(bool flag)
+{
+  if (approxRep)
+    approxRep->expansion_coefficient_flag(flag);
+  else {
+    Cerr << "Error: expansion_coefficient_flag() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+bool Approximation::expansion_coefficient_flag() const
+{
+  if (!approxRep) {
+    Cerr << "Error: expansion_coefficient_flag() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->expansion_coefficient_flag();
+}
+
+
+void Approximation::expansion_gradient_flag(bool flag)
+{
+  if (approxRep)
+    approxRep->expansion_gradient_flag(flag);
+  else {
+    Cerr << "Error: expansion_gradient_flag() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+bool Approximation::expansion_gradient_flag() const
+{
+  if (!approxRep) {
+    Cerr << "Error: expansion_gradient_flag() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->expansion_gradient_flag();
+}    
 
 
 void Approximation::
