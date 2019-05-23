@@ -33,7 +33,7 @@ SharedC3ApproxData::SharedC3ApproxData()
   
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
-  SharedApproxData(BaseConstructor(), problem_db, num_vars)
+  SharedApproxData(BaseConstructor(), problem_db, num_vars),
   startOrder(problem_db.get_sizet("model.c3function_train.start_order")),
   maxOrder(problem_db.get_sizet("model.c3function_train.max_order")),
   startRank(problem_db.get_sizet("model.c3function_train.start_rank")),
@@ -48,7 +48,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
 {
   // printf("CONSTRUCTING SHAREDC3APPROX\n");
 
-  // std::cout << "Convergence Tolerance is " << convergenceTol << std::endl;
+  // std::cout << "Solver Tolerance is " << solverTol << std::endl;
   this->approxOpts = multi_approx_opts_alloc(num_vars);
   this->oneApproxOpts = (struct OneApproxOpts **)
     malloc(num_vars * sizeof(struct OneApproxOpts *));

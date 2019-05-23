@@ -44,9 +44,9 @@ class SharedApproxData
   friend class GaussProcApproximation;
   friend class VPSApproximation;
   friend class PecosApproximation;
-#ifdef HAVE_FUNCTION_TRAIN
+#ifdef HAVE_C3
   friend class C3Approximation;
-#endif // HAVE_FUNCTION_TRAIN
+#endif // HAVE_C3
 #ifdef HAVE_SURFPACK
   friend class SurfpackApproximation;
 #endif // HAVE_SURFPACK

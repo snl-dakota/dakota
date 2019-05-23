@@ -253,6 +253,22 @@
 	     &default_max_refinement_iterations;
 	     ' >
 
+    <!ENTITY ft_refinement '
+             <!--
+             <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
+               <oneOf label="p-refinement Type">
+		 <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform"   />
+		 <keyword  id="dimension_adaptive" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  minOccurs="1" >
+		   <oneOf label="Dimension Adaptivity Estimation Approach">
+		     <keyword  id="generalized" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized"   />
+		   </oneOf>
+		 </keyword>
+	       </oneOf>
+	     </keyword>
+             -->
+	     &default_max_refinement_iterations;
+	     ' >
+
     <!ENTITY expansion_rule_nesting '
 	     <optional>
 	       <oneOf label="Quadrature Rule Nesting">
@@ -629,6 +645,7 @@
 	       </oneOf>
              </keyword>
              &method_seed;
+             &rng_options;
 	     <keyword  id="probability_refinement" name="probability_refinement" code="{0}" label="Importance sampling refinement"  minOccurs="0" default="no refinement">
 	       <!-- TODO: consider removing this alias: -->
 	       <alias name="sample_refinement"/>
@@ -641,7 +658,8 @@
 		 <param type="INTEGERLIST" />
 	       </keyword>
 	     </keyword>
-	     &default_final_moments;
+             &default_final_moments;
+             &level_mappings;
 	     &vbd_expansion;
 	     <optional>
 	       <oneOf label="Covariance Type">
@@ -2277,14 +2295,9 @@
 
         <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="surrogate_based_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
           <alias name="function_train_uq"/>
-          &samples_on_emulator_with_alias;
-          &method_seed;
-	  <!-- Method includes refinement {iterations,tolerance} -->
-          &default_max_refinement_iterations;
-          &default_convergence_tolerance;
+	  &ft_refinement;
           <!-- Rely on DFSModel data import, if possible
 	  &import_build; -->
-          &vbd_expansion;
 	  <!-- Short term work-around for FT model spec independent of DFSModel/SimulationModel.  Don't think this is needed anymore...
           <keyword  id="model_param_spec" name="model_param_spec" code="{N_mdm(str,modelParamSpec)}" label="Model Parameters for UQ" help="" minOccurs="1" >
             <param type="STRING" in_taglist="model" />
@@ -2293,19 +2306,14 @@
           <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
             <param type="INTEGER" constraint=">= 0" />
           </keyword> -->
-	  &level_mappings;
-	  &rng_options;
+	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
 
         <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
-          &samples_on_emulator_with_alias;
-          &method_seed;
-          &default_max_refinement_iterations;
-          &default_convergence_tolerance;
-          &vbd_expansion;
-	  &level_mappings;
-	  &rng_options;
+	  <!-- TO DO: FT can support an ML regression approach with profile shaping based on rank*dim^2 -->
+          &ft_refinement;
+	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
 
@@ -2322,10 +2330,8 @@
 	      <param type="INPUT_FILE" />
 	    </keyword>
 	  </oneOf>
-	  &expansion_options;
 	  &pce_options;
-	  &level_mappings;
-	  &rng_options;
+	  &expansion_options;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2343,10 +2349,8 @@
 		 <param type="INPUT_FILE" />
 	    </keyword> -->
 	  </oneOf>
-	  &expansion_options;
 	  &pce_options;
-	  &level_mappings;
-	  &rng_options;
+	  &expansion_options;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2363,10 +2367,8 @@
 		 <param type="INPUT_FILE" />
 	    </keyword> -->
 	  </oneOf>
-	  &expansion_options;
 	  &pce_options;
-	  &level_mappings;
-	  &rng_options;
+	  &expansion_options;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2377,10 +2379,8 @@
 	    &expansion_quadrature;
 	    &sc_sparse_grid;
 	  </oneOf>
-	  &expansion_options;
 	  &sc_options;
-	  &level_mappings;
-	  &rng_options;
+	  &expansion_options;
 	  &method_optional_model_pointer;
 	</keyword>
 
@@ -2392,11 +2392,9 @@
 	    &expansion_quadrature_sequence;
 	    &sc_sparse_grid_sequence;
 	  </oneOf>
-	  &expansion_options;
 	  &sc_options;
+	  &expansion_options;
 	  <!-- &default_max_iterations; for future multilevel SC -->
-	  &level_mappings;
-	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
 

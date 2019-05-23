@@ -150,9 +150,9 @@ protected:
     void build();
     // void rebuild();
     // void finalize();
-    void store(size_t index);
-    void restore(size_t index);
-    void remove_stored(size_t index);
+    //void store(size_t index);
+    //void restore(size_t index);
+    //void remove_stored(size_t index);
 
     bool expansion_coefficient;
     bool expansion_gradient;
@@ -202,7 +202,7 @@ private:
     double * ytrain;
 
     // Model
-    std::vector<struct FunctionTrain *> storedFT;
+    //std::vector<struct FunctionTrain *> storedFT;
     struct FunctionTrain * ft;
     struct FT1DArray * ft_gradient;
     struct FT1DArray * ft_hessian;

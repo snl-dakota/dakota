@@ -102,6 +102,9 @@
 #ifdef HAVE_JEGA
 #include "JEGAOptimizer.hpp"
 #endif
+#ifdef HAVE_C3
+#include "NonDC3FunctionTrain.hpp"
+#endif
 #ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
 #endif
@@ -450,7 +453,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDStochCollocation(problem_db, model); break;
   case MULTIFIDELITY_STOCH_COLLOCATION:
     return new NonDMultilevelStochCollocation(problem_db, model); break;
-#ifdef HAVE_FUNCTION_TRAIN
+#ifdef HAVE_C3
   case C3_FUNCTION_TRAIN:
     return new NonDC3FunctionTrain(problem_db, model); break;
   //case MULTIFIDELITY_FUNCTION_TRAIN:

@@ -31,8 +31,8 @@ namespace Dakota {
             double absxtol = 1e-10;
             this->optimizer  = c3opt_create(BFGS);
             c3opt_set_maxiter(this->optimizer,this->sharedC3DataRep->maxIterations);
-            c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->convergenceTol);
-            c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->convergenceTol);
+            c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->solverTol);
+            c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->solverTol);
             c3opt_set_absxtol(this->optimizer,absxtol);
             c3opt_set_verbose(this->optimizer,0);
 
@@ -144,7 +144,8 @@ namespace Dakota {
                                  this->sharedC3DataRep->approxOpts,
                                  this->start_ranks.values());
             ft_regress_set_alg_and_obj(ftr,AIO,FTLS);
-            ft_regress_set_adapt(   ftr,this->sharedC3DataRep->rankAdapt);
+	    size_t r_adapt = this->sharedC3DataRep->adaptRank ? 1 : 0;
+            ft_regress_set_adapt(   ftr,r_adapt);
             ft_regress_set_maxrank( ftr,this->sharedC3DataRep->maxRank);
             ft_regress_set_kickrank(ftr,this->sharedC3DataRep->kickRank);
             ft_regress_set_roundtol(ftr,this->sharedC3DataRep->roundingTol);
@@ -152,8 +153,8 @@ namespace Dakota {
 
             c3opt_set_verbose(this->optimizer,this->sharedC3DataRep->verbose);
             c3opt_set_maxiter(this->optimizer,this->sharedC3DataRep->maxIterations);
-            c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->convergenceTol);
-            c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->convergenceTol);
+            c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->solverTol);
+            c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->solverTol);
             
             // free if previously built
             function_train_free(this->ft);      this->ft          = NULL;
@@ -166,15 +167,13 @@ namespace Dakota {
             }
         
         
-            size_t i, j, offset = 0, num_v = sharedDataRep->numVars;
-            this->ndata = approxData.points();
-            // -> treat it as another currentPoint
-            if (approxData.anchor()) {
-                offset  = 1;
-                this->ndata += 1;
-            }
+	    const Pecos::SurrogateData& approx_data = surrogate_data();
+            size_t i, j, num_v = sharedDataRep->numVars;
+	    const Pecos::SDVArray& sdv_array = approx_data.variables_data();
+	    const Pecos::SDRArray& sdr_array = approx_data.response_data();
+            this->ndata = approx_data.points();
         
-            // JUST 1 QUOI
+            // JUST 1 QOI
             // Transfer the training data to the Teuchos arrays used by the GP
             if (this->xtrain != NULL){
                 free(this->xtrain); this->xtrain = NULL;
@@ -194,21 +193,13 @@ namespace Dakota {
                 exit(1);
             }
 
-            // process anchorPoint, if present
-            if (approxData.anchor()) {
-                const RealVector& c_vars = approxData.anchor_continuous_variables();            
-                for (j=0; j<num_v; ++j){
-                    this->xtrain[j] = c_vars[j];
-                }
-                this->ytrain[0] = approxData.anchor_function();
-            }
             // process currentPoints
-            for (i=offset; i<this->ndata; ++i) {
-                const RealVector& c_vars = approxData.continuous_variables(i);
+            for (i=0; i<this->ndata; ++i) {
+                const RealVector& c_vars = sdv_array[i].continuous_variables();
                 for (j=0; j<num_v; j++){
                     this->xtrain[j + i*this->dim] = c_vars[j];
                 }
-                this->ytrain[i] = approxData.response_function(i);
+                this->ytrain[i] = sdr_array[i].response_function();
             }
 
             // Build FT model
@@ -566,6 +557,7 @@ namespace Dakota {
         return hess;
     }
 
+    /*
     void C3Approximation::store(size_t index)
     {
         ft_derived_functions_free(&(this->ft_derived_functions));
@@ -628,7 +620,7 @@ namespace Dakota {
         size_t stored_len = storedFT.size();
         storedFT.erase(storedFT.begin()+index);
     }
-
+    */
     
 
 } // namespace Dakota
