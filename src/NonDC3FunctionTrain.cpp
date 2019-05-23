@@ -50,7 +50,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   short data_order;
   short u_space_type = ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize(u_space_type);
+  initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -154,7 +154,7 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   shared_data_rep->set_parameter("start_poly_order",&start_order);
   shared_data_rep->set_parameter("max_poly_order",  &max_order);
   shared_data_rep->set_parameter("start_rank",      &start_rank);
-  shared_data_rep->set_parameter("kick_rank",       &kickrank);
+  shared_data_rep->set_parameter("kick_rank",       &kick_rank);
   shared_data_rep->set_parameter("max_rank",        &max_rank);
   shared_data_rep->set_parameter("adapt_rank",      &adapt_rank);
   shared_data_rep->set_parameter("solver_tol",      &solver_tol);
@@ -246,6 +246,14 @@ void NonDC3FunctionTrain::post_run(std::ostream& s)
 
 void NonDC3FunctionTrain::compute_analytic_statistics()
 {
+// *** TO DO: push these into C3Approximation::compute_total_effects();
+//     rely on NonDExpansion::compute_analytic_statistics()
+// --> need to pass in vbdOrderLimit (PCE accesses via
+//     data_rep->expConfigOptions.vbdOrderLimit)
+
+// Also why is there a non-virtual Analyzer::print_sobol_indices() ?
+  
+  /*
     NonDExpansion::compute_analytic_statistics();
 
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
@@ -263,6 +271,7 @@ void NonDC3FunctionTrain::compute_analytic_statistics()
             }
         }
     }
+  */
 }
 
 void NonDC3FunctionTrain::print_moments(std::ostream& s)
@@ -348,7 +357,8 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
               << poly_approx_rep_i->main_sobol_index(j)/var << ' ' << std::setw(write_precision+7)
               << poly_approx_rep_i->total_sobol_index(j) << ' ' << cv_labels[j] << '\n';
         }
-          
+
+	/*  Similarly, integrate this into NonDExpansion workflow
         // Print Interaction effects
         if (vbdOrderLimit != 1) { 
             s << std::setw(39) << "Interaction\n";
@@ -362,6 +372,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 
             poly_approx_rep_i->sobol_iterate_apply(print_c3_sobol_indices,&pa);
         }
+	*/
     }
 }
 

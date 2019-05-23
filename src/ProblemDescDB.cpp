@@ -2939,8 +2939,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     static KW<size_t, DataModelRep> Szmo[] = {	
       // must be sorted by string (key)
       // must be sorted by string (key)
-        {"c3function_train.max_cross_iterations", P crossMaxIter},
         {"c3function_train.kick_rank", P kickRank},
+        {"c3function_train.max_cross_iterations", P crossMaxIter},
         {"c3function_train.max_order", P maxOrder},
       	{"c3function_train.max_rank", P maxRank},
         {"c3function_train.start_order", P startOrder},
