@@ -98,7 +98,7 @@ protected:
   bool adaptRank; // converted to size_t (0 no, 1 yes) for C3
 
   double roundingTol;
-  double convergenceTol;
+  double solverTol;
   size_t maxIterations;
   size_t crossMaxIter;
   size_t verbose;

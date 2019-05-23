@@ -65,7 +65,7 @@ namespace Dakota {
 
         /////////////////////////////////////////////
         // Setup
-        this->dim = sharedDataRep->num_variables(); // CHECK THIS AG
+        this->dim = sharedDataRep->numVars; // CHECK THIS AG
         this->num_random = 0; // set later
         this->num_det = this->dim - this->num_random;
         this->adaptive_construction = 0; // means do regression
@@ -82,7 +82,7 @@ namespace Dakota {
     {
 
         // std::cout << "IN THIS CONSTRUCTOR Lets go\n";
-        this->dim = sharedDataRep->num_variables(); // CHECK THIS AG
+        this->dim = sharedDataRep->numVars; // CHECK THIS AG
         this->num_random = 0; // set later
         this->num_det = this->dim - this->num_random;
         this->adaptive_construction = 0; // means do regression
@@ -144,7 +144,7 @@ namespace Dakota {
                                  this->sharedC3DataRep->approxOpts,
                                  this->start_ranks.values());
             ft_regress_set_alg_and_obj(ftr,AIO,FTLS);
-            //ft_regress_set_adapt(   ftr,this->sharedC3DataRep->rankAdapt); // missing data 
+            ft_regress_set_adapt(   ftr,this->sharedC3DataRep->rankAdapt);
             ft_regress_set_maxrank( ftr,this->sharedC3DataRep->maxRank);
             ft_regress_set_kickrank(ftr,this->sharedC3DataRep->kickRank);
             ft_regress_set_roundtol(ftr,this->sharedC3DataRep->roundingTol);
@@ -166,10 +166,10 @@ namespace Dakota {
             }
         
         
-            size_t i, j, offset = 0, num_v = sharedDataRep->num_variables();
-            this->ndata = approxData/* can there be more than one entry in this vector ? RWH */[0].points();
+            size_t i, j, offset = 0, num_v = sharedDataRep->numVars;
+            this->ndata = approxData.points();
             // -> treat it as another currentPoint
-            if (approxData/* can there be more than one entry in this vector ? RWH */[0].anchor()) {
+            if (approxData.anchor()) {
                 offset  = 1;
                 this->ndata += 1;
             }
@@ -195,21 +195,21 @@ namespace Dakota {
             }
 
             // process anchorPoint, if present
-            if (approxData/* can there be more than one entry in this vector ? RWH */[0].anchor()) {
-                //const RealVector& c_vars = approxData/* can there be more than one entry in this vector ? RWH */[0].anchor_continuous_variables(); // Pecos::SurrogateData does not have anchor_continuous_variables() method - RWH
-                //for (j=0; j<num_v; ++j){
-                //    this->xtrain[j] = c_vars[j];
-                //}
-                //this->ytrain[0] = approxData/* can there be more than one entry in this vector ? RWH */[0].anchor_function(); // Pecos::SurrogateData does not have anchor_function() method - RWH
+            if (approxData.anchor()) {
+                const RealVector& c_vars = approxData.anchor_continuous_variables();            
+                for (j=0; j<num_v; ++j){
+                    this->xtrain[j] = c_vars[j];
+                }
+                this->ytrain[0] = approxData.anchor_function();
             }
             // process currentPoints
-            //for (i=offset; i<this->ndata; ++i) {
-            //    const RealVector& c_vars = approxData/* can there be more than one entry in this vector ? RWH */[0].continuous_variables(i); // Pecos::SurrogateData does not have continuous_variables() method - RWH
-            //    for (j=0; j<num_v; j++){
-            //        this->xtrain[j + i*this->dim] = c_vars[j];
-            //    }
-            //    //this->ytrain[i] = approxData/* can there be more than one entry in this vector ? RWH */[0].response_function(i); // Pecos::SurrogateData does not have response_function() method - RWH
-            //}
+            for (i=offset; i<this->ndata; ++i) {
+                const RealVector& c_vars = approxData.continuous_variables(i);
+                for (j=0; j<num_v; j++){
+                    this->xtrain[j + i*this->dim] = c_vars[j];
+                }
+                this->ytrain[i] = approxData.response_function(i);
+            }
 
             // Build FT model
             this->ft = ft_regress_run(ftr,this->optimizer,this->ndata,this->xtrain,this->ytrain);
@@ -572,7 +572,7 @@ namespace Dakota {
         c3_sobol_sensitivity_free(this->ft_sobol); this->ft_sobol = NULL;
         
         // base class implementation manages approx data
-        //Approximation::store(index); // Current state of base class doesn't have store method. RWH
+        Approximation::store(index);
 
         size_t stored_len = storedFT.size();
         if (index == _NPOS || index == stored_len) { // append
@@ -594,7 +594,7 @@ namespace Dakota {
     void C3Approximation::restore(size_t index)
     {
         // base class implementation manages approx data
-        //Approximation::restore(index); // Current state of base class doesn't have store method. RWH
+        Approximation::restore(index);
         // map to Pecos::BasisApproximation
 
         size_t stored_len = storedFT.size();
@@ -623,7 +623,7 @@ namespace Dakota {
     void C3Approximation::remove_stored(size_t index)
     {
         // base class implementation manages approx data
-        //Approximation::remove_stored(index); // Current state of base class doesn't have remove_stored method. RWH
+        Approximation::remove_stored(index);
 
         size_t stored_len = storedFT.size();
         storedFT.erase(storedFT.begin()+index);
