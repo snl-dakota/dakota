@@ -33,7 +33,7 @@ SharedC3ApproxData::SharedC3ApproxData()
   
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
-  SharedApproxData(BaseConstructor(), problem_db, num_vars)
+  SharedApproxData(BaseConstructor(), problem_db, num_vars),
   startOrder(problem_db.get_sizet("model.c3function_train.start_order")),
   maxOrder(problem_db.get_sizet("model.c3function_train.max_order")),
   startRank(problem_db.get_sizet("model.c3function_train.start_rank")),
@@ -41,7 +41,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
   roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
-  solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
+  convergenceTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
   maxIterations(1000),//(problem_db.get_int("model.max_iterations")),
   crossMaxIter(problem_db.get_sizet("model.c3function_train.max_cross_iterations")),
   verbose(0)//problem_db.get_sizet("model.c3function_train.verbosity")),
@@ -94,7 +94,7 @@ SharedC3ApproxData(const String& approx_type,
   this->maxRank = 10;
   this->adaptRank = false;
 
-  this->solverTol = 1e-10;
+  this->convergenceTol = 1e-10;
   this->roundingTol = 1e-10;
   this->maxIterations = 1000;
   this->crossMaxIter = 5;
@@ -127,7 +127,7 @@ void SharedC3ApproxData::set_parameter(String var, void * val)
   else if (var.compare("adapt_rank") == 0)
     this->adaptRank = *(bool*)val;
   else if (var.compare("solver_tol") == 0)
-    this->solverTol = *(double*)val;
+    this->convergenceTol = *(double*)val;
   else if (var.compare("rounding_tol") == 0)
     this->roundingTol = *(double*)val;
   else if (var.compare("max_cross_iterations") == 0)

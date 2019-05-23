@@ -134,7 +134,7 @@ public:
   //
 
   // return the number of variables used in the approximation
-  //int num_variables() const;
+  int num_variables() const;
 
   /// set activeDataIndex
   void surrogate_data_index(size_t d_index);
@@ -243,8 +243,8 @@ private:
 };
 
 
-//inline int SharedApproxData::num_variables() const
-//{ return (dataRep) ? dataRep->numVars : numVars; }
+inline int SharedApproxData::num_variables() const
+{ return (dataRep) ? dataRep->numVars : numVars; }
 
 
 inline void SharedApproxData::surrogate_data_index(size_t d_index)
