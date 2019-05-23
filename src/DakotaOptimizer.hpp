@@ -437,6 +437,22 @@ public:
 
 //----------------------------------------------------------------
 
+  /** Convenience method for common optimizer stopping criteria vectors */
+  void get_common_stopping_criteria(int    & max_fn_evals,
+                                    int    & max_iters,
+                                    double & conv_tol,
+                                    double & min_var_chg,
+                                    double & obj_target )
+  { 
+    max_fn_evals =  maxFunctionEvals;
+    max_iters = maxIterations;
+    conv_tol = convergenceTol;
+    min_var_chg = probDescDB.get_real("method.variable_tolerance");
+    obj_target = probDescDB.get_real("method.solution_target");
+  }
+
+//----------------------------------------------------------------
+
   int num_nonlin_ineq_constraints_found() const
     { return numNonlinearIneqConstraintsFound; }
 

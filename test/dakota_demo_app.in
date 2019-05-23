@@ -4,7 +4,8 @@
 method,
     demo_tpl
 #    options_file = "demo_tpl.opts"     #s1
-    convergence_tolerance = 0.05
+    max_iterations = 1000
+    solution_target = 0.05
 
 variables,
     continuous_design = 3
