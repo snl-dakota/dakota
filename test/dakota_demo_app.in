@@ -5,6 +5,7 @@ method,
     demo_tpl
 #    options_file = "demo_tpl.opts"     #s1
     max_iterations = 1000
+#    max_function_evaluations = 750      #s2
     solution_target = 0.05
 
 variables,
@@ -20,6 +21,9 @@ interface,
 
 responses,
     objective_functions = 1
+#     nonlinear_equality_constraints = 1        #s2
+#     nonlinear_equality_targets = -.2          #s2
+
     no_gradients
     no_hessians
 
