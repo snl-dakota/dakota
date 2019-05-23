@@ -144,7 +144,7 @@ namespace Dakota {
                                  this->sharedC3DataRep->approxOpts,
                                  this->start_ranks.values());
             ft_regress_set_alg_and_obj(ftr,AIO,FTLS);
-            //ft_regress_set_adapt(   ftr,this->sharedC3DataRep->rankAdapt); // missing data  - RWH
+            //ft_regress_set_adapt(   ftr,this->sharedC3DataRep->rankAdapt); // missing data 
             ft_regress_set_maxrank( ftr,this->sharedC3DataRep->maxRank);
             ft_regress_set_kickrank(ftr,this->sharedC3DataRep->kickRank);
             ft_regress_set_roundtol(ftr,this->sharedC3DataRep->roundingTol);
