@@ -148,8 +148,8 @@ protected:
     const RealSymMatrix& hessian(const Variables& vars);
 
     void build();
-    // void rebuild();
-    // void finalize();
+    //void rebuild();
+    //void finalize();
     //void store(size_t index);
     //void restore(size_t index);
     //void remove_stored(size_t index);
