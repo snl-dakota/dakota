@@ -1,0 +1,64 @@
+Blurb:: Sample allocation based on greedy refinement within multifidelity stochastic collocation
+
+Description::
+
+Multifidelity stochastic collocation supports greedy refinement
+strategies using tensor and sparse grids for both nodal and
+hierarchical collocation approaches.  The key idea is that each level
+of the model hierarchy being approximated can generate one or more
+candidates for refinement.  These candidates are competed against each
+other within a unified competition, and the candidate that induces the
+largest change in the statistical QoI (response covariance by default,
+or results of any level mappings when specified), normalized by
+relative cost of evaluating the candidate, is selected and then used
+to generate additional candidates for consideration at its model level.
+
+Topics::
+
+Examples::
+
+The following example of greedy multifidelity stochastic collocation
+using nodel interpolation starts from a zeroth-order expansion (a
+constant) for each level, and generates uniform candidate refinements
+for each level that are competed in a greedy competition.  The number
+of new samples for the incremented candidate expansion order is
+determined from the quadrature rules of the new sparse grid level.  In
+this case, the number of candidates for each level is limited to one
+uniform refinement of the current sparse grid level.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multifidelity_stoch_collocation
+	  nodal
+	  allocation_control greedy
+	  p_refinement uniform
+	    sparse_grid_level_sequence = 0 unrestricted
+	    convergence_tolerance 1.e-3
+\endverbatim
+
+The next example employs generalized sparse grids and hierarchical
+interpolation.  Each level starts from a level 0 reference grid (a
+single point) and generates multiple admissible index set candidates.
+The full set of candidates across all levels is competed within a
+unified greedy competition, where the greedy selection metric is the
+induced change in the statistical QoI, normalized by the aggregate
+simulation cost of the index set candidate.  In this case, there are
+multiple candidates for each level and the number of candidates grows
+rapidly with random dimension and grid level.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multifidelity_stoch_collocation
+	  hierarchical
+	  allocation_control greedy
+	  p_refinement dimension_adaptive generalized
+	    sparse_grid_level_sequence = 0 unrestricted
+	    convergence_tolerance 1.e-8
+\endverbatim
+
+Theory::
+
+Faq::
+See_Also::
