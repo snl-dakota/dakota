@@ -254,7 +254,7 @@
 	     ' >
 
     <!ENTITY ft_refinement '
-             <!--
+             <!-- No context-specific/goal-oriented (UQ) refinement at this time, only generic refinement within Model (adapt_rank) -->
              <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
                <oneOf label="p-refinement Type">
 		 <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform"   />
@@ -265,7 +265,6 @@
 		 </keyword>
 	       </oneOf>
 	     </keyword>
-             -->
 	     &default_max_refinement_iterations;
 	     ' >
 
@@ -2295,7 +2294,7 @@
 
         <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="surrogate_based_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
           <alias name="function_train_uq"/>
-	  &ft_refinement;
+	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
           <!-- Rely on DFSModel data import, if possible
 	  &import_build; -->
 	  <!-- Short term work-around for FT model spec independent of DFSModel/SimulationModel.  Don't think this is needed anymore...
@@ -2312,7 +2311,7 @@
 
         <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
 	  <!-- TO DO: FT can support an ML regression approach with profile shaping based on rank*dim^2 -->
-          &ft_refinement;
+	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>

@@ -26,23 +26,26 @@ namespace Dakota {
 
 NonDC3FunctionTrain* NonDC3FunctionTrain::c3Instance(NULL);
 
+struct SPrintArgs
+{
+  std::ostream *s;
+  StringMultiArrayConstView * cv_labels;
+  double variance;
+};
+
 
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  // numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
-  importApproxPointsFile(probDescDB.get_string("method.import_approx_points_file")),
-  importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
-  importApproxActiveOnly( probDescDB.get_bool("method.import_approx_active_only")),
-  importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file")),
-  importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
-  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
-  numSamplesOnModel(probDescDB.get_sizet("method.c3function_train.num_samples_for_construction"))
-  // exportPointsFile(izet()
-  //     problem_db.get_string("model.export_approx_points_file"))
+  //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
+  //importBuildPointsFile(
+  //  probDescDB.get_string("method.import_build_points_file")),
+  //importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
+  //importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
+  numSamplesOnModel(100)//*** TO DO *** probDescDB.get_sizet("method.c3function_train.num_samples_for_construction"))
+  //exportPointsFile(problem_db.get_string("model.export_approx_points_file"))
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -80,17 +83,17 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse;
-  String approx_type = "function_train"; // Modify DakotaApproximation get_approx()
+  String approx_type = "function_train";
   UShortArray approx_order; // empty
   ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
   sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-                                              sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-                                              outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-                                              importBuildActiveOnly,
-                                              probDescDB.get_string("method.export_approx_points_file"),
-                                              probDescDB.get_ushort("method.export_approx_format")), false);
+    sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
+  //importBuildPointsFile, importBuildFormat, importBuildActiveOnly,
+    probDescDB.get_string("model.surrogate.export_approx_points_file"),
+    probDescDB.get_ushort("model.surrogate.export_approx_format")), false);
 
   initialize_u_space_model();
 
@@ -99,15 +102,15 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------------
   // ...
   // follow construct_expansion_sampler from NonDExpansion.cpp which is called in NonDPolynomialChaos.cpp
-  construct_expansion_sampler(importApproxPointsFile, importApproxFormat, 
-                              importApproxActiveOnly);
+  construct_expansion_sampler(
+    probDescDB.get_string("method.import_approx_points_file"),
+    probDescDB.get_ushort("method.import_approx_format"), 
+    probDescDB.get_bool("method.import_approx_active_only"));
 }
 
 
 NonDC3FunctionTrain::~NonDC3FunctionTrain()
-{
-
-}
+{ }
 
     
 void NonDC3FunctionTrain::
@@ -117,6 +120,7 @@ resolve_inputs(short& u_space_type, short& data_order)
     
   data_order = 1; // no deriv enhancement for now...
 }
+
 
 void NonDC3FunctionTrain::initialize_u_space_model()
 {
@@ -132,10 +136,10 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   shared_data_rep->construct_basis(natafTransform.u_types(),
                                    iteratedModel.aleatory_distribution_parameters());
 
-  size_t model_index    = probDescDB.get_db_model_node(); // for restoration
-  String model_ptr_name = probDescDB.get_string("method.c3function_train.model_param_spec");
+  //size_t model_index    = probDescDB.get_db_model_node(); // for restoration
+  //String model_ptr_name = probDescDB.get_string("method.c3function_train.model_param_spec");
   // String model_ptr_name  = "FT";
-  probDescDB.set_db_model_nodes(model_ptr_name);
+  //probDescDB.set_db_model_nodes(model_ptr_name);
 
   size_t start_order  = probDescDB.get_sizet("model.c3function_train.start_order");
   size_t max_order    = probDescDB.get_sizet("model.c3function_train.max_order");
@@ -147,9 +151,9 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   double solver_tol   = probDescDB.get_real("model.c3function_train.solver_tolerance");
   double rounding_tol = probDescDB.get_real("model.c3function_train.rounding_tolerance");
   //size_t max_iters  = probDescDB.get_int("model.max_iterations");
-  size_t verbose      = probDescDB.get_sizet("model.c3function_train.verbosity");
-  
-  probDescDB.set_db_model_nodes(model_index); // restore
+  size_t verbose      = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
+
+  //probDescDB.set_db_model_nodes(model_index); // restore
 
   shared_data_rep->set_parameter("start_poly_order",&start_order);
   shared_data_rep->set_parameter("max_poly_order",  &max_order);
@@ -182,11 +186,13 @@ void NonDC3FunctionTrain::initialize_u_space_model()
     ((NonD*)u_space_sampler.iterator_rep())->
       initialize_random_variables(natafTransform); // shared rep
 
+  // perform last due to numSamplesOnModel update
+  //NonDExpansion::initialize_u_space_model(); // assumes SharedPecosApproxData
 }
-    
+
+
 void NonDC3FunctionTrain::print_results(std::ostream& s)
 {
-
   if (//iteratedModel.subordinate_models(false).size() == 1 &&
       iteratedModel.truth_model().solution_levels() > 1) {
     s << "<<<<< Samples per solution level:\n";
@@ -199,6 +205,7 @@ void NonDC3FunctionTrain::print_results(std::ostream& s)
 }
   
 
+/*
 int NonDC3FunctionTrain::
 qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
 {
@@ -233,46 +240,8 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
 
   return 0;
 }
+*/
 
-
-void NonDC3FunctionTrain::post_run(std::ostream& s)
-{
-    // Statistics are generated here and output in print_results() below
-    // if (statsFlag) // calculate statistics on allResponses
-    //     compute_statistics(allSamples, allResponses);
-
-    Analyzer::post_run(s);
-}
-
-void NonDC3FunctionTrain::compute_analytic_statistics()
-{
-// *** TO DO: push these into C3Approximation::compute_total_effects();
-//     rely on NonDExpansion::compute_analytic_statistics()
-// --> need to pass in vbdOrderLimit (PCE accesses via
-//     data_rep->expConfigOptions.vbdOrderLimit)
-
-// Also why is there a non-virtual Analyzer::print_sobol_indices() ?
-  
-  /*
-    NonDExpansion::compute_analytic_statistics();
-
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    C3Approximation* poly_approx_rep;
-    // my own global sensitivities
-    for (size_t ii = 0; ii < numFunctions; ii++){
-        poly_approx_rep = (C3Approximation*)poly_approxs[ii].approx_rep();
-        if (vbdFlag) {
-            if ((vbdOrderLimit != 1) && (vbdOrderLimit != 0)){
-                poly_approx_rep->compute_all_sobol_indices(vbdOrderLimit); 
-            }
-            else{
-                poly_approx_rep->compute_all_sobol_indices(numContStateVars);
-
-            }
-        }
-    }
-  */
-}
 
 void NonDC3FunctionTrain::print_moments(std::ostream& s)
 {
@@ -292,11 +261,10 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();  
   for (size_t i=0; i<numFunctions; ++i) {
       C3Approximation* poly_approx_rep_i = (C3Approximation*)poly_approxs[i].approx_rep();
-       if (i==0 || !prev_exception){
-           s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
-             << std::setw(width+1)  << "Skewness" << std::setw(width+2)
-             << "Kurtosis\n";
-       }
+       if (i==0 || !prev_exception)
+	 s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
+	   << std::setw(width+1)  << "Skewness" << std::setw(width+2)
+	   << "Kurtosis\n";
        RealVector moments = poly_approx_rep_i->moments();
        s <<  fn_labels[i] << '\n' << std::setw(14) << "analytical: ";
        s << ' ' << std::setw(width) << moments[0]
@@ -307,73 +275,66 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
   }
 }
 
-struct SPrintArgs
-{
-    std::ostream *s;
-    StringMultiArrayConstView * cv_labels;
-    double variance;
-    
-};
     
 void print_c3_sobol_indices(double value, size_t ninteract, size_t * interactions, void * arg)
 {
-    if (ninteract > 1){
-        struct SPrintArgs * pa = (struct SPrintArgs *)arg;
+  if (ninteract > 1){
+    struct SPrintArgs * pa = (struct SPrintArgs *)arg;
 
-        StringMultiArrayConstView cv_label = *(pa->cv_labels);
+    StringMultiArrayConstView cv_label = *(pa->cv_labels);
     
-        String label;
-        for (size_t jj = 0; jj < ninteract; jj++){
-            label += cv_label[interactions[jj]] + " ";
-        }
-        *(pa->s) << "                     " << std::setw(write_precision+7) << value/pa->variance;
-        *(pa->s) << ' ' << label << '\n';
-    }
-    
+    String label;
+    for (size_t jj = 0; jj < ninteract; jj++)
+      label += cv_label[interactions[jj]] + " ";
+    *(pa->s) << "                     " << std::setw(write_precision+7)
+	     << value/pa->variance << ' ' << label << '\n';
+  } 
 }
-    
+
+
 void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 {
-    s << "\nGlobal sensitivity indices for each response function:\n";
+  s << "\nGlobal sensitivity indices for each response function:\n";
 
-    const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.response_labels();
 
-    StringMultiArrayConstView cv_labels = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView cv_labels = iteratedModel.continuous_variable_labels();
 
-    // print sobol indices per response function
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    for (size_t i=0; i<numFunctions; ++i) {
-        C3Approximation* poly_approx_rep_i = (C3Approximation*)poly_approxs[i].approx_rep();
+  // print sobol indices per response function
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  size_t wpp7 = write_precision+7;
+  for (size_t i=0; i<numFunctions; ++i) {
+    C3Approximation* poly_approx_rep_i = (C3Approximation*)poly_approxs[i].approx_rep();
         
-        // Print Main and Total effects
-        s << fn_labels[i] << " Sobol' indices:\n" << std::setw(38) << "Main"
-          << std::setw(19) << "Total\n";
+    // Print Main and Total effects
+    s << fn_labels[i] << " Sobol' indices:\n" << std::setw(38) << "Main"
+      << std::setw(19) << "Total\n";
         
-        RealVector moments = poly_approx_rep_i->moments();
-        Real var = moments(1);
-        
-        for (size_t j=0; j<numContinuousVars; ++j) {
-            s << "                     "   <<        std::setw(write_precision+7)
-              << poly_approx_rep_i->main_sobol_index(j)/var << ' ' << std::setw(write_precision+7)
-              << poly_approx_rep_i->total_sobol_index(j) << ' ' << cv_labels[j] << '\n';
-        }
+    RealVector moments = poly_approx_rep_i->moments();
+    Real var = moments(1);
+    for (size_t j=0; j<numContinuousVars; ++j)
+      s << "                     "   <<        std::setw(wpp7)
+	<< poly_approx_rep_i->main_sobol_index(j)/var << ' '
+	<< std::setw(wpp7) << poly_approx_rep_i->total_sobol_index(j)
+	<< ' ' << cv_labels[j]<<'\n';
 
-	/*  Similarly, integrate this into NonDExpansion workflow
-        // Print Interaction effects
-        if (vbdOrderLimit != 1) { 
-            s << std::setw(39) << "Interaction\n";
-            StringMultiArrayConstView cv_labels
-                = iteratedModel.continuous_variable_labels();
+    /* *** TO DO: integrate this into std NonDExpansion VBD workflow
+
+    // Print Interaction effects
+    if (vbdOrderLimit != 1) { 
+      s << std::setw(39) << "Interaction\n";
+      StringMultiArrayConstView cv_labels
+        = iteratedModel.continuous_variable_labels();
             
-            struct SPrintArgs pa;
-            pa.s = &s;
-            pa.cv_labels = &cv_labels;
-            pa.variance = var;
+      struct SPrintArgs pa;
+      pa.s = &s;
+      pa.cv_labels = &cv_labels;
+      pa.variance = var;
 
-            poly_approx_rep_i->sobol_iterate_apply(print_c3_sobol_indices,&pa);
-        }
-	*/
+      poly_approx_rep_i->sobol_iterate_apply(print_c3_sobol_indices,&pa);
     }
+    */
+  }
 }
 
 } // namespace Dakota

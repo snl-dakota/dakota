@@ -309,11 +309,11 @@ namespace Dakota {
     void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
     {
         if (ft_sobol == NULL){
-            ft_sobol = c3_sobol_sensitivity_calculate(this->ft,1);
+            ft_sobol = c3_sobol_sensitivity_calculate(this->ft,interaction_order);
         }
         else{
             c3_sobol_sensitivity_free(ft_sobol);
-            ft_sobol = c3_sobol_sensitivity_calculate(this->ft,1);
+            ft_sobol = c3_sobol_sensitivity_calculate(this->ft,interaction_order);
         }
     }
 

@@ -233,11 +233,16 @@ inline bool C3Approximation::expansion_gradient_flag() const
 // instead of smaller ones for different analysis.
 // Need these two functions to reuse that code with no errors
 inline void C3Approximation::compute_component_effects()
-{
-}    
+{ } // C3 does not distinguish so defer to fn below
+
 
 inline void C3Approximation::compute_total_effects()
 {
+  // *** TO DO: mirror expConfigOptions.vbdOrderLimit in Pecos
+
+  size_t interaction_order =//(vbdOrderLimit) ? vbdOrderLimit :
+    sharedDataRep->numVars;
+  compute_all_sobol_indices(interaction_order); 
 }    
     
     

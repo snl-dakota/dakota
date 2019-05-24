@@ -1017,7 +1017,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( surrogate_based_uq ALIAS function_train_uq {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -1116,7 +1115,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( multifidelity_function_train {N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}
-    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}

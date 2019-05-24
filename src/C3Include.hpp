@@ -25,7 +25,7 @@ extern "C"
 
     // polynomial approximation options
     struct OpeOpts;
-    enum poly_type {LEGENDRE, CHEBYSHEV, HERMITE, STANDARD};
+  enum poly_type {LEGENDRE, CHEBYSHEV, HERMITE, STANDARD, FOURIER};
     struct OpeOpts * ope_opts_alloc(enum poly_type);
     void ope_opts_set_lb(struct OpeOpts *, double);
     double ope_opts_get_lb(const struct OpeOpts *);
@@ -37,8 +37,7 @@ extern "C"
     void ope_opts_set_tol(struct OpeOpts *, double);
     
     // One dimensional approximation options
-    enum function_class {CONSTANT,PIECEWISE, POLYNOMIAL,
-                         LINELM, RATIONAL, KERNEL};
+    enum function_class {PIECEWISE, POLYNOMIAL, CONSTELM, LINELM, KERNEL};
     struct OneApproxOpts;
     struct OneApproxOpts * one_approx_opts_alloc(enum function_class, void *);
     void one_approx_opts_free_deep(struct OneApproxOpts **);
@@ -83,7 +82,7 @@ extern "C"
     void ft1d_array_free(struct FT1DArray *);
     
     // General approximation options
-    enum C3ATYPE { CROSS, REGRESS };
+  enum C3ATYPE { CROSS, REGRESS, C3UNSPEC };
     struct C3Approx;
     struct C3Approx * c3approx_create(enum C3ATYPE, size_t);
     void c3approx_destroy(struct C3Approx *);
