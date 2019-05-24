@@ -141,6 +141,7 @@ typedef std::vector<StringSet>         StringSetArray;
 typedef std::vector<UShortSet>         UShortSetArray;
 typedef std::map<int, int>             IntIntMap;
 typedef std::map<int, short>           IntShortMap;
+typedef std::map<unsigned long, unsigned long> ULongULongMap;
 typedef std::map<int, Real>            IntRealMap;
 typedef std::map<Real, Real>           RealRealMap;
 typedef std::map<String, Real>         StringRealMap;

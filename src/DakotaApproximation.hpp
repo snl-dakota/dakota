@@ -112,23 +112,34 @@ public:
 
   /// Statistics
   virtual Real mean();                            
-  virtual Real mean(const RealVector &);          
+  virtual Real mean(const RealVector& x);          
   virtual const RealVector& mean_gradient();      
-  virtual const RealVector& mean_gradient(const RealVector &, const SizetArray &);     
+  virtual const RealVector& mean_gradient(const RealVector& x,
+					  const SizetArray& dvv);     
   virtual Real variance();
   virtual Real variance(const RealVector&);           
   virtual const RealVector& variance_gradient();      
-  virtual const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
-    
-  virtual Real covariance(Approximation *);                    // covariance between two functions
-  virtual Real covariance(const RealVector&, Approximation *); // covariance with respect so subset
-  virtual void compute_moments();
-  virtual void compute_moments(const Pecos::RealVector&);
+  virtual const RealVector& variance_gradient(const RealVector& x,
+					      const SizetArray& dvv);
+  virtual Real covariance(Approximation* approx_2);
+  virtual Real covariance(const RealVector& x, Approximation* approx_2);
+
+  virtual void compute_moments(bool full_stats = true,
+			       bool combined_stats = false);
+  virtual void compute_moments(const RealVector& x, bool full_stats = true,
+			       bool combined_stats = false);
   virtual const RealVector& moments() const;
+  virtual Real moment(size_t i) const;
+  virtual void moment(Real mom, size_t i);
 
   virtual void compute_component_effects();
-  virtual void compute_total_effects();    
+  virtual void compute_total_effects();
+  virtual const RealVector& sobol_indices() const;
+  virtual const RealVector& total_sobol_indices() const;
+  virtual ULongULongMap sparse_sobol_index_map() const;
 
+  virtual const RealVector& expansion_moments() const;
+  virtual const RealVector& numerical_integration_moments() const;
 
   /// check if diagnostics are available for this approximation type
   virtual bool diagnostics_available();
