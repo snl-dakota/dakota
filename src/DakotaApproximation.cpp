@@ -130,7 +130,8 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
   bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
   if (pw_decomp) {
     return new VPSApproximation(problem_db, shared_data, approx_label);
-  } else {
+  }
+  else {
     const String& approx_type = shared_data.data_rep()->approxType;
     if (approx_type == "local_taylor")
       return new TaylorApproximation(problem_db, shared_data, approx_label);
@@ -503,7 +504,7 @@ Real Approximation::mean()
   if (!approxRep) {
     Cerr << "Error:mean() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->mean();
@@ -514,7 +515,7 @@ Real Approximation::mean(const RealVector & x)
   if (!approxRep) {
     Cerr << "Error:mean(x) not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->mean(x);
@@ -525,7 +526,7 @@ const RealVector& Approximation::mean_gradient()
     if (!approxRep) {
         Cerr << "Error: mean_gradient() not available for this approximation type."
         << std::endl;
-        abort_handler(-1);
+        abort_handler(APPROX_ERROR);
     }
         
     return approxRep->mean_gradient();
@@ -536,7 +537,7 @@ const RealVector& Approximation::mean_gradient(const RealVector &x, const SizetA
     if (!approxRep) {
         Cerr << "Error: mean_gradient(x, ind) not available for this approximation type."
         << std::endl;
-        abort_handler(-1);
+        abort_handler(APPROX_ERROR);
     }
         
     return approxRep->mean_gradient(x,ind);
@@ -547,7 +548,7 @@ Real Approximation::variance()
   if (!approxRep) {
     Cerr << "Error:variance() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->variance();
@@ -558,7 +559,7 @@ Real Approximation::variance(const RealVector &x)
   if (!approxRep) {
     Cerr << "Error:variance(x) not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->variance(x);
@@ -569,7 +570,7 @@ const RealVector& Approximation::variance_gradient()
     if (!approxRep) {
         Cerr << "Error: variance_gradient() not available for this approximation type."
         << std::endl;
-        abort_handler(-1);
+        abort_handler(APPROX_ERROR);
     }
         
     return approxRep->variance_gradient();
@@ -577,98 +578,170 @@ const RealVector& Approximation::variance_gradient()
 
 const RealVector& Approximation::variance_gradient(const RealVector &x, const SizetArray & ind)
 {
-    if (!approxRep) {
-        Cerr << "Error: variance_gradient(x, ind) not available for this approximation type."
-        << std::endl;
-        abort_handler(-1);
-    }
-        
-    return approxRep->variance_gradient(x,ind);
+  if (!approxRep) {
+    Cerr << "Error: variance_gradient(x, ind) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->variance_gradient(x,ind);
 }
     
-Real Approximation::covariance(Approximation * approx_rep)
+Real Approximation::covariance(Approximation* approx_2)
 {
   if (!approxRep) {
     Cerr << "Error:covariance(other) not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
-  
-  // THE OTHER APPROXIMATION NEEDS TO HAVE SAME UNDERLYING TYPE -- AG
-  return approxRep->covariance(approx_rep);
+
+  return approxRep->covariance(approx_2);
 }
     
-Real Approximation::covariance(const RealVector &x, Approximation * other)
+Real Approximation::covariance(const RealVector &x, Approximation* approx_2)
 {
   if (!approxRep) {
     Cerr << "Error:covariance(x, other) not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
-  
-  // THE OTHER APPROXIMATION NEEDS TO HAVE SAME UNDERLYING TYPE -- AG
-  return approxRep->covariance(x, other);
+
+  return approxRep->covariance(x, approx_2);
 }
 
-void Approximation::compute_moments()
+void Approximation::compute_moments(bool full_stats, bool combined_stats)
 {
-    if (approxRep){
-        approxRep->compute_moments();
-    }
-    else {
-        Cerr << "Error: compute_moments() not available for this "
-             << "approximation type." << std::endl;
-        abort_handler(-1);
-    }
+  if (approxRep)
+    approxRep->compute_moments(full_stats, combined_stats);
+  else {
+    Cerr << "Error: compute_moments() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
 }
 
-void Approximation::compute_moments(const Pecos::RealVector &x)
+void Approximation::
+compute_moments(const RealVector& x, bool full_stats, bool combined_stats)
 {
-    if (approxRep){
-        approxRep->compute_moments(x);
-    }
-    else{
-        Cerr << "Error: compute_moments(const pecos::RealVector &x) not available for this "
-             << "approximation type." << std::endl;
-        abort_handler(-1);
-    }
+  if (approxRep)
+    approxRep->compute_moments(x, full_stats, combined_stats);
+  else {
+    Cerr << "Error: compute_moments(RealVector) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
 }
 
 const RealVector& Approximation::moments() const
 {
-    if (!approxRep) {
-        Cerr << "Error: moments() not available for this approximation type."
-        << std::endl;
-        abort_handler(-1);
-    }
-        
-    return approxRep->moments();
+  if (!approxRep) {
+    Cerr << "Error: moments() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->moments();
+}
+
+Real Approximation::moment(size_t i) const
+{
+  if (!approxRep) {
+    Cerr << "Error: moment(size_t) not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->moment(i);
+}
+
+void Approximation::moment(Real mom, size_t i)
+{
+  if (approxRep)
+    approxRep->moment(mom, i);
+  else {
+    Cerr << "Error: moment(Real, size_t) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
 }
 
 void Approximation::compute_component_effects()
 {
-    if (approxRep){
-        approxRep->compute_component_effects();
-    }
-    else {
-        Cerr << "Error: compute_component_effects() not available for this "
-             << "approximation type." << std::endl;
-        abort_handler(-1);
-    }
+  if (approxRep)
+    approxRep->compute_component_effects();
+  else {
+    Cerr << "Error: compute_component_effects() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
 }
 
 void Approximation::compute_total_effects()
 {
-    if (approxRep){
-        approxRep->compute_total_effects();
-    }
-    else {
-        Cerr << "Error: compute_total_effects() not available for this "
-             << "approximation type." << std::endl;
-        abort_handler(-1);
-    }
-}    
-    
+  if (approxRep)
+    approxRep->compute_total_effects();
+  else {
+    Cerr << "Error: compute_total_effects() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+const RealVector& Approximation::sobol_indices() const
+{
+  if (!approxRep) {
+    Cerr << "Error: sobol_indices() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->sobol_indices();
+}
+
+const RealVector& Approximation::total_sobol_indices() const
+{
+  if (!approxRep) {
+    Cerr << "Error: total_sobol_indices() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->total_sobol_indices();
+}
+
+ULongULongMap Approximation::sparse_sobol_index_map() const
+{
+  if (!approxRep) {
+    Cerr << "Error: sparse_sobol_index_map() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->sparse_sobol_index_map();
+}
+
+const RealVector& Approximation::expansion_moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: expansion_moments() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->expansion_moments();
+}
+
+const RealVector& Approximation::numerical_integration_moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: numerical_integration_moments() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->numerical_integration_moments();
+}
+
 Real Approximation::value(const RealVector& c_vars)
 {
   if (!approxRep) {
@@ -679,8 +752,7 @@ Real Approximation::value(const RealVector& c_vars)
 
   return approxRep->value(c_vars);
 }
-    
-    
+
 const RealVector& Approximation::gradient(const RealVector& c_vars)
 {
   if (!approxRep) {
@@ -935,7 +1007,7 @@ void Approximation::eval_flag(bool flag)
   else{
       Cerr << "Error: eval_flag() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -947,7 +1019,7 @@ void Approximation::gradient_flag(bool flag)
   else{
       Cerr << "Error: gradient_flag() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 */

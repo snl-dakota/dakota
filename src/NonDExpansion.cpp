@@ -700,8 +700,7 @@ void NonDExpansion::compute_expansion()
   ShortArray sampler_asv(numFunctions, 0);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* poly_approx_rep
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    Approximation* poly_approx_rep = poly_approxs[i].approx_rep();
     bool expansion_coeff_flag = false, expansion_grad_flag = false;
     if (totalLevelRequests) {
       rl_len = requestedRespLevels[i].length();
@@ -1889,9 +1888,9 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
     combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     if (!vbdOrderLimit) // no order limit --> component used within total
       poly_approx_rep->compute_component_effects();
     poly_approx_rep->compute_total_effects(); // from scratch or using component
@@ -2168,9 +2167,9 @@ void NonDExpansion::compute_level_mappings()
   size_t i, j, rl_len, pl_len, bl_len, cntr = 0,
     moment_offset = (finalMomentsType) ? 2 : 0;
 
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     rl_len = requestedRespLevels[i].length();
     pl_len = requestedProbLevels[i].length();
     bl_len = requestedRelLevels[i].length();
@@ -2315,9 +2314,9 @@ void NonDExpansion::compute_moments()
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
     combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
       if (all_vars)
 	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
@@ -2341,9 +2340,9 @@ void NonDExpansion::compute_sobol_indices()
   if (!vbdFlag) return;
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
       poly_approx_rep->compute_component_effects(); // main or main+interaction
       poly_approx_rep->compute_total_effects();     // total
@@ -2374,7 +2373,7 @@ void NonDExpansion::compute_analytic_statistics()
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real mu, var, sigma, beta, z;
   RealVector mu_grad, sigma_grad, final_stat_grad;
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
     if (totalLevelRequests) {
       rl_len = requestedRespLevels[i].length();
@@ -2385,7 +2384,7 @@ void NonDExpansion::compute_analytic_statistics()
     else
       rl_len = pl_len = bl_len = gl_len = 0;
 
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
 
     // Note: corresponding logic in NonDExpansion::compute_expansion() defines
     // expansionCoeffFlag as needed to support final data requirements.
@@ -2762,16 +2761,13 @@ void NonDExpansion::pull_reference(RealVector& stats_ref)
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep;
     bool full_covar = (covarianceControl == FULL_COVARIANCE);
     size_t vec_len = (full_covar) ?
       (numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
     if (stats_ref.length() != vec_len) stats_ref.sizeUninitialized(vec_len);
     // pull means
-    for (size_t i=0; i<numFunctions; ++i) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      stats_ref[i] = poly_approx_rep->moment(0);
-    }
+    for (size_t i=0; i<numFunctions; ++i)
+      stats_ref[i] = poly_approxs[i].moment(0);
     // pull resp{V,Cov}ariance
     if (full_covar)
       pull_lower_triangle(respCovariance, stats_ref, numFunctions);
@@ -2790,7 +2786,7 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    PecosApproximation* poly_approx_rep;
+    Approximation* poly_approx_rep;
     bool full_covar = (covarianceControl == FULL_COVARIANCE);
     // push resp{V|Cov}ariance
     if (full_covar)
@@ -2799,7 +2795,7 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
       copy_data_partial(stats_ref, numFunctions, numFunctions, respVariance);
     // push Pecos::{expansion|numerical}Moments
     for (size_t i=0; i<numFunctions; ++i) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      poly_approx_rep = poly_approxs[i].approx_rep();
       poly_approx_rep->moment(stats_ref[i], 0); // mean values
       if (full_covar) poly_approx_rep->moment(respCovariance(i,i), 1);
       else            poly_approx_rep->moment(respVariance[i],     1);
@@ -2894,9 +2890,9 @@ void NonDExpansion::archive_moments()
   bool exp_active = false, num_active = false;
   RealMatrix exp_matrix(4, numFunctions), num_matrix(4, numFunctions);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
       // Pecos provides central moments
       const RealVector& exp_moments = poly_approx_rep->expansion_moments();
@@ -2984,7 +2980,7 @@ void NonDExpansion::archive_sobol_indices() {
     = iteratedModel.continuous_variable_labels();
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   // Map from index to variable labels
   std::map<int, std::vector<const char *> > sobol_labels;
 
@@ -3021,7 +3017,7 @@ void NonDExpansion::archive_sobol_indices() {
 
   // archive sobol indices per response function
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
@@ -3216,12 +3212,12 @@ void NonDExpansion::print_moments(std::ostream& s)
   //   both exp/num: SC and PCE with numerical integration
   //   exp only:     PCE with unstructured grids (regression, exp sampling)
   // Also handle numerical exception of negative variance in either exp or num
-  PecosApproximation* poly_approx_rep;
+  Approximation* poly_approx_rep;
   size_t exp_mom, num_int_mom;
   bool exception = false, curr_exception, prev_exception = false;
   RealVector std_exp_moments, std_num_int_moments;
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
       // Pecos provides central moments
       const RealVector& exp_moments = poly_approx_rep->expansion_moments();
@@ -3262,13 +3258,14 @@ void NonDExpansion::print_moments(std::ostream& s)
 	if (exp_mom && num_int_mom) s << fn_labels[i];
 	else                        s << std::setw(14) << fn_labels[i];
 	if (exp_mom) {
-	  poly_approx_rep->standardize_moments(exp_moments, std_exp_moments);
+	  Pecos::PolynomialApproximation::
+	    standardize_moments(exp_moments, std_exp_moments);
 	  if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
 	  for (j=0; j<exp_mom; ++j)
 	    s << ' ' << std::setw(width) << std_exp_moments[j];
 	}
 	if (num_int_mom) {
-	  poly_approx_rep->
+	  Pecos::PolynomialApproximation::
 	    standardize_moments(num_int_moments, std_num_int_moments);
 	  if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
 	  for (j=0; j<num_int_mom; ++j)
@@ -3342,7 +3339,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
   // construct labels corresponding to (aggregated) sobol index map
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep; StringArray sobol_labels;
+  Approximation* poly_approx_rep; StringArray sobol_labels;
   size_t i, j, num_indices;
   if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
@@ -3366,7 +3363,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
   // print sobol indices per response function
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
@@ -3442,8 +3439,7 @@ void NonDExpansion::print_local_sensitivity(std::ostream& s)
     << "uncertain variable means:\n";
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
-    PecosApproximation* poly_approx_rep
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    Approximation* poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
       s << fn_labels[i] << ":\n";
       write_col_vector_trans(s, (int)i, expGradsMeanX);

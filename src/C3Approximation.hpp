@@ -129,8 +129,8 @@ public:
     // gradient with respect fixed variables
     const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
 
-    Real covariance(C3Approximation*);                    // covariance between two functions
-    Real covariance(const RealVector&, C3Approximation*); // covariance with respect so subset
+    Real covariance(Approximation* approx_2);                    // covariance between two functions
+    Real covariance(const RealVector& x, Approximation* approx_2); // covariance with respect so subset
 
 
     Real skewness();

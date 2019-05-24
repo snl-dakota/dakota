@@ -481,8 +481,9 @@ namespace Dakota {
 
     
 
-    Real C3Approximation::covariance(C3Approximation * ft2)
+    Real C3Approximation::covariance(Approximation* approx_2)
     {
+        C3Approximation* ft2 = (C3Approximation*)approx_2;
         Real mean1 = this->mean();
         Real mean2 = ft2->mean();
 
@@ -497,8 +498,9 @@ namespace Dakota {
         return retval;
     }
 
-    Real C3Approximation::covariance(const RealVector & x,C3Approximation * ft2)
+    Real C3Approximation::covariance(const RealVector& x, Approximation* approx_2)
     {
+        C3Approximation* ft2 = (C3Approximation*)approx_2;
 
         fprintf(stderr,"covariance(x,ft2) in C3Approximation is not implemented because Alex\n");
         fprintf(stderr,"is not sure how what it means\n");
