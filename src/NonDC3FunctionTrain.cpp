@@ -204,8 +204,23 @@ void NonDC3FunctionTrain::print_results(std::ostream& s)
   NonDExpansion::print_results(s);
 }
   
+/* No overrride appears to be required (NonDExp is sufficient)
+   > initialize_expansion()
+   > compute_expansion()
+
+   Overrides needed:
+   > refine_expansion() --> {pre,core,post}_refinement()
 
 /*
+This function was used to perform the Model samples for purposes of 
+adaptation (as opposed to the regression case.
+
+TO DO: will want to reactivate something like this for "adapt | regress"
+This fn would be passed into the C3 library for its adaptation scheme
+at the bottom of C3Approximation::build() -- see Warning there.
+
+Flag for "adapt | regress" is being added to the FT Model specification.
+
 int NonDC3FunctionTrain::
 qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
 {
@@ -275,7 +290,7 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
   }
 }
 
-    
+
 void print_c3_sobol_indices(double value, size_t ninteract, size_t * interactions, void * arg)
 {
   if (ninteract > 1){

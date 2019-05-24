@@ -22,13 +22,17 @@ struct FTDerivedFunctions
     struct FunctionTrain * ft_diff_from_mean_normalized_squared;
     struct FunctionTrain * ft_diff_from_mean_normalized_cubed;
 
+    // raw moments
     double first_moment;
     double second_moment;
     double third_moment;
 
+    // central moments
     double second_central_moment;
+    double third_central_moment;
     double fourth_central_moment;
 
+    // standardized moments
     double std_dev;
     double skewness;
     double kurtosis;
@@ -96,9 +100,12 @@ public:
     /// get pecosBasisApprox.configOptions.expansionGradFlag
     bool expansion_gradient_flag() const;
 
-    void compute_moments();
-    void compute_moments(const Pecos::RealVector& x);
+    void compute_moments(bool full_stats = true, bool combined_stats = false);
+    void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
+			 bool combined_stats = false);
     const RealVector& moments() const;
+    Real moment(size_t i) const;
+    void moment(Real mom, size_t i);
 
     /// Performs global sensitivity analysis using Sobol' Indices by
     /// computing component (main and interaction) effects
@@ -132,11 +139,14 @@ public:
     Real covariance(Approximation* approx_2);                    // covariance between two functions
     Real covariance(const RealVector& x, Approximation* approx_2); // covariance with respect so subset
 
-
     Real skewness();
     Real kurtosis();
+    Real third_central();
+    Real fourth_central();
 
-    
+    const RealVector& expansion_moments() const;
+    const RealVector& numerical_integration_moments() const;
+
 protected:
 
     //
@@ -191,7 +201,7 @@ private:
     
     RealVector grad;
     RealSymMatrix hess;
-    RealVector moment_vector;
+    RealVector moment_vector, num_moment_vector;
 
     // Regression information
     SizetVector start_ranks;
@@ -225,6 +235,14 @@ inline void C3Approximation::expansion_gradient_flag(bool grad_flag)
 
 inline bool C3Approximation::expansion_gradient_flag() const
 { return this->expansion_coefficient_gradient_flag_var; }
+
+
+inline const RealVector& C3Approximation::expansion_moments() const
+{ return moment_vector; } // populated
+
+
+inline const RealVector& C3Approximation::numerical_integration_moments() const
+{ return num_moment_vector; } // empty
 
 
 // Next two. Should access through compute_all_sobol_indices()

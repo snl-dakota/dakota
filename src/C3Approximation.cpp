@@ -361,21 +361,32 @@ namespace Dakota {
     //     // Set 
     // }
         
-    void C3Approximation::compute_moments()
+    void C3Approximation::compute_moments(bool full_stats, bool combined_stats)
     {
         // printf("mean in compute_moments = %G\n",this->mean());
         // printf("length of moment vector = %d\n",this->moment_vector.length());
         this->moment_vector(0) = this->mean();
         this->moment_vector(1) = this->variance();
+        this->moment_vector(2) = this->third_central();
+        this->moment_vector(3) = this->fourth_central();
     }
 
-    void C3Approximation::compute_moments(const RealVector & x){
+    void C3Approximation::compute_moments(const RealVector& x, bool full_stats,
+					  bool combined_stats) {
         this->moment_vector(0) = this->mean(x);
         this->moment_vector(1) = this->variance(x);
     }
 
     const RealVector& C3Approximation:: moments() const{
         return this->moment_vector;
+    }
+
+    Real C3Approximation:: moment(size_t i) const{
+      return this->moment_vector(i);
+    }
+
+    void C3Approximation:: moment(Real mom, size_t i) {
+      this->moment_vector(i) = mom;
     }
 
     Real C3Approximation::mean()
@@ -410,19 +421,6 @@ namespace Dakota {
         fprintf(stderr,"is not sure how what it means\n");
         exit(1);        
     }
-
-    Real C3Approximation::skewness()
-    {
-        compute_derived_statistics(false);
-        return this->ft_derived_functions.skewness;
-    }
-
-    Real C3Approximation::kurtosis()
-    {
-        compute_derived_statistics(false);
-        return this->ft_derived_functions.kurtosis;
-    }
-
 
     Real C3Approximation::variance()
     {
@@ -505,6 +503,32 @@ namespace Dakota {
         fprintf(stderr,"covariance(x,ft2) in C3Approximation is not implemented because Alex\n");
         fprintf(stderr,"is not sure how what it means\n");
         exit(1);
+    }
+
+
+    Real C3Approximation::third_central()
+    {
+        compute_derived_statistics(false);
+        return this->ft_derived_functions.third_central_moment;
+    }
+
+    Real C3Approximation::fourth_central()
+    {
+        compute_derived_statistics(false);
+        return this->ft_derived_functions.fourth_central_moment;
+    }
+
+
+    Real C3Approximation::skewness()
+    {
+        compute_derived_statistics(false);
+        return this->ft_derived_functions.skewness;
+    }
+
+    Real C3Approximation::kurtosis()
+    {
+        compute_derived_statistics(false);
+        return this->ft_derived_functions.kurtosis;
     }
 
 
@@ -626,13 +650,3 @@ namespace Dakota {
     
 
 } // namespace Dakota
-
-
-
-
-
-
-
-
-
-

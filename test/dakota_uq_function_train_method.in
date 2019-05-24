@@ -28,7 +28,7 @@ model,
 #       verbosity = 0
         max_rank = 10
       dace_method_pointer = 'SAMPLING'
-	
+
 method
   id_method = 'SAMPLING'
   sampling
