@@ -226,6 +226,7 @@ namespace Dakota {
         func->ft_constant_at_mean       = NULL;
         func->ft_diff_from_mean         = NULL;
         func->ft_diff_from_mean_squared = NULL;
+        func->ft_diff_from_mean_cubed = NULL;        
 
         func->ft_diff_from_mean_tesseracted = NULL;
         func->ft_diff_from_mean_normalized  = NULL;
@@ -253,11 +254,17 @@ namespace Dakota {
         func->ft_diff_from_mean_squared =
             function_train_product(func->ft_diff_from_mean,
                                    func->ft_diff_from_mean);
+        func->ft_diff_from_mean_cubed =
+            function_train_product(func->ft_diff_from_mean_squared,
+                                   func->ft_diff_from_mean);        
         func->ft_diff_from_mean_tesseracted =
             function_train_product(func->ft_diff_from_mean_squared,
                                    func->ft_diff_from_mean_squared);
 
         func->second_central_moment = function_train_integrate_weighted(func->ft_diff_from_mean_squared); // var
+        
+        func->third_central_moment = function_train_integrate_weighted(func->ft_diff_from_mean_cubed); // var        
+        
         func->fourth_central_moment = function_train_integrate_weighted(func->ft_diff_from_mean_tesseracted);
 
         func->second_moment = function_train_integrate_weighted(func->ft_squared);
@@ -291,6 +298,8 @@ namespace Dakota {
         function_train_free(func->ft_constant_at_mean);       func->ft_constant_at_mean = NULL;
         function_train_free(func->ft_diff_from_mean);         func->ft_diff_from_mean   = NULL;
         function_train_free(func->ft_diff_from_mean_squared); func->ft_diff_from_mean_squared = NULL;
+
+        function_train_free(func->ft_diff_from_mean_cubed); func->ft_diff_from_mean_cubed = NULL;        
 
         function_train_free(func->ft_diff_from_mean_tesseracted); func->ft_diff_from_mean_tesseracted = NULL;
         function_train_free(func->ft_diff_from_mean_normalized);  func->ft_diff_from_mean_normalized  = NULL;
