@@ -1,0 +1,64 @@
+
+environment,
+	#graphics
+	output_precision = 16
+
+method,
+	# function_train_uq
+    # polynomial_chaos
+    # quadrature_order=7
+	#   convergence_tol = 0.000001
+	#   samples_on_emulator = 10000
+    #   #import_build_points_file = "rosenbrock_samples.dat"
+    sampling
+      sample_type lhs
+      samples = 100000
+      response_levels = .1 1. 50. 100. 500. 1000.
+      distribution cumulative
+      # variance_based_decomp #interaction_order = 1
+      model_pointer = 'M1'
+
+model,
+     id_model = 'M1'
+     surrogate global
+        function_train
+        kick_rank = 2
+        adapt_rank
+        max_order = 5
+        start_rank = 2
+        solver_tolerance = 1e-10
+        rounding_tolerance = 1e-8
+        max_rank = 10
+     dace_method_pointer = 'LHS'
+     # actual_model_pointer = 'M2'
+
+method,
+    id_method = 'LHS'
+    sampling
+    samples = 100
+    model_pointer = 'M2'
+
+model,
+     single
+          interface_pointer = 'I1'
+          variables_pointer = 'V1'
+          responses_pointer = 'R1'
+     id_model = 'M2'
+
+variables,
+    id_variables = 'V1'
+	uniform_uncertain = 2
+	  lower_bounds = -2. -2.
+	  upper_bounds =  2.  2.
+	  descriptors  = 'x1' 'x2'
+
+interface,
+    id_interface = 'I1'
+	direct
+	analysis_driver = 'rosenbrock'
+
+responses,
+    id_responses = 'R1'
+	response_functions = 1
+	no_gradients
+	no_hessians
