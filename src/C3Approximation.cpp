@@ -50,7 +50,7 @@ namespace Dakota {
         // Initialize memory for the rest of private data
         this->grad.size(dim);
         this->hess.shape(dim);
-        this->moment_vector.size(2);
+        this->moment_vector.size(4);
     }
 
     
@@ -155,7 +155,9 @@ namespace Dakota {
             c3opt_set_maxiter(this->optimizer,this->sharedC3DataRep->maxIterations);
             c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->solverTol);
             c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->solverTol);
-            
+
+	    // *** TO DO: Alex will add mappings for latest XML attributes.
+	    
             // free if previously built
             function_train_free(this->ft);      this->ft          = NULL;
             ft1d_array_free(this->ft_gradient); this->ft_gradient = NULL;

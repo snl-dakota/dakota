@@ -596,7 +596,7 @@ void NonDExpansion::core_run()
   compute_expansion();  // nominal iso/aniso expansion from input spec
   if (refineType)
     refine_expansion(); // uniform/adaptive p-/h-refinement
-  
+
   compute_statistics(FINAL_RESULTS);
   // Note: print_results() called by Analyzer::post_run()
   ++numUncertainQuant;

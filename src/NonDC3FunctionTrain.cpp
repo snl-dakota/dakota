@@ -51,6 +51,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
   short data_order;
+  // *** TO DO: see SharedC3ApproxData::construct_basis().  Probably won't support
+  // *** STD_{EXPONENTIAL,BETA,GAMMA} so need a new type to map to { STD_NORMAL, STD_UNIFORM } (not full Askey...)
   short u_space_type = ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
   initialize_random(u_space_type);
@@ -62,6 +64,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   Model g_u_model;
   transform_model(iteratedModel, g_u_model); // retain distribution bounds
 
+  // *** TO DO ***: this is outputting an LHS header but then is being overridden by Model samples specification
   // Evaluates true model
   Iterator u_space_sampler;
   if (numSamplesOnModel) { // generate new data
@@ -333,10 +336,10 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 	<< std::setw(wpp7) << poly_approx_rep_i->total_sobol_index(j)
 	<< ' ' << cv_labels[j]<<'\n';
 
-    /* *** TO DO: integrate this into std NonDExpansion VBD workflow
+    // *** TO DO: integrate this into std NonDExpansion VBD workflow
 
     // Print Interaction effects
-    if (vbdOrderLimit != 1) { 
+    //if (vbdOrderLimit != 1) { 
       s << std::setw(39) << "Interaction\n";
       StringMultiArrayConstView cv_labels
         = iteratedModel.continuous_variable_labels();
@@ -347,8 +350,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
       pa.variance = var;
 
       poly_approx_rep_i->sobol_iterate_apply(print_c3_sobol_indices,&pa);
-    }
-    */
+    //}
   }
 }
 

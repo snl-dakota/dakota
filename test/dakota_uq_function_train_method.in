@@ -7,6 +7,7 @@ method,
 	function_train_uq
 	  convergence_tol = 0.000001
 	  samples_on_emulator = 10000
+    seed = 12347
 #      num_samples_for_construction = 200
       # import_build_points_file = "rosenbrock_samples.dat"
       response_levels = .1 1. 50. 100. 500. 1000.
@@ -23,8 +24,8 @@ model,
         adapt_rank
         max_order = 5
         start_rank = 2
-        solver_tolerance = 1e-8
-        rounding_tolerance = 1e-8
+        solver_tolerance = 1e-12
+        rounding_tolerance = 1e-12
 #       verbosity = 0
         max_rank = 10
       dace_method_pointer = 'SAMPLING'
@@ -32,7 +33,7 @@ model,
 method
   id_method = 'SAMPLING'
   sampling
-    samples = 200
+    samples = 1000
     seed = 531 
     sample_type lhs
     model_pointer = 'SIM'
@@ -46,10 +47,13 @@ model,
 
 variables,
     id_variables = 'V1'
-	uniform_uncertain = 2
-	  lower_bounds = -2. -2.
-	  upper_bounds =  2.  2.
-	  descriptors  = 'x1' 'x2'
+#	uniform_uncertain = 2
+#	  lower_bounds = -3. -2.
+#	  upper_bounds =  2.  3.
+	normal_uncertain = 2
+	   means             =  0.   0.
+	   std_deviations    =  1.   1.
+	descriptors  = 'x1' 'x2'
 
 interface,
     id_interface = 'I1'
