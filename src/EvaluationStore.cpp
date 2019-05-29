@@ -115,8 +115,10 @@ EvaluationsDBState EvaluationStore::iterator_allocate(const String &iterator_id,
     const bool &top_level) {
   if(!active())
     return EvaluationsDBState::INACTIVE;
-  if(top_level)
+  if(top_level) {
     topLevelMethodId = iterator_id;
+    hdf5Stream->add_attribute("/", "top_method", iterator_id);
+  }
   return EvaluationsDBState::ACTIVE;
 }
 
