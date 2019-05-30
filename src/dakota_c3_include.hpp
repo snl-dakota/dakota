@@ -1,5 +1,16 @@
-#ifndef C3_INCLUDE
-#define C3_INCLUDE
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+#ifndef DAKOTA_C3_INCLUDE
+#define DAKOTA_C3_INCLUDE
+
+// Declarations of C functions provided by TPL C3
+// NOTE: Direct inclusion of c3.h from the TPL even with extern C is problematic
 
 extern "C"
 {
@@ -166,6 +177,5 @@ extern "C"
     ft_regress_run(struct FTRegress *,struct c3Opt *,size_t,const double* xdata, const double * ydata);
 
 }
-
 
 #endif

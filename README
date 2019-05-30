@@ -75,6 +75,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
       vpykit/pyutilib.virtualenv  BSD License  
   ampl		    MIT License (old style with disclaimer)
   approxnn          GNU Lesser General Public License(LGPL)
+  C3                BSD 3-clause
   CONMIN	    Public Domain
   DDACE		    GNU Lesser General Public License (LGPL) [SNL]
   dfftpack	    Public Domain

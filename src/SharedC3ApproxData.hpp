@@ -16,7 +16,7 @@
 
 #include "SharedApproxData.hpp"
 #include "SharedRegressOrthogPolyApproxData.hpp"
-#include "C3Include.hpp"
+#include "dakota_c3_include.hpp"
 
 namespace Dakota {
 
