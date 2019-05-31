@@ -53,6 +53,50 @@ bool EvaluationStore::active() {
   #endif
 }
 
+
+std::map<unsigned short, String> EvaluationStore::create_variable_type_map() {
+  std::map<unsigned short, String> variable_types;
+  variable_types[EMPTY_TYPE] = "EMPTY_TYPE";
+  variable_types[CONTINUOUS_DESIGN] = "CONTINUOUS_DESIGN";
+  variable_types[DISCRETE_DESIGN_RANGE] = "DISCRETE_DESIGN_RANGE";
+  variable_types[DISCRETE_DESIGN_SET_INT] = "DISCRETE_DESIGN_SET_INT";
+  variable_types[DISCRETE_DESIGN_SET_STRING] = "DISCRETE_DESIGN_SET_STRING";
+  variable_types[DISCRETE_DESIGN_SET_REAL] = "DISCRETE_DESIGN_SET_REAL";
+  variable_types[NORMAL_UNCERTAIN] = "NORMAL_UNCERTAIN";
+  variable_types[LOGNORMAL_UNCERTAIN] = "LOGNORMAL_UNCERTAIN";
+  variable_types[UNIFORM_UNCERTAIN] = "UNIFORM_UNCERTAIN";
+  variable_types[LOGUNIFORM_UNCERTAIN] = "LOGUNIFORM_UNCERTAIN";
+  variable_types[TRIANGULAR_UNCERTAIN] = "TRIANGULAR_UNCERTAIN";
+  variable_types[EXPONENTIAL_UNCERTAIN] = "EXPONENTIAL_UNCERTAIN";
+  variable_types[BETA_UNCERTAIN] = "BETA_UNCERTAIN";
+  variable_types[GAMMA_UNCERTAIN] = "GAMMA_UNCERTAIN";
+  variable_types[GUMBEL_UNCERTAIN] = "GUMBEL_UNCERTAIN";
+  variable_types[FRECHET_UNCERTAIN] = "FRECHET_UNCERTAIN";
+  variable_types[WEIBULL_UNCERTAIN] = "WEIBULL_UNCERTAIN";
+  variable_types[HISTOGRAM_BIN_UNCERTAIN] = "HISTOGRAM_BIN_UNCERTAIN";
+  variable_types[POISSON_UNCERTAIN] = "POISSON_UNCERTAIN";
+  variable_types[BINOMIAL_UNCERTAIN] = "BINOMIAL_UNCERTAIN";
+  variable_types[NEGATIVE_BINOMIAL_UNCERTAIN] = "NEGATIVE_BINOMIAL_UNCERTAIN";
+  variable_types[GEOMETRIC_UNCERTAIN] = "GEOMETRIC_UNCERTAIN";
+  variable_types[HYPERGEOMETRIC_UNCERTAIN] = "HYPERGEOMETRIC_UNCERTAIN";
+  variable_types[HISTOGRAM_POINT_UNCERTAIN_INT] = "HISTOGRAM_POINT_UNCERTAIN_INT";
+  variable_types[HISTOGRAM_POINT_UNCERTAIN_STRING] = "HISTOGRAM_POINT_UNCERTAIN_STRING";
+  variable_types[HISTOGRAM_POINT_UNCERTAIN_REAL] = "HISTOGRAM_POINT_UNCERTAIN_REAL";
+  variable_types[CONTINUOUS_INTERVAL_UNCERTAIN] = "CONTINUOUS_INTERVAL_UNCERTAIN";
+  variable_types[DISCRETE_INTERVAL_UNCERTAIN] = "DISCRETE_INTERVAL_UNCERTAIN";
+  variable_types[DISCRETE_UNCERTAIN_SET_INT] = "DISCRETE_UNCERTAIN_SET_INT";
+  variable_types[DISCRETE_UNCERTAIN_SET_STRING] = "DISCRETE_UNCERTAIN_SET_STRING";
+  variable_types[DISCRETE_UNCERTAIN_SET_REAL] = "DISCRETE_UNCERTAIN_SET_REAL";
+  variable_types[CONTINUOUS_STATE] = "CONTINUOUS_STATE";
+  variable_types[DISCRETE_STATE_RANGE] = "DISCRETE_STATE_RANGE";
+  variable_types[DISCRETE_STATE_SET_INT] = "DISCRETE_STATE_SET_INT";
+  variable_types[DISCRETE_STATE_SET_STRING] = "DISCRETE_STATE_SET_STRING";
+  variable_types[DISCRETE_STATE_SET_REAL] = "DISCRETE_STATE_SET_REAL";
+  return variable_types;
+}
+
+const std::map<unsigned short, String> EvaluationStore::variableTypes = EvaluationStore::create_variable_type_map();
+
 // Declare a source for the mdoel or iterator. 
 // Permissible values of owner_type are "iterator",
 //  "nested", "surrogate", "recast", and "simulation".
@@ -309,6 +353,8 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
     String data_name = variables_root_group + "continuous";
     String labels_name = variables_scale_root + "continuous_descriptors";
     String ids_name = variables_scale_root + "continuous_ids";
+    String types_name = variables_scale_root + "continuous_types";
+
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.acv())}, 
         ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
@@ -317,12 +363,21 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
     hdf5Stream->store_vector(ids_name, variables.all_continuous_variable_ids());
     hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
+
+    UShortMultiArrayConstView types = variables.all_continuous_variable_types();
+    StringArray type_labels(variables.acv());
+    std::transform(types.begin(), types.end(), type_labels.begin(), 
+        [](const unsigned short t){return variableTypes.at(t);});
+    hdf5Stream->store_vector(types_name, type_labels);
+    hdf5Stream->attach_scale(data_name, types_name, "types", 1);
   }
 
   if(variables.adiv()) {
     String data_name = variables_root_group + "discrete_integer";
     String labels_name = variables_scale_root + "discrete_integer_descriptors";
     String ids_name = variables_scale_root + "discrete_integer_ids";
+    String types_name = variables_scale_root + "discrete_integer_types";
+    
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.adiv())}, 
         ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
@@ -331,12 +386,21 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
     hdf5Stream->store_vector(ids_name, variables.all_discrete_int_variable_ids());
     hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
+
+    UShortMultiArrayConstView types = variables.all_discrete_int_variable_types();
+    StringArray type_labels(variables.adiv());
+    std::transform(types.begin(), types.end(), type_labels.begin(), 
+        [](const unsigned short t){return variableTypes.at(t);});
+    hdf5Stream->store_vector(types_name, type_labels);
+    hdf5Stream->attach_scale(data_name, types_name, "types", 1);
   }
 
   if(variables.adsv()) {
     String data_name = variables_root_group + "discrete_string";
     String labels_name = variables_scale_root + "discrete_string_descriptors";
     String ids_name = variables_scale_root + "discrete_string_ids";
+    String types_name = variables_scale_root + "discrete_string_types";
+
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.adsv())}, 
         ResultsOutputType::STRING, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
@@ -345,12 +409,21 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
     hdf5Stream->store_vector(ids_name, variables.all_discrete_string_variable_ids());
     hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
+
+    UShortMultiArrayConstView types = variables.all_discrete_string_variable_types();
+    StringArray type_labels(variables.adsv());
+    std::transform(types.begin(), types.end(), type_labels.begin(), 
+        [](const unsigned short t){return variableTypes.at(t);});
+    hdf5Stream->store_vector(types_name, type_labels);
+    hdf5Stream->attach_scale(data_name, types_name, "types", 1);
   }
 
   if(variables.adrv()) {
     String data_name = variables_root_group + "discrete_real";
     String labels_name = variables_scale_root + "discrete_real_descriptors";
     String ids_name = variables_scale_root + "discrete_real_ids";
+    String types_name = variables_scale_root + "discrete_real_types";
+
     hdf5Stream->create_empty_dataset(data_name, {0, int(variables.adrv())}, 
         ResultsOutputType::REAL, HDF5_CHUNK_SIZE);
     hdf5Stream->store_vector(labels_name,
@@ -359,6 +432,13 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
     hdf5Stream->attach_scale(data_name, labels_name, "variables", 1);
     hdf5Stream->store_vector(ids_name, variables.all_discrete_real_variable_ids());
     hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
+
+    UShortMultiArrayConstView types = variables.all_discrete_real_variable_types();
+    StringArray type_labels(variables.adsv());
+    std::transform(types.begin(), types.end(), type_labels.begin(), 
+        [](const unsigned short t){return variableTypes.at(t);});
+    hdf5Stream->store_vector(types_name, type_labels);
+    hdf5Stream->attach_scale(data_name, types_name, "types", 1);
   }
 #else
   return;

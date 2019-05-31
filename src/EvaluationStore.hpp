@@ -89,6 +89,10 @@ class EvaluationStore {
                                 const int &eval_id, const Response &response);
 
   private:
+
+    /// Create the mapping from variable type to description
+    static std::map<unsigned short, String> create_variable_type_map();
+
     /// Create the root scale group
     String create_scale_root(const String &root_group);
 
@@ -161,6 +165,9 @@ class EvaluationStore {
     /// were initially allocated.
     std::set<String> resizedModels;
 
+    /// Map from variable type enum to string description
+    static const std::map<unsigned short, String> variableTypes;
+    
 }; // class EvaluationStore
 
 } // Dakota namespace
