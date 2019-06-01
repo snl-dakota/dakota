@@ -140,8 +140,8 @@ void SharedC3ApproxData::set_parameter(String var, void * val)
     std::cerr << "Unrecognized approximation parameter: " << var << std::endl;
 }
 
-void SharedC3ApproxData::construct_basis(const ShortArray& u_types,
-					 const Pecos::AleatoryDistParams & adp)
+void SharedC3ApproxData::
+construct_basis(const ShortArray& u_types, const Pecos::AleatoryDistParams& adp)
 {
   // printf("constructed = %d\n",this->constructed);
   assert (u_types.size() == this->numVars);
@@ -157,9 +157,8 @@ void SharedC3ApproxData::construct_basis(const ShortArray& u_types,
       opts = ope_opts_alloc(LEGENDRE);
       break;
     default:
-      PCerr << "Error: unsupported u-space type _opts_set_in SharedC33ApproxData::"
-	    << "  " << u_types[i] << "  " 
-	    << "distribution_parameters()" << std::endl;
+      PCerr << "Error: unsupported u-space type (" << u_types[i] << ") in "
+	    << "SharedC3ApproxData::distribution_parameters()" << std::endl;
       abort_handler(-1);
       break;
     }

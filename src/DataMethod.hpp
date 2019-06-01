@@ -125,7 +125,7 @@ enum { DEFAULT_CONFIG, PUSH_DOWN, PUSH_UP };
 // ----
 // define special values for u_space_type in
 // NonD::initialize_random_variable_types()
-enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
+enum { STD_NORMAL_U, STD_UNIFORM_U, PARTIAL_ASKEY_U, ASKEY_U, EXTENDED_U };
 // define special values for covarianceControl
 enum { DEFAULT_COVARIANCE, NO_COVARIANCE, DIAGONAL_COVARIANCE,
        FULL_COVARIANCE };

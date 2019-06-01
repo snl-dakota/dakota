@@ -3378,7 +3378,7 @@
                   &model_partial_surfpack_export_format;
                 </keyword>
 
-		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
+		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
 		  <!-- Model includes solver {iterations,tolerance} -->
 		  &default_max_solver_iterations;
 		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >

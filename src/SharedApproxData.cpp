@@ -199,7 +199,7 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
       strends(approx_type, "_interpolation_polynomial"))
     return new SharedPecosApproxData(problem_db, num_vars);
 #ifdef HAVE_C3
-  else if (strends(approx_type,"function_train"))
+  else if (approx_type == "global_function_train")
     return new SharedC3ApproxData(problem_db,num_vars);
 #endif
   //else if (approx_type == "global_gaussian")
@@ -264,7 +264,7 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
     approx = new SharedPecosApproxData(approx_type, approx_order, num_vars,
 				       data_order, output_level);
 #ifdef HAVE_C3
-  else if (strends(approx_type,"function_train"))
+  else if (approx_type == "global_function_train")
     approx = new SharedC3ApproxData(approx_type, approx_order, num_vars,
 				    data_order, output_level);
 #endif

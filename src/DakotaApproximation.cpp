@@ -145,7 +145,7 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
     else if (approx_type == "global_gaussian")
       return new GaussProcApproximation(problem_db, shared_data, approx_label);
 #ifdef HAVE_C3
-    else if (approx_type == "function_train")
+    else if (approx_type == "global_function_train")
       return new C3Approximation(problem_db, shared_data, approx_label);
 #endif
 #ifdef HAVE_SURFPACK
@@ -204,7 +204,7 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(shared_data);
 #ifdef HAVE_C3
-  else if (approx_type == "function_train")
+  else if (approx_type == "global_function_train")
     approx = new C3Approximation(shared_data);
 #endif
   else if (approx_type == "global_gaussian")

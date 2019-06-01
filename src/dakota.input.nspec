@@ -5358,7 +5358,7 @@ KEYWORD model {N_mom3(start,0,stop)}
          ]
        )
       |
-      ( function_train {N_mom(lit,surrogateType_function_train)}
+      ( function_train {N_mom(lit,surrogateType_global_function_train)}
         [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTolerance)} ]
         [ rounding_tolerance REAL {N_mom(Real,roundingTolerance)} ]

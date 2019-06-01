@@ -38,22 +38,26 @@ struct SPrintArgs
     instantiation using the ProblemDescDB. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model),
+  NonDExpansion(problem_db, model)
+  // *** THESE OPTIONS TO BE SUPPORTED FOR PCE/SC-LIKE CONSTRUCTION THAT WRAPS
+  //     A SIM MODEL IN A RecastModel + DACEIterator/DataFitSurrModel:
   //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
   //importBuildPointsFile(
   //  probDescDB.get_string("method.import_build_points_file")),
   //importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
-  //importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
-  numSamplesOnModel(100)//*** TO DO *** probDescDB.get_sizet("method.c3function_train.num_samples_for_construction"))
+  //importBuildActiveOnly(
+  //  probDescDB.get_bool("method.import_build_active_only")),
+  //numSamplesOnModel(probDescDB.get_sizet(
+  //  "method.c3function_train.num_samples_for_construction"))
   //exportPointsFile(problem_db.get_string("model.export_approx_points_file"))
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
   short data_order;
-  // *** TO DO: see SharedC3ApproxData::construct_basis().  Probably won't support
-  // *** STD_{EXPONENTIAL,BETA,GAMMA} so need a new type to map to { STD_NORMAL, STD_UNIFORM } (not full Askey...)
-  short u_space_type = ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
+  // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
+  // GAMMA,EXPONENTIAL} so need PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
+  short u_space_type = /*PARTIAL_*/ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
   initialize_random(u_space_type);
 
@@ -61,50 +65,86 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
 
-  Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  if (iteratedModel.model_type()     == "surrogate" &&
+      iteratedModel.surrogate_type() == "global_function_train") {
+    // transformation, DataFit, and DACE configuration performed by Model spec
+    // All fn train model settings are pulled in that ctor chain
+    uSpaceModel = iteratedModel; // shared rep
 
-  // *** TO DO ***: this is outputting an LHS header but then is being overridden by Model samples specification
-  // Evaluates true model
-  Iterator u_space_sampler;
-  if (numSamplesOnModel) { // generate new data
-	  // default pattern is fixed for consistency in any outer loop,
-	  // but gets overridden in cases of unstructured grid refinement.
-	  bool vary_pattern = false;
-	  construct_lhs(u_space_sampler, g_u_model,
-	    probDescDB.get_ushort("method.sample_type"), numSamplesOnModel,
-	    randomSeed, probDescDB.get_string("method.random_number_generator"),
-	    vary_pattern, ACTIVE);
-	}
+    // TO DO: how to best manage the u-space transformation?
+    // > wrapping iteratedModel here applies the transformation on top of the
+    //   incoming DataFitSurrModel and does little to no good.
+    // > intruding into the DataFitSurrModel ctor is awkward because the
+    //   daceIterator spec points to the actualModel spec (when DACE is active)
+    //   and daceIterator should sample in u-space for a u-space approx.  This
+    //   requires recasting + reinserting the model + re-initializing DACE (no
+    //   thanks), or instantiating the model first (using actual_model_pointer
+    //   or model_pointer from DACE spec) + recasting + instantiating DACE on
+    //   recast (similar to lightwt DataFitSurrModel ctor used by PCE/SC).
+    //   >> either an option in existing DataFitSurrModel or a specialization
+    //      in new ProbTransDataFitSurrModel sub-class?
+    // > trigger recursion based on random variable "standardize" spec, similar
+    //   to variable/objective/constraint scaling --> ScalingModel in Minimizer
+    //   >> Problem: don't want to recast every model that includes that vars
+    //      spec, as it is often shared throughout a recursion.
+    //   >> Possible soln: similar to Minimizer scaling routines triggered
+    //      from variables/responses spec, restrict recasting logic to DFS?
+    //      >>> might be useful to support prob transforms without DFS...
+    //      >>> first model that can performs the prob transform and "consumes"
+    //          the standardization -> Models above it only see transformed
+    //          random vars + no standardize request
 
-  // --------------------------------
-  // Construct G-hat(u) = uSpaceModel
-  // --------------------------------
-  // G-hat(u) uses an orthogonal polynomial approximation over the
-  // active/uncertain variables (using same view as iteratedModel/g_u_model:
-  // not the typical All view for DACE).  No correction is employed.
-  // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse;
-  String approx_type = "function_train";
-  UShortArray approx_order; // empty
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
-  String empty_str; // build data import not supported for structured grids
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
-  //importBuildPointsFile, importBuildFormat, importBuildActiveOnly,
-    probDescDB.get_string("model.surrogate.export_approx_points_file"),
-    probDescDB.get_ushort("model.surrogate.export_approx_format")), false);
+  }
+  else { // wrap iteratedModel in prob transform + DataFit (as in PCE/SC)
 
-  initialize_u_space_model();
+    Cerr << "Error: NonDC3FunctionTrain input spec does not currently support "
+	 << "constructing a model recursion from scratch" << std::endl;
+    abort_handler(METHOD_ERROR);
+
+    Model g_u_model;
+    transform_model(iteratedModel, g_u_model); // retain distribution bounds
+    
+    Iterator u_space_sampler; // Evaluates true model
+    if (numSamplesOnModel) { // not in method spec
+      // default pattern is fixed for consistency in any outer loop,
+      // but gets overridden in cases of unstructured grid refinement.
+      bool vary_pattern = false;
+      construct_lhs(u_space_sampler, g_u_model,
+        probDescDB.get_ushort("method.sample_type"), numSamplesOnModel,
+        randomSeed, probDescDB.get_string("method.random_number_generator"),
+        vary_pattern, ACTIVE);
+    }
+
+    // --------------------------------
+    // Construct G-hat(u) = uSpaceModel
+    // --------------------------------
+    // G-hat(u) uses an orthogonal polynomial approximation over the
+    // active/uncertain variables (using same view as iteratedModel/g_u_model:
+    // not the typical All view for DACE).  No correction is employed.
+    // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
+    short  corr_order = -1, corr_type = NO_CORRECTION;
+    String pt_reuse;
+    String approx_type = "global_function_train";
+    UShortArray approx_order; // empty
+    ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
+    sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+    String empty_str; // build data import not supported for structured grids
+    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+      sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
+      outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
+    //importBuildPointsFile, importBuildFormat, importBuildActiveOnly,
+      probDescDB.get_string("model.surrogate.export_approx_points_file"),
+      probDescDB.get_ushort("model.surrogate.export_approx_format")), false);
+
+    // *** TO DO: fnTrain model settings also need to be pulled from the method
+    // spec as there is no model spec in this case.  Will need to encapsulate
+    // an XML entity and allow it in either location.
+    initialize_u_space_model();
+  }
 
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  // ...
-  // follow construct_expansion_sampler from NonDExpansion.cpp which is called in NonDPolynomialChaos.cpp
   construct_expansion_sampler(
     probDescDB.get_string("method.import_approx_points_file"),
     probDescDB.get_ushort("method.import_approx_format"), 
@@ -115,12 +155,12 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
 NonDC3FunctionTrain::~NonDC3FunctionTrain()
 { }
 
-    
+
 void NonDC3FunctionTrain::
 resolve_inputs(short& u_space_type, short& data_order)
 {
   // May want this eventually to manage different transformation options...
-    
+
   data_order = 1; // no deriv enhancement for now...
 }
 

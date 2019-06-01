@@ -1,12 +1,12 @@
 
 environment,
 	#graphics
-	output_precision = 16
+	#output_precision = 16
 
 method,
 	function_train_uq
 	  convergence_tol = 0.000001
-	  samples_on_emulator = 10000
+	  samples_on_emulator = 1000000
     seed = 12347
 #      num_samples_for_construction = 200
       # import_build_points_file = "rosenbrock_samples.dat"
@@ -20,14 +20,13 @@ model,
      id_model = 'FT'
      surrogate global
         function_train
-        kick_rank = 2
-        adapt_rank
+#	standardize # *** TO DO: user option or hard-wired?	
+        start_rank = 2  kick_rank = 2  max_rank = 10
+	adapt_rank
         max_order = 5
-        start_rank = 2
         solver_tolerance = 1e-12
         rounding_tolerance = 1e-12
 #       verbosity = 0
-        max_rank = 10
       dace_method_pointer = 'SAMPLING'
 
 method
