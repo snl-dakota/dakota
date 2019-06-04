@@ -69,11 +69,11 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
       iteratedModel.surrogate_type() == "global_function_train") {
     // transformation, DataFit, and DACE configuration performed by Model spec
     // All fn train model settings are pulled in that ctor chain
-    uSpaceModel = iteratedModel; // shared rep
+    //uSpaceModel = iteratedModel; // shared rep
 
     // TO DO: how to best manage the u-space transformation?
     // > wrapping iteratedModel here applies the transformation on top of the
-    //   incoming DataFitSurrModel and does little to no good.
+    //   incoming DataFitSurrModel --> insufficient for internal build.
     // > intruding into the DataFitSurrModel ctor is awkward because the
     //   daceIterator spec points to the actualModel spec (when DACE is active)
     //   and daceIterator should sample in u-space for a u-space approx.  This
@@ -92,8 +92,20 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     //      >>> might be useful to support prob transforms without DFS...
     //      >>> first model that can performs the prob transform and "consumes"
     //          the standardization -> Models above it only see transformed
-    //          random vars + no standardize request
+    //          random vars + no standardize request (or recognize no-op for a
+    //          persistent request--> no further standardization to perform)
+    //   >> Some methods/models require standardization and override default
+    //
+    // *****
+    // For now, consider branch in DFSModel ctor for data fits hard-wired with
+    // (orthog,interp,fn_train) and without (everything else) standardization
+    // > allows pathway to specification-based {orthog,interp} as well
+    // *****
 
+    transform_model(iteratedModel, uSpaceModel); // only affects exp_sampler
+
+    // publish random variable types
+    initialize_data_fit_surrogate(iteratedModel);
   }
   else { // wrap iteratedModel in prob transform + DataFit (as in PCE/SC)
 
@@ -136,10 +148,12 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
       probDescDB.get_string("model.surrogate.export_approx_points_file"),
       probDescDB.get_ushort("model.surrogate.export_approx_format")), false);
 
-    // *** TO DO: fnTrain model settings also need to be pulled from the method
-    // spec as there is no model spec in this case.  Will need to encapsulate
-    // an XML entity and allow it in either location.
-    initialize_u_space_model();
+    initialize_data_fit_surrogate(uSpaceModel);
+
+    // TO DO: fnTrain model settings also need to be pulled from the method
+    // spec as there is no model spec in this case.  How to encapsulate an
+    // XML entity for {method,model} to allow it in either location?
+    push_c3_options();
   }
 
   // -------------------------------
@@ -165,39 +179,70 @@ resolve_inputs(short& u_space_type, short& data_order)
 }
 
 
-void NonDC3FunctionTrain::initialize_u_space_model()
+void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
 {
-  // // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
-  // // passed through the DataFitSurrModel ctor chain.  Additional data needed
-  // // by OrthogPolyApproximation are passed using Pecos::BasisConfigOptions.
-  // // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+    dfs_model.shared_approximation().data_rep();
 
-  // // For PCE, the approximation and integration bases are the same.  We (always)
-  // // construct it for the former and (conditionally) pass it in to the latter.
+  // For PCE, the approximation and integration bases are the same.  We (always)
+  // construct it for the former and (conditionally) pass it in to the latter.
   shared_data_rep->construct_basis(natafTransform.u_types(),
-                                   iteratedModel.aleatory_distribution_parameters());
+    dfs_model.aleatory_distribution_parameters());
+  
+  // if all variables mode, initialize key to random variable subset
+  // NOT SURE WHAT TO DO BELOW --AG
+  //if (numContDesVars || numContEpistUncVars || numContStateVars) {
+  //  Pecos::BitArray random_vars_key(numContinuousVars);
+  //  size_t i, num_cdv_cauv = numContDesVars + numContAleatUncVars;
+  //  for (i=0; i<numContinuousVars; ++i)
+  //    random_vars_key[i] = (i >= numContDesVars && i < num_cdv_cauv);
+  //  shared_data_rep->random_variables_key(random_vars_key);
+  //}
 
+  // share natafTransform instance with u-space sampler
+  Iterator& u_space_sampler = dfs_model.subordinate_iterator();
+  if (!u_space_sampler.is_null())
+    ((NonD*)u_space_sampler.iterator_rep())->
+      initialize_random_variables(natafTransform); // shared rep
+
+  // perform last due to numSamplesOnModel update
+  //NonDExpansion::initialize_u_space_model(); // assumes SharedPecosApproxData
+}
+
+
+void NonDC3FunctionTrain::push_c3_options()
+{
   //size_t model_index    = probDescDB.get_db_model_node(); // for restoration
-  //String model_ptr_name = probDescDB.get_string("method.c3function_train.model_param_spec");
+  //String model_ptr_name
+  //  = probDescDB.get_string("method.c3function_train.model_param_spec");
   // String model_ptr_name  = "FT";
   //probDescDB.set_db_model_nodes(model_ptr_name);
 
-  size_t start_order  = probDescDB.get_sizet("model.c3function_train.start_order");
-  size_t max_order    = probDescDB.get_sizet("model.c3function_train.max_order");
-  size_t start_rank   = probDescDB.get_sizet("model.c3function_train.start_rank");
-  size_t kick_rank    = probDescDB.get_sizet("model.c3function_train.kick_rank");
-  size_t max_rank     = probDescDB.get_sizet("model.c3function_train.max_rank");
-  bool   adapt_rank   = probDescDB.get_bool("model.c3function_train.adapt_rank");
-  size_t cross_max_iter = probDescDB.get_sizet("model.c3function_train.max_cross_iterations");
-  double solver_tol   = probDescDB.get_real("model.c3function_train.solver_tolerance");
-  double rounding_tol = probDescDB.get_real("model.c3function_train.rounding_tolerance");
+  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
+  // passed through the DataFitSurrModel ctor chain.  Additional data needed
+  // by OrthogPolyApproximation are passed using Pecos::BasisConfigOptions.
+  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
+
+  size_t start_order
+    = probDescDB.get_sizet("model.c3function_train.start_order");
+  size_t max_order  = probDescDB.get_sizet("model.c3function_train.max_order");
+  size_t start_rank = probDescDB.get_sizet("model.c3function_train.start_rank");
+  size_t kick_rank  = probDescDB.get_sizet("model.c3function_train.kick_rank");
+  size_t max_rank   = probDescDB.get_sizet("model.c3function_train.max_rank");
+  bool   adapt_rank = probDescDB.get_bool("model.c3function_train.adapt_rank");
+  size_t cross_max_iter
+    = probDescDB.get_sizet("model.c3function_train.max_cross_iterations");
+  double solver_tol
+    = probDescDB.get_real("model.c3function_train.solver_tolerance");
+  double rounding_tol
+    = probDescDB.get_real("model.c3function_train.rounding_tolerance");
   //size_t max_iters  = probDescDB.get_int("model.max_iterations");
-  size_t verbose      = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
+  size_t verbose    = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
 
   //probDescDB.set_db_model_nodes(model_index); // restore
 
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
   shared_data_rep->set_parameter("start_poly_order",&start_order);
   shared_data_rep->set_parameter("max_poly_order",  &max_order);
   shared_data_rep->set_parameter("start_rank",      &start_rank);
@@ -210,27 +255,8 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   //shared_data_rep->set_parameter("max_iterations", &max_iters);
   shared_data_rep->set_parameter("verbose",         &verbose);
 
-  std::cout << "solver_tol = " << solver_tol << "\n";
-  std::cout << "adapt_rank = " << adapt_rank << "\n";
-  
-  // // if all variables mode, initialize key to random variable subset
-  // NOT SURE WHAT TO DO BELOW --AG
-  // if (numContDesVars || numContEpistUncVars || numContStateVars) {
-  //   Pecos::BitArray random_vars_key(numContinuousVars);
-  //   size_t i, num_cdv_cauv = numContDesVars + numContAleatUncVars;
-  //   for (i=0; i<numContinuousVars; ++i)
-  //     random_vars_key[i] = (i >= numContDesVars && i < num_cdv_cauv);
-  //   shared_data_rep->random_variables_key(random_vars_key);
-  // }
-
-  // share natafTransform instance with u-space sampler
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  if (!u_space_sampler.is_null())
-    ((NonD*)u_space_sampler.iterator_rep())->
-      initialize_random_variables(natafTransform); // shared rep
-
-  // perform last due to numSamplesOnModel update
-  //NonDExpansion::initialize_u_space_model(); // assumes SharedPecosApproxData
+  //Cout << "solver_tol = " << solver_tol << "\n";
+  //Cout << "adapt_rank = " << adapt_rank << "\n";
 }
 
 
@@ -246,7 +272,8 @@ void NonDC3FunctionTrain::print_results(std::ostream& s)
 
   NonDExpansion::print_results(s);
 }
-  
+
+
 /* No overrride appears to be required (NonDExp is sufficient)
    > initialize_expansion()
    > compute_expansion()

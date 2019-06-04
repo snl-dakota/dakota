@@ -58,20 +58,14 @@ namespace Dakota {
     //- Heading: Member function definitions
     //
 
-    // user specified import build points file
-    //String importBuildPointsFile;
-    // user specified import build file format
-    //unsigned short importBuildFormat;
-    // user specified import build active only
-    //bool importBuildActiveOnly;
+    void initialize_data_fit_surrogate(Model& dfs_model);
 
-    size_t numSamplesOnModel;
+    /// Publish options from C3 input specification (not needed if model-driven
+    /// specification: already extracted by iteratedModel)
+    void push_c3_options();
 
   private:
 
-    /// initialize uSpaceModel with input variable data
-    void initialize_u_space_model();
-        
     //static int qoi_eval(size_t num_samp,        // number of evaluations
     // 			const double* var_sets, // num_vars x num_evals
     // 			double* qoi_sets,       // num_fns x num_evals
@@ -81,15 +75,24 @@ namespace Dakota {
     //- Heading: Data
     //
 
-    unsigned int randomSeed;
-    
     /// pointer to the active object instance used within the static evaluator
     /// functions in order to avoid the need for static data
     static NonDC3FunctionTrain* c3Instance;
 
+    unsigned int randomSeed;
+
+    size_t numSamplesOnModel;
+   
     // other data ...
     /// The number of samples used to evaluate the emulator
     //int numSamplesOnEmulator;
+
+    // user specified import build points file
+    //String importBuildPointsFile;
+    // user specified import build file format
+    //unsigned short importBuildFormat;
+    // user specified import build active only
+    //bool importBuildActiveOnly;
 
     // user specified import approx. points file
     //String importApproxPointsFile;
@@ -108,7 +111,6 @@ namespace Dakota {
     void print_results(std::ostream&);
     void print_moments(std::ostream& s);
     void print_sobol_indices(std::ostream& s);
-    
 
   };
     

@@ -5,62 +5,64 @@ environment,
 
 method,
 	function_train_uq
-	  convergence_tol = 0.000001
-	  samples_on_emulator = 1000000
-    seed = 12347
-#      num_samples_for_construction = 200
-      # import_build_points_file = "rosenbrock_samples.dat"
-      response_levels = .1 1. 50. 100. 500. 1000.
-      variance_based_decomp #interaction_order = 1
-#      model_pointer = 'M2'
-#      model_param_spec = 'FT'
-      model_pointer = 'FT'
+	  seed = 12347
+	  convergence_tol = 1e-6
+#      	  num_samples_for_construction = xxx (defined by DACE spec)
+#      	  import_build_points_file = "rosenbrock_samples.dat"
+	  samples_on_emulator = 100000
+	  response_levels = .1 1. 50. 100. 500. 1000.
+	  variance_based_decomp #interaction_order = 1
+	model_pointer = 'FT'
 
 model,
-     id_model = 'FT'
-     surrogate global
-        function_train
-#	standardize # *** TO DO: user option or hard-wired?	
-        start_rank = 2  kick_rank = 2  max_rank = 10
-	adapt_rank
-        max_order = 5
-        solver_tolerance = 1e-12
-        rounding_tolerance = 1e-12
-#       verbosity = 0
-      dace_method_pointer = 'SAMPLING'
+	id_model = 'FT'
+	surrogate global
+	  function_train
+#	  standardize # TO DO: user option or hard-wired?
+	  start_rank = 2  kick_rank = 2  max_rank = 10
+	  adapt_rank
+	  max_order = 5
+	  solver_tolerance   = 1e-12
+	  rounding_tolerance = 1e-12
+#	  verbosity = 0
+	dace_method_pointer = 'SAMPLING'
 
 method
-  id_method = 'SAMPLING'
-  sampling
-    samples = 1000
-    seed = 531 
-    sample_type lhs
-    model_pointer = 'SIM'
+	id_method = 'SAMPLING'
+	sampling
+	  samples = 1000
+	  seed = 531 
+	  sample_type lhs
+	model_pointer = 'SIM'
 
 model,
-     single
+	single
           interface_pointer = 'I1'
           variables_pointer = 'V1'
           responses_pointer = 'R1'
-     id_model = 'SIM'
+	id_model = 'SIM'
 
 variables,
-    id_variables = 'V1'
-#	uniform_uncertain = 2
-#	  lower_bounds = -3. -2.
-#	  upper_bounds =  2.  3.
-	normal_uncertain = 2
-	   means             =  0.   0.
-	   std_deviations    =  1.   1.
+	id_variables = 'V1'
+	normal_uncertain = 2		#s0,#s1
+	  means          =  0.   0.	#s0
+	  std_deviations =  1.   1.	#s0
+#	  means          =  2.   3.	#s1
+#	  std_deviations =  3.   2.	#s1
+#	uniform_uncertain = 2	 	#s2,#s3
+#	  lower_bounds = -1. -1. 	#s2
+#	  upper_bounds =  1.  1.	#s2
+#	  lower_bounds = -3. -2.	#s3
+#	  upper_bounds =  2.  3.	#s3
 	descriptors  = 'x1' 'x2'
 
 interface,
-    id_interface = 'I1'
+	id_interface = 'I1'
 	direct
 	analysis_driver = 'rosenbrock'
 
 responses,
-    id_responses = 'R1'
+	id_responses = 'R1'
 	response_functions = 1
 	no_gradients
 	no_hessians
