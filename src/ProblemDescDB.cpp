@@ -1014,7 +1014,7 @@ const Iterator& ProblemDescDB::get_iterator()
   // all untagged instantiations.
   String id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
   if(id_method.empty())
-      id_method = "NO_METHOD_ID";
+    id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
                    boost::bind(&Iterator::method_id, _1) == id_method);

@@ -2813,7 +2813,7 @@ Model& Model::surrogate_model()
   if (modelRep) // envelope fwd to letter
     return modelRep->surrogate_model();
   else // letter lacking redefinition of virtual fn.
-    return dummy_model; // return null/empty envelope
+    return dummy_model; // default is no surrogate -> return empty envelope
 }
 
 
@@ -2856,7 +2856,7 @@ Model& Model::truth_model()
   if (modelRep) // envelope fwd to letter
     return modelRep->truth_model();
   else // letter lacking redefinition of virtual fn.
-    return dummy_model; // return null/empty envelope
+    return *this; // default is no surrogate -> return this model instance
 }
 
 
