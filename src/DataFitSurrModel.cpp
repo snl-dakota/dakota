@@ -90,11 +90,13 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     // If approx type uses standardized random variables (hard-wired for now),
     // wrap with a ProbabilityTransformModel (retaining distribution bounds as
     // in PCE, SC, C3 ctors)
-    actualModel = (strends(surrogateType, "_orthogonal_polynomial") ||
-		   strends(surrogateType, "_interpolation_polynomial") ||
-		   strends(surrogateType, "_function_train" )) ?
-      ProbabilityTransformModel(problem_db.get_model()) : // retain distrib bnds
-      problem_db.get_model();
+    if (strends(surrogateType, "_orthogonal_polynomial") ||
+	strends(surrogateType, "_interpolation_polynomial") ||
+	strends(surrogateType, "_function_train" ))
+      actualModel.assign_rep(new
+	ProbabilityTransformModel(problem_db.get_model()), false);
+    else
+      actualModel = problem_db.get_model();
     // ensure consistency of inputs/outputs between actual and approx
     check_submodel_compatibility(actualModel);
   }
