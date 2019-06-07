@@ -5,7 +5,7 @@ environment,
 
 method,
 	function_train_uq
-	  seed = 12347
+	  seed = 531 #12347
 	  convergence_tol = 1e-6
 #      	  num_samples_for_construction = xxx (defined by DACE spec)
 #      	  import_build_points_file = "rosenbrock_samples.dat"
@@ -30,9 +30,7 @@ model,
 method
 	id_method = 'SAMPLING'
 	sampling
-	  samples = 1000
-	  seed = 531 
-	  sample_type lhs
+	  samples = 100  seed = 531  sample_type lhs
 	model_pointer = 'SIM'
 
 model,

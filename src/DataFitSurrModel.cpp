@@ -92,9 +92,11 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     // in PCE, SC, C3 ctors)
     if (strends(surrogateType, "_orthogonal_polynomial") ||
 	strends(surrogateType, "_interpolation_polynomial") ||
-	strends(surrogateType, "_function_train" ))
+	strends(surrogateType, "_function_train" )) {
+      short u_space_type = /*PARTIAL_*/ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
       actualModel.assign_rep(new
-	ProbabilityTransformModel(problem_db.get_model()), false);
+	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
+    }
     else
       actualModel = problem_db.get_model();
     // ensure consistency of inputs/outputs between actual and approx
