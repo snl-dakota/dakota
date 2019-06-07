@@ -1806,7 +1806,7 @@ In Figure~\ref{diexample:asv}, {\tt applic\_module.run()} has been modified to r
   if Results.asv.gradient:
       results["f"].gradient = df
   if Results.asv.hessian:
-      results["f"] = df2
+      results["f"].hessian = df2
 
   results.write()
 \end{verbatim}

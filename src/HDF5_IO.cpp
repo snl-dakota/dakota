@@ -284,7 +284,7 @@ H5::Group HDF5IOHelper::create_groups(const std::string& name,
     // if doesn't exist, add
     bool grpexists = h5File.exists(full_path.c_str());
     if( !grpexists ) {
-      new_group = h5File.createGroup(full_path.c_str(), linkCreatePL);
+      new_group = create_group(h5File, full_path.c_str());
       /* Add Exception handling
       if (create_status < 0)
       {
