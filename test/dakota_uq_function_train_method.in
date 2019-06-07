@@ -42,16 +42,16 @@ model,
 
 variables,
 	id_variables = 'V1'
-	normal_uncertain = 2		#s0,#s1
+	normal_uncertain = 2		#s0
 	  means          =  0.   0.	#s0
 	  std_deviations =  1.   1.	#s0
-#	  means          =  2.   3.	#s1
-#	  std_deviations =  3.   2.	#s1
-#	uniform_uncertain = 2	 	#s2,#s3
-#	  lower_bounds = -1. -1. 	#s2
-#	  upper_bounds =  1.  1.	#s2
-#	  lower_bounds = -3. -2.	#s3
-#	  upper_bounds =  2.  3.	#s3
+#	  means          =  2.   3.	# TO DO
+#	  std_deviations =  3.   2.	# TO DO
+#	uniform_uncertain = 2	 	#s1
+#	  lower_bounds = -1. -1. 	#s1
+#	  upper_bounds =  1.  1.	#s1
+#	  lower_bounds = -3. -2.	# TO DO
+#	  upper_bounds =  2.  3.	# TO DO
 	descriptors  = 'x1' 'x2'
 
 interface,
