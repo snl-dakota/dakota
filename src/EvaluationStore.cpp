@@ -157,6 +157,7 @@ declare_source(const String &owner_id, const String &owner_type,
 
 EvaluationsDBState EvaluationStore::iterator_allocate(const String &iterator_id,
     const bool &top_level) {
+#ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return EvaluationsDBState::INACTIVE;
   if(top_level) {
@@ -164,6 +165,9 @@ EvaluationsDBState EvaluationStore::iterator_allocate(const String &iterator_id,
     hdf5Stream->add_attribute("/", "top_method", iterator_id);
   }
   return EvaluationsDBState::ACTIVE;
+#else
+  return EvaluationsDBState::INACTIVE;
+#endif
 }
 
 /// Allocate storage for model evaluations

@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_C3
 
 environment,
 	#graphics
