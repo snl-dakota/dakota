@@ -24,11 +24,11 @@ class Moments(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             ## Verify the presence of all the execution data
             # execution:N
-            self.assertEqual(expected_num_execs, len(list(h["/methods/aleatory/"].keys())))
-            for n in h["/methods/aleatory/"].keys():
+            self.assertEqual(expected_num_execs, len(list(h["/methods/aleatory/results/"].keys())))
+            for n in h["/methods/aleatory/results/"].keys():
                 self.assertTrue(n in expected_executions)
             # descriptors
-            hdf5_descriptors = set(h["/methods/aleatory/execution:1/moments/"].keys())
+            hdf5_descriptors = set(h["/methods/aleatory/results/execution:1/moments/"].keys())
             self.assertEqual(expected_descriptors, hdf5_descriptors)
 
     def test_moments(self):
@@ -45,7 +45,7 @@ class Moments(unittest.TestCase):
             # moments and scales
             for i in range(expected_num_execs):
                 for r in expected_descriptors:
-                    hdf5_moments = h["/methods/aleatory/execution:%d/moments/%s" % (i+1, r)]
+                    hdf5_moments = h["/methods/aleatory/results/execution:%d/moments/%s" % (i+1, r)]
                     for j in range(4):
                         self.assertAlmostEqual(console_moments[i][r][j], hdf5_moments[j])
                     scale_label = list(hdf5_moments.dims[0].keys())[0]
@@ -63,7 +63,7 @@ class Moments(unittest.TestCase):
         with h5py.File(_TEST_NAME + ".h5","r") as h:
             # CIs and scales
             for i, ci in enumerate(console_cis):
-                hdf_cis = h["/methods/aleatory/execution:%d/moment_confidence_intervals/" % (i+1,)]
+                hdf_cis = h["/methods/aleatory/results/execution:%d/moment_confidence_intervals/" % (i+1,)]
                 for r in expected_descriptors:
                     self.assertEqual(expected_scale_labels[0], list(hdf_cis[r].dims[0].keys())[0])
                     self.assertEqual(expected_scale_labels[1], list(hdf_cis[r].dims[1].keys())[0])
@@ -91,7 +91,7 @@ class PDFs(unittest.TestCase):
             # pdfs and scales
             for i in range(expected_num_execs):
                 for r in expected_descriptors:
-                    hdf5_pdf = h["/methods/aleatory/execution:%d/probability_density/%s" % (i+1, r)]
+                    hdf5_pdf = h["/methods/aleatory/results/execution:%d/probability_density/%s" % (i+1, r)]
                     console_pdf = console_pdfs[i][r]
                     # same number of bins
                     self.assertEqual(len(console_pdf), len(hdf5_pdf))
@@ -145,20 +145,20 @@ class LevelMappings(unittest.TestCase):
                     for result_type in ('response_levels', 'probability_levels', 
                             'reliability_levels', 'gen_reliability_levels'):
                         try:
-                            h["/methods/aleatory/execution:%d/%s/%s" % (i+1, result_type, r)]
+                            h["/methods/aleatory/results/execution:%d/%s/%s" % (i+1, result_type, r)]
                             has_result.add(result_type)
                         except (KeyError, ValueError):
                             pass
                     # Verify the dimension scale label of the datasets
                     for label in has_result:
                         self.assertEqual(label,
-                            h["/methods/aleatory/execution:%d/%s/%s" % (i+1, label, r)].dims[0].keys()[0])
+                            h["/methods/aleatory/results/execution:%d/%s/%s" % (i+1, label, r)].dims[0].keys()[0])
 
                     # compare the total number of results in the console and hdf5 file
                     num_console_rows = len(console_mappings[i][r])
                     num_hdf5_rows = 0
                     for result_type in has_result:
-                        num_hdf5_rows += len(h["/methods/aleatory/execution:%d/%s/%s" % (i+1, result_type, r)])
+                        num_hdf5_rows += len(h["/methods/aleatory/results/execution:%d/%s/%s" % (i+1, result_type, r)])
                     self.assertEqual(num_console_rows, num_hdf5_rows)
                     # Verify any response_levels
                     num_response_levels = 0
@@ -169,7 +169,7 @@ class LevelMappings(unittest.TestCase):
                                 console_ri = j+1
                                 break
                         # Loop over the response_levels and verify the user request and computed values
-                        response_ds = h["/methods/aleatory/execution:%d/response_levels/%s" % (i+1, r)]
+                        response_ds = h["/methods/aleatory/results/execution:%d/response_levels/%s" % (i+1, r)]
                         num_response_levels = len(response_ds)
                         for j in range(num_response_levels):
                             self.assertAlmostEqual(console_mappings[i][r][j][console_ri], response_ds[j])
@@ -180,7 +180,7 @@ class LevelMappings(unittest.TestCase):
                     begin = num_response_levels
                     for j, result_type in enumerate(('probability_levels', 'reliability_levels', 'gen_reliability_levels')):
                         if result_type in has_result:
-                            response_ds =  h["/methods/aleatory/execution:%d/%s/%s" % (i+1, result_type, r)]
+                            response_ds =  h["/methods/aleatory/results/execution:%d/%s/%s" % (i+1, result_type, r)]
                             num_hdf5_rows = len(response_ds)
                             end = begin+num_hdf5_rows
                             for cr, hr, s in zip(console_mappings[i][r][begin:end], response_ds, response_ds.dims[0][0]):
@@ -189,6 +189,98 @@ class LevelMappings(unittest.TestCase):
                                 # Scales
                                 self.assertEqual(cr[j+1], s)
                             begin += num_hdf5_rows
+
+class EvaluationsStructure(unittest.TestCase):
+
+    def test_interface_presence(self):
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            h["/interfaces/NO_ID/sim_m"]
+
+    def test_model_presence(self):
+        expected_model_types = ["simulation", "nested"]
+        expected_sim_models = ["sim_m"]
+        expected_nested_models = ["nested_m"]
+        with h5py.File(_TEST_NAME + ".h5","r") as h:
+            model_types = [k for k in h["/models"]]
+            self.assertItemsEqual(expected_model_types, model_types)
+            sim_models = [k for k in h["/models/simulation"]]
+            self.assertItemsEqual(expected_sim_models, sim_models)
+            nested_models = [k for k in h["/models/nested"]]
+            self.assertItemsEqual(expected_nested_models, nested_models)
+
+    def test_sources(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Methods
+            method_sources = [k for k in h["/methods/lps/sources/"]]
+            self.assertItemsEqual(method_sources,["nested_m"])
+            method_sources = [k for k in h["/methods/aleatory/sources/"]]
+            self.assertItemsEqual(method_sources,["sim_m"])
+            # Models
+            model_sources = [k for k in h["/models/nested/nested_m/sources/"]]
+            self.assertItemsEqual(model_sources,["aleatory"])
+            model_sources = [k for k in h["/models/simulation/sim_m/sources/"]]
+            self.assertItemsEqual(model_sources,["NO_ID"])
+
+class TabularData(unittest.TestCase):
+    def test_tabular_data(self):
+        tdata = hce.read_tabular_data(_TEST_NAME + ".dat")
+        metadata = ["%eval_id", "interface"]
+        variables = ["x3"]
+        responses = ['f_mean',
+                     'f_stddev', 
+                     'f_p1',
+                     'f_p2',
+                     'f_p3',
+                     'f_r1',
+                     'c_mean', 
+                     'c_stddev',
+                     'c_p1',
+                     'c_p2',
+                     'c_p3',
+                     'c_r1']
+        descriptors = metadata + variables + responses
+        self.assertItemsEqual(descriptors, tdata.keys())
+
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/models/nested/nested_m/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(tdata["%eval_id"], tdata[v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps = h["/models/nested/nested_m/responses/functions"]
+            # Responses
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, tr, hr in zip(tdata["%eval_id"], tdata[r], hresps[:,i]):
+                    self.assertAlmostEqual(tr, hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
+
+class RestartData(unittest.TestCase):
+    def test_restart_data(self):
+        rdata = hce.read_restart_file(_TEST_NAME + ".rst")
+        variables = ["x1", "x2", "x3"]
+        responses = ["f", "c"]
+        self.assertItemsEqual(variables, rdata["variables"]["continuous"].keys())
+        self.assertItemsEqual(responses, rdata["response"].keys())
+        
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            # Variables
+            hvars = h["/interfaces/NO_ID/sim_m/variables/continuous"]
+            self.assertItemsEqual(variables, hvars.dims[1][0][:])
+            for i, v in enumerate(variables):
+                for eid, tv, hv in zip(rdata["eval_id"], rdata["variables"]["continuous"][v], hvars[:,i]):
+                    self.assertAlmostEqual(tv, hv, msg="Bad comparison for variable '%s' for eval %d" % (v,eid), places=9)
+            hresps = h["/interfaces/NO_ID/sim_m/responses/functions"]
+            # Responses
+            self.assertItemsEqual(responses, hresps.dims[1][0][:])
+            for i, r in enumerate(responses):
+                for eid, tr, hr in zip(rdata["eval_id"], rdata["response"][r], hresps[:,i]):
+                    self.assertAlmostEqual(tr["function"], hr, msg="Bad comparison for response '%s' for eval %d" % (r, eid), places=9)
+            # ASV
+            for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/sim_m/metadata/active_set_vector"]):
+                for r_a, h_a in zip(r_asv, h_asv):
+                    self.assertEqual(r_a, h_a)
+
 
 if __name__ == '__main__':
     hce.run_dakota("dakota_hdf5_" + _TEST_NAME + ".in")

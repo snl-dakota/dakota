@@ -51,6 +51,14 @@ support:
  - Dakota will define special environment variables \c
    DAKOTA_PARAMETERS_FILE and \c DAKOTA_RESULTS_FILE which can be used
    in the driver script.
+ 
+ - Dakota will replace the tokens `{PARAMETERS}` and `{RESULTS}` in an 
+   anslysis driver string with the names of the parameters and results
+   files for that analysis/evaluation. Along with the 
+   \ref interface-analysis_drivers-fork-verbatim keyword, which prevents
+   Dakota from appending the names of the parameters and reslts files
+   as command line arguments, this feature provides users with greater
+   control over how their analysis drivers are invoked by Dakota.
 
  - Variable definitions preceding the executable program or script,
    such as 'MY_VAR=2 run_analysis.sh' are no longer supported.

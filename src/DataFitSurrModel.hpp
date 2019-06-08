@@ -75,6 +75,8 @@ public:
   /// return points required for build according to pointsManagement mode
   int required_points();
 
+  void declare_sources();
+
 protected:
 
   //
@@ -299,6 +301,8 @@ protected:
 
   /// set the warm start flag, including actualModel
   void warm_start_flag(const bool flag);
+
+  ActiveSet default_interface_active_set();
 
   //
   //- Heading: Data members

@@ -295,7 +295,7 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
        (num_programs > 1 || !iFilterName.empty() || !oFilterName.empty())))
   	shell << "(";
   if (!iFilterName.empty()) {
-    shell << iFilterName;
+    shell << substitute_params_and_results(iFilterName, paramsFileName, resultsFileName);
     if (commandLineArgs)
       shell << " " << paramsFileName << " " << resultsFileName;
     shell << "; ";
@@ -304,31 +304,34 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
   // Analysis code portion (function evaluation may be asynchronous, but
   // analyses must be sequential within each function evaluation)
   for (size_t i=0; i<num_programs; ++i) {
-    shell << programNames[i];
-    if (commandLineArgs) {
-       const char* s1 = paramsFileName.c_str();
-       if (s && !std::strncmp(s,s1,wd_strlen) && s1[wd_strlen] == '/')
-		s1 += wd_strlen + 1;
-      shell << " " << s1;
-      std::string prog_num( (multipleParamsFiles || num_programs > 1) ?
-                            "." + boost::lexical_cast<std::string>(i+1) : "" );
-      if (multipleParamsFiles) // append program cntr to paramsFileName
-	shell << prog_num;
-
-      s1 = resultsFileName.c_str();
-      if (s && !std::strncmp(s,s1,wd_strlen) && s1[wd_strlen] == '/')
-		s1 += wd_strlen + 1;
-      shell << " " << s1;
-      if (num_programs > 1)     // append program cntr to resultsFileName
-	shell << prog_num;
+    const char* s1 = paramsFileName.c_str();
+    if (s && !std::strncmp(s,s1,wd_strlen) && s1[wd_strlen] == '/') {
+      s1 += wd_strlen + 1;
     }
-    if (i != num_programs-1)
+    const char *s2 = resultsFileName.c_str();
+    if (s && !std::strncmp(s,s2,wd_strlen) && s2[wd_strlen] == '/') {
+      s2 += wd_strlen + 1;
+    }
+    
+    std::string prog_num( (multipleParamsFiles || num_programs > 1) ?
+                          "." + boost::lexical_cast<std::string>(i+1) : "" );
+    String params_file(s1), results_file(s2);
+    if(multipleParamsFiles)
+      params_file += prog_num;
+    if(num_programs > 1)
+      results_file += prog_num;
+    shell << substitute_params_and_results(programNames[i], params_file, results_file);
+    if (commandLineArgs)  {
+        shell << " " << params_file << " " << results_file;
+    }
+    if (i != num_programs-1) {
       shell << "; ";
+    }
   }
 
   // Output filter portion
   if (!oFilterName.empty()) {
-    shell << "; " << oFilterName;
+    shell << "; " << substitute_params_and_results(oFilterName, paramsFileName, resultsFileName);
     if (commandLineArgs)
       shell << " " << paramsFileName << " " << resultsFileName;
   }
@@ -347,18 +350,29 @@ void SysCallApplicInterface::spawn_evaluation_to_shell(bool block_flag)
 }
 
 
-/** Put the input filter to the shell.  This function is used when multiple
-    analysis drivers are spread between processors.  No need to check for a
-    Null input filter, as this is checked externally.  Use of nonblocking
-    shells is supported in this fn, although its use is currently prevented
-    externally. */
-void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
+/** Put a single analysis to the shell.  This function is used when
+    multiple analysis drivers are spread between processors.  Use of
+    nonblocking shells is supported in this fn, although its use is
+    currently prevented externally. */
+void SysCallApplicInterface::
+spawn_analysis_to_shell(int analysis_id, bool block_flag)
 {
   CommandShell shell;
 
-  shell << iFilterName;
-  if (commandLineArgs)
-    shell << " " << paramsFileName << " " << resultsFileName;
+  const size_t &num_programs = programNames.size();
+  String prog_num( (multipleParamsFiles || num_programs > 1) ?
+                   "." + std::to_string(analysis_id) : "" );
+  String params_file(paramsFileName), results_file(resultsFileName);
+  if(multipleParamsFiles)
+    params_file += prog_num;
+  if(num_programs > 1)
+    results_file += prog_num;
+
+  shell << substitute_params_and_results(programNames[analysis_id-1], params_file,
+      results_file);
+  if(commandLineArgs) {
+    shell << " " << params_file << " " << results_file;
+  }
 
   shell.asynch_flag(!block_flag);
   shell.suppress_output_flag(suppressOutput);
@@ -369,28 +383,18 @@ void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
 }
 
 
-/** Put a single analysis to the shell.  This function is used when
-    multiple analysis drivers are spread between processors.  Use of
-    nonblocking shells is supported in this fn, although its use is
-    currently prevented externally. */
-void SysCallApplicInterface::
-spawn_analysis_to_shell(int analysis_id, bool block_flag)
+/** Put the input filter to the shell.  This function is used when multiple
+    analysis drivers are spread between processors.  No need to check for a
+    Null input filter, as this is checked externally.  Use of nonblocking
+    shells is supported in this fn, although its use is currently prevented
+    externally. */
+void SysCallApplicInterface::spawn_input_filter_to_shell(bool block_flag)
 {
   CommandShell shell;
 
-  shell << programNames[analysis_id-1];
-  if (commandLineArgs) {
-    using std::string;
-    size_t num_programs = programNames.size();
-    shell << " " << paramsFileName;
-    string prog_num( (multipleParamsFiles || num_programs > 1) ?
-                     "." + boost::lexical_cast<string>(analysis_id) : "" );
-    if (multipleParamsFiles) // append program cntr to paramsFileName
-      shell << prog_num;
-    shell << " " << resultsFileName;
-    if (num_programs > 1)     // append program cntr to resultsFileName
-      shell << prog_num;
-  }
+  shell << substitute_params_and_results(iFilterName, paramsFileName, resultsFileName);
+  if (commandLineArgs)
+    shell << " " << paramsFileName << " " << resultsFileName;
 
   shell.asynch_flag(!block_flag);
   shell.suppress_output_flag(suppressOutput);
@@ -410,7 +414,7 @@ void SysCallApplicInterface::spawn_output_filter_to_shell(bool block_flag)
 {
   CommandShell shell;
 
-  shell << oFilterName;
+  shell << substitute_params_and_results(oFilterName, paramsFileName, resultsFileName);
   if (commandLineArgs)
     shell << " " << paramsFileName << " " << resultsFileName;
 

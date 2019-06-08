@@ -36,10 +36,11 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   componentParallelMode = INTERFACE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
-
+  
   initialize_solution_control(
     problem_db.get_string("model.simulation.solution_level_control"),
     problem_db.get_rv("model.simulation.solution_level_cost"));
+
 }
 
 
@@ -379,4 +380,48 @@ void SimulationModel::eval_tag_prefix(const String& eval_id_str)
   userDefinedInterface.eval_tag_prefix(eval_id_str, append_iface_id);
 }
 
+/*ActiveSet SimulationModel::default_active_set() {
+  ActiveSet set(numFns, numDerivVars);
+  ShortArray asv(numFns, 1);
+ 
+  if(gradientType != "none" && (gradientType == "analytic" || supportsEstimDerivs))
+      for(auto &a : asv)
+        a |=  2;
+
+  if(hessianType != "none" && (hessianType == "analytic" || supportsEstimDerivs))
+      for(auto &a : asv)
+        a |=  4;
+
+  set.request_vector(asv);
+  return set;
+}
+*/
+ActiveSet SimulationModel::default_interface_active_set() {
+  // compute the default active set for the user-defined interface
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  ShortArray asv(numFns, 1);
+  if(gradientType == "analytic") {
+    for(auto &a : asv)
+      a |=  2;
+  } else if(gradientType == "mixed") {
+    for(const auto &gi : gradIdAnalytic)
+      asv[gi-1] |= 2;
+  }
+
+  if(hessianType == "analytic") {
+    for(auto &a : asv)
+      a |=  4;
+  } else if(hessianType == "mixed") {
+    for(const auto &hi : hessIdAnalytic)
+      asv[hi-1] |= 4;
+  }
+
+  set.request_vector(asv);
+  return set;
+}
+
+void SimulationModel::declare_sources() {
+  evaluationsDB.declare_source(modelId, modelType, interface_id(), "interface");
+}
 } // namespace Dakota

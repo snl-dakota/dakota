@@ -21,6 +21,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "ResultsManager.hpp"
+#include "EvaluationStore.hpp"
 
 // Toggle for MPI debug hold
 //#define MPI_DEBUG
@@ -58,6 +59,8 @@ PRPCache data_pairs;          ///< contains all parameter/response pairs.
 
 /// Global results database for iterator results
 ResultsManager iterator_results_db;
+/// Global database for evaluation storage
+EvaluationStore evaluation_store_db;
 
 
 int write_precision = 10;     ///< used in ostream data output functions

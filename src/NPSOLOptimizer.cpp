@@ -482,4 +482,14 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   bestResponseArray.front().function_values(best_fns);
 }
 
+// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+// when it's being used to evaluate a user-defined function (e.g. finding the correlation
+// lengths of Dakota's GP). 
+void NPSOLOptimizer::declare_sources() {
+  if(setUpType == "user_functions") 
+    return;
+  else
+    Iterator::declare_sources();
+}
+ 
 } // namespace Dakota

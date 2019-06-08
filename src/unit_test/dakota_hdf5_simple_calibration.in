@@ -1,8 +1,11 @@
 environment
+  tabular_data
+    tabular_data_file 'simple_calibration.dat'
   results_output  
    results_output_file 'simple_calibration'
    hdf5
-   
+    model_selection all
+  write_restart 'simple_calibration.rst'
 
 method
   nlssol

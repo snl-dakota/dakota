@@ -59,7 +59,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 {
   asmInstance = this;
   modelType = "active_subspace";
-
+  modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   // Set seed of bootstrap sampler:
   BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
 
@@ -102,7 +102,7 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
   refinementSamples(0), subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
   modelType = "active_subspace";
-
+  modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   outputLevel = output_level;
 
   componentParallelMode = CONFIG_PHASE;
@@ -165,8 +165,8 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   transformVars = true;
 
   if (transformVars) {
-    sub_model.assign_rep(new ProbabilityTransformModel(problem_db.get_model()),
-                         false);
+    sub_model.assign_rep(new
+      ProbabilityTransformModel(problem_db.get_model(), STD_NORMAL_U), false);
   } else {
     sub_model = problem_db.get_model();
   }

@@ -112,14 +112,14 @@ void NonDInterval::initialize_final_statistics()
   else {
     char tag_string[10], lev_string[15];
     for (i=0; i<numFunctions; ++i) {
-      std::sprintf(tag_string, "_r%i", i+1);
+      std::sprintf(tag_string, "_r%zu", i+1);
       num_levels = requestedRespLevels[i].length();
       for (j=0; j<num_levels; ++j) {
 	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
 	if (respLevelTarget == PROBABILITIES)
-	  std::sprintf(lev_string, "_plev%i", j+1);
+	  std::sprintf(lev_string, "_plev%zu", j+1);
 	else
-	  std::sprintf(lev_string, "_b*lev%i", j+1);
+	  std::sprintf(lev_string, "_b*lev%zu", j+1);
 	stats_labels[cntr] +=
 	  String("_bel") + String(lev_string) + String(tag_string);
 	cntr++;
@@ -131,7 +131,7 @@ void NonDInterval::initialize_final_statistics()
 	requestedGenRelLevels[i].length();
       for (j=0; j<num_levels; ++j) {
 	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
-	std::sprintf(lev_string, "_zlev%i", j+1);
+	std::sprintf(lev_string, "_zlev%zu", j+1);
 	stats_labels[cntr] +=
 	  String("_bel") + String(lev_string) + String(tag_string);
 	cntr++;

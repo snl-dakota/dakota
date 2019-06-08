@@ -1,0 +1,20 @@
+Blurb:: MPP search for local reliability based on QMEA multi-point approximation in u-space
+
+Description::
+
+Local reliability methods that search for the most probable point
+of failure (MPP) may use a surrogate-based optimization procedure.
+The \c x_multi_point surrogate option creates a QMEA approximation
+in the original random variable space ("x-space") from accumulating
+data from multiple expansion points.
+
+This capability is \b experimental.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+See_Also::

@@ -1,8 +1,13 @@
 environment
   method_pointer 'lps'
+  tabular_data
+    tabular_data_file 'mixed_sampling.dat'
   results_output
     results_output_file 'mixed_sampling'
     hdf5
+      interface_selection simulation
+      model_selection all
+  write_restart 'mixed_sampling.rst'
 
 method
   id_method 'lps'

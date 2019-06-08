@@ -102,6 +102,9 @@
 #ifdef HAVE_JEGA
 #include "JEGAOptimizer.hpp"
 #endif
+#ifdef HAVE_C3
+#include "NonDC3FunctionTrain.hpp"
+#endif
 #ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
 #endif
@@ -119,6 +122,7 @@
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
+#include "EvaluationStore.hpp"
 #include "NonDWASABIBayesCalibration.hpp"
 
 #include <boost/bimap.hpp>
@@ -131,9 +135,11 @@ static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02
 
 namespace Dakota {
 
-extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
-extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+// defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        
+extern ParallelLibrary dummy_lib;
 extern ResultsManager  iterator_results_db;
+extern EvaluationStore evaluation_store_db;
 
 // Initialization of static method ID counters
 size_t Iterator::noSpecIdNum = 0;
@@ -171,7 +177,9 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   // "normal" is the default for no user specification.  Note that iterators
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
-  resultsDB(iterator_results_db), methodId(probDescDB.get_string("method.id")),
+  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+   methodId(probDescDB.get_string("method.id")),
   execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   if (methodId.empty())
@@ -201,7 +209,8 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
   maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
   subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model.output_level()), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId(no_spec_id()), execNum(0),
+  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
@@ -224,8 +233,10 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
   myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId(no_spec_id()), execNum(0),
+  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  methodId(no_spec_id()), execNum(0),
   iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
@@ -241,7 +252,9 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
 Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
-  resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  myModelLayers(0), methodName(DEFAULT_METHOD),
   execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
@@ -257,7 +270,8 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), pa
 Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<TraitsBase> traits):
   // same as default ctor above
   probDescDB(dummy_db), parallelLib(dummy_lib),
-  resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  myModelLayers(0), methodName(DEFAULT_METHOD),
   // bypass some logic in assign_rep():
   iteratorRep(iterator_rep), referenceCount(1), methodTraits(traits)
 {
@@ -279,7 +293,7 @@ Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<
     their own Model instances. */
 Iterator::Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), methodTraits(traits),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 
@@ -303,6 +317,12 @@ bool Iterator::resize()
   }
 }
 
+void Iterator::declare_sources() {
+  evaluationsDB.declare_source(method_id(), 
+                               "iterator",
+                               iterated_model().model_id(),
+                               iterated_model().model_type());
+}
 
 /** Used only by the envelope constructor to initialize iteratorRep to
     the appropriate derived type, as given by the DB's method_name.
@@ -356,7 +376,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
     sub-iterators lack their own model pointers). */
 Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), methodTraits(traits),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -433,6 +453,12 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDStochCollocation(problem_db, model); break;
   case MULTIFIDELITY_STOCH_COLLOCATION:
     return new NonDMultilevelStochCollocation(problem_db, model); break;
+#ifdef HAVE_C3
+  case C3_FUNCTION_TRAIN:
+    return new NonDC3FunctionTrain(problem_db, model); break;
+  //case MULTIFIDELITY_FUNCTION_TRAIN:
+  //  return new NonDMultilevelFunctionTrain(problem_db, model); break;
+#endif
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
@@ -596,7 +622,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(model.problem_description_db()),
   parallelLib(model.parallel_library()), resultsDB(iterator_results_db),
-  methodTraits(traits), 
+  evaluationsDB(evaluation_store_db),  methodTraits(traits), 
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -730,8 +756,8 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
     of referenceCount. */
 Iterator::Iterator(const Iterator& iterator):
   probDescDB(iterator.problem_description_db()),
-  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db),
-  methodTraits(iterator.traits())
+  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
+  evaluationsDB(evaluation_store_db), methodTraits(iterator.traits())
 {
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
@@ -869,10 +895,12 @@ static UShortStrBimap method_map =
   (GLOBAL_INTERVAL_EST,             "global_interval_est")
   (GLOBAL_EVIDENCE,                 "global_evidence")
   (POLYNOMIAL_CHAOS,                "polynomial_chaos")
-  (STOCH_COLLOCATION,               "stoch_collocation")
   (MULTIFIDELITY_POLYNOMIAL_CHAOS,  "multifidelity_polynomial_chaos")
   (MULTILEVEL_POLYNOMIAL_CHAOS,     "multilevel_polynomial_chaos")
+  (STOCH_COLLOCATION,               "stoch_collocation")
   (MULTIFIDELITY_STOCH_COLLOCATION, "multifidelity_stoch_collocation")
+  (C3_FUNCTION_TRAIN,               "c3_function_train")
+  (MULTIFIDELITY_FUNCTION_TRAIN,    "multifidelity_function_train")
   (BAYES_CALIBRATION,               "bayes_calibration")
   (CUBATURE_INTEGRATION,            "cubature")
   (QUADRATURE_INTEGRATION,          "quadrature")
@@ -1047,6 +1075,13 @@ void Iterator::run()
 
     ++execNum;
 
+    if(evaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      evaluationsDBState = evaluationsDB.iterator_allocate(method_id(), top_level());
+      if(evaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
+
     String method_string = method_enum_to_string(methodName);
     initialize_run();
     if (summaryOutputFlag)
@@ -1212,6 +1247,15 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
  }
 }
 
+bool Iterator::top_level() {
+  if(iteratorRep) return iteratorRep->top_level();
+  else return topLevel;
+}
+
+void Iterator::top_level(const bool &flag) {
+  if(iteratorRep) iteratorRep->top_level(flag);
+  else topLevel = flag;
+}
 
 void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {
@@ -1779,16 +1823,17 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
 /** Rationale: The parser allows multiple user-specified methods with
     empty (unspecified) ID. However, only a single Iterator with empty
     ID can be constructed (if it's the only one present, or the "last
-    one parsed"). Therefore decided to prefer NO_ID over NO_ID_<num>
-    for consistency with interface NO_ID convention. */
+    one parsed"). Therefore decided to prefer NO_METHOD_ID over NO_METHOD_ID_<num>
+    for (partial) consistency with interface NO_ID convention. The addition of
+    _METHOD_ is it distinguish methods, models and interfaces in the HDF5 output. */
 String Iterator::user_auto_id()
 {
   // // increment and then use the current ID value
   // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
-  return String("NO_ID");
+  return String("NO_METHOD_ID");
 }
 
-/** Rationale: For now NOSPEC_ID_ is chosen due to historical
+/** Rationale: For now NOSPEC_METHOD_ID_ is chosen due to historical
     id="NO_SPECIFICATION" used for internally-constructed
     Iterators. Longer-term, consider auto-generating an ID that
     includes the context from which the method is constructed, e.g.,
@@ -1796,7 +1841,7 @@ String Iterator::user_auto_id()
 String Iterator::no_spec_id()
 {
   // increment and then use the current ID value
-  return String("NOSPEC_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+  return String("NOSPEC_METHOD_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
 }
 
 } // namespace Dakota

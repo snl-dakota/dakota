@@ -90,6 +90,8 @@ if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GRE
     dakota_add_h5py_test(mixed_sampling)
     dakota_add_h5py_test(incremental_sampling)
     dakota_add_h5py_test(simple_calibration)
+    dakota_add_h5py_test(surrogate_sens)
+    dakota_add_h5py_test(discrete_vps)
     #dakota_add_h5py_test(calibration_with_data)
     #dakota_add_h5py_test(mutlisolution_opt)
   endif()
@@ -179,9 +181,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
     dakota_add_unit_test(NAME hdf5_tests SOURCES teuchos_unit_test_driver hdf5_test_serial.cpp hdf5_utils.cpp ResultsDBHDF5_Test.cpp
       LINK_DAKOTA_LIBS
-      LINK_LIBS ${HDF5_LIBRARIES}
       )
-    target_link_libraries(hdf5_tests ${HDF5_LIBRARIES})
   endif() # DAKOTA_HAVE_HDF5
 
 endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS

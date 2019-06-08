@@ -1,5 +1,7 @@
 # CMakeLists.txt for DAKOTA packages
+option(HAVE_ACRO "Build the ACRO package." ON)
 option(HAVE_AMPL "Build the AMPL package." ON)
+option(HAVE_C3 "Build the Compressed Continuous Computation package." OFF)
 option(HAVE_CONMIN "Build the CONMIN package." ON)
 option(HAVE_DDACE "Build the DDACE package." ON)
 option(HAVE_DOT "Build the DOT package." ON)
@@ -191,6 +193,10 @@ if(HAVE_ACRO)
   endif()
   add_subdirectory(external/acro)
 endif(HAVE_ACRO)
+
+if(HAVE_C3)
+  add_subdirectory(external/C3)
+endif()
 
 if(HAVE_DDACE)
   add_subdirectory(external/DDACE)

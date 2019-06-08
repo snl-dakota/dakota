@@ -6,6 +6,8 @@ for computer models, which is sometimes called ``Bayesian calibration
 of computer models.''  One common solution approach for Bayesian calibration involves Markov Chain Monte Carlo (MCMC) 
 sampling.  Sections~\ref{uq:bayes:basic} to ~\ref{uq:bayes:ex} describe Bayesian fundamentals and then cover 
 specialized approaches for accelerating the MCMC sampling process used within Bayesian inference.
+Chain diagnostic metrics for analyzing the convergence of the MCMC chain are
+discussed in Section~\ref{uq:chain_diagnostics}.
 Section~\ref{uq:model_disc} describes ways of handling a discrepancy between the model estimate and the responses. 
 Section~\ref{uq:bayes_experimental_design} describes a way of determining the optimal experimental design to
 identify high-fidelity runs that can be used to best inform the calibration of a low-fidelity model. 
@@ -330,6 +332,78 @@ posterior is likelihood dominated.  This leads to similar performance
 from the two Hessian-based proposals, with average rejection rates of
 70\%, 19.5\%, and 16.4\% for prior-based, misfit Hessian-based, and
 posterior Hessian-based cases, respectively.
+
+\section{Chain Diagnostics}\label{uq:chain_diagnostics}
+
+The implementation of a number of metrics for assessing the convergence of
+the MCMC chain drawn during Bayesian calibration is undergoing active
+development in Dakota. As of Dakota 6.10, \texttt{confidence\_intervals} is 
+the only diagnostic implemented. 
+
+\subsection{Confidence Intervals}
+
+Suppose $g$ is a function that represents some characteristic of the 
+probability distribution $\pi$ underlying the MCMC chain~\cite{Fle10}, such 
+as the mean or variance. Then under the standard assumptions of an MCMC chain, 
+the true expected value of this function, $\mathbb{E}_{\pi}g$ can be 
+approximated by taking the mean over the $n$ samples in the MCMC chain, denoted
+$X = \{X_{1}, X_{2}, \ldots, X_{n} \}$,
+\begin{equation}
+  \bar{g}_{n} = \frac{1}{n} \sum_{i = 1}^{n} g(X_{i}). 
+\end{equation}
+The error in this approximation converges to zero, such that
+\begin{equation}
+  \sqrt{n}\left( \bar{g}_{n} - \mathbb{E}_{\pi}g \right) \rightarrow
+  \mathcal{N}(0, \sigma_{g}^{2}), \quad n \rightarrow \infty.
+\end{equation}
+Thus, in particular, we would like to estimate the variance of this error,
+$\sigma_{g}^{2}$. Let $\hat{\sigma}_{n}^{2}$ be a consistent estimator of
+the true variance $\sigma_{g}^{2}$. Then 
+\begin{equation}
+  \bar{g}_{n} \pm t_{*} \frac{\hat{\sigma}_{n}}{\sqrt{n}}
+\end{equation}
+is an asymptotically valid interval estimator of $\mathbb{E}_{\pi}g$, where
+$t_{*}$ is a Student's $t$ quantile. In Dakota, confidence intervals are
+computed for the mean and variance of the parameters and of the responses,
+all confidence intervals are given at the 95th percentile, and 
+$\hat{\sigma}_{n}$ is calculated via non-overlapping batch means, or ``batch 
+means" for simplicity.
+
+When batch means is used to calculate $\hat{\sigma}_{n}$, the MCMC chain $X$
+is divided into blocks of equal size. Thus, we have $a_{n}$ batches of size 
+$b_{n}$, and $n = a_{n}b_{n}$. Then the batch means estimate of 
+$\sigma_{g}^{2}$ is given by
+\begin{equation}
+  \hat{\sigma}_{n}^{2} = \frac{b_{n}}{a_{n} -1} \sum_{k = 0}^{a_{n}-1}
+                         \left( \bar{g}_{k} - \bar{g}_{n} \right)^{2},
+\end{equation}
+where $\bar{g}_{k}$ is the expected value of $g$ for batch $k = 0, \ldots,
+a_{n}-1$,
+\begin{equation}
+  \bar{g}_{k} = \frac{1}{b_{n}} \sum_{i = 1}^{b_{n}} 
+                g\left(X_{kb_{n}+i}\right).
+\end{equation}
+It has been found that an appropriate batch size is $b_{n} = \left 
+\lfloor{\sqrt{n}}\right \rfloor$. Further discussion and comparison to
+alternate estimators of $\sigma_{g}^{2}$ can be found in~\cite{Fle10}.
+
+Confidence intervals may be used as a chain diagnostic by setting fixed-width
+stopping rules~\cite{Rob18}. For example, if the width of one or more 
+intervals is below some threshold value, that may indicate that enough samples 
+have been drawn. Common choices for the threshold value include:
+\begin{itemize}
+  \item Fixed width: $\epsilon$
+  \item Relative magnitude: $\epsilon \| \bar{g}_{n} \|$
+  \item Relative standard deviation: $\epsilon \| \hat{\sigma}_{n} \|$
+\end{itemize}
+If the chosen threshold is exceeded, \texttt{samples} may need to be increased.
+Sources~\cite{Fle10, Rob18} suggest increasing the sample size by 10\% and 
+reevaluating the diagnostics for signs of chain convergence. 
+
+If \texttt{output} is set to \texttt{debug}, the sample mean and variance
+for each batch (for each parameter and response) is output to the screen. The
+user can then analyze the convergence of these batch means in order to 
+deduce whether the MCMC chain has converged.
 
 \section{Model Discrepancy}\label{uq:model_disc}
 

@@ -4,10 +4,14 @@ Description:: Multilevel sampling seeks an error balance between the
 estimator variance and the remaining bias error at the highest level,
 the two contributors to mean squared error (MSE).  Since the remaining
 bias error is generally unknown, the convergence_tolerance is used to
-provide a error target relative to the Monte Carlo estimator variance
-resulting from the pilot sample.  The samples allocated at each level
-are proportional to \f$\frac{1}{\epsilon^2}\f$, so each order of
-magnitude reduction in convergence_tolerance will tend to increase the
+provide a error target relative to the Multifidelity Monte Carlo estimator variance
+resulting from the pilot sample. If the pilot samples are not shaped for the 
+low-fidelity model, i.e. the number of low-fidelity evaluations is equal to the
+number of high-fidelity evaluations for each level, the Multifidelity estimator
+falls back to a Multilevel Monte Carlo estimator which is used to assess the
+estimator pilot samples variance. 
+The samples allocated at each level are proportional to \f$\frac{1}{\epsilon^2}\f$, 
+so each order of magnitude reduction in convergence_tolerance will tend to increase the
 sample allocation by two orders of magnitude.  Therefore, this control
 should be used with care to avoid allocation of huge sample sets that
 could overrun available memory.

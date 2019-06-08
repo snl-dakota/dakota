@@ -357,6 +357,30 @@ public:
   unsigned short subspaceIdCVMethod;
 
 
+  // Function-Train Options
+
+  /// Optimization tolerance for FT regression
+  double solverTolerance;
+  /// Rounding tolerance for adaptive algorithms
+  double roundingTolerance;
+  /// starting polynomial order
+  size_t startOrder;
+  /// maximum order of basis polynomials
+  size_t maxOrder;
+  /// starting rank
+  size_t startRank;
+  /// rank increase increment
+  size_t kickRank;
+  /// maximum rank
+  size_t maxRank;
+  /// whether or not to adapt rank
+  bool adaptRank;
+  /// maximum number of cross iterations
+  size_t crossMaxIter;
+  // Verbosity level
+  //size_t verbosity;
+    
+
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;
   /// maximum evals in refinement

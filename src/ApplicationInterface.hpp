@@ -647,13 +647,13 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   if (outputLevel > SILENT_OUTPUT) {
     if (peer_flag) {
       Cout << "Peer 1 assigning ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << " to peer "
 	   << server_id+1 << '\n'; // 2 to numEvalServers
     }
     else {
       Cout << "Master assigning ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << " to server "
 	   << server_id << '\n';
     }
@@ -680,7 +680,7 @@ inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
     Cout << "Initiating ";
-    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
     Cout << "evaluation " << fn_eval_id << '\n';
   }
 

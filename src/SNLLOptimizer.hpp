@@ -146,6 +146,7 @@ public:
   /// Performs the iterations to determine the optimal solution.
   void core_run();
 
+  void declare_sources();
 protected:
 
   //

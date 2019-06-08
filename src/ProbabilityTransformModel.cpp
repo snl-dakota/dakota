@@ -30,13 +30,14 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
 {
   ptmInstance = this; // *** TO DO: assign at run time, not construct time ***
   modelType = "probability_transform";
+  modelId
+    = RecastModel::recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
 
   /*
   numContinuousVars     = subModel.cv();
   numDiscreteIntVars    = subModel.div();
   numDiscreteStringVars = subModel.dsv();
   numDiscreteRealVars   = subModel.drv();
-
   initialize_sizes();
   */
 

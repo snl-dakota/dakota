@@ -19,7 +19,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "ParallelLibrary.hpp"
-
+#include "EvaluationStore.hpp"
 
 namespace Dakota {
 
@@ -42,7 +42,10 @@ public:
 
   SimulationModel(ProblemDescDB& problem_db); ///< constructor
   ~SimulationModel();                         ///< destructor
-    
+  
+  /// Return the "default" or maximal ActiveSet for the model
+  //ActiveSet default_active_set();
+ 
 protected:
 
   //
@@ -142,7 +145,14 @@ protected:
 
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
+
   
+  /// Return the "default" or maximal ActiveSet for the userDefinedInterface
+  ActiveSet default_interface_active_set();
+
+  /// Declare this model's sources
+  void declare_sources();
+
 private:
 
   //
@@ -209,7 +219,17 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
   ++simModelEvalCntr;
+  if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+      interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
+          interface_id(), "simulation", currentVariables, currentResponse, 
+          default_interface_active_set(), userDefinedInterface.analysis_components());
   userDefinedInterface.map(currentVariables, set, currentResponse);
+  if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+    evaluationsDB.store_interface_variables(modelId, interface_id(),
+        userDefinedInterface.evaluation_id(), set, currentVariables);
+    evaluationsDB.store_interface_response(modelId, interface_id(),
+        userDefinedInterface.evaluation_id(), currentResponse);
+  }
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
@@ -218,7 +238,14 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
 inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++simModelEvalCntr;
+  if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+    interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, interface_id(),
+        "simulation", currentVariables, currentResponse, default_interface_active_set(), 
+        userDefinedInterface.analysis_components());
   userDefinedInterface.map(currentVariables, set, currentResponse, true);
+  if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) 
+      evaluationsDB.store_interface_variables(modelId, interface_id(),
+      userDefinedInterface.evaluation_id(), set, currentVariables);
   // Even though each evaluate on SimulationModel results in a corresponding
   // Interface mapping, we utilize an id mapping to protect against the case
   // where multiple Models use the same Interface instance, for which this

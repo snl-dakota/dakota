@@ -16,6 +16,7 @@
 #include "MarginalsCorrDistribution.hpp"
 #include "dakota_system_defs.hpp"
 #include "pecos_global_defs.hpp"
+#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -65,6 +66,21 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     bool oi_resp_ptr_defined = !oi_resp_ptr.empty();
     if (oi_resp_ptr_defined)
       problem_db.set_db_responses_node(oi_resp_ptr);
+    // JAS: We need to work a little harder here to make sure that the
+    // optional interface responses have a gradient and hessian spec that is
+    // compatible with the gradient and hessian spec for the nested model's
+    // responses. Currently, if the nested model's responses specify analytic
+    // or mixed gradients or hessians but the optional interface responses just 
+    // have numerical or no, Dakota dies with a segfault and no error message.
+    // An even better solution might be to wrap the optional interface in a
+    // SimulationModel, which would allow gradient/hessian requests to be 
+    // satisfied however the user wants, and would make it easier for us to
+    // honor a request for scaling.
+
+    optInterfGradientType = problem_db.get_string("responses.gradient_type");
+    optInterfHessianType = problem_db.get_string("responses.hessian_type");
+    optInterfGradIdAnalytic = problem_db.get_is("responses.gradients.mixed.id_analytic");
+    optInterfHessIdAnalytic = problem_db.get_is("responses.hessians.mixed.id_analytic");
 
     numOptInterfIneqCon
       = problem_db.get_sizet("responses.num_nonlinear_inequality_constraints");
@@ -524,6 +540,14 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     subModel.inactive_view(inactive_sm_view); // recurse
 }
 
+
+void NestedModel::declare_sources() {
+  evaluationsDB.declare_source(modelId, modelType, subIterator.method_id(),
+      "iterator");
+  if(!optionalInterface.is_null())
+    evaluationsDB.declare_source(modelId, modelType, optionalInterface.interface_id(),
+      "interface");
+}
 
 /** Asynchronous flags need to be initialized for the subModel.  In
     addition, max_eval_concurrency is the outer level iterator
@@ -1304,8 +1328,19 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 
     ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     parallelLib.parallel_configuration_iterator(modelPCIter);
+    if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+      interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
+          interface_id(), "simulation", currentVariables, optInterfaceResponse, 
+          default_interface_active_set(), optionalInterface.analysis_components());
+
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse);
+    if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+      evaluationsDB.store_interface_variables(modelId, interface_id(),
+          optionalInterface.evaluation_id(), opt_interface_set, currentVariables);
+      evaluationsDB.store_interface_response(modelId, interface_id(),
+          optionalInterface.evaluation_id(), optInterfaceResponse);
+    }
     parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     // map optInterface results into their contribution to currentResponse
@@ -1407,8 +1442,15 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
 	 << "------------------------------------------------------------------"
 	 << '\n';
     // don't need to set component parallel mode since this only queues the job
+    if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+      interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, interface_id(), 
+          "simulation", currentVariables, optInterfaceResponse, default_interface_active_set(),
+          optionalInterface.analysis_components());
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse, true);
+    if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_interface_variables(modelId, interface_id(),
+          optionalInterface.evaluation_id(), opt_interface_set, currentVariables);
     optInterfaceIdMap[optionalInterface.evaluation_id()] = nestedModelEvalCntr;
   }
 
@@ -3297,5 +3339,29 @@ string_variable_mapping(const String& s_var, size_t mapped_index,
   }
 }
 
+ActiveSet NestedModel::default_interface_active_set() {
+  size_t num_fun = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  ShortArray asv(num_fun, 1);
+  if(optInterfGradientType == "analytic") {
+    for(auto &a : asv)
+      a |=  2;
+  } else if(optInterfGradientType == "mixed") {
+    for(const auto &gi : optInterfGradIdAnalytic)
+      asv[gi-1] |= 2;
+  }
+
+  if(optInterfHessianType == "analytic") {
+    for(auto &a : asv)
+      a |=  4;
+  } else if(optInterfHessianType == "mixed") {
+    for(const auto &hi : optInterfHessIdAnalytic)
+      asv[hi-1] |= 4;
+  }
+
+  set.request_vector(asv);
+  return set;
+}
 
 } // namespace Dakota

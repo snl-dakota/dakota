@@ -498,6 +498,12 @@ public:
 
   /// return all continuous variable position identifiers
   SizetMultiArrayConstView all_continuous_variable_ids() const;
+  /// return all discrete integer variable position identifiers
+  SizetMultiArrayConstView all_discrete_int_variable_ids() const;
+  /// return all discrete string variable position identifiers
+  SizetMultiArrayConstView all_discrete_string_variable_ids() const;
+  /// return all discrete real variable position identifiers
+  SizetMultiArrayConstView all_discrete_real_variable_ids() const;
 
   /// a deep variables copy for use in history mechanisms
   /// (SharedVariablesData uses a shallow copy by default)
@@ -1501,6 +1507,15 @@ all_discrete_real_variable_types() const
 
 inline SizetMultiArrayConstView Variables::all_continuous_variable_ids() const
 { return shared_data().all_continuous_ids(0, acv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_int_variable_ids() const
+{ return shared_data().all_discrete_int_ids(0, adiv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_string_variable_ids() const
+{ return shared_data().all_discrete_string_ids(0, adsv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_real_variable_ids() const
+{ return shared_data().all_discrete_real_ids(0, adrv()); }
 
 
 inline const std::pair<short,short>& Variables::view() const

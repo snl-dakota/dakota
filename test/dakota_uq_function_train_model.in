@@ -1,0 +1,58 @@
+#@ *: DakotaConfig=HAVE_C3
+
+environment,
+	#graphics
+	#output_precision = 16
+
+method,
+    sampling
+      sample_type lhs
+      samples = 100000
+      response_levels = .1 1. 50. 100. 500. 1000.
+      distribution cumulative
+      # variance_based_decomp #interaction_order = 1
+      model_pointer = 'M1'
+
+model,
+     id_model = 'M1'
+     surrogate global
+        function_train
+        max_order = 5
+        start_rank = 2  kick_rank = 2  max_rank = 10
+        adapt_rank
+        solver_tolerance = 1e-10
+        rounding_tolerance = 1e-8
+     dace_method_pointer = 'LHS'
+
+method,
+    id_method = 'LHS'
+    sampling
+    samples = 100
+    model_pointer = 'M2'
+
+model,
+     single
+          interface_pointer = 'I1'
+          variables_pointer = 'V1'
+          responses_pointer = 'R1'
+     id_model = 'M2'
+
+variables,
+    id_variables = 'V1'
+	uniform_uncertain = 2
+	  lower_bounds = -1. -1. 	#s0
+	  upper_bounds =  1.  1.	#s0
+#	  lower_bounds = -2. -2.	# TO DO
+#	  upper_bounds =  2.  2.	# TO DO
+	  descriptors  = 'x1' 'x2'
+
+interface,
+    id_interface = 'I1'
+	direct
+	analysis_driver = 'rosenbrock'
+
+responses,
+    id_responses = 'R1'
+	response_functions = 1
+	no_gradients
+	no_hessians

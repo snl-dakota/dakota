@@ -2011,10 +2011,12 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     const BitArray& di_set_bits = this->_model.discrete_int_sets();
     for(i=0; i<num_div; ++i, ++dvi_cntr)
     {
-      if (di_set_bits[i]) // set variables are discrete nature in JEGA
+      if (di_set_bits[i]) { // set variables are discrete nature in JEGA
         EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
-      else // range variables are continuum nature in JEGA
+      }
+      else { // range variables are continuum nature in JEGA
         EDDY_ASSERT(dvis[dvi_cntr]->IsContinuum());
+      }
       intoDiscInt[i] = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
     }
 

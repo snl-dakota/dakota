@@ -256,6 +256,13 @@ private:
       for defining derivative ids (DVV) based on an active subset. */
   SizetMultiArray allContinuousIds;
 
+  /// array of 1-based ids (into total variable set) for discrete int
+  SizetMultiArray allDiscreteIntIds;
+  /// array of 1-based ids (into total variable set) for discrete string
+  SizetMultiArray allDiscreteStringIds;
+  /// array of 1-based ids (into total variable set) for discrete real
+  SizetMultiArray allDiscreteRealIds;
+
   /// array of booleans to indicate relaxation (promotion from
   /// DiscreteInt to Continuous) for all specified discrete int variables
   /// Note: container will be empty when not relaxing variables
@@ -754,6 +761,16 @@ public:
   /// set num_items continuous ids beginning at index start
   void all_continuous_id(size_t id, size_t index);
 
+  /// get num_items discrete int ids beginning at index start
+  SizetMultiArrayConstView
+    all_discrete_int_ids(size_t start, size_t num_items) const;
+  /// get num_items discrete string ids beginning at index start
+  SizetMultiArrayConstView
+    all_discrete_string_ids(size_t start, size_t num_items) const;
+  /// get num_items discrete real ids beginning at index start
+  SizetMultiArrayConstView
+    all_discrete_real_ids(size_t start, size_t num_items) const;
+
   // get ids of discrete variables that have been relaxed into
   // continuous variable arrays
   //const SizetArray& relaxed_discrete_ids() const;
@@ -1188,6 +1205,27 @@ all_continuous_ids(size_t start, size_t num_items) const
 {
   return svdRep->
     allContinuousIds[boost::indices[idx_range(start, start+num_items)]];
+}
+
+inline SizetMultiArrayConstView SharedVariablesData::
+all_discrete_int_ids(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteIntIds[boost::indices[idx_range(start, start+num_items)]];
+}
+
+inline SizetMultiArrayConstView SharedVariablesData::
+all_discrete_string_ids(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteStringIds[boost::indices[idx_range(start, start+num_items)]];
+}
+
+inline SizetMultiArrayConstView SharedVariablesData::
+all_discrete_real_ids(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteRealIds[boost::indices[idx_range(start, start+num_items)]];
 }
 
 

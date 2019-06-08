@@ -12,7 +12,7 @@
 //- Checked by:
 
 #include "DataFitSurrModel.hpp"
-#include "RecastModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "ApproximationInterface.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
@@ -22,7 +22,7 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/rolling_mean.hpp>
-
+#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: DataFitSurrModel.cpp 7034 2010-10-22 20:16:32Z mseldre $";
 
@@ -72,42 +72,62 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     = problem_db.get_string("model.dace_method_pointer");
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.actual_model_pointer");
-  if (!dace_method_pointer.empty()) { // global DACE approximations
-    size_t method_index = problem_db.get_db_method_node(); // for restoration
-    size_t model_index  = problem_db.get_db_model_node();  // for restoration
+  bool dace_construct = !dace_method_pointer.empty(),
+      model_construct = (dace_construct || !actual_model_pointer.empty());
+  size_t method_index = _NPOS, model_index = _NPOS;
+  if (dace_construct) {
+    method_index = problem_db.get_db_method_node(); // for restoration
+    model_index  = problem_db.get_db_model_node();  // for restoration
     problem_db.set_db_list_nodes(dace_method_pointer);
+  }
+  else if (model_construct) {
+    model_index = problem_db.get_db_model_node(); // for restoration
+    problem_db.set_db_model_nodes(actual_model_pointer);
+  }
 
-    // instantiate the DACE iterator, which instantiates the actual model
-    daceIterator = problem_db.get_iterator();
-    daceIterator.sub_iterator_flag(true);
-
-    // retrieve the actual model from daceIterator (invalid for selected
-    // meta-iterators, e.g., hybrids)
-    actualModel = daceIterator.iterated_model();
+  // Instantiate actual model from DB
+  if (model_construct) {
+    // If approx type uses standardized random variables (hard-wired for now),
+    // wrap with a ProbabilityTransformModel (retaining distribution bounds as
+    // in PCE, SC, C3 ctors)
+    if (strends(surrogateType, "_orthogonal_polynomial") ||
+	strends(surrogateType, "_interpolation_polynomial") ||
+	strends(surrogateType, "_function_train" )) {
+      short u_space_type = /*PARTIAL_*/ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
+      actualModel.assign_rep(new
+	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
+    }
+    else
+      actualModel = problem_db.get_model();
+    // ensure consistency of inputs/outputs between actual and approx
     check_submodel_compatibility(actualModel);
+  }
+
+  // Instantiate dace iterator from DB
+  if (dace_construct) {
+    daceIterator = problem_db.get_iterator(actualModel); // no meta-iterators
+    daceIterator.sub_iterator_flag(true);
     // if outer level output is verbose/debug and actualModel verbosity is
     // defined by the DACE method spec, request fine-grained evaluation
     // reporting for purposes of the final output summary.  This allows verbose
     // final summaries without verbose output on every dace-iterator completion.
     if (outputLevel > NORMAL_OUTPUT)
       actualModel.fine_grained_evaluation_counters();
+  }
 
+  // reset all method/model pointers
+  if (dace_construct) {
     problem_db.set_db_method_node(method_index); // restore method only
     problem_db.set_db_model_nodes(model_index);  // restore all model nodes
   }
-  else if (!actual_model_pointer.empty()) { // local/multipoint approximation
-    size_t model_index = problem_db.get_db_model_node(); // for restoration
-    problem_db.set_db_model_nodes(actual_model_pointer);
-    actualModel = problem_db.get_model();
-    check_submodel_compatibility(actualModel);
-    problem_db.set_db_model_nodes(model_index); // restore
-  }
+  else if (model_construct)
+    problem_db.set_db_model_nodes(model_index);  // restore all model nodes
   // else global approx. built solely from reuse_points: daceIterator/
   // actualModel remain empty envelopes.  Verify that there is a data source:
   // this basic check is augmented with a build_global() check which enforces
   // that the total points from both sources be >= minimum required.
   else if ( pointReuse == "none" ) {
-    Cerr << "Error: to build an data fit surrogate model, either a global "
+    Cerr << "Error: to build a data fit surrogate model, either a global "
 	 << "approximation\n       must be specified with reuse_points or "
 	 << "dace_method_pointer, or a\n       local/multipoint approximation "
 	 << "must be specified with an actual_model_pointer." << std::endl;
@@ -128,12 +148,13 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     // within data_pairs, the actualModel must have an active evaluation cache
     // and derivative estimation (which causes consolidation of Interface evals
     // within Model evals, breaking Model eval lookups) must be off.
+    // Note: use of ProbabilityTransform recursion prevents data_pairs lookup
     if ( actualModel.evaluation_cache(false) &&
 	!actualModel.derivative_estimation())
       cache = true;
   }
   const StringArray fn_labels = (actualModel.is_null()) ? 
-    currentResponse.function_labels() :  actualModel.response_labels();
+    currentResponse.function_labels() : actualModel.response_labels();
   approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
     cache, am_interface_id, fn_labels), false);
 
@@ -1004,6 +1025,7 @@ void DataFitSurrModel::build_global()
     // bounds, any recastings within the model recursion must be managed.
     String am_interface_id;
     if (!actualModel.is_null()) am_interface_id = actualModel.interface_id();
+    if(am_interface_id.empty()) am_interface_id = "NO_ID";
     ModelLRevIter ml_rit; PRPCacheCIter prp_iter;
     Variables db_vars; Response db_resp;
     bool map_to_iter_space = recastings();
@@ -1479,18 +1501,39 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
     //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     //parallelLib.parallel_configuration_iterator(modelPCIter);
+    if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
+      interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
+          approxInterface.interface_id(), "approximation", currentVariables, currentResponse,
+          default_interface_active_set(), approxInterface.analysis_components());
+    
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet approx_set = set;
       approx_set.request_vector(approx_asv);
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
-      approxInterface.map(currentVariables, approx_set, approx_response); break;
+      approxInterface.map(currentVariables, approx_set, approx_response);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_set, currentVariables);
+        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_response);
+      }
+      break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approx_response = currentResponse.copy(); // TO DO
-      approxInterface.map(currentVariables, set, approx_response);        break;
+      approxInterface.map(currentVariables, set, approx_response);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), set, currentVariables);
+        evaluationsDB.store_interface_response(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_response);
+      }
+      break;
     }
+
     //parallelLib.parallel_configuration_iterator(pc_iter); // restore
+
 
     // export data (optional)
     if (!exportPointsFile.empty())
@@ -1595,6 +1638,12 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       break;
     }
 
+    if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.interface_allocate(modelId, approxInterface.interface_id(),
+                                       "approximation", currentVariables, currentResponse, 
+                                       default_interface_active_set(), 
+                                       approxInterface.analysis_components());
+
     // compute the approximate response
     // don't need to set component parallel mode since this only queues the job
     switch (responseMode) {
@@ -1602,10 +1651,16 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       ActiveSet approx_set = set;
       approx_set.request_vector(approx_asv);
       approxInterface.map(currentVariables, approx_set, currentResponse, true);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), approx_set, currentVariables);
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
       approxInterface.map(currentVariables,        set, currentResponse, true);
+      if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        evaluationsDB.store_interface_variables(modelId, approxInterface.interface_id(),
+          approxInterface.evaluation_id(), set, currentVariables);
       break;
     }
 
@@ -2013,15 +2068,15 @@ import_points(unsigned short tabular_format, bool active_only)
     //  int first_id = data_pairs.front().evaluation_id();
     //  if (first_id < 0) cache_id = first_id - 1;
     //}
-
     /// process arrays of data from TabularIO::read_data_tabular() above
     for (prp_it =import_prp_list.begin();
 	 prp_it!=import_prp_list.end(); ++prp_it) {
       ParamResponsePair& pr = *prp_it;
       //if ( (tabular_format & TABULAR_EVAL_ID) == 0 )  // not imported
       pr.eval_id(0); // always override eval id to 0 for imported data
-      if ( (tabular_format & TABULAR_IFACE_ID) == 0 )// not imported: dangerous!
-	pr.interface_id(am_iface_id); // assign best guess / default
+      if ( (tabular_format & TABULAR_IFACE_ID) == 0  && !am_iface_id.empty()) {// not imported: dangerous!
+          pr.interface_id(am_iface_id); // assign best guess / default
+      }
 
       if (restart) parallelLib.write_restart(pr); // preserve eval id
       if (cache)   data_pairs.insert(pr); // duplicate ids OK for PRPCache
@@ -2452,5 +2507,76 @@ void DataFitSurrModel::update_from_model(const Model& model)
     userDefinedConstraints.nonlinear_eq_constraint_targets(
       model.nonlinear_eq_constraint_targets());
 }
+
+void DataFitSurrModel::declare_sources() {
+
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    if(actualModel.is_null() || surrogateFnIndices.size() == numFns) {
+      evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+        "approximation");
+    } else if(surrogateFnIndices.empty()) { // don't know if this can happen.
+      evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    } else {
+      evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+        "approximation");
+      evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    }
+    break;
+  case BYPASS_SURROGATE:
+    evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    break;
+  case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
+    evaluationsDB.declare_source(modelId, "surrogate", actualModel.model_id(),
+        actualModel.model_type());
+    evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+        "approximation");
+    break;
+  }
+
+}
+
+ActiveSet DataFitSurrModel::default_interface_active_set() {
+  // The ApproximationInterface may provide just a subset
+  // of the responses, with the balance coming from the
+  // actualModel.
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  ShortArray asv(numFns);
+  const bool has_gradients = gradientType != "none" && 
+    (gradientType == "analytic" || supportsEstimDerivs);
+  const bool has_hessians = hessianType != "none" && 
+    (hessianType == "analytic" || supportsEstimDerivs);
+  // Most frequent case: build surrogates for all responses
+  if(responseMode == MODEL_DISCREPANCY || 
+     responseMode == AGGREGATED_MODELS ||
+     actualModel.is_null() ||
+     surrogateFnIndices.size() == numFns) {
+    std::fill(asv.begin(), asv.end(), 1);
+    if(has_gradients)
+      for(auto &a : asv)
+        a |=  2;
+    if(has_hessians)
+       for(auto &a : asv)
+         a |=  4;
+  } else {
+    std::fill(asv.begin(), asv.end(), 0);
+    for(int i = 0; i < numFns; ++i) {
+      if(surrogateFnIndices.count(i)) {
+        asv[i] = 1;
+        if(has_gradients)
+          asv[i] |= 2;
+        if(has_hessians)
+          asv[i] |= 4;
+      }
+    }
+  }
+  set.request_vector(asv);
+  return set;
+}
+
 
 } // namespace Dakota
