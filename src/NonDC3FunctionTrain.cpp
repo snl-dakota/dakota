@@ -69,11 +69,14 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
       iteratedModel.surrogate_type() == "global_function_train") {
     // transformation, DataFit, and DACE configuration performed by Model spec
     // All fn train model settings are pulled in that ctor chain
-    //uSpaceModel = iteratedModel; // shared rep
+    uSpaceModel = iteratedModel; // shared rep
 
     // TO DO: how to best manage the u-space transformation?
+
     // > wrapping iteratedModel here applies the transformation on top of the
     //   incoming DataFitSurrModel --> insufficient for internal build.
+    //transform_model(iteratedModel, uSpaceModel); // only affects exp_sampler
+
     // > intruding into the DataFitSurrModel ctor is awkward because the
     //   daceIterator spec points to the actualModel spec (when DACE is active)
     //   and daceIterator should sample in u-space for a u-space approx.  This
@@ -95,14 +98,9 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     //          random vars + no standardize request (or recognize no-op for a
     //          persistent request--> no further standardization to perform)
     //   >> Some methods/models require standardization and override default
-    //
-    // *****
-    // For now, consider branch in DFSModel ctor for data fits hard-wired with
-    // (orthog,interp,fn_train) and without (everything else) standardization
-    // > allows pathway to specification-based {orthog,interp} as well
-    // *****
-
-    transform_model(iteratedModel, uSpaceModel); // only affects exp_sampler
+    // > For now, define logic in DFSModel ctor for data fits hard-wired with
+    //   (orthog,interp,fn_train) and without (everything else) standardization
+    //   >> allows pathway to specification-based {orthog,interp} as well
 
     // publish random variable types
     initialize_data_fit_surrogate(iteratedModel);
