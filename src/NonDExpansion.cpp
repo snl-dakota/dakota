@@ -208,12 +208,19 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   // check compatibility of refinement type and u-space type
   if (refineType == Pecos::H_REFINEMENT) { // override
-    if (u_space_type == ASKEY_U) // non-default
-      Cerr << "\nWarning: overriding ASKEY to STD_UNIFORM for h-refinement.\n"
-	   << std::endl;
-    else if (u_space_type == STD_NORMAL_U) // non-default
-      Cerr << "\nWarning: overriding WIENER to STD_UNIFORM for h-refinement.\n"
-	   << std::endl;
+    switch (u_space_type) {
+    //case EXTENDED_U: // default; not user-selectable -> quiet default reassign
+    //  break;
+    case ASKEY_U: case PARTIAL_ASKEY_U: // non-default
+      Cerr << "\nWarning: overriding transformation from ASKEY to STD_UNIFORM "
+	   << "for h-refinement.\n" << std::endl;
+      break;
+    case STD_NORMAL_U: // non-default
+      Cerr << "\nWarning: overriding transformation from WIENER to STD_UNIFORM "
+	   << "for h-refinement.\n" << std::endl;
+      break;
+    }
+
     u_space_type = STD_UNIFORM_U; piecewiseBasis = true;
   }
   else if (refineType == Pecos::P_REFINEMENT && piecewiseBasis) {

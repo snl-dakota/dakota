@@ -93,7 +93,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     if (strends(surrogateType, "_orthogonal_polynomial") ||
 	strends(surrogateType, "_interpolation_polynomial") ||
 	strends(surrogateType, "_function_train" )) {
-      short u_space_type = /*PARTIAL_*/ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
+      // Hardwire for C3 case prior to availability of general Model spec:
+      short u_space_type = PARTIAL_ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
       actualModel.assign_rep(new
 	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
     }

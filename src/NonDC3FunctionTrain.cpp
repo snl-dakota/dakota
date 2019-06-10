@@ -56,8 +56,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // ----------------------------------------------
   short data_order;
   // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
-  // GAMMA,EXPONENTIAL} so need PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
-  short u_space_type = /*PARTIAL_*/ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
+  // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
+  short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
   initialize_random(u_space_type);
 

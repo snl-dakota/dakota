@@ -824,7 +824,7 @@ public:
   short growthOverride;
   /// enumeration for u-space type that defines u-space variable targets
   /// for probability space transformations: EXTENDED_U (default), ASKEY_U,
-  /// STD_NORMAL_U, or STD_UNIFORM_U
+  /// PARTIAL_ASKEY_U, STD_NORMAL_U, or STD_UNIFORM_U
   short expansionType;
   /// boolean indicating presence of \c piecewise keyword
   bool piecewiseBasis;

@@ -345,12 +345,20 @@ resolve_inputs(short& u_space_type, short& data_order)
 
   // override u_space_type to STD_UNIFORM_U for global Hermite interpolation
   if (useDerivs && !piecewiseBasis) {
-    if (u_space_type == ASKEY_U) // non-default
-      Cerr << "\nWarning: overriding ASKEY to STD_UNIFORM for Hermite "
-	   << "interpolation.\n" << std::endl;
-    else if (u_space_type == STD_NORMAL_U) // non-default
-      Cerr << "\nWarning: overriding WIENER to STD_UNIFORM for Hermite "
-	   << "interpolation.\n" << std::endl;
+
+    switch (u_space_type) {
+    //case EXTENDED_U: // default; not user-selectable -> quiet default reassign
+    //  break;
+    case ASKEY_U: case PARTIAL_ASKEY_U: // non-default
+      Cerr << "\nWarning: overriding transformation from ASKEY to STD_UNIFORM "
+	   << "for Hermite interpolation.\n" << std::endl;
+      break;
+    case STD_NORMAL_U: // non-default
+      Cerr << "\nWarning: overriding transformation from WIENER to STD_UNIFORM "
+	   << "for Hermite interpolation.\n" << std::endl;
+      break;
+    }
+
     u_space_type = STD_UNIFORM_U;
   }
 }

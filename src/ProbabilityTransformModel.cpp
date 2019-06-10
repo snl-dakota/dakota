@@ -620,9 +620,11 @@ initialize_distribution_transformation(short u_space_type)
   // > if STD_NORMAL_U (reliability, AIS, and Wiener PCE/SC), then u-space is
   //   defined exclusively with std normals;
   // > if STD_UNIFORM_U (SC with local & global Hermite basis polynomials),
-  //   then u-space is defined exclusively with std uniforms.
+  //   then u-space is defined exclusively with std uniforms;
+  // > if PARTIAL_ASKEY_U (C3 with orthog polynomials), then u-space is defined
+  //   by std normals and std uniforms;
   // > if ASKEY_U (PCE/SC using Askey polynomials), then u-space is defined by
-  //   std normals, std uniforms, std exponentials, std betas, and std gammas
+  //   std normals, std uniforms, std exponentials, std betas, and std gammas;
   // > if EXTENDED_U (PCE/SC with Askey plus numerically-generated polynomials),
   //   then u-space involves at most linear scaling to std distributions.
 
@@ -641,13 +643,30 @@ initialize_distribution_transformation(short u_space_type)
       case Pecos::DISCRETE_UNCERTAIN_SET_INT:
       case Pecos::DISCRETE_UNCERTAIN_SET_STRING:
       case Pecos::DISCRETE_UNCERTAIN_SET_REAL:
-	err_flag = true;                 break;
+	err_flag = true;                                            break;
       case Pecos::CONTINUOUS_RANGE: case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
-	u_types[i] = Pecos::STD_UNIFORM; break;	
+	u_types[i] = Pecos::STD_UNIFORM;                            break;
       default:
 	u_types[i] = (u_space_type == STD_UNIFORM_U)
-	           ? Pecos::STD_UNIFORM : Pecos::STD_NORMAL;
-	break;
+	           ? Pecos::STD_UNIFORM : Pecos::STD_NORMAL;        break;
+      }
+    break;
+  case PARTIAL_ASKEY_U: // used for cases with limited distrib support (C3)
+    for (i=0; i<num_rv; ++i)
+      switch (x_types[i]) {
+      case Pecos::NORMAL:           case Pecos::BOUNDED_NORMAL:
+      case Pecos::LOGNORMAL:        case Pecos::BOUNDED_LOGNORMAL:
+      case Pecos::EXPONENTIAL:      case Pecos::GAMMA:
+      case Pecos::GUMBEL:           case Pecos::FRECHET:
+      case Pecos::WEIBULL: // unbounded or semi-bounded dist; bounded N/logN
+	u_types[i] = Pecos::STD_NORMAL;                             break;
+      case Pecos::UNIFORM:          case Pecos::LOGUNIFORM:
+      case Pecos::TRIANGULAR:       case Pecos::BETA:
+      case Pecos::HISTOGRAM_BIN:    case Pecos::CONTINUOUS_RANGE:
+      case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN: // bounded
+	u_types[i] = Pecos::STD_UNIFORM;                            break;
+      // TO DO: discrete types
+      default:	               err_flag = true;                     break;
       }
     break;
   case ASKEY_U:
@@ -666,14 +685,18 @@ initialize_distribution_transformation(short u_space_type)
       case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
       case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
       // TO DO: discrete types
-      default:                 u_types[i] = x_types[i];             break;
+      //case Pecos::POISSON:           case Pecos::BINOMIAL:
+      //case Pecos::NEGATIVE_BINOMIAL: case Pecos::GEOMETRIC:
+      //case Pecos::HYPERGEOMETRIC:
+      default:                 err_flag = true;                     break;
       }
     break;
   case EXTENDED_U:
     for (i=0; i<num_rv; ++i)
       switch (x_types[i]) {
+      case Pecos::CONTINUOUS_RANGE:  case Pecos::UNIFORM:
+	u_types[i] = Pecos::STD_UNIFORM;                            break;
       case Pecos::NORMAL:      u_types[i] = Pecos::STD_NORMAL;      break;
-      case Pecos::UNIFORM:     u_types[i] = Pecos::STD_UNIFORM;     break;
       case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
       case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
       case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
@@ -687,7 +710,7 @@ initialize_distribution_transformation(short u_space_type)
     = (Pecos::MarginalsCorrDistribution*)uDist.multivar_dist_rep();
   if (err_flag) {
     Cerr << "Error: unsupported mapping in ProbabilityTransformModel::"
-         << "initialize_transformed_distribution()." << std::endl;
+         << "initialize_distribution_transformation()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   else
