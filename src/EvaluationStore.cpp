@@ -438,7 +438,7 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
     hdf5Stream->attach_scale(data_name, ids_name, "ids", 1);
 
     UShortMultiArrayConstView types = variables.all_discrete_real_variable_types();
-    StringArray type_labels(variables.adsv());
+    StringArray type_labels(variables.adrv());
     std::transform(types.begin(), types.end(), type_labels.begin(), 
         [](const unsigned short t){return variableTypes.at(t);});
     hdf5Stream->store_vector(types_name, type_labels);
