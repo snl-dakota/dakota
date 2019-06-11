@@ -469,10 +469,8 @@ void Model::assign_rep(Model* model_rep, bool ref_count_incr)
 }
 
 
-/** Build ProbabilityTransformation::ranVar arrays containing the
-    uncertain variable distribution types and their corresponding
-    means/standard deviations.  This function is used when the Model
-    variables are in x-space. */
+/** Build random variable distribution types and active subset.  This
+    function is used when the Model variables are in x-space. */
 void Model::
 initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
 			bool active_only)
