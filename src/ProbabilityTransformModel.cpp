@@ -30,8 +30,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   boundVal(bnd), mappingInitialized(false)
 {
   modelType = "probability_transform";
-  modelId
-    = RecastModel::recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
+  modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
 
   // initialize invariant portions of probability transform at construct time
   initialize_transformation(u_space_type);
@@ -62,16 +61,15 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
 
-  RecastModel::init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr,
-			  numFns, 0, 0, recast_resp_order);
-  RecastModel::init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping,
-			 set_u_to_x_mapping, primary_resp_map,
-			 secondary_resp_map, nonlinear_resp_map,
-			 resp_x_to_u_mapping, NULL);
+  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns,
+	     0, 0, recast_resp_order);
+  init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping,
+	    set_u_to_x_mapping, primary_resp_map, secondary_resp_map,
+	    nonlinear_resp_map, resp_x_to_u_mapping, NULL);
   // publish inverse mappings for use in data imports.  Since derivatives are
   // not imported and response values are not transformed, an inverse variables
   // transformation is sufficient for this purpose.
-  RecastModel::inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
+  inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
 }
 
 
@@ -113,13 +111,97 @@ void ProbabilityTransformModel::initialize_dakota_variable_types()
   // {transformation,types,correlations}().  Defining the transformation is
   // deferred until Model::initialize_mapping() to allow for problem resizing.
 
-  size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
+  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  size_t i, num_cdv, num_ddiv, num_ddsv, num_ddrv, num_cauv, num_dauiv,
+    num_dausv, num_daurv, num_ceuv, num_deuiv, num_deusv, num_deurv,
+    num_csv, num_dsiv,  num_dssv,  num_dsrv, rv_cntr = 0, cv_cntr = 0,
+    div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
+  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+  svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+  svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
   const Pecos::ShortArray& u_types = uDist.types();
 
-  // Update continuous aleatory variable types (needed for Model::
+  // Update active continuous/discrete variable types (needed for Model::
   // continuous_{probability_density,distribution_bounds,distribution_moment}())
-  for (i=numContDesVars; i<num_cdv_cauv; ++i)
-    continuous_variable_type(pecos_to_dakota_variable_type(u_types[i]), i);
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_var_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  if (cdv)
+    for (i=0; i<num_cdv; ++i, ++rv_cntr, ++cv_cntr)
+      continuous_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), cv_cntr);
+  else
+    rv_cntr += num_cdv;
+  if (ddv) {
+    for (i=0; i<num_ddiv; ++i, ++rv_cntr, ++div_cntr)
+      discrete_int_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), div_cntr);
+    for (i=0; i<num_ddsv; ++i, ++rv_cntr, ++dsv_cntr)
+      discrete_string_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), dsv_cntr);
+    for (i=0; i<num_ddrv; ++i, ++rv_cntr, ++drv_cntr)
+      discrete_real_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), drv_cntr);
+  }
+  else
+    rv_cntr += num_ddiv + num_ddsv + num_ddrv;
+  if (cauv)
+    for (i=0; i<num_cauv; ++i, ++rv_cntr, ++cv_cntr)
+      continuous_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), cv_cntr);
+  else
+    rv_cntr += num_cauv;
+  if (dauv) {
+    for (i=0; i<num_dauiv; ++i, ++rv_cntr, ++div_cntr)
+      discrete_int_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), div_cntr);
+    for (i=0; i<num_dausv; ++i, ++rv_cntr, ++dsv_cntr)
+      discrete_string_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), dsv_cntr);
+    for (i=0; i<num_daurv; ++i, ++rv_cntr, ++drv_cntr)
+      discrete_real_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), drv_cntr);
+  }
+  else
+    rv_cntr += num_dauiv + num_dausv + num_daurv;
+  if (ceuv)
+    for (i=0; i<num_ceuv; ++i, ++rv_cntr, ++cv_cntr)
+      continuous_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), cv_cntr);
+  else
+    rv_cntr += num_ceuv;
+  if (deuv) {
+    for (i=0; i<num_deuiv; ++i, ++rv_cntr, ++div_cntr)
+      discrete_int_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), div_cntr);
+    for (i=0; i<num_deusv; ++i, ++rv_cntr, ++dsv_cntr)
+      discrete_string_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), dsv_cntr);
+    for (i=0; i<num_deurv; ++i, ++rv_cntr, ++drv_cntr)
+      discrete_real_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), drv_cntr);
+  }
+  else
+    rv_cntr += num_deuiv + num_deusv + num_deurv;
+  if (csv)
+    for (i=0; i<num_csv; ++i, ++rv_cntr, ++cv_cntr)
+      continuous_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), cv_cntr);
+  else
+    rv_cntr += num_csv;
+  if (dsv) {
+    for (i=0; i<num_dsiv; ++i, ++rv_cntr, ++div_cntr)
+      discrete_int_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), div_cntr);
+    for (i=0; i<num_dssv; ++i, ++rv_cntr, ++dsv_cntr)
+      discrete_string_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), dsv_cntr);
+    for (i=0; i<num_dsrv; ++i, ++rv_cntr, ++drv_cntr)
+      discrete_real_variable_type(
+        pecos_to_dakota_variable_type(u_types[rv_cntr]), drv_cntr);
+  }
+  else
+    rv_cntr += num_dsiv + num_dssv + num_dsrv;
 }
 
 
@@ -149,7 +231,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
       case Pecos::STD_NORMAL:      // mean +/- bound std devs
         c_l_bnds[i] = -bnd;  c_u_bnds[i] =    bnd;  break;
       case Pecos::STD_EXPONENTIAL: // [0, mean + bound std devs] for beta=1
-        c_l_bnds[i] = 0.;      c_u_bnds[i] = 1.+bnd;  break;
+        c_l_bnds[i] = 0.;    c_u_bnds[i] = 1.+bnd;  break;
       case Pecos::STD_GAMMA: {
         Real mean, stdev;
         Pecos::GammaRandomVariable::
@@ -330,7 +412,7 @@ initialize_distribution_types(short u_space_type)
 
   const Pecos::ShortArray& x_types = xDist.types();
   size_t i, num_rv = x_types.size();
-  ShortArray u_types(num_rv, 0);
+  Pecos::ShortArray u_types(num_rv, NO_TYPE);
   bool err_flag = false;
   switch (u_space_type) {
   case STD_NORMAL_U:  case STD_UNIFORM_U:

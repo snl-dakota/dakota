@@ -439,11 +439,10 @@ inline NonD::~NonD()
 
 
 void NonD::
-transform_model(Model& x_model, Model& u_model,
-		bool truncated_bounds, Real bound)
+transform_model(Model& x_model, Model& u_model,	bool truncate_bnds, Real bnd)
 {
   u_model.assign_rep(new
-    ProbabilityTransformModel(x_model, truncated_bounds, bound), false);
+    ProbabilityTransformModel(x_model, truncate_bnds, bnd), false);
 }
 
 
