@@ -208,148 +208,211 @@ void ProbabilityTransformModel::initialize_dakota_variable_types()
 void ProbabilityTransformModel::
 update_model_bounds(bool truncate_bnds, Real bnd)
 {
-  /////////////////////////////////////////////////
-  // Populate model bounds for transformed space //
-  /////////////////////////////////////////////////
+  // Here, we finesse the continuous "global" bounds for a Model (distinct from
+  // distribution bounds in Pecos::MultivariateDistribution), for benefit of
+  // methods that are not distribution-aware, instead operating on bounded
+  // domains (e.g., PStudyDACE).  While the same concept could be extended to
+  // discrete distributions with semi-infinite support, we leave that exercise
+  // to be motivated by future use cases.
 
-  // [-1,1] are standard bounds for design, state, epistemic, uniform, & beta
-  RealVector c_l_bnds(numContinuousVars, false);  c_l_bnds = -1.;
-  RealVector c_u_bnds(numContinuousVars, false);  c_u_bnds =  1.;
+  ////////////////////////////////////////////////////////////
+  // Populate continuous model bounds for transformed space //
+  ////////////////////////////////////////////////////////////
+
+  const Pecos::ShortArray&               u_types = uDist.types();
+  const std::vector<Pecos::RandomVariable>& x_rv = xDist.random_variables();
+  size_t num_cv = currentVariables.cv(), num_rv = u_types.size();
+  // [-1,1] are u-space bounds for design, state, epistemic, uniform, & beta
+  RealVector c_l_bnds(num_cv, false);  c_l_bnds = -1.;
+  RealVector c_u_bnds(num_cv, false);  c_u_bnds =  1.;
   Real dbl_inf = std::numeric_limits<Real>::infinity();
-  const Pecos::ShortArray& x_types = xDist.types();
-  const Pecos::ShortArray& u_types = uDist.types();
-  //size_t i, num_rv = u_types.size(); // ***
-  size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;
+
+  // active subset flags
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_var_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  // raw counts
+  const SharedVariablesData& x_svd = subModel.current_variables().shared_data();
+  size_t i, num_cdv, num_ddiv, num_ddsv, num_ddrv, num_cauv, num_dauiv,
+    num_dausv, num_daurv, num_ceuv, num_deuiv, num_deusv, num_deurv,
+    num_csv, num_dsiv,  num_dssv,  num_dsrv, cv_cntr = 0, rv_cntr = 0;
+  x_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  x_svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+  x_svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+  x_svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
+
   if (truncate_bnds) {
     // truncate unbounded distributions for approaches requiring bounds:
-    //   standard sampling modes: model bounds only used for design/state
-    //   *_UNIFORM modes: model bounds are used for all active variables
-    size_t nuv_cntr = 0, lnuv_cntr = 0, gauv_cntr = 0, guuv_cntr = 0,
-           fuv_cntr = 0, wuv_cntr = 0;
-    for (i=numContDesVars; i<num_cdv_cauv; ++i) {
-      switch (u_types[i]) {
-      case Pecos::STD_NORMAL:      // mean +/- bound std devs
-        c_l_bnds[i] = -bnd;  c_u_bnds[i] =    bnd;  break;
-      case Pecos::STD_EXPONENTIAL: // [0, mean + bound std devs] for beta=1
-        c_l_bnds[i] = 0.;    c_u_bnds[i] = 1.+bnd;  break;
-      case Pecos::STD_GAMMA: {
-        Real mean, stdev;
-        Pecos::GammaRandomVariable::
-	  moments_from_params(x_adp.gamma_alpha(gauv_cntr), 1., mean, stdev);
-        c_l_bnds[i] = 0.;  c_u_bnds[i] = mean + bnd * stdev;  break;
-      }
-      case Pecos::BOUNDED_NORMAL: {
-        // Note: as for NIDR initialization, we use the gauss{Mean,StdDev}
-        // parameters rather than computing the actual mean,std_dev of the
-        // bounded distribution
-        Real l_bnd = x_adp.normal_lower_bound(nuv_cntr),
-             u_bnd = x_adp.normal_upper_bound(nuv_cntr);
-        c_l_bnds[i] = (l_bnd > -dbl_inf) ? l_bnd : // use specified bound
-	  x_adp.normal_mean(nuv_cntr)              // infer bound
-	  - bnd * x_adp.normal_std_deviation(nuv_cntr);
-        c_u_bnds[i] = (u_bnd <  dbl_inf) ? u_bnd : // use specified bound
-	  x_adp.normal_mean(nuv_cntr)              // infer bound
-	  + bnd * x_adp.normal_std_deviation(nuv_cntr);
-        break;
-      }
-      case Pecos::BOUNDED_LOGNORMAL: {
-        c_l_bnds[i] = x_adp.lognormal_lower_bound(lnuv_cntr); // specified or 0
-        Real u_bnd  = x_adp.lognormal_upper_bound(lnuv_cntr);
-        if (u_bnd < dbl_inf)
-          c_u_bnds[i] = u_bnd; // use specified bound
-        else {                 // infer bound
-          // Note: as for NIDR initialization, we use the mean,std_dev
-          // parameters rather than computing the actual mean,std_dev of the
-          // bounded distribution
-          Real mean, stdev;
-          Pecos::moments_from_lognormal_spec(x_adp.lognormal_means(),
-            x_adp.lognormal_std_deviations(), x_adp.lognormal_lambdas(),
-            x_adp.lognormal_zetas(), x_adp.lognormal_error_factors(),
-            lnuv_cntr, mean, stdev);
-          c_u_bnds[i] = mean + bnd * stdev;
-        }
-        break;
-      }
-      case Pecos::LOGUNIFORM: case Pecos::TRIANGULAR: case Pecos::HISTOGRAM_BIN:
-        // bounded distributions: x-space has desired bounds
-        c_l_bnds[i] = subModel.continuous_lower_bound(i);
-        c_u_bnds[i] = subModel.continuous_upper_bound(i);
-        break;
-      // Note: Could use subModel bounds for the following cases as well except
-      // that NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
-      case Pecos::LOGNORMAL: { // semi-bounded distribution
-        Real mean, stdev;
-        Pecos::moments_from_lognormal_spec(x_adp.lognormal_means(),
-          x_adp.lognormal_std_deviations(), x_adp.lognormal_lambdas(),
-          x_adp.lognormal_zetas(), x_adp.lognormal_error_factors(),
-	  lnuv_cntr, mean, stdev);
-        c_l_bnds[i] = 0.;  c_u_bnds[i] = mean + bnd * stdev;  break;
-      }
-      case Pecos::GUMBEL: { // unbounded distribution
-        Real mean, stdev;
-        Pecos::GumbelRandomVariable::
-	  moments_from_params(x_adp.gumbel_alpha(guuv_cntr),
-			      x_adp.gumbel_beta(guuv_cntr), mean, stdev);
-        c_l_bnds[i] = mean - bnd * stdev;  c_u_bnds[i] = mean + bnd * stdev;
-        break;
-      }
-      case Pecos::FRECHET: { // semibounded distribution
-        Real mean, stdev;
-        Pecos::FrechetRandomVariable::
-	  moments_from_params(x_adp.frechet_alpha(fuv_cntr),
-			      x_adp.frechet_beta(fuv_cntr), mean, stdev);
-        c_l_bnds[i] = 0.;  c_u_bnds[i] = mean + bnd * stdev;  break;
-      }
-      case Pecos::WEIBULL: { // semibounded distribution
-        Real mean, stdev;
-        Pecos::WeibullRandomVariable::
-	  moments_from_params(x_adp.weibull_alpha(wuv_cntr),
-			      x_adp.weibull_beta(wuv_cntr), mean, stdev);
-        c_l_bnds[i] = 0.;  c_u_bnds[i] = mean + bnd * stdev;  break;
-      }
-      }
-      switch (x_types[i]) {
-      case Pecos::NORMAL:    case Pecos::BOUNDED_NORMAL:     ++nuv_cntr; break;
-      case Pecos::LOGNORMAL: case Pecos::BOUNDED_LOGNORMAL: ++lnuv_cntr; break;
-      case Pecos::GAMMA:                                    ++gauv_cntr; break;
-      case Pecos::GUMBEL:                                   ++guuv_cntr; break;
-      case Pecos::FRECHET:                                   ++fuv_cntr; break;
-      case Pecos::WEIBULL:                                   ++wuv_cntr; break;
+    // > standard sampling modes: model bounds only used for design/state
+    // > *_UNIFORM modes: model bounds are used for all active variables
+
+    // all cdv are mapped to [-1,1]
+    if (cdv) cv_cntr += num_cdv;
+    rv_cntr += num_cdv + num_ddiv + num_ddsv + num_ddrv;
+
+    if (cauv) {
+      for (i=0; i<num_cauv; ++i, ++cv_cntr, ++rv_cntr) {
+	const Pecos::RandomVariable& rv_i = x_rv[rv_cntr];
+	switch (u_types[rv_cntr]) {
+	case Pecos::STD_NORMAL:      // mean +/- bnd std devs
+	  c_l_bnds[cv_cntr] = -bnd;  c_u_bnds[cv_cntr] =    bnd;  break;
+	case Pecos::STD_EXPONENTIAL: // [0, mean + bnd std devs] for beta=1
+	  c_l_bnds[cv_cntr] = 0.;    c_u_bnds[cv_cntr] = 1.+bnd;  break;
+	case Pecos::STD_GAMMA: {
+	  Real mean, stdev;
+	  Pecos::GammaRandomVariable::moments_from_params(
+	    rv_i.pull_parameter<Real>(Pecos::GA_ALPHA), 1., mean, stdev);
+	  c_l_bnds[cv_cntr] = 0.;
+	  c_u_bnds[cv_cntr] = mean + bnd * stdev;  break;
+	}
+	case Pecos::BOUNDED_NORMAL: {
+	  // Note: as for NIDR initialization, we use mean,std_dev parameters
+	  // rather than computing actual mean,std_dev of bounded distribution
+	  Real l_bnd = rv_i.pull_parameter<Real>(Pecos::N_LWR_BND),
+	       u_bnd = rv_i.pull_parameter<Real>(Pecos::N_UPR_BND);
+	  c_l_bnds[cv_cntr] = (l_bnd > -dbl_inf) ? l_bnd : // use spec bound
+	    rv_i.pull_parameter<Real>(Pecos::N_MEAN) - bnd *  // infer bound
+	    rv_i.pull_parameter<Real>(Pecos::N_STD_DEV);
+	  c_u_bnds[cv_cntr] = (u_bnd <  dbl_inf) ? u_bnd : // use spec bound
+	    rv_i.pull_parameter<Real>(Pecos::N_MEAN) + bnd *  // infer bound
+	    rv_i.pull_parameter<Real>(Pecos::N_STD_DEV);
+	  break;
+	}
+	case Pecos::LOGNORMAL: // semi-bounded distribution
+	  c_l_bnds[cv_cntr] = 0.;
+	  c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_MEAN)
+	              + bnd * rv_i.pull_parameter<Real>(Pecos::LN_STD_DEV);
+	  break;
+	case Pecos::BOUNDED_LOGNORMAL: {
+	  c_l_bnds[cv_cntr]
+	    = rv_i.pull_parameter<Real>(Pecos::LN_LWR_BND); // spec or 0
+	  Real u_bnd  = rv_i.pull_parameter<Real>(Pecos::LN_UPR_BND);
+	  if (u_bnd < dbl_inf)
+	    c_u_bnds[cv_cntr] = u_bnd; // use spec bound
+	  else                         // infer bound
+	    // Note: as for NIDR initialization, we use mean,std_dev parameters
+	    // rather than computing actual mean,std_dev of bounded distribution
+	    c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_MEAN)
+	                + bnd * rv_i.pull_parameter<Real>(Pecos::LN_STD_DEV);
+	  break;
+	}
+	case Pecos::LOGUNIFORM: case Pecos::TRIANGULAR:
+	case Pecos::HISTOGRAM_BIN:
+	  // bounded distributions: x-space has desired bounds
+	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  break;
+	// Note: Could use subModel bounds for the following cases as well
+	// except NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
+	case Pecos::GUMBEL: { // unbounded distribution
+	  Real mean, stdev;
+	  Pecos::GumbelRandomVariable::moments_from_params(
+	    rv_i.pull_parameter<Real>(Pecos::GU_ALPHA),
+	    rv_i.pull_parameter<Real>(Pecos::GU_BETA), mean, stdev);
+	  c_l_bnds[cv_cntr] = mean - bnd * stdev;
+	  c_u_bnds[cv_cntr] = mean + bnd * stdev;
+	  break;
+	}
+	case Pecos::FRECHET: { // semibounded distribution
+	  Real mean, stdev;
+	  Pecos::FrechetRandomVariable::moments_from_params(
+	    rv_i.pull_parameter<Real>(Pecos::F_ALPHA),
+	    rv_i.pull_parameter<Real>(Pecos::F_BETA), mean, stdev);
+	  c_l_bnds[cv_cntr] = 0.; c_u_bnds[cv_cntr] = mean + bnd * stdev; break;
+	}
+	case Pecos::WEIBULL: { // semibounded distribution
+	  Real mean, stdev;
+	  Pecos::WeibullRandomVariable::moments_from_params(
+	    rv_i.pull_parameter<Real>(Pecos::W_ALPHA),
+	    rv_i.pull_parameter<Real>(Pecos::W_BETA), mean, stdev);
+	  c_l_bnds[cv_cntr] = 0.; c_u_bnds[cv_cntr] = mean + bnd * stdev; break;
+	}
+	}
       }
     }
+    else
+      rv_cntr += num_cauv;
+    rv_cntr += num_dauiv + num_dausv + num_daurv;
+
+    if (ceuv) {
+      for (i=0; i<num_ceuv; ++i, ++cv_cntr, ++rv_cntr) {
+	const Pecos::RandomVariable& rv_i = x_rv[rv_cntr];
+	switch (u_types[rv_cntr]) {
+	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	  // bounded distributions: x-space has desired bounds
+	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  break;
+	}
+      }
+    }
+    //else
+    //  rv_cntr += num_ceuv;
+    //rv_cntr += num_deuiv + num_deusv + num_deurv;
+
+    // all csv are mapped to [-1,1]
+    //if (csv) cv_cntr += num_csv;
+    //rv_cntr += num_csv + num_dsiv + num_dssv + num_dsrv;
   }
   else { // retain infinite model bounds where distributions are unbounded
-    size_t nuv_cntr = 0, lnuv_cntr = 0;
-    for (i=numContDesVars; i<num_cdv_cauv; ++i) {
-      switch (u_types[i]) {
-      case Pecos::STD_NORMAL:  case Pecos::GUMBEL: // unbounded distributions
-        c_l_bnds[i] = -dbl_inf;  c_u_bnds[i] = dbl_inf;  break;
-      case Pecos::LOGNORMAL:  case Pecos::STD_EXPONENTIAL:
-      case Pecos::STD_GAMMA:  case Pecos::FRECHET:
-      case Pecos::WEIBULL:                       // semibounded distributions
-        c_l_bnds[i] = 0.;  c_u_bnds[i] = dbl_inf;  break;
-      case Pecos::BOUNDED_NORMAL:
-        // can't rely on subModel bounds since could be 1-sided
-        c_l_bnds[i] = x_adp.normal_lower_bound(nuv_cntr);
-        c_u_bnds[i] = x_adp.normal_upper_bound(nuv_cntr);  break;
-      case Pecos::BOUNDED_LOGNORMAL:
-        // can't rely on subModel bounds since could be 1-sided
-        c_l_bnds[i] = x_adp.lognormal_lower_bound(lnuv_cntr);
-        c_u_bnds[i] = x_adp.lognormal_upper_bound(lnuv_cntr);  break;
-      case Pecos::LOGUNIFORM:  case Pecos::TRIANGULAR:
-      case Pecos::HISTOGRAM_BIN:                    // bounded distributions
-        // 2-sided: can rely on subModel bounds
-        c_l_bnds[i] = subModel.continuous_lower_bound(i);
-        c_u_bnds[i] = subModel.continuous_upper_bound(i);  break;
-      }
-      switch (x_types[i]) {
-      case Pecos::NORMAL:    case Pecos::BOUNDED_NORMAL:      ++nuv_cntr; break;
-      case Pecos::LOGNORMAL: case Pecos::BOUNDED_LOGNORMAL:  ++lnuv_cntr; break;
+
+    // all cdv are mapped to [-1,1]
+    if (cdv) cv_cntr += num_cdv;
+    rv_cntr += num_cdv + num_ddiv + num_ddsv + num_ddrv;
+
+    if (cauv) {
+      for (i=0; i<num_cauv; ++i, ++cv_cntr, ++rv_cntr) {
+	const Pecos::RandomVariable& rv_i = x_rv[rv_cntr];
+	switch (u_types[rv_cntr]) {
+	case Pecos::STD_NORMAL:  case Pecos::GUMBEL: // unbounded distributions
+	  c_l_bnds[cv_cntr] = -dbl_inf;  c_u_bnds[cv_cntr] = dbl_inf;   break;
+	case Pecos::LOGNORMAL:  case Pecos::STD_EXPONENTIAL:
+	case Pecos::STD_GAMMA:  case Pecos::FRECHET:
+	case Pecos::WEIBULL:                       // semibounded distributions
+	  c_l_bnds[cv_cntr] = 0.;        c_u_bnds[cv_cntr] = dbl_inf;   break;
+	case Pecos::BOUNDED_NORMAL:
+	  // can't rely on subModel bounds since could be 1-sided
+	  c_l_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::N_LWR_BND);
+	  c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::N_UPR_BND);
+	  break;
+	case Pecos::BOUNDED_LOGNORMAL:
+	  // can't rely on subModel bounds since could be 1-sided
+	  c_l_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_LWR_BND);
+	  c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_UPR_BND);
+	  break;
+	case Pecos::LOGUNIFORM:  case Pecos::TRIANGULAR:
+	case Pecos::HISTOGRAM_BIN:                     // bounded distributions
+	  // 2-sided: can rely on subModel bounds
+	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr); break;
+	}
       }
     }
+    else
+      rv_cntr += num_cauv;
+    rv_cntr += num_dauiv + num_dausv + num_daurv;
+
+    if (ceuv) {
+      for (i=0; i<num_ceuv; ++i, ++cv_cntr, ++rv_cntr) {
+	const Pecos::RandomVariable& rv_i = x_rv[rv_cntr];
+	switch (u_types[rv_cntr]) {
+	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	  // bounded distributions: x-space has desired bounds
+	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  break;
+	}
+      }
+    }
+    //else
+    //  rv_cntr += num_ceuv;
+    //rv_cntr += num_deuiv + num_deusv + num_deurv;
+
+    // all csv are mapped to [-1,1]
+    //if (csv) cv_cntr += num_csv;
+    //rv_cntr += num_csv + num_dsiv + num_dssv + num_dsrv;
   }
-  continuous_lower_bounds(c_l_bnds);
-  continuous_upper_bounds(c_u_bnds);
+
+  continuous_lower_bounds(c_l_bnds);  continuous_upper_bounds(c_u_bnds);
 }
 
 
@@ -412,7 +475,7 @@ initialize_distribution_types(short u_space_type)
 
   const Pecos::ShortArray& x_types = xDist.types();
   size_t i, num_rv = x_types.size();
-  Pecos::ShortArray u_types(num_rv, NO_TYPE);
+  Pecos::ShortArray u_types(num_rv, Pecos::NO_TYPE);
   bool err_flag = false;
   switch (u_space_type) {
   case STD_NORMAL_U:  case STD_UNIFORM_U:
