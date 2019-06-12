@@ -72,9 +72,9 @@ protected:
 
   /// instantiate and initialize natafTransform
   void initialize_nataf();
-  /// alternate form: initialize natafTransform based on incoming data
-  void initialize_nataf(const Pecos::ProbabilityTransformation& transform,
-			bool deep_copy = false);
+  // alternate form: initialize natafTransform based on incoming data
+  //void initialize_nataf(const Pecos::ProbabilityTransformation& transform,
+  //			bool deep_copy = false);
 
   /// initialize transformed distribution types and instantiate uDist
   void initialize_distribution_types(short u_space_type);
@@ -104,7 +104,8 @@ protected:
 
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations
-  unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
+  unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type,
+					       size_t rv_index);
 
   /// static function for RecastModels used for forward mapping of u-space
   /// variables from NonD Iterators to x-space variables for Model evaluations
@@ -177,6 +178,27 @@ inline void ProbabilityTransformModel::initialize_nataf()
     natafTransform.u_distribution(uDist); // shallow copy
   }
 }
+
+
+/* This function is commonly used to publish tranformation data when
+   the Model variables are in a transformed space (e.g., u-space) and
+   ProbabilityTransformation::ranVarTypes et al. may not be generated
+   directly.  This allows for the use of inverse transformations to
+   return the transformed space variables to their original states.
+void ProbabilityTransformModel::
+initialize_nataf(const Pecos::ProbabilityTransformation& transform,
+		 bool deep_copy)
+{
+  if (deep_copy) {
+    initialize_nataf();
+    natafTransform.copy(transform);
+    // TO DO: deep copy of randomVarsX not yet implemented in
+    // Pecos::ProbabilityTransformation::copy()
+  }
+  else
+    natafTransform = transform; // shared rep
+}
+*/
 
 
 inline void ProbabilityTransformModel::
