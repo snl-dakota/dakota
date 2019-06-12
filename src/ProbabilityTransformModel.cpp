@@ -120,7 +120,7 @@ void ProbabilityTransformModel::initialize_dakota_variable_types()
   svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
   svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
   svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
-  const Pecos::ShortArray& u_types = uDist.types();
+  const Pecos::ShortArray& u_types = uDist.random_variable_types();
 
   // Update active continuous/discrete variable types (needed for Model::
   // continuous_{probability_density,distribution_bounds,distribution_moment}())
@@ -219,7 +219,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
   // Populate continuous model bounds for transformed space //
   ////////////////////////////////////////////////////////////
 
-  const Pecos::ShortArray&               u_types = uDist.types();
+  const Pecos::ShortArray& u_types = uDist.random_variable_types();
   const std::vector<Pecos::RandomVariable>& x_rv = xDist.random_variables();
   size_t num_cv = currentVariables.cv(), num_rv = u_types.size();
   // [-1,1] are u-space bounds for design, state, epistemic, uniform, & beta
@@ -473,7 +473,7 @@ initialize_distribution_types(short u_space_type)
   // > if EXTENDED_U (PCE/SC with Askey plus numerically-generated polynomials),
   //   then u-space involves at most linear scaling to std distributions.
 
-  const Pecos::ShortArray& x_types = xDist.types();
+  const Pecos::ShortArray& x_types = xDist.random_variable_types();
   size_t i, num_rv = x_types.size();
   Pecos::ShortArray u_types(num_rv, Pecos::NO_TYPE);
   bool err_flag = false;
@@ -575,7 +575,7 @@ void ProbabilityTransformModel::update_distribution_parameters()
 
   const std::vector<Pecos::RandomVariable>& x_rv = xDist.random_variables();
   std::vector<Pecos::RandomVariable>&       u_rv = uDist.random_variables();
-  const Pecos::ShortArray&               u_types = uDist.types();
+  const Pecos::ShortArray& u_types = uDist.random_variable_types();
   size_t i, num_rv = u_types.size();
 
   for (i=0; i<num_rv; ++i)
@@ -616,26 +616,35 @@ void ProbabilityTransformModel::update_distribution_parameters()
 void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 {
   if (xDist.correlation()) {
-    const Pecos::ShortArray&   x_types = xDist.types();
-    const Pecos::ShortArray&   u_types = uDist.types();
+    const Pecos::ShortArray&   x_types = xDist.random_variable_types();
+    const Pecos::ShortArray&   u_types = uDist.random_variable_types();
     const Pecos::RealSymMatrix& x_corr = xDist.correlation_matrix();
-    size_t i, j, num_cdv_cauv = numContDesVars+numContAleatUncVars;
+    const Pecos::BitArray& active_corr = xDist.active_correlations();
+    size_t i, j, corr_i, corr_j, num_rv = x_types.size();
+    bool no_mask = active_corr.empty();
 
     // We can only decorrelate in std normal space; therefore, if a variable
-    // with a u_type other than STD_NORMAL is correlated with anything, revert
+    // with a u_type other than STD_NORMAL is correlated with anything, change
     // its u_type to STD_NORMAL.
     if (u_space_type != STD_NORMAL_U) {
-      for (i=numContDesVars; i<num_cdv_cauv; ++i)
-        if (u_types[i] != Pecos::STD_NORMAL)
-          // since we don't check all rows, check *all* columns despite symmetry
-          for (j=numContDesVars; j<num_cdv_cauv; ++j)
-            if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER) {
-              Cerr << "\nWarning: u-space type for random variable "
-                   << i-numContDesVars+1 << " changed to\n         "
-                   << "STD_NORMAL due to decorrelation requirements.\n";
-              uDist.type(Pecos::STD_NORMAL, i);
-              break; // out of inner loop
-            }
+      for (i=0, corr_i=0; i<num_rv; ++i)
+	if (no_mask || active_corr[i]) {
+	  if (u_types[i] != Pecos::STD_NORMAL)
+	    // since we don't check all rows, check all columns despite symmetry
+	    for (j=0, corr_j=0; j<num_rv; ++j)
+	      if (no_mask || active_corr[j]) {
+		if (i != j && std::fabs(x_corr(corr_i, corr_j)) >
+		    Pecos::SMALL_NUMBER) {
+		  Cerr << "\nWarning: u-space type for random variable " << i+1
+		       << " changed to\n         STD_NORMAL due to "
+		       << "decorrelation requirements.\n";
+		  uDist.random_variable_type(Pecos::STD_NORMAL, i);
+		  break; // out of inner loop
+		}
+		++corr_j;
+	      }
+	  ++corr_i;
+	}
     }
 
     // Check for correlations among variable types (bounded normal, bounded
@@ -643,23 +652,30 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
     // supported by Der Kiureghian & Liu for correlation warping estimation
     // when transforming to std normals.
     bool err_flag = false;
-    for (i=numContDesVars; i<num_cdv_cauv; ++i) {
+    for (i=0, corr_i=0; i<num_rv; ++i) {
       bool distribution_error = false;
-      short x_type = x_types[i];
-      if ( x_type == Pecos::BOUNDED_NORMAL    || x_type == Pecos::LOGUNIFORM ||
-           x_type == Pecos::BOUNDED_LOGNORMAL || x_type == Pecos::TRIANGULAR ||
-           x_type == Pecos::BETA || x_type == Pecos::HISTOGRAM_BIN )
-        // since we don't check all rows, check *all* columns despite symmetry
-        for (j=numContDesVars; j<num_cdv_cauv; ++j)
-          if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER)
-	    { distribution_error = true; break; }
+      if (no_mask || active_corr[i]) {
+	short x_type = x_types[i];
+	if (x_type == Pecos::BOUNDED_NORMAL    || x_type == Pecos::LOGUNIFORM ||
+	    x_type == Pecos::BOUNDED_LOGNORMAL || x_type == Pecos::TRIANGULAR ||
+	    x_type == Pecos::BETA || x_type == Pecos::HISTOGRAM_BIN)
+	  // since we don't check all rows, check *all* columns despite symmetry
+	  for (j=0, corr_j=0; j<num_rv; ++j)
+	    if (no_mask || active_corr[j]) {
+	      if (i != j && std::fabs(x_corr(corr_i, corr_j)) >
+		  Pecos::SMALL_NUMBER)
+		{ distribution_error = true; break; }
+	      ++corr_j;
+	    }
+	++corr_i;
+      }
       if (distribution_error) {
-        Cerr << "Error: correlation warping for Nataf variable transformation "
-             << "of bounded normal,\n       bounded lognormal, loguniform, "
-             << "triangular, beta, and histogram bin\n       distributions is "
-             << "not currently supported.  Error detected for variable " << i+1
-             << "." << std::endl;
-        err_flag = true;
+	Cerr << "Error: correlation warping for Nataf variable transformation "
+	     << "of bounded normal,\n       bounded lognormal, loguniform, "
+	     << "triangular, beta, and histogram bin\n       distributions is "
+	     << "not currently supported.  Error detected for variable " << i+1
+	     << "." << std::endl;
+	err_flag = true;
       }
     }
     if (err_flag)

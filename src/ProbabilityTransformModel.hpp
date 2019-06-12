@@ -211,29 +211,28 @@ nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
 			    const Pecos::MultivariateDistribution& u_dist) const
 {
   bool nln_vars_map = false;
-  const ShortArray& x_types = x_dist.types();
-  const ShortArray& u_types = u_dist.types();
+  const ShortArray& x_types = x_dist.random_variable_types();
+  const ShortArray& u_types = u_dist.random_variable_types();
   size_t i, num_types = std::min(x_types.size(), u_types.size());
   const BitArray& active_v = x_dist.active_variables();
   for (i=0; i<num_types; ++i)
     if (active_v[i]) {
       switch (u_types[i]) {
       case Pecos::STD_NORMAL:
-	nln_vars_map = (x_types[i] == Pecos::NORMAL)      ? false : true; break;
-      case Pecos::STD_UNIFORM: {
-	short x_type = x_types[i];
-	nln_vars_map = (x_type == Pecos::UNIFORM ||
-	  x_type == Pecos::HISTOGRAM_BIN || x_type == Pecos::CONTINUOUS_RANGE ||
-	  x_type == Pecos::CONTINUOUS_INTERVAL_UNCERTAIN) ? false : true; break;
-      }
+	nln_vars_map = (x_types[i] != Pecos::NORMAL); break;
+      case Pecos::STD_UNIFORM:
+	switch (x_types[i]) {
+	case Pecos::CONTINUOUS_RANGE: case Pecos::UNIFORM:
+	case Pecos::HISTOGRAM_BIN:    case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	  break;
+	default:  nln_vars_map = true;  break;
+	}
+	break;
       case Pecos::STD_EXPONENTIAL:
-	nln_vars_map = (x_types[i] == Pecos::EXPONENTIAL) ? false : true; break;
-      case Pecos::STD_BETA:
-	nln_vars_map = (x_types[i] == Pecos::BETA)        ? false : true; break;
-      case Pecos::STD_GAMMA:
-	nln_vars_map = (x_types[i] == Pecos::GAMMA)       ? false : true; break;
-      default:
-	nln_vars_map = (x_types[i] == u_types[i])         ? false : true; break;
+	nln_vars_map = (x_types[i] != Pecos::EXPONENTIAL); break;
+      case Pecos::STD_BETA:  nln_vars_map = (x_types[i] != Pecos::BETA);  break;
+      case Pecos::STD_GAMMA: nln_vars_map = (x_types[i] != Pecos::GAMMA); break;
+      default:               nln_vars_map = (x_types[i] != u_types[i]);   break;
       }
 
       if (nln_vars_map) break;
