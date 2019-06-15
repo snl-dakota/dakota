@@ -50,6 +50,8 @@ public:
   bool finalize_mapping();
   bool mapping_initialized() const;
   bool resize_pending() const;
+  void update_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
 
   //
   //- Heading: Member functions
@@ -78,12 +80,10 @@ protected:
 
   /// initialize transformed distribution types and instantiate uDist
   void initialize_distribution_types(short u_space_type);
-  /// update distibution parameters within uDist
-  void update_distribution_parameters();
+
   // x-space correlations assigned in Model (and available within
   // natafTransform::xDist) and u-space is uncorrelated
   //void update_distribution_correlations();
-
   /// verify that correlation warping is supported by Nataf for given
   /// variable types
   void verify_correlation_support(short u_space_type);
@@ -142,9 +142,10 @@ private:
   /// to standard random variables u using the chain rule df/dx dx/du.
   bool distParamDerivs;
 
-  /// boolean flag to indicate truncated bounds
+  /// boolean flag indicating use of distribution truncation for
+  /// defining global model bounds
   bool truncatedBounds;
-  /// bound value
+  /// number of +/- standard deviations used for defining bounds truncation
   Real boundVal;
 
   /// "primary" all continuous variable mapping indices flowed down
@@ -217,7 +218,7 @@ initialize_transformation(short u_space_type)
 
 inline void ProbabilityTransformModel::update_transformation()
 {
-  update_distribution_parameters();
+  uDist.pull_distribution_parameters(xDist);
   // x-space correlations assigned in Model and u-space is uncorrelated
   //update_distribution_correlations();
   natafTransform.transform_correlations();
@@ -225,6 +226,16 @@ inline void ProbabilityTransformModel::update_transformation()
   update_model_bounds(truncatedBounds, boundVal);
 
   ptmInstance = this; // run time (Model::initialize_mapping())
+}
+
+
+inline void ProbabilityTransformModel::
+update_from_subordinate_model(size_t depth)
+{
+  // standard updates for RecastModels, including subModel recursion
+  RecastModel::update_from_subordinate_model(depth);
+  // propagate any xDist parameter updates to uDist
+  uDist.pull_distribution_parameters(xDist);
 }
 
 

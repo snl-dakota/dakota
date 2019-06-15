@@ -13,6 +13,7 @@
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataFitSurrModel.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
@@ -1597,45 +1598,38 @@ void ActiveSubspaceModel::update_linear_constraints()
 /// transform and set the distribution parameters in the reduced model
 void ActiveSubspaceModel::uncertain_vars_to_subspace()
 {
-  const Pecos::AleatoryDistParams& native_params =
-    subModel.aleatory_distribution_parameters();
-
-  // update the reduced space model
-  Pecos::AleatoryDistParams& reduced_dist_params =
-    aleatory_distribution_parameters();
+  const Pecos::MultivariateDistribution& native_dist =
+    subModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* native_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
 
   // initialize AleatoryDistParams for reduced model
   // This is necessary if subModel has been transformed
   // to standard normals from a different distribution
-  reduced_dist_params.copy(native_params); // deep copy
+  //xDist.pull_distribution_parameters(native_dist); // deep copy
 
   // native space characterization
-  const RealVector& mu_x = native_params.normal_means();
-  const RealVector& sd_x = native_params.normal_std_deviations();
-  const RealSymMatrix& correl_x = native_params.uncertain_correlations();
-
+  RealVector mu_x, sd_x;
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_x);
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_x);
+  const RealSymMatrix& correl_x = native_dist.correlation_matrix();
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: correl_x = \n" << correl_x;
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
     Cerr << "\nError (subspace model): Wrong correlation size." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // reduced space characterization: mean mu, std dev sd
-  RealVector mu_y(reducedRank), sd_y(reducedRank);
-  RealVector mu_z(inactiveBasis.numCols());
-
+  RealVector mu_y(reducedRank), sd_y(reducedRank),
+             mu_z(inactiveBasis.numCols());
 
   // mu_y = activeBasis^T * mu_x
-  int m = activeBasis.numRows();
-  int n = activeBasis.numCols();
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
+  int  m = activeBasis.numRows(), n = activeBasis.numCols();
+  Real alpha = 1.0,               beta = 0.0;
+  int  incx  = 1,                 incy = 1;
 
   // y <-- alpha*A*x + beta*y
   // mu_y <-- 1.0 * activeBasis^T * mu_x + 0.0 * mu_y
@@ -1651,27 +1645,24 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
     for (int row=0; row<activeBasis.numRows(); ++row)
       for (int col=0; col<activeBasis.numRows(); ++col)
         V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
-  } else {
+  }
+  else {
     V_x = 0.0;
     for (int row=0; row<activeBasis.numRows(); ++row)
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
-
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: activeBasis = \n" << activeBasis
 	 << "\nSubspace Model: V_x =\n"          << V_x;
 
   // compute V_y = U^T * V_x * U
-  alpha = 1.0;
-  beta = 0.0;
+  alpha = 1.0;  beta = 0.0;
   RealMatrix UTVx(n, m, false);
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
                 alpha, activeBasis, V_x, beta);
   RealMatrix V_y(reducedRank, reducedRank, false);
   V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
                alpha, UTVx, activeBasis, beta);
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: V_y = \n" << V_y;
 
@@ -1679,9 +1670,10 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   for (int i=0; i<reducedRank; ++i)
     sd_y(i) = std::sqrt(V_y(i,i));
 
-  reduced_dist_params.normal_means(mu_y);
-  reduced_dist_params.normal_std_deviations(sd_y);
-
+  Pecos::MarginalsCorrDistribution* reduced_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
 
   // compute the correlations in reduced space
   // TODO: fix symmetric access to not loop over whole matrix
@@ -1693,35 +1685,28 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   for (int row=0; row<reducedRank; ++row)
     for (int col=0; col<reducedRank; ++col)
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: correl_y = \n" << correl_y;
-
-  reduced_dist_params.uncertain_correlations(correl_y);
+  xDist.correlation_matrix(correl_y);
 
   // Set inactive subspace variables
   // mu_z = inactiveBasis^T * mu_x
   m = inactiveBasis.numRows();
   n = inactiveBasis.numCols();
-  alpha = 1.0;
-  beta = 0.0;
+  alpha = 1.0;  beta = 0.0;
 
   incx = 1;
   int incz = 1;
-
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, inactiveBasis.values(), m,
                     mu_x.values(), incx, beta, mu_z.values(), incz);
-
   inactiveVars = mu_z;
 
-
   // Set continuous variable types:
-  UShortMultiArray cont_variable_types(boost::extents[reducedRank]);
-  for (int i = 0; i < reducedRank; i++) {
-    cont_variable_types[i] = NORMAL_UNCERTAIN;
-  }
+  UShortMultiArray cv_types(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++)
+    cv_types[i] = NORMAL_UNCERTAIN;
   currentVariables.continuous_variable_types(
-    cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
+    cv_types[boost::indices[idx_range(0, reducedRank)]]);
 
   // Set currentVariables to means of active variables:
   continuous_variables(mu_y);

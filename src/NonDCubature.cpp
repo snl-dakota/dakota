@@ -38,12 +38,12 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
 
   // natafTransform available: initialize_random_variables() called in
   // NonDIntegration ctor
-  const Pecos::ShortArray& u_types = natafTransform.u_types();
   check_variables(natafTransform.x_random_variables());
-  check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
+  check_integration(iteratedModel.multivariate_distribution());
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
-  cubDriver->initialize_grid(u_types, cubIntOrderRef, cubIntRule);
+  cubDriver->
+    initialize_grid(natafTransform.u_types(), cubIntOrderRef, cubIntRule);
   //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
@@ -65,7 +65,7 @@ NonDCubature(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::core_run().
   //check_variables(x_ran_vars);
-  check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
+  check_integration(iteratedModel.multivariate_distribution());
 }
 
 
@@ -83,28 +83,34 @@ NonDCubature::~NonDCubature()
 
 
 void NonDCubature::
-check_integration(const Pecos::ShortArray& u_types,
-		  const Pecos::AleatoryDistParams& adp)
+check_integration(const Pecos::MultivariateDistribution& mvd)
 {
   bool err_flag = false;
 
   // For parameterized polynomials (including numerically-generated), check
-  // u_types and dp for isotropy; for other polynomials, check u_types only.
-  short type0 = u_types[0];
+  // u_types and dist params for isotropy; for other poly, check u_types only.
+  const ShortArray& rv_types = mvd.random_variable_types();
+  short type0 = rv_types[0];
   switch (type0) {
   case Pecos::STD_BETA: { // verify isotropy in u_type and dp
-    const RealVector& beuv_alphas = adp.beta_alphas();
-    const RealVector& beuv_betas  = adp.beta_betas();
-    const Real& alpha0 = beuv_alphas[0]; const Real& beta0 = beuv_betas[0];
+    Pecos::MarginalsCorrDistribution* mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
+    RealArray beuv_alphas, beuv_betas;
+    mvd_rep->pull_parameters(BE_ALPHA, beuv_alphas);
+    mvd_rep->pull_parameters(BE_BETA,  beuv_betas);
+    Real alpha0 = beuv_alphas[0], beta0 = beuv_betas[0];
     for (size_t i=1; i<numContinuousVars; ++i)
-      if (u_types[i]    != type0 || beuv_alphas[i] != alpha0 ||
+      if (rv_types[i]   != type0 || beuv_alphas[i] != alpha0 ||
 	  beuv_betas[i] != beta0)
 	err_flag = true;
     break;
   }
   case Pecos::STD_GAMMA: { // verify isotropy in u_type and dp
-    const RealVector& gauv_alphas = adp.gamma_alphas();
-    const Real& alpha0 = gauv_alphas[0];
+    Pecos::MarginalsCorrDistribution* mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
+    RealArray gauv_alphas;
+    mvd_rep->pull_parameters(GA_ALPHA, gauv_alphas);
+    Real alpha0 = gauv_alphas[0];
     for (size_t i=1; i<numContinuousVars; ++i)
       if (u_types[i] != type0 || gauv_alphas[i] != alpha0)
 	err_flag = true;

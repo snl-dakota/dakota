@@ -184,8 +184,9 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
 
   // For PCE, the approximation and integration bases are the same.  We (always)
   // construct it for the former and (conditionally) pass it in to the latter.
-  shared_data_rep->construct_basis(natafTransform.u_types(),
-    dfs_model.aleatory_distribution_parameters());
+  const Pecos::MultivariateDistribution& u_dist
+    = dfs_model.truth_model().transformed_multivariate_distribution();
+  shared_data_rep->construct_basis(u_dist);
   
   // if all variables mode, initialize key to random variable subset
   // NOT SURE WHAT TO DO BELOW --AG
@@ -197,11 +198,14 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
   //  shared_data_rep->random_variables_key(random_vars_key);
   //}
 
+  /* natafTransform now shared within the ProbabilityTransformModel instance
+     (DataFitSurrModel::actualModel)
   // share natafTransform instance with u-space sampler
   Iterator& u_space_sampler = dfs_model.subordinate_iterator();
   if (!u_space_sampler.is_null())
     ((NonD*)u_space_sampler.iterator_rep())->
       initialize_random_variables(natafTransform); // shared rep
+  */
 
   // perform last due to numSamplesOnModel update
   //NonDExpansion::initialize_u_space_model(); // assumes SharedPecosApproxData

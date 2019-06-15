@@ -37,7 +37,9 @@ NonD* NonD::nondInstance(NULL);
 
 
 NonD::NonD(ProblemDescDB& problem_db, Model& model):
-  Analyzer(problem_db, model), numContDesVars(0), numDiscIntDesVars(0),
+  Analyzer(problem_db, model),
+  /*
+  numContDesVars(0), numDiscIntDesVars(0),
   numDiscStringDesVars(0), numDiscRealDesVars(0), numDesignVars(0),
   numContStateVars(0), numDiscIntStateVars(0), numDiscStringStateVars(0),
   numDiscRealStateVars(0), numStateVars(0), numNormalVars(0),
@@ -54,6 +56,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0),
+  */
   respLevelTarget(probDescDB.get_short("method.nond.response_level_target")),
   respLevelTargetReduce(
     probDescDB.get_short("method.nond.response_level_target_reduce")),
@@ -68,11 +71,12 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   finalMomentsType(probDescDB.get_short("method.nond.final_moments")),
   distParamDerivs(false)
 {
-  bool err_flag = false;
+  //bool err_flag = false;
   const Variables& vars = iteratedModel.current_variables();
-  short active_view = vars.view().first;
+  //short active_view = vars.view().first;
   const SharedVariablesData& svd = vars.shared_data();
 
+  /*
   // initialize aleatory uncertain variables
   if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
       active_view == RELAXED_ALEATORY_UNCERTAIN ||
@@ -181,6 +185,11 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 	 << method_enum_to_string(methodName) << '.' << std::endl;
     err_flag = true;
   }
+  */
+
+  const SizetArray& ac_totals = svd.active_components_totals();
+  epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
 
   // When specifying z/p/beta/beta* levels, a spec with an index key (number of
   // levels = list of ints) will result in multiple vectors of levels, one for
@@ -204,13 +213,15 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
     pdfOutput = true;
 
-  if (err_flag)
-    abort_handler(-1);
+  //if (err_flag)
+  //  abort_handler(-1);
 }
 
 
 NonD::NonD(unsigned short method_name, Model& model):
-  Analyzer(method_name, model), numContDesVars(0), numDiscIntDesVars(0),
+  Analyzer(method_name, model),
+  /*
+  numContDesVars(0), numDiscIntDesVars(0),
   numDiscStringDesVars(0), numDiscRealDesVars(0), numDesignVars(0),
   numContStateVars(0), numDiscIntStateVars(0), numDiscStringStateVars(0),
   numDiscRealStateVars(0), numStateVars(0), numNormalVars(0),
@@ -226,7 +237,9 @@ NonD::NonD(unsigned short method_name, Model& model):
   numDiscStringAleatUncVars(0), numDiscRealAleatUncVars(0),
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
-  numEpistemicUncVars(0), totalLevelRequests(0), cdfFlag(true),
+  numEpistemicUncVars(0),
+  */
+  totalLevelRequests(0), cdfFlag(true),
   pdfOutput(false), finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
@@ -242,7 +255,9 @@ NonD::NonD(unsigned short method_name, Model& model):
 
 NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 	   const RealVector& upper_bnds):
-  Analyzer(method_name), numContDesVars(0), numDiscIntDesVars(0),
+  Analyzer(method_name),
+  /*
+  numContDesVars(0), numDiscIntDesVars(0),
   numDiscStringDesVars(0), numDiscRealDesVars(0), numDesignVars(0),
   numContStateVars(0), numDiscIntStateVars(0), numDiscStringStateVars(0),
   numDiscRealStateVars(0), numStateVars(0), numNormalVars(0),
@@ -259,24 +274,27 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), numUncertainVars(numUniformVars),
+  */
   epistemicStats(false), totalLevelRequests(0), cdfFlag(true), pdfOutput(false),
   finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
 
-  numContinuousVars  = numUniformVars;
+  numContinuousVars //= numUniformVars
+    = std::min(lower_bnds.length(), upper_bnds.length());
   numDiscreteIntVars = numDiscreteStringVars = numDiscreteRealVars = 0;
 }
 
 
 void NonD::size()
 {
-  bool err_flag = false;
+  //bool err_flag = false;
   const Variables& vars = iteratedModel.current_variables();
-  short active_view = vars.view().first;
+  //short active_view = vars.view().first;
   const SharedVariablesData& svd = vars.shared_data();
 
+  /*
   // update sizes for aleatory uncertain variables
   if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
       active_view == RELAXED_ALEATORY_UNCERTAIN ||
@@ -380,6 +398,11 @@ void NonD::size()
 
   if (err_flag)
     abort_handler(-1);
+  */
+
+  const SizetArray& ac_totals = svd.active_components_totals();
+  epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
 }
 
 
@@ -387,11 +410,12 @@ bool NonD::resize()
 {
   bool parent_reinit_comms = Analyzer::resize();
 
-  bool err_flag = false;
+  //bool err_flag = false;
   const Variables& vars = iteratedModel.current_variables();
-  short active_view = vars.view().first;
+  //short active_view = vars.view().first;
   const SharedVariablesData& svd = vars.shared_data();
 
+  /*
   // update sizes for aleatory uncertain variables
   if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
       active_view == RELAXED_ALEATORY_UNCERTAIN ||
@@ -495,9 +519,15 @@ bool NonD::resize()
 
   if (err_flag)
     abort_handler(-1);
+  */
+
+  const SizetArray& ac_totals = svd.active_components_totals();
+  epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
 
   return parent_reinit_comms;
 }
+
 
 void NonD::derived_set_communicators(ParLevLIter pl_iter)
 {

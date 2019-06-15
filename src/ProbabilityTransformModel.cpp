@@ -33,6 +33,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
 
   // initialize invariant portions of probability transform at construct time
+  xDist = x_model.multivariate_distribution(); // shared rep
   initialize_transformation(u_space_type);
 
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
@@ -524,54 +525,6 @@ initialize_distribution_types(short u_space_type)
   Pecos::MarginalsCorrDistribution* u_dist_rep
     = (Pecos::MarginalsCorrDistribution*)uDist.multivar_dist_rep();
   u_dist_rep->initialize_types(u_types, xDist.active_variables());
-}
-
-
-void ProbabilityTransformModel::update_distribution_parameters()
-{
-  // Note: similar in intent to Model::initialize_distribution_parameters(),
-  // but logic is significantly different for u-space (w/ updates from x-space).
-
-  //Pecos::MarginalsCorrDistribution* u_dist_rep
-  //  = (Pecos::MarginalsCorrDistribution*)uDist.multivar_dist_rep();
-
-  const std::vector<Pecos::RandomVariable>& x_rv = xDist.random_variables();
-  std::vector<Pecos::RandomVariable>&       u_rv = uDist.random_variables();
-  const Pecos::ShortArray& u_types = uDist.random_variable_types();
-  size_t i, num_rv = u_types.size();
-
-  for (i=0; i<num_rv; ++i)
-    switch (u_types[i]) {
-    case Pecos::STD_NORMAL:       case Pecos::STD_UNIFORM:
-    case Pecos::STD_EXPONENTIAL:
-      break; // default uDist values are STD (and differ from xDist values)
-    //case Pecos::STD_BETA:       case Pecos::STD_GAMMA:
-    //  scale params are standardized, but shape params are copied
-    default:
-      u_rv[i].copy_parameters(x_rv[i]); break;
-
-    /*			      
-    case BOUNDED_NORMAL: case LOGNORMAL: case BOUNDED_LOGNORMAL:
-    case LOGUNIFORM: case TRIANGULAR: case GUMBEL: case FRECHET:
-    case WEIBULL: case HISTOGRAM_BIN:
-    case Pecos::DISCRETE_RANGE:      case Pecos::DISCRETE_SET_INT:
-    case Pecos::DISCRETE_SET_STRING: case Pecos::DISCRETE_SET_REAL:
-    case Pecos::POISSON:             case Pecos::BINOMIAL:
-    case Pecos::NEGATIVE_BINOMIAL:   case Pecos::GEOMETRIC:
-    case Pecos::HYPERGEOMETRIC:      case Pecos::HISTOGRAM_PT_INT:
-    case Pecos::HISTOGRAM_PT_STRING: case Pecos::HISTOGRAM_PT_REAL:
-    case Pecos::DISCRETE_INTERVAL_UNCERTAIN:
-    case Pecos::DISCRETE_UNCERTAIN_SET_INT:
-    case Pecos::DISCRETE_UNCERTAIN_SET_STRING:
-    case Pecos::DISCRETE_UNCERTAIN_SET_REAL:
-
-      u_dist_rep->push_parameter(i, Pecos::_,
-				 x_dist_rep->pull_parameter(i, Pecos::_));
-      u_dist_rep->push_parameter(i, Pecos::_,
-				 x_dist_rep->pull_parameter(i, Pecos::_));
-      break;
-    */
-    }
 }
 
 

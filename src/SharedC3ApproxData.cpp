@@ -141,9 +141,10 @@ void SharedC3ApproxData::set_parameter(String var, void * val)
 }
 
 void SharedC3ApproxData::
-construct_basis(const ShortArray& u_types, const Pecos::AleatoryDistParams& adp)
+construct_basis(const Pecos::MultivariateDistribution& u_dist)
 {
   // printf("constructed = %d\n",this->constructed);
+  const ShortArray& u_types = u_dist.random_variable_types();
   assert (u_types.size() == this->numVars);
 
   for (size_t i=0; i < this->numVars; ++i){

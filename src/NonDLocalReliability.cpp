@@ -391,7 +391,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     }
     importanceSampler.assign_rep(import_sampler_rep, false);
     // set up the x-space data within the importance sampler
-    import_sampler_rep->initialize_random_variables(natafTransform);
+    //import_sampler_rep->initialize_random_variables(natafTransform);
   }
 
   // Size the output arrays, augmenting sizing in NonDReliability.  Relative to

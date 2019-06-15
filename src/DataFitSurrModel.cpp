@@ -2205,17 +2205,6 @@ void DataFitSurrModel::init_model(Model& model)
     model.nonlinear_eq_constraint_targets(
       userDefinedConstraints.nonlinear_eq_constraint_targets());
 
-  // discrete set values
-
-  if (!discreteDesignSetIntValues.empty())
-    model.discrete_design_set_int_values(discreteDesignSetIntValues);
-  if (!discreteDesignSetRealValues.empty())
-    model.discrete_design_set_real_values(discreteDesignSetRealValues);
-  if (!discreteStateSetIntValues.empty())
-    model.discrete_state_set_int_values(discreteStateSetIntValues);
-  if (!discreteStateSetRealValues.empty())
-    model.discrete_state_set_real_values(discreteStateSetRealValues);
-
   // uncertain variable distribution data
 
   // Note: Variables instances defined from the same variablesId are not shared
@@ -2225,10 +2214,11 @@ void DataFitSurrModel::init_model(Model& model)
   // can be mapped, since the distributions used to build may differ from those
   // used to evaluate.   More careful logic may be needed in the future...
   if (currentVariables.shared_data().id() ==
-      model.current_variables().shared_data().id()) {
-    model.aleatory_distribution_parameters().update(aleatDistParams);
-    model.epistemic_distribution_parameters().update(epistDistParams);
-  }
+      model.current_variables().shared_data().id())
+    model.multivariate_distribution().pull_distribution_parameters(xDist);
+  // Note: when actualModel is a ProbabilityTransformModel, its xDist is a
+  //       shared rep with actualModel.subModel.xDist.  uDist updates from
+  //       this shared xDist are managed elsewhere...
 
   // labels: update model with current{Variables,Response} descriptors
 
@@ -2423,13 +2413,6 @@ void DataFitSurrModel::update_from_model(const Model& model)
     currentResponse.function_labels(model.response_labels());
   }
 
-  if (!model.discrete_design_set_int_values().empty())
-    discreteDesignSetIntValues = model.discrete_design_set_int_values();
-  if (!model.discrete_design_set_string_values().empty())
-    discreteDesignSetStringValues = model.discrete_design_set_string_values();
-  if (!model.discrete_design_set_real_values().empty())
-    discreteDesignSetRealValues = model.discrete_design_set_real_values();
-
   // uncertain variable distribution data
   // Note: Variables instances defined from the same variablesId are not shared
   // (see ProblemDescDB::get_variables()), so we propagate any distribution
@@ -2438,17 +2421,8 @@ void DataFitSurrModel::update_from_model(const Model& model)
   // can be mapped, since the distributions used to build may differ from those
   // used to evaluate.  More careful logic may be needed in the future...
   if (currentVariables.shared_data().id() ==
-      model.current_variables().shared_data().id()) {
-    aleatDistParams.update(model.aleatory_distribution_parameters());
-    epistDistParams.update(model.epistemic_distribution_parameters());
-  }
-
-  if (!model.discrete_state_set_int_values().empty())
-    discreteStateSetIntValues = model.discrete_state_set_int_values();
-  if (!model.discrete_state_set_string_values().empty())
-    discreteStateSetStringValues = model.discrete_state_set_string_values();
-  if (!model.discrete_state_set_real_values().empty())
-    discreteStateSetRealValues = model.discrete_state_set_real_values();
+      model.current_variables().shared_data().id())
+    xDist.pull_distribution_parameters(model.multivariate_distribution());
 
   // linear constraints
 

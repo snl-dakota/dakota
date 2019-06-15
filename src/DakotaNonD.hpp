@@ -228,6 +228,7 @@ protected:
   // correspond to either X or U space.  If a specific X or U variables count
   // is needed, then natafTransform.ranVarTypesX/U.count() should be used.
 
+  /*
   /// number of continuous design variables (modeled using uniform
   /// distribution for All view modes)
   size_t numContDesVars;
@@ -334,6 +335,7 @@ protected:
   size_t numEpistemicUncVars;
   /// total number of uncertain variables (native space)
   size_t numUncertainVars;
+  */
 
   /// flag for computing interval-type metrics instead of integrated metrics
   /// If any epistemic vars are active in a metric evaluation, then flag is set.

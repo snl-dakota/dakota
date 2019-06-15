@@ -63,8 +63,7 @@ public:
   void integration_iterator(const Iterator& iterator);
 
   /// invoke Pecos::SharedOrthogPolyApproxData::construct_basis()
-  void construct_basis(const Pecos::ShortArray& u_types,
-		       const Pecos::AleatoryDistParams& adp);
+  void construct_basis(const Pecos::MultivariateDistribution& u_dist);
 
   // set Pecos::SharedOrthogPolyApproxData::basisTypes
   //void basis_types(const Pecos::ShortArray& basis_types);
@@ -283,11 +282,10 @@ random_variables_key(const Pecos::BitArray& random_vars_key)
 
 
 inline void SharedPecosApproxData::
-construct_basis(const Pecos::ShortArray& u_types,
-		const Pecos::AleatoryDistParams& adp)
+construct_basis(const Pecos::MultivariateDistribution& u_dist)
 {
   ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    construct_basis(u_types, adp);
+    construct_basis(u_dist);
 }
 
 

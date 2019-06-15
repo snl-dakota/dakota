@@ -46,11 +46,10 @@ public:
   SharedC3ApproxData();
   /// standard ProblemDescDB-driven constructor
   SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars);
-    
+  /// on-the-fly constructor (no problem DB)
   SharedC3ApproxData(const String& approx_type,
                      const UShortArray& approx_order, size_t num_vars,
                      short data_order, short output_level);
-    
   /// destructor
   ~SharedC3ApproxData();
 
@@ -64,14 +63,10 @@ public:
   size_t pre_combine(short);
   void post_combine(short);
 
-    
-  /// invoke SharedOrthogPolyApproxData::construct_basis()
-  void construct_basis(const ShortArray& u_types,
-                       const Pecos::AleatoryDistParams& adp);
-    
+  void construct_basis(const Pecos::MultivariateDistribution& u_dist);
+
   void set_parameter(String var, void * val);
 
-    
   // set SharedOrthogPolyApproxData::basisTypes
   //void basis_types(const ShortArray& basis_types);
   // get SharedOrthogPolyApproxData::basisTypes
@@ -81,6 +76,10 @@ protected:
 
   //
   //- Heading: Virtual function redefinitions
+  //
+
+  //
+  //- Heading: Data
   //
 
   struct OneApproxOpts ** oneApproxOpts;
@@ -109,7 +108,7 @@ protected:
 private:
 
   //
-  //- Heading: Member functions
+  //- Heading: Convenience functions
   //
 
   //
@@ -120,21 +119,9 @@ private:
 };
 
 
-
 // inline void SharedC3ApproxData::
 // random_variables_key(const Pecos::BitArray& random_vars_key)
-// { // pecosSharedDataRep->random_variables_key(random_vars_key);
-// }
-
-
-// inline void SharedC3ApproxData::
-// construct_basis(const ShortArray& u_types,
-// 		const AleatoryDistParams& adp)
-// {
-//   // ((SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-//   //   construct_basis(u_types, adp);
-// }
-
+// { pecosSharedDataRep->random_variables_key(random_vars_key); }
 
 } // namespace Dakota
 

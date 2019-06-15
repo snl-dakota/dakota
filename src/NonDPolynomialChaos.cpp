@@ -842,8 +842,9 @@ void NonDPolynomialChaos::initialize_u_space_model()
 
   // For PCE, the approximation and integration bases are the same.  We (always)
   // construct it for the former and (conditionally) pass it in to the latter.
-  shared_data_rep->construct_basis(natafTransform.u_types(),
-    iteratedModel.aleatory_distribution_parameters());
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.truth_model().transformed_multivariate_distribution();
+  shared_data_rep->construct_basis(u_dist);
 
   // If the model is not yet fully initialized, skip grid initialization.
   if ( expansionCoeffsApproach == Pecos::QUADRATURE ||

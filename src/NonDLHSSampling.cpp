@@ -182,6 +182,8 @@ void NonDLHSSampling::pre_run()
 
   bool increm_lhs_active
     = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
+
+  // *** TO DO: update for refactor...
   if (dOptimal)
     // initialize nataf transform for generating basis
     initialize_random_variables(EXTENDED_U);
@@ -511,8 +513,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // BMA TODO: verify we can use numerically generated for discrete types
 
   // BMA TODO: can allow MC or LHS with new strategy, including
-  // incremental if we want; pick the new Latin design that maximizes
-  // det.
+  // incremental if we want; pick the new Latin design that maximizes det.
 
   // BMA TODO: Sampling supports modes beyond just active; this gets
   // counts for more cases, but may not cover all use cases
@@ -539,12 +540,11 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   std::vector<Pecos::BasisPolynomial> poly_basis;
   ShortArray basis_types, colloc_rules;
   Pecos::SharedOrthogPolyApproxData::
-    construct_basis(natafTransform.u_types(),
-		    iteratedModel.aleatory_distribution_parameters(), 
+    construct_basis(//natafTransform.u_types(), // *** TO DO
+		    iteratedModel.multivariate_distribution(),// xDist i/o uDist
 		    bc_options, poly_basis, basis_types, colloc_rules);
-  Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true,
-							     basis_types,
-							     poly_basis);
+  Pecos::SharedOrthogPolyApproxData::
+    coefficients_norms_flag(true, basis_types, poly_basis);
 
   // transform from x to u space; should we make a copy?
   bool x_to_u = true;

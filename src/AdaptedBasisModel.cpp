@@ -11,6 +11,7 @@
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataFitSurrModel.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include "NonDPolynomialChaos.hpp"
 
 namespace Dakota {
@@ -591,23 +592,21 @@ SizetArray AdaptedBasisModel::variables_resize()
 /// transform and set the distribution parameters in the reduced model
 void AdaptedBasisModel::uncertain_vars_to_subspace()
 {
-  const Pecos::AleatoryDistParams& native_params =
-    subModel.aleatory_distribution_parameters();
-
-  // update the reduced space model
-  Pecos::AleatoryDistParams& reduced_dist_params =
-    aleatory_distribution_parameters();
+  const Pecos::MultivariateDistribution& native_dist =
+    subModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* native_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
 
   // initialize AleatoryDistParams for reduced model
   // This is necessary if subModel has been transformed
   // to standard normals from a different distribution
-  reduced_dist_params.copy(native_params); // deep copy
+  //xDist.pull_distribution_parameters(native_dist); // deep copy
 
   // native space characterization
-  const RealVector& mu_x = native_params.normal_means();
-  const RealVector& sd_x = native_params.normal_std_deviations();
-  const RealSymMatrix& correl_x = native_params.uncertain_correlations();
-
+  RealVector mu_x, sd_x;
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_x);
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_x);
+  const RealSymMatrix& correl_x = native_dist.correlation_matrix();
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nAdapted Basis Model: correl_x = \n" << correl_x;
 
@@ -650,8 +649,7 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
 	 << "\nAdapted Basis Model: V_x =\n" << V_x;
 
   // compute V_y = U^T * V_x * U
-  alpha = 1.0;
-  beta = 0.0;
+  alpha = 1.0;  beta = 0.0;
   RealMatrix UTVx(n, m, false);
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
                 alpha, rotationMatrix, V_x, beta);
@@ -666,9 +664,10 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   for (int i=0; i<reducedRank; ++i)
     sd_y(i) = std::sqrt(V_y(i,i));
 
-  reduced_dist_params.normal_means(mu_y);
-  reduced_dist_params.normal_std_deviations(sd_y);
-
+  Pecos::MarginalsCorrDistribution* reduced_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
 
   // compute the correlations in reduced space
   // TODO: fix symmetric access to not loop over whole matrix
@@ -680,19 +679,16 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   for (int row=0; row<reducedRank; ++row)
     for (int col=0; col<reducedRank; ++col)
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nAdapted Basis Model: correl_y = \n" << correl_y;
-
-  reduced_dist_params.uncertain_correlations(correl_y);
+  xDist.correlation_matrix(correl_y);
 
   // Set continuous variable types:
-  UShortMultiArray cont_variable_types(boost::extents[reducedRank]);
-  for (int i = 0; i < reducedRank; i++) {
-    cont_variable_types[i] = NORMAL_UNCERTAIN;
-  }
+  UShortMultiArray cv_types(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++)
+    cv_types[i] = NORMAL_UNCERTAIN;
   currentVariables.continuous_variable_types(
-    cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
+    cv_types[boost::indices[idx_range(0, reducedRank)]]);
 
   // Set currentVariables to means of active variables:
   continuous_variables(mu_y);

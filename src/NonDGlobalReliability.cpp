@@ -220,7 +220,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //                                       dace_method);
     dace_iterator.assign_rep(lhs_sampler_rep, false);
     // share nataf instance to provide data for performing inverse transforms
-    lhs_sampler_rep->initialize_random_variables(natafTransform); // shared rep
+    //lhs_sampler_rep->initialize_random_variables(natafTransform);// shared rep
 
     // Construct G-hat(u) using a GP approximation over the active/uncertain
     // variables (using the same view as iteratedModel/g_u_model: not the
@@ -317,8 +317,8 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   // if approximation is built in x-space, then importanceSampler must perform
   // inverse transformations on gp_inputs; if approximation is built in u-space,
   // only the cdfFlag is needed to define which samples are failures
-  if (mppSearchType == EGRA_X) // share the ProbabilityTransformation rep
-    importance_sampler_rep->initialize_random_variables(natafTransform);
+  //if (mppSearchType == EGRA_X) // share the ProbabilityTransformation rep
+  //  importance_sampler_rep->initialize_random_variables(natafTransform);
 }
 
 

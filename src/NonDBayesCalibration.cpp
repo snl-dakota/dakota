@@ -424,8 +424,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 
     // natafTransform is not fully updated at this point, but using
     // a shallow copy allows run time updates to propagate
-    if (standardizedSpace)
-      lhs_rep->initialize_random_variables(natafTransform); // shallow copy
+    //if (standardizedSpace)
+    //  lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian

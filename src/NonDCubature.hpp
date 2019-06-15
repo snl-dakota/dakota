@@ -81,8 +81,7 @@ private:
   //
 
   /// verify self-consistency of integration specification
-  void check_integration(const Pecos::ShortArray& u_types,
-			 const Pecos::AleatoryDistParams& adp);
+  void check_integration(const MultivariateDistribution& mvd);
 
   //
   //- Heading: Data

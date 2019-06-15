@@ -468,10 +468,10 @@ void NonDExpansion::initialize_u_space_model()
   }
 
   // share natafTransform instance with u-space sampler
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  if (!u_space_sampler.is_null())
-    ((NonD*)u_space_sampler.iterator_rep())->
-      initialize_random_variables(natafTransform); // shared rep
+  //Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+  //if (!u_space_sampler.is_null())
+  //  ((NonD*)u_space_sampler.iterator_rep())->
+  //    initialize_random_variables(natafTransform); // shared rep
 
   // if numerical integration, manage u_space_sampler updates
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
@@ -581,7 +581,7 @@ construct_expansion_sampler(const String& import_approx_file,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
 	cdfFlag, false); // suppress PDFs (managed locally)
       // needed if export_approx_points_file:
-      imp_sampler_rep->initialize_random_variables(natafTransform);// shared rep
+      //imp_sampler_rep->initialize_random_variables(natafTransform);//share rep
       //imp_sampler_rep->final_moments_type(NO_MOMENTS); // already off for AIS
     }
   }
@@ -590,7 +590,7 @@ construct_expansion_sampler(const String& import_approx_file,
   // publish natafTransform instance (shared rep: distribution parameter
   // updates do not need to be explicitly propagated) so that u-space
   // sampler has access to x-space data to perform inverse transforms
-  exp_sampler_rep->initialize_random_variables(natafTransform); // shared rep
+  //exp_sampler_rep->initialize_random_variables(natafTransform); // shared rep
   // store rep inside envelope
   expansionSampler.assign_rep(exp_sampler_rep, false);
 }
@@ -628,13 +628,15 @@ void NonDExpansion::initialize_expansion()
   // we handle that special case here prior to the general recursion.  The
   // alternative would be to supply another function pointer to RecastModel
   // to support partial distribution parameter mappings.
-  Pecos::AleatoryDistParams& adp_u
-    = uSpaceModel.subordinate_model().aleatory_distribution_parameters();
-  const Pecos::AleatoryDistParams& adp_x
-    = iteratedModel.aleatory_distribution_parameters();
-  adp_u.update_partial(adp_x, natafTransform.x_random_variables(),
-		       natafTransform.u_types());
-  // now perform the general recursion
+  //Pecos::AleatoryDistParams& adp_u
+  //  = uSpaceModel.subordinate_model().aleatory_distribution_parameters();
+  //const Pecos::AleatoryDistParams& adp_x
+  //  = iteratedModel.aleatory_distribution_parameters();
+  //adp_u.update_partial(adp_x, natafTransform.x_random_variables(),
+  //		       natafTransform.u_types());
+  // Update: ProbabilityTransformModel::update_from_model() can now handle this
+  //
+  // Now perform the Model update recursion
   size_t depth = (methodName > STOCH_COLLOCATION && // multilevel/multifidelity
 		  multilevDiscrepEmulation == DISTINCT_EMULATION) ?
     2    : // limit depth to avoid warning at HierarchSurrModel
