@@ -16,8 +16,6 @@
 #define DAKOTA_NOND_H
 
 #include "DakotaAnalyzer.hpp"
-#include "ProbabilityTransformation.hpp"
-#include "DataMethod.hpp"
 
 //#define DERIV_DEBUG
 
@@ -438,14 +436,6 @@ private:
 
 inline NonD::~NonD()
 { }
-
-
-void NonD::
-transform_model(Model& x_model, Model& u_model,	bool truncate_bnds, Real bnd)
-{
-  u_model.assign_rep(new
-    ProbabilityTransformModel(x_model, truncate_bnds, bnd), false);
-}
 
 
 inline void NonD::distribution_parameter_derivatives(bool dist_param_derivs)

@@ -45,7 +45,8 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   numFullspaceVars(subModel.cv()), totalSamples(0), subspaceInitialized(false),
   reducedRank(problem_db.get_int("model.active_subspace.dimension")),
   gradientScaleFactors(RealArray(numFns, 1.0)),
-  truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
+  truncationTolerance(probDescDB.get_real(
+    "model.active_subspace.truncation_method.energy.truncation_tolerance")),
   buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
   refinementSamples(0),
   subspaceNormalization(
@@ -1733,42 +1734,29 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
   //  Calculate x = activeBasis*y + inactiveBasis*inactiveVars via matvec
   //  directly into x cv in submodel
   const RealMatrix& W1 = asmInstance->activeBasis;
-  int m = W1.numRows();
-  int n = W1.numCols();
-
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
+  int m = W1.numRows(), n = W1.numCols();
+  Real alpha = 1.0,     beta = 0.0;
+  int  incx  = 1,       incy = 1;
 
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W1.values(), m,
                     y.values(), incy, beta, x.values(), incx);
 
   // Now add the inactive variable's contribution:
   const RealMatrix& W2 = asmInstance->inactiveBasis;
-  const RealVector& z = asmInstance->inactiveVars;
-  m = W2.numRows();
-  n = W2.numCols();
+  const RealVector&  z = asmInstance->inactiveVars;
+  m = W2.numRows();  n = W2.numCols();
 
-  alpha = 1.0;
-  beta = 1.0;
-
+  alpha = 1.0;  beta = 1.0;
   int incz = 1;
-
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W2.values(), m,
                     z.values(), incz, beta, x.values(), incx);
 
   sub_model_x_vars.continuous_variables(x);
 
-  if (asmInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: Subspace vars are\n";
-    Cout << recast_y_vars << std::endl;
-
-    Cout << "\nSubspace Model: Fullspace vars are\n";
-    Cout << sub_model_x_vars << std::endl;
-  }
-
+  if (asmInstance->outputLevel >= DEBUG_OUTPUT)
+    Cout <<   "\nSubspace Model: Subspace vars are\n"  << recast_y_vars
+	 << "\n\nSubspace Model: Fullspace vars are\n" << sub_model_x_vars
+	 << std::endl;
 }
 
 
