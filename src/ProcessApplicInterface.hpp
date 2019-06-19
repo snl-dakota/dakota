@@ -239,7 +239,8 @@ private:
   void write_parameters_file(const Variables& vars, const ActiveSet& set,
 			     const Response& response, const std::string& prog,
 			     const std::vector<String>& an_comps,
-			     const std::string& params_fname);
+			     const std::string& params_fname,
+                             const bool file_mode_out = true);
 
   /// Open and read the results file at path, properly handling errors
   void read_results_file(Response &response, const bfs::path &path, 

@@ -80,6 +80,9 @@ protected:
   /// return evalCacheFlag
   bool restart_file() const;
 
+  /// form and return the final evaluation ID tag, appending iface ID if needed
+  String final_eval_id_tag(int fn_eval_id);
+
   // Placeholders for external layer of filtering (common I/O operations
   // such as d.v. linking and response time history smoothing)
   //void filter(const Variables& vars);
@@ -118,6 +121,9 @@ protected:
   bool check_asynchronous(bool warn, int max_eval_concurrency);
   /// checks on asynchronous settings for multiprocessor partitions
   bool check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency);
+
+  /// form and return the final batch ID tag
+  String final_batch_id_tag();
 
   //
   //- Heading: Virtual functions (evaluations)
@@ -205,6 +211,10 @@ protected:
   /// flag indicating usage of batch evaluation facilities, where a set of
   /// jobs is launched and scheduled as a unit rather than individually
   bool batchEval;
+
+  /// maintain a count of the batches
+  int batchIdCntr; 
+
   /// flag for suppressing output on slave processors
   bool suppressOutput;
 
@@ -684,9 +694,15 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 {
   if (outputLevel > SILENT_OUTPUT) {
-    Cout << "Initiating ";
-    if (!interfaceId.empty()) Cout << interfaceId << ' ';
-    Cout << "evaluation " << prp_it->eval_id() << '\n';
+    if(batchEval) {
+      Cout << "Adding ";
+      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      Cout << "evaluation " << prp_it->eval_id() << " to batch " << batchIdCntr + 1 << std::endl;
+    } else {
+      Cout << "Initiating ";
+      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      Cout << "evaluation " << prp_it->eval_id() << '\n';
+    }
   }
 
   // bcast job to other processors within peer 1 (added for direct plugins)

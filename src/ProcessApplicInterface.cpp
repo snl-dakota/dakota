@@ -251,18 +251,11 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 {
   // This function may not be executed by a multiprocessor evalComm.
-
-  int fn_eval_id = pair.eval_id();
-  define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
-  write_parameters_files(pair.variables(), pair.active_set(),
+  if(!batchEval) {
+    int fn_eval_id = pair.eval_id();
+    define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
+    write_parameters_files(pair.variables(), pair.active_set(),
 			 pair.response(),  fn_eval_id);
-
-  if (batchEval) { // suppress launch of individual process
-    // writing a batch params file (which augments individual params files) and
-    // launching batch driver deferred until {wait,test}_local_evaluations(),
-    // once local PRP queue is defined
-  }
-  else {
     // execute the simulator application -- nonblocking call
     pid_t pid = create_evaluation_process(FALL_THROUGH);
     // bind process id with eval id for use in synchronization
@@ -287,33 +280,65 @@ void ProcessApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 
 void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
 {
-  PRPQueueIter prp_iter; 
 
-  // individual parameters files written in ProcessApplicInterface::
-  // derived_map_asynch()
-  // TO DO: augment with an alternate batch tabular file
-  //for (prp_iter)
-  //  write_tabular(prp_iter->second);
+  batchIdCntr++;
+  define_filenames(final_batch_id_tag());
+  if(!allowExistingResults)
+    std::remove(resultsFileWritten.c_str());
+  std::vector<String> an_comps;
+  if(!analysisComponents.empty())
+    copy_data(analysisComponents, an_comps);
+  std::remove(paramsFileWritten.c_str()); // 
+  for(const auto & pair : prp_queue) {
+    int fn_eval_id = pair.eval_id();
+    fullEvalId = final_eval_id_tag(fn_eval_id); // must be set for eval ID to 
+                                                // appear in params file
+    write_parameters_file(pair.variables(), pair.active_set(), 
+        pair.response(), programNames[0], an_comps, 
+        paramsFileWritten, false /*append to file*/);
+  }
 
   // In this case, individual jobs have not been launched and we launch the
   // user's analysis driver once for the complete batch:
   create_evaluation_process(BLOCK);
-  // TO DO: modify evaluation header output (paramsFileName, resultsFileName) 
 
-  // For now, collect individual results
-  if (evalCommRank == 0)
-    for (prp_iter=prp_queue.begin(); prp_iter!=prp_queue.end(); ++prp_iter) {
-      int fn_eval_id = prp_iter->eval_id();
-      Response resp  = prp_iter->response(); // shallow copy
-      read_results_files(resp, fn_eval_id, final_eval_id_tag(fn_eval_id));
+  // Response.read() expects results for a single evaluation to be present in a
+  // stream, but the results file for a batch evaluation will contain multiple.
+  // The strategy here is to consume the results file one evaluation at a time,
+  // placing the content for one evaluation into a stringstream, which will be
+  // passed to Response.read(). The # character at the beginning of a line is
+  // presumed to separate evaluations (content that follows on that line will 
+  // be dropped), and the evaluations are presumed to be in the same order as 
+  // prp_queue. Probably not a very robust way of doing things, but for purposes
+  // of prototyping, it'll do.
+  
+  bfs::ifstream results_file(resultsFileWritten);
+  Response response;
+  for(auto & pair : prp_queue) {
+    std::stringstream eval_ss;
+    while(true) {
+      String eval_buffer;
+      std::getline(results_file, eval_buffer);
+      if(results_file.eof())
+        break;
+      if(eval_buffer[0] == '#') {
+        if(eval_ss.str().empty())
+          continue;
+        else
+          break;
+      } else {
+        eval_ss << eval_buffer << std::endl;
+      }
     }
+    response = pair.response();
+    // the read operation errors out for improperly formatted data
+    response.read(eval_ss, resultsFileFormat);
+    completionSet.insert(pair.eval_id());
+  }
 
-  // TO DO: detect whether batch evaluator wrote individual files or
-  // a batch tabular file, with some precedence
-  //for (prp_iter)
-  //  read_tabular(prp_iter->second);
+  // TODO: clean up workdir and files based on fileSaveFlag, etc. See the logic
+  // in read_results_files().
 }
-
 
 void ProcessApplicInterface::test_local_evaluation_batch(PRPQueue& prp_queue)
 { wait_local_evaluation_batch(prp_queue); }
@@ -556,10 +581,16 @@ void ProcessApplicInterface::
 write_parameters_file(const Variables& vars, const ActiveSet& set,
 		      const Response& response, const std::string& prog,
 		      const std::vector<String>& an_comps,
-                      const std::string& params_fname)
+                      const std::string& params_fname,
+                      const bool file_mode_out)
 {
   // Write the parameters file
-  std::ofstream parameter_stream(params_fname.c_str());
+  std::ofstream parameter_stream;
+  if(file_mode_out) // params for one evaluation per file
+    parameter_stream.open(params_fname.c_str());
+  else // params for multiple evaluations per file (batch mode)
+    parameter_stream.open(params_fname.c_str(), std::ios_base::app);
+
   using std::setw;
   if (!parameter_stream) {
     Cerr << "\nError: cannot create parameters file " << params_fname

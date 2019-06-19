@@ -20,11 +20,19 @@ namespace Dakota {
 
 extern PRPCache data_pairs;
 
+bool batch_eval_active() {
+  if(std::getenv("DAKOTA_BATCH_EVAL"))
+    return true;
+  else
+    return false;
+}
+
 
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db):
   Interface(BaseConstructor(), problem_db),
-  parallelLib(problem_db.parallel_library()), batchEval(false),
+  parallelLib(problem_db.parallel_library()), batchEval(batch_eval_active()),
+  batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
   eaDedMasterFlag(false), analysisCommSize(1), analysisCommRank(0),
   analysisServerId(1), multiProcAnalysisFlag(false),
@@ -357,6 +365,26 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
   }
   return issue_flag;
 }
+
+/// form and return the final batch ID tag
+
+String ApplicationInterface::
+final_batch_id_tag() {
+  return evalTagPrefix + "." + std::to_string(batchIdCntr);
+}
+
+String ApplicationInterface::
+final_eval_id_tag(int iface_eval_id)
+{
+  if (appendIfaceId) {
+    if(batchEval)
+      return evalTagPrefix + "." + std::to_string(batchIdCntr) + "." + std::to_string(iface_eval_id);
+     else
+      return evalTagPrefix + "." + std::to_string(iface_eval_id);
+  } else
+    return evalTagPrefix;
+}
+
 
 
 //void ApplicationInterface::free_communicators()
@@ -1246,8 +1274,12 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
     */
 
     // Step 2: process completed jobs with wait_local_evaluations()
-    if (outputLevel > SILENT_OUTPUT)
-      Cout << "Waiting on completed jobs" << std::endl;
+    if (outputLevel > SILENT_OUTPUT) {
+      if(batchEval)
+        Cout << "Waiting on completed batch" << std::endl;
+      else
+        Cout << "Waiting on completed jobs" << std::endl;
+    }
     completionSet.clear();
     wait_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
     recv_cntr += completed = completionSet.size();
@@ -2918,7 +2950,9 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
   if (outputLevel > SILENT_OUTPUT) {
     if (interfaceId.empty()) Cout << "Evaluation ";
     else Cout << interfaceId << " evaluation ";
-    Cout << fn_eval_id << " has completed\n";
+    Cout << fn_eval_id;
+    if(batchEval) Cout << " (batch " << batchIdCntr << ")";
+    Cout << " has completed\n";
   }
 
   rawResponseMap[fn_eval_id] = prp_it->response();

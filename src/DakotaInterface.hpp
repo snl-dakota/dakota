@@ -317,7 +317,7 @@ protected:
 			Response& total_response);
 
   /// form and return the final evaluation ID tag, appending iface ID if needed
-  String final_eval_id_tag(int fn_eval_id);
+  virtual String final_eval_id_tag(int fn_eval_id);
 
   //
   //- Heading: Data
