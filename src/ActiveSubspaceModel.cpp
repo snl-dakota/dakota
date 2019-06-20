@@ -1604,7 +1604,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   Pecos::MarginalsCorrDistribution* native_dist_rep
     = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
 
-  // initialize AleatoryDistParams for reduced model
+  // initialize distribution params for reduced model
   // This is necessary if subModel has been transformed
   // to standard normals from a different distribution
   //xDist.pull_distribution_parameters(native_dist); // deep copy

@@ -198,6 +198,10 @@ private:
   /// reliability index (from differentiating BREITUNG or HOHENRACK expressions)
   Real dp2_dbeta_factor(Real beta, bool cdf_flag);
 
+  /// perform an evaluation of the actual model and store value,grad,Hessian
+  /// data in X,U spaces
+  void truth_evaluation(short mode);
+
   //
   //- Heading: Utility routines
   //

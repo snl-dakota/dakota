@@ -184,12 +184,16 @@ public:
   ActiveSet default_active_set();
   void declare_sources();
 
+  /// return nonlinearVarsMapping
+  bool nonlinear_variables_mapping() const;
+
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
 
+  Pecos::ProbabilityTransformation& probability_transformation();
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -470,6 +474,12 @@ protected:
   /// Counters for naming RecastModels
   static StringStringPairIntMap recastModelIdCounters;
 
+  /// boolean set to true if the variables mapping involves a nonlinear
+  /// transformation.  Used in transform_set() to manage the requirement for
+  /// gradients within the Hessian transformations.  This does not require
+  /// a BoolDeque for each individual variable, since response gradients and
+  /// Hessians are managed per function, not per variable.
+  bool nonlinearVarsMapping;
 
 private:
 
@@ -496,12 +506,6 @@ private:
   /// subModel variables; data is packed with only the variable indices
   /// employed rather than a sparsely filled N_sm x N_r matrix).
   Sizet2DArray varsMapIndices;
-  /// boolean set to true if the variables mapping involves a nonlinear
-  /// transformation.  Used in transform_set() to manage the requirement for
-  /// gradients within the Hessian transformations.  This does not require
-  /// a BoolDeque for each individual variable, since response gradients and
-  /// Hessians are managed per function, not per variable.
-  bool nonlinearVarsMapping;
 
   /// set to true if non-NULL primaryRespMapping or secondaryRespMapping
   /// are supplied
@@ -574,8 +578,17 @@ inline RecastModel::~RecastModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+inline bool RecastModel::nonlinear_variables_mapping() const
+{ return nonlinearVarsMapping; }
+
+
 inline void RecastModel::submodel_supports_derivative_estimation(bool sed_flag)
 { subModel.supports_derivative_estimation(sed_flag); }
+
+
+inline Pecos::ProbabilityTransformation& RecastModel::
+probability_transformation()
+{ return subModel.probability_transformation(); } // forward along
 
 
 inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
@@ -727,8 +740,11 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 { subModel.surrogate_function_indices(surr_fn_indices); }
 
 
+// For case of RecastModel, forward to subModel for all cases.  SurrogateModels
+// and NestedModels only fwd if BYPASS_SURROGATE (to support recursive bypass),
+// but Recast should allow mode set followed by reset for underlying surrogate.
 inline void RecastModel::surrogate_response_mode(short mode)
-{ if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
+{ /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
 
 
 inline void RecastModel::link_multilevel_approximation_data()

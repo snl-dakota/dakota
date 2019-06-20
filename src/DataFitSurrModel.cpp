@@ -2526,10 +2526,8 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
   const bool has_hessians = hessianType != "none" && 
     (hessianType == "analytic" || supportsEstimDerivs);
   // Most frequent case: build surrogates for all responses
-  if(responseMode == MODEL_DISCREPANCY || 
-     responseMode == AGGREGATED_MODELS ||
-     actualModel.is_null() ||
-     surrogateFnIndices.size() == numFns) {
+  if (responseMode == MODEL_DISCREPANCY || responseMode == AGGREGATED_MODELS ||
+      actualModel.is_null() || surrogateFnIndices.size() == numFns) {
     std::fill(asv.begin(), asv.end(), 1);
     if(has_gradients)
       for(auto &a : asv)

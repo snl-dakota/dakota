@@ -676,7 +676,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
   //   MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
   // > Management of multiple SurrogateData instances is complicated in the
   //   heterogeneous setting where level 0 uses a single instance and levels
-  //   1-L use two isntances.  In the future, could manage activation explicitly
+  //   1-L use two instances.  In the future, could manage activation explicitly
   //   using functions shown below.  For now, SurrogateData::{push,pop}() are
   //   hardened for inactive instances.
   switch (mode) {

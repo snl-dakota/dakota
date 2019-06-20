@@ -589,11 +589,9 @@ void NonDBayesCalibration::construct_map_optimizer()
   }
 }
 
+
 NonDBayesCalibration::~NonDBayesCalibration()
 { }
-
-
-
 
 
 void NonDBayesCalibration::core_run()

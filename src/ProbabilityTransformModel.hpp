@@ -42,9 +42,13 @@ public:
   /// destructor
   ~ProbabilityTransformModel();
 
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
+
+  Pecos::ProbabilityTransformation& probability_transformation();
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -52,15 +56,6 @@ public:
   bool resize_pending() const;
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
-
-  //
-  //- Heading: Member functions
-  //
-
-  /// return natafTransform
-  Pecos::ProbabilityTransformation& probability_transformation();
-
-protected:
 
   //
   //- Heading: Member functions
@@ -221,6 +216,10 @@ inline void ProbabilityTransformModel::update_transformation()
   uDist.pull_distribution_parameters(xDist);
   // x-space correlations assigned in Model and u-space is uncorrelated
   //update_distribution_correlations();
+
+  // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
+  // Since the uncertain variable distributions (means, std devs, correlations)
+  // may change, update of correlation warpings is performed regularly.
   natafTransform.transform_correlations();
 
   update_model_bounds(truncatedBounds, boundVal);

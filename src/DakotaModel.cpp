@@ -3594,6 +3594,19 @@ int Model::derivative_concurrency() const
 }
 
 
+Pecos::ProbabilityTransformation& Model::probability_transformation()
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual probability_"
+	 << "transformation() function.\n       Probability transformations "
+	 << "are not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->probability_transformation(); // envelope fwd to letter
+}
+
+
 bool Model::initialize_mapping(ParLevLIter pl_iter)
 {
   if (modelRep)

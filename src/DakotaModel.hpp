@@ -24,7 +24,10 @@
 #include "DakotaResponse.hpp"
 #include "MultivariateDistribution.hpp"
 
-namespace Pecos { class SurrogateData; /* forward declarations */ }
+namespace Pecos { /* forward declarations */
+class SurrogateData;
+class ProbabilityTransformation;
+}
 
 namespace Dakota {
 
@@ -204,6 +207,10 @@ public:
 
   /// set the (currently active) surrogate function index set
   virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
+
+  /// return probability transformation employed by the Model (forwarded along
+  /// to ProbabilityTransformModel recasting)
+  virtual Pecos::ProbabilityTransformation& probability_transformation();
 
   /// initialize model mapping, returns true if the variables size has changed
   virtual bool initialize_mapping(ParLevLIter pl_iter);

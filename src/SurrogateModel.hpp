@@ -54,6 +54,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  Pecos::ProbabilityTransformation& probability_transformation();
+
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
   /// return mappingInitialized
@@ -233,6 +235,11 @@ private:
 
 inline SurrogateModel::~SurrogateModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+inline Pecos::ProbabilityTransformation& SurrogateModel::
+probability_transformation()
+{ return truth_model().probability_transformation(); } // forward along
 
 
 inline bool SurrogateModel::initialize_mapping(ParLevLIter pl_iter)

@@ -49,8 +49,6 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   for (i=0; i<numFns; ++i)
     { primary_resp_map[i].resize(1); primary_resp_map[i][0] = i; }
 
-  // Nonlinear mappings require special ASV logic for transforming Hessians.
-  bool nonlinear_vars_map = nonlinear_variables_mapping(xDist, uDist);
   // There is no additional response mapping beyond that required by the
   // nonlinear variables mapping.
   BoolDequeArray nonlinear_resp_map(numFns, BoolDeque(1, false));
@@ -64,9 +62,9 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
 
   init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns,
 	     0, 0, recast_resp_order);
-  init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping,
-	    set_u_to_x_mapping, primary_resp_map, secondary_resp_map,
-	    nonlinear_resp_map, resp_x_to_u_mapping, NULL);
+  init_maps(vars_map, nonlinear_variables_mapping(xDist, uDist),
+	    vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
+	    secondary_resp_map, nonlinear_resp_map, resp_x_to_u_mapping, NULL);
   // publish inverse mappings for use in data imports.  Since derivatives are
   // not imported and response values are not transformed, an inverse variables
   // transformation is sufficient for this purpose.
@@ -724,8 +722,6 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 
   bool map_derivs = ( (u_grad_flag || u_hess_flag) &&
                       u_dvv != u_vars.inactive_continuous_variable_ids() );
-  bool nonlinear_vars_map = ptmInstance->
-    nonlinear_variables_mapping(ptmInstance->xDist, ptmInstance->uDist);
   RealVector   fn_grad_x,  fn_grad_us;  RealSymMatrix      fn_hess_us;
   RealMatrix jacobian_xu, jacobian_xs;  RealSymMatrixArray hessian_xu;
 
@@ -739,7 +735,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
     else {
       if (u_grad_flag || u_hess_flag)
         ptmInstance->natafTransform.jacobian_dX_dU(x_cv, jacobian_xu);
-      if (u_hess_flag && nonlinear_vars_map)
+      if (u_hess_flag && ptmInstance->nonlinearVarsMapping)
         ptmInstance->natafTransform.hessian_d2X_dU2(x_cv, hessian_xu);
     }
   }
@@ -789,10 +785,10 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 
     // map Hessian d^2g/dx^2 to d^2G/du^2
     if (u_asv_val & 4) {
-      if ( !(x_asv_val & 4) ||
-           ( map_derivs && nonlinear_vars_map && !(x_asv_val & 2) ) ) {
-        Cerr << "Error: missing required sub-model data in ProbabilityTransform"
-	     << "Model::resp_x_to_u_mapping()" << std::endl;
+      if ( !(x_asv_val & 4) || ( map_derivs &&
+	   ptmInstance->nonlinearVarsMapping && !(x_asv_val & 2) ) ) {
+        Cerr << "Error: missing required sub-model data in Probability"
+	     << "TransformModel::resp_x_to_u_mapping()" << std::endl;
         abort_handler(MODEL_ERROR);
       }
       const RealSymMatrix& fn_hess_x = x_response.function_hessian(i);
