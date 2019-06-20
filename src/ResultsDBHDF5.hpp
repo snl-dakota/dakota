@@ -26,6 +26,8 @@ namespace Dakota {
 
 /// Create a method name (HDF5 link name) from iterator_id
 String method_hdf5_link_name(const StrStrSizet& iterator_id);
+/// Create a method results name (HDF5 link name) from iterator_id
+String method_results_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create an execution name (HDF5 link name) from iterator_id
 String execution_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create a scale name (hdf5 link name) for a scale from an iterator_id,

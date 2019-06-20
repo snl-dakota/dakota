@@ -36,7 +36,7 @@ public:
   //
 
   /// standard constructor
-  ProbabilityTransformModel(const Model& sub_model,
+  ProbabilityTransformModel(const Model& sub_model, short u_space_type,
                             bool truncated_bounds = false, Real bound = 10.);
 
   /// destructor

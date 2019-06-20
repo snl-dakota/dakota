@@ -22,7 +22,7 @@ namespace Dakota
 ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 
 ProbabilityTransformModel::
-ProbabilityTransformModel(const Model& x_model,
+ProbabilityTransformModel(const Model& x_model, short u_space_type,
                           bool truncated_bounds, Real bound) :
   RecastModel(x_model), distParamDerivs(false),
   truncatedBounds(truncated_bounds), boundVal(bound), mappingInitialized(false)
@@ -38,7 +38,7 @@ ProbabilityTransformModel(const Model& x_model,
   initialize_sizes();
 
   initialize_random_variable_transformation();
-  initialize_random_variable_types(STD_NORMAL_U);
+  initialize_random_variable_types(u_space_type);
   initialize_random_variable_correlations();
 
   size_t i, num_cdv_cauv = numContDesVars+numContAleatUncVars;

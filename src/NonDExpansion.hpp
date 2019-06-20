@@ -121,6 +121,9 @@ protected:
   /// restore statistics into native stats arrays for a selected candidate
   virtual void push_candidate(const RealVector& stats_star);
 
+  /// print global sensitivity indices
+  virtual void print_sobol_indices(std::ostream& s);
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -262,7 +265,7 @@ protected:
   /// compute only numerical level mappings; this uses a lightweight approach
   /// for incremental statistics (no derivatives, no finalStatistics update)
   void compute_numerical_level_mappings();
- /// compute Sobol' indices for main, interaction, and total effects; this
+  /// compute Sobol' indices for main, interaction, and total effects; this
   /// is intended for incremental statistics
   void compute_sobol_indices();
 
@@ -444,8 +447,6 @@ private:
   
   /// print expansion and numerical moments
   void print_moments(std::ostream& s);
-  /// print global sensitivity indices
-  void print_sobol_indices(std::ostream& s);
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
 

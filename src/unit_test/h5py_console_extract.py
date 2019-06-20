@@ -323,7 +323,13 @@ def read_tabular_data(tabular_file):
             data["%eval_id"].append(int(tokens[0]))
             data["interface"].append(tokens[1])
             for c, t in zip(columns[2:], tokens[2:]):
-                data[c].append(float(t))
+                try:
+                    data[c].append(int(t))
+                except ValueError:
+                    try:
+                        data[c].append(float(t))
+                    except ValueError:
+                        data[c].append(t)
     return data
 
 def restart_variables(row):

@@ -602,7 +602,6 @@ void Model::evaluate()
     modelRep->evaluate();
   else { // letter
     ++modelEvalCntr;
-
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
           currentVariables, currentResponse, default_active_set());
@@ -704,7 +703,6 @@ void Model::evaluate_nowait()
     modelRep->evaluate_nowait();
   else { // letter
     ++modelEvalCntr;
-
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
       modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
           currentVariables, currentResponse, default_active_set());
@@ -881,9 +879,11 @@ const IntResponseMap& Model::synchronize()
     responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
     cachedResponseMap.clear();
 
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+      for(const auto  &id_r : responseMap)
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
+    }
     // return final map
-    for(const auto  &id_r : responseMap)
-      evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
     return responseMap;
   }
 }
@@ -960,9 +960,10 @@ const IntResponseMap& Model::synchronize_nowait()
     // using Model::cache_unmatched_response().
     responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
     cachedResponseMap.clear();
-    for(const auto  &id_r : responseMap)
-      evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
-
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+      for(const auto  &id_r : responseMap)
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second);
+    }
     return responseMap;
   }
 }
@@ -2813,7 +2814,7 @@ Model& Model::surrogate_model()
   if (modelRep) // envelope fwd to letter
     return modelRep->surrogate_model();
   else // letter lacking redefinition of virtual fn.
-    return dummy_model; // return null/empty envelope
+    return dummy_model; // default is no surrogate -> return empty envelope
 }
 
 
@@ -2856,7 +2857,7 @@ Model& Model::truth_model()
   if (modelRep) // envelope fwd to letter
     return modelRep->truth_model();
   else // letter lacking redefinition of virtual fn.
-    return dummy_model; // return null/empty envelope
+    return *this; // default is no surrogate -> return this model instance
 }
 
 

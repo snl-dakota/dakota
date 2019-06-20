@@ -165,8 +165,8 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   transformVars = true;
 
   if (transformVars) {
-    sub_model.assign_rep(new ProbabilityTransformModel(problem_db.get_model()),
-                         false);
+    sub_model.assign_rep(new
+      ProbabilityTransformModel(problem_db.get_model(), STD_NORMAL_U), false);
   } else {
     sub_model = problem_db.get_model();
   }

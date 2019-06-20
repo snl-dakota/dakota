@@ -168,7 +168,7 @@ DataMethodRep::DataMethodRep():
   // Wasabi
   numPushforwardSamples(10000),
   // Parameter Study
-  numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
+  numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
   refinementRate(2.),
   // Point import/export files

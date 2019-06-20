@@ -38,6 +38,12 @@ const std::string ResultsDBHDF5::outputVersion = "2.0.0";
 
 
 // Helper functions for naming datasets and scales
+String method_results_hdf5_link_name(const StrStrSizet& iterator_id) {
+  return method_hdf5_link_name(iterator_id) + "/results";
+}
+
+
+// Helper functions for naming datasets and scales
 String method_hdf5_link_name(const StrStrSizet& iterator_id) {
   String method_id = iterator_id.get<1>();
 
@@ -46,14 +52,14 @@ String method_hdf5_link_name(const StrStrSizet& iterator_id) {
   if (method_id.empty())
     method_id = "anonymous";
 
-  String rval = "/methods/" + method_id + "/results";
+  String rval = "/methods/" + method_id;
   return rval;
 }
 
 // Create an execution name from the unique identifiers passed
 String execution_hdf5_link_name(const StrStrSizet& iterator_id) {
   const size_t& exec_num = iterator_id.get<2>();
-  String rval = method_hdf5_link_name(iterator_id) + "/execution:" +
+  String rval = method_results_hdf5_link_name(iterator_id) + "/execution:" +
     boost::lexical_cast<String>(exec_num);
   return rval;
 }
@@ -192,14 +198,13 @@ void ResultsDBHDF5::insert(const StrStrSizet& iterator_id,
 void ResultsDBHDF5::add_metadata_to_method(const StrStrSizet& iterator_id,
             const AttributeArray &attrs)
 {
-  String name = method_hdf5_link_name(iterator_id);
+  String name = method_results_hdf5_link_name(iterator_id);
   add_attributes(name, attrs);
 }
 
 void ResultsDBHDF5::add_name_to_method(const StrStrSizet &iterator_id)
 {
   String link_name = method_hdf5_link_name(iterator_id);
-  //AttributeArray attrs({ResultAttribute<String>("method_name", iterator_id.get<0>())});
   String method_name = iterator_id.get<0>();
   String method_id = iterator_id.get<1>();
   size_t exec_id = iterator_id.get<2>();

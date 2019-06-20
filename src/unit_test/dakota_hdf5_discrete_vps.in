@@ -1,0 +1,67 @@
+environment
+  tabular_data
+    tabular_data_file 'discrete_vps.dat'
+  results_output  
+   results_output_file 'discrete_vps'
+   hdf5
+  write_restart 'discrete_vps.rst'
+
+method
+  vector_parameter_study
+    step_vector 0.5 0.5   #cdv
+                1   1     #ddsi
+                1   1     #ddss
+                1   1     #ddsr
+                0.5 0.5   #uuv
+                1   1     #dusi
+                1   1     #duss
+                1   1     #dusr
+    num_steps 2
+
+variables
+  active all
+  continuous_design 2
+    initial_point -1.0 -1.0
+
+  discrete_design_set
+    integer 2
+      elements 1 2 3 
+               4 5 6
+      initial_point 1 4
+    string 2
+      elements 'a' 'b' 'c' 
+               'd' 'e' 'f'
+      initial_point 'a' 'd'
+    real 2
+      elements  7.0  8.0  9.0 
+               10.0 11.0 12.0
+      initial_point 7.0 10.0
+
+  uniform_uncertain 2
+    lower_bounds 2.0 2.0
+    upper_bounds  4.0  4.0
+    initial_point 2.0 2.0
+    
+  discrete_uncertain_set
+    integer 2
+      elements 13 14 15 
+               16 17 18
+      initial_point 13 16
+    string 2
+      elements 'g' 'h' 'i' 
+               'j' 'k' 'l'
+
+      initial_point 'g' 'j'
+    real  2
+      elements 19 20 21 
+               22 23 24
+      initial_point 19 22
+
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+
+interface
+  direct
+   analysis_drivers 'text_book'

@@ -21,4 +21,10 @@ scales:
     contents: Variable Ids
     notes: "1-to-N rank of the variable in Dakota input spec order"
     literal_contents: False
+  - dimension: 1
+    type: String
+    label: types
+    contents: Variable types
+    notes: "Type of each variable, e.g. CONTINUOUS_DESIGN, DISCRETE_DESIGN_SET_INT"
+    literal_contents: False
 

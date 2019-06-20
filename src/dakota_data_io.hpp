@@ -479,7 +479,7 @@ void read_data_partial_tabular(std::istream& s,
     else {
       char err[80];
       std::sprintf(err,
-	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
+	      "At EOF: insufficient tabular data for SerialDenseVector[%zu]", i);
       // TODO: enable this code once we can safely include lexical_cast.hpp
       // std::string err;
       // err += "At EOF: insufficient tabular data for SerialDenseVector[";
@@ -507,7 +507,7 @@ void read_data_partial_tabular(std::istream& s, OrdinalType start_index,
     else {
       char err[80];
       std::sprintf(err,
-	      "At EOF: insufficient tabular data for StringMultiArray[%d]", i);
+	      "At EOF: insufficient tabular data for StringMultiArray[%zu]", i);
       // TODO: enable this code once we can safely include lexical_cast.hpp
       // std::string err;
       // err += "At EOF: insufficient tabular data for StringMultiArray[";

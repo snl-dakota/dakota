@@ -105,6 +105,9 @@
 #ifdef HAVE_JEGA
 #include "JEGAOptimizer.hpp"
 #endif
+#ifdef HAVE_C3
+#include "NonDC3FunctionTrain.hpp"
+#endif
 #ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
 #endif
@@ -453,6 +456,12 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDStochCollocation(problem_db, model); break;
   case MULTIFIDELITY_STOCH_COLLOCATION:
     return new NonDMultilevelStochCollocation(problem_db, model); break;
+#ifdef HAVE_C3
+  case C3_FUNCTION_TRAIN:
+    return new NonDC3FunctionTrain(problem_db, model); break;
+  //case MULTIFIDELITY_FUNCTION_TRAIN:
+  //  return new NonDMultilevelFunctionTrain(problem_db, model); break;
+#endif
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
@@ -893,10 +902,12 @@ static UShortStrBimap method_map =
   (GLOBAL_INTERVAL_EST,             "global_interval_est")
   (GLOBAL_EVIDENCE,                 "global_evidence")
   (POLYNOMIAL_CHAOS,                "polynomial_chaos")
-  (STOCH_COLLOCATION,               "stoch_collocation")
   (MULTIFIDELITY_POLYNOMIAL_CHAOS,  "multifidelity_polynomial_chaos")
   (MULTILEVEL_POLYNOMIAL_CHAOS,     "multilevel_polynomial_chaos")
+  (STOCH_COLLOCATION,               "stoch_collocation")
   (MULTIFIDELITY_STOCH_COLLOCATION, "multifidelity_stoch_collocation")
+  (C3_FUNCTION_TRAIN,               "c3_function_train")
+  (MULTIFIDELITY_FUNCTION_TRAIN,    "multifidelity_function_train")
   (BAYES_CALIBRATION,               "bayes_calibration")
   (CUBATURE_INTEGRATION,            "cubature")
   (QUADRATURE_INTEGRATION,          "quadrature")
