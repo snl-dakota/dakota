@@ -39,11 +39,6 @@ NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1);
   }
 
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
-  // Note: initialize_random_variable_parameters() is performed at run time
-  initialize_random_variable_correlations();
-  verify_correlation_support(STD_NORMAL_U);
   initialize_final_statistics(); // default statistics set
 
   // RealVectors are sized within derived classes
@@ -61,11 +56,6 @@ bool NonDReliability::resize()
 {
   bool parent_reinit_comms = NonD::resize();
 
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
-  // Note: initialize_random_variable_parameters() is performed at run time
-  initialize_random_variable_correlations();
-  verify_correlation_support(STD_NORMAL_U);
   initialize_final_statistics(); // default statistics set
 
   // RealVectors are sized within derived classes
@@ -96,7 +86,7 @@ void NonDReliability::initialize_graphics(int iterator_server_id)
       size_t i;
       for (i=0; i<numFunctions; i++)
 	dakota_graphics.set_y_label2d(i, "Probability");
-      for (i=0; i<numUncertainVars; i++)
+      for (i=0; i<numContinuousVars; i++)
 	dakota_graphics.set_y_label2d(i+numFunctions, "Most Prob Point");
     }
 

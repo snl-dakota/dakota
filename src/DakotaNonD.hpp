@@ -187,7 +187,7 @@ protected:
 					   const Sizet3DArray& N_samp);
 
   /// recast x_model from x-space to u-space to create u_model
-  void transform_model(Model& x_model, Model& u_model,
+  void transform_model(Model& x_model, Model& u_model, short u_space_type,
 		       bool truncated_bounds = false, Real bound = 10.);
 
   /// assign a NonDLHSSampling instance within u_space_sampler

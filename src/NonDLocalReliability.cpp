@@ -219,16 +219,16 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
       outputLevel, sample_reuse), false);
 
-    // transform g_hat_x_model from x-space to u-space
-    transform_model(g_hat_x_model, uSpaceModel, true); // truncated dist bounds
+    // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
+    transform_model(g_hat_x_model, uSpaceModel, STD_NORMAL_U, true);
     break;
   }
   case AMV_U: case AMV_PLUS_U: case TANA_U: case QMEA_U: {
     // DataFit( Recast( iteratedModel ) )
 
-    // Recast g(x) to G(u)
+    // Recast g(x) to G(u); truncate distribution bounds
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model, true); // truncated dist bounds
+    transform_model(iteratedModel, g_u_model, STD_NORMAL_U, true);
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -249,8 +249,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     break;
   }
   case NO_APPROX: { // Recast( iteratedModel )
-    // Recast g(x) to G(u)
-    transform_model(iteratedModel, uSpaceModel, true); // truncated dist bounds
+    // Recast g(x) to G(u); truncate distribution bounds
+    transform_model(iteratedModel, uSpaceModel, STD_NORMAL_U, true);
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -366,7 +366,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     switch (mppSearchType) {
     case AMV_X: case AMV_PLUS_X: case TANA_X: case QMEA_X: {
       Model g_u_model;
-      transform_model(iteratedModel, g_u_model); // original dist bounds
+      transform_model(iteratedModel, g_u_model, STD_NORMAL_U); // orig dist bnds
       import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
 	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
 	cdfFlag, x_model_flag, use_model_bounds, track_extreme);

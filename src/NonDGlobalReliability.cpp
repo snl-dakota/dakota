@@ -197,14 +197,14 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
       probDescDB.get_ushort("method.export_approx_format")), false);
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
-    // Recast g-hat(x) to G-hat(u)
-    transform_model(g_hat_x_model, uSpaceModel, true, 5.);// truncated dist bnds
+    // Recast g-hat(x) to G-hat(u); truncate dist bnds
+    transform_model(g_hat_x_model, uSpaceModel, STD_NORMAL_U, true, 5.);
   }
   else { // DataFit( Recast( iteratedModel ) )
 
-    // Recast g(x) to G(u)
+    // Recast g(x) to G(u); truncate dist bnds
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model, true, 5.); // truncated dist bnds
+    transform_model(iteratedModel, g_u_model, STD_NORMAL_U, true, 5.);
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);
@@ -387,10 +387,6 @@ void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
 
 void NonDGlobalReliability::core_run()
 {
-  // initialize the random variable arrays and the correlation Cholesky factor
-  initialize_random_variable_parameters();
-  transform_correlations();
-
   // set the object instance pointer for use within static member functions
   NonDGlobalReliability* prev_grel_instance = nondGlobRelInstance;
   nondGlobRelInstance = this;

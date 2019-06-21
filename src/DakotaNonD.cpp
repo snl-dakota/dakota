@@ -538,10 +538,11 @@ void NonD::derived_set_communicators(ParLevLIter pl_iter)
 
 
 void NonD::
-transform_model(Model& x_model, Model& u_model,	bool truncate_bnds, Real bnd)
+transform_model(Model& x_model, Model& u_model, short u_space_type,
+		bool truncate_bnds, Real bnd)
 {
-  u_model.assign_rep(new
-    ProbabilityTransformModel(x_model, truncate_bnds, bnd), false);
+  u_model.assign_rep(new ProbabilityTransformModel(x_model, u_space_type,
+						   truncate_bnds, bnd), false);
 }
 
 
