@@ -180,12 +180,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    standardizedSpace = true; break; // natafTransform defined w/i NonDExpansion
+  case PCE_EMULATOR:  case MF_PCE_EMULATOR:  case ML_PCE_EMULATOR:
+  case  SC_EMULATOR:  case  MF_SC_EMULATOR:
+    standardizedSpace = true; break; // nataf defined w/i ProbTransformModel
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
 
+    /*
     // define local natafTransform, whether standardized space or not,
     // since we utilize x-space bounds, moments, density routines
     initialize_random_variable_transformation();
@@ -197,6 +198,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // only needed if Nataf transform will actually be performed
     if (standardizedSpace)
       verify_correlation_support(ASKEY_U);
+    */
     break;
   }
 
@@ -377,9 +379,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
-    ProbabilityTransformModel* pt_model
-      = (ProbabilityTransformModel*)mcmcModel.model_rep();
-    natafTransform = pt_rep->probability_transformation(); // shared rep
+    natafTransform = mcmcModel.probability_transformation(); // shared rep
     break;
   }
 
@@ -412,7 +412,7 @@ void NonDBayesCalibration::construct_mcmc_model()
     // these purposes, but +/-3 sigma has little to no effect in current tests.
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
-      transform_model(inbound_model, lhs_model, truncate_bnds);//, 3.);
+      transform_model(inbound_model, lhs_model, ASKEY_U, truncate_bnds);//, 3.);
     else
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
@@ -439,15 +439,13 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   case NO_EMULATOR:
     mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
-    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    if (standardizedSpace) transform_model(inbound_model, mcmcModel);//dist bnds
+    if (standardizedSpace) transform_model(inbound_model, mcmcModel, ASKEY_U);
     else                   mcmcModel = inbound_model; // shared rep
 
     if (mcmcModel.gradient_type() != "none") mcmcDerivOrder |= 2;
     if (mcmcModel.hessian_type()  != "none") mcmcDerivOrder |= 4;
     break;
   }
-
 }
 
 

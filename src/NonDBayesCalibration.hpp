@@ -472,7 +472,7 @@ protected:
   void kl_post_prior(RealMatrix& acceptanceChain);
   void prior_sample_matrix(RealMatrix& prior_dist_samples);
   void mutual_info_buildX();
-  static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
+  static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2,
      		RealVector& distances, int NX, int NY, int dim2, IntVector& k, 
 		double eps);
   static void ann_dist(const ANNpointArray matrix1, 

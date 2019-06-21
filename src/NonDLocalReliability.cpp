@@ -1826,7 +1826,7 @@ void NonDLocalReliability::truth_evaluation(short mode)
     fnHessX = x_resp.function_hessian(respFnCount);
     fnHessU = u_resp.function_hessian(respFnCount);
     // Note: fnGradX may have also been computed (for nonlinear map w/ 4-bit
-    //       and w/o 2-bit), but can bypass update since (mode & 2) would be
+    //       and w/o 2-bit), but bypass this update since (mode & 2) would be
     //       active if grads were required
     curvatureDataAvailable = true; kappaUpdated = false;
   }
