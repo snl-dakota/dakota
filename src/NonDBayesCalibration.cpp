@@ -379,7 +379,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
-    natafTransform = mcmcModel.probability_transformation(); // shared rep
+    //natafTransform = mcmcModel.probability_transformation(); // shared rep
     break;
   }
 
@@ -421,11 +421,6 @@ void NonDBayesCalibration::construct_mcmc_model()
       NonDLHSSampling(lhs_model, sample_type, samples, randomSeed,
         probDescDB.get_string("method.random_number_generator"));
     lhs_iterator.assign_rep(lhs_rep, false);
-
-    // natafTransform is not fully updated at this point, but using
-    // a shallow copy allows run time updates to propagate
-    //if (standardizedSpace)
-    //  lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
@@ -1929,7 +1924,7 @@ void NonDBayesCalibration::prior_cholesky_factorization()
   int i, j, num_params = numContinuousVars + numHyperparams;
   priorCovCholFactor.shape(num_params, num_params); // init to 0
 
-  if (!standardizedSpace && natafTransform.x_correlation()) {
+  if (!standardizedSpace && x_dist.correlation()) {
     Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
     RealSymMatrix prior_cov_matrix;//= ();
 
@@ -1946,7 +1941,7 @@ void NonDBayesCalibration::prior_cholesky_factorization()
   }
   else {
     RealRealPairArray dist_moments = (standardizedSpace) ?
-      natafTransform.u_moments() : natafTransform.x_moments();
+      u_dist.moments() : x_dist.moments();
     for (i=0; i<numContinuousVars; ++i)
       priorCovCholFactor(i,i) = dist_moments[i].second;
     // for now we assume a variance when the inv gamma has infinite moments

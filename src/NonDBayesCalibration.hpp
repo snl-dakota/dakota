@@ -512,7 +512,9 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
   // TO DO: consider QUESO-based approach for this using priorRv.pdf(),
   // which may in turn call back to our GenericVectorRV prior plug-in
 
-  if (natafTransform.x_correlation()) {
+  const Pecos::MultivariateDistribution& x_dist
+    = iteratedModel.multivariate_distribution();
+  if (x_dist.correlation()) {
     Cerr << "Error: prior_density() uses a product of marginal densities\n"
 	 << "       and can only be used for independent random variables."
 	 << std::endl;
@@ -520,12 +522,15 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
   }
 
   Real pdf = 1.;
-  if (standardizedSpace)
+  if (standardizedSpace) {
+    const Pecos::MultivariateDistribution& u_dist
+      = uSpaceModel.transformed_multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.u_pdf(vec[i], i);
+      pdf *= u_dist.pdf(vec[i], i);
+  }
   else
     for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.x_pdf(vec[i], i);
+      pdf *= x_dist.pdf(vec[i], i);
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -538,7 +543,9 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
 template <typename VectorType> 
 Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 {
-  if (natafTransform.x_correlation()) {
+  const Pecos::MultivariateDistribution& x_dist
+    = iteratedModel.multivariate_distribution();
+  if (x_dist.correlation()) {
     Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
 	 << "       and can only be used for independent random variables."
 	 << std::endl;
@@ -548,10 +555,10 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
   Real log_pdf = 0.;
   if (standardizedSpace)
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.u_log_pdf(vec[i], i);
+      log_pdf += u_dist.log_pdf(vec[i], i);
   else
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.x_log_pdf(vec[i], i);
+      log_pdf += x_dist.log_pdf(vec[i], i);
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -564,7 +571,9 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 template <typename Engine> 
 void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
 {
-  if (natafTransform.x_correlation()) {
+  const Pecos::MultivariateDistribution& x_dist
+    = iteratedModel.multivariate_distribution();
+  if (x_dist.correlation()) {
     Cerr << "Error: prior_sample() does not support correlated prior samples."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
@@ -574,10 +583,10 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
     prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
   if (standardizedSpace)
     for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = natafTransform.draw_u_sample(i, rng);
+      prior_samples[i] = u_dist.draw_sample(i, rng);
   else
     for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = natafTransform.draw_x_sample(i, rng);
+      prior_samples[i] = x_dist.draw_sample(i, rng);
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -590,12 +599,14 @@ template <typename VectorType>
 void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 {
   if (standardizedSpace) {
-    RealRealPairArray u_moments = natafTransform.u_moments();
+    RealRealPairArray u_moments = u_dist.moments();
     for (size_t i=0; i<numContinuousVars; ++i)
       mean_vec[i] = u_moments[i].first;
   }
   else {
-    RealVector x_means = natafTransform.x_means();
+    const Pecos::MultivariateDistribution& x_dist
+      = iteratedModel.multivariate_distribution();
+    RealVector x_means = x_dist.means();
     for (size_t i=0; i<numContinuousVars; ++i)
       mean_vec[i] = x_means[i];
   }
@@ -609,16 +620,18 @@ template <typename MatrixType>
 void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
 {
   if (standardizedSpace) {
-    RealRealPairArray u_moments = natafTransform.u_moments();
+    RealRealPairArray u_moments = u_dist.moments();
     for (size_t i=0; i<numContinuousVars; ++i) {
       const Real& u_std_i = u_moments[i].second;
       var_mat(i,i) = u_std_i * u_std_i;
     }
   }
   else {
-    RealVector x_std = natafTransform.x_std_deviations();
-    if (natafTransform.x_correlation()) {
-      const RealSymMatrix& x_correl = natafTransform.x_correlation_matrix();
+    const Pecos::MultivariateDistribution& x_dist
+      = iteratedModel.multivariate_distribution();
+    RealVector x_std = x_dist.std_deviations();
+    if (x_dist.correlation()) {
+      const RealSymMatrix& x_correl = x_dist.correlation_matrix();
       for (size_t i=0; i<numContinuousVars; ++i) {
 	var_mat(i,i) = x_std[i] * x_std[i];
 	for (size_t j=1; j<numContinuousVars; ++j)
@@ -644,10 +657,13 @@ augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
   if (standardizedSpace)
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -= natafTransform.u_log_pdf_gradient(vec[i], i);
-  else
+      log_grad[i] -= u_dist.log_pdf_gradient(vec[i], i);
+  else {
+    const Pecos::MultivariateDistribution& x_dist
+      = iteratedModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -= natafTransform.x_log_pdf_gradient(vec[i], i);
+      log_grad[i] -= x_dist.log_pdf_gradient(vec[i], i);
+  }
 }
 
 
@@ -659,10 +675,13 @@ augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   if (standardizedSpace)
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -= natafTransform.u_log_pdf_hessian(vec[i], i);
-  else
+      log_hess(i, i) -= u_dist.log_pdf_hessian(vec[i], i);
+  else {
+    const Pecos::MultivariateDistribution& x_dist
+      = iteratedModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -= natafTransform.x_log_pdf_hessian(vec[i], i);
+      log_hess(i, i) -=  x_dist.log_pdf_hessian(vec[i], i);
+  }
 }
 
 

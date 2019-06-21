@@ -39,25 +39,6 @@ NonD* NonD::nondInstance(NULL);
 
 NonD::NonD(ProblemDescDB& problem_db, Model& model):
   Analyzer(problem_db, model),
-  /*
-  numContDesVars(0), numDiscIntDesVars(0),
-  numDiscStringDesVars(0), numDiscRealDesVars(0), numDesignVars(0),
-  numContStateVars(0), numDiscIntStateVars(0), numDiscStringStateVars(0),
-  numDiscRealStateVars(0), numStateVars(0), numNormalVars(0),
-  numLognormalVars(0), numUniformVars(0), numLoguniformVars(0),
-  numTriangularVars(0), numExponentialVars(0), numBetaVars(0), numGammaVars(0),
-  numGumbelVars(0), numFrechetVars(0), numWeibullVars(0),
-  numHistogramBinVars(0), numPoissonVars(0), numBinomialVars(0),
-  numNegBinomialVars(0), numGeometricVars(0), numHyperGeomVars(0),
-  numHistogramPtIntVars(0), numHistogramPtStringVars(0),
-  numHistogramPtRealVars(0), numContIntervalVars(0), numDiscIntervalVars(0),
-  numDiscSetIntUncVars(0), numDiscSetStringUncVars(0), numDiscSetRealUncVars(0),
-  numContAleatUncVars(0), numDiscIntAleatUncVars(0),
-  numDiscStringAleatUncVars(0), numDiscRealAleatUncVars(0),
-  numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
-  numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
-  numEpistemicUncVars(0),
-  */
   respLevelTarget(probDescDB.get_short("method.nond.response_level_target")),
   respLevelTargetReduce(
     probDescDB.get_short("method.nond.response_level_target_reduce")),
@@ -72,125 +53,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   finalMomentsType(probDescDB.get_short("method.nond.final_moments")),
   distParamDerivs(false)
 {
-  //bool err_flag = false;
-  const Variables& vars = iteratedModel.current_variables();
-  //short active_view = vars.view().first;
-  const SharedVariablesData& svd = vars.shared_data();
-
-  /*
-  // initialize aleatory uncertain variables
-  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
-      active_view == RELAXED_ALEATORY_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_ALEATORY_UNCERTAIN) {
-    numNormalVars = probDescDB.get_sizet("variables.normal_uncertain");
-    numLognormalVars = probDescDB.get_sizet("variables.lognormal_uncertain");
-    numUniformVars = probDescDB.get_sizet("variables.uniform_uncertain");
-    numLoguniformVars = probDescDB.get_sizet("variables.loguniform_uncertain");
-    numTriangularVars = probDescDB.get_sizet("variables.triangular_uncertain");
-    numExponentialVars
-      = probDescDB.get_sizet("variables.exponential_uncertain");
-    numBetaVars = probDescDB.get_sizet("variables.beta_uncertain");
-    numGammaVars = probDescDB.get_sizet("variables.gamma_uncertain");
-    numGumbelVars = probDescDB.get_sizet("variables.gumbel_uncertain");
-    numFrechetVars = probDescDB.get_sizet("variables.frechet_uncertain");
-    numWeibullVars = probDescDB.get_sizet("variables.weibull_uncertain");
-    numHistogramBinVars
-      = probDescDB.get_sizet("variables.histogram_uncertain.bin");
-
-    numPoissonVars = probDescDB.get_sizet("variables.poisson_uncertain");
-    numBinomialVars = probDescDB.get_sizet("variables.binomial_uncertain");
-    numNegBinomialVars
-      = probDescDB.get_sizet("variables.negative_binomial_uncertain");
-    numGeometricVars = probDescDB.get_sizet("variables.geometric_uncertain");
-    numHyperGeomVars
-      = probDescDB.get_sizet("variables.hypergeometric_uncertain");
-    numHistogramPtIntVars
-      = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
-
-    numHistogramPtStringVars
-      = probDescDB.get_sizet("variables.histogram_uncertain.point_string");
-
-    numHistogramPtRealVars
-      = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
-
-    svd.aleatory_uncertain_counts(numContAleatUncVars, numDiscIntAleatUncVars,
-				  numDiscStringAleatUncVars,
-				  numDiscRealAleatUncVars);
-    numAleatoryUncVars = numContAleatUncVars       + numDiscIntAleatUncVars
-                       + numDiscStringAleatUncVars + numDiscRealAleatUncVars;
-  }
-
-  // initialize epistemic uncertain variables
-  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
-      active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
-    numContIntervalVars
-      = probDescDB.get_sizet("variables.continuous_interval_uncertain");
-
-    numDiscIntervalVars
-      = probDescDB.get_sizet("variables.discrete_interval_uncertain");
-    numDiscSetIntUncVars
-      = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
-
-    numDiscSetStringUncVars
-      = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
-
-    numDiscSetRealUncVars
-      = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
-
-    svd.epistemic_uncertain_counts(numContEpistUncVars, numDiscIntEpistUncVars,
-				   numDiscStringEpistUncVars,
-				   numDiscRealEpistUncVars);
-    numEpistemicUncVars = numContEpistUncVars + numDiscIntEpistUncVars +
-      numDiscStringEpistUncVars + numDiscRealEpistUncVars;
-  }
-
-  // default mode definition (can be overridden in derived classes, e.g.,
-  // based on NonDSampling::samplingVarsMode):
-  epistemicStats = (numEpistemicUncVars > 0);
-
-  // initialize total uncertain variables
-  numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
-
-  // initialize design variables (if active)
-  if (active_view == RELAXED_ALL    || active_view == MIXED_ALL ||
-      active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
-    svd.design_counts(numContDesVars, numDiscIntDesVars, numDiscStringDesVars,
-		      numDiscRealDesVars);
-    numDesignVars = numContDesVars + numDiscIntDesVars + numDiscStringDesVars
-                  + numDiscRealDesVars;
-  }
-
-  // initialize state variables (if active)
-  if (active_view == RELAXED_ALL   || active_view == MIXED_ALL ||
-      active_view == RELAXED_STATE || active_view == MIXED_STATE) {
-    svd.state_counts(numContStateVars, numDiscIntStateVars,
-		     numDiscStringStateVars, numDiscRealStateVars);
-    numStateVars = numContStateVars       + numDiscIntStateVars
-                 + numDiscStringStateVars + numDiscRealStateVars;
-  }
-
-  if ( !numUncertainVars && !numDesignVars && !numStateVars ) {
-    Cerr << "\nError: number of active variables must be nonzero in Dakota::"
-	 << "NonD." << std::endl;
-    err_flag = true;
-  }
-  if (numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
-      numDiscreteRealVars != numDesignVars + numUncertainVars + numStateVars) {
-    Cerr << "\nError: inconsistent active variable counts ("
-	 << numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
-            numDiscreteRealVars << ", " << numDesignVars + numUncertainVars +
-            numStateVars << ") in Dakota::" << "NonD(Model&) for method "
-	 << method_enum_to_string(methodName) << '.' << std::endl;
-    err_flag = true;
-  }
-  */
-
-  const SizetArray& ac_totals = svd.active_components_totals();
-  epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
-		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
+  size();
 
   // When specifying z/p/beta/beta* levels, a spec with an index key (number of
   // levels = list of ints) will result in multiple vectors of levels, one for
@@ -213,33 +76,11 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   // simple PDF output control for now (suppressed if quiet/silent output level)
   if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
     pdfOutput = true;
-
-  //if (err_flag)
-  //  abort_handler(-1);
 }
 
 
 NonD::NonD(unsigned short method_name, Model& model):
   Analyzer(method_name, model),
-  /*
-  numContDesVars(0), numDiscIntDesVars(0),
-  numDiscStringDesVars(0), numDiscRealDesVars(0), numDesignVars(0),
-  numContStateVars(0), numDiscIntStateVars(0), numDiscStringStateVars(0),
-  numDiscRealStateVars(0), numStateVars(0), numNormalVars(0),
-  numLognormalVars(0), numUniformVars(0), numLoguniformVars(0),
-  numTriangularVars(0), numExponentialVars(0), numBetaVars(0), numGammaVars(0),
-  numGumbelVars(0), numFrechetVars(0), numWeibullVars(0),
-  numHistogramBinVars(0), numPoissonVars(0), numBinomialVars(0),
-  numNegBinomialVars(0), numGeometricVars(0), numHyperGeomVars(0),
-  numHistogramPtIntVars(0), numHistogramPtStringVars(0),
-  numHistogramPtRealVars(0), numContIntervalVars(0), numDiscIntervalVars(0),
-  numDiscSetIntUncVars(0), numDiscSetStringUncVars(0), numDiscSetRealUncVars(0),
-  numContAleatUncVars(0), numDiscIntAleatUncVars(0),
-  numDiscStringAleatUncVars(0), numDiscRealAleatUncVars(0),
-  numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
-  numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
-  numEpistemicUncVars(0),
-  */
   totalLevelRequests(0), cdfFlag(true),
   pdfOutput(false), finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
@@ -256,33 +97,14 @@ NonD::NonD(unsigned short method_name, Model& model):
 
 NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 	   const RealVector& upper_bnds):
-  Analyzer(method_name),
-  /*
-  numContDesVars(0), numDiscIntDesVars(0),
-  numDiscStringDesVars(0), numDiscRealDesVars(0), numDesignVars(0),
-  numContStateVars(0), numDiscIntStateVars(0), numDiscStringStateVars(0),
-  numDiscRealStateVars(0), numStateVars(0), numNormalVars(0),
-  numLognormalVars(0), numUniformVars(0), numLoguniformVars(0),
-  numTriangularVars(0), numExponentialVars(0), numBetaVars(0), numGammaVars(0),
-  numGumbelVars(0), numFrechetVars(0), numWeibullVars(0),
-  numHistogramBinVars(0), numPoissonVars(0), numBinomialVars(0),
-  numNegBinomialVars(0), numGeometricVars(0), numHyperGeomVars(0),
-  numHistogramPtIntVars(0), numHistogramPtStringVars(0),
-  numHistogramPtRealVars(0), numContIntervalVars(0), numDiscIntervalVars(0),
-  numDiscSetIntUncVars(0), numDiscSetStringUncVars(0), numDiscSetRealUncVars(0),
-  numContAleatUncVars(0), numDiscIntAleatUncVars(0),
-  numDiscStringAleatUncVars(0), numDiscRealAleatUncVars(0),
-  numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
-  numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
-  numEpistemicUncVars(0), numUncertainVars(numUniformVars),
-  */
-  epistemicStats(false), totalLevelRequests(0), cdfFlag(true), pdfOutput(false),
-  finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
+  Analyzer(method_name), epistemicStats(false), totalLevelRequests(0),
+  cdfFlag(true), pdfOutput(false), finalMomentsType(STANDARD_MOMENTS),
+  distParamDerivs(false)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
 
-  numContinuousVars //= numUniformVars
+  numContinuousVars
     = std::min(lower_bnds.length(), upper_bnds.length());
   numDiscreteIntVars = numDiscreteStringVars = numDiscreteRealVars = 0;
 }
@@ -290,118 +112,9 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 
 void NonD::size()
 {
-  //bool err_flag = false;
   const Variables& vars = iteratedModel.current_variables();
   //short active_view = vars.view().first;
-  const SharedVariablesData& svd = vars.shared_data();
-
-  /*
-  // update sizes for aleatory uncertain variables
-  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
-      active_view == RELAXED_ALEATORY_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_ALEATORY_UNCERTAIN) { // aleatory or both
-    const Pecos::AleatoryDistParams& adp
-      = iteratedModel.aleatory_distribution_parameters();
-    numNormalVars       = adp.normal_means().length();
-    numLognormalVars    = adp.lognormal_means().length();
-    numUniformVars      = adp.uniform_lower_bounds().length();
-    numLoguniformVars   = adp.loguniform_lower_bounds().length();
-    numTriangularVars   = adp.triangular_modes().length();
-    numExponentialVars  = adp.exponential_betas().length();
-    numBetaVars         = adp.beta_alphas().length();
-    numGammaVars        = adp.gamma_alphas().length();
-    numGumbelVars       = adp.gumbel_alphas().length();
-    numFrechetVars      = adp.frechet_alphas().length();
-    numWeibullVars      = adp.weibull_alphas().length();
-    numHistogramBinVars = adp.histogram_bin_pairs().size();
-
-    numPoissonVars     = adp.poisson_lambdas().length();
-    numBinomialVars    = adp.binomial_probability_per_trial().length();
-    numNegBinomialVars = adp.negative_binomial_probability_per_trial().length();
-    numGeometricVars   = adp.geometric_probability_per_trial().length();
-    numHyperGeomVars   = adp.hypergeometric_num_drawn().length();
-    numHistogramPtIntVars = adp.histogram_point_int_pairs().size();
-
-    numHistogramPtStringVars = adp.histogram_point_string_pairs().size();
-
-    numHistogramPtRealVars   = adp.histogram_point_real_pairs().size();
-
-    svd.aleatory_uncertain_counts(numContAleatUncVars, numDiscIntAleatUncVars,
-				  numDiscStringAleatUncVars,
-				  numDiscRealAleatUncVars);
-    numAleatoryUncVars = numContAleatUncVars       + numDiscIntAleatUncVars
-                       + numDiscStringAleatUncVars + numDiscRealAleatUncVars;
-  }
-
-  // update sizes for epistemic uncertain variables
-  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
-      active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
-    const Pecos::EpistemicDistParams& edp
-      = iteratedModel.epistemic_distribution_parameters();
-    numContIntervalVars  = edp.continuous_interval_basic_probabilities().size();
-
-    numDiscIntervalVars  = edp.discrete_interval_basic_probabilities().size();
-    numDiscSetIntUncVars = edp.discrete_set_int_values_probabilities().size();
-
-    numDiscSetStringUncVars
-      = edp.discrete_set_string_values_probabilities().size();
-
-    numDiscSetRealUncVars = edp.discrete_set_real_values_probabilities().size();
-
-    svd.epistemic_uncertain_counts(numContEpistUncVars, numDiscIntEpistUncVars,
-				   numDiscStringEpistUncVars,
-				   numDiscRealEpistUncVars);
-    numEpistemicUncVars = numContEpistUncVars       + numDiscIntEpistUncVars
-                        + numDiscStringEpistUncVars + numDiscRealEpistUncVars;
-  }
-
-  // default mode definition (can be overridden in derived classes, e.g.,
-  // based on NonDSampling::samplingVarsMode):
-  epistemicStats = (numEpistemicUncVars > 0);
-
-  // update total uncertain variables
-  numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
-
-  // update sizes for design variables (if active)
-  if (active_view == RELAXED_ALL    || active_view == MIXED_ALL ||
-      active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
-    svd.design_counts(numContDesVars, numDiscIntDesVars, numDiscStringDesVars,
-		      numDiscRealDesVars);
-    numDesignVars = numContDesVars       + numDiscIntDesVars
-                  + numDiscStringDesVars + numDiscRealDesVars;
-  }
-
-  // update sizes for state variables (if active)
-  if (active_view == RELAXED_ALL   || active_view == MIXED_ALL ||
-      active_view == RELAXED_STATE || active_view == MIXED_STATE) {
-    svd.state_counts(numContStateVars, numDiscIntStateVars,
-		     numDiscStringStateVars, numDiscRealStateVars);
-    numStateVars = numContStateVars       + numDiscIntStateVars
-                 + numDiscStringStateVars + numDiscRealStateVars;
-  }
-
-  if ( !numUncertainVars && !numDesignVars && !numStateVars ) {
-    Cerr << "\nError: number of active variables must be nonzero in Dakota::"
-	 << "NonD::resize()." << std::endl;
-    err_flag = true;
-  }
-  if (numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
-      numDiscreteRealVars != numDesignVars + numUncertainVars + numStateVars) {
-    Cout << "\nError: inconsistent active variable counts ("
-	 << numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
-            numDiscreteRealVars << ", " << numDesignVars + numUncertainVars +
-            numStateVars << ") in Dakota::NonD::resize()." << std::endl;
-    err_flag = true;
-  }
-
-  if (err_flag)
-    abort_handler(-1);
-  */
-
-  const SizetArray& ac_totals = svd.active_components_totals();
+  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
   epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
 		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
 }
@@ -411,120 +124,7 @@ bool NonD::resize()
 {
   bool parent_reinit_comms = Analyzer::resize();
 
-  //bool err_flag = false;
-  const Variables& vars = iteratedModel.current_variables();
-  //short active_view = vars.view().first;
-  const SharedVariablesData& svd = vars.shared_data();
-
-  /*
-  // update sizes for aleatory uncertain variables
-  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
-      active_view == RELAXED_ALEATORY_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_ALEATORY_UNCERTAIN) { // aleatory or both
-    const Pecos::AleatoryDistParams& adp
-      = iteratedModel.aleatory_distribution_parameters();
-    numNormalVars       = adp.normal_means().length();
-    numLognormalVars    = adp.lognormal_means().length();
-    numUniformVars      = adp.uniform_lower_bounds().length();
-    numLoguniformVars   = adp.loguniform_lower_bounds().length();
-    numTriangularVars   = adp.triangular_modes().length();
-    numExponentialVars  = adp.exponential_betas().length();
-    numBetaVars         = adp.beta_alphas().length();
-    numGammaVars        = adp.gamma_alphas().length();
-    numGumbelVars       = adp.gumbel_alphas().length();
-    numFrechetVars      = adp.frechet_alphas().length();
-    numWeibullVars      = adp.weibull_alphas().length();
-    numHistogramBinVars = adp.histogram_bin_pairs().size();
-
-    numPoissonVars     = adp.poisson_lambdas().length();
-    numBinomialVars    = adp.binomial_probability_per_trial().length();
-    numNegBinomialVars = adp.negative_binomial_probability_per_trial().length();
-    numGeometricVars   = adp.geometric_probability_per_trial().length();
-    numHyperGeomVars   = adp.hypergeometric_num_drawn().length();
-    numHistogramPtIntVars = adp.histogram_point_int_pairs().size();
-
-    numHistogramPtStringVars = adp.histogram_point_string_pairs().size();
-
-    numHistogramPtRealVars   = adp.histogram_point_real_pairs().size();
-
-    svd.aleatory_uncertain_counts(numContAleatUncVars, numDiscIntAleatUncVars,
-				  numDiscStringAleatUncVars,
-				  numDiscRealAleatUncVars);
-    numAleatoryUncVars = numContAleatUncVars       + numDiscIntAleatUncVars
-                       + numDiscStringAleatUncVars + numDiscRealAleatUncVars;
-  }
-
-  // update sizes for epistemic uncertain variables
-  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
-      active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
-    const Pecos::EpistemicDistParams& edp
-      = iteratedModel.epistemic_distribution_parameters();
-    numContIntervalVars  = edp.continuous_interval_basic_probabilities().size();
-
-    numDiscIntervalVars  = edp.discrete_interval_basic_probabilities().size();
-    numDiscSetIntUncVars = edp.discrete_set_int_values_probabilities().size();
-
-    numDiscSetStringUncVars
-      = edp.discrete_set_string_values_probabilities().size();
-
-    numDiscSetRealUncVars = edp.discrete_set_real_values_probabilities().size();
-
-    svd.epistemic_uncertain_counts(numContEpistUncVars, numDiscIntEpistUncVars,
-				   numDiscStringEpistUncVars,
-				   numDiscRealEpistUncVars);
-    numEpistemicUncVars = numContEpistUncVars       + numDiscIntEpistUncVars
-                        + numDiscStringEpistUncVars + numDiscRealEpistUncVars;
-  }
-
-  // default mode definition (can be overridden in derived classes, e.g.,
-  // based on NonDSampling::samplingVarsMode):
-  epistemicStats = (numEpistemicUncVars > 0);
-
-  // update total uncertain variables
-  numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
-
-  // update sizes for design variables (if active)
-  if (active_view == RELAXED_ALL    || active_view == MIXED_ALL ||
-      active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
-    svd.design_counts(numContDesVars, numDiscIntDesVars, numDiscStringDesVars,
-		      numDiscRealDesVars);
-    numDesignVars = numContDesVars       + numDiscIntDesVars
-                  + numDiscStringDesVars + numDiscRealDesVars;
-  }
-
-  // update sizes for state variables (if active)
-  if (active_view == RELAXED_ALL   || active_view == MIXED_ALL ||
-      active_view == RELAXED_STATE || active_view == MIXED_STATE) {
-    svd.state_counts(numContStateVars, numDiscIntStateVars,
-		     numDiscStringStateVars, numDiscRealStateVars);
-    numStateVars = numContStateVars       + numDiscIntStateVars
-                 + numDiscStringStateVars + numDiscRealStateVars;
-  }
-
-  if ( !numUncertainVars && !numDesignVars && !numStateVars ) {
-    Cerr << "\nError: number of active variables must be nonzero in Dakota::"
-	 << "NonD::resize()." << std::endl;
-    err_flag = true;
-  }
-  if (numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
-      numDiscreteRealVars != numDesignVars + numUncertainVars + numStateVars) {
-    Cout << "\nError: inconsistent active variable counts ("
-	 << numContinuousVars + numDiscreteIntVars + numDiscreteStringVars +
-            numDiscreteRealVars << ", " << numDesignVars + numUncertainVars +
-            numStateVars << ") in Dakota::NonD::resize()." << std::endl;
-    err_flag = true;
-  }
-
-  if (err_flag)
-    abort_handler(-1);
-  */
-
-  const SizetArray& ac_totals = svd.active_components_totals();
-  epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
-		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
+  size(); // sufficient at this time
 
   return parent_reinit_comms;
 }

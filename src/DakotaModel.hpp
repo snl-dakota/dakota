@@ -743,8 +743,8 @@ public:
   Pecos::MultivariateDistribution& multivariate_distribution();
   /// return xDist
   const Pecos::MultivariateDistribution& multivariate_distribution() const;
-  /// set xDist
-  void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
+  // set xDist
+  //void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
 
   // LABELS and TAGS
 
@@ -2341,12 +2341,12 @@ multivariate_distribution() const
 { return (modelRep) ? modelRep->xDist : xDist; }
 
 
-inline void Model::
-multivariate_distribution(const Pecos::MultivariateDistribution& dist)
-{
-  if (modelRep) modelRep->xDist = dist;
-  else          xDist = dist;
-}
+// inline void Model::
+// multivariate_distribution(const Pecos::MultivariateDistribution& dist)
+// {
+//   if (modelRep) modelRep->xDist = dist;
+//   else          xDist = dist;
+// }
 
 
 inline StringMultiArrayConstView Model::continuous_variable_labels() const
