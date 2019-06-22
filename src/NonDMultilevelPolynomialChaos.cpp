@@ -65,7 +65,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -205,7 +205,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -285,7 +285,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -417,7 +417,7 @@ bool NonDMultilevelPolynomialChaos::resize()
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler

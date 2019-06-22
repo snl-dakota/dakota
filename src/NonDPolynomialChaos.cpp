@@ -92,7 +92,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -188,7 +188,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -268,7 +268,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -659,7 +659,7 @@ bool NonDPolynomialChaos::resize()
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -843,7 +843,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // For PCE, the approximation and integration bases are the same.  We (always)
   // construct it for the former and (conditionally) pass it in to the latter.
   const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.truth_model().transformed_multivariate_distribution();
+    = uSpaceModel.truth_model().multivariate_distribution();
   shared_data_rep->construct_basis(u_dist);
 
   // If the model is not yet fully initialized, skip grid initialization.

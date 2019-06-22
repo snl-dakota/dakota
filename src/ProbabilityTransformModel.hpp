@@ -73,11 +73,10 @@ protected:
   //void initialize_nataf(const Pecos::ProbabilityTransformation& transform,
   //			bool deep_copy = false);
 
-  /// initialize transformed distribution types and instantiate uDist
+  /// initialize transformed distribution types and instantiate mvDist
   void initialize_distribution_types(short u_space_type);
 
-  // x-space correlations assigned in Model (and available within
-  // natafTransform::xDist) and u-space is uncorrelated
+  // x-space correlations assigned in Model and u-space is uncorrelated
   //void update_distribution_correlations();
   /// verify that correlation warping is supported by Nataf for given
   /// variable types
@@ -123,10 +122,6 @@ protected:
 
 private:
 
-  /// the multivariate random variable distribution in transformed
-  /// probability space
-  Pecos::MultivariateDistribution uDist;
-
   /// Nonlinear variable transformation that encapsulates the required
   /// data for performing transformations from X -> Z -> U and back.
   Pecos::ProbabilityTransformation natafTransform;
@@ -170,8 +165,9 @@ inline void ProbabilityTransformModel::initialize_nataf()
 {
   if (natafTransform.is_null()) {
     natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
-    natafTransform.x_distribution(xDist); // shallow copy
-    natafTransform.u_distribution(uDist); // shallow copy
+    // shallow copies
+    natafTransform.x_distribution(subModel.multivariate_distribution());
+    natafTransform.u_distribution(mvDist);
   }
 }
 
@@ -200,8 +196,8 @@ initialize_nataf(const Pecos::ProbabilityTransformation& transform,
 inline void ProbabilityTransformModel::
 initialize_transformation(short u_space_type)
 {
-  if (uDist.is_null()) // already initialized: no current reason to update
-    uDist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
+  if (mvDist.is_null()) // already initialized: no current reason to update
+    mvDist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
 
   initialize_distribution_types(u_space_type);
   initialize_nataf();
@@ -213,7 +209,7 @@ initialize_transformation(short u_space_type)
 
 inline void ProbabilityTransformModel::update_transformation()
 {
-  uDist.pull_distribution_parameters(xDist);
+  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
   // x-space correlations assigned in Model and u-space is uncorrelated
   //update_distribution_correlations();
 
@@ -233,8 +229,8 @@ update_from_subordinate_model(size_t depth)
 {
   // standard updates for RecastModels, including subModel recursion
   RecastModel::update_from_subordinate_model(depth);
-  // propagate any xDist parameter updates to uDist
-  uDist.pull_distribution_parameters(xDist);
+  // propagate any subModel parameter updates to mvDist
+  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
 }
 
 

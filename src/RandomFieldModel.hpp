@@ -112,7 +112,7 @@ protected:
   SizetArray variables_resize();
 
   /// For KL models, augment the subModel's uncertain variables with
-  /// additional N(0,1) variables; set up xDist for the N(0,1)'s
+  /// additional N(0,1) variables; set up mvDist for the N(0,1)'s
   void initialize_rf_coeffs();
 
   

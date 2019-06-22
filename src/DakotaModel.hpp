@@ -739,11 +739,11 @@ public:
   /// discrete set real variables (aggregated in activeDiscSetRealValues)
   const RealSetArray& discrete_set_real_values(short active_view);
 
-  /// return xDist
+  /// return mvDist
   Pecos::MultivariateDistribution& multivariate_distribution();
-  /// return xDist
+  /// return mvDist
   const Pecos::MultivariateDistribution& multivariate_distribution() const;
-  // set xDist
+  // set mvDist
   //void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
 
   // LABELS and TAGS
@@ -1452,9 +1452,9 @@ protected:
   RealSetArray discreteStateSetRealValues;
   */
 
-  /// the multivariate random variable distribution (in user-defined
-  /// probability space)
-  Pecos::MultivariateDistribution xDist;
+  /// the multivariate random variable distribution (in probability space
+  /// corresponding to currentVariables)
+  Pecos::MultivariateDistribution mvDist;
 
   /// array of flags (one per primary function) for switching the
   /// sense to maximize the primary function (default is minimize)
@@ -2333,19 +2333,19 @@ inline const RealSetArray& Model::discrete_set_real_values()
 
 
 inline Pecos::MultivariateDistribution& Model::multivariate_distribution()
-{ return (modelRep) ? modelRep->xDist : xDist; }
+{ return (modelRep) ? modelRep->mvDist : mvDist; }
 
 
 inline const Pecos::MultivariateDistribution& Model::
 multivariate_distribution() const
-{ return (modelRep) ? modelRep->xDist : xDist; }
+{ return (modelRep) ? modelRep->mvDist : mvDist; }
 
 
 // inline void Model::
 // multivariate_distribution(const Pecos::MultivariateDistribution& dist)
 // {
-//   if (modelRep) modelRep->xDist = dist;
-//   else          xDist = dist;
+//   if (modelRep) modelRep->mvDist = dist;
+//   else          mvDist = dist;
 // }
 
 

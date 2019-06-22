@@ -53,7 +53,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -138,7 +138,7 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler

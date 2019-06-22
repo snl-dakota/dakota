@@ -75,7 +75,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
 
     // > wrapping iteratedModel here applies the transformation on top of the
     //   incoming DataFitSurrModel --> insufficient for internal build.
-    //transform_model(iteratedModel, uSpaceModel); // only affects exp_sampler
+    //transform_model(iteratedModel, uSpaceModel, u_space_type); // only affects exp_sampler
 
     // > intruding into the DataFitSurrModel ctor is awkward because the
     //   daceIterator spec points to the actualModel spec (when DACE is active)
@@ -112,8 +112,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
 
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model); // retain distribution bounds
-    
+    transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bnds
+
     Iterator u_space_sampler; // Evaluates true model
     if (numSamplesOnModel) { // not in method spec
       // default pattern is fixed for consistency in any outer loop,
@@ -185,7 +185,7 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
   // For PCE, the approximation and integration bases are the same.  We (always)
   // construct it for the former and (conditionally) pass it in to the latter.
   const Pecos::MultivariateDistribution& u_dist
-    = dfs_model.truth_model().transformed_multivariate_distribution();
+    = dfs_model.truth_model().multivariate_distribution();
   shared_data_rep->construct_basis(u_dist);
   
   // if all variables mode, initialize key to random variable subset

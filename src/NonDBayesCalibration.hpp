@@ -524,7 +524,7 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
   Real pdf = 1.;
   if (standardizedSpace) {
     const Pecos::MultivariateDistribution& u_dist
-      = uSpaceModel.transformed_multivariate_distribution();
+      = mcmcModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
       pdf *= u_dist.pdf(vec[i], i);
   }
@@ -553,9 +553,12 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
   }
 
   Real log_pdf = 0.;
-  if (standardizedSpace)
+  if (standardizedSpace) {
+    const Pecos::MultivariateDistribution& u_dist
+      = mcmcModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
       log_pdf += u_dist.log_pdf(vec[i], i);
+  }
   else
     for (size_t i=0; i<numContinuousVars; ++i)
       log_pdf += x_dist.log_pdf(vec[i], i);
@@ -581,9 +584,12 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
 
   if (prior_samples.empty())
     prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
-  if (standardizedSpace)
+  if (standardizedSpace) {
+    const Pecos::MultivariateDistribution& u_dist
+      = mcmcModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
       prior_samples[i] = u_dist.draw_sample(i, rng);
+  }
   else
     for (size_t i=0; i<numContinuousVars; ++i)
       prior_samples[i] = x_dist.draw_sample(i, rng);
@@ -599,14 +605,13 @@ template <typename VectorType>
 void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 {
   if (standardizedSpace) {
-    RealRealPairArray u_moments = u_dist.moments();
+    RealRealPairArray u_moments
+      = mcmcModel.multivariate_distribution().moments();
     for (size_t i=0; i<numContinuousVars; ++i)
       mean_vec[i] = u_moments[i].first;
   }
   else {
-    const Pecos::MultivariateDistribution& x_dist
-      = iteratedModel.multivariate_distribution();
-    RealVector x_means = x_dist.means();
+    RealVector x_means = iteratedModel.multivariate_distribution().means();
     for (size_t i=0; i<numContinuousVars; ++i)
       mean_vec[i] = x_means[i];
   }
@@ -620,7 +625,8 @@ template <typename MatrixType>
 void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
 {
   if (standardizedSpace) {
-    RealRealPairArray u_moments = u_dist.moments();
+    RealRealPairArray u_moments
+      = mcmcModel.multivariate_distribution().moments();
     for (size_t i=0; i<numContinuousVars; ++i) {
       const Real& u_std_i = u_moments[i].second;
       var_mat(i,i) = u_std_i * u_std_i;
@@ -638,10 +644,9 @@ void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
 	  var_mat(i,j) = var_mat(j,i) = x_correl(i,j) * x_std[i] * x_std[j];
       }
     }
-    else {
+    else
       for (size_t i=0; i<numContinuousVars; ++i)
 	var_mat(i,i) = x_std[i] * x_std[i];
-    }
   }
   for (size_t i=0; i<numHyperparams; ++i)
     var_mat(numContinuousVars + i, numContinuousVars + i) = 
@@ -655,9 +660,12 @@ augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
 {
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
-  if (standardizedSpace)
+  if (standardizedSpace) {
+    const Pecos::MultivariateDistribution& u_dist
+      = mcmcModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
       log_grad[i] -= u_dist.log_pdf_gradient(vec[i], i);
+  }
   else {
     const Pecos::MultivariateDistribution& x_dist
       = iteratedModel.multivariate_distribution();
@@ -673,9 +681,12 @@ augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
 {
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
-  if (standardizedSpace)
+  if (standardizedSpace) {
+    const Pecos::MultivariateDistribution& u_dist
+      = mcmcModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
       log_hess(i, i) -= u_dist.log_pdf_hessian(vec[i], i);
+  }
   else {
     const Pecos::MultivariateDistribution& x_dist
       = iteratedModel.multivariate_distribution();

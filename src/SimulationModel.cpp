@@ -118,7 +118,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // get size of corresponding set values
   size_t i, num_lev;
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
@@ -216,7 +216,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
   size_t val_index = c_cit->second;
 
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {
@@ -280,7 +280,7 @@ unsigned short SimulationModel::solution_level_index() const
 {
   size_t val_index;
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   switch (solnCntlVarType) {
   case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
   case DISCRETE_STATE_RANGE: {

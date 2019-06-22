@@ -1607,7 +1607,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   // initialize distribution params for reduced model
   // This is necessary if subModel has been transformed
   // to standard normals from a different distribution
-  //xDist.pull_distribution_parameters(native_dist); // deep copy
+  //mvDist.pull_distribution_parameters(native_dist); // deep copy
 
   // native space characterization
   RealVector mu_x, sd_x;
@@ -1672,7 +1672,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
     sd_y(i) = std::sqrt(V_y(i,i));
 
   Pecos::MarginalsCorrDistribution* reduced_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
   reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
 
@@ -1688,7 +1688,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSubspace Model: correl_y = \n" << correl_y;
-  xDist.correlation_matrix(correl_y);
+  mvDist.correlation_matrix(correl_y);
 
   // Set inactive subspace variables
   // mu_z = inactiveBasis^T * mu_x

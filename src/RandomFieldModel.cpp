@@ -132,7 +132,7 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   mappingInitialized = true;
 
   if (expansionForm == RF_KARHUNEN_LOEVE) {
-    // augment xDist with normal(0,1)
+    // augment mvDist with normal(0,1)
     initialize_rf_coeffs();
     // update message lengths for send/receive of parallel jobs (normally
     // performed once in Model::init_communicators() just after construct time)
@@ -402,13 +402,13 @@ void RandomFieldModel::initialize_rf_coeffs()
     // get submodel normal parameters (could get from current object as well)
     const Pecos::MultivariateDistribution& sm_dist
       = subModel.multivariate_distribution();
-    Pecos::MarginalsCorrDistribution* sm_dist_rep
+    Pecos::MarginalsCorrDistribution* sm_mvd_rep
       = (Pecos::MarginalsCorrDistribution*)sm_dist.multivar_dist_rep();
     RealVector normal_means, normal_stdev, normal_lb, normal_ub;
-    sm_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
-    sm_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
-    sm_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);
-    sm_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_UPR_BND, normal_ub);
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_UPR_BND, normal_ub);
 
     // append normal variables
     int num_sm_normal = normal_means.length();
@@ -434,13 +434,13 @@ void RandomFieldModel::initialize_rf_coeffs()
       currentVariables.
         continuous_variable_label(sm_cv_labels[i], actualReducedRank + i);
 
-    // update xDist for the RandomFieldModel
-    Pecos::MarginalsCorrDistribution* x_dist_rep
-      = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
-    x_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
-    x_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
-    x_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);
-    x_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_UPR_BND, normal_ub);
+    // update mvDist for the RandomFieldModel
+    Pecos::MarginalsCorrDistribution* mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_UPR_BND, normal_ub);
   }
 }
 

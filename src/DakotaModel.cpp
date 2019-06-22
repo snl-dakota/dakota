@@ -120,8 +120,8 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   estDerivsFlag(false), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
-  initialize_distribution(xDist);
-  initialize_distribution_parameters(xDist);
+  initialize_distribution(mvDist);
+  initialize_distribution_parameters(mvDist);
 
   if (modelId.empty())
     modelId = user_auto_id();
@@ -253,10 +253,9 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 }
 
 
-/** This constructor also builds the base class data for inherited
-    models.  However, it is used for recast models which are
-    instantiated on the fly.  Therefore it only initializes a small
-    subset of attributes. */
+/** This constructor also builds the base class data for inherited models.
+    However, it is used for recast models which are instantiated on the fly.
+    Therefore it only initializes a small subset of attributes. */
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
@@ -268,7 +267,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId("NO_SPECIFICATION"), /* this will be changed by the constructors of
-                                 RecastModel and its derived classes */
+                                  RecastModel and its derived classes */
   modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   modelRep(NULL), referenceCount(1)
@@ -301,8 +300,8 @@ Model::Model():
     execute get_model, since Model(BaseConstructor, problem_db)
     builds the actual base class data for the derived models. */
 Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
-  parallelLib(problem_db.parallel_library()), evaluationsDB(evaluation_store_db),
-  referenceCount(1)
+  parallelLib(problem_db.parallel_library()),
+  evaluationsDB(evaluation_store_db), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(ProblemDescDB&) called to instantiate envelope."
@@ -1116,7 +1115,7 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
     { fd_lb = -dbl_inf;  fd_ub = dbl_inf; }
   else { // manage global/inferred vs. distribution bounds
     Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
     for (size_t j=0; j<num_deriv_vars; j++) {
       size_t cv_index = find_index(cv_ids, original_dvv[j]);
       switch (cv_types[cv_index]) {
@@ -4503,7 +4502,7 @@ void Model::estimate_message_lengths()
       // worst case before packing. Variables aren't aware of the set
       // elements, so set them here with helper functions.
       Variables new_vars(currentVariables.copy());
-      assign_max_strings(xDist, new_vars);
+      assign_max_strings(mvDist, new_vars);
 
       buff << new_vars;
       messageLengths[0] = buff.size(); // length of message containing vars
@@ -4830,7 +4829,7 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
   // TO DO: return if already defined by a previous invocation
 
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: {
@@ -5010,7 +5009,7 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
   // TO DO: return if already defined (previous call)
 
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: case RELAXED_DESIGN: {
@@ -5120,7 +5119,7 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
   // TO DO: return if already defined (previous call)
 
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
   case MIXED_DESIGN: {

@@ -33,15 +33,16 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
 
   // initialize invariant portions of probability transform at construct time
-  xDist = x_model.multivariate_distribution(); // shared rep
   initialize_transformation(u_space_type);
 
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
   SizetArray recast_vars_comps_total; // default: no change in cauv total
   // we do not reorder the u-space variable types such that we preserve a
   // 1-to-1 mapping with consistent ordering
-  size_t i, num_active_rv = xDist.active_variables().count();
-  //size_t num_rv = xDist.random_variables().size(); // *** TO DO: manage active subsets within NatafTransformation
+  Pecos::MultivariateDistribution& x_dist
+    = subModel.multivariate_distribution();
+  size_t i, num_active_rv = x_dist.active_variables().count();
+  //size_t num_rv = x_dist.random_variables().size(); // *** TO DO: manage active subsets within NatafTransformation
   vars_map.resize(num_active_rv);
   for (i=0; i<num_active_rv; ++i)
     { vars_map[i].resize(1);         vars_map[i][0] = i; }
@@ -62,7 +63,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
 
   init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns,
 	     0, 0, recast_resp_order);
-  init_maps(vars_map, nonlinear_variables_mapping(xDist, uDist),
+  init_maps(vars_map, nonlinear_variables_mapping(x_dist, mvDist),
 	    vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
 	    secondary_resp_map, nonlinear_resp_map, resp_x_to_u_mapping, NULL);
   // publish inverse mappings for use in data imports.  Since derivatives are
@@ -119,7 +120,7 @@ void ProbabilityTransformModel::initialize_dakota_variable_types()
   svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
   svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
   svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
-  const Pecos::ShortArray& u_types = uDist.random_variable_types();
+  const Pecos::ShortArray& u_types = mvDist.random_variable_types();
 
   // Update active continuous/discrete variable types (needed for Model::
   // continuous_{probability_density,distribution_bounds,distribution_moment}())
@@ -218,8 +219,9 @@ update_model_bounds(bool truncate_bnds, Real bnd)
   // Populate continuous model bounds for transformed space //
   ////////////////////////////////////////////////////////////
 
-  const Pecos::ShortArray& u_types = uDist.random_variable_types();
-  const std::vector<Pecos::RandomVariable>& x_rv = xDist.random_variables();
+  const Pecos::ShortArray& u_types = mvDist.random_variable_types();
+  const std::vector<Pecos::RandomVariable>& x_rv
+    = subModel.multivariate_distribution().random_variables();
   size_t num_cv = currentVariables.cv(), num_rv = u_types.size();
   // [-1,1] are u-space bounds for design, state, epistemic, uniform, & beta
   RealVector c_l_bnds(num_cv, false);  c_l_bnds = -1.;
@@ -434,7 +436,9 @@ initialize_distribution_types(short u_space_type)
   // > if EXTENDED_U (PCE/SC with Askey plus numerically-generated polynomials),
   //   then u-space involves at most linear scaling to std distributions.
 
-  const Pecos::ShortArray& x_types = xDist.random_variable_types();
+  Pecos::MultivariateDistribution& x_dist
+    = subModel.multivariate_distribution();
+  const Pecos::ShortArray& x_types = x_dist.random_variable_types();
   size_t i, num_rv = x_types.size();
   Pecos::ShortArray u_types(num_rv, Pecos::NO_TYPE);
   bool err_flag = false;
@@ -521,18 +525,20 @@ initialize_distribution_types(short u_space_type)
   }
 
   Pecos::MarginalsCorrDistribution* u_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)uDist.multivar_dist_rep();
-  u_dist_rep->initialize_types(u_types, xDist.active_variables());
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  u_dist_rep->initialize_types(u_types, x_dist.active_variables());
 }
 
 
 void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 {
-  if (xDist.correlation()) {
-    const Pecos::ShortArray&   x_types = xDist.random_variable_types();
-    const Pecos::ShortArray&   u_types = uDist.random_variable_types();
-    const Pecos::RealSymMatrix& x_corr = xDist.correlation_matrix();
-    const Pecos::BitArray& active_corr = xDist.active_correlations();
+  Pecos::MultivariateDistribution& x_dist
+    = subModel.multivariate_distribution();
+  if (x_dist.correlation()) {
+    const Pecos::ShortArray&   x_types = x_dist.random_variable_types();
+    const Pecos::ShortArray&   u_types = mvDist.random_variable_types();
+    const Pecos::RealSymMatrix& x_corr = x_dist.correlation_matrix();
+    const Pecos::BitArray& active_corr = x_dist.active_correlations();
     size_t i, j, corr_i, corr_j, num_rv = x_types.size();
     bool no_mask = active_corr.empty();
 
@@ -551,7 +557,7 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 		  Cerr << "\nWarning: u-space type for random variable " << i+1
 		       << " changed to\n         STD_NORMAL due to "
 		       << "decorrelation requirements.\n";
-		  uDist.random_variable_type(Pecos::STD_NORMAL, i);
+		  mvDist.random_variable_type(Pecos::STD_NORMAL, i);
 		  break; // out of inner loop
 		}
 		++corr_j;
@@ -698,6 +704,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
   const SizetArray& u_dvv = u_response.active_set_derivative_vector();
   const ShortArray& x_asv = x_response.active_set_request_vector();
   const SizetArray& x_dvv = x_response.active_set_derivative_vector();
+  Pecos::MultivariateDistribution& x_dist
+    = ptmInstance->subModel.multivariate_distribution();
   size_t i, j, num_fns = x_asv.size(), num_deriv_vars = x_dvv.size();
   if (u_asv.size() != num_fns) {
     Cerr << "Error: inconsistent response function definition in Probability"
@@ -706,7 +714,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 	 << u_asv.size() << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  if (!ptmInstance->xDist.correlation() && u_dvv != x_dvv) {
+  if (!x_dist.correlation() && u_dvv != x_dvv) {
     Cerr << "Error: inconsistent derivative component definition in Probability"
 	 << "TransformModel::resp_x_to_u_mapping().\nx-space DVV =\n" << x_dvv
          << "u-space DVV =\n" << u_dvv << std::endl;
@@ -826,10 +834,12 @@ void ProbabilityTransformModel::
 set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
 		   ActiveSet& x_set)
 {
+  Pecos::MultivariateDistribution& x_dist
+    = ptmInstance->subModel.multivariate_distribution();
   //if (ptmInstance->distParamDerivs) {
   //}
   //else
-  if (ptmInstance->xDist.correlation()) {
+  if (x_dist.correlation()) {
     const SizetArray& u_dvv = u_set.derivative_vector();
     SizetMultiArrayConstView cv_ids = u_vars.continuous_variable_ids();
     SizetMultiArrayConstView icv_ids
@@ -839,7 +849,7 @@ set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
       SizetMultiArrayConstView acv_ids = u_vars.all_continuous_variable_ids();
       size_t i, j, num_cv = cv_ids.size(), num_acv = acv_ids.size();
       SizetArray x_dvv;
-      const RealSymMatrix& corr_x = ptmInstance->xDist.correlation_matrix();
+      const RealSymMatrix& corr_x = x_dist.correlation_matrix();
       for (i=0; i<num_acv; ++i) { // insert in ascending order
         size_t acv_id = acv_ids[i];
         if (contains(u_dvv, acv_id))

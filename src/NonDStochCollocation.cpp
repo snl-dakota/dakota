@@ -44,7 +44,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -113,7 +113,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -376,7 +376,7 @@ void NonDStochCollocation::initialize_u_space_model()
   // build a polynomial basis for purposes of defining collocation pts/wts
   std::vector<Pecos::BasisPolynomial> driver_basis;
   const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.truth_model().transformed_multivariate_distribution();
+    = uSpaceModel.truth_model().multivariate_distribution();
   Pecos::SharedInterpPolyApproxData::
     construct_basis(u_dist, bc_options, driver_basis);
 

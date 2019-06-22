@@ -97,9 +97,15 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
       short u_space_type = PARTIAL_ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
       actualModel.assign_rep(new
 	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
+      // overwrite mvDist from Model ctor by copying transformed u-space dist
+      // (keep them distinct to allow for different active views).
+      // construct time augmented with run time pull_distribution_parameters().
+      mvDist = actualModel.multivariate_distribution().copy();
     }
-    else
+    else {
       actualModel = problem_db.get_model();
+      // leave mvDist as initialized in Model ctor (from variables spec)
+    }
     // ensure consistency of inputs/outputs between actual and approx
     check_submodel_compatibility(actualModel);
   }
@@ -213,11 +219,16 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (pointReuse.empty()) // assign default
     pointReuse = (import_pts) ? "all" : "none";
 
+  // copy actualModel dist (keep distinct to allow for different active views).
+  // construct time augmented with run time pull_distribution_parameters().
+  mvDist = actualModel.multivariate_distribution().copy();
+
   // update constraint counts in userDefinedConstraints.
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
 				 actualModel.num_nonlinear_eq_constraints(),
 				 actualModel.num_linear_ineq_constraints(),
 				 actualModel.num_linear_eq_constraints());
+
   update_from_model(actualModel);
   check_submodel_compatibility(actualModel);
 
@@ -2215,10 +2226,15 @@ void DataFitSurrModel::init_model(Model& model)
   // used to evaluate.   More careful logic may be needed in the future...
   if (currentVariables.shared_data().id() ==
       model.current_variables().shared_data().id())
-    model.multivariate_distribution().pull_distribution_parameters(xDist);
-  // Note: when actualModel is a ProbabilityTransformModel, its xDist is a
-  //       shared rep with actualModel.subModel.xDist.  uDist updates from
-  //       this shared xDist are managed elsewhere...
+    model.multivariate_distribution().pull_distribution_parameters(mvDist);
+  // Note: when model is a ProbabilityTransformModel, its mvDist is in u-space.
+  //       DataFit operates in and pushes updates to this transformed space.
+  // Note: it is sufficient to perform this push at initialize_mapping() time
+  //       (once per iterator run) rather than repeatedly --> it is part of
+  //       init_model() rather than update_model().
+  // Note: currentVariables may have different active view from incoming model
+  //       vars, but MultivariateDistribution updates can be performed for all
+  //       vars (independent of view)
 
   // labels: update model with current{Variables,Response} descriptors
 
@@ -2422,7 +2438,12 @@ void DataFitSurrModel::update_from_model(const Model& model)
   // used to evaluate.  More careful logic may be needed in the future...
   if (currentVariables.shared_data().id() ==
       model.current_variables().shared_data().id())
-    xDist.pull_distribution_parameters(model.multivariate_distribution());
+    mvDist.pull_distribution_parameters(model.multivariate_distribution());
+  // Note: when incoming model is a ProbabilityTransform, its MVD is in u-space.
+  //       DataFit operates in and pulls updates from this transformed space.
+  // Note: currentVariables may have different active view from incoming model
+  //       vars, but MultivariateDistribution updates can be performed for all
+  //       vars (independent of view)
 
   // linear constraints
 
@@ -2483,8 +2504,9 @@ void DataFitSurrModel::update_from_model(const Model& model)
       model.nonlinear_eq_constraint_targets());
 }
 
-void DataFitSurrModel::declare_sources() {
 
+void DataFitSurrModel::declare_sources()
+{
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if(actualModel.is_null() || surrogateFnIndices.size() == numFns) {
@@ -2511,8 +2533,8 @@ void DataFitSurrModel::declare_sources() {
         "approximation");
     break;
   }
-
 }
+
 
 ActiveSet DataFitSurrModel::default_interface_active_set() {
   // The ApproximationInterface may provide just a subset
@@ -2550,6 +2572,5 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
   set.request_vector(asv);
   return set;
 }
-
 
 } // namespace Dakota

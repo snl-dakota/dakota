@@ -820,13 +820,13 @@ void RecastModel::update_from_model(Model& model)
 
     // uncertain variable distribution data
     // > deep dist data copies were used previously for DistributionParams
-    //xDist.update(model.multivariate_distribution());
+    //mvDist.update(model.multivariate_distribution());
     // Current approach: rep is shared
-    // > tramples an xDist construction from Model(BaseConstructor) ....
-    // > populates xDist for Model(LightWtBaseConstructor)
+    // > tramples an mvDist construction from Model(BaseConstructor) ....
+    // > populates mvDist for Model(LightWtBaseConstructor)
     // > reassignments protected by smart ptr management
     // Note: becomes less important w/ broader use of ProbabilityTransformModel
-    xDist = subModel.multivariate_distribution(); // shared rep
+    mvDist = subModel.multivariate_distribution(); // shared rep
 
     // linear constraints
     if (model.num_linear_ineq_constraints()) {

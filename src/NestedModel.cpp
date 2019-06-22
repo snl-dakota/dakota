@@ -2981,7 +2981,7 @@ size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
            num_euv = 0, num_beuv = 0, num_gauv = 0, num_guuv = 0, num_fuv = 0;
     submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
     Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
     const ShortArray& rv_types = mvd_rep->types(); num_rv = rv_types.size();
     for (i=0; i<num_rv; ++i)
       switch (rv_types[i]) {
@@ -3091,7 +3091,7 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
            num_puv = 0, num_biuv = 0, num_nbiuv = 0, num_geuv = 0;
     submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
     Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
     const ShortArray& rv_types = mvd_rep->types(); num_rv = rv_types.size();
     for (i=0; i<num_rv; ++i)
       switch (rv_types[i]) {
@@ -3173,7 +3173,7 @@ void NestedModel::
 real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 {
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views --> resort to ACV types?
 
   switch (svm_target) {
@@ -3304,7 +3304,7 @@ integer_variable_mapping(const int& i_var, size_t mapped_index,
 			 short svm_target)
 {
   Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)xDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
   bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views...)
 
   switch (svm_target) {
