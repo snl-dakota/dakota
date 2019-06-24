@@ -17,6 +17,7 @@
 #include "NonDCubature.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "MarginalsCorrDistribution.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDCubature.cpp,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
@@ -96,8 +97,8 @@ check_integration(const Pecos::MultivariateDistribution& mvd)
     Pecos::MarginalsCorrDistribution* mvd_rep
       = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
     RealArray beuv_alphas, beuv_betas;
-    mvd_rep->pull_parameters(BE_ALPHA, beuv_alphas);
-    mvd_rep->pull_parameters(BE_BETA,  beuv_betas);
+    mvd_rep->pull_parameters(Pecos::STD_BETA, Pecos::BE_ALPHA, beuv_alphas);
+    mvd_rep->pull_parameters(Pecos::STD_BETA, Pecos::BE_BETA,  beuv_betas);
     Real alpha0 = beuv_alphas[0], beta0 = beuv_betas[0];
     for (size_t i=1; i<numContinuousVars; ++i)
       if (rv_types[i]   != type0 || beuv_alphas[i] != alpha0 ||
@@ -109,7 +110,7 @@ check_integration(const Pecos::MultivariateDistribution& mvd)
     Pecos::MarginalsCorrDistribution* mvd_rep
       = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
     RealArray gauv_alphas;
-    mvd_rep->pull_parameters(GA_ALPHA, gauv_alphas);
+    mvd_rep->pull_parameters(Pecos::STD_GAMMA, Pecos::GA_ALPHA, gauv_alphas);
     Real alpha0 = gauv_alphas[0];
     for (size_t i=1; i<numContinuousVars; ++i)
       if (u_types[i] != type0 || gauv_alphas[i] != alpha0)

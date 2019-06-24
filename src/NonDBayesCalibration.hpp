@@ -16,6 +16,7 @@
 #define NOND_BAYES_CALIBRATION_H
 
 #include "NonDCalibration.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include "InvGammaRandomVariable.hpp"
 #include "GaussianKDE.hpp"
 #include "ANN/ANN.h" 
@@ -576,6 +577,8 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
 {
   const Pecos::MultivariateDistribution& x_dist
     = iteratedModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* x_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)x_dist.multivar_dist_rep();
   if (x_dist.correlation()) {
     Cerr << "Error: prior_sample() does not support correlated prior samples."
 	 << std::endl;
@@ -588,11 +591,11 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
     const Pecos::MultivariateDistribution& u_dist
       = mcmcModel.multivariate_distribution();
     for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = u_dist.draw_sample(i, rng);
+      prior_samples[i] = x_dist_rep->draw_sample(i, rng);
   }
   else
     for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = x_dist.draw_sample(i, rng);
+      prior_samples[i] = x_dist_rep->draw_sample(i, rng);
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)

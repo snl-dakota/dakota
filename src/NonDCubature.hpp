@@ -21,6 +21,8 @@
 
 namespace Dakota {
 
+class MultivariateDistribution; // fwd declaration
+  
 
 /// Derived nondeterministic class that generates N-dimensional
 /// numerical cubature points for evaluation of expectation integrals.
