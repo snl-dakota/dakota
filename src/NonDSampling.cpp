@@ -278,7 +278,6 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
 					 model.continuous_upper_bounds(),
 					 corr, num_samples, design_matrix); 
-					 //backfillFlag);
     }
     else if (samplingVarsMode == ALL_UNIFORM) {
       // sample uniformly from ALL lower/upper bnds with model in distinct view.
@@ -287,7 +286,6 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
 					 model.all_continuous_upper_bounds(),
 					 corr, num_samples, design_matrix); 
-					 //backfillFlag);
     }
     else { // A, E, A+E UNCERTAIN_UNIFORM
       // sample uniformly from {A,E,A+E} UNCERTAIN lower/upper bounds
@@ -311,7 +309,6 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       // TO DO: add support for uniform discrete
       lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, uncertain_c_u_bnds,
 					 corr, num_samples, design_matrix); 
-					 //backfillFlag);
     }
     break;
   }

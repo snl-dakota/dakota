@@ -12,19 +12,19 @@
 //- Checked by:
 //- Version:
 
-#include "dakota_system_defs.hpp"
-#include "dakota_data_io.hpp"
+#include "NonDLHSSampling.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "DakotaApproximation.hpp"
+#include "ProbabilityTransformation.hpp"
 #include "ReducedBasis.hpp"
 #include "dakota_linear_algebra.hpp"
-
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
 #include "Teuchos_LAPACK.hpp"
 #include "Teuchos_SerialDenseSolver.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
-#include "DakotaApproximation.hpp"
 //#include <Teuchos_MatrixMarket_Raw_Writer.hpp>
 #include "nested_sampling.hpp"
 #include "BasisPolynomial.hpp"
@@ -61,35 +61,39 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
     numResponseFunctions = model.num_primary_fns();
 
   if (dOptimal) {
-    if (numDesignVars || numEpistemicUncVars || numStateVars) {
+    const SharedVariablesData& svd = model.current_variables().shared_data();
+    const SizetArray& ac_totals = svd.active_components_totals();
+    if (ac_totals[TOTAL_CDV]   || ac_totals[TOTAL_DDIV]  ||
+	ac_totals[TOTAL_DDSV]  || ac_totals[TOTAL_DDRV]  ||
+	ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV] ||
+	ac_totals[TOTAL_CSV]   || ac_totals[TOTAL_DSIV]  ||
+	ac_totals[TOTAL_DSSV]  || ac_totals[TOTAL_DSRV]) {
       Cerr << "\nError: 'd_optimal' sampling not supported for design, "
 	   << "epistemic, or state\n       variables. Consider aleatory "
 	   << "uncertain variables instead.\n";
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
-    bool leja = (oversampleRatio > 0.0);
+    bool leja = (oversampleRatio > 0.);
     if (leja) {
-      if (oversampleRatio < 1.0) {
+      if (oversampleRatio < 1.) {
         Cerr << "\nError: 'leja_oversample_ratio' must be at least 1.0\n";
-        abort_handler(-1);
+        abort_handler(METHOD_ERROR);
       }
-      if (numPoissonVars || numBinomialVars || numNegBinomialVars ||
-	  numGeometricVars || numHyperGeomVars || numHistogramPtIntVars ||
-	  numHistogramPtStringVars || numHistogramPtRealVars) {
-        Cerr << "\nError: 'd_optimal', 'leja_oversample_ratio' does not support "
-             << "discrete variables.\n";
-        abort_handler(-1);
+      if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+        Cerr << "\nError: 'd_optimal', 'leja_oversample_ratio' does not "
+             << "support discrete variables.\n";
+        abort_handler(METHOD_ERROR);
       }
     }
-    else {
-      // classical D-optimal
+    else { // classical D-optimal
       if (numCandidateDesigns == 0)
         numCandidateDesigns = 100;
     }
     // NOTE: Classical D-optimal works with regular LHS by generating
     // candidate designs that are Latin and picking the best.
     if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT)
-      if (refineSamples.length() > 0)
+      if (refineSamples.length())
         Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
              << " refined LHS \n         sampling" << std::endl;
       else if (leja)
@@ -183,7 +187,7 @@ void NonDLHSSampling::pre_run()
   bool increm_lhs_active
     = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
 
-  // *** TO DO: update for refactor...
+  /* TO DO: update for refactor...
   if (dOptimal)
     // initialize nataf transform for generating basis
     initialize_random_variables(EXTENDED_U);
@@ -194,6 +198,7 @@ void NonDLHSSampling::pre_run()
     // Capture any run-time updates for x-space distributions
     initialize_random_variable_parameters();
   }
+  */
   resize_final_statistics_gradients(); // finalStats ASV available at run time
 
   // BMA TODO: D-optimal incremental LHS (challenging due to set/get ranks)
@@ -305,10 +310,10 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
 {
   // BMA NOTE: this could likely be extended to grow by any power of 2
   if (previous_samples != new_samples) {
-    Cout << "Error: For incremental LHS, the total number of samples must double"
-         << " each time.\n       For example, samples = 20 refinement_samples = "
-         << "20 40 80." << std::endl;
-    abort_handler(-1);
+    Cout << "Error: For incremental LHS, the total number of samples must "
+	 << "double each time.\n       For example, samples = 20 refinement_"
+	 << "samples = 20 40 80." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
    
   // BMA TODO: are these sizes correct for cases where we are sampling inactive?
@@ -340,7 +345,7 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   BoolDequeArray switch_ranks(numContinuousVars, 
                               BoolDeque(previous_samples, false));
   const std::vector<Pecos::RandomVariable>& x_ran_vars
-    = natafTransform.x_random_variables();
+    = iteratedModel.multivariate_distribution().random_variables();
   for (int v=0; v<numContinuousVars; ++v) {
     const Pecos::RandomVariable& rv = x_ran_vars[v];
     for (int s=0; s<previous_samples; ++s) {
@@ -535,6 +540,15 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   RealMatrix selected_samples(Teuchos::View, full_samples, 
 			      num_vars, total_samples, 0, 0);
 
+  // *** TEMP WORK AROUND ***
+  Pecos::ProbabilityTransformation nataf("nataf"); // for now
+  Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
+  nataf.x_distribution(iteratedModel.multivariate_distribution());
+  nataf.u_distribution(u_dist);
+  //ProbabilityTransformModel::
+  //  initialize_distribution_types(EXTENDED_U, x_dist.random_variable_types(),
+  //                                u_dist.random_variable_types());
+
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;
   std::vector<Pecos::BasisPolynomial> poly_basis;
@@ -547,8 +561,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     coefficients_norms_flag(true, basis_types, poly_basis);
 
   // transform from x to u space; should we make a copy?
-  bool x_to_u = true;
-  transform_samples(initial_samples, x_to_u);
+  transform_samples(nataf, initial_samples, 0, true); // x_to_u
 
   bool leja = (oversampleRatio > 0.0);
   if (leja) {
@@ -566,7 +579,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     RealMatrix candidate_samples(num_vars, num_candidates);
     get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
     // transform from x to u space; should we make a copy?
-    transform_samples(candidate_samples, x_to_u);
+    transform_samples(nataf, candidate_samples, 0, true); // x_to_u
 
     // BMA TODO: construct and preserve the LejaSampler if possible
     // BMA TODO: discuss with John what's needed...
@@ -605,7 +618,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     for (int cand_i = 0; cand_i < numCandidateDesigns; ++cand_i) {
 
       get_parameter_sets(iteratedModel, new_samples, curr_new_samples, false);
-      transform_samples(curr_new_samples, x_to_u);
+      transform_samples(nataf, curr_new_samples, 0, true); // x_to_u
 
       // build basis matrix from total sample set (selected_samples
       // includes intiial and new samples)
@@ -624,8 +637,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     curr_new_samples.assign(best_new_samples);
   }
   // transform whole samples matrix from u back to x space
-  bool u_to_x = false;
-  transform_samples(selected_samples, u_to_x);
+  transform_samples(nataf, selected_samples, 0, false); // u_to_x
 }
 
 void NonDLHSSampling::post_input()
