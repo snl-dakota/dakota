@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+class TPLDataTransfer;
+
 /** Adapter for copying initial continuous variables values from a Dakota Model
    into TPL vectors */
 
@@ -456,7 +458,7 @@ public:
   int num_nonlin_ineq_constraints_found() const
     { return numNonlinearIneqConstraintsFound; }
 
-  /** Adapter for transferring variable bounds from Dakota data to TPL data */
+  /** Method for transferring variable bounds from Dakota data to TPL data */
   template <typename AdapterT>
     bool get_variable_bounds_from_dakota(
         typename AdapterT::VecT & lower,
@@ -470,7 +472,7 @@ public:
                             upper);
     }
 
-  /** Adapter for transferring responses from Dakota data to TPL data */
+  /** Method for transferring responses from Dakota data to TPL data */
   template <typename VecT>
     void get_responses_from_dakota(
         const RealVector & dak_fn_vals,
@@ -487,6 +489,11 @@ public:
                             cEqs,
                             cIneqs);
     }
+
+  // Accessor for data transfer helper/adapters
+  std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const
+    { return dataTransferHandler; }
+  
 protected:
 
   //
@@ -517,12 +524,9 @@ protected:
   void finalize_run();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  // helper/adapter methods
+  // Configure data transfer helper/adapters
   void configure_constraint_maps();
-  //void mapped_function_values(const RealVector& function_vals); // use constraints and traits for format
-  //const Real& mapped_function_value(size_t i) const;
 
-  
   //
   //- Heading: Data
   //
@@ -549,6 +553,9 @@ protected:
 
   /// offsets for constraint transformations
   std::vector<double> constraintMapOffsets;
+
+  /// New approach for handling data transfers to/from Dakota and the underlying TPL
+  std::shared_ptr<TPLDataTransfer> dataTransferHandler;
 
 //----------------------------------------------------------------
 
@@ -947,7 +954,7 @@ void get_nonlinear_eq_constraints( Model & model,
 
 //----------------------------------------------------------------
 
-/** Data adapter to transfer data from Dakota to third-party opt packages */
+/** Data adapter to transfer data from Dakota to third-party opt packages (ROL-specific) */
 template <typename VecT>
 void get_nonlinear_ineq_constraints( const Model & model,
                                            VecT & values)
@@ -966,10 +973,10 @@ void get_nonlinear_ineq_constraints( const Model & model,
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename VecT>
-void get_nonlinear_constraints( Model & model,
-                                VecT & nonlin_ineq_lower,
-                                VecT & nonlin_ineq_upper,
-                                VecT & nonlin_eq_targets)
+void get_nonlinear_bounds( Model & model,
+                           VecT & nonlin_ineq_lower,
+                           VecT & nonlin_ineq_upper,
+                           VecT & nonlin_eq_targets)
 {
   const RealVector& nln_ineq_lwr_bnds = model.nonlinear_ineq_constraint_lower_bounds();
   const RealVector& nln_ineq_upr_bnds = model.nonlinear_ineq_constraint_upper_bounds();

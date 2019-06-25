@@ -30,7 +30,9 @@ namespace Dakota {
   enum class NONLINEAR_INEQUALITY_FORMAT { NONE,
                                            TWO_SIDED,
                                            ONE_SIDED_LOWER,
-                                           ONE_SIDED_UPPER };
+                                           ONE_SIDED_UPPER,
+                                           ANTI_STANDARD,
+                                           STANDARD };
 
 /// Base class for traits.
 
