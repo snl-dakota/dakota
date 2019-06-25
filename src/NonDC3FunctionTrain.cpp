@@ -51,15 +51,15 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   //  "method.c3function_train.num_samples_for_construction"))
   //exportPointsFile(problem_db.get_string("model.export_approx_points_file"))
 {
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
   // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
   short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
+  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -197,15 +197,6 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
   //    random_vars_key[i] = (i >= numContDesVars && i < num_cdv_cauv);
   //  shared_data_rep->random_variables_key(random_vars_key);
   //}
-
-  /* natafTransform now shared within the ProbabilityTransformModel instance
-     (DataFitSurrModel::actualModel)
-  // share natafTransform instance with u-space sampler
-  Iterator& u_space_sampler = dfs_model.subordinate_iterator();
-  if (!u_space_sampler.is_null())
-    ((NonD*)u_space_sampler.iterator_rep())->
-      initialize_random_variables(natafTransform); // shared rep
-  */
 
   // perform last due to numSamplesOnModel update
   //NonDExpansion::initialize_u_space_model(); // assumes SharedPecosApproxData

@@ -47,12 +47,12 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -194,12 +194,12 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -274,12 +274,12 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -406,12 +406,12 @@ bool NonDMultilevelPolynomialChaos::resize()
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)

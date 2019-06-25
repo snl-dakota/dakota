@@ -61,12 +61,12 @@ void NonDLHSEvidence::post_process_samples()
     for (i=0, it=all_responses.begin(); i<numSamples; i++, ++it) {
 
       const Real& fn_val = it->second.function_value(respFnCntr);
-      Variables all_vars = iteratedModel.current_variables().copy();
-      sample_to_variables(all_samples[i],all_vars);
+      Variables vars = iteratedModel.current_variables().copy();
+      sample_to_variables(all_samples[i], vars);
 
-      const RealVector&  c_vars = all_vars.continuous_variables();
-      const IntVector&  di_vars = all_vars.discrete_int_variables();
-      const RealVector& dr_vars = all_vars.discrete_real_variables();
+      const RealVector&  c_vars = vars.continuous_variables();
+      const IntVector&  di_vars = vars.discrete_int_variables();
+      const RealVector& dr_vars = vars.discrete_real_variables();
 
       for (cellCntr=0; cellCntr<numCells; ++cellCntr) {
         bool in_bounds = true;

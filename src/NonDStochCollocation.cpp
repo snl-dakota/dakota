@@ -32,13 +32,13 @@ NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model)
 {
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
+  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -102,12 +102,12 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach,
 		piecewise_basis, use_derivs)
 {
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
+  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -417,8 +417,7 @@ void NonDStochCollocation::initialize_covariance()
 void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
 
   if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
@@ -427,11 +426,11 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	// refinement assessed for impact on combined expansion from roll up
-	deltaRespMean[i] = (all_vars) ?
+	deltaRespMean[i] = (allVars) ?
 	  pa_rep_i->delta_combined_mean(initialPtU) :
 	  pa_rep_i->delta_combined_mean();
       else // refinement assessed for impact on the current expansion
-	deltaRespMean[i] = (all_vars) ?
+	deltaRespMean[i] = (allVars) ?
 	  pa_rep_i->delta_mean(initialPtU) : pa_rep_i->delta_mean();
 
       if (update_ref) {
@@ -458,8 +457,7 @@ void NonDStochCollocation::
 compute_delta_variance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
 
   if (deltaRespVariance.empty())
     deltaRespVariance.sizeUninitialized(numFunctions);
@@ -470,10 +468,10 @@ compute_delta_variance(bool update_ref, bool print_metric)
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	// refinement assessed for impact on combined expansion from roll up
-	delta = (all_vars) ? pa_rep_i->delta_combined_variance(initialPtU) :
+	delta = (allVars) ? pa_rep_i->delta_combined_variance(initialPtU) :
 	  pa_rep_i->delta_combined_variance();
       else // refinement assessed for impact on the current expansion
-	delta = (all_vars) ? pa_rep_i->delta_variance(initialPtU) :
+	delta = (allVars) ? pa_rep_i->delta_variance(initialPtU) :
 	  pa_rep_i->delta_variance();
 
       if (update_ref) {
@@ -497,8 +495,7 @@ void NonDStochCollocation::
 compute_delta_covariance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   size_t i, j;
 
   if (deltaRespCovariance.empty())
@@ -514,11 +511,11 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 	if (pa_rep_j->expansion_coefficient_flag()) {
 	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	    // refinement assessed for impact on combined exp from roll up
-	    delta = (all_vars) ?
+	    delta = (allVars) ?
 	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
 	      pa_rep_i->delta_combined_covariance(pa_rep_j);
 	  else // refinement assessed for impact on the current expansion
-	    delta = (all_vars) ?
+	    delta = (allVars) ?
 	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
 	      pa_rep_i->delta_covariance(pa_rep_j);
 
@@ -629,8 +626,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
         if (!revert) level_maps_new.size(totalLevelRequests); // init to 0
       }
 
-      bool warn_flag = false,
-	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+      bool warn_flag = false;
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
@@ -645,11 +641,11 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
 	      z_bar = requestedRespLevels[i][j];
 	      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-		delta = deltaLevelMaps[cntr] = (all_vars) ?
+		delta = deltaLevelMaps[cntr] = (allVars) ?
 		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
 	      else
-		delta = deltaLevelMaps[cntr] = (all_vars) ?
+		delta = deltaLevelMaps[cntr] = (allVars) ?
 		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
@@ -679,11 +675,11 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 	  for (j=0; j<bl_len; ++j, ++cntr) {
 	    beta_bar = requestedRelLevels[i][j];
 	    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-	      delta = deltaLevelMaps[cntr] = (all_vars) ?
+	      delta = deltaLevelMaps[cntr] = (allVars) ?
 		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);
 	    else
-	      delta = deltaLevelMaps[cntr] = (all_vars) ?
+	      delta = deltaLevelMaps[cntr] = (allVars) ?
 		pa_rep_i->delta_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_z(cdfFlag, beta_bar);
 	    sum_sq += delta * delta;
@@ -778,8 +774,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
         if (!revert) final_stats_new.size(num_stats); // init to 0
       }
 
-      bool warn_flag = false,
-	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+      bool warn_flag = false;
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
@@ -795,11 +790,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
 	      z_bar = requestedRespLevels[i][j];
 	      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-		delta = delta_final_stats[cntr] = (all_vars) ?
+		delta = delta_final_stats[cntr] = (allVars) ?
 		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
 	      else
-		delta = delta_final_stats[cntr] = (all_vars) ?
+		delta = delta_final_stats[cntr] = (allVars) ?
 		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
@@ -811,11 +806,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 		// ref is undefined and delta neglects term; must compute new
 		if (!revert) {
 		  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-		    final_stats_new[cntr] = (all_vars) ?
+		    final_stats_new[cntr] = (allVars) ?
 		      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
 		      pa_rep_i->combined_beta(cdfFlag, z_bar);
 		  else
-		    final_stats_new[cntr] = (all_vars) ?
+		    final_stats_new[cntr] = (allVars) ?
 		      pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
 		      pa_rep_i->beta(cdfFlag, z_bar);
 		}
@@ -841,11 +836,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	  for (j=0; j<bl_len; ++j, ++cntr) {
 	    beta_bar = requestedRelLevels[i][j];
 	    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-	      delta = delta_final_stats[cntr] = (all_vars) ?
+	      delta = delta_final_stats[cntr] = (allVars) ?
 		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);
 	    else
-	      delta = delta_final_stats[cntr] = (all_vars) ?
+	      delta = delta_final_stats[cntr] = (allVars) ?
 		pa_rep_i->delta_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_z(cdfFlag, beta_bar);
 	    sum_sq += delta * delta;
@@ -977,7 +972,6 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
     level_maps_new.resize(totalLevelRequests);
 
   size_t i, j, cntr, rl_len, pl_len, bl_len, gl_len, pl_bl_gl_len;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
   for (i=0, cntr=0; i<numFunctions; ++i) {
@@ -998,11 +992,11 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
 	  // ref is undefined and delta neglects term; must compute new
 	  z_bar = requestedRespLevels[i][j];
 	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-	    level_maps_new[cntr] = (all_vars) ?
+	    level_maps_new[cntr] = (allVars) ?
 	      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
 	      pa_rep_i->combined_beta(cdfFlag, z_bar);
 	  else
-	    level_maps_new[cntr] = (all_vars) ?
+	    level_maps_new[cntr] = (allVars) ?
 	      pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
 	      pa_rep_i->beta(cdfFlag, z_bar);
 	}

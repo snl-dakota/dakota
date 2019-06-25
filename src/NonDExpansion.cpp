@@ -28,6 +28,7 @@
 #include "DiscrepancyCorrection.hpp"
 #include "dakota_tabular_io.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProbabilityTransformation.hpp"
 
 //#define DEBUG
 //#define CONVERGENCE_DATA
@@ -73,7 +74,18 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 {
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
-  epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
+  const Variables& vars = iteratedModel.current_variables();
+  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
+  bool auv = (ac_totals[TOTAL_CAUV]  || ac_totals[TOTAL_DAUIV] ||
+	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
+  epistemicStats = (euv && !auv);
+
+  // flag for combined var expansions which include non-probabilistic subset
+  // (continuous only for now)
+  allVars = (ac_totals[TOTAL_CDV] || ac_totals[TOTAL_CEUV] ||
+	     ac_totals[TOTAL_CSV]);
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
@@ -97,7 +109,18 @@ NonDExpansion(unsigned short method_name, Model& model,
 {
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
-  epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
+  const Variables& vars = iteratedModel.current_variables();
+  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
+  bool auv = (ac_totals[TOTAL_CAUV]  || ac_totals[TOTAL_DAUIV] ||
+	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
+  epistemicStats = (euv && !auv);
+
+  // flag for combined var expansions which include non-probabilistic subset
+  // (continuous only for now)
+  allVars = (ac_totals[TOTAL_CDV] || ac_totals[TOTAL_CEUV] ||
+	     ac_totals[TOTAL_CSV]);
 
   // level mappings not yet available
   // (defer initialize_response_covariance() and initialize_final_statistics())
@@ -234,6 +257,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 }
 
 
+/*
 void NonDExpansion::initialize_random(short u_space_type)
 {
   // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
@@ -244,6 +268,7 @@ void NonDExpansion::initialize_random(short u_space_type)
   //initialize_final_statistics();
   verify_correlation_support(u_space_type); // correlation warping factors
 }
+*/
 
 
 void NonDExpansion::
@@ -369,16 +394,15 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 
   // tracking of unique product weights needed for PCE and SC standard modes
   // since both employ PolynomialApproximation::compute_numerical_moments(4).
-  // Neither PCE nor SC require product wts for all_vars mode, since moment
+  // Neither PCE nor SC require product wts for allVars mode, since moment
   // calculations must employ gauss_wts_1d.
-  // Exception 1: all_vars Nodal SC requires weights for total covariance()
+  // Exception 1: allVars Nodal SC requires weights for total covariance()
   //              evaluation in VBD.
   // Exception 2: NonDIntegration::print_points_weights() needs weights for
   //              outputLevel > NORMAL_OUTPUT.
-  bool all_vars  = (numContDesVars || numContEpistUncVars || numContStateVars);
   bool nodal_vbd = (vbdFlag && methodName == STOCH_COLLOCATION &&
     expansionCoeffsApproach != Pecos::HIERARCHICAL_SPARSE_GRID);
-  bool track_wts = (!all_vars || nodal_vbd || outputLevel > NORMAL_OUTPUT);
+  bool track_wts = (!allVars || nodal_vbd || outputLevel > NORMAL_OUTPUT);
 
   short growth_rate;
   if (ruleGrowthOverride == Pecos::UNRESTRICTED ||
@@ -437,8 +461,8 @@ void NonDExpansion::initialize_u_space_model()
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   if (refineControl) {
-    // communicate refinement metric to Pecos (determines internal bookkeeping
-    // requirements for some PolyApproximation types)
+    // communicate refinement metric to Pecos (determines internal
+    // bookkeeping requirements for some PolyApproximation types)
     if (totalLevelRequests) {
       refineMetric = Pecos::LEVEL_STATS_METRIC;
       for (size_t i=0; i<numFunctions; ++i)
@@ -458,19 +482,16 @@ void NonDExpansion::initialize_u_space_model()
   shared_data_rep->configuration_options(ec_options);
 
   // if all variables mode, initialize key to random variable subset
-  if (numContDesVars || numContEpistUncVars || numContStateVars) {
+  if (allVars) {
     Pecos::BitArray random_vars_key(numContinuousVars);
-    size_t i, num_cdv_cauv = numContDesVars + numContAleatUncVars;
+    const Variables&  vars      = iteratedModel.current_variables();
+    const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+    size_t i, num_cdv = ac_totals[TOTAL_CDV],
+      num_cdv_cauv = num_cdv + ac_totals[TOTAL_CAUV];
     for (i=0; i<numContinuousVars; ++i)
-      random_vars_key[i] = (i >= numContDesVars && i < num_cdv_cauv);
+      random_vars_key[i] = (i >= num_cdv && i < num_cdv_cauv);
     shared_data_rep->random_variables_key(random_vars_key);
   }
-
-  // share natafTransform instance with u-space sampler
-  //Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  //if (!u_space_sampler.is_null())
-  //  ((NonD*)u_space_sampler.iterator_rep())->
-  //    initialize_random_variables(natafTransform); // shared rep
 
   // if numerical integration, manage u_space_sampler updates
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
@@ -478,6 +499,7 @@ void NonDExpansion::initialize_u_space_model()
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID) {
+    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
     shared_data_rep->integration_iterator(u_space_sampler);
     numSamplesOnModel = u_space_sampler.maximum_evaluation_concurrency()
       / uSpaceModel.subordinate_model().derivative_concurrency();
@@ -579,17 +601,11 @@ construct_expansion_sampler(const String& import_approx_file,
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
 	cdfFlag, false); // suppress PDFs (managed locally)
-      // needed if export_approx_points_file:
-      //imp_sampler_rep->initialize_random_variables(natafTransform);//share rep
       //imp_sampler_rep->final_moments_type(NO_MOMENTS); // already off for AIS
     }
   }
   // publish output verbosity
   exp_sampler_rep->output_level(outputLevel);
-  // publish natafTransform instance (shared rep: distribution parameter
-  // updates do not need to be explicitly propagated) so that u-space
-  // sampler has access to x-space data to perform inverse transforms
-  //exp_sampler_rep->initialize_random_variables(natafTransform); // shared rep
   // store rep inside envelope
   expansionSampler.assign_rep(exp_sampler_rep, false);
 }
@@ -611,31 +627,17 @@ void NonDExpansion::core_run()
 
 void NonDExpansion::initialize_expansion()
 {
-  initialize_random_variable_parameters();//capture any distrib param insertions
+  //initialize_random_variable_parameters();// capture any dist param insertions
   if (totalLevelRequests) initialize_level_mappings(); // size computed*Levels
   resize_final_statistics_gradients(); // finalStats ASV available at run time
-  transform_correlations();
+  //transform_correlations();
 
   // now that data has flowed down at run-time from any higher level recursions
   // to iteratedModel, it must be propagated up through the local g_u_model and
   // uSpaceModel recursions (so they are correct when propagated back down).
-  //
-  // RecastModel::update_from_model() has insufficient context to update
-  // distribution params for variables that are not transformed (i.e., 
-  // numerically-generated bases/points); it assumes that the presence of any
-  // variable transformation precludes flow of distribution parameters.  So
-  // we handle that special case here prior to the general recursion.  The
-  // alternative would be to supply another function pointer to RecastModel
-  // to support partial distribution parameter mappings.
-  //Pecos::AleatoryDistParams& adp_u
-  //  = uSpaceModel.subordinate_model().aleatory_distribution_parameters();
-  //const Pecos::AleatoryDistParams& adp_x
-  //  = iteratedModel.aleatory_distribution_parameters();
-  //adp_u.update_partial(adp_x, natafTransform.x_random_variables(),
-  //		       natafTransform.u_types());
-  // Update: ProbabilityTransformModel::update_from_model() can now handle this
-  //
-  // Now perform the Model update recursion
+  // RecastModel::update_from_model() had insufficient context to update
+  // distribution parameters for variables that were not transformed, but
+  // ProbabilityTransformModel::update_from_model() can now handle this.
   size_t depth = (methodName > STOCH_COLLOCATION && // multilevel/multifidelity
 		  multilevDiscrepEmulation == DISTINCT_EMULATION) ?
     2    : // limit depth to avoid warning at HierarchSurrModel
@@ -654,17 +656,21 @@ void NonDExpansion::initialize_expansion()
   // epistemic, and state vars, it captures the current values for this UQ
   // execution; for aleatory vars, it captures the initial values from user
   // specifications or mean defaults.
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
   if (numUncertainQuant == 0) // initial UQ: full update of initialPtU
-    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
-				initialPtU);
-  else if (numContDesVars || numContEpistUncVars || numContStateVars) {
+    nataf.trans_X_to_U(iteratedModel.continuous_variables(), initialPtU);
+  else if (allVars) {
     // subsequent UQ for all vars mode: partial update of initialPtU; store
     // current design/epistemic/state but don't overwrite initial aleatory
-    RealVector pt_u; size_t i;
-    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
-    for (i=0; i<numContDesVars; ++i)
+    RealVector pt_u;
+    nataf.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
+    const Variables& vars = iteratedModel.current_variables();
+    const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+    size_t i, num_cdv = ac_totals[TOTAL_CDV];
+    for (i=0; i<num_cdv; ++i)
       initialPtU[i] = pt_u[i]; // design
-    for (i=numContDesVars + numContAleatUncVars; i<numContinuousVars; ++i)
+    for (i=num_cdv + ac_totals[TOTAL_CAUV]; i<numContinuousVars; ++i)
       initialPtU[i] = pt_u[i]; // epistemic/state
   }
 
@@ -682,11 +688,13 @@ void NonDExpansion::initialize_expansion()
 void NonDExpansion::compute_expansion()
 {
 #ifdef DERIV_DEBUG
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
   // numerical verification of analytic Jacobian/Hessian routines
   RealVector rdv_u;
-  natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
-  natafTransform.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
-  natafTransform.verify_design_jacobian(rdv_u);
+  nataf.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
+  nataf.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
+  nataf.verify_design_jacobian(rdv_u);
 #endif // DERIV_DEBUG
 
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
@@ -704,9 +712,12 @@ void NonDExpansion::compute_expansion()
 
   // define ASV for u_space_sampler and expansion coefficient/gradient
   // data flags for PecosApproximation
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   ShortArray sampler_asv(numFunctions, 0);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  const Variables& vars = iteratedModel.current_variables();
+  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+  size_t num_cdv = ac_totals[TOTAL_CDV],
+    num_cdv_cauv = num_cdv + ac_totals[TOTAL_CAUV];
   for (i=0; i<numFunctions; ++i) {
     Approximation* poly_approx_rep = poly_approxs[i].approx_rep();
     bool expansion_coeff_flag = false, expansion_grad_flag = false;
@@ -752,13 +763,12 @@ void NonDExpansion::compute_expansion()
       // all vars requirements:
       //   mean grad: coeffs (nonrandom v),          coeff grads (random v)
       //   var  grad: coeffs (nonrandom v), coeffs & coeff grads (random v)
-      if (all_vars) { // aleatory + design/epistemic
+      if (allVars) { // aleatory + design/epistemic
 	size_t deriv_index, num_deriv_vars = final_dvv.size();
 	for (j=0; j<num_deriv_vars; ++j) {
 	  deriv_index = final_dvv[j] - 1; // OK since we are in an "All" view
 	  // random variable
-	  if (deriv_index >= numContDesVars &&
-	      deriv_index <  numContDesVars + numContAleatUncVars) {
+	  if (deriv_index >= num_cdv && deriv_index <  num_cdv_cauv) {
 	    if (moment1_grad) expansion_grad_flag = true;
 	    if (moment2_grad) expansion_grad_flag = expansion_coeff_flag = true;
 	  }
@@ -785,12 +795,12 @@ void NonDExpansion::compute_expansion()
 
   // If OUU/SOP (multiple calls to core_run()), an expansion constructed over
   // the full range of all variables does not need to be reconstructed on
-  // subsequent calls.  However, an all_vars construction over a trust region
+  // subsequent calls.  However, an allVars construction over a trust region
   // needs rebuilding when the trust region is updated.  In the checks below,
   // all_approx detects any variable insertions or ASV omissions and
   // force_rebuild() manages variable augmentations.
   bool all_approx = false;
-  if (all_vars && numUncertainQuant && secondaryACVarMapTargets.empty()) {
+  if (allVars && numUncertainQuant && secondaryACVarMapTargets.empty()) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
     const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
@@ -816,7 +826,7 @@ void NonDExpansion::compute_expansion()
 	for (i=0; i<num_outer_cv; ++i)
 	  if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion
 	    { dist_param_deriv = true; break; }
-	sampler_grad = (all_vars) ? dist_param_deriv : true;
+	sampler_grad = (allVars) ? dist_param_deriv : true;
       }
       u_space_sampler_rep->distribution_parameter_derivatives(dist_param_deriv);
       if (dist_param_deriv)
@@ -847,12 +857,11 @@ void NonDExpansion::compute_expansion()
 	else // assign cv_ids
 	  sampler_set.derivative_vector(cv_ids);
       }
-      else if (all_vars && sampler_grad) { // filter: retain only insertion tgts
+      else if (allVars && sampler_grad) { // filter: retain only insertion tgts
 	SizetArray filtered_final_dvv;
-	size_t num_cdv_cauv = numContDesVars+numContAleatUncVars;
 	for (i=0; i<num_final_grad_vars; ++i) {
 	  size_t dvv_i = final_dvv[i];
-	  if (dvv_i > numContDesVars && dvv_i <= num_cdv_cauv)
+	  if (dvv_i > num_cdv && dvv_i <= num_cdv_cauv)
 	    filtered_final_dvv.push_back(dvv_i);
 	}
 	sampler_set.derivative_vector(filtered_final_dvv);
@@ -1893,8 +1902,7 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   }
 
   size_t i;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
-    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
+  bool combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Approximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
@@ -1959,8 +1967,7 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
 
 void NonDExpansion::compute_active_diagonal_variance()
 {
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
@@ -1968,8 +1975,7 @@ void NonDExpansion::compute_active_diagonal_variance()
     Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE)
                 ? respVariance[i] : respCovariance(i,i);
     if (pa_rep_i->expansion_coefficient_flag())
-      var_i = (all_vars) ? pa_rep_i->variance(initialPtU) :
-	                   pa_rep_i->variance();
+      var_i = (allVars) ? pa_rep_i->variance(initialPtU) : pa_rep_i->variance();
     else
       { warn_flag = true; var_i = 0.; }
   }
@@ -1983,8 +1989,7 @@ void NonDExpansion::compute_active_diagonal_variance()
 void NonDExpansion::compute_active_off_diagonal_covariance()
 {
   size_t i, j;
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
@@ -1994,7 +1999,7 @@ void NonDExpansion::compute_active_off_diagonal_covariance()
 	PecosApproximation* pa_rep_j
 	  = (PecosApproximation*)poly_approxs[j].approx_rep();
 	if (pa_rep_j->expansion_coefficient_flag())
-	  respCovariance(i,j) = (all_vars) ?
+	  respCovariance(i,j) = (allVars) ?
 	    pa_rep_i->covariance(initialPtU, pa_rep_j) :
 	    pa_rep_i->covariance(pa_rep_j);
 	else
@@ -2015,8 +2020,7 @@ void NonDExpansion::compute_active_off_diagonal_covariance()
 
 void NonDExpansion::compute_combined_diagonal_variance()
 {
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
@@ -2024,8 +2028,8 @@ void NonDExpansion::compute_combined_diagonal_variance()
     Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE)
                 ? respVariance[i] : respCovariance(i,i);
     if (pa_rep_i->expansion_coefficient_flag())
-      var_i = (all_vars) ? pa_rep_i->combined_covariance(initialPtU, pa_rep_i)
-	                 : pa_rep_i->combined_covariance(pa_rep_i);
+      var_i = (allVars) ? pa_rep_i->combined_covariance(initialPtU, pa_rep_i)
+	                : pa_rep_i->combined_covariance(pa_rep_i);
     else
       { warn_flag = true; var_i = 0.; }
   }
@@ -2040,8 +2044,7 @@ void NonDExpansion::compute_combined_diagonal_variance()
 void NonDExpansion::compute_combined_off_diagonal_covariance()
 {
   size_t i, j;
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
@@ -2051,7 +2054,7 @@ void NonDExpansion::compute_combined_off_diagonal_covariance()
 	PecosApproximation* pa_rep_j
 	  = (PecosApproximation*)poly_approxs[j].approx_rep();
 	if (pa_rep_j->expansion_coefficient_flag())
-	  respCovariance(i,j) = (all_vars) ?
+	  respCovariance(i,j) = (allVars) ?
 	    pa_rep_i->combined_covariance(initialPtU, pa_rep_j) :
 	    pa_rep_i->combined_covariance(pa_rep_j);
 	else
@@ -2101,13 +2104,12 @@ void NonDExpansion::compute_statistics(short results_state)
       //break;
     //}
     break;
-  case INTERMEDIATE_RESULTS: {
-    bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  case INTERMEDIATE_RESULTS:
     switch (refineMetric) {
     case Pecos::NO_METRIC: // possible for multifidelity_expansion()
       compute_moments();
       if (totalLevelRequests) {
-	if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+	if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
 	compute_level_mappings();
       }
       break;
@@ -2117,16 +2119,15 @@ void NonDExpansion::compute_statistics(short results_state)
 	compute_off_diagonal_covariance();
       break;
     case Pecos::MIXED_STATS_METRIC:
-      if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+      if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
       compute_moments(); compute_level_mappings();
       break;
     case Pecos::LEVEL_STATS_METRIC:
-      if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+      if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
       compute_level_mappings();
       break;
     }
     break;
-  }
   case FINAL_RESULTS:
     uSpaceModel.continuous_variables(initialPtU); // see top comment
     // -----------------------------
@@ -2164,8 +2165,7 @@ void NonDExpansion::compute_level_mappings()
   compute_numerical_level_mappings();
 
   // flags for limiting unneeded computation (matched in print_results())
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
-       combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS),
+  bool combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS),
        z_to_beta = (respLevelTarget == RELIABILITIES);
 
   // loop over response fns and compute/store analytic stats/stat grads
@@ -2201,7 +2201,7 @@ void NonDExpansion::compute_level_mappings()
 	  { moments_flag = true; break; }
     }
     if (moments_flag) {
-      if (all_vars)
+      if (allVars)
 	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
       else
 	poly_approx_rep->compute_moments(false, combined_stats);
@@ -2320,13 +2320,12 @@ void NonDExpansion::compute_moments()
   // for use with incremental results states
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
-    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
+  bool combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   Approximation* poly_approx_rep;
   for (size_t i=0; i<numFunctions; ++i) {
     poly_approx_rep = poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
-      if (all_vars)
+      if (allVars)
 	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
       else
 	poly_approx_rep->compute_moments(false, combined_stats);
@@ -2365,7 +2364,6 @@ void NonDExpansion::compute_analytic_statistics()
 
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0,
     num_final_grad_vars = final_dvv.size(), total_offset,
     moment_offset = (finalMomentsType) ? 2 : 0;
@@ -2398,7 +2396,7 @@ void NonDExpansion::compute_analytic_statistics()
     // expansionCoeffFlag as needed to support final data requirements.
     // If not full stats, suppress secondary moment calculations.
     if (poly_approx_rep->expansion_coefficient_flag()) {
-      if (all_vars)
+      if (allVars)
 	poly_approx_rep->compute_moments(initialPtU, true, combined_stats);
       else
 	poly_approx_rep->compute_moments(true, combined_stats);
@@ -2445,7 +2443,7 @@ void NonDExpansion::compute_analytic_statistics()
       finalStatistics.function_value(mu, cntr);
     // *** mean gradient
     if (mom1_grad_flag) {
-      const RealVector& grad = (all_vars) ?
+      const RealVector& grad = (allVars) ?
 	poly_approx_rep->mean_gradient(initialPtU, final_dvv) :
 	poly_approx_rep->mean_gradient();
       if (final_mom1_grad_flag)
@@ -2470,7 +2468,7 @@ void NonDExpansion::compute_analytic_statistics()
     }
     // *** std deviation / variance gradient
     if (mom2_grad_flag) {
-      const RealVector& grad = (all_vars) ?
+      const RealVector& grad = (allVars) ?
 	poly_approx_rep->variance_gradient(initialPtU, final_dvv) :
 	poly_approx_rep->variance_gradient();
       if (std_moments || moment_grad_mapping_flag) {
@@ -2562,22 +2560,24 @@ void NonDExpansion::compute_analytic_statistics()
       // polynomial derivatives.  They are computed for the means of the
       // uncertain varables and provide a measure of local importance (but not
       // scaled by input covariance as in mean value importance factors).
+      Pecos::ProbabilityTransformation& nataf
+	= uSpaceModel.probability_transformation();
+      Pecos::MultivariateDistribution& x_dist
+	= iteratedModel.multivariate_distribution();
       const RealVector& exp_grad_u
 	= poly_approxs[i].gradient(uSpaceModel.current_variables());
       RealVector exp_grad_x;
       SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
       SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-      RealVector x_means(natafTransform.x_means());
-      natafTransform.trans_grad_U_to_X(exp_grad_u, exp_grad_x, x_means,
-				       x_dvv, cv_ids);
+      RealVector x_means(x_dist.means());
+      nataf.trans_grad_U_to_X(exp_grad_u, exp_grad_x, x_means, x_dvv, cv_ids);
       Teuchos::setCol(exp_grad_x, (int)i, expGradsMeanX);
 
 #ifdef TEST_HESSIANS
       const RealSymMatrix& exp_hess_u
 	= poly_approxs[i].hessian(uSpaceModel.current_variables());
       //RealSymMatrix exp_hess_x;
-      //natafTransform.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_means,
-      //                                 x_dvv, cv_ids);
+      //nataf.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_means, x_dvv, cv_ids);
       Cout << exp_hess_u; //exp_hess_x
 #endif // TEST_HESSIANS
     }
@@ -3151,7 +3151,7 @@ void NonDExpansion::update_final_statistics_gradients()
 
   // for all_variables, finalStatistics design grads are in u-space
   // -> transform to the original design space
-  if (numContDesVars || numContEpistUncVars || numContStateVars) {
+  if (allVars) {
     // this approach is more efficient but less general.  If we can assume
     // that the DVV only contains design/state vars, then we know they are
     // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
@@ -3161,18 +3161,21 @@ void NonDExpansion::update_final_statistics_gradients()
     size_t num_final_grad_vars = final_dvv.size();
     Real factor, x = 0.; // x is a dummy for common pdf API (unused by uniform)
     const std::vector<Pecos::RandomVariable>& x_ran_vars
-      = natafTransform.x_random_variables();
+      = iteratedModel.multivariate_distribution().random_variables();
 
     RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
     int num_final_stats = final_stat_grads.numCols();
-    for (size_t j=0; j<num_final_grad_vars; ++j) {
+    const Variables& vars = iteratedModel.current_variables();
+    const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+    size_t i, j, num_cdv = ac_totals[TOTAL_CDV],
+      num_cdv_cauv = num_cdv + ac_totals[TOTAL_CAUV];
+    for (j=0; j<num_final_grad_vars; ++j) {
       size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
-      if ( deriv_j <  numContDesVars ||
-	   deriv_j >= numContDesVars+numContAleatUncVars ) {
+      if ( deriv_j < num_cdv || deriv_j >= num_cdv_cauv ) {
 	// augmented design var sensitivity: 2/range (see jacobian_dZ_dX())
 	factor = x_ran_vars[deriv_j].pdf(x)
 	       / Pecos::UniformRandomVariable::std_pdf();
-	for (size_t i=0; i<num_final_stats; ++i)
+	for (i=0; i<num_final_stats; ++i)
 	  final_stat_grads(j,i) *= factor;
       }
       // else inserted design variable sensitivity: no scaling required
@@ -3181,15 +3184,16 @@ void NonDExpansion::update_final_statistics_gradients()
     // This approach is more general, but is overkill for this purpose
     // and incurs additional copying overhead.
     /*
+    Pecos::ProbabilityTransformation& nataf
+      = uSpaceModel.probability_transformation();
     RealVector initial_pt_x_pv, fn_grad_u, fn_grad_x;
     copy_data(initial_pt_x, initial_pt_x_pv);
     RealMatrix jacobian_ux;
-    natafTransform.jacobian_dU_dX(initial_pt_x_pv, jacobian_ux);
+    nataf.jacobian_dU_dX(initial_pt_x_pv, jacobian_ux);
     RealBaseVector final_stat_grad;
     for (i=0; i<num_final_stats; ++i) {
       copy_data(finalStatistics.function_gradient_view(i), fn_grad_u);
-      natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, jacobian_ux,
-	                               final_dvv);
+      nataf.trans_grad_U_to_X(fn_grad_u, fn_grad_x, jacobian_ux, final_dvv);
       copy_data(fn_grad_x, final_stat_grad);
       finalStatistics.function_gradient(final_stat_grad, i)
     }

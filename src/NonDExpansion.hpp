@@ -139,8 +139,8 @@ protected:
   //- Heading: Member function definitions
   //
 
-  /// common constructor code for initialization of natafTransform
-  void initialize_random(short u_space_type);
+  // common constructor code for initialization of natafTransform
+  //void initialize_random(short u_space_type);
 
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
@@ -312,6 +312,10 @@ protected:
   /// type of statistical metric: NO_EXPANSION_STATS,
   /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
   short statsType;
+
+  /// flag for combined variable expansions which include a
+  /// non-probabilistic subset (design, epistemic, state)
+  bool allVars;
 
   /// emulation approach for multilevel discrepancy: distinct or recursive
   short multilevDiscrepEmulation;

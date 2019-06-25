@@ -74,12 +74,12 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -177,12 +177,12 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -257,12 +257,12 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -648,12 +648,12 @@ bool NonDPolynomialChaos::resize()
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
