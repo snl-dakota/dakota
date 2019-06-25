@@ -72,20 +72,23 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.nond.integration_refinement")),
   refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
 {
-  // override default definition in NonD ctor.  If there are any aleatory
-  // variables, then we will sample on that subset for probabilistic stats.
   const Variables& vars = iteratedModel.current_variables();
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
-	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
-  bool auv = (ac_totals[TOTAL_CAUV]  || ac_totals[TOTAL_DAUIV] ||
-	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
-  epistemicStats = (euv && !auv);
+  // convenience looping bounds
+  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
 
   // flag for combined var expansions which include non-probabilistic subset
   // (continuous only for now)
   allVars = (ac_totals[TOTAL_CDV] || ac_totals[TOTAL_CEUV] ||
 	     ac_totals[TOTAL_CSV]);
+
+  // override default definition in NonD ctor.  If there are any aleatory
+  // variables, then we will sample on that subset for probabilistic stats.
+  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
+  bool auv = (numCAUV                || ac_totals[TOTAL_DAUIV] ||
+	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
+  epistemicStats = (euv && !auv);
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
@@ -107,20 +110,23 @@ NonDExpansion(unsigned short method_name, Model& model,
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
   vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
-  // override default definition in NonD ctor.  If there are any aleatory
-  // variables, then we will sample on that subset for probabilistic stats.
   const Variables& vars = iteratedModel.current_variables();
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
-	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
-  bool auv = (ac_totals[TOTAL_CAUV]  || ac_totals[TOTAL_DAUIV] ||
-	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
-  epistemicStats = (euv && !auv);
+  // convenience looping bounds
+  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
 
   // flag for combined var expansions which include non-probabilistic subset
   // (continuous only for now)
   allVars = (ac_totals[TOTAL_CDV] || ac_totals[TOTAL_CEUV] ||
 	     ac_totals[TOTAL_CSV]);
+
+  // override default definition in NonD ctor.  If there are any aleatory
+  // variables, then we will sample on that subset for probabilistic stats.
+  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
+  bool auv = (ac_totals[TOTAL_CAUV]  || ac_totals[TOTAL_DAUIV] ||
+	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
+  epistemicStats = (euv && !auv);
 
   // level mappings not yet available
   // (defer initialize_response_covariance() and initialize_final_statistics())
@@ -484,12 +490,9 @@ void NonDExpansion::initialize_u_space_model()
   // if all variables mode, initialize key to random variable subset
   if (allVars) {
     Pecos::BitArray random_vars_key(numContinuousVars);
-    const Variables&  vars      = iteratedModel.current_variables();
-    const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-    size_t i, num_cdv = ac_totals[TOTAL_CDV],
-      num_cdv_cauv = num_cdv + ac_totals[TOTAL_CAUV];
+    size_t i, end_cauv = startCAUV + numCAUV;
     for (i=0; i<numContinuousVars; ++i)
-      random_vars_key[i] = (i >= num_cdv && i < num_cdv_cauv);
+      random_vars_key[i] = (i >= startCAUV && i < end_cauv);
     shared_data_rep->random_variables_key(random_vars_key);
   }
 
@@ -663,14 +666,11 @@ void NonDExpansion::initialize_expansion()
   else if (allVars) {
     // subsequent UQ for all vars mode: partial update of initialPtU; store
     // current design/epistemic/state but don't overwrite initial aleatory
-    RealVector pt_u;
+    RealVector pt_u;  size_t i;
     nataf.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
-    const Variables& vars = iteratedModel.current_variables();
-    const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-    size_t i, num_cdv = ac_totals[TOTAL_CDV];
-    for (i=0; i<num_cdv; ++i)
+    for (i=0; i<startCAUV; ++i)
       initialPtU[i] = pt_u[i]; // design
-    for (i=num_cdv + ac_totals[TOTAL_CAUV]; i<numContinuousVars; ++i)
+    for (i=startCAUV + numCAUV; i<numContinuousVars; ++i)
       initialPtU[i] = pt_u[i]; // epistemic/state
   }
 
@@ -714,10 +714,7 @@ void NonDExpansion::compute_expansion()
   // data flags for PecosApproximation
   ShortArray sampler_asv(numFunctions, 0);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const Variables& vars = iteratedModel.current_variables();
-  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-  size_t num_cdv = ac_totals[TOTAL_CDV],
-    num_cdv_cauv = num_cdv + ac_totals[TOTAL_CAUV];
+  size_t end_cauv = startCAUV + numCAUV;
   for (i=0; i<numFunctions; ++i) {
     Approximation* poly_approx_rep = poly_approxs[i].approx_rep();
     bool expansion_coeff_flag = false, expansion_grad_flag = false;
@@ -768,7 +765,7 @@ void NonDExpansion::compute_expansion()
 	for (j=0; j<num_deriv_vars; ++j) {
 	  deriv_index = final_dvv[j] - 1; // OK since we are in an "All" view
 	  // random variable
-	  if (deriv_index >= num_cdv && deriv_index <  num_cdv_cauv) {
+	  if (deriv_index >= startCAUV && deriv_index < end_cauv) {
 	    if (moment1_grad) expansion_grad_flag = true;
 	    if (moment2_grad) expansion_grad_flag = expansion_coeff_flag = true;
 	  }
@@ -861,7 +858,7 @@ void NonDExpansion::compute_expansion()
 	SizetArray filtered_final_dvv;
 	for (i=0; i<num_final_grad_vars; ++i) {
 	  size_t dvv_i = final_dvv[i];
-	  if (dvv_i > num_cdv && dvv_i <= num_cdv_cauv)
+	  if (dvv_i > startCAUV && dvv_i <= end_cauv)
 	    filtered_final_dvv.push_back(dvv_i);
 	}
 	sampler_set.derivative_vector(filtered_final_dvv);
@@ -3165,13 +3162,10 @@ void NonDExpansion::update_final_statistics_gradients()
 
     RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
     int num_final_stats = final_stat_grads.numCols();
-    const Variables& vars = iteratedModel.current_variables();
-    const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-    size_t i, j, num_cdv = ac_totals[TOTAL_CDV],
-      num_cdv_cauv = num_cdv + ac_totals[TOTAL_CAUV];
+    size_t i, j, end_cauv = startCAUV + numCAUV;
     for (j=0; j<num_final_grad_vars; ++j) {
       size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
-      if ( deriv_j < num_cdv || deriv_j >= num_cdv_cauv ) {
+      if ( deriv_j < startCAUV || deriv_j >= end_cauv ) {
 	// augmented design var sensitivity: 2/range (see jacobian_dZ_dX())
 	factor = x_ran_vars[deriv_j].pdf(x)
 	       / Pecos::UniformRandomVariable::std_pdf();

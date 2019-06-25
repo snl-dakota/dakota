@@ -1225,9 +1225,11 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
+  const Variables& vars = iteratedModel.current_variables();
+  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
 
-  size_t i, width = write_precision+7,
-    num_cuv = numContAleatUncVars+numContEpistUncVars;
+  size_t i, width = write_precision+7, num_ceuv = ac_totals[TOTAL_CEUV],
+    num_csv = ac_totals[TOTAL_CSV];
   char tag[10];
   int j; // for sprintf %i
 
@@ -1239,14 +1241,16 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
     s << "Polynomial Chaos Expansion for " << fn_labels[i] << ":\n";
     // header
     s << "  " << std::setw(width) << "coefficient";
-    for (j=0; j<numContDesVars; j++)
+    for (j=0; j<startCAUV; ++j)
       { std::sprintf(tag, "d%i", j+1); s << std::setw(5) << tag; }
-    for (j=0; j<num_cuv; j++)
+    for (j=0; j<numCAUV; ++j)
       { std::sprintf(tag, "u%i", j+1); s << std::setw(5) << tag; }
-    for (j=0; j<numContStateVars; j++)
+    for (j=0; j<num_ceuv; ++j)
+      { std::sprintf(tag, "e%i", j+1); s << std::setw(5) << tag; }
+    for (j=0; j<num_csv; ++j)
       { std::sprintf(tag, "s%i", j+1); s << std::setw(5) << tag; }
     s << "\n  " << std::setw(width) << "-----------";
-    for (j=0; j<numContinuousVars; j++)
+    for (j=0; j<numContinuousVars; ++j)
       s << " ----";
     poly_approxs[i].print_coefficients(s, normalizedCoeffOutput);
   }

@@ -326,6 +326,11 @@ protected:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 
+  /// starting index of continuous aleatory uncertain variables within
+  /// active continuous variables
+  size_t startCAUV;
+  /// number of active continuous aleatory uncertain variables
+  size_t numCAUV;
   /// number of invocations of core_run()
   size_t numUncertainQuant;
 
