@@ -379,7 +379,6 @@ void NonDBayesCalibration::construct_mcmc_model()
       empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
-    //natafTransform = mcmcModel.probability_transformation(); // shared rep
     break;
   }
 
@@ -669,9 +668,9 @@ void NonDBayesCalibration::initialize_model()
     stochExpIterator.run(pl_iter); break;
   }
   default: // GPs and NO_EMULATOR
-    initialize_random_variable_parameters(); // standardizedSpace or not
+    //initialize_random_variable_parameters(); // standardizedSpace or not
     //resize_final_statistics_gradients(); // not required
-    if (standardizedSpace) transform_correlations();
+    //if (standardizedSpace) transform_correlations();
     if (emulatorType)      mcmcModel.build_approximation();
     break;
   }
@@ -1924,6 +1923,8 @@ void NonDBayesCalibration::prior_cholesky_factorization()
   int i, j, num_params = numContinuousVars + numHyperparams;
   priorCovCholFactor.shape(num_params, num_params); // init to 0
 
+  const Pecos::MultivariateDistribution& x_dist
+    = iteratedModel.multivariate_distribution();
   if (!standardizedSpace && x_dist.correlation()) {
     Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
     RealSymMatrix prior_cov_matrix;//= ();
@@ -1940,13 +1941,15 @@ void NonDBayesCalibration::prior_cholesky_factorization()
 	priorCovCholFactor(i, j) = prior_cov_matrix(i, j);
   }
   else {
-    RealRealPairArray dist_moments = (standardizedSpace) ?
-      u_dist.moments() : x_dist.moments();
+    //RealRealPairArray dist_moments = (standardizedSpace) ?
+    //  u_dist.moments() : x_dist.moments();
+    RealRealPairArray dist_moments
+      = mcmcModel./*truth_model().*/multivariate_distribution().moments();
     for (i=0; i<numContinuousVars; ++i)
       priorCovCholFactor(i,i) = dist_moments[i].second;
     // for now we assume a variance when the inv gamma has infinite moments
     for (i=0; i<numHyperparams; ++i)
-      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
+      if (invGammaDists[i].pull_parameter<Real>(Pecos::IGA_ALPHA) > 2.0)
         priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) = 
           invGammaDists[i].standard_deviation();
       else
