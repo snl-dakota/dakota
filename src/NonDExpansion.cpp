@@ -680,7 +680,7 @@ void NonDExpansion::initialize_expansion()
       numUncertainQuant == 0) {
     NonDSampling* exp_sampler_rep
       = (NonDSampling*)expansionSampler.iterator_rep();
-    exp_sampler_rep->transform_samples();
+    exp_sampler_rep->transform_samples(nataf);
   }
 }
 

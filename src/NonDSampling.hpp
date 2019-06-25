@@ -163,11 +163,13 @@ public:
   /// transform allSamples imported by alternate constructor.  This is needed
   /// since random variable distribution parameters are not updated until
   /// run time and an imported sample_matrix is typically in x-space.
-  void transform_samples(bool x_to_u = true);
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+  			 bool x_to_u = true);
 
   /// transform the specified samples matrix from x to u or u to x
-  void transform_samples(RealMatrix& sample_matrix, bool x_to_u, 
-			 int num_samples = 0);
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+			 RealMatrix& sample_matrix, int num_samples = 0,
+			 bool x_to_u = true);
 
 protected:
 
@@ -264,29 +266,6 @@ protected:
   /// requests to activeSet used in evaluate_parameter_sets()
   void active_set_mapping();
 
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_design_counts(const Model& model, size_t& num_cdv, size_t& num_ddiv,
-			  size_t& num_ddsv, size_t& num_ddrv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
-				      size_t& num_dauiv, size_t& num_dausv,
-				      size_t& num_daurv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
-				       size_t& num_deuiv, size_t& num_deusv,
-				       size_t& num_deurv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_uncertain_counts(const Model& model, size_t& num_cuv,
-			     size_t& num_duiv, size_t& num_dusv,
-			     size_t& num_durv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_state_counts(const Model& model, size_t& num_csv, size_t& num_dsiv,
-			 size_t& num_dssv, size_t& num_dsrv) const;
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
@@ -486,8 +465,9 @@ inline void NonDSampling::vary_pattern(bool pattern_flag)
 
 
 /** transform x_samples to u_samples for use by expansionSampler */
-inline void NonDSampling::transform_samples(bool x_to_u)
-{ transform_samples(allSamples, x_to_u, numSamples); }
+inline void NonDSampling::
+transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
+{ transform_samples(nataf, allSamples, numSamples, x_to_u); }
 
 
 /** This version of get_parameter_sets() extracts data from the
