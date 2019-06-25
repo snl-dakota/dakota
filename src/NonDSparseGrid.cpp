@@ -55,7 +55,10 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // initialize_random_variables() called in NonDIntegration ctor
-  check_variables(natafTransform.x_random_variables());
+  //check_variables(x_dist.random_variables());
+  // TO DO: create a ProbabilityTransformModel, if needed
+  const Pecos::MultivariateDistribution& u_dist
+    = model.multivariate_distribution();
 
   // define ExpansionConfigOptions
   short refine_metric = (refine_control) ? Pecos::COVARIANCE_METRIC :
@@ -70,7 +73,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     refine_control, refine_metric, refine_stats,
     probDescDB.get_int("method.nond.max_refinement_iterations"),
     probDescDB.get_int("method.nond.max_solver_iterations"), convergenceTol,
-    probDescDB.get_ushort("method.soft_convergence_limit"));
+					   probDescDB.get_ushort("method.sofmake NonDSt_convergence_limit"));
 
   // define BasisConfigOptions
   bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
@@ -107,7 +110,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   case Pecos::COMBINED_SPARSE_GRID: {
     bool track_colloc = false, track_uniq_prod_wts = false; // defaults
     ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
 		      ec_options, bc_options, growth_rate, track_colloc,
 		      track_uniq_prod_wts);
     break;
@@ -115,25 +118,24 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   case Pecos::INCREMENTAL_SPARSE_GRID: {
     bool track_uniq_prod_wts = false; // default
     ((Pecos::IncrementalSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
 		      ec_options, bc_options, growth_rate, track_uniq_prod_wts);
     break;
   }
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     bool track_colloc = false; // non-default
     ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
 		      ec_options, bc_options, growth_rate, track_colloc);
     break;
   }
   default: // SparseGridDriver
     ssgDriver->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
 		      ec_options, bc_options, growth_rate);
     break;
   }
-  ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
-    iteratedModel.aleatory_distribution_parameters());
+  ssgDriver->initialize_grid_parameters(u_dist);
 
   maxEvalConcurrency *= ssgDriver->grid_size(); // requires polyParams
 }
@@ -178,11 +180,6 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
 	track_collocation_indices(true);
     break;
   }
-
-  // local natafTransform not yet updated: x_ran_vars would have to be passed in
-  // from NonDExpansion if check_variables() needed to be called here.  Instead,
-  // it is deferred until run time in NonDIntegration::core_run().
-  //check_variables(x_ran_vars);
 }
 
 
@@ -209,8 +206,7 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
 {
   // capture any run-time updates to distribution parameters
   if (subIteratorFlag)
-    ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.aleatory_distribution_parameters());
+    ssgDriver->initialize_grid_parameters(model.multivariate_distribution());
 
   // compute grid and retrieve point/weight sets
   ssgDriver->compute_grid(allSamples);

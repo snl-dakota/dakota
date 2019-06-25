@@ -44,7 +44,10 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 
   // natafTransform available: initialize_random_variables() called in
   // NonDIntegration ctor
-  check_variables(natafTransform.x_random_variables());
+  //check_variables(x_dist.random_variables());
+  // TO DO: create a ProbabilityTransformModel, if needed
+  const Pecos::MultivariateDistribution& u_dist
+    = model.multivariate_distribution();
 
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
@@ -71,7 +74,8 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
 				       equidist_rules, use_derivs);
 
-  tpqDriver->initialize_grid(natafTransform.u_types(), ec_options, bc_options);
+  tpqDriver->initialize_grid(u_dist.random_variable_types(),
+			     ec_options, bc_options);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
 
@@ -234,8 +238,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
 {
   // capture any distribution parameter insertions
   if (!numIntegrations || subIteratorFlag)
-    tpqDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.aleatory_distribution_parameters());
+    tpqDriver->initialize_grid_parameters(model.multivariate_distribution());
 
   size_t i, j, num_quad_points = tpqDriver->grid_size();
   const Pecos::UShortArray& quad_order = tpqDriver->quadrature_order();
