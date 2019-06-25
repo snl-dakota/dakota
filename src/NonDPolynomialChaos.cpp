@@ -1225,8 +1225,8 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
-  const Variables& vars = iteratedModel.current_variables();
-  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+  const Variables&   vars      = iteratedModel.current_variables();
+  const SizetArray&  ac_totals = vars.shared_data().active_components_totals();
 
   size_t i, width = write_precision+7, num_ceuv = ac_totals[TOTAL_CEUV],
     num_csv = ac_totals[TOTAL_CSV];

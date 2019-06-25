@@ -100,8 +100,7 @@ void NonDWASABIBayesCalibration::calibrate()
   // resize, initializing to zero
   paramMins.size(numContinuousVars);
   paramMaxs.size(numContinuousVars);
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
+  RealRealPairArray bnds = mcmcModel.multivariate_distribution().bounds();
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
 

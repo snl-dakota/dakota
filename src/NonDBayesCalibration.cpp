@@ -2362,7 +2362,7 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   for (e=0; e<num_exp; ++e) {
     //int lhs_seed = (randomSeed > 0) ? randomSeed : generate_system_seed();
     lhsDriver.generate_normal_samples(means_vec, std_deviations[e], lower_bnds,
-              upper_bnds, num_filtered, correl_matrices[e],lhs_normal_samples);
+              upper_bnds, correl_matrices[e], num_filtered, lhs_normal_samples);
     for (s=0; s<num_filtered; ++s, ++cntr)
       for (r=0; r<numFunctions; ++r)
 	predVals(r,cntr) = filtered_fn_vals(r,s) + lhs_normal_samples(r,s);
