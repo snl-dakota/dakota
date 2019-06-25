@@ -34,17 +34,16 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
   cubIntOrderRef(probDescDB.get_ushort("method.nond.cubature_integrand"))
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
+  numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
+  cubDriver    = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
 
-  // natafTransform available: initialize_random_variables() called in
-  // NonDIntegration ctor
-  check_variables(natafTransform.x_random_variables());
-  check_integration(iteratedModel.multivariate_distribution());
+  // additional initializations in NonDIntegration ctor
+  Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
+  assign_rule(mv_dist); // assign cubIntRule
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
-  cubDriver->
-    initialize_grid(natafTransform.u_types(), cubIntOrderRef, cubIntRule);
+  cubDriver->initialize_grid(mv_dist.random_variable_types(),
+			     cubIntOrderRef, cubIntRule);
   //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
@@ -53,20 +52,15 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical cubature points. */
 NonDCubature::
-NonDCubature(Model& model, const Pecos::ShortArray& u_types,
-	     unsigned short cub_int_order): 
+NonDCubature(Model& model, unsigned short cub_int_order): 
   NonDIntegration(CUBATURE_INTEGRATION, model), cubIntOrderRef(cub_int_order)
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
+  numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
+  cubDriver    = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
   cubDriver->integrand_order(cubIntOrderRef);
 
-  // local natafTransform not yet updated: x_types would have to be passed in
-  // from NonDExpansion if check_variables() needed to be called here.  Instead,
-  // it is deferred until run time in NonDIntegration::core_run().
-  //check_variables(x_ran_vars);
-  check_integration(iteratedModel.multivariate_distribution());
+  assign_rule(model.multivariate_distribution());
 }
 
 
@@ -82,58 +76,23 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 NonDCubature::~NonDCubature()
 { }
 
-
+  
 void NonDCubature::
-check_integration(const Pecos::MultivariateDistribution& mvd)
+assign_rule(const Pecos::MultivariateDistribution& mvd)
 {
-  bool err_flag = false;
-
-  // For parameterized polynomials (including numerically-generated), check
-  // u_types and dist params for isotropy; for other poly, check u_types only.
   const ShortArray& rv_types = mvd.random_variable_types();
-  short type0 = rv_types[0];
-  switch (type0) {
-  case Pecos::STD_BETA: { // verify isotropy in u_type and dp
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
-    RealArray beuv_alphas, beuv_betas;
-    mvd_rep->pull_parameters(Pecos::STD_BETA, Pecos::BE_ALPHA, beuv_alphas);
-    mvd_rep->pull_parameters(Pecos::STD_BETA, Pecos::BE_BETA,  beuv_betas);
-    Real alpha0 = beuv_alphas[0], beta0 = beuv_betas[0];
-    for (size_t i=1; i<numContinuousVars; ++i)
-      if (rv_types[i]   != type0 || beuv_alphas[i] != alpha0 ||
-	  beuv_betas[i] != beta0)
-	err_flag = true;
-    break;
-  }
-  case Pecos::STD_GAMMA: { // verify isotropy in u_type and dp
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
-    RealArray gauv_alphas;
-    mvd_rep->pull_parameters(Pecos::STD_GAMMA, Pecos::GA_ALPHA, gauv_alphas);
-    Real alpha0 = gauv_alphas[0];
-    for (size_t i=1; i<numContinuousVars; ++i)
-      if (u_types[i] != type0 || gauv_alphas[i] != alpha0)
-	err_flag = true;
-    break;
-  }
+  short rv_type0 = rv_types[0];  size_t i, num_rv = rv_types.size();
+  for (size_t i=1; i<num_rv; ++i)
+    if (rv_types[i] != rv_type0) {
+      Cerr << "Error: homogeneity required in random variable types for "
+	   << "NonDCubature integration." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
 
-  // TO DO: Golub-Welsch parameter checks!
+  // Note: homogeneity of distribution parameters is verified at run time
+  // in Pecos::CubatureDriver::initialize_grid_parameters()
 
-  default: // no dp; verify isotropy in u_type only
-    for (size_t i=1; i<numContinuousVars; ++i)
-      if (u_types[i] != type0)
-	err_flag = true;
-    break;
-  }
-
-  if (err_flag) {
-    Cerr << "Error: homogeneous u-space types required for NonDCubature "
-	 << "integration." << std::endl;
-    abort_handler(-1);
-  }
-
-  switch (type0) {
+  switch (rv_type0) {
   case Pecos::STD_NORMAL:
     cubIntRule = Pecos::GAUSS_HERMITE;      break;
   case Pecos::STD_UNIFORM:
@@ -153,9 +112,9 @@ check_integration(const Pecos::MultivariateDistribution& mvd)
 void NonDCubature::get_parameter_sets(Model& model)
 {
   // capture any distribution parameter insertions
+  Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
   if (!numIntegrations || subIteratorFlag)
-    cubDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.aleatory_distribution_parameters());
+    cubDriver->initialize_grid_parameters(mv_dist);
 
   size_t i, j, num_cub_points = cubDriver->grid_size();
   Cout << "\nCubature integrand order = " << cubDriver->integrand_order()

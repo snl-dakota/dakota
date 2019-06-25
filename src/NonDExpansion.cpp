@@ -258,8 +258,7 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
     abort_handler(METHOD_ERROR);
   }
 
-  u_space_sampler.assign_rep(new 
-    NonDCubature(g_u_model, natafTransform.u_types(), cub_int_order), false);
+  u_space_sampler.assign_rep(new NonDCubature(g_u_model, cub_int_order), false);
 }
 
 

@@ -92,6 +92,15 @@ protected:
   //- Heading: Data
   //
 
+  /// number of variables of type CONTINUOUS_INTERVAL_UNCERTAIN
+  size_t numContIntervalVars;
+  /// number of variables of type DISCRETE_INTERVAL_UNCERTAIN
+  size_t numDiscIntervalVars;
+  /// number of variables of type DISCRETE_UNCERTAIN_SET_INT
+  size_t numDiscSetIntUncVars;
+  /// number of variables of type DISCRETE_UNCERTAIN_SET_REAL
+  size_t numDiscSetRealUncVars;
+
   /// flag for SingleInterval derived class
   bool singleIntervalFlag;
 

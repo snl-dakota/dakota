@@ -34,6 +34,13 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, Model& model):
 {
   bool err_flag = false;
 
+  const SharedVariablesData& svd = model.current_variables().shared_data();
+  const SizetArray&    ac_totals = svd.active_components_totals();
+  numContIntervalVars   = ac_totals[TOTAL_CEUV];
+  numDiscIntervalVars   = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
+  numDiscSetIntUncVars  = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+  numDiscSetRealUncVars = ac_totals[TOTAL_DEURV];
+
   // initialize finalStatistics using non-default definition (there is no mean
   // or standard deviation and each level mapping involves lower/upper bounds).
   initialize_final_statistics();
@@ -77,6 +84,7 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, Model& model):
 
 NonDInterval::~NonDInterval()
 {}
+
 
 bool NonDInterval::resize()
 {

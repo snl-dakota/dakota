@@ -19,10 +19,12 @@
 #include "NonDIntegration.hpp"
 #include "CubatureDriver.hpp"
 
+namespace Pecos {
+class MultivariateDistribution; // fwd declaration
+}
+
 namespace Dakota {
 
-class MultivariateDistribution; // fwd declaration
-  
 
 /// Derived nondeterministic class that generates N-dimensional
 /// numerical cubature points for evaluation of expectation integrals.
@@ -40,8 +42,7 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDCubature(Model& model, const Pecos::ShortArray& u_types,
-	       unsigned short cub_int_order);
+  NonDCubature(Model& model, unsigned short cub_int_order);
 
   //
   //- Heading: Member functions
@@ -82,8 +83,8 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// verify self-consistency of integration specification
-  void check_integration(const MultivariateDistribution& mvd);
+  /// define cubIntRule from random variable type
+  void assign_rule(const Pecos::MultivariateDistribution& mvd);
 
   //
   //- Heading: Data

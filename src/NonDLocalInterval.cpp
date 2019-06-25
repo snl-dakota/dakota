@@ -44,7 +44,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 	 << "NonDLocalInterval." << std::endl;
     err_flag = true;
   }
-  if (numUncertainVars != numContIntervalVars) {
+  if (numContinuousVars != numContIntervalVars) {
     Cerr << "\nError: only continuous interval distributions are currently "
 	 << "supported in NonDLocalInterval." << std::endl;
     err_flag = true;
