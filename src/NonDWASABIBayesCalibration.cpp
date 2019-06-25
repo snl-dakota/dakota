@@ -95,7 +95,7 @@ void NonDWASABIBayesCalibration::calibrate()
   // initialize the prior PDF and sampler
   // the prior is currently assumed uniform, but this will be generalized
 
-  // set the bounds on the parameters (TMW: can this be moved?  
+  // set the bounds on the parameters (TMW: can this be moved?)
   // Does it require initialize_model() to be called first? 
   // resize, initializing to zero
   paramMins.size(numContinuousVars);

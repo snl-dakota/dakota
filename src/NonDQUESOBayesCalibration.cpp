@@ -491,15 +491,16 @@ void NonDQUESOBayesCalibration::run_queso_solver()
     acceptedFnVals(numFunctions, chainSamples) */
 void NonDQUESOBayesCalibration::cache_chain()
 {
-  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams, chainSamples);
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
+				     chainSamples);
   acceptedFnVals.shapeUninitialized(numFunctions, chainSamples);
 
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
   Variables lookup_vars = mcmcModel.current_variables().copy();
-  String interface_id = mcmcModel.interface_id();
-  Response lookup_resp = mcmcModel.current_response().copy();
-  ActiveSet lookup_as = lookup_resp.active_set();
+  String   interface_id = mcmcModel.interface_id();
+  Response  lookup_resp = mcmcModel.current_response().copy();
+  ActiveSet   lookup_as = lookup_resp.active_set();
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
@@ -507,7 +508,6 @@ void NonDQUESOBayesCalibration::cache_chain()
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-
   if (num_mcmc != chainSamples) {
     Cerr << "\nError: QUESO cache_chain(): chain length is " << num_mcmc
 	 << "; expected " << chainSamples << '\n';
@@ -517,7 +517,10 @@ void NonDQUESOBayesCalibration::cache_chain()
   // The posterior may include GPMSA hyper-parameters, so use the postRv space
   //  QUESO::GslVector qv(paramSpace->zeroVector());
   QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
-  
+
+  Pecos::ProbabilityTransformation& nataf
+    = mcmcModel.probability_transformation();
+
   unsigned int lookup_failures = 0;
   unsigned int num_params = numContinuousVars + numHyperparams;
   for (int i=0; i<num_mcmc; ++i) {
@@ -531,7 +534,7 @@ void NonDQUESOBayesCalibration::cache_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      natafTransform.trans_U_to_X(u_rv, x_rv);
+      nataf.trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
 
@@ -862,8 +865,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
+  RealRealPairArray bnds = mcmcModel.multivariate_distribution().bounds();
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
   for (size_t i=0; i<numHyperparams; ++i) {
@@ -885,8 +887,9 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
       copy_gsl_partial(init_pt, *paramInitials, 0);
       break;
-    default: { // init_pt not already propagated to u-space: use local nataf
-      RealVector u_pt; natafTransform.trans_X_to_U(init_pt, u_pt);
+    default: { // init_pt not already propagated to u-space: use nataf
+      RealVector u_pt;
+      mcmcModel.probability_transformation().trans_X_to_U(init_pt, u_pt);
       copy_gsl_partial(u_pt, *paramInitials, 0);
       break;
     }
@@ -922,7 +925,7 @@ void NonDQUESOBayesCalibration::init_proposal_covariance()
     // all hyperparams utilize inverse gamma priors, which may not
     // have finite variance; use std_dev = 0.05 * mode
     for (int i=0; i<numHyperparams; ++i) {
-      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
+      if (invGammaDists[i].pull_parameter<Real>(Pecos::IGA_ALPHA) > 2.0)
         (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
           invGammaDists[i].variance();
       else
@@ -951,8 +954,8 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
 
   // diagonal covariance from variance of prior marginals
   Real stdev;
-  RealRealPairArray dist_moments = (standardizedSpace) ?
-    natafTransform.u_moments() : natafTransform.x_moments();
+  RealRealPairArray dist_moments
+    = mcmcModel.multivariate_distribution().moments();
   for (int i=0; i<numContinuousVars; ++i) {
     stdev = dist_moments[i].second;
     (*proposalCovMatrix)(i,i) = priorPropCovMult * stdev * stdev;
@@ -1303,7 +1306,7 @@ print_variables(std::ostream& s, const RealVector& c_vars)
   if (standardizedSpace) {
     RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
     RealVector x_rv;
-    natafTransform.trans_U_to_X(u_rv, x_rv);
+    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else

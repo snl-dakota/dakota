@@ -201,8 +201,7 @@ void NonDDREAMBayesCalibration::calibrate()
   // resize, initializing to zero
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
+  RealRealPairArray bnds = mcmcModel.multivariate_distribution().bounds();
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
   // If calibrating error multipliers, the parameter domain is expanded to
@@ -467,7 +466,10 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
- 
+
+  Pecos::ProbabilityTransformation& nataf
+    = mcmcModel.probability_transformation();
+
   int lookup_failures = 0, num_samples = acceptanceChain.numCols();
   acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
   for (int sample_index=0; sample_index < num_samples; ++sample_index) {
@@ -478,7 +480,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 		      numContinuousVars);
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
-      natafTransform.trans_U_to_X(u_rv, x_rv);
+      nataf.trans_U_to_X(u_rv, x_rv);
       // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval

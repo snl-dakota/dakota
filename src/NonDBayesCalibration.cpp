@@ -1923,9 +1923,8 @@ void NonDBayesCalibration::prior_cholesky_factorization()
   int i, j, num_params = numContinuousVars + numHyperparams;
   priorCovCholFactor.shape(num_params, num_params); // init to 0
 
-  const Pecos::MultivariateDistribution& x_dist
-    = iteratedModel.multivariate_distribution();
-  if (!standardizedSpace && x_dist.correlation()) {
+  if (!standardizedSpace &&
+      iteratedModel.multivariate_distribution().correlation()) { // x_dist
     Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
     RealSymMatrix prior_cov_matrix;//= ();
 
@@ -1941,10 +1940,8 @@ void NonDBayesCalibration::prior_cholesky_factorization()
 	priorCovCholFactor(i, j) = prior_cov_matrix(i, j);
   }
   else {
-    //RealRealPairArray dist_moments = (standardizedSpace) ?
-    //  u_dist.moments() : x_dist.moments();
     RealRealPairArray dist_moments
-      = mcmcModel./*truth_model().*/multivariate_distribution().moments();
+      = mcmcModel.multivariate_distribution().moments();// u_dist (decorrelated)
     for (i=0; i<numContinuousVars; ++i)
       priorCovCholFactor(i,i) = dist_moments[i].second;
     // for now we assume a variance when the inv gamma has infinite moments
