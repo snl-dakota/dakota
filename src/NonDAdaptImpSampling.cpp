@@ -24,6 +24,7 @@
 #include "NonDLHSSampling.hpp"
 #include "pecos_stat_util.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProbabilityTransformation.hpp"
 
 static const char rcsId[] = "@(#) $Id: NonDAdaptImpSampling.cpp 4058 2006-10-26 01:39:40Z lpswile $";
 
@@ -163,12 +164,15 @@ initialize(const RealVectorArray& acv_points, bool x_space_data,
       designPoint[i] = acv_pt_0[i];
   }
 
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
+
   RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
     RealVector& init_pt_i = initPointsU[i];
     init_pt_i.sizeUninitialized(numCAUV);
     if (x_space_data) {
-      natafTransform.trans_X_to_U(acv_points[i], acv_u_point);
+      nataf.trans_X_to_U(acv_points[i], acv_u_point);
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
@@ -205,6 +209,9 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
       designPoint[i] = acv_pt_0[i];
   }
 
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
+
   RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
     const Real* acv_pt_i = acv_points[i];
@@ -213,7 +220,7 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
     if (x_space_data) {
       RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
 			     numContinuousVars);
-      natafTransform.trans_X_to_U(acv_pt_view, acv_u_point);
+      nataf.trans_X_to_U(acv_pt_view, acv_u_point);
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
@@ -246,12 +253,15 @@ initialize(const RealVector& acv_point, bool x_space_data, size_t resp_index,
       designPoint[j] = acv_point[j];
   }
 
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
+
   initPointsU.resize(1);
   RealVector& init_pt = initPointsU[0];
   init_pt.sizeUninitialized(numCAUV);
   if (x_space_data) {
     RealVector acv_u_point;
-    natafTransform.trans_X_to_U(acv_point, acv_u_point);
+    nataf.trans_X_to_U(acv_point, acv_u_point);
     for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       init_pt[cntr] = acv_u_point[j];
   }
@@ -455,6 +465,9 @@ select_rep_points(const RealVectorArray& var_samples_u,
   // store samples in min_indx in repPointsU
   //RealVectorArray prev_rep_pts = repPointsU;
 
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.multivariate_distribution();
+
   // define repPointsU and calculate repWeights
   repPointsU.resize(new_rep_pts);
   repWeights.sizeUninitialized(new_rep_pts);
@@ -478,7 +491,7 @@ select_rep_points(const RealVectorArray& var_samples_u,
 
     rep_pdf = 1.;
     for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
-      rep_pdf *= natafTransform.u_pdf(repPointsU[i][cntr], j);
+      rep_pdf *= u_dist.pdf(repPointsU[i][cntr], j);
 
     repWeights[i] = rep_pdf;
     sum_density  += rep_pdf;
@@ -607,7 +620,9 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // artificial bound constraints (PCE, SC, local reliability, stand-alone).
     // Note: local reliability employs artificial bounds for the MPP search,
     // but these are not relevant for the AIS process on the truth model.
-    RealRealPairArray u_bnds = natafTransform.u_bounds(); // all active cv
+    const Pecos::MultivariateDistribution& u_dist
+      = uSpaceModel.multivariate_distribution();
+    RealRealPairArray u_bnds = u_dist.bounds(); // all active cv
     for (i=0, j=startCAUV; i<numCAUV; ++i, ++j)
       { n_l_bnds[i] = u_bnds[j].first; n_u_bnds[i] = u_bnds[j].second; }
   }
@@ -638,7 +653,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
       initialize_lhs(false, num_rep_samples);
       RealSymMatrix correl;
       lhsDriver.generate_normal_samples(repPointsU[i], n_std_devs,
-	n_l_bnds, n_u_bnds, num_rep_samples, correl, lhs_samples_array);
+	n_l_bnds, n_u_bnds, correl, num_rep_samples, lhs_samples_array);
 
       // copy sample set from lhs_samples_array into var_samples_u
       for (j=0; j<num_rep_samples && cntr<refineSamples; ++j, ++cntr)
@@ -714,6 +729,9 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   if (compute_cov)
     failure_ratios.reserve(batch_size);
 
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.multivariate_distribution();
+
   // calculate the probability of failure using all samples relative
   // to each of the representative points
   for (i=0; i<batch_size; i++) {
@@ -733,7 +751,7 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
       pdf_ratio = 1.;
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
-	pdf_ratio *= natafTransform.u_pdf(sample_i[cntr], j);
+	pdf_ratio *= u_dist.pdf(sample_i[cntr], j);
       pdf_ratio /= recentered_density(sample_i);
 
       // add sample's contribution to sum_prob
@@ -817,7 +835,9 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   //  recentered_pdf += repWeights[j] * Pecos::NormalRandomVariable::
   //    std_pdf(distance(repPointsU[j], sample_i) / n_std_devs);
 
-  RealRealPairArray u_bnds = natafTransform.u_bounds(); // all active cv
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.multivariate_distribution();
+  RealRealPairArray u_bnds = u_dist.bounds(); // all active cv
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
