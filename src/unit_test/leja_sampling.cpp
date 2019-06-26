@@ -56,27 +56,26 @@ initialize_homogeneous_uniform_aleatory_dist_params( short utype,
 
   switch (utype){
   case Pecos::STD_UNIFORM: {
-    RealVector uuv_l_bnds(num_vars, false), uuv_u_bnds(num_vars, false);
-    uuv_l_bnds = -1.;  uuv_u_bnds =  1.;
+    RealArray uuv_l_bnds(num_vars, -1.), uuv_u_bnds(num_vars, 1.);
     mvd_rep->push_parameters(utype, Pecos::U_LWR_BND, uuv_l_bnds);
     mvd_rep->push_parameters(utype, Pecos::U_UPR_BND, uuv_u_bnds);
     break;
   }
   case Pecos::POISSON: {
-    RealVector puv_lambdas(num_vars, false);  puv_lambdas = 5.;
+    RealArray puv_lambdas(num_vars, 5.);
     mvd_rep->push_parameters(utype, Pecos::P_LAMBDA, puv_lambdas);
     break;
   }
   case Pecos::BINOMIAL: {
-    RealVector biuv_p_per_tr(num_vars, false);   biuv_p_per_tr = 0.5;
-    IntVector biuv_num_trials(num_vars, false);  biuv_num_trials = 20;
+    RealArray biuv_p_per_tr(num_vars, 0.5);
+    UIntArray biuv_num_trials(num_vars, 20);
     mvd_rep->push_parameters(utype, Pecos::BI_P_PER_TRIAL, biuv_p_per_tr);
     mvd_rep->push_parameters(utype, Pecos::BI_TRIALS,      biuv_num_trials);
     break;
   }
   case Pecos::NEGATIVE_BINOMIAL: {
-    RealVector nbuv_p_per_tr(num_vars, false);   nbuv_p_per_tr = 0.5;
-    IntVector nbuv_num_trials(num_vars, false);  nbuv_num_trials = 20;
+    RealArray nbuv_p_per_tr(num_vars, 0.5);
+    UIntArray nbuv_num_trials(num_vars, 20);
     mvd_rep->push_parameters(utype, Pecos::NBI_P_PER_TRIAL, nbuv_p_per_tr);
     mvd_rep->push_parameters(utype, Pecos::NBI_TRIALS,      nbuv_num_trials);
     break;
