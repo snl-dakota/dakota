@@ -8,7 +8,7 @@
 
 #include "dakota_global_defs.hpp"
 #include "DakotaResponse.hpp"
-#include "DistributionParams.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include "BasisPolynomial.hpp"
 //#include "SharedPolyApproxData.hpp"
 #include "nested_sampling.hpp"
@@ -41,81 +41,49 @@ namespace TestLejaSampling {
   in generate_samples
 
  */
-Pecos::AleatoryDistParams 
-initialize_homgeneous_uniform_aleatory_dist_params( short utype, 
-						    int num_vars ){
+Pecos::MultivariateDistribution 
+initialize_homogeneous_uniform_aleatory_dist_params( short utype, 
+						     int num_vars ){
+  Pecos::MultivariateDistribution mvd(Pecos::MARGINALS_CORRELATIONS);
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)mvd.multivar_dist_rep();
 
-  RealVector nuv_means;
-  RealVector nuv_std_devs;     RealVector nuv_l_bnds;
-  RealVector nuv_u_bnds;       RealVector lnuv_means;
-  RealVector lnuv_std_devs;    RealVector lnuv_lambdas;
-  RealVector lnuv_zetas;       RealVector lnuv_err_facts;
-  RealVector lnuv_l_bnds;      RealVector lnuv_u_bnds;
-  RealVector uuv_l_bnds;       RealVector uuv_u_bnds;
-  RealVector luuv_l_bnds;      RealVector luuv_u_bnds;
-  RealVector tuv_modes;        RealVector tuv_l_bnds;
-  RealVector tuv_u_bnds;       RealVector euv_betas;
-  RealVector beuv_alphas;      RealVector beuv_betas;
-  RealVector beuv_l_bnds;      RealVector beuv_u_bnds;
-  RealVector gauv_alphas;      RealVector gauv_betas;
-  RealVector guuv_alphas;      RealVector guuv_betas;
-  RealVector fuv_alphas;       RealVector fuv_betas;
-  RealVector wuv_alphas;       RealVector wuv_betas;
-  RealRealMapArray hbuv_prs;   RealVector puv_lambdas;
-  RealVector biuv_p_per_tr;    IntVector biuv_num_trials; 
-  RealVector nbuv_p_per_tr;    IntVector nbuv_num_trials; 
-  RealVector geuv_p_per_tr;    IntVector hguv_tot_pop;
-  IntVector hguv_sel_pop;      IntVector hguv_num_drawn;
-  IntRealMapArray hpuiv_prs;   StringRealMapArray hpusv_prs;
-  RealRealMapArray hpurv_prs;  RealSymMatrix uv_corr;
+  ShortArray rv_types(num_vars, utype);
+  mvd_rep->initialize_types(rv_types); // default active_vars
+
+  RealSymMatrix uv_corr;
+  mvd_rep->initialize_correlations(uv_corr); // default active_corr
 
   switch (utype){
-  case Pecos::STD_UNIFORM:
-    uuv_l_bnds.sizeUninitialized( num_vars );
-    uuv_u_bnds.sizeUninitialized( num_vars );
-    uuv_l_bnds = -1; uuv_u_bnds = 1;
-    break;
-  case Pecos::POISSON:
-    puv_lambdas.sizeUninitialized( num_vars );
-    puv_lambdas = 5;
-    break;
-  case Pecos::BINOMIAL:
-    biuv_p_per_tr.sizeUninitialized( num_vars );
-    biuv_num_trials.sizeUninitialized( num_vars );
-    biuv_p_per_tr = 0.5;
-    biuv_num_trials = 20;
-    break;
-  case Pecos::NEGATIVE_BINOMIAL:
-    nbuv_p_per_tr.sizeUninitialized( num_vars );
-    nbuv_num_trials.sizeUninitialized( num_vars );
-    nbuv_p_per_tr = 0.5;
-    nbuv_num_trials = 20;
+  case Pecos::STD_UNIFORM: {
+    RealVector uuv_l_bnds(num_vars, false), uuv_u_bnds(num_vars, false);
+    uuv_l_bnds = -1.;  uuv_u_bnds =  1.;
+    mvd_rep->push_parameters(utype, Pecos::U_LWR_BND, uuv_l_bnds);
+    mvd_rep->push_parameters(utype, Pecos::U_UPR_BND, uuv_u_bnds);
     break;
   }
-  Pecos::AleatoryDistParams adp(nuv_means,
-				nuv_std_devs,     nuv_l_bnds,
-				nuv_u_bnds,       lnuv_means,
-				lnuv_std_devs,    lnuv_lambdas,
-				lnuv_zetas,       lnuv_err_facts,
-				lnuv_l_bnds,      lnuv_u_bnds,
-				uuv_l_bnds,       uuv_u_bnds,
-				luuv_l_bnds,      luuv_u_bnds,
-				tuv_modes,        tuv_l_bnds,
-				tuv_u_bnds,       euv_betas,
-				beuv_alphas,      beuv_betas,
-				beuv_l_bnds,      beuv_u_bnds,
-				gauv_alphas,      gauv_betas,
-				guuv_alphas,      guuv_betas,
-				fuv_alphas,       fuv_betas,
-				wuv_alphas,       wuv_betas,
-				hbuv_prs,         puv_lambdas,
-				biuv_p_per_tr,    biuv_num_trials, 
-				nbuv_p_per_tr,    nbuv_num_trials, 
-				geuv_p_per_tr,    hguv_tot_pop,
-				hguv_sel_pop,     hguv_num_drawn,
-				hpuiv_prs,        hpusv_prs,
-				hpurv_prs,  uv_corr);
-  return adp;
+  case Pecos::POISSON: {
+    RealVector puv_lambdas(num_vars, false);  puv_lambdas = 5.;
+    mvd_rep->push_parameters(utype, Pecos::P_LAMBDA, puv_lambdas);
+    break;
+  }
+  case Pecos::BINOMIAL: {
+    RealVector biuv_p_per_tr(num_vars, false);   biuv_p_per_tr = 0.5;
+    IntVector biuv_num_trials(num_vars, false);  biuv_num_trials = 20;
+    mvd_rep->push_parameters(utype, Pecos::BI_P_PER_TRIAL, biuv_p_per_tr);
+    mvd_rep->push_parameters(utype, Pecos::BI_TRIALS,      biuv_num_trials);
+    break;
+  }
+  case Pecos::NEGATIVE_BINOMIAL: {
+    RealVector nbuv_p_per_tr(num_vars, false);   nbuv_p_per_tr = 0.5;
+    IntVector nbuv_num_trials(num_vars, false);  nbuv_num_trials = 20;
+    mvd_rep->push_parameters(utype, Pecos::NBI_P_PER_TRIAL, nbuv_p_per_tr);
+    mvd_rep->push_parameters(utype, Pecos::NBI_TRIALS,      nbuv_num_trials);
+    break;
+  }
+  }
+
+  return mvd;
   }
 
   template <typename T>
@@ -146,7 +114,7 @@ initialize_homgeneous_uniform_aleatory_dist_params( short utype,
 
   /**  Note this function sets specific distribution parameters 
        that are not general. They must coincide with the parameters used
-       in initialize_homgeneous_uniform_aleatory_dist_params
+       in initialize_homogeneous_uniform_aleatory_dist_params
   */
 void generate_samples(short utype, int num_vars, int num_candidate_samples, 
 		      int seed, RealMatrix &candidate_samples){
@@ -206,15 +174,14 @@ void test_leja_sequence_helper(short utype, int num_vars,
   // Currently Leja Sampler assumes that the samples are in U space
   // that is the native space of the polynomial. For Legendre polynomials
   // the parameter range is [-1,1]
-  Pecos::AleatoryDistParams adp = 
-    initialize_homgeneous_uniform_aleatory_dist_params(utype, num_vars);
-  ShortArray u_types(num_vars,utype);
+  Pecos::MultivariateDistribution mvd = 
+    initialize_homogeneous_uniform_aleatory_dist_params(utype, num_vars);
 
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;
   std::vector<Pecos::BasisPolynomial> poly_basis;
-  Pecos::SharedOrthogPolyApproxData::construct_basis(u_types, adp, bc_options, 
-						     poly_basis);
+  Pecos::SharedOrthogPolyApproxData::
+    construct_basis(mvd, bc_options, poly_basis);
 
   // Initialize sampling object
   LejaSampler sampler;
