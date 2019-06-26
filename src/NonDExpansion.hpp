@@ -326,11 +326,6 @@ protected:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 
-  /// starting index of continuous aleatory uncertain variables within
-  /// active continuous variables
-  size_t startCAUV;
-  /// number of active continuous aleatory uncertain variables
-  size_t numCAUV;
   /// number of invocations of core_run()
   size_t numUncertainQuant;
 
@@ -406,6 +401,9 @@ private:
   //
   //- Heading: Convenience function definitions
   //
+
+  /// initialize data based on variable counts
+  void initialize_counts();
 
   /// set response mode to AGGREGATED_MODELS and recur response size updates
   void aggregated_models_mode();

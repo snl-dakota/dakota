@@ -53,7 +53,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   finalMomentsType(probDescDB.get_short("method.nond.final_moments")),
   distParamDerivs(false)
 {
-  size();
+  initialize_counts();
 
   // When specifying z/p/beta/beta* levels, a spec with an index key (number of
   // levels = list of ints) will result in multiple vectors of levels, one for
@@ -80,13 +80,12 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 
 
 NonD::NonD(unsigned short method_name, Model& model):
-  Analyzer(method_name, model),
-  totalLevelRequests(0), cdfFlag(true),
+  Analyzer(method_name, model), totalLevelRequests(0), cdfFlag(true),
   pdfOutput(false), finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
-  size();
+  initialize_counts();
 
   // current set of statistics is mean, standard deviation, and 
   // probability of failure for each response function 
@@ -104,17 +103,21 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
 
-  numContinuousVars
+  startCAUV = 0;
+  numCAUV = numContinuousVars
     = std::min(lower_bnds.length(), upper_bnds.length());
   numDiscreteIntVars = numDiscreteStringVars = numDiscreteRealVars = 0;
 }
 
 
-void NonD::size()
+void NonD::initialize_counts()
 {
   const Variables& vars = iteratedModel.current_variables();
   //short active_view = vars.view().first;
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+  // convenience looping bounds
+  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
+  // stats type
   epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
 		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
 }
@@ -124,7 +127,7 @@ bool NonD::resize()
 {
   bool parent_reinit_comms = Analyzer::resize();
 
-  size(); // sufficient at this time
+  initialize_counts(); // sufficient at this time
 
   return parent_reinit_comms;
 }

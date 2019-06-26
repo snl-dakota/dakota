@@ -156,25 +156,25 @@ initialize(const RealVectorArray& acv_points, bool x_space_data,
   size_t i, j, cntr, num_points = acv_points.size();
   initPointsU.resize(num_points);
 
-  if (numContDesVars) { // store inactive variable values, if present
-    designPoint.sizeUninitialized(numContDesVars);
+  if (startCAUV) { // store inactive variable values, if present
+    designPoint.sizeUninitialized(startCAUV);
     const RealVector& acv_pt_0 = acv_points[0];
-    for (i=0; i<numContDesVars; i++)
+    for (i=0; i<startCAUV; i++)
       designPoint[i] = acv_pt_0[i];
   }
 
   RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
     RealVector& init_pt_i = initPointsU[i];
-    init_pt_i.sizeUninitialized(numUncertainVars);
+    init_pt_i.sizeUninitialized(numCAUV);
     if (x_space_data) {
       natafTransform.trans_X_to_U(acv_points[i], acv_u_point);
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
     else {
       const RealVector& acv_init_pt_i = acv_points[i];
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_init_pt_i[j];
     }
   }
@@ -198,10 +198,10 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
   size_t i, j, cntr, num_points = acv_points.numCols();
   initPointsU.resize(num_points);
 
-  if (numContDesVars) { // store inactive variable values, if present
-    designPoint.sizeUninitialized(numContDesVars);
+  if (startCAUV) { // store inactive variable values, if present
+    designPoint.sizeUninitialized(startCAUV);
     const Real* acv_pt_0 = acv_points[0];
-    for (i=0; i<numContDesVars; i++)
+    for (i=0; i<startCAUV; i++)
       designPoint[i] = acv_pt_0[i];
   }
 
@@ -209,16 +209,16 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
   for (i=0; i<num_points; i++) {
     const Real* acv_pt_i = acv_points[i];
     RealVector& init_pt_i = initPointsU[i];
-    init_pt_i.sizeUninitialized(numUncertainVars);
+    init_pt_i.sizeUninitialized(numCAUV);
     if (x_space_data) {
       RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
 			     numContinuousVars);
       natafTransform.trans_X_to_U(acv_pt_view, acv_u_point);
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
     else
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_pt_i[j];
   }
 #ifdef DEBUG  
@@ -240,23 +240,23 @@ initialize(const RealVector& acv_point, bool x_space_data, size_t resp_index,
 {
   size_t j, cntr;
 
-  if (numContDesVars) { // store inactive variable values, if present
-    designPoint.sizeUninitialized(numContDesVars);
-    for (j=0; j<numContDesVars; ++j)
+  if (startCAUV) { // store inactive variable values, if present
+    designPoint.sizeUninitialized(startCAUV);
+    for (j=0; j<startCAUV; ++j)
       designPoint[j] = acv_point[j];
   }
 
   initPointsU.resize(1);
   RealVector& init_pt = initPointsU[0];
-  init_pt.sizeUninitialized(numUncertainVars);
+  init_pt.sizeUninitialized(numCAUV);
   if (x_space_data) {
     RealVector acv_u_point;
     natafTransform.trans_X_to_U(acv_point, acv_u_point);
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       init_pt[cntr] = acv_u_point[j];
   }
   else
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       init_pt[cntr] = acv_point[j];
 
   respFnIndex  = resp_index;
@@ -477,7 +477,7 @@ select_rep_points(const RealVectorArray& var_samples_u,
     //sum_density  += phi_beta;
 
     rep_pdf = 1.;
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       rep_pdf *= natafTransform.u_pdf(repPointsU[i][cntr], j);
 
     repWeights[i] = rep_pdf;
@@ -584,8 +584,8 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
   // generate std normal samples
 
   size_t i, j, cntr, num_rep_pts = repPointsU.size(), num_rep_samples;
-  RealVector n_std_devs(numUncertainVars, false),
-    n_l_bnds(numUncertainVars, false), n_u_bnds(numUncertainVars, false);
+  RealVector n_std_devs(numCAUV, false), n_l_bnds(numCAUV, false),
+               n_u_bnds(numCAUV, false);
   n_std_devs = 1.;
 
   if (useModelBounds) {
@@ -596,9 +596,9 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // off and extrapolating on the GP trend function).
     const RealVector& c_l_bnds = uSpaceModel.continuous_lower_bounds();
     const RealVector& c_u_bnds = uSpaceModel.continuous_upper_bounds();
-    for (i=0; i<numUncertainVars; ++i) {
-      n_l_bnds[i] = c_l_bnds[i+numContDesVars];
-      n_u_bnds[i] = c_u_bnds[i+numContDesVars];
+    for (i=0; i<numCAUV; ++i) {
+      n_l_bnds[i] = c_l_bnds[i+startCAUV];
+      n_u_bnds[i] = c_u_bnds[i+startCAUV];
     }
   }
   else {
@@ -608,7 +608,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // Note: local reliability employs artificial bounds for the MPP search,
     // but these are not relevant for the AIS process on the truth model.
     RealRealPairArray u_bnds = natafTransform.u_bounds(); // all active cv
-    for (i=0, j=numContDesVars; i<numUncertainVars; ++i, ++j)
+    for (i=0, j=startCAUV; i<numCAUV; ++i, ++j)
       { n_l_bnds[i] = u_bnds[j].first; n_u_bnds[i] = u_bnds[j].second; }
   }
 
@@ -642,8 +642,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
 
       // copy sample set from lhs_samples_array into var_samples_u
       for (j=0; j<num_rep_samples && cntr<refineSamples; ++j, ++cntr)
-	copy_data(lhs_samples_array[j], (int)numUncertainVars,
-		  var_samples_u[cntr]);
+	copy_data(lhs_samples_array[j], (int)numCAUV, var_samples_u[cntr]);
     }
   }
 }
@@ -657,7 +656,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
     fn_samples.sizeUninitialized(num_samples);
 
   // update designPoint once; update uncertain vars for each sample
-  for (j=0; j<numContDesVars; ++j)
+  for (j=0; j<startCAUV; ++j)
     uSpaceModel.continuous_variable(designPoint[j], j);
 
   // calculate the probability of failure
@@ -666,7 +665,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
   bool asynch_flag = uSpaceModel.asynch_flag();
   for (i=0; i<num_samples; i++) {
     const RealVector& sample_i = var_samples_u[i];
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       uSpaceModel.continuous_variable(sample_i[cntr], j);
 
     // get response value at the sample point
@@ -733,7 +732,7 @@ calculate_statistics(const RealVectorArray& var_samples_u,
       //  / recentered_pdf;
 
       pdf_ratio = 1.;
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	pdf_ratio *= natafTransform.u_pdf(sample_i[cntr], j);
       pdf_ratio /= recentered_density(sample_i);
 
@@ -823,7 +822,7 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
     const RealVector& rep_pt_i = repPointsU[i];
-    for (j=0, k=numContDesVars; j<numUncertainVars; ++j, ++k)
+    for (j=0, k=startCAUV; j<numCAUV; ++j, ++k)
       rep_pdf *= Pecos::BoundedNormalRandomVariable::pdf(sample_point[j],
 	rep_pt_i[j], stdev, u_bnds[k].first, u_bnds[k].second);
     local_pdf += repWeights[i] * rep_pdf;

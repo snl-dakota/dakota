@@ -144,9 +144,6 @@ protected:
   void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 			 Sizet2DArray& delta_N_l);
 
-  /// Size local variables
-  void size();
-
   /// create a system-generated unique seed (when a seed is unspecified)
   int generate_system_seed();
 
@@ -222,9 +219,11 @@ protected:
   /// pointer containing previous value of nondInstance
   NonD* prevNondInstance;
 
-  // The following variable counts reflect the native Model space, which could
-  // correspond to either X or U space.  If a specific X or U variables count
-  // is needed, then natafTransform.ranVarTypesX/U.count() should be used.
+  /// starting index of continuous aleatory uncertain variables within
+  /// active continuous variables (convenience for managing offsets)
+  size_t startCAUV;
+  /// number of active continuous aleatory uncertain variables
+  size_t numCAUV;
 
   /// flag for computing interval-type metrics instead of integrated metrics
   /// If any epistemic vars are active in a metric evaluation, then flag is set.
@@ -298,6 +297,9 @@ protected:
   BitArray pdfComputed;
 
 private:
+
+  /// initialize data based on variable counts
+  void initialize_counts();
 
   /// convenience function for distributing a vector of levels among multiple
   /// response functions if a short-hand specification is employed.

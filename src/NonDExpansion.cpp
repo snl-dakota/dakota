@@ -72,24 +72,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.nond.integration_refinement")),
   refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
 {
-  const Variables& vars = iteratedModel.current_variables();
-  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-  // convenience looping bounds
-  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
-
-  // flag for combined var expansions which include non-probabilistic subset
-  // (continuous only for now)
-  allVars = (ac_totals[TOTAL_CDV] || ac_totals[TOTAL_CEUV] ||
-	     ac_totals[TOTAL_CSV]);
-
-  // override default definition in NonD ctor.  If there are any aleatory
-  // variables, then we will sample on that subset for probabilistic stats.
-  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
-	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
-  bool auv = (numCAUV                || ac_totals[TOTAL_DAUIV] ||
-	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
-  epistemicStats = (euv && !auv);
-
+  initialize_counts();
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
 }
@@ -110,10 +93,21 @@ NonDExpansion(unsigned short method_name, Model& model,
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
   vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
-  const Variables& vars = iteratedModel.current_variables();
+  initialize_counts();
+
+  // level mappings not yet available
+  // (defer initialize_response_covariance() and initialize_final_statistics())
+}
+
+
+NonDExpansion::~NonDExpansion()
+{ }
+
+
+void NonDExpansion::initialize_counts()
+{
+  const Variables&  vars      = iteratedModel.current_variables();
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
-  // convenience looping bounds
-  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
 
   // flag for combined var expansions which include non-probabilistic subset
   // (continuous only for now)
@@ -127,19 +121,14 @@ NonDExpansion(unsigned short method_name, Model& model,
   bool auv = (ac_totals[TOTAL_CAUV]  || ac_totals[TOTAL_DAUIV] ||
 	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
   epistemicStats = (euv && !auv);
-
-  // level mappings not yet available
-  // (defer initialize_response_covariance() and initialize_final_statistics())
 }
-
-
-NonDExpansion::~NonDExpansion()
-{ }
 
 
 bool NonDExpansion::resize()
 {
   bool parent_reinit_comms = NonD::resize();
+
+  initialize_counts();
 
   return parent_reinit_comms;
 }

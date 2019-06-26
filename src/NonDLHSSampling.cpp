@@ -287,8 +287,8 @@ void NonDLHSSampling::
 initial_increm_lhs_set(int new_samples, 
                        RealMatrix& full_samples, IntMatrix& full_ranks)
 {
-  int num_vars = numContinuousVars + numDiscreteIntVars 
-    + numDiscreteRealVars + numDiscreteStringVars;
+  int num_vars = numContinuousVars   + numDiscreteIntVars 
+               + numDiscreteRealVars + numDiscreteStringVars;
 
   // sub-matrix to populate
   RealMatrix batch_samples(Teuchos::View, full_samples, 
@@ -300,7 +300,6 @@ initial_increm_lhs_set(int new_samples,
   IntMatrix batch_ranks(Teuchos::View, full_ranks,
                         num_vars, new_samples, 0, 0);
   store_ranks(batch_samples, batch_ranks);
-
 }
 
 
@@ -315,11 +314,11 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
 	 << "samples = 20 40 80." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-   
+
   // BMA TODO: are these sizes correct for cases where we are sampling inactive?
   // Should this be based on mode_counts instead of these? See DakotaNonD.cpp
-  const int num_vars = numContinuousVars + numDiscreteIntVars 
-    + numDiscreteRealVars + numDiscreteStringVars;
+  const int num_vars = numContinuousVars   + numDiscreteIntVars 
+                     + numDiscreteRealVars + numDiscreteStringVars;
 
   const int total_samples = previous_samples + new_samples;
 
@@ -417,7 +416,6 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   Cout << "rank_combined\n" << sampleRanks << '\n';// updated by SET_GET_RANKS
   Cout << "Full sample set allSamples\n" << allSamples; 
 #endif //DEBUG
-
 }
 
 
@@ -473,7 +471,6 @@ void NonDLHSSampling::
 combine_discrete_ranks(const RealMatrix& initial_values, 
                        const RealMatrix& increm_values)
 {
-
   const int num_vars = initial_values.numRows();
   const int previous_samples = initial_values.numCols();
   const int new_samples = increm_values.numCols();
@@ -639,6 +636,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // transform whole samples matrix from u back to x space
   transform_samples(nataf, selected_samples, 0, false); // u_to_x
 }
+
 
 void NonDLHSSampling::post_input()
 {
@@ -894,6 +892,7 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }
 }
 
+
 void NonDLHSSampling::print_header_and_statistics(std::ostream& s, 
     const int& num_samples)
 {
@@ -945,6 +944,7 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
     }
   }
 }
+
 
 void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
   if(epistemicStats) {
@@ -1006,6 +1006,5 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
   if(inc_id == 0 || inc_id == refineSamples.length() + 1)
     resultsDB.add_metadata_to_execution(run_identifier(), ns_attr); 
 }
-
 
 } // namespace Dakota
