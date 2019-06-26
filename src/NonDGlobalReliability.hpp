@@ -148,7 +148,7 @@ private:
 };
 
 
-void NonDGlobalReliability::x_truth_evaluation(short mode)
+inline void NonDGlobalReliability::x_truth_evaluation(short mode)
 {
   uSpaceModel.component_parallel_mode(TRUTH_MODEL);      // Recast forwards
 
@@ -161,7 +161,7 @@ void NonDGlobalReliability::x_truth_evaluation(short mode)
 }
 
 
-void NonDGlobalReliability::
+inline void NonDGlobalReliability::
 x_truth_evaluation(const RealVector& c_vars_u, short mode)
 {
   RealVector c_vars_x;
@@ -172,7 +172,7 @@ x_truth_evaluation(const RealVector& c_vars_u, short mode)
 }
 
 
-void NonDGlobalReliability::
+inline void NonDGlobalReliability::
 u_truth_evaluation(const RealVector& c_vars_u, short mode)
 {
   uSpaceModel.component_parallel_mode(TRUTH_MODEL);      // Recast forwards
@@ -189,7 +189,8 @@ u_truth_evaluation(const RealVector& c_vars_u, short mode)
 }
 
 
-void NonDGlobalReliability::u_evaluation(const RealVector& c_vars_u, short mode)
+inline void NonDGlobalReliability::
+u_evaluation(const RealVector& c_vars_u, short mode)
 {
   uSpaceModel.continuous_variables(c_vars_u);
   ActiveSet set = uSpaceModel.current_response().active_set();
