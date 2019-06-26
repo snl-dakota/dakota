@@ -23,7 +23,6 @@ AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
 AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   pcePilotExpansion(pcePilotExpRepPtr, false), numFullspaceVars(subModel.cv()),
-  adaptedBasisInitialized(false),
   reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
   abmInstance = this;
@@ -38,6 +37,10 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
 
   validate_inputs();
 }
+
+
+AdaptedBasisModel::~AdaptedBasisModel()
+{ /* empty dtor */ }
 
 
 Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
@@ -105,10 +108,6 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 }
 
 
-AdaptedBasisModel::~AdaptedBasisModel()
-{ /* empty dtor */ }
-
-
 void AdaptedBasisModel::validate_inputs()
 {
   bool error_flag = false;
@@ -128,7 +127,7 @@ void AdaptedBasisModel::validate_inputs()
 
 bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  RecastModel::initialize_mapping(pl_iter);
+  RecastModel::initialize_mapping(pl_iter); // sets mappingInitialized to true
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nAdapted Basis Model: Initializing adapted basis model."
@@ -149,8 +148,6 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
   // convert the normal distributions to the reduced space and set in the
   // reduced model
   uncertain_vars_to_subspace();
-  // adapted basis calculation now complete
-  adaptedBasisInitialized = true;
 
   // Kill servers and return ranks [1,n-1] to serve_init_mapping()
   component_parallel_mode(CONFIG_PHASE);
@@ -171,9 +168,8 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 bool AdaptedBasisModel::finalize_mapping()
 {
   // TODO: return to full space
-  //adaptedBasisInitialized = false;
 
-  RecastModel::finalize_mapping();
+  //RecastModel::finalize_mapping(); // sets mappingInitialized to false
 
   return false; // This will become true when TODO is implemented.
 }
@@ -285,7 +281,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    //if (!adaptedBasisInitialized) // see ActiveSubspaceModel
+    //if (!mappingInitialized) // see ActiveSubspaceModel
       pcePilotExpansion.set_communicators(pl_iter);
 
     subModel.set_communicators(pl_iter, max_eval_concurrency);

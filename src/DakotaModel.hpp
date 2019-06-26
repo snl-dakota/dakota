@@ -216,8 +216,6 @@ public:
   virtual bool initialize_mapping(ParLevLIter pl_iter);
   /// finalize model mapping, returns true if the variables size has changed
   virtual bool finalize_mapping();
-  /// return true if mapping has been fully initialized, false otherwise.
-  virtual bool mapping_initialized() const;
   /// return true if a potential resize is still pending, such that
   /// sizing-based initialization should be deferred
   virtual bool resize_pending() const;
@@ -474,6 +472,9 @@ public:
   /// with derived counter returned by derived_evaluation_id()
   int evaluation_id() const;
 
+  // return mappingInitialized
+  bool mapping_initialized() const;
+
   /// allocate communicator partitions for a model and store
   /// configuration in modelPCIterMap
   void init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
@@ -669,46 +670,6 @@ public:
   UShortMultiArrayConstView all_discrete_real_variable_types() const;
   /// return all continuous variable identifiers from currentVariables
   SizetMultiArrayConstView  all_continuous_variable_ids()      const;
-
-  /*
-  /// return the sets of values available for each of the discrete
-  /// design set integer variables
-  const IntSetArray& discrete_design_set_int_values() const;
-  /// define the sets of values available for each of the discrete
-  /// design set integer variables
-  void discrete_design_set_int_values(const IntSetArray& isa);
-  /// return the sets of values available for each of the discrete
-  /// design set string variables
-  const StringSetArray& discrete_design_set_string_values() const;
-  /// define the sets of values available for each of the discrete
-  /// design set string variables
-  void discrete_design_set_string_values(const StringSetArray& ssa);
-  /// return the sets of values available for each of the discrete
-  /// design set real variables
-  const RealSetArray& discrete_design_set_real_values() const;
-  /// define the sets of values available for each of the discrete
-  /// design set real variables
-  void discrete_design_set_real_values(const RealSetArray& rsa);
-
-  /// return the sets of values available for each of the discrete
-  /// state set integer variables
-  const IntSetArray& discrete_state_set_int_values() const;
-  /// define the sets of values available for each of the discrete
-  /// state set integer variables
-  void discrete_state_set_int_values(const IntSetArray& isa);
-  /// return the sets of values available for each of the discrete
-  /// state set string variables
-  const StringSetArray& discrete_state_set_string_values() const;
-  /// define the sets of values available for each of the discrete
-  /// state set string variables
-  void discrete_state_set_string_values(const StringSetArray& ssa);
-  /// return the sets of values available for each of the discrete
-  /// state set real variables
-  const RealSetArray& discrete_state_set_real_values() const;
-  /// define the sets of values available for each of the discrete
-  /// state set real variables
-  void discrete_state_set_real_values(const RealSetArray& rsa);
-  */
 
   // array indicating which discrete integer variables are set vs. range?
   /// define and return discreteIntSets using active view from currentVariables
@@ -1403,6 +1364,9 @@ protected:
   /// length of packed MPI buffers containing vars, vars/set, response,
   /// and PRPair
   IntArray messageLengths;
+
+  /// track use of initialize_mapping() and finalize_mapping()
+  bool mappingInitialized;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
@@ -3519,6 +3483,10 @@ inline void Model::output_level(const short level)
 
 inline const IntArray& Model::message_lengths() const
 { return (modelRep) ? modelRep->messageLengths : messageLengths; }
+
+
+inline bool Model::mapping_initialized() const
+{ return (modelRep) ? modelRep->mappingInitialized : mappingInitialized; }
 
 
 inline void Model::parallel_configuration_iterator(ParConfigLIter pc_iter)

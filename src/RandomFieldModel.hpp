@@ -37,10 +37,8 @@ public:
 
   /// Problem database constructor
   RandomFieldModel(ProblemDescDB& problem_db);
-
   /// destructor
   ~RandomFieldModel();
-
 
   //
   //- Heading: Virtual function redefinitions
@@ -49,7 +47,6 @@ public:
   /// for KL models, the model is augmented with the random coeffs of the KL
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
-  bool mapping_initialized() const;
   bool resize_pending() const;
 
 protected:
@@ -222,17 +219,10 @@ protected:
   /// static pointer to this class for use in static callbacks
   static RandomFieldModel* rfmInstance;
 
-  /// the index of the active metaiterator-iterator parallelism level
-  /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
-  //  size_t miPLIndex;
-
-  /// track use of initialize_mapping() and finalize_mapping()
-  bool mappingInitialized;
+  // the index of the active metaiterator-iterator parallelism level
+  // (corresponding to ParallelConfiguration::miPLIters) used at runtime
+  //size_t miPLIndex;
 };
-
-
-inline bool RandomFieldModel::mapping_initialized() const
-{ return mappingInitialized; }
 
 
 inline bool RandomFieldModel::resize_pending() const

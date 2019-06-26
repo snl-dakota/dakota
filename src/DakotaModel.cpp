@@ -92,7 +92,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
   hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
   hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
-  warmStartFlag(false), supportsEstimDerivs(true),
+  warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1), 
@@ -235,7 +235,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   currentResponse(srd, set), numFns(set.request_vector().size()),
   userDefinedConstraints(svd), evaluationsDB(evaluation_store_db),
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
-  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
+  supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
+  parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(output_level), hierarchicalTagging(false),
@@ -259,8 +260,9 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
-  warmStartFlag(false), supportsEstimDerivs(true), probDescDB(problem_db), 
-  parallelLib(parallel_lib), evaluationsDB(evaluation_store_db),
+  warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
+  probDescDB(problem_db), parallelLib(parallel_lib),
+  evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
@@ -3625,6 +3627,8 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
       }
     }
 
+    mappingInitialized = true;
+
     return false; // size did not change
   }
 }
@@ -3634,17 +3638,10 @@ bool Model::finalize_mapping()
 {
   if (modelRep)
     return modelRep->finalize_mapping();
-  else // Base class default behavior is no-op
+  else { // base class behavior
+    mappingInitialized = false;
     return false; // size did not change
-}
-
-
-bool Model::mapping_initialized() const
-{
-  if (modelRep)
-    return modelRep->mapping_initialized();
-  else // Base class default is true
-    return true;
+  }
 }
 
 

@@ -52,7 +52,6 @@ protected:
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
-  bool mapping_initialized() const;
   bool resize_pending() const;
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
@@ -147,14 +146,7 @@ private:
 
   /// static pointer to this class for use in static callbacks
   static ProbabilityTransformModel* ptmInstance;
-
-  /// track use of initialize_mapping() and finalize_mapping()
-  bool mappingInitialized;
 };
-
-
-inline bool ProbabilityTransformModel::mapping_initialized() const
-{ return mappingInitialized; }
 
 
 inline bool ProbabilityTransformModel::resize_pending() const
@@ -219,8 +211,6 @@ inline void ProbabilityTransformModel::update_transformation()
   natafTransform.transform_correlations();
 
   update_model_bounds(truncatedBounds, boundVal);
-
-  ptmInstance = this; // run time (Model::initialize_mapping())
 }
 
 
@@ -230,7 +220,7 @@ update_from_subordinate_model(size_t depth)
   // standard updates for RecastModels, including subModel recursion
   RecastModel::update_from_subordinate_model(depth);
   // propagate any subModel parameter updates to mvDist
-  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
+  update_transformation();
 }
 
 

@@ -31,7 +31,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
-  surrModelEvalCntr(0), approxBuilds(0), mappingInitialized(false)
+  surrModelEvalCntr(0), approxBuilds(0)
 {
   // assign default responseMode based on correction specification;
   // NO_CORRECTION (0) is default
@@ -58,8 +58,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const ActiveSet& set, short corr_type, short output_level):
   Model(LightWtBaseConstructor(), problem_db, parallel_lib, svd, srd,
 	set, output_level),
-  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0),
-  mappingInitialized(false)
+  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";
 

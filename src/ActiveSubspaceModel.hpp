@@ -77,7 +77,6 @@ public:
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
-  bool mapping_initialized() const;
   bool resize_pending() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
@@ -145,6 +144,9 @@ protected:
   /// sample the model's gradient, computed the SVD, and form the active
   /// subspace rotation matrix.
   void build_subspace();
+
+  /// helper for shared code between lightweight ctor and initialize_mapping()
+  void initialize_subspace();
 
   /// sample the derivative at diff_samples points and leave temporary
   /// in dace_iterator
@@ -285,9 +287,6 @@ protected:
   /// total construction samples evaluated so far
   unsigned int totalSamples;
 
-  /// boolean flag to determine if mapping has been fully initialized
-  bool subspaceInitialized;
-
   /// Normalization to use in the case of multiple QoI's
   unsigned short subspaceNormalization;
 
@@ -375,12 +374,8 @@ protected:
 };
 
 
-inline bool ActiveSubspaceModel::mapping_initialized() const
-{ return subspaceInitialized; }
-
-
 inline bool ActiveSubspaceModel::resize_pending() const
-{ return !subspaceInitialized; }
+{ return !mappingInitialized; }
 
 } // namespace Dakota
 

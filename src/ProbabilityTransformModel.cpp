@@ -26,14 +26,11 @@ ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
 			  bool truncate_bnds, Real bnd) :
-  RecastModel(x_model), distParamDerivs(false), truncatedBounds(truncate_bnds),
-  boundVal(bnd), mappingInitialized(false)
+  RecastModel(x_model), distParamDerivs(false),
+  truncatedBounds(truncate_bnds), boundVal(bnd)
 {
   modelType = "probability_transform";
   modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
-
-  // initialize invariant portions of probability transform at construct time
-  initialize_transformation(u_space_type);
 
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
   SizetArray recast_vars_comps_total; // default: no change in cauv total
@@ -61,8 +58,13 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
 
+  // initialize current{Variables,Response}, userDefinedConstraints
   init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns,
 	     0, 0, recast_resp_order);
+  // initialize invariant portions of probability transform within mvDist
+  // (requires currentVariables)
+  initialize_transformation(u_space_type);
+  // initialize Variables/Response/ActiveSet recastings (requires mvDist)
   init_maps(vars_map, nonlinear_variables_mapping(x_dist, mvDist),
 	    vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
 	    secondary_resp_map, nonlinear_resp_map, resp_x_to_u_mapping, NULL);
@@ -82,22 +84,20 @@ bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
   RecastModel::initialize_mapping(pl_iter);
   bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
-  update_transformation();
+  //update_transformation(); // redundant with update_from_subordinate_model()
+  ptmInstance = this; // run time
 
   // update message lengths for send/receive of parallel jobs (normally
   // performed once in Model::init_communicators() just after construct time)
   if (sub_model_resize)
     estimate_message_lengths();
 
-  mappingInitialized = true;
   return sub_model_resize;
 }
 
 
 bool ProbabilityTransformModel::finalize_mapping()
 {
-  mappingInitialized = false;
-
   bool sub_model_resize = subModel.finalize_mapping();
   RecastModel::finalize_mapping();
 

@@ -277,7 +277,7 @@ init_variables(const SizetArray& vars_comps_totals,
   // vars_comp_totals, but no mapping, but have to allow it here in
   // case mapping not yet provided.
 
-  // if any change in variable types, will neeed a new SharedVariablesData
+  // if any change in variable types, will need a new SharedVariablesData
   bool vars_char_same = 
     ( vars_comps_totals.empty() || 
       svd.components_totals()         == vars_comps_totals ) &&
@@ -780,8 +780,11 @@ void RecastModel::update_from_model(Model& model)
     // any label, uncertain variable distributions, and linear
     // constraint mappings must be performed explicitly
 
-    // for partial mapping of distribution parameters that are unmodified by a
-    // variable transformation, see NonDExpansion::initialize_expansion()
+    // for partial mapping of variables that are unmodified by a variable
+    // transformation, see NonDExpansion::initialize_expansion()
+
+    // for mapping of distribution parameters that are part of a variable
+    // transformation, see ProbabilityTransformModel::update_transformation()
   }
   else {
     update_active_complement = false; // can use all view updates below

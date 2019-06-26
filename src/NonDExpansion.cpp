@@ -619,6 +619,16 @@ void NonDExpansion::core_run()
 
 void NonDExpansion::initialize_expansion()
 {
+  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // initialization of Model mappings for iteratedModel, but local recursions
+  // are not visible --> recur through DataFitSurr,ProbabilityTransform
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  bool var_size_changed = uSpaceModel.initialize_mapping(pl_iter);
+  //if (var_size_changed) resize();
+  // Note: uSpaceModel takes care of part of this at build time (daceIterator
+  // -> g_u_model) as well as interrogation of uSpaceModel by expansion sampler.
+  // Therefore, take care to avoid redundancy using mappingInitialized flag.
+
   //initialize_random_variable_parameters();// capture any dist param insertions
   if (totalLevelRequests) initialize_level_mappings(); // size computed*Levels
   resize_final_statistics_gradients(); // finalStats ASV available at run time
@@ -630,7 +640,9 @@ void NonDExpansion::initialize_expansion()
   // RecastModel::update_from_model() had insufficient context to update
   // distribution parameters for variables that were not transformed, but
   // ProbabilityTransformModel::update_from_model() can now handle this.
-  size_t depth = (methodName > STOCH_COLLOCATION && // multilevel/multifidelity
+  bool single_fid = (methodName == POLYNOMIAL_CHAOS ||
+    methodName == STOCH_COLLOCATION || methodName == C3_FUNCTION_TRAIN);
+  size_t depth = (!single_fid && // multilevel/multifidelity
 		  multilevDiscrepEmulation == DISTINCT_EMULATION) ?
     2    : // limit depth to avoid warning at HierarchSurrModel
     _NPOS; // max depth
