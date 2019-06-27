@@ -506,33 +506,40 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
 
   if (!active_only || cdv) {
     num_rv = probDescDB.get_sizet("variables.continuous_design");
-    assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
-    if (cdv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
+    if (num_rv) {
+      assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
+      if (cdv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
   }
 
   // Discrete design
 
   if (!active_only || ddv) {
     num_rv = probDescDB.get_sizet("variables.discrete_design_range");
-    assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
-    if (ddv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.discrete_design_set_int");
-    assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
-    if (ddv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.discrete_design_set_string");
-    assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
-    if (ddv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.discrete_design_set_real");
-    assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
-    if (ddv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
   }
 
   // Continuous aleatory
@@ -540,198 +547,237 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   if (!active_only || cauv) {
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     num_rv = probDescDB.get_sizet("variables.normal_uncertain");
-    const RealVector& n_l_bnds
-      = probDescDB.get_rv("variables.normal_uncertain.lower_bounds");
-    const RealVector& n_u_bnds
-      = probDescDB.get_rv("variables.normal_uncertain.upper_bounds");
-    bool l_bnds = !n_l_bnds.empty(), u_bnds = !n_u_bnds.empty();
-    if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
-      assign_value(rv_types, Pecos::NORMAL, start_rv, num_rv);
-    else
-      for (i=0; i<num_rv; ++i)
-	rv_types[i] = ( ( l_bnds && n_l_bnds[i] > -dbl_inf ) ||
-			( u_bnds && n_u_bnds[i] <  dbl_inf ) ) ?
-	  Pecos::BOUNDED_NORMAL : Pecos::NORMAL;
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      const RealVector& n_l_bnds
+	= probDescDB.get_rv("variables.normal_uncertain.lower_bounds");
+      const RealVector& n_u_bnds
+	= probDescDB.get_rv("variables.normal_uncertain.upper_bounds");
+      bool l_bnds = !n_l_bnds.empty(), u_bnds = !n_u_bnds.empty();
+      if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
+	assign_value(rv_types, Pecos::NORMAL, start_rv, num_rv);
+      else
+	for (i=0; i<num_rv; ++i)
+	  rv_types[start_rv+i] = ( ( l_bnds && n_l_bnds[i] > -dbl_inf ) ||
+				   ( u_bnds && n_u_bnds[i] <  dbl_inf ) ) ?
+	    Pecos::BOUNDED_NORMAL : Pecos::NORMAL;
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
-    const RealVector& ln_l_bnds
-      = probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds");
-    const RealVector& ln_u_bnds
-      = probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
-    l_bnds = !ln_l_bnds.empty();  u_bnds = !ln_u_bnds.empty();
-    if (!l_bnds && !u_bnds) // won't happen: parser -> 0/inf
-      assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
-    else
-      for (i=0; i<num_rv; ++i)
-	rv_types[start_rv+i] = ( ( l_bnds && ln_l_bnds[i] > 0. ) ||
-				 ( u_bnds && ln_u_bnds[i] < dbl_inf ) ) ?
-	  Pecos::BOUNDED_LOGNORMAL : Pecos::LOGNORMAL;
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      const RealVector& ln_l_bnds
+	= probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds");
+      const RealVector& ln_u_bnds
+	= probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
+      bool l_bnds = !ln_l_bnds.empty(), u_bnds = !ln_u_bnds.empty();
+      if (!l_bnds && !u_bnds) // won't happen: parser -> 0/inf
+	assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
+      else
+	for (i=0; i<num_rv; ++i)
+	  rv_types[start_rv+i] = ( ( l_bnds && ln_l_bnds[i] > 0. ) ||
+				   ( u_bnds && ln_u_bnds[i] < dbl_inf ) ) ?
+	    Pecos::BOUNDED_LOGNORMAL : Pecos::LOGNORMAL;
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
-    assign_value(rv_types, Pecos::UNIFORM, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::UNIFORM, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
-    assign_value(rv_types, Pecos::LOGUNIFORM, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::LOGUNIFORM, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
-    assign_value(rv_types, Pecos::TRIANGULAR, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::TRIANGULAR, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
-    assign_value(rv_types, Pecos::EXPONENTIAL, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::EXPONENTIAL, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.beta_uncertain");
-    assign_value(rv_types, Pecos::BETA, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::BETA, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
-    assign_value(rv_types, Pecos::GAMMA, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
+    if (num_rv) {
+      assign_value(rv_types, Pecos::GAMMA, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
 
     // Note: Inv gamma is not part of variable spec (calibration hyperparameter)
 
     num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
-    assign_value(rv_types, Pecos::GUMBEL, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::GUMBEL, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
-    assign_value(rv_types, Pecos::FRECHET, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::FRECHET, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
-    assign_value(rv_types, Pecos::WEIBULL, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::WEIBULL, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
-    assign_value(rv_types, Pecos::HISTOGRAM_BIN, start_rv, num_rv);
-    if (cauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_BIN, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
   }
 
   // Discrete aleatory
 
   if (!active_only || dauv) {
     num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
-    assign_value(rv_types, Pecos::POISSON, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::POISSON, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
-    assign_value(rv_types, Pecos::BINOMIAL, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::BINOMIAL, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
-    assign_value(rv_types, Pecos::NEGATIVE_BINOMIAL, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::NEGATIVE_BINOMIAL, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
-    assign_value(rv_types, Pecos::GEOMETRIC, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::GEOMETRIC, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
-    assign_value(rv_types, Pecos::HYPERGEOMETRIC, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HYPERGEOMETRIC, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
-    assign_value(rv_types, Pecos::HISTOGRAM_PT_INT, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_PT_INT, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_string");
-    assign_value(rv_types, Pecos::HISTOGRAM_PT_STRING, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_PT_STRING, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
-    assign_value(rv_types, Pecos::HISTOGRAM_PT_REAL, start_rv, num_rv);
-    if (dauv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_PT_REAL, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
   }
 
   // Continuous epistemic
 
   if (!active_only || ceuv) {
     num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
-    assign_value(rv_types,Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,start_rv,num_rv);
-    if (ceuv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
+    if (num_rv) {
+      assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
+		   start_rv, num_rv);
+      if (ceuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
   }
 
   // Discrete epistemic
 
   if (!active_only || deuv) {
     num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
-    assign_value(rv_types, Pecos::DISCRETE_INTERVAL_UNCERTAIN, start_rv,num_rv);
-    if (deuv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types,Pecos::DISCRETE_INTERVAL_UNCERTAIN,start_rv,num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
-    assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_INT, start_rv, num_rv);
-    if (deuv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_INT,start_rv,num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
-    assign_value(rv_types,Pecos::DISCRETE_UNCERTAIN_SET_STRING,start_rv,num_rv);
-    if (deuv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_STRING,
+		   start_rv, num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
     num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
-    assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_REAL, start_rv,num_rv);
-    if (deuv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
+    if (num_rv) {
+      assign_value(rv_types,Pecos::DISCRETE_UNCERTAIN_SET_REAL,start_rv,num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
   }
 
   // Continuous state
 
   if (!active_only || csv) {
     num_rv = probDescDB.get_sizet("variables.continuous_state");
-    assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
-    if (csv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-  }
+    if (num_rv) {
+      assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
+      if (csv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
 
-  // Discrete state
+    // Discrete state
 
-  if (!active_only || dsv) {
-    num_rv = probDescDB.get_sizet("variables.discrete_state_range");
-    assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
-    if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
-    num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
-    assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
-    if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
-    num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
-    assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
-    if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-    start_rv += num_rv;
-
-    num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
-    assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
-    if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-    //start_rv += num_rv;
+    if (!active_only || dsv) {
+      num_rv = probDescDB.get_sizet("variables.discrete_state_range");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	//start_rv += num_rv;
+      }
+    }
   }
 
   mv_dist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
