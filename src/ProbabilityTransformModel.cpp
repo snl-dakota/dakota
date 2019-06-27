@@ -439,84 +439,86 @@ initialize_distribution_types(short u_space_type)
   Pecos::MultivariateDistribution& x_dist
     = subModel.multivariate_distribution();
   const Pecos::ShortArray& x_types = x_dist.random_variable_types();
+  const Pecos::BitArray& active_rv = x_dist.active_variables();
   size_t i, num_rv = x_types.size();
   Pecos::ShortArray u_types(num_rv, Pecos::NO_TYPE);
   bool err_flag = false;
-  switch (u_space_type) {
-  case STD_NORMAL_U:  case STD_UNIFORM_U:
-    for (i=0; i<num_rv; ++i)
-      switch (x_types[i]) {
-      case Pecos::DISCRETE_RANGE:      case Pecos::DISCRETE_SET_INT:
-      case Pecos::DISCRETE_SET_STRING: case Pecos::DISCRETE_SET_REAL:
-      case Pecos::POISSON:             case Pecos::BINOMIAL:
-      case Pecos::NEGATIVE_BINOMIAL:   case Pecos::GEOMETRIC:
-      case Pecos::HYPERGEOMETRIC:      case Pecos::HISTOGRAM_PT_INT:
-      case Pecos::HISTOGRAM_PT_STRING: case Pecos::HISTOGRAM_PT_REAL:
-      case Pecos::DISCRETE_INTERVAL_UNCERTAIN:
-      case Pecos::DISCRETE_UNCERTAIN_SET_INT:
-      case Pecos::DISCRETE_UNCERTAIN_SET_STRING:
-      case Pecos::DISCRETE_UNCERTAIN_SET_REAL:
-	err_flag = true;                                            break;
-      case Pecos::CONTINUOUS_RANGE: case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
-	u_types[i] = Pecos::STD_UNIFORM;                            break;
-      default:
-	u_types[i] = (u_space_type == STD_UNIFORM_U)
-	           ? Pecos::STD_UNIFORM : Pecos::STD_NORMAL;        break;
+
+  for (i=0; i<num_rv; ++i)
+    if (active_rv[i])
+      switch (u_space_type) {
+      case STD_NORMAL_U:  case STD_UNIFORM_U:
+	switch (x_types[i]) {
+	case Pecos::DISCRETE_RANGE:      case Pecos::DISCRETE_SET_INT:
+	case Pecos::DISCRETE_SET_STRING: case Pecos::DISCRETE_SET_REAL:
+	case Pecos::POISSON:             case Pecos::BINOMIAL:
+	case Pecos::NEGATIVE_BINOMIAL:   case Pecos::GEOMETRIC:
+	case Pecos::HYPERGEOMETRIC:      case Pecos::HISTOGRAM_PT_INT:
+	case Pecos::HISTOGRAM_PT_STRING: case Pecos::HISTOGRAM_PT_REAL:
+	case Pecos::DISCRETE_INTERVAL_UNCERTAIN:
+	case Pecos::DISCRETE_UNCERTAIN_SET_INT:
+	case Pecos::DISCRETE_UNCERTAIN_SET_STRING:
+	case Pecos::DISCRETE_UNCERTAIN_SET_REAL:
+	  err_flag = true;                                            break;
+	case Pecos::CONTINUOUS_RANGE: case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	  u_types[i] = Pecos::STD_UNIFORM;                            break;
+	default:
+	  u_types[i] = (u_space_type == STD_UNIFORM_U)
+	             ? Pecos::STD_UNIFORM : Pecos::STD_NORMAL;        break;
+	}
+	break;
+      case PARTIAL_ASKEY_U: // used for cases with limited distrib support (C3)
+	switch (x_types[i]) {
+	case Pecos::NORMAL:           case Pecos::BOUNDED_NORMAL:
+	case Pecos::LOGNORMAL:        case Pecos::BOUNDED_LOGNORMAL:
+	case Pecos::EXPONENTIAL:      case Pecos::GAMMA:
+	case Pecos::GUMBEL:           case Pecos::FRECHET:
+	case Pecos::WEIBULL: // unbounded or semi-bounded dist; bounded N/logN
+	  u_types[i] = Pecos::STD_NORMAL;                             break;
+	case Pecos::UNIFORM:          case Pecos::LOGUNIFORM:
+	case Pecos::TRIANGULAR:       case Pecos::BETA:
+	case Pecos::HISTOGRAM_BIN:    case Pecos::CONTINUOUS_RANGE:
+	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN: // bounded
+	  u_types[i] = Pecos::STD_UNIFORM;                            break;
+	  // TO DO: discrete types
+	default:	               err_flag = true;               break;
+	}
+	break;
+      case ASKEY_U:
+	switch (x_types[i]) {
+	case Pecos::NORMAL:           case Pecos::BOUNDED_NORMAL:
+	case Pecos::LOGNORMAL:        case Pecos::BOUNDED_LOGNORMAL:
+	case Pecos::GUMBEL:           case Pecos::FRECHET:
+	case Pecos::WEIBULL:
+	  u_types[i] = Pecos::STD_NORMAL;      break;
+	case Pecos::UNIFORM:          case Pecos::LOGUNIFORM:
+	case Pecos::TRIANGULAR:       case Pecos::HISTOGRAM_BIN:
+	case Pecos::CONTINUOUS_RANGE: case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	  u_types[i] = Pecos::STD_UNIFORM;     break;
+	case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
+	case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
+	case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
+	  // TO DO: discrete types
+	  //case Pecos::POISSON:           case Pecos::BINOMIAL:
+	  //case Pecos::NEGATIVE_BINOMIAL: case Pecos::GEOMETRIC:
+	  //case Pecos::HYPERGEOMETRIC:
+	default:                 err_flag = true;                     break;
+	}
+	break;
+      case EXTENDED_U:
+	switch (x_types[i]) {
+	case Pecos::CONTINUOUS_RANGE:  case Pecos::UNIFORM:
+	  u_types[i] = Pecos::STD_UNIFORM;                            break;
+	case Pecos::NORMAL:      u_types[i] = Pecos::STD_NORMAL;      break;
+	case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
+	case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
+	case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
+	default:                 u_types[i] = x_types[i];             break;
+	}
+	break;
       }
-    break;
-  case PARTIAL_ASKEY_U: // used for cases with limited distrib support (C3)
-    for (i=0; i<num_rv; ++i)
-      switch (x_types[i]) {
-      case Pecos::NORMAL:           case Pecos::BOUNDED_NORMAL:
-      case Pecos::LOGNORMAL:        case Pecos::BOUNDED_LOGNORMAL:
-      case Pecos::EXPONENTIAL:      case Pecos::GAMMA:
-      case Pecos::GUMBEL:           case Pecos::FRECHET:
-      case Pecos::WEIBULL: // unbounded or semi-bounded dist; bounded N/logN
-	u_types[i] = Pecos::STD_NORMAL;                             break;
-      case Pecos::UNIFORM:          case Pecos::LOGUNIFORM:
-      case Pecos::TRIANGULAR:       case Pecos::BETA:
-      case Pecos::HISTOGRAM_BIN:    case Pecos::CONTINUOUS_RANGE:
-      case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN: // bounded
-	u_types[i] = Pecos::STD_UNIFORM;                            break;
-      // TO DO: discrete types
-      default:	               err_flag = true;                     break;
-      }
-    break;
-  case ASKEY_U:
-    for (i=0; i<num_rv; ++i)
-      switch (x_types[i]) {
-      case Pecos::NORMAL:           case Pecos::BOUNDED_NORMAL:
-      case Pecos::LOGNORMAL:        case Pecos::BOUNDED_LOGNORMAL:
-      case Pecos::GUMBEL:           case Pecos::FRECHET:
-      case Pecos::WEIBULL:
-	u_types[i] = Pecos::STD_NORMAL;      break;
-      case Pecos::UNIFORM:          case Pecos::LOGUNIFORM:
-      case Pecos::TRIANGULAR:       case Pecos::HISTOGRAM_BIN:
-      case Pecos::CONTINUOUS_RANGE: case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
-	u_types[i] = Pecos::STD_UNIFORM;     break;
-      case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
-      case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
-      case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
-      // TO DO: discrete types
-      //case Pecos::POISSON:           case Pecos::BINOMIAL:
-      //case Pecos::NEGATIVE_BINOMIAL: case Pecos::GEOMETRIC:
-      //case Pecos::HYPERGEOMETRIC:
-      default:                 err_flag = true;                     break;
-      }
-    break;
-  case EXTENDED_U:
-    for (i=0; i<num_rv; ++i)
-      switch (x_types[i]) {
-      case Pecos::CONTINUOUS_RANGE:  case Pecos::UNIFORM:
-	u_types[i] = Pecos::STD_UNIFORM;                            break;
-      case Pecos::NORMAL:      u_types[i] = Pecos::STD_NORMAL;      break;
-      case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
-      case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
-      case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
-      default:                 u_types[i] = x_types[i];             break;
-      }
-    break;
-  }
+    else // inactive variables are not transformed
+      u_types[i] = x_types[i];
 
   if (err_flag) {
     Cerr << "Error: unsupported mapping in ProbabilityTransformModel::"
