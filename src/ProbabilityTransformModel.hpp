@@ -218,9 +218,21 @@ inline void ProbabilityTransformModel::
 update_from_subordinate_model(size_t depth)
 {
   // standard updates for RecastModels, including subModel recursion
-  RecastModel::update_from_subordinate_model(depth);
+  //RecastModel::update_from_subordinate_model(depth);
+  // ordering problem with invMapping dependence on dist params
+
+  // data flows from the bottom-up, so recurse first
+  if (depth == std::numeric_limits<size_t>::max())
+    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.update_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> update this level only
+
   // propagate any subModel parameter updates to mvDist
   update_transformation();
+
+  // now pull additional updates from subModel (requires latest dist params)
+  RecastModel::update_from_model(subModel);
 }
 
 

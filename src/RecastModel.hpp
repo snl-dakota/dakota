@@ -445,6 +445,9 @@ protected:
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
 
+  /// update current variables/labels/bounds/targets from subModel
+  void update_from_model(Model& model);
+
   //
   //- Heading: Data members
   //
@@ -489,9 +492,6 @@ private:
 
   /// code shared among constructors to initialize base class data from submodel
   void initialize_data_from_submodel();
-
-  /// update current variables/labels/bounds/targets from subModel
-  void update_from_model(Model& model);
 
   /// resize {primary,secondary}MapIndices and nonlinearRespMapping to
   /// synchronize with subModel sizes

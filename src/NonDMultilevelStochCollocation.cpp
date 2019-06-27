@@ -306,7 +306,7 @@ void NonDMultilevelStochCollocation::core_run()
   // clean up for re-entrancy of ML SC
   uSpaceModel.clear_inactive();
 
-  ++numUncertainQuant;
+  finalize_expansion();
 }
 
 

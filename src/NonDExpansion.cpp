@@ -613,7 +613,8 @@ void NonDExpansion::core_run()
 
   compute_statistics(FINAL_RESULTS);
   // Note: print_results() called by Analyzer::post_run()
-  ++numUncertainQuant;
+
+  finalize_expansion();
 }
 
 
@@ -621,13 +622,15 @@ void NonDExpansion::initialize_expansion()
 {
   // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
   // initialization of Model mappings for iteratedModel, but local recursions
-  // are not visible --> recur through DataFitSurr,ProbabilityTransform
-  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  bool var_size_changed = uSpaceModel.initialize_mapping(pl_iter);
-  //if (var_size_changed) resize();
-  // Note: uSpaceModel takes care of part of this at build time (daceIterator
-  // -> g_u_model) as well as interrogation of uSpaceModel by expansion sampler.
-  // Therefore, take care to avoid redundancy using mappingInitialized flag.
+  // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
+  if (!uSpaceModel.mapping_initialized()) {
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    /*bool var_size_changed =*/ uSpaceModel.initialize_mapping(pl_iter);
+    //if (var_size_changed) resize();
+  }
+  // Note: part of this occurs at DataFit build time (daceIterator -> g_u_model)
+  // as well as evaluation of uSpaceModel by expansion sampler. Therefore, take
+  // care to avoid redundancy using mappingInitialized flag.
 
   //initialize_random_variable_parameters();// capture any dist param insertions
   if (totalLevelRequests) initialize_level_mappings(); // size computed*Levels
@@ -907,6 +910,20 @@ void NonDExpansion::refine_expansion()
   }
 
   post_refinement(metric);
+}
+
+
+void NonDExpansion::finalize_expansion()
+{
+  ++numUncertainQuant;
+
+  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // finalization of Model mappings for iteratedModel, but local recursions
+  // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
+  if (uSpaceModel.mapping_initialized()) {
+    /*bool var_size_changed =*/ uSpaceModel.finalize_mapping();
+    //if (var_size_changed) resize();
+  }
 }
 
 

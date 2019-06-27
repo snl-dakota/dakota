@@ -86,6 +86,8 @@ protected:
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
   virtual void compute_expansion();
+  /// finalize mappings for the uSpaceModel
+  virtual void finalize_expansion();
   /// uniformly increment the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void increment_order_and_grid();

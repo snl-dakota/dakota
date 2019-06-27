@@ -602,7 +602,7 @@ void NonDMultilevelPolynomialChaos::core_run()
   // clean up for re-entrancy of ML PCE
   uSpaceModel.clear_inactive();
 
-  ++numUncertainQuant;
+  finalize_expansion();
 }
 
 
