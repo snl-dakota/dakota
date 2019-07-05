@@ -108,9 +108,6 @@ declare_source(const String &owner_id, const String &owner_type,
 #ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-  //Cout << "EvaluationStore::declare_source().\n";
-  //Cout << "owner_id(" << owner_id << "), owner_type(" << owner_type << ")"
-  //  << ", source_id(" << source_id << "), source_type(" << source_type << ")\n";
   // Location of source model or interface evals or method results
   String source_location;
   // Location of the link to the source
@@ -121,7 +118,6 @@ declare_source(const String &owner_id, const String &owner_type,
     link_location = String("/methods/") + owner_id + "/sources/" + source_id;
     if(source_type == "iterator") { // always link iterator sources
       source_location = String("/methods/") + source_id;
-      //Cout << "source_loc: " << source_location << ", link_loc: " << link_location << std::endl;
       hdf5Stream->create_softlink(link_location, source_location);
     } else { // source is a model
       if( (modelSelection == MODEL_EVAL_STORE_TOP_METHOD && owner_id == topLevelMethodId) || 
@@ -129,7 +125,6 @@ declare_source(const String &owner_id, const String &owner_type,
         sourceModels.emplace(source_id);
       if(model_active(source_id)) { // Only link if evals for this model will be stored
         source_location = String("/models/") + source_type + "/" + source_id; 
-        //Cout << "source_loc: " << source_location << ", link_loc: " << link_location << std::endl;
         hdf5Stream->create_softlink(link_location, source_location);
       }
     } 
@@ -137,16 +132,13 @@ declare_source(const String &owner_id, const String &owner_type,
     link_location = String("/models/") + owner_type + "/" + owner_id + "/sources/" + source_id;
     if(source_type == "iterator") {
       source_location = String("/methods/") + source_id;
-      //Cout << "source_loc: " << source_location << ", link_loc: " << link_location << std::endl;
       hdf5Stream->create_softlink(link_location, source_location);
     } else if(source_type == "interface" && interface_active(source_type)) {
       source_location = String("/interfaces/") + source_id + "/" + owner_id;
-      //Cout << "source_loc: " << source_location << ", link_loc: " << link_location << std::endl;
       hdf5Stream->create_softlink(link_location, source_location);
     }
     else if(model_active(source_id)) { // source is a model
       source_location = String("/models/") + source_type + "/" + source_id;
-      //Cout << "source_loc: " << source_location << ", link_loc: " << link_location << std::endl;
       hdf5Stream->create_softlink(link_location, source_location);
     }
   }
@@ -177,12 +169,9 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
 #ifdef DAKOTA_HAVE_HDF5
   if(! (active() && model_active(model_id)))
     return EvaluationsDBState::INACTIVE;
-  //Cout << "EvaluationStore::model_allocate()\nmodel_id: " << model_id << "\nmodel_type: " << model_type << std::endl;
   allocatedModels.emplace(model_id);
-  //Cout << "EvaluationStore::model_allocate(), response.num_functions(): " << response.num_functions() << std::endl;
   const auto & ds_pair = modelDefaultSets.emplace(model_id, DefaultSet(set));
   const DefaultSet &default_set = (*ds_pair.first).second;
-  //Cout << "EvaluationStore::model_allocate(), default_set.numFunctions: " << default_set.numFunctions << std::endl;
   String root_group = create_model_root(model_id, model_type);
   String scale_root = create_scale_root(root_group);
   // Create evaluation ID dataset, which is attached as a scale to many datasets
@@ -206,7 +195,6 @@ EvaluationsDBState EvaluationStore::interface_allocate(const String &model_id, c
 #ifdef DAKOTA_HAVE_HDF5
   if(!(active() && interface_active(interface_type)))
     return EvaluationsDBState::INACTIVE;
-  //Cout << "EvaluationStore::interface_allocate()\ninterface_id: " << interface_id << "\nmodel_id: " << model_id << std::endl;
   allocatedInterfaces.emplace(make_pair(model_id, interface_id));
   const auto & ds_pair = interfaceDefaultSets.emplace(std::make_pair(model_id, interface_id), DefaultSet(set));
   const DefaultSet &default_set = (*ds_pair.first).second;
@@ -232,9 +220,6 @@ void EvaluationStore::store_model_variables(const String &model_id, const String
 #ifdef DAKOTA_HAVE_HDF5
   if(!active())
     return;
-  //Cout << "EvaluationStore::store_model_variables()\nmodel_id: " << 
-  //  model_id << "\nmodel_type: " << model_type << 
-  //  "\neval_id: " << eval_id << std::endl;
   const DefaultSet &default_set_s = modelDefaultSets[model_id]; 
   if(set.request_vector().size() != default_set_s.numFunctions) {
     if(resizedModels.find(model_id) == resizedModels.end()) {
@@ -473,7 +458,6 @@ void EvaluationStore::allocate_response(const String &root_group, const Response
   int num_hessians =  set_s.numHessians; 
   if(num_gradients) {
     int dvv_length = set_s.set.derivative_vector().size();
-    //Cout << "EvaluationStore::allocate_response() for " << root_group << ", dvv_length: " << dvv_length << std::endl;
     String gradients_name = response_root_group + "gradients";
     hdf5Stream->create_empty_dataset(gradients_name, {0, num_gradients, dvv_length},
       ResultsOutputType::REAL, HDF5_CHUNK_SIZE, &DSET_FILL_VAL);
@@ -592,13 +576,6 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
   const ShortArray &default_asv = default_set_s.set.request_vector();
   const size_t num_default_deriv_vars = default_set_s.set.derivative_vector().size();
   const SizetArray &default_dvv = default_set_s.set.derivative_vector();
-  //Cout << "EvaluationStore::store_response() for " << root_group << std::endl;
-  //Cout << "EvaluationStore::store_response(), default_dvv:\n";
-  //for(const auto & id : default_dvv)
-  //  Cout << id << std::endl;
-  //Cout << "EvaluationStore::store_responses(), set dvv:\n";
-  //for(const auto & id : dvv)
-  //  Cout << id << std::endl;
   // function values
   bool has_functions = bool(default_set_s.numFunctions); 
   String functions_name = response_root + "functions";
@@ -644,8 +621,6 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
         if(default_asv[i] & 2)
           gradient_idxs.push_back(i);    
       const int num_default_gradients = gradient_idxs.size();
-      //Cout << "EvaluationStore::store_response(), num_default_gradients: " << num_default_gradients << std::endl;
-      //Cout << "EvaluationStore::store_response(), num_default_deriv_vars: " << num_default_deriv_vars << std::endl;
       RealMatrix full_gradients(num_default_deriv_vars, num_default_gradients, false /*don't zero out*/);
       full_gradients = DSET_FILL_VAL;
       dvv_idx.resize(dvv.size());
@@ -654,9 +629,6 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
       for(int i = 0; i < num_default_gradients; ++i) {
         const RealVector col = response.function_gradient_view(gradient_idxs[i]);
         for(int j = 0; j < dvv.size(); ++j) {
-          // int dvv_j = find_index(default_dvv, dvv[j]);
-          //Cout << "EvaluationStore::store_responses(), dvv[j]: " << dvv[j] << std::endl;
-          //Cout << "EvaluationStore::store_responses(), dvv_j: " << dvv_j << std::endl;
           full_gradients(dvv_idx[j], i) = col(j);
         }
       }
@@ -683,7 +655,6 @@ void EvaluationStore::store_response(const String &root_group, const int &resp_i
         }
         full_hessians.push_back(full_hessian);
       }
-      //Cout << "EvaluationStore::store_response(), full_hessians.size(): " << full_hessians.size() << std::endl;
       hdf5Stream->set_vector_matrix(hessians_name, full_hessians, resp_idx, true /*transpose (for efficiency)*/);
     } else {
       IntArray hessian_idxs; // Indexes of responses that can have hessians
