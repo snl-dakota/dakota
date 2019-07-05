@@ -126,3 +126,26 @@ TEUCHOS_UNIT_TEST(stat_utils, batch_means_variance)
 }
 
 //------------------------------------
+
+TEUCHOS_UNIT_TEST(stat_utils, batch_means_percentile)
+{
+  // Read in matrices 
+  std::ifstream infile1("stat_util_test_files/Matrix1.txt");
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(1,1000);
+  for (int i = 0; i < 1000; ++i){
+    infile1 >> Xmatrix[i][0];
+  }
+  //std::cout << "M = " << Xmatrix << std::endl;
+  RealMatrix interval_matrix;
+  interval_matrix.shapeUninitialized(2,1);
+  RealMatrix means_matrix;
+  batch_means_percentile(Xmatrix, interval_matrix, means_matrix, 95, 0.95);
+
+  Real gold_lower_int = 1.5047654078e+00;
+  Real gold_upper_int = 1.7926345922e+00;
+  TEST_FLOATING_EQUALITY(interval_matrix[0][0], gold_lower_int, 1.e-5);
+  TEST_FLOATING_EQUALITY(interval_matrix[0][1], gold_upper_int, 1.e-5);
+}
+
+//------------------------------------
