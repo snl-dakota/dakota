@@ -74,8 +74,7 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
 				       equidist_rules, use_derivs);
 
-  tpqDriver->initialize_grid(u_dist.random_variable_types(),
-			     ec_options, bc_options);
+  tpqDriver->initialize_grid(u_dist, ec_options, bc_options);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
 

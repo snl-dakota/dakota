@@ -110,29 +110,28 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   case Pecos::COMBINED_SPARSE_GRID: {
     bool track_colloc = false, track_uniq_prod_wts = false; // defaults
     ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
-		      ec_options, bc_options, growth_rate, track_colloc,
-		      track_uniq_prod_wts);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate, track_colloc, track_uniq_prod_wts);
     break;
   }
   case Pecos::INCREMENTAL_SPARSE_GRID: {
     bool track_uniq_prod_wts = false; // default
     ((Pecos::IncrementalSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
-		      ec_options, bc_options, growth_rate, track_uniq_prod_wts);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate, track_uniq_prod_wts);
     break;
   }
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     bool track_colloc = false; // non-default
     ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
-		      ec_options, bc_options, growth_rate, track_colloc);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate, track_colloc);
     break;
   }
   default: // SparseGridDriver
     ssgDriver->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist.random_variable_types(),
-		      ec_options, bc_options, growth_rate);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate);
     break;
   }
   ssgDriver->initialize_grid_parameters(u_dist);

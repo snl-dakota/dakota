@@ -42,8 +42,7 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
   assign_rule(mv_dist); // assign cubIntRule
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
-  cubDriver->initialize_grid(mv_dist.random_variable_types(),
-			     cubIntOrderRef, cubIntRule);
+  cubDriver->initialize_grid(mv_dist, cubIntOrderRef, cubIntRule);
   //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
