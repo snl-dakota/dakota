@@ -664,7 +664,7 @@ void NonDLHSSampling::post_run(std::ostream& s)
 {
   // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
-  if (statsFlag)
+  if (statsFlag) {
     if(varBasedDecompFlag) {
       compute_vbd_stats(numSamples, allResponses);
       archive_sobol_indices();
@@ -678,6 +678,8 @@ void NonDLHSSampling::post_run(std::ostream& s)
       // JAS TODO
       archive_results(numSamples); 
     }
+  }
+
   Analyzer::post_run(s);
  
   if (pcaFlag)

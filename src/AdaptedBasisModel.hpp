@@ -44,7 +44,7 @@ public:
   //
 
   bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
+  //bool finalize_mapping();
   bool resize_pending() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to

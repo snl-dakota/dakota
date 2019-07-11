@@ -1110,46 +1110,29 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  RecastModel::initialize_mapping(pl_iter); // sets mappingInitialized to true
+  bool sub_model_resize = RecastModel::initialize_mapping(pl_iter);
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nSubspace Model: Initializing active subspace." << std::endl;
 
   // init-time setting of miPLIndex for use in component_parallel_mode()
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
-
   // Set mode OFFLINE_PHASE
   component_parallel_mode(OFFLINE_PHASE);
 
-  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+  // TODO: create modes to switch between active, inactive, complete subspaces
 
-  // TODO: create modes to switch between active, inactive, and complete
-  //       subspaces
-
-  // runtime operation to identify the subspace model (if not later
+  // runtime operations to identify the subspace model (if not later
   // returning to update the subspace)
   build_subspace();
-
   initialize_subspace();
 
   // Kill servers and return ranks [1,n-1] to serve_init_mapping()
   component_parallel_mode(CONFIG_PHASE);
 
-  if (reducedRank != numFullspaceVars || // Active SS is reduced rank
-      sub_model_resize) // Active SS is full rank but subModel resized
-    return true; // Size of variables has changed
-  else
-    return false;
-}
-
-
-bool ActiveSubspaceModel::finalize_mapping()
-{
-  // TODO: return to full space
-
-  //RecastModel::finalize_mapping(); // sets mappingInitialized to false
-
-  return false; // This will become true when TODO is implemented.
+  // return true if size of variables has changed
+  return (reducedRank != numFullspaceVars || // Active SS is reduced rank
+	  sub_model_resize); // Active SS is full rank but subModel resized
 }
 
 

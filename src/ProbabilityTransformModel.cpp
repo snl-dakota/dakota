@@ -79,32 +79,6 @@ ProbabilityTransformModel::~ProbabilityTransformModel()
 { }
 
 
-bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
-{
-  RecastModel::initialize_mapping(pl_iter);
-  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
-
-  //update_transformation(); // redundant with update_from_subordinate_model()
-  ptmInstance = this; // run time
-
-  // update message lengths for send/receive of parallel jobs (normally
-  // performed once in Model::init_communicators() just after construct time)
-  if (sub_model_resize)
-    estimate_message_lengths();
-
-  return sub_model_resize;
-}
-
-
-bool ProbabilityTransformModel::finalize_mapping()
-{
-  bool sub_model_resize = subModel.finalize_mapping();
-  RecastModel::finalize_mapping();
-
-  return sub_model_resize; // This will become true when TODO is implemented.
-}
-
-
 void ProbabilityTransformModel::initialize_dakota_variable_types()
 {
   // Note: ctor has called initialize_distribution_

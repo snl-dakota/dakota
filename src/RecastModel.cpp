@@ -822,7 +822,7 @@ void RecastModel::update_from_model(Model& model)
       model.all_discrete_real_variable_labels());
 
     // uncertain variable distribution data
-    // > deep dist data copies were used previously for DistributionParams
+    // > deep copies were used previously for Pecos::DistributionParams
     //mvDist.update(model.multivariate_distribution());
     // Current approach: rep is shared
     // > tramples an mvDist construction from Model(BaseConstructor) ....

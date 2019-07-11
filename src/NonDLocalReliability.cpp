@@ -514,8 +514,6 @@ void NonDLocalReliability::core_run()
       = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
     compute_densities(import_sampler_rep->extreme_values(), true, true);
   } // else no extreme values to define outer PDF bins
-
-  ++numRelAnalyses;
 }
 
 
@@ -1129,7 +1127,6 @@ void NonDLocalReliability::initialize_class_data()
 
   Pecos::ProbabilityTransformation& nataf
     = uSpaceModel.probability_transformation();
-
   // define ranVarMeansU for use in the transformed AMV option
   // (must follow transform_correlations())
   //if (mppSearchType == AMV_U)
@@ -1154,11 +1151,6 @@ void NonDLocalReliability::initialize_class_data()
   iteratedModel.evaluate(activeSet);
   medianFnVals = iteratedModel.current_response().function_values();
   */
-
-  // now that vars/labels/bounds/targets have flowed down at run-time from any
-  // higher level recursions, propagate them up the instantiate-on-the-fly
-  // Model recursion so that they are correct when they propagate back down.
-  mppModel.update_from_subordinate_model(); // depth = max
 }
 
 

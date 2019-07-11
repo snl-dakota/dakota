@@ -127,7 +127,7 @@ void AdaptedBasisModel::validate_inputs()
 
 bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  RecastModel::initialize_mapping(pl_iter); // sets mappingInitialized to true
+  bool sub_model_resize = RecastModel::initialize_mapping(pl_iter);
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nAdapted Basis Model: Initializing adapted basis model."
@@ -135,11 +135,8 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 
   // init-time setting of miPLIndex for use in component_parallel_mode()
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
-
   // Set mode OFFLINE_PHASE
   component_parallel_mode(OFFLINE_PHASE);
-
-  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
   // runtime operation to identify the adapted basis model
   identify_subspace();
@@ -162,16 +159,6 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
   // return whether size of variables has changed
   return (reducedRank != numFullspaceVars || // Active SS is reduced rank
 	  sub_model_resize); // Active SS is full rank but subModel resized
-}
-
-
-bool AdaptedBasisModel::finalize_mapping()
-{
-  // TODO: return to full space
-
-  //RecastModel::finalize_mapping(); // sets mappingInitialized to false
-
-  return false; // This will become true when TODO is implemented.
 }
 
 

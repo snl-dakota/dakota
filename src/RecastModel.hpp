@@ -592,11 +592,26 @@ probability_transformation()
 
 
 inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
-{ return Model::initialize_mapping(pl_iter); }
+{
+  Model::initialize_mapping(pl_iter);
+
+  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  if (sub_model_resize)
+    estimate_message_lengths();
+
+  return sub_model_resize;
+}
 
 
 inline bool RecastModel::finalize_mapping()
-{ return Model::finalize_mapping(); }
+{
+  bool sub_model_resize = subModel.finalize_mapping();
+  Model::finalize_mapping();
+  return sub_model_resize;
+}
 
 
 inline size_t RecastModel::qoi() const

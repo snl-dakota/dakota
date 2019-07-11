@@ -370,7 +370,7 @@ private:
 
 inline void NonDSampling::pre_run()
 { 
-  NonD::pre_run();
+  Analyzer::pre_run();
 
   // synchronize the derivative components flowing down from a NestedModel's
   // call to subIterator.response_results_active_set(), so that the correct 

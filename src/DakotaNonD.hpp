@@ -105,7 +105,6 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
 
   void initialize_run();
-  void pre_run();
   void finalize_run();
 
   // return the final uncertain variables from the nondeterministic iteration
@@ -357,10 +356,6 @@ inline void NonD::initialize_run()
   prevNondInstance = nondInstance; 
   nondInstance = this; 
 }
-
-
-inline void NonD::pre_run()
-{ Analyzer::pre_run(); }
 
 
 inline void NonD::finalize_run()

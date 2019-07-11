@@ -386,7 +386,6 @@ void NonDGlobalReliability::core_run()
   // Optimize the GP for all levels and then use MAIS for _all_ levels
   optimize_gaussian_process();
   importance_sampling();
-  numRelAnalyses++;
 
   // restore in case of recursion
   nondGlobRelInstance = prev_grel_instance;
@@ -395,11 +394,6 @@ void NonDGlobalReliability::core_run()
 
 void NonDGlobalReliability::optimize_gaussian_process()
 {
-  // now that variables/labels/bounds/targets have flowed down at run-time from
-  // any higher level recursions, propagate them up the instantiate-on-the-fly
-  // Model recursion so that they are correct when they propagate back down.
-  mppModel.update_from_subordinate_model(); // depth = max
-
   if (mppSearchType == EGRA_X) {
     // Assign non-default global variable bounds for use in PStudyDACE methods
     // that require a bounded region (NIDR default truncates infinite/semi-

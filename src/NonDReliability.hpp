@@ -31,11 +31,6 @@ namespace Dakota {
 class NonDReliability: public NonD
 {
 public:
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  bool resize();
 
 protected:
 
@@ -49,6 +44,10 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
+
+  bool resize();
+  void pre_run();
+  void post_run(std::ostream& s);
 
   /// initialize graphics customized for reliability methods
   void initialize_graphics(int iterator_server_id = 1);

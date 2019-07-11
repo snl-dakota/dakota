@@ -110,7 +110,7 @@ void RandomFieldModel::validate_inputs()
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  RecastModel::initialize_mapping(pl_iter); // sets mappingInitialized to true
+  bool sub_model_resize = RecastModel::initialize_mapping(pl_iter);
 
   // TODO: create modes to switch between generating, accepting, and
   // underlying model
@@ -140,17 +140,6 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   }
   // may need true for PCA/GP if the vars characterization changes
   return false; // size of variables unchanged
-}
-
-
-bool RandomFieldModel::finalize_mapping()
-{
-  // TODO: return to submodel space
-  // probably don't do this...
-
-  RecastModel::finalize_mapping(); // sets mappingInitialized to false
-
-  return false; // This will become true when TODO is implemented.
 }
 
 

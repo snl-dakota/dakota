@@ -50,8 +50,8 @@ protected:
 
   Pecos::ProbabilityTransformation& probability_transformation();
 
-  bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
   bool resize_pending() const;
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
@@ -211,6 +211,8 @@ inline void ProbabilityTransformModel::update_transformation()
   natafTransform.transform_correlations();
 
   update_model_bounds(truncatedBounds, boundVal);
+
+  ptmInstance = this; // run time
 }
 
 
