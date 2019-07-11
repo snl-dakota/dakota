@@ -43,8 +43,8 @@ class TPLDataTransfer
     //----------------------------------------------------------------
 
     template <typename VecT>
-    void get_nonlinear_ineq_constraints( const Response & resp,
-                                                   VecT & values)
+    void get_nonlinear_ineq_constraints_from_dakota( const Response & resp,
+                                                               VecT & values )
     {
       const RealVector& resp_vals = resp.function_values();
 
@@ -52,6 +52,20 @@ class TPLDataTransfer
         values[i] =   resp_vals[nonlinearIneqConstraintMapIndices[i]]
                       * nonlinearIneqConstraintMapMultipliers[i]
                       + nonlinearIneqConstraintMapShifts[i];
+    }
+
+    //----------------------------------------------------------------
+
+    template <typename VecT>
+    void get_best_nonlinear_ineq_constraints_from_tpl( const VecT & values,
+                                                       RealVector & target )
+    {
+      // Caller is responsible for target being sized/allocated for now
+      // ... we could add a check on size.
+      for( size_t i=0; i<nonlinearIneqConstraintMapIndices.size(); ++i )
+        target[nonlinearIneqConstraintMapIndices[i]] =
+            (values[i] - nonlinearIneqConstraintMapShifts[i]) /
+                         nonlinearIneqConstraintMapMultipliers[i];
     }
 
     //----------------------------------------------------------------

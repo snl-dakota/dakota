@@ -85,7 +85,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq)
 
   std::shared_ptr<TPLDataTransfer> data_xfer = demo_optimizer->get_data_transfer_helper();
   DemoOptTraits::VecT nln_ineqs(data_xfer->num_active_nonlin_ineq_constraints());
-  data_xfer->get_nonlinear_ineq_constraints(demo_optimizer->iterated_model().current_response(), nln_ineqs);
+  data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
   TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
@@ -103,7 +103,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq)
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
-  data_xfer->get_nonlinear_ineq_constraints(demo_optimizer->iterated_model().current_response(), nln_ineqs);
+  data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
   TEST_FLOATING_EQUALITY(-5.5, nln_ineqs[0], 1.e-12);
@@ -123,7 +123,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq)
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
-  data_xfer->get_nonlinear_ineq_constraints(demo_optimizer->iterated_model().current_response(), nln_ineqs);
+  data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(2, nln_ineqs.size());
   TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
@@ -144,7 +144,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq)
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
   nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
-  data_xfer->get_nonlinear_ineq_constraints(demo_optimizer->iterated_model().current_response(), nln_ineqs);
+  data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(2, nln_ineqs.size());
   TEST_FLOATING_EQUALITY(-5.5, nln_ineqs[0], 1.e-12);
