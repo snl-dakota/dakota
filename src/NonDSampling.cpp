@@ -317,11 +317,11 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       = iteratedModel.multivariate_distribution();
     const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
     BitArray active_rv, active_corr;
-    lhsDriver.aleatory_uncertain_subset(rv, active_corr);
+    aleatory_uncertain_subset(rv, active_corr);
     if (samplingVarsMode == ALEATORY_UNCERTAIN) active_rv = active_corr;
     else if (samplingVarsMode == EPISTEMIC_UNCERTAIN)
-      lhsDriver.epistemic_uncertain_subset(rv, active_rv);
-    else        lhsDriver.uncertain_subset(rv, active_rv);
+      epistemic_uncertain_subset(rv, active_rv);
+    else        uncertain_subset(rv, active_rv);
     if (backfillFlag)
       lhsDriver.generate_unique_samples(rv, mv_dist.correlation_matrix(),
 	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
@@ -335,26 +335,25 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       = iteratedModel.multivariate_distribution();
     const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
     BitArray active_rv, active_corr;
-    lhsDriver.aleatory_uncertain_subset(rv, active_corr);
+    aleatory_uncertain_subset(rv, active_corr);
     switch (model_view) {
     case RELAXED_DESIGN:              case MIXED_DESIGN: {
       size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
       vars.shared_data().design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
       size_t num_dv = num_cdv + num_ddiv + num_ddsv + num_ddrv;
-      lhsDriver.design_state_subset(rv, active_corr, 0, num_dv); break;
+      design_state_subset(rv, active_corr, 0, num_dv); break;
     }
     case RELAXED_ALEATORY_UNCERTAIN:  case MIXED_ALEATORY_UNCERTAIN:
-      active_rv = active_corr;                               break;
+      active_rv = active_corr;                    break;
     case RELAXED_EPISTEMIC_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN:
-      lhsDriver.epistemic_uncertain_subset(rv, active_rv);   break;
+      epistemic_uncertain_subset(rv, active_rv);  break;
     case RELAXED_UNCERTAIN:           case MIXED_UNCERTAIN:
-      lhsDriver.uncertain_subset(rv, active_rv);             break;
+      uncertain_subset(rv, active_rv);            break;
     case RELAXED_STATE:               case MIXED_STATE: {
       size_t num_csv, num_dsiv, num_dssv, num_dsrv, num_rv = rv.size();
       vars.shared_data().state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
       size_t num_sv = num_csv + num_dsiv + num_dssv + num_dsrv;
-      lhsDriver.design_state_subset(rv, active_corr, num_rv - num_sv, num_sv);
-      break;
+      design_state_subset(rv, active_corr, num_rv - num_sv, num_sv);  break;
     }
     default: // {RELAXED,MIXED}_ALL modes can leave active_rv empty
       break;
@@ -373,7 +372,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       = iteratedModel.multivariate_distribution();
     const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
     BitArray active_rv, active_corr; // leave active_rv empty
-    lhsDriver.aleatory_uncertain_subset(rv, active_corr);
+    aleatory_uncertain_subset(rv, active_corr);
     if (backfillFlag)
       lhsDriver.generate_unique_samples(rv, mv_dist.correlation_matrix(),
 	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
