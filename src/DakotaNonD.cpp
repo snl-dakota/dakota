@@ -19,7 +19,7 @@
 #include "ProblemDescDB.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "dakota_tabular_io.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #ifdef HAVE_DDACE
 #include "Distribution.h"
 #elif defined(DAKOTA_UTILIB)

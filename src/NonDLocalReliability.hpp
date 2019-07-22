@@ -17,7 +17,7 @@
 
 #include "NonDReliability.hpp"
 #include "DakotaApproximation.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 
 #ifdef HAVE_OPTPP
 #include "globals.h"

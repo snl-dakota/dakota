@@ -27,7 +27,7 @@
 #ifdef HAVE_ACRO
 #include "COLINOptimizer.hpp"
 #endif
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 
 //#define DEBUG
 

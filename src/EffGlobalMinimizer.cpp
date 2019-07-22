@@ -24,7 +24,7 @@
 #endif
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include <boost/lexical_cast.hpp>
 
 //#define DEBUG

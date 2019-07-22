@@ -29,7 +29,7 @@
 #include "DataFitSurrModel.hpp"
 #include "DakotaApproximation.hpp"
 #include "ProblemDescDB.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include <boost/lexical_cast.hpp>
 
 //#define DEBUG

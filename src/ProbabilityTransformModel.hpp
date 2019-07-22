@@ -18,7 +18,6 @@
 
 #include "RecastModel.hpp"
 #include "ProbabilityTransformation.hpp"
-#include "pecos_stat_util.hpp"
 
 namespace Dakota
 {

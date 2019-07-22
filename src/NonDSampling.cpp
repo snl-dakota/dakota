@@ -21,7 +21,7 @@
 #include "SensAnalysisGlobal.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "pecos_data_types.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include <algorithm>
 
 #include <boost/math/special_functions/beta.hpp>

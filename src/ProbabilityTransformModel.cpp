@@ -13,6 +13,10 @@
 
 #include "ProbabilityTransformModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
+#include "GammaRandomVariable.hpp"
+#include "GumbelRandomVariable.hpp"
+#include "FrechetRandomVariable.hpp"
+#include "WeibullRandomVariable.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -454,7 +458,7 @@ initialize_distribution_types(short u_space_type)
 	case Pecos::HISTOGRAM_BIN:    case Pecos::CONTINUOUS_RANGE:
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN: // bounded
 	  u_types[i] = Pecos::STD_UNIFORM;                            break;
-	// TO DO: discrete types
+	// TO DO: discrete types ddv, dauv, deuv, dsv
 	default:	               err_flag = true;               break;
 	}
 	break;
@@ -472,7 +476,7 @@ initialize_distribution_types(short u_space_type)
 	case Pecos::EXPONENTIAL: u_types[i] = Pecos::STD_EXPONENTIAL; break;
 	case Pecos::BETA:        u_types[i] = Pecos::STD_BETA;        break;
 	case Pecos::GAMMA:       u_types[i] = Pecos::STD_GAMMA;       break;
-	// TO DO: discrete types
+	// TO DO: discrete types ddv, dauv, deuv, dsv
 	//case Pecos::POISSON:           case Pecos::BINOMIAL:
 	//case Pecos::NEGATIVE_BINOMIAL: case Pecos::GEOMETRIC:
 	//case Pecos::HYPERGEOMETRIC:

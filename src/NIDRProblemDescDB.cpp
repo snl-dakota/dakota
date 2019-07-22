@@ -19,6 +19,21 @@
 #include "WorkdirHelper.hpp"     // for copy/link file op utilities
 #include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
+#include "LognormalRandomVariable.hpp"
+#include "LoguniformRandomVariable.hpp"
+#include "TriangularRandomVariable.hpp"
+#include "BetaRandomVariable.hpp"
+#include "GammaRandomVariable.hpp"
+#include "GumbelRandomVariable.hpp"
+#include "FrechetRandomVariable.hpp"
+#include "WeibullRandomVariable.hpp"
+#include "HistogramBinRandomVariable.hpp"
+#include "PoissonRandomVariable.hpp"
+#include "BinomialRandomVariable.hpp"
+#include "NegBinomialRandomVariable.hpp"
+#include "GeometricRandomVariable.hpp"
+#include "HypergeometricRandomVariable.hpp"
+#include "DiscreteSetRandomVariable.hpp"
 #include <functional>
 #include <string>
 #include <sstream>

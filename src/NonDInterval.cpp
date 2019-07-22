@@ -18,7 +18,7 @@
 //#include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDLHSSampling.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include "MarginalsCorrDistribution.hpp"
 
 //#define DEBUG
