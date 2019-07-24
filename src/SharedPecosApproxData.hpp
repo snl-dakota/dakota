@@ -65,6 +65,10 @@ public:
   /// invoke Pecos::SharedOrthogPolyApproxData::construct_basis()
   void construct_basis(const Pecos::MultivariateDistribution& u_dist);
 
+  /// invoke Pecos::SharedPolyApproxData::update_basis_distribution_parameters()
+  void update_basis_distribution_parameters(
+    const Pecos::MultivariateDistribution& u_dist);
+
   // set Pecos::SharedOrthogPolyApproxData::basisTypes
   //void basis_types(const Pecos::ShortArray& basis_types);
   // get Pecos::SharedOrthogPolyApproxData::basisTypes
@@ -284,8 +288,21 @@ random_variables_key(const Pecos::BitArray& random_vars_key)
 inline void SharedPecosApproxData::
 construct_basis(const Pecos::MultivariateDistribution& u_dist)
 {
+  // PCE only
+
   ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
     construct_basis(u_dist);
+}
+
+
+inline void SharedPecosApproxData::
+update_basis_distribution_parameters(
+  const Pecos::MultivariateDistribution& u_dist)
+{
+  // PCE only
+
+  pecosSharedDataRep->
+    update_basis_distribution_parameters(u_dist, polynomial_basis());
 }
 
 

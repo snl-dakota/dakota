@@ -845,7 +845,6 @@ void NonDPolynomialChaos::initialize_u_space_model()
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   shared_data_rep->construct_basis(u_dist);
-
   // If the model is not yet fully initialized, skip grid initialization.
   if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
        expansionCoeffsApproach == Pecos::CUBATURE   ||
@@ -883,6 +882,23 @@ void NonDPolynomialChaos::initialize_u_space_model()
 
   // perform last due to numSamplesOnModel update
   NonDExpansion::initialize_u_space_model();
+}
+
+
+void NonDPolynomialChaos::initialize_expansion()
+{
+  NonDExpansion::initialize_expansion();
+
+  // Propagate updated distribution parameters to the polynomial basis
+  // Note: PCE always has an approximation basis, which is shared with the
+  // IntegrationDriver in projection cases (not regression)
+  // > one update to approximation basis is sufficient for PCE
+  // > awkward to combine PCE,SC cases in NonDExpansion::initialize_expansion()
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.truth_model().multivariate_distribution();
+  shared_data_rep->update_basis_distribution_parameters(u_dist);
 }
 
 

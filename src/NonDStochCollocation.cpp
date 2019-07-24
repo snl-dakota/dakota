@@ -374,12 +374,13 @@ void NonDStochCollocation::initialize_u_space_model()
 				       true, useDerivs);
 
   // build a polynomial basis for purposes of defining collocation pts/wts
+  // Note: this 1D orthog poly array is distinct from the 2D interpolant array
+  // used in SharedInterpPolyApproxData::polynomialBasis
   std::vector<Pecos::BasisPolynomial> driver_basis;
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   Pecos::SharedInterpPolyApproxData::
     construct_basis(u_dist, bc_options, driver_basis);
-
   // set the polynomial basis within the NonDIntegration instance
   NonDIntegration* u_space_sampler_rep
     = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
@@ -411,6 +412,23 @@ void NonDStochCollocation::initialize_covariance()
       pa_rep_i->initialize_covariance(pa_rep_j);
     }
   }
+}
+
+
+void NonDStochCollocation::initialize_expansion()
+{
+  NonDExpansion::initialize_expansion();
+
+  // Propagate updated distribution parameters to the polynomial basis
+  // Note: SC always has an orthogonal driver basis, but this is not shared
+  // with the interpolant basis --> not clean to combine PCE and SC cases in
+  // NonDExpansion::initialize_expansion()
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.truth_model().multivariate_distribution();
+  NonDIntegration* u_space_sampler_rep
+    = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+  Pecos::SharedPolyApproxData::update_basis_distribution_parameters(u_dist,
+    u_space_sampler_rep->polynomial_basis());
 }
 
 

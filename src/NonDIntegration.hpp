@@ -70,6 +70,11 @@ public:
   //- Heading: Member functions
   //
 
+  /// return IntegrationDriver::polynomialBasis
+  const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
+  /// return IntegrationDriver::polynomialBasis
+  std::vector<Pecos::BasisPolynomial>& polynomial_basis();
+
   /// convert scalar_order_spec and vector dim_pref_spec to vector aniso_order
   static void dimension_preference_to_anisotropic_order(
     unsigned short scalar_order_spec, const RealVector& dim_pref_spec,
@@ -150,6 +155,15 @@ private:
 
 inline const Pecos::IntegrationDriver& NonDIntegration::driver() const
 { return numIntDriver; }
+
+
+inline const std::vector<Pecos::BasisPolynomial>& NonDIntegration::
+polynomial_basis() const
+{ return numIntDriver.polynomial_basis(); }
+
+
+inline std::vector<Pecos::BasisPolynomial>& NonDIntegration::polynomial_basis()
+{ return numIntDriver.polynomial_basis(); }
 
 
 //inline const Pecos::RealVector& NonDIntegration::weight_products() const
