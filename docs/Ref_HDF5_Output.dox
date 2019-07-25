@@ -319,6 +319,21 @@ and the model responses.
 <br>
 \htmlinclude best_model_resps_config_vars.html
 
+\subsection hdf5_results-ms_pareto Multistart and Pareto Set
+
+The \ref method-multi_start and \ref method-pareto_set methods are meta-iterators that control
+multiple optimization sub-iterators. For both methods, \c Dakota stores the results of the
+sub-iterators (best parameters and best results). For \c multi_start, \c Dakota additionally 
+stores the initial points, and for \c pareto_set, it stores the objective function weights.
+
+\htmlinclude multistart_starting_points.html
+<br>
+\htmlinclude pareto_set_weights.html
+<br>
+\htmlinclude concurrent_best_parameters.html
+<br>
+\htmlinclude concurrent_responses.html
+
 \section hdf5_output-hdf5_evaluations Organization of Evaluations
 
 An *evaluation* is a mapping from variables to responses performed by a %Dakota model or interface.

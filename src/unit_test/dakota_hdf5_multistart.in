@@ -1,0 +1,48 @@
+environment
+  tabular_data
+    tabular_data_file 'multistart.dat'
+  results_output  
+   results_output_file 'multistart'
+   hdf5
+    model_selection all
+  write_restart 'multistart.rst'
+  method_pointer 'ms'
+
+method
+  id_method 'ms'
+  multi_start
+  method_pointer 'local'
+
+   starting_points 
+       2.429096277   -1.198594429    1.955726693   0.9464289042   
+      -0.528315853   0.6643248176   -2.099952012    2.865977624   
+      -2.410441036   -2.865346401  -0.4212401907  -0.3189880368   
+     -0.8772290289    2.614077681   0.7755786977  -0.9015161077   
+       1.252565142   0.1095451788    -1.15446292   -1.960437923   
+
+
+method
+  id_method 'local'
+  optpp_q_newton 
+
+variables
+  continuous_design 4
+    descriptors  'x1'      'x2'  'x3'   'x4'
+    lower_bounds -3        -3    -3     -3
+    upper_bounds  3         3     3      3
+
+  continuous_state 1
+    descriptors    'Y'
+    initial_state 2.0
+ 
+
+responses
+  descriptors 'f'
+
+  objective_functions 1
+  analytic_gradients
+  no_hessians
+
+interface
+  direct
+   analysis_drivers 'herbie'

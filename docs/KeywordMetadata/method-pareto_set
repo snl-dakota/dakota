@@ -23,6 +23,15 @@ The set of optimal solutions is called the "pareto set," which can
 provide valuable design trade-off information when there are competing
 objectives.
 
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the best parameters and responses returned by each sub-iterator.
+The weights are provided as metadata. See the \ref hdf5_results-ms_pareto 
+documentation for details.
+
+
 Topics::
 Examples::
 Theory::

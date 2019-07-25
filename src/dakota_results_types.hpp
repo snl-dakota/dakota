@@ -280,17 +280,93 @@ struct RealScale {
     isMatrix = false;
   }
 
+  /// Constructor that takes a RealVectorArray
+  RealScale(const std::string & in_label, 
+        const RealVectorArray &in_items,
+        ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    int num_rows = in_items.size();
+    numCols = in_items[0].length(); // assume all "rows" are the same length
+    items = RealVector(num_rows*numCols);
+    // impossible to avoid making a copy in this case.
+    for(int i = 0; i < num_rows; ++i)
+      for(int j = 0; j < numCols; ++j)
+        items[j*num_rows+i] = in_items[i][j]; // deliberately transposed. See AttachScaleVisitor in ResultsDBHDF5.hpp.
+    scope = in_scope;
+    isMatrix = true;
+  }
+
   // Name of the scale
   std::string label;
   // Scope of the scale (whether it is shared among responses)
   ScaleScope scope;
-  // Items in the scale
+  // Items in the scale; column-major when isMatrix is true
   RealVector items;
   /// Number of columns; equals length of scale when 1D
   int numCols;
   /// 2d or 1d?
   bool isMatrix;
 };
+
+/// Data structure for storing int-valued dimension scale
+struct IntegerScale {
+
+  /// Constructor that takes an IntVector 
+  IntegerScale(const std::string &label, const IntVector &in_items, 
+          ScaleScope scope = ScaleScope::UNSHARED) : 
+          label(label), scope(scope) {
+    items = IntVector(Teuchos::View, *const_cast<IntVector*>(&in_items));
+    numCols = items.length();
+    isMatrix = false;
+  }
+
+  /// Constructor that takes an IntArray
+  IntegerScale(const std::string &label, const IntArray &in_items, 
+          ScaleScope scope = ScaleScope::UNSHARED) : 
+          label(label), scope(scope) {
+    items = IntVector(Teuchos::View, const_cast<int*>(in_items.data()),
+        in_items.size());
+    numCols = items.length();
+    isMatrix = false;
+  }
+
+  /// Constructor that takes a pointer to int and length
+  IntegerScale(const std::string &label, const int *in_items, const int len,
+          ScaleScope scope = ScaleScope::UNSHARED) : 
+          label(label), scope(scope) {
+    items = IntVector(Teuchos::View,
+        const_cast<int*>(in_items), len);
+    numCols = items.length();
+    isMatrix = false;
+  }
+
+  /// Constructor that takes an initializer_list.
+  IntegerScale(const std::string & in_label, 
+        std::initializer_list<int> in_items,
+        ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    int len = in_items.size();
+    items = IntVector(len);
+    // make a copy. Typically initializer_lists should be short, so this
+    // is excusable.
+    std::copy(in_items.begin(), in_items.end(), &items[0]); 
+    scope = in_scope;
+    numCols = len;
+    isMatrix = false;
+  }
+
+  // Name of the scale
+  std::string label;
+  // Scope of the scale (whether it is shared among responses)
+  ScaleScope scope;
+  // Items in the scale
+  IntVector items;
+  /// Number of columns; equals length of scale when 1D
+  int numCols;
+  /// 2d or 1d?
+  bool isMatrix;
+};
+
 
 
 /// Data structure for storing string-valued dimension scale
@@ -401,7 +477,7 @@ struct StringScale {
 
 /// Datatype to communicate scales (stored in boost::variant) and their
 /// associated dimension (the int) to the ResultsManager instance.
-typedef std::multimap<int, boost::variant<StringScale, RealScale> > DimScaleMap;
+typedef std::multimap<int, boost::variant<StringScale, RealScale, IntegerScale> > DimScaleMap;
 
 
 // HDF5 objects can have key:value metadata attached to them. These
