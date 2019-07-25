@@ -95,7 +95,7 @@ protected:
 
   void initialize_u_space_model();
 
-  void initialize_expansion();
+  //void initialize_expansion();
   void compute_expansion();
 
   void select_refinement_points(const RealVectorArray& candidate_samples,

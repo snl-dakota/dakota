@@ -211,7 +211,7 @@ inline void ProbabilityTransformModel::update_transformation()
 
   update_model_bounds(truncatedBounds, boundVal);
 
-  ptmInstance = this; // run time
+  ptmInstance = this; // run time update
 }
 
 

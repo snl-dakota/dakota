@@ -141,6 +141,9 @@ protected:
   //- Heading: Member function definitions
   //
 
+  /// helper for initializing a numerical integration grid
+  void initialize_u_space_grid();
+
   // common constructor code for initialization of natafTransform
   //void initialize_random(short u_space_type);
 

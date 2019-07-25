@@ -831,39 +831,10 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDPolynomialChaos::initialize_u_space_model()
 {
-  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
-  // passed through the DataFitSurrModel ctor chain.  Additional data needed
-  // by OrthogPolyApproximation are passed using Pecos::BasisConfigOptions.
-  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
+  NonDExpansion::initialize_u_space_model();
+
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  Pecos::BasisConfigOptions bc_options(nestedRules, false, true, useDerivs);
-  shared_data_rep->configuration_options(bc_options);
-
-  // For PCE, the approximation and integration bases are the same.  We (always)
-  // construct it for the former and (conditionally) pass it in to the latter.
-  const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.truth_model().multivariate_distribution();
-  shared_data_rep->construct_basis(u_dist);
-  // If the model is not yet fully initialized, skip grid initialization.
-  if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
-       expansionCoeffsApproach == Pecos::CUBATURE   ||
-       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
-       ( tensorRegression && numSamplesOnModel ) ) {
-    if (iteratedModel.resize_pending()) // defer grid initialization
-      { /* callResize = true; */ }
-    else {
-      NonDIntegration* u_space_sampler_rep = 
-        (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-      u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
-    }
-  }
-
-  // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
-  // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
-  shared_data_rep->coefficients_norms_flag(true);
-
   // Transfer regression data: cross validation, noise tol, and L2 penalty.
   // Note: regression solver type is transferred via expansionCoeffsApproach
   //       in NonDExpansion::initialize_u_space_model()
@@ -880,25 +851,22 @@ void NonDPolynomialChaos::initialize_u_space_model()
     //...
   }
 
-  // perform last due to numSamplesOnModel update
-  NonDExpansion::initialize_u_space_model();
-}
+  // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
+  // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
+  shared_data_rep->coefficients_norms_flag(true);
 
+  // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
+  shared_data_rep->construct_basis(uSpaceModel.multivariate_distribution());
 
-void NonDPolynomialChaos::initialize_expansion()
-{
-  NonDExpansion::initialize_expansion();
-
-  // Propagate updated distribution parameters to the polynomial basis
-  // Note: PCE always has an approximation basis, which is shared with the
-  // IntegrationDriver in projection cases (not regression)
-  // > one update to approximation basis is sufficient for PCE
-  // > awkward to combine PCE,SC cases in NonDExpansion::initialize_expansion()
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.truth_model().multivariate_distribution();
-  shared_data_rep->update_basis_distribution_parameters(u_dist);
+  // if numerical integration, manage u_space_sampler updates
+  bool num_int = (expansionCoeffsApproach == Pecos::QUADRATURE           ||
+		  expansionCoeffsApproach == Pecos::CUBATURE             ||
+		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+		  expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID);
+  if ( num_int || ( tensorRegression && numSamplesOnModel ) ) {
+    shared_data_rep->integration_iterator(uSpaceModel.subordinate_iterator());
+    if (num_int) initialize_u_space_grid();
+  }
 }
 
 

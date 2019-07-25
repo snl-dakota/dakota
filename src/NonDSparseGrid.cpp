@@ -73,7 +73,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     refine_control, refine_metric, refine_stats,
     probDescDB.get_int("method.nond.max_refinement_iterations"),
     probDescDB.get_int("method.nond.max_solver_iterations"), convergenceTol,
-					   probDescDB.get_ushort("method.sofmake NonDSt_convergence_limit"));
+    probDescDB.get_ushort("method.sofmake NonDSt_convergence_limit"));
 
   // define BasisConfigOptions
   bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
@@ -135,8 +135,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     break;
   }
   ssgDriver->initialize_grid_parameters(u_dist);
-
-  maxEvalConcurrency *= ssgDriver->grid_size(); // requires polyParams
+  maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }
 
 
@@ -192,8 +191,10 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
   // Precompute quadrature rules (e.g., by defining maximal order for
   // NumGenOrthogPolynomial::solve_eigenproblem()):
   ssgDriver->precompute_rules(); // efficiency optimization
+  // *** TO DO: migrate downstream to (pre-)run time (initialize_expansion()?)
+  //            see also note below about grid_size()...
 
-  maxEvalConcurrency *= ssgDriver->grid_size(); // requires polyParams
+  maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }
 
 

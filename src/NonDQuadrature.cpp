@@ -199,6 +199,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
   // Precompute quadrature rules (e.g., by defining maximal order for
   // NumGenOrthogPolynomial::solve_eigenproblem()):
   tpqDriver->precompute_rules(); // efficiency optimization
+  // *** TO DO: migrate downstream to (pre-)run time (initialize_expansion()?)
 }
 
 

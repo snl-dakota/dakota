@@ -469,12 +469,21 @@ void NonDExpansion::initialize_u_space_model()
     else
       refineMetric = Pecos::COVARIANCE_METRIC;
   }
+
+  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
+  // passed via the DataFitSurrModel ctor chain.  Additional data needed by
+  // {Orthog,Interp}PolyApproximation are passed in Pecos::
+  // {Expansion,Basis,Regression}ConfigOptions.   Note: passing useDerivs
+  // again is redundant with the DataFitSurrModel ctor.
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
     refineControl, refineMetric, statsType, maxRefineIterations,
     maxSolverIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
+  Pecos::BasisConfigOptions
+    bc_options(nestedRules, piecewiseBasis, true, useDerivs);
+  shared_data_rep->configuration_options(bc_options);
 
   // if all variables mode, initialize key to random variable subset
   if (allVars) {
@@ -484,16 +493,22 @@ void NonDExpansion::initialize_u_space_model()
       random_vars_key[i] = (i >= startCAUV && i < end_cauv);
     shared_data_rep->random_variables_key(random_vars_key);
   }
+}
 
-  // if numerical integration, manage u_space_sampler updates
-  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
-      expansionCoeffsApproach == Pecos::CUBATURE ||
-      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID) {
-    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-    shared_data_rep->integration_iterator(u_space_sampler);
-    numSamplesOnModel = u_space_sampler.maximum_evaluation_concurrency()
+
+void NonDExpansion::initialize_u_space_grid()
+{
+  // if model resize is pending, defer initializing a potentially large grid
+  if (iteratedModel.resize_pending())
+    { /* callResize = true; */ }
+  else {
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    NonDIntegration* u_space_sampler_rep = 
+      (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+    u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
+
+    numSamplesOnModel = u_space_sampler_rep->maximum_evaluation_concurrency()
       / uSpaceModel.subordinate_model().derivative_concurrency();
     // maxEvalConcurrency already updated for expansion samples and regression
     if (numSamplesOnModel) // optional with default = 0
@@ -650,6 +665,17 @@ void NonDExpansion::initialize_expansion()
     2    : // limit depth to avoid warning at HierarchSurrModel
     _NPOS; // max depth
   uSpaceModel.update_from_subordinate_model(depth);
+
+  // Propagate updated distribution parameters to the polynomial basis
+  // Note: PCE always has an approximation basis, which is shared with the
+  //   IntegrationDriver in projection cases (not regression) --> one update
+  //   to approximation basis is sufficient
+  // Note: SC always has a driver basis, but this is not shared with the
+  //   num_vars x num_levels interpolant basis
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->update_basis_distribution_parameters(
+    uSpaceModel.multivariate_distribution());
 
   // if a sub-iterator, reset any refinements that may have occurred
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();

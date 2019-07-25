@@ -74,7 +74,7 @@ protected:
   void resolve_inputs(short& u_space_type, short& data_order);
   void initialize_u_space_model();
 
-  void initialize_expansion();
+  //void initialize_expansion();
   //void compute_expansion();
 
   Real compute_covariance_metric(bool revert, bool print_metric);
