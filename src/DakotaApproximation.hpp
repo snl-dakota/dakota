@@ -224,6 +224,8 @@ public:
 
   /// return approxData[sharedDataRep->activeDataIndex]
   const Pecos::SurrogateData& surrogate_data() const;
+  /// return approxData[sharedDataRep->activeDataIndex]
+  Pecos::SurrogateData& surrogate_data();
   /// return approxData[d_index]
   const Pecos::SurrogateData& surrogate_data(size_t d_index) const;
 
@@ -365,6 +367,15 @@ private:
 
 
 inline const Pecos::SurrogateData& Approximation::surrogate_data() const
+{
+  if (approxRep)
+    return approxRep->surrogate_data();
+  else
+    return approxData[sharedDataRep->activeDataIndex];
+}
+
+
+inline Pecos::SurrogateData& Approximation::surrogate_data()
 {
   if (approxRep)
     return approxRep->surrogate_data();
