@@ -284,16 +284,16 @@ void QMEApproximation::find_scaled_coefficients()
   RealVector y0(num_v), y(num_v);
   RealMatrix dy(num_v,numUsed);
   beta.sizeUninitialized(numUsed);
-  size_t num_prev=num_pts-1, p1=num_prev-numUsed, n=0;
-  for (p=0; p<num_pts; ++p) { 
-    const RealVector& xp    = sdv_array[p].continuous_variables();
-    Real              fp    = sdr_array[p].response_function();
+  size_t num_prev=num_pts-1, p1=num_pts-numUsed-1, n=0;
+  for (p=p1; p<num_pts-1; ++p) { 
+    const RealVector& xp = sdv_array[p].continuous_variables();
+    Real              fp = sdr_array[p].response_function();
     for (i=0; i<num_v; ++i) {
-      if (p==0) y0[i] = std::pow( x0[i],     pExp[i] );
-      y[i]            = std::pow( xp[i], pExp[i] );
-      if (p >= p1 && p<num_prev) dy(i,n) = y[i] - y0[i];
+      if (p==p1) y0[i] = std::pow( x0[i], pExp[i] );
+                 y[i]  = std::pow( xp[i], pExp[i] );
+      dy(i,n)  = y[i] - y0[i];
     }
-    if (p >= p1 && p<num_prev) {beta[n]=0.0; ++n;}
+    beta[n]=0.0; ++n;
     Real fn_val = fp;
 #ifdef DEBUG
     Cout << "QMEA point = " << p << '\n';
@@ -434,11 +434,12 @@ Real QMEApproximation::apxfn_value(const RealVector& x)
     RealVector dy(num_v);
     for (i=0; i<num_v; i++) {
       Real p_i = pExp[i], sp = std::pow(s_eval[i],p_i), s2i = scX2[i],
-	               diff1 = sp - std::pow(scX1[i],p_i), 
+	          diff1 = sp - std::pow(scX1[i],p_i), 
                   diff2 = sp - std::pow(s2i,p_i);
       sum1 += grad2[i]*std::pow(s2i,1.-p_i)/p_i*diff2;
       sum_diff1_sq += diff1 * diff1;
       sum_diff2_sq += diff2 * diff2;
+      dy[i] = diff2;
     }
     Real epsilon = H/(sum_diff1_sq + sum_diff2_sq);
     lin_val     = f2 + sum1;
@@ -459,7 +460,7 @@ Real QMEApproximation::apxfn_value(const RealVector& x)
     }
     approx_val = lin_val + quad_term/2.0;
 #ifdef DEBUG
-    Cout << "QMEA quad_term: " << quad_term << '\n';
+    Cout << "QMEA quad_term: "    << quad_term << '\n';
     Cout << "QMEA approx value: " << approx_val << '\n';
     Cout << "     dy=" << dy << '\n';
     Cout << "     d_reduced_coeff=" << d_reduced_coeff << '\n';
