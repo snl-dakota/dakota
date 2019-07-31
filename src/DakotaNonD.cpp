@@ -19,12 +19,8 @@
 #include "ProblemDescDB.hpp"
 #include "dakota_tabular_io.hpp"
 #include "pecos_stat_util.hpp"
-#ifdef HAVE_DDACE
-#include "Distribution.h"
-#elif defined(DAKOTA_UTILIB)
-#include <utilib/seconds.h>
-#endif
 #include "ParallelLibrary.hpp"
+#include <chrono>
 
 //#define DEBUG
 
@@ -516,14 +512,11 @@ int NonD::generate_system_seed()
   // varies the seed below using the same approach as the user-specified
   // case.  This has the additional benefit that a random run can be
   // recreated by specifying the clock-generated seed in the input file.
-  int seed = 1;
-#ifdef HAVE_DDACE
-  seed += DistributionBase::timeSeed(); // microsecs, time of day
-#elif defined(DAKOTA_UTILIB)
-  seed += (int)CurrentTime();           // secs, time of day
-#else
-  seed += (int)clock();                 // clock ticks, exec time
-#endif
+
+  // This replaces DDACE timeSeed(), which returns the trailing microseconds
+  auto mu_sec = std::chrono::duration_cast<std::chrono::microseconds>
+    (std::chrono::high_resolution_clock::now().time_since_epoch()) % 1000000;
+  int seed = 1 + mu_sec.count();
 
   return seed;
 }
