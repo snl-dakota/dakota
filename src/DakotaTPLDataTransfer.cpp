@@ -36,6 +36,26 @@ TPLDataTransfer::TPLDataTransfer() :
 // -----------------------------------------------------------------
 
 void
+TPLDataTransfer::configure_nonlinear_eq_adapters(
+                                NONLINEAR_EQUALITY_FORMAT format,
+                                const Constraints &       constraints)
+{
+  int num_obj = numDakotaObjectiveFns;
+
+  numDakotaNonlinearEqConstraints = constraints.num_nonlinear_eq_constraints();
+  const RealVector& targets       = constraints.nonlinear_eq_constraint_targets();
+
+  for (int i=0; i<numDakotaNonlinearEqConstraints; ++i)
+  {
+    nonlinearEqConstraintMapIndices.push_back(i+num_obj);
+    nonlinearEqConstraintMapMultipliers.push_back(1.0);
+    nonlinearEqConstraintTargets.push_back(-targets[i]);
+  }
+}
+
+// -----------------------------------------------------------------
+
+void
 TPLDataTransfer::configure_nonlinear_ineq_adapters(
                                 NONLINEAR_INEQUALITY_FORMAT format,
                                 const Constraints &         constraints)
@@ -98,6 +118,9 @@ void
 TPLDataTransfer::configure_data_adapters(std::shared_ptr<TraitsBase> traits,
                                          const Constraints & constraints    )
 {
+  if( traits->supports_nonlinear_equality() )
+    configure_nonlinear_eq_adapters(traits->nonlinear_equality_format(), constraints);
+
   if( traits->supports_nonlinear_inequality() )
     configure_nonlinear_ineq_adapters(traits->nonlinear_inequality_format(), constraints);
 }

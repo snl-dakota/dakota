@@ -152,3 +152,51 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq)
 }
 
 //----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq)
+{
+  /// Dakota input string:
+  string text_book_input = baseline_text_book_input;
+  text_book_input +=
+   "    nonlinear_equality_constraints = 1      "
+   "    descriptors 'f' 'c1'                    ";
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input.c_str()));
+
+  // boilerplate to create Dakota objects, etc...
+  {
+    if (p_env->parallel_library().mpirun_flag())
+      TEST_ASSERT( false ); // This test only works for serial builds
+    // Execute the environment
+    p_env->execute();
+  }
+
+  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  
+  std::shared_ptr<TPLDataTransfer> data_xfer = demo_optimizer->get_data_transfer_helper();
+  DemoOptTraits::VecT nln_eqs(data_xfer->num_nonlin_eq_constraints());
+  data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
+
+  TEST_EQUALITY(1, nln_eqs.size());
+  TEST_FLOATING_EQUALITY(-0.5, nln_eqs[0], 1.e-12);
+
+
+  // Now test adapters when using nonzero nonlinear equality targets
+  text_book_input = baseline_text_book_input;
+  text_book_input +=
+   "    nonlinear_equality_constraints = 1      "
+   "    nonlinear_equality_targets = -.5        "
+   "    descriptors 'f' 'c1'                    ";
+  p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
+  p_env->execute();
+
+  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  data_xfer = demo_optimizer->get_data_transfer_helper();
+  nln_eqs.resize(data_xfer->num_nonlin_eq_constraints());
+  data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
+
+  TEST_EQUALITY(1, nln_eqs.size());
+  TEST_FLOATING_EQUALITY(0.0, nln_eqs[0], 1.e-12);
+}
+
+//----------------------------------------------------------------
