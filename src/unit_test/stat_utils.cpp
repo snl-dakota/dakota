@@ -11,12 +11,34 @@
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
 #include "bayes_calibration_utils.hpp"
+#include "dakota_stat_util.hpp"
+#include <random>
+#include <thread>
 
 #include <string>
 
 #include <Teuchos_UnitTestHarness.hpp>
 
 using namespace Dakota;
+
+//------------------------------------
+
+TEUCHOS_UNIT_TEST(stat_utils, system_seed)
+{
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(1, 1999); // avg sleep = 1 ms
+
+  unsigned int num_out_of_bounds_seeds = 0;
+  // 1000 trials will, on average, span 1 sec = 1000000 microseconds
+  for (unsigned int i=0; i<1000; ++i) {
+    int seed = generate_system_seed();
+    if (seed < 1 || seed > 1000000)
+      ++num_out_of_bounds_seeds;
+    std::this_thread::sleep_for(std::chrono::microseconds(dis(gen)));
+  }
+  TEST_EQUALITY(num_out_of_bounds_seeds, 0);
+}
 
 //------------------------------------
 

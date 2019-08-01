@@ -43,6 +43,7 @@
 //#include "dakota_tabular_io.hpp"
 #include "DiscrepancyCorrection.hpp"
 #include "bayes_calibration_utils.hpp"
+#include "dakota_stat_util.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -136,7 +137,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   if (randomSeed != 0)
     Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
   else {
-    // Use NonD convenience function for system seed
     randomSeed = generate_system_seed();
     Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }

@@ -175,9 +175,6 @@ protected:
   /// Size local variables
   void size();
 
-  /// create a system-generated unique seed (when a seed is unspecified)
-  int generate_system_seed();
-
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();
   /// update finalStatistics::functionValues from momentStats and
