@@ -76,7 +76,7 @@ TPLDataTransfer::configure_nonlinear_ineq_adapters(
     lower_bnds_specified = true;
 
 
-  if( format == NONLINEAR_INEQUALITY_FORMAT::STANDARD )
+  if( format == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER )
   {
     for (int i=0; i<numDakotaNonlinearIneqConstraints; i++) {
       // Always do upper bounds which may be the Dakota default of 0.0
@@ -93,7 +93,7 @@ TPLDataTransfer::configure_nonlinear_ineq_adapters(
       }
     }
   }
-  else if( format == NONLINEAR_INEQUALITY_FORMAT::ANTI_STANDARD )
+  else if( format == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER )
   {
     for (int i=0; i<numDakotaNonlinearIneqConstraints; i++) {
       // Always do upper bounds which may be the Dakota default of 0.0

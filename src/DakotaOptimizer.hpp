@@ -590,7 +590,7 @@ protected:
   {
     bool split_into_one_sided = true;
     if( (ctype == CONSTRAINT_TYPE::NONLINEAR) &&
-        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED) )
+        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY) )
       split_into_one_sided = false;
 
     return configure_equality_constraint_maps(

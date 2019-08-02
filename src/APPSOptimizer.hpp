@@ -96,7 +96,7 @@ class AppsTraits: public TraitsBase
 
   /// Return the format used for nonlinear equality constraints
   NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
-    { return NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED; }
+    { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }

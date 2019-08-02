@@ -24,15 +24,13 @@ namespace Dakota {
                                            ONE_SIDED_UPPER };
 
   enum class NONLINEAR_EQUALITY_FORMAT   { NONE,
-                                           TPL_MANAGED,
-                                           DAKOTA_MANAGED };
+                                           TRUE_EQUALITY,
+                                           TWO_INEQUALITY };
 
   enum class NONLINEAR_INEQUALITY_FORMAT { NONE,
-                                           TWO_SIDED,
-                                           ONE_SIDED_LOWER,
                                            ONE_SIDED_UPPER,
-                                           ANTI_STANDARD,
-                                           STANDARD };
+                                           ONE_SIDED_LOWER,
+                                           TWO_SIDED };
 
 /// Base class for traits.
 
