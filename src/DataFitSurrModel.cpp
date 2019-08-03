@@ -220,7 +220,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     pointReuse = (import_pts) ? "all" : "none";
 
   // copy actualModel dist (keep distinct to allow for different active views).
-  // construct time augmented with run time pull_distribution_parameters().
+  // ref values for distribution params at construct time are updated at run
+  // time via pull_distribution_parameters().
   mvDist = actualModel.multivariate_distribution().copy();
 
   // update constraint counts in userDefinedConstraints.

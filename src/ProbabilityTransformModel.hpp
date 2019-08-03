@@ -194,7 +194,11 @@ initialize_transformation(short u_space_type)
   initialize_nataf();
   initialize_dakota_variable_types();
   verify_correlation_support(u_space_type);
-  // defer distribution parameter updates until run time (see below)
+
+  // pull reference values for distribution params as there are some run-time
+  // operations that require them (e.g. grid_size() for maxConcurrency).
+  // These params are updated below at run time.
+  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
 }
 
 

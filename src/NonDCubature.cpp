@@ -43,7 +43,6 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
   cubDriver->initialize_grid(mv_dist, cubIntOrderRef, cubIntRule);
-  //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 
@@ -67,7 +66,6 @@ void NonDCubature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   cubDriver->initialize_grid(poly_basis);
-  //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 
@@ -114,6 +112,8 @@ void NonDCubature::get_parameter_sets(Model& model)
   Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
   if (!numIntegrations || subIteratorFlag)
     cubDriver->initialize_grid_parameters(mv_dist);
+
+  //cubDriver->precompute_rules(); // not implemented
 
   size_t i, j, num_cub_points = cubDriver->grid_size();
   Cout << "\nCubature integrand order = " << cubDriver->integrand_order()

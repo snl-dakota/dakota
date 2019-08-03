@@ -78,8 +78,6 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
 
-  tpqDriver->precompute_rules(); // efficiency optimization
-
   maxEvalConcurrency *= tpqDriver->grid_size();
 }
 
@@ -195,11 +193,6 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     maxEvalConcurrency *= numSamples;
     break;
   }
-
-  // Precompute quadrature rules (e.g., by defining maximal order for
-  // NumGenOrthogPolynomial::solve_eigenproblem()):
-  tpqDriver->precompute_rules(); // efficiency optimization
-  // *** TO DO: migrate downstream to (pre-)run time (initialize_expansion()?)
 }
 
 
@@ -239,6 +232,10 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // capture any distribution parameter insertions
   if (!numIntegrations || subIteratorFlag)
     tpqDriver->initialize_grid_parameters(model.multivariate_distribution());
+
+  // Precompute quadrature rules (e.g., by defining maximal order for
+  // NumGenOrthogPolynomial::solve_eigenproblem()):
+  tpqDriver->precompute_rules(); // efficiency optimization
 
   size_t i, j, num_quad_points = tpqDriver->grid_size();
   const Pecos::UShortArray& quad_order = tpqDriver->quadrature_order();

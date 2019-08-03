@@ -66,7 +66,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   short refine_stats  = (refine_control) ? Pecos::ACTIVE_EXPANSION_STATS :
     Pecos::NO_EXPANSION_STATS;
   Pecos::ExpansionConfigOptions ec_options(ssgDriverType, exp_basis_type,
-    iteratedModel.correction_type(),
+    model.correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
     outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
     probDescDB.get_ushort("method.nond.vbd_interaction_order"), //refine_type,
@@ -188,11 +188,10 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
   ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
 
-  // Precompute quadrature rules (e.g., by defining maximal order for
-  // NumGenOrthogPolynomial::solve_eigenproblem()):
-  ssgDriver->precompute_rules(); // efficiency optimization
-  // *** TO DO: migrate downstream to (pre-)run time (initialize_expansion()?)
-  //            see also note below about grid_size()...
+  // the u-space model must have details for parameterized u-space distributions
+  // in order to enable initial grid size calculation
+  ssgDriver->
+    initialize_grid_parameters(iteratedModel.multivariate_distribution());
 
   maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }
@@ -207,6 +206,10 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
   // capture any run-time updates to distribution parameters
   if (subIteratorFlag)
     ssgDriver->initialize_grid_parameters(model.multivariate_distribution());
+
+  // Precompute quadrature rules (e.g., by defining maximal order for
+  // NumGenOrthogPolynomial::solve_eigenproblem()):
+  ssgDriver->precompute_rules(); // efficiency optimization
 
   // compute grid and retrieve point/weight sets
   ssgDriver->compute_grid(allSamples);
