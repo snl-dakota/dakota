@@ -3048,9 +3048,9 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
 }
 
 
-/// Check the histogram bin input data, normalize the counts and
-/// populate the histogramUncBinPairs map data structure; map keys are
-/// guaranteed unique since the abscissas must increase
+/// Check the histogram bin input data, normalize the counts and populate
+/// the histogramUncBinPairs map data structure; map keys are guaranteed
+/// unique since the abscissas must increase
 static void 
 Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3061,7 +3061,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   Real x, y, bin_width, count_sum;
 
   if (hba = vi->hba) { // abscissas are required
-    num_a = hba->length();                         // abscissas
+    num_a = hba->length();                            // abscissas
     hbo = vi->hbo; num_o = (hbo) ? hbo->length() : 0; // ordinates
     hbc = vi->hbc; num_c = (hbc) ? hbc->length() : 0; // counts
     if (num_o && num_o != num_a) {
@@ -3077,7 +3077,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       key = true;
       m = nhbp->size();
       //dv->numHistogramBinUncVars = m;
-      for(i=tothbp=0; i<m; ++i) {
+      for (i=tothbp=0; i<m; ++i) {
 	tothbp += nhbpi = (*nhbp)[i];
 	if (nhbpi < 2) {
 	  Squawk("pairs_per_variable must be >= 2");
@@ -3108,25 +3108,22 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       count_sum = 0.;
       for (j=0; j<nhbpi; ++j, ++cntr) {
 	Real x = (*hba)[cntr];                          // abscissas
-	Real y = (num_o) ? (*hbo)[cntr] : (*hbc)[cntr]; // ordinates/counts
+	Real y = (num_c) ? (*hbc)[cntr] : (*hbo)[cntr]; // ordinates/counts
 	if (j<nhbpi-1) {
 	  Real bin_width = (*hba)[cntr+1] - x;
-	  if (bin_width <= 0.) {
-	    Squawk("histogram bin x values must increase");
-	    return;
+	  if (bin_width <= 0.)
+	    { Squawk("histogram bin x values must increase");          return; }
+	  if (y <= 0.)
+	    { Squawk("nonpositive intermediate histogram bin y value");return; }
+	  if (num_c) {
+	    count_sum += y; // accumulate counts
+	    y /= bin_width; // convert counts to ordinates (probability density)
 	  }
-	  if (y <= 0.) {
-	    Squawk("nonpositive intermediate histogram bin y value");
-	    return;
-	  }
-	  if (num_o) // convert from ordinates (probability density) to counts
-	    y *= bin_width;
-	  count_sum += y;
+	  else
+	    count_sum += y * bin_width; // accumulate counts
 	}
-	else if (y != 0) {
-	  Squawk("histogram bin y values must end with 0");
-	  return;
-	}
+	else if (y != 0.)
+	  { Squawk("histogram bin y values must end with 0"); return; }
 	// insert without checking since keys (abscissas) must increase
 	hbpi[x] = y;
       }
@@ -6221,7 +6218,6 @@ check_variables(std::list<DataVariables>* dvl)
   // input keyword not accounted for below
 
 
-
   if (pDDBInstance) {
     std::list<void*>::iterator It, Ite = pDDBInstance->VIL.end();
     for(It = pDDBInstance->VIL.begin(); It != Ite; ++It)
@@ -6236,7 +6232,7 @@ check_variables(std::list<DataVariables>* dvl)
     RealSymMatrix *rsm;
     IntVector *iv_a;
     StringArray *sa_a;
-    RealVector *rv, *rv_a, *rv_c;
+    RealVector *rv, *rv_a, *rv_o, *rv_c;
     RealVectorArray *rva;
     Var_Info *vi;
     size_t i, j, m, n, cntr;
@@ -6275,28 +6271,27 @@ check_variables(std::list<DataVariables>* dvl)
 	flatten_rsa(&dv->discreteDesignSetReal,     &vi->ddsr);
       }
       // histogram bin uncertain vars
-      // convert RealRealMapArray to RealVectors of abscissas and counts
+      // convert RealRealMapArray to RealVectors of abscissas + ordinates
       const RealRealMapArray& hbp = dv->histogramUncBinPairs;
       if ((m = hbp.size())) {
 	vi->nhbp = ia = new IntArray(m);
 	for(i = 0; i < m; ++i)
 	  total_prs += (*ia)[i] = hbp[i].size();
 	vi->hba = rv_a = new RealVector(total_prs); // abscissas
-	vi->hbc = rv_c = new RealVector(total_prs); // counts
-	vi->hbo = NULL;                            // no ordinates
+	vi->hbo = rv_o = new RealVector(total_prs); // ordinates only
+	vi->hbc = NULL;                             // no counts
 	for(i = cntr = 0; i < m; ++i) {
-	  RRMCIter it = hbp[i].begin();
-	  RRMCIter it_end = hbp[i].end();
+	  RRMCIter it = hbp[i].begin(), it_end = hbp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*rv_a)[cntr] = it->first;   // abscissas
-	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
+	    (*rv_a)[cntr] = it->first;  // abscissas
+	    (*rv_o)[cntr] = it->second; // ordinates only (no counts)
 	  }
 	  // normalization occurs in Vchk_HistogramBinUnc going other direction
 	}
       }
 
       // histogram point int uncertain vars
-      // convert IntRealMapArray to Int/RealVectors of abscissas and counts
+      // convert IntRealMapArray to Int/RealVectors of abscissas + counts
       const IntRealMapArray& hpip = dv->histogramUncPointIntPairs;
       if ((m = hpip.size())) {
 	vi->nhpip = ia = new IntArray(m);
@@ -6308,7 +6303,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  IRMCIter it = hpip[i].begin();
 	  IRMCIter it_end = hpip[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*iv_a)[cntr] = it->first;   // abscissas
+	    (*iv_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6316,7 +6311,7 @@ check_variables(std::list<DataVariables>* dvl)
       }
 
       // histogram point string uncertain vars
-      // convert StringRealMapArray to String/RealVectors of abscissas and counts
+      // convert StringRealMapArray to String/RealVectors of abscissas + counts
       const StringRealMapArray& hpsp = dv->histogramUncPointStrPairs;
       if ((m = hpsp.size())) {
 	vi->nhpsp = ia = new IntArray(m);
@@ -6328,7 +6323,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  SRMCIter it = hpsp[i].begin();
 	  SRMCIter it_end = hpsp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*sa_a)[cntr] = it->first;   // abscissas
+	    (*sa_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6336,7 +6331,7 @@ check_variables(std::list<DataVariables>* dvl)
       }
 
       // histogram point real uncertain vars
-      // convert RealRealMapArray to RealVectors of abscissas and counts
+      // convert RealRealMapArray to RealVectors of abscissas + counts
       const RealRealMapArray& hprp = dv->histogramUncPointRealPairs;
       if ((m = hprp.size())) {
 	vi->nhprp = ia = new IntArray(m);
@@ -6348,7 +6343,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  RRMCIter it = hprp[i].begin();
 	  RRMCIter it_end = hprp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*rv_a)[cntr] = it->first;   // abscissas
+	    (*rv_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction

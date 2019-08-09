@@ -435,15 +435,16 @@ public:
   /// initial_point specification in \ref VarCAUV_Weibull)
   RealVector weibullUncVars;
 
-  /// An array for each real-valued bin-based histogram uncertain
-  /// variable. Each array entry is a map from a real value to its
-  /// probability. (See continuous linear histogram in LHS manual;
-  /// from the \c histogram_bin_uncertain specification in \ref
-  /// VarCAUV_Bin_Histogram).  (x,y) ordinate specifications are
-  /// converted to (x,c) counts within NIDR.
+  /// An array for each real-valued bin-based histogram uncertain variable.
+  /// Each array entry is a map from a real value to its probability (from the
+  /// \c histogram_bin_uncertain specification in \ref VarCAUV_Bin_Histogram;
+  /// see also continuous_linear variable type in LHS manual).  Note: bin
+  /// widths may be unequal and any (x,c) count specifications are converted
+  /// to (x,y) ordinates (probability densities) within Vchk_HistogramBinUnc()
+  /// in the NIDR parser.
   RealRealMapArray histogramUncBinPairs;
-  /// initial values of the histogram bin uncertain variables (from the \c
-  /// initial_point specification in \ref VarCAUV_Bin_Histogram)
+  /// initial values of the histogram bin uncertain variables (from the
+  /// \c initial_point specification in \ref VarCAUV_Bin_Histogram)
   RealVector histogramBinUncVars;
 
   // discrete types
