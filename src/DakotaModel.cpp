@@ -1291,7 +1291,7 @@ void Model::evaluate()
     ++modelEvalCntr;
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, currentResponse, default_active_set());
+          currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
@@ -1332,7 +1332,7 @@ void Model::evaluate(const ActiveSet& set)
 
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
       modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, currentResponse, default_active_set());
+          currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
@@ -1392,7 +1392,7 @@ void Model::evaluate_nowait()
     ++modelEvalCntr;
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
       modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, currentResponse, default_active_set());
+          currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }
@@ -1426,7 +1426,7 @@ void Model::evaluate_nowait(const ActiveSet& set)
 
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
       modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
-          currentVariables, currentResponse, default_active_set());
+          currentVariables, mvDist, currentResponse, default_active_set());
       if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
         declare_sources();
     }

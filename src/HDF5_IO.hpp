@@ -145,6 +145,7 @@ class HDF5IOHelper
    *   set_vector (in a 2D dataset)
    *   set_matrix (in a 3D dataset)
    *   set_vector_matrix (in a 4D dataset)
+   *   set_vector_field (assign a field to a 1D dataset of compound type)
    *  - Append data into a dataset with an unlimited 0th dimension (call create_empty_dataset first)
    *   append_scalar (to a 1D dataset)
    *   append_vector (to a 2D dataset)
@@ -256,7 +257,16 @@ class HDF5IOHelper
                      const std::vector<Teuchos::SerialDenseMatrix<int, T> > &data,
                      const int &index,
                      const bool &transpose = false);
-  
+ 
+  /// Set a field on all elements of a 1D dataset of compound type using a ds name.
+  template<typename T>
+  void set_vector_field(const String &dset_name,
+                     const T &data, const String &field_name);
+  /// Set a field on all elements of a 1D dataset of compound type using a ds object.
+  template<typename T>
+  void set_vector_field(const String &dset_name, H5::DataSet &ds,
+                     const std::vector<T> &data, const String &field_name);
+
   /// Append an empty "layer" to the 0th dimension and return its index
   int append_empty(const String &dset_name);
   
@@ -331,6 +341,10 @@ class HDF5IOHelper
   void create_empty_dataset(const String &dset_name, const IntArray &dims, 
                          ResultsOutputType stored_type, int chunk_size=0, 
                          const void *fill_val = NULL);
+
+  /// Create a dataset with compound type
+  void create_empty_dataset(const String &dset_name, const IntArray &dims, 
+                         const std::vector<VariableParametersField> &fields);
   //------------------------------------------------------------------
 
   /// attach a dimension scale to a dataset
@@ -850,6 +864,30 @@ void HDF5IOHelper::set_vector_matrix(const String &dset_name, H5::DataSet &ds,
     }
   }
 } 
+
+template<typename T>
+void HDF5IOHelper::set_vector_field(const String &dset_name, const T &data, const String &field_name) {
+  auto ds_iter = datasetCache.find(dset_name);
+  if( ds_iter != datasetCache.end())
+    set_vector_field(dset_name, ds_iter->second, data, field_name);
+  else {
+    H5::DataSet ds = h5File.openDataSet(dset_name);
+    set_vector_field(dset_name, ds, data, field_name);
+  }
+}
+
+/// Set a field on all elements of a 1D dataset of compound type using a ds object.
+template<typename T>
+void HDF5IOHelper::set_vector_field(const String &dset_name, H5::DataSet &ds,
+                     const std::vector<T> &data, const String &field_name) {
+  T test_var;
+  H5::DataType h5_mem_t = h5_mem_dtype(test_var);
+  H5::CompType comp_t(h5_mem_t.getSize());
+  comp_t.insertMember(field_name, 0, h5_mem_t);
+  ds.write(data.data(), comp_t);
+}
+ 
+
 
 template<typename T>
 void HDF5IOHelper::append_scalar(const String &dset_name, const T&data) {

@@ -21,6 +21,8 @@
 #include "DakotaResponse.hpp"
 #include "DakotaActiveSet.hpp"
 #include "dakota_data_types.hpp"
+#include "dakota_results_types.hpp"
+#include "MarginalsCorrDistribution.hpp"
 
 namespace Dakota {
 
@@ -164,8 +166,8 @@ EvaluationsDBState EvaluationStore::iterator_allocate(const String &iterator_id,
 
 /// Allocate storage for model evaluations
 EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const String &model_type, 
-                    const Variables &variables, const Response &response,
-                    const ActiveSet &set) {
+                    const Variables &variables, const Pecos::MultivariateDistribution &mv_dist, 
+                    const Response &response, const ActiveSet &set) {
 #ifdef DAKOTA_HAVE_HDF5
   if(! (active() && model_active(model_id)))
     return EvaluationsDBState::INACTIVE;
@@ -179,7 +181,9 @@ EvaluationsDBState EvaluationStore::model_allocate(const String &model_id, const
   hdf5Stream->create_empty_dataset(eval_ids_scale, {0}, 
       ResultsOutputType::INTEGER, HDF5_CHUNK_SIZE);
   
-  allocate_variables(root_group, variables);
+  Pecos::MarginalsCorrDistribution* mvd_rep
+        = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  allocate_variables(root_group, variables, mvd_rep);
   allocate_response(root_group, response, default_set);
   allocate_metadata(root_group, variables, response, default_set);
   return EvaluationsDBState::ACTIVE;
@@ -330,13 +334,17 @@ String EvaluationStore::create_scale_root(const String &root_group) {
 }
 
 /// Allocate storage for variables
-void EvaluationStore::allocate_variables(const String &root_group, const Variables &variables) {
+void EvaluationStore::allocate_variables(const String &root_group, const Variables &variables,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
   // TODO: variable names and order
 #ifdef DAKOTA_HAVE_HDF5
   String variables_root_group = root_group + "variables/";
   String scale_root = create_scale_root(root_group);
   String variables_scale_root = scale_root + "variables/";
   String eval_ids = scale_root + "evaluation_ids";
+
+  if(mvd_rep) // will be NULL for interfaces
+    allocate_variable_parameters(root_group, variables, mvd_rep);
 
   if(variables.acv()) {
     String data_name = variables_root_group + "continuous";
@@ -433,6 +441,184 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
   return;
 #endif
 }
+
+/// Store parameters for a single "domain" (e.g. all continuous variables)
+void EvaluationStore::store_parameters_for_domain(const String &root_group,
+    const UShortMultiArrayConstView &types,  const SizetMultiArrayConstView &ids,
+    const StringMultiArrayView &labels, Pecos::MarginalsCorrDistribution *mvd_rep) {
+
+  String scale_root = create_scale_root(root_group); // root_group already has
+                                                     // variable_parameters
+  // The loop below chunks up the set of variables by Dakota type (e.g. normal_uncertain)
+  UShortArray to_find = {types[0]};
+  auto first_it = types.begin(); // iterator to first variable of this type
+  // Find iterator to last variable of this type
+  auto last_it = std::find_end(first_it, types.end(), to_find.begin(), to_find.end());
+  size_t first_idx = 0, last_idx = 0; // Indexes to first and last variable of this type
+  while(last_it != types.end()) { // iterate until all variables have been processed
+    last_idx = std::distance(first_it, last_it) + first_idx;
+    const unsigned short &this_type = *first_it;
+    switch(this_type) {
+      case NORMAL_UNCERTAIN:
+        // pecos rv types: Pecos::NORMAL, Pecos::BOUNDED_NORMAL
+        // parameters: Pecos::N_MEAN, Pecos::N_STD_DEV, Pecos::N_LWR_BND, Pecos::N_UPR_BND
+        // Use count-based API for lookup since there are two possible Pecos var types
+        {
+          size_t start_rv = ids[first_idx] - 1;
+          size_t num_rv = last_idx - first_idx + 1;
+          RealArray means, std_devs, lbs, ubs;
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_MEAN, means);
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_STD_DEV, std_devs);
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_LWR_BND, lbs);
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_UPR_BND, ubs);
+          std::vector<VariableParametersField> fields = {
+            VariableParametersField("mean", ResultsOutputType::REAL),
+            VariableParametersField("std_deviation", ResultsOutputType::REAL),
+            VariableParametersField("lower_bound", ResultsOutputType::REAL),
+            VariableParametersField("upper_bound", ResultsOutputType::REAL)
+          };
+          String location = root_group + "normal_uncertain";
+          String scale_location = scale_root + "normal_uncertain/";
+          IntArray dims = {int(num_rv)};
+          hdf5Stream->create_empty_dataset(location, dims, fields);
+          hdf5Stream->set_vector_field(location, means, "mean");
+          hdf5Stream->set_vector_field(location, std_devs, "std_deviation");
+          hdf5Stream->set_vector_field(location, lbs, "lower_bound");
+          hdf5Stream->set_vector_field(location, ubs, "upper_bound");
+          // Create descriptors dimension scale
+          StringMultiArrayConstView these_labels(
+              labels[boost::indices[idx_range(first_idx, last_idx+1)]]);
+          String labels_location = scale_location + "labels";
+          hdf5Stream->store_vector(labels_location, these_labels);
+          hdf5Stream->attach_scale(location, labels_location, "labels", 0);
+
+          // Create ids dimension scale
+          SizetMultiArrayConstView these_ids(
+              ids[boost::indices[idx_range(first_idx, last_idx+1)]]);
+          String ids_location = scale_location + "ids";
+          hdf5Stream->store_vector(ids_location, these_ids);
+          hdf5Stream->attach_scale(location, ids_location, "ids", 0);
+        }
+        break;
+      case UNIFORM_UNCERTAIN:
+        // pecos rv types: Pecos::UNIFORM
+        // parameters: Pecos::U_LWR_BND, Pecos::U_UPR_BND
+        // Use count-based API for lookup since there are two possible Pecos var types
+        {
+          size_t start_rv = ids[first_idx] - 1;
+          size_t num_rv = last_idx - first_idx + 1;
+          RealArray lbs, ubs;
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::U_LWR_BND, lbs);
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::U_UPR_BND, ubs);
+          std::vector<VariableParametersField> fields = {
+            VariableParametersField("lower_bound", ResultsOutputType::REAL),
+            VariableParametersField("upper_bound", ResultsOutputType::REAL)
+          };
+          String location = root_group + "uniform_uncertain";
+          String scale_location = scale_root + "uniform_uncertain/";
+          IntArray dims = {int(num_rv)};
+          hdf5Stream->create_empty_dataset(location, dims, fields);
+          hdf5Stream->set_vector_field(location, lbs, "lower_bound");
+          hdf5Stream->set_vector_field(location, ubs, "upper_bound");
+          // Create descriptors dimension scale
+          StringMultiArrayConstView these_labels(
+              labels[boost::indices[idx_range(first_idx, last_idx+1)]]);
+          String labels_location = scale_location + "labels";
+          hdf5Stream->store_vector(labels_location, these_labels);
+          hdf5Stream->attach_scale(location, labels_location, "labels", 0);
+
+          // Create ids dimension scale
+          SizetMultiArrayConstView these_ids(
+              ids[boost::indices[idx_range(first_idx, last_idx+1)]]);
+          String ids_location = scale_location + "ids";
+          hdf5Stream->store_vector(ids_location, these_ids);
+          hdf5Stream->attach_scale(location, ids_location, "ids", 0);
+        }
+        break;
+      case LOGNORMAL_UNCERTAIN:
+        // pecos rv types: Pecos::LOGNORMAL, BOUNDED_LOGNORMAL
+        // parameters: (LN_MEAN with LN_STD_DEV or LN_ERR_FACT) OR
+        //             (LN_LAMBDA with LN_ZETA)
+        //             LN_LWR_BND, LN_UPR_BND   
+        {
+          size_t start_rv = ids[first_idx] - 1;
+          size_t num_rv = last_idx - first_idx + 1;
+          RealArray lbs, ubs, means, std_devs, err_facts, lambdas, zetas;
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_LWR_BND, lbs);
+          Cout << "lwr_bnd\n";
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_UPR_BND, ubs);
+          Cout << "upr_bnd\n";
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_MEAN, means);
+          Cout << "mean\n";
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_STD_DEV, std_devs);
+          Cout << "std\n";
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_ERR_FACT, err_facts);
+          Cout << "err\n";
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_LAMBDA, lambdas);
+          Cout << "lambda\n";
+          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_ZETA, zetas);
+          Cout << "zeta\n";
+          std::vector<VariableParametersField> fields = {
+            VariableParametersField("lower_bound", ResultsOutputType::REAL),
+            VariableParametersField("upper_bound", ResultsOutputType::REAL),
+            VariableParametersField("mean", ResultsOutputType::REAL),
+            VariableParametersField("std_deviation", ResultsOutputType::REAL),
+            VariableParametersField("error_factor", ResultsOutputType::REAL),
+            VariableParametersField("lambda", ResultsOutputType::REAL),
+            VariableParametersField("zeta", ResultsOutputType::REAL)
+          };
+          String location = root_group + "lognormal_uncertain";
+          String scale_location = scale_root + "lognormal_uncertain/";
+          IntArray dims = {int(num_rv)};
+          hdf5Stream->create_empty_dataset(location, dims, fields);
+          hdf5Stream->set_vector_field(location, lbs, "lower_bound");
+          hdf5Stream->set_vector_field(location, ubs, "upper_bound");
+          hdf5Stream->set_vector_field(location, means, "mean");
+          hdf5Stream->set_vector_field(location, std_devs, "std_deviation");
+          hdf5Stream->set_vector_field(location, err_facts, "error_factor");
+          hdf5Stream->set_vector_field(location, lambdas, "lambda");
+          hdf5Stream->set_vector_field(location, zetas, "zeta");
+          // Create descriptors dimension scale
+          StringMultiArrayConstView these_labels(
+              labels[boost::indices[idx_range(first_idx, last_idx+1)]]);
+          String labels_location = scale_location + "labels";
+          hdf5Stream->store_vector(labels_location, these_labels);
+          hdf5Stream->attach_scale(location, labels_location, "labels", 0);
+
+          // Create ids dimension scale
+          SizetMultiArrayConstView these_ids(
+              ids[boost::indices[idx_range(first_idx, last_idx+1)]]);
+          String ids_location = scale_location + "ids";
+          hdf5Stream->store_vector(ids_location, these_ids);
+          hdf5Stream->attach_scale(location, ids_location, "ids", 0);
+        }
+        break;
+
+    }
+    first_it = last_it;
+    first_it++;
+    to_find[0] = *first_it;
+    first_idx = last_idx + 1;
+    last_it = std::find_end(first_it, types.end(), to_find.begin(), to_find.end());
+  }
+
+}
+
+
+/// Allocate storage for variable paramters
+void EvaluationStore::allocate_variable_parameters(const String &root_group,
+    const Variables &variables, Pecos::MarginalsCorrDistribution *mvd_rep) {
+   
+  String parameters_group = root_group + "metadata/variable_parameters/";
+  if(variables.acv()) {
+    store_parameters_for_domain(parameters_group, 
+        variables.all_continuous_variable_types(),
+        variables.all_continuous_variable_ids(),
+        variables.all_continuous_variable_labels(),
+        mvd_rep);
+  }
+}
+
 
 /// Allocate storage for responses
 void EvaluationStore::allocate_response(const String &root_group, const Response &response,

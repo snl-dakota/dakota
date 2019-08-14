@@ -17,7 +17,7 @@
 #include "H5Cpp.h"      // C++ API
 #include "hdf5.h"       // C API
 #include "hdf5_hl.h"    // C H5Lite API
-
+#include "H5CompType.h"
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -425,6 +425,49 @@ create_empty_dataset(const String &dset_name, const IntArray &dims,
     H5::DataSpace dataspace = H5::DataSpace(rank, fdims.get());
     create_dataset(h5File, dset_name, h5_type, dataspace);
   }
+}
+
+/// Create a dataset with compound type
+void HDF5IOHelper::create_empty_dataset(const String &dset_name, const IntArray &dims, 
+                         const std::vector<VariableParametersField> &fields) {
+
+  create_groups(dset_name);
+  // 1. Create the fields as a vector of H5::DataTypes
+  // 2. Create the Compound
+  std::vector< std::unique_ptr<H5::DataType> > field_t;
+  for(const auto &f : fields) {
+    if(f.dims.empty()) { // scalar
+      switch(f.type) {
+        case ResultsOutputType::REAL:
+          field_t.emplace(field_t.end(), 
+              new H5::DataType(h5_file_dtype(double(0.0))));
+        break;
+        case ResultsOutputType::INTEGER:
+          field_t.emplace(field_t.end(),
+              new H5::DataType(h5_file_dtype(int(0))));
+        break;
+        case ResultsOutputType::STRING:
+          field_t.emplace(field_t.end(),
+              new H5::DataType(h5_file_dtype(String(""))));
+        break;
+      }
+    }
+  }
+  size_t comp_t_size = 0;
+  for(const auto &f : field_t)
+    comp_t_size += f->getSize();
+  H5::CompType comp_t(comp_t_size);
+  size_t comp_t_offset = 0;
+  for(int i = 0; i < fields.size(); ++i) {
+    comp_t.insertMember(fields[i].name, comp_t_offset, *field_t[i]);
+    comp_t_offset += field_t[i]->getSize();
+  }
+
+  int rank = dims.size();
+  std::unique_ptr<hsize_t[]> fdims(new hsize_t[rank]);
+  std::copy(dims.begin(), dims.end(), fdims.get());
+  H5::DataSpace dataspace = H5::DataSpace(rank, fdims.get());
+  create_dataset(h5File, dset_name, comp_t, dataspace);
 }
 
 bool HDF5IOHelper::is_scale(const H5::DataSet dset) const

@@ -18,6 +18,8 @@
 #include <set>
 #include "DakotaActiveSet.hpp"
 #include "dakota_data_types.hpp"
+#include "MultivariateDistribution.hpp"
+#include "MarginalsCorrDistribution.hpp"
 
 namespace Dakota {
 
@@ -25,6 +27,7 @@ class Variables;
 class Response;
 class Variables;
 class Response;
+
 #ifdef DAKOTA_HAVE_HDF5
 class HDF5IOHelper;
 #endif
@@ -40,7 +43,6 @@ struct DefaultSet {
     DefaultSet(const ActiveSet &in_set);
     DefaultSet() {};
 };
-
 
 class EvaluationStore {
   public:
@@ -65,8 +67,8 @@ class EvaluationStore {
     EvaluationsDBState iterator_allocate(const String &iterator_id, const bool &top_level);
     /// Allocate storage for model evaluations
     EvaluationsDBState model_allocate(const String &model_id, const String &model_type, 
-                        const Variables &variables, const Response &response,
-                        const ActiveSet &set);
+                        const Variables &variables, const Pecos::MultivariateDistribution &mv_dist,
+                        const Response &response, const ActiveSet &set);
     /// Allocate storage for evalulations of interface+model pairs
     EvaluationsDBState interface_allocate(const String &model_id,const String &interface_id, 
                         const String &interface_type, const Variables &variables, 
@@ -103,8 +105,20 @@ class EvaluationStore {
     String create_interface_root(const String &model_id, const String &interface_id);
 
     /// Allocate storage for variables
-    void allocate_variables(const String &root_group, const Variables &variables);
-    
+    void allocate_variables(const String &root_group, const Variables &variables,
+        Pecos::MarginalsCorrDistribution *mvd_rep = NULL);
+ 
+    /// Allocate storage for variable paramters
+    void store_parameters_for_domain(const String &root_group, 
+        const UShortMultiArrayConstView& types,
+        const SizetMultiArrayConstView &ids,
+        const StringMultiArrayView &labels, 
+        Pecos::MarginalsCorrDistribution *mvd_rep);
+
+    /// Allocate storage for variable paramters
+    void allocate_variable_parameters(const String &root_group, const Variables &variables,
+        Pecos::MarginalsCorrDistribution *mvd_rep);
+   
     /// Allocate storage for responses
     void allocate_response(const String &root_group, const Response &response, 
         const DefaultSet &set_s);

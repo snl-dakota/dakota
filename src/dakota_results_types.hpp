@@ -505,6 +505,14 @@ typedef std::vector<boost::variant< ResultAttribute<int>,
 /// enum for setting type on allocted matrix for Results Output
 enum class ResultsOutputType { REAL, INTEGER, STRING};
 
+struct VariableParametersField {
+  VariableParametersField(const String &in_name, ResultsOutputType in_type,  
+      const SizetArray &in_dims = SizetArray()) : name(in_name), dims(in_dims), type(in_type) {};
+  String name;
+  SizetArray dims;
+  ResultsOutputType type;
+};
+
 }  // namespace Dakota
 
 #endif  // DAKOTA_RESULTS_TYPES_H
