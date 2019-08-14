@@ -912,6 +912,8 @@ print_level_mappings(std::ostream& s, String qoi_type,
 }
 
 
+/** This version differs in its use of a concatenated vector of level
+    mappings, rathen than computed{Resp,Prob,Real,GenRel}Levels. */
 void NonD::
 print_level_mappings(std::ostream& s, const RealVector& level_maps,
 		     bool moment_offset, const String& prepend)
