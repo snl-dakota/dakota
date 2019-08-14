@@ -487,10 +487,10 @@ void NonDExpansion::initialize_u_space_model()
 
   // if all variables mode, initialize key to random variable subset
   if (allVars) {
-    Pecos::BitArray random_vars_key(numContinuousVars);
+    Pecos::BitArray random_vars_key(numContinuousVars); // init to false
     size_t i, end_cauv = startCAUV + numCAUV;
-    for (i=0; i<numContinuousVars; ++i)
-      random_vars_key[i] = (i >= startCAUV && i < end_cauv);
+    for (i=startCAUV; i<end_cauv; ++i)
+      random_vars_key.set(i);
     shared_data_rep->random_variables_key(random_vars_key);
   }
 }
@@ -569,6 +569,9 @@ construct_expansion_sampler(const String& import_approx_file,
 			    false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
+    // needs to precede exp_sampler_rep->requested_levels()
+    exp_sampler_rep->final_moments_type(NO_MOMENTS); // suppress sample moments
+
     // publish level mappings to expansion sampler, but suppress reliability
     // moment mappings (performed locally within compute_statistics())
     RealVectorArray empty_rv_array; // empty
@@ -577,8 +580,6 @@ construct_expansion_sampler(const String& import_approx_file,
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, false); // suppress PDFs (managed locally)
-    // also suppress final moments
-    exp_sampler_rep->final_moments_type(NO_MOMENTS);
 
     bool imp_sampling = false;
     if (integrationRefine && respLevelTarget != RELIABILITIES)

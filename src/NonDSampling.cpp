@@ -314,7 +314,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
   }
   case ALEATORY_UNCERTAIN:  case EPISTEMIC_UNCERTAIN:  case UNCERTAIN: {
     Pecos::MultivariateDistribution& mv_dist
-      = iteratedModel.multivariate_distribution();
+      = model.multivariate_distribution();
     const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
     BitArray active_rv, active_corr;
     aleatory_uncertain_subset(rv, active_corr);
@@ -332,7 +332,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
   }
   case ACTIVE: { // synchronize with model_view
     Pecos::MultivariateDistribution& mv_dist
-      = iteratedModel.multivariate_distribution();
+      = model.multivariate_distribution();
     const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
     BitArray active_rv, active_corr;
     aleatory_uncertain_subset(rv, active_corr);
@@ -369,7 +369,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
   }
   case ALL: { // override model_view
     Pecos::MultivariateDistribution& mv_dist
-      = iteratedModel.multivariate_distribution();
+      = model.multivariate_distribution();
     const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
     BitArray active_rv, active_corr; // leave active_rv empty
     aleatory_uncertain_subset(rv, active_corr);
