@@ -311,21 +311,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
     }
     break;
   }
-  case ALEATORY_UNCERTAIN:  case EPISTEMIC_UNCERTAIN:  case UNCERTAIN: {
-    BitArray active_vars, active_corr;
-    uncertain_bits(model, active_vars, active_corr);
-    Pecos::MultivariateDistribution& mv_dist
-      = model.multivariate_distribution();
-    if (backfillFlag)
-      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
-	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
-	active_vars, active_corr);
-    else
-      lhsDriver.generate_samples(mv_dist.random_variables(),
-	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
-	active_vars, active_corr);
-    break;
-  }
+
   case ACTIVE: { // utilize model view to sample active variables
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
@@ -340,8 +326,10 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
 	mv_dist.active_variables(), mv_dist.active_correlations());
     break;
   }
-  case ALL: { // override active model view to sample all variables
-    BitArray active_vars, active_corr; // leave active_vars empty
+
+  case ALEATORY_UNCERTAIN: case EPISTEMIC_UNCERTAIN: case UNCERTAIN: case ALL: {
+    // override active model view to sample alternate subset/superset
+    BitArray active_vars, active_corr;
     uncertain_bits(model, active_vars, active_corr);
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
