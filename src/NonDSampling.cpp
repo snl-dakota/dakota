@@ -251,11 +251,10 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
 
   // Invoke LHSDriver to generate samples within the specified distributions
 
-  const Variables& vars = model.current_variables();
-  short model_view = vars.view().first;
   switch (samplingVarsMode) {
   case ACTIVE_UNIFORM:  case ALL_UNIFORM:  case UNCERTAIN_UNIFORM:
   case ALEATORY_UNCERTAIN_UNIFORM:  case EPISTEMIC_UNCERTAIN_UNIFORM: {
+    short model_view = model.current_variables().view().first;
     // Use LHSDriver::generate_uniform_samples() between lower/upper bounds
     RealSymMatrix corr; // uncorrelated samples
     if ( samplingVarsMode == ACTIVE_UNIFORM ||
@@ -313,73 +312,48 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
     break;
   }
   case ALEATORY_UNCERTAIN:  case EPISTEMIC_UNCERTAIN:  case UNCERTAIN: {
+    BitArray active_vars, active_corr;
+    uncertain_bits(model, active_vars, active_corr);
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
-    const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
-    BitArray active_rv, active_corr;
-    aleatory_uncertain_subset(rv, active_corr);
-    if (samplingVarsMode == ALEATORY_UNCERTAIN) active_rv = active_corr;
-    else if (samplingVarsMode == EPISTEMIC_UNCERTAIN)
-      epistemic_uncertain_subset(rv, active_rv);
-    else        uncertain_subset(rv, active_rv);
     if (backfillFlag)
-      lhsDriver.generate_unique_samples(rv, mv_dist.correlation_matrix(),
-	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
+      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	active_vars, active_corr);
     else
-      lhsDriver.generate_samples(rv, mv_dist.correlation_matrix(),
-	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
+      lhsDriver.generate_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	active_vars, active_corr);
     break;
   }
-  case ACTIVE: { // synchronize with model_view
+  case ACTIVE: { // utilize model view to sample active variables
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
-    const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
-    BitArray active_rv, active_corr;
-    aleatory_uncertain_subset(rv, active_corr);
-    switch (model_view) {
-    case RELAXED_DESIGN:              case MIXED_DESIGN: {
-      size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-      vars.shared_data().design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-      size_t num_dv = num_cdv + num_ddiv + num_ddsv + num_ddrv;
-      design_state_subset(rv, active_corr, 0, num_dv); break;
-    }
-    case RELAXED_ALEATORY_UNCERTAIN:  case MIXED_ALEATORY_UNCERTAIN:
-      active_rv = active_corr;                    break;
-    case RELAXED_EPISTEMIC_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN:
-      epistemic_uncertain_subset(rv, active_rv);  break;
-    case RELAXED_UNCERTAIN:           case MIXED_UNCERTAIN:
-      uncertain_subset(rv, active_rv);            break;
-    case RELAXED_STATE:               case MIXED_STATE: {
-      size_t num_csv, num_dsiv, num_dssv, num_dsrv, num_rv = rv.size();
-      vars.shared_data().state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
-      size_t num_sv = num_csv + num_dsiv + num_dssv + num_dsrv;
-      design_state_subset(rv, active_corr, num_rv - num_sv, num_sv);  break;
-    }
-    default: // {RELAXED,MIXED}_ALL modes can leave active_rv empty
-      break;
-    }
     if (backfillFlag)
-      lhsDriver.generate_unique_samples(rv, mv_dist.correlation_matrix(),
-	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
+      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	mv_dist.active_variables(), mv_dist.active_correlations());
       // sampleRanks remains empty. See LHSDriver::generate_unique_samples()
     else
-      lhsDriver.generate_samples(rv, mv_dist.correlation_matrix(),
-	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
+      lhsDriver.generate_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	mv_dist.active_variables(), mv_dist.active_correlations());
     break;
   }
-  case ALL: { // override model_view
+  case ALL: { // override active model view to sample all variables
+    BitArray active_vars, active_corr; // leave active_vars empty
+    uncertain_bits(model, active_vars, active_corr);
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
-    const std::vector<Pecos::RandomVariable>& rv = mv_dist.random_variables();
-    BitArray active_rv, active_corr; // leave active_rv empty
-    aleatory_uncertain_subset(rv, active_corr);
     if (backfillFlag)
-      lhsDriver.generate_unique_samples(rv, mv_dist.correlation_matrix(),
-	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
+      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	active_vars, active_corr);
       // sampleRanks remains empty. See LHSDriver::generate_unique_samples()
     else
-      lhsDriver.generate_samples(rv, mv_dist.correlation_matrix(),
-	num_samples, design_matrix, sampleRanks, active_rv, active_corr);
+      lhsDriver.generate_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	active_vars, active_corr);
     break;
   }
   }
@@ -606,6 +580,52 @@ mode_counts(const Model& model, size_t& cv_start,  size_t& num_cv,
   case ALL_UNIFORM:
     // UNIFORM views do not currently support non-relaxed discrete
     num_cv = model.acv();                                break;
+  }
+}
+
+
+void NonDSampling::
+uncertain_bits(const Model& model, BitArray& active_vars,
+	       BitArray& active_corr) const
+{
+  const SharedVariablesData& svd = model.current_variables().shared_data();
+  size_t num_v = model.tv(), num_cdv, num_ddiv, num_ddsv, num_ddrv,
+         num_cauv, num_dauiv, num_dausv, num_daurv;
+  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+  size_t num_dv  = num_cdv  + num_ddiv  + num_ddsv  + num_ddrv,
+         num_auv = num_cauv + num_dauiv + num_dausv + num_daurv;
+  active_corr.resize(num_v, false);
+  assign_value(active_corr, true, num_dv, num_auv);
+
+  switch (samplingVarsMode) {
+  case ALEATORY_UNCERTAIN:
+    active_vars = active_corr;  break;
+  case EPISTEMIC_UNCERTAIN: {
+    size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
+    svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+    active_vars.resize(num_v, false);
+    assign_value(active_vars, true, num_dv + num_auv,
+		 num_ceuv + num_deuiv + num_deusv + num_deurv);
+    break;
+  }
+  case UNCERTAIN: {
+    size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
+    svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+    active_vars.resize(num_v, false);
+    assign_value(active_vars, true, num_dv,
+		 num_auv + num_ceuv + num_deuiv + num_deusv + num_deurv);
+    break;
+  }
+  case ALL:
+    active_vars.clear(); break; // no subset, all are active
+  //case ALEATORY_UNCERTAIN_UNIFORM:
+  //case EPISTEMIC_UNCERTAIN_UNIFORM:
+  //case UNCERTAIN_UNIFORM:
+  default:
+    Cerr << "Error: unsupported sampling mode in NonDSampling::uncertain_bits()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);  break;
   }
 }
 

@@ -272,6 +272,9 @@ protected:
 		   size_t& div_start,  size_t& num_div,
 		   size_t& dsv_start,  size_t& num_dsv,
 		   size_t& drv_start,  size_t& num_drv) const;
+  /// define subset views for uncertain sampling modes
+  void uncertain_bits(const Model& model, BitArray& active_vars,
+		      BitArray& active_corr) const;
 
   /// helper to accumulate sum of finite samples
   static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,

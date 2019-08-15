@@ -506,7 +506,7 @@ initialize_distribution_types(short u_space_type)
 
   Pecos::MarginalsCorrDistribution* u_dist_rep
     = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
-  u_dist_rep->initialize_types(u_types, x_dist.active_variables());
+  u_dist_rep->initialize_types(u_types, active_rv);
 }
 
 
