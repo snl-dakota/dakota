@@ -359,6 +359,7 @@ Real SimulationModel::solution_level_cost() const
 }
 
 
+/*
 void SimulationModel::component_parallel_mode(short mode)
 {
   if (mode != INTERFACE) {
@@ -369,6 +370,7 @@ void SimulationModel::component_parallel_mode(short mode)
   parallelLib.parallel_configuration_iterator(modelPCIter);
   //componentParallelMode = mode;
 }
+*/
 
 
 /** SimulationModel doesn't need to change the tagging, so just forward to

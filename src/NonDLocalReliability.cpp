@@ -1797,6 +1797,7 @@ void NonDLocalReliability::assign_mean_data()
 
 void NonDLocalReliability::truth_evaluation(short mode)
 {
+  // the following are no-ops for ReastModel -> SimulationModel (NO_APPROX):
   uSpaceModel.component_parallel_mode(TRUTH_MODEL);      // Recast forwards
   uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
 
@@ -1823,6 +1824,7 @@ void NonDLocalReliability::truth_evaluation(short mode)
     curvatureDataAvailable = true; kappaUpdated = false;
   }
 
+  // the following are no-ops for ReastModel -> SimulationModel (NO_APPROX):
   uSpaceModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // restore
   // Not currently necessary as surrogate mode does not employ parallelism:
   //uSpaceModel.component_parallel_mode(SURROGATE_MODEL); // restore

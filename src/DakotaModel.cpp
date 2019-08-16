@@ -4216,11 +4216,7 @@ void Model::component_parallel_mode(short mode)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->component_parallel_mode(mode);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual "
-	 << "component_parallel_mode() function.\n." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+  // else: default implementation is no-op
 }
 
 

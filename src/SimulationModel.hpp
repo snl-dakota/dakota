@@ -84,9 +84,9 @@ protected:
   /// (invokes synch_nowait() on userDefinedInterface)
   const IntResponseMap& derived_synchronize_nowait();
 
-  /// SimulationModel only supports parallelism in userDefinedInterface,
-  /// so this virtual function redefinition is simply a sanity check.
-  void component_parallel_mode(short mode);
+  // SimulationModel only supports parallelism in userDefinedInterface,
+  // so this virtual function redefinition is simply a sanity check.
+  //void component_parallel_mode(short mode);
 
   /// return userDefinedInterface synchronization setting
   short local_eval_synchronization();

@@ -532,7 +532,7 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 	    // since we don't check all rows, check all columns despite symmetry
 	    for (j=0, corr_j=0; j<num_rv; ++j)
 	      if (no_mask || active_corr[j]) {
-		if (i != j && std::fabs(x_corr(corr_i, corr_j)) >
+		if (i != j && std::abs(x_corr(corr_i, corr_j)) >
 		    Pecos::SMALL_NUMBER) {
 		  Cerr << "\nWarning: u-space type for random variable " << i+1
 		       << " changed to\n         STD_NORMAL due to "
@@ -561,8 +561,8 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 	  // since we don't check all rows, check *all* columns despite symmetry
 	  for (j=0, corr_j=0; j<num_rv; ++j)
 	    if (no_mask || active_corr[j]) {
-	      if (i != j && std::fabs(x_corr(corr_i, corr_j)) >
-		  Pecos::SMALL_NUMBER)
+	      if (i != j &&
+		  std::abs(x_corr(corr_i, corr_j)) > Pecos::SMALL_NUMBER)
 		{ distribution_error = true; break; }
 	      ++corr_j;
 	    }
@@ -838,9 +838,8 @@ set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
           size_t cv_index = find_index(cv_ids, acv_id);
           if (cv_index != _NPOS) { // random var: check correlation
             for (j=0; j<num_cv; ++j) {
-              if (cv_index != j &&
-                  std::fabs(corr_x(cv_index, j)) > Pecos::SMALL_NUMBER &&
-                  contains(u_dvv, cv_ids[j])) {
+              if (cv_index != j && std::abs(corr_x(cv_index, j)) >
+		  Pecos::SMALL_NUMBER && contains(u_dvv, cv_ids[j])) {
                 x_dvv.push_back(acv_id);
                 break;
               }
