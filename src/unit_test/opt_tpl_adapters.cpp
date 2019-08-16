@@ -84,7 +84,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
   Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
 
   std::shared_ptr<TPLDataTransfer> data_xfer = demo_optimizer->get_data_transfer_helper();
-  DemoOptTraits::VecT nln_ineqs(data_xfer->num_active_nonlin_ineq_constraints());
+  DemoOptTraits::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
@@ -102,7 +102,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
 
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
@@ -122,7 +122,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
 
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(2, nln_ineqs.size());
@@ -144,7 +144,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_demo)
 
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(2, nln_ineqs.size());
@@ -175,7 +175,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
   Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   
   std::shared_ptr<TPLDataTransfer> data_xfer = demo_optimizer->get_data_transfer_helper();
-  DemoOptTraits::VecT nln_eqs(data_xfer->num_nonlin_eq_constraints());
+  DemoOptTraits::VecT nln_eqs(data_xfer->num_tpl_nonlin_eq_constraints());
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
 
   TEST_EQUALITY(1, nln_eqs.size());
@@ -193,7 +193,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
 
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
   data_xfer = demo_optimizer->get_data_transfer_helper();
-  nln_eqs.resize(data_xfer->num_nonlin_eq_constraints());
+  nln_eqs.resize(data_xfer->num_tpl_nonlin_eq_constraints());
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
 
   TEST_EQUALITY(1, nln_eqs.size());
@@ -207,7 +207,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_demo)
 
 namespace 
 {
-  template<NONLINEAR_INEQUALITY_FORMAT NLINEQ_F>
+  template< NONLINEAR_INEQUALITY_FORMAT NLINEQ_F,
+            NONLINEAR_EQUALITY_FORMAT   NLEQ_F   >
   class UnitTestTraits: public TraitsBase
   {
     public:
@@ -249,6 +250,10 @@ namespace
       NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
       { return NLINEQ_F; }
 
+      /// Return format for nonlinear inequality constraints
+      NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override
+      { return NLEQ_F; }
+
   }; // mock traits for unit testing
 }
 
@@ -275,8 +280,8 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   // The Demo optimizer is only needed to get the model and responses
   Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
 
-  using TRAITS_TYPE1 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER>;
-  using TRAITS_TYPE2 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED>;
+  using TRAITS_TYPE1 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER, NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY>;
+  using TRAITS_TYPE2 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED,       NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY>;
 
   std::shared_ptr<TraitsBase> test_traits1(new TRAITS_TYPE1()); 
   std::shared_ptr<TraitsBase> test_traits2(new TRAITS_TYPE2()); 
@@ -289,7 +294,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   std::shared_ptr<TPLDataTransfer> data_xfer(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  TRAITS_TYPE1::VecT nln_ineqs(data_xfer->num_active_nonlin_ineq_constraints());
+  TRAITS_TYPE1::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
@@ -299,7 +304,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   data_xfer.reset(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
@@ -322,7 +327,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   data_xfer.reset(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
@@ -332,7 +337,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   data_xfer.reset(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
@@ -358,7 +363,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   data_xfer.reset(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(2, nln_ineqs.size());
@@ -369,7 +374,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   data_xfer.reset(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
@@ -391,10 +396,12 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // The Demo optimizer is only needed to get the model and responses
   demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+
+  // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(2, nln_ineqs.size());
@@ -405,13 +412,128 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   data_xfer.reset(new TPLDataTransfer()); 
   data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
 
-  nln_ineqs.resize(data_xfer->num_active_nonlin_ineq_constraints());
+  nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
   TEST_EQUALITY(1, nln_ineqs.size());
   TEST_FLOATING_EQUALITY(-0.5, nln_ineqs[0], 1.e-12);
+}
 
 
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
+{
+  /// Dakota input string:
+  string text_book_input = baseline_text_book_input;
+  text_book_input +=
+   "    nonlinear_equality_constraints = 1      "
+   "    descriptors 'f' 'c1'                    ";
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input.c_str()));
+
+  // boilerplate to create Dakota objects, etc...
+  {
+    if (p_env->parallel_library().mpirun_flag())
+      TEST_ASSERT( false ); // This test only works for serial builds
+    // Execute the environment
+    p_env->execute();
+  }
+
+  // The Demo optimizer is only needed to get the model and responses
+  Dakota::DemoTPLOptimizer * demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+  
+  using TRAITS_TYPE1 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER, NONLINEAR_EQUALITY_FORMAT::TWO_INEQUALITY>;
+  using TRAITS_TYPE2 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER, NONLINEAR_EQUALITY_FORMAT::TWO_INEQUALITY>;
+  using TRAITS_TYPE3 = UnitTestTraits<NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED,       NONLINEAR_EQUALITY_FORMAT::TWO_INEQUALITY>;
+
+  std::shared_ptr<TraitsBase> test_traits1(new TRAITS_TYPE1()); 
+  std::shared_ptr<TraitsBase> test_traits2(new TRAITS_TYPE2()); 
+  std::shared_ptr<TraitsBase> test_traits3(new TRAITS_TYPE3()); 
+
+  std::shared_ptr<TPLDataTransfer> data_xfer1(new TPLDataTransfer()); 
+  std::shared_ptr<TPLDataTransfer> data_xfer2(new TPLDataTransfer()); 
+  std::shared_ptr<TPLDataTransfer> data_xfer3(new TPLDataTransfer()); 
+  data_xfer1->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer2->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer3->configure_data_adapters( test_traits3, demo_optimizer->iterated_model().user_defined_constraints() );
+
+  DemoOptTraits::VecT nln_eqs1(data_xfer1->num_tpl_nonlin_eq_constraints());
+  DemoOptTraits::VecT nln_eqs2(data_xfer2->num_tpl_nonlin_eq_constraints());
+  DemoOptTraits::VecT nln_eqs3(data_xfer3->num_tpl_nonlin_eq_constraints());
+  data_xfer1->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs1);
+  data_xfer2->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs2);
+  data_xfer3->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs3);
+
+  // There should be no equality values because they are treated as two-sided inequalities
+  TEST_EQUALITY(0, nln_eqs1.size());
+  TEST_EQUALITY(0, nln_eqs2.size());
+  TEST_EQUALITY(0, nln_eqs3.size());
+
+  DemoOptTraits::VecT nln_ineqs1(data_xfer1->num_tpl_nonlin_ineq_constraints());
+  DemoOptTraits::VecT nln_ineqs2(data_xfer2->num_tpl_nonlin_ineq_constraints());
+  DemoOptTraits::VecT nln_ineqs3(data_xfer3->num_tpl_nonlin_ineq_constraints());
+  data_xfer1->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs1);
+  data_xfer2->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs2);
+  data_xfer3->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs3);
+
+  // BUT there should be two inequality constraints for each model equality constraint
+  TEST_EQUALITY(2, nln_ineqs1.size());
+  TEST_EQUALITY(2, nln_ineqs2.size());
+  TEST_EQUALITY(2, nln_ineqs3.size());
+  // ... and they are all treated the same because they are transformed in a manner that works with any of the
+  //     three inequality constraint formats
+  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs1[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.5, nln_ineqs1[1], 1.e-12);
+  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs2[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.5, nln_ineqs2[1], 1.e-12);
+  TEST_FLOATING_EQUALITY(-0.5, nln_ineqs3[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.5, nln_ineqs3[1], 1.e-12);
+
+
+  // Now test adapters when using nonzero nonlinear equality targets
+  text_book_input = baseline_text_book_input;
+  text_book_input +=
+   "    nonlinear_equality_constraints = 1      "
+   "    nonlinear_equality_targets = -.5        "
+   "    descriptors 'f' 'c1'                    ";
+  p_env.reset(Opt_TPL_Test::create_env(text_book_input.c_str()));
+  p_env->execute();
+
+  demo_optimizer = dynamic_cast<Dakota::DemoTPLOptimizer*>(get_optimizer(p_env));
+
+  data_xfer1.reset(new TPLDataTransfer()); 
+  data_xfer2.reset(new TPLDataTransfer()); 
+  data_xfer3.reset(new TPLDataTransfer()); 
+  data_xfer1->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer2->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer3->configure_data_adapters( test_traits3, demo_optimizer->iterated_model().user_defined_constraints() );
+
+  // Check correctness of equality constraints (shouldn't be any)
+  nln_eqs1.resize(data_xfer1->num_tpl_nonlin_eq_constraints());
+  nln_eqs2.resize(data_xfer2->num_tpl_nonlin_eq_constraints());
+  nln_eqs3.resize(data_xfer3->num_tpl_nonlin_eq_constraints());
+
+  data_xfer1->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs1);
+  data_xfer2->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs2);
+  data_xfer3->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs3);
+
+  TEST_EQUALITY(0, nln_eqs1.size());
+  TEST_EQUALITY(0, nln_eqs2.size());
+  TEST_EQUALITY(0, nln_eqs3.size());
+
+  // Check correctness of inequality constraints
+  nln_ineqs1.resize(data_xfer1->num_tpl_nonlin_ineq_constraints());
+  nln_ineqs2.resize(data_xfer2->num_tpl_nonlin_ineq_constraints());
+  nln_ineqs3.resize(data_xfer3->num_tpl_nonlin_ineq_constraints());
+
+  data_xfer1->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs1);
+  data_xfer2->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs2);
+  data_xfer3->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs3);
+
+  TEST_EQUALITY(2, nln_ineqs1.size());
+  TEST_EQUALITY(2, nln_ineqs2.size());
+  TEST_EQUALITY(2, nln_ineqs3.size());
+  TEST_FLOATING_EQUALITY(0.0, nln_ineqs1[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.0, nln_ineqs1[1], 1.e-12);
+  TEST_FLOATING_EQUALITY(0.0, nln_ineqs2[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.0, nln_ineqs2[1], 1.e-12);
+  TEST_FLOATING_EQUALITY(0.0, nln_ineqs3[0], 1.e-12);   TEST_FLOATING_EQUALITY( 0.0, nln_ineqs3[1], 1.e-12);
 }
 
 //----------------------------------------------------------------

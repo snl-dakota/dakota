@@ -36,13 +36,21 @@ class TPLDataTransfer
     /// Construct maps, etc. needed to exchange data to/from Dakota and the TPL
     void configure_data_adapters(std::shared_ptr<TraitsBase>, const Constraints &);
 
-    /// Number of nonlinear equality constraints
-    int num_nonlin_eq_constraints() const
+    /// Number of nonlinear equality constraints from Dakota perspective
+    int num_dakota_nonlin_eq_constraints() const
       { return numDakotaNonlinearEqConstraints; }
 
-    /// Number of active nonlinear inequality constraints
-    int num_active_nonlin_ineq_constraints() const
-      { return numNonlinearIneqConstraintsActive; }
+    /// Number of nonlinear equality constraints from TPL perspective
+    int num_tpl_nonlin_eq_constraints() const
+      { return numTPLNonlinearEqConstraints; }
+
+    /// Number of nonlinear inequality constraints from Dakota perspective
+    int num_dakota_nonlin_ineq_constraints() const
+      { return numDakotaNonlinearIneqConstraints; }
+
+    /// Number of nonlinear inequality constraints from TPL perspective
+    int num_tpl_nonlin_ineq_constraints() const
+      { return numTPLNonlinearIneqConstraints; }
 
     //----------------------------------------------------------------
 
@@ -78,11 +86,18 @@ class TPLDataTransfer
     void get_nonlinear_eq_constraints_from_dakota( const Response & resp,
                                                              VecT & values )
     {
-      const RealVector& resp_vals = resp.function_values();
+      // We do not perform checks on incoming vector size or do any resizing/allocation
+      // because clients may be passing a view into a larger vector, and the size/resize
+      // semantics might overly constrain what type we can support, eg double*, RealVector, etc.
 
-      for( size_t i=0; i<numDakotaNonlinearEqConstraints; ++i )
-        values[i] =     resp_vals[numDakotaObjectiveFns + i]
-                      + nonlinearEqConstraintTargets[i];
+      if( numTPLNonlinearEqConstraints > 0 ) // TPL supports equalities
+      {
+        const RealVector& resp_vals = resp.function_values();
+
+        for( size_t i=0; i<numDakotaNonlinearEqConstraints; ++i )
+          values[i] =     resp_vals[numDakotaObjectiveFns + i]
+                        + nonlinearEqConstraintTargets[i];
+      }
     }
 
     //----------------------------------------------------------------
@@ -98,7 +113,7 @@ class TPLDataTransfer
     void configure_nonlinear_eq_adapters(NONLINEAR_EQUALITY_FORMAT, const Constraints &);
 
     /// Construct nonlinear inequality maps needed to exchange data to/from Dakota and the TPL
-    void configure_nonlinear_ineq_adapters(NONLINEAR_INEQUALITY_FORMAT, const Constraints &);
+    void configure_nonlinear_ineq_adapters(NONLINEAR_INEQUALITY_FORMAT, const Constraints &, bool split_eqs);
 
     //
     //- Heading: Data
@@ -109,6 +124,9 @@ class TPLDataTransfer
 
     /// number of nonlinear equality constraints from Dakota perspective
     int numDakotaNonlinearEqConstraints;
+
+    /// number of nonlinear equality constraints from TPL perspective
+    int numTPLNonlinearEqConstraints;
 
     /// map from Dakota constraint number to TPL constraint number
     std::vector<int> nonlinearEqConstraintMapIndices;
@@ -122,8 +140,9 @@ class TPLDataTransfer
     /// number of nonlinear inequality constraints from Dakota perspective
     int numDakotaNonlinearIneqConstraints;
 
-    /// number of nonlinear inequality constraints actually used (based on conditional and bigRealBoundSize
-    int numNonlinearIneqConstraintsActive;
+    /// number of nonlinear inequality constraints actually used
+    /// ... based conditionally on lower bounds using bigRealBoundSize and on whether TPL splits equalities into two inequalities
+    int numTPLNonlinearIneqConstraints;
 
     /// map from Dakota constraint number to TPL constraint number
     std::vector<int> nonlinearIneqConstraintMapIndices;
