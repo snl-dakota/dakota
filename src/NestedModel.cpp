@@ -3172,18 +3172,20 @@ size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
 void NestedModel::
 real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 {
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  Pecos::MultivariateDistribution& sm_mvd
+    = subModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* sm_mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
   bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views --> resort to ACV types?
 
   switch (svm_target) {
   case Pecos::CR_LWR_BND:
     subModel.all_continuous_lower_bound(r_var, mapped_index);
-    if (active_rv) mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, r_var);
     break;
   case Pecos::CR_UPR_BND:
     subModel.all_continuous_upper_bound(r_var, mapped_index);
-    if (active_rv) mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, r_var);
     break;
   case Pecos::N_MEAN:     case Pecos::N_STD_DEV:  case Pecos::N_LWR_BND:
   case Pecos::N_UPR_BND:  case Pecos::LN_MEAN:    case Pecos::LN_STD_DEV:
@@ -3197,7 +3199,7 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   case Pecos::F_ALPHA:    case Pecos::F_BETA:     case Pecos::W_ALPHA:
   case Pecos::W_BETA:     case Pecos::P_LAMBDA:   case Pecos::BI_P_PER_TRIAL:
   case Pecos::NBI_P_PER_TRIAL: case Pecos::GE_P_PER_TRIAL:
-    mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+    sm_mvd_rep->push_parameter(mapped_index, svm_target, r_var);
     break;
   // N_{MEAN,STD_DEV,LWR_BND,UPR_BND} change individual dist parameters only.
   // N_{LOCATION,SCALE} change multiple parameters to accomplish a translation
@@ -3206,35 +3208,41 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Normal, location & scale are mean & std deviation.
   case Pecos::N_LOCATION: { // a translation with no change in shape/scale
-    Real  mean = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN);
-    Real l_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND);
-    Real u_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND);
+    Real  mean = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::N_MEAN);
+    Real l_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND);
+    Real u_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND);
     Real delta = r_var - mean;
     // translate: change bounds by same amount as mean
-    mvd_rep->push_parameter(mapped_index, Pecos::N_MEAN, r_var);
+    sm_mvd_rep->push_parameter(mapped_index, Pecos::N_MEAN, r_var);
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     if (l_bnd > -dbl_inf)
-      mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND, l_bnd + delta);
+      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND, l_bnd + delta);
     if (u_bnd <  dbl_inf)
-      mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND, u_bnd + delta);
+      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND, u_bnd + delta);
     break;
   }
   case Pecos::N_SCALE: { // change in shape/scale without translation
-    Real  mean = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN);
-    Real stdev = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_STD_DEV);
-    Real l_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND);
-    Real u_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND);
+    Real  mean = sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN);
+    Real stdev = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::N_STD_DEV);
+    Real l_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND);
+    Real u_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND);
     // scale: preserve number of std deviations where l,u bound occurs
-    mvd_rep->push_parameter(mapped_index, Pecos::N_STD_DEV, r_var);
+    sm_mvd_rep->push_parameter(mapped_index, Pecos::N_STD_DEV, r_var);
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     if (l_bnd > -dbl_inf) {
       Real num_sig_l = (mean - l_bnd) / stdev;
-      mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND,
+      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND,
 			      mean - num_sig_l * r_var);
     }
     if (u_bnd <  dbl_inf) {
       Real num_sig_u = (u_bnd - mean) / stdev;
-      mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND,
+      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND,
 			      mean + num_sig_u * r_var);
     }
     break;
@@ -3247,20 +3255,26 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // user to convert).  For Uniform, location & scale are center & range.
   case Pecos::U_LOCATION: {
     // translate: change both bounds by same amount
-    Real  l_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND);
-    Real  u_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND);
+    Real  l_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND);
+    Real  u_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND);
     Real center = (u_bnd + l_bnd) / 2., delta = r_var - center;
-    mvd_rep->push_parameter(mapped_index, Pecos::U_LWR_BND, l_bnd + delta);
-    mvd_rep->push_parameter(mapped_index, Pecos::U_UPR_BND, u_bnd + delta);
+    sm_mvd_rep->push_parameter(mapped_index, Pecos::U_LWR_BND, l_bnd + delta);
+    sm_mvd_rep->push_parameter(mapped_index, Pecos::U_UPR_BND, u_bnd + delta);
     break;
   }
   case Pecos::U_SCALE: {
     // scale: move bounds in/out by same amount about consistent center
-    Real  l_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND);
-    Real  u_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND);
+    Real  l_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND);
+    Real  u_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND);
     Real center = (u_bnd + l_bnd) / 2., half_range = r_var / 2.;
-    mvd_rep->push_parameter(mapped_index, Pecos::U_LWR_BND, center-half_range);
-    mvd_rep->push_parameter(mapped_index, Pecos::U_UPR_BND, center+half_range);
+    sm_mvd_rep->
+      push_parameter(mapped_index, Pecos::U_LWR_BND, center-half_range);
+    sm_mvd_rep->
+      push_parameter(mapped_index, Pecos::U_UPR_BND, center+half_range);
     break;
   }
   // T_{MODE,LWR_BND,UPR_BND} change individual dist parameters only.
@@ -3271,24 +3285,30 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // user to convert).  For Triangular, location & scale are mode & range.
   case Pecos::T_LOCATION: {
     // translate: change mode and both bounds by same amount
-    Real  mode = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE);
-    Real l_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND);
-    Real u_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND);
+    Real  mode = sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE);
+    Real l_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND);
+    Real u_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND);
     Real delta = r_var - mode;
-    mvd_rep->push_parameter(mapped_index, Pecos::T_MODE,    r_var);
-    mvd_rep->push_parameter(mapped_index, Pecos::T_LWR_BND, l_bnd + delta);
-    mvd_rep->push_parameter(mapped_index, Pecos::T_UPR_BND, u_bnd + delta);
+    sm_mvd_rep->push_parameter(mapped_index, Pecos::T_MODE,    r_var);
+    sm_mvd_rep->push_parameter(mapped_index, Pecos::T_LWR_BND, l_bnd + delta);
+    sm_mvd_rep->push_parameter(mapped_index, Pecos::T_UPR_BND, u_bnd + delta);
     break;
   }
   case Pecos::T_SCALE: {
     // scale: preserve L/M/U proportions while scaling range
-    Real  mode = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE);
-    Real l_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND);
-    Real u_bnd = mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND);
+    Real  mode = sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE);
+    Real l_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND);
+    Real u_bnd = sm_mvd_rep->
+      pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND);
     Real range = u_bnd - l_bnd, perc_l = (mode - l_bnd) / range,
         perc_u = (u_bnd - mode) / range;
-    mvd_rep->push_parameter(mapped_index, Pecos::T_LWR_BND, mode-perc_l*r_var);
-    mvd_rep->push_parameter(mapped_index, Pecos::T_UPR_BND, mode+perc_u*r_var);
+    sm_mvd_rep->
+      push_parameter(mapped_index, Pecos::T_LWR_BND, mode-perc_l*r_var);
+    sm_mvd_rep->
+      push_parameter(mapped_index, Pecos::T_UPR_BND, mode+perc_u*r_var);
     break;
   }
   case Pecos::NO_TARGET: default:
@@ -3303,22 +3323,24 @@ void NestedModel::
 integer_variable_mapping(const int& i_var, size_t mapped_index,
 			 short svm_target)
 {
-  Pecos::MarginalsCorrDistribution* mvd_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  Pecos::MultivariateDistribution& sm_mvd
+    = subModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* sm_mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
   bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views...)
 
   switch (svm_target) {
   case Pecos::DR_LWR_BND:
     subModel.all_discrete_int_lower_bound(i_var, mapped_index);
-    if (active_rv) mvd_rep->push_parameter(mapped_index, svm_target, i_var);
+    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, i_var);
     break;
   case Pecos::DR_UPR_BND:
     subModel.all_discrete_int_upper_bound(i_var, mapped_index);
-    if (active_rv) mvd_rep->push_parameter(mapped_index, svm_target, i_var);
+    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, i_var);
     break;
   case Pecos::BI_TRIALS:    case Pecos::NBI_TRIALS:
   case Pecos::HGE_TOT_POP:  case Pecos::HGE_SEL_POP:  case Pecos::HGE_DRAWN:
-    mvd_rep->push_parameter(mapped_index, svm_target, i_var); break;
+    sm_mvd_rep->push_parameter(mapped_index, svm_target, i_var); break;
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for integer value "
 	 << "insertion in NestedModel::integer_variable_mapping()" << std::endl;
@@ -3331,6 +3353,11 @@ void NestedModel::
 string_variable_mapping(const String& s_var, size_t mapped_index,
 			 short svm_target)
 {
+  Pecos::MultivariateDistribution& sm_mvd
+    = subModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* sm_mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+
   switch (svm_target) {
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for string value "
