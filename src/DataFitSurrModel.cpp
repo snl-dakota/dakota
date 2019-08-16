@@ -266,26 +266,24 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (grad_flag)
     gradientType = (approx_type == "global_polynomial" ||
       approx_type == "global_gaussian" || approx_type == "global_kriging" ||
+      approx_type == "global_moving_least_squares" ||
       strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial") ||
       strbegins(approx_type, "local_") ||
-      strbegins(approx_type, "multipoint_") ||
-      approx_type == "global_moving_least_squares")
-      ? "analytic" : "numerical";
+      strbegins(approx_type, "multipoint_")) ? "analytic" : "numerical";
   else 
     gradientType = "none";
   if (hess_flag)
-    hessianType = (approx_type == "global_polynomial" ||
-      approx_type == "global_kriging" ||
-      strends(approx_type, "_orthogonal_polynomial") ||
-    //strends(approx_type, "_interpolation_polynomial") || // TO DO
-		   strbegins(approx_type, "local_"))
+    hessianType = ( strbegins(approx_type, "local_") ||
+      approx_type == "global_polynomial" || approx_type == "global_kriging" ||
+      strends(approx_type, "_orthogonal_polynomial"))
+    //strends(approx_type, "_interpolation_polynomial")) // TO DO
       ? "analytic" : "numerical";
   else
     hessianType = "none";
 
-  //Cout << "DFS gradientType = " << gradientType 
-  //     << " DFS hessianType = " << hessianType << std::endl;
+  Cout << "DFS gradientType = " << gradientType 
+       << " DFS hessianType = " << hessianType << std::endl;
 
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to
   // defaults if needed.

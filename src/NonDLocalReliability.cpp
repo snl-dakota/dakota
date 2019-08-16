@@ -210,13 +210,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     else                              approx_type = "local_taylor";
     UShortArray approx_order(1, taylorOrder);
     short corr_order = -1, corr_type = NO_CORRECTION,
-          data_order = (taylorOrder == 2) ? 7 : 3;
+      ai_data_order = (taylorOrder == 2)                          ? 7 : 3,
+      dfs_set_order = (taylorOrder == 2 || integrationOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
     Model g_hat_x_model;  Iterator dace_iterator;
-    ActiveSet surr_set = iteratedModel.current_response().active_set(); // copy
-    surr_set.request_values(3); // surrogate gradient evals
+    ActiveSet dfs_set = iteratedModel.current_response().active_set(); // copy
+    dfs_set.request_values(dfs_set_order);
     g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
-      surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
+      dfs_set, approx_type, approx_order, corr_type, corr_order, ai_data_order,
       outputLevel, sample_reuse), false);
 
     // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
@@ -238,13 +239,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     else                              approx_type = "local_taylor";
     UShortArray approx_order(1, taylorOrder);
     short corr_order = -1, corr_type = NO_CORRECTION,
-          data_order = (taylorOrder == 2) ? 7 : 3;
+      ai_data_order = (taylorOrder == 2)                          ? 7 : 3,
+      dfs_set_order = (taylorOrder == 2 || integrationOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
     Iterator dace_iterator;
-    ActiveSet surr_set = g_u_model.current_response().active_set(); // copy
-    surr_set.request_values(3); // surrogate gradient evals
+    ActiveSet dfs_set = g_u_model.current_response().active_set(); // copy
+    dfs_set.request_values(dfs_set_order);
     uSpaceModel.assign_rep(new DataFitSurrModel(dace_iterator, g_u_model,
-      surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
+      dfs_set, approx_type, approx_order, corr_type, corr_order, ai_data_order,
       outputLevel, sample_reuse), false);
     break;
   }
@@ -458,11 +460,10 @@ void NonDLocalReliability::derived_init_communicators(ParLevLIter pl_iter)
     // uSpaceModel, mppOptimizer, and importanceSampler use NoDBBaseConstructor,
     // so no need to manage DB list nodes at this level
 
-    // maxEvalConcurrency defined from the derivative concurrency in the
-    // responses specification.  For FORM/SORM, the NPSOL/OPT++ concurrency
-    // is the same, but for approximate methods, the concurrency is dictated
-    // by the gradType/hessType logic in the instantiate on-the-fly
-    // DataFitSurrModel constructor.
+    // maxEvalConcurrency defined from derivative concurrency in the responses
+    // specification.  For FORM/SORM, the NPSOL/OPT++ concurrency is the same,
+    // but for approximate methods, concurrency is dictated by {grad,hess}Type
+    // logic in the instantiate on-the-fly DataFitSurrModel constructor.
     uSpaceModel.init_communicators(pl_iter, maxEvalConcurrency);
     // TO DO: distinguish gradient concurrency for truth vs. surrogate?
     //        (probably doesn't matter for surrogate)
