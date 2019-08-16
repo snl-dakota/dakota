@@ -97,17 +97,26 @@ TPLDataTransfer::configure_nonlinear_ineq_adapters(
   {
     for (int i=0; i<numDakotaNonlinearIneqConstraints; i++) {
       // Always do upper bounds which may be the Dakota default of 0.0
-        nonlinearIneqConstraintMapIndices.push_back(i);
+        nonlinearIneqConstraintMapIndices.push_back(numDakotaObjectiveFns + numDakotaNonlinearEqConstraints + i);
         nonlinearIneqConstraintMapMultipliers.push_back(-1.0);
         nonlinearIneqConstraintMapShifts.push_back(ineq_upr_bnds[i]);
         numNonlinearIneqConstraintsActive++;
 
       if (lower_bnds_specified) {
-        nonlinearIneqConstraintMapIndices.push_back(i);
+        nonlinearIneqConstraintMapIndices.push_back(numDakotaObjectiveFns + numDakotaNonlinearEqConstraints + i);
         nonlinearIneqConstraintMapMultipliers.push_back(1.0);
         nonlinearIneqConstraintMapShifts.push_back(-1.0*ineq_lwr_bnds[i]);
         numNonlinearIneqConstraintsActive++;
       }
+    }
+  }
+  else if( format == NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED )
+  {
+    for (int i=0; i<numDakotaNonlinearIneqConstraints; i++) {
+        nonlinearIneqConstraintMapIndices.push_back(numDakotaObjectiveFns + numDakotaNonlinearEqConstraints + i);
+        nonlinearIneqConstraintMapMultipliers.push_back(1.0);
+        nonlinearIneqConstraintMapShifts.push_back(0.0);
+        numNonlinearIneqConstraintsActive++;
     }
   }
 }
