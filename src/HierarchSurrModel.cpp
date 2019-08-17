@@ -1129,7 +1129,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
 
 void HierarchSurrModel::resize_response(bool use_virtual_counts)
 {
-  size_t num_surr, num_truth, num_curr_fns;
+  size_t num_surr, num_truth;
   if (use_virtual_counts) { // allow models to consume lower-level aggregations
     num_surr  = surrogate_model().qoi();
     num_truth =     truth_model().qoi();
@@ -1141,24 +1141,24 @@ void HierarchSurrModel::resize_response(bool use_virtual_counts)
 
   switch (responseMode) {
   case AGGREGATED_MODELS:
-    num_curr_fns = num_surr + num_truth;  break;
+    numFns = num_surr + num_truth;  break;
   case MODEL_DISCREPANCY:
     if (num_surr != num_truth) {
       Cerr << "Error: mismatch in response sizes for MODEL_DISCREPANCY mode "
 	   << "in HierarchSurrModel::resize_response()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    num_curr_fns = num_truth;  break;
+    numFns = num_truth;  break;
   case BYPASS_SURROGATE:       case NO_SURROGATE:
-    num_curr_fns = num_truth;  break;
+    numFns = num_truth;  break;
   case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:  default:
-    num_curr_fns = num_surr;   break;
+    numFns = num_surr;   break;
   }
 
   // gradient and Hessian settings are based on independent spec (not LF, HF)
   // --> preserve previous settings
-  if (currentResponse.num_functions() != num_curr_fns) {
-    currentResponse.reshape(num_curr_fns, currentVariables.cv(),
+  if (currentResponse.num_functions() != numFns) {
+    currentResponse.reshape(numFns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),
                             !currentResponse.function_hessians().empty());
 

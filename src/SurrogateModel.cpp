@@ -76,7 +76,9 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
 {
   bool error_flag = false;
   // Check for compatible array sizing between sub_model and currentResponse
-  size_t sm_num_fns = sub_model.qoi();
+  // > DataFitSurrModel consumes aggregations...
+  // > HierarchSurrModel has deactivated this check...
+  size_t sm_num_fns = sub_model.qoi(); // bypass lower level aggregation
   if ( sm_num_fns != numFns ) {
     Cerr << "Error: incompatibility between approximate and actual model "
 	 << "response function sets\n       within SurrogateModel: "

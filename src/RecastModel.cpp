@@ -311,12 +311,11 @@ void RecastModel::
 init_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 	      short recast_resp_order, bool reshape_vars)
 {
-  size_t num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
+  numFns = num_recast_primary_fns + num_recast_secondary_fns;
 
   // recasting of response
   const Response& sub_model_resp = subModel.current_response();
   currentResponse = sub_model_resp.copy();
-  numFns = num_recast_fns;
 
   bool grad_flag = (recast_resp_order & 2),
     hess_flag = (recast_resp_order & 4),
@@ -327,7 +326,6 @@ init_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
        sub_model_resp.num_functions() != numFns       ||
        grad_flag != sm_grad_flag || hess_flag != sm_hess_flag )
     currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
-
 }
 
 
