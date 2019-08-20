@@ -160,10 +160,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 	!actualModel.derivative_estimation())
       cache = true;
   }
-  const StringArray fn_labels = (actualModel.is_null()) ? 
-    currentResponse.function_labels() : actualModel.response_labels();
+  // size approxInterface based on currentResponse, which is constructed from
+  // DB response spec, since actualModel could contain response aggregations
   approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
-    cache, am_interface_id, fn_labels), false);
+    cache, am_interface_id, currentResponse.function_labels()), false);
 
   // initialize the DiscrepancyCorrection instance
   deltaCorr.initialize(*this, surrogateFnIndices, corrType,
@@ -282,8 +282,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   else
     hessianType = "none";
 
-  Cout << "DFS gradientType = " << gradientType 
-       << " DFS hessianType = " << hessianType << std::endl;
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "DFS gradientType = " << gradientType 
+	 << " DFS hessianType = " << hessianType << std::endl;
 
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to
   // defaults if needed.

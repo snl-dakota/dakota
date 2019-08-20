@@ -489,46 +489,47 @@ void SurrogateModel::
 asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 	  ShortArray& approx_asv, bool build_flag)
 {
+  size_t i, num_qoi = qoi();
   switch (responseMode) {
   case AGGREGATED_MODELS: {
     // split actual & approx asv (can ignore build_flag)
-    if (orig_asv.size() != 2*numFns) {
+    if (orig_asv.size() != 2*num_qoi) {
       Cerr << "Error: ASV not aggregated for AGGREGATED_MODELS mode in "
 	   << "SurrogateModel::asv_split()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    approx_asv.resize(numFns); actual_asv.resize(numFns); size_t i;
+    approx_asv.resize(num_qoi); actual_asv.resize(num_qoi);
     // aggregated response uses {HF,LF} order:
-    for (i=0; i<numFns; ++i)
+    for (i=0; i<num_qoi; ++i)
       actual_asv[i] = orig_asv[i];
-    for (i=0; i<numFns; ++i)
-      approx_asv[i] = orig_asv[i+numFns];
+    for (i=0; i<num_qoi; ++i)
+      approx_asv[i] = orig_asv[i+num_qoi];
     break;
   }
   default: // non-aggregated modes have consistent ASV request vector lengths
-    if (surrogateFnIndices.size() == numFns) {
+    if (surrogateFnIndices.size() == num_qoi) {
       if (build_flag) actual_asv = orig_asv;
       else            approx_asv = orig_asv;
     }
     // else response set is mixed:
     else if (build_flag) { // construct mode: define actual_asv
-      actual_asv.assign(numFns, 0);
+      actual_asv.assign(num_qoi, 0);
       for (ISIter it=surrogateFnIndices.begin();
 	   it!=surrogateFnIndices.end(); ++it)
 	actual_asv[*it] = orig_asv[*it];
     }
     else { // eval mode: define actual_asv & approx_asv contributions
-      for (size_t i=0; i<numFns; ++i) {
+      for (i=0; i<num_qoi; ++i) {
 	short orig_asv_val = orig_asv[i];
 	if (orig_asv_val) {
 	  if (surrogateFnIndices.count(i)) {
 	    if (approx_asv.empty()) // keep empty if no active requests
-	      approx_asv.assign(numFns, 0);
+	      approx_asv.assign(num_qoi, 0);
 	    approx_asv[i] = orig_asv_val;
 	  }
 	  else {
 	    if (actual_asv.empty()) // keep empty if no active requests
-	      actual_asv.assign(numFns, 0);
+	      actual_asv.assign(num_qoi, 0);
 	    actual_asv[i] = orig_asv_val;
 	  }
 	}
