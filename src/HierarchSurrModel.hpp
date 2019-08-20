@@ -300,12 +300,12 @@ inline HierarchSurrModel::~HierarchSurrModel()
 inline size_t HierarchSurrModel::qoi() const
 {
   switch (responseMode) {
-  // Note: resize_response() aggregaates {truth,surrogate}_model().num_fns(),
+  // Note: resize_response() aggregates {truth,surrogate}_model().num_fns(),
   //       such that code below is a bit more general that currResp num_fns/2
   case AGGREGATED_MODELS:
     return orderedModels[truthModelKey.front()].qoi();  break;
   default:
-    return response_size();                               break;
+    return response_size();                             break;
   }
 }
 

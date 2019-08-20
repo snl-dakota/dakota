@@ -83,9 +83,10 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation; support surrogate gradient evals
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
@@ -160,9 +161,11 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // TO DO: support surr Hessian evals in helper mode
-                            // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation.
+  // TO DO: support surrogate Hessians in helper mode.
+  ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);

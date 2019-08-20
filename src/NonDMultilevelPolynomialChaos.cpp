@@ -154,9 +154,10 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
@@ -237,10 +238,10 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   UShortArray exp_orders; String pt_reuse; // empty for integration approaches
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                             // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
+  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
@@ -318,11 +319,11 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
   if (!import_build_pts_file.empty()) pt_reuse = "all";
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                             // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
+  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, import_build_pts_file, import_build_format,
@@ -499,8 +500,10 @@ bool NonDMultilevelPolynomialChaos::resize()
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7);
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Resize: support approx Hessians.
+  ShortArray asv(g_u_model.qoi(), 7);
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||

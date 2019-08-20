@@ -615,7 +615,7 @@ inline bool RecastModel::finalize_mapping()
 
 
 inline size_t RecastModel::qoi() const
-{ return subModel.qoi(); }
+{ return subModel.qoi(); } // TO DO: check for response mapping
 
 
 inline Iterator& RecastModel::subordinate_iterator()

@@ -75,27 +75,29 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
 {
   bool error_flag = false;
-  // Check for compatible array sizing between sub_model and currentResponse
-  // > DataFitSurrModel consumes aggregations...
-  // > HierarchSurrModel has deactivated this check...
-  size_t sm_num_fns = sub_model.qoi(); // bypass lower level aggregation
-  if ( sm_num_fns != numFns ) {
+  // Check for compatible array sizing between sub_model and currentResponse.
+  // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
+  // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
+  // future, aggregations may span a broader model hierarchy (e.g., factor =
+  // orderedModels.size()).  In general, the fn count check needs to be
+  // specialized in the derived classes.
+  size_t sm_qoi = sub_model.qoi();
+  if ( numFns % sm_qoi || ( numFns != sm_qoi && numFns != 2*sm_qoi ) ) {
     Cerr << "Error: incompatibility between approximate and actual model "
-	 << "response function sets\n       within SurrogateModel: "
-	 << numFns << " approximate and " << sm_num_fns << " actual functions."
-	 << "\n       Check consistency of responses specifications."
-	 << std::endl;
+	 << "response function sets\n       within SurrogateModel: " << numFns
+	 << " approximate and " << sm_qoi << " actual functions.\n       "
+	 << "Check consistency of responses specifications." << std::endl;
     error_flag = true;
   }
 
   // Check for compatible array sizing between sub_model and currentVariables,
   // accounting for the use of different views in different variables sets:
-  //   > common case for local/multipoint/hierarchical: the variables view in
-  //     sub_model and currentVariables are the same.
-  //   > common case for global: sub_model has an "All" vars view due to DACE
-  //     usage and the currentVariables view may vary depending on the type
-  //     of iterator interfaced with this SurrogateModel.  Enforcing an "all"
-  //     view in the data returned from currentVariables ensures consistency.
+  // > common case for local/multipoint/hierarchical: the variables view in
+  //   sub_model and currentVariables are the same.
+  // > common case for global: sub_model has an "All" vars view due to DACE
+  //   usage and the currentVariables view may vary depending on the type
+  //   of iterator interfaced with this SurrogateModel.  Enforcing an "all"
+  //   view in the data returned from currentVariables ensures consistency.
   short cv_active_view = currentVariables.view().first;
   short sm_active_view = sub_model.current_variables().view().first;
   if ( cv_active_view == sm_active_view ) {
