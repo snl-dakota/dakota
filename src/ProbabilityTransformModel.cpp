@@ -237,41 +237,50 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::STD_EXPONENTIAL: // [0, mean + bnd std devs] for beta=1
 	  c_l_bnds[cv_cntr] = 0.;    c_u_bnds[cv_cntr] = 1.+bnd;  break;
 	case Pecos::STD_GAMMA: {
-	  Real mean, stdev;
-	  Pecos::GammaRandomVariable::moments_from_params(
-	    rv_i.pull_parameter<Real>(Pecos::GA_ALPHA), 1., mean, stdev);
+	  Real alpha, mean, stdev;
+	  rv_i.pull_parameter(Pecos::GA_ALPHA, alpha);
+	  Pecos::GammaRandomVariable::
+	    moments_from_params(alpha, 1., mean, stdev);
 	  c_l_bnds[cv_cntr] = 0.;
 	  c_u_bnds[cv_cntr] = mean + bnd * stdev;  break;
 	}
 	case Pecos::BOUNDED_NORMAL: {
 	  // Note: as for NIDR initialization, we use mean,std_dev parameters
 	  // rather than computing actual mean,std_dev of bounded distribution
-	  Real l_bnd = rv_i.pull_parameter<Real>(Pecos::N_LWR_BND),
-	       u_bnd = rv_i.pull_parameter<Real>(Pecos::N_UPR_BND);
+	  Real mean, stdev, l_bnd, u_bnd;
+	  rv_i.pull_parameter(Pecos::N_MEAN,    mean);
+	  rv_i.pull_parameter(Pecos::N_STD_DEV, stdev);
+	  rv_i.pull_parameter(Pecos::N_LWR_BND, l_bnd);
+	  rv_i.pull_parameter(Pecos::N_UPR_BND, u_bnd);
 	  c_l_bnds[cv_cntr] = (l_bnd > -dbl_inf) ? l_bnd : // use spec bound
-	    rv_i.pull_parameter<Real>(Pecos::N_MEAN) - bnd *  // infer bound
-	    rv_i.pull_parameter<Real>(Pecos::N_STD_DEV);
+	    mean - bnd * stdev;  // infer bound
 	  c_u_bnds[cv_cntr] = (u_bnd <  dbl_inf) ? u_bnd : // use spec bound
-	    rv_i.pull_parameter<Real>(Pecos::N_MEAN) + bnd *  // infer bound
-	    rv_i.pull_parameter<Real>(Pecos::N_STD_DEV);
+	    mean + bnd * stdev; // infer bound
 	  break;
 	}
-	case Pecos::LOGNORMAL: // semi-bounded distribution
+	case Pecos::LOGNORMAL: { // semi-bounded distribution
+	  Real mean, stdev;
+	  rv_i.pull_parameter(Pecos::LN_MEAN, mean);
+	  rv_i.pull_parameter(Pecos::LN_STD_DEV, stdev);
 	  c_l_bnds[cv_cntr] = 0.;
-	  c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_MEAN)
-	              + bnd * rv_i.pull_parameter<Real>(Pecos::LN_STD_DEV);
+	  c_u_bnds[cv_cntr] = mean + bnd * stdev;
 	  break;
+	}
 	case Pecos::BOUNDED_LOGNORMAL: {
-	  c_l_bnds[cv_cntr]
-	    = rv_i.pull_parameter<Real>(Pecos::LN_LWR_BND); // spec or 0
-	  Real u_bnd  = rv_i.pull_parameter<Real>(Pecos::LN_UPR_BND);
+	  Real l_bnd, u_bnd;
+	  rv_i.pull_parameter(Pecos::LN_LWR_BND, l_bnd);
+	  rv_i.pull_parameter(Pecos::LN_UPR_BND, u_bnd);
+	  c_l_bnds[cv_cntr] = l_bnd; // spec or 0
 	  if (u_bnd < dbl_inf)
 	    c_u_bnds[cv_cntr] = u_bnd; // use spec bound
-	  else                         // infer bound
+	  else {                       // infer bound
+	    Real mean, stdev;
+	    rv_i.pull_parameter(Pecos::LN_MEAN,    mean);
+	    rv_i.pull_parameter(Pecos::LN_STD_DEV, stdev);
 	    // Note: as for NIDR initialization, we use mean,std_dev parameters
 	    // rather than computing actual mean,std_dev of bounded distribution
-	    c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_MEAN)
-	                + bnd * rv_i.pull_parameter<Real>(Pecos::LN_STD_DEV);
+	    c_u_bnds[cv_cntr] = mean + bnd * stdev;
+	  }
 	  break;
 	}
 	case Pecos::LOGUNIFORM: case Pecos::TRIANGULAR:
@@ -283,26 +292,29 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	// Note: Could use subModel bounds for the following cases as well
 	// except NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
 	case Pecos::GUMBEL: { // unbounded distribution
-	  Real mean, stdev;
-	  Pecos::GumbelRandomVariable::moments_from_params(
-	    rv_i.pull_parameter<Real>(Pecos::GU_ALPHA),
-	    rv_i.pull_parameter<Real>(Pecos::GU_BETA), mean, stdev);
+	  Real alpha, beta, mean, stdev;
+	  rv_i.pull_parameter(Pecos::GU_ALPHA, alpha);
+	  rv_i.pull_parameter(Pecos::GU_BETA,  beta);
+	  Pecos::GumbelRandomVariable::
+	    moments_from_params(alpha, beta, mean, stdev);
 	  c_l_bnds[cv_cntr] = mean - bnd * stdev;
 	  c_u_bnds[cv_cntr] = mean + bnd * stdev;
 	  break;
 	}
 	case Pecos::FRECHET: { // semibounded distribution
-	  Real mean, stdev;
-	  Pecos::FrechetRandomVariable::moments_from_params(
-	    rv_i.pull_parameter<Real>(Pecos::F_ALPHA),
-	    rv_i.pull_parameter<Real>(Pecos::F_BETA), mean, stdev);
+	  Real alpha, beta, mean, stdev;
+	  rv_i.pull_parameter(Pecos::F_ALPHA, alpha);
+	  rv_i.pull_parameter(Pecos::F_BETA,  beta);
+	  Pecos::FrechetRandomVariable::
+	    moments_from_params(alpha, beta, mean, stdev);
 	  c_l_bnds[cv_cntr] = 0.; c_u_bnds[cv_cntr] = mean + bnd * stdev; break;
 	}
 	case Pecos::WEIBULL: { // semibounded distribution
-	  Real mean, stdev;
-	  Pecos::WeibullRandomVariable::moments_from_params(
-	    rv_i.pull_parameter<Real>(Pecos::W_ALPHA),
-	    rv_i.pull_parameter<Real>(Pecos::W_BETA), mean, stdev);
+	  Real alpha, beta, mean, stdev;
+	  rv_i.pull_parameter(Pecos::W_ALPHA, alpha);
+	  rv_i.pull_parameter(Pecos::W_BETA,  beta);
+	  Pecos::WeibullRandomVariable::
+	    moments_from_params(alpha, beta, mean, stdev);
 	  c_l_bnds[cv_cntr] = 0.; c_u_bnds[cv_cntr] = mean + bnd * stdev; break;
 	}
 	}
@@ -350,13 +362,13 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	  c_l_bnds[cv_cntr] = 0.;        c_u_bnds[cv_cntr] = dbl_inf;   break;
 	case Pecos::BOUNDED_NORMAL:
 	  // can't rely on subModel bounds since could be 1-sided
-	  c_l_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::N_LWR_BND);
-	  c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::N_UPR_BND);
+	  rv_i.pull_parameter(Pecos::N_LWR_BND, c_l_bnds[cv_cntr]);
+	  rv_i.pull_parameter(Pecos::N_UPR_BND, c_u_bnds[cv_cntr]);
 	  break;
 	case Pecos::BOUNDED_LOGNORMAL:
 	  // can't rely on subModel bounds since could be 1-sided
-	  c_l_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_LWR_BND);
-	  c_u_bnds[cv_cntr] = rv_i.pull_parameter<Real>(Pecos::LN_UPR_BND);
+	  rv_i.pull_parameter(Pecos::LN_LWR_BND, c_l_bnds[cv_cntr]);
+	  rv_i.pull_parameter(Pecos::LN_UPR_BND, c_u_bnds[cv_cntr]);
 	  break;
 	case Pecos::LOGUNIFORM:  case Pecos::TRIANGULAR:
 	case Pecos::HISTOGRAM_BIN:                     // bounded distributions

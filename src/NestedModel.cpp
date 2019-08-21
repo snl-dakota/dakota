@@ -3208,12 +3208,10 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Normal, location & scale are mean & std deviation.
   case Pecos::N_LOCATION: { // a translation with no change in shape/scale
-    Real  mean = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::N_MEAN);
-    Real l_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND);
-    Real u_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND);
+    Real mean, l_bnd, u_bnd;
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN, mean);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND, u_bnd);
     Real delta = r_var - mean;
     // translate: change bounds by same amount as mean
     sm_mvd_rep->push_parameter(mapped_index, Pecos::N_MEAN, r_var);
@@ -3225,13 +3223,11 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
     break;
   }
   case Pecos::N_SCALE: { // change in shape/scale without translation
-    Real  mean = sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN);
-    Real stdev = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::N_STD_DEV);
-    Real l_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND);
-    Real u_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND);
+    Real mean, stdev, l_bnd, u_bnd;
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN, mean);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_STD_DEV, stdev);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND, u_bnd);
     // scale: preserve number of std deviations where l,u bound occurs
     sm_mvd_rep->push_parameter(mapped_index, Pecos::N_STD_DEV, r_var);
     Real dbl_inf = std::numeric_limits<Real>::infinity();
@@ -3255,10 +3251,9 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // user to convert).  For Uniform, location & scale are center & range.
   case Pecos::U_LOCATION: {
     // translate: change both bounds by same amount
-    Real  l_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND);
-    Real  u_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND);
+    Real l_bnd, u_bnd;
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND, u_bnd);
     Real center = (u_bnd + l_bnd) / 2., delta = r_var - center;
     sm_mvd_rep->push_parameter(mapped_index, Pecos::U_LWR_BND, l_bnd + delta);
     sm_mvd_rep->push_parameter(mapped_index, Pecos::U_UPR_BND, u_bnd + delta);
@@ -3266,10 +3261,9 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   }
   case Pecos::U_SCALE: {
     // scale: move bounds in/out by same amount about consistent center
-    Real  l_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND);
-    Real  u_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND);
+    Real l_bnd, u_bnd;
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND, u_bnd);
     Real center = (u_bnd + l_bnd) / 2., half_range = r_var / 2.;
     sm_mvd_rep->
       push_parameter(mapped_index, Pecos::U_LWR_BND, center-half_range);
@@ -3285,11 +3279,10 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // user to convert).  For Triangular, location & scale are mode & range.
   case Pecos::T_LOCATION: {
     // translate: change mode and both bounds by same amount
-    Real  mode = sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE);
-    Real l_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND);
-    Real u_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND);
+    Real mode, l_bnd, u_bnd;
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE, mode);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND, u_bnd);
     Real delta = r_var - mode;
     sm_mvd_rep->push_parameter(mapped_index, Pecos::T_MODE,    r_var);
     sm_mvd_rep->push_parameter(mapped_index, Pecos::T_LWR_BND, l_bnd + delta);
@@ -3298,11 +3291,10 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   }
   case Pecos::T_SCALE: {
     // scale: preserve L/M/U proportions while scaling range
-    Real  mode = sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE);
-    Real l_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND);
-    Real u_bnd = sm_mvd_rep->
-      pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND);
+    Real mode, l_bnd, u_bnd;
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE, mode);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND, u_bnd);
     Real range = u_bnd - l_bnd, perc_l = (mode - l_bnd) / range,
         perc_u = (u_bnd - mode) / range;
     sm_mvd_rep->

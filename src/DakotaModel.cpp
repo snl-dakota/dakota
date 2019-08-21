@@ -4638,8 +4638,8 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
   start_rv = num_cdv + num_ddiv; end_rv = start_rv + num_ddsv;
   adsv_index = num_ddiv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
-    SSCIter max_it = max_string(mvd_rep->
-      pull_parameter<StringSet>(rv, Pecos::DSS_VALUES));
+    mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
+    SSCIter max_it = max_string(ss);
     vars.all_discrete_string_variable(*max_it, adsv_index);
   }
   // histogram pt string
@@ -4648,8 +4648,8 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
   start_rv = end_rv + num_ddrv + num_cauv + num_dauiv;
   end_rv = start_rv + num_dausv;  adsv_index += num_ddrv + num_dauiv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
-    SRMCIter max_it = max_string(mvd_rep->
-      pull_parameter<StringRealMap>(rv, Pecos::H_BIN_PAIRS));
+    mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::H_BIN_PAIRS, srm);
+    SRMCIter max_it = max_string(srm);
     vars.all_discrete_string_variable(max_it->first, adsv_index);
   }
   // discrete epistemic set string
@@ -4658,8 +4658,8 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
   start_rv = end_rv + num_daurv + num_ceuv + num_deuiv;
   end_rv = start_rv + num_deusv;  adsv_index += num_daurv + num_deuiv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
-    SRMCIter max_it = max_string(mvd_rep->
-      pull_parameter<StringRealMap>(rv, Pecos::DUSS_VALUES_PROBS));
+    mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::DUSS_VALUES_PROBS, srm);
+    SRMCIter max_it = max_string(srm);
     vars.all_discrete_string_variable(max_it->first, adsv_index);
   }
   // discrete state set string
@@ -4668,8 +4668,8 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
   start_rv = end_rv + num_deurv + num_csv + num_dsiv;
   end_rv = start_rv + num_dssv;  adsv_index += num_deurv + num_dsiv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
-    SSCIter max_it = max_string(mvd_rep->
-      pull_parameter<StringSet>(rv, Pecos::DSS_VALUES));
+    mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
+    SSCIter max_it = max_string(ss);
     vars.all_discrete_string_variable(*max_it, adsv_index);
   }
 }

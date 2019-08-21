@@ -1945,13 +1945,13 @@ void NonDBayesCalibration::prior_cholesky_factorization()
     for (i=0; i<numContinuousVars; ++i)
       priorCovCholFactor(i,i) = dist_moments[i].second;
     // for now we assume a variance when the inv gamma has infinite moments
-    for (i=0; i<numHyperparams; ++i)
-      if (invGammaDists[i].pull_parameter<Real>(Pecos::IGA_ALPHA) > 2.0)
-        priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) = 
-          invGammaDists[i].standard_deviation();
-      else
-        priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) =
-          0.05*(invGammaDists[i].mode());
+    Real alpha;
+    for (i=0; i<numHyperparams; ++i) {
+      invGammaDists[i].pull_parameter(Pecos::IGA_ALPHA, alpha);
+      priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) =
+	(alpha > 2.) ? invGammaDists[i].standard_deviation()
+	             : invGammaDists[i].mode() * 0.05;
+    }
   }
 }
 

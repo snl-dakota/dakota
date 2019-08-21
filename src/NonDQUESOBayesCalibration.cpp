@@ -924,13 +924,12 @@ void NonDQUESOBayesCalibration::init_proposal_covariance()
   if (numHyperparams > 0) {
     // all hyperparams utilize inverse gamma priors, which may not
     // have finite variance; use std_dev = 0.05 * mode
+    Real alpha;
     for (int i=0; i<numHyperparams; ++i) {
-      if (invGammaDists[i].pull_parameter<Real>(Pecos::IGA_ALPHA) > 2.0)
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
-          invGammaDists[i].variance();
-      else
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
-          std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
+      invGammaDists[i].pull_parameter(Pecos::IGA_ALPHA, alpha);
+      (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
+	(alpha > 2.) ? invGammaDists[i].variance() :
+	std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.);
     }
   }
 
