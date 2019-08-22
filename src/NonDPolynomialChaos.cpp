@@ -854,12 +854,11 @@ void NonDPolynomialChaos::initialize_u_space_model()
     //...
   }
 
+  // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
+  shared_data_rep->construct_basis(uSpaceModel.multivariate_distribution());
   // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
   // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
   shared_data_rep->coefficients_norms_flag(true);
-
-  // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
-  shared_data_rep->construct_basis(uSpaceModel.multivariate_distribution());
 
   // if numerical integration, manage u_space_sampler updates
   bool num_int = (expansionCoeffsApproach == Pecos::QUADRATURE           ||
