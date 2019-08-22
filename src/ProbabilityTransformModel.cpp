@@ -89,21 +89,21 @@ void ProbabilityTransformModel::initialize_dakota_variable_types()
   // {transformation,types,correlations}().  Defining the transformation is
   // deferred until Model::initialize_mapping() to allow for problem resizing.
 
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& x_svd = subModel.current_variables().shared_data();
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  x_svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
   size_t i, num_cdv, num_ddiv, num_ddsv, num_ddrv, num_cauv, num_dauiv,
     num_dausv, num_daurv, num_ceuv, num_deuiv, num_deusv, num_deurv,
     num_csv, num_dsiv,  num_dssv,  num_dsrv, rv_cntr = 0, cv_cntr = 0,
     div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
-  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-  svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-  svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
+  x_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  x_svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+  x_svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+  x_svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
   const Pecos::ShortArray& u_types = mvDist.random_variable_types();
 
   // Update active continuous/discrete variable types (needed for Model::
   // continuous_{probability_density,distribution_bounds,distribution_moment}())
-  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-  active_var_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
   if (cdv)
     for (i=0; i<num_cdv; ++i, ++rv_cntr, ++cv_cntr)
       continuous_variable_type(
@@ -206,11 +206,9 @@ update_model_bounds(bool truncate_bnds, Real bnd)
   RealVector c_u_bnds(num_cv, false);  c_u_bnds =  1.;
   Real dbl_inf = std::numeric_limits<Real>::infinity();
 
-  // active subset flags
-  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-  active_var_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
-  // raw counts
   const SharedVariablesData& x_svd = subModel.current_variables().shared_data();
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  x_svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
   size_t i, num_cdv, num_ddiv, num_ddsv, num_ddrv, num_cauv, num_dauiv,
     num_dausv, num_daurv, num_ceuv, num_deuiv, num_deusv, num_deurv,
     num_csv, num_dsiv,  num_dssv,  num_dsrv, cv_cntr = 0, rv_cntr = 0;

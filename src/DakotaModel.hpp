@@ -1192,10 +1192,6 @@ protected:
   void initialize_distribution_parameters(
     Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
 
-  /// helper to define active variable subsets based on active view
-  void active_var_subsets(bool& cdv, bool& ddv, bool& cauv, bool& dauv,
-			  bool& ceuv, bool& deuv, bool& csv, bool& dsv);
-
   /// default logic for defining asynchEvalFlag and evaluationCapacity
   /// based on ie_pl settings
   void set_ie_asynchronous_mode(int max_eval_concurrency);
@@ -3538,30 +3534,6 @@ inline SRMCIter Model::max_string(const StringRealMap& srm)
     if (srm_it->first.size() > max_it->first.size())
       max_it = srm_it;
   return max_it;
-}
-
-
-inline void Model::
-active_var_subsets(bool& cdv, bool& ddv, bool& cauv, bool& dauv, bool& ceuv,
-		   bool& deuv, bool& csv, bool& dsv)
-{
-  // Continuous/discrete distinction is finer granularity than is currently
-  // necessary, but is more readily extensible...
-
-  switch (currentVariables.view().first) {
-  case RELAXED_ALL:                 case MIXED_ALL:
-    cdv = ddv = cauv = dauv = ceuv = deuv = csv = dsv = true;        break;
-  case RELAXED_UNCERTAIN:           case MIXED_UNCERTAIN:
-    cdv = ddv = csv = dsv = false; cauv = dauv = ceuv = deuv = true; break;
-  case RELAXED_ALEATORY_UNCERTAIN:  case MIXED_ALEATORY_UNCERTAIN: 
-    cdv = ddv = ceuv = deuv = csv = dsv = false; cauv = dauv = true; break;
-  case RELAXED_EPISTEMIC_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN:
-    cdv = ddv = cauv = dauv = csv = dsv = false; ceuv = deuv = true; break;
-  case RELAXED_DESIGN:              case MIXED_DESIGN:
-    cauv = dauv = ceuv = deuv = csv = dsv = false; cdv = ddv = true; break;
-  case RELAXED_STATE:               case MIXED_STATE:
-    cdv = ddv = cauv = dauv = ceuv = deuv = false; csv = dsv = true; break;
-  }
 }
 
 

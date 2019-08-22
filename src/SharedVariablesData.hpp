@@ -120,12 +120,31 @@ private:
 			 size_t& num_cv, size_t& num_div, size_t& num_dsv,
 			 size_t& num_drv) const;
 
+  /// define active variable subsets based on active view
+  void active_subsets(bool& cdv,  bool& ddv,  bool& cauv, bool& dauv,
+		      bool& ceuv, bool& deuv, bool& csv,  bool& dsv) const;
+
+  /// convert index within active continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t cv_index_to_all_index(size_t cv_index) const;
+  /// convert index within all continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t acv_index_to_all_index(size_t acv_index) const;
+  /// convert index within active discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t div_index_to_all_index(size_t div_index) const;
   /// convert index within all discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adiv_index_to_all_index(size_t adiv_index) const;
+  /// convert index within active discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t dsv_index_to_all_index(size_t dsv_index) const;
   /// convert index within all discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adsv_index_to_all_index(size_t adsv_index) const;
+  /// convert index within active discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t drv_index_to_all_index(size_t drv_index) const;
   /// convert index within all discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adrv_index_to_all_index(size_t adrv_index) const;
@@ -205,7 +224,7 @@ private:
 
   /// the variables view pair containing active (first) and inactive (second)
   /// view enumerations
-  std::pair<short,short> variablesView;
+  std::pair<short, short> variablesView;
   /// start index of active continuous variables within allContinuousVars
   size_t cvStart;
   /// start index of active discrete integer variables within allDiscreteIntVars
@@ -430,6 +449,167 @@ state_counts(size_t& num_csv,  size_t& num_dsiv,
 }
 
 
+inline void SharedVariablesDataRep::
+active_subsets(bool& cdv, bool& ddv, bool& cauv, bool& dauv, bool& ceuv,
+	       bool& deuv, bool& csv, bool& dsv) const
+{
+  // Continuous/discrete distinction is finer granularity than is currently
+  // necessary, but is more readily extensible...
+
+  switch (variablesView.first) {
+  case RELAXED_ALL:                 case MIXED_ALL:
+    cdv = ddv = cauv = dauv = ceuv = deuv = csv = dsv = true;        break;
+  case RELAXED_UNCERTAIN:           case MIXED_UNCERTAIN:
+    cdv = ddv = csv = dsv = false; cauv = dauv = ceuv = deuv = true; break;
+  case RELAXED_ALEATORY_UNCERTAIN:  case MIXED_ALEATORY_UNCERTAIN: 
+    cdv = ddv = ceuv = deuv = csv = dsv = false; cauv = dauv = true; break;
+  case RELAXED_EPISTEMIC_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN:
+    cdv = ddv = cauv = dauv = csv = dsv = false; ceuv = deuv = true; break;
+  case RELAXED_DESIGN:              case MIXED_DESIGN:
+    cauv = dauv = ceuv = deuv = csv = dsv = false; cdv = ddv = true; break;
+  case RELAXED_STATE:               case MIXED_STATE:
+    cdv = ddv = cauv = dauv = ceuv = deuv = false; csv = dsv = true; break;
+  }
+}
+
+
+inline size_t SharedVariablesDataRep::
+cv_index_to_all_index(size_t cv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  size_t offset = 0, bound = 0;
+  if (cdv) {
+    bound += variablesCompsTotals[TOTAL_CDV];
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_CDV];
+  offset += variablesCompsTotals[TOTAL_DDIV]
+         +  variablesCompsTotals[TOTAL_DDSV]
+         +  variablesCompsTotals[TOTAL_DDRV];
+
+  if (cauv) {
+    bound += variablesCompsTotals[TOTAL_CAUV];
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_CAUV];
+  offset += variablesCompsTotals[TOTAL_DAUIV]
+         +  variablesCompsTotals[TOTAL_DAUSV]
+         +  variablesCompsTotals[TOTAL_DAURV];
+
+  if (ceuv) {
+    bound += variablesCompsTotals[TOTAL_CEUV];
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_CEUV];
+  offset += variablesCompsTotals[TOTAL_DEUIV]
+         +  variablesCompsTotals[TOTAL_DEUSV]
+         +  variablesCompsTotals[TOTAL_DEURV];
+
+  if (csv) {
+    bound += variablesCompsTotals[TOTAL_CSV];
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+
+  Cerr << "Error: CV index out of range in SharedVariablesDataRep::"
+       << "cv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+inline size_t SharedVariablesDataRep::
+acv_index_to_all_index(size_t acv_index) const
+{
+  size_t offset = 0, bound = variablesCompsTotals[TOTAL_CDV];
+  if (acv_index < bound)
+    return offset + acv_index;
+  offset += variablesCompsTotals[TOTAL_DDIV] + variablesCompsTotals[TOTAL_DDSV]
+         +  variablesCompsTotals[TOTAL_DDRV];
+  bound  += variablesCompsTotals[TOTAL_CAUV];
+  if (acv_index < bound)
+    return offset + acv_index;
+  offset += variablesCompsTotals[TOTAL_DAUIV]
+         +  variablesCompsTotals[TOTAL_DAUSV]
+         +  variablesCompsTotals[TOTAL_DAURV];
+  bound  += variablesCompsTotals[TOTAL_CEUV];
+  if (acv_index < bound)
+    return offset + acv_index;
+  offset += variablesCompsTotals[TOTAL_DEUIV]
+         +  variablesCompsTotals[TOTAL_DEUSV]
+         +  variablesCompsTotals[TOTAL_DEURV];
+  bound  += variablesCompsTotals[TOTAL_CSV];
+  if (acv_index < bound)
+    return offset + acv_index;
+
+  Cerr << "Error: ACV index out of range in SharedVariablesDataRep::"
+       << "acv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+inline size_t SharedVariablesDataRep::
+div_index_to_all_index(size_t div_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  size_t offset = variablesCompsTotals[TOTAL_CDV], bound = 0;
+  if (ddv) {
+    bound += variablesCompsTotals[TOTAL_DDIV];
+    if (div_index < bound)
+      return offset + div_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_DDIV];
+  offset += variablesCompsTotals[TOTAL_DDSV]
+         +  variablesCompsTotals[TOTAL_DDRV]
+         +  variablesCompsTotals[TOTAL_CAUV];
+
+  if (dauv) {
+    bound += variablesCompsTotals[TOTAL_DAUIV];
+    if (div_index < bound)
+      return offset + div_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_DAUIV];
+  offset += variablesCompsTotals[TOTAL_DAUSV]
+         +  variablesCompsTotals[TOTAL_DAURV]
+         +  variablesCompsTotals[TOTAL_CEUV];
+
+  if (deuv) {
+    bound += variablesCompsTotals[TOTAL_DEUIV];
+    if (div_index < bound)
+      return offset + div_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_DEUIV];
+  offset += variablesCompsTotals[TOTAL_DEUSV]
+         +  variablesCompsTotals[TOTAL_DEURV]
+         +  variablesCompsTotals[TOTAL_CSV];
+
+  if (dsv) {
+    bound += variablesCompsTotals[TOTAL_DSIV];
+    if (div_index < bound)
+      return offset + div_index;
+  }
+
+  Cerr << "Error: DIV index out of range in SharedVariablesDataRep::"
+       << "div_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
 inline size_t SharedVariablesDataRep::
 adiv_index_to_all_index(size_t adiv_index) const
 {
@@ -453,12 +633,65 @@ adiv_index_to_all_index(size_t adiv_index) const
   bound  += variablesCompsTotals[TOTAL_DSIV];
   if (adiv_index < bound)
     return offset + adiv_index;
-  else {
-    Cerr << "Error: ADIV index out of range in SharedVariablesDataRep::"
-	 << "adiv_index_to_all_index()" << std::endl;
-    abort_handler(VARS_ERROR);
-    return _NPOS;
+
+  Cerr << "Error: ADIV index out of range in SharedVariablesDataRep::"
+       << "adiv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+inline size_t SharedVariablesDataRep::
+dsv_index_to_all_index(size_t dsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  size_t bound = 0,
+    offset = variablesCompsTotals[TOTAL_CDV] + variablesCompsTotals[TOTAL_DDIV];
+  if (ddv) {
+    bound += variablesCompsTotals[TOTAL_DDSV];
+    if (dsv_index < bound)
+      return offset + dsv_index;
   }
+  else
+    offset += variablesCompsTotals[TOTAL_DDSV];
+  offset += variablesCompsTotals[TOTAL_DDRV]
+         +  variablesCompsTotals[TOTAL_CAUV]
+         +  variablesCompsTotals[TOTAL_DAUIV];
+
+  if (dauv) {
+    bound += variablesCompsTotals[TOTAL_DAUSV];
+    if (dsv_index < bound)
+      return offset + dsv_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_DAUSV];
+  offset += variablesCompsTotals[TOTAL_DAURV]
+         +  variablesCompsTotals[TOTAL_CEUV]
+         +  variablesCompsTotals[TOTAL_DEUIV];
+
+  if (deuv) {
+    bound += variablesCompsTotals[TOTAL_DEUSV];
+    if (dsv_index < bound)
+      return offset + dsv_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_DEUSV];
+  offset += variablesCompsTotals[TOTAL_DEURV]
+         +  variablesCompsTotals[TOTAL_CSV]
+         +  variablesCompsTotals[TOTAL_DSIV];
+
+  if (dsv) {
+    bound += variablesCompsTotals[TOTAL_DSSV];
+    if (dsv_index < bound)
+      return offset + dsv_index;
+  }
+
+  Cerr << "Error: DSV index out of range in SharedVariablesDataRep::"
+       << "dsv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
 }
 
 
@@ -487,12 +720,66 @@ adsv_index_to_all_index(size_t adsv_index) const
   bound  += variablesCompsTotals[TOTAL_DSSV];
   if (adsv_index < bound)
     return offset + adsv_index;
-  else {
-    Cerr << "Error: ADSV index out of range in SharedVariablesDataRep::"
-	 << "adsv_index_to_all_index()" << std::endl;
-    abort_handler(VARS_ERROR);
-    return _NPOS;
+
+  Cerr << "Error: ADSV index out of range in SharedVariablesDataRep::"
+       << "adsv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+inline size_t SharedVariablesDataRep::
+drv_index_to_all_index(size_t drv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  size_t bound = 0,
+    offset = variablesCompsTotals[TOTAL_CDV] + variablesCompsTotals[TOTAL_DDIV]
+           + variablesCompsTotals[TOTAL_DDSV];
+  if (ddv) {
+    bound += variablesCompsTotals[TOTAL_DDRV];
+    if (drv_index < bound)
+      return offset + drv_index;
   }
+  else
+    offset += variablesCompsTotals[TOTAL_DDRV];
+  offset += variablesCompsTotals[TOTAL_CAUV]
+         +  variablesCompsTotals[TOTAL_DAUIV]
+         +  variablesCompsTotals[TOTAL_DAUSV];
+
+  if (dauv) {
+    bound += variablesCompsTotals[TOTAL_DAURV];
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_DAURV];
+  offset += variablesCompsTotals[TOTAL_CEUV]
+         +  variablesCompsTotals[TOTAL_DEUIV]
+         +  variablesCompsTotals[TOTAL_DEUSV];
+
+  if (deuv) {
+    bound += variablesCompsTotals[TOTAL_DEURV];
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+  else
+    offset += variablesCompsTotals[TOTAL_DEURV];
+  offset += variablesCompsTotals[TOTAL_CSV]
+         +  variablesCompsTotals[TOTAL_DSIV]
+         +  variablesCompsTotals[TOTAL_DSSV];
+
+  if (dsv) {
+    bound += variablesCompsTotals[TOTAL_DSRV];
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+
+  Cerr << "Error: DRV index out of range in SharedVariablesDataRep::"
+       << "drv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
 }
 
 
@@ -522,12 +809,11 @@ adrv_index_to_all_index(size_t adrv_index) const
   bound  += variablesCompsTotals[TOTAL_DSRV];
   if (adrv_index < bound)
     return offset + adrv_index;
-  else {
-    Cerr << "Error: ADRV index out of range in SharedVariablesDataRep::"
-	 << "adrv_index_to_all_index()" << std::endl;
-    abort_handler(VARS_ERROR);
-    return _NPOS;
-  }
+
+  Cerr << "Error: ADRV index out of range in SharedVariablesDataRep::"
+       << "adrv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
 }
 
 
@@ -655,12 +941,31 @@ public:
   void state_counts(size_t& num_csv,  size_t& num_dsiv,
 		    size_t& num_dssv, size_t& num_dsrv) const;
 
+  /// define active variable subsets based on active view
+  void active_subsets(bool& cdv,  bool& ddv,  bool& cauv, bool& dauv,
+		      bool& ceuv, bool& deuv, bool& csv,  bool& dsv) const;
+
+  /// convert index within active continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t cv_index_to_all_index(size_t cv_index) const;
+  /// convert index within all continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t acv_index_to_all_index(size_t acv_index) const;
+  /// convert index within active discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t div_index_to_all_index(size_t div_index) const;
   /// convert index within all discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adiv_index_to_all_index(size_t adiv_index) const;
+  /// convert index within active discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t dsv_index_to_all_index(size_t dsv_index) const;
   /// convert index within all discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adsv_index_to_all_index(size_t adsv_index) const;
+  /// convert index within active discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t drv_index_to_all_index(size_t drv_index) const;
   /// convert index within all discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adrv_index_to_all_index(size_t adrv_index) const;
@@ -980,14 +1285,45 @@ state_counts(size_t& num_csv, size_t& num_dsiv, size_t& num_dssv,
 { svdRep->state_counts(num_csv, num_dsiv, num_dssv, num_dsrv); }
 
 
+inline void SharedVariablesData::
+active_subsets(bool& cdv,  bool& ddv,  bool& cauv, bool& dauv,
+	       bool& ceuv, bool& deuv, bool& csv,  bool& dsv) const
+{ return svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv); }
+
+
+inline size_t SharedVariablesData::
+cv_index_to_all_index(size_t cv_index) const
+{ return svdRep->cv_index_to_all_index(cv_index); }
+
+
+inline size_t SharedVariablesData::
+acv_index_to_all_index(size_t acv_index) const
+{ return svdRep->acv_index_to_all_index(acv_index); }
+
+
+inline size_t SharedVariablesData::
+div_index_to_all_index(size_t div_index) const
+{ return svdRep->div_index_to_all_index(div_index); }
+
+
 inline size_t SharedVariablesData::
 adiv_index_to_all_index(size_t adiv_index) const
 { return svdRep->adiv_index_to_all_index(adiv_index); }
 
 
 inline size_t SharedVariablesData::
+dsv_index_to_all_index(size_t dsv_index) const
+{ return svdRep->dsv_index_to_all_index(dsv_index); }
+
+
+inline size_t SharedVariablesData::
 adsv_index_to_all_index(size_t adsv_index) const
 { return svdRep->adsv_index_to_all_index(adsv_index); }
+
+
+inline size_t SharedVariablesData::
+drv_index_to_all_index(size_t drv_index) const
+{ return svdRep->drv_index_to_all_index(drv_index); }
 
 
 inline size_t SharedVariablesData::

@@ -79,8 +79,10 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
     optInterfGradientType = problem_db.get_string("responses.gradient_type");
     optInterfHessianType = problem_db.get_string("responses.hessian_type");
-    optInterfGradIdAnalytic = problem_db.get_is("responses.gradients.mixed.id_analytic");
-    optInterfHessIdAnalytic = problem_db.get_is("responses.hessians.mixed.id_analytic");
+    optInterfGradIdAnalytic
+      = problem_db.get_is("responses.gradients.mixed.id_analytic");
+    optInterfHessIdAnalytic
+      = problem_db.get_is("responses.hessians.mixed.id_analytic");
 
     numOptInterfIneqCon
       = problem_db.get_sizet("responses.num_nonlinear_inequality_constraints");
@@ -2188,278 +2190,319 @@ update_sub_model(const Variables& vars, const Constraints& cons)
   // variable mappings.  A few variables also support LOCATION and SCALE, and
   // this could be expanded more broadly in the future.
 
-  size_t i, num_var_map_2 = active2ACVarMapTargets.size();
+  size_t i, curr_i, num_var_map_2 = active2ACVarMapTargets.size(),
+    num_curr_cv  = vars.cv(),  num_curr_div = vars.div(),
+    num_curr_dsv = vars.dsv(), num_curr_drv = vars.drv(),
+    pacvm_index, padivm_index, padsvm_index, padrvm_index;
+  const SharedVariablesData& svd = vars.shared_data();
+  const SharedVariablesData& sm_svd
+    = subModel.current_variables().shared_data();
+  Pecos::MarginalsCorrDistribution* sm_mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)
+    subModel.multivariate_distribution().multivar_dist_rep();
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
-  size_t curr_i, num_curr_cv = vars.cv();
-  const RealVector& curr_c_vars   = vars.continuous_variables();
-  const RealVector& curr_c_l_bnds = cons.continuous_lower_bounds();
-  const RealVector& curr_c_u_bnds = cons.continuous_upper_bounds();
-  StringMultiArrayConstView curr_c_labels
-    = vars.continuous_variable_labels();
-  for (i=0; i<num_curr_cv; ++i) {
-    curr_i = cv_index_map(i, vars);
-    size_t pacvm_index = active1ACVarMapIndices[curr_i],
-      padivm_index = active1ADIVarMapIndices[curr_i],
-      padsvm_index = active1ADSVarMapIndices[curr_i],
+  if (num_curr_cv) {
+    const RealVector& curr_c_vars   = vars.continuous_variables();
+    const RealVector& curr_c_l_bnds = cons.continuous_lower_bounds();
+    const RealVector& curr_c_u_bnds = cons.continuous_upper_bounds();
+    StringMultiArrayConstView curr_c_labels
+      = vars.continuous_variable_labels();
+    for (i=0; i<num_curr_cv; ++i) {
+      curr_i = cv_index_map(i, vars);
+      pacvm_index  =  active1ACVarMapIndices[curr_i];
+      padivm_index = active1ADIVarMapIndices[curr_i];
+      padsvm_index = active1ADSVarMapIndices[curr_i];
       padrvm_index = active1ADRVarMapIndices[curr_i];
-    if (pacvm_index != _NPOS) {
-      short sacvm_target
-	= (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      if (sacvm_target == Pecos::NO_TARGET) {
-	subModel.all_continuous_variable(curr_c_vars[i], pacvm_index);
-	if (extraCVarsData[i]) {
-	  subModel.all_continuous_lower_bound(curr_c_l_bnds[i], pacvm_index);
-	  subModel.all_continuous_upper_bound(curr_c_u_bnds[i], pacvm_index);
-	  if (firstUpdate)
-	    subModel.all_continuous_variable_label(curr_c_labels[i],
-						   pacvm_index);
+      if (pacvm_index != _NPOS) {
+	short sacvm_target
+	  = (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	if (sacvm_target == Pecos::NO_TARGET) {
+	  subModel.all_continuous_variable(curr_c_vars[i], pacvm_index);
+	  if (extraCVarsData[i]) {
+	    subModel.all_continuous_lower_bound(curr_c_l_bnds[i], pacvm_index);
+	    subModel.all_continuous_upper_bound(curr_c_u_bnds[i], pacvm_index);
+	    // Note: this is more general than just bounds (all dist params):
+	    sm_mvd_rep->pull_distribution_parameters(mvDist,
+	      svd.cv_index_to_all_index(i),
+	      sm_svd.acv_index_to_all_index(pacvm_index));
+	    if (firstUpdate)
+	      subModel.all_continuous_variable_label(curr_c_labels[i],
+						     pacvm_index);
+	  }
+	}
+	else {
+	  size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	  real_variable_mapping(curr_c_vars[i], mapped_index, sacvm_target);
 	}
       }
-      else {
-	size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	real_variable_mapping(curr_c_vars[i], mapped_index, sacvm_target);
+      else if (padivm_index != _NPOS) {
+	short sadivm_target = (num_var_map_2) ? active2ADIVarMapTargets[curr_i]
+	  : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+	real_variable_mapping(curr_c_vars[i], mapped_index, sadivm_target);
       }
-    }
-    else if (padivm_index != _NPOS) {
-      short sadivm_target = (num_var_map_2) ? active2ADIVarMapTargets[curr_i]
-	: Pecos::NO_TARGET;
-      size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-      real_variable_mapping(curr_c_vars[i], mapped_index, sadivm_target);
-    }
-    else if (padsvm_index != _NPOS) {
-      short sadsvm_target = (num_var_map_2) ? active2ADSVarMapTargets[curr_i]
-	: Pecos::NO_TARGET;
-      size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-      real_variable_mapping(curr_c_vars[i], mapped_index, sadsvm_target);
-    }
-    else if (padrvm_index != _NPOS) {
-      short sadrvm_target = (num_var_map_2) ? active2ADRVarMapTargets[curr_i]
-	: Pecos::NO_TARGET;
-      size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-      real_variable_mapping(curr_c_vars[i], mapped_index, sadrvm_target);
+      else if (padsvm_index != _NPOS) {
+	short sadsvm_target = (num_var_map_2) ? active2ADSVarMapTargets[curr_i]
+	  : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	real_variable_mapping(curr_c_vars[i], mapped_index, sadsvm_target);
+      }
+      else if (padrvm_index != _NPOS) {
+	short sadrvm_target = (num_var_map_2) ? active2ADRVarMapTargets[curr_i]
+	  : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+	real_variable_mapping(curr_c_vars[i], mapped_index, sadrvm_target);
+      }
     }
   }
 
   // Map ACTIVE DISCRETE INTEGER VARIABLES from currentVariables
-  size_t num_curr_div = vars.div();
-  const IntVector& curr_di_vars   = vars.discrete_int_variables();
-  const IntVector& curr_di_l_bnds = cons.discrete_int_lower_bounds();
-  const IntVector& curr_di_u_bnds = cons.discrete_int_upper_bounds();
-  StringMultiArrayConstView curr_di_labels
-    = vars.discrete_int_variable_labels();
-  for (i=0; i<num_curr_div; ++i) {
-    curr_i = div_index_map(i, vars);
-    size_t pacvm_index = active1ACVarMapIndices[curr_i],
-      padivm_index = active1ADIVarMapIndices[curr_i],
-      padsvm_index = active1ADSVarMapIndices[curr_i],
+  if (num_curr_div) {
+    const IntVector& curr_di_vars   = vars.discrete_int_variables();
+    const IntVector& curr_di_l_bnds = cons.discrete_int_lower_bounds();
+    const IntVector& curr_di_u_bnds = cons.discrete_int_upper_bounds();
+    StringMultiArrayConstView curr_di_labels
+      = vars.discrete_int_variable_labels();
+    for (i=0; i<num_curr_div; ++i) {
+      curr_i = div_index_map(i, vars);
+      pacvm_index  =  active1ACVarMapIndices[curr_i];
+      padivm_index = active1ADIVarMapIndices[curr_i];
+      padsvm_index = active1ADSVarMapIndices[curr_i];
       padrvm_index = active1ADRVarMapIndices[curr_i];
-    if (pacvm_index != _NPOS) {
-      short sacvm_target
-	= (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-      integer_variable_mapping(curr_di_vars[i], mapped_index, sacvm_target);
-    }
-    else if (padivm_index != _NPOS) {
-      short sadivm_target = (num_var_map_2) ?
-	active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      if (sadivm_target == Pecos::NO_TARGET) {
-	subModel.all_discrete_int_variable(curr_di_vars[i], padivm_index);
-	if (extraDIVarsData[i]) {
-	  subModel.all_discrete_int_lower_bound(curr_di_l_bnds[i],padivm_index);
-	  subModel.all_discrete_int_upper_bound(curr_di_u_bnds[i],padivm_index);
-	  if (firstUpdate)
-	    subModel.all_discrete_int_variable_label(curr_di_labels[i],
-						     padivm_index);
+      if (pacvm_index != _NPOS) {
+	short sacvm_target
+	  = (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	integer_variable_mapping(curr_di_vars[i], mapped_index, sacvm_target);
+      }
+      else if (padivm_index != _NPOS) {
+	short sadivm_target = (num_var_map_2) ?
+	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	if (sadivm_target == Pecos::NO_TARGET) {
+	  subModel.all_discrete_int_variable(curr_di_vars[i], padivm_index);
+	  if (extraDIVarsData[i]) {
+	    subModel.all_discrete_int_lower_bound(curr_di_l_bnds[i],
+						  padivm_index);
+	    subModel.all_discrete_int_upper_bound(curr_di_u_bnds[i],
+						  padivm_index);
+	    // Note: this is more general than just bounds (all dist params):
+	    sm_mvd_rep->pull_distribution_parameters(mvDist,
+	      svd.div_index_to_all_index(i),
+	      sm_svd.adiv_index_to_all_index(padivm_index));
+	    if (firstUpdate)
+	      subModel.all_discrete_int_variable_label(curr_di_labels[i],
+						       padivm_index);
+	  }
+	}
+	else {
+	  size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+	  integer_variable_mapping(curr_di_vars[i], mapped_index,sadivm_target);
 	}
       }
-      else {
-	size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	integer_variable_mapping(curr_di_vars[i], mapped_index, sadivm_target);
+      else if (padsvm_index != _NPOS) {
+	short sadsvm_target = (num_var_map_2) ?
+	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	integer_variable_mapping(curr_di_vars[i], mapped_index, sadsvm_target);
       }
-    }
-    else if (padsvm_index != _NPOS) {
-      short sadsvm_target = (num_var_map_2) ?
-	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-      integer_variable_mapping(curr_di_vars[i], mapped_index, sadsvm_target);
-    }
-    else if (padrvm_index != _NPOS) {
-      short sadrvm_target = (num_var_map_2) ?
-	active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-      integer_variable_mapping(curr_di_vars[i], mapped_index, sadrvm_target);
+      else if (padrvm_index != _NPOS) {
+	short sadrvm_target = (num_var_map_2) ?
+	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+	integer_variable_mapping(curr_di_vars[i], mapped_index, sadrvm_target);
+      }
     }
   }
 
   // Map ACTIVE DISCRETE STRING VARIABLES from currentVariables
-  size_t num_curr_dsv = vars.dsv();
-  StringMultiArrayConstView curr_ds_vars = vars.discrete_string_variables();
-  StringMultiArrayConstView curr_ds_labels
-    = vars.discrete_string_variable_labels();
-  for (i=0; i<num_curr_dsv; ++i) {
-    curr_i = dsv_index_map(i, vars);
-    size_t pacvm_index  = active1ACVarMapIndices[curr_i],
-      padivm_index = active1ADIVarMapIndices[curr_i],
-      padsvm_index = active1ADSVarMapIndices[curr_i],
+  if (num_curr_dsv) {
+    StringMultiArrayConstView curr_ds_vars = vars.discrete_string_variables();
+    StringMultiArrayConstView curr_ds_labels
+      = vars.discrete_string_variable_labels();
+    for (i=0; i<num_curr_dsv; ++i) {
+      curr_i = dsv_index_map(i, vars);
+      pacvm_index  =  active1ACVarMapIndices[curr_i];
+      padivm_index = active1ADIVarMapIndices[curr_i];
+      padsvm_index = active1ADSVarMapIndices[curr_i];
       padrvm_index = active1ADRVarMapIndices[curr_i];
-    if (pacvm_index != _NPOS) {
-      short sacvm_target = (num_var_map_2) ?
-	active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-      string_variable_mapping(curr_ds_vars[i], mapped_index, sacvm_target);
-    }
-    else if (padivm_index != _NPOS) {
-      short sadivm_target = (num_var_map_2) ?
-	active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-      string_variable_mapping(curr_ds_vars[i], mapped_index, sadivm_target);
-    }
-    else if (padsvm_index != _NPOS) {
-      short sadsvm_target = (num_var_map_2) ?
-	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      if (sadsvm_target == Pecos::NO_TARGET) {
-	subModel.all_discrete_string_variable(curr_ds_vars[i], padsvm_index);
-	if (extraDSVarsData[i] && firstUpdate)
-	  subModel.all_discrete_string_variable_label(curr_ds_labels[i],
-						      padsvm_index);
+      if (pacvm_index != _NPOS) {
+	short sacvm_target = (num_var_map_2) ?
+	  active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	string_variable_mapping(curr_ds_vars[i], mapped_index, sacvm_target);
       }
-      else {
-	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	string_variable_mapping(curr_ds_vars[i], mapped_index, sadsvm_target);
+      else if (padivm_index != _NPOS) {
+	short sadivm_target = (num_var_map_2) ?
+	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+	string_variable_mapping(curr_ds_vars[i], mapped_index, sadivm_target);
       }
-    }
-    else if (padrvm_index != _NPOS) {
-      short sadrvm_target = (num_var_map_2) ?
-	active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-      string_variable_mapping(curr_ds_vars[i], mapped_index, sadrvm_target);
+      else if (padsvm_index != _NPOS) {
+	short sadsvm_target = (num_var_map_2) ?
+	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	if (sadsvm_target == Pecos::NO_TARGET) {
+	  subModel.all_discrete_string_variable(curr_ds_vars[i], padsvm_index);
+	  if (extraDSVarsData[i]) {
+	    // Note: this is more general than just bounds (all dist params):
+	    sm_mvd_rep->pull_distribution_parameters(mvDist,
+	      svd.dsv_index_to_all_index(i),
+	      sm_svd.adsv_index_to_all_index(padsvm_index));
+	    if (firstUpdate)
+	      subModel.all_discrete_string_variable_label(curr_ds_labels[i],
+							  padsvm_index);
+	  }
+	}
+	else {
+	  size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	  string_variable_mapping(curr_ds_vars[i], mapped_index, sadsvm_target);
+	}
+      }
+      else if (padrvm_index != _NPOS) {
+	short sadrvm_target = (num_var_map_2) ?
+	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+	string_variable_mapping(curr_ds_vars[i], mapped_index, sadrvm_target);
+      }
     }
   }
 
   // Map ACTIVE DISCRETE REAL VARIABLES from currentVariables
-  size_t num_curr_drv = vars.drv();
-  const RealVector& curr_dr_vars   = vars.discrete_real_variables();
-  const RealVector& curr_dr_l_bnds = cons.discrete_real_lower_bounds();
-  const RealVector& curr_dr_u_bnds = cons.discrete_real_upper_bounds();
-  StringMultiArrayConstView curr_dr_labels
-    = vars.discrete_real_variable_labels();
-  for (i=0; i<num_curr_drv; ++i) {
-    curr_i = drv_index_map(i, vars);
-    size_t pacvm_index  = active1ACVarMapIndices[curr_i],
-      padivm_index = active1ADIVarMapIndices[curr_i],
-      padsvm_index = active1ADSVarMapIndices[curr_i],
+  if (num_curr_drv) {
+    const RealVector& curr_dr_vars   = vars.discrete_real_variables();
+    const RealVector& curr_dr_l_bnds = cons.discrete_real_lower_bounds();
+    const RealVector& curr_dr_u_bnds = cons.discrete_real_upper_bounds();
+    StringMultiArrayConstView curr_dr_labels
+      = vars.discrete_real_variable_labels();
+    for (i=0; i<num_curr_drv; ++i) {
+      curr_i = drv_index_map(i, vars);
+      pacvm_index  =  active1ACVarMapIndices[curr_i];
+      padivm_index = active1ADIVarMapIndices[curr_i];
+      padsvm_index = active1ADSVarMapIndices[curr_i];
       padrvm_index = active1ADRVarMapIndices[curr_i];
-    if (pacvm_index != _NPOS) {
-      short sacvm_target = (num_var_map_2) ?
-	active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-      real_variable_mapping(curr_dr_vars[i], mapped_index, sacvm_target);
-    }
-    else if (padivm_index != _NPOS) {
-      short sadivm_target = (num_var_map_2) ?
-	active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-      real_variable_mapping(curr_dr_vars[i], mapped_index, sadivm_target);
-    }
-    else if (padsvm_index != _NPOS) {
-      short sadsvm_target = (num_var_map_2) ?
-	active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-      real_variable_mapping(curr_dr_vars[i], mapped_index, sadsvm_target);
-    }
-    else if (padrvm_index != _NPOS) {
-      short sadrvm_target = (num_var_map_2) ?
-	active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
-      if (sadrvm_target == Pecos::NO_TARGET) {
-	subModel.all_discrete_real_variable(curr_dr_vars[i], padrvm_index);
-	if (extraDRVarsData[i]) {
-	  subModel.all_discrete_real_lower_bound(curr_dr_l_bnds[i],
-						 padrvm_index);
-	  subModel.all_discrete_real_upper_bound(curr_dr_u_bnds[i],
-						 padrvm_index);
-	  if (firstUpdate)
-	    subModel.all_discrete_real_variable_label(curr_dr_labels[i],
-						      padrvm_index);
-	}
+      if (pacvm_index != _NPOS) {
+	short sacvm_target = (num_var_map_2) ?
+	  active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	real_variable_mapping(curr_dr_vars[i], mapped_index, sacvm_target);
       }
-      else {
-	size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	real_variable_mapping(curr_dr_vars[i], mapped_index, sadrvm_target);
+      else if (padivm_index != _NPOS) {
+	short sadivm_target = (num_var_map_2) ?
+	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+	real_variable_mapping(curr_dr_vars[i], mapped_index, sadivm_target);
+      }
+      else if (padsvm_index != _NPOS) {
+	short sadsvm_target = (num_var_map_2) ?
+	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	real_variable_mapping(curr_dr_vars[i], mapped_index, sadsvm_target);
+      }
+      else if (padrvm_index != _NPOS) {
+	short sadrvm_target = (num_var_map_2) ?
+	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
+	if (sadrvm_target == Pecos::NO_TARGET) {
+	  subModel.all_discrete_real_variable(curr_dr_vars[i], padrvm_index);
+	  if (extraDRVarsData[i]) {
+	    subModel.all_discrete_real_lower_bound(curr_dr_l_bnds[i],
+						   padrvm_index);
+	    subModel.all_discrete_real_upper_bound(curr_dr_u_bnds[i],
+						   padrvm_index);
+	    // Note: this is more general than just bounds (all dist params):
+	    sm_mvd_rep->pull_distribution_parameters(mvDist,
+	      svd.drv_index_to_all_index(i),
+	      sm_svd.adrv_index_to_all_index(padrvm_index));
+	    if (firstUpdate)
+	      subModel.all_discrete_real_variable_label(curr_dr_labels[i],
+							padrvm_index);
+	  }
+	}
+	else {
+	  size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+	  real_variable_mapping(curr_dr_vars[i], mapped_index, sadrvm_target);
+	}
       }
     }
   }
 
   // Map COMPLEMENT CONTINUOUS VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
-  size_t num_curr_ccv = vars.acv() - num_curr_cv;
-  const RealVector& curr_ac_vars   = vars.all_continuous_variables();
-  const RealVector& curr_ac_l_bnds = cons.all_continuous_lower_bounds();
-  const RealVector& curr_ac_u_bnds = cons.all_continuous_upper_bounds();
-  StringMultiArrayConstView curr_ac_labels
-    = vars.all_continuous_variable_labels();
-  for (i=0; i<num_curr_ccv; ++i) {
-    curr_i = ccv_index_map(i, vars);
-    size_t c1_index = complement1ACVarMapIndices[i];
-    subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
-    subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
-    subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
-    if (firstUpdate)
-      subModel.all_continuous_variable_label(curr_ac_labels[curr_i], c1_index);
+  size_t num_curr_ccv = vars.acv() - num_curr_cv, c1_index;
+  if (num_curr_ccv) {
+    const RealVector& curr_ac_vars   = vars.all_continuous_variables();
+    const RealVector& curr_ac_l_bnds = cons.all_continuous_lower_bounds();
+    const RealVector& curr_ac_u_bnds = cons.all_continuous_upper_bounds();
+    StringMultiArrayConstView curr_ac_labels
+      = vars.all_continuous_variable_labels();
+    for (i=0; i<num_curr_ccv; ++i) {
+      curr_i = ccv_index_map(i, vars);
+      c1_index = complement1ACVarMapIndices[i];
+      subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
+      subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
+      subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
+      if (firstUpdate)
+	subModel.all_continuous_variable_label(curr_ac_labels[curr_i],c1_index);
+    }
   }
 
   // Map COMPLEMENT DISCRETE INTEGER VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
   size_t num_curr_cdiv = vars.adiv() - num_curr_div;
-  const IntVector& curr_adi_vars   = vars.all_discrete_int_variables();
-  const IntVector& curr_adi_l_bnds = cons.all_discrete_int_lower_bounds();
-  const IntVector& curr_adi_u_bnds = cons.all_discrete_int_upper_bounds();
-  StringMultiArrayConstView curr_adi_labels
-    = vars.all_discrete_int_variable_labels();
-  for (i=0; i<num_curr_cdiv; ++i) {
-    curr_i = cdiv_index_map(i, vars);
-    size_t c1_index = complement1ADIVarMapIndices[i];
-    subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
-    subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
-    subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
-    if (firstUpdate)
-      subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
-					       c1_index);
+  if (num_curr_cdiv) {
+    const IntVector& curr_adi_vars   = vars.all_discrete_int_variables();
+    const IntVector& curr_adi_l_bnds = cons.all_discrete_int_lower_bounds();
+    const IntVector& curr_adi_u_bnds = cons.all_discrete_int_upper_bounds();
+    StringMultiArrayConstView curr_adi_labels
+      = vars.all_discrete_int_variable_labels();
+    for (i=0; i<num_curr_cdiv; ++i) {
+      curr_i = cdiv_index_map(i, vars);
+      c1_index = complement1ADIVarMapIndices[i];
+      subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
+      subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
+      subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
+      if (firstUpdate)
+	subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
+						 c1_index);
+    }
   }
 
   // Map COMPLEMENT DISCRETE STRING VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
   size_t num_curr_cdsv = vars.adsv() - num_curr_dsv;
-  StringMultiArrayConstView curr_ads_vars
-    = vars.all_discrete_string_variables();
-  StringMultiArrayConstView curr_ads_labels
-    = vars.all_discrete_string_variable_labels();
-  for (i=0; i<num_curr_cdsv; ++i) {
-    curr_i = cdsv_index_map(i, vars);
-    size_t c1_index = complement1ADSVarMapIndices[i];
-    subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
-    if (firstUpdate)
-      subModel.all_discrete_string_variable_label(curr_ads_labels[curr_i],
-						  c1_index);
+  if (num_curr_cdsv) {
+    StringMultiArrayConstView curr_ads_vars
+      = vars.all_discrete_string_variables();
+    StringMultiArrayConstView curr_ads_labels
+      = vars.all_discrete_string_variable_labels();
+    for (i=0; i<num_curr_cdsv; ++i) {
+      curr_i = cdsv_index_map(i, vars);
+      c1_index = complement1ADSVarMapIndices[i];
+      subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
+      if (firstUpdate)
+	subModel.all_discrete_string_variable_label(curr_ads_labels[curr_i],
+						    c1_index);
+    }
   }
 
   // Map COMPLEMENT DISCRETE REAL VARIABLES from currentVariables into
   // corresponding subModel type (using same logic as default active mapping)
   size_t num_curr_cdrv = vars.adrv() - num_curr_drv;
-  const RealVector& curr_adr_vars   = vars.all_discrete_real_variables();
-  const RealVector& curr_adr_l_bnds = cons.all_discrete_real_lower_bounds();
-  const RealVector& curr_adr_u_bnds = cons.all_discrete_real_upper_bounds();
-  StringMultiArrayConstView curr_adr_labels
-    = vars.all_discrete_real_variable_labels();
-  for (i=0; i<num_curr_cdrv; ++i) {
-    curr_i = cdrv_index_map(i, vars);
-    size_t c1_index = complement1ADRVarMapIndices[i];
-    subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
-    subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
-    subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
-    if (firstUpdate)
-      subModel.all_discrete_real_variable_label(curr_adr_labels[curr_i],
-						c1_index);
+  if (num_curr_cdrv) {
+    const RealVector& curr_adr_vars   = vars.all_discrete_real_variables();
+    const RealVector& curr_adr_l_bnds = cons.all_discrete_real_lower_bounds();
+    const RealVector& curr_adr_u_bnds = cons.all_discrete_real_upper_bounds();
+    StringMultiArrayConstView curr_adr_labels
+      = vars.all_discrete_real_variable_labels();
+    for (i=0; i<num_curr_cdrv; ++i) {
+      curr_i = cdrv_index_map(i, vars);
+      c1_index = complement1ADRVarMapIndices[i];
+      subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
+      subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
+      subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
+      if (firstUpdate)
+	subModel.all_discrete_real_variable_label(curr_adr_labels[curr_i],
+						  c1_index);
+    }
   }
 
   firstUpdate = false;
@@ -2974,15 +3017,13 @@ size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
       sacvm_target == Pecos::CR_UPR_BND)
     return pacvm_index; // no offset since all_continuous_* used to update
   else {
-    const SharedVariablesData& submodel_svd
-      = subModel.current_variables().shared_data();
+    const SharedVariablesData& sm_svd = sm_vars.shared_data();
     size_t num_rv, num_cdv, num_ddiv, num_ddsv, num_ddrv,
            num_nuv = 0, num_lnuv = 0,  num_uuv = 0, num_luuv = 0, num_tuv = 0,
            num_euv = 0, num_beuv = 0, num_gauv = 0, num_guuv = 0, num_fuv = 0;
-    submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
-    const ShortArray& rv_types = mvd_rep->types(); num_rv = rv_types.size();
+    sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+    const ShortArray& rv_types = mvDist.random_variable_types();
+    num_rv = rv_types.size();
     for (i=0; i<num_rv; ++i)
       switch (rv_types[i]) {
       case NORMAL:    case BOUNDED_NORMAL:    ++num_nuv;  break;
@@ -3085,14 +3126,12 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
   if (sadivm_target == Pecos::DR_LWR_BND || sadivm_target == Pecos::DR_UPR_BND)
     return padivm_index; // no offset since all_discrete_int_* used to update
   else {
-    const SharedVariablesData& submodel_svd
-      = subModel.current_variables().shared_data();
+    const SharedVariablesData& sm_svd = sm_vars.shared_data();
     size_t num_rv, num_cdv, num_ddiv, num_ddsv, num_ddrv,
            num_puv = 0, num_biuv = 0, num_nbiuv = 0, num_geuv = 0;
-    submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    Pecos::MarginalsCorrDistribution* mvd_rep
-      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
-    const ShortArray& rv_types = mvd_rep->types(); num_rv = rv_types.size();
+    sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+    const ShortArray& rv_types = mvDist.random_variable_types();
+    num_rv = rv_types.size();
     for (i=0; i<num_rv; ++i)
       switch (rv_types[i]) {
       case POISSON:           ++num_puv;   break;
@@ -3131,10 +3170,10 @@ size_t NestedModel::sm_adsv_index_map(size_t padsvm_index, short sadsvm_target)
   //case Pecos::DSS_LWR_BND: case Pecos::DSS_UPR_BND:
   //  return padsvm_index; break;
   //case Pecos::DAUS_DISTRIBUTION_PARAMETER:
-  //  const SharedVariablesData& submodel_svd
+  //  const SharedVariablesData& sm_svd
   //    = subModel.current_variables().shared_data();
   //  size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  //  submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  //  sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   //  return padsvm_index - num_ddsv;
   //  break;
   //}
@@ -3153,10 +3192,10 @@ size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
   //case Pecos::DSR_LWR_BND: case Pecos::DSR_UPR_BND:
   //  return padrvm_index; break;
   //case Pecos::DAURV_DISTRIBUTION_PARAMETER:
-  //  const SharedVariablesData& submodel_svd
+  //  const SharedVariablesData& sm_svd
   //    = subModel.current_variables().shared_data();
   //  size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  //  submodel_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  //  sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
   //  return padrvm_index - num_ddrv;
   //  break;
   //}

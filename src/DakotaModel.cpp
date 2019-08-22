@@ -495,7 +495,8 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   ShortArray rv_types(num_rv);  BitArray active_vars(num_rv);// init bits to 0
 
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-  active_var_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  currentVariables.shared_data().active_subsets(cdv,  ddv,  cauv, dauv,
+						ceuv, deuv, csv,  dsv);
   size_t i, start_rv = 0;
 
   // Implied by call to this function ... ?
@@ -804,7 +805,8 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     BitArray active_corr(num_rv); // init bits to 0; activate c/d auv below
 
     bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-    active_var_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+    currentVariables.shared_data().active_subsets(cdv,  ddv,  cauv, dauv,
+						  ceuv, deuv, csv,  dsv);
 
     // Continuous design
     // RANGE type could be design or state, so use count-based API
