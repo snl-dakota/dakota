@@ -129,11 +129,9 @@ initialize_solution_control(const String& control, const RealVector& cost)
       userDefinedConstraints.all_discrete_int_lower_bounds()[solnCntlADVIndex];
     break;
   case DISCRETE_DESIGN_SET_INT: case DISCRETE_STATE_SET_INT:
-    PCout << "Enter SimulationModel::initialize_solution_control()"<< std::endl;
     solnCntlRVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
     num_lev = mvd_rep->
       pull_parameter_size<IntSet>(solnCntlRVIndex, Pecos::DSI_VALUES);
-    PCout << "Exit SimulationModel::initialize_solution_control()" << std::endl;
     break;
   case DISCRETE_DESIGN_SET_STRING: case DISCRETE_STATE_SET_STRING:
     solnCntlRVIndex = svd.adsv_index_to_all_index(solnCntlADVIndex);

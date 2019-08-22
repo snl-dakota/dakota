@@ -982,17 +982,17 @@ state_counts(size_t& num_csv, size_t& num_dsiv, size_t& num_dssv,
 
 inline size_t SharedVariablesData::
 adiv_index_to_all_index(size_t adiv_index) const
-{ svdRep->adiv_index_to_all_index(adiv_index); }
+{ return svdRep->adiv_index_to_all_index(adiv_index); }
 
 
 inline size_t SharedVariablesData::
 adsv_index_to_all_index(size_t adsv_index) const
-{ svdRep->adsv_index_to_all_index(adsv_index); }
+{ return svdRep->adsv_index_to_all_index(adsv_index); }
 
 
 inline size_t SharedVariablesData::
 adrv_index_to_all_index(size_t adrv_index) const
-{ svdRep->adrv_index_to_all_index(adrv_index); }
+{ return svdRep->adrv_index_to_all_index(adrv_index); }
 
 
 inline void SharedVariablesData::initialize_active_start_counts()
