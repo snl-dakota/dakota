@@ -855,7 +855,13 @@ void NonDPolynomialChaos::initialize_u_space_model()
   }
 
   // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
-  shared_data_rep->construct_basis(uSpaceModel.multivariate_distribution());
+  const Pecos::MultivariateDistribution& u_mvd
+    = uSpaceModel.multivariate_distribution();
+  // construct the polynomial basis (shared by integration drivers)
+  shared_data_rep->construct_basis(u_mvd);
+  // mainly a run-time requirement, but also needed at construct time
+  // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
+  shared_data_rep->update_basis_distribution_parameters(u_mvd);
   // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
   // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
   shared_data_rep->coefficients_norms_flag(true);
