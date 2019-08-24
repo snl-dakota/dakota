@@ -1273,7 +1273,6 @@ void Model::evaluate()
     modelRep->evaluate();
   else { // letter
     ++modelEvalCntr;
-
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
           currentVariables, currentResponse, default_active_set());
@@ -1375,7 +1374,6 @@ void Model::evaluate_nowait()
     modelRep->evaluate_nowait();
   else { // letter
     ++modelEvalCntr;
-
     if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
       modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
           currentVariables, currentResponse, default_active_set());
@@ -1552,9 +1550,11 @@ const IntResponseMap& Model::synchronize()
     responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
     cachedResponseMap.clear();
 
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+      for(const auto  &id_r : responseMap)
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
+    }
     // return final map
-    for(const auto  &id_r : responseMap)
-      evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
     return responseMap;
   }
 }
@@ -1631,9 +1631,10 @@ const IntResponseMap& Model::synchronize_nowait()
     // using Model::cache_unmatched_response().
     responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
     cachedResponseMap.clear();
-    for(const auto  &id_r : responseMap)
-      evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
-
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+      for(const auto  &id_r : responseMap)
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second);
+    }
     return responseMap;
   }
 }
