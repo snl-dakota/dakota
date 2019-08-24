@@ -720,16 +720,29 @@ inline void copy_data( const RealMatrix &source, RealMatrix &dest,
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
-/// std::vector<ScalarType> - used by SurfpackApproximation constructor - RWH
-template <typename OrdinalType, typename ScalarType, typename VectorType> 
+/// VecType - used by APPS for HOPS vector types
+template <typename OrdinalType, typename ScalarType, typename VecType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv,
-	             VectorType& vec)
+	       VecType& vec)
 {
   OrdinalType size_sdv = sdv.length();
-  if (size_sdv > vec.size())
+  if (size_sdv != vec.size())
     vec.resize(size_sdv);
   for (OrdinalType i=0; i<size_sdv; ++i)
     vec[i] = sdv[i];
+}
+
+/// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
+/// std::vector<ScalarType> - used by DakotaModel
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2> 
+void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& sdv,
+	       std::vector<ScalarType2>& vec)
+{
+  OrdinalType size_sdv = sdv.length();
+  if (size_sdv != vec.size())
+    vec.resize(size_sdv);
+  for (OrdinalType i=0; i<size_sdv; ++i)
+    vec[i] = (ScalarType2)sdv[i];
 }
 
 /// copy Array<ScalarType> to
@@ -1349,9 +1362,7 @@ find_if(const ListT& c,
 // copy std::vector<VecType> to Real*
 // VectorType must support the length() method. 
 template<typename VectorType, typename ScalarType>
-void copy_data(const std::vector<VectorType>& va,
-               ScalarType * ptr,
-               int ptr_len)
+void copy_data(const std::vector<VectorType>& va, ScalarType * ptr, int ptr_len)
 {
   size_t total_len=0, cntr=0, num_vec = va.size();
   for( size_t i=0; i<num_vec; ++i)

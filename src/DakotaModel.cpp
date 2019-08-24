@@ -1005,8 +1005,10 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_P_PER_TRIAL,
           probDescDB.get_rv("variables.binomial_uncertain.prob_per_trial"));
-	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS,
-          probDescDB.get_iv("variables.binomial_uncertain.num_trials"));
+	UIntArray num_tr;
+	copy_data(probDescDB.get_iv(
+	  "variables.binomial_uncertain.num_trials"), num_tr);
+	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS, num_tr);
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
@@ -1015,9 +1017,11 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
 	mvd_rep->push_parameters(Pecos::NEGATIVE_BINOMIAL,
 	  Pecos::NBI_P_PER_TRIAL, probDescDB.get_rv(
           "variables.negative_binomial_uncertain.prob_per_trial"));
-	mvd_rep->push_parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS,
-          probDescDB.get_iv(
-	  "variables.negative_binomial_uncertain.num_trials"));
+	UIntArray num_tr;
+	copy_data(probDescDB.get_iv(
+	  "variables.negative_binomial_uncertain.num_trials"), num_tr);
+	mvd_rep->
+	  push_parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS, num_tr);
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
@@ -1030,14 +1034,19 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
       }
       num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
       if (num_rv) {
-	mvd_rep->push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_TOT_POP,
-          probDescDB.get_iv(
-	  "variables.hypergeometric_uncertain.total_population"));
-	mvd_rep->push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_SEL_POP,
-          probDescDB.get_iv(
-          "variables.hypergeometric_uncertain.selected_population"));
-	mvd_rep->push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_DRAWN,
-          probDescDB.get_iv("variables.hypergeometric_uncertain.num_drawn"));
+	UIntArray tot_pop, sel_pop, num_drawn;
+	copy_data(probDescDB.get_iv(
+	  "variables.hypergeometric_uncertain.total_population"), tot_pop);
+	copy_data(probDescDB.get_iv(
+          "variables.hypergeometric_uncertain.selected_population"), sel_pop);
+	copy_data(probDescDB.get_iv(
+	  "variables.hypergeometric_uncertain.num_drawn"), num_drawn);
+	mvd_rep->
+	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_TOT_POP, tot_pop);
+	mvd_rep->
+	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_SEL_POP, sel_pop);
+	mvd_rep->
+	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_DRAWN, num_drawn);
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
