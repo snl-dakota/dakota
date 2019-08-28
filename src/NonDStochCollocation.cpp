@@ -13,10 +13,10 @@
 #include "dakota_system_defs.hpp"
 #include "NonDStochCollocation.hpp"
 #include "NonDSparseGrid.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "SharedInterpPolyApproxData.hpp"
@@ -45,7 +45,8 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -115,7 +116,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler

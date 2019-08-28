@@ -15,6 +15,7 @@
 #include "C3Approximation.hpp"
 #include "SharedC3ApproxData.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
@@ -75,7 +76,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
 
     // > wrapping iteratedModel here applies the transformation on top of the
     //   incoming DataFitSurrModel --> insufficient for internal build.
-    //transform_model(iteratedModel, uSpaceModel, u_space_type); // only affects exp_sampler
+    //uSpaceModel.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    //  u_space_type), false); // only affects exp_sampler
 
     // > intruding into the DataFitSurrModel ctor is awkward because the
     //   daceIterator spec points to the actualModel spec (when DACE is active)
@@ -112,7 +114,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
 
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model, u_space_type); // retain dist bnds
+    g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+      u_space_type), false); // retain dist bnds
 
     Iterator u_space_sampler; // Evaluates true model
     if (numSamplesOnModel) { // not in method spec

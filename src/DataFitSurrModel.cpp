@@ -1056,9 +1056,9 @@ void DataFitSurrModel::build_global()
 	// region center first, we must take care to not include this point
 	// in the point reuse, since this would cause it to be used twice.
 	// Note: for NonD uses with u-space models, the global_bounds boolean
-	// in NonD::transform_model() needs to be set in order to allow test
-	// of transformed bounds in "region" reuse case.  For "all" reuse case
-	// typically used with data import, this is not necessary.
+	// in ProbabilityTransformModel ctor needs to be set in order to allow
+	// test of transformed bounds in "region" reuse case.  For "all" reuse
+	// case typically used with data import, this is not necessary.
 	if ( inside(db_vars) && !(anchor && // avoid anchor duplic
 	     active_vars_compare(db_vars, approx_data.anchor_variables())) ) {
 	  // Eval id definitions:

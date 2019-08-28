@@ -11,12 +11,12 @@
 //- Owner:       Mike Eldred, Sandia National Laboratories
 
 #include "NonDMultilevelPolynomialChaos.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSparseGrid.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "dakota_data_io.hpp"
@@ -65,7 +65,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -206,7 +207,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -286,7 +288,8 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -418,7 +421,8 @@ bool NonDMultilevelPolynomialChaos::resize()
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler

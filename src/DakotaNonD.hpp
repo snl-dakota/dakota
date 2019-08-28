@@ -182,10 +182,6 @@ protected:
   void print_multilevel_evaluation_summary(std::ostream& s,
 					   const Sizet3DArray& N_samp);
 
-  /// recast x_model from x-space to u-space to create u_model
-  void transform_model(Model& x_model, Model& u_model, short u_space_type,
-		       bool truncated_bounds = false, Real bound = 10.);
-
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
 		     unsigned short sample_type, int num_samples, int seed,

@@ -518,9 +518,6 @@ void NonDQUESOBayesCalibration::cache_chain()
   //  QUESO::GslVector qv(paramSpace->zeroVector());
   QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
 
-  Pecos::ProbabilityTransformation& nataf
-    = mcmcModel.probability_transformation();
-
   unsigned int lookup_failures = 0;
   unsigned int num_params = numContinuousVars + numHyperparams;
   for (int i=0; i<num_mcmc; ++i) {
@@ -534,7 +531,7 @@ void NonDQUESOBayesCalibration::cache_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      nataf.trans_U_to_X(u_rv, x_rv);
+      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
 
@@ -887,7 +884,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
       copy_gsl_partial(init_pt, *paramInitials, 0);
       break;
-    default: { // init_pt not already propagated to u-space: use nataf
+    default: { // init_pt not already propagated to u-space: use prob transform
       RealVector u_pt;
       mcmcModel.probability_transformation().trans_X_to_U(init_pt, u_pt);
       copy_gsl_partial(u_pt, *paramInitials, 0);

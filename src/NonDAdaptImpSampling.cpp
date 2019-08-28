@@ -17,8 +17,7 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-#include "RecastModel.hpp"
-#include "DakotaModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDLHSSampling.hpp"
@@ -64,7 +63,8 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   statsFlag = true;
-  transform_model(iteratedModel, uSpaceModel, STD_NORMAL_U, useModelBounds);
+  uSpaceModel.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    STD_NORMAL_U, useModelBounds), false);
 
   // maxEvalConcurrency defined from initial LHS size (numSamples)
 }
@@ -87,12 +87,12 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 {
   finalMomentsType = NO_MOMENTS;
 
-  if (x_space_model) {
+  if (x_space_model)
     // This option is currently unused.  If used in the future, care must be
     // taken to ensure that natafTransform.{x,u}_types() inherited from above
     // are synchronized with those from the calling context.
-    transform_model(model, uSpaceModel, STD_NORMAL_U, useModelBounds, 5.);
-  }
+    uSpaceModel.assign_rep(new ProbabilityTransformModel(model,
+      STD_NORMAL_U, useModelBounds, 5.), false);
   else
     uSpaceModel = model;
 
@@ -164,15 +164,13 @@ initialize(const RealVectorArray& acv_points, bool x_space_data,
       designPoint[i] = acv_pt_0[i];
   }
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
-
   RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
     RealVector& init_pt_i = initPointsU[i];
     init_pt_i.sizeUninitialized(numCAUV);
     if (x_space_data) {
-      nataf.trans_X_to_U(acv_points[i], acv_u_point);
+      uSpaceModel.probability_transformation().trans_X_to_U(acv_points[i],
+							    acv_u_point);
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
@@ -209,9 +207,6 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
       designPoint[i] = acv_pt_0[i];
   }
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
-
   RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
     const Real* acv_pt_i = acv_points[i];
@@ -220,7 +215,8 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
     if (x_space_data) {
       RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
 			     numContinuousVars);
-      nataf.trans_X_to_U(acv_pt_view, acv_u_point);
+      uSpaceModel.probability_transformation().trans_X_to_U(acv_pt_view,
+							    acv_u_point);
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
@@ -253,15 +249,13 @@ initialize(const RealVector& acv_point, bool x_space_data, size_t resp_index,
       designPoint[j] = acv_point[j];
   }
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
-
   initPointsU.resize(1);
   RealVector& init_pt = initPointsU[0];
   init_pt.sizeUninitialized(numCAUV);
   if (x_space_data) {
     RealVector acv_u_point;
-    nataf.trans_X_to_U(acv_point, acv_u_point);
+    uSpaceModel.probability_transformation().trans_X_to_U(acv_point,
+							  acv_u_point);
     for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       init_pt[cntr] = acv_u_point[j];
   }

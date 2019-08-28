@@ -12,12 +12,10 @@
 //- Checked by:
 //- Version:
 
-#include "RecastModel.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaNonD.hpp"
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
-#include "ProbabilityTransformModel.hpp"
 #include "dakota_tabular_io.hpp"
 #include "NormalRandomVariable.hpp"
 #include "ParallelLibrary.hpp"
@@ -133,15 +131,6 @@ void NonD::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
   iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
-}
-
-
-void NonD::
-transform_model(Model& x_model, Model& u_model, short u_space_type,
-		bool truncate_bnds, Real bnd)
-{
-  u_model.assign_rep(new ProbabilityTransformModel(x_model, u_space_type,
-						   truncate_bnds, bnd), false);
 }
 
 

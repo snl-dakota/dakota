@@ -221,7 +221,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       outputLevel, sample_reuse), false);
 
     // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
-    transform_model(g_hat_x_model, uSpaceModel, STD_NORMAL_U, true);
+    uSpaceModel.assign_rep(new
+      ProbabilityTransformModel(g_hat_x_model, STD_NORMAL_U, true), false);
     break;
   }
   case AMV_U: case AMV_PLUS_U: case TANA_U: case QMEA_U: {
@@ -229,7 +230,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 
     // Recast g(x) to G(u); truncate distribution bounds
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model, STD_NORMAL_U, true);
+    g_u_model.assign_rep(new
+      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true), false);
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -252,7 +254,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   }
   case NO_APPROX: { // Recast( iteratedModel )
     // Recast g(x) to G(u); truncate distribution bounds
-    transform_model(iteratedModel, uSpaceModel, STD_NORMAL_U, true);
+    uSpaceModel.assign_rep(new
+      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true), false);
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -355,8 +358,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String rng; // empty string: use default
 
-    // Note: truncated distribution bounds in transform_model() can be true
-    // (to bound an optimizer search) with AIS use_model_bounds = false
+    // Note: truncated distribution bounds in ProbabilityTransformModel can be
+    // true (to bound an optimizer search) with AIS use_model_bounds = false
     // (AIS will ignore these global bounds); extreme values are needed
     // to define bounds for outer PDF bins.
     bool x_model_flag = false, use_model_bounds = false, vary_pattern = true,
@@ -368,7 +371,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     switch (mppSearchType) {
     case AMV_X: case AMV_PLUS_X: case TANA_X: case QMEA_X: {
       Model g_u_model;
-      transform_model(iteratedModel, g_u_model, STD_NORMAL_U); // orig dist bnds
+      g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+	STD_NORMAL_U), false); // original distribution bnds
       import_sampler_rep = new NonDAdaptImpSampling(g_u_model, sample_type,
 	refine_samples, refine_seed, rng, vary_pattern, integrationRefinement,
 	cdfFlag, x_model_flag, use_model_bounds, track_extreme);

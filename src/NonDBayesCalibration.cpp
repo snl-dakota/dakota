@@ -15,7 +15,7 @@
 #include "NonDBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
-#include "RecastModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "DataTransformModel.hpp"
 #include "ScalingModel.hpp"
 #include "WeightingModel.hpp"
@@ -411,7 +411,8 @@ void NonDBayesCalibration::construct_mcmc_model()
     // these purposes, but +/-3 sigma has little to no effect in current tests.
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
-      transform_model(inbound_model, lhs_model, ASKEY_U, truncate_bnds);//, 3.);
+      lhs_model.assign_rep(new ProbabilityTransformModel(inbound_model,
+	ASKEY_U, truncate_bnds), false); //, 3.)
     else
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
@@ -433,8 +434,11 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   case NO_EMULATOR:
     mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
-    if (standardizedSpace) transform_model(inbound_model, mcmcModel, ASKEY_U);
-    else                   mcmcModel = inbound_model; // shared rep
+    if (standardizedSpace)
+      mcmcModel.assign_rep(new
+	ProbabilityTransformModel(inbound_model, ASKEY_U), false);
+    else
+      mcmcModel = inbound_model; // shared rep
 
     if (mcmcModel.gradient_type() != "none") mcmcDerivOrder |= 2;
     if (mcmcModel.hessian_type()  != "none") mcmcDerivOrder |= 4;

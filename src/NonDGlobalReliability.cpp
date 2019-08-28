@@ -25,7 +25,7 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
-#include "RecastModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "DakotaApproximation.hpp"
 #include "ProblemDescDB.hpp"
@@ -198,13 +198,15 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     // Recast g-hat(x) to G-hat(u); truncate dist bnds
-    transform_model(g_hat_x_model, uSpaceModel, STD_NORMAL_U, true, 5.);
+    uSpaceModel.assign_rep(new
+      ProbabilityTransformModel(g_hat_x_model, STD_NORMAL_U, true, 5.), false);
   }
   else { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u); truncate dist bnds
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model, STD_NORMAL_U, true, 5.);
+    g_u_model.assign_rep(new
+      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true, 5.), false);
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);
@@ -404,10 +406,10 @@ void NonDGlobalReliability::optimize_gaussian_process()
     //   in this x-space interval, which could result in very irregular coverage
     //   in u-space (it would be preferable to sample uniformly in u-space).
     // Note: this cannot currently be defined in the constructor.  EGRA_U does
-    //   this by defining bounds truncation in transform_model(), but EGRA_X
-    //   needs trans_U_to_X() which isn't available until dist parameters are
-    //   updated at run time.  Therefore, the code below sets the bounds for
-    //   the DataFitSurrModel, which then propagates to actualModel in
+    //   this by defining bounds truncation in ProbabilityTransformModel, but
+    //   EGRA_X needs trans_U_to_X() which isn't available until dist parameters
+    //   are updated at run time.  Therefore, the code below sets the bounds
+    //   for the DataFitSurrModel, which then propagates to actualModel in
     //   DataFitSurrModel::update_actual_model()
     // Note: since u-space type is STD_NORMAL_U, u-space aleatory variables
     //   are all unbounded and global bounds are set to +/-5.
@@ -649,15 +651,13 @@ void NonDGlobalReliability::optimize_gaussian_process()
       const Pecos::SurrogateData& gp_data
 	= uSpaceModel.approximation_data(respFnCount);
       size_t num_data_pts = gp_data.size(), num_vars = uSpaceModel.cv();
-      Pecos::ProbabilityTransformation& nataf
-	= uSpaceModel.probability_transformation();
       for (size_t i=0; i<num_data_pts; ++i) {
 	const RealVector& sams = gp_data.continuous_variables(i); // view
 	Real true_fn = gp_data.response_function(i);
 	
 	if (mppSearchType == EGRA_X) {
 	  RealVector sams_u(num_vars);
-	  nataf.trans_X_to_U(sams,sams_u);
+	  uSpaceModel.probability_transformation().trans_X_to_U(sams,sams_u);
 	  
 	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)

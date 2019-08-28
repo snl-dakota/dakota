@@ -467,9 +467,6 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
 
-  Pecos::ProbabilityTransformation& nataf
-    = mcmcModel.probability_transformation();
-
   int lookup_failures = 0, num_samples = acceptanceChain.numCols();
   acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
   for (int sample_index=0; sample_index < num_samples; ++sample_index) {
@@ -480,7 +477,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 		      numContinuousVars);
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
-      nataf.trans_U_to_X(u_rv, x_rv);
+      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
       // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval

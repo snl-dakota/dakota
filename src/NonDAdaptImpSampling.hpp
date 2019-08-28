@@ -138,7 +138,7 @@ private:
 
   /// importance sampling is performed in standardized probability space.
   /// This u-space model is either passed in (alternate constructor for
-  /// helper AIS) or constructed using transform_model() (standard
+  /// helper AIS) or constructed using ProbabilityTransformModel (standard
   /// constructor for stand-alone AIS)
   Model uSpaceModel;
 

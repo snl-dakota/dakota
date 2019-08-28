@@ -12,10 +12,10 @@
 
 #include "dakota_system_defs.hpp"
 #include "NonDPolynomialChaos.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSampling.hpp"
 #include "SharedPecosApproxData.hpp"
@@ -92,7 +92,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -189,7 +190,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -269,7 +271,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -660,7 +663,8 @@ bool NonDPolynomialChaos::resize()
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model, uSpaceType); // retain dist bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
