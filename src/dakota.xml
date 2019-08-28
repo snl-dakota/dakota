@@ -1766,6 +1766,23 @@
         </keyword>
 
 
+        <keyword  id="demo_tpl" name="demo_tpl" code="{N_mdm(utype,methodName_DEMO_TPL)}" label="demo_tpl" help="" minOccurs="1" group="Optimization: Local" >
+          &default_max_function_evaluations;
+	  &default_max_iterations;
+          &default_convergence_tolerance;
+          <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
+            <param type="REAL" />
+          </keyword>
+          <keyword  id="solution_target" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution target"  minOccurs="0" default="no target" >
+            <alias name="solution_accuracy"/>
+            <param type="REAL" />
+          </keyword>
+	  <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	    <param type="INPUT_FILE" />
+	  </keyword>
+        </keyword>
+
+
         <keyword  id="rol" name="rol" code="{N_mdm(utype,methodName_ROL)}" label="rol" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
 	  &default_max_iterations;
           <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >

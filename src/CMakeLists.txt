@@ -431,6 +431,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
     predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
+    DakotaTPLDataTransfer.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
@@ -762,6 +763,17 @@ if(HAVE_ROL)
   add_definitions("-DHAVE_ROL")
   set(iterator_src ${iterator_src} ROLOptimizer.cpp)
 endif(HAVE_ROL)
+
+if(HAVE_DEMO_TPL)
+  set(DAKOTA_DEMOTPL_ROOT_DIR "${Dakota_SOURCE_DIR}/packages/external/demo_tpl")
+  list(APPEND DAKOTA_INCDIRS 
+    ${DAKOTA_DEMOTPL_ROOT_DIR}/dakota_src
+    ${DAKOTA_DEMOTPL_ROOT_DIR}/src)
+  set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp)
+  list(APPEND DAKOTA_PKG_LIBS demo_tpl)
+  list(APPEND EXPORT_TARGETS demo_tpl)
+  add_definitions("-DHAVE_DEMO_TPL")
+endif(HAVE_DEMO_TPL)
 
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)

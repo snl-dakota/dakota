@@ -133,6 +133,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
 
   set(dakota_opt_unit_tests
     opt_api_core_data_xfers.cpp
+    opt_tpl_adapters.cpp
     opt_tpl_api.cpp
     opt_api_traits.cpp
     rol_adapters.cpp
