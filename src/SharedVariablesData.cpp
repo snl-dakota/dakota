@@ -1426,6 +1426,61 @@ void SharedVariablesDataRep::copy_rep(SharedVariablesDataRep* svd_rep)
 }
 
 
+void SharedVariablesData::assemble_all_labels(StringArray& all_labels) const
+{
+  const StringMultiArray&  acv_labels = svdRep->allContinuousLabels;
+  const StringMultiArray& adiv_labels = svdRep->allDiscreteIntLabels;
+  const StringMultiArray& adsv_labels = svdRep->allDiscreteStringLabels;
+  const StringMultiArray& adrv_labels = svdRep->allDiscreteRealLabels;
+
+  size_t num_av =  acv_labels.size() + adiv_labels.size()
+                + adsv_labels.size() + adrv_labels.size();
+  all_labels.resize(num_av);
+
+  size_t num_cv, num_div, num_dsv, num_drv, cv_start = 0, div_start = 0,
+    dsv_start = 0, drv_start = 0, all_start = 0;
+  design_counts(num_cv, num_div, num_dsv, num_drv); // includes relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;    cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  all_start += num_drv;  drv_start += num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;    cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  all_start += num_drv;  drv_start += num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);// w/ relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;    cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  all_start += num_drv;  drv_start += num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);              // w/ relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;   // cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  //div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  //dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  //all_start += num_drv;  drv_start += num_drv;
+}
+
+
 /** Deep copies are used when recasting changes the nature of a
     Variables set. */
 SharedVariablesData SharedVariablesData::copy() const

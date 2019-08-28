@@ -56,8 +56,8 @@ protected:
 
   Pecos::ProbabilityTransformation& probability_transformation();
 
-  bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
 
   /// return truth_model()
   Model& subordinate_model();
@@ -233,14 +233,6 @@ inline SurrogateModel::~SurrogateModel()
 inline Pecos::ProbabilityTransformation& SurrogateModel::
 probability_transformation()
 { return truth_model().probability_transformation(); } // forward along
-
-
-inline bool SurrogateModel::initialize_mapping(ParLevLIter pl_iter)
-{ return Model::initialize_mapping(pl_iter); }
-
-
-inline bool SurrogateModel::finalize_mapping()
-{ return Model::finalize_mapping(); }
 
 
 inline Model& SurrogateModel::subordinate_model()

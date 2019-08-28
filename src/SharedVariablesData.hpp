@@ -1021,6 +1021,10 @@ public:
   /// set discrete real label at index start 
   void all_discrete_real_label(const String& drv_label, size_t index);
 
+  /// assemble all variable labels (continuous and discrete {int,string,real})
+  /// in standard (input specification-based) order
+  void assemble_all_labels(StringArray& all_labels) const;
+
   /// get num_items continuous types beginning at index start
   UShortMultiArrayConstView
     all_continuous_types(size_t start, size_t num_items) const;

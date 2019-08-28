@@ -58,11 +58,15 @@ public:
   ~NestedModel();                         ///< destructor
 
   void declare_sources();
+
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
 
   // Perform the response computation portions specific to this derived class.
   // In this case, this involves running the subIterator on the subModel.
@@ -163,6 +167,7 @@ protected:
   void update_local_results(int job_index);
 
   ActiveSet default_interface_active_set();
+
 private:
 
   //
@@ -462,6 +467,37 @@ private:
 
 inline NestedModel::~NestedModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+/*
+inline bool NestedModel::initialize_mapping(ParLevLIter pl_iter)
+{
+  Model::initialize_mapping(pl_iter);
+
+  // DON'T RECUR: allow subIterator to invoke subModel::initialize_mapping()
+  //              at its run time
+  //bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+  //update_sub_model(currentVariables, userDefinedConstraints);
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  //if (sub_model_resize)
+  //  estimate_message_lengths();
+
+  return false;//sub_model_resize;
+}
+
+
+inline bool NestedModel::finalize_mapping()
+{
+  // DON'T RECUR: allow subIterator to invoke subModel::initialize_mapping()
+  //              at its run time
+  //bool sub_model_resize = subModel.finalize_mapping();
+
+  Model::finalize_mapping();
+  return false;//sub_model_resize;
+}
+*/
 
 
 inline Iterator& NestedModel::subordinate_iterator()

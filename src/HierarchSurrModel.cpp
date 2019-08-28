@@ -309,7 +309,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     execution within Model::initialize_mapping(). */
 bool HierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  SurrogateModel::initialize_mapping(pl_iter);
+  Model::initialize_mapping(pl_iter);
 
   // push inactive variable values/bounds from currentVariables and
   // userDefinedConstraints into orderedModels
@@ -333,7 +333,7 @@ bool HierarchSurrModel::finalize_mapping()
   for (i=0; i<num_models; ++i)
     orderedModels[i].finalize_mapping();
 
-  SurrogateModel::finalize_mapping();
+  Model::finalize_mapping();
 
   return false; // no change to problem size
 }

@@ -65,9 +65,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     pointReuse = (import_pts) ? "all" : "none";
 
   // DataFitSurrModel is allowed to set the db list nodes, so long as it 
-  // restores the list nodes to their previous setting.  This removes the need
-  // to continuously reset at the strategy level (which would be wasteful
-  // since the type of derived model may not be known at the strategy level).
+  // restores the list nodes to their previous setting
   const String& dace_method_pointer
     = problem_db.get_string("model.dace_method_pointer");
   const String& actual_model_pointer
@@ -314,7 +312,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
 bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  SurrogateModel::initialize_mapping(pl_iter);
+  Model::initialize_mapping(pl_iter);
   actualModel.initialize_mapping(pl_iter);
 
   // push data that varies per iterator execution rather than per-evaluation
@@ -332,7 +330,7 @@ bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 bool DataFitSurrModel::finalize_mapping()
 {
   actualModel.finalize_mapping();
-  SurrogateModel::finalize_mapping();
+  Model::finalize_mapping();
 
   return false; // no change to problem size
 }
@@ -2216,26 +2214,6 @@ void DataFitSurrModel::init_model(Model& model)
     model.nonlinear_eq_constraint_targets(
       userDefinedConstraints.nonlinear_eq_constraint_targets());
 
-  // uncertain variable distribution data
-
-  // Note: Variables instances defined from the same variablesId are not shared
-  // (see ProblemDescDB::get_variables()), so we propagate any distribution
-  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
-  // differing variablesId, we cannot assume that the distribution information
-  // can be mapped, since the distributions used to build may differ from those
-  // used to evaluate.   More careful logic may be needed in the future...
-  if (currentVariables.shared_data().id() ==
-      model.current_variables().shared_data().id())
-    model.multivariate_distribution().pull_distribution_parameters(mvDist);
-  // Note: when model is a ProbabilityTransformModel, its mvDist is in u-space.
-  //       DataFit operates in and pushes updates to this transformed space.
-  // Note: it is sufficient to perform this push at initialize_mapping() time
-  //       (once per iterator run) rather than repeatedly --> it is part of
-  //       init_model() rather than update_model().
-  // Note: currentVariables may have different active view from incoming model
-  //       vars, but MultivariateDistribution updates can be performed for all
-  //       vars (independent of view)
-
   // labels: update model with current{Variables,Response} descriptors
 
   if (!approxBuilds) {
@@ -2282,6 +2260,37 @@ void DataFitSurrModel::init_model(Model& model)
       model.all_discrete_real_variable_labels(
         currentVariables.discrete_real_variable_labels());
     }
+  }
+
+  // uncertain variable distribution data (dependent on label updates above)
+
+  // Note: Variables instances defined from the same variablesId are not shared
+  // (see ProblemDescDB::get_variables()), so we propagate any distribution
+  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
+  // differing variablesId, we assume that the distribution information can be
+  // mapped when a variable label is matched, but this precludes the case
+  // where the distribution for the same variable differs between that used to
+  // build and that used to evaluate.   More careful logic could involve
+  // matching both variable label and distribution type (presumably the dist
+  // params would be consistent when the dist type is the same), and this could
+  // be implemented at the lower (MultivariateDistribution) level.
+  // > currentVariables may have different active view from incoming model
+  //   vars, but MultivariateDistribution updates can be performed for all
+  //   vars (independent of view)
+  // > when model is a ProbabilityTransformModel, its mvDist is in u-space.
+  //   DataFit operates in and pushes updates to this transformed space for
+  //   parameterized std distribs (e.g. {JACOBI,GEN_LAGUERE,NUM_GEN}_ORTHOG).
+  // > it is sufficient to pull parameters at initialize_mapping() time, as
+  //   this data varies per iterator execution rather than per-evaluation
+  const SharedVariablesData&   svd =          currentVariables.shared_data();
+  const SharedVariablesData& m_svd = model.current_variables().shared_data();
+  if (svd.id() == m_svd.id()) // same set of variables
+    model.multivariate_distribution().pull_distribution_parameters(mvDist);
+  else { // map between related sets of variables based on labels
+    StringArray pull_labels;    svd.assemble_all_labels(pull_labels);
+    StringArray push_labels;  m_svd.assemble_all_labels(push_labels);
+    model.multivariate_distribution().
+      pull_distribution_parameters(mvDist, pull_labels, push_labels);
   }
 }
 
@@ -2429,21 +2438,20 @@ void DataFitSurrModel::update_from_model(const Model& model)
     currentResponse.function_labels(model.response_labels());
   }
 
-  // uncertain variable distribution data
-  // Note: Variables instances defined from the same variablesId are not shared
-  // (see ProblemDescDB::get_variables()), so we propagate any distribution
-  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
-  // differing variablesId, we cannot assume that the distribution information
-  // can be mapped, since the distributions used to build may differ from those
-  // used to evaluate.  More careful logic may be needed in the future...
-  if (currentVariables.shared_data().id() ==
-      model.current_variables().shared_data().id())
+  // uncertain variable distribution data (dependent on label updates above)
+
+  // See notes in init_model() above, with the difference that these
+  // updates are performed once at lightweight construct time.
+  const SharedVariablesData&   svd =          currentVariables.shared_data();
+  const SharedVariablesData& m_svd = model.current_variables().shared_data();
+  if (svd.id() == m_svd.id()) // same variables specification
     mvDist.pull_distribution_parameters(model.multivariate_distribution());
-  // Note: when incoming model is a ProbabilityTransform, its MVD is in u-space.
-  //       DataFit operates in and pulls updates from this transformed space.
-  // Note: currentVariables may have different active view from incoming model
-  //       vars, but MultivariateDistribution updates can be performed for all
-  //       vars (independent of view)
+  else{ // map between related sets of variables based on labels
+    StringArray pull_labels;  m_svd.assemble_all_labels(pull_labels);
+    StringArray push_labels;    svd.assemble_all_labels(push_labels);
+    mvDist.pull_distribution_parameters(model.multivariate_distribution(),
+					pull_labels, push_labels);
+  }
 
   // linear constraints
 
