@@ -2351,8 +2351,9 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   RealVector means_vec(numFunctions), lower_bnds(numFunctions), 
 	     upper_bnds(numFunctions);
   means_vec.putScalar(0.0);
-  lower_bnds.putScalar(-DBL_MAX);
-  upper_bnds.putScalar(DBL_MAX);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  lower_bnds.putScalar(-dbl_inf);
+  upper_bnds.putScalar( dbl_inf);
   RealMatrix lhs_normal_samples;
   unsigned short sample_type = SUBMETHOD_LHS;
   short sample_ranks_mode = 0; //IGNORE RANKS
