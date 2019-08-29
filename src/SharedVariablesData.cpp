@@ -1426,8 +1426,6 @@ void SharedVariablesDataRep::copy_rep(SharedVariablesDataRep* svd_rep)
 }
 
 
-/** maps index within active continuous variables to index within aggregated
-    active continuous/discrete-{int,string,real} variables. */
 size_t SharedVariablesData::cv_index_to_active_index(size_t cv_index) const
 {
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
@@ -1475,8 +1473,6 @@ size_t SharedVariablesData::cv_index_to_active_index(size_t cv_index) const
 }
 
 
-/** maps index within active continuous variables to index within all
-    continuous/discrete-{int,string,real} variables. */
 size_t SharedVariablesData::cv_index_to_all_index(size_t cv_index) const
 {
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
@@ -1522,6 +1518,50 @@ size_t SharedVariablesData::cv_index_to_all_index(size_t cv_index) const
 
   Cerr << "Error: CV index out of range in SharedVariablesData::"
        << "cv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::ccv_index_to_acv_index(size_t ccv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t offset = 0, bound = 0;
+  if (!cdv) {
+    bound += vc_totals[TOTAL_CDV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_CDV];
+
+  if (!cauv) {
+    bound += vc_totals[TOTAL_CAUV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_CAUV];
+
+  if (!ceuv) {
+    bound += vc_totals[TOTAL_CEUV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_CEUV];
+
+  if (!csv) {
+    bound += vc_totals[TOTAL_CSV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+
+  Cerr << "Error: CCV index out of range in SharedVariablesData::"
+       << "ccv_index_to_acv_index()" << std::endl;
   abort_handler(VARS_ERROR);
   return _NPOS;
 }
@@ -1650,6 +1690,50 @@ size_t SharedVariablesData::div_index_to_all_index(size_t div_index) const
 
   Cerr << "Error: DIV index out of range in SharedVariablesData::"
        << "div_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::cdiv_index_to_adiv_index(size_t cdiv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t offset = 0, bound = 0;
+  if (!ddv) {
+    bound += vc_totals[TOTAL_DDIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DDIV];
+
+  if (!dauv) {
+    bound += vc_totals[TOTAL_DAUIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DAUIV];
+
+  if (!deuv) {
+    bound += vc_totals[TOTAL_DEUIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DEUIV];
+
+  if (!dsv) {
+    bound += vc_totals[TOTAL_DSIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+
+  Cerr << "Error: CDIV index out of range in SharedVariablesData::"
+       << "cdiv_index_to_adiv_index()" << std::endl;
   abort_handler(VARS_ERROR);
   return _NPOS;
 }
@@ -1789,6 +1873,50 @@ size_t SharedVariablesData::dsv_index_to_all_index(size_t dsv_index) const
 }
 
 
+size_t SharedVariablesData::cdsv_index_to_adsv_index(size_t cdsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t bound = 0, offset = 0;
+  if (!ddv) {
+    bound += vc_totals[TOTAL_DDSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DDSV];
+
+  if (!dauv) {
+    bound += vc_totals[TOTAL_DAUSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DAUSV];
+
+  if (!deuv) {
+    bound += vc_totals[TOTAL_DEUSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DEUSV];
+
+  if (!dsv) {
+    bound += vc_totals[TOTAL_DSSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+
+  Cerr << "Error: CDSV index out of range in SharedVariablesData::"
+       << "cdsv_index_to_adsv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
 size_t SharedVariablesData::adsv_index_to_all_index(size_t adsv_index) const
 {
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
@@ -1915,6 +2043,50 @@ size_t SharedVariablesData::drv_index_to_all_index(size_t drv_index) const
 
   Cerr << "Error: DRV index out of range in SharedVariablesData::"
        << "drv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::cdrv_index_to_adrv_index(size_t cdrv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t bound = 0, offset = 0;
+  if (!ddv) {
+    bound += vc_totals[TOTAL_DDRV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DDRV];
+
+  if (!dauv) {
+    bound += vc_totals[TOTAL_DAURV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DAURV];
+
+  if (!deuv) {
+    bound += vc_totals[TOTAL_DEURV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DEURV];
+
+  if (!dsv) {
+    bound += vc_totals[TOTAL_DSRV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+
+  Cerr << "Error: CDRV index out of range in SharedVariablesData::"
+       << "cdrv_index_to_adrv_index()" << std::endl;
   abort_handler(VARS_ERROR);
   return _NPOS;
 }

@@ -582,6 +582,9 @@ public:
   /// convert index within active continuous variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t cv_index_to_all_index(size_t cv_index) const;
+  /// convert index within complement of active continuous variables
+  /// to index within all continuous variables
+  size_t ccv_index_to_acv_index(size_t ccv_index) const;
   /// convert index within all continuous variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t acv_index_to_all_index(size_t acv_index) const;
@@ -591,6 +594,9 @@ public:
   /// convert index within active discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t div_index_to_all_index(size_t div_index) const;
+  /// convert index within complement of active discrete integer variables
+  /// to index within all discrete integer variables
+  size_t cdiv_index_to_adiv_index(size_t div_index) const;
   /// convert index within all discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adiv_index_to_all_index(size_t adiv_index) const;
@@ -600,6 +606,9 @@ public:
   /// convert index within active discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t dsv_index_to_all_index(size_t dsv_index) const;
+  /// convert index within complement of active discrete string variables
+  /// to index within all discrete string variables
+  size_t cdsv_index_to_adsv_index(size_t dsv_index) const;
   /// convert index within all discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adsv_index_to_all_index(size_t adsv_index) const;
@@ -609,6 +618,9 @@ public:
   /// convert index within active discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t drv_index_to_all_index(size_t drv_index) const;
+  /// convert index within complement of active discrete real
+  /// variables to index within all discrete real variables
+  size_t cdrv_index_to_adrv_index(size_t drv_index) const;
   /// convert index within all discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adrv_index_to_all_index(size_t adrv_index) const;

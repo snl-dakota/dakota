@@ -412,7 +412,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT CONTINUOUS VARIABLES from currentVariables
   for (i=0; i<num_curr_ccv; ++i) {
-    curr_i = ccv_index_map(i, currentVariables);
+    curr_i = svd.ccv_index_to_acv_index(i);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_ac_type = curr_ac_types[curr_i];
@@ -440,7 +440,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT DISCRETE INTEGER VARIABLES from currentVariables
   for (i=0; i<num_curr_cdiv; ++i) {
-    curr_i = cdiv_index_map(i, currentVariables);
+    curr_i = svd.cdiv_index_to_adiv_index(i);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_adi_type = curr_adi_types[curr_i];
@@ -468,7 +468,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT DISCRETE STRING VARIABLES from currentVariables
   for (i=0; i<num_curr_cdsv; ++i) {
-    curr_i = cdsv_index_map(i, currentVariables);
+    curr_i = svd.cdsv_index_to_adsv_index(i);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_ads_type = curr_ads_types[curr_i];
@@ -496,7 +496,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map COMPLEMENT DISCRETE REAL VARIABLES from currentVariables
   for (i=0; i<num_curr_cdrv; ++i) {
-    curr_i = cdrv_index_map(i, currentVariables);
+    curr_i = svd.cdrv_index_to_adrv_index(i);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
     unsigned short curr_adr_type = curr_adr_types[curr_i];
@@ -2417,7 +2417,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_ac_labels
       = vars.all_continuous_variable_labels();
     for (i=0; i<num_curr_ccv; ++i) {
-      curr_i = ccv_index_map(i, vars);
+      curr_i = svd.ccv_index_to_acv_index(i);
       c1_index = complement1ACVarMapIndices[i];
       subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
       subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
@@ -2437,7 +2437,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_adi_labels
       = vars.all_discrete_int_variable_labels();
     for (i=0; i<num_curr_cdiv; ++i) {
-      curr_i = cdiv_index_map(i, vars);
+      curr_i = svd.cdiv_index_to_adiv_index(i);
       c1_index = complement1ADIVarMapIndices[i];
       subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
       subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
@@ -2457,7 +2457,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_ads_labels
       = vars.all_discrete_string_variable_labels();
     for (i=0; i<num_curr_cdsv; ++i) {
-      curr_i = cdsv_index_map(i, vars);
+      curr_i = svd.cdsv_index_to_adsv_index(i);
       c1_index = complement1ADSVarMapIndices[i];
       subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
       if (firstUpdate)
@@ -2476,7 +2476,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_adr_labels
       = vars.all_discrete_real_variable_labels();
     for (i=0; i<num_curr_cdrv; ++i) {
-      curr_i = cdrv_index_map(i, vars);
+      curr_i = svd.cdrv_index_to_adrv_index(i);
       c1_index = complement1ADRVarMapIndices[i];
       subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
       subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
@@ -2488,223 +2488,6 @@ update_sub_model(const Variables& vars, const Constraints& cons)
   }
 
   firstUpdate = false;
-}
-
-
-/** maps index within complement of active continuous variables to
-    index within all continuous variables. */
-size_t NestedModel::ccv_index_map(size_t ccv_index, const Variables& vars)
-{
-  const SharedVariablesData& svd = vars.shared_data();
-  size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  switch (svd.view().first) { // active view
-  case MIXED_DESIGN: case RELAXED_DESIGN: // complement is cauv/ceuv/csv
-    offset = num_cdv; break;
-  case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-    // complement is cdv/ceuv/csv
-    if (ccv_index < num_cdv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      offset = num_cauv;
-    }
-    break;
-  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
-    // complement is cdv/cauv/csv
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    if (ccv_index < num_cdv + num_cauv)
-      offset = 0;
-    else{
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_ceuv;
-    }
-    break;
-  }
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: // complement is cdv/csv
-    if (ccv_index < num_cdv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv,
-             num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_cauv + num_ceuv;
-    }
-    break;
-  case MIXED_STATE: case RELAXED_STATE:
-    offset = 0; break;
-  default: // MIXED_ALL, RELAXED_ALL
-    Cerr << "Error: unsupported active view in NestedModel::ccv_index_map()."
-	 << std::endl;
-    abort_handler(MODEL_ERROR); break;
-  }
-  return ccv_index + offset;
-}
-
-
-/** maps index within complement of active discrete int variables to
-    index within all discrete int variables. */
-size_t NestedModel::cdiv_index_map(size_t cdiv_index, const Variables& vars)
-{
-  const SharedVariablesData& svd = vars.shared_data();
-  size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  switch (svd.view().first) { // active view
-  case MIXED_DESIGN: case RELAXED_DESIGN: // complement is dauiv/deuiv/dsiv
-    offset = num_ddiv; break;
-  case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-    // complement is ddiv/deuiv/dsiv
-    if (cdiv_index < num_ddiv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      offset = num_dauiv;
-    }
-    break;
-  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-    // complement is ddiv/dauiv/dsiv
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    if (cdiv_index < num_ddiv + num_dauiv)
-      offset = 0;
-    else {
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_deuiv;
-    }
-    break;
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: // complement is ddiv/dsiv
-    if (cdiv_index < num_ddiv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv,
-             num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_dauiv + num_deuiv;
-    }
-    break;
-  case MIXED_STATE: case RELAXED_STATE:
-    offset = 0; break;
-  default: // MIXED_ALL, RELAXED_ALL
-    Cerr << "Error: unsupported active view in NestedModel::cdiv_index_map()."
-	 << std::endl;
-    abort_handler(MODEL_ERROR); break;
-  }
-  return cdiv_index + offset;
-}
-
-
-/** maps index within complement of active discrete string variables to
-    index within all discrete string variables. */
-size_t NestedModel::cdsv_index_map(size_t cdsv_index, const Variables& vars)
-{
-  const SharedVariablesData& svd = vars.shared_data();
-  size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  switch (svd.view().first) { // active view
-  case MIXED_DESIGN: case RELAXED_DESIGN:  // complement is dausv/deusv/dssv
-    offset = num_ddsv; break;
-  case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-    // complement is ddsv/deusv/dssv
-    if (cdsv_index < num_ddsv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      offset = num_dausv;
-    }
-    break;
-  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-    // complement is ddsv/dausv/dssv
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    if (cdsv_index < num_ddsv + num_dausv)
-      offset = 0;
-    else {
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_deusv;
-    }
-    break;
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: // complement is ddsv/dssv
-    if (cdsv_index < num_ddsv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv,
-             num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_dausv + num_deusv;
-    }
-    break;
-  case MIXED_STATE: case RELAXED_STATE:
-    offset = 0; break;
-  default: // MIXED_ALL, RELAXED_ALL
-    Cerr << "Error: unsupported active view in NestedModel::cdsv_index_map()."
-	 << std::endl;
-    abort_handler(MODEL_ERROR); break;
-  }
-  return cdsv_index + offset;
-}
-
-
-/** maps index within complement of active discrete real variables to
-    index within all discrete real variables. */
-size_t NestedModel::cdrv_index_map(size_t cdrv_index, const Variables& vars)
-{
-  const SharedVariablesData& svd = vars.shared_data();
-  size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  switch (svd.view().first) { // active view
-  case MIXED_DESIGN: case RELAXED_DESIGN:  // complement is daurv/deurv/dsrv
-    offset = num_ddrv; break;
-  case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-    // complement is ddrv/deurv/dsrv
-    if (cdrv_index < num_ddrv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      offset = num_daurv;
-    }
-    break;
-  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-    // complement is ddrv/daurv/dsrv
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    if (cdrv_index < num_ddrv + num_daurv)
-      offset = 0;
-    else {
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_deurv;
-    }
-    break;
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: // complement is ddrv/dsrv
-    if (cdrv_index < num_ddrv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv,
-             num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_daurv + num_deurv;
-    }
-    break;
-  case MIXED_STATE: case RELAXED_STATE:
-    offset = 0; break;
-  default: // MIXED_ALL, RELAXED_ALL
-    Cerr << "Error: unsupported active view in NestedModel::cdrv_index_map()."
-	 << std::endl;
-    abort_handler(MODEL_ERROR); break;
-  }
-  return cdrv_index + offset;
 }
 
 

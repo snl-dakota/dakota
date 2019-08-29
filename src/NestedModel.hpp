@@ -208,19 +208,6 @@ private:
 				       size_t curr_index,
 				       short& inactive_sm_view);
 
-  /// offset active complement ccv_index to create index into all
-  /// continuous arrays
-  size_t ccv_index_map(size_t ccv_index, const Variables& vars);
-  /// offset active complement cdiv_index to create index into all
-  /// discrete int arrays
-  size_t cdiv_index_map(size_t cdiv_index, const Variables& vars);
-  /// offset active complement cdsv_index to create index into all
-  /// discrete string arrays
-  size_t cdsv_index_map(size_t cdsv_index, const Variables& vars);
-  /// offset active complement cdrv_index to create index into all
-  /// discrete real arrays
-  size_t cdrv_index_map(size_t cdrv_index, const Variables& vars);
-
   /// insert r_var into appropriate recipient
   void real_variable_mapping(Real r_var, size_t av_index, short svm_target);
   /// insert i_var into appropriate recipient
