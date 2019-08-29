@@ -191,9 +191,11 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     prev_ds_type = USHRT_MAX, prev_dr_type = USHRT_MAX;
   String empty_str;
 
+  const SharedVariablesData& svd = currentVariables.shared_data();
+
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   for (i=0; i<num_curr_cv; ++i) {
-    curr_i = cv_index_map(i, currentVariables);
+    curr_i = svd.cv_index_to_active_index(i);//cv_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -241,7 +243,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE INTEGER VARIABLES from currentVariables
   for (i=0; i<num_curr_div; ++i) {
-    curr_i = div_index_map(i, currentVariables);
+    curr_i = svd.div_index_to_active_index(i);//div_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -289,7 +291,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE STRING VARIABLES from currentVariables
   for (i=0; i<num_curr_dsv; ++i) {
-    curr_i = dsv_index_map(i, currentVariables);
+    curr_i = svd.dsv_index_to_active_index(i);//dsv_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -337,7 +339,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE REAL VARIABLES from currentVariables
   for (i=0; i<num_curr_drv; ++i) {
-    curr_i = drv_index_map(i, currentVariables);
+    curr_i = svd.drv_index_to_active_index(i);//drv_index_map(i, currentVariables);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -2209,7 +2211,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_c_labels
       = vars.continuous_variable_labels();
     for (i=0; i<num_curr_cv; ++i) {
-      curr_i = cv_index_map(i, vars);
+      curr_i = svd.cv_index_to_active_index(i);//cv_index_map(i, vars);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2232,27 +2234,31 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  }
 	}
 	else {
-	  size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	  real_variable_mapping(curr_c_vars[i], mapped_index, sacvm_target);
+	  //size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	  //real_variable_mapping(curr_c_vars[i], mapped_index, sacvm_target);
+	  real_variable_mapping(curr_c_vars[i], pacvm_index, sacvm_target);
 	}
       }
       else if (padivm_index != _NPOS) {
 	short sadivm_target = (num_var_map_2) ? active2ADIVarMapTargets[curr_i]
 	  : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	real_variable_mapping(curr_c_vars[i], mapped_index, sadivm_target);
+	//size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+	//real_variable_mapping(curr_c_vars[i], mapped_index, sadivm_target);
+	real_variable_mapping(curr_c_vars[i], padivm_index, sadivm_target);
       }
       else if (padsvm_index != _NPOS) {
 	short sadsvm_target = (num_var_map_2) ? active2ADSVarMapTargets[curr_i]
 	  : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	real_variable_mapping(curr_c_vars[i], mapped_index, sadsvm_target);
+	//size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	//real_variable_mapping(curr_c_vars[i], mapped_index, sadsvm_target);
+	real_variable_mapping(curr_c_vars[i], padsvm_index, sadsvm_target);
       }
       else if (padrvm_index != _NPOS) {
 	short sadrvm_target = (num_var_map_2) ? active2ADRVarMapTargets[curr_i]
 	  : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	real_variable_mapping(curr_c_vars[i], mapped_index, sadrvm_target);
+	//size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+	//real_variable_mapping(curr_c_vars[i], mapped_index, sadrvm_target);
+	real_variable_mapping(curr_c_vars[i], padrvm_index, sadrvm_target);
       }
     }
   }
@@ -2265,7 +2271,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_di_labels
       = vars.discrete_int_variable_labels();
     for (i=0; i<num_curr_div; ++i) {
-      curr_i = div_index_map(i, vars);
+      curr_i = svd.div_index_to_active_index(i);//div_index_map(i, vars);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2273,8 +2279,9 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       if (pacvm_index != _NPOS) {
 	short sacvm_target
 	  = (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	integer_variable_mapping(curr_di_vars[i], mapped_index, sacvm_target);
+	//size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	//integer_variable_mapping(curr_di_vars[i], mapped_index, sacvm_target);
+	integer_variable_mapping(curr_di_vars[i], pacvm_index, sacvm_target);
       }
       else if (padivm_index != _NPOS) {
 	short sadivm_target = (num_var_map_2) ?
@@ -2296,21 +2303,24 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  }
 	}
 	else {
-	  size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	  integer_variable_mapping(curr_di_vars[i], mapped_index,sadivm_target);
+	  //size_t mapped_index = sm_adiv_index_map(padivm_index,sadivm_target);
+	  //integer_variable_mapping(curr_di_vars[i],mapped_index,sadivm_target);
+	  integer_variable_mapping(curr_di_vars[i], padivm_index,sadivm_target);
 	}
       }
       else if (padsvm_index != _NPOS) {
 	short sadsvm_target = (num_var_map_2) ?
 	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	integer_variable_mapping(curr_di_vars[i], mapped_index, sadsvm_target);
+	//size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	//integer_variable_mapping(curr_di_vars[i], mapped_index,sadsvm_target);
+	integer_variable_mapping(curr_di_vars[i], padsvm_index, sadsvm_target);
       }
       else if (padrvm_index != _NPOS) {
 	short sadrvm_target = (num_var_map_2) ?
 	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	integer_variable_mapping(curr_di_vars[i], mapped_index, sadrvm_target);
+	//size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+	//integer_variable_mapping(curr_di_vars[i], mapped_index,sadrvm_target);
+	integer_variable_mapping(curr_di_vars[i], padrvm_index, sadrvm_target);
       }
     }
   }
@@ -2321,7 +2331,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_ds_labels
       = vars.discrete_string_variable_labels();
     for (i=0; i<num_curr_dsv; ++i) {
-      curr_i = dsv_index_map(i, vars);
+      curr_i = svd.dsv_index_to_active_index(i);//dsv_index_map(i, vars);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2329,14 +2339,16 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       if (pacvm_index != _NPOS) {
 	short sacvm_target = (num_var_map_2) ?
 	  active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	string_variable_mapping(curr_ds_vars[i], mapped_index, sacvm_target);
+	//size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	//string_variable_mapping(curr_ds_vars[i], mapped_index, sacvm_target);
+	string_variable_mapping(curr_ds_vars[i], pacvm_index, sacvm_target);
       }
       else if (padivm_index != _NPOS) {
 	short sadivm_target = (num_var_map_2) ?
 	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	string_variable_mapping(curr_ds_vars[i], mapped_index, sadivm_target);
+	//size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+	//string_variable_mapping(curr_ds_vars[i], mapped_index, sadivm_target);
+	string_variable_mapping(curr_ds_vars[i], padivm_index, sadivm_target);
       }
       else if (padsvm_index != _NPOS) {
 	short sadsvm_target = (num_var_map_2) ?
@@ -2354,15 +2366,17 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  }
 	}
 	else {
-	  size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	  string_variable_mapping(curr_ds_vars[i], mapped_index, sadsvm_target);
+	  //size_t mapped_index = sm_adsv_index_map(padsvm_index,sadsvm_target);
+	  //string_variable_mapping(curr_ds_vars[i],mapped_index,sadsvm_target);
+	  string_variable_mapping(curr_ds_vars[i], padsvm_index, sadsvm_target);
 	}
       }
       else if (padrvm_index != _NPOS) {
 	short sadrvm_target = (num_var_map_2) ?
 	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	string_variable_mapping(curr_ds_vars[i], mapped_index, sadrvm_target);
+	//size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
+	//string_variable_mapping(curr_ds_vars[i], mapped_index, sadrvm_target);
+	string_variable_mapping(curr_ds_vars[i], padrvm_index, sadrvm_target);
       }
     }
   }
@@ -2375,7 +2389,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_dr_labels
       = vars.discrete_real_variable_labels();
     for (i=0; i<num_curr_drv; ++i) {
-      curr_i = drv_index_map(i, vars);
+      curr_i = svd.drv_index_to_active_index(i);//drv_index_map(i, vars);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2383,20 +2397,23 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       if (pacvm_index != _NPOS) {
 	short sacvm_target = (num_var_map_2) ?
 	  active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	real_variable_mapping(curr_dr_vars[i], mapped_index, sacvm_target);
+	//size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
+	//real_variable_mapping(curr_dr_vars[i], mapped_index, sacvm_target);
+	real_variable_mapping(curr_dr_vars[i], pacvm_index, sacvm_target);
       }
       else if (padivm_index != _NPOS) {
 	short sadivm_target = (num_var_map_2) ?
 	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	real_variable_mapping(curr_dr_vars[i], mapped_index, sadivm_target);
+	//size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
+	//real_variable_mapping(curr_dr_vars[i], mapped_index, sadivm_target);
+	real_variable_mapping(curr_dr_vars[i], padivm_index, sadivm_target);
       }
       else if (padsvm_index != _NPOS) {
 	short sadsvm_target = (num_var_map_2) ?
 	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	real_variable_mapping(curr_dr_vars[i], mapped_index, sadsvm_target);
+	//size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
+	//real_variable_mapping(curr_dr_vars[i], mapped_index, sadsvm_target);
+	real_variable_mapping(curr_dr_vars[i], padsvm_index, sadsvm_target);
       }
       else if (padrvm_index != _NPOS) {
 	short sadrvm_target = (num_var_map_2) ?
@@ -2418,8 +2435,9 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  }
 	}
 	else {
-	  size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	  real_variable_mapping(curr_dr_vars[i], mapped_index, sadrvm_target);
+	  //size_t mapped_index = sm_adrv_index_map(padrvm_index,sadrvm_target);
+	  //real_variable_mapping(curr_dr_vars[i], mapped_index, sadrvm_target);
+	  real_variable_mapping(curr_dr_vars[i], padrvm_index, sadrvm_target);
 	}
       }
     }
@@ -2506,240 +2524,6 @@ update_sub_model(const Variables& vars, const Constraints& cons)
   }
 
   firstUpdate = false;
-}
-
-
-/** maps index within active continuous variables to index within aggregated
-    active continuous/discrete-int/discrete-string/discrete-real variables. */
-size_t NestedModel::cv_index_map(size_t cv_index, const Variables& vars)
-{
-  size_t offset;
-  const SharedVariablesData& svd = vars.shared_data();
-  switch (svd.view().first) { // active view
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
-    //  active cv order is cauv,ceuv;
-    // aggregated order is cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv:
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    offset = (cv_index < num_cauv) ? 0 : num_dauiv + num_dausv + num_daurv;
-    break;
-  }
-  case MIXED_ALL: case RELAXED_ALL: {
-    //  active cv order is cdv,cauv,ceuv,csv;
-    // aggregated order is cdv/ddiv/ddsv/ddrv,cauv/dauiv/dausv/daurv,
-    // ceuv/deuiv/deusv/deurv,csv/dsiv/dssv/dsrv:
-    size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-    svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    if (cv_index < num_cdv)
-      offset = 0;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      if (cv_index < num_cdv + num_cauv)            // continuous aleatory
-	offset = num_ddiv + num_ddsv + num_ddrv;
-      else {
-	size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-	svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv,
-				       num_deurv);
-	if (cv_index < num_cdv + num_cauv + num_ceuv) // continuous epistemic
-	  offset = num_ddiv  + num_ddsv  + num_ddrv
-	         + num_dauiv + num_dausv + num_daurv;
-	else                                              // continuous state
-	  offset = num_ddiv  + num_ddsv  + num_ddrv
-	         + num_dauiv + num_dausv + num_daurv
-	         + num_deuiv + num_deusv + num_deurv;
-      }
-    }
-    break;
-  }
-  default: // MIXED and RELAXED for single variable types
-    offset = 0; break;
-  }
-  return cv_index + offset;
-}
-
-
-/** maps index within active discrete int variables to index within aggregated
-    active continuous/discrete-int/discrete-string/discrete-real variables. */
-size_t NestedModel::div_index_map(size_t div_index, const Variables& vars)
-{
-  size_t offset;
-  const SharedVariablesData& svd = vars.shared_data();
-  switch (svd.view().first) { // active view
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
-    // active div order is dauiv/deuiv
-    // aggregated order is cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv:
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    if (div_index < num_dauiv) // discrete int aleatory
-      offset = num_cauv;
-    else { // discrete int epistemic
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_cauv + num_dausv + num_daurv + num_ceuv;
-    }
-    break;
-  }
-  case MIXED_ALL: case RELAXED_ALL: {
-    // active div order is ddiv,dauiv,deuiv,dsiv; aggregated order is
-    // cdv/ddiv/ddsv/ddrv,cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv,
-    // csv/dsiv/dssv/dsrv:
-    size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-    svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    if (div_index < num_ddiv)                              // disc int design
-      offset = num_cdv;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      if (div_index < num_ddiv + num_dauiv)             // disc int aleatory
-	offset = num_cdv + num_ddsv + num_ddrv + num_cauv;
-      else {
-	size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-	svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv,
-				       num_deurv);
-	if (div_index < num_ddiv + num_dauiv + num_deuiv) // disc int epistemic
-	  offset = num_cdv  + num_ddsv  + num_ddrv
-	         + num_cauv + num_dausv + num_daurv + num_ceuv;
-	else { // disc int state
-	  size_t num_csv, num_dsiv, num_dssv, num_dsrv;
-	  svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
-	  offset = num_cdv  + num_ddsv  + num_ddrv
-	         + num_cauv + num_dausv + num_daurv
-	         + num_ceuv + num_deusv + num_deurv + num_csv;
-	}
-      }
-    }
-    break;
-  }
-  default: // MIXED and RELAXED for single variable types
-    offset = vars.cv(); break;
-  }
-  return div_index + offset;
-}
-
-
-/** maps index within active discrete string variables to index within
-    aggregated active continuous/discrete-int/discrete-string/discrete-string
-    variables. */
-size_t NestedModel::dsv_index_map(size_t dsv_index, const Variables& vars)
-{
-  size_t offset;
-  const SharedVariablesData& svd = vars.shared_data();
-  switch (svd.view().first) { // active view
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
-    // active dsv order is dausv/deusv
-    // aggregated order is cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv:
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    if (dsv_index < num_dausv) // discrete string aleatory
-      offset = num_cauv + num_dauiv;
-    else { // discrete string epistemic
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_cauv + num_dauiv + num_daurv + num_ceuv + num_deuiv;
-    }
-    break;
-  }
-  case MIXED_ALL: case RELAXED_ALL: {
-    // active dsv order is ddsv,dausv,deusv,dssv; aggregated order is
-    // cdv/ddiv/ddsv/ddrv,cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv,
-    // csv/dsiv/dssv/dsrv:
-    size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-    svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    if (dsv_index < num_ddsv)                           // disc string design
-      offset = num_cdv + num_ddiv;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      if (dsv_index < num_ddsv + num_dausv)             // disc string aleatory
-	offset = num_cdv + num_ddiv + num_ddrv + num_cauv + num_dauiv;
-      else {
-	size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-	svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv,
-				       num_deurv);
-	if (dsv_index < num_ddsv + num_dausv + num_deusv)//disc string epistemic
-	  offset = num_cdv  + num_ddiv  + num_ddrv
-	         + num_cauv + num_dauiv + num_daurv
-	         + num_ceuv + num_deuiv;
-	else {                                          // disc string state
-	  size_t num_csv, num_dsiv, num_dssv, num_dsrv;
-	  svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
-	  offset = num_cdv  + num_ddiv  + num_ddrv
-	         + num_cauv + num_dauiv + num_daurv
-	         + num_ceuv + num_deuiv + num_deurv
-	         + num_csv  + num_dsiv;
-	}
-      }
-    }
-    break;
-  }
-  default: // MIXED and RELAXED for single variable types
-    offset = vars.cv() + vars.div(); break;
-  }
-  return dsv_index + offset;
-}
-
-
-/** maps index within active discrete real variables to index within aggregated
-    active continuous/discrete-int/discrete-string/discrete-real variables. */
-size_t NestedModel::drv_index_map(size_t drv_index, const Variables& vars)
-{
-  size_t offset;
-  const SharedVariablesData& svd = vars.shared_data();
-  switch (svd.view().first) { // active view
-  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
-    // active drv order is daurv/deurv
-    // aggregated order is cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv:
-    size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-    svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-    if (drv_index < num_daurv) // discrete real aleatory
-      offset = num_cauv + num_dauiv + num_dausv;
-    else { // discrete real epistemic
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-      offset = num_cauv + num_dauiv + num_dausv
-	     + num_ceuv + num_deuiv + num_deusv;
-    }
-    break;
-  }
-  case MIXED_ALL: case RELAXED_ALL: {
-    // active drv order is ddrv,daurv,deurv,dsrv; aggregated order is
-    // cdv/ddiv/ddsv/ddrv,cauv/dauiv/dausv/daurv,ceuv/deuiv/deusv/deurv,
-    // csv/dsiv/dssv/dsrv:
-    size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-    svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    if (drv_index < num_ddrv)                             // disc real design
-      offset = num_cdv + num_ddiv + num_ddsv;
-    else {
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-      if (drv_index < num_ddrv + num_daurv)               // disc real aleatory
-	offset = num_cdv  + num_ddiv  + num_ddsv
-	       + num_cauv + num_dauiv + num_dausv;
-      else {
-	size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-	svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv,
-				       num_deurv);
-	if (drv_index < num_ddrv + num_daurv + num_deurv) // disc real epistemic
-	  offset = num_cdv  + num_ddiv  + num_ddsv
-	         + num_cauv + num_dauiv + num_dausv
-	         + num_ceuv + num_deuiv + num_deusv;
-	else {                                            // disc real state
-	  size_t num_csv, num_dsiv, num_dssv, num_dsrv;
-	  svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
-	  offset = num_cdv  + num_ddiv  + num_ddsv
-	         + num_cauv + num_dauiv + num_dausv
-	         + num_ceuv + num_deuiv + num_deusv
-	         + num_csv  + num_dsiv  + num_dssv;
-	}
-      }
-    }
-    break;
-  }
-  default: // MIXED and RELAXED for single variable types
-    offset = vars.cv() + vars.div() + vars.dsv(); break;
-  }
-  return drv_index + offset;
 }
 
 
@@ -2960,285 +2744,46 @@ size_t NestedModel::cdrv_index_map(size_t cdrv_index, const Variables& vars)
 }
 
 
-size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
-{
-  // pacvm_index maps from NestedModel's i-th active continuous variable to
-  // subModel ACV index (as stored in active1ACVarMapIndices[i]).  For secondary
-  // mappings involving distribution parameters, this function must map from the
-  // ACV index into the random variable vector index.  Since all variable types
-  // are included in vector<RandomVariable> (active subset views are managed by
-  // BitArray), this mapping only manages discrete offsets to accommodate the
-  // difference between ACV ordering and integrated continuous/discrete ordering
-  // (same as input spec ordering).
-
-  const Variables&           sm_vars = subModel.current_variables();
-  const SharedVariablesData& sm_svd  = sm_vars.shared_data();
-  size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-
-  // Note: this is similar to cv_index_map() for a *_ALL view
-  switch (sacvm_target) {
-  case Pecos::CR_LWR_BND: case Pecos::CR_UPR_BND:
-    if (pacvm_index < num_cdv) offset = 0; // design
-    else { // state: accumulate multiple offsets for ddv, dauv, deuv
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      sm_svd.aleatory_uncertain_counts(num_cauv,num_dauiv,num_dausv,num_daurv);
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      sm_svd.epistemic_uncertain_counts(num_ceuv,num_deuiv,num_deusv,num_deurv);
-      offset = num_ddiv  + num_ddsv  + num_ddrv  + num_dauiv + num_dausv
-	     + num_daurv + num_deuiv + num_deusv + num_deurv;
-    }
-    break;
-  case Pecos::N_MEAN:     case Pecos::N_STD_DEV:  case Pecos::N_LWR_BND:
-  case Pecos::N_UPR_BND:  case Pecos::LN_MEAN:    case Pecos::LN_STD_DEV:
-  case Pecos::LN_LAMBDA:  case Pecos::LN_ZETA:    case Pecos::LN_ERR_FACT:
-  case Pecos::LN_LWR_BND: case Pecos::LN_UPR_BND: case Pecos::U_LWR_BND:
-  case Pecos::U_UPR_BND:  case Pecos::LU_LWR_BND: case Pecos::LU_UPR_BND:
-  case Pecos::T_MODE:     case Pecos::T_LWR_BND:  case Pecos::T_UPR_BND:
-  case Pecos::E_BETA:     case Pecos::BE_ALPHA:   case Pecos::BE_BETA:
-  case Pecos::BE_LWR_BND: case Pecos::BE_UPR_BND: case Pecos::GA_ALPHA:
-  case Pecos::GA_BETA:    case Pecos::GU_ALPHA:   case Pecos::GU_BETA:
-  case Pecos::F_ALPHA:    case Pecos::F_BETA:     case Pecos::W_ALPHA:
-  case Pecos::W_BETA:     case Pecos::N_LOCATION: case Pecos::N_SCALE:
-  case Pecos::U_LOCATION: case Pecos::U_SCALE:    case Pecos::T_LOCATION:
-  case Pecos::T_SCALE:
-    offset = num_ddiv + num_ddsv + num_ddrv;
-    break;
-  case Pecos::NO_TARGET: default:
-    Cerr << "\nError: secondary mapping target unmatched for continuous "
-	 << "variable in NestedModel::sm_acv_index_map()." << std::endl;
-    abort_handler(MODEL_ERROR); break;
-  }
-  return pacvm_index + offset;
-
-
-  /* OLD CASE: manage RV index to distribution type index
-  if (sacvm_target == Pecos::CR_LWR_BND ||
-      sacvm_target == Pecos::CR_UPR_BND)
-    return pacvm_index; // no offset since all_continuous_* used to update
-  else {
-    const SharedVariablesData& sm_svd = sm_vars.shared_data();
-    size_t num_rv, num_cdv, num_ddiv, num_ddsv, num_ddrv,
-           num_nuv = 0, num_lnuv = 0,  num_uuv = 0, num_luuv = 0, num_tuv = 0,
-           num_euv = 0, num_beuv = 0, num_gauv = 0, num_guuv = 0, num_fuv = 0;
-    sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    const ShortArray& rv_types = mvDist.random_variable_types();
-    num_rv = rv_types.size();
-    for (i=0; i<num_rv; ++i)
-      switch (rv_types[i]) {
-      case NORMAL:    case BOUNDED_NORMAL:    ++num_nuv;  break;
-      case LOGNORMAL: case BOUNDED_LOGNORMAL: ++num_lnuv; break;
-      case UNIFORM:                           ++num_uuv;  break;
-      case LOGUNIFORM:                        ++num_luuv; break;
-      case TRIANGULAR:                        ++num_tuv;  break;
-      case EXPONENTIAL:                       ++num_euv;  break;
-      case BETA:                              ++num_beuv; break;
-      case GAMMA:                             ++num_gauv; break;
-      case GUMBEL:                            ++num_guuv; break;
-      case FRECHET:                           ++num_fuv;  break;
-    //case WEIBULL:                           ++num_wuv;  break;
-      }
-
-    size_t dist_index = pacvm_index - num_cdv;
-    switch (sacvm_target) {
-    case Pecos::N_MEAN:     case Pecos::N_STD_DEV:
-    case Pecos::N_LWR_BND:  case Pecos::N_UPR_BND:
-    case Pecos::N_LOCATION: case Pecos::N_SCALE:
-      break;
-    case Pecos::LN_MEAN:     case Pecos::LN_STD_DEV:
-    case Pecos::LN_LAMBDA:   case Pecos::LN_ZETA:
-    case Pecos::LN_ERR_FACT: case Pecos::LN_LWR_BND: case Pecos::LN_UPR_BND:
-      dist_index -= num_nuv; break;
-    case Pecos::U_LWR_BND:  case Pecos::U_UPR_BND:
-    case Pecos::U_LOCATION: case Pecos::U_SCALE:
-      dist_index -= num_nuv + num_lnuv; break;
-    case Pecos::LU_LWR_BND: case Pecos::LU_UPR_BND:
-      dist_index -= num_nuv + num_lnuv + num_uuv; break;
-    case Pecos::T_MODE:     case Pecos::T_LWR_BND:   case Pecos::T_UPR_BND:
-    case Pecos::T_LOCATION: case Pecos::T_SCALE:
-      dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv; break;
-    case Pecos::E_BETA:
-      dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv + num_tuv; break;
-    case Pecos::BE_ALPHA:   case Pecos::BE_BETA:
-    case Pecos::BE_LWR_BND: case Pecos::BE_UPR_BND:
-      dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv + num_tuv + num_euv;
-      break;
-    case Pecos::GA_ALPHA: case Pecos::GA_BETA:
-      dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv + num_tuv + num_euv
-	+ num_beuv; break;
-    case Pecos::GU_ALPHA: case Pecos::GU_BETA:
-      dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv + num_tuv + num_euv
-	+ num_beuv + num_gauv; break;
-    case Pecos::F_ALPHA: case Pecos::F_BETA:
-      dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv + num_tuv + num_euv
-	+ num_beuv + num_gauv + num_guuv; break;
-    case Pecos::W_ALPHA: case Pecos::W_BETA:
-      dist_index -= num_nuv + num_lnuv + num_uuv + num_luuv + num_tuv + num_euv
-	+ num_beuv + num_gauv + num_guuv + num_fuv; break;
-    case Pecos::NO_TARGET: default:
-      Cerr << "\nError: secondary mapping target unmatched for continuous "
-	   << "variable in NestedModel::sm_acv_index_map()." << std::endl;
-      abort_handler(MODEL_ERROR); break;
-    }
-    return dist_index;
-  }
-  */
-}
-
-
-size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
-{
-  const Variables&           sm_vars = subModel.current_variables();
-  const SharedVariablesData& sm_svd  = sm_vars.shared_data();
-  size_t offset, num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  size_t num_ddv = num_ddiv + num_ddsv + num_ddrv;
-
-  // Note: this is similar to cv_index_map() for a *_ALL view
-  switch (sadivm_target) {
-  case Pecos::DR_LWR_BND: case Pecos::DR_UPR_BND:
-    if (padivm_index < num_ddv) offset = 0; // design
-    else { // state: accumulate multiple offsets for ddv, dauv, deuv
-      size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-      sm_svd.aleatory_uncertain_counts(num_cauv,num_dauiv,num_dausv,num_daurv);
-      size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-      sm_svd.epistemic_uncertain_counts(num_ceuv,num_deuiv,num_deusv,num_deurv);
-      offset = num_ddv
-	     + num_dauiv + num_dausv + num_daurv
-	     + num_deuiv + num_deusv + num_deurv;
-    }
-    break;
-  case Pecos::P_LAMBDA:
-  case Pecos::BI_P_PER_TRIAL:  case Pecos::BI_TRIALS:
-  case Pecos::NBI_P_PER_TRIAL: case Pecos::NBI_TRIALS:
-  case Pecos::GE_P_PER_TRIAL: 
-  case Pecos::HGE_TOT_POP:     case Pecos::HGE_SEL_POP: case Pecos::HGE_DRAWN:
-    offset = num_ddv;
-    break;
-  case Pecos::NO_TARGET: default:
-    Cerr << "\nError: secondary mapping target unmatched for discrete integer "
-	 << "variable in NestedModel::sm_adiv_index_map()." << std::endl;
-    abort_handler(MODEL_ERROR); break;
-  }
-  return padivm_index + offset;
-
-  /*
-  if (sadivm_target == Pecos::DR_LWR_BND || sadivm_target == Pecos::DR_UPR_BND)
-    return padivm_index; // no offset since all_discrete_int_* used to update
-  else {
-    const SharedVariablesData& sm_svd = sm_vars.shared_data();
-    size_t num_rv, num_cdv, num_ddiv, num_ddsv, num_ddrv,
-           num_puv = 0, num_biuv = 0, num_nbiuv = 0, num_geuv = 0;
-    sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    const ShortArray& rv_types = mvDist.random_variable_types();
-    num_rv = rv_types.size();
-    for (i=0; i<num_rv; ++i)
-      switch (rv_types[i]) {
-      case POISSON:           ++num_puv;   break;
-      case BINOMIAL:          ++num_biuv;  break;
-      case NEGATIVE_BINOMIAL: ++num_nbiuv; break;
-      case GEOMETRIC:         ++num_luuv;  break;
-    //case HYPERGEOMETRIC:    ++num_hgeuv; break;
-      }
-
-    size_t dist_index = padivm_index - num_ddiv;
-    switch (sadivm_target) {
-    case Pecos::P_LAMBDA:                                      break;
-    case Pecos::BI_P_PER_TRIAL:  case Pecos::BI_TRIALS:
-      dist_index -= num_puv;                                   break;
-    case Pecos::NBI_P_PER_TRIAL: case Pecos::NBI_TRIALS:
-      dist_index -= num_puv + num_biuv;                        break;
-    case Pecos::GE_P_PER_TRIAL: 
-      dist_index -= num_puv + num_biuv + num_nbiuv;            break;
-    case Pecos::HGE_TOT_POP: case Pecos::HGE_SEL_POP: case Pecos::HGE_DRAWN:
-      dist_index -= num_puv + num_biuv + num_nbiuv + num_geuv; break;
-    case Pecos::NO_TARGET: default:
-      Cerr << "\nError: secondary mapping target unmatched for discrete "
-	   << "integer variable in NestedModel::sm_adiv_index_map()."
-	   << std::endl;
-      abort_handler(MODEL_ERROR);                                       break;
-    }
-    return dist_index;
-  }
-  */
-}
-
-
-size_t NestedModel::sm_adsv_index_map(size_t padsvm_index, short sadsvm_target)
-{
-  //switch (sadsvm_target) {
-  //case Pecos::DSS_LWR_BND: case Pecos::DSS_UPR_BND:
-  //  return padsvm_index; break;
-  //case Pecos::DAUS_DISTRIBUTION_PARAMETER:
-  //  const SharedVariablesData& sm_svd
-  //    = subModel.current_variables().shared_data();
-  //  size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  //  sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  //  return padsvm_index - num_ddsv;
-  //  break;
-  //}
-  //case Pecos::NO_TARGET: default:
-    Cerr << "\nError: secondary mapping target unmatched for discrete string "
-	 << "variable in NestedModel::sm_adsv_index_map()." << std::endl;
-    abort_handler(MODEL_ERROR);
-  //}
-  return _NPOS;
-}
-
-
-size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
-{
-  //switch (sadrvm_target) {
-  //case Pecos::DSR_LWR_BND: case Pecos::DSR_UPR_BND:
-  //  return padrvm_index; break;
-  //case Pecos::DAURV_DISTRIBUTION_PARAMETER:
-  //  const SharedVariablesData& sm_svd
-  //    = subModel.current_variables().shared_data();
-  //  size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  //  sm_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  //  return padrvm_index - num_ddrv;
-  //  break;
-  //}
-  //case Pecos::NO_TARGET: default:
-    Cerr << "\nError: secondary mapping target unmatched for discrete real "
-	 << "variable in NestedModel::sm_adrv_index_map()." << std::endl;
-    abort_handler(MODEL_ERROR);
-  //}
-  return _NPOS;
-}
-
-
 void NestedModel::
-real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
+real_variable_mapping(Real r_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
   Pecos::MarginalsCorrDistribution* sm_mvd_rep
     = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
-  bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views --> resort to ACV types?
+
+  const SharedVariablesData& sm_svd
+    = subModel.current_variables().shared_data();
 
   switch (svm_target) {
-  case Pecos::CR_LWR_BND:
-    subModel.all_continuous_lower_bound(r_var, mapped_index);
-    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+  case Pecos::CR_LWR_BND:  case Pecos::N_LWR_BND:  case Pecos::LN_LWR_BND:
+  case Pecos::U_LWR_BND:   case Pecos::LU_LWR_BND: case Pecos::T_LWR_BND:
+  case Pecos::BE_LWR_BND:
+    sm_mvd_rep->push_parameter(sm_svd.acv_index_to_all_index(av_index),
+			       svm_target, r_var);
+    subModel.all_continuous_lower_bound(r_var, av_index);
     break;
-  case Pecos::CR_UPR_BND:
-    subModel.all_continuous_upper_bound(r_var, mapped_index);
-    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+  case Pecos::CR_UPR_BND:  case Pecos::N_UPR_BND:  case Pecos::LN_UPR_BND:
+  case Pecos::U_UPR_BND:   case Pecos::LU_UPR_BND: case Pecos::T_UPR_BND:
+  case Pecos::BE_UPR_BND:
+    sm_mvd_rep->push_parameter(sm_svd.acv_index_to_all_index(av_index),
+			       svm_target, r_var);
+    subModel.all_continuous_upper_bound(r_var, av_index);
     break;
-  case Pecos::N_MEAN:     case Pecos::N_STD_DEV:  case Pecos::N_LWR_BND:
-  case Pecos::N_UPR_BND:  case Pecos::LN_MEAN:    case Pecos::LN_STD_DEV:
-  case Pecos::LN_LAMBDA:  case Pecos::LN_ZETA:    case Pecos::LN_ERR_FACT:
-  case Pecos::LN_LWR_BND: case Pecos::LN_UPR_BND: case Pecos::U_LWR_BND:
-  case Pecos::U_UPR_BND:  case Pecos::LU_LWR_BND: case Pecos::LU_UPR_BND:
-  case Pecos::T_MODE:     case Pecos::T_LWR_BND:  case Pecos::T_UPR_BND:
-  case Pecos::E_BETA:     case Pecos::BE_ALPHA:   case Pecos::BE_BETA:
-  case Pecos::BE_LWR_BND: case Pecos::BE_UPR_BND: case Pecos::GA_ALPHA:
-  case Pecos::GA_BETA:    case Pecos::GU_ALPHA:   case Pecos::GU_BETA:
-  case Pecos::F_ALPHA:    case Pecos::F_BETA:     case Pecos::W_ALPHA:
-  case Pecos::W_BETA:     case Pecos::P_LAMBDA:   case Pecos::BI_P_PER_TRIAL:
+  case Pecos::N_MEAN:      case Pecos::N_STD_DEV:  case Pecos::LN_MEAN:
+  case Pecos::LN_STD_DEV:  case Pecos::LN_LAMBDA:  case Pecos::LN_ZETA:
+  case Pecos::LN_ERR_FACT: case Pecos::T_MODE:     case Pecos::E_BETA:
+  case Pecos::BE_ALPHA:    case Pecos::BE_BETA:    case Pecos::GA_ALPHA:
+  case Pecos::GA_BETA:     case Pecos::GU_ALPHA:   case Pecos::GU_BETA:
+  case Pecos::F_ALPHA:     case Pecos::F_BETA:     case Pecos::W_ALPHA:
+  case Pecos::W_BETA:
+    sm_mvd_rep->push_parameter(sm_svd.acv_index_to_all_index(av_index),
+			       svm_target, r_var);
+    break;
+  case Pecos::P_LAMBDA:        case Pecos::BI_P_PER_TRIAL:
   case Pecos::NBI_P_PER_TRIAL: case Pecos::GE_P_PER_TRIAL:
-    sm_mvd_rep->push_parameter(mapped_index, svm_target, r_var);
+    sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
+			       svm_target, r_var);
     break;
   // N_{MEAN,STD_DEV,LWR_BND,UPR_BND} change individual dist parameters only.
   // N_{LOCATION,SCALE} change multiple parameters to accomplish a translation
@@ -3247,38 +2792,48 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Normal, location & scale are mean & std deviation.
   case Pecos::N_LOCATION: { // a translation with no change in shape/scale
+    size_t rv_index = sm_svd.acv_index_to_all_index(av_index);
     Real mean, l_bnd, u_bnd;
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN, mean);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND, l_bnd);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND, u_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_MEAN, mean);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_UPR_BND, u_bnd);
     Real delta = r_var - mean;
     // translate: change bounds by same amount as mean
-    sm_mvd_rep->push_parameter(mapped_index, Pecos::N_MEAN, r_var);
+    sm_mvd_rep->push_parameter(rv_index, Pecos::N_MEAN, r_var);
     Real dbl_inf = std::numeric_limits<Real>::infinity();
-    if (l_bnd > -dbl_inf)
-      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND, l_bnd + delta);
-    if (u_bnd <  dbl_inf)
-      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND, u_bnd + delta);
+    if (l_bnd > -dbl_inf) {
+      Real new_l_bnd = l_bnd + delta;
+      sm_mvd_rep->push_parameter(rv_index, Pecos::N_LWR_BND, new_l_bnd);
+      subModel.all_continuous_lower_bound(new_l_bnd, av_index);
+    }
+    if (u_bnd <  dbl_inf) {
+      Real new_u_bnd = u_bnd + delta;
+      sm_mvd_rep->push_parameter(rv_index, Pecos::N_UPR_BND, new_u_bnd);
+      subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
+    }
     break;
   }
   case Pecos::N_SCALE: { // change in shape/scale without translation
+    size_t rv_index = sm_svd.acv_index_to_all_index(av_index);
     Real mean, stdev, l_bnd, u_bnd;
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_MEAN, mean);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_STD_DEV, stdev);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_LWR_BND, l_bnd);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::N_UPR_BND, u_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_MEAN, mean);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_STD_DEV, stdev);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_UPR_BND, u_bnd);
     // scale: preserve number of std deviations where l,u bound occurs
-    sm_mvd_rep->push_parameter(mapped_index, Pecos::N_STD_DEV, r_var);
+    sm_mvd_rep->push_parameter(rv_index, Pecos::N_STD_DEV, r_var);
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     if (l_bnd > -dbl_inf) {
-      Real num_sig_l = (mean - l_bnd) / stdev;
-      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_LWR_BND,
-			      mean - num_sig_l * r_var);
+      Real num_sig_l = (mean - l_bnd) / stdev,
+	   new_l_bnd = mean - num_sig_l * r_var;
+      sm_mvd_rep->push_parameter(rv_index, Pecos::N_LWR_BND, new_l_bnd);
+      subModel.all_continuous_lower_bound(new_l_bnd, av_index);
     }
     if (u_bnd <  dbl_inf) {
-      Real num_sig_u = (u_bnd - mean) / stdev;
-      sm_mvd_rep->push_parameter(mapped_index, Pecos::N_UPR_BND,
-			      mean + num_sig_u * r_var);
+      Real num_sig_u = (u_bnd - mean) / stdev,
+	   new_u_bnd = mean + num_sig_u * r_var;
+      sm_mvd_rep->push_parameter(rv_index, Pecos::N_UPR_BND, new_u_bnd);
+      subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
     }
     break;
   }
@@ -3289,25 +2844,31 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Uniform, location & scale are center & range.
   case Pecos::U_LOCATION: {
+    size_t rv_index = sm_svd.acv_index_to_all_index(av_index);
     // translate: change both bounds by same amount
     Real l_bnd, u_bnd;
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND, l_bnd);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND, u_bnd);
-    Real center = (u_bnd + l_bnd) / 2., delta = r_var - center;
-    sm_mvd_rep->push_parameter(mapped_index, Pecos::U_LWR_BND, l_bnd + delta);
-    sm_mvd_rep->push_parameter(mapped_index, Pecos::U_UPR_BND, u_bnd + delta);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::U_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::U_UPR_BND, u_bnd);
+    Real center = (u_bnd + l_bnd) / 2., delta = r_var - center,
+      new_l_bnd = l_bnd + delta, new_u_bnd = u_bnd + delta;
+    sm_mvd_rep->push_parameter(rv_index, Pecos::U_LWR_BND, new_l_bnd);
+    sm_mvd_rep->push_parameter(rv_index, Pecos::U_UPR_BND, new_u_bnd);
+    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
+    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
     break;
   }
   case Pecos::U_SCALE: {
+    size_t rv_index = sm_svd.acv_index_to_all_index(av_index);
     // scale: move bounds in/out by same amount about consistent center
     Real l_bnd, u_bnd;
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_LWR_BND, l_bnd);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::U_UPR_BND, u_bnd);
-    Real center = (u_bnd + l_bnd) / 2., half_range = r_var / 2.;
-    sm_mvd_rep->
-      push_parameter(mapped_index, Pecos::U_LWR_BND, center-half_range);
-    sm_mvd_rep->
-      push_parameter(mapped_index, Pecos::U_UPR_BND, center+half_range);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::U_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::U_UPR_BND, u_bnd);
+    Real center = (u_bnd + l_bnd) / 2., half_range = r_var / 2.,
+      new_l_bnd = center-half_range, new_u_bnd = center+half_range;
+    sm_mvd_rep->push_parameter(rv_index, Pecos::U_LWR_BND, new_l_bnd);
+    sm_mvd_rep->push_parameter(rv_index, Pecos::U_UPR_BND, new_u_bnd);
+    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
+    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
     break;
   }
   // T_{MODE,LWR_BND,UPR_BND} change individual dist parameters only.
@@ -3317,29 +2878,35 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   // distribution (a consistent meaning of mu/sigma would be more awkward for a
   // user to convert).  For Triangular, location & scale are mode & range.
   case Pecos::T_LOCATION: {
+    size_t rv_index = sm_svd.acv_index_to_all_index(av_index);
     // translate: change mode and both bounds by same amount
     Real mode, l_bnd, u_bnd;
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE, mode);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND, l_bnd);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND, u_bnd);
-    Real delta = r_var - mode;
-    sm_mvd_rep->push_parameter(mapped_index, Pecos::T_MODE,    r_var);
-    sm_mvd_rep->push_parameter(mapped_index, Pecos::T_LWR_BND, l_bnd + delta);
-    sm_mvd_rep->push_parameter(mapped_index, Pecos::T_UPR_BND, u_bnd + delta);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::T_MODE, mode);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::T_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::T_UPR_BND, u_bnd);
+    Real  delta = r_var - mode, new_l_bnd = l_bnd + delta,
+      new_u_bnd = u_bnd + delta;
+    sm_mvd_rep->push_parameter(rv_index, Pecos::T_MODE,    r_var);
+    sm_mvd_rep->push_parameter(rv_index, Pecos::T_LWR_BND, new_l_bnd);
+    sm_mvd_rep->push_parameter(rv_index, Pecos::T_UPR_BND, new_u_bnd);
+    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
+    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
     break;
   }
   case Pecos::T_SCALE: {
+    size_t rv_index = sm_svd.acv_index_to_all_index(av_index);
     // scale: preserve L/M/U proportions while scaling range
     Real mode, l_bnd, u_bnd;
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_MODE, mode);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_LWR_BND, l_bnd);
-    sm_mvd_rep->pull_parameter<Real>(mapped_index, Pecos::T_UPR_BND, u_bnd);
-    Real range = u_bnd - l_bnd, perc_l = (mode - l_bnd) / range,
-        perc_u = (u_bnd - mode) / range;
-    sm_mvd_rep->
-      push_parameter(mapped_index, Pecos::T_LWR_BND, mode-perc_l*r_var);
-    sm_mvd_rep->
-      push_parameter(mapped_index, Pecos::T_UPR_BND, mode+perc_u*r_var);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::T_MODE, mode);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::T_LWR_BND, l_bnd);
+    sm_mvd_rep->pull_parameter<Real>(rv_index, Pecos::T_UPR_BND, u_bnd);
+    Real  range = u_bnd - l_bnd, perc_l = (mode - l_bnd) / range,
+         perc_u = (u_bnd - mode) / range, new_l_bnd = mode - perc_l * r_var,
+      new_u_bnd = mode + perc_u * r_var;
+    sm_mvd_rep->push_parameter(rv_index, Pecos::T_LWR_BND, new_l_bnd);
+    sm_mvd_rep->push_parameter(rv_index, Pecos::T_UPR_BND, new_u_bnd);
+    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
+    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
     break;
   }
   case Pecos::NO_TARGET: default:
@@ -3351,27 +2918,34 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
 
 
 void NestedModel::
-integer_variable_mapping(const int& i_var, size_t mapped_index,
-			 short svm_target)
+integer_variable_mapping(int i_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
   Pecos::MarginalsCorrDistribution* sm_mvd_rep
     = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
-  bool active_rv; // *** TO DO ***: design and/or state in active view (simple for all view, but there are design/state specific views...)
+
+  const SharedVariablesData& sm_svd
+    = subModel.current_variables().shared_data();
 
   switch (svm_target) {
   case Pecos::DR_LWR_BND:
-    subModel.all_discrete_int_lower_bound(i_var, mapped_index);
-    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, i_var);
+    sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
+			       svm_target, i_var);
+    subModel.all_discrete_int_lower_bound(i_var, av_index);
     break;
   case Pecos::DR_UPR_BND:
-    subModel.all_discrete_int_upper_bound(i_var, mapped_index);
-    if (active_rv) sm_mvd_rep->push_parameter(mapped_index, svm_target, i_var);
+    sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
+			       svm_target, i_var);
+    subModel.all_discrete_int_upper_bound(i_var, av_index);
     break;
   case Pecos::BI_TRIALS:    case Pecos::NBI_TRIALS:
-  case Pecos::HGE_TOT_POP:  case Pecos::HGE_SEL_POP:  case Pecos::HGE_DRAWN:
-    sm_mvd_rep->push_parameter(mapped_index, svm_target, i_var); break;
+  case Pecos::HGE_TOT_POP:  case Pecos::HGE_SEL_POP:  case Pecos::HGE_DRAWN: {
+    unsigned int ui_var = (unsigned int)i_var;
+    sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
+			       svm_target, ui_var);
+    break;
+  }
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for integer value "
 	 << "insertion in NestedModel::integer_variable_mapping()" << std::endl;
@@ -3381,13 +2955,16 @@ integer_variable_mapping(const int& i_var, size_t mapped_index,
 
 
 void NestedModel::
-string_variable_mapping(const String& s_var, size_t mapped_index,
-			 short svm_target)
+string_variable_mapping(const String& s_var, size_t av_index,
+			short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
     = subModel.multivariate_distribution();
   Pecos::MarginalsCorrDistribution* sm_mvd_rep
     = (Pecos::MarginalsCorrDistribution*)sm_mvd.multivar_dist_rep();
+
+  const SharedVariablesData& sm_svd
+    = subModel.current_variables().shared_data();
 
   switch (svm_target) {
   case Pecos::NO_TARGET: default:
@@ -3397,7 +2974,9 @@ string_variable_mapping(const String& s_var, size_t mapped_index,
   }
 }
 
-ActiveSet NestedModel::default_interface_active_set() {
+
+ActiveSet NestedModel::default_interface_active_set()
+{
   size_t num_fun = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
   ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());

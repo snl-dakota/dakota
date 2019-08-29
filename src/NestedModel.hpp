@@ -208,6 +208,7 @@ private:
 				       size_t curr_index,
 				       short& inactive_sm_view);
 
+  /*
   /// offset pacvm_index based on sacvm_target to create mapped_index
   size_t sm_acv_index_map(size_t  pacvm_index,  short sacvm_target);
   /// offset padivm_index based on sadivm_target to create mapped_index
@@ -226,6 +227,7 @@ private:
 		       const Variables& vars);
   /// offset drv_index to create index into aggregated primary/secondary arrays
   size_t drv_index_map(size_t drv_index, const Variables& vars);
+  */
 
   /// offset active complement ccv_index to create index into all
   /// continuous arrays
@@ -241,13 +243,11 @@ private:
   size_t cdrv_index_map(size_t cdrv_index, const Variables& vars);
 
   /// insert r_var into appropriate recipient
-  void real_variable_mapping(const Real& r_var, size_t mapped_index,
-			     short svm_target);
+  void real_variable_mapping(Real r_var, size_t av_index, short svm_target);
   /// insert i_var into appropriate recipient
-  void integer_variable_mapping(const int& i_var, size_t mapped_index,
-				short svm_target);
+  void integer_variable_mapping(int i_var, size_t av_index, short svm_target);
   /// insert s_var into appropriate recipient
-  void string_variable_mapping(const String& s_var, size_t mapped_index,
+  void string_variable_mapping(const String& s_var, size_t av_index,
 			       short svm_target);
 
   /// define the evaluation requirements for the optionalInterface
