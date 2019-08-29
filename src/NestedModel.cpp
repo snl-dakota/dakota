@@ -195,7 +195,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   for (i=0; i<num_curr_cv; ++i) {
-    curr_i = svd.cv_index_to_active_index(i);//cv_index_map(i, currentVariables);
+    curr_i = svd.cv_index_to_active_index(i);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -243,7 +243,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE INTEGER VARIABLES from currentVariables
   for (i=0; i<num_curr_div; ++i) {
-    curr_i = svd.div_index_to_active_index(i);//div_index_map(i, currentVariables);
+    curr_i = svd.div_index_to_active_index(i);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -291,7 +291,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE STRING VARIABLES from currentVariables
   for (i=0; i<num_curr_dsv; ++i) {
-    curr_i = svd.dsv_index_to_active_index(i);//dsv_index_map(i, currentVariables);
+    curr_i = svd.dsv_index_to_active_index(i);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -339,7 +339,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Map ACTIVE DISCRETE REAL VARIABLES from currentVariables
   for (i=0; i<num_curr_drv; ++i) {
-    curr_i = svd.drv_index_to_active_index(i);//drv_index_map(i, currentVariables);
+    curr_i = svd.drv_index_to_active_index(i);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
     if (map1.empty()) {
@@ -2211,7 +2211,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_c_labels
       = vars.continuous_variable_labels();
     for (i=0; i<num_curr_cv; ++i) {
-      curr_i = svd.cv_index_to_active_index(i);//cv_index_map(i, vars);
+      curr_i = svd.cv_index_to_active_index(i);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2233,31 +2233,22 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 						     pacvm_index);
 	  }
 	}
-	else {
-	  //size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	  //real_variable_mapping(curr_c_vars[i], mapped_index, sacvm_target);
+	else
 	  real_variable_mapping(curr_c_vars[i], pacvm_index, sacvm_target);
-	}
       }
       else if (padivm_index != _NPOS) {
 	short sadivm_target = (num_var_map_2) ? active2ADIVarMapTargets[curr_i]
 	  : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	//real_variable_mapping(curr_c_vars[i], mapped_index, sadivm_target);
 	real_variable_mapping(curr_c_vars[i], padivm_index, sadivm_target);
       }
       else if (padsvm_index != _NPOS) {
 	short sadsvm_target = (num_var_map_2) ? active2ADSVarMapTargets[curr_i]
 	  : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	//real_variable_mapping(curr_c_vars[i], mapped_index, sadsvm_target);
 	real_variable_mapping(curr_c_vars[i], padsvm_index, sadsvm_target);
       }
       else if (padrvm_index != _NPOS) {
 	short sadrvm_target = (num_var_map_2) ? active2ADRVarMapTargets[curr_i]
 	  : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	//real_variable_mapping(curr_c_vars[i], mapped_index, sadrvm_target);
 	real_variable_mapping(curr_c_vars[i], padrvm_index, sadrvm_target);
       }
     }
@@ -2271,7 +2262,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_di_labels
       = vars.discrete_int_variable_labels();
     for (i=0; i<num_curr_div; ++i) {
-      curr_i = svd.div_index_to_active_index(i);//div_index_map(i, vars);
+      curr_i = svd.div_index_to_active_index(i);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2279,8 +2270,6 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       if (pacvm_index != _NPOS) {
 	short sacvm_target
 	  = (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	//integer_variable_mapping(curr_di_vars[i], mapped_index, sacvm_target);
 	integer_variable_mapping(curr_di_vars[i], pacvm_index, sacvm_target);
       }
       else if (padivm_index != _NPOS) {
@@ -2302,24 +2291,17 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 						       padivm_index);
 	  }
 	}
-	else {
-	  //size_t mapped_index = sm_adiv_index_map(padivm_index,sadivm_target);
-	  //integer_variable_mapping(curr_di_vars[i],mapped_index,sadivm_target);
+	else
 	  integer_variable_mapping(curr_di_vars[i], padivm_index,sadivm_target);
-	}
       }
       else if (padsvm_index != _NPOS) {
 	short sadsvm_target = (num_var_map_2) ?
 	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	//integer_variable_mapping(curr_di_vars[i], mapped_index,sadsvm_target);
 	integer_variable_mapping(curr_di_vars[i], padsvm_index, sadsvm_target);
       }
       else if (padrvm_index != _NPOS) {
 	short sadrvm_target = (num_var_map_2) ?
 	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	//integer_variable_mapping(curr_di_vars[i], mapped_index,sadrvm_target);
 	integer_variable_mapping(curr_di_vars[i], padrvm_index, sadrvm_target);
       }
     }
@@ -2331,7 +2313,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_ds_labels
       = vars.discrete_string_variable_labels();
     for (i=0; i<num_curr_dsv; ++i) {
-      curr_i = svd.dsv_index_to_active_index(i);//dsv_index_map(i, vars);
+      curr_i = svd.dsv_index_to_active_index(i);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2339,15 +2321,11 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       if (pacvm_index != _NPOS) {
 	short sacvm_target = (num_var_map_2) ?
 	  active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	//string_variable_mapping(curr_ds_vars[i], mapped_index, sacvm_target);
 	string_variable_mapping(curr_ds_vars[i], pacvm_index, sacvm_target);
       }
       else if (padivm_index != _NPOS) {
 	short sadivm_target = (num_var_map_2) ?
 	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	//string_variable_mapping(curr_ds_vars[i], mapped_index, sadivm_target);
 	string_variable_mapping(curr_ds_vars[i], padivm_index, sadivm_target);
       }
       else if (padsvm_index != _NPOS) {
@@ -2365,17 +2343,12 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 							  padsvm_index);
 	  }
 	}
-	else {
-	  //size_t mapped_index = sm_adsv_index_map(padsvm_index,sadsvm_target);
-	  //string_variable_mapping(curr_ds_vars[i],mapped_index,sadsvm_target);
+	else
 	  string_variable_mapping(curr_ds_vars[i], padsvm_index, sadsvm_target);
-	}
       }
       else if (padrvm_index != _NPOS) {
 	short sadrvm_target = (num_var_map_2) ?
 	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adrv_index_map(padrvm_index, sadrvm_target);
-	//string_variable_mapping(curr_ds_vars[i], mapped_index, sadrvm_target);
 	string_variable_mapping(curr_ds_vars[i], padrvm_index, sadrvm_target);
       }
     }
@@ -2389,7 +2362,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     StringMultiArrayConstView curr_dr_labels
       = vars.discrete_real_variable_labels();
     for (i=0; i<num_curr_drv; ++i) {
-      curr_i = svd.drv_index_to_active_index(i);//drv_index_map(i, vars);
+      curr_i = svd.drv_index_to_active_index(i);
       pacvm_index  =  active1ACVarMapIndices[curr_i];
       padivm_index = active1ADIVarMapIndices[curr_i];
       padsvm_index = active1ADSVarMapIndices[curr_i];
@@ -2397,22 +2370,16 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       if (pacvm_index != _NPOS) {
 	short sacvm_target = (num_var_map_2) ?
 	  active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_acv_index_map(pacvm_index, sacvm_target);
-	//real_variable_mapping(curr_dr_vars[i], mapped_index, sacvm_target);
 	real_variable_mapping(curr_dr_vars[i], pacvm_index, sacvm_target);
       }
       else if (padivm_index != _NPOS) {
 	short sadivm_target = (num_var_map_2) ?
 	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adiv_index_map(padivm_index, sadivm_target);
-	//real_variable_mapping(curr_dr_vars[i], mapped_index, sadivm_target);
 	real_variable_mapping(curr_dr_vars[i], padivm_index, sadivm_target);
       }
       else if (padsvm_index != _NPOS) {
 	short sadsvm_target = (num_var_map_2) ?
 	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
-	//size_t mapped_index = sm_adsv_index_map(padsvm_index, sadsvm_target);
-	//real_variable_mapping(curr_dr_vars[i], mapped_index, sadsvm_target);
 	real_variable_mapping(curr_dr_vars[i], padsvm_index, sadsvm_target);
       }
       else if (padrvm_index != _NPOS) {
@@ -2434,11 +2401,8 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 							padrvm_index);
 	  }
 	}
-	else {
-	  //size_t mapped_index = sm_adrv_index_map(padrvm_index,sadrvm_target);
-	  //real_variable_mapping(curr_dr_vars[i], mapped_index, sadrvm_target);
+	else
 	  real_variable_mapping(curr_dr_vars[i], padrvm_index, sadrvm_target);
-	}
       }
     }
   }

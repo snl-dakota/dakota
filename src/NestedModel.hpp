@@ -208,27 +208,6 @@ private:
 				       size_t curr_index,
 				       short& inactive_sm_view);
 
-  /*
-  /// offset pacvm_index based on sacvm_target to create mapped_index
-  size_t sm_acv_index_map(size_t  pacvm_index,  short sacvm_target);
-  /// offset padivm_index based on sadivm_target to create mapped_index
-  size_t sm_adiv_index_map(size_t padivm_index, short sadivm_target);
-  /// offset padsvm_index based on sadsvm_target to create mapped_index
-  size_t sm_adsv_index_map(size_t padsvm_index, short sadsvm_target);
-  /// offset padrvm_index based on sadrvm_target to create mapped_index
-  size_t sm_adrv_index_map(size_t padrvm_index, short sadrvm_target);
-
-  /// offset cv_index to create index into aggregated primary/secondary arrays
-  size_t cv_index_map(size_t cv_index, const Variables& vars);
-  /// offset div_index to create index into aggregated primary/secondary arrays
-  size_t div_index_map(size_t div_index, const Variables& vars);
-  /// offset dsv_index to create index into aggregated primary/secondary arrays
-  size_t dsv_index_map(size_t dsv_index,
-		       const Variables& vars);
-  /// offset drv_index to create index into aggregated primary/secondary arrays
-  size_t drv_index_map(size_t drv_index, const Variables& vars);
-  */
-
   /// offset active complement ccv_index to create index into all
   /// continuous arrays
   size_t ccv_index_map(size_t ccv_index, const Variables& vars);
