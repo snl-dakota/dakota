@@ -1131,9 +1131,10 @@ protected:
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
   Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-	const SharedResponseData& srd, const ActiveSet& set,
-	short output_level);
+	ParallelLibrary& parallel_lib,
+	const SharedVariablesData& svd, bool share_svd,
+	const SharedResponseData&  srd, bool share_srd,
+	const ActiveSet& set, short output_level);
 
   /// constructor initializing base class for recast model instances
   Model(LightWtBaseConstructor, ProblemDescDB& problem_db,

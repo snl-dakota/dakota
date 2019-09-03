@@ -229,11 +229,12 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-      const SharedResponseData& srd, const ActiveSet& set, short output_level):
-  currentVariables(svd), numDerivVars(set.derivative_vector().size()),
-  currentResponse(srd, set), numFns(set.request_vector().size()),
-  userDefinedConstraints(svd), evaluationsDB(evaluation_store_db),
+      ParallelLibrary& parallel_lib,
+      const SharedVariablesData& svd, bool share_svd,
+      const SharedResponseData&  srd, bool share_srd,
+      const ActiveSet& set, short output_level):
+  numDerivVars(set.derivative_vector().size()),
+  numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
   supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
   parallelLib(parallel_lib),
@@ -242,10 +243,24 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   outputLevel(output_level), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  modelId(no_spec_id()), modelEvalCntr(0), estDerivsFlag(false),
-  initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
-  modelRep(NULL), referenceCount(1)
+  modelId(no_spec_id()), // to be replaced by derived ctors
+  modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
+  modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
+  if (share_svd) {
+    currentVariables       =   Variables(svd);
+    userDefinedConstraints = Constraints(svd);
+  }
+  else {
+    SharedVariablesData new_svd(svd.copy());
+    //SharedVariablesData new_svd(svd.view(), svd.components_totals()); // alt
+    currentVariables       =   Variables(new_svd);
+    userDefinedConstraints = Constraints(new_svd);
+  }
+
+  currentResponse = (share_srd) ?
+    Response(srd, set) : Response(srd.response_type(), set);
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(NoDBBaseConstructor, ParallelLibrary&, "
        << "SharedVariablesData&, ActiveSet&, short) called to build letter "
@@ -268,8 +283,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  modelId("NO_SPECIFICATION"), /* this will be changed by the constructors of
-                                  RecastModel and its derived classes */
+  modelId(no_spec_id()), // to be replaced by derived ctors
   modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
   modelRep(NULL), referenceCount(1)
@@ -5645,7 +5659,7 @@ String Model::user_auto_id()
     Note that this function is not used to name recast models; see 
     their constructors for how its done.
 **/
-    String Model::no_spec_id()
+String Model::no_spec_id()
 {
   // increment and then use the current ID value
   return String("NOSPEC_MODEL_ID_") + boost::lexical_cast<String>(++noSpecIdNum);

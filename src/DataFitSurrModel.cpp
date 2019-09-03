@@ -189,10 +189,11 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 bool import_build_active_only,
 		 const String& export_approx_points_file,
 		 unsigned short export_approx_format):
+  // SVD can be shared, but don't share SRD as QoI +aggregations are consumed:
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(),
-		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().shared_data(),
+		 actual_model.current_variables().shared_data(), true,
+		 actual_model.current_response().shared_data(), false,
 		 set, corr_type, output_level),
   daceIterator(dace_iterator), actualModel(actual_model), pointsTotal(0),
   pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
