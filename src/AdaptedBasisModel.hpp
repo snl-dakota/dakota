@@ -86,6 +86,8 @@ protected:
   /// server operations when iteration on the AdaptedBasisModel is complete
   void stop_servers();
 
+  void assign_instance();
+
   // ---
   // Construct time convenience functions
   // ---
@@ -268,6 +270,10 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 inline void AdaptedBasisModel::stop_servers()
 { component_parallel_mode(CONFIG_PHASE); }
+
+
+inline void AdaptedBasisModel::assign_instance()
+{ abmInstance = this; }
 
 } // namespace Dakota
 

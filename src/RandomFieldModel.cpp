@@ -27,7 +27,6 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
   percentVariance(problem_db.get_real("model.truncation_tolerance")),
   actualReducedRank(5)
 {
-  rfmInstance = this;
   modelType = "random_field";
   modelId = RecastModel::recast_model_id(root_model_id(), "RANDOM_FIELD");
   init_dace_iterator(problem_db);
@@ -292,8 +291,7 @@ void RandomFieldModel::initialize_recast()
   size_t recast_vars = submodel_vars + actualReducedRank;
 
   // BMA TODO: This is wrong!  Assumes normal lead the cv array!
-  UShortMultiArrayConstView sm_cv_types
-    = rfmInstance->subModel.continuous_variable_types();
+  UShortMultiArrayConstView sm_cv_types = subModel.continuous_variable_types();
   size_t num_sm_normal
     = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
 

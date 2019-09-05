@@ -51,8 +51,6 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
               response_order(sub_model, recast_resp_deriv_order)), 
   expData(exp_data), numHyperparams(num_hyper), obsErrorMultiplierMode(mult_mode)
 {
-  dtModelInstance = this;
-
   modelId = RecastModel::recast_model_id(root_model_id(), "DATA_TRANSFORM");
   // register state variables as inactive vars if config vars are present
   // BMA TODO: correctly manage the view if relaxed, also review recursion

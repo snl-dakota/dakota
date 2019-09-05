@@ -59,7 +59,6 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
     probDescDB.get_real("model.active_subspace.cv.decrease_tolerance")),
   cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
 {
-  asmInstance = this;
   modelType = "active_subspace";
   modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   // Set seed of bootstrap sampler:
@@ -1816,7 +1815,7 @@ void ActiveSubspaceModel::build_surrogate()
   // is built.
 
   Model asm_model;
-  asm_model.assign_rep(asmInstance, false);
+  asm_model.assign_rep(this, false);
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
   ActiveSet surr_set = current_response().active_set(); // copy

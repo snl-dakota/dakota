@@ -25,7 +25,6 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   pcePilotExpansion(pcePilotExpRepPtr, false), numFullspaceVars(subModel.cv()),
   reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
-  abmInstance = this;
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace

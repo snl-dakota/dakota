@@ -70,7 +70,6 @@ public:
   /// destructor
   ~ActiveSubspaceModel();
 
-
   //
   //- Heading: Virtual function redefinitions
   //
@@ -86,7 +85,6 @@ public:
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   int serve_init_mapping(ParLevLIter pl_iter);
-
 
 protected:
 
@@ -122,6 +120,8 @@ protected:
   /// Executed by the master to terminate the offline and online phase
   /// server operations when iteration on the ActiveSubspaceModel is complete
   void stop_servers();
+
+  void assign_instance();
 
   // ---
   // Construct time convenience functions
@@ -376,6 +376,10 @@ protected:
 
 inline bool ActiveSubspaceModel::resize_pending() const
 { return !mappingInitialized; }
+
+
+inline void ActiveSubspaceModel::assign_instance()
+{ asmInstance = this; }
 
 } // namespace Dakota
 

@@ -70,6 +70,12 @@ public:
 
 protected:
 
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void assign_instance();
+
   // ---
   // Scaling initialization helper functions
   // ---
@@ -189,6 +195,10 @@ protected:
   RealVector linearEqScaleOffsets;       ///< offsets for linear constraints
 
 };
+
+
+inline void ScalingModel::assign_instance()
+{ scaleModelInstance = this; }
 
 } // namespace Dakota
 

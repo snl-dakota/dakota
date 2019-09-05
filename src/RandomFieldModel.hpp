@@ -69,6 +69,8 @@ protected:
 				  bool recurse_flag);
   */
 
+  void assign_instance();
+
   // ---
   // Construct time convenience functions
   // ---
@@ -227,6 +229,10 @@ protected:
 
 inline bool RandomFieldModel::resize_pending() const
 { return (expansionForm == RF_KARHUNEN_LOEVE && !mappingInitialized); }
+
+
+inline void RandomFieldModel::assign_instance()
+{ rfmInstance = this; }
 
 } // namespace Dakota
 

@@ -80,6 +80,8 @@ public:
 
 protected:
 
+  void assign_instance();
+
   // ---
   // Construct time convenience functions
   // ---
@@ -237,6 +239,10 @@ protected:
   IntIntResponseMapMap cachedResp;
 
 };
+
+
+inline void DataTransformModel::assign_instance()
+{ dtModelInstance = this; }
 
 } // namespace Dakota
 

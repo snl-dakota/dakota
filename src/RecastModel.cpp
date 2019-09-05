@@ -513,8 +513,12 @@ transform_variables(const Variables& recast_vars, Variables& sub_model_vars)
 {
   // typical flow: mapping from recast variables ("iterator space")
   // into the sub-model variables ("user space")
-  if (variablesMapping) variablesMapping(recast_vars, sub_model_vars);
-  else                  sub_model_vars.active_variables(recast_vars);
+  if (variablesMapping) {
+    assign_instance();
+    variablesMapping(recast_vars, sub_model_vars);
+  }
+  else
+    sub_model_vars.active_variables(recast_vars);
 }
 
 
@@ -524,8 +528,12 @@ inverse_transform_variables(const Variables& sub_model_vars,
 {
   // atypical flow: mapping from sub-model variables ("user space")
   // into the recast variables ("iterator space")
-  if (invVarsMapping) invVarsMapping(sub_model_vars, recast_vars);
-  else                recast_vars.active_variables(sub_model_vars);
+  if (invVarsMapping) {
+    assign_instance();
+    invVarsMapping(sub_model_vars, recast_vars);
+  }
+  else
+    recast_vars.active_variables(sub_model_vars);
 }
 
 
@@ -596,8 +604,10 @@ transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
   // additions have case-specific context whereas the logic above is generic.
   // It would be preferable if provided mappings focused on updating the
   // sub_model_set rather than generating it from recast_set.
-  if (setMapping)
+  if (setMapping) {
+    assign_instance();
     setMapping(recast_vars, recast_set, sub_model_set);
+  }
 }
 
 
@@ -663,8 +673,10 @@ inverse_transform_set(const Variables& sub_model_vars,
   // an invSetMapping (provided in inverse_mappings()) augments the standard
   // mappings above, such that the provided mappings don't get overwritten by
   // the standard logic.
-  if (invSetMapping)
+  if (invSetMapping) {
+    assign_instance();
     invSetMapping(sub_model_vars, sub_model_set, recast_set);
+  }
 }
 
 
@@ -677,6 +689,9 @@ transform_response(const Variables& recast_vars,
   // the recast response ("iterator space")
 
   size_t num_recast_1_fns = primaryRespMapIndices.size();
+
+  if (primaryRespMapping || secondaryRespMapping)
+    assign_instance();
 
   if (primaryRespMapping)
     primaryRespMapping(sub_model_vars, recast_vars,
@@ -708,6 +723,9 @@ inverse_transform_response(const Variables& sub_model_vars,
   // into the sub-model response ("user space")
 
   size_t num_recast_1_fns = primaryRespMapIndices.size();
+
+  if (invPriRespMapping || invSecRespMapping)
+    assign_instance();
 
   if (invPriRespMapping)
     invPriRespMapping(recast_vars, sub_model_vars, recast_resp, sub_model_resp);
@@ -762,6 +780,8 @@ void RecastModel::update_from_model(Model& model)
 {
   bool update_active_complement = true;
   if (invVarsMapping) {
+    assign_instance();
+
     // generally restricted to active variables
     invVarsMapping(model.current_variables(), currentVariables);
 
@@ -1132,9 +1152,15 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
   return eval_found;
 }
 
+
+void RecastModel::assign_instance()
+{ } // no static instance pointer to assign at base (default is no-op)
+
+
 String RecastModel::root_model_id() {
   return subModel.root_model_id();
 }
+
 
 ActiveSet RecastModel::default_active_set() {
   // The "base class" implementation assumes that supportsEstimDerivs is false
@@ -1156,10 +1182,9 @@ ActiveSet RecastModel::default_active_set() {
   return set;
 }
 
+
 void RecastModel::declare_sources() {
   evaluationsDB.declare_source(modelId, modelType, subModel.model_id(), subModel.model_type());
 }
-
-
 
 } // namespace Dakota

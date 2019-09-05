@@ -416,6 +416,14 @@ protected:
 		 const ActiveSet& search_set, Response& found_resp);
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// assign static pointer instance to this for use in static
+  /// transformation functions
+  virtual void assign_instance();
+
+  //
   //- Heading: Member functions
   //
 

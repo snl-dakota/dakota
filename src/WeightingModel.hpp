@@ -37,6 +37,16 @@ public:
 
 protected:
 
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void assign_instance();
+
+  //
+  //- Heading: Member functions
+  //
+
   static void primary_resp_weighter(const Variables& sub_model_vars,
 				    const Variables& recast_vars,
 				    const Response& sub_model_response,
@@ -51,9 +61,11 @@ private:
 
   /// static pointer to this class for use in static callbacks
   static WeightingModel* weightModelInstance;
-
-
 };
+
+
+inline void WeightingModel::assign_instance()
+{ weightModelInstance = this; }
 
 }  // namespace Dakota
 

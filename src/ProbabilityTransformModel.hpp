@@ -55,6 +55,8 @@ protected:
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
 
+  void assign_instance();
+
   //
   //- Heading: Member functions
   //
@@ -214,8 +216,6 @@ inline void ProbabilityTransformModel::update_transformation()
   natafTransform.transform_correlations();
 
   update_model_bounds(truncatedBounds, boundVal);
-
-  ptmInstance = this; // run time update
 }
 
 
@@ -280,6 +280,10 @@ nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
 inline void ProbabilityTransformModel::
 distribution_parameter_derivatives(bool dist_param_derivs)
 { distParamDerivs = dist_param_derivs; }
+
+
+inline void ProbabilityTransformModel::assign_instance()
+{ ptmInstance = this; }
 
 
 /** Map the variables from iterator space (u) to simulation space (x). */
