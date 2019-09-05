@@ -545,6 +545,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   //ProbabilityTransformModel::
   //  initialize_distribution_types(EXTENDED_U, x_dist.random_variable_types(),
   //                                u_dist.random_variable_types());
+  // *** need ranVarTypes ***
 
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;

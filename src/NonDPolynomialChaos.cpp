@@ -877,7 +877,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
 		  expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID);
   if ( num_int || ( tensorRegression && numSamplesOnModel ) ) {
     shared_data_rep->integration_iterator(uSpaceModel.subordinate_iterator());
-    if (num_int) initialize_u_space_grid();
+    initialize_u_space_grid();
   }
 }
 
