@@ -212,9 +212,11 @@ public:
   /// to ProbabilityTransformModel recasting)
   virtual Pecos::ProbabilityTransformation& probability_transformation();
 
-  /// initialize model mapping, returns true if the variables size has changed
+  /// Perform any global updates prior to individual evaluate() calls;
+  /// returns true if the variables size has changed
   virtual bool initialize_mapping(ParLevLIter pl_iter);
-  /// finalize model mapping, returns true if the variables size has changed
+  /// restore state in preparation for next initialization;
+  /// returns true if the variables size has changed
   virtual bool finalize_mapping();
   /// return true if a potential resize is still pending, such that
   /// sizing-based initialization should be deferred

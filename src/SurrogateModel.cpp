@@ -76,22 +76,6 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 
 void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
 {
-  bool error_flag = false;
-  // Check for compatible array sizing between sub_model and currentResponse.
-  // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
-  // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
-  // future, aggregations may span a broader model hierarchy (e.g., factor =
-  // orderedModels.size()).  In general, the fn count check needs to be
-  // specialized in the derived classes.
-  size_t sm_qoi = sub_model.qoi(), aggregation = numFns / sm_qoi;
-  if ( numFns % sm_qoi || aggregation < 1 || aggregation > 2 ) {
-    Cerr << "Error: incompatibility between approximate and actual model "
-	 << "response function sets\n       within SurrogateModel: " << numFns
-	 << " approximate and " << sm_qoi << " actual functions.\n       "
-	 << "Check consistency of responses specifications." << std::endl;
-    error_flag = true;
-  }
-
   // Check for compatible array sizing between sub_model and currentVariables,
   // accounting for the use of different views in different variables sets:
   // > common case for local/multipoint/hierarchical: the variables view in
@@ -100,99 +84,69 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
   //   usage and the currentVariables view may vary depending on the type
   //   of iterator interfaced with this SurrogateModel.  Enforcing an "all"
   //   view in the data returned from currentVariables ensures consistency.
-  short cv_active_view = currentVariables.view().first;
-  short sm_active_view = sub_model.current_variables().view().first;
-  if ( cv_active_view == sm_active_view ) {
+  short active_view = currentVariables.view().first,
+     sm_active_view = sub_model.current_variables().view().first;
+  bool error_flag = false;
+  if ( active_view == sm_active_view ) {
     // common cases: Distinct on Distinct (e.g., opt/UQ on local/multipt/hier)
     //               All on All           (e.g., DACE/PStudy on global)
-    size_t sm_cv = sub_model.cv(),     sm_div = sub_model.div(),
-      sm_dsv = sub_model.dsv(),        sm_drv = sub_model.drv(),
-      cv_cv  = currentVariables.cv(),  cv_div = currentVariables.div(),
-      cv_dsv = currentVariables.dsv(), cv_drv = currentVariables.drv();
-    if ( sm_cv  != cv_cv  || sm_div != cv_div ||
-	 sm_dsv != cv_dsv || sm_drv != cv_drv ) {
+    size_t sm_cv = sub_model.cv(),  sm_div = sub_model.div(),
+      sm_dsv = sub_model.dsv(),     sm_drv = sub_model.drv(),
+      cv  = currentVariables.cv(),  div = currentVariables.div(),
+      dsv = currentVariables.dsv(), drv = currentVariables.drv();
+    if (sm_cv != cv || sm_div != div || sm_dsv != dsv || sm_drv != drv) {
       Cerr << "Error: incompatibility between approximate and actual model "
-	   << "variable sets within\n       SurrogateModel: active approximate "
-	   << "= " << cv_cv << " continuous, " << cv_div << " discrete int, "
-	   << cv_dsv << " discrete string, and " << cv_drv << " discrete real "
-	   << "and\n       active actual = " << sm_cv << " continuous, "
-	   << sm_div << " discrete int, " << sm_dsv << " discrete string, and "
-	   << sm_drv << " discrete real.  Check consistency of variables "
+	   << "variable sets within SurrogateModel:\n       Active approximate "
+	   << "= " << cv << " continuous, " << div << " discrete int, " << dsv
+	   << " discrete string, and " << drv << " discrete real.\n       "
+	   << "Active      actual = " << sm_cv << " continuous, " << sm_div
+	   << " discrete int, " << sm_dsv << " discrete string, and " << sm_drv
+	   << " discrete real.\n       Check consistency of variables "
 	   << "specifications." << std::endl;
       error_flag = true;
     }
   }
-  else {
-    if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
-	 cv_active_view >= RELAXED_DESIGN ) {
-      // common case: Distinct on All (e.g., opt/UQ on global surrogate)
-      size_t sm_cv  = sub_model.cv(),      sm_div  = sub_model.div(),
-	sm_dsv  = sub_model.dsv(),         sm_drv  = sub_model.drv(),
-	cv_acv  = currentVariables.acv(),  cv_adiv = currentVariables.adiv(),
-	cv_adsv = currentVariables.adsv(), cv_adrv = currentVariables.adrv();
-      if ( sm_cv  != cv_acv  || sm_div != cv_adiv ||
-	   sm_dsv != cv_adsv || sm_drv != cv_adrv ) {
-	Cerr << "Error: incompatibility between approximate and actual model "
-	     << "variable sets within\n       SurrogateModel: active "
-	     << "approximate = " << cv_acv << " continuous, " << cv_adiv
-	     << " discrete int, " << cv_adsv << " discrete string, and "
-	     << cv_adrv << " discrete real (All view) and\n       "
-	     << "active actual = " << sm_cv << " continuous, " << sm_div
-	     << " discrete int, " << sm_dsv << " discrete string, and "
-	     << sm_drv << " discrete real.  Check consistency of variables "
-	     << "specifications." << std::endl;
-	error_flag = true;
-      }
-    }
-    else if ( ( cv_active_view == RELAXED_ALL || cv_active_view == MIXED_ALL )
-	      && sm_active_view >= RELAXED_DESIGN ) {
-      // common case: All on Distinct (e.g., DACE/PStudy on local/multipt/hier)
-      size_t sm_acv = sub_model.acv(),    sm_adiv = sub_model.adiv(),
-	sm_adsv = sub_model.adsv(),       sm_adrv = sub_model.adrv(),
-	cv_cv   = currentVariables.cv(),  cv_div  = currentVariables.div(),
-	cv_dsv  = currentVariables.dsv(), cv_drv  = currentVariables.drv();
-      if ( sm_acv  != cv_cv  || sm_adiv != cv_div ||
-	   sm_adsv != cv_dsv || sm_adrv != cv_drv ) {
-	Cerr << "Error: incompatibility between approximate and actual model "
-	     << "variable sets within\n       SurrogateModel: active "
-	     << "approximate = " << cv_cv << " continuous, " << cv_div
-	     << " discrete int, " << cv_dsv << " discrete string, and "
-	     << cv_drv << " discrete real and\n       active actual = "
-	     << sm_acv << " continuous, " << sm_adiv << " discrete int, "
-	     << sm_adsv << " discrete string, and " << sm_adrv
-	     << " discrete real (All view).  Check consistency of variables "
-	     << "specifications." << std::endl;
-	error_flag = true;
-      }
-    }
-    else {
-      // *** TO DO: allow subsetting based on variable type?
-      //            Need to understand vars spec in Bayes exp design tests...
-      Cerr << "Error: unsupported variable view differences between approximate"
-	   << " and actual models within SurrogateModel." << std::endl;
+  else if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
+	    active_view >= RELAXED_DESIGN ) {
+    // common case: Distinct on All (e.g., opt/UQ on global surrogate)
+    size_t sm_cv  = sub_model.cv(),   sm_div = sub_model.div(),
+      sm_dsv  = sub_model.dsv(),      sm_drv = sub_model.drv(),
+      acv  = currentVariables.acv(),  adiv = currentVariables.adiv(),
+      adsv = currentVariables.adsv(), adrv = currentVariables.adrv();
+    if (sm_cv != acv || sm_div != adiv || sm_dsv != adsv || sm_drv != adrv) {
+      Cerr << "Error: incompatibility between approximate and actual model "
+	   << "variable sets within SurrogateModel:\n       Active "
+	   << "approximate = " << acv << " continuous, " << adiv
+	   << " discrete int, " << adsv << " discrete string, and " << adrv
+	   << " discrete real (All view).\n       Active      actual = "
+	   << sm_cv << " continuous, " << sm_div << " discrete int, " << sm_dsv
+	   << " discrete string, and " << sm_drv << " discrete real.\n       "
+	   << "Check consistency of variables specifications."<< std::endl;
       error_flag = true;
     }
   }
-
-  /*
-  if ( ( ( strbegins(surrogateType, "local_") || 
-           strbegins(surrogateType, "multipoint_")
-	|| surrogateType == "hierarchical" ) &&
-	 ( sub_model.cv() != currentVariables.cv() ||
-           sub_model.div() != currentVariables.div() ||
-           sub_model.dsv() != currentVariables.dsv() ||
-           sub_model.drv() != currentVariables.drv() ) ) ||
-       ( strbegins(surrogateType, "global_") &&
-	 ( sub_model.cv() != currentVariables.acv() ||
-	   sub_model.div() != currentVariables.adiv() ||
-	   sub_model.dsv() != currentVariables.adsv() ||
-	   sub_model.drv() != currentVariables.adrv() ) ) ) {
-    Cerr << "Error: subordinate model not compatible within SurrogateModel.\n"
-	 << "       Check consistency of variables specifications for\n"
-	 << "       approximation and actual models." << std::endl;
-    error_flag = true;
+  else if ( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	    sm_active_view >= RELAXED_DESIGN ) {
+    // common case: All on Distinct (e.g., DACE/PStudy on local/multipt/hier)
+    // Note: force_rebuild() ...
+    size_t sm_acv = sub_model.acv(), sm_adiv = sub_model.adiv(),
+      sm_adsv = sub_model.adsv(),    sm_adrv = sub_model.adrv(),
+      cv  = currentVariables.cv(),   div = currentVariables.div(),
+      dsv = currentVariables.dsv(),  drv = currentVariables.drv();
+    if (sm_acv != cv || sm_adiv != div || sm_adsv != dsv || sm_adrv != drv) {
+      Cerr << "Error: incompatibility between approximate and actual model "
+	   << "variable sets within SurrogateModel:\n       Active "
+	   << "approximate = " << cv << " continuous, " << div
+	   << " discrete int, " << dsv << " discrete string, and " << drv
+	   << " discrete real.\n       Active      actual = " << sm_acv
+	   << " continuous, " << sm_adiv << " discrete int, " << sm_adsv
+	   << " discrete string, and " << sm_adrv << " discrete real (All "
+	   << "view).\n       Check consistency of variables specifications."
+	   << std::endl;
+      error_flag = true;
+    }
   }
-  */
+  //else: other options are specific to DataFit and Hierarch surrogates
 
   if (error_flag)
     abort_handler(-1);

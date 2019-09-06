@@ -71,6 +71,8 @@ variables,
 
 variables,
 	id_variables = 'CONFIG_VARS'
+# MSE: for hierarchical model self-consistency, would prefer to leave state
+#      as inactive and have zero active vars
 	active state
 	continuous_state = 1                                   
           upper_bounds = 70

@@ -311,6 +311,45 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 }
 
 
+void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
+{
+  bool error_flag = false;
+  // Check for compatible array sizing between sub_model and currentResponse.
+  // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
+  // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
+  // future, aggregations may span a broader model hierarchy (e.g., factor =
+  // orderedModels.size()).  In general, the fn count check needs to be
+  // specialized in the derived classes.
+  size_t sm_qoi = sub_model.qoi();
+  if ( numFns != sm_qoi) {
+    Cerr << "Error: incompatibility between approximate and actual model "
+	 << "response function sets\n       within DataFitSurrModel: " << numFns
+	 << " approximate and " << sm_qoi << " actual functions.\n       "
+	 << "Check consistency of responses specifications." << std::endl;
+    error_flag = true;
+  }
+
+  // check view-based variable counts:
+  SurrogateModel::check_submodel_compatibility(sub_model);
+  // cases not covered by the SurrogateModel check are disallowed for DFSModel
+  short active_view = currentVariables.view().first,
+     sm_active_view = sub_model.current_variables().view().first;
+  if ( !( active_view == sm_active_view ||
+	( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
+	  active_view >= RELAXED_DESIGN ) ||
+	( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	  sm_active_view >= RELAXED_DESIGN ) ) ) {
+    Cerr << "Error: unsupported variable view differences between "
+   	     << "approximate and actual models within DataFitSurrModel."
+   	     << std::endl;
+    error_flag = true;
+  }
+
+  if (error_flag)
+    abort_handler(-1);
+}
+
+
 bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
   Model::initialize_mapping(pl_iter);

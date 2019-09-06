@@ -43,7 +43,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   for (i=0; i<num_models; ++i) {
     problem_db.set_db_model_nodes(ordered_model_ptrs[i]);
     orderedModels[i] = problem_db.get_model();
-    //check_submodel_compatibility(orderedModels[i]); // TO DO: Bayes exp design
+    check_submodel_compatibility(orderedModels[i]);
     //if (cv_view != orderedModels[i].current_variables().view()) {
     //  Cerr << "Error: variable views in hierarchical models must be "
     //       << "identical." << std::endl;
@@ -74,6 +74,53 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
 					  corrType, corrOrder);
 
   //truthResponseRef[truthModelKey] = currentResponse.copy();
+}
+
+
+void HierarchSurrModel::check_submodel_compatibility(const Model& sub_model)
+{
+  SurrogateModel::check_submodel_compatibility(sub_model);
+  
+  bool error_flag = false;
+  // Check for compatible array sizing between sub_model and currentResponse.
+  // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
+  // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
+  // future, aggregations may span a broader model hierarchy (e.g., factor =
+  // orderedModels.size()).  In general, the fn count check needs to be
+  // specialized in the derived classes.
+  size_t sm_qoi = sub_model.qoi();//, aggregation = numFns / sm_qoi;
+  if ( numFns % sm_qoi ) { //|| aggregation < 1 || aggregation > 2 ) {
+    Cerr << "Error: incompatibility between approximate and actual model "
+	 << "response function sets\n       within HierarchSurrModel: "<< numFns
+	 << " approximate and " << sm_qoi << " actual functions.\n       "
+	 << "Check consistency of responses specifications." << std::endl;
+    error_flag = true;
+  }
+
+  // TO DO: Bayes exp design (hi2lo) introduces new requirements on a
+  // hierarchical model, and MF active subspaces will as well.
+  // > For (simulation-based) OED, one option is to enforce consistency in
+  //   inactive state (config vars) and allow active parameterization to vary.
+  // > For hi2lo, this implies that the active variable subset could be null
+  //   for HF, as the active calibration variables only exist for LF.
+  size_t sm_icv = sub_model.icv(),  sm_idiv = sub_model.idiv(),
+    sm_idsv = sub_model.idsv(),     sm_idrv = sub_model.idrv(),
+    icv  = currentVariables.icv(),  idiv = currentVariables.idiv(),
+    idsv = currentVariables.idsv(), idrv = currentVariables.idrv();
+  if (sm_icv != icv || sm_idiv != idiv || sm_idsv != idsv || sm_idrv != idrv) {
+    Cerr << "Error: incompatibility between approximate and actual model "
+	 << "variable sets within\n       HierarchSurrModel: inactive "
+	 << "approximate = " << icv << " continuous, " << idiv
+	 << " discrete int, " << idsv << " discrete string, and " << idrv
+	 << " discrete real and\n       inactive actual = " << sm_icv
+	 << " continuous, " << sm_idiv << " discrete int, " << sm_idsv
+	 << " discrete string, and " << sm_idrv << " discrete real.  Check "
+	 << "consistency of variables specifications." << std::endl;
+    error_flag = true;
+  }
+
+  if (error_flag)
+    abort_handler(-1);
 }
 
 

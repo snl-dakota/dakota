@@ -89,23 +89,19 @@ protected:
   short correction_type();
   void  correction_type(short corr_type);
 
-  /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
-  /// restore state in preparation for next initialization
   bool finalize_mapping();
+
+  void check_submodel_compatibility(const Model& sub_model);
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs approxInterface.map()/synch()/
   // synch_nowait() where approxInterface is a local, multipoint, or global
   // approximation.
-  //
-  /// portion of evaluate() specific to DataFitSurrModel
+
   void derived_evaluate(const ActiveSet& set);
-  /// portion of evaluate_nowait() specific to DataFitSurrModel
   void derived_evaluate_nowait(const ActiveSet& set);
-  /// portion of synchronize() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize();
-  /// portion of synchronize_nowait() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize_nowait();
 
   /// map incoming ASV into actual request for surrogate construction, managing

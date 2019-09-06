@@ -73,18 +73,14 @@ protected:
   short correction_type();
   void  correction_type(short corr_type);
 
-  /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
-  /// restore state in preparation for next initialization
   bool finalize_mapping();
 
-  /// portion of evaluate() specific to HierarchSurrModel
+  void check_submodel_compatibility(const Model& sub_model);
+
   void derived_evaluate(const ActiveSet& set);
-  /// portion of evaluate_nowait() specific to HierarchSurrModel
   void derived_evaluate_nowait(const ActiveSet& set);
-  /// portion of synchronize() specific to HierarchSurrModel
   const IntResponseMap& derived_synchronize();
-  /// portion of synchronize_nowait() specific to HierarchSurrModel
   const IntResponseMap& derived_synchronize_nowait();
 
   /// return the active low fidelity model

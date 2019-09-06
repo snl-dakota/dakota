@@ -90,6 +90,11 @@ protected:
   virtual void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 			 ShortArray& approx_asv, bool build_flag);
 
+  /// verify compatibility between SurrogateModel attributes and
+  /// attributes of the submodel (DataFitSurrModel::actualModel or
+  /// HierarchSurrModel::highFidelityModel)
+  virtual void check_submodel_compatibility(const Model& sub_model);
+
   //
   //- Heading: Member functions
   //
@@ -99,10 +104,6 @@ protected:
   /// return the level index from active high fidelity model key
   unsigned short truth_level_index() const;
 
-  /// verify compatibility between SurrogateModel attributes and
-  /// attributes of the submodel (DataFitSurrModel::actualModel or
-  /// HierarchSurrModel::highFidelityModel)
-  void check_submodel_compatibility(const Model& sub_model);
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
 
