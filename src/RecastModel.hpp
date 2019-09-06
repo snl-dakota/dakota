@@ -515,9 +515,6 @@ private:
   /// employed rather than a sparsely filled N_sm x N_r matrix).
   Sizet2DArray varsMapIndices;
 
-  /// set to true if non-NULL primaryRespMapping or secondaryRespMapping
-  /// are supplied
-  bool respMapping;
   /// For each recast primary function, identifies the indices of the
   /// subModel functions used to define it (maps subModel response
   /// to RecastModel Response).
@@ -555,8 +552,6 @@ private:
 				const Response& sub_model_response,
 				Response& recast_response);
 
-  // flag indicating that inverse mappings have been published
-  //bool inverseMapFlag;
   /// holds pointer for optional inverse variables mapping function
   /// passed in inverse_mappings()
   void (*invVarsMapping)    (const Variables& sub_model_vars,

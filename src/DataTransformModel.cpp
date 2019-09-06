@@ -482,7 +482,7 @@ void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
     }
 
     // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
-    //if (respMapping) {
+    //if (primaryRespMapping || secondaryRespMapping) {
     recastSetMap[recastModelEvalCntr]  = set;
     recastVarsMap[recastModelEvalCntr] = currentVariables.copy();
     // This RecastModel doens't map variables in a way that needs these

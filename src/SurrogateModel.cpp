@@ -128,7 +128,8 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
   else if ( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
 	    sm_active_view >= RELAXED_DESIGN ) {
     // common case: All on Distinct (e.g., DACE/PStudy on local/multipt/hier)
-    // Note: force_rebuild() ...
+    // Note: force_rebuild() is critical for this case (prevents interrogation
+    // of a surrogate for inconsistent values for vars not included in build)
     size_t sm_acv = sub_model.acv(), sm_adiv = sub_model.adiv(),
       sm_adsv = sub_model.adsv(),    sm_adrv = sub_model.adrv(),
       cv  = currentVariables.cv(),   div = currentVariables.div(),

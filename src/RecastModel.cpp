@@ -66,9 +66,8 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   nonlinearRespMapping(nonlinear_resp_mapping), recastModelEvalCntr(0),
   variablesMapping(variables_map), setMapping(set_map),
   primaryRespMapping(primary_resp_map),
-  secondaryRespMapping(secondary_resp_map),// inverseMapFlag(false),
-  invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
-  invSecRespMapping(NULL)
+  secondaryRespMapping(secondary_resp_map), invVarsMapping(NULL),
+  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
   modelType = "recast"; 
   supportsEstimDerivs = false; // subModel estimates derivatives by default
@@ -90,15 +89,13 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     numDerivVars = currentVariables.cv();
   }
 
-  respMapping = (primaryRespMapping || secondaryRespMapping);
-
   if (nonlinearRespMapping.size() != 
       primaryRespMapIndices.size() + secondaryRespMapIndices.size()) {
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
 
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     init_response(primaryRespMapIndices.size(), secondaryRespMapIndices.size(), 
 		  recast_resp_order, reshape_vars);
   }
@@ -131,11 +128,10 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	    short recast_resp_order):
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
-  subModel(sub_model), nonlinearVarsMapping(false), respMapping(false),
-  recastModelEvalCntr(0), variablesMapping(NULL), setMapping(NULL),
-  primaryRespMapping(NULL), secondaryRespMapping(NULL),// inverseMapFlag(false),
-  invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
-  invSecRespMapping(NULL)
+  subModel(sub_model), nonlinearVarsMapping(false), recastModelEvalCntr(0),
+  variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
+  secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
+  invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
@@ -234,8 +230,6 @@ init_maps(const Sizet2DArray& vars_map_indices,
   nonlinearRespMapping    = nonlinear_resp_mapping;
   primaryRespMapping      = primary_resp_map;
   secondaryRespMapping    = secondary_resp_map;
-
-  respMapping = (primaryRespMapping || secondaryRespMapping);
 
   if (nonlinearRespMapping.size() != primaryRespMapIndices.size() +
       secondaryRespMapIndices.size()) {
@@ -377,7 +371,6 @@ void RecastModel::inverse_mappings(
 			      const Response& sub_model_resp,
 			      Response& recast_resp))
 {
-  //inverseMapFlag  = true;
   invVarsMapping    = inv_vars_map;     invSetMapping     = inv_set_map;
   invPriRespMapping = inv_pri_resp_map; invSecRespMapping = inv_sec_resp_map;
 }
@@ -405,7 +398,7 @@ void RecastModel::derived_evaluate(const ActiveSet& set)
   // recast the subModel response ("user space") into the currentResponse
   // ("iterator space")
   currentResponse.active_set(set);
-  if (respMapping)
+  if (primaryRespMapping || secondaryRespMapping)
     transform_response(currentVariables, subModel.current_variables(),
 		       subModel.current_response(), currentResponse);
   else
@@ -442,7 +435,7 @@ void RecastModel::derived_evaluate_nowait(const ActiveSet& set)
   recastIdMap[subModel.evaluation_id()] = recastModelEvalCntr;
 
   // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     recastSetMap[recastModelEvalCntr]  = set;
     recastVarsMap[recastModelEvalCntr] = currentVariables.copy();
     if (variablesMapping)
@@ -456,7 +449,7 @@ const IntResponseMap& RecastModel::derived_synchronize()
 {
   recastResponseMap.clear();
 
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     IntResponseMap resp_map_rekey;
     rekey_synch(subModel, true, recastIdMap, resp_map_rekey);
     transform_response_map(resp_map_rekey, recastResponseMap);
@@ -472,7 +465,7 @@ const IntResponseMap& RecastModel::derived_synchronize_nowait()
 {
   recastResponseMap.clear();
 
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     IntResponseMap resp_map_rekey;
     rekey_synch(subModel, false, recastIdMap, resp_map_rekey);
     transform_response_map(resp_map_rekey, recastResponseMap);
@@ -1001,7 +994,7 @@ const RealVector& RecastModel::error_estimates()
 {
   // linear mappings are fine (see NestedModel), but general nonlinear mappings
   // are problematic.
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
 
     // preclude nonlinear mappings and multi-component mappings for now.
     // Note: a linear multi-component mapping can be supported by NestedModel::
@@ -1144,7 +1137,7 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 
   // recast the subModel response ("user space") into the "iterator space"
   found_resp.active_set(search_set);
-  if (respMapping)
+  if (primaryRespMapping || secondaryRespMapping)
     transform_response(search_vars, sub_model_vars, sub_model_resp, found_resp);
   else
     found_resp.update(sub_model_resp);
