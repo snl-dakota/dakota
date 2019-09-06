@@ -542,6 +542,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
   ProbabilityTransformModel::
     initialize_distribution_types(EXTENDED_U, x_dist, u_dist);
+  u_dist.pull_distribution_parameters(x_dist);
   Pecos::ProbabilityTransformation nataf("nataf"); // for now
   nataf.x_distribution(x_dist);  nataf.u_distribution(u_dist);
 
@@ -551,8 +552,9 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   ShortArray basis_types, colloc_rules;
   Pecos::SharedOrthogPolyApproxData::
     construct_basis(u_dist, bc_options, poly_basis, basis_types, colloc_rules);
-  Pecos::SharedOrthogPolyApproxData::
-    coefficients_norms_flag(true, basis_types, poly_basis);
+  Pecos::SharedPolyApproxData::
+    update_basis_distribution_parameters(u_dist, poly_basis);
+  Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true, poly_basis);
 
   // transform from x to u space; should we make a copy?
   transform_samples(nataf, initial_samples, 0, true); // x_to_u
