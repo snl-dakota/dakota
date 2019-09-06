@@ -41,6 +41,15 @@ public:
   /// destructor
   ~ProbabilityTransformModel();
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// initialize transformed distribution types and instantiate mvDist
+  static void initialize_distribution_types(short u_space_type,
+    const Pecos::MultivariateDistribution& x_dist,
+    Pecos::MultivariateDistribution& u_dist);
+
 protected:
 
   //
@@ -72,9 +81,6 @@ protected:
   // alternate form: initialize natafTransform based on incoming data
   //void initialize_nataf(const Pecos::ProbabilityTransformation& transform,
   //			bool deep_copy = false);
-
-  /// initialize transformed distribution types and instantiate mvDist
-  void initialize_distribution_types(short u_space_type);
 
   // x-space correlations assigned in Model and u-space is uncorrelated
   //void update_distribution_correlations();
@@ -192,7 +198,9 @@ initialize_transformation(short u_space_type)
   if (mvDist.is_null()) // already initialized: no current reason to update
     mvDist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
 
-  initialize_distribution_types(u_space_type);
+  const Pecos::MultivariateDistribution& x_dist
+    = subModel.multivariate_distribution();
+  initialize_distribution_types(u_space_type, x_dist, mvDist);
   initialize_nataf();
   initialize_dakota_variable_types();
   verify_correlation_support(u_space_type);
@@ -200,7 +208,7 @@ initialize_transformation(short u_space_type)
   // pull reference values for distribution params as there are some run-time
   // operations that require them (e.g. grid_size() for maxConcurrency).
   // These params are updated below at run time.
-  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
+  mvDist.pull_distribution_parameters(x_dist);
 }
 
 

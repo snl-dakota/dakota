@@ -410,7 +410,9 @@ update_model_bounds(bool truncate_bnds, Real bnd)
     means/standard deviations.  This function is used when the Model
     variables are in x-space. */
 void ProbabilityTransformModel::
-initialize_distribution_types(short u_space_type)
+initialize_distribution_types(short u_space_type,
+			      const Pecos::MultivariateDistribution& x_dist,
+			      Pecos::MultivariateDistribution& u_dist)
 {
   // u_space_type is an enumeration for type of u-space transformation:
   // > if STD_NORMAL_U (reliability, AIS, and Wiener PCE/SC), then u-space is
@@ -424,8 +426,6 @@ initialize_distribution_types(short u_space_type)
   // > if EXTENDED_U (PCE/SC with Askey plus numerically-generated polynomials),
   //   then u-space involves at most linear scaling to std distributions.
 
-  Pecos::MultivariateDistribution& x_dist
-    = subModel.multivariate_distribution();
   const Pecos::ShortArray& x_types = x_dist.random_variable_types();
   const Pecos::BitArray& active_rv = x_dist.active_variables();
   size_t i, num_rv = x_types.size();
@@ -515,7 +515,7 @@ initialize_distribution_types(short u_space_type)
   }
 
   Pecos::MarginalsCorrDistribution* u_dist_rep
-    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+    = (Pecos::MarginalsCorrDistribution*)u_dist.multivar_dist_rep();
   u_dist_rep->initialize_types(u_types, active_rv);
 }
 

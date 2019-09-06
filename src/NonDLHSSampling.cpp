@@ -13,10 +13,10 @@
 //- Version:
 
 #include "NonDLHSSampling.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaApproximation.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "ReducedBasis.hpp"
 #include "dakota_linear_algebra.hpp"
@@ -537,24 +537,20 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   RealMatrix selected_samples(Teuchos::View, full_samples, 
 			      num_vars, total_samples, 0, 0);
 
-  // *** TEMP WORK AROUND ***
-  Pecos::ProbabilityTransformation nataf("nataf"); // for now
+  const Pecos::MultivariateDistribution& x_dist
+    = iteratedModel.multivariate_distribution();
   Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
-  nataf.x_distribution(iteratedModel.multivariate_distribution());
-  nataf.u_distribution(u_dist);
-  //ProbabilityTransformModel::
-  //  initialize_distribution_types(EXTENDED_U, x_dist.random_variable_types(),
-  //                                u_dist.random_variable_types());
-  // *** need ranVarTypes ***
+  ProbabilityTransformModel::
+    initialize_distribution_types(EXTENDED_U, x_dist, u_dist);
+  Pecos::ProbabilityTransformation nataf("nataf"); // for now
+  nataf.x_distribution(x_dist);  nataf.u_distribution(u_dist);
 
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;
   std::vector<Pecos::BasisPolynomial> poly_basis;
   ShortArray basis_types, colloc_rules;
   Pecos::SharedOrthogPolyApproxData::
-    construct_basis(//natafTransform.u_types(), // *** TO DO
-		    iteratedModel.multivariate_distribution(),// xDist i/o uDist
-		    bc_options, poly_basis, basis_types, colloc_rules);
+    construct_basis(u_dist, bc_options, poly_basis, basis_types, colloc_rules);
   Pecos::SharedOrthogPolyApproxData::
     coefficients_norms_flag(true, basis_types, poly_basis);
 

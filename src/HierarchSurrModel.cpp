@@ -43,7 +43,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   for (i=0; i<num_models; ++i) {
     problem_db.set_db_model_nodes(ordered_model_ptrs[i]);
     orderedModels[i] = problem_db.get_model();
-    check_submodel_compatibility(orderedModels[i]);
+    //check_submodel_compatibility(orderedModels[i]); // TO DO: Bayes exp design
     //if (cv_view != orderedModels[i].current_variables().view()) {
     //  Cerr << "Error: variable views in hierarchical models must be "
     //       << "identical." << std::endl;

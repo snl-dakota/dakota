@@ -83,8 +83,8 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
   // future, aggregations may span a broader model hierarchy (e.g., factor =
   // orderedModels.size()).  In general, the fn count check needs to be
   // specialized in the derived classes.
-  size_t sm_qoi = sub_model.qoi();
-  if ( numFns % sm_qoi || ( numFns != sm_qoi && numFns != 2*sm_qoi ) ) {
+  size_t sm_qoi = sub_model.qoi(), aggregation = numFns / sm_qoi;
+  if ( numFns % sm_qoi || aggregation < 1 || aggregation > 2 ) {
     Cerr << "Error: incompatibility between approximate and actual model "
 	 << "response function sets\n       within SurrogateModel: " << numFns
 	 << " approximate and " << sm_qoi << " actual functions.\n       "
@@ -166,6 +166,8 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
       }
     }
     else {
+      // *** TO DO: allow subsetting based on variable type?
+      //            Need to understand vars spec in Bayes exp design tests...
       Cerr << "Error: unsupported variable view differences between approximate"
 	   << " and actual models within SurrogateModel." << std::endl;
       error_flag = true;

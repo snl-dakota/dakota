@@ -494,10 +494,8 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // > Model base instantiates the x-space MultivariateDistribution, while
   //   derived ProbabilityTransformModel manages a ProbabilityTransform
   //   (which makes a shallow copy of x-dist and creates a u-dist).
-  // > NonD::initialize_distribution_types(u_space_type) gets split into
-  //   two parts: define x-space, then later define u-space from x-space.
   // > This fn houses data for discrete design/state and must now be invoked
-  //   in non-UQ contexts.  *** TO DO ***
+  //   in non-UQ contexts.
 
   // Previous (transformation-based) logic was restricted to active continuous:
   //ShortArray x_types(currentVariables.cv()); // active cont
