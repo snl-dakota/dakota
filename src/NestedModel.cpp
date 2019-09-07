@@ -2160,8 +2160,8 @@ void NestedModel::
 update_sub_model(const Variables& vars, const Constraints& cons)
 {
   // Update subModel variables using active currentVariables through a
-  // combination of variable insertions and augmentations.  Insertions
-  // and augmentations are not mutually exclusive, so subModel updates must
+  // combination of variable insertions and augmentations.  Insertions and
+  // augmentations are not mutually exclusive, so subModel updates must
   // account for both, potentially on a variable by variable basis.
 
   // Top-level active variables/bounds/labels are mapped to the subModel, but
@@ -2170,27 +2170,23 @@ update_sub_model(const Variables& vars, const Constraints& cons)
   // relevant at the subModel level.
 
   // For defined variable mappings, insert active currentVariables into subModel
-  // variables.  When secondary mappings are defined, this insertion involves
-  // the updating of sub-parameters for the subModel variables.  When only
+  // variables (1). When secondary mappings are defined, this insertion involves
+  // the updating of sub-parameters for the subModel variables (2). When only
   // primary mappings are defined, the insertions update the subModel variable
-  // values.  For null primary mappings (empty strings), augmentations are
+  // values. For null primary mappings (empty strings), augmentations are
   // performed by updating the subModel variables of the same variable type as
-  // the active currentVariables.
-
-  // Bounds and labels are only updated for the augmented variables.  Labels
-  // should not be updated for inserted variables, and bounds should not be
-  // updated for inserted variables with secondary mappings (since this would
-  // be redundant with bound parameter insertion).  It may be desirable in the
-  // future to update bounds for inserted variables with only primary mappings,
-  // but this is omitted for now.
+  // the active currentVariables (3). Bounds, labels, and sub-parameters are
+  // additionally propagated for augmentations and active complement mappings
+  // (both based on matching consistent types), with some differences in
+  // required updating frequency.
 
   // Distribution parameter insertion is used for second-order probability
-  // (UQ sample inserted into distr. parameters for UQ reliability/sampling)
+  // (UQ sample inserted into distrib parameters for UQ reliability/sampling)
   // and for OUU with design/uncertain overlap (optimization design variables
   // inserted into distr. parameters for UQ reliability/sampling).  For now,
-  // mainly the existing distribution parameters are supported for the secondary
-  // variable mappings.  A few variables also support LOCATION and SCALE, and
-  // this could be expanded more broadly in the future.
+  // existing distribution parameters are supported for the secondary variable
+  // mappings, and a few variables additionally support LOCATION and SCALE
+  // (this can be expanded in the future).
 
   size_t i, curr_i, num_var_map_2 = active2ACVarMapTargets.size(),
     num_curr_cv  = vars.cv(),  num_curr_div = vars.div(),
@@ -2221,7 +2217,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  = (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sacvm_target == Pecos::NO_TARGET) {
 	  subModel.all_continuous_variable(curr_c_vars[i], pacvm_index);
-	  if (extraCVarsData[i]) {
+	  if (extraCVarsData[i]) { // default mapping between consistent types
 	    subModel.all_continuous_lower_bound(curr_c_l_bnds[i], pacvm_index);
 	    subModel.all_continuous_upper_bound(curr_c_u_bnds[i], pacvm_index);
 	    // Note: this is more general than just bounds (all dist params):
@@ -2277,7 +2273,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sadivm_target == Pecos::NO_TARGET) {
 	  subModel.all_discrete_int_variable(curr_di_vars[i], padivm_index);
-	  if (extraDIVarsData[i]) {
+	  if (extraDIVarsData[i]) { // default mapping between consistent types
 	    subModel.all_discrete_int_lower_bound(curr_di_l_bnds[i],
 						  padivm_index);
 	    subModel.all_discrete_int_upper_bound(curr_di_u_bnds[i],
@@ -2333,7 +2329,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sadsvm_target == Pecos::NO_TARGET) {
 	  subModel.all_discrete_string_variable(curr_ds_vars[i], padsvm_index);
-	  if (extraDSVarsData[i]) {
+	  if (extraDSVarsData[i]) { // default mapping between consistent types
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
 	      svd.dsv_index_to_all_index(i),
@@ -2387,7 +2383,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sadrvm_target == Pecos::NO_TARGET) {
 	  subModel.all_discrete_real_variable(curr_dr_vars[i], padrvm_index);
-	  if (extraDRVarsData[i]) {
+	  if (extraDRVarsData[i]) { // default mapping between consistent types
 	    subModel.all_discrete_real_lower_bound(curr_dr_l_bnds[i],
 						   padrvm_index);
 	    subModel.all_discrete_real_upper_bound(curr_dr_u_bnds[i],
@@ -2422,8 +2418,13 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
       subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
       subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
-      if (firstUpdate)
+      if (firstUpdate) {
 	subModel.all_continuous_variable_label(curr_ac_labels[curr_i],c1_index);
+	// Note: this is more general than just bounds (all dist params):
+	sm_mvd_rep->pull_distribution_parameters(mvDist,
+	  svd.ccv_index_to_all_index(i),
+	  sm_svd.acv_index_to_all_index(c1_index));
+      }
     }
   }
 
@@ -2442,9 +2443,14 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
       subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
       subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
-      if (firstUpdate)
+      if (firstUpdate) {
 	subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
 						 c1_index);
+	// Note: this is more general than just bounds (all dist params):
+	sm_mvd_rep->pull_distribution_parameters(mvDist,
+	  svd.cdiv_index_to_all_index(i),
+	  sm_svd.adiv_index_to_all_index(c1_index));
+      }
     }
   }
 
@@ -2460,9 +2466,14 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       curr_i = svd.cdsv_index_to_adsv_index(i);
       c1_index = complement1ADSVarMapIndices[i];
       subModel.all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
-      if (firstUpdate)
+      if (firstUpdate) {
 	subModel.all_discrete_string_variable_label(curr_ads_labels[curr_i],
 						    c1_index);
+	// Note: this is more general than just bounds (all dist params):
+	sm_mvd_rep->pull_distribution_parameters(mvDist,
+	  svd.cdsv_index_to_all_index(i),
+	  sm_svd.adsv_index_to_all_index(c1_index));
+      }
     }
   }
 
@@ -2481,9 +2492,14 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
       subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
       subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
-      if (firstUpdate)
+      if (firstUpdate) {
 	subModel.all_discrete_real_variable_label(curr_adr_labels[curr_i],
 						  c1_index);
+	// Note: this is more general than just bounds (all dist params):
+	sm_mvd_rep->pull_distribution_parameters(mvDist,
+	  svd.cdrv_index_to_all_index(i),
+	  sm_svd.adrv_index_to_all_index(c1_index));
+      }
     }
   }
 

@@ -1431,37 +1431,38 @@ size_t SharedVariablesData::cv_index_to_active_index(size_t cv_index) const
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
   svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
 
-  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
-  size_t offset = 0, bound = 0;
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
   if (cdv) {
-    bound += vc_totals[TOTAL_CDV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
   if (ddv)
-    offset += vc_totals[TOTAL_DDIV] + vc_totals[TOTAL_DDSV]
-           +  vc_totals[TOTAL_DDRV];
+    offset += num_div + num_dsv + num_drv;
 
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   if (cauv) {
-    bound += vc_totals[TOTAL_CAUV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
   if (dauv)
-    offset += vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAUSV]
-           +  vc_totals[TOTAL_DAURV];
+    offset += num_div + num_dsv + num_drv;
 
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   if (ceuv) {
-    bound += vc_totals[TOTAL_CEUV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
   if (deuv)
-    offset += vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DEUSV]
-           +  vc_totals[TOTAL_DEURV];
+    offset += num_div + num_dsv + num_drv;
 
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
   if (csv) {
-    bound += vc_totals[TOTAL_CSV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
@@ -1478,43 +1479,47 @@ size_t SharedVariablesData::cv_index_to_all_index(size_t cv_index) const
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
   svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
 
-  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
-  size_t offset = 0, bound = 0;
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
   if (cdv) {
-    bound += vc_totals[TOTAL_CDV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
   else
-    offset += vc_totals[TOTAL_CDV];
-  offset += vc_totals[TOTAL_DDIV] + vc_totals[TOTAL_DDSV]
-         +  vc_totals[TOTAL_DDRV];
+    offset += num_cv;
+  offset += num_div + num_dsv + num_drv;
 
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   if (cauv) {
-    bound += vc_totals[TOTAL_CAUV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
   else
-    offset += vc_totals[TOTAL_CAUV];
-  offset += vc_totals[TOTAL_DAUIV] + vc_totals[TOTAL_DAUSV]
-         +  vc_totals[TOTAL_DAURV];
+    offset += num_cv;
+  offset += num_div + num_dsv + num_drv;
 
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   if (ceuv) {
-    bound += vc_totals[TOTAL_CEUV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
   else
-    offset += vc_totals[TOTAL_CEUV];
-  offset += vc_totals[TOTAL_DEUIV] + vc_totals[TOTAL_DEUSV]
-         +  vc_totals[TOTAL_DEURV];
+    offset += num_cv;
+  offset += num_div + num_dsv + num_drv;
 
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
   if (csv) {
-    bound += vc_totals[TOTAL_CSV];
+    bound += num_cv;
     if (cv_index < bound)
       return offset + cv_index;
   }
+  //else
+  //  offset += num_cv;
+  //offset += num_div + num_dsv + num_drv;
 
   Cerr << "Error: CV index out of range in SharedVariablesData::"
        << "cv_index_to_all_index()" << std::endl;
@@ -1530,6 +1535,9 @@ size_t SharedVariablesData::ccv_index_to_acv_index(size_t ccv_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = 0, bound = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (!cdv) {
     bound += vc_totals[TOTAL_CDV];
     if (ccv_index < bound)
@@ -1567,10 +1575,62 @@ size_t SharedVariablesData::ccv_index_to_acv_index(size_t ccv_index) const
 }
 
 
+size_t SharedVariablesData::ccv_index_to_all_index(size_t ccv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t offset = 0, bound = 0;
+
+  // *** TO DO: update for relax_counts
+
+  /*
+  if (!cdv) {
+    bound += vc_totals[TOTAL_CDV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_CDV];
+
+  if (!cauv) {
+    bound += vc_totals[TOTAL_CAUV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_CAUV];
+
+  if (!ceuv) {
+    bound += vc_totals[TOTAL_CEUV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_CEUV];
+
+  if (!csv) {
+    bound += vc_totals[TOTAL_CSV];
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  */
+
+  Cerr << "Error: CCV index out of range in SharedVariablesData::"
+       << "ccv_index_to_acv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
 size_t SharedVariablesData::acv_index_to_all_index(size_t acv_index) const
 {
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = 0, bound = vc_totals[TOTAL_CDV];
+
+  // *** TO DO: update for relax_counts
+
   if (acv_index < bound)
     return offset + acv_index;
   offset += vc_totals[TOTAL_DDIV] + vc_totals[TOTAL_DDSV]
@@ -1603,6 +1663,9 @@ size_t SharedVariablesData::div_index_to_active_index(size_t div_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = 0, bound = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (cdv)
     offset += vc_totals[TOTAL_CDV];
   if (ddv) {
@@ -1652,6 +1715,9 @@ size_t SharedVariablesData::div_index_to_all_index(size_t div_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = vc_totals[TOTAL_CDV], bound = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (ddv) {
     bound += vc_totals[TOTAL_DDIV];
     if (div_index < bound)
@@ -1702,6 +1768,9 @@ size_t SharedVariablesData::cdiv_index_to_adiv_index(size_t cdiv_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = 0, bound = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (!ddv) {
     bound += vc_totals[TOTAL_DDIV];
     if (cdiv_index < bound)
@@ -1739,11 +1808,62 @@ size_t SharedVariablesData::cdiv_index_to_adiv_index(size_t cdiv_index) const
 }
 
 
+size_t SharedVariablesData::cdiv_index_to_all_index(size_t cdiv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t offset = 0, bound = 0;
+
+  // *** TO DO: update for relax_counts
+  /*
+  if (!ddv) {
+    bound += vc_totals[TOTAL_DDIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DDIV];
+
+  if (!dauv) {
+    bound += vc_totals[TOTAL_DAUIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DAUIV];
+
+  if (!deuv) {
+    bound += vc_totals[TOTAL_DEUIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DEUIV];
+
+  if (!dsv) {
+    bound += vc_totals[TOTAL_DSIV];
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  */
+
+  Cerr << "Error: CDIV index out of range in SharedVariablesData::"
+       << "cdiv_index_to_adiv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
 size_t SharedVariablesData::adiv_index_to_all_index(size_t adiv_index) const
 {
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = vc_totals[TOTAL_CDV],
          bound  = vc_totals[TOTAL_DDIV];
+
+  // *** TO DO: update for relax_counts
+
   if (adiv_index < bound)
     return offset + adiv_index;
   offset += vc_totals[TOTAL_DDSV] + vc_totals[TOTAL_DDRV]
@@ -1776,6 +1896,9 @@ size_t SharedVariablesData::dsv_index_to_active_index(size_t dsv_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = 0, bound = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (cdv)
     offset += vc_totals[TOTAL_CDV];
   if (ddv) {
@@ -1830,6 +1953,9 @@ size_t SharedVariablesData::dsv_index_to_all_index(size_t dsv_index) const
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t bound = 0,
     offset = vc_totals[TOTAL_CDV] + vc_totals[TOTAL_DDIV];
+
+  // *** TO DO: update for relax_counts
+
   if (ddv) {
     bound += vc_totals[TOTAL_DDSV];
     if (dsv_index < bound)
@@ -1880,6 +2006,9 @@ size_t SharedVariablesData::cdsv_index_to_adsv_index(size_t cdsv_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t bound = 0, offset = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (!ddv) {
     bound += vc_totals[TOTAL_DDSV];
     if (cdsv_index < bound)
@@ -1917,11 +2046,62 @@ size_t SharedVariablesData::cdsv_index_to_adsv_index(size_t cdsv_index) const
 }
 
 
+size_t SharedVariablesData::cdsv_index_to_all_index(size_t cdsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t bound = 0, offset = 0;
+
+  // *** TO DO: update for relax_counts
+  /*
+  if (!ddv) {
+    bound += vc_totals[TOTAL_DDSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DDSV];
+
+  if (!dauv) {
+    bound += vc_totals[TOTAL_DAUSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DAUSV];
+
+  if (!deuv) {
+    bound += vc_totals[TOTAL_DEUSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DEUSV];
+
+  if (!dsv) {
+    bound += vc_totals[TOTAL_DSSV];
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  */
+
+  Cerr << "Error: CDSV index out of range in SharedVariablesData::"
+       << "cdsv_index_to_adsv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
 size_t SharedVariablesData::adsv_index_to_all_index(size_t adsv_index) const
 {
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = vc_totals[TOTAL_CDV] + vc_totals[TOTAL_DDIV],
          bound  = vc_totals[TOTAL_DDSV];
+
+  // *** TO DO: update for relax_counts
+
   if (adsv_index < bound)
     return offset + adsv_index;
   offset += vc_totals[TOTAL_DDRV] + vc_totals[TOTAL_CAUV]
@@ -1954,6 +2134,9 @@ size_t SharedVariablesData::drv_index_to_active_index(size_t drv_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t offset = 0, bound = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (cdv)
     offset += vc_totals[TOTAL_CDV];
   if (ddv) {
@@ -2005,6 +2188,9 @@ size_t SharedVariablesData::drv_index_to_all_index(size_t drv_index) const
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t bound = 0, offset = vc_totals[TOTAL_CDV] + vc_totals[TOTAL_DDIV]
     + vc_totals[TOTAL_DDSV];
+
+  // *** TO DO: update for relax_counts
+
   if (ddv) {
     bound += vc_totals[TOTAL_DDRV];
     if (drv_index < bound)
@@ -2055,6 +2241,9 @@ size_t SharedVariablesData::cdrv_index_to_adrv_index(size_t cdrv_index) const
 
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t bound = 0, offset = 0;
+
+  // *** TO DO: update for relax_counts
+
   if (!ddv) {
     bound += vc_totals[TOTAL_DDRV];
     if (cdrv_index < bound)
@@ -2092,11 +2281,62 @@ size_t SharedVariablesData::cdrv_index_to_adrv_index(size_t cdrv_index) const
 }
 
 
+size_t SharedVariablesData::cdrv_index_to_all_index(size_t cdrv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const SizetArray& vc_totals = svdRep->variablesCompsTotals;
+  size_t bound = 0, offset = 0;
+
+  // *** TO DO: update for relax_counts
+  /*
+  if (!ddv) {
+    bound += vc_totals[TOTAL_DDRV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DDRV];
+
+  if (!dauv) {
+    bound += vc_totals[TOTAL_DAURV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DAURV];
+
+  if (!deuv) {
+    bound += vc_totals[TOTAL_DEURV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += vc_totals[TOTAL_DEURV];
+
+  if (!dsv) {
+    bound += vc_totals[TOTAL_DSRV];
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  */
+
+  Cerr << "Error: CDRV index out of range in SharedVariablesData::"
+       << "cdrv_index_to_adrv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
 size_t SharedVariablesData::adrv_index_to_all_index(size_t adrv_index) const
 {
   const SizetArray& vc_totals = svdRep->variablesCompsTotals;
   size_t bound  = vc_totals[TOTAL_DDRV], offset = vc_totals[TOTAL_CDV]
     + vc_totals[TOTAL_DDIV] + vc_totals[TOTAL_DDSV];
+
+  // *** TO DO: update for relax_counts
+
   if (adrv_index < bound)
     return offset + adrv_index;
   offset += vc_totals[TOTAL_CAUV] + vc_totals[TOTAL_DAUIV]
@@ -2119,6 +2359,73 @@ size_t SharedVariablesData::adrv_index_to_all_index(size_t adrv_index) const
        << "adrv_index_to_all_index()" << std::endl;
   abort_handler(VARS_ERROR);
   return _NPOS;
+}
+
+
+BitArray SharedVariablesData::cv_to_all_mask() const
+{
+  size_t num_cv, num_div, num_dsv, num_drv;
+  svdRep->all_counts(num_cv, num_div, num_dsv, num_drv);
+  BitArray all_mask(num_cv + num_div + num_dsv + num_drv); // init bits to false
+
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svdRep->active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  size_t i, all_index = 0;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (cdv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  all_index += num_div + num_dsv + num_drv;
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  all_index += num_div + num_dsv + num_drv;
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  all_index += num_div + num_dsv + num_drv;
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+
+  return all_mask;
+}
+
+
+BitArray SharedVariablesData::acv_to_all_mask() const
+{
+  size_t num_cv, num_div, num_dsv, num_drv;
+  svdRep->all_counts(num_cv, num_div, num_dsv, num_drv);
+  BitArray all_mask(num_cv + num_div + num_dsv + num_drv); // init bits to false
+
+  size_t i, all_index = 0;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  for (i=0; i<num_cv; ++i, ++all_index)
+    all_mask.set(all_index);
+  all_index += num_div + num_dsv + num_drv;
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  for (i=0; i<num_cv; ++i, ++all_index)
+    all_mask.set(all_index);
+  all_index += num_div + num_dsv + num_drv;
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  for (i=0; i<num_cv; ++i, ++all_index)
+    all_mask.set(all_index);
+  all_index += num_div + num_dsv + num_drv;
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  for (i=0; i<num_cv; ++i, ++all_index)
+    all_mask.set(all_index);
+
+  return all_mask;
 }
 
 

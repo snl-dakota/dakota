@@ -582,9 +582,15 @@ public:
   /// convert index within active continuous variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t cv_index_to_all_index(size_t cv_index) const;
+  /// convert index within inactive continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  //size_t icv_index_to_all_index(size_t ccv_index) const;
   /// convert index within complement of active continuous variables
   /// to index within all continuous variables
   size_t ccv_index_to_acv_index(size_t ccv_index) const;
+  /// convert index within complement of active continuous variables to index
+  /// within aggregated variables (all continous, discrete {int,string,real})
+  size_t ccv_index_to_all_index(size_t ccv_index) const;
   /// convert index within all continuous variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t acv_index_to_all_index(size_t acv_index) const;
@@ -594,9 +600,16 @@ public:
   /// convert index within active discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t div_index_to_all_index(size_t div_index) const;
+  /// convert index within inactive discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  //size_t idiv_index_to_all_index(size_t div_index) const;
   /// convert index within complement of active discrete integer variables
   /// to index within all discrete integer variables
   size_t cdiv_index_to_adiv_index(size_t div_index) const;
+  /// convert index within complement of active discrete integer variables
+  /// to index within aggregated variables (all continous, discrete
+  /// {int,string,real})
+  size_t cdiv_index_to_all_index(size_t div_index) const;
   /// convert index within all discrete integer variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adiv_index_to_all_index(size_t adiv_index) const;
@@ -606,9 +619,16 @@ public:
   /// convert index within active discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t dsv_index_to_all_index(size_t dsv_index) const;
+  /// convert index within inactive discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  //size_t idsv_index_to_all_index(size_t dsv_index) const;
   /// convert index within complement of active discrete string variables
   /// to index within all discrete string variables
   size_t cdsv_index_to_adsv_index(size_t dsv_index) const;
+  /// convert index within complement of active discrete string variables
+  /// to index within aggregated variables (all continous, discrete
+  /// {int,string,real})
+  size_t cdsv_index_to_all_index(size_t dsv_index) const;
   /// convert index within all discrete string variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adsv_index_to_all_index(size_t adsv_index) const;
@@ -618,12 +638,56 @@ public:
   /// convert index within active discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t drv_index_to_all_index(size_t drv_index) const;
+  /// convert index within inactive discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  //size_t idrv_index_to_all_index(size_t drv_index) const;
   /// convert index within complement of active discrete real
   /// variables to index within all discrete real variables
   size_t cdrv_index_to_adrv_index(size_t drv_index) const;
+  /// convert index within complement of active discrete real variables
+  /// to index within aggregated variables (all continous, discrete
+  /// {int,string,real})
+  size_t cdrv_index_to_all_index(size_t drv_index) const;
   /// convert index within all discrete real variables to index within
   /// aggregated variables (all continous, discrete {int,string,real})
   size_t adrv_index_to_all_index(size_t adrv_index) const;
+
+  /// create a BitArray indicating the active continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray cv_to_all_mask() const;
+  /// create a BitArray indicating the active discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray div_to_all_mask();
+  /// create a BitArray indicating the active discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray dsv_to_all_mask();
+  /// create a BitArray indicating the active discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray drv_to_all_mask();
+  /// create a BitArray indicating the inactive continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray icv_to_all_mask();
+  /// create a BitArray indicating the inactive discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray idiv_to_all_mask();
+  /// create a BitArray indicating the inactive discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray idsv_to_all_mask();
+  /// create a BitArray indicating the inactive discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray idrv_to_all_mask();
+  /// create a BitArray indicating the all continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray acv_to_all_mask() const;
+  /// create a BitArray indicating the all discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray adiv_to_all_mask();
+  /// create a BitArray indicating the all discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray adsv_to_all_mask();
+  /// create a BitArray indicating the all discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  //BitArray adrv_to_all_mask();
 
   /// initialize start index and counts for active variables
   void initialize_active_start_counts();
