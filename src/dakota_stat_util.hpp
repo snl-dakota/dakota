@@ -6,6 +6,9 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#ifndef DAKOTA_STAT_UTIL_H
+#define DAKOTA_STAT_UTIL_H
+
 // Statistics-related utilities
 
 namespace Dakota {
@@ -14,3 +17,5 @@ namespace Dakota {
 int generate_system_seed();
 
 } // namespace Dakota
+
+#endif // DAKOTA_STAT_UTIL_H
