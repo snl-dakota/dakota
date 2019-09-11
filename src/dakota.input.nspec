@@ -2752,6 +2752,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
+          [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+            |
+            ( dimension_adaptive {0}
+              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+              |
+              decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+              |
+              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -2918,6 +2930,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
+          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ allocation_control {0}
+            ( estimator_variance {N_mdm(type,mlmfAllocControl_ESTIMATOR_VARIANCE)}
+              [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
+             )
+            |
+            rip_sampling {N_mdm(type,mlmfAllocControl_RIP_SAMPLING)}
+            |
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ basis_type {0}
@@ -3054,10 +3081,29 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
+          [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+            |
+            ( dimension_adaptive {0}
+              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+              |
+              decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+              |
+              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ allocation_control {0}
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3220,6 +3266,30 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
+          [ 
+            ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+             )
+            |
+            ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+              |
+              local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3258,6 +3328,38 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
+          [ 
+            ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+             )
+            |
+            ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+              |
+              local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ allocation_control {0}
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3455,6 +3557,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
+          [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+            |
+            ( dimension_adaptive {0}
+              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+              |
+              decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+              |
+              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3621,6 +3735,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
+          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ allocation_control {0}
+            ( estimator_variance {N_mdm(type,mlmfAllocControl_ESTIMATOR_VARIANCE)}
+              [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
+             )
+            |
+            rip_sampling {N_mdm(type,mlmfAllocControl_RIP_SAMPLING)}
+            |
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ basis_type {0}
@@ -3757,10 +3886,29 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
+          [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+            |
+            ( dimension_adaptive {0}
+              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+              |
+              decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+              |
+              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ allocation_control {0}
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3923,6 +4071,30 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
+          [ 
+            ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+             )
+            |
+            ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+              |
+              local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -3961,6 +4133,38 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
+          [ 
+            ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+             )
+            |
+            ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+              |
+              local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ allocation_control {0}
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -4052,6 +4256,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
+          [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+            |
+            ( dimension_adaptive {0}
+              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+              |
+              decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+              |
+              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -4218,6 +4434,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
+          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ allocation_control {0}
+            ( estimator_variance {N_mdm(type,mlmfAllocControl_ESTIMATOR_VARIANCE)}
+              [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
+             )
+            |
+            rip_sampling {N_mdm(type,mlmfAllocControl_RIP_SAMPLING)}
+            |
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ basis_type {0}
@@ -4354,10 +4585,29 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
+          [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+            |
+            ( dimension_adaptive {0}
+              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+              |
+              decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+              |
+              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ allocation_control {0}
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -4520,6 +4770,30 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
+          [ 
+            ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+             )
+            |
+            ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+              |
+              local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
@@ -4558,6 +4832,38 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
+          [ 
+            ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+             )
+            |
+            ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+              uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+              |
+              ( dimension_adaptive {0}
+                sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+                |
+                generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+               )
+              |
+              local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+             )
+           ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ allocation_control {0}
+            greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+           ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
           ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
             [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
             [ 
