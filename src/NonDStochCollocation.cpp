@@ -98,9 +98,13 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
 NonDStochCollocation::
 NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     unsigned short num_int, const RealVector& dim_pref,
-		     short u_space_type, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach,
-		piecewise_basis, use_derivs)
+		     short u_space_type, short refine_type,
+		     short refine_control, short covar_control,
+		     short ml_discrep, short rule_nest, short rule_growth,
+		     bool piecewise_basis, bool use_derivs):
+  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, ml_discrep, rule_nest,
+		rule_growth, piecewise_basis, use_derivs)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -160,10 +164,13 @@ NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
-		     short exp_coeffs_approach, bool piecewise_basis,
-		     bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
-		use_derivs)
+		     short exp_coeffs_approach, short refine_type,
+		     short refine_control, short covar_control,
+		     short ml_discrep, short rule_nest, short rule_growth,
+		     bool piecewise_basis, bool use_derivs):
+  NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, ml_discrep, rule_nest,
+		rule_growth, piecewise_basis, use_derivs)
 {
   // Logic delegated to derived class constructor...
 }

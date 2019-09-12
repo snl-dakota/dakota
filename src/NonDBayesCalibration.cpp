@@ -238,6 +238,18 @@ void NonDBayesCalibration::construct_mcmc_model()
     short u_space_type = probDescDB.get_short("method.nond.expansion_type");
     const RealVector& dim_pref
       = probDescDB.get_rv("method.nond.dimension_preference");
+    short refine_type
+      = probDescDB.get_short("method.nond.expansion_refinement_type"),
+      refine_cntl
+      = probDescDB.get_short("method.nond.expansion_refinement_control"),
+      cov_cntl
+      = probDescDB.get_short("method.nond.covariance_control"),
+      ml_discrep
+      = probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
+      rule_nest = probDescDB.get_short("method.nond.nesting_override"),
+      rule_growth = probDescDB.get_short("method.nond.growth_override");
+    bool pw_basis = probDescDB.get_bool("method.nond.piecewise_basis"),
+       use_derivs = probDescDB.get_bool("method.derivative_usage");
     NonDExpansion* se_rep;
 
     if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
@@ -248,13 +260,12 @@ void NonDBayesCalibration::construct_mcmc_model()
       if (ssg_level != USHRT_MAX)
 	se_rep = new NonDStochCollocation(inbound_model,
 	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+	  refine_type, refine_cntl, cov_cntl, ml_discrep, rule_nest,
+	  rule_growth, pw_basis, use_derivs);
       else if (tpq_order != USHRT_MAX)
 	se_rep = new NonDStochCollocation(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl, cov_cntl,
+	  ml_discrep, rule_nest, rule_growth, pw_basis, use_derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
 
@@ -268,21 +279,24 @@ void NonDBayesCalibration::construct_mcmc_model()
       if (ssg_level != USHRT_MAX) // PCE w/ spectral projection via sparse grid
 	se_rep = new NonDPolynomialChaos(inbound_model,
 	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
-	  false, false);
+	  refine_type, refine_cntl, cov_cntl, ml_discrep, rule_nest,
+	  rule_growth, pw_basis, use_derivs);
       else if (tpq_order != USHRT_MAX)
 	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, u_space_type, false, false);
+	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
+	  cov_cntl, ml_discrep, rule_nest, rule_growth, pw_basis, use_derivs);
       else if (cub_int != USHRT_MAX)
 	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::CUBATURE,
-	  cub_int, dim_pref, u_space_type, false, false);
+	  cub_int, dim_pref, u_space_type, refine_type, refine_cntl,
+	  cov_cntl, ml_discrep, rule_nest, rule_growth, pw_basis, use_derivs);
       else { // regression PCE: LeastSq/CS, OLI
 	se_rep = new NonDPolynomialChaos(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
 	  probDescDB.get_ushort("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sizet("method.nond.collocation_points"),
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  randomSeed, u_space_type, false,
-	  probDescDB.get_bool("method.derivative_usage"),	
+	  randomSeed, u_space_type, refine_type, refine_cntl, cov_cntl,
+	  ml_discrep, /* rule_nest, rule_growth, */ pw_basis, use_derivs,
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
@@ -300,13 +314,13 @@ void NonDBayesCalibration::construct_mcmc_model()
       if (!ssg_level_seq.empty())
 	se_rep = new NonDMultilevelStochCollocation(inbound_model,
 	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+	  refine_type, refine_cntl, cov_cntl, ml_discrep, rule_nest,
+	  rule_growth, pw_basis, use_derivs);
       else if (!tpq_order_seq.empty())
 	se_rep = new NonDMultilevelStochCollocation(inbound_model,
-	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, ml_discrep, rule_nest, rule_growth, pw_basis,
+	  use_derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
 
@@ -318,10 +332,13 @@ void NonDBayesCalibration::construct_mcmc_model()
       if (!ssg_level_seq.empty())
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
 	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
-	  false, false);
+	  refine_type, refine_cntl, cov_cntl, ml_discrep, rule_nest,
+	  rule_growth, pw_basis, use_derivs);
       else if (!tpq_order_seq.empty())
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,false,false);
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, ml_discrep, rule_nest, rule_growth, pw_basis,
+	  use_derivs);
       else { // regression PCE: LeastSq/CS, OLI
 	SizetArray pilot; // empty for MF PCE
 	se_rep = new NonDMultilevelPolynomialChaos(
@@ -330,8 +347,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  pilot, randomSeed, u_space_type, false,
-	  probDescDB.get_bool("method.derivative_usage"),	
+	  pilot, randomSeed, u_space_type, refine_type, refine_cntl, cov_cntl,
+	  ml_discrep, /* rule_nest, rule_growth, */ pw_basis, use_derivs,	
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
@@ -347,7 +364,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
 	probDescDB.get_sza("method.nond.pilot_samples"), randomSeed,
-	u_space_type, false, probDescDB.get_bool("method.derivative_usage"),
+	u_space_type, refine_type, refine_cntl, cov_cntl, ml_discrep,
+	/* rule_nest, rule_growth, */ pw_basis, use_derivs,
 	probDescDB.get_bool("method.nond.cross_validation"),
 	probDescDB.get_string("method.import_build_points_file"),
 	probDescDB.get_ushort("method.import_build_format"),

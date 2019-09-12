@@ -43,6 +43,9 @@ public:
 				short exp_coeffs_approach,
 				const UShortArray& num_int_seq,
 				const RealVector& dim_pref, short u_space_type,
+				short refine_type, short refine_control,
+				short covar_control, short ml_discrep,
+				short rule_nest, short rule_growth,
 				bool piecewise_basis, bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
   NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
@@ -51,7 +54,10 @@ public:
 				const RealVector& dim_pref,
 				const SizetArray& colloc_pts_seq,
 				Real colloc_ratio, const SizetArray& pilot,
-				int seed, short u_space_type,
+				int seed, short u_space_type, short refine_type,
+				short refine_control, short covar_control,
+				short ml_discrep,
+				//short rule_nest, short rule_growth,
 				bool piecewise_basis, bool use_derivs,
 				bool cv_flag,
 				const String& import_build_pts_file,

@@ -48,6 +48,17 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
     = problem_db.get_ushort("model.adapted_basis.expansion_order");
   Real colloc_ratio
     = problem_db.get_real("model.adapted_basis.collocation_ratio");
+  short refine_type
+    = probDescDB.get_short("method.nond.expansion_refinement_type"),
+    refine_cntl
+    = probDescDB.get_short("method.nond.expansion_refinement_control"),
+    cov_cntl = probDescDB.get_short("method.nond.covariance_control"),
+    ml_discrep
+    = probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
+    rule_nest = probDescDB.get_short("method.nond.nesting_override"),
+    rule_growth = probDescDB.get_short("method.nond.growth_override");
+  bool pw_basis = probDescDB.get_bool("method.nond.piecewise_basis"),
+     use_derivs = probDescDB.get_bool("method.derivative_usage");
 
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
@@ -59,19 +70,21 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   if (ssg_level) {
     // L1 isotropic sparse grid --> Linear exp (quadratic main effects ignored)
     // L2 isotropic sparse grid --> Quadratic expansion
-    pcePilotExpRepPtr
-      = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
-				ssg_level, dim_pref, EXTENDED_U, false, false);
+    pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
+      Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, EXTENDED_U,
+      refine_type, refine_cntl, cov_cntl, ml_discrep, rule_nest, rule_growth,
+      pw_basis, use_derivs);
   }
   else if (exp_order) { // regression PCE: LeastSq/CS (exp_order,colloc_ratio)
     short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
     String import_file; unsigned short import_fmt = TABULAR_ANNOTATED;
     size_t colloc_pts; int seed = 12347;
-    pcePilotExpRepPtr
-      = new NonDPolynomialChaos(actual_model, exp_coeffs_approach, exp_order,
-				dim_pref, colloc_pts, colloc_ratio, seed,
-				EXTENDED_U, false, false, false,// pw,derivs,CV
-				import_file, import_fmt, false); // active_only
+    pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
+      exp_coeffs_approach, exp_order, dim_pref, colloc_pts, colloc_ratio, seed,
+      EXTENDED_U, refine_type, refine_cntl, cov_cntl, ml_discrep,
+      /* rule_nest, rule_growth, */ pw_basis, use_derivs,
+      probDescDB.get_bool("method.nond.cross_validation"), import_file,
+      import_fmt, probDescDB.get_bool("method.import_build_active_only"));
   }
   else {
     Cerr << "Error: insufficient PCE build specification in AdaptedBasisModel."

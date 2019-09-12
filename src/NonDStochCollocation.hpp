@@ -41,8 +41,10 @@ public:
   /// alternate constructor
   NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		       unsigned short num_int, const RealVector& dim_pref,
-		       short u_space_type, bool piecewise_basis,
-		       bool use_derivs);
+		       short u_space_type, short refine_type,
+		       short refine_control, short covar_control,
+		       short ml_discrep, short rule_nest, short rule_growth,
+		       bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDStochCollocation();
 
@@ -64,8 +66,10 @@ protected:
 		       Model& model);
   /// short-cut ctor allowing derived class to replace logic in base class ctor
   NonDStochCollocation(unsigned short method_name, Model& model,
-		       short exp_coeffs_approach, bool piecewise_basis,
-		       bool use_derivs);
+		       short exp_coeffs_approach, short refine_type,
+		       short refine_control, short covar_control,
+		       short ml_discrep, short rule_nest, short rule_growth,
+		       bool piecewise_basis, bool use_derivs);
 
   //
   //- Heading: Virtual function redefinitions
