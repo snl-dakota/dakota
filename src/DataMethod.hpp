@@ -51,8 +51,10 @@ enum { DEFAULT_METHOD=0,
        DACE, FSU_CVT, FSU_HALTON, FSU_HAMMERSLEY, PSUADE_MOAT,
        // NonD Analyzers:
        LOCAL_RELIABILITY=(ANALYZER_BIT | NOND_BIT), GLOBAL_RELIABILITY,
-       POLYNOMIAL_CHAOS, STOCH_COLLOCATION, MULTILEVEL_POLYNOMIAL_CHAOS,
-       MULTIFIDELITY_POLYNOMIAL_CHAOS, MULTIFIDELITY_STOCH_COLLOCATION,
+       POLYNOMIAL_CHAOS, MULTILEVEL_POLYNOMIAL_CHAOS,
+       MULTIFIDELITY_POLYNOMIAL_CHAOS,
+       STOCH_COLLOCATION, MULTIFIDELITY_STOCH_COLLOCATION,
+       C3_FUNCTION_TRAIN, MULTIFIDELITY_FUNCTION_TRAIN,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
@@ -123,7 +125,7 @@ enum { DEFAULT_CONFIG, PUSH_DOWN, PUSH_UP };
 // ----
 // define special values for u_space_type in
 // NonD::initialize_random_variable_types()
-enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
+enum { STD_NORMAL_U, STD_UNIFORM_U, PARTIAL_ASKEY_U, ASKEY_U, EXTENDED_U };
 // define special values for covarianceControl
 enum { DEFAULT_COVARIANCE, NO_COVARIANCE, DIAGONAL_COVARIANCE,
        FULL_COVARIANCE };
@@ -759,6 +761,13 @@ public:
   /// the \c HAS_SGTE specification for NOMAD
   String useSurrogate;
 
+  // NonD C3 Function Train
+
+  // pointer to model parameters for UQ
+  //String modelParamSpec;
+  // Number of LHS used for construction
+  //size_t numSamplesForConstruct;
+    
   // NonD & DACE
 
   /// the \c samples specification for NonD & DACE methods
@@ -792,8 +801,6 @@ public:
   Real wilksConfidenceLevel;
   /// Wilks sided interval type
   short wilksSidedInterval;
-
-  // NonD
 
   /// a sub-specification of vbdFlag: interaction order limit for
   /// calculation/output of component VBD indices
@@ -984,9 +991,14 @@ public:
   /// flag indicating the calculation of mutual information between prior
   /// and posterior in Bayesian methods 
   bool posteriorStatsMutual;
-  /// flat indicating calculation of kernel density estimate of posterior 
+  /// flag indicating calculation of kernel density estimate of posterior 
   /// distributions
   bool posteriorStatsKDE;
+  /// flag indicating calculation of chain diagnostics
+  bool chainDiagnostics;
+  /// flag indicating calculation of confidence intervals as a chain
+  /// diagnositc
+  bool chainDiagnosticsCI;
   /// flag indicating calculation of the evidence of the model
   bool modelEvidence;
   /// flag indicating use of Monte Carlo approximation for evidence calc.

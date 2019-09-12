@@ -1485,6 +1485,19 @@ model_shint(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(short DataModelRep::**)v = (short)*val->i;
 }
 
+
+void NIDRProblemDescDB::
+model_sizet(const char *keyname, Values *val, void **g, void *v)
+{
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
+#endif
+  (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
+}
+
+    
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1514,6 +1527,7 @@ model_str(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(String DataModelRep::**)v = *val->s;
 }
 
+   
 void NIDRProblemDescDB::
 model_strL(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1680,9 +1694,11 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 	    "nonlinear_inequality", aln_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 	    "nonlinear_equality", aln_scaletypes);
-  if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
-    squawk("Specify calibration weights or experimental errors, not both.");
-  }
+  // The following check was relevant prior to refactoring the way transformations
+  // are applied (now in a layered manner)
+  // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
+  //   squawk("Specify calibration weights or experimental errors, not both.");
+  // }
   if ((n = dr->responseLabels.size()) > 0) {
     if (!(k = dr->numResponseFunctions)) {
       if (!(k = dr->numObjectiveFunctions))
@@ -5643,7 +5659,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   static IntArray   *Var_Info::* Ia_delete[]
     = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, 
 	AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss, AVI ndusr, 
-	AVI ndssi, AVI ndssr };
+	AVI ndssi, AVI ndsss, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp,
 	AVI DSIp, AVI DSSp, AVI DSRp,
@@ -5652,9 +5668,10 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 	AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
-    = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
+    = { AVI ddsi, AVI DIlb, AVI DIub, AVI hpia, AVI dusi, AVI dssi,
+        AVI ddsia, AVI ddssa, AVI ddsra };
   static StringArray *Var_Info::* Sa_delete[]
-    = { AVI ddss, AVI duss, AVI dsss };
+    = { AVI ddss, AVI hpsa, AVI duss, AVI dsss };
 #undef AVI
 
   Var_Info *vi = (Var_Info*)v;
@@ -6888,7 +6905,7 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-        MP_(subModelPointer);
+    MP_(subModelPointer);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6901,6 +6918,8 @@ static bool
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
 	MP_(calModelDiscrepancy),
+	MP_(chainDiagnostics),
+	MP_(chainDiagnosticsCI),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(crossValidNoiseOnly),
@@ -6994,12 +7013,13 @@ static size_t
         MP_(expansionSamples),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
-        MP_(numDesigns),
-        MP_(numFinalSolutions),
+    MP_(numDesigns),
+    MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
   	MP_(numPredConfigs);
+
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -7140,6 +7160,7 @@ static Method_mp_utype
 	MP2s(integrationRefine,MMAIS),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
 	MP2s(methodName,BRANCH_AND_BOUND),
+    MP2s(methodName,C3_FUNCTION_TRAIN),
 	MP2s(methodName,COLINY_BETA),
 	MP2s(methodName,COLINY_COBYLA),
 	MP2s(methodName,COLINY_DIRECT),
@@ -7183,6 +7204,7 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTIFIDELITY_FUNCTION_TRAIN),
 	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
 	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
@@ -7285,6 +7307,7 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
 	MP2(surrogateType,global_mars),
@@ -7369,6 +7392,8 @@ static Real
 	MP_(percentFold),
 	MP_(truncationTolerance),
 	MP_(relTolerance),
+    MP_(solverTolerance),
+    MP_(roundingTolerance),
 	MP_(decreaseTolerance);
 
 static RealVector
@@ -7409,6 +7434,7 @@ static StringArray
         MP_(secondaryVarMaps);
 
 static bool
+        MP_(adaptRank),
 	MP_(autoRefine),
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
@@ -7461,6 +7487,15 @@ static int
         MP_(subspaceDimension),
         MP_(subspaceCVMaxRank);
 
+static size_t
+    MP_(crossMaxIter),
+    MP_(kickRank),
+    MP_(maxOrder),        
+    MP_(maxRank),
+    MP_(startOrder),
+    MP_(startRank);
+//  MP_(verbosity);
+    
 #undef MP2s
 #undef MP2
 #undef MP_
@@ -7587,7 +7622,14 @@ static Env_mp_utype
         MP2s(tabularFormat,TABULAR_IFACE_ID),
         MP2s(tabularFormat,TABULAR_ANNOTATED),
         MP2s(resultsOutputFormat,RESULTS_OUTPUT_TEXT),
-        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5);
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_TOP_METHOD),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_NONE),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL_METHODS),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_SIMULATION),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_NONE),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_ALL);
 
 static String
         MP_(errorFile),

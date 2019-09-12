@@ -57,6 +57,7 @@ public:
   NestedModel(ProblemDescDB& problem_db); ///< constructor
   ~NestedModel();                         ///< destructor
 
+  void declare_sources();
 protected:
 
   //
@@ -161,6 +162,7 @@ protected:
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
 
+  ActiveSet default_interface_active_set();
 private:
 
   //
@@ -351,6 +353,15 @@ private:
   /// number of equality constraints resulting from the optional
   /// interface evaluations
   size_t numOptInterfEqCon = 0;
+
+  /// analytic IDs for mixed gradients on the optional interface
+  IntSet optInterfGradIdAnalytic;
+  /// analytic IDs for mixed Hessians on the optional interface
+  IntSet optInterfHessIdAnalytic;
+  /// Gradient type for the optional interface
+  String optInterfGradientType;
+  /// Hessian type for the optional interface
+  String optInterfHessianType;
 
   // Attributes pertaining to variables mapping
   //

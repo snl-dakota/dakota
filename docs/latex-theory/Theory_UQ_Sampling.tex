@@ -35,26 +35,26 @@ of any estimator is its own variance:
  \mathbb{V}ar\left( \hat{Q}_N^{MC} \right)  = \dfrac{1}{N^2} \sum_{i=1}^{N} \mathbb{V}ar\left( Q \right) 
             = \dfrac{\mathbb{V}ar\left(Q\right) }{N}.
 \end{equation}
-Furthermore, it is possible to show that the error $\left( \mathbb{E}\left[Q\right] - \hat{Q}_N^{MC} \right)/\sqrt{ \mathbb{V}ar\left( \hat{Q}_N^{MC} \right) }$ is proportional to 
-a standard normal RV $\mathcal{N}(0,1)$. As a consequence, it is possible to define a confidence
+Furthermore, it is possible to show, in the limit $N \rightarrow \infty$, that the error $\left( \mathbb{E}\left[Q\right] - \hat{Q}_N^{MC} \right) \sim 
+\sqrt{\dfrac{\mathbb{V}ar\left(Q\right) }{N}} \mathcal{N}(0,1)$, where $\mathcal{N}(0,1)$ represents a standard normal RV. As a consequence, it is possible to define a confidence
 interval for the MC estimator which has an amplitude proportional to the standard deviation of the estimator.
 Indeed, the variance of the estimator plays a fundamental role in the quality of the
 numerical results: the reduction of the variance (for a fixed computational cost) 
 is a very effective way of improving the quality of the MC prediction. 
 
 \section{Control variate Monte Carlo} \label{uq:sampling:controlvariate}
-A closer inspection of Eq.~\ref{EQ: variance MC} indicates that only an increase in the number of simulations $N$ 
+A closer inspection of Eq.~\eqref{EQ: variance MC} indicates that only an increase in the number of simulations $N$ 
 might reduce the overall variance, since $\mathbb{V}ar\left({Q}\right)$ is an intrinsic property of the model under analysis. However, 
 more sophisticated  techniques have been proposed to accelerate the convergence of a MC simulation. For instance, an incomplete list 
 of these techniques can include stratified sampling, importance sampling, Latin hypercube, deterministic Sobol' 
 sequences and control variates. In particular, the control variate approach, is based on the idea of replacing
 the RV $Q$ with a different one which has the same expected value, but with a smaller variance.
-The goal is to reduce the numerator in Eq.~\ref{EQ: variance MC}, and hence the value of the estimator variance without
+The goal is to reduce the numerator in Eq.~\eqref{EQ: variance MC}, and hence the value of the estimator variance without
 requiring a larger number of simulations.
 In a practical setting, the control variate makes use of an auxiliary functional $G=G(\boldsymbol{\xi})$ for which the 
-expected value is known. Indeed, the alternative estimator can be defined as
+expected value $\mathbb{E}\left[G\right]$ is known. Indeed, the alternative estimator can be defined as
 \begin{equation} \label{EQ: control variate}
-\hat{Q}_N^{MCCV} =  \hat{Q}_N^{MC} - \beta \left( \hat{G}_N^{MC} - \mathbb{E}\left[Q\right] \right).
+\hat{Q}_N^{MCCV} =  \hat{Q}_N^{MC} - \beta \left( \hat{G}_N^{MC} - \mathbb{E}\left[G\right] \right).
 \end{equation}
 The MC control variate estimator $\hat{Q}_N^{MCCV}$ is unbiased (irrespective of the value of the parameter 
 $\beta \in \mathbb{R}$), but its variance now has a more complex dependence not only 
@@ -94,7 +94,7 @@ A MC estimator in presence of a finite spatial resolution and finite sampling is
 \begin{equation}
 \hat{Q}^{MC}_{M,N} = \frac{1}{N} \sum_{i=1}^N Q_M^{(i)}
 \end{equation}
-which corresponds to the following mean square error (MSE)
+for which the mean square error (MSE) is
 \begin{equation}
 \mathbb{E}\left[ (\hat{Q}^{MC}_{M,N}-\mathbb{E}\left[ Q \right] )^2 \right]
        = N^{-1} \mathbb{V}ar\left({Q_M}\right) + \left( \mathbb{E}\left[{ Q_M-Q }\right] \right)^2,
@@ -105,9 +105,9 @@ a sufficiently fine resolution $M$. Since the numerical cost of a PDE is related
 the total cost of a MC simulation for a PDE can easily become intractable for complex multi-physics applications that are computationally 
 intensive.
 
-The multilevel Monte Carlo (MLMC) algorithm has been introduced as an extension of the control variate approach when an additional 
+The multilevel Monte Carlo (MLMC) algorithm has been introduced, starting from the control variate idea, for situation in which additional 
 %(with respect to the stochastic space) 
-discretization space can be utilized. The basic idea, borrowed from the multigrid approach,
+discretization levels can be defined. The basic idea, borrowed from the multigrid approach,
 is to replace the evaluation of the statistics of $Q_M$ with a sequence of evaluations at coarser levels. If it is 
 possible to define a sequence of discretization levels $\left\{ M_\ell: \ell = 0, \dots, L \right\}$ with 
 $M_0 < M_1 < \dots < M_L \stackrel{\mathrm{def}}{=} M$, the expected value $\mathbb{E}\left[{Q_M}\right]$ can be decomposed, 
@@ -124,15 +124,16 @@ If the difference function $Y_\ell$ is defined according to
  \end{split}
  \right.
 \end{equation}
-the expected value $\mathbb{E}\left[{Q_M}\right]=\sum_{\ell=0}^{L}{  \mathbb{E}\left[Y_\ell\right]   }$. A multilevel MC estimator is obtained when a MC estimator is
-written at each level for $Y_\ell$, obtaining the following multilevel MC estimator $\hat{Q}_M^{\mathrm{ML}}$
+the expected value $\mathbb{E}\left[{Q_M}\right]=\sum_{\ell=0}^{L}{  \mathbb{E}\left[Y_\ell\right]   }$. A multilevel MC estimator is obtained 
+when a MC estimator is adopted independently for the evaluation of the expected value of $Y_\ell$ on each level. The resulting multilevel 
+estimator $\hat{Q}_M^{\mathrm{ML}}$ is 
 \begin{equation}
  \hat{Q}_M^{\mathrm{ML}} = \, \sum_{\ell = 0}^L \hat{Y}_{\ell, N_\ell}^{\mathrm{MC}} 
  = \sum_{\ell = 0}^L \frac{1}{N_\ell} \sum_{i=1}^{N_\ell} Y_\ell^{(i)}.
 \end{equation}
-Since it is unbiased, the advantage of using this formulation is in its reduced estimator variance 
+Since the multilevel estimator is unbiased, the advantage of using this formulation is in its reduced estimator variance 
 $\sum_{\ell=0}^{L} N_\ell^{-1} \mathbb{V}ar\left({Y_\ell}\right)$: since $Q_M \rightarrow Q$, 
-the difference function $Y_\ell \rightarrow 0$. Indeed, the corresponding number of
+the difference function $Y_\ell \rightarrow 0$ as the level $\ell$ increases. Indeed, the corresponding number of
 samples $N_\ell$ required to resolve the variance associated with the $\ell$th level is expected 
 to decrease with $\ell$.
  
@@ -146,7 +147,7 @@ with $\mathcal{C}_{\ell}$ being the cost of the evaluation of $Y_\ell$ (involvin
  f(N_\ell,\lambda) = \sum_{\ell=0}^{L} N_\ell \, \mathcal{C}_{\ell} 
                    + \lambda \left( \sum_{\ell=0}^{L} N_\ell^{-1} \mathbb{V}ar\left({Y_\ell}\right) - \varepsilon^2/2 \right). 
 \end{equation}
-using Lagrange multiplier $\lambda$.  This equality constraint reflects a balance between the two contributions to MSE, reflecting the goal to not over-resolve one or the other.  The result of the minimization is
+using a Lagrange multiplier $\lambda$.  This equality constraint reflects a balance between the two contributions to MSE, reflecting the goal to not over-resolve one or the other.  The result of the minimization is
 \begin{equation}\label{EQ: MLMC nl}
 N_{\ell} = \frac{2}{\varepsilon^2} \left[ \, \sum_{k=0}^L \left( \mathbb{V}ar\left(Y_k\right) \mathcal{C}_k \right)^{1/2} \right] 
                \sqrt{\frac{ \mathbb{V}ar\left({Y_\ell}\right) }{\mathcal{C}_{\ell}}},
@@ -156,7 +157,7 @@ defining an optimal sample allocation per discretization level.
 
 \section{A multilevel-multifidelity approach} \label{uq:sampling:mlmf}
 
-The MLMC approach in \S\ref{uq:sampling:multilevel} can be considered
+The MLMC approach described in \S\ref{uq:sampling:multilevel} can be considered
 to be a recursive control variate technique in that it seeks to reduce
 the variance of the target function in order to limit the sampling at
 high resolution. In addition, the difference function $Y_\ell$ for
@@ -175,7 +176,7 @@ and a cheaper, possibly biased low-fidelity (LF) model, it is possible
 to write the following estimator
 \begin{equation}\label{EQ: MLMF estimator}
  \mathbb{E}\left[Q_M^{\mathrm{HF}}\right] = \sum_{l=0}^{L_{\mathrm{HF}}} \mathbb{E}\left[Y^{\mathrm{HF}}_{\ell}\right] 
-                                          = \sum_{l=0}^{L_{\mathrm{HF}}} \hat{Y}^{\mathrm{HF}}_{\ell} = \sum_{l=0}^{L_{\mathrm{HF}}} Y^{{\mathrm{HF}},\star}_{\ell},
+                                          \approx \sum_{l=0}^{L_{\mathrm{HF}}} \hat{Y}^{\mathrm{HF}}_{\ell} = \sum_{l=0}^{L_{\mathrm{HF}}} Y^{{\mathrm{HF}},\star}_{\ell},
 \end{equation}
 where
 \begin{equation}
@@ -206,7 +207,7 @@ estimator can be written as (for further details see \cite{GeraciCTR})
 \end{split}
 \end{equation}
 
-The Pearson correlation coefficient between the HF and LF models is indicated by $\rho_\ell$ in the previous equations.
+The Pearson's correlation coefficient between the HF and LF models is indicated by $\rho_\ell$ in the previous equations.
 Assuming the vector $r_\ell$ as a parameter, the variance is minimized per level, mimicking the standard control variate 
 approach, and thus obtaining the optimal coefficient as 
 $\alpha_\ell = -\rho_\ell \sqrt{ \dfrac{ \mathbb{V}ar\left( Y^{\mathrm{HF}}_{\ell} \right) } 
@@ -228,7 +229,7 @@ on the additional number of LF evaluations $\Delta_{\ell}^{\mathrm{LF}}$, hence 
 can be made very close to unity by choosing an affordably large $r_\ell$, i.e., $\Delta_{\ell}^{\mathrm{LF}} >> N_{\ell}^{\mathrm{HF}}$.
 
 The optimal sample allocation is determined taking into account the relative cost between the HF and LF models and their correlation (per level).
-In particular the optimization problem introduced in Eq.~\ref{EQ:mlmc_optimization} is replaced by
+In particular the optimization problem introduced in Eq.~\eqref{EQ:mlmc_optimization} is replaced by
  \begin{equation*}
   \operatornamewithlimits{argmin}\limits_{N_{\ell}^{\mathrm{HF}}, r_\ell}(\mathcal{L}), \quad \mathrm{where} \quad \mathcal{L} = \sum_{\ell=0}^{L_{\mathrm{HF}}} N_{\ell}^{\mathrm{HF}} \mathcal{C}_{\ell}^{\mathrm{eq}} +
                  \lambda \left( \sum_{\ell=0}^{L_{\mathrm{HF}}} \dfrac{1}{N_{\ell}^{\mathrm{HF}}}\mathbb{V}ar\left( Y^{\mathrm{HF}}_{\ell}\right) \Lambda_{\ell}(r_\ell) - \varepsilon^2/2 \right),
@@ -260,16 +261,16 @@ to the HF model, but also to the correlation between the LF and HF model.
 A potential refinement of the previous approach consists in exploiting the QoI on each pair of levels, $\ell$ and $\ell-1$, to 
 build a more correlated LF function. For instance, it is possible to use
 \begin{equation}
- \mathring{Y}^{\mathrm{LF}}_{\ell} =  \gamma_\ell Q_\ell^{\mathrm{LF}} - Q_\ell^{\mathrm{HF}}
+ \mathring{Y}^{\mathrm{LF}}_{\ell} =  \gamma_\ell Q_\ell^{\mathrm{LF}} - Q_{\ell-1}^{\mathrm{LF}}
 \end{equation}
 and maximize the correlation between $Y_\ell^{\mathrm{HF}}$ and $\mathring{Y}^{\mathrm{LF}}_{\ell}$ through the coefficient $\gamma_\ell$.
 
-Formally the two formulations are completely equivalent if $Y_\ell^{\mathrm{HF}}$ is replaced with $\mathring{Y}^{\mathrm{LF}}_{\ell}$ in 
+Formally the two formulations are completely equivalent if $Y_\ell^{\mathrm{LF}}$ is replaced with $\mathring{Y}^{\mathrm{LF}}_{\ell}$ in 
 Equation~\eqref{EQ: MLMF estimator} and they can be linked through the two ratios
   \begin{equation}
  \begin{split}
- \theta_{\ell} &= \dfrac{  \mathrm{Cov}\left(  Y^{\mathrm{LF}}_{\ell},\mathring{Y}^{\mathrm{LF}}_{\ell} \right)   }
-                        {  \mathrm{Cov}\left( Y^{\mathrm{LF}}_{\ell},Y^{\mathrm{LF}}_{\ell} \right)  } \\
+ \theta_{\ell} &= \dfrac{  \mathrm{Cov}\left(  Y^{\mathrm{HF}}_{\ell},\mathring{Y}^{\mathrm{LF}}_{\ell} \right)   }
+                        {  \mathrm{Cov}\left( Y^{\mathrm{HF}}_{\ell},Y^{\mathrm{LF}}_{\ell} \right)  } \\
  \quad \tau_{\ell}  &= \dfrac{  \mathbb{V}ar\left(  \mathring{Y}^{\mathrm{LF}}_{\ell} \right)  }{ \mathbb{V}ar\left( Y^{\mathrm{LF}}_{\ell} \right) },
  \end{split}
 \end{equation}

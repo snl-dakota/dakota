@@ -308,11 +308,11 @@ void read_leading_columns(std::istream& input_stream,
   if (tabular_format & TABULAR_IFACE_ID) {
     input_stream >> iface_id;
     // (Dakota 6.1 used EMPTY for missing ID)
-    if (iface_id == "NO_ID" || iface_id == "EMPTY")
-      iface_id.clear();
+    if (iface_id == "EMPTY")
+      iface_id = "NO_ID";
   }
   else
-    iface_id.clear();
+    iface_id = "NO_ID";
 }
 
 

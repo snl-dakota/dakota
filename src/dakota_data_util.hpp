@@ -201,6 +201,11 @@ bool is_equal_vec( const RealVector & vec1,
 // Misc matrix utilities 
 // ---------------------
 
+/// Computes means of columns of matrix
+void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+/// Computes standard deviations of columns of matrix
+void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
+      			  RealVector& std_devs);
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 

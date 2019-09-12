@@ -49,6 +49,7 @@ typedef Teuchos::SerialDenseMatrix<int, Real>    RealMatrix;
 typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
 typedef Teuchos::SerialDenseVector<int, int>     IntVector;
 typedef Teuchos::SerialDenseMatrix<int, int>     IntMatrix;
+typedef Teuchos::SerialDenseVector<int, size_t>  SizetVector;
 
 //typedef Tpetra::CrsMatrix<int, Real>             RealSparseMatrix
 //typedef Tpetra::Vector<int, Real>                RealParallelVector
@@ -125,6 +126,7 @@ typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, size_t>         IntSizetPair;
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
+typedef std::pair<String, String>      StringStringPair;
 typedef std::pair<int, Response>       IntResponsePair;
 typedef std::pair<UShortArray, UShortArray> UShortArrayPair;
 typedef std::set<Real>                 RealSet;
@@ -139,6 +141,7 @@ typedef std::vector<StringSet>         StringSetArray;
 typedef std::vector<UShortSet>         UShortSetArray;
 typedef std::map<int, int>             IntIntMap;
 typedef std::map<int, short>           IntShortMap;
+typedef std::map<unsigned long, unsigned long> ULongULongMap;
 typedef std::map<int, Real>            IntRealMap;
 typedef std::map<Real, Real>           RealRealMap;
 typedef std::map<String, Real>         StringRealMap;
@@ -156,6 +159,7 @@ typedef std::map<IntArray, size_t>     IntArraySizetMap;
 typedef std::map<IntIntPair, Real>     IntIntPairRealMap;
 typedef std::map<IntIntPair, RealMatrix> IntIntPairRealMatrixMap;
 typedef std::map<RealRealPair, Real>     RealRealPairRealMap;
+typedef std::map<StringStringPair, int>  StringStringPairIntMap;
 typedef std::vector<IntIntPairRealMap>   IntIntPairRealMapArray;
 typedef std::vector<RealRealPairRealMap> RealRealPairRealMapArray;
 typedef std::multimap<RealRealPair, ParamResponsePair> RealPairPRPMultiMap;

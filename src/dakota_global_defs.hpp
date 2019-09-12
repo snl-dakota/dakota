@@ -62,6 +62,20 @@ enum {
   OTHER_ERROR     = -1  // the historical Dakota default error
 };
 
+/// enum for selecting the models that store evaluations
+enum { 
+      MODEL_EVAL_STORE_TOP_METHOD = 0,
+      MODEL_EVAL_STORE_NONE,
+      MODEL_EVAL_STORE_ALL,
+      MODEL_EVAL_STORE_ALL_METHODS};
+
+/// enum for selecting the interfaces that store evaluations
+enum {
+      INTERF_EVAL_STORE_SIMULATION = 0,
+      INTERF_EVAL_STORE_NONE,
+      INTERF_EVAL_STORE_ALL};
+
+
 /// enum for dakota abort behaviors
 enum {ABORT_EXITS, ABORT_THROWS};
 
@@ -190,5 +204,12 @@ void register_signal_handlers();
 void mpi_debug_hold();
 
 } // namespace Dakota
+
+/// Return type for EvaluationStore::model_allocate and interface_allocate
+/// UNITIALIZED: Model constructor has this as its default
+/// ACTIVE: The database is open and this model or interface should write to it
+/// INACTIVE: The database is either closed, or this model or interface should not
+///           write to it.
+enum class EvaluationsDBState {UNINITIALIZED, ACTIVE, INACTIVE};
 
 #endif // DAKOTA_GLOBAL_DEFS_H

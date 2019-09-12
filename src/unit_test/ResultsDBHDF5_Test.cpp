@@ -11,33 +11,39 @@
 #include "dakota_global_defs.hpp"
 #include "ResultsManager.hpp"
 #include "HDF5_IO.hpp"
+#include "ResultsDBHDF5.hpp"
 #include <boost/tuple/tuple.hpp>
 #include <iostream>
 #include <math.h>
 #include <memory>
+#include <utility>
 #include <string>
 
 using namespace H5;
-
+using namespace Dakota;
 /**
  *  Test creating and destroying a Dakota HDF5 database.
  */
 TEUCHOS_UNIT_TEST(tpl_hdf5, test_results_manager_init) {
-  std::string database_name = "database_1";
+  std::string database_name = "database_1.h5";
  
   Dakota::ResultsManager results_manager;
-  results_manager.initialize(database_name, Dakota::RESULTS_OUTPUT_HDF5);
+  std::shared_ptr<HDF5IOHelper> hdf5_helper_ptr(new HDF5IOHelper(database_name, true));
+  std::unique_ptr<ResultsDBHDF5> db_ptr(new ResultsDBHDF5(false /* in_core */, hdf5_helper_ptr));
+  results_manager.add_database(std::move(db_ptr));
 
   TEST_ASSERT( results_manager.active() );
 }
 
 TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
-  std::string database_name = "database_2";
+  std::string database_name = "database_2.h5";
 
   Dakota::ResultsManager results_manager;
-  results_manager.initialize(database_name, Dakota::RESULTS_OUTPUT_HDF5);
+  std::shared_ptr<HDF5IOHelper> hdf5_helper_ptr(new HDF5IOHelper(database_name, true));
+  std::unique_ptr<ResultsDBHDF5> db_ptr(new ResultsDBHDF5(false /* in_core */, hdf5_helper_ptr));
+  results_manager.add_database(std::move(db_ptr));
 
-  Dakota::HDF5IOHelper helper(database_name + ".h5", false);
+  Dakota::HDF5IOHelper helper(database_name, false);
   // methods treated like a dataset name
   helper.create_groups("/methods");
   TEST_ASSERT(!helper.exists("/methods"));
@@ -59,9 +65,12 @@ TEUCHOS_UNIT_TEST(tpl_hdf5, test_create_groups) {
 TEUCHOS_UNIT_TEST(tpl_hdf5, test_insert_into) {
   // TODO: This is not a very good test, yet. It passes if no exceptions are throw, but it doesn't read
   // the matrices back in to confirm that they were written correctly.
-  std::string database_name = "database_3";
+  std::string database_name = "database_3.h5";
   Dakota::ResultsManager results_manager;
-  results_manager.initialize(database_name, Dakota::RESULTS_OUTPUT_HDF5);
+  std::shared_ptr<HDF5IOHelper> hdf5_helper_ptr(new HDF5IOHelper(database_name, true));
+  std::unique_ptr<ResultsDBHDF5> db_ptr(new ResultsDBHDF5(false /* in_core */, hdf5_helper_ptr));
+  results_manager.add_database(std::move(db_ptr));
+
   Dakota::StrStrSizet iterator_id = boost::make_tuple(std::string("test_method"), 
                                                         std::string("test_method_id"), 1);
  

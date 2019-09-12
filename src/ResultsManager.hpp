@@ -103,13 +103,15 @@ class ResultsManager
 
 public:
 
-  /// default constructor: no databases active until initialize called
+  /// default constructor: no databases active until they are added
   ResultsManager()
   { /* no-op*/ }
 
-  /// initialize the results manager to manage an in-core database,
-  /// writing to the specified file name
-  void initialize(const std::string& base_filename, const unsigned short &format);
+  /// Delete all databases
+  void clear_databases();
+
+  /// Add a database
+  void add_database(std::unique_ptr<ResultsDBBase>);
 
   /// whether any databases are active
   bool active() const;

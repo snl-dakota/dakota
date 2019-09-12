@@ -108,28 +108,29 @@ pid_t ProcessHandleApplicInterface::create_evaluation_process(bool block_flag)
       Cout << "nonblocking fork: ";
 
     if (!iFilterName.empty()) {
-      Cout << iFilterName;
+      Cout << substitute_params_and_results(iFilterName, paramsFileName, resultsFileName);
       if (commandLineArgs)
-	Cout << ' ' << paramsFileName << ' ' << resultsFileName;
+        Cout << ' ' << paramsFileName << ' ' << resultsFileName;
       Cout << "; ";
     }
     for (i=0; i<numAnalysisDrivers; i++) {
-      Cout << programNames[i];
+      String params_file = paramsFileName;
+      String results_file = resultsFileName;
+      if (multipleParamsFiles)
+        params_file += '.' + std::to_string(i+1);
+      if (numAnalysisDrivers > 1)
+        results_file += '.' + std::to_string(i+1);
+      Cout << substitute_params_and_results(programNames[i], params_file, results_file);
       if (commandLineArgs) {
-	Cout << ' ' << paramsFileName;
-	if (multipleParamsFiles)
-	  Cout << '.' << i+1;
-	Cout << ' ' << resultsFileName;
-	if (numAnalysisDrivers > 1)
-	  Cout << '.' << i+1;
+        Cout << ' ' << params_file << ' ' << results_file;
       }
       if (i != numAnalysisDrivers-1)
         Cout << "; ";
     }
     if (!oFilterName.empty()) {
-      Cout << "; " << oFilterName;
+      Cout << "; " << substitute_params_and_results(oFilterName, paramsFileName, resultsFileName);
       if (commandLineArgs)
-	Cout << ' ' << paramsFileName << ' ' << resultsFileName;
+        Cout << ' ' << paramsFileName << ' ' << resultsFileName;
     }
     Cout << '\n';
   }
@@ -526,7 +527,9 @@ void ProcessHandleApplicInterface::
 create_command_arguments(boost::shared_array<const char*>& av, 
 			 StringArray& driver_and_args)
 {
-  driver_and_args = WorkdirHelper::tokenize_driver(argList[0]);
+
+  String driver_subbed = substitute_params_and_results(argList[0], argList[1], argList[2]);
+  driver_and_args = WorkdirHelper::tokenize_driver(driver_subbed);
 
   // if commandLineArgs, include params/results files at end
   size_t nargs = driver_and_args.size();

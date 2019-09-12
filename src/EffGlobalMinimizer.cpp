@@ -657,4 +657,14 @@ void EffGlobalMinimizer::update_penalty()
 #endif
 }
 
+// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+// when it's being used to evaluate a user-defined function (e.g. finding the correlation
+// lengths of Dakota's GP). 
+void EffGlobalMinimizer::declare_sources() {
+  if(setUpType == "user_functions") 
+    return;
+  else
+    Iterator::declare_sources();
+}
+ 
 } // namespace Dakota

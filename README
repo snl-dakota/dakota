@@ -23,7 +23,6 @@ Keith R. Dalbey
 John P. Eddy	                               	 
 Mohamed S. Ebeida
 Michael S. Eldred                             	 
-Joseph R. Frye
 Gianluca Geraci
 Russell W. Hooper
 Patricia D. Hough		       
@@ -34,6 +33,7 @@ Kathryn A. Maupin
 Jason A. Monschke
 Elliott M. Ridgway
 Ahmad Rushdi
+D. Thomas Seidl
 J. Adam Stephens                             	 
 Laura P. Swiler
 Dena M. Vigil			       
@@ -63,9 +63,6 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
 		    (including any source, test, unit_test, example,
 		     script, build system, or other files not
 		     specifically marked)
-  pyprepro          MIT License [SNL]
-    bottlepy/bottle MIT License (modern stle with sublicense)
-    pypi/six        MIT License (modern stle with sublicense)
   acro              Revised BSD License [SNL]
     (including colin, dummy, interfaces, pebbl, scolib, utilib)
     tpl
@@ -78,6 +75,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
       vpykit/pyutilib.virtualenv  BSD License  
   ampl		    MIT License (old style with disclaimer)
   approxnn          GNU Lesser General Public License(LGPL)
+  C3                BSD 3-clause
   CONMIN	    Public Domain
   DDACE		    GNU Lesser General Public License (LGPL) [SNL]
   dfftpack	    Public Domain
@@ -98,6 +96,9 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
   PSUADE	    GNU Lesser General Public License (LGPL)
+  pyprepro          MIT License [SNL]
+    bottlepy/bottle MIT License (modern stle with sublicense)
+    pypi/six        MIT License (modern stle with sublicense)
   queso		    GNU Lesser General Public License (LGPL)
   sciplot	    GNU Library General Public License (old LGPL)
   surfpack	    GNU Lesser General Public License (LGPL) [SNL]
@@ -110,11 +111,15 @@ code under an appropriate license and include it under the appropriate
 packages directory when compiling Dakota.
 
 Third-party system libraries: In addition to standard compiler and
-system runtime libraries, Dakota requires the following external
-third-party libraries for compilation and operation:
+system runtime libraries, Dakota uses the following external
+third-party libraries for compilation and operation. These are
+included in Dakota binary distributions (though not in source
+distributions):
 
   BLAS/LAPACK	    BSD License, or that of compiler or system-provided libs
   Boost		    Boost Software License
+  HDF5 (optional)   BSD-style Open Source License (variant)
+    zlib            ZLib License
 
 GPL/Other: Dakota may optionally depend on GNU GPL-licensed
 components, which are disabled by default, resulting in an
@@ -178,7 +183,8 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
-6.9      11/15/18 (refer to git submodules for TPL SHA1s)
+6.10               05/15/19 (refer to git submodules for TPL SHA1s)
+6.9                11/15/18 (refer to git submodules for TPL SHA1s)
 6.8		   05/15/18 (refer to git submodules for TPL SHA1s)
 6.7		   11/15/17 (refer to git submodules for TPL SHA1s)
 6.6		   05/15/17 (refer to git submodules for TPL SHA1s)
@@ -221,7 +227,6 @@ Contributing enhancements.
 Dakota is both a research and a production code and is under active
 development.  Bug reports, suggestions for improvement, and changes to
 support other platforms/compilers are welcome.  See the Dakota
-Developer Portal at https://dakota.sandia.gov/content/developer-portal/
-for more information.
+website at https://dakota.sandia.gov/ for more information.
 
 ------------------------------------------------------------------------------

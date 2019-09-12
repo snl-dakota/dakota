@@ -159,37 +159,46 @@ Section~\ref{parallel:SLP:local:fork}.
 
 \subsection{Syntax for Filter and Driver Strings}\label{interfaces:syntax}
 
-With the fork interface, and on most systems, with the system interface
-as well, the string values supplied for \texttt{input\_filter}, \texttt{output\_filter},
-and \texttt{analysis\_driver} can involve simple Bourne-shell
-syntax for specifying environment values that the filter or driver will see.
-For example,
-\begin{verbatim}
-    analysis_driver = 'opfile=myspec outlev=2 mydriver'
-\end{verbatim}
-would cause \texttt{mydriver} to be invoked with environment
-variables \texttt{opfile} and \texttt{outlev} having the
-values ``myspec" and ``2", respectively.  If the driver is a
-shell script, it can access these values as \texttt{\$opfile} and
-\texttt{\$outlev}; a compiled driver can obtain these values
-from a function; drivers written in C or C++ can use the standard
-\texttt{getenv} function (e.g., invoking \verb@getenv("opfile")@).
+Dakota's default behavior is to construct input filter, analysis driver, and
+output filter commands by appending the names of the parameters file and results file
+for the evaluation/analysis to the user-provided
+\texttt{input\_filter}, \texttt{output\_filter}, and \texttt{analysis\_drivers} 
+strings. After adding its working directory to the \texttt{PATH}, Dakota executes 
+these commands in its working directory or, if the \texttt{work\_directory} keyword 
+group is present, in a work directory.
 
-Both the values assigned to environment variables and name of the
-file invoked as filter or driver can contain spaces, provided that the values
-in question are quoted.  Within strings delimited by single quotes,
-you can use double quotes for quoting, and vice versa.  For instance,
-\begin{verbatim}
-    analysis_driver = 'opfile="my spec" "my driver"'
-\end{verbatim}
-and
-\begin{verbatim}
-    analysis_driver = "opfile='my spec' 'my driver'"
-\end{verbatim}
-both specify a driver named ``\texttt{my driver}" and value ``\texttt{my spec}"
-for \texttt{\$opfile}.
+Filter and driver strings may contain absolute or relative path information and 
+whitespace; Dakota will pass them through without modification.
 
+Quotes are also permitted with the restriction that if double-quotes (") are used to 
+enclose the driver or filter string as a whole, then only single quotes (') are allowed 
+within it, and vice versa. The input filter string \texttt{'dprepro --var "foo=1"'} 
+works, as does \texttt{"dprepro --var 'foo=1'"}, but not \texttt{"dprepro --var "foo=1""}.
 
+In some situations, users may not wish Dakota to append the names of the parameters
+or results files to filter and driver strings. The \texttt{verbatim} keyword prevents
+this behavior, and causes Dakota to execute filter and driver strings "as is".
+
+Beginning with version 6.10, Dakota will substitute the tokens \texttt{\{PARAMETERS\}} 
+and \texttt{\{RESULTS\}} in driver and filter strings with the names of the paramters 
+and results files for that analysis/evaluation just prior to execution.
+
+For example, if an \texttt{interface} block in the input file included:
+
+\begin{verbatim}
+  input_filter 'preprocess {PARAMETERS}'
+  analysis_drivers 'run_sim.sh'
+  output_filter 'postprocess {RESULTS}'
+  verbatim
+\end{verbatim}
+
+Then, the input filter \texttt{preprocess} would be run with only the parameters file 
+as a command line argument, the analysis driver \texttt{run\_sim.sh} would receive no 
+command line arguments, and the output filter \texttt{postprocess} would receive only 
+the results file name.
+
+The combination of \texttt{verbatim} and substitution provide users with considerable
+flexibility in specifying the form of filter and driver commands.
 
 \subsection{Fork or System Call: Which to Use?}\label{interfaces:which}
 
@@ -1797,7 +1806,7 @@ In Figure~\ref{diexample:asv}, {\tt applic\_module.run()} has been modified to r
   if Results.asv.gradient:
       results["f"].gradient = df
   if Results.asv.hessian:
-      results["f"] = df2
+      results["f"].hessian = df2
 
   results.write()
 \end{verbatim}
@@ -2054,6 +2063,46 @@ Returns:
 
 Note that escaping the trailing delimiter (e.g.
 \texttt{\textbackslash{}\}}) is optional.
+
+\subsubsection{Whitespace Control}\label{interfaces:whitespace-control}
+
+Expressions span the entire line, which can possibly introduce undesired white space. 
+Ending a line with \texttt{\textbackslash\textbackslash} will prevent the additional space. Consider the following:
+\begin{verbatim}
+BLOCK \\
+{%
+if True:
+    block = 10
+else:
+    block = 20
+end
+%}
+{block}
+\end{verbatim}
+
+Which renders as:
+\begin{verbatim}
+BLOCK 10
+\end{verbatim}
+
+Without the trailing \texttt{\textbackslash\textbackslash}, the result would instead be:
+\begin{verbatim}
+BLOCK
+10
+\end{verbatim}
+This can also be abused to allow spacing. Consider the following:
+
+\begin{verbatim}
+I want this to \\
+%
+render as \\
+%
+one line
+\end{verbatim}
+Since the \texttt{\%} symbolize a code block (empty in this case), it will render
+\begin{verbatim}
+I want this to render as one line
+\end{verbatim}
 
 \subsubsection{Immutable Variables}\label{interfaces:immutable-variables}
 

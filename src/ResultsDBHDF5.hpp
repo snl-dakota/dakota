@@ -13,7 +13,8 @@
 
 #ifndef DAKOTA_RESULTS_DB_HDF5_H
 #define DAKOTA_RESULTS_DB_HDF5_H
-
+#include <memory>
+#include <utility>
 #include <set>
 #include "ResultsDBBase.hpp"
 // This file requires a complete implementation of HDF5_IO, so can't
@@ -25,6 +26,8 @@ namespace Dakota {
 
 /// Create a method name (HDF5 link name) from iterator_id
 String method_hdf5_link_name(const StrStrSizet& iterator_id);
+/// Create a method results name (HDF5 link name) from iterator_id
+String method_results_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create an execution name (HDF5 link name) from iterator_id
 String execution_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create a scale name (hdf5 link name) for a scale from an iterator_id,
@@ -105,9 +108,9 @@ class AttachScaleVisitor : public boost::static_visitor <>
           if(scale.isMatrix) {
             Teuchos::SerialDenseMatrix<int, Real>scale_matrix(Teuchos::View, scale.items.values(), 
                 sizeof(scale.items[0]), scale.items.length()/scale.numCols, scale.numCols);
-            hdf5Stream->store_matrix_data(name, scale_matrix);
+            hdf5Stream->store_matrix(name, scale_matrix);
           } else
-            hdf5Stream->store_vector_data(name, scale.items);
+            hdf5Stream->store_vector(name, scale.items);
         }
         hdf5Stream->attach_scale(dsetName, name, scale.label, dimension);
     }
@@ -118,13 +121,25 @@ class AttachScaleVisitor : public boost::static_visitor <>
           scale_hdf5_link_name(iteratorID, location, scale);
         if(!hdf5Stream->exists(name)) {
           if(scale.isMatrix) 
-            hdf5Stream->store_matrix_data(name, scale.items, scale.numCols);
+            hdf5Stream->store_matrix(name, scale.items, scale.numCols);
           else
-            hdf5Stream->store_vector_data(name, scale.items);
+            hdf5Stream->store_vector(name, scale.items);
         }
         hdf5Stream->attach_scale(dsetName, name, scale.label, dimension);
     }
 
+    /// Called by boost::apply_vistitor to process an IntegerScale
+    void operator()(const IntegerScale &scale) {
+        String name =
+          scale_hdf5_link_name(iteratorID, location, scale);
+        if(!hdf5Stream->exists(name)) {
+          if(scale.isMatrix) 
+            hdf5Stream->store_matrix(name, scale.items, scale.numCols);
+          else
+            hdf5Stream->store_vector(name, scale.items);
+        }
+        hdf5Stream->attach_scale(dsetName, name, scale.label, dimension);
+    }
 
   private:
     /// Iterator ID for the method and execuation
@@ -147,9 +162,8 @@ public:
   // We are always overriting any existing HDF5 files. If we eventually
   // support appending to existing files, then the methodNameCache
   // will need to be initialized from the file.
-  ResultsDBHDF5(bool in_core, const String& base_filename) :
-    ResultsDBBase(base_filename + (in_core ? ".tmp.h5" : ".h5")),
-    hdf5Stream(new HDF5IOHelper(fileName, true)) {
+  ResultsDBHDF5(bool in_core, std::shared_ptr<HDF5IOHelper> hdf5_helper_ptr) :
+    hdf5Stream(hdf5_helper_ptr) {
 
     AttributeArray root_attrs = {
         ResultAttribute<String>("dakota_version", DakotaBuildInfo::get_release_num()),
@@ -260,7 +274,8 @@ private:
   /// Cached method Ids; used to know which methods have already had their 
   /// method_name attribute set. Hopefully faster than querying the HDF5 file.
   std::set<String> methodIdCache;
-  /// Instance of HDF5IOHelper (probably doesn't need to be a pointer)
+  /// Instance of HDF5IOHelper (must be a pointer because it's shared with the global
+  /// evaluation store instance 
   std::shared_ptr<HDF5IOHelper> hdf5Stream;
 };
 

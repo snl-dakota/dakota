@@ -25,6 +25,30 @@
 #include <arrayobject.h>
 #endif
 
+// Python 2/3 compatibility layer
+// BMA: Using preprocessor defines (only in this compilation unit) per
+// submitted patch since not likely to support Python 2 for long and
+// then they'll go away
+#if PY_MAJOR_VERSION >= 3
+#define DAKPY_PYSTR_FROMSTR PyUnicode_FromString
+#define DAKPY_PYSTR_ASSTR PyUnicode_AsUTF8
+#define DAKPY_PYINT_FROMLONG PyLong_FromLong
+#define DAKPY_PYINT_ASLONG PyLong_AsLong
+#define DAKPY_PYINT_CHECK PyLong_Check
+#ifdef DAKOTA_PYTHON_NUMPY
+#define DAKPY_IMPORT_ARRAY import_array1
+#endif
+#else
+#define DAKPY_PYSTR_FROMSTR PyString_FromString
+#define DAKPY_PYSTR_ASSTR PyString_AsString
+#define DAKPY_PYINT_FROMLONG PyInt_FromLong
+#define DAKPY_PYINT_ASLONG PyInt_AsLong
+#define DAKPY_PYINT_CHECK PyInt_Check
+#ifdef DAKOTA_PYTHON_NUMPY
+#define DAKPY_IMPORT_ARRAY import_array
+#endif
+#endif
+
 #include "PythonInterface.hpp"
 #include "dakota_global_defs.hpp"
 #include "DataMethod.hpp"
@@ -55,7 +79,7 @@ PythonInterface::PythonInterface(const ProblemDescDB& problem_db)
 
   if (userNumpyFlag) {
 #ifdef DAKOTA_PYTHON_NUMPY
-    import_array();
+    DAKPY_IMPORT_ARRAY();
 #else
     Cerr << "\nError: Direct Python interface 'numpy' option requested, but "
 	 << "not available." << std::endl;
@@ -137,23 +161,23 @@ int PythonInterface::python_run(const String& ac_name)
 
   // assemble everything into a dictionary to pass to user function
   // this should eat references to the objects declared above
-  PyDict_SetItem(pDict, PyString_FromString("variables"), 
-		 PyInt_FromLong((long) numVars));
-  PyDict_SetItem(pDict, PyString_FromString("functions"), 
-		 PyInt_FromLong((long) numFns)); 
-  PyDict_SetItem(pDict, PyString_FromString("cv"), cv);
-  PyDict_SetItem(pDict, PyString_FromString("cv_labels"), cv_labels);
-  PyDict_SetItem(pDict, PyString_FromString("div"), div);
-  PyDict_SetItem(pDict, PyString_FromString("div_labels"), div_labels);
-  PyDict_SetItem(pDict, PyString_FromString("drv"), drv);
-  PyDict_SetItem(pDict, PyString_FromString("drv_labels"), drv_labels);
-  PyDict_SetItem(pDict, PyString_FromString("av"), av);
-  PyDict_SetItem(pDict, PyString_FromString("av_labels"), av_labels);
-  PyDict_SetItem(pDict, PyString_FromString("asv"), asv);
-  PyDict_SetItem(pDict, PyString_FromString("dvv"), dvv);
-  PyDict_SetItem(pDict, PyString_FromString("analysis_components"), an_comps);
-  PyDict_SetItem(pDict, PyString_FromString("currEvalId"), 
-		 PyInt_FromLong((long) currEvalId));
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("variables"), 
+		 DAKPY_PYINT_FROMLONG((long) numVars));
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("functions"), 
+		 DAKPY_PYINT_FROMLONG((long) numFns)); 
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("cv"), cv);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("cv_labels"), cv_labels);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("div"), div);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("div_labels"), div_labels);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("drv"), drv);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("drv_labels"), drv_labels);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("av"), av);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("av_labels"), av_labels);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("asv"), asv);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("dvv"), dvv);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("analysis_components"), an_comps);
+  PyDict_SetItem(pDict, DAKPY_PYSTR_FROMSTR("currEvalId"), 
+		 DAKPY_PYINT_FROMLONG((long) currEvalId));
 
 
   // The active analysis_driver is passed in ac_name (in form
@@ -171,7 +195,7 @@ int PythonInterface::python_run(const String& ac_name)
   }
 
   // import the module and function and test for callable
-  PyObject *pModule = PyImport_Import(PyString_FromString(module_name.c_str()));
+  PyObject *pModule = PyImport_Import(DAKPY_PYSTR_FROMSTR(module_name.c_str()));
   if (pModule == NULL) {
     Cerr << "Error (PythonInterface): Failure importing module '" 
 	 << module_name  << "'.\n                         Consider setting "
@@ -273,7 +297,7 @@ int PythonInterface::python_run(const String& ac_name)
     }
     // optional returns
     if (obj = PyDict_GetItemString(retVal, "failure"))
-      fail_code = PyInt_AsLong(obj);
+      fail_code = DAKPY_PYINT_ASLONG(obj);
 
     if (obj = PyDict_GetItemString(retVal, "fnLabels")) {
       if (!PyList_Check(obj) || PyList_Size(obj) != numFns) {
@@ -282,7 +306,7 @@ int PythonInterface::python_run(const String& ac_name)
 	abort_handler(INTERFACE_ERROR);
       }
       for (size_t i=0; i<numFns; ++i)
-	fnLabels[i] = PyString_AsString(PyList_GetItem(obj, i));
+	fnLabels[i] = DAKPY_PYSTR_ASSTR(PyList_GetItem(obj, i));
     }
   }
   else {
@@ -322,7 +346,7 @@ python_convert_int(const ArrayT& src, Size sz, PyObject** dst)
       return(false);
     }
     for (Size i=0; i<sz; ++i)
-      PyList_SetItem(*dst, i, PyInt_FromLong((long) src[i]));
+      PyList_SetItem(*dst, i, DAKPY_PYINT_FROMLONG((long) src[i]));
   }
   return(true);
 }
@@ -393,7 +417,7 @@ python_convert(const RealVector& c_src, const IntVector& di_src,
     for (int i=0; i<c_sz; ++i)
       PyList_SetItem(*dst, i, PyFloat_FromDouble(c_src[i]));
     for (int i=0; i<di_sz; ++i)
-      PyList_SetItem(*dst, c_sz + i, PyInt_FromLong((long) di_src[i]));
+      PyList_SetItem(*dst, c_sz + i, DAKPY_PYINT_FROMLONG((long) di_src[i]));
     for (int i=0; i<dr_sz; ++i)
       PyList_SetItem(*dst, c_sz + di_sz + i, 
 		     PyFloat_FromDouble(dr_src[i]));
@@ -413,7 +437,7 @@ python_convert_strlist(const StringArrayT& src, PyObject** dst)
       return(false);
   }
   for (int i=0; i<sz; ++i)
-    PyList_SetItem(*dst, i, PyString_FromString(src[i].c_str()));
+    PyList_SetItem(*dst, i, DAKPY_PYSTR_FROMSTR(src[i].c_str()));
 
   return(true);
 }
@@ -432,11 +456,11 @@ python_convert(const StringMultiArray& c_src, const StringMultiArray& di_src,
     return(false);
   }
   for (int i=0; i<c_sz; ++i)
-    PyList_SetItem(*dst, i, PyString_FromString(c_src[i].c_str()));
+    PyList_SetItem(*dst, i, DAKPY_PYSTR_FROMSTR(c_src[i].c_str()));
   for (int i=0; i<di_sz; ++i)
-    PyList_SetItem(*dst, c_sz+i, PyString_FromString(di_src[i].c_str()));
+    PyList_SetItem(*dst, c_sz+i, DAKPY_PYSTR_FROMSTR(di_src[i].c_str()));
   for (int i=0; i<dr_sz; ++i)
-    PyList_SetItem(*dst, c_sz+di_sz+i, PyString_FromString(dr_src[i].c_str()));
+    PyList_SetItem(*dst, c_sz+di_sz+i, DAKPY_PYSTR_FROMSTR(dr_src[i].c_str()));
 
   return(true);
 }
@@ -471,8 +495,8 @@ python_convert(PyObject *pyv, RealVector& rv, const int& dim)
       val = PyList_GetItem(pyv, i);
       if (PyFloat_Check(val))
 	rv[i] = PyFloat_AsDouble(val);
-      else if (PyInt_Check(val))
-	rv[i] = (double) PyInt_AsLong(val);
+      else if (DAKPY_PYINT_CHECK(val))
+	rv[i] = (double) DAKPY_PYINT_ASLONG(val);
       else {
 	Cerr << "Unsupported Python data type converting vector." << std::endl;
 	Py_DECREF(val);
@@ -513,8 +537,8 @@ python_convert(PyObject *pyv, double *rv, const int& dim)
       val = PyList_GetItem(pyv, i);
       if (PyFloat_Check(val))
 	rv[i] = PyFloat_AsDouble(val);
-      else if (PyInt_Check(val))
-	rv[i] = (double) PyInt_AsLong(val);
+      else if (DAKPY_PYINT_CHECK(val))
+	rv[i] = (double) DAKPY_PYINT_ASLONG(val);
       else {
 	Cerr << "Unsupported Python data type converting vector." << std::endl;
 	Py_DECREF(val);
@@ -610,8 +634,8 @@ bool PythonInterface::python_convert(PyObject *pym,
 	val = PyList_GetItem(pyv, j);
 	if (PyFloat_Check(val))
 	  rm(i,j) = PyFloat_AsDouble(val);
-	else if (PyInt_Check(val))
-	  rm(i,j) = (double) PyInt_AsLong(val);
+	else if (DAKPY_PYINT_CHECK(val))
+	  rm(i,j) = (double) DAKPY_PYINT_ASLONG(val);
 	else {
 	  Cerr << "Unsupported Python data type converting vector." 
 	       << std::endl;

@@ -179,12 +179,18 @@ public:
 
   /// override the submodel's derivative estimation behavior
   void submodel_supports_derivative_estimation(bool sed_flag);
+  
+  String root_model_id();
+
+  ActiveSet default_active_set();
+  void declare_sources();
 
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
@@ -410,6 +416,13 @@ protected:
   //- Heading: Member functions
   //
 
+  /// helper to compute the recast response order during member initialization
+  // TODO: Move to Response?
+  static short response_order(const Model& sub_model);
+
+  /// Generate a model id for recast models
+  static String recast_model_id(const String &root_id, const String &type);
+
   /// initialize currentVariables and related info from the passed
   /// size/type info
   bool init_variables(const SizetArray& vars_comps_totals,
@@ -455,6 +468,9 @@ protected:
   IntResponseMap recastResponseMap;
   /// mapping from subModel evaluation ids to RecastModel evaluation ids
   IntIntMap recastIdMap;
+  /// Counters for naming RecastModels
+  static StringStringPairIntMap recastModelIdCounters;
+
 
 private:
 
@@ -551,6 +567,7 @@ private:
 			     const Variables& sub_model_vars,
 			     const Response& recast_resp,
 			     Response& sub_model_resp);
+
 };
 
 

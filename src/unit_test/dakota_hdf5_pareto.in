@@ -1,0 +1,42 @@
+environment
+  tabular_data
+    tabular_data_file 'pareto.dat'
+  results_output  
+   results_output_file 'pareto'
+   hdf5
+    model_selection all
+  write_restart 'pareto.rst'
+  method_pointer 'pareto'
+
+method
+  id_method 'pareto'
+  pareto_set
+  method_pointer 'local'
+  weight_sets
+           0.4770140416   0.5229859584   
+           0.4601373082   0.5398626918   
+          0.04671799784   0.9532820022   
+           0.7718149981   0.2281850019   
+           0.6162456695   0.3837543305   
+
+method
+  id_method 'local'
+  asynch_pattern_search
+
+variables
+  continuous_design 3
+    descriptors  'x1'      'x2'   'x3'
+    lower_bounds  -1        -1      -1
+    upper_bounds  1        1      1   
+
+
+responses
+  descriptors 'f1' 'f2'
+
+  objective_functions 2
+  numerical_gradients
+  no_hessians
+
+interface
+  direct
+   analysis_drivers 'mogatest1'

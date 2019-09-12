@@ -288,6 +288,11 @@ public:
   String tabularDataFile;   ///< filename for tabulation of graphics data
   String resultsOutputFile; ///< filename for results data
 
+  /// Models selected to store their evaluations
+  unsigned short modelEvalsSelection;
+  /// Interfaces selected to store their evaluations
+  unsigned short interfEvalsSelection;
+
 private:
 
   /// Perform initial output/error redirects from user requests
