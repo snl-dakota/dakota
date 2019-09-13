@@ -6,6 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#ifdef HAVE_DEMO_TPL
+
 #include <string>
 #include <map>
 #include <Teuchos_UnitTestHarness.hpp>
@@ -847,3 +849,5 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
 }
 
 //----------------------------------------------------------------
+
+#endif // HAVE_DEMO_TPL
