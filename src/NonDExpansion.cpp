@@ -82,18 +82,21 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
-	      short exp_coeffs_approach, bool piecewise_basis, bool use_derivs):
+	      short exp_coeffs_approach, short refine_type,
+	      short refine_control, short covar_control, short ml_discrep,
+	      short rule_nest, short rule_growth, bool piecewise_basis,
+	      bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
-  multilevDiscrepEmulation(DEFAULT_EMULATION), numUncertainQuant(0),
+  multilevDiscrepEmulation(ml_discrep), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
   nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
-  refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
+  refineType(refine_type), refineControl(refine_control),
   refineMetric(Pecos::NO_METRIC), softConvLimit(3), maxRefineIterations(100),
-  maxSolverIterations(-1), ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
-  ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
-  vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
+  maxSolverIterations(-1), ruleNestingOverride(rule_nest),
+  ruleGrowthOverride(rule_growth), vbdFlag(false), vbdOrderLimit(0),
+  vbdDropTol(-1.), covarianceControl(covar_control)
 {
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.

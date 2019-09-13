@@ -164,9 +164,12 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int, const RealVector& dim_pref,
-		    short u_space_type, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, piecewise_basis,
-		use_derivs), 
+		    short u_space_type, short refine_type, short refine_control,
+		    short covar_control, short rule_nest, short rule_growth,
+		    bool piecewise_basis, bool use_derivs):
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, DEFAULT_EMULATION, rule_nest,
+		rule_growth, piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -239,13 +242,17 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short exp_order, const RealVector& dim_pref,
 		    size_t colloc_pts, Real colloc_ratio,
-		    int seed, short u_space_type, bool piecewise_basis,
-		    bool use_derivs, bool cv_flag,
+		    int seed, short u_space_type, short refine_type,
+		    short refine_control, short covar_control,
+		    //short rule_nest, short rule_growth,
+		    bool piecewise_basis, bool use_derivs, bool cv_flag,
 		    const String& import_build_pts_file,
 		    unsigned short import_build_format,
 		    bool import_build_active_only):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, piecewise_basis,
-		use_derivs), 
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, DEFAULT_EMULATION,
+		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
+		piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
   tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
@@ -355,9 +362,12 @@ NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
 NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
-		    short u_space_type, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
-		use_derivs), 
+		    short u_space_type, short refine_type, short refine_control,
+		    short covar_control, short ml_discrep, short rule_nest,
+		    short rule_growth, bool piecewise_basis, bool use_derivs):
+  NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, ml_discrep, rule_nest,
+		rule_growth, piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -377,10 +387,15 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
-		    short u_space_type, bool piecewise_basis, bool use_derivs,
-		    Real colloc_ratio, int seed, bool cv_flag):
-  NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
-		use_derivs), 
+		    short u_space_type, short refine_type, short refine_control,
+		    short covar_control, short ml_discrep,
+		    //short rule_nest, short rule_growth,
+		    bool piecewise_basis, bool use_derivs, Real colloc_ratio,
+		    int seed, bool cv_flag):
+  NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, ml_discrep,
+		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
+		piecewise_basis, use_derivs),
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
   tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),

@@ -37,7 +37,9 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, bool piecewise_basis,
+		short exp_coeffs_approach, short refine_type,
+		short refine_control, short covar_control, short ml_discrep,
+		short rule_nest, short rule_growth, bool piecewise_basis,
 		bool use_derivs);
   /// destructor
   ~NonDExpansion();
@@ -71,6 +73,15 @@ public:
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// return maxRefineIterations
+  int maximum_refinement_iterations() const;
+  /// set maxRefineIterations
+  void maximum_refinement_iterations(int max_refine_iter);
 
 protected:
 
@@ -136,7 +147,7 @@ protected:
   void update_final_statistics_gradients();
 
   //
-  //- Heading: Member function definitions
+  //- Heading: Member functions
   //
 
   /// common constructor code for initialization of natafTransform
@@ -492,6 +503,14 @@ private:
   /// refinement samples for expansion sampler
   IntVector refinementSamples;
 };
+
+
+inline int NonDExpansion::maximum_refinement_iterations() const
+{ return maxRefineIterations; }
+
+
+inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
+{ maxRefineIterations = max_refine_iter; }
 
 
 inline const Model& NonDExpansion::algorithm_space_model() const

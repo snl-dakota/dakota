@@ -20,7 +20,7 @@
 #include "dakota_tabular_io.hpp"
 #include "pecos_stat_util.hpp"
 #include "ParallelLibrary.hpp"
-#include <chrono>
+#include "dakota_stat_util.hpp"
 
 //#define DEBUG
 
@@ -499,26 +499,6 @@ void NonD::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
   iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
-}
-
-
-int NonD::generate_system_seed()
-{
-  // Generate initial seed from a system clock.  NOTE: the system clock
-  // should not used for multiple LHS calls since (1) clock granularity can
-  // be too coarse (can repeat on subsequent runs for inexpensive test fns)
-  // and (2) seed progression can be highly structured, which could induce
-  // correlation between sample sets.  Instead, the clock-generated case
-  // varies the seed below using the same approach as the user-specified
-  // case.  This has the additional benefit that a random run can be
-  // recreated by specifying the clock-generated seed in the input file.
-
-  // This replaces DDACE timeSeed(), which returns the trailing microseconds
-  auto mu_sec = std::chrono::duration_cast<std::chrono::microseconds>
-    (std::chrono::high_resolution_clock::now().time_since_epoch()) % 1000000;
-  int seed = 1 + mu_sec.count();
-
-  return seed;
 }
 
 

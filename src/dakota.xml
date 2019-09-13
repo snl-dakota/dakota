@@ -723,6 +723,7 @@
 
     <!ENTITY bayes_pce '
 	     <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce"  minOccurs="1" >
+	       &pce_refinement;    <!-- NEW -->
 	       <oneOf>
 		 &expansion_quadrature;
 		 &pce_sparse_grid;
@@ -731,23 +732,30 @@
 		 &bayes_pce_orthog_least_interp;
 	       </oneOf>
 	       &pce_options;
+	       <!-- &expansion_options; -->
 	     </keyword>
 	     ' >
 
     <!ENTITY bayes_ml_pce '
       	     <keyword  id="ml_pce" name="ml_pce" code="{N_mdm(type,emulatorType_ML_PCE_EMULATOR)}" label="ml_pce"  minOccurs="1" >
+	       &ml_pilot_samples;
+	       &ml_alloc_control;  <!-- NEW -->
+	       &discrep_emulation; <!-- NEW -->
 	       <oneOf>
 		 &pce_expansion_order_sequence;
 		 &pce_orthog_least_interp_sequence;
 	       </oneOf>
 	       &pce_options;
-	       &ml_pilot_samples;
+	       <!-- &expansion_options; -->
 	       <!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive"  minOccurs="0"/> -->
 	     </keyword>
 	     ' >
 
     <!ENTITY bayes_mf_pce '
       	     <keyword  id="mf_pce" name="mf_pce" code="{N_mdm(type,emulatorType_MF_PCE_EMULATOR)}" label="mf_pce"  minOccurs="1" >
+	       &pce_refinement;    <!-- NEW -->
+	       &mf_alloc_control;  <!-- NEW -->
+	       &discrep_emulation; <!-- NEW -->
 	       <oneOf>
 		 &expansion_quadrature_sequence;
 		 &pce_sparse_grid_sequence;
@@ -761,26 +769,33 @@
 		 <!-- </required> -->
 	       </oneOf>
 	       &pce_options;
+	       <!-- &expansion_options; -->
 	     </keyword>
 	     ' >
 
     <!ENTITY bayes_sc '
      	     <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc"  minOccurs="1" >
+	       &sc_refinement;    <!-- NEW -->
 	       <oneOf label="Interpolation Grid Type">
 		 &expansion_quadrature;
 		 &sc_sparse_grid;
 	       </oneOf>
 	       &sc_options;
+	       <!-- &expansion_options; -->
 	     </keyword>
 	     ' >
 
     <!ENTITY bayes_mf_sc '
       	     <keyword  id="mf_sc" name="mf_sc" code="{N_mdm(type,emulatorType_MF_SC_EMULATOR)}" label="mf_sc"  minOccurs="1" >
+	       &sc_refinement;      <!-- NEW -->
+	       &mf_alloc_control;   <!-- NEW -->
+	       &discrep_emulation;  <!-- NEW -->
 	       <oneOf label="Interpolation Grid Type">
 		 &expansion_quadrature_sequence;
 		 &sc_sparse_grid_sequence;
 	       </oneOf>
 	       &sc_options;
+	       <!-- &expansion_options; -->
 	     </keyword>
 	     ' >
 

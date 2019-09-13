@@ -18,7 +18,7 @@
 #include "sData.h"
 #include "MOATAnalyzer.h"
 #include "aData.h"
-#include <chrono>
+#include "dakota_stat_util.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -215,11 +215,7 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 	// user-specified case.  This has the additional benefit that a random
 	// run can be recreated by specifying the clock-generated seed in the
 	// input file.
-
-	// This replaces DDACE timeSeed(), which returns the trailing microseconds
-	auto mu_sec = std::chrono::duration_cast<std::chrono::microseconds>
-	  (std::chrono::high_resolution_clock::now().time_since_epoch()) % 1000000;
-	randomSeed = 1 + mu_sec.count();
+	randomSeed = generate_system_seed();
       }
     }
     else if (varyPattern) { // define sequence of seed values for numLHSRuns > 1
