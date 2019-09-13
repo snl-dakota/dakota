@@ -41,7 +41,7 @@ responses
   calibration_terms 3
 
     # Specify the calibration data file and its format
-    calibration_data_file 'cant_exp_data.5perc.50.dat'
+    calibration_data_file 'cant_exp_data-5perc-50.dat'
       num_experiments = 50
       freeform
 
