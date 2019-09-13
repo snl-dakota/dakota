@@ -20,6 +20,7 @@
 #include "ProblemDescDB.hpp"
 #include "SensAnalysisGlobal.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "dakota_stat_util.hpp"
 #include "pecos_data_types.hpp"
 #include "NormalRandomVariable.hpp"
 #include <algorithm>
@@ -633,8 +634,17 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   // one run to the next.
   if (numLHSRuns == 1) { // set initial seed
     lhsDriver.rng(rngName);
-    if (!seedSpec) // no user specification --> nonrepeatable behavior
+    if (!seedSpec) { // no user specification --> nonrepeatable behavior
+      // Generate initial seed from a system clock.  NOTE: the system clock
+      // should not used for multiple LHS calls since (1) clock granularity can
+      // be too coarse (can repeat on subsequent runs for inexpensive test fns)
+      // and (2) seed progression can be highly structured, which could induce
+      // correlation between sample sets.  Instead, the clock-generated case
+      // varies the seed below using the same approach as the user-specified
+      // case.  This has the additional benefit that a random run can be
+      // recreated by specifying the clock-generated seed in the input file.
       randomSeed = generate_system_seed();
+    }
     lhsDriver.seed(randomSeed);
   }
   else if (varyPattern) // define sequence of seed values for numLHSRuns > 1

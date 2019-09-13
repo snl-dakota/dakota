@@ -143,9 +143,6 @@ protected:
   void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 			 Sizet2DArray& delta_N_l);
 
-  /// create a system-generated unique seed (when a seed is unspecified)
-  int generate_system_seed();
-
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();
   /// update finalStatistics::functionValues from momentStats and

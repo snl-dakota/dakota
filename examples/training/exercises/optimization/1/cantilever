@@ -131,8 +131,8 @@ print("""                          ____                  ____
 # Compute QoIs
 area = params["thickness"] * params["width"] 
 mass = area * params["density"] * params["length"] / 12**3.0
-stress = 600.0/(area*params["thickness"])*params["vertical_load"] + \
-        600.0/(area*params["width"])*params["horizontal_load"]
+stress = 6.0*params["length"] / (area*params["thickness"]) * params["vertical_load"] + \
+         6.0*params["length"] / (area*params["width"]) * params["horizontal_load"]
 displacement = 4.0*params["length"]**3.0/(area*params["youngs_modulus"]) * \
         math.sqrt(
            (params["vertical_load"]/params["thickness"] ** 2.0)**2.0 + 

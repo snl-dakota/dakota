@@ -116,10 +116,16 @@ NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 			       const UShortArray& num_int_seq,
 			       const RealVector& dim_pref, short u_space_type,
-			       bool piecewise_basis, bool use_derivs):
+			       short refine_type, short refine_control,
+			       short covar_control, short ml_alloc_cntl,
+			       short ml_discrep, short rule_nest,
+			       short rule_growth, bool piecewise_basis,
+			       bool use_derivs):
   NonDStochCollocation(MULTIFIDELITY_STOCH_COLLOCATION, model,
-		       exp_coeffs_approach, piecewise_basis, use_derivs),
-  mlmfAllocControl(DEFAULT_MLMF_CONTROL), sequenceIndex(0)
+		       exp_coeffs_approach, refine_type, refine_control,
+		       covar_control, ml_discrep, rule_nest, rule_growth,
+		       piecewise_basis, use_derivs),
+  mlmfAllocControl(ml_alloc_cntl), sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
