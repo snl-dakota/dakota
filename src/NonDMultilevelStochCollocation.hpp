@@ -40,12 +40,10 @@ public:
   NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
-				 const UShortArray& num_int_seq,
-				 const RealVector& dim_pref, short u_space_type,
-				 short refine_type, short refine_control,
-				 short covar_control, short ml_discrep,
-				 short rule_nest, short rule_growth,
-				 bool piecewise_basis, bool use_derivs);
+    const UShortArray& num_int_seq, const RealVector& dim_pref,
+    short u_space_type, short refine_type, short refine_control,
+    short covar_control, short ml_alloc_cntl, short ml_discrep,
+    short rule_nest, short rule_growth, bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDMultilevelStochCollocation();
 

@@ -74,6 +74,15 @@ public:
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// return maxRefineIterations
+  int maximum_refinement_iterations() const;
+  /// set maxRefineIterations
+  void maximum_refinement_iterations(int max_refine_iter);
+
 protected:
 
   //
@@ -138,7 +147,7 @@ protected:
   void update_final_statistics_gradients();
 
   //
-  //- Heading: Member function definitions
+  //- Heading: Member functions
   //
 
   /// common constructor code for initialization of natafTransform
@@ -494,6 +503,14 @@ private:
   /// refinement samples for expansion sampler
   IntVector refinementSamples;
 };
+
+
+inline int NonDExpansion::maximum_refinement_iterations() const
+{ return maxRefineIterations; }
+
+
+inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
+{ maxRefineIterations = max_refine_iter; }
 
 
 inline const Model& NonDExpansion::algorithm_space_model() const

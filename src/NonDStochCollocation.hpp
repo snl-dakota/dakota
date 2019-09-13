@@ -43,7 +43,7 @@ public:
 		       unsigned short num_int, const RealVector& dim_pref,
 		       short u_space_type, short refine_type,
 		       short refine_control, short covar_control,
-		       short ml_discrep, short rule_nest, short rule_growth,
+		       short rule_nest, short rule_growth,
 		       bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDStochCollocation();

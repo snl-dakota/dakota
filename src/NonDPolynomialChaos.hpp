@@ -44,7 +44,7 @@ public:
 		      unsigned short num_int, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
-		      short ml_discrep, short rule_nest, short rule_growth,
+		      short rule_nest, short rule_growth,
 		      bool piecewise_basis, bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
@@ -52,7 +52,7 @@ public:
 		      size_t colloc_pts, Real colloc_ratio, int seed,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
-		      short ml_discrep, //short rule_nest, short rule_growth,
+		      //short rule_nest, short rule_growth,
 		      bool piecewise_basis, bool use_derivs, bool cv_flag,
 		      const String& import_build_pts_file,
 		      unsigned short import_build_format,
