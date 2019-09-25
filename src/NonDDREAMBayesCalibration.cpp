@@ -201,7 +201,8 @@ void NonDDREAMBayesCalibration::calibrate()
   // resize, initializing to zero
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
-  RealRealPairArray bnds = mcmcModel.multivariate_distribution().bounds();
+  RealRealPairArray bnds
+    = mcmcModel.multivariate_distribution().distribution_bounds();
   for (size_t i=0; i<numContinuousVars; ++i)
     { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
   // If calibrating error multipliers, the parameter domain is expanded to

@@ -616,7 +616,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // but these are not relevant for the AIS process on the truth model.
     const Pecos::MultivariateDistribution& u_dist
       = uSpaceModel.multivariate_distribution();
-    RealRealPairArray u_bnds = u_dist.bounds(); // all active cv
+    RealRealPairArray u_bnds = u_dist.distribution_bounds(); // all active cv
     for (i=0, j=startCAUV; i<numCAUV; ++i, ++j)
       { n_l_bnds[i] = u_bnds[j].first; n_u_bnds[i] = u_bnds[j].second; }
   }
@@ -831,7 +831,7 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
 
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.multivariate_distribution();
-  RealRealPairArray u_bnds = u_dist.bounds(); // all active cv
+  RealRealPairArray u_bnds = u_dist.distribution_bounds(); // all active cv
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
