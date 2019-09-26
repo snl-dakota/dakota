@@ -133,6 +133,14 @@ void HDF5IOHelper::set_vector(const String &dset_name, H5::DataSet &ds,
   set_vector(dset_name, ds, ptrs_to_data, index, row);
 }
 
+/// Set a field on all elements of a 1D dataset of compound type using a ds object.
+void HDF5IOHelper::set_vector_vector_field(const String &dset_name, H5::DataSet &ds,
+                     const std::vector<String> &data, const size_t length,
+                     const String &field_name) {
+  std::vector<const char *> ptrs_to_data = pointers_to_strings(data);
+  set_vector_vector_field(dset_name, ds, ptrs_to_data, length, field_name);
+}
+
 /// Append a scalar to a 1D dataset
 void HDF5IOHelper::append_scalar(const String &dset_name, const String &data) {
   append_scalar(dset_name, data.c_str());
@@ -449,6 +457,24 @@ void HDF5IOHelper::create_empty_dataset(const String &dset_name, const IntArray 
         case ResultsOutputType::STRING:
           field_t.emplace(field_t.end(),
               new H5::DataType(h5_file_dtype(String(""))));
+        break;
+      }
+    } else { // non-scalar dataset field
+      int ndims = f.dims.size();
+      std::unique_ptr<hsize_t[]> field_dims(new hsize_t[ndims]);
+      std::copy(f.dims.begin(), f.dims.end(), field_dims.get());
+      switch(f.type) {
+        case ResultsOutputType::REAL:
+          field_t.emplace(field_t.end(),
+              new H5::ArrayType(h5_file_dtype(double(0.0)), ndims, field_dims.get()));
+        break;
+        case ResultsOutputType::INTEGER:
+          field_t.emplace(field_t.end(),
+              new H5::ArrayType(h5_file_dtype(int(0)), ndims, field_dims.get()));
+        break;
+        case ResultsOutputType::STRING:
+          field_t.emplace(field_t.end(),
+              new H5::ArrayType(h5_file_dtype(String("")), ndims, field_dims.get()));
         break;
       }
     }

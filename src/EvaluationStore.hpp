@@ -107,7 +107,35 @@ class EvaluationStore {
     /// Allocate storage for variables
     void allocate_variables(const String &root_group, const Variables &variables,
         Pecos::MarginalsCorrDistribution *mvd_rep = NULL);
- 
+
+    // This macro creates function declarations for storing parameters for
+    // all Dakota types
+#define DECLARE_STORE_PARAMETERS_FOR(vtype) void store_parameters_for_##vtype( \
+        const size_t start_rv,                                         \
+        const size_t num_rv,                                           \
+        const String &location,                                        \
+        Pecos::MarginalsCorrDistribution *mvd_rep);
+
+    DECLARE_STORE_PARAMETERS_FOR(continuous_design)
+    DECLARE_STORE_PARAMETERS_FOR(discrete_design_range)
+    DECLARE_STORE_PARAMETERS_FOR(discrete_design_set_int)
+    DECLARE_STORE_PARAMETERS_FOR(discrete_design_set_string)
+    DECLARE_STORE_PARAMETERS_FOR(discrete_design_set_real)
+    DECLARE_STORE_PARAMETERS_FOR(normal_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(uniform_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(lognormal_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(loguniform_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(triangular_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(exponential_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(beta_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(gamma_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(gumbel_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(frechet_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(weibull_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(histogram_bin_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(poisson_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(binomial_uncertain)
+
     /// Allocate storage for variable paramters
     void store_parameters_for_domain(const String &root_group, 
         const UShortMultiArrayConstView& types,

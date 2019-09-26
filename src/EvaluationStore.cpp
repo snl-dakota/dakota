@@ -442,6 +442,479 @@ void EvaluationStore::allocate_variables(const String &root_group, const Variabl
 #endif
 }
 
+void EvaluationStore::
+store_parameters_for_continuous_design(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::CONTINUOUS_RANGE
+  // parameters: Pecos::CR_LWR_BND, Pecos::CR_UPR_BND
+  RealArray lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::CR_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::CR_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL)
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
+
+void EvaluationStore::
+store_parameters_for_discrete_design_range(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_RANGE
+  // parameters: Pecos::DR_LWR_BND, Pecos::DR_UPR_BND
+  IntArray lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DR_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DR_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lower_bound", ResultsOutputType::INTEGER),
+    VariableParametersField("upper_bound", ResultsOutputType::INTEGER)
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
+
+void EvaluationStore::
+store_parameters_for_discrete_design_set_int(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_SET_INT
+  // parameters: Pecos::DSI_VALUES
+  IntSetArray isa;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DSI_VALUES, isa);
+  // Because h5py barfs on vlen datasets of vlen strings, we have to
+  // use regular, fixed-sized datasets that are big enough to hold the
+  // maximum number of elements.
+  size_t max_num_elements = 0;
+  IntArray num_elements;
+  for(const auto &e : isa) {
+    num_elements.push_back(e.size());
+    max_num_elements = (max_num_elements > e.size()) ? max_num_elements : e.size();
+  }
+  // Populate a 1D array with ALL the elements, including padding
+  IntArray all_elements(num_rv * max_num_elements, INT_MAX);
+  for(int i = 0; i < num_rv; ++i)
+    std::copy(isa[i].begin(), isa[i].end(), &all_elements[i*max_num_elements]);
+
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("num_elements", ResultsOutputType::INTEGER),
+    VariableParametersField("elements", ResultsOutputType::INTEGER, {max_num_elements}),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
+  hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+}
+
+void EvaluationStore::
+store_parameters_for_discrete_design_set_string(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_SET_INT
+  // parameters: Pecos::DSI_VALUES
+  StringSetArray ssa;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DSS_VALUES, ssa);
+  // Because h5py barfs on vlen datasets of vlen strings, we have to
+  // use regular, fixed-sized datasets that are big enough to hold the
+  // maximum number of elements.
+  size_t max_num_elements = 0;
+  IntArray num_elements;
+  for(const auto &e : ssa) {
+    num_elements.push_back(e.size());
+    max_num_elements = (max_num_elements > e.size()) ? max_num_elements : e.size();
+  }
+  // Populate a 1D array with ALL the elements, including padding
+  StringArray all_elements(num_rv * max_num_elements, "");
+  for(int i = 0; i < num_rv; ++i)
+    std::copy(ssa[i].begin(), ssa[i].end(), &all_elements[i*max_num_elements]);
+
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("num_elements", ResultsOutputType::INTEGER),
+    VariableParametersField("elements", ResultsOutputType::STRING, {max_num_elements}),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
+  hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+}
+
+void EvaluationStore::
+store_parameters_for_discrete_design_set_real(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_SET_INT
+  // parameters: Pecos::DSI_VALUES
+  RealSetArray rsa;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DSR_VALUES, rsa);
+  // Because h5py barfs on vlen datasets of vlen strings, we have to
+  // use regular, fixed-sized datasets that are big enough to hold the
+  // maximum number of elements.
+  size_t max_num_elements = 0;
+  IntArray num_elements;
+  for(const auto &e : rsa) {
+    num_elements.push_back(e.size());
+    max_num_elements = (max_num_elements > e.size()) ? max_num_elements : e.size();
+  }
+  // Populate a 1D array with ALL the elements, including padding
+  RealArray all_elements(num_rv * max_num_elements, DSET_FILL_VAL);
+  for(int i = 0; i < num_rv; ++i)
+    std::copy(rsa[i].begin(), rsa[i].end(), &all_elements[i*max_num_elements]);
+
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("num_elements", ResultsOutputType::INTEGER),
+    VariableParametersField("elements", ResultsOutputType::REAL, {max_num_elements}),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
+  hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+}
+
+void EvaluationStore::
+store_parameters_for_normal_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::NORMAL, Pecos::BOUNDED_NORMAL
+  // parameters: Pecos::N_MEAN, Pecos::N_STD_DEV, Pecos::N_LWR_BND, Pecos::N_UPR_BND
+  // Use count-based API for lookup since there are two possible Pecos var types
+  RealArray means, std_devs, lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_MEAN, means);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_STD_DEV, std_devs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("mean", ResultsOutputType::REAL),
+    VariableParametersField("std_deviation", ResultsOutputType::REAL),
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL)
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, means, "mean");
+  hdf5Stream->set_vector_scalar_field(location, std_devs, "std_deviation");
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
+
+void EvaluationStore::
+store_parameters_for_uniform_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::UNIFORM
+  // parameters: Pecos::U_LWR_BND, Pecos::U_UPR_BND
+  // Use count-based API for lookup since there are two possible Pecos var types
+  RealArray lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::U_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::U_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL)
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
+
+void EvaluationStore::
+store_parameters_for_lognormal_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::LOGNORMAL, BOUNDED_LOGNORMAL
+  // parameters: (LN_MEAN with LN_STD_DEV or LN_ERR_FACT) OR
+  //             (LN_LAMBDA with LN_ZETA)
+  //             LN_LWR_BND, LN_UPR_BND   
+  RealArray lbs, ubs, means, std_devs, err_facts, lambdas, zetas;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_UPR_BND, ubs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_MEAN, means);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_STD_DEV, std_devs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_ERR_FACT, err_facts);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_LAMBDA, lambdas);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_ZETA, zetas);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL),
+    VariableParametersField("mean", ResultsOutputType::REAL),
+    VariableParametersField("std_deviation", ResultsOutputType::REAL),
+    VariableParametersField("error_factor", ResultsOutputType::REAL),
+    VariableParametersField("lambda", ResultsOutputType::REAL),
+    VariableParametersField("zeta", ResultsOutputType::REAL)
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+  hdf5Stream->set_vector_scalar_field(location, means, "mean");
+  hdf5Stream->set_vector_scalar_field(location, std_devs, "std_deviation");
+  hdf5Stream->set_vector_scalar_field(location, err_facts, "error_factor");
+  hdf5Stream->set_vector_scalar_field(location, lambdas, "lambda");
+  hdf5Stream->set_vector_scalar_field(location, zetas, "zeta");
+}
+
+void EvaluationStore::
+store_parameters_for_loguniform_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::LOGUNIFORM
+  // parameters:  LU_LWR_BND, LU_UPR_BND   
+  RealArray lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LU_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LU_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
+
+void EvaluationStore::
+store_parameters_for_triangular_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::TRIANGULAR
+  // parameters:  T_LWR_BND, T_UPR_BND, T_MODE
+  RealArray lbs, ubs, modes;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::T_MODE, modes);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::T_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::T_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("mode", ResultsOutputType::REAL),
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, modes, "mode");
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
+
+void EvaluationStore::
+store_parameters_for_exponential_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::EXPONENTIAL
+  // parameters:  E_BETA
+  RealArray betas;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::E_BETA, betas);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("beta", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+}
+
+void EvaluationStore::
+store_parameters_for_beta_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::BETA
+  // parameters:  BE_ALPHA, BE_BETA, BE_LWR_BND, BE_UPR_BND
+  RealArray alphas, betas, lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::BE_ALPHA, alphas);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::BE_BETA, betas);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::BE_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::BE_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("alpha", ResultsOutputType::REAL),
+    VariableParametersField("beta", ResultsOutputType::REAL),
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
+  hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
+
+void EvaluationStore::
+store_parameters_for_gamma_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::GAMMA
+  // parameters:  GA_ALPHA, GA_BETA
+  RealArray alphas, betas;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::GA_ALPHA, alphas);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::GA_BETA, betas);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("alpha", ResultsOutputType::REAL),
+    VariableParametersField("beta", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
+  hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+}
+
+void EvaluationStore::
+store_parameters_for_gumbel_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::GUMBEL
+  // parameters:  GU_ALPHA, GU_BETA
+  RealArray alphas, betas;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::GU_ALPHA, alphas);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::GU_BETA, betas);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("alpha", ResultsOutputType::REAL),
+    VariableParametersField("beta", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
+  hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+}
+
+void EvaluationStore::
+store_parameters_for_frechet_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::FRECHET
+  // parameters:  F_ALPHA, F_BETA
+  RealArray alphas, betas;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::F_ALPHA, alphas);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::F_BETA, betas);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("alpha", ResultsOutputType::REAL),
+    VariableParametersField("beta", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
+  hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+}
+
+void EvaluationStore::
+store_parameters_for_weibull_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::WEIBULL
+  // parameters:  W_ALPHA, W_BETA
+  RealArray alphas, betas;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::W_ALPHA, alphas);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::W_BETA, betas);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("alpha", ResultsOutputType::REAL),
+    VariableParametersField("beta", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
+  hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+}
+
+void EvaluationStore::
+store_parameters_for_histogram_bin_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::HISTOGRAM_BIN
+  // parameters: Pecos::H_BIN_PAIRS
+  RealRealMapArray bin_pairs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::H_BIN_PAIRS, bin_pairs);
+  // Because h5py barfs on vlen datasets of vlen strings, we have to
+  // use regular, fixed-sized datasets that are big enough to hold the
+  // maximum number of elements.
+  size_t max_num_elements = 0;
+  SizetArray num_elements;
+  for(const auto &p : bin_pairs) {
+    num_elements.push_back(p.size());
+    max_num_elements = (max_num_elements > p.size()) ? max_num_elements : p.size();
+  }
+  // Populate a 1D array with ALL the elements, including padding
+  RealArray counts(num_rv*max_num_elements, DSET_FILL_VAL), 
+            abscissas(num_rv*max_num_elements, DSET_FILL_VAL);
+  for(int i = 0; i < num_rv; ++i) {
+    std::transform(bin_pairs[i].begin(), bin_pairs[i].end(), 
+        &abscissas[i*max_num_elements],
+        [](const std::pair<Real,Real> &p){return p.first;});
+    std::transform(bin_pairs[i].begin(), bin_pairs[i].end(), 
+        &counts[i*max_num_elements],
+        [](const std::pair<Real,Real> &p){return p.second;});
+  }
+
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("num_elements", ResultsOutputType::INTEGER),
+    VariableParametersField("abscissas", ResultsOutputType::REAL, {max_num_elements}),
+    VariableParametersField("counts", ResultsOutputType::REAL, {max_num_elements}),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
+  hdf5Stream->set_vector_vector_field(location, abscissas, max_num_elements, "abscissas");
+  hdf5Stream->set_vector_vector_field(location, counts, max_num_elements, "counts");
+}
+
+void EvaluationStore::
+store_parameters_for_poisson_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::POISSON
+  // parameters: P_LAMBDA
+  RealArray lambdas;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::P_LAMBDA, lambdas);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lambda", ResultsOutputType::REAL),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lambdas, "lambda");
+}
+
+void EvaluationStore::
+store_parameters_for_binomial_uncertain(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv types: Pecos::BINOMIAL
+  // parameters: BI_P_PER_TRIAL, BI_TRIALS
+  RealArray p_per_trial;
+  UIntArray ui_trials;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::BI_P_PER_TRIAL, p_per_trial);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::BI_TRIALS, ui_trials);
+  // Convert to signed integer. Overflow possible but hopefully unlikely.
+  IntArray trials(ui_trials.begin(), ui_trials.end());
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("probability_per_trial", ResultsOutputType::REAL),
+    VariableParametersField("num_trials", ResultsOutputType::INTEGER),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, p_per_trial, "probability_per_trial");
+  hdf5Stream->set_vector_scalar_field(location, trials, "num_trials");
+}
+
+
 /// Store parameters for a single "domain" (e.g. all continuous variables)
 void EvaluationStore::store_parameters_for_domain(const String &root_group,
     const UShortMultiArrayConstView &types,  const SizetMultiArrayConstView &ids,
@@ -458,142 +931,56 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
   while(last_it != types.end()) { // iterate until all variables have been processed
     last_idx = std::distance(first_it, last_it) + first_idx;
     const unsigned short &this_type = *first_it;
+    size_t start_rv = ids[first_idx] - 1;
+    size_t num_rv = last_idx - first_idx + 1;
+    bool store_scales = true; // it's safe to store scales; will be set to
+                              // false if no datasets are created.
+    String location = root_group, scale_location = scale_root;
+#define CALL_STORE_PARAMETERS_FOR(vtype)                               \
+    location += #vtype;                                                \
+    scale_location += #vtype;                                          \
+    store_parameters_for_##vtype(start_rv, num_rv, location, mvd_rep); \
+    break;
+
     switch(this_type) {
-      case NORMAL_UNCERTAIN:
-        // pecos rv types: Pecos::NORMAL, Pecos::BOUNDED_NORMAL
-        // parameters: Pecos::N_MEAN, Pecos::N_STD_DEV, Pecos::N_LWR_BND, Pecos::N_UPR_BND
-        // Use count-based API for lookup since there are two possible Pecos var types
-        {
-          size_t start_rv = ids[first_idx] - 1;
-          size_t num_rv = last_idx - first_idx + 1;
-          RealArray means, std_devs, lbs, ubs;
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_MEAN, means);
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_STD_DEV, std_devs);
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_LWR_BND, lbs);
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::N_UPR_BND, ubs);
-          std::vector<VariableParametersField> fields = {
-            VariableParametersField("mean", ResultsOutputType::REAL),
-            VariableParametersField("std_deviation", ResultsOutputType::REAL),
-            VariableParametersField("lower_bound", ResultsOutputType::REAL),
-            VariableParametersField("upper_bound", ResultsOutputType::REAL)
-          };
-          String location = root_group + "normal_uncertain";
-          String scale_location = scale_root + "normal_uncertain/";
-          IntArray dims = {int(num_rv)};
-          hdf5Stream->create_empty_dataset(location, dims, fields);
-          hdf5Stream->set_vector_field(location, means, "mean");
-          hdf5Stream->set_vector_field(location, std_devs, "std_deviation");
-          hdf5Stream->set_vector_field(location, lbs, "lower_bound");
-          hdf5Stream->set_vector_field(location, ubs, "upper_bound");
-          // Create descriptors dimension scale
-          StringMultiArrayConstView these_labels(
+      case CONTINUOUS_DESIGN:     CALL_STORE_PARAMETERS_FOR(continuous_design)
+      case DISCRETE_DESIGN_RANGE: CALL_STORE_PARAMETERS_FOR(discrete_design_range)
+      case DISCRETE_DESIGN_SET_INT: CALL_STORE_PARAMETERS_FOR(discrete_design_set_int)
+      case DISCRETE_DESIGN_SET_STRING: CALL_STORE_PARAMETERS_FOR(discrete_design_set_string)
+      case DISCRETE_DESIGN_SET_REAL: CALL_STORE_PARAMETERS_FOR(discrete_design_set_real)
+      case NORMAL_UNCERTAIN:      CALL_STORE_PARAMETERS_FOR(normal_uncertain);
+      case UNIFORM_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(uniform_uncertain);
+      case LOGNORMAL_UNCERTAIN:   CALL_STORE_PARAMETERS_FOR(lognormal_uncertain);
+      case LOGUNIFORM_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(loguniform_uncertain);
+      case TRIANGULAR_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(triangular_uncertain);
+      case EXPONENTIAL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(exponential_uncertain);
+      case BETA_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(beta_uncertain);
+      case GAMMA_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(gamma_uncertain);
+      case GUMBEL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(gumbel_uncertain);
+      case FRECHET_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(frechet_uncertain);
+      case WEIBULL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(weibull_uncertain);
+      case HISTOGRAM_BIN_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(histogram_bin_uncertain);
+      case POISSON_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(poisson_uncertain);
+      case BINOMIAL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(binomial_uncertain);
+  
+      default:
+        store_scales = false; // if no cases were executed, then there's no
+                              // dataset to add scales to.
+
+    }
+    if(store_scales) {
+      StringMultiArrayConstView these_labels(
               labels[boost::indices[idx_range(first_idx, last_idx+1)]]);
-          String labels_location = scale_location + "labels";
-          hdf5Stream->store_vector(labels_location, these_labels);
-          hdf5Stream->attach_scale(location, labels_location, "labels", 0);
-
-          // Create ids dimension scale
-          SizetMultiArrayConstView these_ids(
+      SizetMultiArrayConstView these_ids(
               ids[boost::indices[idx_range(first_idx, last_idx+1)]]);
-          String ids_location = scale_location + "ids";
-          hdf5Stream->store_vector(ids_location, these_ids);
-          hdf5Stream->attach_scale(location, ids_location, "ids", 0);
-        }
-        break;
-      case UNIFORM_UNCERTAIN:
-        // pecos rv types: Pecos::UNIFORM
-        // parameters: Pecos::U_LWR_BND, Pecos::U_UPR_BND
-        // Use count-based API for lookup since there are two possible Pecos var types
-        {
-          size_t start_rv = ids[first_idx] - 1;
-          size_t num_rv = last_idx - first_idx + 1;
-          RealArray lbs, ubs;
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::U_LWR_BND, lbs);
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::U_UPR_BND, ubs);
-          std::vector<VariableParametersField> fields = {
-            VariableParametersField("lower_bound", ResultsOutputType::REAL),
-            VariableParametersField("upper_bound", ResultsOutputType::REAL)
-          };
-          String location = root_group + "uniform_uncertain";
-          String scale_location = scale_root + "uniform_uncertain/";
-          IntArray dims = {int(num_rv)};
-          hdf5Stream->create_empty_dataset(location, dims, fields);
-          hdf5Stream->set_vector_field(location, lbs, "lower_bound");
-          hdf5Stream->set_vector_field(location, ubs, "upper_bound");
-          // Create descriptors dimension scale
-          StringMultiArrayConstView these_labels(
-              labels[boost::indices[idx_range(first_idx, last_idx+1)]]);
-          String labels_location = scale_location + "labels";
-          hdf5Stream->store_vector(labels_location, these_labels);
-          hdf5Stream->attach_scale(location, labels_location, "labels", 0);
-
-          // Create ids dimension scale
-          SizetMultiArrayConstView these_ids(
-              ids[boost::indices[idx_range(first_idx, last_idx+1)]]);
-          String ids_location = scale_location + "ids";
-          hdf5Stream->store_vector(ids_location, these_ids);
-          hdf5Stream->attach_scale(location, ids_location, "ids", 0);
-        }
-        break;
-      case LOGNORMAL_UNCERTAIN:
-        // pecos rv types: Pecos::LOGNORMAL, BOUNDED_LOGNORMAL
-        // parameters: (LN_MEAN with LN_STD_DEV or LN_ERR_FACT) OR
-        //             (LN_LAMBDA with LN_ZETA)
-        //             LN_LWR_BND, LN_UPR_BND   
-        {
-          size_t start_rv = ids[first_idx] - 1;
-          size_t num_rv = last_idx - first_idx + 1;
-          RealArray lbs, ubs, means, std_devs, err_facts, lambdas, zetas;
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_LWR_BND, lbs);
-          Cout << "lwr_bnd\n";
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_UPR_BND, ubs);
-          Cout << "upr_bnd\n";
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_MEAN, means);
-          Cout << "mean\n";
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_STD_DEV, std_devs);
-          Cout << "std\n";
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_ERR_FACT, err_facts);
-          Cout << "err\n";
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_LAMBDA, lambdas);
-          Cout << "lambda\n";
-          mvd_rep->pull_parameters(start_rv, num_rv, Pecos::LN_ZETA, zetas);
-          Cout << "zeta\n";
-          std::vector<VariableParametersField> fields = {
-            VariableParametersField("lower_bound", ResultsOutputType::REAL),
-            VariableParametersField("upper_bound", ResultsOutputType::REAL),
-            VariableParametersField("mean", ResultsOutputType::REAL),
-            VariableParametersField("std_deviation", ResultsOutputType::REAL),
-            VariableParametersField("error_factor", ResultsOutputType::REAL),
-            VariableParametersField("lambda", ResultsOutputType::REAL),
-            VariableParametersField("zeta", ResultsOutputType::REAL)
-          };
-          String location = root_group + "lognormal_uncertain";
-          String scale_location = scale_root + "lognormal_uncertain/";
-          IntArray dims = {int(num_rv)};
-          hdf5Stream->create_empty_dataset(location, dims, fields);
-          hdf5Stream->set_vector_field(location, lbs, "lower_bound");
-          hdf5Stream->set_vector_field(location, ubs, "upper_bound");
-          hdf5Stream->set_vector_field(location, means, "mean");
-          hdf5Stream->set_vector_field(location, std_devs, "std_deviation");
-          hdf5Stream->set_vector_field(location, err_facts, "error_factor");
-          hdf5Stream->set_vector_field(location, lambdas, "lambda");
-          hdf5Stream->set_vector_field(location, zetas, "zeta");
-          // Create descriptors dimension scale
-          StringMultiArrayConstView these_labels(
-              labels[boost::indices[idx_range(first_idx, last_idx+1)]]);
-          String labels_location = scale_location + "labels";
-          hdf5Stream->store_vector(labels_location, these_labels);
-          hdf5Stream->attach_scale(location, labels_location, "labels", 0);
-
-          // Create ids dimension scale
-          SizetMultiArrayConstView these_ids(
-              ids[boost::indices[idx_range(first_idx, last_idx+1)]]);
-          String ids_location = scale_location + "ids";
-          hdf5Stream->store_vector(ids_location, these_ids);
-          hdf5Stream->attach_scale(location, ids_location, "ids", 0);
-        }
-        break;
-
+      // Create descriptors dimension scale
+      String labels_location = scale_location + "/labels";
+      hdf5Stream->store_vector(labels_location, these_labels);
+      hdf5Stream->attach_scale(location, labels_location, "labels", 0);
+      // Create ids dimension scale
+      String ids_location = scale_location + "/ids";
+      hdf5Stream->store_vector(ids_location, these_ids);
+      hdf5Stream->attach_scale(location, ids_location, "ids", 0);
     }
     first_it = last_it;
     first_it++;
@@ -615,6 +1002,27 @@ void EvaluationStore::allocate_variable_parameters(const String &root_group,
         variables.all_continuous_variable_types(),
         variables.all_continuous_variable_ids(),
         variables.all_continuous_variable_labels(),
+        mvd_rep);
+  }
+  if(variables.adiv()) {
+    store_parameters_for_domain(parameters_group, 
+        variables.all_discrete_int_variable_types(),
+        variables.all_discrete_int_variable_ids(),
+        variables.all_discrete_int_variable_labels(),
+        mvd_rep);
+  }
+  if(variables.adsv()) {
+    store_parameters_for_domain(parameters_group, 
+        variables.all_discrete_string_variable_types(),
+        variables.all_discrete_string_variable_ids(),
+        variables.all_discrete_string_variable_labels(),
+        mvd_rep);
+  }
+  if(variables.adrv()) {
+    store_parameters_for_domain(parameters_group, 
+        variables.all_discrete_real_variable_types(),
+        variables.all_discrete_real_variable_ids(),
+        variables.all_discrete_real_variable_labels(),
         mvd_rep);
   }
 }
