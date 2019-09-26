@@ -2618,8 +2618,9 @@ inline void Model::continuous_lower_bounds(const RealVector& c_l_bnds)
     modelRep->continuous_lower_bounds(c_l_bnds);
   else {
     userDefinedConstraints.continuous_lower_bounds(c_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(c_l_bnds, svd.cv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(c_l_bnds,
+	currentVariables.shared_data().cv_to_all_mask());
   }
 }
 
@@ -2630,8 +2631,9 @@ inline void Model::continuous_lower_bound(Real c_l_bnd, size_t i)
     modelRep->continuous_lower_bound(c_l_bnd, i);
   else {
     userDefinedConstraints.continuous_lower_bound(c_l_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bound(c_l_bnd, svd.cv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(c_l_bnd,
+	currentVariables.shared_data().cv_index_to_all_index(i));
   }
 }
 
@@ -2656,8 +2658,9 @@ inline void Model::continuous_upper_bounds(const RealVector& c_u_bnds)
     modelRep->continuous_upper_bounds(c_u_bnds);
   else {
     userDefinedConstraints.continuous_upper_bounds(c_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(c_u_bnds, svd.cv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(c_u_bnds,
+	currentVariables.shared_data().cv_to_all_mask());
   }
 }
 
@@ -2668,8 +2671,9 @@ inline void Model::continuous_upper_bound(Real c_u_bnd, size_t i)
     modelRep->continuous_upper_bound(c_u_bnd, i);
   else {
     userDefinedConstraints.continuous_upper_bound(c_u_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bound(c_u_bnd, svd.cv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(c_u_bnd,
+	currentVariables.shared_data().cv_index_to_all_index(i));
   }
 }
 
@@ -2696,8 +2700,9 @@ inline void Model::discrete_int_lower_bounds(const IntVector& d_l_bnds)
     modelRep->discrete_int_lower_bounds(d_l_bnds);
   else {
     userDefinedConstraints.discrete_int_lower_bounds(d_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(d_l_bnds, svd.div_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(d_l_bnds,
+	currentVariables.shared_data().div_to_all_mask());
   }
 }
 
@@ -2708,8 +2713,9 @@ inline void Model::discrete_int_lower_bound(int d_l_bnd, size_t i)
     modelRep->discrete_int_lower_bound(d_l_bnd, i);
   else {
     userDefinedConstraints.discrete_int_lower_bound(d_l_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bound(d_l_bnd, svd.div_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(d_l_bnd,
+	currentVariables.shared_data().div_index_to_all_index(i));
   }
 }
 
@@ -2736,8 +2742,9 @@ inline void Model::discrete_int_upper_bounds(const IntVector& d_u_bnds)
     modelRep->discrete_int_upper_bounds(d_u_bnds);
   else {
     userDefinedConstraints.discrete_int_upper_bounds(d_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(d_u_bnds, svd.div_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(d_u_bnds,
+	currentVariables.shared_data().div_to_all_mask());
   }
 }
 
@@ -2748,8 +2755,9 @@ inline void Model::discrete_int_upper_bound(int d_u_bnd, size_t i)
     modelRep->discrete_int_upper_bound(d_u_bnd, i);
   else {
     userDefinedConstraints.discrete_int_upper_bound(d_u_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bound(d_u_bnd, svd.div_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(d_u_bnd,
+	currentVariables.shared_data().div_index_to_all_index(i));
   }
 }
 
@@ -2776,8 +2784,9 @@ inline void Model::discrete_real_lower_bounds(const RealVector& d_l_bnds)
     modelRep->discrete_real_lower_bounds(d_l_bnds);
   else {
     userDefinedConstraints.discrete_real_lower_bounds(d_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(d_l_bnds, svd.drv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(d_l_bnds,
+	currentVariables.shared_data().drv_to_all_mask());
   }
 }
 
@@ -2788,8 +2797,9 @@ inline void Model::discrete_real_lower_bound(Real d_l_bnd, size_t i)
     modelRep->discrete_real_lower_bound(d_l_bnd, i);
   else {
     userDefinedConstraints.discrete_real_lower_bound(d_l_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bound(d_l_bnd, svd.drv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(d_l_bnd,
+	currentVariables.shared_data().drv_index_to_all_index(i));
   }
 }
 
@@ -2816,8 +2826,9 @@ inline void Model::discrete_real_upper_bounds(const RealVector& d_u_bnds)
     modelRep->discrete_real_upper_bounds(d_u_bnds);
   else {
     userDefinedConstraints.discrete_real_upper_bounds(d_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(d_u_bnds, svd.drv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(d_u_bnds,
+	currentVariables.shared_data().drv_to_all_mask());
   }
 }
 
@@ -2828,8 +2839,9 @@ inline void Model::discrete_real_upper_bound(Real d_u_bnd, size_t i)
     modelRep->discrete_real_upper_bound(d_u_bnd, i);
   else {
     userDefinedConstraints.discrete_real_upper_bound(d_u_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bound(d_u_bnd, svd.drv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(d_u_bnd,
+	currentVariables.shared_data().drv_index_to_all_index(i));
   }
 }
 
@@ -2849,8 +2861,9 @@ inactive_continuous_lower_bounds(const RealVector& i_c_l_bnds)
     modelRep->inactive_continuous_lower_bounds(i_c_l_bnds);
   else {
     userDefinedConstraints.inactive_continuous_lower_bounds(i_c_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(i_c_l_bnds, svd.icv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(i_c_l_bnds,
+	currentVariables.shared_data().icv_to_all_mask());
   }
 }
 
@@ -2870,8 +2883,9 @@ inactive_continuous_upper_bounds(const RealVector& i_c_u_bnds)
     modelRep->inactive_continuous_upper_bounds(i_c_u_bnds);
   else {
     userDefinedConstraints.inactive_continuous_upper_bounds(i_c_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(i_c_u_bnds, svd.icv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(i_c_u_bnds,
+	currentVariables.shared_data().icv_to_all_mask());
   }
 }
 
@@ -2891,8 +2905,9 @@ inactive_discrete_int_lower_bounds(const IntVector& i_d_l_bnds)
     modelRep->inactive_discrete_int_lower_bounds(i_d_l_bnds);
   else {
     userDefinedConstraints.inactive_discrete_int_lower_bounds(i_d_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(i_d_l_bnds, svd.idiv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(i_d_l_bnds,
+	currentVariables.shared_data().idiv_to_all_mask());
   }
 }
 
@@ -2912,8 +2927,9 @@ inactive_discrete_int_upper_bounds(const IntVector& i_d_u_bnds)
     modelRep->inactive_discrete_int_upper_bounds(i_d_u_bnds);
   else {
     userDefinedConstraints.inactive_discrete_int_upper_bounds(i_d_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(i_d_u_bnds, svd.idiv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(i_d_u_bnds,
+	currentVariables.shared_data().idiv_to_all_mask());
   }
 }
 
@@ -2933,8 +2949,9 @@ inactive_discrete_real_lower_bounds(const RealVector& i_d_l_bnds)
     modelRep->inactive_discrete_real_lower_bounds(i_d_l_bnds);
   else {
     userDefinedConstraints.inactive_discrete_real_lower_bounds(i_d_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(i_d_l_bnds, svd.idrv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(i_d_l_bnds,
+	currentVariables.shared_data().idrv_to_all_mask());
   }
 }
 
@@ -2954,8 +2971,9 @@ inactive_discrete_real_upper_bounds(const RealVector& i_d_u_bnds)
     modelRep->inactive_discrete_real_upper_bounds(i_d_u_bnds);
   else {
     userDefinedConstraints.inactive_discrete_real_upper_bounds(i_d_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(i_d_u_bnds, svd.idrv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(i_d_u_bnds,
+	currentVariables.shared_data().idrv_to_all_mask());
   }
 }
 
@@ -2974,8 +2992,9 @@ inline void Model::all_continuous_lower_bounds(const RealVector& a_c_l_bnds)
     modelRep->all_continuous_lower_bounds(a_c_l_bnds);
   else {
     userDefinedConstraints.all_continuous_lower_bounds(a_c_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(a_c_l_bnds, svd.acv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(a_c_l_bnds,
+	currentVariables.shared_data().acv_to_all_mask());
   }
 }
 
@@ -2986,8 +3005,9 @@ inline void Model::all_continuous_lower_bound(Real a_c_l_bnd, size_t i)
     modelRep->all_continuous_lower_bound(a_c_l_bnd, i);
   else {
     userDefinedConstraints.all_continuous_lower_bound(a_c_l_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bound(a_c_l_bnd, svd.acv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(a_c_l_bnd,
+        currentVariables.shared_data().acv_index_to_all_index(i));
   }
 }
 
@@ -3006,8 +3026,9 @@ inline void Model::all_continuous_upper_bounds(const RealVector& a_c_u_bnds)
     modelRep->all_continuous_upper_bounds(a_c_u_bnds);
   else {
     userDefinedConstraints.all_continuous_upper_bounds(a_c_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(a_c_u_bnds, svd.acv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(a_c_u_bnds,
+        currentVariables.shared_data().acv_to_all_mask());
   }
 }
 
@@ -3018,8 +3039,9 @@ inline void Model::all_continuous_upper_bound(Real a_c_u_bnd, size_t i)
     modelRep->all_continuous_upper_bound(a_c_u_bnd, i);
   else {
     userDefinedConstraints.all_continuous_upper_bound(a_c_u_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bound(a_c_u_bnd, svd.acv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(a_c_u_bnd,
+        currentVariables.shared_data().acv_index_to_all_index(i));
   }
 }
 
@@ -3038,8 +3060,9 @@ inline void Model::all_discrete_int_lower_bounds(const IntVector& a_d_l_bnds)
     modelRep->all_discrete_int_lower_bounds(a_d_l_bnds);
   else {
     userDefinedConstraints.all_discrete_int_lower_bounds(a_d_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(a_d_l_bnds, svd.adiv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(a_d_l_bnds,
+        currentVariables.shared_data().adiv_to_all_mask());
   }
 }
 
@@ -3050,8 +3073,9 @@ inline void Model::all_discrete_int_lower_bound(int a_d_l_bnd, size_t i)
     modelRep->all_discrete_int_lower_bound(a_d_l_bnd, i);
   else {
     userDefinedConstraints.all_discrete_int_lower_bound(a_d_l_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bound(a_d_l_bnd, svd.adiv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(a_d_l_bnd,
+        currentVariables.shared_data().adiv_index_to_all_index(i));
   }
 }
 
@@ -3070,8 +3094,9 @@ inline void Model::all_discrete_int_upper_bounds(const IntVector& a_d_u_bnds)
     modelRep->all_discrete_int_upper_bounds(a_d_u_bnds);
   else {
     userDefinedConstraints.all_discrete_int_upper_bounds(a_d_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(a_d_u_bnds, svd.adiv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(a_d_u_bnds,
+        currentVariables.shared_data().adiv_to_all_mask());
   }
 }
 
@@ -3082,8 +3107,9 @@ inline void Model::all_discrete_int_upper_bound(int a_d_u_bnd, size_t i)
     modelRep->all_discrete_int_upper_bound(a_d_u_bnd, i);
   else {
     userDefinedConstraints.all_discrete_int_upper_bound(a_d_u_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bound(a_d_u_bnd, svd.adiv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(a_d_u_bnd,
+        currentVariables.shared_data().adiv_index_to_all_index(i));
   }
 }
 
@@ -3102,8 +3128,9 @@ inline void Model::all_discrete_real_lower_bounds(const RealVector& a_d_l_bnds)
     modelRep->all_discrete_real_lower_bounds(a_d_l_bnds);
   else {
     userDefinedConstraints.all_discrete_real_lower_bounds(a_d_l_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bounds(a_d_l_bnds, svd.adrv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(a_d_l_bnds,
+        currentVariables.shared_data().adrv_to_all_mask());
   }
 }
 
@@ -3114,8 +3141,9 @@ inline void Model::all_discrete_real_lower_bound(Real a_d_l_bnd, size_t i)
     modelRep->all_discrete_real_lower_bound(a_d_l_bnd, i);
   else {
     userDefinedConstraints.all_discrete_real_lower_bound(a_d_l_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.lower_bound(a_d_l_bnd, svd.adrv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(a_d_l_bnd,
+        currentVariables.shared_data().adrv_index_to_all_index(i));
   }
 }
 
@@ -3134,8 +3162,9 @@ inline void Model::all_discrete_real_upper_bounds(const RealVector& a_d_u_bnds)
     modelRep->all_discrete_real_upper_bounds(a_d_u_bnds);
   else {
     userDefinedConstraints.all_discrete_real_upper_bounds(a_d_u_bnds);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bounds(a_d_u_bnds, svd.adrv_to_all_mask());
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(a_d_u_bnds,
+        currentVariables.shared_data().adrv_to_all_mask());
   }
 }
 
@@ -3146,8 +3175,9 @@ inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
     modelRep->all_discrete_real_upper_bound(a_d_u_bnd, i);
   else {
     userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    mvDist.upper_bound(a_d_u_bnd, svd.adrv_index_to_all_index(i));
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(a_d_u_bnd,
+        currentVariables.shared_data().adrv_index_to_all_index(i));
   }
 }
 
