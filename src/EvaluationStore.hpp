@@ -135,6 +135,17 @@ class EvaluationStore {
     DECLARE_STORE_PARAMETERS_FOR(histogram_bin_uncertain)
     DECLARE_STORE_PARAMETERS_FOR(poisson_uncertain)
     DECLARE_STORE_PARAMETERS_FOR(binomial_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(negative_binomial_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(geometric_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(hypergeometric_uncertain)
+    DECLARE_STORE_PARAMETERS_FOR(histogram_point_uncertain_int);
+    DECLARE_STORE_PARAMETERS_FOR(histogram_point_uncertain_string);
+    DECLARE_STORE_PARAMETERS_FOR(histogram_point_uncertain_real);
+    DECLARE_STORE_PARAMETERS_FOR(continuous_interval_uncertain);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_interval_uncertain);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_uncertain_set_int);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_uncertain_set_string);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_uncertain_set_real);
 
     /// Allocate storage for variable paramters
     void store_parameters_for_domain(const String &root_group, 

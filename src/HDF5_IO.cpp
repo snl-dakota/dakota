@@ -367,6 +367,10 @@ create_empty_dataset(const String &dset_name, const IntArray &dims,
       h5_type = h5_file_dtype(int(0));
       fill_type = h5_mem_dtype(int(0));
       break;
+    case ResultsOutputType::UINTEGER:
+      h5_type = h5_file_dtype(unsigned(0));
+      fill_type = h5_mem_dtype(unsigned(0));
+      break;
     case ResultsOutputType::STRING:
       h5_type = h5_file_dtype(String(""));
       fill_type = h5_mem_dtype(String(""));
@@ -454,6 +458,10 @@ void HDF5IOHelper::create_empty_dataset(const String &dset_name, const IntArray 
           field_t.emplace(field_t.end(),
               new H5::DataType(h5_file_dtype(int(0))));
         break;
+        case ResultsOutputType::UINTEGER:
+          field_t.emplace(field_t.end(),
+              new H5::DataType(h5_file_dtype(unsigned(0))));
+        break;
         case ResultsOutputType::STRING:
           field_t.emplace(field_t.end(),
               new H5::DataType(h5_file_dtype(String(""))));
@@ -471,6 +479,10 @@ void HDF5IOHelper::create_empty_dataset(const String &dset_name, const IntArray 
         case ResultsOutputType::INTEGER:
           field_t.emplace(field_t.end(),
               new H5::ArrayType(h5_file_dtype(int(0)), ndims, field_dims.get()));
+        break;
+        case ResultsOutputType::UINTEGER:
+          field_t.emplace(field_t.end(),
+              new H5::ArrayType(h5_file_dtype(unsigned(0)), ndims, field_dims.get()));
         break;
         case ResultsOutputType::STRING:
           field_t.emplace(field_t.end(),

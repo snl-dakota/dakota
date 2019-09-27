@@ -48,9 +48,17 @@ inline H5::DataType h5_file_dtype( const Real & )
 inline H5::DataType h5_file_dtype( const int & )
 { return H5::PredType::STD_I32LE; }
 
-/// Return the HDF5 datatype to store a int
+/// Return the HDF5 datatype to store a size_t
 inline H5::DataType h5_file_dtype( const size_t & )
-{ return H5::PredType::STD_I32LE; }
+{ return H5::PredType::STD_U32LE; }
+
+/// Return the HDF5 datatype to store a uint
+inline H5::DataType h5_file_dtype( const unsigned int & )
+{ return H5::PredType::STD_U32LE; }
+
+/// Return the HDF5 datatype to store a short
+inline H5::DataType h5_file_dtype( const short & )
+{ return H5::PredType::STD_I16LE; }
 
 /// Return the HDF5 datatype to store a string
 inline H5::DataType h5_file_dtype( const char * )
@@ -80,7 +88,11 @@ inline H5::DataType h5_mem_dtype( const int & )
 inline H5::DataType h5_mem_dtype( const size_t & )
 { return H5::PredType::NATIVE_ULONG; }
 
-/// Return the HDF5 datatype to read a size_t in memory
+/// Return the HDF5 datatype to read a uint in memory
+inline H5::DataType h5_mem_dtype( const unsigned int & )
+{ return H5::PredType::NATIVE_ULONG; }
+
+/// Return the HDF5 datatype to read a short in memory
 inline H5::DataType h5_mem_dtype( const short & )
 { return H5::PredType::NATIVE_SHORT; }
 
