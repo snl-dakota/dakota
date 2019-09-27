@@ -12,8 +12,8 @@
 #ifndef DAKOTA_TPLDATATRANSFER_H
 #define DAKOTA_TPLDATATRANSFER_H
 
-// Might replace this with DakotaModel.hpp and add others as needed - RWH
-#include "DakotaMinimizer.hpp"
+#include "DakotaModel.hpp"
+#include "DakotaTraitsBase.hpp"
 
 namespace Dakota {
 
@@ -34,7 +34,7 @@ class TPLDataTransfer
     ~TPLDataTransfer() { }
 
     /// Construct maps, etc. needed to exchange data to/from Dakota and the TPL
-    void configure_data_adapters(std::shared_ptr<TraitsBase>, const Constraints &);
+    void configure_data_adapters(std::shared_ptr<TraitsBase>, const Model &);
 
     /// Number of nonlinear equality constraints from Dakota perspective
     int num_dakota_nonlin_eq_constraints() const
@@ -51,6 +51,15 @@ class TPLDataTransfer
     /// Number of nonlinear inequality constraints from TPL perspective
     int num_tpl_nonlin_ineq_constraints() const
       { return numTPLNonlinearIneqConstraints; }
+
+    //----------------------------------------------------------------
+
+    //template <typename VecT>
+    Real get_response_value_from_dakota(const Response & resp) const
+    {
+      return ( maxSense ? -resp.function_value(0) :
+                           resp.function_value(0)   );
+    }
 
     //----------------------------------------------------------------
 
@@ -121,6 +130,9 @@ class TPLDataTransfer
 
     /// number of objective functions from Dakota perspective
     int numDakotaObjectiveFns;
+
+    /// Single boolean (could be extended to multiple) indicating min/max sense of optimal value
+    bool maxSense;
 
     /// number of nonlinear equality constraints from Dakota perspective
     int numDakotaNonlinearEqConstraints;

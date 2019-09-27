@@ -144,8 +144,10 @@ TPLDataTransfer::configure_nonlinear_ineq_adapters(
 
 void
 TPLDataTransfer::configure_data_adapters(std::shared_ptr<TraitsBase> traits,
-                                         const Constraints & constraints    )
+                                         const Model & model                 )
 {
+  const Constraints & constraints = model.user_defined_constraints();
+
   // Need to do these first
   if( traits->supports_nonlinear_equality() )
     configure_nonlinear_eq_adapters(traits->nonlinear_equality_format(), constraints);
@@ -156,6 +158,10 @@ TPLDataTransfer::configure_data_adapters(std::shared_ptr<TraitsBase> traits,
                      ( traits->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TWO_INEQUALITY );
     configure_nonlinear_ineq_adapters(traits->nonlinear_inequality_format(), constraints, split_eqs);
   }
+
+  // Determine and store min/max response sense (assumes single for now)
+  maxSense = (   !model.primary_response_fn_sense().empty() 
+              &&  model.primary_response_fn_sense()[0]      );
 }
 
 // -----------------------------------------------------------------

@@ -18,8 +18,6 @@
 
 namespace Dakota {
 
-class TPLDataTransfer;
-
 /** Adapter for copying initial continuous variables values from a Dakota Model
    into TPL vectors */
 
@@ -490,9 +488,6 @@ public:
                             cIneqs);
     }
 
-  // Accessor for data transfer helper/adapters
-  std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const
-    { return dataTransferHandler; }
   
 protected:
 
@@ -553,9 +548,6 @@ protected:
 
   /// offsets for constraint transformations
   std::vector<double> constraintMapOffsets;
-
-  /// New approach for handling data transfers to/from Dakota and the underlying TPL
-  std::shared_ptr<TPLDataTransfer> dataTransferHandler;
 
 //----------------------------------------------------------------
 

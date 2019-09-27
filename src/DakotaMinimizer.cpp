@@ -264,6 +264,10 @@ void Minimizer::update_from_model(const Model& model)
       if (dr_l_bnds[i] > -bigRealBoundSize || dr_u_bnds[i] < bigRealBoundSize)
 	{ boundConstraintFlag = true; break; }
   }
+
+  // Configure the TPL data Transfer helper
+  dataTransferHandler.reset(new TPLDataTransfer()); 
+  dataTransferHandler->configure_data_adapters( methodTraits, model );
 }
 
 

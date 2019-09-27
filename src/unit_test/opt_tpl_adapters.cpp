@@ -406,7 +406,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // ONE_SIDED_LOWER
   std::shared_ptr<TPLDataTransfer> data_xfer(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   TRAITS_TYPE1::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -416,7 +416,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -439,7 +439,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -449,7 +449,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -475,7 +475,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -486,7 +486,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
   
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -513,7 +513,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -524,7 +524,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_ineq_traits)
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
@@ -569,7 +569,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
 
   // ONE_SIDED_LOWER
   std::shared_ptr<TPLDataTransfer> data_xfer(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   TRAITS_TYPE1::VecT nln_eqs  (data_xfer->num_tpl_nonlin_eq_constraints());
   TRAITS_TYPE1::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -583,7 +583,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_eqs.resize  (data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -611,7 +611,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   nln_eqs.resize  (data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -625,7 +625,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_eqs.resize  (data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -656,7 +656,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   nln_eqs.resize  (data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -671,7 +671,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
   
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_eqs.resize  (data_xfer->num_tpl_nonlin_ineq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -703,7 +703,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
 
   nln_eqs.resize  (data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -718,7 +718,7 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_mixed_traits)
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
 
   nln_eqs.resize  (data_xfer->num_tpl_nonlin_eq_constraints());
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
@@ -766,9 +766,9 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   std::shared_ptr<TPLDataTransfer> data_xfer1(new TPLDataTransfer()); 
   std::shared_ptr<TPLDataTransfer> data_xfer2(new TPLDataTransfer()); 
   std::shared_ptr<TPLDataTransfer> data_xfer3(new TPLDataTransfer()); 
-  data_xfer1->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
-  data_xfer2->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
-  data_xfer3->configure_data_adapters( test_traits3, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer1->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
+  data_xfer2->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
+  data_xfer3->configure_data_adapters( test_traits3, demo_optimizer->iterated_model() );
 
   DemoOptTraits::VecT nln_eqs1(data_xfer1->num_tpl_nonlin_eq_constraints());
   DemoOptTraits::VecT nln_eqs2(data_xfer2->num_tpl_nonlin_eq_constraints());
@@ -814,9 +814,9 @@ TEUCHOS_UNIT_TEST(opt_tpl_adapters, nln_eq_traits)
   data_xfer1.reset(new TPLDataTransfer()); 
   data_xfer2.reset(new TPLDataTransfer()); 
   data_xfer3.reset(new TPLDataTransfer()); 
-  data_xfer1->configure_data_adapters( test_traits1, demo_optimizer->iterated_model().user_defined_constraints() );
-  data_xfer2->configure_data_adapters( test_traits2, demo_optimizer->iterated_model().user_defined_constraints() );
-  data_xfer3->configure_data_adapters( test_traits3, demo_optimizer->iterated_model().user_defined_constraints() );
+  data_xfer1->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
+  data_xfer2->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
+  data_xfer3->configure_data_adapters( test_traits3, demo_optimizer->iterated_model() );
 
   // Check correctness of equality constraints (shouldn't be any)
   nln_eqs1.resize(data_xfer1->num_tpl_nonlin_eq_constraints());
