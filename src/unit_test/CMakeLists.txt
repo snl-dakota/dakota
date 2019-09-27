@@ -187,6 +187,20 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
       )
   endif() # DAKOTA_HAVE_HDF5
 
+
+  if(DAKOTA_TEST_PREPROC)
+    dakota_add_unit_test(NAME preproc_tests SOURCES test_preproc.cpp
+      LINK_DAKOTA_LIBS)
+    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.tmpl"
+      "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.tmpl"
+      dakota_unit_test_copied_files
+      )
+    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.base"
+      "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.base"
+      dakota_unit_test_copied_files
+      )
+  endif()
+
 endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 
 
