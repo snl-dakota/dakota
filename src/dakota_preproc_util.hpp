@@ -14,11 +14,8 @@
 namespace Dakota {
 
 
-// write input string to tmp file
-
-// dprepro to a tmp file
-
-// echo the raw, then processed file
+/// utility to write an input string to a tmpfile in PWD
+std::string string_to_tmpfile(const std::string& dump_string);
 
 /// run pyprepro on the user-provided input file and return generated tmp output
 std::string pyprepro_input(const std::string& template_file,
