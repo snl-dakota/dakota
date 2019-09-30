@@ -1324,8 +1324,144 @@ store_parameters_for_discrete_uncertain_set_real(const size_t start_rv,
 }
 
 
+void EvaluationStore::
+store_parameters_for_continuous_state(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::CONTINUOUS_RANGE
+  // parameters: Pecos::CR_LWR_BND, Pecos::CR_UPR_BND
+  RealArray lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::CR_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::CR_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lower_bound", ResultsOutputType::REAL),
+    VariableParametersField("upper_bound", ResultsOutputType::REAL)
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
 
+void EvaluationStore::
+store_parameters_for_discrete_state_range(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_RANGE
+  // parameters: Pecos::DR_LWR_BND, Pecos::DR_UPR_BND
+  IntArray lbs, ubs;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DR_LWR_BND, lbs);
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DR_UPR_BND, ubs);
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("lower_bound", ResultsOutputType::INTEGER),
+    VariableParametersField("upper_bound", ResultsOutputType::INTEGER)
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
+  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+}
 
+void EvaluationStore::
+store_parameters_for_discrete_state_set_int(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_SET_INT
+  // parameters: Pecos::DSI_VALUES
+  IntSetArray isa;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DSI_VALUES, isa);
+  // Because h5py barfs on vlen datasets of vlen strings, we have to
+  // use regular, fixed-sized datasets that are big enough to hold the
+  // maximum number of elements.
+  size_t max_num_elements = 0;
+  IntArray num_elements;
+  for(const auto &e : isa) {
+    num_elements.push_back(e.size());
+    max_num_elements = (max_num_elements > e.size()) ? max_num_elements : e.size();
+  }
+  // Populate a 1D array with ALL the elements, including padding
+  IntArray all_elements(num_rv * max_num_elements, INT_DSET_FILL_VAL);
+  for(int i = 0; i < num_rv; ++i)
+    std::copy(isa[i].begin(), isa[i].end(), &all_elements[i*max_num_elements]);
+
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("num_elements", ResultsOutputType::INTEGER),
+    VariableParametersField("elements", ResultsOutputType::INTEGER, {max_num_elements}),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
+  hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+}
+
+void EvaluationStore::
+store_parameters_for_discrete_state_set_string(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_SET_INT
+  // parameters: Pecos::DSI_VALUES
+  StringSetArray ssa;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DSS_VALUES, ssa);
+  // Because h5py barfs on vlen datasets of vlen strings, we have to
+  // use regular, fixed-sized datasets that are big enough to hold the
+  // maximum number of elements.
+  size_t max_num_elements = 0;
+  IntArray num_elements;
+  for(const auto &e : ssa) {
+    num_elements.push_back(e.size());
+    max_num_elements = (max_num_elements > e.size()) ? max_num_elements : e.size();
+  }
+  // Populate a 1D array with ALL the elements, including padding
+  StringArray all_elements(num_rv * max_num_elements, STR_DSET_FILL_VAL);
+  for(int i = 0; i < num_rv; ++i)
+    std::copy(ssa[i].begin(), ssa[i].end(), &all_elements[i*max_num_elements]);
+
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("num_elements", ResultsOutputType::INTEGER),
+    VariableParametersField("elements", ResultsOutputType::STRING, {max_num_elements}),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
+  hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+}
+
+void EvaluationStore::
+store_parameters_for_discrete_state_set_real(const size_t start_rv, 
+    const size_t num_rv,
+    const String &location,
+    Pecos::MarginalsCorrDistribution *mvd_rep) {
+  // pecos rv type: Pecos::DISCRETE_SET_INT
+  // parameters: Pecos::DSI_VALUES
+  RealSetArray rsa;
+  mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DSR_VALUES, rsa);
+  // Because h5py barfs on vlen datasets of vlen strings, we have to
+  // use regular, fixed-sized datasets that are big enough to hold the
+  // maximum number of elements.
+  size_t max_num_elements = 0;
+  IntArray num_elements;
+  for(const auto &e : rsa) {
+    num_elements.push_back(e.size());
+    max_num_elements = (max_num_elements > e.size()) ? max_num_elements : e.size();
+  }
+  // Populate a 1D array with ALL the elements, including padding
+  RealArray all_elements(num_rv * max_num_elements, REAL_DSET_FILL_VAL);
+  for(int i = 0; i < num_rv; ++i)
+    std::copy(rsa[i].begin(), rsa[i].end(), &all_elements[i*max_num_elements]);
+
+  std::vector<VariableParametersField> fields = {
+    VariableParametersField("num_elements", ResultsOutputType::INTEGER),
+    VariableParametersField("elements", ResultsOutputType::REAL, {max_num_elements}),
+  };
+  IntArray dims = {int(num_rv)};
+  hdf5Stream->create_empty_dataset(location, dims, fields);
+  hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
+  hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+}
 
 /// Store parameters for a single "domain" (e.g. all continuous variables)
 void EvaluationStore::store_parameters_for_domain(const String &root_group,
@@ -1355,40 +1491,79 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
     break;
 
     switch(this_type) {
-      case CONTINUOUS_DESIGN:     CALL_STORE_PARAMETERS_FOR(continuous_design)
-      case DISCRETE_DESIGN_RANGE: CALL_STORE_PARAMETERS_FOR(discrete_design_range)
-      case DISCRETE_DESIGN_SET_INT: CALL_STORE_PARAMETERS_FOR(discrete_design_set_int)
-      case DISCRETE_DESIGN_SET_STRING: CALL_STORE_PARAMETERS_FOR(discrete_design_set_string)
-      case DISCRETE_DESIGN_SET_REAL: CALL_STORE_PARAMETERS_FOR(discrete_design_set_real)
-      case NORMAL_UNCERTAIN:      CALL_STORE_PARAMETERS_FOR(normal_uncertain);
-      case UNIFORM_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(uniform_uncertain);
-      case LOGNORMAL_UNCERTAIN:   CALL_STORE_PARAMETERS_FOR(lognormal_uncertain);
-      case LOGUNIFORM_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(loguniform_uncertain);
-      case TRIANGULAR_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(triangular_uncertain);
-      case EXPONENTIAL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(exponential_uncertain);
-      case BETA_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(beta_uncertain);
-      case GAMMA_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(gamma_uncertain);
-      case GUMBEL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(gumbel_uncertain);
-      case FRECHET_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(frechet_uncertain);
-      case WEIBULL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(weibull_uncertain);
-      case HISTOGRAM_BIN_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(histogram_bin_uncertain);
-      case POISSON_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(poisson_uncertain);
-      case BINOMIAL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(binomial_uncertain);
-      case NEGATIVE_BINOMIAL_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(negative_binomial_uncertain);
-      case GEOMETRIC_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(geometric_uncertain);
-      case HYPERGEOMETRIC_UNCERTAIN:     CALL_STORE_PARAMETERS_FOR(hypergeometric_uncertain);
-      case HISTOGRAM_POINT_UNCERTAIN_INT: CALL_STORE_PARAMETERS_FOR(histogram_point_uncertain_int);
-      case HISTOGRAM_POINT_UNCERTAIN_STRING: CALL_STORE_PARAMETERS_FOR(histogram_point_uncertain_string);
-      case HISTOGRAM_POINT_UNCERTAIN_REAL: CALL_STORE_PARAMETERS_FOR(histogram_point_uncertain_real);
-      case CONTINUOUS_INTERVAL_UNCERTAIN: CALL_STORE_PARAMETERS_FOR(continuous_interval_uncertain);
-      case DISCRETE_INTERVAL_UNCERTAIN: CALL_STORE_PARAMETERS_FOR(discrete_interval_uncertain);
-      case DISCRETE_UNCERTAIN_SET_INT: CALL_STORE_PARAMETERS_FOR(discrete_uncertain_set_int);
-      case DISCRETE_UNCERTAIN_SET_STRING: CALL_STORE_PARAMETERS_FOR(discrete_uncertain_set_string);
-      case DISCRETE_UNCERTAIN_SET_REAL: CALL_STORE_PARAMETERS_FOR(discrete_uncertain_set_real);
+      case CONTINUOUS_DESIGN:
+        CALL_STORE_PARAMETERS_FOR(continuous_design)
+      case DISCRETE_DESIGN_RANGE:
+        CALL_STORE_PARAMETERS_FOR(discrete_design_range)
+      case DISCRETE_DESIGN_SET_INT:
+        CALL_STORE_PARAMETERS_FOR(discrete_design_set_int)
+      case DISCRETE_DESIGN_SET_STRING:
+        CALL_STORE_PARAMETERS_FOR(discrete_design_set_string)
+      case DISCRETE_DESIGN_SET_REAL:
+        CALL_STORE_PARAMETERS_FOR(discrete_design_set_real)
+      case NORMAL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(normal_uncertain);
+      case UNIFORM_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(uniform_uncertain);
+      case LOGNORMAL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(lognormal_uncertain);
+      case LOGUNIFORM_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(loguniform_uncertain);
+      case TRIANGULAR_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(triangular_uncertain);
+      case EXPONENTIAL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(exponential_uncertain);
+      case BETA_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(beta_uncertain);
+      case GAMMA_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(gamma_uncertain);
+      case GUMBEL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(gumbel_uncertain);
+      case FRECHET_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(frechet_uncertain);
+      case WEIBULL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(weibull_uncertain);
+      case HISTOGRAM_BIN_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(histogram_bin_uncertain);
+      case POISSON_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(poisson_uncertain);
+      case BINOMIAL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(binomial_uncertain);
+      case NEGATIVE_BINOMIAL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(negative_binomial_uncertain);
+      case GEOMETRIC_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(geometric_uncertain);
+      case HYPERGEOMETRIC_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(hypergeometric_uncertain);
+      case HISTOGRAM_POINT_UNCERTAIN_INT:
+        CALL_STORE_PARAMETERS_FOR(histogram_point_uncertain_int);
+      case HISTOGRAM_POINT_UNCERTAIN_STRING:
+        CALL_STORE_PARAMETERS_FOR(histogram_point_uncertain_string);
+      case HISTOGRAM_POINT_UNCERTAIN_REAL:
+        CALL_STORE_PARAMETERS_FOR(histogram_point_uncertain_real);
+      case CONTINUOUS_INTERVAL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(continuous_interval_uncertain);
+      case DISCRETE_INTERVAL_UNCERTAIN:
+        CALL_STORE_PARAMETERS_FOR(discrete_interval_uncertain);
+      case DISCRETE_UNCERTAIN_SET_INT:
+        CALL_STORE_PARAMETERS_FOR(discrete_uncertain_set_int);
+      case DISCRETE_UNCERTAIN_SET_STRING:
+        CALL_STORE_PARAMETERS_FOR(discrete_uncertain_set_string);
+      case DISCRETE_UNCERTAIN_SET_REAL:
+        CALL_STORE_PARAMETERS_FOR(discrete_uncertain_set_real);
+      case CONTINUOUS_STATE:
+        CALL_STORE_PARAMETERS_FOR(continuous_state);
+      case DISCRETE_STATE_RANGE:
+        CALL_STORE_PARAMETERS_FOR(discrete_state_range);
+      case DISCRETE_STATE_SET_INT:
+        CALL_STORE_PARAMETERS_FOR(discrete_state_set_int);
+      case DISCRETE_STATE_SET_STRING:
+        CALL_STORE_PARAMETERS_FOR(discrete_state_set_string);
+      case DISCRETE_STATE_SET_REAL:
+        CALL_STORE_PARAMETERS_FOR(discrete_state_set_real);
       default:
         store_scales = false; // if no cases were executed, then there's no
                               // dataset to add scales to.
-
     }
     if(store_scales) {
       StringMultiArrayConstView these_labels(
@@ -1410,7 +1585,6 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
     first_idx = last_idx + 1;
     last_it = std::find_end(first_it, types.end(), to_find.begin(), to_find.end());
   }
-
 }
 
 

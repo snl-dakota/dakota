@@ -146,6 +146,11 @@ class EvaluationStore {
     DECLARE_STORE_PARAMETERS_FOR(discrete_uncertain_set_int);
     DECLARE_STORE_PARAMETERS_FOR(discrete_uncertain_set_string);
     DECLARE_STORE_PARAMETERS_FOR(discrete_uncertain_set_real);
+    DECLARE_STORE_PARAMETERS_FOR(continuous_state);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_state_range);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_state_set_int);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_state_set_string);
+    DECLARE_STORE_PARAMETERS_FOR(discrete_state_set_real);
 
     /// Allocate storage for variable paramters
     void store_parameters_for_domain(const String &root_group, 
