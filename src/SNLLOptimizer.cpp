@@ -463,7 +463,7 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf0_evaluator vars = \n" << x;
   if (!snllOptInstance->numNonlinearConstraints ||
-       lastFnEvalLocn != CONEvaluator || x != lastEvalVars) {
+       lastFnEvalLocn != CON_EVALUATOR || x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
     snllOptInstance->iteratedModel.continuous_variables(x);
@@ -477,7 +477,7 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
     //if (snllOptInstance->numNonlinearConstraints) // turn off asv for constr's
     //  for (i=0; i<snllOptInstance->numNonlinearConstraints; i++)
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const BoolDeque& max_sense
@@ -534,7 +534,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
     Cout << "\nSNLLOptimizer::nlf1_evaluator vars = \n" << x;
 
   if (!snllOptInstance->numNonlinearConstraints ||
-      lastFnEvalLocn != CONEvaluator || mode != lastEvalMode ||
+      lastFnEvalLocn != CON_EVALUATOR || mode != lastEvalMode ||
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
@@ -551,7 +551,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
     snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const Response& local_response
@@ -623,7 +623,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf2_evaluator vars = \n" << x;
   if (!snllOptInstance->numNonlinearConstraints ||
-      lastFnEvalLocn != CONEvaluator || mode != lastEvalMode ||
+      lastFnEvalLocn != CON_EVALUATOR || mode != lastEvalMode ||
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
@@ -639,7 +639,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
     snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const Response& local_response
@@ -683,7 +683,7 @@ constraint0_evaluator(int n, const RealVector& x, RealVector& g,
   snllOptInstance->iteratedModel.continuous_variables(x);
 
   snllOptInstance->iteratedModel.evaluate(); // default active set
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalVars   = x;
 
   snllOptInstance->copy_con_vals_dak_to_optpp(
@@ -710,7 +710,7 @@ constraint1_evaluator(int mode, int n, const RealVector& x, RealVector& g,
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = mode;
   lastEvalVars   = x;
 
@@ -748,7 +748,7 @@ constraint2_evaluator(int mode, int n, const RealVector& x, RealVector& g,
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = mode;
   lastEvalVars   = x;
 
@@ -865,8 +865,7 @@ void SNLLOptimizer::post_run(std::ostream& s)
 
 void SNLLOptimizer::finalize_run()
 {
-  // reset in case of recursion
-  theOptimizer->reset();
+  reset(); // MSE: PDH supports trying to move this up into pre_run() ...
 
   // Compound constraint doesn't get managed in an Optpp::SmartPtr;
   // mirror the alloc in snll_initialize_run() with this delete in
@@ -883,6 +882,18 @@ void SNLLOptimizer::finalize_run()
 
   Optimizer::finalize_run();
 }
+
+
+void SNLLOptimizer::reset()
+{
+  // reset in case of recursion
+  theOptimizer->reset();
+
+  lastFnEvalLocn = NO_EVALUATOR;
+  lastEvalMode   = 0;
+  lastEvalVars.sizeUninitialized(0);
+}
+
 
 // This override exists purely to prevent an optimizer/minimizer from declaring sources 
 // when it's being used to evaluate a user-defined function (e.g. finding the correlation

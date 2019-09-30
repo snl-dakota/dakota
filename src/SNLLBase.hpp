@@ -32,7 +32,7 @@ namespace Dakota {
 class Minimizer;
 class ProblemDescDB;
 /// enumeration for the type of evaluator function
-enum EvalType { NLFEvaluator, CONEvaluator }; // could add 0/1/2/2GN granularity
+enum EvalType { NO_EVALUATOR, NLF_EVALUATOR, CON_EVALUATOR }; // could add 0/1/2/2GN granularity
 
 
 /// Base class for OPT++ optimization and least squares methods.

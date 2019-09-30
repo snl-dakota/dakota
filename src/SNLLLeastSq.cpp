@@ -279,7 +279,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::nlf2_evaluator_gn vars = \n" << x;
   if (!snllLSqInstance->numNonlinearConstraints ||
-      lastFnEvalLocn != CONEvaluator || lsq_mode != lastEvalMode ||
+      lastFnEvalLocn != CON_EVALUATOR || lsq_mode != lastEvalMode ||
       x != lastEvalVars) {
     // data not available from constraint evaluator, so perform
     // a new function evaluation.
@@ -299,7 +299,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
 
     snllLSqInstance->activeSet.request_vector(local_asv);
     snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
@@ -391,7 +391,7 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
   snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
@@ -456,7 +456,7 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
   snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
@@ -558,6 +558,8 @@ void SNLLLeastSq::core_run()
 
 void SNLLLeastSq::finalize_run()
 {
+  reset(); // MSE: PDH supports trying to move this up into pre_run() ...
+
   // Compound constraint doesn't get managed in an Optpp::SmartPtr;
   // mirror the alloc in snll_initialize_run() with this delete in
   // finalize_run()
@@ -572,6 +574,17 @@ void SNLLLeastSq::finalize_run()
   snllLSqInstance = prevSnllLSqInstance;
 
   LeastSq::finalize_run();
+}
+
+
+void SNLLLeastSq::reset()
+{
+  // reset in case of recursion
+  theOptimizer->reset();
+
+  lastFnEvalLocn = NO_EVALUATOR;
+  lastEvalMode   = 0;
+  lastEvalVars.sizeUninitialized(0);
 }
 
 } // namespace Dakota
