@@ -220,9 +220,7 @@ parse_inputs(ProgramOptions& prog_opts,
         prog_opts.input_string(stdin_string);
       }
 
-      //bool pre_process = prog_opts.pre_process();
-      bool pre_process = false;
-      if (pre_process) {
+      if (prog_opts.preproc_input()) {
 
 	if (prog_opts.echo_input())
 	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
@@ -234,7 +232,8 @@ parse_inputs(ProgramOptions& prog_opts,
 	  tmpl_file = string_to_tmpfile(prog_opts.input_string());
 
 	// run the pre-processor on the file
-	std::string preproc_file = pyprepro_input(tmpl_file);
+	std::string preproc_file = pyprepro_input(tmpl_file,
+						  prog_opts.preproc_cmd());
 
 	if (prog_opts.echo_input())
 	  echo_input_file(preproc_file, "");

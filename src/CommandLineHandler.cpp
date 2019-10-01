@@ -337,6 +337,10 @@ void CommandLineHandler::initialize_options()
   enroll("input",   GetLongOpt::MandatoryValue,
 	 "REQUIRED DAKOTA input file $val", NULL);
 
+  enroll("preproc", GetLongOpt::OptionalValue,
+	 "Pre-process input file with pyprepro or tool $val",
+	 NULL);
+
   enroll("output",  GetLongOpt::MandatoryValue,
 	 "Redirect DAKOTA standard output to file $val", NULL);
 
