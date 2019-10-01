@@ -994,7 +994,7 @@ store_parameters_for_histogram_point_uncertain_int(const size_t start_rv,
     max_num_elements = (max_num_elements > p.size()) ? max_num_elements : p.size();
   }
   // Populate a 1D array with ALL the elements, including padding
-  IntArray abscissas(num_rv*max_num_elements, 0);
+  IntArray abscissas(num_rv*max_num_elements, INT_DSET_FILL_VAL);
   RealArray counts(num_rv*max_num_elements, REAL_DSET_FILL_VAL); 
   for(int i = 0; i < num_rv; ++i) {
     std::transform(bin_pairs[i].begin(), bin_pairs[i].end(), 
@@ -1144,9 +1144,9 @@ store_parameters_for_continuous_interval_uncertain(const size_t start_rv,
   IntArray dims = {int(num_rv)};
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
-  hdf5Stream->set_vector_scalar_field(location, probs, "interval_probabilities");
-  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bounds");
-  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bounds");
+  hdf5Stream->set_vector_vector_field(location, probs, max_num_elements, "interval_probabilities");
+  hdf5Stream->set_vector_vector_field(location, lbs, max_num_elements, "lower_bounds");
+  hdf5Stream->set_vector_vector_field(location, ubs, max_num_elements, "upper_bounds");
 }
 
 void EvaluationStore::
@@ -1192,9 +1192,9 @@ store_parameters_for_discrete_interval_uncertain(const size_t start_rv,
   IntArray dims = {int(num_rv)};
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
-  hdf5Stream->set_vector_scalar_field(location, probs, "interval_probabilities");
-  hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bounds");
-  hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bounds");
+  hdf5Stream->set_vector_vector_field(location, probs, max_num_elements, "interval_probabilities");
+  hdf5Stream->set_vector_vector_field(location, lbs, max_num_elements, "lower_bounds");
+  hdf5Stream->set_vector_vector_field(location, ubs, max_num_elements, "upper_bounds");
 }
 
 void EvaluationStore::
