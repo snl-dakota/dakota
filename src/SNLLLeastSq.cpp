@@ -560,15 +560,6 @@ void SNLLLeastSq::finalize_run()
 {
   reset(); // MSE: PDH supports trying to move this up into pre_run() ...
 
-  // Compound constraint doesn't get managed in an Optpp::SmartPtr;
-  // mirror the alloc in snll_initialize_run() with this delete in
-  // finalize_run()
-  OPTPP::CompoundConstraint* cc = nlfObjective->getConstraints();
-  if (cc) {
-    delete cc;
-    nlfObjective->setConstraints(NULL);
-  }
-
   // restore in case of recursion
   optLSqInstance  = prevMinInstance;
   snllLSqInstance = prevSnllLSqInstance;
@@ -582,9 +573,17 @@ void SNLLLeastSq::reset()
   // reset in case of recursion
   theOptimizer->reset();
 
-  lastFnEvalLocn = NO_EVALUATOR;
-  lastEvalMode   = 0;
-  lastEvalVars.sizeUninitialized(0);
+  // Compound constraint doesn't get managed in an Optpp::SmartPtr;
+  // mirror the alloc in snll_initialize_run() with this delete in
+  // finalize_run()
+  OPTPP::CompoundConstraint* cc = nlfObjective->getConstraints();
+  if (cc) {
+    delete cc;
+    nlfObjective->setConstraints(NULL);
+  }
+
+  // reset last{FnEvalLocn,EvalMode,EvalVars}
+  reset_base();
 }
 
 } // namespace Dakota
