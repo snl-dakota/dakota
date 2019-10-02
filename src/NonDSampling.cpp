@@ -385,7 +385,7 @@ update_model_from_sample(Model& model, const Real* sample_vars)
     adrv_start, num_adrv;
   mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv, adsv_start,
 	      num_adsv, adrv_start, num_adrv);
-  if (num_adsv) {
+  if (num_adsv) { // incur overhead of extracting DSS values
     short active_view = vars.view().first;
     bool relax = (active_view == RELAXED_ALL ||
       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
@@ -408,7 +408,7 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
     adrv_start, num_adrv;
   mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv, adsv_start,
 	      num_adsv, adrv_start, num_adrv);
-  if (num_adsv) {
+  if (num_adsv) { // incur overhead of extracting DSS values
     short active_view = vars.view().first;
     bool relax = (active_view == RELAXED_ALL ||
       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
@@ -424,14 +424,146 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
 }
 
 
+/*
+void NonDSampling::
+sample_to_variables(const Real* sample_vars, Variables& vars)
+{
+  // sample_vars are in RandomVariable order, which mirrors the XML spec
+  // vars updates utilize all continuous,discrete {int,string,real} indexing
+
+  const SharedVariablesData& svd = vars.shared_data();
+  size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+    drv_start, num_drv;
+  switch (samplingVarsMode) {
+  case ALEATORY_UNCERTAIN:
+    // design vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    // aleatory uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+
+    // manage single index offsets instead of repeated index mappings
+    rv_start = cv_start + div_start + dsv_start + drv_start;
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+    rv_start += num_cv;
+    sample_to_div(sample_vars, vars, div_start, num_div, rv_start);
+    rv_start += num_div;
+    sample_to_dsv(sample_vars, vars, dsv_start, num_dsv, rv_start);
+    rv_start += num_dsv;
+    sample_to_drv(sample_vars, vars, drv_start, num_drv, rv_start);
+    //rv_start += num_drv;
+    break;
+  case ALEATORY_UNCERTAIN_UNIFORM: {
+    // continuous design vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    // continuous aleatory uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+
+    // UNIFORM views do not currently support non-relaxed discrete
+    rv_start = cv_start + div_start + dsv_start + drv_start;
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+    break;
+  }
+  case EPISTEMIC_UNCERTAIN:
+    // design + aleatory uncertain vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_start  += num_cv;   div_start += num_div;
+    dsv_start += num_dsv;  drv_start += num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+
+    rv_start = cv_start + div_start + dsv_start + drv_start;
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+    rv_start += num_cv;
+    sample_to_div(sample_vars, vars, div_start, num_div, rv_start);
+    rv_start += num_div;
+    sample_to_dsv(sample_vars, vars, dsv_start, num_dsv, rv_start);
+    rv_start += num_dsv;
+    sample_to_drv(sample_vars, vars, drv_start, num_drv, rv_start);
+    //rv_start += num_drv;
+    break;
+  case EPISTEMIC_UNCERTAIN_UNIFORM: {
+    // continuous design + aleatory uncertain vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_start  += num_cv;   div_start += num_div;
+    dsv_start += num_dsv;  drv_start += num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+
+    // UNIFORM views do not currently support non-relaxed discrete
+    rv_start = cv_start + div_start + dsv_start + drv_start;
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+    break;
+  }
+  case UNCERTAIN:
+    // design vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    // aleatory+epistemic uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+
+    rv_start = cv_start + div_start + dsv_start + drv_start;
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+    rv_start += num_cv;
+    sample_to_div(sample_vars, vars, div_start, num_div, rv_start);
+    rv_start += num_div;
+    sample_to_dsv(sample_vars, vars, dsv_start, num_dsv, rv_start);
+    rv_start += num_dsv;
+    sample_to_drv(sample_vars, vars, drv_start, num_drv, rv_start);
+    rv_start += num_drv;
+
+    cv_start  += num_cv;   div_start += num_div;
+    dsv_start += num_dsv;  drv_start += num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+    rv_start += num_cv;
+    sample_to_div(sample_vars, vars, div_start, num_div, rv_start);
+    rv_start += num_div;
+    sample_to_dsv(sample_vars, vars, dsv_start, num_dsv, rv_start);
+    rv_start += num_dsv;
+    sample_to_drv(sample_vars, vars, drv_start, num_drv, rv_start);
+    //rv_start += num_drv;
+    break;
+  case UNCERTAIN_UNIFORM:
+    // design vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    // aleatory+epistemic uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    // UNIFORM views do not currently support non-relaxed discrete
+    rv_start = cv_start + div_start + dsv_start + drv_start;
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+
+    cv_start  += num_cv;   div_start += num_div;
+    dsv_start += num_dsv;  drv_start += num_drv;
+    rv_start  += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+    break;
+  }
+  case ACTIVE:
+    cv_start  = vars.cv_start();  num_cv  = vars.cv();
+    div_start = vars.div_start(); num_div = vars.div();
+    dsv_start = vars.dsv_start(); num_dsv = vars.dsv();
+    drv_start = vars.drv_start(); num_drv = vars.drv();  break;
+  case ACTIVE_UNIFORM:
+    // UNIFORM views do not currently support non-relaxed discrete
+    cv_start = vars.cv_start(); num_cv = vars.cv();      break;
+  case ALL:
+    num_cv  = vars.acv();  num_div = vars.adiv();
+    num_dsv = vars.adsv(); num_drv = vars.adrv();        break;
+  case ALL_UNIFORM:
+    // UNIFORM views do not currently support non-relaxed discrete
+    num_cv = vars.acv();                                 break;
+  }
+}
+*/
+
+
+// TO DO: Inefficiency from repeated lookups...
 void NonDSampling::
 sample_to_variables(const Real* sample_vars, Variables& vars, size_t acv_start,
 		    size_t num_acv, size_t adiv_start, size_t num_adiv,
 		    size_t adsv_start, size_t num_adsv, size_t adrv_start,
 		    size_t num_adrv, const StringSetArray& all_dss_values)
 {
-  // BMA TODO: make sure inactive get updated too as needed?
-
   const SharedVariablesData& svd = vars.shared_data();
 
   // sampled continuous vars (by value)
@@ -456,7 +588,53 @@ sample_to_variables(const Real* sample_vars, Variables& vars, size_t acv_start,
 }
 
 
-// BMA TODO: consolidate with other use cases
+void NonDSampling::
+sample_to_cv(const Real* sample_vars, Variables& vars, size_t acv_start,
+	     size_t num_acv, size_t rv_offset)
+{
+  // sampled continuous vars (by value)
+  for (size_t i=0; i<num_acv; ++i)
+    vars.all_continuous_variable(sample_vars[i+rv_offset], i+acv_start);
+}
+
+
+void NonDSampling::
+sample_to_div(const Real* sample_vars, Variables& vars, size_t adiv_start,
+	      size_t num_adiv, size_t rv_offset)
+{
+  // sampled discrete int vars (by value cast from Real)
+  for (size_t i=0; i<num_adiv; ++i)
+    vars.all_discrete_int_variable((int)sample_vars[i+rv_offset], i+adiv_start);
+}
+
+
+void NonDSampling::
+sample_to_dsv(const Real* sample_vars, Variables& vars, size_t adsv_start,
+	      size_t num_adsv, size_t rv_offset,
+	      const StringSetArray& all_dss_values)
+{
+  // sampled discrete string vars (by index cast from Real)
+  size_t i, set_index, offset_adsv;
+  for (i=0; i<num_adsv; ++i) {
+    set_index = (size_t)sample_vars[i+rv_offset];
+    offset_adsv = i + adsv_start;
+    const String& str
+      = set_index_to_value(set_index, all_dss_values[offset_adsv]);
+    vars.all_discrete_string_variable(str, offset_adsv);
+  }
+}
+
+
+void NonDSampling::
+sample_to_drv(const Real* sample_vars, Variables& vars, size_t adrv_start,
+	      size_t num_adrv, size_t rv_offset)
+{
+  // sampled discrete real vars (by value)
+  for (size_t i=0; i<num_adrv; ++i)
+    vars.all_discrete_real_variable(sample_vars[i+rv_offset], i+adrv_start);
+}
+
+
 /** Map the active variables from vars to sample_vars (column in allSamples) */
 void NonDSampling::
 variables_to_sample(const Variables& vars, Real* sample_vars)
@@ -479,7 +657,7 @@ variables_to_sample(const Variables& vars, Real* sample_vars)
     sample_vars[svd.adiv_index_to_all_index(i)]
       = (Real)vars.all_discrete_int_variables()[i];
   // sampled discrete string vars (cast index to Real)
-  if (num_adsv) {
+  if (num_adsv) { // incur overhead of extracting DSS values
     short active_view = vars.view().first;
     bool relax = (active_view == RELAXED_ALL ||
       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );

@@ -368,6 +368,15 @@ private:
 			   size_t num_adiv, size_t adsv_start, size_t num_adsv,
 			   size_t adrv_start, size_t num_adrv,
 			   const StringSetArray& all_dss_values);
+  void sample_to_cv(const Real* sample_vars, Variables& vars, size_t acv_start,
+		    size_t num_acv, size_t rv_offset);
+  void sample_to_div(const Real* sample_vars, Variables& vars,
+		     size_t adiv_start, size_t num_adiv, size_t rv_offset);
+  void sample_to_dsv(const Real* sample_vars, Variables& vars,
+		     size_t adsv_start, size_t num_adsv, size_t rv_offset,
+		     const StringSetArray& all_dss_values);
+  void sample_to_drv(const Real* sample_vars, Variables& vars,
+		     size_t adrv_start, size_t num_adrv, size_t rv_offset);
 
   //
   //- Heading: Data
