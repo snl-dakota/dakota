@@ -281,6 +281,10 @@ void Analyzer::update_model_from_variables(Model& model, const Variables& vars)
   model.active_variables(vars);
 }
 
+// ***************************************************
+// MSE TO DO: generalize for all active variable types
+// NonDSampling still overrrides in the case of samplingVarsMode != active view
+// ***************************************************
 
 void Analyzer::update_model_from_sample(Model& model, const Real* sample_vars)
 {
