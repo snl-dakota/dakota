@@ -249,7 +249,7 @@ protected:
 
   /// override default mapping of continuous variables only
   void sample_to_variables(const Real* sample_vars, Variables& vars);
-
+  /// override default mapping of continuous variables only
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
   /// return error estimates associated with each of the finalStatistics
@@ -268,12 +268,12 @@ protected:
 
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
+  void mode_counts(const Variables& vars, size_t& cv_start, size_t& num_cv,
 		   size_t& div_start,  size_t& num_div,
 		   size_t& dsv_start,  size_t& num_dsv,
 		   size_t& drv_start,  size_t& num_drv) const;
   /// define subset views for uncertain sampling modes
-  void uncertain_bits(const Model& model, BitArray& active_vars,
+  void uncertain_bits(const Variables& vars, BitArray& active_vars,
 		      BitArray& active_corr) const;
 
   /// helper to accumulate sum of finite samples
