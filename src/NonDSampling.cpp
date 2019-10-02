@@ -331,7 +331,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
   case ALEATORY_UNCERTAIN: case EPISTEMIC_UNCERTAIN: case UNCERTAIN: case ALL: {
     // override active model view to sample alternate subset/superset
     BitArray active_vars, active_corr;
-    uncertain_bits(model, active_vars, active_corr);
+    uncertain_bits(model.current_variables(), active_vars, active_corr);
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
     if (backfillFlag)
@@ -392,12 +392,12 @@ update_model_from_sample(Model& model, const Real* sample_vars)
   // sampled continuous vars (by value)
   end = acv_start + num_acv;
   for (i=acv_start; i<end; ++i)
-    model.all_continuous_variable(sample_vars[svd.acv_to_all_index(i)], i);
+    model.all_continuous_variable(sample_vars[svd.acv_index_to_all_index(i)],i);
   // sampled discrete int vars (by value cast from Real)
   end = adiv_start + num_adiv;
   for (i=adiv_start; i<end; ++i)
     model.all_discrete_int_variable(
-      (int)sample_vars[svd.adiv_to_all_index(i)], i);
+      (int)sample_vars[svd.adiv_index_to_all_index(i)], i);
   // sampled discrete string vars (by index cast from Real)
   if (num_adsv) {
     short active_view = model.current_variables().view().first;
@@ -409,12 +409,14 @@ update_model_from_sample(Model& model, const Real* sample_vars)
     end = adsv_start + num_adsv;
     for (i=adsv_start; i<end; ++i)
       model.all_discrete_string_variable(set_index_to_value(
-	(size_t)sample_vars[svd.adsv_to_all_index(i)], all_dss_values[i]), i);
+	(size_t)sample_vars[svd.adsv_index_to_all_index(i)],
+	all_dss_values[i]), i);
   }
   // sampled discrete real vars (by value)
   end = adrv_start + num_adrv;
   for (i=adrv_start; i<end; ++i)
-    model.all_discrete_real_variable(sample_vars[svd.adrv_to_all_index(i)], i);
+    model.all_discrete_real_variable(
+      sample_vars[svd.adrv_index_to_all_index(i)], i);
 }
 
 
@@ -428,15 +430,17 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
 
   // BMA TODO: make sure inactive get updated too as needed?
 
+  const SharedVariablesData& svd = vars.shared_data();
+
   // sampled continuous vars (by value)
   end = acv_start + num_acv;
   for (i=acv_start; i<end; ++i)
-    vars.all_continuous_variable(sample_vars[svd.acv_to_all_index(i)], i);
+    vars.all_continuous_variable(sample_vars[svd.acv_index_to_all_index(i)], i);
   // sampled discrete int vars (by value cast from Real)
   end = adiv_start + num_adiv;
   for (i=adiv_start; i<end; ++i)
     vars.all_discrete_int_variable(
-      (int)sample_vars[svd.adiv_to_all_index(i)], i);
+      (int)sample_vars[svd.adiv_index_to_all_index(i)], i);
   // sampled discrete string vars (by index cast from Real)
   if (num_adsv) {
     short active_view = vars.view().first;
@@ -448,12 +452,14 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
     end = adsv_start + num_adsv;
     for (i=adsv_start; i<end; ++i)
       vars.all_discrete_string_variable(set_index_to_value(
-	(size_t)sample_vars[svd.adsv_to_all_index(i)], all_dss_values[i]), i);
+	(size_t)sample_vars[svd.adsv_index_to_all_index(i)],
+	all_dss_values[i]), i);
   }
   // sampled discrete real vars (by value)
   end = adrv_start + num_adrv;
   for (i=adrv_start; i<end; ++i)
-    vars.all_discrete_real_variable(sample_vars[svd.adrv_to_all_index(i)], i);
+    vars.all_discrete_real_variable(
+      sample_vars[svd.adrv_index_to_all_index(i)], i);
 }
 
 
@@ -467,15 +473,18 @@ variables_to_sample(const Variables& vars, Real* sample_vars)
   mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv,
 	      adsv_start, num_adsv, adrv_start, num_adrv);
 
+  const SharedVariablesData& svd = vars.shared_data();
+
   // sampled continuous vars (by value)
   end = acv_start + num_acv;
   for (i=acv_start; i<end; ++i)
-    sample_vars[svd.acv_to_all_index(i)] = vars.all_continuous_variable(i);
+    sample_vars[svd.acv_index_to_all_index(i)]
+      = vars.all_continuous_variables()[i];
   // sampled discrete int vars (cast value to Real)
   end = adiv_start + num_adiv;
   for (i=adiv_start; i<end; ++i)
-    sample_vars[svd.adiv_to_all_index(i)]
-      = (Real)vars.all_discrete_int_variable(i);
+    sample_vars[svd.adiv_index_to_all_index(i)]
+      = (Real)vars.all_discrete_int_variables()[i];
   // sampled discrete string vars (cast index to Real)
   if (num_adsv) {
     short active_view = vars.view().first;
@@ -486,13 +495,14 @@ variables_to_sample(const Variables& vars, Real* sample_vars)
       = iteratedModel.discrete_set_string_values(all_view);
     end = adsv_start + num_adsv;
     for (i=adsv_start; i<end; ++i)
-      sample_vars[svd.adsv_to_all_index(i)] = (Real)set_value_to_index(
-	vars.all_discrete_string_variable(i), all_dss_values[i]);
+      sample_vars[svd.adsv_index_to_all_index(i)] = (Real)set_value_to_index(
+	vars.all_discrete_string_variables()[i], all_dss_values[i]);
   }
   // sampled discrete real vars (by value)
   end = adrv_start + num_adrv;
   for (i=adrv_start; i<end; ++i)
-    sample_vars[svd.adrv_to_all_index(i)] = vars.all_discrete_real_variable(i);
+    sample_vars[svd.adrv_index_to_all_index(i)]
+      = vars.all_discrete_real_variables()[i];
 }
 
 
