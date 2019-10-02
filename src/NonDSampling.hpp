@@ -359,6 +359,17 @@ protected:
 private:
 
   //
+  //- Heading: Convenience functions
+  //
+  
+  /// helper function to consolidate update code
+  void sample_to_variables(const Real* sample_vars, Variables& vars,
+			   size_t acv_start, size_t num_acv, size_t adiv_start,
+			   size_t num_adiv, size_t adsv_start, size_t num_adsv,
+			   size_t adrv_start, size_t num_adrv,
+			   const StringSetArray& all_dss_values);
+
+  //
   //- Heading: Data
   //
   

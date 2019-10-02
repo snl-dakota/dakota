@@ -380,60 +380,62 @@ get_parameter_sets(const RealVector& means, const RealVector& std_devs,
 void NonDSampling::
 update_model_from_sample(Model& model, const Real* sample_vars)
 {
-  //sample_to_variables(sample_vars, model.current_variables());
-
-  const Variables&          vars = model.current_variables();
-  const SharedVariablesData& svd = vars.shared_data();
-  size_t i, acv_start, num_acv, adiv_start, num_adiv, adsv_start, num_adsv,
-    adrv_start, num_adrv, end;
-  mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv,
-	      adsv_start, num_adsv, adrv_start, num_adrv);
-
-  // sampled continuous vars (by value)
-  end = acv_start + num_acv;
-  for (i=acv_start; i<end; ++i)
-    model.all_continuous_variable(sample_vars[svd.acv_index_to_all_index(i)],i);
-  // sampled discrete int vars (by value cast from Real)
-  end = adiv_start + num_adiv;
-  for (i=adiv_start; i<end; ++i)
-    model.all_discrete_int_variable(
-      (int)sample_vars[svd.adiv_index_to_all_index(i)], i);
-  // sampled discrete string vars (by index cast from Real)
+  Variables& vars = model.current_variables();
+  size_t acv_start, num_acv, adiv_start, num_adiv, adsv_start, num_adsv,
+    adrv_start, num_adrv;
+  mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv, adsv_start,
+	      num_adsv, adrv_start, num_adrv);
   if (num_adsv) {
-    short active_view = model.current_variables().view().first;
+    short active_view = vars.view().first;
     bool relax = (active_view == RELAXED_ALL ||
       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
     short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
-    const StringSetArray& all_dss_values
-      = model.discrete_set_string_values(all_view);
-    end = adsv_start + num_adsv;
-    for (i=adsv_start; i<end; ++i)
-      model.all_discrete_string_variable(set_index_to_value(
-	(size_t)sample_vars[svd.adsv_index_to_all_index(i)],
-	all_dss_values[i]), i);
+    sample_to_variables(sample_vars, vars, acv_start, num_acv, adiv_start,
+			num_adiv, adsv_start, num_adsv, adrv_start, num_adrv,
+			model.discrete_set_string_values(all_view));
   }
-  // sampled discrete real vars (by value)
-  end = adrv_start + num_adrv;
-  for (i=adrv_start; i<end; ++i)
-    model.all_discrete_real_variable(
-      sample_vars[svd.adrv_index_to_all_index(i)], i);
+  else
+    sample_to_variables(sample_vars, vars, acv_start, num_acv, adiv_start,
+			num_adiv, adsv_start, num_adsv, adrv_start, num_adrv,
+			StringSetArray());
 }
 
 
 void NonDSampling::
 sample_to_variables(const Real* sample_vars, Variables& vars)
 {
-  size_t i, acv_start, num_acv, adiv_start, num_adiv, adsv_start, num_adsv,
-    adrv_start, num_adrv, end;
-  mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv,
-	      adsv_start, num_adsv, adrv_start, num_adrv);
+  size_t acv_start, num_acv, adiv_start, num_adiv, adsv_start, num_adsv,
+    adrv_start, num_adrv;
+  mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv, adsv_start,
+	      num_adsv, adrv_start, num_adrv);
+  if (num_adsv) {
+    short active_view = vars.view().first;
+    bool relax = (active_view == RELAXED_ALL ||
+      ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
+    short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
+    sample_to_variables(sample_vars, vars, acv_start, num_acv, adiv_start,
+			num_adiv, adsv_start, num_adsv, adrv_start, num_adrv,
+			iteratedModel.discrete_set_string_values(all_view));
+  }
+  else
+    sample_to_variables(sample_vars, vars, acv_start, num_acv, adiv_start,
+			num_adiv, adsv_start, num_adsv, adrv_start, num_adrv,
+			StringSetArray());
+}
 
+
+void NonDSampling::
+sample_to_variables(const Real* sample_vars, Variables& vars, size_t acv_start,
+		    size_t num_acv, size_t adiv_start, size_t num_adiv,
+		    size_t adsv_start, size_t num_adsv, size_t adrv_start,
+		    size_t num_adrv, const StringSetArray& all_dss_values)
+{
   // BMA TODO: make sure inactive get updated too as needed?
 
   const SharedVariablesData& svd = vars.shared_data();
 
   // sampled continuous vars (by value)
-  end = acv_start + num_acv;
+  size_t i, end = acv_start + num_acv;
   for (i=acv_start; i<end; ++i)
     vars.all_continuous_variable(sample_vars[svd.acv_index_to_all_index(i)], i);
   // sampled discrete int vars (by value cast from Real)
@@ -442,19 +444,10 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
     vars.all_discrete_int_variable(
       (int)sample_vars[svd.adiv_index_to_all_index(i)], i);
   // sampled discrete string vars (by index cast from Real)
-  if (num_adsv) {
-    short active_view = vars.view().first;
-    bool relax = (active_view == RELAXED_ALL ||
-      ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
-    short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
-    const StringSetArray& all_dss_values
-      = iteratedModel.discrete_set_string_values(all_view);
-    end = adsv_start + num_adsv;
-    for (i=adsv_start; i<end; ++i)
-      vars.all_discrete_string_variable(set_index_to_value(
-	(size_t)sample_vars[svd.adsv_index_to_all_index(i)],
-	all_dss_values[i]), i);
-  }
+  end = adsv_start + num_adsv;
+  for (i=adsv_start; i<end; ++i)
+    vars.all_discrete_string_variable(set_index_to_value(
+      (size_t)sample_vars[svd.adsv_index_to_all_index(i)],all_dss_values[i]),i);
   // sampled discrete real vars (by value)
   end = adrv_start + num_adrv;
   for (i=adrv_start; i<end; ++i)
@@ -468,15 +461,15 @@ sample_to_variables(const Real* sample_vars, Variables& vars)
 void NonDSampling::
 variables_to_sample(const Variables& vars, Real* sample_vars)
 {
-  size_t i, acv_start, num_acv, adiv_start, num_adiv, adsv_start, num_adsv,
-    adrv_start, num_adrv, end;
+  size_t acv_start, num_acv, adiv_start, num_adiv, adsv_start, num_adsv,
+    adrv_start, num_adrv;
   mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv,
 	      adsv_start, num_adsv, adrv_start, num_adrv);
 
   const SharedVariablesData& svd = vars.shared_data();
 
   // sampled continuous vars (by value)
-  end = acv_start + num_acv;
+  size_t i, end = acv_start + num_acv;
   for (i=acv_start; i<end; ++i)
     sample_vars[svd.acv_index_to_all_index(i)]
       = vars.all_continuous_variables()[i];
