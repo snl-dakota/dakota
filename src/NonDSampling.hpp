@@ -363,17 +363,29 @@ private:
   /// helper function to consolidate update code
   void sample_to_variables(const Real* sample_vars, Variables& vars,
 			   Model& model);
-  /// helper function to copy a range to continuous variables to sample_vars
+  /// helper function to copy a range from sample_vars to a variables type
+  void sample_to_type(const Real* sample_vars, Variables& vars,
+		      size_t& cv_start, size_t num_cv, size_t& div_start,
+		      size_t num_div, size_t& dsv_start, size_t num_dsv,
+		      size_t& drv_start, size_t num_drv, size_t& rv_start,
+		      Model& model);
+  /// helper function to copy a range from sample_vars to a variables type
+  void sample_to_cv_type(const Real* sample_vars, Variables& vars,
+			 size_t& cv_start, size_t num_cv, size_t& div_start,
+			 size_t num_div, size_t& dsv_start, size_t num_dsv,
+			 size_t& drv_start, size_t num_drv, size_t& rv_start);
+                         //, Model& model);
+  /// helper function to copy a range from sample_vars to continuous variables
   void sample_to_cv(const Real* sample_vars, Variables& vars, size_t acv_start,
 		    size_t num_acv, size_t rv_start);
-  /// helper function to copy a range to discrete int variables to sample_vars
+  /// helper function to copy a range from sample_vars to discrete int variables
   void sample_to_div(const Real* sample_vars, Variables& vars,
 		     size_t adiv_start, size_t num_adiv, size_t rv_start);
-  /// helper function to copy a range to discrete string vars to sample_vars
+  /// helper function to copy a range from sample_vars to discrete string vars
   void sample_to_dsv(const Real* sample_vars, Variables& vars,
 		     size_t adsv_start, size_t num_adsv, size_t rv_start,
 		     const StringSetArray& all_dss_values);
-  /// helper function to copy a range to discrete real vars to sample_vars
+  /// helper function to copy a range from sample_vars to discrete real vars
   void sample_to_drv(const Real* sample_vars, Variables& vars,
 		     size_t adrv_start, size_t num_adrv, size_t rv_start);
 
