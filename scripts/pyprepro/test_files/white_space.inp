@@ -1,0 +1,14 @@
+This is two \\
+lines
+
+This is a \\
+%
+line
+
+This is a \\
+{% pass %}
+line
+
+This is a \\
+% txt = 'line'
+{txt}
