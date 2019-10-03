@@ -166,10 +166,12 @@ enum { CALIBRATE_NONE = 0, CALIBRATE_ONE, CALIBRATE_PER_EXPER,
 // ------------
 // LHS rank array processing modes:
 enum { IGNORE_RANKS, SET_RANKS, GET_RANKS, SET_GET_RANKS };
-// sampling modes (combinations of Uncertain/Active/All and Native/Uniform):
-enum { UNCERTAIN,           UNCERTAIN_UNIFORM,
+// sampling modes (combination of view and native distribution vs. uniform):
+enum { DESIGN,            //DESIGN_UNIFORM,
+       UNCERTAIN,           UNCERTAIN_UNIFORM,
        ALEATORY_UNCERTAIN,  ALEATORY_UNCERTAIN_UNIFORM,
        EPISTEMIC_UNCERTAIN, EPISTEMIC_UNCERTAIN_UNIFORM,
+       STATE,             //STATE_UNIFORM,
        ACTIVE,              ACTIVE_UNIFORM,
        ALL,                 ALL_UNIFORM };
 // (1) {,A,E}UNCERTAIN: sample only over the {,A,E} uncertain variables,

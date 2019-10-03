@@ -1595,6 +1595,16 @@ private:
   // discrete real variables
   //BitArray discreteRealSets;
 
+  /// previous view used in discrete_set_int_values(view): avoids
+  /// recomputation of activeDiscSetIntValues
+  short prevDSIView;
+  /// previous view used in discrete_set_string_values(view): avoids
+  /// recomputation of activeDiscSetStringValues
+  short prevDSSView;
+  /// previous view used in discrete_set_real_values(view): avoids
+  /// recomputation of activeDiscSetRealValues
+  short prevDSRView;
+
   /// used to collect sub-models for subordinate_models()
   ModelList modelList;
   /// a key indicating which models within a model recursion involve recasting

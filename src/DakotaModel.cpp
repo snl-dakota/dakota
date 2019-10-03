@@ -117,8 +117,9 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
-  estDerivsFlag(false), initCommsBcastFlag(false),
-  modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
+  estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
+  modelRep(NULL), referenceCount(1)
 {
   initialize_distribution(mvDist);
   initialize_distribution_parameters(mvDist);
@@ -245,7 +246,9 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
   modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
-  modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
+  modelAutoGraphicsFlag(false), prevDSIView(EMPTY_VIEW),
+  prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW), modelRep(NULL),
+  referenceCount(1)
 {
   if (share_svd) {
     currentVariables       =   Variables(svd);
@@ -286,6 +289,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   modelId(no_spec_id()), // to be replaced by derived ctors
   modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
   modelRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -4935,7 +4939,9 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
   if (modelRep)
     return modelRep->discrete_set_int_values(active_view);
 
-  // TO DO: return if already defined by a previous invocation
+  // return previous result for previous invocation with consistent view
+  // Note: any external update of DSI values should reset prevDSIView to 0
+  if (active_view == prevDSIView) return activeDiscSetIntValues;
 
   Pecos::MarginalsCorrDistribution* mvd_rep
     = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
@@ -5106,6 +5112,7 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
   }
   }
 
+  prevDSIView = active_view;
   return activeDiscSetIntValues;
 }
 
@@ -5115,7 +5122,9 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
   if (modelRep)
     return modelRep->discrete_set_string_values(active_view);
 
-  // TO DO: return if already defined (previous call)
+  // return previous result for previous invocation with consistent view
+  // Note: any external update of DSS values should reset prevDSSView to 0
+  if (active_view == prevDSSView) return activeDiscSetStringValues;
 
   Pecos::MarginalsCorrDistribution* mvd_rep
     = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
@@ -5216,7 +5225,8 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
   }
   }
 
-  return activeDiscSetStringValues; // if not previously returned
+  prevDSSView = active_view;
+  return activeDiscSetStringValues;
 }
 
 
@@ -5225,7 +5235,9 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
   if (modelRep)
     return modelRep->discrete_set_real_values(active_view);
 
-  // TO DO: return if already defined (previous call)
+  // return previous result for previous invocation with consistent view
+  // Note: any external update of DSR values should reset prevDSRView to 0
+  if (active_view == prevDSRView) return activeDiscSetRealValues;
 
   Pecos::MarginalsCorrDistribution* mvd_rep
     = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
@@ -5378,7 +5390,8 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
   }
   }
 
-  return activeDiscSetRealValues; // if not previously returned
+  prevDSRView = active_view;
+  return activeDiscSetRealValues;
 }
 
 

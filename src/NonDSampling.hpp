@@ -246,7 +246,6 @@ protected:
 
   /// Override default update of continuous vars only
   void update_model_from_sample(Model& model, const Real* sample_vars);
-
   /// override default mapping of continuous variables only
   void sample_to_variables(const Real* sample_vars, Variables& vars);
   /// override default mapping of continuous variables only
@@ -269,12 +268,11 @@ protected:
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void mode_counts(const Variables& vars, size_t& cv_start, size_t& num_cv,
-		   size_t& div_start,  size_t& num_div,
-		   size_t& dsv_start,  size_t& num_dsv,
-		   size_t& drv_start,  size_t& num_drv) const;
-  /// define subset views for uncertain sampling modes
-  void uncertain_bits(const Variables& vars, BitArray& active_vars,
-		      BitArray& active_corr) const;
+		   size_t& div_start, size_t& num_div, size_t& dsv_start,
+		   size_t& num_dsv, size_t& drv_start, size_t& num_drv) const;
+  /// define subset views for sampling modes
+  void mode_bits(const Variables& vars, BitArray& active_vars,
+		 BitArray& active_corr) const;
 
   /// helper to accumulate sum of finite samples
   static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,
@@ -364,19 +362,20 @@ private:
   
   /// helper function to consolidate update code
   void sample_to_variables(const Real* sample_vars, Variables& vars,
-			   size_t acv_start, size_t num_acv, size_t adiv_start,
-			   size_t num_adiv, size_t adsv_start, size_t num_adsv,
-			   size_t adrv_start, size_t num_adrv,
-			   const StringSetArray& all_dss_values);
+			   Model& model);
+  /// helper function to copy a range to continuous variables to sample_vars
   void sample_to_cv(const Real* sample_vars, Variables& vars, size_t acv_start,
-		    size_t num_acv, size_t rv_offset);
+		    size_t num_acv, size_t rv_start);
+  /// helper function to copy a range to discrete int variables to sample_vars
   void sample_to_div(const Real* sample_vars, Variables& vars,
-		     size_t adiv_start, size_t num_adiv, size_t rv_offset);
+		     size_t adiv_start, size_t num_adiv, size_t rv_start);
+  /// helper function to copy a range to discrete string vars to sample_vars
   void sample_to_dsv(const Real* sample_vars, Variables& vars,
-		     size_t adsv_start, size_t num_adsv, size_t rv_offset,
+		     size_t adsv_start, size_t num_adsv, size_t rv_start,
 		     const StringSetArray& all_dss_values);
+  /// helper function to copy a range to discrete real vars to sample_vars
   void sample_to_drv(const Real* sample_vars, Variables& vars,
-		     size_t adrv_start, size_t num_adrv, size_t rv_offset);
+		     size_t adrv_start, size_t num_adrv, size_t rv_start);
 
   //
   //- Heading: Data
@@ -507,6 +506,109 @@ get_parameter_sets(Model& model, const int num_samples,
     class member allSamples. */
 inline void NonDSampling::get_parameter_sets(Model& model)
 { get_parameter_sets(model, numSamples, allSamples); }
+
+
+inline void NonDSampling::
+sample_to_cv(const Real* sample_vars, Variables& vars, size_t acv_start,
+	     size_t num_acv, size_t rv_start)
+{
+  // sampled continuous vars (by value)
+  for (size_t i=0; i<num_acv; ++i)
+    vars.all_continuous_variable(sample_vars[i+rv_start], i+acv_start);
+}
+
+
+inline void NonDSampling::
+sample_to_div(const Real* sample_vars, Variables& vars, size_t adiv_start,
+	      size_t num_adiv, size_t rv_start)
+{
+  // sampled discrete int vars (by value cast from Real)
+  for (size_t i=0; i<num_adiv; ++i)
+    vars.all_discrete_int_variable((int)sample_vars[i+rv_start], i+adiv_start);
+}
+
+
+inline void NonDSampling::
+sample_to_dsv(const Real* sample_vars, Variables& vars, size_t adsv_start,
+	      size_t num_adsv, size_t rv_start,
+	      const StringSetArray& dss_values)
+{
+  // sampled discrete string vars (by index cast from Real)
+  size_t i, set_index, offset_adsv = adsv_start;
+  for (i=0; i<num_adsv; ++i, ++offset_adsv) {
+    set_index = (size_t)sample_vars[i+rv_start];
+    const String& dss = set_index_to_value(set_index, dss_values[offset_adsv]);
+    vars.all_discrete_string_variable(dss, offset_adsv);
+  }
+}
+
+
+inline void NonDSampling::
+sample_to_drv(const Real* sample_vars, Variables& vars, size_t adrv_start,
+	      size_t num_adrv, size_t rv_start)
+{
+  // sampled discrete real vars (by value)
+  for (size_t i=0; i<num_adrv; ++i)
+    vars.all_discrete_real_variable(sample_vars[i+rv_start], i+adrv_start);
+}
+
+
+inline void NonDSampling::
+sample_to_type(const Real* sample_vars, Variables& vars, size_t& cv_start,
+	       size_t num_cv, size_t& div_start, size_t num_div,
+	       size_t& dsv_start, size_t num_dsv, size_t& drv_start,
+	       size_t num_drv, size_t& rv_start, Model& model)
+{
+  sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+  rv_start += num_cv;   cv_start  += num_cv; 
+  sample_to_div(sample_vars, vars, div_start, num_div, rv_start);
+  rv_start += num_div;  div_start += num_div;
+  if (num_dsv) {
+    short active_view = vars.view().first, all_view =
+      ( active_view == RELAXED_ALL || ( active_view >= RELAXED_DESIGN &&
+        active_view <= RELAXED_STATE )) ? RELAXED_ALL : MIXED_ALL;
+    // Note: Model::activeDiscSetStringValues is cached, so no penalty for
+    //       repeated query with same view
+    sample_to_dsv(sample_vars, vars, dsv_start, num_dsv, rv_start,
+		  model.discrete_set_string_values(all_view));
+    rv_start += num_dsv;  dsv_start += num_dsv;
+  }
+  sample_to_drv(sample_vars, vars, drv_start, num_drv, rv_start);
+  rv_start += num_drv;  drv_start += num_drv;
+}
+
+
+inline void NonDSampling::
+sample_to_cv_type(const Real* sample_vars, Variables& vars, size_t& cv_start,
+		  size_t num_cv, size_t& div_start, size_t num_div,
+		  size_t& dsv_start, size_t num_dsv, size_t& drv_start,
+		  size_t num_drv, size_t& rv_start)//, Model& model)
+{
+  // UNIFORM views do not currently support non-relaxed discrete
+
+  sample_to_cv(sample_vars, vars, cv_start, num_cv, rv_start);
+  rv_start += num_cv;   cv_start  += num_cv; 
+  //sample_to_div(sample_vars, vars, div_start, num_div, rv_start);
+  rv_start += num_div;  //div_start += num_div;
+  if (num_dsv) {
+    //sample_to_dsv(sample_vars, vars, dsv_start,num_dsv,rv_start,
+    //              model.discrete_set_string_values(all_view));
+    rv_start += num_dsv;  //dsv_start += num_dsv;
+  }
+  //sample_to_drv(sample_vars, vars, drv_start, num_drv, rv_start);
+  rv_start += num_drv;  //drv_start += num_drv;
+}
+
+
+inline void NonDSampling::
+update_model_from_sample(Model& model, const Real* sample_vars)
+{ sample_to_variables(sample_vars, model.current_variables(), model); }
+
+
+inline void NonDSampling::
+sample_to_variables(const Real* sample_vars, Variables& vars)
+{ sample_to_variables(sample_vars, vars, iteratedModel); }
+// default to iteratedModel for dss values
 
 
 inline const RealVector& NonDSampling::response_error_estimates() const
