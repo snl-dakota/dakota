@@ -816,8 +816,12 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
     // (1) this is 4th central moment (non-excess, unnormalized),
     //     which differs from the fourth cumulant (excess, unnormalized)
     // (2) cm2 is now unbiased within following conversion:
-    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
-        / (n_sq - 3. * Nlq + 3.);
+    
+    //cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
+    //    / (n_sq - 3. * Nlq + 3.);
+    //[fm] account for bias correction due to cm2^2 term
+    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * (n_sq - Nlq) / (n_sq - 2. * Nlq + 3) * cm2 * cm2 )
+        / ( (n_sq - 3. * Nlq + 3.) - (6. * Nlq - 9.) * (n_sq - Nlq) / (Nlq * (n_sq - 2. * Nlq + 3.)) );
   }
   else
     Cerr << "Warning: due to small sample size, resorting to biased estimator "

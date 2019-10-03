@@ -688,24 +688,45 @@ void NonDLHSSampling::update_final_statistics()
     finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
   size_t i, cntr = 0;
   Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
-    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev;
+    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev, qoi_cm4, qoi_exckurt;
   for (i=0; i<numFunctions; ++i) {
     switch (finalMomentsType) {
     case STANDARD_MOMENTS:
       qoi_stdev = momentStats(1,i);
       // standard error (estimator std-dev) for Monte Carlo mean
       finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      if(outputLevel >= DEBUG_OUTPUT)
+	Cout << "Estimator SE for mean = " << finalStatErrors[cntr-1] << "\n";
       // standard error (estimator std-dev) for Monte Carlo std-deviation
       // (Harding et al., 2014: assumes normally distributed population): 
-      finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
+      //finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
+      // [fm] using Var of Var estimator from excess kurtosis following
+      // https://stats.stackexchange.com/questions/29905/reference-for-mathrmvars2-sigma4-left-frac2n-1-frac-kappan/29945#29945
+      // and delta method
+      qoi_exckurt = momentStats(3, i);
+      finalStatErrors[cntr++] = 1. / (2. * qoi_stdev) * std::sqrt(qoi_stdev * qoi_stdev * qoi_stdev * qoi_stdev * (qoi_exckurt/ns + 2./(ns - 1.) ) );
+      if(outputLevel >= DEBUG_OUTPUT)
+	Cout << "Estimator SE for stddev = " << finalStatErrors[cntr-1] << "\n\n";
       break;
     case CENTRAL_MOMENTS:
       qoi_var = momentStats(1,i); qoi_stdev = std::sqrt(qoi_var);
+      qoi_cm4 = momentStats(3,i);
+   
       // standard error (estimator std-dev) for Monte Carlo mean
       finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      if(outputLevel >= DEBUG_OUTPUT)
+	Cout << "Estimator SE for mean = " << finalStatErrors[cntr-1] << "\n";
       // standard error (estimator std-dev) for Monte Carlo variance
       // (Harding et al., 2014: assumes normally distributed population): 
-      finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
+      //finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
+      //[fm] Introduction to the Theory of Statistics, Var[Var] = 1/N (cm4 - (N-3)/(N-1) cm2^2) + bias correction
+      //finalStatErrors[cntr++] = std::sqrt( 1./ns * (qoi_cm4 - (ns - 3.)/(ns - 1.) * qoi_var * qoi_var ) );
+      finalStatErrors[cntr++] = std::sqrt( (ns - 1.)/(ns*ns - 2. * ns + 3.) * (qoi_cm4 - (ns - 3.)/(ns - 1.) * qoi_var * qoi_var ) );
+      if(outputLevel >= DEBUG_OUTPUT)
+	Cout << "QoICM4 = " << qoi_cm4 << "\n";
+	Cout << "QoICM2 = " << qoi_var << "\n";
+	Cout << "ns = " << ns << "\n";
+	Cout << "Estimator SE for variance = " << finalStatErrors[cntr-1] << "\n\n";
       break;
     }
     // level mapping errors not implemented at this time

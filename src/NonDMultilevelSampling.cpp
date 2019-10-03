@@ -2573,9 +2573,10 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     }
     check_negative(agg_estim_var);
     finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
-    if (outputLevel >= DEBUG_OUTPUT)
+    if (outputLevel >= DEBUG_OUTPUT){
       Cout << "Estimator variance for mean = " << agg_estim_var << "\n";
-
+      Cout << "Estimator SE for mean = " << finalStatErrors[cntr-1] << "\n";
+    }
     // std error in variance or std deviation estimate
     lev = 0; Nlq = num_Q[lev][qoi];
     uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
@@ -2606,17 +2607,26 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	+ cm1lm1_sq * mu_Q2l + cm1l_sq * mu_Q2lm1
 	- 2. * cm1l * mu_Q1lQ2lm1 + 4. * cm1l * cm1lm1 * mu_Q1lQ1lm1
 	- 3. * cm1l_sq * cm1lm1_sq;
-      var_P2l     = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;
-      var_P2lm1   = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
+      //var_P2l     = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;
+      //var_P2lm1   = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
+      // [fm] bias correction for var_P2l and var_P2lm1
+      var_P2l = Nlq*(Nlq-1.)/(Nlq*Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.)/(Nlq - 1.) * cm2l_sq); 
+      var_P2lm1 = Nlq*(Nlq-1.)/(Nlq*Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.)/(Nlq - 1.) * cm2lm1_sq); 
       // [gg] fix to derivation: squared term
       term = mu_Q1lQ1lm1 - cm1l * cm1lm1;
       covar_P2lP2lm1
 	= mu_P2lP2lm1 - var_Ql * var_Qlm1 + term * term / (Nlq - 1.);
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
+      if (outputLevel >= DEBUG_OUTPUT){
+	Cout << "Estimator for covariance for variance = " << covar_P2lP2lm1 << "\n";
+	Cout << "Estimator for covariance for variance first term = " << mu_P2lP2lm1 << "\n";
+	Cout << "Estimator for covariance for variance second term = " << var_Ql * var_Qlm1 << "\n";
+	Cout << "Estimator for covariance for variance third  term = " << term * term / (Nlq - 1.) << "\n";
+      }
     }
     check_negative(agg_estim_var);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Estimator variance for variance = " << agg_estim_var << "\n\n";
+      Cout << "Estimator SE for variance = " << sqrt(agg_estim_var) << "\n";
 
     Real mom2 = momentStats(1,qoi);
     if (finalMomentsType == STANDARD_MOMENTS && mom2 > 0.) {
@@ -2631,6 +2641,8 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       // in the derivative approx goes to zero asymptotically.
       finalStatErrors[cntr] = std::sqrt(agg_estim_var) / (2. * mom2);
       ++cntr;
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Estimator SE for stddev = " << finalStatErrors[cntr-1] << "\n\n";
     }
     else // std error of variance estimator
       finalStatErrors[cntr++] = std::sqrt(agg_estim_var);
