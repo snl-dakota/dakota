@@ -200,8 +200,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
       varTypeMap["d"]  = VAR_d;  //varTypeMap["h"] = VAR_h;
       varTypeMap["F0"] = VAR_F0; //varTypeMap["E"] = VAR_E; break;
     //case PROBLEM18:
-      varTypeMap["x"] = VAR_x; varTypeMap["xi"] = VAR_xi; varTypeMap["Af"] = VAR_Af; 
-      varTypeMap["Ac"] = VAR_Ac;
+      varTypeMap["x"] = VAR_x; varTypeMap["xi"] = VAR_xi; 
+      varTypeMap["Af"] = VAR_Af; varTypeMap["Ac"] = VAR_Ac;
     //}
   }
 }
@@ -4314,14 +4314,24 @@ int TestDriverInterface::problem18(){
   std::map<var_t, Real>::iterator xi_iter = xCM.find(VAR_xi);
   Real xi = (xi_iter == xCM.end()) ? 0. : xi_iter->second; // RV xi
 
-  std::map<var_t, Real>::iterator Af_iter = xCM.find(VAR_Af);
-  Real Af = (Af_iter == xCM.end()) ? 1. : Af_iter->second; // Correlation Af for objective
+  std::map<var_t, Real>::iterator Af_iter = xDRM.find(VAR_Af);
+  Real Af = (Af_iter == xDRM.end()) ? 1. : Af_iter->second; // Correlation Af for objective
 
-  std::map<var_t, Real>::iterator Ac_iter = xCM.find(VAR_Ac);
-  Real Ac = (Ac_iter == xCM.end()) ? 1. : Ac_iter->second; // Correlation Ac for constraint
+  std::map<var_t, Real>::iterator Ac_iter = xDRM.find(VAR_Ac);
+  Real Ac = (Ac_iter == xDRM.end()) ? 1. : Ac_iter->second; // Correlation Ac for constraint
 
   fnVals[0] = problem18_f(x) + Af * xi * xi * xi;
   fnVals[1] = problem18_g(x) - problem18_f(x) + Ac * xi * xi * xi;
+
+  //std::cout << "Input parameters:" << std::endl;
+  //std::cout << "x: " << x << std::endl;
+  //std::cout << "xi: " << xi << std::endl;
+  //std::cout << "Af: " << Af << std::endl;
+  //std::cout << "Ac: " << Ac << std::endl;
+  //std::cout << "x reached end: " << (x_iter == xCM.end()) << std::endl;
+  //std::cout << "xi reached end: " << (xi_iter == xCM.end()) << std::endl;
+  //std::cout << "Af reached end: " << (Af_iter == xDRM.end()) << std::endl;
+  //std::cout << "Ac reached end: " << (Ac_iter == xDRM.end()) << std::endl;
 
   return 0;
 }
