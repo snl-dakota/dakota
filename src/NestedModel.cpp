@@ -3411,23 +3411,25 @@ ActiveSet NestedModel::default_interface_active_set() {
   size_t num_fun = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
   ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  bool has_deriv_vars = set.derivative_vector().size() != 0;
   ShortArray asv(num_fun, 1);
-  if(optInterfGradientType == "analytic") {
-    for(auto &a : asv)
-      a |=  2;
-  } else if(optInterfGradientType == "mixed") {
-    for(const auto &gi : optInterfGradIdAnalytic)
-      asv[gi-1] |= 2;
-  }
+  if(has_deriv_vars) {
+    if(optInterfGradientType == "analytic") {
+      for(auto &a : asv)
+        a |=  2;
+    } else if(optInterfGradientType == "mixed") {
+      for(const auto &gi : optInterfGradIdAnalytic)
+        asv[gi-1] |= 2;
+    }
 
-  if(optInterfHessianType == "analytic") {
-    for(auto &a : asv)
-      a |=  4;
-  } else if(optInterfHessianType == "mixed") {
-    for(const auto &hi : optInterfHessIdAnalytic)
-      asv[hi-1] |= 4;
+    if(optInterfHessianType == "analytic") {
+      for(auto &a : asv)
+        a |=  4;
+    } else if(optInterfHessianType == "mixed") {
+      for(const auto &hi : optInterfHessIdAnalytic)
+        asv[hi-1] |= 4;
+    }
   }
-
   set.request_vector(asv);
   return set;
 }
