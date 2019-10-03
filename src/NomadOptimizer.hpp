@@ -188,6 +188,13 @@ class NomadOptimizer::Evaluator : public NOMAD::Evaluator
 {
 private:
 
+  /// map NOMAD evaluation point to Dakota model
+  void set_variables(const NOMAD::Eval_Point &x) const;
+  /// evaluate the Dakota model (block or not, but don't collect response)
+  void eval_model(bool allow_asynch, const NOMAD::Eval_Point& x) const;
+  /// map Dakota model responses to NOMAD evaluation point
+  void get_responses(const RealVector& ftn_vals, NOMAD::Eval_Point &x) const;
+
   Model& _model;
   int n_cont,n_disc_int, n_disc_real;
 
@@ -244,7 +251,12 @@ public:
   bool eval_x (NOMAD::Eval_Point &x,
 	       const NOMAD::Double &h_max,
 	       bool &count_eval) const;
-	       
+
+  /// multi-point variant of evaluator
+  bool eval_x ( std::list<NOMAD::Eval_Point *>& x,
+		const NOMAD::Double& h_max,
+		std::list<bool>& count_eval ) const;
+
   /// publishes constraint transformation
   void set_constraint_map (int numNomadNonlinearIneqConstraints,
 			   int numNomadNonlinearEqConstraints,
