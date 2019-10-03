@@ -450,23 +450,25 @@ ActiveSet SimulationModel::default_interface_active_set() {
   // compute the default active set for the user-defined interface
   ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  bool has_deriv_vars = set.derivative_vector().size() != 0;
   ShortArray asv(numFns, 1);
-  if(gradientType == "analytic") {
-    for(auto &a : asv)
-      a |=  2;
-  } else if(gradientType == "mixed") {
-    for(const auto &gi : gradIdAnalytic)
-      asv[gi-1] |= 2;
-  }
+  if(has_deriv_vars) {
+    if(gradientType == "analytic") {
+      for(auto &a : asv)
+        a |=  2;
+    } else if(gradientType == "mixed") {
+      for(const auto &gi : gradIdAnalytic)
+        asv[gi-1] |= 2;
+    }
 
-  if(hessianType == "analytic") {
-    for(auto &a : asv)
-      a |=  4;
-  } else if(hessianType == "mixed") {
-    for(const auto &hi : hessIdAnalytic)
-      asv[hi-1] |= 4;
+    if(hessianType == "analytic") {
+      for(auto &a : asv)
+        a |=  4;
+    } else if(hessianType == "mixed") {
+      for(const auto &hi : hessIdAnalytic)
+        asv[hi-1] |= 4;
+    }
   }
-
   set.request_vector(asv);
   return set;
 }

@@ -13,16 +13,12 @@
 #include "PSUADEDesignCompExp.hpp"
 #include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
-#ifdef HAVE_DDACE
-#include "Distribution.h"
-#elif defined(DAKOTA_UTILIB)
-#include <utilib/seconds.h>
-#endif
 // PSUADE specific headers
 #include "MOATSampling.h"
 #include "sData.h"
 #include "MOATAnalyzer.h"
 #include "aData.h"
+#include "dakota_stat_util.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -209,7 +205,7 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
     // been specified).  This renders the study repeatable but the sampling
     // pattern varies from one run to the next.
     if (numDACERuns == 1) { // set initial seed
-      if (!seedSpec) // no user specification: random behavior
+      if (!seedSpec) { // no user specification: random behavior
 	// Generate initial seed from a system clock.  NOTE: the system clock
 	// is not reused on subsequent invocations since (1) clock granularity
 	// can be too coarse (can repeat on subsequent runs for inexpensive test
@@ -219,13 +215,8 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 	// user-specified case.  This has the additional benefit that a random
 	// run can be recreated by specifying the clock-generated seed in the
 	// input file.
-#ifdef HAVE_DDACE
-	randomSeed = 1 + DistributionBase::timeSeed(); // microsecs, time of day
-#elif defined(DAKOTA_UTILIB)
-        randomSeed = 1 + (int)CurrentTime(); // secs, time of day
-#else
-        randomSeed = 1 + (int)clock(); // last resort: clock ticks, exec time
-#endif
+	randomSeed = generate_system_seed();
+      }
     }
     else if (varyPattern) { // define sequence of seed values for numLHSRuns > 1
       // It would be preferable to call srand() only once and then call rand()

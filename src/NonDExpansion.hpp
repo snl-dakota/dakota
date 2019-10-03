@@ -37,7 +37,9 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, bool piecewise_basis,
+		short exp_coeffs_approach, short refine_type,
+		short refine_control, short covar_control, short ml_discrep,
+		short rule_nest, short rule_growth, bool piecewise_basis,
 		bool use_derivs);
   /// destructor
   ~NonDExpansion();
@@ -71,6 +73,15 @@ public:
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// return maxRefineIterations
+  int maximum_refinement_iterations() const;
+  /// set maxRefineIterations
+  void maximum_refinement_iterations(int max_refine_iter);
 
 protected:
 
@@ -121,6 +132,9 @@ protected:
   /// restore statistics into native stats arrays for a selected candidate
   virtual void push_candidate(const RealVector& stats_star);
 
+  /// print global sensitivity indices
+  virtual void print_sobol_indices(std::ostream& s);
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -133,7 +147,7 @@ protected:
   void update_final_statistics_gradients();
 
   //
-  //- Heading: Member function definitions
+  //- Heading: Member functions
   //
 
   /// common constructor code for initialization of natafTransform
@@ -262,7 +276,7 @@ protected:
   /// compute only numerical level mappings; this uses a lightweight approach
   /// for incremental statistics (no derivatives, no finalStatistics update)
   void compute_numerical_level_mappings();
- /// compute Sobol' indices for main, interaction, and total effects; this
+  /// compute Sobol' indices for main, interaction, and total effects; this
   /// is intended for incremental statistics
   void compute_sobol_indices();
 
@@ -444,8 +458,6 @@ private:
   
   /// print expansion and numerical moments
   void print_moments(std::ostream& s);
-  /// print global sensitivity indices
-  void print_sobol_indices(std::ostream& s);
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
 
@@ -491,6 +503,14 @@ private:
   /// refinement samples for expansion sampler
   IntVector refinementSamples;
 };
+
+
+inline int NonDExpansion::maximum_refinement_iterations() const
+{ return maxRefineIterations; }
+
+
+inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
+{ maxRefineIterations = max_refine_iter; }
 
 
 inline const Model& NonDExpansion::algorithm_space_model() const

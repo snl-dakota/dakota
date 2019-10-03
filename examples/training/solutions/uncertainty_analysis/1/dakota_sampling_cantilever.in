@@ -5,7 +5,7 @@ method
   sampling sample_type lhs
   samples 400 
   seed 1337
-  response_levels  1.e5 1e-3
+  response_levels  5.e3 1e-3
     num_response_levels 0 1 1
   probability_levels 0.01 0.025 0.05 0.1:0.1:0.9 0.95 0.975 0.99
                      0.01 0.025 0.05 0.1:0.1:0.9 0.95 0.975 0.99

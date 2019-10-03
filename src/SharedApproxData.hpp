@@ -43,8 +43,13 @@ class SharedApproxData
   friend class QMEApproximation;
   friend class GaussProcApproximation;
   friend class VPSApproximation;
-  friend class SurfpackApproximation;
   friend class PecosApproximation;
+#ifdef HAVE_C3
+  friend class C3Approximation;
+#endif // HAVE_C3
+#ifdef HAVE_SURFPACK
+  friend class SurfpackApproximation;
+#endif // HAVE_SURFPACK
 
 public:
 

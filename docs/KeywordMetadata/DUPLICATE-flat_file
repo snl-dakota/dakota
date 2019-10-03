@@ -23,7 +23,10 @@ Setting the size for this initializer has the effect of requiring a
 minimum number of designs to create. If this minimum number has not
 been created once the files are all read, the rest are created using
 the \c unique_random initializer and then the \c simple_random
-initializer if necessary.
+initializer if necessary.  If more designs are found in the
+initialization files than specified by the initial size, then the
+initial size is ignored and all designs read out of the files are kept
+in the initial population.
 
 
 Topics::

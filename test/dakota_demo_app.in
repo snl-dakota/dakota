@@ -1,0 +1,32 @@
+#@ *: DakotaConfig=HAVE_DEMO_TPL
+#@ s1: ReqFiles=demo_tpl.opts
+
+method,
+    demo_tpl
+#    options_file = "demo_tpl.opts"                     #s1
+    max_iterations = 1000
+#    max_function_evaluations = 750                     #s2
+    solution_target = 0.05
+
+variables,
+    continuous_design = 3
+    initial_point      -1.0    1.5   2.0
+    upper_bounds	10.0   10.0  10.0
+    lower_bounds       -10.0  -10.0 -10.0
+    descriptors	        'x1'  'x2'  'x3'
+
+interface,
+    direct
+    analysis_driver = 'text_book'
+
+responses,
+    objective_functions = 1
+#     nonlinear_equality_constraints = 1                #s2
+#     nonlinear_equality_targets = -.2                  #s2
+#     nonlinear_inequality_constraints = 2              #s3,#s4
+#     nonlinear_inequality_lower_bounds = -2.0  -3.0    #s4
+#     nonlinear_inequality_upper_bounds =  5.0   3.0    #s4
+#     descriptors 'f' 'c1' 'c2'                         #s3
+    no_gradients
+    no_hessians
+

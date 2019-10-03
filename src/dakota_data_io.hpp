@@ -172,6 +172,64 @@ template<class T> boost::shared_ptr<T> to_boost_ptr(const std::shared_ptr<T> &p)
 
 namespace Dakota {
 
+
+// Forward declarations since these operators are used in read/write data and vice-versa
+
+/// global std::istream extraction operator for std::vector
+template <typename T>
+std::istream& operator>>(std::istream& s, std::vector<T>& data);
+
+/// global std::ostream insertion operator for std::vector
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const std::vector<T>& data);
+
+/// global std::ostream insertion operator for std::list
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const std::list<T>& data);
+
+/// global ostream insertion operator for std::pair
+template <typename U, typename V>
+std::ostream& operator<<(std::ostream& s, const std::pair<U,V>& data);
+
+/// global std::ostream insertion operator for std::set
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const std::set<T>& data);
+
+/// global std::ostream insertion operator for std::map
+template <typename KeyT, typename ValueT>
+std::ostream& operator<<(std::ostream& s, const std::map<KeyT, ValueT>& data);
+
+/// global std::istream extraction operator for SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+std::istream& operator>>(std::istream& s,
+			 Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data);
+
+/// global std::ostream insertion operator for SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+std::ostream& operator<<(std::ostream& s,
+			 const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data);
+
+/// global std::istream extraction operator for SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::istream& operator>>(std::istream& s,
+			 Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data);
+
+/// global std::ostream insertion operator for SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::ostream& operator<<(std::ostream& s,
+			 const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data);
+
+/// global std::istream extraction operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::istream& operator>>(std::istream& s,
+			 Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data);
+
+/// global std::ostream insertion operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::ostream& operator<<(std::ostream& s,
+			 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data);
+
+
 /// simple utility to convert intrinsics to strings 
 template <typename T>
   inline std::string convert_to_string(const T &value) {
@@ -479,7 +537,7 @@ void read_data_partial_tabular(std::istream& s,
     else {
       char err[80];
       std::sprintf(err,
-	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
+	      "At EOF: insufficient tabular data for SerialDenseVector[%zu]", i);
       // TODO: enable this code once we can safely include lexical_cast.hpp
       // std::string err;
       // err += "At EOF: insufficient tabular data for SerialDenseVector[";
@@ -507,7 +565,7 @@ void read_data_partial_tabular(std::istream& s, OrdinalType start_index,
     else {
       char err[80];
       std::sprintf(err,
-	      "At EOF: insufficient tabular data for StringMultiArray[%d]", i);
+	      "At EOF: insufficient tabular data for StringMultiArray[%zu]", i);
       // TODO: enable this code once we can safely include lexical_cast.hpp
       // std::string err;
       // err += "At EOF: insufficient tabular data for StringMultiArray[";

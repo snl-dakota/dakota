@@ -26,6 +26,8 @@ namespace Dakota {
 
 /// Create a method name (HDF5 link name) from iterator_id
 String method_hdf5_link_name(const StrStrSizet& iterator_id);
+/// Create a method results name (HDF5 link name) from iterator_id
+String method_results_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create an execution name (HDF5 link name) from iterator_id
 String execution_hdf5_link_name(const StrStrSizet& iterator_id);
 /// Create a scale name (hdf5 link name) for a scale from an iterator_id,
@@ -126,6 +128,18 @@ class AttachScaleVisitor : public boost::static_visitor <>
         hdf5Stream->attach_scale(dsetName, name, scale.label, dimension);
     }
 
+    /// Called by boost::apply_vistitor to process an IntegerScale
+    void operator()(const IntegerScale &scale) {
+        String name =
+          scale_hdf5_link_name(iteratorID, location, scale);
+        if(!hdf5Stream->exists(name)) {
+          if(scale.isMatrix) 
+            hdf5Stream->store_matrix(name, scale.items, scale.numCols);
+          else
+            hdf5Stream->store_vector(name, scale.items);
+        }
+        hdf5Stream->attach_scale(dsetName, name, scale.label, dimension);
+    }
 
   private:
     /// Iterator ID for the method and execuation

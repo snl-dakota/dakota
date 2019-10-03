@@ -63,7 +63,7 @@ bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial
 
   if (numWorkersUsed < numWorkersTotal) {
 
-    set_variables<HOPSPACK::Vector>(apps_xtrial, iteratedModel, iteratedModel.current_variables());
+    set_variables<>(apps_xtrial, iteratedModel, iteratedModel.current_variables());
 
     numWorkersUsed++;
   }

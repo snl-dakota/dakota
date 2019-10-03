@@ -1,0 +1,18 @@
+Blurb:: Sample allocation approach for multifidelity polynomial chaos and multifidelity stochastic collocation
+
+Description::
+
+Multifidelity polynomial chaos and multifidelity stochastic
+collocation can optionally employ a greedy sample allocation strategy,
+where adaptive refinement spans multiple level candidates.  The
+default, when \c allocation_control is not specified, is to compute or
+adapt separately for each model fidelity.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+See_Also::

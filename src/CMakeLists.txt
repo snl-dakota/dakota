@@ -390,9 +390,6 @@ if(DAKOTA_HAVE_HDF5)
   list(APPEND EXT_TPL_INCDIRS ${HDF5_INCLUDE_DIRS})
   list(APPEND EXT_TPL_LIBDIRS ${HDF5_LIBRARY_DIRS})
   list(APPEND EXT_TPL_LIBS ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES})
-  if(WIN32)
-    list(APPEND EXT_TPL_LIBS ${ZLIB_LIBRARIES})
-  endif()
 endif(DAKOTA_HAVE_HDF5)
 
 
@@ -427,13 +424,14 @@ set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_data_io.cpp dakota_global_defs.cpp 
-    dakota_linear_algebra.cpp dakota_tabular_io.cpp 
+    dakota_linear_algebra.cpp dakota_stat_util.cpp dakota_tabular_io.cpp
     CommandLineHandler.cpp DakotaGraphics.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
     predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
+    DakotaTPLDataTransfer.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
@@ -613,6 +611,27 @@ if(Boost_FOUND)
   list(APPEND EXT_TPL_LIBS ${Boost_LIBRARIES})
 endif()
 
+CheckPackage(C3)
+if(HAVE_C3)
+  set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp)
+  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp)
+  # BMA: disabled these includes as we aren't including c3.h
+  ##list(APPEND DAKOTA_INCDIRS
+  ##  ${C3_SOURCE_DIR}/include
+  ##  ${C3_SOURCE_DIR}/src/lib_stringmanip
+  ##  ${C3_SOURCE_DIR}/src/lib_array
+  ##  ${C3_SOURCE_DIR}/src/lib_linalg
+  ##  ${C3_SOURCE_DIR}/src/lib_quadrature
+  ##  ${C3_SOURCE_DIR}/src/lib_optimization
+  ##  ${C3_SOURCE_DIR}/src/lib_funcs
+  ##  ${C3_SOURCE_DIR}/src/lib_clinalg
+  ##  ${C3_SOURCE_DIR}/src/lib_probability
+  ##  ${C3_SOURCE_DIR}/src/lib_superlearn
+  ##  ${C3_SOURCE_DIR}/src/lib_interface
+  ##  )
+  list(APPEND DAKOTA_PKG_LIBS c3)
+endif()
+
 CheckPackage(CONMIN)
 if(HAVE_CONMIN)
   list(APPEND DAKOTA_LIBDIRS ${CONMIN_LIB_DIRS})
@@ -754,6 +773,17 @@ if(HAVE_ROL)
   set(iterator_src ${iterator_src} ROLOptimizer.cpp)
 endif(HAVE_ROL)
 
+if(HAVE_DEMO_TPL)
+  set(DAKOTA_DEMOTPL_ROOT_DIR "${Dakota_SOURCE_DIR}/packages/external/demo_tpl")
+  list(APPEND DAKOTA_INCDIRS 
+    ${DAKOTA_DEMOTPL_ROOT_DIR}/dakota_src
+    ${DAKOTA_DEMOTPL_ROOT_DIR}/src)
+  set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp)
+  list(APPEND DAKOTA_PKG_LIBS demo_tpl)
+  list(APPEND EXPORT_TARGETS demo_tpl)
+  add_definitions("-DHAVE_DEMO_TPL")
+endif(HAVE_DEMO_TPL)
+
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
   list(APPEND interface_src PSUADEDesignCompExp.cpp)
@@ -817,6 +847,11 @@ if(DAKOTA_HAVE_GSL)
 endif(DAKOTA_HAVE_GSL)
 
 list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
+# BMA: Should probably use only ATLAS when enabling C3...
+if(HAVE_C3)
+  message(WARNING "Dakota/C3: Duplicate include of ATLAS and BLAS/LAPACK")
+  list(INSERT EXT_TPL_LIBS 0 "${atlas_lib}")
+endif()
 
 # Now that packages and TPLs are processed, set include/link directories
 include_directories(${DAKOTA_INCDIRS} ${EXT_TPL_INCDIRS})

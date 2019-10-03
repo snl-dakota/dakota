@@ -19,12 +19,8 @@
 #include "ProblemDescDB.hpp"
 #include "dakota_tabular_io.hpp"
 #include "pecos_stat_util.hpp"
-#ifdef HAVE_DDACE
-#include "Distribution.h"
-#elif defined(DAKOTA_UTILIB)
-#include <utilib/seconds.h>
-#endif
 #include "ParallelLibrary.hpp"
+#include "dakota_stat_util.hpp"
 
 //#define DEBUG
 
@@ -503,29 +499,6 @@ void NonD::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
   iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
-}
-
-
-int NonD::generate_system_seed()
-{
-  // Generate initial seed from a system clock.  NOTE: the system clock
-  // should not used for multiple LHS calls since (1) clock granularity can
-  // be too coarse (can repeat on subsequent runs for inexpensive test fns)
-  // and (2) seed progression can be highly structured, which could induce
-  // correlation between sample sets.  Instead, the clock-generated case
-  // varies the seed below using the same approach as the user-specified
-  // case.  This has the additional benefit that a random run can be
-  // recreated by specifying the clock-generated seed in the input file.
-  int seed = 1;
-#ifdef HAVE_DDACE
-  seed += DistributionBase::timeSeed(); // microsecs, time of day
-#elif defined(DAKOTA_UTILIB)
-  seed += (int)CurrentTime();           // secs, time of day
-#else
-  seed += (int)clock();                 // clock ticks, exec time
-#endif
-
-  return seed;
 }
 
 
@@ -1837,7 +1810,7 @@ void NonD::initialize_final_statistics()
   StringArray stats_labels(num_final_stats);
   if (epistemicStats) { // epistemic & mixed aleatory/epistemic
     for (i=0; i<numFunctions; ++i) {
-      std::sprintf(resp_tag, "_r%i", i+1);
+      std::sprintf(resp_tag, "_r%zu", i+1);
       stats_labels[cntr++] = String("z_lo") + String(resp_tag);
       stats_labels[cntr++] = String("z_up") + String(resp_tag);
     }
@@ -1846,7 +1819,7 @@ void NonD::initialize_final_statistics()
     char lev_tag[10];
     String dist_tag = (cdfFlag) ? String("cdf") : String("ccdf");
     for (i=0; i<numFunctions; ++i) {
-      std::sprintf(resp_tag, "_r%i", i+1);
+      std::sprintf(resp_tag, "_r%zu", i+1);
       if (finalMomentsType) {
 	stats_labels[cntr++] = String("mean") + String(resp_tag);
 	stats_labels[cntr++] = (finalMomentsType == CENTRAL_MOMENTS) ?
@@ -1856,16 +1829,16 @@ void NonD::initialize_final_statistics()
       num_levels = requestedRespLevels[i].length();
       for (j=0; j<num_levels; ++j, ++cntr) {
 	switch (respLevelTarget) {
-	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%i",  j+1); break;
-	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%i",  j+1); break;
-	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%i", j+1); break;
+	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%zu",  j+1); break;
+	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%zu",  j+1); break;
+	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%zu", j+1); break;
 	}
 	stats_labels[cntr] = dist_tag + String(lev_tag) + String(resp_tag);
       }
       num_levels = requestedProbLevels[i].length() +
 	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
       for (j=0; j<num_levels; ++j, ++cntr) {
-	std::sprintf(lev_tag, "_zlev%i", j+1);
+	std::sprintf(lev_tag, "_zlev%zu", j+1);
 	stats_labels[cntr] = dist_tag + String(lev_tag) + String(resp_tag);
       }
     }
@@ -1873,9 +1846,9 @@ void NonD::initialize_final_statistics()
       String sys_tag("_sys");
       for (j=0; j<rl_len; ++j, ++cntr) {
 	switch (respLevelTarget) {
-	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%i",  j+1); break;
-	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%i",  j+1); break;
-	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%i", j+1); break;
+	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%zu",  j+1); break;
+	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%zu",  j+1); break;
+	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%zu", j+1); break;
 	}
 	stats_labels[cntr] = dist_tag + String(lev_tag) + sys_tag;
       }

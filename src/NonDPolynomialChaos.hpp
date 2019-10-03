@@ -42,14 +42,19 @@ public:
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      unsigned short num_int, const RealVector& dim_pref,
-		      short u_space_type, bool piecewise_basis,
-		      bool use_derivs);
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      unsigned short exp_order, const RealVector& dim_pref,
 		      size_t colloc_pts, Real colloc_ratio, int seed,
-		      short u_space_type, bool piecewise_basis, bool use_derivs,
-		      bool cv_flag, const String& import_build_pts_file,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      //short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs, bool cv_flag,
+		      const String& import_build_pts_file,
 		      unsigned short import_build_format,
 		      bool import_build_active_only);
 
@@ -74,13 +79,18 @@ protected:
   /// multilevel/multifidelity PCE using numerical integration
   NonDPolynomialChaos(unsigned short method_name, Model& model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
-		      short u_space_type, bool piecewise_basis,
-		      bool use_derivs);
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short ml_discrep, short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs);
   /// base constructor for lightweight construction of 
   /// multilevel/multifidelity PCE using regression
   NonDPolynomialChaos(unsigned short method_name, Model& model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
-		      short u_space_type, bool piecewise_basis, bool use_derivs,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short ml_discrep, //short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs,
 		      Real colloc_ratio, int seed, bool cv_flag);
 
   //

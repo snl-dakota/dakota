@@ -109,7 +109,37 @@ public:
   virtual const RealSymMatrix& hessian(const RealVector& c_vars);
   /// retrieve the variance of the predicted value for a given parameter vector
   virtual Real prediction_variance(const RealVector& c_vars);
-    
+
+  /// Statistics
+  virtual Real mean();                            
+  virtual Real mean(const RealVector& x);          
+  virtual const RealVector& mean_gradient();      
+  virtual const RealVector& mean_gradient(const RealVector& x,
+					  const SizetArray& dvv);     
+  virtual Real variance();
+  virtual Real variance(const RealVector&);           
+  virtual const RealVector& variance_gradient();      
+  virtual const RealVector& variance_gradient(const RealVector& x,
+					      const SizetArray& dvv);
+  virtual Real covariance(Approximation* approx_2);
+  virtual Real covariance(const RealVector& x, Approximation* approx_2);
+
+  virtual void compute_moments(bool full_stats = true,
+			       bool combined_stats = false);
+  virtual void compute_moments(const RealVector& x, bool full_stats = true,
+			       bool combined_stats = false);
+  virtual const RealVector& moments() const;
+  virtual Real moment(size_t i) const;
+  virtual void moment(Real mom, size_t i);
+
+  virtual void compute_component_effects();
+  virtual void compute_total_effects();
+  virtual const RealVector& sobol_indices() const;
+  virtual const RealVector& total_sobol_indices() const;
+  virtual ULongULongMap sparse_sobol_index_map() const;
+
+  virtual const RealVector& expansion_moments() const;
+  virtual const RealVector& numerical_integration_moments() const;
 
   /// check if diagnostics are available for this approximation type
   virtual bool diagnostics_available();
@@ -161,6 +191,17 @@ public:
   /// return the number of constraints to be enforced via an anchor point
   virtual int num_constraints() const;
 
+  /* *** Additions for C3 ***
+  /// clear current build data in preparation for next build
+  virtual void clear_current();
+  virtual void eval_flag(bool);
+  virtual void gradient_flag(bool);
+  */
+  virtual void expansion_coefficient_flag(bool);
+  virtual bool expansion_coefficient_flag() const;    
+  virtual void expansion_gradient_flag(bool);
+  virtual bool expansion_gradient_flag() const;
+
   //
   //- Heading: Member functions
   //
@@ -183,6 +224,8 @@ public:
 
   /// return approxData[sharedDataRep->activeDataIndex]
   const Pecos::SurrogateData& surrogate_data() const;
+  /// return approxData[sharedDataRep->activeDataIndex]
+  Pecos::SurrogateData& surrogate_data();
   /// return approxData[d_index]
   const Pecos::SurrogateData& surrogate_data(size_t d_index) const;
 
@@ -324,6 +367,15 @@ private:
 
 
 inline const Pecos::SurrogateData& Approximation::surrogate_data() const
+{
+  if (approxRep)
+    return approxRep->surrogate_data();
+  else
+    return approxData[sharedDataRep->activeDataIndex];
+}
+
+
+inline Pecos::SurrogateData& Approximation::surrogate_data()
 {
   if (approxRep)
     return approxRep->surrogate_data();
@@ -521,7 +573,7 @@ inline void Approximation::clear_current_active_data()
   else // default implementation
     clear_active_data();
 }
-
+    
 
 /** Clears out current + history for each tracked key (not virtual). */
 inline void Approximation::clear_data()

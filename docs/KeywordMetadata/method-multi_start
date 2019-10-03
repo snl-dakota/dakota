@@ -27,6 +27,15 @@ of optimizations are performed from different starting values for the
 design variables. This can be an effective approach for problems with
 multiple minima.
 
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the starting points for each sub-iterator it runs, as well
+as the best parameters and responses returned by each sub-iterator.
+See the \ref hdf5_results-ms_pareto documentation for details.
+
+
 Topics::
 Examples::
 Theory::

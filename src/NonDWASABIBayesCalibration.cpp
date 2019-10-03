@@ -17,6 +17,7 @@
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "NonDSampling.hpp"
+#include "dakota_stat_util.hpp"
 
 // BMA TODO: remove this header
 // for uniform PDF and samples

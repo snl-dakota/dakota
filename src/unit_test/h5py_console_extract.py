@@ -309,6 +309,124 @@ def extract_best_residual_norms():
             norms.append(float(norm))
     return norms
 
+def extract_multi_start_results():
+    """Extract results summary from a multi_start study, including
+    initial points, best points, and best responses"""
+    lines_iter = iter(_OUTPUT)
+    for line in lines_iter:
+        if line.startswith("<<<<< Results summary:"):
+            break
+    label_line = next(lines_iter)
+    # 1. split the labels
+    # 2. throw away the first token ("set_id")
+    # 3. Grab labels that don't end in *. These are the starting points.
+    # 4. Grab labels that do end in *. These are the best points. This list may be
+    #    longer because it can include non-continuous design variables
+    # 5. Grab remaining labels, which are all responses.
+    all_labels = label_line.split()[1:]
+    num_starts = 0
+    start_labels = []
+    num_best = 0
+    best_labels = []
+    for label in all_labels:
+        if label[-1] is '*':
+            break
+        num_starts += 1
+        start_labels.append(label)
+    for label in all_labels[num_starts:]:
+        if label[-1] is not '*':
+            break
+        num_best += 1
+        best_labels.append(label[:-1]) # snip off *
+    num_funcs = len(all_labels) - num_best - num_starts
+    func_labels = all_labels[num_best + num_starts:]
+    # Begin reading values
+    results = {"start_labels":start_labels,
+            "best_labels":best_labels,
+            "function_labels":func_labels,
+            "starts":[],
+            "best":[],
+            "functions":[]}
+    
+    while True:
+        value_line = lines_iter.next().strip()
+        if not value_line:
+            break
+        values = []
+        for value in value_line.split()[1:]:
+            try:
+                values.append(int(value))
+            except ValueError:
+                try:
+                    values.append(float(value))
+                except ValueError:
+                    values.append(value)
+        results["starts"].append(values[:num_starts])
+        results["best"].append(values[num_starts:num_starts+num_best])
+        results["functions"].append(values[num_starts+num_best:])
+    return results
+        
+def extract_pareto_set_results():
+    """Extract results summary from a pareto_set study. These
+    include the weights, variables, and functions."""
+    lines_iter = iter(_OUTPUT)
+    for line in lines_iter:
+        if line.startswith("<<<<< Results summary:"):
+            break
+    label_line = next(lines_iter)
+    # 1. split the labels. These are weights, best params, best responses
+    # 2. throw away the first token ("set_id") 
+    # 3. Grab weight labels (w\d+). These are the weights. The number responses equals the
+    #    number of weights.
+    # 4. Grab the best parameters labels (by count: total number - 2*number of weights)
+    # 5. Grab the best responses
+    all_labels = label_line.split()[1:]
+    num_weights = 0
+    weight_labels = []
+    num_best = 0
+    best_labels = []
+    weight_re = re.compile("w\d+$")
+    for label in all_labels:
+        if weight_re.match(label) is None:
+            break
+        num_weights += 1
+        weight_labels.append(label)
+    num_best = len(all_labels) - num_weights*2
+    for label in all_labels[num_weights:-num_weights]:
+        best_labels.append(label)
+    num_funcs = num_weights
+    func_labels = all_labels[-num_weights:]
+    # Begin reading values
+    results = {"weight_labels":weight_labels,
+            "best_labels":best_labels,
+            "function_labels":func_labels,
+            "weights":[],
+            "best":[],
+            "functions":[]}
+    
+    while True:
+        value_line = lines_iter.next().strip()
+        if not value_line:
+            break
+        values = []
+        for value in value_line.split()[1:]:
+            try:
+                values.append(int(value))
+            except ValueError:
+                try:
+                    values.append(float(value))
+                except ValueError:
+                    values.append(value)
+        results["weights"].append(values[:num_weights])
+        results["best"].append(values[num_weights:-num_funcs])
+        results["functions"].append(values[-num_funcs:])
+    return results
+        
+
+
+
+
+
 
 def read_tabular_data(tabular_file):
     """Read an annotated format Dakota tabular file. Convert everything
@@ -323,7 +441,13 @@ def read_tabular_data(tabular_file):
             data["%eval_id"].append(int(tokens[0]))
             data["interface"].append(tokens[1])
             for c, t in zip(columns[2:], tokens[2:]):
-                data[c].append(float(t))
+                try:
+                    data[c].append(int(t))
+                except ValueError:
+                    try:
+                        data[c].append(float(t))
+                    except ValueError:
+                        data[c].append(t)
     return data
 
 def restart_variables(row):

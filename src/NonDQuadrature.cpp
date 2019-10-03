@@ -20,6 +20,7 @@
 #include "ProblemDescDB.hpp"
 #include "PolynomialApproximation.hpp"
 #include "LHSDriver.hpp"
+#include "dakota_stat_util.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDQuadrature.cpp,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
