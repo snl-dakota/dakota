@@ -39,7 +39,7 @@ public:
 		std::vector<double> &noise,// 1 obj + len-1 nln ineq constr <= 0
 		void *param); // general pass through from NOWPAC
 
-  double evaluate_samples ( std::vector<double> const &samples, const unsigned int index, void *param );
+  double evaluate_samples ( std::vector<double> const &samples, const unsigned int index, std::vector<double>const& x );
   // TO DO: queue() + synchronize()
 
   void allocate_constraints();

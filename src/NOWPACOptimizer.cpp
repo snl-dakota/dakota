@@ -395,7 +395,7 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
   Real obj_fn = dakota_fns[0], mult;
   size_t index, cntr = 0;
   vals[cntr]  = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
-  noise[cntr] = errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
+  noise[cntr] = 2. * errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
   ++cntr;
 
   // apply nonlinear inequality constraint mappings
@@ -408,8 +408,9 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
     index       = (*i_iter)+1; // offset single objective
     mult        = (*m_iter);
     vals[cntr]  = (*o_iter) + mult * dakota_fns[index];
-    noise[cntr] = std::abs(mult) * errors[index];
+    noise[cntr] = 2. * std::abs(mult) * errors[index];
   }
+
   // apply linear inequality constraint mappings
   const RealMatrix& lin_ineq_coeffs
     = iteratedModel.linear_ineq_constraint_coeffs();
@@ -428,7 +429,7 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
   }
 }
 
-double NOWPACBlackBoxEvaluator::evaluate_samples ( std::vector<double> const &samples, const unsigned int index, void *param ){
+double NOWPACBlackBoxEvaluator::evaluate_samples ( std::vector<double> const &samples, const unsigned int index, std::vector<double> const &x){
 	//TO DO implement if smoothing works at some point.
 	return -1;
 }
