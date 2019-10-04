@@ -202,6 +202,7 @@ nested_variable_mappings(const SizetArray& c_index1,
   //secondaryADSVarMapTargets = ds_target2;
   //secondaryADRVarMapTargets = dr_target2;
 
+  distParamDerivs = false;
   size_t i, num_outer_cv = secondaryACVarMapTargets.size();
   for (i=0; i<num_outer_cv; ++i)
     if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion

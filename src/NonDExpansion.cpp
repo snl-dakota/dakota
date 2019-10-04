@@ -831,8 +831,8 @@ void NonDExpansion::compute_expansion()
   // all_approx detects any variable insertions or ASV omissions and
   // force_rebuild() manages variable augmentations.
   bool all_approx = false;
-  if (allVars && numUncertainQuant &&
-      uSpaceModel.secondary_acv_map_targets().empty()) {
+  if (allVars && numUncertainQuant) {// &&
+      //uSpaceModel.secondary_acv_map_targets().empty()) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
     const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();

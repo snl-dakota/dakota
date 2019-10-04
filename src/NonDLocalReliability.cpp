@@ -2133,10 +2133,11 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
   // dg/ds = dg/dx * dx/ds where dx/ds is the design Jacobian.  Since dg/dx is
   // already available (passed in as fn_grad_x), these sensitivities do not
   // require additional response evaluations.
+  SizetArray primaryACVarMapIndices; ShortArray secondaryACVarMapTargets;//*** TO DO ***
   if (uSpaceModel.distribution_parameter_derivatives()) {
     // *** TO DO ***
-    uSpaceModel.trans_grad_X_to_S(fn_grad_x, final_stat_grad, x_vars);
-    /*
+    //uSpaceModel.trans_grad_X_to_S(fn_grad_x, final_stat_grad, x_vars);
+
     Pecos::ProbabilityTransformation& nataf
       = uSpaceModel.probability_transformation();
     SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
@@ -2147,7 +2148,6 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     nataf.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv, cv_ids,acv_ids,
 			    primaryACVarMapIndices, secondaryACVarMapTargets);
     final_stat_grad = fn_grad_s;
-    */
   }
 
   // For design vars that are separate from the uncertain vars, perform a new
@@ -2155,8 +2155,8 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
   // performed at (s, x_vars) for each response fn for each level as
   // required by final_asv.  RBDO typically specifies one level for 1 or
   // more limit states, so the number of additional evals will usually be small.
-  if (secondaryACVarMapTargets.empty() ||
-      contains(secondaryACVarMapTargets, Pecos::NO_TARGET)) {
+  if (secondaryACVarMapTargets.empty() ||                    // *** TO DO ***
+      contains(secondaryACVarMapTargets, Pecos::NO_TARGET)) {// *** TO DO ***
     Cout << "\n>>>>> Evaluating sensitivity with respect to augmented inactive "
 	 << "variables\n";
     if (mppSearchType && mppSearchType < NO_APPROX)

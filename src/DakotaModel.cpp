@@ -4782,10 +4782,10 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  if (iteratorRep)
-    iteratorRep->
-      nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
-			       c_target2, di_target2, ds_target2, dr_target2);
+  if (modelRep)
+    modelRep->nested_variable_mappings(c_index1, di_index1, ds_index1,
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
   //else no-op
 }
 
