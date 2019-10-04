@@ -419,7 +419,7 @@ sample_to_variables(const Real* sample_vars, Variables& vars, Model& model)
   }
 
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-        drv_start, num_drv;
+        drv_start, num_drv, rv_start;
   switch (vars_mode) {
   case DESIGN:
     cv_start = div_start = dsv_start = drv_start = rv_start = 0;
@@ -767,7 +767,7 @@ mode_bits(const Variables& vars, BitArray& active_vars,
     assign_value(active_vars, true, 0, num_dv);  break;
   case ALEATORY_UNCERTAIN:
     active_vars = active_corr;  break;
-  case EPISTEMIC_UNCERTAIN: {
+  case EPISTEMIC_UNCERTAIN:
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     active_vars.resize(num_v, false);
     assign_value(active_vars, true, num_dv + num_auv,
