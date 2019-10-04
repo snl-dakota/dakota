@@ -232,9 +232,28 @@ public:
 					const ShortArray& di_target2,
 					const ShortArray& ds_target2,
 					const ShortArray& dr_target2);
-  /// return flag indicating that at least some final results derivatives
-  /// are w.r.t. distribution parameters
-  virtual bool distribution_parameter_derivatives() const;
+  /// return primaryACVarMapIndices
+  const SizetArray& nested_acv1_indices() const;
+  /// return secondaryACVarMapTargets
+  const ShortArray& nested_acv2_targets() const;
+  /// return derivative composition of final results w.r.t.
+  /// distribution parameters (none, all, or mixed)
+  virtual short distribution_parameter_derivatives() const;
+
+  /// transform x-space gradient vector to u-space
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  /// transform u-space gradient vector to x-space
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  /// transform x-space gradient vector to gradient with respect to inserted
+  /// distribution parameters
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  /// transform x-space Hessian matrix to u-space
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
 
   /// build a new SurrogateModel approximation
   virtual void build_approximation();

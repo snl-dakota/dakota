@@ -100,7 +100,9 @@ protected:
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
 				const ShortArray& dr_target2);
-  bool distribution_parameter_derivatives() const;
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short distribution_parameter_derivatives() const;
 
   void check_submodel_compatibility(const Model& sub_model);
 
@@ -459,9 +461,17 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
-inline bool DataFitSurrModel::distribution_parameter_derivatives() const
+inline const SizetArray& DataFitSurrModel::nested_acv1_indices() const
+{ return actualModel.nested_acv1_indices(); }
+
+
+inline const ShortArray& DataFitSurrModel::nested_acv2_targets() const
+{ return actualModel.nested_acv2_targets(); }
+
+
+inline short DataFitSurrModel::distribution_parameter_derivatives() const
 {
-  return (actualModel.is_null()) ? false :
+  return (actualModel.is_null()) ? NO_DERIVS :
     actualModel.distribution_parameter_derivatives(); // forward along
 }
 

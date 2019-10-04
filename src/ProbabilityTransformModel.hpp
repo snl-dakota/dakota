@@ -73,10 +73,25 @@ protected:
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
 				const ShortArray& dr_target2);
+  /// return primaryACVarMapIndices
+  const SizetArray& nested_acv1_indices() const;
+  /// return secondaryACVarMapTargets
+  const ShortArray& nested_acv2_targets() const;
+  
   /// return distParamDerivs
-  bool distribution_parameter_derivatives() const;
+  short distribution_parameter_derivatives() const;
 
   void assign_instance();
+
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
 
   //
   //- Heading: Member functions
@@ -141,11 +156,11 @@ private:
   /// data for performing transformations from X -> Z -> U and back.
   Pecos::ProbabilityTransformation natafTransform;
 
-  /// flags calculation of derivatives with respect to distribution
-  /// parameters s within resp_x_to_u_mapping() using the chain rule
-  /// df/dx dx/ds.  The default is to calculate derivatives with respect
+  /// indicates state of derivatives of final results with respect to
+  /// distribution parameters s within resp_x_to_u_mapping() using the chain
+  /// rule df/dx dx/ds.  The default is to calculate derivatives with respect
   /// to standard random variables u using the chain rule df/dx dx/du.
-  bool distParamDerivs;
+  short distParamDerivs;
 
   /// boolean flag indicating use of distribution truncation for
   /// defining global model bounds
@@ -202,12 +217,24 @@ nested_variable_mappings(const SizetArray& c_index1,
   //secondaryADSVarMapTargets = ds_target2;
   //secondaryADRVarMapTargets = dr_target2;
 
-  distParamDerivs = false;
+  distParamDerivs = NO_DERIVS;
   size_t i, num_outer_cv = secondaryACVarMapTargets.size();
-  for (i=0; i<num_outer_cv; ++i)
-    if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion
-      { distParamDerivs = true; break; }
+  if (num_outer_cv) {
+    bool tgt = false, no_tgt = false;
+    for (i=0; i<num_outer_cv; ++i) {
+      short acvm_tgt2 = secondaryACVarMapTargets[i];
+      if (acvm_tgt2 == Pecos::NO_TARGET) no_tgt = true;
+      else                                  tgt = true;
+    }
+    if (tgt && no_tgt) distParamDerivs = MIXED_DERIVS;
+    else if (tgt)      distParamDerivs =   ALL_DERIVS;
+  }
 }
+
+
+inline short ProbabilityTransformModel::
+distribution_parameter_derivatives() const
+{ return distParamDerivs; }
 
 
 inline bool ProbabilityTransformModel::resize_pending() const
@@ -339,11 +366,6 @@ nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
 }
 
 
-inline bool ProbabilityTransformModel::
-distribution_parameter_derivatives() const
-{ return distParamDerivs; }
-
-
 inline void ProbabilityTransformModel::assign_instance()
 { ptmInstance = this; }
 
@@ -371,6 +393,49 @@ vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 inline Pecos::ProbabilityTransformation& ProbabilityTransformModel::
 probability_transformation()
 { return natafTransform; }
+
+
+inline void ProbabilityTransformModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars, x_dvv, cv_ids);
+}
+
+
+inline void ProbabilityTransformModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars, x_dvv, cv_ids);
+}
+
+
+inline void ProbabilityTransformModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv, cv_ids,
+    currentVariables.all_continuous_variable_ids(), primaryACVarMapIndices,
+    secondaryACVarMapTargets);
+}
+
+
+inline void ProbabilityTransformModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
+		  const RealVector& x_vars, const RealVector& fn_grad_x)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x,
+				   x_dvv, cv_ids);
+}
 
 } // namespace Dakota
 

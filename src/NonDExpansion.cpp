@@ -830,9 +830,9 @@ void NonDExpansion::compute_expansion()
   // needs rebuilding when the trust region is updated.  In the checks below,
   // all_approx detects any variable insertions or ASV omissions and
   // force_rebuild() manages variable augmentations.
+  short dist_param_derivs = uSpaceModel.distribution_parameter_derivatives();
   bool all_approx = false;
-  if (allVars && numUncertainQuant) {// &&
-      //uSpaceModel.secondary_acv_map_targets().empty()) {
+  if (allVars && numUncertainQuant && dist_param_derivs == NO_DERIVS) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
     const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
@@ -852,12 +852,11 @@ void NonDExpansion::compute_expansion()
       // if required statistical sensitivities are not covered by All variables
       // mode for augmented design variables, then the simulations must evaluate
       // response sensitivities.
-      bool sampler_grad;
-      if (final_stat_grad_flag)
-	sampler_grad = (allVars) ?
-	  uSpaceModel.distribution_parameter_derivatives() : true;
-      else
-	sampler_grad = false;
+      bool sampler_grad = false;
+      if (final_stat_grad_flag) {
+	if (allVars) sampler_grad = (dist_param_derivs > NO_DERIVS);
+	else         sampler_grad = true;
+      }
 
       // Set the u_space_sampler DVV, managing different gradient modes & their
       // combinations.  The u_space_sampler's DVV may then be augmented for
@@ -2597,25 +2596,20 @@ void NonDExpansion::compute_analytic_statistics()
       // polynomial derivatives.  They are computed for the means of the
       // uncertain varables and provide a measure of local importance (but not
       // scaled by input covariance as in mean value importance factors).
-      Pecos::ProbabilityTransformation& nataf
-	= uSpaceModel.probability_transformation();
       Pecos::MultivariateDistribution& x_dist
 	= iteratedModel.multivariate_distribution();
       const RealVector& exp_grad_u
 	= poly_approxs[i].gradient(uSpaceModel.current_variables());
-      RealVector exp_grad_x;
-      SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
-      SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-      RealVector x_means(x_dist.means());
-      nataf.trans_grad_U_to_X(exp_grad_u, exp_grad_x, x_means, x_dvv, cv_ids);
-      Teuchos::setCol(exp_grad_x, (int)i, expGradsMeanX);
+      RealVector
+	exp_grad_x(Teuchos::getCol(Teuchos::View, expGradsMeanX, (int)i));
+      uSpaceModel.trans_grad_U_to_X(exp_grad_u, exp_grad_x, x_dist.means());
 
 #ifdef TEST_HESSIANS
       const RealSymMatrix& exp_hess_u
 	= poly_approxs[i].hessian(uSpaceModel.current_variables());
       //RealSymMatrix exp_hess_x;
-      //nataf.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_means, x_dvv, cv_ids);
-      Cout << exp_hess_u; //exp_hess_x
+      //uSpaceModel.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_dist.means());
+      Cout << exp_hess_u; //<< exp_hess_x;
 #endif // TEST_HESSIANS
     }
 

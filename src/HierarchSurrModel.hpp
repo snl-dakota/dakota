@@ -84,7 +84,9 @@ protected:
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
 				const ShortArray& dr_target2);
-  bool distribution_parameter_derivatives() const;
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short distribution_parameter_derivatives() const;
 
   void check_submodel_compatibility(const Model& sub_model);
 
@@ -322,7 +324,15 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
-inline bool HierarchSurrModel::distribution_parameter_derivatives() const
+inline const SizetArray& HierarchSurrModel::nested_acv1_indices() const
+{ return orderedModels[truthModelKey.front()].nested_acv1_indices(); }
+
+
+inline const ShortArray& HierarchSurrModel::nested_acv2_targets() const
+{ return orderedModels[truthModelKey.front()].nested_acv2_targets(); }
+
+
+inline short HierarchSurrModel::distribution_parameter_derivatives() const
 {
   return
     orderedModels[truthModelKey.front()].distribution_parameter_derivatives();

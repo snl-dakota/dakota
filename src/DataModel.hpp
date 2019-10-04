@@ -47,6 +47,9 @@ enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
 /// (active model for parallel scheduling)
 enum { SURROGATE_MODEL=1, TRUTH_MODEL };
 
+/// define special values for distParamDerivs
+enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS }; 
+
 
 /// Body class for model specification data.
 

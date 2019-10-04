@@ -250,6 +250,7 @@ short RecastModel::response_order(const Model& sub_model)
   return recast_resp_order;
 }
 
+
 String RecastModel::recast_model_id(const String &root_id, const String &type) {
   auto key = std::make_pair(root_id, type);
   int id;
@@ -259,6 +260,7 @@ String RecastModel::recast_model_id(const String &root_id, const String &type) {
     id = ++recastModelIdCounters[key];
   return String("RECAST_") + root_id + "_" + type + "_" + std::to_string(id);
 }
+
 
 bool RecastModel::
 init_variables(const SizetArray& vars_comps_totals,

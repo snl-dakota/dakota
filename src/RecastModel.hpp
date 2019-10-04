@@ -206,7 +206,19 @@ protected:
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
 				const ShortArray& dr_target2);
-  bool distribution_parameter_derivatives() const;
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short distribution_parameter_derivatives() const;
+
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
 
   size_t qoi() const;
 
@@ -644,8 +656,41 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
-inline bool RecastModel::distribution_parameter_derivatives() const
+inline const SizetArray& RecastModel::nested_acv1_indices() const
+{ return subModel.nested_acv1_indices(); }
+
+
+inline const ShortArray& RecastModel::nested_acv2_targets() const
+{ return subModel.nested_acv2_targets(); }
+
+
+inline short RecastModel::distribution_parameter_derivatives() const
 { return subModel.distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+
+
+inline void RecastModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+
+
+inline void RecastModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+
+
+inline void RecastModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+		  const RealVector& fn_grad_x)
+{ subModel.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
 
 
 inline size_t RecastModel::qoi() const

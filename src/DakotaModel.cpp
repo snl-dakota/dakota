@@ -4790,12 +4790,90 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
-bool Model::distribution_parameter_derivatives() const
+const SizetArray& Model::nested_acv1_indices() const
+{
+  if (!modelRep) {
+    Cerr << "Error: Letter lacking redefinition of virtual nested_acv1_indices"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return modelRep->nested_acv1_indices();
+}
+
+
+const ShortArray& Model::nested_acv2_targets() const
+{
+  if (!modelRep) {
+    Cerr << "Error: Letter lacking redefinition of virtual nested_acv2_targets"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return modelRep->nested_acv2_targets();
+}
+
+
+short Model::distribution_parameter_derivatives() const
 {
   if (modelRep)
     return modelRep->distribution_parameter_derivatives();
   else // default implementation
-    return false;
+    return NO_DERIVS;
+}
+
+
+void Model::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{
+  if (modelRep)
+    modelRep->trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_grad_X_to_U"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{
+  if (modelRep)
+    modelRep->trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_grad_U_to_X"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{
+  if (modelRep)
+    modelRep->trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_grad_X_to_S"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
+		  const RealVector& x_vars, const RealVector& fn_grad_x)
+{
+  if (modelRep)
+    modelRep->trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_hess_X_to_U"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 

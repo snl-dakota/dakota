@@ -1560,8 +1560,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
 	iteratedModel.interface_id(), search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
 	fnGradX = cache_it->response().function_gradient_copy(respFnCount);
-	SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-	nataf.trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX, x_dvv,cv_ids);
+	uSpaceModel.trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX);
 	found_mode |= 2;
       }
     }
@@ -1581,9 +1580,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
 	iteratedModel.interface_id(), search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
         fnHessX = cache_it->response().function_hessian(respFnCount);
-	SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-	nataf.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX, fnGradX,
-				x_dvv, cv_ids);
+	uSpaceModel.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,fnGradX);
 	curvatureDataAvailable = true; kappaUpdated = false;
 	found_mode |= 4;
       }
@@ -1786,15 +1783,10 @@ void NonDLocalReliability::assign_mean_data()
   for (size_t i=0; i<numContinuousVars; i++)
     fnGradX[i] = fnGradsMeanX(i,respFnCount);
 
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
-  SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
-  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-  nataf.trans_grad_X_to_U(fnGradX, fnGradU, ranVarMeansX, x_dvv, cv_ids);
+  uSpaceModel.trans_grad_X_to_U(fnGradX, fnGradU, ranVarMeansX);
   if (taylorOrder == 2 && iteratedModel.hessian_type() != "quasi") {
     fnHessX = fnHessiansMeanX[respFnCount];
-    nataf.trans_hess_X_to_U(fnHessX, fnHessU, ranVarMeansX, fnGradX,
-			    x_dvv, cv_ids);
+    uSpaceModel.trans_hess_X_to_U(fnHessX, fnHessU, ranVarMeansX, fnGradX);
     curvatureDataAvailable = true; kappaUpdated = false;
   }
 }
@@ -2133,30 +2125,16 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
   // dg/ds = dg/dx * dx/ds where dx/ds is the design Jacobian.  Since dg/dx is
   // already available (passed in as fn_grad_x), these sensitivities do not
   // require additional response evaluations.
-  SizetArray primaryACVarMapIndices; ShortArray secondaryACVarMapTargets;//*** TO DO ***
-  if (uSpaceModel.distribution_parameter_derivatives()) {
-    // *** TO DO ***
-    //uSpaceModel.trans_grad_X_to_S(fn_grad_x, final_stat_grad, x_vars);
-
-    Pecos::ProbabilityTransformation& nataf
-      = uSpaceModel.probability_transformation();
-    SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
-    SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-    SizetMultiArrayConstView acv_ids
-      = iteratedModel.all_continuous_variable_ids();
-    RealVector fn_grad_s(num_final_grad_vars, false);
-    nataf.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv, cv_ids,acv_ids,
-			    primaryACVarMapIndices, secondaryACVarMapTargets);
-    final_stat_grad = fn_grad_s;
-  }
+  short dist_param_derivs = uSpaceModel.distribution_parameter_derivatives();
+  if (dist_param_derivs == ALL_DERIVS || dist_param_derivs == MIXED_DERIVS)
+    uSpaceModel.trans_grad_X_to_S(fn_grad_x, final_stat_grad, x_vars);
 
   // For design vars that are separate from the uncertain vars, perform a new
   // fn eval for dg/ds, where s = inactive/design vars.  This eval must be
   // performed at (s, x_vars) for each response fn for each level as
   // required by final_asv.  RBDO typically specifies one level for 1 or
   // more limit states, so the number of additional evals will usually be small.
-  if (secondaryACVarMapTargets.empty() ||                    // *** TO DO ***
-      contains(secondaryACVarMapTargets, Pecos::NO_TARGET)) {// *** TO DO ***
+  if (dist_param_derivs == NO_DERIVS || dist_param_derivs == MIXED_DERIVS) {
     Cout << "\n>>>>> Evaluating sensitivity with respect to augmented inactive "
 	 << "variables\n";
     if (mppSearchType && mppSearchType < NO_APPROX)
@@ -2183,13 +2161,14 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     */
     iteratedModel.evaluate(inactive_grad_set);
     const Response& curr_resp = iteratedModel.current_response();
-    if (secondaryACVarMapTargets.empty())
+    if (dist_param_derivs == NO_DERIVS)
       final_stat_grad = curr_resp.function_gradient_copy(respFnCount);
-    else {
-      const RealMatrix& fn_grads = curr_resp.function_gradients();
+    else { // MIXED_DERIVS
+      const RealMatrix&     fn_grads = curr_resp.function_gradients();
+      const ShortArray& acv2_targets = uSpaceModel.nested_acv2_targets();
       size_t cntr = 0;
       for (i=0; i<num_final_grad_vars; i++)
-	if (secondaryACVarMapTargets[i] == Pecos::NO_TARGET)
+	if (acv2_targets[i] == Pecos::NO_TARGET)
 	  final_stat_grad[i] = fn_grads(cntr++, respFnCount);
     }
   }

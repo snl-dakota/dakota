@@ -57,6 +57,16 @@ protected:
 
   Pecos::ProbabilityTransformation& probability_transformation();
 
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
+
   //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
 
@@ -235,6 +245,47 @@ inline SurrogateModel::~SurrogateModel()
 inline Pecos::ProbabilityTransformation& SurrogateModel::
 probability_transformation()
 { return truth_model().probability_transformation(); } // forward along
+
+
+inline void SurrogateModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{
+  Model& hf_model = truth_model();
+  if (!hf_model.is_null())
+    hf_model.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars);
+}
+
+
+inline void SurrogateModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{
+  Model& hf_model = truth_model();
+  if (!hf_model.is_null())
+    hf_model.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars);
+}
+
+
+inline void SurrogateModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{
+  Model& hf_model = truth_model();
+  if (!hf_model.is_null())
+    hf_model.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars);
+}
+
+
+inline void SurrogateModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+		  const RealVector& fn_grad_x)
+{
+  Model& hf_model = truth_model();
+  if (!hf_model.is_null())
+    hf_model.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x);
+}
 
 
 inline Model& SurrogateModel::subordinate_model()
