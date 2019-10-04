@@ -4771,29 +4771,61 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // else default is nothing additional beyond free_communicators()
 }
 
-ActiveSet Model::default_active_set() {
-  if(modelRep) {
+
+void Model::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  if (iteratorRep)
+    iteratorRep->
+      nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
+			       c_target2, di_target2, ds_target2, dr_target2);
+  //else no-op
+}
+
+
+bool Model::distribution_parameter_derivatives() const
+{
+  if (modelRep)
+    return modelRep->distribution_parameter_derivatives();
+  else // default implementation
+    return false;
+}
+
+
+ActiveSet Model::default_active_set()
+{
+  if (modelRep)
     return modelRep->default_active_set();
-  } else {
-   // This member function is called from Model::evaluate(_no_wait), and the 
-   // ActiveSet that is returned is used to allocate evaluation storage in HDF5.
+  else {
+    // This member fn is called from Model::evaluate(_no_wait) and the
+    // ActiveSet returned is used to allocate evaluation storage in HDF5
 
     ActiveSet set; 
     set.derivative_vector(currentVariables.all_continuous_variable_ids());
     ShortArray asv(numFns, 1);
-   
-    if(gradientType != "none" && (gradientType == "analytic" || supportsEstimDerivs))
-        for(auto &a : asv)
-          a |=  2;
 
-    if(hessianType != "none" && (hessianType == "analytic" || supportsEstimDerivs))
-        for(auto &a : asv)
-          a |=  4;
+    if ( gradientType != "none" &&
+	 ( gradientType == "analytic" || supportsEstimDerivs ) )
+      for(auto &a : asv)
+	a |=  2;
+
+    if ( hessianType != "none" &&
+	 ( hessianType == "analytic" || supportsEstimDerivs ) )
+      for(auto &a : asv)
+	a |=  4;
 
     set.request_vector(asv);
     return set;
   }
 }
+
 
 void Model::inactive_view(short view, bool recurse_flag)
 {

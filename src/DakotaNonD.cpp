@@ -44,8 +44,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
   totalLevelRequests(0),
   cdfFlag(probDescDB.get_short("method.nond.distribution") != COMPLEMENTARY),
   pdfOutput(false),
-  finalMomentsType(probDescDB.get_short("method.nond.final_moments")),
-  distParamDerivs(false)
+  finalMomentsType(probDescDB.get_short("method.nond.final_moments"))
 {
   initialize_counts();
 
@@ -75,7 +74,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 
 NonD::NonD(unsigned short method_name, Model& model):
   Analyzer(method_name, model), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
+  pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -91,8 +90,7 @@ NonD::NonD(unsigned short method_name, Model& model):
 NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 	   const RealVector& upper_bnds):
   Analyzer(method_name), epistemicStats(false), totalLevelRequests(0),
-  cdfFlag(true), pdfOutput(false), finalMomentsType(STANDARD_MOMENTS),
-  distParamDerivs(false)
+  cdfFlag(true), pdfOutput(false), finalMomentsType(STANDARD_MOMENTS)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.

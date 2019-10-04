@@ -608,7 +608,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   // > now that subIterator is constructed, perform downstream updates
   if (!subIterator.is_null()) {
-    update_sub_iterator(); // follow DB restore: extracts data from nested spec
+    init_sub_iterator(); // follow DB restore: extracts data from nested spec
     if (subIteratorSched.messagePass) {
       // msg lengths: vars from this model, set & final results from subIterator
       MPIPackBuffer buff; int eval_id = 0;
@@ -687,10 +687,15 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
-void NestedModel::update_sub_iterator()
+void NestedModel::init_sub_iterator()
 {
+  // activates additional data processing options and manages output
   subIterator.sub_iterator_flag(true);
-  subIterator.active_variable_mappings(active1ACVarMapIndices,
+  // passes data through to subModel via recursions layered by subIterator;
+  // VarMaps are used by ProbabilityTransformModel, which generally appears
+  // within these Model recursions (so can't call subModel here without
+  // requiring inclusion in the update_from_sub_model() chain)
+  subIterator.nested_variable_mappings(active1ACVarMapIndices,
     active1ADIVarMapIndices, active1ADSVarMapIndices, active1ADRVarMapIndices,
     active2ACVarMapTargets,  active2ADIVarMapTargets, active2ADSVarMapTargets,
     active2ADRVarMapTargets);

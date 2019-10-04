@@ -47,9 +47,6 @@ public:
 			short resp_lev_tgt, short resp_lev_tgt_reduce,
 			bool cdf_flag, bool pdf_output);
 
-  /// set distParamDerivs
-  void distribution_parameter_derivatives(bool dist_param_derivs);
-
   /// prints the z/p/beta/beta* mappings reflected in
   /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels for default
   /// qoi_type and qoi_labels
@@ -311,20 +308,11 @@ private:
   //- Heading: Data members
   //
 
-  /// flags calculation of derivatives with respect to distribution
-  /// parameters s within resp_x_to_u_mapping() using the chain rule
-  /// df/dx dx/ds.  The default is to calculate derivatives with respect
-  /// to standard random variables u using the chain rule df/dx dx/du.
-  bool distParamDerivs;
 };
 
 
 inline NonD::~NonD()
 { }
-
-
-inline void NonD::distribution_parameter_derivatives(bool dist_param_derivs)
-{ distParamDerivs = dist_param_derivs; }
 
 
 inline bool NonD::pdf_output() const

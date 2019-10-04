@@ -64,6 +64,18 @@ protected:
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
 
+  /// set primaryACVarMapIndices and secondaryACVarMapTargets (only, for now)
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  /// return distParamDerivs
+  bool distribution_parameter_derivatives() const;
+
   void assign_instance();
 
   //
@@ -98,9 +110,6 @@ protected:
   bool nonlinear_variables_mapping(
     const Pecos::MultivariateDistribution& x_dist,
     const Pecos::MultivariateDistribution& u_dist) const;
-
-  /// set distParamDerivs
-  void distribution_parameter_derivatives(bool dist_param_derivs);
 
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations
@@ -147,13 +156,57 @@ private:
   /// "primary" all continuous variable mapping indices flowed down
   /// from higher level iteration
   SizetArray primaryACVarMapIndices;
+  // "primary" all discrete int variable mapping indices flowed down from
+  // higher level iteration
+  //SizetArray primaryADIVarMapIndices;
+  // "primary" all discrete string variable mapping indices flowed down from
+  // higher level iteration
+  //SizetArray primaryADSVarMapIndices;
+  // "primary" all discrete real variable mapping indices flowed down from
+  // higher level iteration
+  //SizetArray primaryADRVarMapIndices;
   /// "secondary" all continuous variable mapping targets flowed down
   /// from higher level iteration
   ShortArray secondaryACVarMapTargets;
+  // "secondary" all discrete int variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADIVarMapTargets;
+  // "secondary" all discrete string variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADSVarMapTargets;
+  // "secondary" all discrete real variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADRVarMapTargets;
 
   /// static pointer to this class for use in static callbacks
   static ProbabilityTransformModel* ptmInstance;
 };
+
+
+inline void ProbabilityTransformModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  primaryACVarMapIndices      = c_index1;
+  //primaryADIVarMapIndices   = di_index1;
+  //primaryADSVarMapIndices   = ds_index1;
+  //primaryADRVarMapIndices   = dr_index1;
+  secondaryACVarMapTargets    = c_target2;
+  //secondaryADIVarMapTargets = di_target2;
+  //secondaryADSVarMapTargets = ds_target2;
+  //secondaryADRVarMapTargets = dr_target2;
+
+  size_t i, num_outer_cv = secondaryACVarMapTargets.size();
+  for (i=0; i<num_outer_cv; ++i)
+    if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion
+      { distParamDerivs = true; break; }
+}
 
 
 inline bool ProbabilityTransformModel::resize_pending() const
@@ -285,9 +338,9 @@ nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
 }
 
 
-inline void ProbabilityTransformModel::
-distribution_parameter_derivatives(bool dist_param_derivs)
-{ distParamDerivs = dist_param_derivs; }
+inline bool ProbabilityTransformModel::
+distribution_parameter_derivatives() const
+{ return distParamDerivs; }
 
 
 inline void ProbabilityTransformModel::assign_instance()

@@ -831,7 +831,8 @@ void NonDExpansion::compute_expansion()
   // all_approx detects any variable insertions or ASV omissions and
   // force_rebuild() manages variable augmentations.
   bool all_approx = false;
-  if (allVars && numUncertainQuant && secondaryACVarMapTargets.empty()) {
+  if (allVars && numUncertainQuant &&
+      uSpaceModel.secondary_acv_map_targets().empty()) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
     const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
@@ -851,21 +852,12 @@ void NonDExpansion::compute_expansion()
       // if required statistical sensitivities are not covered by All variables
       // mode for augmented design variables, then the simulations must evaluate
       // response sensitivities.
-      bool sampler_grad = false, dist_param_deriv = false;
-      if (final_stat_grad_flag) {
-	size_t i, num_outer_cv = secondaryACVarMapTargets.size();
-	for (i=0; i<num_outer_cv; ++i)
-	  if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion
-	    { dist_param_deriv = true; break; }
-	sampler_grad = (allVars) ? dist_param_deriv : true;
-      }
-      u_space_sampler_rep->distribution_parameter_derivatives(dist_param_deriv);
-      if (dist_param_deriv)
-	u_space_sampler.active_variable_mappings(primaryACVarMapIndices,
-	  primaryADIVarMapIndices, primaryADSVarMapIndices,
-	  primaryADRVarMapIndices, secondaryACVarMapTargets,
-	  secondaryADIVarMapTargets, secondaryADSVarMapTargets,
-	  secondaryADRVarMapTargets);
+      bool sampler_grad;
+      if (final_stat_grad_flag)
+	sampler_grad = (allVars) ?
+	  uSpaceModel.distribution_parameter_derivatives() : true;
+      else
+	sampler_grad = false;
 
       // Set the u_space_sampler DVV, managing different gradient modes & their
       // combinations.  The u_space_sampler's DVV may then be augmented for

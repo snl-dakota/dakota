@@ -174,8 +174,8 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// update subIterator with mapping data and set subIterator-based counts
-  void update_sub_iterator();
+  /// init subIterator-based counts and init subModel with mapping data
+  void init_sub_iterator();
 
   /// convert job_index to an eval_id through subIteratorIdMap and
   /// eval_id to a subIteratorPRPQueue queue iterator
@@ -578,7 +578,7 @@ inline void NestedModel::derived_init_serial()
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 
-  update_sub_iterator();
+  init_sub_iterator();
 
   // initialize optionalInterface and subModel for serial operations
   // (e.g., num servers = 1 instead of the 0 default used by

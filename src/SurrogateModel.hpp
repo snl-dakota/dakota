@@ -56,6 +56,7 @@ protected:
   //
 
   Pecos::ProbabilityTransformation& probability_transformation();
+  bool distribution_parameter_derivatives() const;
 
   //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
@@ -235,6 +236,10 @@ inline SurrogateModel::~SurrogateModel()
 inline Pecos::ProbabilityTransformation& SurrogateModel::
 probability_transformation()
 { return truth_model().probability_transformation(); } // forward along
+
+
+inline bool SurrogateModel::distribution_parameter_derivatives() const
+{ return truth_model().distribution_parameter_derivatives(); } // forward along
 
 
 inline Model& SurrogateModel::subordinate_model()

@@ -222,6 +222,20 @@ public:
   /// sizing-based initialization should be deferred
   virtual bool resize_pending() const;
 
+  /// set primaryA{C,DI,DS,DR}VarMapIndices, secondaryA{C,DI,DS,DR}VarMapTargets
+  /// (coming from a higher-level NestedModel context to inform derivative est.)
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
+  /// return flag indicating that at least some final results derivatives
+  /// are w.r.t. distribution parameters
+  virtual bool distribution_parameter_derivatives() const;
+
   /// build a new SurrogateModel approximation
   virtual void build_approximation();
   /// build a new SurrogateModel approximation using/enforcing

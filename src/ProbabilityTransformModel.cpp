@@ -728,8 +728,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
     // and is computed outside of the num_fns loop
     if (ptmInstance->distParamDerivs)
       ptmInstance->natafTransform.jacobian_dX_dS(x_cv, jacobian_xs,
-          x_cv_ids, x_acv_ids, ptmInstance->primaryACVarMapIndices,
-          ptmInstance->secondaryACVarMapTargets);
+	x_cv_ids, x_acv_ids, ptmInstance->primaryACVarMapIndices,
+	ptmInstance->secondaryACVarMapTargets);
     else {
       if (u_grad_flag || u_hess_flag)
         ptmInstance->natafTransform.jacobian_dX_dU(x_cv, jacobian_xu);
@@ -770,9 +770,9 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
         fn_grad_us = u_response.function_gradient_view(i);
         if (ptmInstance->distParamDerivs) // transform subset of components
           ptmInstance->natafTransform.trans_grad_X_to_S(fn_grad_x,
-              fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, x_acv_ids,
-              ptmInstance->primaryACVarMapIndices,
-              ptmInstance->secondaryACVarMapTargets);
+            fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, x_acv_ids,
+            ptmInstance->primaryACVarMapIndices,
+            ptmInstance->secondaryACVarMapTargets);
         else   // transform subset of components
           ptmInstance->natafTransform.trans_grad_X_to_U(fn_grad_x,
               fn_grad_us, jacobian_xu, x_dvv, x_cv_ids);

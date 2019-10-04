@@ -92,6 +92,15 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+
   void check_submodel_compatibility(const Model& sub_model);
 
   // Perform the response computation portions specific to this derived 
@@ -429,6 +438,24 @@ private:
 /** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
 { if (!exportPointsFile.empty()) finalize_export(); }
+
+
+inline void DataFitSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to actualModel:
+  if (!actualModel.is_null()) {
+    actualModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+					 dr_index1, c_target2, di_target2,
+					 ds_target2, dr_target2);
+}
 
 
 inline size_t DataFitSurrModel::qoi() const

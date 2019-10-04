@@ -45,6 +45,15 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+
   bool resize();
   void pre_run();
   void post_run(std::ostream& s);
@@ -106,6 +115,22 @@ protected:
 
 inline const Model& NonDReliability::algorithm_space_model() const
 { return uSpaceModel; }
+
+
+inline void NonDReliability::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
+}
 
 } // namespace Dakota
 

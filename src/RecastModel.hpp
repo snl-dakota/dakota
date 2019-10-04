@@ -198,6 +198,16 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
 
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  bool distribution_parameter_derivatives() const;
+
   size_t qoi() const;
 
   /// portion of evaluate() specific to RecastModel
@@ -615,6 +625,27 @@ inline bool RecastModel::finalize_mapping()
   Model::finalize_mapping();
   return sub_model_resize;
 }
+
+
+inline void RecastModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to subModel:
+  subModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				    dr_index1, c_target2, di_target2,
+				    ds_target2, dr_target2);
+}
+
+
+inline bool RecastModel::distribution_parameter_derivatives() const
+{ return subModel.distribution_parameter_derivatives(); }
 
 
 inline size_t RecastModel::qoi() const

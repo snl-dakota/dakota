@@ -1754,6 +1754,24 @@ void Iterator::sub_iterator_flag(bool si_flag)
 }
 
 
+void Iterator::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  if (iteratorRep)
+    iteratorRep->
+      nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
+			       c_target2, di_target2, ds_target2, dr_target2);
+  //else no-op
+}
+
+
 StrStrSizet Iterator::run_identifier() const
 {
   return(boost::make_tuple(method_enum_to_string(methodName),
