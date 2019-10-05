@@ -241,19 +241,23 @@ public:
   virtual short distribution_parameter_derivatives() const;
 
   /// transform x-space gradient vector to u-space
-  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
-			 const RealVector& x_vars);
+  virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_u,
+				 const RealVector& x_vars);
   /// transform u-space gradient vector to x-space
-  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
-			 const RealVector& x_vars);
+  virtual void trans_grad_U_to_X(const RealVector& fn_grad_u,
+				 RealVector& fn_grad_x,
+				 const RealVector& x_vars);
   /// transform x-space gradient vector to gradient with respect to inserted
   /// distribution parameters
-  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
-			 const RealVector& x_vars);
+  virtual void trans_grad_X_to_S(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_s,
+				 const RealVector& x_vars);
   /// transform x-space Hessian matrix to u-space
-  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
-			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
-			 const RealVector& fn_grad_x);
+  virtual void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+				 RealSymMatrix& fn_hess_u,
+				 const RealVector& x_vars,
+				 const RealVector& fn_grad_x);
 
   /// build a new SurrogateModel approximation
   virtual void build_approximation();
