@@ -30,7 +30,7 @@ ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model, short u_space_type,
 			  bool truncate_bnds, Real bnd) :
-  RecastModel(x_model), distParamDerivs(false),
+  RecastModel(x_model), distParamDerivs(NO_DERIVS),
   truncatedBounds(truncate_bnds), boundVal(bnd)
 {
   modelType = "probability_transform";
@@ -726,7 +726,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
   if (map_derivs) {
     // The following transformation data is invariant w.r.t. the response fns
     // and is computed outside of the num_fns loop
-    if (ptmInstance->distParamDerivs)
+    if (ptmInstance->distParamDerivs > NO_DERIVS)
       ptmInstance->natafTransform.jacobian_dX_dS(x_cv, jacobian_xs,
 	x_cv_ids, x_acv_ids, ptmInstance->primaryACVarMapIndices,
 	ptmInstance->secondaryACVarMapTargets);
@@ -768,14 +768,14 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
       }
       if (map_derivs) { // perform transformation
         fn_grad_us = u_response.function_gradient_view(i);
-        if (ptmInstance->distParamDerivs) // transform subset of components
+        if (ptmInstance->distParamDerivs > NO_DERIVS) // transform subset
           ptmInstance->natafTransform.trans_grad_X_to_S(fn_grad_x,
             fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, x_acv_ids,
             ptmInstance->primaryACVarMapIndices,
             ptmInstance->secondaryACVarMapTargets);
-        else   // transform subset of components
+        else // transform subset of components
           ptmInstance->natafTransform.trans_grad_X_to_U(fn_grad_x,
-              fn_grad_us, jacobian_xu, x_dvv, x_cv_ids);
+            fn_grad_us, jacobian_xu, x_dvv, x_cv_ids);
       }
       else // no transformation: dg/dx = dG/du
         u_response.function_gradient(fn_grad_x, i);
@@ -792,7 +792,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
       const RealSymMatrix& fn_hess_x = x_response.function_hessian(i);
       if (map_derivs) { // perform transformation
         fn_hess_us = u_response.function_hessian_view(i);
-        if (ptmInstance->distParamDerivs) { // transform subset of components
+        if (ptmInstance->distParamDerivs > NO_DERIVS) { // transform subset
           Cerr << "Error: Hessians with respect to inserted variables not yet "
                << "supported." << std::endl;
           abort_handler(MODEL_ERROR);
@@ -826,7 +826,7 @@ set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
 {
   Pecos::MultivariateDistribution& x_dist
     = ptmInstance->subModel.multivariate_distribution();
-  //if (ptmInstance->distParamDerivs) {
+  //if (ptmInstance->distParamDerivs > NO_DERIVS) {
   //}
   //else
   if (x_dist.correlation()) {

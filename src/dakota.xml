@@ -634,7 +634,7 @@
 	     </keyword>
 	     ' >
 
-<!ENTITY expansion_options '
+    <!ENTITY expansion_options '
       	     <!-- Old reference default; samples = 0 -->
 	     &samples_on_emulator_with_alias;
 	     <keyword  id="sample_type" name="sample_type" code="{0}" label="Sampling type"  minOccurs="0" default="lhs" >
@@ -704,6 +704,22 @@
 	     <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag"  minOccurs="0" default="use function values only" />
 	     ' >
 
+    <!ENTITY bayes_seed_rng '
+	     <keyword  id="seed1" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	       <param type="INTEGER" constraint="> 0" />
+	     </keyword>
+             &rng_options;
+	     ' >
+
+    <!ENTITY bayes_expansion_options '
+	     <optional>
+	       <oneOf label="Covariance Type">
+		 <keyword  id="diagonal_covariance" name="diagonal_covariance" code="{N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}" label="diagonal_covariance"   default="diagonal_covariance for response vector > 10; else full_covariance" />
+		 <keyword  id="full_covariance" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance"   />
+	       </oneOf>
+	     </optional>
+	     ' >
+
     <!ENTITY bayes_pce_expansion_order '
 	     <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order"  minOccurs="1" >
 	       <param type="INTEGER" />
@@ -732,7 +748,7 @@
 		 &bayes_pce_orthog_least_interp;
 	       </oneOf>
 	       &pce_options;
-	       <!-- &expansion_options; -->
+	       &bayes_expansion_options;
 	     </keyword>
 	     ' >
 
@@ -746,7 +762,7 @@
 		 &pce_orthog_least_interp_sequence;
 	       </oneOf>
 	       &pce_options;
-	       <!-- &expansion_options; -->
+	       &bayes_expansion_options;
 	       <!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive"  minOccurs="0"/> -->
 	     </keyword>
 	     ' >
@@ -769,7 +785,7 @@
 		 <!-- </required> -->
 	       </oneOf>
 	       &pce_options;
-	       <!-- &expansion_options; -->
+	       &bayes_expansion_options;
 	     </keyword>
 	     ' >
 
@@ -781,7 +797,7 @@
 		 &sc_sparse_grid;
 	       </oneOf>
 	       &sc_options;
-	       <!-- &expansion_options; -->
+	       &bayes_expansion_options;
 	     </keyword>
 	     ' >
 
@@ -2705,9 +2721,7 @@
 		<alias name="samples" />
 		<param type="INTEGER" />
 	      </keyword>
-	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
-		<param type="INTEGER" constraint="> 0" />
-	      </keyword>
+	      &bayes_seed_rng;
 	      &bayes_emulator;
 	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space"  minOccurs="0" />
 	      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform"  minOccurs="0" />
@@ -2724,7 +2738,6 @@
 		  <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel"  default="dram" />
 		</oneOf>
 	      </optional>
-	      &rng_options;
 	      <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
 		<oneOf label="Pre-solve Optimizer">
 		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp"   />
@@ -2742,9 +2755,7 @@
 		<alias name="samples" />
 		<param type="INTEGER" />
 	      </keyword>
-	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
-		<param type="INTEGER" constraint="> 0" />
-	      </keyword>
+	      &bayes_seed_rng;
 	      <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"   >
 		<param type="INTEGER" />
 	      </keyword>
@@ -2775,7 +2786,6 @@
 		      -->
 		</oneOf>
 	      </optional>
-	      &rng_options;
 	      &bayes_proposal_covariance;
 	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		<param type="INPUT_FILE" />
