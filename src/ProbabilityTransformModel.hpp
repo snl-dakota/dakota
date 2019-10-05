@@ -232,6 +232,14 @@ nested_variable_mappings(const SizetArray& c_index1,
 }
 
 
+inline const SizetArray& ProbabilityTransformModel::nested_acv1_indices() const
+{ return primaryACVarMapIndices; }
+
+
+inline const ShortArray& ProbabilityTransformModel::nested_acv2_targets() const
+{ return secondaryACVarMapTargets; }
+
+
 inline short ProbabilityTransformModel::
 distribution_parameter_derivatives() const
 { return distParamDerivs; }
