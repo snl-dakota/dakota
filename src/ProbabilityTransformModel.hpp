@@ -221,11 +221,9 @@ nested_variable_mappings(const SizetArray& c_index1,
   size_t i, num_outer_cv = secondaryACVarMapTargets.size();
   if (num_outer_cv) {
     bool tgt = false, no_tgt = false;
-    for (i=0; i<num_outer_cv; ++i) {
-      short acvm_tgt2 = secondaryACVarMapTargets[i];
-      if (acvm_tgt2 == Pecos::NO_TARGET) no_tgt = true;
-      else                                  tgt = true;
-    }
+    for (i=0; i<num_outer_cv; ++i)
+      if (secondaryACVarMapTargets[i] == Pecos::NO_TARGET) no_tgt = true;
+      else                                                    tgt = true;
     if (tgt && no_tgt) distParamDerivs = MIXED_DERIVS;
     else if (tgt)      distParamDerivs =   ALL_DERIVS;
   }

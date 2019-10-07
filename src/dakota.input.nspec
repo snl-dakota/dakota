@@ -2948,6 +2948,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     ( queso {N_mdm(utype,subMethod_SUBMETHOD_QUESO)}
       chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ rng {0}
+        mt19937 {N_mdm(lit,rngName_mt19937)}
+        |
+        rnum2 {N_mdm(lit,rngName_rnum2)}
+       ]
       [ emulator {0}
         ( gaussian_process ALIAS kriging {0}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
@@ -3147,6 +3152,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
@@ -3301,6 +3311,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -3483,6 +3498,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
@@ -3545,6 +3565,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
@@ -3643,11 +3668,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         |
         multilevel {N_mdm(lit,mcmcType_multilevel)}
        ]
-      [ rng {0}
-        mt19937 {N_mdm(lit,rngName_mt19937)}
-        |
-        rnum2 {N_mdm(lit,rngName_rnum2)}
-       ]
       [ pre_solve {0}
         sqp {N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}
         |
@@ -3682,6 +3702,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
       chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ rng {0}
+        mt19937 {N_mdm(lit,rngName_mt19937)}
+        |
+        rnum2 {N_mdm(lit,rngName_rnum2)}
+       ]
       build_samples INTEGER {N_mdm(int,buildSamples)}
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
@@ -3720,11 +3745,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
         |
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
-       ]
-      [ rng {0}
-        mt19937 {N_mdm(lit,rngName_mt19937)}
-        |
-        rnum2 {N_mdm(lit,rngName_rnum2)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( prior {N_mdm(lit,proposalCovType_prior)}
@@ -3952,6 +3972,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
@@ -4106,6 +4131,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -4288,6 +4318,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
@@ -4350,6 +4385,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
@@ -4651,6 +4691,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
@@ -4805,6 +4850,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -4987,6 +5037,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
@@ -5049,6 +5104,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+          [ 
+            diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+            |
+            full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+           ]
          )
         |
         ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
