@@ -830,9 +830,9 @@ void NonDExpansion::compute_expansion()
   // needs rebuilding when the trust region is updated.  In the checks below,
   // all_approx detects any variable insertions or ASV omissions and
   // force_rebuild() manages variable augmentations.
-  short dist_param_derivs = uSpaceModel.distribution_parameter_derivatives();
-  bool all_approx = false;
-  if (allVars && numUncertainQuant && dist_param_derivs == NO_DERIVS) {
+  bool all_approx = false, dist_param_derivs
+    = (uSpaceModel.query_distribution_parameter_derivatives() > NO_DERIVS);
+  if (allVars && numUncertainQuant && dist_param_derivs) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
     const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
@@ -854,7 +854,9 @@ void NonDExpansion::compute_expansion()
       // response sensitivities.
       bool sampler_grad = false;
       if (final_stat_grad_flag) {
-	if (allVars) sampler_grad = (dist_param_derivs > NO_DERIVS);
+	if (dist_param_derivs)
+	  uSpaceModel.activate_distribution_parameter_derivatives();
+	if (allVars) sampler_grad = dist_param_derivs;
 	else         sampler_grad = true;
       }
 
@@ -898,6 +900,9 @@ void NonDExpansion::compute_expansion()
     }
 
     uSpaceModel.build_approximation();
+
+    if (u_space_sampler_rep && final_stat_grad_flag && dist_param_derivs)
+      uSpaceModel.deactivate_distribution_parameter_derivatives();
   }
 }
 

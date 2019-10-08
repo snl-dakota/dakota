@@ -57,6 +57,9 @@ protected:
 
   Pecos::ProbabilityTransformation& probability_transformation();
 
+  void activate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives();
+
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
@@ -245,6 +248,14 @@ inline SurrogateModel::~SurrogateModel()
 inline Pecos::ProbabilityTransformation& SurrogateModel::
 probability_transformation()
 { return truth_model().probability_transformation(); } // forward along
+
+
+inline void SurrogateModel::activate_distribution_parameter_derivatives()
+{ truth_model().activate_distribution_parameter_derivatives(); }
+
+
+inline void SurrogateModel::deactivate_distribution_parameter_derivatives()
+{ truth_model().deactivate_distribution_parameter_derivatives(); }
 
 
 inline void SurrogateModel::

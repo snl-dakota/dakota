@@ -78,8 +78,13 @@ protected:
   /// return secondaryACVarMapTargets
   const ShortArray& nested_acv2_targets() const;
   
-  /// return distParamDerivs
-  short distribution_parameter_derivatives() const;
+  /// calculate and return potential state of distribution parameter
+  /// derivatives, but do not cache value in distParamDerivs
+  short query_distribution_parameter_derivatives() const;
+  /// activate distParamDerivs to {NO,MIXED,ALL}_DERIVS
+  void activate_distribution_parameter_derivatives();
+  /// reset distParamDerivs to NO_DERIVS
+  void deactivate_distribution_parameter_derivatives();
 
   void assign_instance();
 
@@ -216,18 +221,34 @@ nested_variable_mappings(const SizetArray& c_index1,
   //secondaryADIVarMapTargets = di_target2;
   //secondaryADSVarMapTargets = ds_target2;
   //secondaryADRVarMapTargets = dr_target2;
+}
 
-  distParamDerivs = NO_DERIVS;
+
+inline short ProbabilityTransformModel::
+query_distribution_parameter_derivatives() const
+{
+  short dist_param_derivs = NO_DERIVS;
   size_t i, num_outer_cv = secondaryACVarMapTargets.size();
   if (num_outer_cv) {
     bool tgt = false, no_tgt = false;
     for (i=0; i<num_outer_cv; ++i)
       if (secondaryACVarMapTargets[i] == Pecos::NO_TARGET) no_tgt = true;
       else                                                    tgt = true;
-    if (tgt && no_tgt) distParamDerivs = MIXED_DERIVS;
-    else if (tgt)      distParamDerivs =   ALL_DERIVS;
+    if (tgt && no_tgt) dist_param_derivs = MIXED_DERIVS;
+    else if (tgt)      dist_param_derivs =   ALL_DERIVS;
   }
+  return dist_param_derivs;
 }
+
+
+inline void ProbabilityTransformModel::
+activate_distribution_parameter_derivatives()
+{ distParamDerivs = query_distribution_parameter_derivatives(); }
+
+
+inline void ProbabilityTransformModel::
+deactivate_distribution_parameter_derivatives()
+{ distParamDerivs = NO_DERIVS; }
 
 
 inline const SizetArray& ProbabilityTransformModel::nested_acv1_indices() const
@@ -236,11 +257,6 @@ inline const SizetArray& ProbabilityTransformModel::nested_acv1_indices() const
 
 inline const ShortArray& ProbabilityTransformModel::nested_acv2_targets() const
 { return secondaryACVarMapTargets; }
-
-
-inline short ProbabilityTransformModel::
-distribution_parameter_derivatives() const
-{ return distParamDerivs; }
 
 
 inline bool ProbabilityTransformModel::resize_pending() const

@@ -4812,12 +4812,28 @@ const ShortArray& Model::nested_acv2_targets() const
 }
 
 
-short Model::distribution_parameter_derivatives() const
+short Model::query_distribution_parameter_derivatives() const
 {
   if (modelRep)
-    return modelRep->distribution_parameter_derivatives();
+    return modelRep->query_distribution_parameter_derivatives();
   else // default implementation
     return NO_DERIVS;
+}
+
+
+void Model::activate_distribution_parameter_derivatives()
+{
+  if (modelRep)
+    return modelRep->activate_distribution_parameter_derivatives();
+  // else no-op
+}
+
+
+void Model::deactivate_distribution_parameter_derivatives()
+{
+  if (modelRep)
+    return modelRep->deactivate_distribution_parameter_derivatives();
+  // else no-op
 }
 
 

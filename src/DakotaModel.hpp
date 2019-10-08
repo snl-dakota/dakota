@@ -236,9 +236,13 @@ public:
   const SizetArray& nested_acv1_indices() const;
   /// return secondaryACVarMapTargets
   const ShortArray& nested_acv2_targets() const;
-  /// return derivative composition of final results w.r.t.
-  /// distribution parameters (none, all, or mixed)
-  virtual short distribution_parameter_derivatives() const;
+  /// calculate and return derivative composition of final results
+  /// w.r.t. distribution parameters (none, all, or mixed)
+  virtual short query_distribution_parameter_derivatives() const;
+  /// activate derivative setting w.r.t. distribution parameters
+  virtual void activate_distribution_parameter_derivatives();
+  /// deactivate derivative setting w.r.t. distribution parameters
+  virtual void deactivate_distribution_parameter_derivatives();
 
   /// transform x-space gradient vector to u-space
   virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,

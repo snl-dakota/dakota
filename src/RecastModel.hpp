@@ -208,7 +208,9 @@ protected:
 				const ShortArray& dr_target2);
   const SizetArray& nested_acv1_indices() const;
   const ShortArray& nested_acv2_targets() const;
-  short distribution_parameter_derivatives() const;
+  short query_distribution_parameter_derivatives() const;
+  void activate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives();
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 			 const RealVector& x_vars);
@@ -664,8 +666,16 @@ inline const ShortArray& RecastModel::nested_acv2_targets() const
 { return subModel.nested_acv2_targets(); }
 
 
-inline short RecastModel::distribution_parameter_derivatives() const
-{ return subModel.distribution_parameter_derivatives(); }
+inline short RecastModel::query_distribution_parameter_derivatives() const
+{ return subModel.query_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::activate_distribution_parameter_derivatives()
+{ subModel.activate_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::deactivate_distribution_parameter_derivatives()
+{ subModel.deactivate_distribution_parameter_derivatives(); }
 
 
 inline void RecastModel::
