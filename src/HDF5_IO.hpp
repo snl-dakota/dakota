@@ -90,7 +90,7 @@ inline H5::DataType h5_mem_dtype( const size_t & )
 
 /// Return the HDF5 datatype to read a uint in memory
 inline H5::DataType h5_mem_dtype( const unsigned int & )
-{ return H5::PredType::NATIVE_ULONG; }
+{ return H5::PredType::NATIVE_UINT; }
 
 /// Return the HDF5 datatype to read a short in memory
 inline H5::DataType h5_mem_dtype( const short & )
