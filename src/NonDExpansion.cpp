@@ -832,7 +832,7 @@ void NonDExpansion::compute_expansion()
   // force_rebuild() manages variable augmentations.
   bool all_approx = false, dist_param_derivs
     = (uSpaceModel.query_distribution_parameter_derivatives() > NO_DERIVS);
-  if (allVars && numUncertainQuant && dist_param_derivs) {
+  if (allVars && numUncertainQuant && !dist_param_derivs) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
     const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
