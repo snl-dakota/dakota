@@ -418,149 +418,140 @@ sample_to_variables(const Real* sample_vars, Variables& vars, Model& model)
   default:  vars_mode = samplingVarsMode;                                 break;
   }
 
-  size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-    drv_start, num_drv, samp_start = 0;//, rv_start
+  size_t cv_index, num_cv, div_index, num_div, dsv_index, num_dsv,
+    drv_index, num_drv, samp_index = 0;
   switch (vars_mode) {
   case DESIGN:
-    cv_start = div_start = dsv_start = drv_start = 0;
+    cv_index = div_index = dsv_index = drv_index = 0;
     svd.design_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     break;
   //case DESIGN_UNIFORM:
-  //  cv_start = div_start = dsv_start = drv_start = samp_start = 0;
+  //  cv_index = div_index = dsv_index = drv_index = 0;
   //  svd.design_counts(num_cv, num_div, num_dsv, num_drv);
-  //  sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-  // 		        dsv_start, num_dsv, drv_start, num_drv, samp_start);
+  //  sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+  // 		        dsv_index, num_dsv, drv_index, num_drv, samp_index);
   //  break;
   case ALEATORY_UNCERTAIN:
     // design vars define starting indices
-    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
-    //rv_start = cv_start + div_start + dsv_start + drv_start;
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
     // aleatory uncertain vars define counts
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     break;
   case ALEATORY_UNCERTAIN_UNIFORM:
     // continuous design vars define starting indices
-    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
-    //rv_start = cv_start + div_start + dsv_start + drv_start;
-    samp_start = 0;//count_value(active_vars, 0, rv_start);
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
     // continuous aleatory uncertain vars define counts
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     break;
   case EPISTEMIC_UNCERTAIN:
     // design + aleatory uncertain vars define starting indices
-    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    cv_start  += num_cv;   div_start += num_div;
-    dsv_start += num_dsv;  drv_start += num_drv;
-    //rv_start = cv_start + div_start + dsv_start + drv_start;
+    cv_index  += num_cv;   div_index += num_div;
+    dsv_index += num_dsv;  drv_index += num_drv;
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     break;
   case EPISTEMIC_UNCERTAIN_UNIFORM:
     // continuous design + aleatory uncertain vars define starting indices
-    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    cv_start  += num_cv;   div_start += num_div;
-    dsv_start += num_dsv;  drv_start += num_drv;
-    //rv_start = cv_start + div_start + dsv_start + drv_start;
+    cv_index  += num_cv;   div_index += num_div;
+    dsv_index += num_dsv;  drv_index += num_drv;
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     break;
   case UNCERTAIN:
     // aleatory
-    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
-    //rv_start = cv_start + div_start + dsv_start + drv_start;
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     // epistemic
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     break;
   case UNCERTAIN_UNIFORM:
     // aleatory
-    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
-    //rv_start = cv_start + div_start + dsv_start + drv_start;
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     // epistemic
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     break;
   case STATE:
-    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    cv_start  += num_cv;  div_start += num_div;
-    dsv_start += num_dsv; drv_start += num_drv;
+    cv_index  += num_cv;  div_index += num_div;
+    dsv_index += num_dsv; drv_index += num_drv;
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    cv_start  += num_cv;  div_start += num_div;
-    dsv_start += num_dsv; drv_start += num_drv;
-    //rv_start = cv_start + div_start + dsv_start + drv_start;
+    cv_index  += num_cv;  div_index += num_div;
+    dsv_index += num_dsv; drv_index += num_drv;
     svd.state_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     break;
   //case STATE_UNIFORM:
-  //  svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+  //  svd.design_counts(cv_index, div_index, dsv_index, drv_index);
   //  svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-  //  cv_start  += num_cv;  div_start += num_div;
-  //  dsv_start += num_dsv; drv_start += num_drv;
+  //  cv_index  += num_cv;  div_index += num_div;
+  //  dsv_index += num_dsv; drv_index += num_drv;
   //  svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-  //  cv_start  += num_cv;  div_start += num_div;
-  //  dsv_start += num_dsv; drv_start += num_drv;
-  //  rv_start = cv_start + div_start + dsv_start + drv_start;
+  //  cv_index  += num_cv;  div_index += num_div;
+  //  dsv_index += num_dsv; drv_index += num_drv;
   //  svd.state_counts(num_cv, num_div, num_dsv, num_drv);
-  //  sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-  //	      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+  //  sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+  //	      dsv_index, num_dsv, drv_index, num_drv, samp_index);
   //  break;
   case ALL:
     // design
-    cv_start = div_start = dsv_start = drv_start = 0;//rv_start = 0;
+    cv_index = div_index = dsv_index = drv_index = 0;
     svd.design_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     // aleatory
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     // epistemic
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     // state
     svd.state_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		   dsv_start, num_dsv, drv_start, num_drv, samp_start, model);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
     break;
   case ALL_UNIFORM:
     // design
-    cv_start = div_start = dsv_start = drv_start = 0;//rv_start = 0;
+    cv_index = div_index = dsv_index = drv_index = 0;
     svd.design_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     // aleatory
     svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     // epistemic
     svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     // state
     svd.state_counts(num_cv, num_div, num_dsv, num_drv);
-    sample_to_cv_type(sample_vars, vars, cv_start, num_cv, div_start, num_div,
-		      dsv_start, num_dsv, drv_start, num_drv, samp_start);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
     break;
   }
 }
