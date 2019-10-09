@@ -233,9 +233,9 @@ public:
 					const ShortArray& ds_target2,
 					const ShortArray& dr_target2);
   /// return primaryACVarMapIndices
-  const SizetArray& nested_acv1_indices() const;
+  virtual const SizetArray& nested_acv1_indices() const;
   /// return secondaryACVarMapTargets
-  const ShortArray& nested_acv2_targets() const;
+  virtual const ShortArray& nested_acv2_targets() const;
   /// calculate and return derivative composition of final results
   /// w.r.t. distribution parameters (none, all, or mixed)
   virtual short query_distribution_parameter_derivatives() const;

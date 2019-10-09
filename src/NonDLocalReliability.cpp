@@ -2125,7 +2125,8 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
   // dg/ds = dg/dx * dx/ds where dx/ds is the design Jacobian.  Since dg/dx is
   // already available (passed in as fn_grad_x), these sensitivities do not
   // require additional response evaluations.
-  short dist_param_derivs = uSpaceModel.query_distribution_parameter_derivatives();
+  short dist_param_derivs
+    = uSpaceModel.query_distribution_parameter_derivatives();
   if (dist_param_derivs == ALL_DERIVS || dist_param_derivs == MIXED_DERIVS)
     uSpaceModel.trans_grad_X_to_S(fn_grad_x, final_stat_grad, x_vars);
 
