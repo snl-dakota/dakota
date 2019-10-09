@@ -336,7 +336,12 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
     }
     response = pair.response();
     // the read operation errors out for improperly formatted data
-    response.read(eval_ss, resultsFileFormat);
+    try {
+      response.read(eval_ss, resultsFileFormat);
+    }
+    catch(const FunctionEvalFailure & fneval_except) {
+      manage_failure(pair.variables(), response.active_set(), response, pair.eval_id());
+    }
     completionSet.insert(pair.eval_id());
   }
 
