@@ -66,6 +66,10 @@ protected:
 
   void file_cleanup() const;
 
+  void file_and_workdir_cleanup(const bfs::path &params_path,
+      const bfs::path &results_path,
+      const bfs::path &workdir_path,
+      const String &tag) const;
 
   /// Remove (potentially autotagged for multiple programs) parameters
   /// and results files with passed root names

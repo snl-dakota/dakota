@@ -282,7 +282,11 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
 {
 
   batchIdCntr++;
-  define_filenames(final_batch_id_tag());
+  // define_filenames sets paramsFileWritten and resultsFileWritten, taking
+  // into consideration all the myriad settings the user could have provided,
+  // hierarchical tagging, etc.
+  String batch_id_tag = final_batch_id_tag();
+  define_filenames(batch_id_tag);
   if(!allowExistingResults)
     std::remove(resultsFileWritten.c_str());
   std::vector<String> an_comps;
@@ -336,8 +340,8 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
     completionSet.insert(pair.eval_id());
   }
 
-  // TODO: clean up workdir and files based on fileSaveFlag, etc. See the logic
-  // in read_results_files().
+  file_and_workdir_cleanup(paramsFileWritten, resultsFileWritten, createdDir, batch_id_tag);
+
 }
 
 void ProcessApplicInterface::test_local_evaluation_batch(PRPQueue& prp_queue)
@@ -709,56 +713,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
   else 
     read_results_file(response,results_path,id);
 
-  // remove the workdir if in the map and we're not saving
-  bool removing_workdir = (!workdir_path.empty() && !dirSave);
-
-  if (fileSaveFlag) {
-
-    // Prevent overwriting of files with reused names for which a file_save 
-    // request has been given.  Assume tmp files always unique.
-
-    // Cases (work in progress):
-    //  * no workdir --> tag if needed (old behavior)
-    //  * workdir, shared, saved --> tag if needed
-    //  * a workdir can be unique via dir_tag or tmp files
-    //    - workdir, unique, saved --> done no tag
-    //    - workdir, not saved --> tag and move to rundir
-    //  * when workdir and absolute path to files tag in abs path
-
-    if ( useWorkdir ) {
-      if ( dirSave ) {
-	// if saving the directory, just need to make sure filenames are unique
-	// use legacy tagging mechanism within the workdir
-	// TODO: don't need to tag if workdir is unique per eval...
-	if (!fileTagFlag && !dirTag && !workDirName.empty())
-	  autotag_files(params_path, results_path, eval_id_tag);
-      }
-      else {
-	// work_directory getting removed; unique tag the files into the rundir
-	// take the filename off the path and use with rundir
-	// TODO: do we even need to support this?
-	// TODO: distinguish between params in vs. not in (absolute
-	// path) the workdir
-	// autotag_files(params_path, results_path, eval_id_tag,
-	// 	      bfs::current_path());
-      }
-    }
-    else {
-      // simple case; no workdir --> old behavior, tagging if needed
-      // in place (whether relative or absolute)
-      if (!fileTagFlag)
-	autotag_files(params_path, results_path, eval_id_tag);
-    }
-  }
-  else
-    remove_params_results_files(params_path, results_path);
-
-  // Now that files are handled, conditionally remove the work directory
-  if (removing_workdir) {
-    if (outputLevel > NORMAL_OUTPUT)
-      Cout << "Removing work_directory " << workdir_path << std::endl;
-    WorkdirHelper::recursive_remove(workdir_path, FILEOP_ERROR);
-  }
+  file_and_workdir_cleanup(params_path, results_path, workdir_path, eval_id_tag);
   // Remove the evaluation which has been processed from the bookkeeping
   fileNameMap.erase(map_iter);
 }
@@ -996,6 +951,65 @@ void ProcessApplicInterface::reset_process_environment()
       Cout << "Resetting environment PATH." << std::endl;
     WorkdirHelper::reset();
   }
+}
+
+void ProcessApplicInterface::
+file_and_workdir_cleanup(const bfs::path &params_path,
+    const bfs::path &results_path,
+    const bfs::path &workdir_path, 
+    const String &tag) const
+{
+  
+  // remove the workdir if in the map and we're not saving
+  bool removing_workdir = (!workdir_path.empty() && !dirSave);
+  if (fileSaveFlag) {
+
+    // Prevent overwriting of files with reused names for which a file_save 
+    // request has been given.  Assume tmp files always unique.
+
+    // Cases (work in progress):
+    //  * no workdir --> tag if needed (old behavior)
+    //  * workdir, shared, saved --> tag if needed
+    //  * a workdir can be unique via dir_tag or tmp files
+    //    - workdir, unique, saved --> done no tag
+    //    - workdir, not saved --> tag and move to rundir
+    //  * when workdir and absolute path to files tag in abs path
+
+    if ( useWorkdir ) {
+      if ( dirSave ) {
+	// if saving the directory, just need to make sure filenames are unique
+	// use legacy tagging mechanism within the workdir
+	// TODO: don't need to tag if workdir is unique per eval...
+	if (!fileTagFlag && !dirTag && !workDirName.empty())
+	  autotag_files(params_path, results_path, tag);
+      }
+      else {
+	// work_directory getting removed; unique tag the files into the rundir
+	// take the filename off the path and use with rundir
+	// TODO: do we even need to support this?
+	// TODO: distinguish between params in vs. not in (absolute
+	// path) the workdir
+	// autotag_files(params_path, results_path, eval_id_tag,
+	// 	      bfs::current_path());
+      }
+    }
+    else {
+      // simple case; no workdir --> old behavior, tagging if needed
+      // in place (whether relative or absolute)
+      if (!fileTagFlag)
+	autotag_files(params_path, results_path, tag);
+    }
+  }
+  else
+    remove_params_results_files(params_path, results_path);
+
+  // Now that files are handled, conditionally remove the work directory
+  if (removing_workdir) {
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << "Removing work_directory " << workdir_path << std::endl;
+    WorkdirHelper::recursive_remove(workdir_path, FILEOP_ERROR);
+  }
+
 }
 
 } // namespace Dakota
