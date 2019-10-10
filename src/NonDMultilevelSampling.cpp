@@ -2627,7 +2627,7 @@ namespace Dakota {
 
     Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
         cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
-        mu_Q2l, mu_Q2lm1, mu_Q1lQ1lm1, mu_Q2lQ1lm1, mu_Q1lQ2lm1, mu_Q2lQ2lm1,
+        mu_Q2l, mu_Q2lm1, mu_Q2lQ2lm1,
         mu_Q1lm1_mu_Q2lQ1lm1, mu_Q1lm1_mu_Q1lm1_muQ2l, mu_Q1l_mu_Q1lQ2lm1, mu_Q1l_mu_Q1l_mu_Q2lm1,
         mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1, mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1, mu_Q2l_muQ2lm1, mu_Q1lQ1lm1_mu_Q1lQ1lm1,
         mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term, bessel_corr;
@@ -2688,12 +2688,9 @@ namespace Dakota {
                                cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
         cm2l_sq = cm2l * cm2l;
         cm2lm1_sq = cm2lm1 * cm2lm1;
-        mu_Q1lQ1lm1 = sum_Q1lQ1lm1(qoi, lev) / Nlq;
-        mu_Q1lQ2lm1 = sum_Q1lQ2lm1(qoi, lev) / Nlq;
-        mu_Q2lQ1lm1 = sum_Q2lQ1lm1(qoi, lev) / Nlq;
-        mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq;
 
         //[fm] unbiased products of mean
+        mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq;
         mu_Q1lm1_mu_Q2lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
         mu_Q1lm1_mu_Q1lm1_muQ2l = unbiased_mean_product_triplet(sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q2l(qoi, lev),
                                                                     sum_Q2lm1(qoi, lev), sum_Q2lQ1lm1(qoi,lev), sum_Q2lQ1lm1(qoi,lev),
