@@ -897,10 +897,12 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
 
 inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq) const
 {
-  Real mean1 = 1./Nlq * 1./Nlq * sumQ1 * sumQ2;
-  Real mean2 = 1./Nlq * sumQ1Q2;
-  Real bessel_corr1 = (Real)Nlq / ((Real)Nlq - 1.);
-  Real bessel_corr2 = 1. / ((Real)Nlq - 1.);
+  Real mean1, mean2, bessel_corr1, bessel_corr2 = 0.;
+
+  mean1 = 1./Nlq * 1./Nlq * sumQ1 * sumQ2;
+  mean2 = 1./Nlq * sumQ1Q2;
+  bessel_corr1 = (Real)Nlq / ((Real)Nlq - 1.);
+  bessel_corr2 = 1. / ((Real)Nlq - 1.);
 
   return bessel_corr1*mean1 - bessel_corr2*mean2;
 }
@@ -908,41 +910,45 @@ inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real& sumQ1
 inline Real NonDMultilevelSampling::unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
                                                                   const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq) const
 {
-  Real mean1 = 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ2 * sumQ3;
-  Real mean2 = unbiased_mean_product_pair(sumQ1Q2, sumQ3, sumQ1Q2Q3, Nlq);
-  Real mean3 = unbiased_mean_product_pair(sumQ2Q3, sumQ1, sumQ1Q2Q3, Nlq);
-  Real mean4 = unbiased_mean_product_pair(sumQ1Q3, sumQ2, sumQ1Q2Q3, Nlq);
-  Real mean5 = 1./((Real)Nlq) * sumQ1Q2Q3;
-  Real bessel_corr1 = (Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.));
-  Real bessel_corr2 = 1./(Nlq - 2.);
-  Real bessel_corr3 = 1./((Nlq - 1.)*(Nlq - 2.));
+  Real mean1, mean2, mean3, bessel_corr1, bessel_corr2, bessel_corr3 = 0.;
 
-  return bessel_corr1 * mean1 - bessel_corr2 * (mean2 + mean3 + mean4) - bessel_corr3 * mean5;
+  mean1 = 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ2 * sumQ3;
+  mean2 = unbiased_mean_product_pair(sumQ1Q2, sumQ3, sumQ1Q2Q3, Nlq);
+  mean2 += unbiased_mean_product_pair(sumQ2Q3, sumQ1, sumQ1Q2Q3, Nlq);
+  mean2 += unbiased_mean_product_pair(sumQ1Q3, sumQ2, sumQ1Q2Q3, Nlq);
+  mean3 = 1./((Real)Nlq) * sumQ1Q2Q3;
+  bessel_corr1 = (Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.));
+  bessel_corr2 = 1./(Nlq - 2.);
+  bessel_corr3 = 1./((Nlq - 1.)*(Nlq - 2.));
+
+  return bessel_corr1 * mean1 - bessel_corr2 * mean2 - bessel_corr3 * mean3;
 }
 
 inline Real NonDMultilevelSampling::unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
                                                                    const Real& sumQ1sq, const Real& sumQ2sq,
                                                                    const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq) const
 {
-  Real mean1 = 1./Nlq * 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ1 * sumQ2 * sumQ2;
+  Real mean1, mean2, mean3, mean4, bessel_corr1, bessel_corr2, bessel_corr3, bessel_corr4 = 0.;
 
-  Real mean2 = unbiased_mean_product_triplet(sumQ1sq, sumQ2, sumQ2, sumQ1sqQ2, sumQ1sqQ2, sumQ2sq, sumQ1sqQ2sq, Nlq);
-  Real mean3 = unbiased_mean_product_triplet(sumQ1Q2, sumQ1, sumQ2, sumQ1sqQ2, sumQ1Q2sq, sumQ1Q2, sumQ1sqQ2sq, Nlq);
-  Real mean4 = unbiased_mean_product_triplet(sumQ1, sumQ1, sumQ2sq, sumQ1sq, sumQ1Q2sq, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
+  mean1 = 1./Nlq * 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ1 * sumQ2 * sumQ2;
 
-  Real mean5 = unbiased_mean_product_pair(sumQ1sq, sumQ2sq, sumQ1sqQ2sq, Nlq);
-  Real mean6 = unbiased_mean_product_pair(sumQ1Q2, sumQ1Q2, sumQ1sqQ2sq, Nlq);
-  Real mean7 = unbiased_mean_product_pair(sumQ1sqQ2, sumQ2, sumQ1sqQ2sq, Nlq);
-  Real mean8 = unbiased_mean_product_pair(sumQ1, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
+  mean2 = unbiased_mean_product_triplet(sumQ1sq, sumQ2, sumQ2, sumQ1sqQ2, sumQ1sqQ2, sumQ2sq, sumQ1sqQ2sq, Nlq);
+  mean2 += 4. * unbiased_mean_product_triplet(sumQ1Q2, sumQ1, sumQ2, sumQ1sqQ2, sumQ1Q2sq, sumQ1Q2, sumQ1sqQ2sq, Nlq);
+  mean2 += unbiased_mean_product_triplet(sumQ1, sumQ1, sumQ2sq, sumQ1sq, sumQ1Q2sq, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
 
-  Real mean9 = 1./Nlq * sumQ1sqQ2sq;
+  mean3 = unbiased_mean_product_pair(sumQ1sq, sumQ2sq, sumQ1sqQ2sq, Nlq);
+  mean3 += 2. * unbiased_mean_product_pair(sumQ1Q2, sumQ1Q2, sumQ1sqQ2sq, Nlq);
+  mean3 += 2. * unbiased_mean_product_pair(sumQ1sqQ2, sumQ2, sumQ1sqQ2sq, Nlq);
+  mean3 += 2. * unbiased_mean_product_pair(sumQ1, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
 
-  Real bessel_corr1 = (Nlq * Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
-  Real bessel_corr2 = 1./(Nlq - 3.);
-  Real bessel_corr3 = 1./((Nlq - 2.)*(Nlq - 3.));
-  Real bessel_corr4 = 1./((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+  mean4 = 1./Nlq * sumQ1sqQ2sq;
 
-  return bessel_corr1 * mean1 - bessel_corr2 * (mean2 + 4. * mean3 + mean4) - bessel_corr3 * (mean5 + 2.*mean6 + 2.*mean7 + 2.*mean8) - bessel_corr4 * mean9;
+  bessel_corr1 = (Nlq * Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+  bessel_corr2 = 1./(Nlq - 3.);
+  bessel_corr3 = 1./((Nlq - 2.)*(Nlq - 3.));
+  bessel_corr4 = 1./((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+
+  return bessel_corr1 * mean1 - bessel_corr2 * mean2 - bessel_corr3 * mean3 - bessel_corr4 * mean4;
 }
 
 } // namespace Dakota

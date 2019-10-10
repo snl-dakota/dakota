@@ -2672,8 +2672,8 @@ namespace Dakota {
                              sum_Q3l(qoi, lev) / Nlq, sum_Q4l(qoi, lev) / Nlq,
                              cm1l, cm2l, cm3l, cm4l, Nlq);
       cm2l_sq = cm2l * cm2l;
-      //var_P2l = cm4l - cm2l_sq + 2. / (Nlq - 1.) * cm2l_sq;
-      //[fm] bias correction
+
+      //[fm] bias correction for var_P2l
       var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
       agg_estim_var = var_P2l / Nlq;
       for (lev = 1; lev < num_lev; ++lev) {
@@ -2726,7 +2726,7 @@ namespace Dakota {
         // [fm] unbiased by opening up the square and compute three different term
         mu_Q1lQ1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
         term = mu_Q1lQ1lm1_mu_Q1lQ1lm1 - 2. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 + mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1;
-        
+
         //[fm] Using an unbiased estimator we include the var_Ql * var_Qlm1 term in mu_P2lP2lm1
         //     and term is already squared out
         covar_P2lP2lm1
