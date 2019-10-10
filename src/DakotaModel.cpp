@@ -3212,11 +3212,14 @@ bool Model::manage_data_recastings()
     bool manage_recasting = false;
     recastFlags.assign(num_models, false);
     // detect recasting needs top down
-    for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i)
-      if (ml_it->model_type()      == "recast")
+    for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i) {
+      const String& m_type = ml_it->model_type();
+      if (m_type == "recast" ||
+	  m_type == "probability_transform") // + other Recast types...
 	manage_recasting = recastFlags[i] = true;
-      else if (ml_it->model_type() == "nested")
+      else if (m_type == "nested")
 	break;
+    }
 
     if (!manage_recasting) recastFlags.clear();
     return manage_recasting;
