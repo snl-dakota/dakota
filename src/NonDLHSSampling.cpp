@@ -715,18 +715,17 @@ void NonDLHSSampling::update_final_statistics()
       // standard error (estimator std-dev) for Monte Carlo mean
       finalStatErrors[cntr++] = qoi_stdev / sqrtn;
       if(outputLevel >= DEBUG_OUTPUT)
-	Cout << "Estimator SE for mean = " << finalStatErrors[cntr-1] << "\n";
+          Cout << "Estimator SE for mean = " << finalStatErrors[cntr-1] << "\n";
       // standard error (estimator std-dev) for Monte Carlo variance
       // (Harding et al., 2014: assumes normally distributed population): 
       //finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
-      //[fm] Introduction to the Theory of Statistics, Var[Var] = 1/N (cm4 - (N-3)/(N-1) cm2^2) + bias correction
-      //finalStatErrors[cntr++] = std::sqrt( 1./ns * (qoi_cm4 - (ns - 3.)/(ns - 1.) * qoi_var * qoi_var ) );
+      //[fm] Introduction to the Theory of Statistics, Var[Var] = bias correction * 1/N (cm4 - (N-3)/(N-1) cm2^2)
       finalStatErrors[cntr++] = std::sqrt( (ns - 1.)/(ns*ns - 2. * ns + 3.) * (qoi_cm4 - (ns - 3.)/(ns - 1.) * qoi_var * qoi_var ) );
       if(outputLevel >= DEBUG_OUTPUT)
-	Cout << "QoICM4 = " << qoi_cm4 << "\n";
-	Cout << "QoICM2 = " << qoi_var << "\n";
-	Cout << "ns = " << ns << "\n";
-	Cout << "Estimator SE for variance = " << finalStatErrors[cntr-1] << "\n\n";
+	    Cout << "QoICM4 = " << qoi_cm4 << "\n";
+	    Cout << "QoICM2 = " << qoi_var << "\n";
+	    Cout << "ns = " << ns << "\n";
+	    Cout << "Estimator SE for variance = " << finalStatErrors[cntr-1] << "\n\n";
       break;
     }
     // level mapping errors not implemented at this time

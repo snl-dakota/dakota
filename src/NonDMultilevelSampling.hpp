@@ -437,6 +437,16 @@ private:
   /// compute average of a set of observations
   Real average(const SizetArray& sa) const;
 
+  /// compute the unbiased product of two sampling means
+  Real unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq) const;
+  /// compute the unbiased product of three sampling means
+  Real unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
+                                                                    const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq) const;
+  /// compute the unbiased product of two pairs of products of sampling means
+  Real unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
+                                                                     const Real& sumQ1sq, const Real& sumQ2sq,
+                                                                     const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq) const;
+
   //
   //- Heading: Data
   //
@@ -883,6 +893,56 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
   for (i=0; i<len; ++i)
     sum += sa[i];
   return (Real)sum / (Real)len;
+}
+
+inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq) const
+{
+  Real mean1 = 1./Nlq * 1./Nlq * sumQ1 * sumQ2;
+  Real mean2 = 1./Nlq * sumQ1Q2;
+  Real bessel_corr1 = (Real)Nlq / ((Real)Nlq - 1.);
+  Real bessel_corr2 = 1. / ((Real)Nlq - 1.);
+
+  return bessel_corr1*mean1 - bessel_corr2*mean2;
+}
+
+inline Real NonDMultilevelSampling::unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
+                                                                  const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq) const
+{
+  Real mean1 = 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ2 * sumQ3;
+  Real mean2 = unbiased_mean_product_pair(sumQ1Q2, sumQ3, sumQ1Q2Q3, Nlq);
+  Real mean3 = unbiased_mean_product_pair(sumQ2Q3, sumQ1, sumQ1Q2Q3, Nlq);
+  Real mean4 = unbiased_mean_product_pair(sumQ1Q3, sumQ2, sumQ1Q2Q3, Nlq);
+  Real mean5 = 1./((Real)Nlq) * sumQ1Q2Q3;
+  Real bessel_corr1 = (Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.));
+  Real bessel_corr2 = 1./(Nlq - 2.);
+  Real bessel_corr3 = 1./((Nlq - 1.)*(Nlq - 2.));
+
+  return bessel_corr1 * mean1 - bessel_corr2 * (mean2 + mean3 + mean4) - bessel_corr3 * mean5;
+}
+
+inline Real NonDMultilevelSampling::unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
+                                                                   const Real& sumQ1sq, const Real& sumQ2sq,
+                                                                   const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq) const
+{
+  Real mean1 = 1./Nlq * 1./Nlq * 1./Nlq * 1./Nlq * sumQ1 * sumQ1 * sumQ2 * sumQ2;
+
+  Real mean2 = unbiased_mean_product_triplet(sumQ1sq, sumQ2, sumQ2, sumQ1sqQ2, sumQ1sqQ2, sumQ2sq, sumQ1sqQ2sq, Nlq);
+  Real mean3 = unbiased_mean_product_triplet(sumQ1Q2, sumQ1, sumQ2, sumQ1sqQ2, sumQ1Q2sq, sumQ1Q2, sumQ1sqQ2sq, Nlq);
+  Real mean4 = unbiased_mean_product_triplet(sumQ1, sumQ1, sumQ2sq, sumQ1sq, sumQ1Q2sq, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
+
+  Real mean5 = unbiased_mean_product_pair(sumQ1sq, sumQ2sq, sumQ1sqQ2sq, Nlq);
+  Real mean6 = unbiased_mean_product_pair(sumQ1Q2, sumQ1Q2, sumQ1sqQ2sq, Nlq);
+  Real mean7 = unbiased_mean_product_pair(sumQ1sqQ2, sumQ2, sumQ1sqQ2sq, Nlq);
+  Real mean8 = unbiased_mean_product_pair(sumQ1, sumQ1Q2sq, sumQ1sqQ2sq, Nlq);
+
+  Real mean9 = 1./Nlq * sumQ1sqQ2sq;
+
+  Real bessel_corr1 = (Nlq * Nlq * Nlq)/((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+  Real bessel_corr2 = 1./(Nlq - 3.);
+  Real bessel_corr3 = 1./((Nlq - 2.)*(Nlq - 3.));
+  Real bessel_corr4 = 1./((Nlq - 1.)*(Nlq - 2.)*(Nlq - 3.));
+
+  return bessel_corr1 * mean1 - bessel_corr2 * (mean2 + 4. * mean3 + mean4) - bessel_corr3 * (mean5 + 2.*mean6 + 2.*mean7 + 2.*mean8) - bessel_corr4 * mean9;
 }
 
 } // namespace Dakota

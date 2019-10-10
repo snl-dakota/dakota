@@ -1359,8 +1359,7 @@ accumulate_moments(const RealVectorArray& fn_samples, size_t q,
       // (Appendix M):  unbiased_cm4 =
       // ( N^3 biased_cm4 / (N-1) - (6N - 9) unbiased_cm2^2 ) / (N^2 - 3N + 3)
       //(ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
-      //[fm] above estimator is not unbiased since cm2 * cm2 is not unbiased
-      //(ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
+      //[fm] above estimator is not unbiased since cm2 * cm2 is biased, unbiased correction:
       (ns_sq * sum4 / nm1 - (6.*ns - 9.)*(ns_sq - ns)/(ns_sq - 2. * ns + 3) * cm2 * cm2) / ( (ns*(ns - 3.) + 3.) - ( (6.*ns - 9.)*(ns_sq - ns) )/( ns * (ns_sq - 2.*ns + 3) ) ) :
       // unbiased standard (excess kurtosis) from Wikipedia ("Estimators of
       // population kurtosis")
