@@ -2301,37 +2301,6 @@ void DataFitSurrModel::init_model(Model& model)
         currentVariables.discrete_real_variable_labels());
     }
   }
-
-  // uncertain variable distribution data (dependent on label updates above)
-
-  // Note: Variables instances defined from the same variablesId are not shared
-  // (see ProblemDescDB::get_variables()), so we propagate any distribution
-  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
-  // differing variablesId, we assume that the distribution information can be
-  // mapped when a variable label is matched, but this precludes the case
-  // where the distribution for the same variable differs between that used to
-  // build and that used to evaluate.   More careful logic could involve
-  // matching both variable label and distribution type (presumably the dist
-  // params would be consistent when the dist type is the same), and this could
-  // be implemented at the lower (MultivariateDistribution) level.
-  // > currentVariables may have different active view from incoming model
-  //   vars, but MultivariateDistribution updates can be performed for all
-  //   vars (independent of view)
-  // > when model is a ProbabilityTransformModel, its mvDist is in u-space.
-  //   DataFit operates in and pushes updates to this transformed space for
-  //   parameterized std distribs (e.g. {JACOBI,GEN_LAGUERE,NUM_GEN}_ORTHOG).
-  // > it is sufficient to pull parameters at initialize_mapping() time, as
-  //   this data varies per iterator execution rather than per-evaluation
-  const SharedVariablesData&   svd =          currentVariables.shared_data();
-  const SharedVariablesData& m_svd = model.current_variables().shared_data();
-  if (svd.id() == m_svd.id()) // same set of variables
-    model.multivariate_distribution().pull_distribution_parameters(mvDist);
-  else { // map between related sets of variables based on labels
-    StringArray pull_labels;    svd.assemble_all_labels(pull_labels);
-    StringArray push_labels;  m_svd.assemble_all_labels(push_labels);
-    model.multivariate_distribution().
-      pull_distribution_parameters(mvDist, pull_labels, push_labels);
-  }
 }
 
 
@@ -2433,6 +2402,37 @@ void DataFitSurrModel::update_model(Model& model)
     Cerr << "Error: unsupported variable view differences in "
 	 << "DataFitSurrModel::update_model()" << std::endl;
     abort_handler(MODEL_ERROR);
+  }
+
+  // uncertain variable distribution data (dependent on label updates above)
+
+  // Note: Variables instances defined from the same variablesId are not shared
+  // (see ProblemDescDB::get_variables()), so we propagate any distribution
+  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
+  // differing variablesId, we assume that the distribution information can be
+  // mapped when a variable label is matched, but this precludes the case
+  // where the distribution for the same variable differs between that used to
+  // build and that used to evaluate.   More careful logic could involve
+  // matching both variable label and distribution type (presumably the dist
+  // params would be consistent when the dist type is the same), and this could
+  // be implemented at the lower (MultivariateDistribution) level.
+  // > currentVariables may have different active view from incoming model
+  //   vars, but MultivariateDistribution updates can be performed for all
+  //   vars (independent of view)
+  // > when model is a ProbabilityTransformModel, its mvDist is in u-space.
+  //   DataFit operates in and pushes updates to this transformed space for
+  //   parameterized std distribs (e.g. {JACOBI,GEN_LAGUERE,NUM_GEN}_ORTHOG).
+  // > it is sufficient to pull parameters at initialize_mapping() time, as
+  //   this data varies per iterator execution rather than per-evaluation
+  const SharedVariablesData&   svd =          currentVariables.shared_data();
+  const SharedVariablesData& m_svd = model.current_variables().shared_data();
+  if (svd.id() == m_svd.id()) // same set of variables
+    model.multivariate_distribution().pull_distribution_parameters(mvDist);
+  else { // map between related sets of variables based on labels
+    StringArray pull_labels;    svd.assemble_all_labels(pull_labels);
+    StringArray push_labels;  m_svd.assemble_all_labels(push_labels);
+    model.multivariate_distribution().
+      pull_distribution_parameters(mvDist, pull_labels, push_labels);
   }
 }
 
