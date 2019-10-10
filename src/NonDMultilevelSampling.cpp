@@ -2628,6 +2628,8 @@ namespace Dakota {
     Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
         cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
         mu_Q2l, mu_Q2lm1, mu_Q1lQ1lm1, mu_Q2lQ1lm1, mu_Q1lQ2lm1, mu_Q2lQ2lm1,
+        mu_Q1lm1_mu_Q2lQ1lm1, mu_Q1lm1_mu_Q1lm1_muQ2l, mu_Q1l_mu_Q1lQ2lm1, mu_Q1l_mu_Q1l_mu_Q2lm1,
+        mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1, mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1, mu_Q2l_muQ2lm1, mu_Q1lQ1lm1_mu_Q1lQ1lm1,
         mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term, bessel_corr;
     size_t lev, qoi, cntr = 0, Nlq,
         num_lev = iteratedModel.truth_model().solution_levels();
@@ -2684,36 +2686,29 @@ namespace Dakota {
         uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq, mu_Q2lm1,
                                sum_Q3lm1(qoi, lev) / Nlq, sum_Q4lm1(qoi, lev) / Nlq,
                                cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
-        cm1l_sq = cm1l * cm1l; //Todo
-        cm1lm1_sq = cm1lm1 * cm1lm1; //Todo
         cm2l_sq = cm2l * cm2l;
         cm2lm1_sq = cm2lm1 * cm2lm1;
-        var_Ql = (sum_Q2l(qoi, lev) / Nlq - cm1l * cm1l) * bessel_corr;
-        var_Qlm1 = (sum_Q2lm1(qoi, lev) / Nlq - cm1lm1 * cm1lm1) * bessel_corr;
         mu_Q1lQ1lm1 = sum_Q1lQ1lm1(qoi, lev) / Nlq;
         mu_Q1lQ2lm1 = sum_Q1lQ2lm1(qoi, lev) / Nlq;
         mu_Q2lQ1lm1 = sum_Q2lQ1lm1(qoi, lev) / Nlq;
         mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq;
-        //mu_P2lP2lm1 = mu_Q2lQ2lm1 - 2. * cm1lm1 * mu_Q2lQ1lm1
-        //              + cm1lm1_sq * mu_Q2l + cm1l_sq * mu_Q2lm1
-        //              - 2. * cm1l * mu_Q1lQ2lm1 + 4. * cm1l * cm1lm1 * mu_Q1lQ1lm1
-        //              - 3. * cm1l_sq * cm1lm1_sq;
+
         //[fm] unbiased products of mean
-        Real mu_Q1lm1_mu_Q2lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
-        Real mu_Q1lm1_mu_Q1lm1_muQ2l = unbiased_mean_product_triplet(sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q2l(qoi, lev),
+        mu_Q1lm1_mu_Q2lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
+        mu_Q1lm1_mu_Q1lm1_muQ2l = unbiased_mean_product_triplet(sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q2l(qoi, lev),
                                                                     sum_Q2lm1(qoi, lev), sum_Q2lQ1lm1(qoi,lev), sum_Q2lQ1lm1(qoi,lev),
                                                                     sum_Q2lQ2lm1(qoi, lev), Nlq);
-        Real mu_Q1l_mu_Q1lQ2lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q1lQ2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
-        Real mu_Q1l_mu_Q1l_mu_Q2lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1l(qoi, lev), sum_Q2lm1(qoi, lev),
+        mu_Q1l_mu_Q1lQ2lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q1lQ2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
+        mu_Q1l_mu_Q1l_mu_Q2lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1l(qoi, lev), sum_Q2lm1(qoi, lev),
                                                            sum_Q2l(qoi, lev), sum_Q1lQ2lm1(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
                                                            sum_Q2lQ2lm1(qoi, lev), Nlq);
-        Real mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
+        mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
                                                                 sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
                                                                 sum_Q2lQ2lm1(qoi, lev), Nlq);
-        Real mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 = unbiased_mean_product_pairpair(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
+        mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 = unbiased_mean_product_pairpair(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
                                                                      sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev),
                                                                      sum_Q2lQ1lm1(qoi, lev), sum_Q1lQ2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
-        Real mu_Q2l_muQ2lm1 = unbiased_mean_product_pair(sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
+        mu_Q2l_muQ2lm1 = unbiased_mean_product_pair(sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
         mu_P2lP2lm1 = mu_Q2lQ2lm1 //E[QL2 Ql2]
                       - 2. * mu_Q1lm1_mu_Q2lQ1lm1 //E[Ql] E[QL2Ql]
                       + 2. * mu_Q1lm1_mu_Q1lm1_muQ2l //E[Ql]2 E[QL2]
@@ -2723,19 +2718,15 @@ namespace Dakota {
                       - 4. * mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 //E[QL]2 E[Ql]2
                       - mu_Q2l_muQ2lm1; //E[QL2] E[Ql2]
 
-        //var_P2l     = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;
-        //var_P2lm1   = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
         // [fm] bias correction for var_P2l and var_P2lm1
         var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
         var_P2lm1 =
             Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
-        // [gg] fix to derivation: squared term
-        //term = mu_Q1lQ1lm1 - cm1l * cm1lm1;
+
         // [fm] unbiased by opening up the square and compute three different term
-        Real mu_Q1lQ1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
+        mu_Q1lQ1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
         term = mu_Q1lQ1lm1_mu_Q1lQ1lm1 - 2. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 + mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1;
-        //covar_P2lP2lm1
-        //    = mu_P2lP2lm1 - var_Ql * var_Qlm1 + term * term / (Nlq - 1.);
+        
         //[fm] Using an unbiased estimator we include the var_Ql * var_Qlm1 term in mu_P2lP2lm1
         //     and term is already squared out
         covar_P2lP2lm1
@@ -2744,8 +2735,7 @@ namespace Dakota {
         if (outputLevel >= DEBUG_OUTPUT) {
           Cout << "Estimator for covariance for variance = " << covar_P2lP2lm1 << "\n";
           Cout << "Estimator for covariance for variance first term = " << mu_P2lP2lm1 << "\n";
-          Cout << "Estimator for covariance for variance second term = " << var_Ql * var_Qlm1 << "\n";
-          Cout << "Estimator for covariance for variance third  term = " << term * term / (Nlq - 1.) << "\n";
+          Cout << "Estimator for covariance for variance second  term = " << term << "\n";
         }
       }
       check_negative(agg_estim_var);
