@@ -4492,10 +4492,12 @@ void Model::warm_start_flag(const bool flag)
   else          warmStartFlag = flag;
 }
 
+
 void Model::declare_sources() {
   if(modelRep) modelRep->declare_sources();
   else return;
 }
+
 
 void Model::
 set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
