@@ -846,7 +846,7 @@ void get_variables( Model & model,
   const StringSetArray& pt_set_string = model.discrete_set_string_values();
 
   int offset = 0;
-  copy_data(cvars, vec);
+  copy_data_partial(cvars, 0, vec, offset, cvars.length());
 
   offset = cvars.length();
   copy_data(divars, int_set_bits, pt_set_int, vec, offset, divars.length());
