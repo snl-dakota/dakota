@@ -461,6 +461,8 @@ select_rep_points(const RealVectorArray& var_samples_u,
 
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = uSpaceModel.current_variables().shared_data();
 
   // define repPointsU and calculate repWeights
   repPointsU.resize(new_rep_pts);
@@ -485,7 +487,7 @@ select_rep_points(const RealVectorArray& var_samples_u,
 
     rep_pdf = 1.;
     for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
-      rep_pdf *= u_dist.pdf(repPointsU[i][cntr], j);
+      rep_pdf *= u_dist.pdf(repPointsU[i][cntr], svd.cv_index_to_all_index(j));
 
     repWeights[i] = rep_pdf;
     sum_density  += rep_pdf;
@@ -614,11 +616,16 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // artificial bound constraints (PCE, SC, local reliability, stand-alone).
     // Note: local reliability employs artificial bounds for the MPP search,
     // but these are not relevant for the AIS process on the truth model.
-    const Pecos::MultivariateDistribution& u_dist
-      = uSpaceModel.multivariate_distribution();
-    RealRealPairArray u_bnds = u_dist.distribution_bounds(); // all active cv
-    for (i=0, j=startCAUV; i<numCAUV; ++i, ++j)
-      { n_l_bnds[i] = u_bnds[j].first; n_u_bnds[i] = u_bnds[j].second; }
+    RealRealPairArray u_bnds // all active RV
+      = uSpaceModel.multivariate_distribution().distribution_bounds();
+    const SharedVariablesData& svd
+      = uSpaceModel.current_variables().shared_data();
+    size_t rv_index;
+    for (i=0, j=startCAUV; i<numCAUV; ++i, ++j) {
+      rv_index = svd.cv_index_to_active_index(j);
+      n_l_bnds[i] = u_bnds[rv_index].first;
+      n_u_bnds[i] = u_bnds[rv_index].second;
+    }
   }
 
   // generate u-space samples by centering std normals around rep points
@@ -725,6 +732,8 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = uSpaceModel.current_variables().shared_data();
 
   // calculate the probability of failure using all samples relative
   // to each of the representative points
@@ -745,7 +754,7 @@ calculate_statistics(const RealVectorArray& var_samples_u,
 
       pdf_ratio = 1.;
       for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
-	pdf_ratio *= u_dist.pdf(sample_i[cntr], j);
+	pdf_ratio *= u_dist.pdf(sample_i[cntr], svd.cv_index_to_all_index(j));
       pdf_ratio /= recentered_density(sample_i);
 
       // add sample's contribution to sum_prob
@@ -829,16 +838,19 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   //  recentered_pdf += repWeights[j] * Pecos::NormalRandomVariable::
   //    std_pdf(distance(repPointsU[j], sample_i) / n_std_devs);
 
-  const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.multivariate_distribution();
-  RealRealPairArray u_bnds = u_dist.distribution_bounds(); // all active cv
+  RealRealPairArray u_bnds // all active RV
+    = uSpaceModel.multivariate_distribution().distribution_bounds();
+  const SharedVariablesData& svd
+    = uSpaceModel.current_variables().shared_data();
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
     const RealVector& rep_pt_i = repPointsU[i];
-    for (j=0, k=startCAUV; j<numCAUV; ++j, ++k)
+    for (j=0, k=startCAUV; j<numCAUV; ++j, ++k) {
+      RealRealPair& u_bnds_j = u_bnds[svd.cv_index_to_active_index(k)];
       rep_pdf *= Pecos::BoundedNormalRandomVariable::pdf(sample_point[j],
-	rep_pt_i[j], stdev, u_bnds[k].first, u_bnds[k].second);
+	rep_pt_i[j], stdev, u_bnds_j.first, u_bnds_j.second);
+    }
     local_pdf += repWeights[i] * rep_pdf;
   } 
   return local_pdf;
