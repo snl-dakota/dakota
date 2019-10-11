@@ -19,9 +19,9 @@
 #include "DakotaResponse.hpp"
 #include "NonDMultilevelSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "SNLLOptimizer.hpp"
 
 static const char rcsId[] = "@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
-
 
 namespace Dakota {
 
@@ -359,6 +359,131 @@ namespace Dakota {
     equivHFEvals /= cost[num_lev - 1]; // normalize into equivalent HF evals
   }
 
+  static RealVector* static_lev_cost(NULL);
+  static size_t* static_qoi(NULL);
+  static Real* static_eps_sq_div_2(NULL);
+
+  static IntRealMatrixMap* static_sum_Ql(NULL);
+  static IntRealMatrixMap* static_sum_Qlm1(NULL);
+  static IntIntPairRealMatrixMap* static_sum_QlQlm1(NULL);
+
+  static NonDMultilevelSampling* static_this(NULL);
+
+  void NonDMultilevelSampling::target_var_objective_eval(int mode, int n, const RealVector& x, double& f,
+                                                         RealVector& grad_f, int& result_mode){
+    double obj_val = 0;
+    for(int i = 0; i < n; ++i){
+      obj_val = x[i] * (*static_lev_cost)[i];
+      grad_f[i] = (*static_lev_cost)[i];
+    }
+    f = obj_val;
+
+    Cout << "Objective val: " << f << "\n";
+  }
+
+  void NonDMultilevelSampling::target_var_constraint_eval(int mode, int n, const RealVector& x, RealVector& g,
+                                                          RealMatrix& grad_g, int& result_mode){
+
+    Sizet2DArray N_l;
+    // std error in variance or std deviation estimate
+    size_t lev = 0;
+    size_t Nlq = x[lev];
+    size_t qoi = *static_qoi;
+    size_t num_lev = n;
+
+    Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
+        cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
+        mu_Q2l, mu_Q2lm1, mu_Q2lQ2lm1,
+        mu_Q1lm1_mu_Q2lQ1lm1, mu_Q1lm1_mu_Q1lm1_muQ2l, mu_Q1l_mu_Q1lQ2lm1, mu_Q1l_mu_Q1l_mu_Q2lm1,
+        mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1, mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1, mu_Q2l_muQ2lm1, mu_Q1lQ1lm1_mu_Q1lQ1lm1,
+        mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term, bessel_corr;
+
+    IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
+    RealMatrix &sum_Q1l = (*static_sum_Ql)[1], &sum_Q1lm1 = (*static_sum_Qlm1)[1],
+        &sum_Q2l = (*static_sum_Ql)[2], &sum_Q2lm1 = (*static_sum_Qlm1)[2],
+        &sum_Q3l = (*static_sum_Ql)[3], &sum_Q3lm1 = (*static_sum_Qlm1)[3],
+        &sum_Q4l = (*static_sum_Ql)[4], &sum_Q4lm1 = (*static_sum_Qlm1)[4],
+        &sum_Q1lQ1lm1 = (*static_sum_QlQlm1)[pr11], &sum_Q1lQ2lm1 = (*static_sum_QlQlm1)[pr12],
+        &sum_Q2lQ1lm1 = (*static_sum_QlQlm1)[pr21], &sum_Q2lQ2lm1 = (*static_sum_QlQlm1)[pr22];
+
+    static_this->uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq, sum_Q2l(qoi, lev) / Nlq,
+                                        sum_Q3l(qoi, lev) / Nlq, sum_Q4l(qoi, lev) / Nlq,
+                                        cm1l, cm2l, cm3l, cm4l, Nlq);
+    cm2l_sq = cm2l * cm2l;
+
+    //[fm] bias correction for var_P2l
+    var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+    agg_estim_var = var_P2l / Nlq;
+    for (lev = 1; lev < num_lev; ++lev) {
+      Nlq = x[lev];
+      mu_Q2l = sum_Q2l(qoi, lev) / Nlq;
+      static_this->uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq, mu_Q2l,
+                                          sum_Q3l(qoi, lev) / Nlq, sum_Q4l(qoi, lev) / Nlq,
+                                          cm1l, cm2l, cm3l, cm4l, Nlq);
+      mu_Q2lm1 = sum_Q2lm1(qoi, lev) / Nlq;
+      static_this->uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq, mu_Q2lm1,
+                                          sum_Q3lm1(qoi, lev) / Nlq, sum_Q4lm1(qoi, lev) / Nlq,
+                                          cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
+      cm2l_sq = cm2l * cm2l;
+      cm2lm1_sq = cm2lm1 * cm2lm1;
+
+      //[fm] unbiased products of mean
+      mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq;
+      mu_Q1lm1_mu_Q2lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
+                                                        sum_Q2lQ2lm1(qoi, lev), Nlq);
+      mu_Q1lm1_mu_Q1lm1_muQ2l = unbiased_mean_product_triplet(sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                              sum_Q2l(qoi, lev),
+                                                              sum_Q2lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
+                                                              sum_Q2lQ1lm1(qoi, lev),
+                                                              sum_Q2lQ2lm1(qoi, lev), Nlq);
+      mu_Q1l_mu_Q1lQ2lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q1lQ2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev),
+                                                      Nlq);
+      mu_Q1l_mu_Q1l_mu_Q2lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1l(qoi, lev), sum_Q2lm1(qoi, lev),
+                                                             sum_Q2l(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
+                                                             sum_Q1lQ2lm1(qoi, lev),
+                                                             sum_Q2lQ2lm1(qoi, lev), Nlq);
+      mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                                 sum_Q1lQ1lm1(qoi, lev),
+                                                                 sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
+                                                                 sum_Q1lQ2lm1(qoi, lev),
+                                                                 sum_Q2lQ2lm1(qoi, lev), Nlq);
+      mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 = unbiased_mean_product_pairpair(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
+                                                                      sum_Q1lQ1lm1(qoi, lev),
+                                                                      sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev),
+                                                                      sum_Q2lQ1lm1(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
+                                                                      sum_Q2lQ2lm1(qoi, lev), Nlq);
+      mu_Q2l_muQ2lm1 = unbiased_mean_product_pair(sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq);
+      mu_P2lP2lm1 = mu_Q2lQ2lm1 //E[QL2 Ql2]
+                    - 2. * mu_Q1lm1_mu_Q2lQ1lm1 //E[Ql] E[QL2Ql]
+                    + 2. * mu_Q1lm1_mu_Q1lm1_muQ2l //E[Ql]2 E[QL2]
+                    - 2. * mu_Q1l_mu_Q1lQ2lm1 //E[QL] E[QLQl2]
+                    + 2. * mu_Q1l_mu_Q1l_mu_Q2lm1 //E[QL]2 E[Ql2]
+                    + 4. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 //E[QL] E[Ql] E[QLQl]
+                    - 4. * mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 //E[QL]2 E[Ql]2
+                    - mu_Q2l_muQ2lm1; //E[QL2] E[Ql2]
+
+      // [fm] bias correction for var_P2l and var_P2lm1
+      var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+      var_P2lm1 =
+          Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
+
+      // [fm] unbiased by opening up the square and compute three different term
+      mu_Q1lQ1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
+                                                           sum_Q2lQ2lm1(qoi, lev), Nlq);
+      term = mu_Q1lQ1lm1_mu_Q1lQ1lm1 - 2. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 + mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1;
+
+      //[fm] Using an unbiased estimator we include the var_Ql * var_Qlm1 term in mu_P2lP2lm1
+      //     and term is already squared out
+      covar_P2lP2lm1
+          = mu_P2lP2lm1 + term / (Nlq - 1.);
+      agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
+    }
+
+    g[0] = agg_estim_var - (*static_eps_sq_div_2);
+
+    Cout << "Constraint val: " << g[0] << "\n";
+  }
+
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
@@ -373,6 +498,8 @@ namespace Dakota {
     Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
     // retrieve cost estimates across soln levels for a particular model form
     RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
+    RealVector cur_cost;
+    cur_cost.size(num_lev);
     // For moment estimation, we accumulate telescoping sums for Q^i using
     // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
     // For computing N_l from estimator variance, we accumulate square of Y1
@@ -391,6 +518,8 @@ namespace Dakota {
     RealVectorArray mu_hat(num_lev);
     Sizet2DArray &N_l = NLev[model_form];
 
+    bool target_mean = false;
+
     // now converge on sample counts per level (N_l)
     while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
@@ -398,6 +527,8 @@ namespace Dakota {
       for (lev = 0; lev < num_lev; ++lev) {
 
         configure_indices(lev, model_form, cost, lev_cost);
+
+        cur_cost[lev] = lev_cost;
 
         // set the number of current samples from the defined increment
         numSamples = delta_N_l[lev];
@@ -432,17 +563,21 @@ namespace Dakota {
           // compute estimator variance from current sample accumulation:
           if (outputLevel >= DEBUG_OUTPUT)
             Cout << "variance of Y[" << lev << "]: ";
-          agg_var_l = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
-                                              sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
-                                              N_l[lev], lev);
+          if (target_mean)
+            agg_var_l = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
+                                                sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
+                                                N_l[lev], lev);
         }
 
-        sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
-        // MSE reference is MC applied to HF:
-        if (iter == 0)
-          estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
-                                               sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
-                                               N_l[lev], lev);
+        if (target_mean) {
+          sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
+          // MSE reference is MC applied to HF:
+          if (iter == 0) {
+            estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
+                                                 sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
+                                                 N_l[lev], lev);
+          }
+        }
       }
       // compute epsilon target based on relative tolerance: total MSE = eps^2
       // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -450,19 +585,86 @@ namespace Dakota {
       // discretization error, we compute an initial estimator variance and
       // then seek to reduce it by a relative_factor <= 1.
       if (iter == 0) { // eps^2 / 2 = var * relative factor
+        if(target_mean)
         eps_sq_div_2 = estimator_var0 * convergenceTol;
         if (outputLevel == DEBUG_OUTPUT)
           Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
       }
 
       // update targets based on variance estimates
-      Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target;
-      for (lev = 0; lev < num_lev; ++lev) {
-        // Equation 3.9 in CTR Annual Research Briefs:
-        // "A multifidelity control variate approach for the multilevel Monte
-        // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-        N_target = std::sqrt(agg_var[lev] / lev_cost) * fact;
-        delta_N_l[lev] = one_sided_delta(average(N_l[lev]), N_target);
+      if(target_mean){
+        Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target;
+        for (lev = 0; lev < num_lev; ++lev) {
+          // Equation 3.9 in CTR Annual Research Briefs:
+          // "A multifidelity control variate approach for the multilevel Monte
+          // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
+          N_target = std::sqrt(agg_var[lev] / lev_cost) * fact;
+          delta_N_l[lev] = one_sided_delta(average(N_l[lev]), N_target);
+        }
+      }else{
+        //Compute current error estimators, i.e. Var[Var]
+
+        Cout << "Before SNL Run. num point: " << numFunctions<< "\n";
+        for (qoi = 0; qoi < numFunctions; ++qoi) {
+          RealVector initial_point;
+          initial_point.size(N_l.size());
+          for (int i = 0; i < N_l.size(); ++i) {
+            initial_point[i] = N_l[i][qoi];
+          }
+          RealVector var_lower_bnds;
+          var_lower_bnds.size(num_lev);
+          RealVector var_upper_bnds;
+          var_upper_bnds.size(num_lev);
+          var_upper_bnds.putScalar(std::numeric_limits<double>::infinity());
+          RealMatrix lin_ineq_coeffs;
+          lin_ineq_coeffs.shape(0, 0);
+          RealVector lin_ineq_lower_bnds, lin_ineq_upper_bnds;
+          lin_ineq_lower_bnds.size(0);
+          lin_ineq_upper_bnds.size(0);
+          RealMatrix lin_eq_coeffs;
+          lin_eq_coeffs.shape(0, 0);
+          RealVector lin_eq_targets;
+          lin_eq_targets.size(0);
+          RealVector nonlin_ineq_lower_bnds;
+          nonlin_ineq_lower_bnds.size(0);
+          RealVector nonlin_ineq_upper_bnds;
+          nonlin_ineq_upper_bnds.size(0);
+          RealVector nonlin_eq_targets;
+          nonlin_eq_targets.size(1); //init to 0
+          int derivative_level = 0;
+          Real conv_tol = 1e-7;
+          static_lev_cost = &cur_cost;
+          static_qoi = &qoi;
+          static_sum_Ql = &sum_Ql;
+          static_sum_Qlm1 = &sum_Qlm1;
+          static_sum_QlQlm1 = &sum_QlQlm1;
+          static_eps_sq_div_2 = &convergenceTol;
+          static_this = this;
+
+          Cout << "Before SNL Run. Initial point: \n";
+          for (int i = 0; i < initial_point.length(); ++i) {
+            Cout << initial_point[i] << " ";
+          }
+          Cout << "\n";
+
+          SNLLOptimizer snl_optimizer(initial_point,
+                        var_lower_bnds,      var_upper_bnds,
+                        lin_ineq_coeffs, lin_ineq_lower_bnds,
+                        lin_ineq_upper_bnds, lin_eq_coeffs,
+                        lin_eq_targets,     nonlin_ineq_lower_bnds,
+                        nonlin_ineq_upper_bnds, nonlin_eq_targets,
+                        &target_var_objective_eval,
+                        &target_var_constraint_eval);
+
+          snl_optimizer.core_run();
+
+          Cout << "After SNL Run. Initial point: \n";
+          for (int i = 0; i < initial_point.length(); ++i) {
+            Cout << initial_point[i] << " ";
+          }
+          Cout << "\n";
+
+        }
       }
       ++iter;
       Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
@@ -529,6 +731,7 @@ namespace Dakota {
     for (lev = 1; lev < num_lev; ++lev) // subsequent levels incur 2 model costs
       equivHFEvals += raw_N_l[lev] * (cost[lev] + cost[lev - 1]);
     equivHFEvals /= cost[num_lev - 1]; // normalize into equivalent HF evals
+    exit(-1);
   }
 
 
@@ -2645,6 +2848,7 @@ namespace Dakota {
       // std error in mean estimate
       lev = 0;
       Nlq = num_Q[lev][qoi];
+
       bessel_corr = (Real) Nlq / (Real) (Nlq - 1);
       cm1l = sum_Q1l(qoi, lev) / Nlq;
       var_Yl = (sum_Q2l(qoi, lev) / Nlq - cm1l * cm1l) * bessel_corr; // var_Ql
@@ -2660,6 +2864,7 @@ namespace Dakota {
         agg_estim_var += var_Yl / Nlq;
       }
       check_negative(agg_estim_var);
+
       finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
       if (outputLevel >= DEBUG_OUTPUT) {
         Cout << "Estimator variance for mean = " << agg_estim_var << "\n";

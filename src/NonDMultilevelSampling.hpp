@@ -438,14 +438,19 @@ private:
   Real average(const SizetArray& sa) const;
 
   /// compute the unbiased product of two sampling means
-  Real unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq) const;
+  static Real unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq);
   /// compute the unbiased product of three sampling means
-  Real unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
-                                                                    const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq) const;
+  static Real unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
+                                                                    const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq);
   /// compute the unbiased product of two pairs of products of sampling means
-  Real unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
+  static Real unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
                                                                      const Real& sumQ1sq, const Real& sumQ2sq,
-                                                                     const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq) const;
+                                                                     const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq);
+
+  static void target_var_objective_eval(int mode, int n, const RealVector& x, double& f,
+                                        RealVector& grad_f, int& result_mode);
+  static void target_var_constraint_eval(int mode, int n, const RealVector& x, RealVector& g,
+                                         RealMatrix& grad_g, int& result_mode);
 
   //
   //- Heading: Data
@@ -477,7 +482,6 @@ private:
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
 };
-
 
 inline void NonDMultilevelSampling::aggregated_models_mode()
 {
@@ -895,7 +899,7 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
   return (Real)sum / (Real)len;
 }
 
-inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq) const
+inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2, const size_t& Nlq)
 {
   Real mean1, mean2, bessel_corr1, bessel_corr2 = 0.;
 
@@ -908,7 +912,7 @@ inline Real NonDMultilevelSampling::unbiased_mean_product_pair(const Real& sumQ1
 }
 
 inline Real NonDMultilevelSampling::unbiased_mean_product_triplet(const Real& sumQ1, const Real& sumQ2, const Real& sumQ3,
-                                                                  const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq) const
+                                                                  const Real& sumQ1Q2, const Real& sumQ1Q3, const Real& sumQ2Q3, const Real& sumQ1Q2Q3, const size_t& Nlq)
 {
   Real mean1, mean2, mean3, bessel_corr1, bessel_corr2, bessel_corr3 = 0.;
 
@@ -926,7 +930,7 @@ inline Real NonDMultilevelSampling::unbiased_mean_product_triplet(const Real& su
 
 inline Real NonDMultilevelSampling::unbiased_mean_product_pairpair(const Real& sumQ1, const Real& sumQ2, const Real& sumQ1Q2,
                                                                    const Real& sumQ1sq, const Real& sumQ2sq,
-                                                                   const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq) const
+                                                                   const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq)
 {
   Real mean1, mean2, mean3, mean4, bessel_corr1, bessel_corr2, bessel_corr3, bessel_corr4 = 0.;
 
