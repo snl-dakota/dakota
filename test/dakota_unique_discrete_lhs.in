@@ -39,7 +39,7 @@ variables,
 #	    elements    = 'iso1' 'iso2' 'iso3'	#s2
 #           descriptors = 'uncertain-set-sting'	#s2
 #
-#	discrete_uncertain_range = 1		#s1,#s3,#s5
+#	discrete_interval_uncertain = 1		#s1,#s3,#s5
 #	  lower_bounds  = 0.	      		#s1,#s3,#s5
 #         upper_bounds  = 4.			#s1,#s3,#s5
 #	  descriptors   = 'uncertain-range'	#s1,#s3,#s5
