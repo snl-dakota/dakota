@@ -33,8 +33,8 @@
 namespace Dakota {
 namespace TestLejaSampling {
 
-/** \brief Create an AleatoryDistParams object such that all variables are 
- * uniform in [l_bnd, u_bnd]
+/** \brief Create a MultivariateDistribution object such that all
+ * variables are uniform in [l_bnd, u_bnd]
 
   Note this function sets specific distribution parameters 
   that are not general. They must coincide with the parameters used

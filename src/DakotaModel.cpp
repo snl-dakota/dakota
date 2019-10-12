@@ -4663,48 +4663,49 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
   Pecos::MarginalsCorrDistribution* mvd_rep
     = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
   const SharedVariablesData& svd = vars.shared_data();
-  StringSet ss; StringRealMap srm; size_t rv, start_rv, end_rv, adsv_index;
+  StringSet ss; StringRealMap srm;
+  size_t rv, start_rv, end_rv, adsv_index = 0,
+    num_cv, num_div, num_dsv, num_drv;
 
   // discrete design set string
-  size_t num_cdv, num_ddiv, num_ddsv, num_ddrv;
-  svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  start_rv = num_cdv + num_ddiv; end_rv = start_rv + num_ddsv;
-  adsv_index = num_ddiv;
+  svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv = num_cv + num_div;  end_rv = start_rv + num_dsv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
     SSCIter max_it = max_string(ss);
     vars.all_discrete_string_variable(*max_it, adsv_index);
   }
+  start_rv = end_rv + num_drv;
+
   // histogram pt string
-  size_t num_cauv, num_dauiv, num_dausv, num_daurv;
-  svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-  start_rv = end_rv + num_ddrv + num_cauv + num_dauiv;
-  end_rv = start_rv + num_dausv;  adsv_index += num_ddrv + num_dauiv;
+  svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::H_BIN_PAIRS, srm);
     SRMCIter max_it = max_string(srm);
     vars.all_discrete_string_variable(max_it->first, adsv_index);
   }
+  start_rv = end_rv + num_drv;
+
   // discrete epistemic set string
-  size_t num_ceuv, num_deuiv, num_deusv, num_deurv;
-  svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-  start_rv = end_rv + num_daurv + num_ceuv + num_deuiv;
-  end_rv = start_rv + num_deusv;  adsv_index += num_daurv + num_deuiv;
+  svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::DUSS_VALUES_PROBS, srm);
     SRMCIter max_it = max_string(srm);
     vars.all_discrete_string_variable(max_it->first, adsv_index);
   }
+  start_rv = end_rv + num_drv;
+
   // discrete state set string
-  size_t num_csv, num_dsiv, num_dssv, num_dsrv;
-  svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
-  start_rv = end_rv + num_deurv + num_csv + num_dsiv;
-  end_rv = start_rv + num_dssv;  adsv_index += num_deurv + num_dsiv;
+  svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
   for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
     SSCIter max_it = max_string(ss);
     vars.all_discrete_string_variable(*max_it, adsv_index);
   }
+  //start_rv = end_rv + num_drv;
 }
 
 
