@@ -164,7 +164,10 @@ void RolTestInterface::evaluate_rol_fns()
 
   // continuous variables
   Teuchos::RCP<std::vector<Real>> xc_rcp(new std::vector<Real>(numVars, 0.0));
-  copy_data(xC, *xc_rcp);
+  // NOTE: using,
+  //    copy_data(xC, *xc_rcp);
+  // will resize the target vector incorrectly based on (xC.length() != xc_rcp->size())
+  copy_data_partial(xC, 0, *xc_rcp, 0, xC.length());
   ROL::StdVector<Real> rol_xc(xc_rcp);
 
   // we don't use ROL's tolerance information here; TODO: reasonable default?
