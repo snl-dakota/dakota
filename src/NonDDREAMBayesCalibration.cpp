@@ -203,8 +203,12 @@ void NonDDREAMBayesCalibration::calibrate()
   paramMaxs.size(total_num_params);
   RealRealPairArray bnds
     = mcmcModel.multivariate_distribution().distribution_bounds();
-  for (size_t i=0; i<numContinuousVars; ++i)
-    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (size_t i=0; i<numContinuousVars; ++i) {
+    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
+    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+  }
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
   // BMA TODO: change from uniform to inverse gamma prior and allow control for 

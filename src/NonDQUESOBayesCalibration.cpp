@@ -864,8 +864,12 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
                    paramMaxs(paramSpace->zeroVector());
   RealRealPairArray bnds
     = mcmcModel.multivariate_distribution().distribution_bounds();
-  for (size_t i=0; i<numContinuousVars; ++i)
-    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (size_t i=0; i<numContinuousVars; ++i) {
+    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
+    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+  }
   for (size_t i=0; i<numHyperparams; ++i) {
     // inverse gamma is defined on [0,inf), but we may have to divide
     // responses by up to mult^{5/2}, so bound away from 0.
@@ -950,13 +954,12 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
   //QUESO::GslVector covDiag(paramSpace->zeroVector());
 
   // diagonal covariance from variance of prior marginals
-  Real stdev;
-  RealRealPairArray dist_moments
-    = mcmcModel.multivariate_distribution().moments();
-  for (int i=0; i<numContinuousVars; ++i) {
-    stdev = dist_moments[i].second;
-    (*proposalCovMatrix)(i,i) = priorPropCovMult * stdev * stdev;
-  }
+  RealVector dist_var = mcmcModel.multivariate_distribution().variances();
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (int i=0; i<numContinuousVars; ++i)
+    (*proposalCovMatrix)(i,i) = priorPropCovMult * dist_var[i];
+      //* dist_var[svd.cv_index_to_active_index(i)];
   //proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
 
   if (outputLevel > NORMAL_OUTPUT) {

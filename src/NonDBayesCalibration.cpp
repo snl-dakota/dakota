@@ -1990,10 +1990,15 @@ void NonDBayesCalibration::prior_cholesky_factorization()
 	priorCovCholFactor(i, j) = prior_cov_matrix(i, j);
   }
   else {
-    RealRealPairArray dist_moments
-      = mcmcModel.multivariate_distribution().moments();// u_dist (decorrelated)
+    // SVD index conversion is more general, but not required for current uses
+    //const SharedVariablesData& svd
+    //  = mcmcModel.current_variables().shared_data();
+    RealVector dist_stdevs  // u_dist (decorrelated)
+      = mcmcModel.multivariate_distribution().std_deviations();
     for (i=0; i<numContinuousVars; ++i)
-      priorCovCholFactor(i,i) = dist_moments[i].second;
+      priorCovCholFactor(i,i) = dist_stdevs[i];
+	//= dist_stdevs[svd.cv_index_to_active_index(i)];
+
     // for now we assume a variance when the inv gamma has infinite moments
     Real alpha;
     for (i=0; i<numHyperparams; ++i) {
