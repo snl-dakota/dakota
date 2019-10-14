@@ -416,17 +416,17 @@ private:
 			  size_t lev);
 
   /// convert uncentered (raw) moments to centered moments; biased estimators
-  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
-			      size_t Nlq) const;
+			      size_t Nlq);
   /// convert uncentered (raw) moments to centered moments; unbiased estimators
-  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
+  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+			      Real& cm1, Real& cm2, Real& cm3, Real& cm4);
   /// convert centered moments to standardized moments
-  void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
+  static void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+			    Real& sm1, Real& sm2, Real& sm3, Real& sm4);
   /// detect, warn, and repair a negative central moment (for even orders)
-  void check_negative(Real& cm) const;
+  static void check_negative(Real& cm);
 
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
@@ -785,7 +785,7 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 /** For single-level moment calculations with a scalar Nlq. */
 inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
+		       Real& cm1, Real& cm2, Real& cm3, Real& cm4)
 {
   // convert from uncentered ("raw") to centered moments for a single level
 
@@ -812,7 +812,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 /** For single-level moment calculations with a scalar Nlq. */
 inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
-		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq) const
+		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq)
 {
   // convert from uncentered ("raw") to centered moments for a single level
 
@@ -845,7 +845,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
 
 inline void NonDMultilevelSampling::
 centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-		     Real& sm1, Real& sm2, Real& sm3, Real& sm4) const
+		     Real& sm1, Real& sm2, Real& sm3, Real& sm4)
 {
   // convert from centered to standardized moments
   sm1 = cm1;                    // mean
@@ -862,7 +862,7 @@ centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 }
 
 
-inline void NonDMultilevelSampling::check_negative(Real& cm) const
+inline void NonDMultilevelSampling::check_negative(Real& cm)
 {
   if (cm < 0.) {
     Cerr << "\nWarning: central moment less than zero (" << cm << ").  "
