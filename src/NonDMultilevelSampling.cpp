@@ -411,7 +411,7 @@ namespace Dakota {
     Sizet2DArray N_l;
     // std error in variance or std deviation estimate
     size_t lev = 0;
-    size_t Nlq = x[lev];
+    Real Nlq = x[lev];
     size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
     size_t qoi = *static_qoi;
     size_t num_lev = n;
@@ -422,6 +422,16 @@ namespace Dakota {
         mu_Q1lm1_mu_Q2lQ1lm1, mu_Q1lm1_mu_Q1lm1_muQ2l, mu_Q1l_mu_Q1lQ2lm1, mu_Q1l_mu_Q1l_mu_Q2lm1,
         mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1, mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1, mu_Q2l_muQ2lm1, mu_Q1lQ1lm1_mu_Q1lQ1lm1,
         mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term, bessel_corr;
+
+    RealVector grad_fd, term1_fd, term2_fd, term3_fd, term1_grad, term2_grad, term3_grad;
+    Real h = 0.05;
+    grad_fd.size(num_lev);
+    term1_fd.size(num_lev);
+    term2_fd.size(num_lev);
+    term3_fd.size(num_lev);
+    term1_grad.size(num_lev);
+    term2_grad.size(num_lev);
+    term3_grad.size(num_lev);
 
     IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
     RealMatrix &sum_Q1l = (*static_sum_Ql)[1], &sum_Q1lm1 = (*static_sum_Qlm1)[1],
@@ -446,6 +456,8 @@ namespace Dakota {
     if(mode & OPTPP::NLPGradient){
       grad_g[0][0] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4l
                   - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2l_sq;
+      grad_fd[0] = ( ( (Nlq + h) - 1.) / ( (Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
+                   - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) ) / h;
     }
 
     if(mode & OPTPP::NLPFunction) {
@@ -510,8 +522,7 @@ namespace Dakota {
                                                            sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
       term = mu_Q1lQ1lm1_mu_Q1lQ1lm1 - 2. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 + mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1;
 
-      //[fm] Using an unbiased estimator we include the var_Ql * var_Qlm1 term in mu_P2lP2lm1
-      //     and term is already squared out
+      //[fm] Using only unbiased estimators the sum is also unbiased
       covar_P2lP2lm1
           = mu_P2lP2lm1 + term / (Nlq - 1.);
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
@@ -524,22 +535,80 @@ namespace Dakota {
                       - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2l_sq
                     + ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4lm1
                       - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2lm1_sq
-                    - 2. * ( -1./(Nlq* Nlq) * mu_Q1lQ1lm1_mu_Q1lQ1lm1 + (Nlq * Nlq - 3. * Nlq + 1.)/( (Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq) ) * term);
+                    - 2. * ( -1./(Nlq* Nlq) * mu_P2lP2lm1 + (-2. * Nlq + 1.)/( (Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq) ) * term);
+
+        term1_fd[lev] = ( ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
+                          - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) ) / h;
+        term2_fd[lev] = ( ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4lm1 - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2lm1_sq)
+                          - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq) ) / h;
+        term3_fd[lev] = ( 2. * ( mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.)) ) - 2. * ( mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.)) ) ) / h;
+
+        term1_grad[lev] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4l
+                          - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2l_sq;
+        term2_grad[lev] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4lm1
+                          - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2lm1_sq;
+        term3_grad[lev] = 2. * ( -1./(Nlq* Nlq) * mu_P2lP2lm1 + (-2. * Nlq + 1.)/( (Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq) ) * term);
+
+        Real fd_upper = ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
+                        + ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4lm1 - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2lm1_sq)
+                        - 2. * ( mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.)) );
+        Real fd_lower = ((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq)
+                         + (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq)
+                         - 2. * ( mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.)) ));
+        grad_fd[lev] = ( fd_upper - fd_lower )/ h;
+
       }
     }
 
     if (mode & OPTPP::NLPFunction){
       g[0] = agg_estim_var; // - (*static_eps_sq_div_2);
       result_mode = OPTPP::NLPFunction;
+
       Cout << "Constraint var - target = diff: " << agg_estim_var << " - " << *static_eps_sq_div_2 << " = " << g[0] - *static_eps_sq_div_2 << "\n";
     }
     if(mode & OPTPP::NLPGradient){
+      result_mode = OPTPP::NLPGradient;
+
       Cout << "Gradients: ";
       for(int i = 0; i < num_lev; ++i){
         Cout << grad_g[0][i] << " ";
       }
       Cout << "\n";
-      result_mode = OPTPP::NLPGradient;
+      Cout << "Gradients FD: ";
+      for(int i = 0; i < num_lev; ++i){
+        Cout << grad_fd[i] << " ";
+      }
+      Cout << "\n";
+      Cout << "term1 Grad: ";
+      for(int i = 0; i < num_lev; ++i){
+        Cout << term1_grad[i] << " ";
+      }
+      Cout << "\n";
+      Cout << "term1 FD: ";
+      for(int i = 0; i < num_lev; ++i){
+        Cout << term1_fd[i] << " ";
+      }
+      Cout << "\n";
+      Cout << "term2 Grad: ";
+      for(int i = 0; i < num_lev; ++i){
+        Cout << term2_grad[i] << " ";
+      }
+      Cout << "\n";
+      Cout << "term2 FD: ";
+      for(int i = 0; i < num_lev; ++i){
+        Cout << term2_fd[i] << " ";
+      }
+      Cout << "\n";
+      Cout << "term3 Grad: ";
+      for(int i = 0; i < num_lev; ++i){
+        Cout << term3_grad[i] << " ";
+      }
+      Cout << "\n";
+      Cout << "term3 FD: ";
+      for(int i = 0; i < num_lev; ++i){
+        Cout << term3_fd[i] << " ";
+      }
+      Cout << "\n";
     }
 
   }
@@ -623,13 +692,13 @@ namespace Dakota {
           // compute estimator variance from current sample accumulation:
           if (outputLevel >= DEBUG_OUTPUT)
             Cout << "variance of Y[" << lev << "]: ";
-          if (target_mean)
+          //if (target_mean)
             agg_var_l = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
                                                 sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
                                                 N_l[lev], lev);
         }
 
-        if (target_mean) {
+        //if (target_mean) {
           sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
           // MSE reference is MC applied to HF:
           if (iter == 0) {
@@ -637,7 +706,7 @@ namespace Dakota {
                                                  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
                                                  N_l[lev], lev);
           }
-        }
+        //}
       }
       // compute epsilon target based on relative tolerance: total MSE = eps^2
       // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -645,23 +714,26 @@ namespace Dakota {
       // discretization error, we compute an initial estimator variance and
       // then seek to reduce it by a relative_factor <= 1.
       if (iter == 0) { // eps^2 / 2 = var * relative factor
-        if(target_mean)
+        //if(target_mean)
         eps_sq_div_2 = estimator_var0 * convergenceTol;
         if (outputLevel == DEBUG_OUTPUT)
           Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
       }
 
       // update targets based on variance estimates
-      if(target_mean){
+      //if(target_mean){
         Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target;
+        Cout << "N_target: " << std::endl;
         for (lev = 0; lev < num_lev; ++lev) {
           // Equation 3.9 in CTR Annual Research Briefs:
           // "A multifidelity control variate approach for the multilevel Monte
           // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
           N_target = std::sqrt(agg_var[lev] / lev_cost) * fact;
+          Cout << N_target << " ";
           delta_N_l[lev] = one_sided_delta(average(N_l[lev]), N_target);
         }
-      }else{
+        Cout << "\n";
+      //}else{
         //Compute current error estimators, i.e. Var[Var]
 
         Cout << "Before SNL Run. num point: " << numFunctions<< "\n";
@@ -670,11 +742,15 @@ namespace Dakota {
           initial_point.size(N_l.size());
           pilot_samples.size(N_l.size());
 
+          Cout << "Qoi: " << qoi << ", Pilot samples: " << std::endl;
           for (int i = 0; i < N_l.size(); ++i) {
             pilot_samples[i] = N_l[i][qoi];
+            Cout << N_l[i][qoi] << " ";
           }
-          initial_point[0] = 108;
-          initial_point[1] = 39;
+          Cout << "\n";
+          initial_point[0] = 119;
+          initial_point[1] = 16;
+          Real target_var_var =
           Real conv_tol = 1.3898e-7;
 
           RealVector var_lower_bnds, var_upper_bnds, lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets,
@@ -683,7 +759,10 @@ namespace Dakota {
 
           //Bound constraints only allowing positive values for Nlq
           var_lower_bnds.size(num_lev); //init to 0
-          var_lower_bnds.putScalar(3.); //Set to 4 to avoid NaNs
+          //for (int i = 0; i < N_l.size(); ++i) {
+          //  var_lower_bnds[i] = N_l[i][qoi] > 3. ? N_l[i][qoi] : 3.;
+          //}
+          var_lower_bnds.putScalar(3.); //Set to 3 to avoid NaNs
           var_upper_bnds.size(num_lev); //init to 0
           var_upper_bnds.putScalar(1e10); //Set to high upper bound
 
@@ -735,12 +814,14 @@ namespace Dakota {
           }
           Cout << "\n";
 
-        }
+        //}
       }
       ++iter;
       Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
            << std::endl;
     }
+    Cout << "\nMLMC final sample size\n" << N_l
+         << std::endl;
 
     // Roll up expected value estimators for central moments.  Final expected
     // value is sum of expected values from telescopic sum.  Note: raw moments
