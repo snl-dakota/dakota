@@ -773,6 +773,19 @@ void RecastModel::initialize_data_from_submodel()
     constraints data within subModel. */
 void RecastModel::update_from_model(Model& model)
 {
+  // break up into pieces so that derived Recasts can override with subsets
+
+  bool update_active_complement = update_variables_from_model(model);
+
+  if (update_active_complement)
+    update_variables_active_complement_from_model(model);
+
+  update_response_from_model(model);
+}
+
+
+bool RecastModel::update_variables_from_model(Model& model)
+{
   bool update_active_complement = true;
   if (invVarsMapping) {
     assign_instance();
@@ -860,87 +873,95 @@ void RecastModel::update_from_model(Model& model)
         model.linear_eq_constraint_targets());
     }
   }
-  if (update_active_complement) {
 
-    size_t i, cv_begin = currentVariables.cv_start(),
-      num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
-      num_acv = currentVariables.acv();
-    const RealVector& acv = model.all_continuous_variables();
-    const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
-    const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
-    StringMultiArrayConstView acv_labels
-      = model.all_continuous_variable_labels();
-    for (i=0; i<cv_begin; ++i) {
-      currentVariables.all_continuous_variable(acv[i], i);
-      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
-      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
-      currentVariables.all_continuous_variable_label(acv_labels[i], i);
-    }
-    for (i=cv_end; i<num_acv; ++i) {
-      currentVariables.all_continuous_variable(acv[i], i);
-      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
-      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
-      currentVariables.all_continuous_variable_label(acv_labels[i], i);
-    }
+  return update_active_complement;
+}
 
-    size_t div_begin = currentVariables.div_start(),
-      num_div  = currentVariables.div(), div_end = div_begin + num_div,
-      num_adiv = currentVariables.adiv();
-    const IntVector& adiv = model.all_discrete_int_variables();
-    const IntVector& adiv_l_bnds = model.all_discrete_int_lower_bounds();
-    const IntVector& adiv_u_bnds = model.all_discrete_int_upper_bounds();
-    StringMultiArrayConstView adiv_labels
-      = model.all_discrete_int_variable_labels();
-    for (i=0; i<div_begin; ++i) {
-      currentVariables.all_discrete_int_variable(adiv[i], i);
-      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
-      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
-      currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
-    }
-    for (i=div_end; i<num_adiv; ++i) {
-      currentVariables.all_discrete_int_variable(adiv[i], i);
-      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
-      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
-      currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
-    }
 
-    size_t dsv_begin = currentVariables.dsv_start(),
-      num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
-      num_adsv = currentVariables.adsv();
-    StringMultiArrayConstView adsv = model.all_discrete_string_variables();
-    StringMultiArrayConstView adsv_labels
-      = model.all_discrete_string_variable_labels();
-    for (i=0; i<dsv_begin; ++i) {
-      currentVariables.all_discrete_string_variable(adsv[i], i);
-      currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
-    }
-    for (i=dsv_end; i<num_adsv; ++i) {
-      currentVariables.all_discrete_string_variable(adsv[i], i);
-      currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
-    }
-
-    size_t drv_begin = currentVariables.drv_start(),
-      num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
-      num_adrv = currentVariables.adrv();
-    const RealVector& adrv = model.all_discrete_real_variables();
-    const RealVector& adrv_l_bnds = model.all_discrete_real_lower_bounds();
-    const RealVector& adrv_u_bnds = model.all_discrete_real_upper_bounds();
-    StringMultiArrayConstView adrv_labels
-      = model.all_discrete_real_variable_labels();
-    for (i=0; i<drv_begin; ++i) {
-      currentVariables.all_discrete_real_variable(adrv[i], i);
-      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
-      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
-      currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
-    }
-    for (i=drv_end; i<num_adrv; ++i) {
-      currentVariables.all_discrete_real_variable(adrv[i], i);
-      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
-      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
-      currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
-    }
+void RecastModel::update_variables_active_complement_from_model(Model& model)
+{
+  size_t i, cv_begin = currentVariables.cv_start(),
+    num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
+    num_acv = currentVariables.acv();
+  const RealVector& acv = model.all_continuous_variables();
+  const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
+  const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
+  StringMultiArrayConstView acv_labels
+    = model.all_continuous_variable_labels();
+  for (i=0; i<cv_begin; ++i) {
+    currentVariables.all_continuous_variable(acv[i], i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+    currentVariables.all_continuous_variable_label(acv_labels[i], i);
+  }
+  for (i=cv_end; i<num_acv; ++i) {
+    currentVariables.all_continuous_variable(acv[i], i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+    currentVariables.all_continuous_variable_label(acv_labels[i], i);
   }
 
+  size_t div_begin = currentVariables.div_start(),
+    num_div  = currentVariables.div(), div_end = div_begin + num_div,
+    num_adiv = currentVariables.adiv();
+  const IntVector& adiv = model.all_discrete_int_variables();
+  const IntVector& adiv_l_bnds = model.all_discrete_int_lower_bounds();
+  const IntVector& adiv_u_bnds = model.all_discrete_int_upper_bounds();
+  StringMultiArrayConstView adiv_labels
+    = model.all_discrete_int_variable_labels();
+  for (i=0; i<div_begin; ++i) {
+    currentVariables.all_discrete_int_variable(adiv[i], i);
+    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
+    currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
+  }
+  for (i=div_end; i<num_adiv; ++i) {
+    currentVariables.all_discrete_int_variable(adiv[i], i);
+    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
+    currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
+  }
+
+  size_t dsv_begin = currentVariables.dsv_start(),
+    num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
+    num_adsv = currentVariables.adsv();
+  StringMultiArrayConstView adsv = model.all_discrete_string_variables();
+  StringMultiArrayConstView adsv_labels
+    = model.all_discrete_string_variable_labels();
+  for (i=0; i<dsv_begin; ++i) {
+    currentVariables.all_discrete_string_variable(adsv[i], i);
+    currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
+  }
+  for (i=dsv_end; i<num_adsv; ++i) {
+    currentVariables.all_discrete_string_variable(adsv[i], i);
+    currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
+  }
+
+  size_t drv_begin = currentVariables.drv_start(),
+    num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
+    num_adrv = currentVariables.adrv();
+  const RealVector& adrv = model.all_discrete_real_variables();
+  const RealVector& adrv_l_bnds = model.all_discrete_real_lower_bounds();
+  const RealVector& adrv_u_bnds = model.all_discrete_real_upper_bounds();
+  StringMultiArrayConstView adrv_labels
+    = model.all_discrete_real_variable_labels();
+  for (i=0; i<drv_begin; ++i) {
+    currentVariables.all_discrete_real_variable(adrv[i], i);
+    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
+    currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
+  }
+  for (i=drv_end; i<num_adrv; ++i) {
+    currentVariables.all_discrete_real_variable(adrv[i], i);
+    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
+    currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
+  }
+}
+
+
+void RecastModel::update_response_from_model(Model& model)
+{
   if (primaryRespMapping) {
     // response mappings are in opposite direction from variables
     // mappings, so primaryRespMapping could potentially be used to

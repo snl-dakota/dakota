@@ -477,8 +477,14 @@ protected:
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
 
-  /// update current variables/labels/bounds/targets from subModel
+  /// update current variables/bounds/labels/constraints from subModel
   void update_from_model(Model& model);
+  /// update active variables/bounds/labels from subModel
+  bool update_variables_from_model(Model& model);
+  /// update complement of active variables/bounds/labels from subModel
+  void update_variables_active_complement_from_model(Model& model);
+  /// update nonlinear constraint bounds/targets from subModel
+  void update_response_from_model(Model& model);
 
   //
   //- Heading: Data members

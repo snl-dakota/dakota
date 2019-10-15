@@ -207,6 +207,7 @@ void test_leja_sequence_helper(short utype, int num_vars,
   RealMatrix enriched_samples_subset( Teuchos::Copy, enriched_samples, num_vars,
 				      num_initial_samples );
   enriched_samples_subset -= initial_samples;
+  std::cout << "normInf 1:" << enriched_samples_subset.normInf() << std::endl;
   BOOST_CHECK( enriched_samples_subset.normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
 
@@ -218,7 +219,12 @@ void test_leja_sequence_helper(short utype, int num_vars,
 
   // Check samples obtained by running algorithm once are the same
   // as those obtained running the algorithm in steps.
+  write_data(std::cout, combined_samples);
   combined_samples -= enriched_samples;
+  write_data(std::cout, enriched_samples);
+  std::cout << "difference:\n" << std::endl;
+  write_data(std::cout, combined_samples);
+  std::cout << "normInf difference:" << combined_samples.normInf() << std::endl;
   BOOST_CHECK( combined_samples.normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
 }

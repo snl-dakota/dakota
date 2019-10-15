@@ -87,6 +87,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void pre_run();
   void core_run();
 
   void derived_init_communicators(ParLevLIter pl_iter);
@@ -104,11 +105,9 @@ protected:
   /// Perform Bayesian calibration (all derived classes must implement)
   virtual void calibrate() = 0;
 
-
   //
   //- Heading: Member functions
   //
-
 
   /// construct mcmcModel (no emulation, GP, PCE, or SC) that wraps
   /// inbound Model
@@ -117,8 +116,11 @@ protected:
   /// initialize the hyper-parameter priors
   void init_hyper_parameters();
 
-  /// construct the negative log posterior RecastModel (wraps
-  /// residualModel) and corresponding MAP optimizer
+  /// initialize the MAP optimizer selection
+  void init_map_optimizer();
+  /// construct the negative log posterior RecastModel (negLogPostModel)
+  void construct_map_model();
+  /// construct the MAP optimizer for minimization of negLogPostModel
   void construct_map_optimizer();
 
   /// initialize emulator model and probability space transformations
@@ -510,37 +512,58 @@ inline const Model& NonDBayesCalibration::algorithm_space_model() const
 template <typename VectorType> 
 Real NonDBayesCalibration::prior_density(const VectorType& vec)
 {
+  // template supports QUESO::GslVector which has to use long form
+
   // TO DO: consider QUESO-based approach for this using priorRv.pdf(),
   // which may in turn call back to our GenericVectorRV prior plug-in
 
-  /* Don't copy Gsl vector to allow this:
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  if (mv_dist.correlation()) {
+    Cerr << "Error: prior_density() uses a product of marginal densities\n"
+	 << "       and can only be used for independent random variables."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  size_t v, num_rv = mv_dist.random_variables().size();
+  const BitArray& active_vars = mv_dist.active_variables();
+  Real pdf = 1.;
+  if (active_vars.empty()) {
+    if (num_rv != numContinuousVars) {
+      Cerr << "Error: active variable size mismatch in NonDBayesCalibration::"
+	   << "log_prior_density()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    for (v=0; v<num_rv; ++v)
+      pdf *= mv_dist.pdf(vec[v], v);
+  }
+  else {
+    size_t av_cntr = 0;
+    for (v=0; v<num_rv; ++v)
+      if (active_vars[v])
+	pdf *= mv_dist.pdf(vec[av_cntr++], v);
+  }
+
+  // the estimated param is mult^2 ~ invgamma(alpha,beta)
+  for (size_t i=0; i<numHyperparams; ++i)
+    pdf *= invGammaDists[i].pdf(vec[numContinuousVars + i]);
+
+  return pdf;
+}
+
+
+template <> 
+inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
+{
+  // template specialization supports RealVector (e.g., for MAP pre-solve)
+
   Real pdf = (standardizedSpace) ?
     mcmcModel.multivariate_distribution().pdf(vec) :    // u_dist
     iteratedModel.multivariate_distribution().pdf(vec); // x_dist
-  */
-
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd
-  //  = iteratedModel.current_variables().shared_data();
-  Real pdf = 1.;
-  if (standardizedSpace) {
-    const Pecos::MultivariateDistribution& u_dist
-      = mcmcModel.multivariate_distribution();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= u_dist.pdf(vec[i], i);//svd.cv_index_to_active_index(i));
-  }
-  else {
-    const Pecos::MultivariateDistribution& x_dist
-      = iteratedModel.multivariate_distribution();
-    if (x_dist.correlation()) {
-      Cerr << "Error: prior_density() uses a product of marginal densities\n"
-	   << "       and can only be used for independent random variables."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= x_dist.pdf(vec[i], i);//svd.cv_index_to_active_index(i));
-  }
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -553,34 +576,51 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
 template <typename VectorType> 
 Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 {
-  /* Don't copy Gsl vector to allow this:
-  Real pdf = (standardizedSpace) ?
-    mcmcModel.multivariate_distribution().log_pdf(vec) :    // u_dist
-    iteratedModel.multivariate_distribution().log_pdf(vec); // x_dist
-  */
-
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd
-  //  = iteratedModel.current_variables().shared_data();
-  Real log_pdf = 0.;
-  if (standardizedSpace) {
-    const Pecos::MultivariateDistribution& u_dist
-      = mcmcModel.multivariate_distribution();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += u_dist.log_pdf(vec[i], i);//svd.cv_index_to_active_index(i));
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  if (mv_dist.correlation()) {
+    Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
+	 << "       and can only be used for independent random variables."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
   }
-  else {
-    const Pecos::MultivariateDistribution& x_dist
-      = iteratedModel.multivariate_distribution();
-    if (x_dist.correlation()) {
-      Cerr << "Error: log_prior_density() uses a sum of log marginal densities"
-	   << "\n       and can only be used for independent random variables."
-	   << std::endl;
+
+  size_t v, num_rv = mv_dist.random_variables().size();
+  const BitArray& active_vars = mv_dist.active_variables();
+  Real log_pdf = 0.;
+  if (active_vars.empty()) {
+    if (num_rv != numContinuousVars) {
+      Cerr << "Error: active variable size mismatch in NonDBayesCalibration::"
+	   << "log_prior_density()" << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += x_dist.log_pdf(vec[i], i);//svd.cv_index_to_active_index(i));
+    for (v=0; v<num_rv; ++v)
+      log_pdf += mv_dist.log_pdf(vec[v], v);
   }
+  else {
+    size_t av_cntr = 0;
+    for (v=0; v<num_rv; ++v)
+      if (active_vars[v])
+	log_pdf += mv_dist.log_pdf(vec[av_cntr++], v);
+  }
+
+  // the estimated param is mult^2 ~ invgamma(alpha,beta)
+  for (size_t i=0; i<numHyperparams; ++i)
+    log_pdf += invGammaDists[i].log_pdf(vec[numContinuousVars + i]);
+
+  return log_pdf;
+}
+
+
+template <> 
+inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
+{
+  Real log_pdf = (standardizedSpace) ?
+    mcmcModel.multivariate_distribution().log_pdf(vec) :    // u_dist
+    iteratedModel.multivariate_distribution().log_pdf(vec); // x_dist
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -593,34 +633,24 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 template <typename Engine> 
 void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
 {
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd
-  //  = iteratedModel.current_variables().shared_data();
-
   if (prior_samples.empty())
     prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
 
-  if (standardizedSpace) {
-    Pecos::MarginalsCorrDistribution* u_dist_rep
-      = (Pecos::MarginalsCorrDistribution*)
-      mcmcModel.multivariate_distribution().multivar_dist_rep();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = u_dist_rep->draw_sample(i, rng);
-      //= u_dist_rep->draw_sample(svd.cv_index_to_active_index(i), rng);
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const Pecos::MarginalsCorrDistribution* mv_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  if (mv_dist_rep->correlation()) {
+    Cerr << "Error: prior_sample() does not support correlated prior samples."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
   }
-  else {
-    Pecos::MarginalsCorrDistribution* x_dist_rep
-      = (Pecos::MarginalsCorrDistribution*)
-      iteratedModel.multivariate_distribution().multivar_dist_rep();
-    if (x_dist_rep->correlation()) {
-      Cerr << "Error: prior_sample() does not support correlated prior samples."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = x_dist_rep->draw_sample(i, rng);
-      //= x_dist_rep->draw_sample(svd.cv_index_to_active_index(i), rng);
-  }
+  for (size_t i=0; i<numContinuousVars; ++i)
+    prior_samples[i]
+      = mv_dist_rep->draw_sample(svd.cv_index_to_all_index(i), rng);
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -635,16 +665,15 @@ void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
   // SVD index conversion is more general, but not required for current uses
   //const SharedVariablesData& svd
   //  = iteratedModel.current_variables().shared_data();
-  if (standardizedSpace) {
-    RealVector u_means = mcmcModel.multivariate_distribution().means();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      mean_vec[i] = u_means[i];//[svd.cv_index_to_active_index(i)];
-  }
-  else {
-    RealVector x_means = iteratedModel.multivariate_distribution().means();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      mean_vec[i] = x_means[i];//[svd.cv_index_to_active_index(i)];
-  }
+
+  // returns set of means that correspond to activeVars
+  RealVector mvd_means
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution().means()
+    : iteratedModel.multivariate_distribution().means();
+
+  for (size_t i=0; i<numContinuousVars; ++i)
+    mean_vec[i] = mvd_means[i];//[svd.cv_index_to_active_index(i)];
+
   for (size_t i=0; i<numHyperparams; ++i)
     mean_vec[numContinuousVars + i] = invGammaDists[i].mean();
 }
@@ -657,7 +686,9 @@ void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
   // SVD index conversion is more general, but not required for current uses
   //const SharedVariablesData& svd
   //  = iteratedModel.current_variables().shared_data();
+
   if (standardizedSpace) {
+    // returns set of RV variances that correspond to activeVars
     RealVector u_var = mcmcModel.multivariate_distribution().variances();
     for (size_t i=0; i<numContinuousVars; ++i)
       var_mat(i,i) = u_var[i];//[svd.cv_index_to_active_index(i)];
@@ -666,6 +697,7 @@ void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
     const Pecos::MultivariateDistribution& x_dist
       = iteratedModel.multivariate_distribution();
     if (x_dist.correlation()) {
+      // returns set of RV stdevs that correspond to activeVars
       RealVector x_std = x_dist.std_deviations();
       const RealSymMatrix& x_correl = x_dist.correlation_matrix();
       size_t i, j;//, rv_i, rv_j;
@@ -681,6 +713,7 @@ void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
       }
     }
     else {
+      // returns set of RV variances that correspond to activeVars
       RealVector x_var = x_dist.variances();
       for (size_t i=0; i<numContinuousVars; ++i)
 	var_mat(i,i) = x_var[i];//[svd.cv_index_to_active_index(i)];
@@ -697,26 +730,17 @@ template <typename VectorType1, typename VectorType2>
 void NonDBayesCalibration::
 augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
 {
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd
-  //  = iteratedModel.current_variables().shared_data();
-
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
-  if (standardizedSpace) {
-    const Pecos::MultivariateDistribution& u_dist
-      = mcmcModel.multivariate_distribution();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -=
-	u_dist.log_pdf_gradient(vec[i], i);//svd.cv_index_to_active_index(i));
-  }
-  else {
-    const Pecos::MultivariateDistribution& x_dist
-      = iteratedModel.multivariate_distribution();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -=
-	x_dist.log_pdf_gradient(vec[i], i);//svd.cv_index_to_active_index(i));
-  }
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+
+  for (size_t i=0; i<numContinuousVars; ++i)
+    log_grad[i] -=
+      mv_dist.log_pdf_gradient(vec[i], svd.cv_index_to_all_index(i));
 }
 
 
@@ -724,27 +748,48 @@ template <typename MatrixType, typename VectorType>
 void NonDBayesCalibration::
 augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
 {
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd
-  //  = iteratedModel.current_variables().shared_data();
-
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
-  if (standardizedSpace) {
-    const Pecos::MultivariateDistribution& u_dist
-      = mcmcModel.multivariate_distribution();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -=
-	u_dist.log_pdf_hessian(vec[i], i);//svd.cv_index_to_active_index(i));
-  }
-  else {
-    const Pecos::MultivariateDistribution& x_dist
-      = iteratedModel.multivariate_distribution();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -=
-	x_dist.log_pdf_hessian(vec[i], i);//svd.cv_index_to_active_index(i));
-  }
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+
+  for (size_t i=0; i<numContinuousVars; ++i)
+    log_hess(i, i) -=
+      mv_dist.log_pdf_hessian(vec[i], svd.cv_index_to_all_index(i));
 }
+
+
+/*
+template <> 
+inline void NonDBayesCalibration::
+augment_gradient_with_log_prior(RealVector& log_grad, const RealVector& vec)
+{
+  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
+  // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+
+  log_grad -= mv_dist.log_pdf_gradient(vec);
+}
+
+
+template <> 
+inline void NonDBayesCalibration::
+augment_hessian_with_log_prior(RealSymMatrix& log_hess, const RealVector& vec)
+{
+  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
+  // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+
+  log_hess -= mv_dist.log_pdf_hessian(vec); // only need diagonal correction...
+}
+*/
 
 
 inline void NonDBayesCalibration::

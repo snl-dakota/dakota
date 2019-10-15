@@ -1666,24 +1666,33 @@ cv_to_all_mask(bool cdv, bool cauv, bool ceuv, bool csv) const
   if (cdv)
     for (i=0; i<num_cv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_cv;
   all_index += num_div + num_dsv + num_drv;
 
   aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   if (cauv)
     for (i=0; i<num_cv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_cv;
   all_index += num_div + num_dsv + num_drv;
 
   epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   if (ceuv)
     for (i=0; i<num_cv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_cv;
   all_index += num_div + num_dsv + num_drv;
 
   state_counts(num_cv, num_div, num_dsv, num_drv);
   if (csv)
     for (i=0; i<num_cv; ++i, ++all_index)
       all_mask.set(all_index);
+  //else
+  //  all_index += num_cv;
+  //all_index += num_div + num_dsv + num_drv;
 
   return all_mask;
 }
@@ -1701,6 +1710,8 @@ div_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (ddv)
     for (i=0; i<num_div; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_div;
   all_index += num_dsv + num_drv;
 
   aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
@@ -1708,6 +1719,8 @@ div_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (dauv)
     for (i=0; i<num_div; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_div;
   all_index += num_dsv + num_drv;
 
   epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
@@ -1715,6 +1728,8 @@ div_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (deuv)
     for (i=0; i<num_div; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_div;
   all_index += num_dsv + num_drv;
 
   state_counts(num_cv, num_div, num_dsv, num_drv);
@@ -1722,6 +1737,9 @@ div_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (dsv)
     for (i=0; i<num_div; ++i, ++all_index)
       all_mask.set(all_index);
+  //else
+  //  all_index += num_div;
+  //all_index += num_dsv + num_drv;
 
   return all_mask;
 }
@@ -1739,6 +1757,8 @@ dsv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (ddv)
     for (i=0; i<num_dsv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_dsv;
   all_index += num_drv;
 
   aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
@@ -1746,6 +1766,8 @@ dsv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (dauv)
     for (i=0; i<num_dsv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_dsv;
   all_index += num_drv;
 
   epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
@@ -1753,6 +1775,8 @@ dsv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (deuv)
     for (i=0; i<num_dsv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_dsv;
   all_index += num_drv;
 
   state_counts(num_cv, num_div, num_dsv, num_drv);
@@ -1760,6 +1784,9 @@ dsv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (dsv)
     for (i=0; i<num_dsv; ++i, ++all_index)
       all_mask.set(all_index);
+  //else
+  //  all_index += num_dsv;
+  //all_index += num_drv;
 
   return all_mask;
 }
@@ -1777,24 +1804,32 @@ drv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
   if (ddv)
     for (i=0; i<num_drv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_drv;
 
   aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   all_index += num_cv + num_div + num_dsv;
   if (dauv)
     for (i=0; i<num_drv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_drv;
 
   epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
   all_index += num_cv + num_div + num_dsv;
   if (deuv)
     for (i=0; i<num_drv; ++i, ++all_index)
       all_mask.set(all_index);
+  else
+    all_index += num_drv;
 
   state_counts(num_cv, num_div, num_dsv, num_drv);
   all_index += num_cv + num_div + num_dsv;
   if (dsv)
     for (i=0; i<num_drv; ++i, ++all_index)
       all_mask.set(all_index);
+  //else
+  //  all_index += num_drv;
 
   return all_mask;
 }

@@ -65,7 +65,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  mcmcDerivOrder(7),
+  mcmcDerivOrder(1),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
   scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
@@ -210,9 +210,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
   if (calibrationData) {
-    residualModel.assign_rep
-      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-                              obsErrorMultiplierMode, mcmcDerivOrder), false);
+    residualModel.assign_rep(new
+      DataTransformModel(mcmcModel, expData, numHyperparams, 
+			 obsErrorMultiplierMode, mcmcDerivOrder), false);
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     for (size_t i=0; i<numHyperparams; ++i) {
@@ -223,16 +223,15 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   else
     residualModel = mcmcModel;  // shallow copy
 
-  // TODO: will need to be resized when data changes
-  construct_map_optimizer();
+  // Order is important: data transform, then scale, then weights
+  if (scaleFlag)   scale_model();
+  if (weightFlag)  weight_model();
+
+  init_map_optimizer();
+  construct_map_model();
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
-
-  if (scaleFlag)
-    scale_model();
-  if (weightFlag)
-    weight_model();
 }
 
 
@@ -545,89 +544,109 @@ void NonDBayesCalibration::init_hyper_parameters()
     Calculation of model evidence using Laplace approximation: 
 		 this requires a MAP solve. 
 */
-void NonDBayesCalibration::construct_map_optimizer() 
+void NonDBayesCalibration::init_map_optimizer() 
 {
-  if ( mapOptAlgOverride == SUBMETHOD_SQP || 
-       mapOptAlgOverride == SUBMETHOD_NIP ||
-       ( emulatorType && mapOptAlgOverride != SUBMETHOD_NONE ) ||
-       ( calModelEvidLaplace ) ) {
-
-    size_t num_total_calib_terms = residualModel.num_primary_fns();
-    Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
-      secondary_resp_map_indices;
-    primary_resp_map_indices[0].resize(num_total_calib_terms);
-    for (size_t i=0; i<num_total_calib_terms; ++i)
-      primary_resp_map_indices[0][i] = i;
-    bool nonlinear_vars_map = false; BoolDequeArray nonlinear_resp_map(1);
-    nonlinear_resp_map[0] = BoolDeque(num_total_calib_terms, true);
-    SizetArray recast_vc_totals;  // empty: no change in size
-    BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
-
-    switch (mapOptAlgOverride) {
-    case SUBMETHOD_SQP:
+  switch (mapOptAlgOverride) {
+  case SUBMETHOD_SQP:
 #ifndef HAVE_NPSOL
-      Cerr << "\nWarning: this executable not configured with NPSOL SQP."
-	   << "\n         MAP pre-solve not available." << std::endl;
-      mapOptAlgOverride = SUBMETHOD_DEFAULT; // model,optimizer not constructed
+    Cerr << "\nWarning: this executable not configured with NPSOL SQP."
+	 << "\n         MAP pre-solve not available." << std::endl;
+    mapOptAlgOverride = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
-      break;
-    case SUBMETHOD_NIP:
+    break;
+  case SUBMETHOD_NIP:
 #ifndef HAVE_OPTPP
-      Cerr << "\nWarning: this executable not configured with OPT++ NIP."
-	   << "\n         MAP pre-solve not available." << std::endl;
-      mapOptAlgOverride = SUBMETHOD_DEFAULT; // model,optimizer not constructed
+    Cerr << "\nWarning: this executable not configured with OPT++ NIP."
+	 << "\n         MAP pre-solve not available." << std::endl;
+    mapOptAlgOverride = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
-      break;
-    case SUBMETHOD_DEFAULT: // use full Newton, if available
+    break;
+  case SUBMETHOD_DEFAULT: // use full Newton, if available
+    if (emulatorType || calModelEvidLaplace) {
 #ifdef HAVE_OPTPP
       mapOptAlgOverride = SUBMETHOD_NIP;
 #elif HAVE_NPSOL
       mapOptAlgOverride = SUBMETHOD_SQP;
 #else
+      mapOptAlgOverride = SUBMETHOD_NONE;
+#endif
+    }
+    break;
+  //case SUBMETHOD_NONE:
+  //  break;
+  }
+
+  // Errors / warnings
+  if (mapOptAlgOverride == SUBMETHOD_NONE) {
+    if (calModelEvidLaplace) {
+      Cout << "Error: You must specify a pre-solve method for the Laplace "
+	   << "approximation of model evidence." << std::endl; 
+      abort_handler(METHOD_ERROR);
+    }
+    if (emulatorType)
       Cerr << "\nWarning: this executable not configured with NPSOL or OPT++."
 	   << "\n         MAP pre-solve not available." << std::endl;
-#endif
-      break;
-    }
+  }      
+}
 
-    // recast ActiveSet requests if full-Newton NIP with gauss-Newton misfit
-    // (avoids error in unsupported Hessian requests in Model::manage_asv())
-    short nlp_resp_order = 3; // quasi-Newton optimization
-    void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
-    if (mapOptAlgOverride == SUBMETHOD_NIP) {
-      nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
-      if (mcmcDerivOrder == 3) // map asrv for Gauss-Newton approx
-        set_recast = gnewton_set_recast;
-    }
 
-    // RecastModel for bound-constrained argmin(misfit - log prior)
-    if (mapOptAlgOverride)
-      negLogPostModel.assign_rep(new 
-	RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
-		    all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
-		    set_recast, primary_resp_map_indices, 
-		    secondary_resp_map_indices, 0, nlp_resp_order, 
-		    nonlinear_resp_map, neg_log_post_resp_mapping, NULL),false);
+void NonDBayesCalibration::construct_map_model() 
+{
+  if (mapOptAlgOverride == SUBMETHOD_NONE) return;
 
-    switch (mapOptAlgOverride) {
+  size_t num_total_calib_terms = residualModel.num_primary_fns();
+  Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
+    secondary_resp_map_indices;
+  primary_resp_map_indices[0].resize(num_total_calib_terms);
+  for (size_t i=0; i<num_total_calib_terms; ++i)
+    primary_resp_map_indices[0][i] = i;
+  bool nonlinear_vars_map = false; BoolDequeArray nonlinear_resp_map(1);
+  nonlinear_resp_map[0] = BoolDeque(num_total_calib_terms, true);
+  SizetArray recast_vc_totals;  // empty: no change in size
+  BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
+
+  // recast ActiveSet requests if full-Newton NIP with gauss-Newton misfit
+  // (avoids error in unsupported Hessian requests in Model::manage_asv())
+  short nlp_resp_order = 3; // quasi-Newton optimization
+  void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+  if (mapOptAlgOverride == SUBMETHOD_NIP) {
+    nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
+    if (mcmcDerivOrder == 3) // map asrv for Gauss-Newton approx
+      set_recast = gnewton_set_recast;
+  }
+
+  // RecastModel for bound-constrained argmin(misfit - log prior)
+  negLogPostModel.assign_rep(new 
+    RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
+		all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
+		set_recast, primary_resp_map_indices, 
+		secondary_resp_map_indices, 0, nlp_resp_order, 
+		nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
+}
+
+
+void NonDBayesCalibration::construct_map_optimizer() 
+{
+  // Note: this fn may get invoked repeatedly but assign_rep() manages the
+  // outgoing pointer
+
+  switch (mapOptAlgOverride) {
 #ifdef HAVE_NPSOL
-    case SUBMETHOD_SQP: {
-      // SQP with BFGS Hessians
-      int npsol_deriv_level = 3;
-      mapOptimizer.assign_rep(new
-	NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),
-	false);
-      break;
-    }
+  case SUBMETHOD_SQP: {
+    // SQP with BFGS Hessians
+    int npsol_deriv_level = 3;
+    mapOptimizer.assign_rep(new
+      NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),false);
+    break;
+  }
 #endif
 #ifdef HAVE_OPTPP
-    case SUBMETHOD_NIP:
-      // full Newton (OPTPP::OptBCNewton)
-      mapOptimizer.assign_rep(new 
-	SNLLOptimizer("optpp_newton", negLogPostModel), false);
-      break;
+  case SUBMETHOD_NIP:
+    // full Newton (OPTPP::OptBCNewton)
+    mapOptimizer.assign_rep(new 
+      SNLLOptimizer("optpp_newton", negLogPostModel), false);
+    break;
 #endif
-    }
   }
 }
 
@@ -636,18 +655,34 @@ NonDBayesCalibration::~NonDBayesCalibration()
 { }
 
 
+void NonDBayesCalibration::pre_run()
+{
+  Analyzer::pre_run();
+
+  // now that vars/labels/bounds/targets have flowed down at run-time from
+  // any higher level recursions, propagate them up local Model recursions
+  // so that they are correct when they propagate back down.
+  if (!negLogPostModel.is_null())
+    negLogPostModel.update_from_subordinate_model(); // depth = max
+  else
+    residualModel.update_from_subordinate_model();   // depth = max
+
+  // needs to follow bounds updates so that correct OPT++ optimizer is selected
+  // (OptBCNewtonLike or OptNewtonLike)
+  construct_map_optimizer();
+}
+
+
 void NonDBayesCalibration::core_run()
 {
   nonDBayesInstance = this;
 
-  if (adaptExpDesign)
-    // use meta-iteration in this class
+  if (adaptExpDesign) // use meta-iteration in this class
     calibrate_to_hifi();
-  else
-    // delegate to base class calibration
+  else                // delegate to base class calibration
     calibrate();
-  if (calModelDiscrepancy)
-    // calibrate a model discrepancy function
+
+  if (calModelDiscrepancy) // calibrate a model discrepancy function
     build_model_discrepancy();
     //print_discrepancy_results();
 }
@@ -655,17 +690,19 @@ void NonDBayesCalibration::core_run()
 
 void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
-  //iteratedModel.init_communicators(maxEvalConcurrency);
-
   // stochExpIterator and mcmcModel use NoDBBaseConstructor,
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
+  case PCE_EMULATOR:    case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.init_communicators(pl_iter);              break;
-  default:
-    mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
+  //default:
+  //  mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
   }
+  residualModel.init_communicators(pl_iter, maxEvalConcurrency);
+
+  if (!mapOptimizer.is_null())
+    mapOptimizer.init_communicators(pl_iter);
 
   if (!hifiSampler.is_null())
     hifiSampler.init_communicators(pl_iter);
@@ -675,17 +712,20 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-  //iteratedModel.set_communicators(maxEvalConcurrency);
 
   // stochExpIterator and mcmcModel use NoDBBaseConstructor,
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
+  case PCE_EMULATOR:    case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.set_communicators(pl_iter);              break;
-  default:
-    mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
+  //default:
+  //  mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
   }
+  residualModel.set_communicators(pl_iter, maxEvalConcurrency);
+
+  if (!mapOptimizer.is_null())
+    mapOptimizer.set_communicators(pl_iter);
 
   if (!hifiSampler.is_null())
     hifiSampler.set_communicators(pl_iter);
@@ -694,18 +734,20 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
 
 void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
-  switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    stochExpIterator.free_communicators(pl_iter);              break;
-  default:
-    mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
-  }
-
-  //iteratedModel.free_communicators(maxEvalConcurrency);
-
   if (!hifiSampler.is_null())
     hifiSampler.free_communicators(pl_iter);
+
+  if (!mapOptimizer.is_null())
+    mapOptimizer.free_communicators(pl_iter);
+
+  residualModel.free_communicators(pl_iter, maxEvalConcurrency);
+  switch (emulatorType) {
+  case PCE_EMULATOR:    case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
+    stochExpIterator.free_communicators(pl_iter);              break;
+  //default:
+  //  mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
+  }
 }
 
 
@@ -789,9 +831,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     mcmcModel.continuous_variables(initial_point);
-    residualModel.assign_rep
-      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-			      obsErrorMultiplierMode, mcmcDerivOrder), false);
+    residualModel.assign_rep(new
+      DataTransformModel(mcmcModel, expData, numHyperparams,
+			 obsErrorMultiplierMode, mcmcDerivOrder), false);
     construct_map_optimizer();
 
     // Run the underlying calibration solver (MCMC)
@@ -2580,14 +2622,14 @@ void NonDBayesCalibration::calculate_evidence()
   if (calModelEvidLaplace) {
     if (obsErrorMultiplierMode > CALIBRATE_NONE) {
       Cout << "The Laplace approximation of model evidence currently " 
-           << "does not work when error multipliers are specified." << '\n';
+           << "does not work when error multipliers are specified."<< std::endl;
       abort_handler(METHOD_ERROR);
     } 
-    if (mapOptAlgOverride == SUBMETHOD_NONE) {
-      Cout << "You must specify a pre-solve method for the Laplace approximation" 
-           << " of model evidence. "  << '\n'; 
-      abort_handler(METHOD_ERROR);
-    } 
+    //if (mapOptAlgOverride == SUBMETHOD_NONE) {
+    //  Cout << "You must specify a pre-solve method for the Laplace " 
+    //       << "approximation of model evidence." << std::endl;
+    //  abort_handler(METHOD_ERROR);
+    //} 
     Cout << "Starting Laplace approximation of model evidence, first " 
          << "\nobtain MAP point from pre-solve.\n";
     const RealVector& map_c_vars
@@ -3346,6 +3388,7 @@ void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
   }
 }
 
+
 /** Wrap the residualModel in a scaling transformation, such that
     residualModel now contains a scaling recast model. */
 void NonDBayesCalibration::scale_model()
@@ -3360,9 +3403,8 @@ void NonDBayesCalibration::scale_model()
 
 
 /** Setup Recast for weighting model.  The weighting transformation
-    doesn't resize, and makes no vars, active set or secondary
-    mapping.  All indices are one-to-one mapped (no change in
-    counts). */
+    doesn't resize, and makes no vars, active set or secondary mapping.
+    All indices are one-to-one mapped (no change in counts). */
 void NonDBayesCalibration::weight_model()
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -3372,8 +3414,8 @@ void NonDBayesCalibration::weight_model()
   const RealVector& lsq_weights = residualModel.primary_response_fn_weights();
   for (int i=0; i<lsq_weights.length(); ++i)
     if (lsq_weights[i] < 0) {
-      Cerr << "\nError: Calibration term weights must be nonnegative. Specified "
-     << "weights are:\n" << lsq_weights << '\n';
+      Cerr << "\nError: Calibration term weights must be nonnegative. "
+	   << "Specified weights are:\n" << lsq_weights << '\n';
       abort_handler(-1);
     }
 

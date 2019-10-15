@@ -1244,7 +1244,7 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
     // this Iterator and its underlying Model.  This may get appended
     // to by any runtime updates as eval ids change.
     eval_tag_prefix(parallelLib.output_manager().build_output_tag());
- }
+  }
 }
 
 bool Iterator::top_level() {
