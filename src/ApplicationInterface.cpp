@@ -545,7 +545,11 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
   if (asynch_flag) {
     // Output appears here to support core | algebraic | both
     if (!duplicate && outputLevel > SILENT_OUTPUT) {
-      Cout << "(Asynchronous job " << evalIdCntr;
+      if(batchEval)
+        Cout << "(Batch job ";
+      else
+        Cout << "(Asynchronous job "; 
+      Cout << evalIdCntr;
       if (interfaceId.empty()) Cout << " added to queue)\n";
       else Cout << " added to " << interfaceId << " queue)\n";
     }

@@ -317,6 +317,11 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
   // of prototyping, it'll do.
   
   bfs::ifstream results_file(resultsFileWritten);
+  if (!results_file) {
+    Cerr << "\nError: cannot open results file " << resultsFileWritten
+	 << " for batch " << std::to_string(batchIdCntr) << std::endl;
+    abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
+  }
   Response response;
   for(auto & pair : prp_queue) {
     std::stringstream eval_ss;
@@ -341,6 +346,11 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
     }
     catch(const FunctionEvalFailure & fneval_except) {
       manage_failure(pair.variables(), response.active_set(), response, pair.eval_id());
+    }
+    catch(const FileReadException& fr_except) {
+      throw FileReadException("Error(s) encountered reading batch results file " +
+          resultsFileWritten + " for Evaluation " + std::to_string(pair.eval_id())
+          + ":\n" + fr_except.what()); 
     }
     completionSet.insert(pair.eval_id());
   }
