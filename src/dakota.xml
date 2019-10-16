@@ -4671,20 +4671,29 @@
 	    </keyword>
 	    <keyword  id="restart_file" name="restart_file" code="{N_ifm(false,restartFileFlag)}" label="Restart File"  minOccurs="0" complexity="1"/>
       </keyword>
-      <keyword id="asynchronous" name="asynchronous" code="{N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}" label="Asynchronous Interface Usage"  minOccurs="0" default="synchronous interface usage" complexity="0">
-	    <keyword id="evaluation_concurrency" name="evaluation_concurrency" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Asynchronous Evaluation Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="0">
-          <param type="INTEGER" constraint="&gt; 0" />
-	    </keyword>
-	    <keyword id="local_evaluation_scheduling" name="local_evaluation_scheduling" code="{0}" label="Local Evaluation Scheduling"  minOccurs="0" default="dynamic" complexity="1">
-          <oneOf label="Scheduling Mode">
-            <keyword id="dynamic" name="dynamic" code="{N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}" label="Dynamic"  complexity="1" />
-            <keyword id="static" name="static" code="{N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}" label="Static"  complexity="1" />
-          </oneOf>
-	    </keyword>
-	    <keyword id="analysis_concurrency" name="analysis_concurrency" code="{N_ifm(pint,asynchLocalAnalysisConcurrency)}" label="Asynchronous Analysis Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="1">
-          <param type="INTEGER" constraint="&gt; 0" />
-	    </keyword>
-      </keyword>
+      <optional>
+        <oneOf>
+  	<keyword id="batch" name="batch" code="{N_ifm(true,batchEvalFlag)}" label="Batch Interface Usage"  default="sequential interface usage" complexity="0">
+    	    <keyword id="size" name="size" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Batch size"  minOccurs="0" default="local: unlimited batch size, hybrid: zero batch size" complexity="0">
+              <param type="INTEGER" constraint="&gt; 0" />
+    	    </keyword>
+          </keyword>
+          <keyword id="asynchronous" name="asynchronous" code="{N_ifm(true, asynchFlag)}" label="Asynchronous Interface Usage"  default="synchronous interface usage" complexity="0">
+    	    <keyword id="evaluation_concurrency" name="evaluation_concurrency" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Asynchronous Evaluation Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="0">
+              <param type="INTEGER" constraint="&gt; 0" />
+    	    </keyword>
+    	    <keyword id="local_evaluation_scheduling" name="local_evaluation_scheduling" code="{0}" label="Local Evaluation Scheduling"  minOccurs="0" default="dynamic" complexity="1">
+              <oneOf label="Scheduling Mode">
+                <keyword id="dynamic" name="dynamic" code="{N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}" label="Dynamic"  complexity="1" />
+                <keyword id="static" name="static" code="{N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}" label="Static"  complexity="1" />
+              </oneOf>
+    	    </keyword>
+    	    <keyword id="analysis_concurrency" name="analysis_concurrency" code="{N_ifm(pint,asynchLocalAnalysisConcurrency)}" label="Asynchronous Analysis Concurrency"  minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="1">
+              <param type="INTEGER" constraint="&gt; 0" />
+    	    </keyword>
+          </keyword>
+        </oneOf>
+      </optional>
       <group label="Parallel Configuration">
 	    <keyword id="evaluation_servers" name="evaluation_servers" code="{N_ifm(pint,evalServers)}" label="Number of Evaluation Servers"  minOccurs="0" default="automatic (see discussion)" complexity="1">
           <param type="INTEGER" constraint="&gt; 0" />

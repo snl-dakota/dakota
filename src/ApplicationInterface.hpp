@@ -212,6 +212,9 @@ protected:
   /// jobs is launched and scheduled as a unit rather than individually
   bool batchEval;
 
+  /// flag indicating usage of asynchronous evaluation
+  bool asynchFlag;
+
   /// maintain a count of the batches
   int batchIdCntr; 
 

@@ -2745,8 +2745,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       // must be sorted by string (key)
 	{"analysis_scheduling", P analysisScheduling},
 	{"evaluation_scheduling", P evalScheduling},
-	{"local_evaluation_scheduling", P asynchLocalEvalScheduling},
-	{"synchronization", P interfaceSynchronization}};
+	{"local_evaluation_scheduling", P asynchLocalEvalScheduling}};
     #undef P
 
     KW<short, DataInterfaceRep> *kw;
@@ -3148,6 +3147,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"application.file_save", P fileSaveFlag},
 	{"application.file_tag", P fileTagFlag},
 	{"application.verbatim", P verbatimFlag},
+        {"asynch", P asynchFlag},
+        {"batch", P batchEvalFlag},
 	{"dirSave", P dirSave},
 	{"dirTag", P dirTag},
 	{"evaluation_cache", P evalCacheFlag},

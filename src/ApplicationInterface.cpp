@@ -20,18 +20,12 @@ namespace Dakota {
 
 extern PRPCache data_pairs;
 
-bool batch_eval_active() {
-  if(std::getenv("DAKOTA_BATCH_EVAL"))
-    return true;
-  else
-    return false;
-}
-
-
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db):
   Interface(BaseConstructor(), problem_db),
-  parallelLib(problem_db.parallel_library()), batchEval(batch_eval_active()),
+  parallelLib(problem_db.parallel_library()), 
+  batchEval(problem_db.get_bool("interface.batch")),
+  asynchFlag(problem_db.get_bool("interface.asynch")),
   batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
   eaDedMasterFlag(false), analysisCommSize(1), analysisCommRank(0),
@@ -59,7 +53,10 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   asynchLocalEvalStatic(
     problem_db.get_short("interface.local_evaluation_scheduling") ==
     STATIC_SCHEDULING),
-  interfaceSynchronization(problem_db.get_short("interface.synchronization")),
+  interfaceSynchronization( 
+      (batchEval | asynchFlag) ? 
+        ASYNCHRONOUS_INTERFACE : SYNCHRONOUS_INTERFACE
+      ),
   headerFlag(true),
   asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
   evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),

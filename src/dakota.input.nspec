@@ -5751,14 +5751,20 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
      ]
     [ restart_file {N_ifm(false,restartFileFlag)} ]
    ]
-  [ asynchronous {N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}
-    [ evaluation_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]
-    [ local_evaluation_scheduling {0}
-      dynamic {N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}
-      |
-      static {N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}
-     ]
-    [ analysis_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalAnalysisConcurrency)} ]
+  [ 
+    ( batch {N_ifm(true,batchEvalFlag)}
+      [ size INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]
+     )
+    |
+    ( asynchronous {N_ifm(true, asynchFlag)}
+      [ evaluation_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]
+      [ local_evaluation_scheduling {0}
+        dynamic {N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}
+        |
+        static {N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}
+       ]
+      [ analysis_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalAnalysisConcurrency)} ]
+     )
    ]
   [ evaluation_servers INTEGER > 0 {N_ifm(pint,evalServers)} ]
   [ evaluation_scheduling {0}

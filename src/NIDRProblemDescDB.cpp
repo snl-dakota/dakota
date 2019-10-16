@@ -807,9 +807,23 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   DataInterfaceRep *di = ii->di;
 
   StringArray& analysis_drivers = di->analysisDrivers;
+  bool ife = di->inputFilter.empty();
+  bool ofe = di->outputFilter.empty();
   int nd = analysis_drivers.size();
   int ac = di->asynchLocalAnalysisConcurrency;
   int ec = di->asynchLocalEvalConcurrency;
+
+  if(di->batchEvalFlag && (nd > 1 || !ife || !ofe))
+    squawk("For batch evaluation, specification of an input_filter, output_filter,\n\t"
+        "or more than one analysis_drivers is disallowed");
+  if(di->batchEvalFlag && ec == 1) {
+    warn("batch option not required for evaluation concurrency == 1.\n\t"
+        "Sequential operation will be used");
+      di->batchEvalFlag = false;
+  }
+
+  if(di->batchEvalFlag && ! (di->failAction == "abort" || di->failAction == "recover"))
+    squawk("For batch evaluation, only failure_capture abort and recover are supported");
 
   if (di->algebraicMappings == "" && nd == 0)
     squawk("interface specification must provide algebraic_mappings,\n\t"
@@ -823,7 +837,7 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
     warn("asynchronous option not required for evaluation and analysis.\n\t"
 	 "Concurrency limited to %d and %d.\n\t"
 	 "Synchronous operations will be used", ec, ac);
-    di->interfaceSynchronization = SYNCHRONOUS_INTERFACE;
+    di->asynchFlag = false;
   }
 
   // validate each of the analysis_drivers
@@ -6480,9 +6494,7 @@ static Iface_mp_type
 	MP2s(evalScheduling,PEER_DYNAMIC_SCHEDULING),
 	MP2s(evalScheduling,PEER_STATIC_SCHEDULING),
 	MP2s(asynchLocalEvalScheduling,DYNAMIC_SCHEDULING),
-        MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING),
-        MP2s(interfaceSynchronization,ASYNCHRONOUS_INTERFACE),
-        MP2s(interfaceSynchronization,SYNCHRONOUS_INTERFACE);
+        MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING);
 
 static Iface_mp_utype
 	MP2s(interfaceType,TEST_INTERFACE),
@@ -6516,6 +6528,8 @@ static bool
 	MP_(activeSetVectorFlag),
 	MP_(allowExistingResultsFlag),
 	MP_(apreproFlag),
+	MP_(asynchFlag),
+	MP_(batchEvalFlag),
 	MP_(dirSave),
 	MP_(dirTag),
 	MP_(evalCacheFlag),
