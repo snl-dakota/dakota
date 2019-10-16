@@ -75,6 +75,8 @@ enum { DEFAULT_METHOD=0,
        COLINY_EA,   COLINY_PATTERN_SEARCH, COLINY_SOLIS_WETS,
        MOGA, SOGA, NCSU_DIRECT, MESH_ADAPTIVE_SEARCH, MIT_NOWPAC, MIT_SNOWPAC,
        GENIE_OPT_DARTS, GENIE_DIRECT,
+       // Place Demo Opt TPL here based on current state of non-gradient flavor
+       DEMO_TPL,
        // Gradient-based Optimizers / Minimizers:
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,

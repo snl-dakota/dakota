@@ -6,7 +6,7 @@ method
   samples 400 
   seed 1337
   ### TODO: Add keywords to generate data for CDFs and to estimate the 
-  ###       probabilities that stress will exceed 1e5 psi and displacement 
+  ###       probabilities that stress will exceed 5.0e3 psi and displacement 
   ###       will exceed 0.001 in. 
 
 variables

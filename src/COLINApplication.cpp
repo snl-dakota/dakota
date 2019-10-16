@@ -169,7 +169,7 @@ void COLINApplication::set_problem(Model& model) {
     RealVector ineq_upper; // will be sized in adapter call
     RealVector eq_targets; // will be sized in adapter call
 
-    get_nonlinear_constraints( model, ineq_lower, ineq_upper, eq_targets);
+    get_nonlinear_bounds( model, ineq_lower, ineq_upper, eq_targets);
     copy_data_partial(ineq_lower, bounds, 0 );
     copy_data_partial(eq_targets, bounds, ineq_lower.length() );
     _nonlinear_constraint_lower_bounds = bounds;

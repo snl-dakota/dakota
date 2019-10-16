@@ -4909,17 +4909,19 @@ ActiveSet Model::default_active_set()
 
     ActiveSet set; 
     set.derivative_vector(currentVariables.all_continuous_variable_ids());
+    bool has_deriv_vars = set.derivative_vector().size() != 0;
     ShortArray asv(numFns, 1);
+    if (has_deriv_vars) {
+      if ( gradientType != "none" &&
+	   ( gradientType == "analytic" || supportsEstimDerivs ) )
+	for(auto &a : asv)
+	  a |=  2;
 
-    if ( gradientType != "none" &&
-	 ( gradientType == "analytic" || supportsEstimDerivs ) )
-      for(auto &a : asv)
-	a |=  2;
-
-    if ( hessianType != "none" &&
-	 ( hessianType == "analytic" || supportsEstimDerivs ) )
-      for(auto &a : asv)
-	a |=  4;
+      if ( hessianType != "none" &&
+	   ( hessianType == "analytic" || supportsEstimDerivs ) )
+	for(auto &a : asv)
+	  a |=  4;
+    }
 
     set.request_vector(asv);
     return set;

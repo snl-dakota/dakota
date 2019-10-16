@@ -1254,20 +1254,22 @@ ActiveSet ScalingModel::default_active_set() {
   // submodel. It is also assumed to have supportEstimDerivs == true
   ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  bool has_deriv_vars = set.derivative_vector().size() != 0;
   // The ScalingModel can return at least everything that the submodel can.
   ShortArray asv(subModel.default_active_set().request_vector());
 
   // In addition, if mixed or numerical gradients are active, the ScalingModel
   // can return gradients for all responses
-  if(gradientType != "none")
-    for(auto &a : asv)
-        a |=  2;
-  // Also, if mixed, numerical, or quasi hessians are active, the ScalingModel
-  // can return hessians for all responses
-  if(hessianType != "none")
+  if(has_deriv_vars) {
+    if(gradientType != "none")
       for(auto &a : asv)
-        a |=  4;
-
+          a |=  2;
+    // Also, if mixed, numerical, or quasi hessians are active, the ScalingModel
+    // can return hessians for all responses
+    if(hessianType != "none")
+        for(auto &a : asv)
+          a |=  4;
+    }
   set.request_vector(asv);
   return set;
 }

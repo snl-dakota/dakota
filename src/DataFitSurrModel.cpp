@@ -2590,10 +2590,11 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
   // actualModel.
   ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  bool has_deriv_vars = set.derivative_vector().size() != 0;
   ShortArray asv(numFns);
-  const bool has_gradients = gradientType != "none" && 
+  const bool has_gradients = gradientType != "none" && has_deriv_vars &&
     (gradientType == "analytic" || supportsEstimDerivs);
-  const bool has_hessians = hessianType != "none" && 
+  const bool has_hessians = hessianType != "none" &&  has_deriv_vars &&
     (hessianType == "analytic" || supportsEstimDerivs);
   // Most frequent case: build surrogates for all responses
   if (responseMode == MODEL_DISCREPANCY || responseMode == AGGREGATED_MODELS ||
