@@ -444,7 +444,9 @@ namespace Dakota {
   void NonDMultilevelSampling::target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                                           RealMatrix& grad_g, int& result_mode) {
 
+    bool compute_gradient = false;
 #ifdef HAVE_NPSOL
+    compute_gradient = true;
     Cout << "Qoi: " << *static_qoi << "\n";
     Cout << "Mode: " << mode << " Function" << "\n";
     Cout << "Dim n: " << n << "\n";
@@ -459,6 +461,7 @@ namespace Dakota {
     Cout << "Mode: " << mode  << " Gradient" << "\n";
 #elif HAVE_OPTPP
     if(mode & OPTPP::NLPFunction) {
+      result_mode = OPTPP::NLPFunction;
       Cout << "Qoi: " << *static_qoi << "\n";
       Cout << "Mode: " << mode << " Function" << "\n";
       Cout << "Dim n: " << n << "\n";
@@ -470,6 +473,8 @@ namespace Dakota {
       Cout << "\n";
     }
     if(mode & OPTPP::NLPGradient){
+      compute_gradient = true;
+      result_mode = OPTPP::NLPGradient;
       Cout << "Qoi: " << *static_qoi << "\n";
       Cout << "Mode: " << mode  << " Gradient" << "\n";
     }
@@ -483,169 +488,16 @@ namespace Dakota {
     size_t qoi = *static_qoi;
     size_t num_lev = n;
 
-    Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
-        cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
-        mu_Q2l, mu_Q2lm1, mu_Q2lQ2lm1,
-        mu_Q1lm1_mu_Q2lQ1lm1, mu_Q1lm1_mu_Q1lm1_muQ2l, mu_Q1l_mu_Q1lQ2lm1, mu_Q1l_mu_Q1l_mu_Q2lm1,
-        mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1, mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1, mu_Q2l_muQ2lm1, mu_Q1lQ1lm1_mu_Q1lQ1lm1,
-        mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term, bessel_corr;
-
-    RealVector grad_fd, term1_fd, term2_fd, term3_fd, term1_grad, term2_grad, term3_grad;
-    Real h = 0.05;
-    grad_fd.size(num_lev);
-    term1_fd.size(num_lev);
-    term2_fd.size(num_lev);
-    term3_fd.size(num_lev);
-    term1_grad.size(num_lev);
-    term2_grad.size(num_lev);
-    term3_grad.size(num_lev);
-
-    IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
-    RealMatrix &sum_Q1l = (*static_sum_Ql)[1], &sum_Q1lm1 = (*static_sum_Qlm1)[1],
-        &sum_Q2l = (*static_sum_Ql)[2], &sum_Q2lm1 = (*static_sum_Qlm1)[2],
-        &sum_Q3l = (*static_sum_Ql)[3], &sum_Q3lm1 = (*static_sum_Qlm1)[3],
-        &sum_Q4l = (*static_sum_Ql)[4], &sum_Q4lm1 = (*static_sum_Qlm1)[4],
-        &sum_Q1lQ1lm1 = (*static_sum_QlQlm1)[pr11], &sum_Q1lQ2lm1 = (*static_sum_QlQlm1)[pr12],
-        &sum_Q2lQ1lm1 = (*static_sum_QlQlm1)[pr21], &sum_Q2lQ2lm1 = (*static_sum_QlQlm1)[pr22];
-
-    uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq_pilot, sum_Q2l(qoi, lev) / Nlq_pilot,
-                                        sum_Q3l(qoi, lev) / Nlq_pilot, sum_Q4l(qoi, lev) / Nlq_pilot,
-                                        cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
-
-
-    cm2l_sq = cm2l * cm2l;
+    Real agg_estim_var;
 
     //[fm] bias correction for var_P2l
-    var_P2l = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
-    agg_estim_var = var_P2l;
-
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-    if(mode & OPTPP::NLPFunction) {
-      Cout << "1 cm : " << cm1l << cm2l << cm3l << cm4l << "\n";
-    }
-#endif
-
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-    if(mode & OPTPP::NLPGradient){
-#endif
-      grad_g[0][0] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4l
-                  - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2l_sq;
-      grad_fd[0] = ( ( (Nlq + h) - 1.) / ( (Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
-                   - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) ) / h;
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-    }
-#endif
-
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-    if(mode & OPTPP::NLPFunction) {
-      Cout << "1 agg var: " << agg_estim_var << "\n";
-    }
-#endif
+    agg_estim_var = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, compute_gradient, grad_g[0][0]);
 
     for (lev = 1; lev < num_lev; ++lev) {
       Nlq = x[lev];
       Nlq_pilot = (*static_Nlq_pilot)[lev];
-      mu_Q2l = sum_Q2l(qoi, lev) / Nlq_pilot;
-      uncentered_to_centered(sum_Q1l(qoi, lev) / Nlq_pilot, mu_Q2l,
-                                          sum_Q3l(qoi, lev) / Nlq_pilot, sum_Q4l(qoi, lev) / Nlq_pilot,
-                                          cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
-      mu_Q2lm1 = sum_Q2lm1(qoi, lev) / Nlq_pilot;
-      uncentered_to_centered(sum_Q1lm1(qoi, lev) / Nlq_pilot, mu_Q2lm1,
-                                          sum_Q3lm1(qoi, lev) / Nlq_pilot, sum_Q4lm1(qoi, lev) / Nlq_pilot,
-                                          cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq_pilot);
-      cm2l_sq = cm2l * cm2l;
-      cm2lm1_sq = cm2lm1 * cm2lm1;
 
-      // [fm] bias correction for var_P2l and var_P2lm1
-      var_P2l = Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
-      var_P2lm1 =
-          Nlq * (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq);
-
-      //[fm] unbiased products of mean
-      mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi, lev) / Nlq_pilot;
-      mu_Q1lm1_mu_Q2lQ1lm1 = unbiased_mean_product_pair(sum_Q1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
-                                                        sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
-      mu_Q1lm1_mu_Q1lm1_muQ2l = unbiased_mean_product_triplet(sum_Q1lm1(qoi, lev), sum_Q1lm1(qoi, lev),
-                                                              sum_Q2l(qoi, lev),
-                                                              sum_Q2lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
-                                                              sum_Q2lQ1lm1(qoi, lev),
-                                                              sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
-      mu_Q1l_mu_Q1lQ2lm1 = unbiased_mean_product_pair(sum_Q1l(qoi, lev), sum_Q1lQ2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev),
-                                                      Nlq_pilot);
-      mu_Q1l_mu_Q1l_mu_Q2lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1l(qoi, lev), sum_Q2lm1(qoi, lev),
-                                                             sum_Q2l(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
-                                                             sum_Q1lQ2lm1(qoi, lev),
-                                                             sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
-      mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 = unbiased_mean_product_triplet(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
-                                                                 sum_Q1lQ1lm1(qoi, lev),
-                                                                 sum_Q1lQ1lm1(qoi, lev), sum_Q2lQ1lm1(qoi, lev),
-                                                                 sum_Q1lQ2lm1(qoi, lev),
-                                                                 sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
-      mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 = unbiased_mean_product_pairpair(sum_Q1l(qoi, lev), sum_Q1lm1(qoi, lev),
-                                                                      sum_Q1lQ1lm1(qoi, lev),
-                                                                      sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev),
-                                                                      sum_Q2lQ1lm1(qoi, lev), sum_Q1lQ2lm1(qoi, lev),
-                                                                      sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
-      mu_Q2l_muQ2lm1 = unbiased_mean_product_pair(sum_Q2l(qoi, lev), sum_Q2lm1(qoi, lev), sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
-      mu_P2lP2lm1 = mu_Q2lQ2lm1 //E[QL2 Ql2]
-                    - 2. * mu_Q1lm1_mu_Q2lQ1lm1 //E[Ql] E[QL2Ql]
-                    + 2. * mu_Q1lm1_mu_Q1lm1_muQ2l //E[Ql]2 E[QL2]
-                    - 2. * mu_Q1l_mu_Q1lQ2lm1 //E[QL] E[QLQl2]
-                    + 2. * mu_Q1l_mu_Q1l_mu_Q2lm1 //E[QL]2 E[Ql2]
-                    + 4. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 //E[QL] E[Ql] E[QLQl]
-                    - 4. * mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1 //E[QL]2 E[Ql]2
-                    - mu_Q2l_muQ2lm1; //E[QL2] E[Ql2]
-
-      // [fm] unbiased by opening up the square and compute three different term
-      mu_Q1lQ1lm1_mu_Q1lQ1lm1 = unbiased_mean_product_pair(sum_Q1lQ1lm1(qoi, lev), sum_Q1lQ1lm1(qoi, lev),
-                                                           sum_Q2lQ2lm1(qoi, lev), Nlq_pilot);
-      term = mu_Q1lQ1lm1_mu_Q1lQ1lm1 - 2. * mu_Q1l_mu_Qlm1_mu_Q1lQ1lm1 + mu_Q1l_mu_Q1l_mu_Q1lm1_muQ1lm1;
-
-      //[fm] Using only unbiased estimators the sum is also unbiased
-      covar_P2lP2lm1
-          = mu_P2lP2lm1 + term / (Nlq - 1.);
-      agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-      if(mode & OPTPP::NLPFunction) {
-        Cout << "2 agg var: " << agg_estim_var << "\n";
-      }
-      if(mode & OPTPP::NLPGradient){
-#endif
-        grad_g[0][lev] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4l
-                      - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2l_sq
-                    + ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4lm1
-                      - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2lm1_sq
-                    - 2. * ( -1./(Nlq* Nlq) * mu_P2lP2lm1 + (-2. * Nlq + 1.)/( (Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq) ) * term);
-
-        term1_fd[lev] = ( ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
-                          - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) ) / h;
-        term2_fd[lev] = ( ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4lm1 - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2lm1_sq)
-                          - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq) ) / h;
-        term3_fd[lev] = ( 2. * ( mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.)) ) - 2. * ( mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.)) ) ) / h;
-
-        term1_grad[lev] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4l
-                          - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2l_sq;
-        term2_grad[lev] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm4lm1
-                          - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) / ( (Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.) )  * cm2lm1_sq;
-        term3_grad[lev] = 2. * ( -1./(Nlq* Nlq) * mu_P2lP2lm1 + (-2. * Nlq + 1.)/( (Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq) ) * term);
-
-        Real fd_upper = ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
-                        + ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4lm1 - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2lm1_sq)
-                        - 2. * ( mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.)) );
-        Real fd_lower = ((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq)
-                         + (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq)
-                         - 2. * ( mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.)) ));
-        grad_fd[lev] = ( fd_upper - fd_lower )/ h;
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-      }
-#endif
-
+      agg_estim_var += var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev, compute_gradient, grad_g[0][lev]);
     }
 
 #ifdef HAVE_NPSOL
@@ -653,63 +505,12 @@ namespace Dakota {
     if (mode & OPTPP::NLPFunction){
 #endif
       g[0] = agg_estim_var; // - (*static_eps_sq_div_2);
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-      result_mode = OPTPP::NLPFunction;
-#endif
       Cout << "Constraint var - target = diff: " << agg_estim_var << " - " << *static_eps_sq_div_2 << " = " << g[0] - *static_eps_sq_div_2 << "\n";
 #ifdef HAVE_NPSOL
 #elif HAVE_OPTPP
     }
 #endif
 
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-    if(mode & OPTPP::NLPGradient){
-      result_mode = OPTPP::NLPGradient;
-
-      Cout << "Gradients: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << grad_g[0][i] << " ";
-      }
-      Cout << "\n";
-      Cout << "Gradients FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << grad_fd[i] << " ";
-      }
-      Cout << "\n";
-      Cout << "term1 Grad: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term1_grad[i] << " ";
-      }
-      Cout << "\n";
-      Cout << "term1 FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term1_fd[i] << " ";
-      }
-      Cout << "\n";
-      Cout << "term2 Grad: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term2_grad[i] << " ";
-      }
-      Cout << "\n";
-      Cout << "term2 FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term2_fd[i] << " ";
-      }
-      Cout << "\n";
-      Cout << "term3 Grad: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term3_grad[i] << " ";
-      }
-      Cout << "\n";
-      Cout << "term3 FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term3_fd[i] << " ";
-      }
-      Cout << "\n";
-    }
-#endif
 
   }
 
@@ -724,14 +525,15 @@ namespace Dakota {
     size_t lev, num_lev = truth_model.solution_levels(), // single model form
         qoi, iter = 0;
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-    Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
+    Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost, place_holder;
     // retrieve cost estimates across soln levels for a particular model form
-    RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev), estimator_var0_qoi, eps_sq_div_2_qoi, sum_sqrt_var_cost_qoi;
-    RealMatrix agg_var_qoi(numFunctions, num_lev);
-    RealMatrix Nl_opt(num_lev, numFunctions);
+    RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev), agg_var_of_var(num_lev), estimator_var0_qoi, eps_sq_div_2_qoi, sum_sqrt_var_cost_qoi, sum_sqrt_var_of_var_cost_qoi;
+    RealMatrix agg_var_qoi(numFunctions, num_lev), agg_var_of_var_qoi(numFunctions, num_lev);
+    RealMatrix Nl_opt(num_lev, numFunctions), N_target_mean_qoi(num_lev, numFunctions), N_target_var_qoi(num_lev, numFunctions);
     estimator_var0_qoi.size(numFunctions);
     eps_sq_div_2_qoi.size(numFunctions);
     sum_sqrt_var_cost_qoi.size(numFunctions);
+    sum_sqrt_var_of_var_cost_qoi.size(numFunctions);
     RealVector agg_var_l_qoi(numFunctions);
     RealVector level_cost;
     level_cost.size(num_lev);
@@ -808,6 +610,8 @@ namespace Dakota {
               agg_var_qoi[qoi][lev] = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
                                                            sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
                                                            N_l[lev], lev, qoi);
+              agg_var_of_var_qoi[qoi][lev] = ((lev == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[lev][qoi], N_l[lev][qoi], qoi, false, place_holder)
+                                                      : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[lev][qoi], N_l[lev][qoi], qoi, lev, false, place_holder)) * N_l[lev][qoi]; //Similar to Fabio
             }
         }
 
@@ -815,6 +619,7 @@ namespace Dakota {
           sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
           for(qoi = 0; qoi < numFunctions; ++qoi){
             sum_sqrt_var_cost_qoi[qoi] += std::sqrt(agg_var_qoi[qoi][lev] * lev_cost);
+            sum_sqrt_var_of_var_cost_qoi[qoi] += std::sqrt(agg_var_of_var_qoi[qoi][lev] * lev_cost);
           }
           // MSE reference is MC applied to HF:
           if (iter == 0) {
@@ -822,7 +627,7 @@ namespace Dakota {
                                                  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
                                                  N_l[lev], lev);
             for(qoi = 0; qoi < numFunctions; ++qoi){
-              estimator_var0_qoi[qoi] = aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
+              estimator_var0_qoi[qoi] += aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
                                                            sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],
                                                            N_l[lev], lev, qoi);
             }
@@ -838,7 +643,7 @@ namespace Dakota {
         //if(target_mean)
         eps_sq_div_2 = estimator_var0 * convergenceTol;
         for(qoi = 0; qoi < numFunctions; ++qoi){
-          eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTol;
+          eps_sq_div_2_qoi[qoi] = convergenceTol; //estimator_var0_qoi[qoi] * convergenceTol;
         }
         if (outputLevel == DEBUG_OUTPUT) {
           Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
@@ -848,7 +653,7 @@ namespace Dakota {
 
       // update targets based on variance estimates
       //if(target_mean){
-        Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target, N_target_qoi;
+        Real fact = sum_sqrt_var_cost / eps_sq_div_2, fact_var, N_target, N_target_qoi;
         Cout << "N_target: " << std::endl;
         for (lev = 0; lev < num_lev; ++lev) {
           // Equation 3.9 in CTR Annual Research Briefs:
@@ -863,16 +668,19 @@ namespace Dakota {
         Cout << "N_target per Qoi: " << std::endl;
         for (qoi = 0; qoi < numFunctions; ++qoi) {
           fact = sum_sqrt_var_cost_qoi[qoi] / eps_sq_div_2_qoi[qoi];
-          Cout << "\t\tlagrange: " << fact << std::endl;
+          fact_var = sum_sqrt_var_of_var_cost_qoi[qoi] / eps_sq_div_2_qoi[qoi];
+          Cout << "\t\tlagrange: " << fact_var << std::endl;
           for (lev = 0; lev < num_lev; ++lev) {
-            Cout << "\t\tVar: " << agg_var_qoi[qoi][lev] << std::endl;
+            Cout << "\t\tVar of var: " << agg_var_of_var_qoi[qoi][lev] << std::endl;
             Cout << "\t\tCost: " << level_cost[lev] << "\n";
+            Cout << "\t\tSum Sqrt Var: " << sum_sqrt_var_of_var_cost_qoi[qoi] << "\n";
             // Equation 3.9 in CTR Annual Research Briefs:
             // "A multifidelity control variate approach for the multilevel Monte
             // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-            N_target_qoi = std::sqrt(agg_var_qoi[qoi][lev] / level_cost[lev]) * fact;
-            delta_N_l_qoi[qoi][lev] = one_sided_delta(N_l[lev][qoi], N_target_qoi);
-            Cout << "\tN_target: " << N_target_qoi << "\n";
+            N_target_mean_qoi[lev][qoi] = std::sqrt(agg_var_qoi[qoi][lev] / level_cost[lev]) * fact;
+            N_target_var_qoi[lev][qoi] = std::sqrt(agg_var_of_var_qoi[qoi][lev] / level_cost[lev]) * fact_var;
+            delta_N_l_qoi[qoi][lev] = one_sided_delta(N_l[lev][qoi], N_target_mean_qoi[lev][qoi]);
+            Cout << "\tN_target (Mean, Var): (" << N_target_mean_qoi[lev][qoi] << ", " <<  N_target_var_qoi[lev][qoi] << ")" << "\n";
           }
           Cout << "\n";
         }
@@ -901,13 +709,12 @@ namespace Dakota {
           pilot_samples.size(N_l.size());
 
           Cout << "Qoi: " << qoi << ", Pilot samples: " << std::endl;
-          for (int i = 0; i < N_l.size(); ++i) {
-            pilot_samples[i] = N_l[i][qoi];
-            Cout << N_l[i][qoi] << " ";
+          for (lev = 0; lev < N_l.size(); ++lev) {
+            pilot_samples[lev] = N_l[lev][qoi];
+            initial_point[lev] = N_target_var_qoi[lev][qoi] > pilot_samples[lev] ? N_target_var_qoi[lev][qoi] : pilot_samples[lev];
+            Cout << N_l[lev][qoi] << " ";
           }
           Cout << "\n";
-          initial_point[0] = 119;
-          initial_point[1] = 16;
           Real conv_tol = 1.3898e-7;
 
           RealVector var_lower_bnds, var_upper_bnds, lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets,
@@ -916,10 +723,10 @@ namespace Dakota {
 
           //Bound constraints only allowing positive values for Nlq
           var_lower_bnds.size(num_lev); //init to 0
-          //for (int i = 0; i < N_l.size(); ++i) {
-          //  var_lower_bnds[i] = N_l[i][qoi] > 3. ? N_l[i][qoi] : 3.;
-          //}
-          var_lower_bnds.putScalar(3.); //Set to 3 to avoid NaNs
+          for (lev = 0; lev < N_l.size(); ++lev) {
+            var_lower_bnds[lev] = pilot_samples[lev] > 3. ? pilot_samples[lev] : 3.;
+          }
+          //var_lower_bnds.putScalar(3.); //Set to 3 to avoid NaNs
           var_upper_bnds.size(num_lev); //init to 0
           var_upper_bnds.putScalar(1e10); //Set to high upper bound
 
