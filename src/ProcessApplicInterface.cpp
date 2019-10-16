@@ -155,7 +155,8 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
 
   bool require_unique =
     (interface_synchronization() == ASYNCHRONOUS_INTERFACE) &&
-    (asynchLocalEvalConcSpec != 1);
+    (asynchLocalEvalConcSpec != 1) && 
+    !batchEval;
 
   if (require_unique) {
     if (useWorkdir) {
