@@ -399,7 +399,11 @@ private:
   Real aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			       const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			       const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
-			       size_t lev);
+			       const size_t& lev);
+  Real aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                               const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                               const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+                               const size_t& lev, const size_t& qoi);
 
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy variances
@@ -413,7 +417,12 @@ private:
   Real aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			  const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			  const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
-			  size_t lev);
+			  const size_t& lev);
+
+  Real aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                          const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                          const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+                          const size_t& lev, const size_t& qoi);
 
   /// convert uncentered (raw) moments to centered moments; biased estimators
   static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
@@ -447,10 +456,14 @@ private:
                                                                      const Real& sumQ1sq, const Real& sumQ2sq,
                                                                      const Real& sumQ1sqQ2, const Real& sumQ1Q2sq, const Real& sumQ1sqQ2sq, const size_t& Nlq);
 
-  static void target_var_objective_eval(int mode, int n, const RealVector& x, double& f,
+  ///OPTPP definition
+  static void target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
                                         RealVector& grad_f, int& result_mode);
-  static void target_var_constraint_eval(int mode, int n, const RealVector& x, RealVector& g,
+  static void target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                          RealMatrix& grad_g, int& result_mode);
+  /// NPSOL definition
+  static void target_var_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
+  static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
 
   //
   //- Heading: Data
@@ -707,7 +720,7 @@ inline Real NonDMultilevelSampling::
 aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
-			size_t lev)
+			const size_t& lev)
 {
   Real agg_var_l = 0., var_Y;
   //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
@@ -721,6 +734,25 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
   return agg_var_l;
 }
+
+  inline Real NonDMultilevelSampling::
+  aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                          const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                          const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+                          const size_t& lev, const size_t& qoi)
+  {
+    Real agg_var_l = 0., var_Y;
+    //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+      agg_var_l += (lev) ?
+                   variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+                                 sum_Qlm1Qlm1[qoi], N_l[qoi]) :
+                   variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], N_l[qoi]);
+    //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
+    //}
+    //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
+    return agg_var_l;
+  }
 
 
 inline Real NonDMultilevelSampling::
@@ -748,7 +780,7 @@ aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 inline Real NonDMultilevelSampling::
 aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 		   const Real* sum_QlQl,     const Real* sum_QlQlm1,
-		   const Real* sum_Qlm1Qlm1, const SizetArray& N_l, size_t lev)
+		   const Real* sum_Qlm1Qlm1, const SizetArray& N_l, const size_t& lev)
 {
   Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
@@ -761,6 +793,22 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   }
   return agg_mse;
 }
+
+  inline Real NonDMultilevelSampling::
+  aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+                     const Real* sum_QlQl,     const Real* sum_QlQlm1,
+                     const Real* sum_Qlm1Qlm1, const SizetArray& N_l, const size_t& lev, const size_t& qoi)
+  {
+    Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
+    Nlq = N_l[qoi];
+    var_Y = (lev) ?
+            variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+                          sum_Qlm1Qlm1[qoi], Nlq) :
+            variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], Nlq);
+    agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
+
+    return agg_mse;
+  }
 
 
 inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
