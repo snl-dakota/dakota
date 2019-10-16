@@ -4909,9 +4909,8 @@ ActiveSet Model::default_active_set()
 
     ActiveSet set; 
     set.derivative_vector(currentVariables.all_continuous_variable_ids());
-    bool has_deriv_vars = set.derivative_vector().size() != 0;
     ShortArray asv(numFns, 1);
-    if (has_deriv_vars) {
+    if (!set.derivative_vector().empty()) {
       if ( gradientType != "none" &&
 	   ( gradientType == "analytic" || supportsEstimDerivs ) )
 	for(auto &a : asv)
