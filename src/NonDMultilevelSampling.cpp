@@ -380,13 +380,24 @@ namespace Dakota {
     optpp_x.size(n);
     optpp_grad_f.size(n);
 
+    f = -1; //Dummy value
+
+    Cout << "Obj Mode and nstate npsol: " << mode << ", " << nstate << "\n";
+
     for(size_t i = 0; i < n; ++i){
       optpp_x[i] = x[i];
     }
     target_var_objective_eval_optpp(mode, n, optpp_x, f, optpp_grad_f, nstate);
+
+    Cout << "Objective val npsol: " << f << "\n";
+
+    Cout << "grad val npsol: " << "\n";
     for(size_t i = 0; i < n; ++i){
       gradf[i] = optpp_grad_f[i];
+      Cout << gradf[i] << " ";
     }
+    Cout << "\n";
+    Cout << "Obj Mode after npsol: " << mode << ", " << nstate << "\n";
 
   }
 
@@ -397,48 +408,62 @@ namespace Dakota {
     optpp_x.size(n);
     optpp_g.size(n);
 
+    Cout << "Cons Mode and nstate npsol: " << mode << ", " << nstate << "\n";
+
     for(size_t i = 0; i < n; ++i){
       optpp_x[i] = x[i];
     }
 
     target_var_constraint_eval_optpp(mode, n, optpp_x, optpp_g, optpp_grad_g, nstate);
 
+    Cout << "cons and grad val npsol: " << "\n";
+    g[0] = optpp_g[0];
+    Cout << g[0] << "\n";
     for(size_t i = 0; i < n; ++i){
-      g[i] = optpp_g[i];
       grad_g[i] = optpp_grad_g[0][i];
+      Cout << grad_g[i] << " ";
     }
+    Cout << "\n";
+    Cout << "Cons Mode after npsol: " << mode << ", " << nstate << "\n";
   }
 
   void NonDMultilevelSampling::target_var_objective_eval_optpp(int mode, int n, const RealVector& x, double& f,
                                                          RealVector& grad_f, int& result_mode){
     f = 0;
-#ifdef HAVE_NPSOL
     Cout << "Design val: " << "\n";
-    for(int i = 0; i < n; ++i){
+
+#ifdef HAVE_NPSOL
+#elif HAVE_OPTPP
+    if(mode & OPTPP::NLPFunction){
+        result_mode = OPTPP::NLPFunction;
+#endif
+    for (int i = 0; i < n; ++i) {
       Cout << x[i] << " ";
       f += x[i] * (*static_lev_cost)[i];
     }
-    Cout << "Objective val: " << f << "\n";
     Cout << "\n";
-    for(int i = 0; i < n; ++i){
-      grad_f[i] = (*static_lev_cost)[i];
-    }
+    Cout << "Objective val: " << f << "\n";
+#ifdef HAVE_NPSOL
 #elif HAVE_OPTPP
-    if(mode & OPTPP::NLPFunction){
-      Cout << "Design val: " << "\n";
-      for(int i = 0; i < n && (mode & OPTPP::NLPFunction); ++i){
-        Cout << x[i] << " ";
-        f += x[i] * (*static_lev_cost)[i];
-        result_mode = OPTPP::NLPFunction;
-      }
-      Cout << "Objective val: " << f << "\n";
-      Cout << "\n";
-    }
-    for(int i = 0; i < n && (mode & OPTPP::NLPGradient); ++i){
-      grad_f[i] = (*static_lev_cost)[i];
-      result_mode = OPTPP::NLPGradient;
     }
 #endif
+
+#ifdef HAVE_NPSOL
+#elif HAVE_OPTPP
+    if(mode & OPTPP::NLPGradient){
+        result_mode = OPTPP::NLPGradient;
+#endif
+    Cout << "grad val: " << "\n";
+    for(int i = 0; i < n; ++i){
+      grad_f[i] = (*static_lev_cost)[i];
+      Cout << grad_f[i] << " ";
+    }
+    Cout << "\n";
+#ifdef HAVE_NPSOL
+#elif HAVE_OPTPP
+    }
+#endif
+
   }
 
   void NonDMultilevelSampling::target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
@@ -500,11 +525,19 @@ namespace Dakota {
       agg_estim_var += var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev, compute_gradient, grad_g[0][lev]);
     }
 
+
 #ifdef HAVE_NPSOL
 #elif HAVE_OPTPP
     if (mode & OPTPP::NLPFunction){
 #endif
       g[0] = agg_estim_var; // - (*static_eps_sq_div_2);
+
+      Cout << "cons and grad val: " << "\n";
+      Cout << g[0] << "\n";
+      for(size_t i = 0; i < n; ++i){
+        Cout << grad_g[0][i] << " ";
+      }
+      Cout << "\n";
       Cout << "Constraint var - target = diff: " << agg_estim_var << " - " << *static_eps_sq_div_2 << " = " << g[0] - *static_eps_sq_div_2 << "\n";
 #ifdef HAVE_NPSOL
 #elif HAVE_OPTPP
@@ -715,7 +748,6 @@ namespace Dakota {
             Cout << N_l[lev][qoi] << " ";
           }
           Cout << "\n";
-          Real conv_tol = 1.3898e-7;
 
           RealVector var_lower_bnds, var_upper_bnds, lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets,
               nonlin_ineq_lower_bnds, nonlin_ineq_upper_bnds, nonlin_eq_targets;
@@ -745,15 +777,9 @@ namespace Dakota {
 
           //Number of nonlinear equality constraints = 1, s.t. c_eq: c_1(Nlq) = 0;
           nonlin_eq_targets.size(1); //init to 0
-          nonlin_eq_targets[0] = conv_tol;
+          nonlin_eq_targets[0] = convergenceTol;
 
-          static_lev_cost = &level_cost;
-          static_qoi = &qoi;
-          static_sum_Ql = &sum_Ql;
-          static_sum_Qlm1 = &sum_Qlm1;
-          static_sum_QlQlm1 = &sum_QlQlm1;
-          static_eps_sq_div_2 = &conv_tol;
-          static_Nlq_pilot = &pilot_samples;
+          assign_static_member(convergenceTol, qoi, level_cost, sum_Ql, sum_Qlm1, sum_QlQlm1, pilot_samples);
 
           Cout << "Before SNL Run. Initial point: \n";
           for (int i = 0; i < initial_point.length(); ++i) {
@@ -770,7 +796,7 @@ namespace Dakota {
                         nonlin_ineq_upper_bnds, nonlin_eq_targets,
                         &target_var_objective_eval_npsol,
                         &target_var_constraint_eval_npsol,
-                        3, 1e-10); //derivative_level = 3 means user_supplied gradients
+                        3, 1e-15); //derivative_level = 3 means user_supplied gradients
 #elif HAVE_OPTPP
           optimizer = new SNLLOptimizer(initial_point,
                         var_lower_bnds,      var_upper_bnds,
@@ -782,22 +808,29 @@ namespace Dakota {
                         &target_var_constraint_eval_optpp);
 #endif
 
+          optimizer->output_level(DEBUG_OUTPUT);
+          optimizer->constraint_tolerance(1e-14);
+          optimizer->convergence_tolerance(1e-14);
+          optimizer->maximum_iterations(100000);
           optimizer->core_run();
           Cout << "After SNL Run. Initial point: \n";
           for (int i = 0; i < initial_point.length(); ++i) {
             Cout << initial_point[i] << " ";
           }
           Cout << "After SNL Run. Best point: \n";
-          Cout << optimizer->variables_results() << std::endl;
+          Cout << optimizer->variables_results().continuous_variables() << std::endl;
           Cout << "\n";
 
           for (lev = 0; lev < num_lev; ++lev) {
             Nl_opt[lev][qoi] = optimizer->variables_results().continuous_variable(lev);
+            delta_N_l_qoi[qoi][lev] = one_sided_delta(N_l[lev][qoi], Nl_opt[lev][qoi]);
           }
         //}
       }
       ++iter;
       Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
+           << std::endl;
+      Cout << "\nMLMC iteration " << iter << " sample increments qoi:\n" << delta_N_l_qoi
            << std::endl;
     }
     Cout << "\nMLMC final sample size\n" << N_l
@@ -866,6 +899,19 @@ namespace Dakota {
       equivHFEvals += raw_N_l[lev] * (cost[lev] + cost[lev - 1]);
     equivHFEvals /= cost[num_lev - 1]; // normalize into equivalent HF evals
     exit(-1);
+  }
+
+  void NonDMultilevelSampling::assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost,
+                                                    IntRealMatrixMap &sum_Ql, IntRealMatrixMap &sum_Qlm1,
+                                                    IntIntPairRealMatrixMap &sum_QlQlm1,
+                                                    RealVector &pilot_samples) const {
+    static_lev_cost = &level_cost;
+    static_qoi = &qoi;
+    static_sum_Ql = &sum_Ql;
+    static_sum_Qlm1 = &sum_Qlm1;
+    static_sum_QlQlm1 = &sum_QlQlm1;
+    static_eps_sq_div_2 = &conv_tol;
+    static_Nlq_pilot = &pilot_samples;
   }
 
 

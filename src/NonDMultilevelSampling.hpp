@@ -498,6 +498,10 @@ private:
   bool exportSampleSets;
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
+
+  void assign_static_member(Real &conv_tol, size_t &qoi, RealVector &level_cost, IntRealMatrixMap &sum_Ql,
+                            IntRealMatrixMap &sum_Qlm1, IntIntPairRealMatrixMap &sum_QlQlm1,
+                            RealVector &pilot_samples) const;
 };
 
 inline void NonDMultilevelSampling::aggregated_models_mode()
