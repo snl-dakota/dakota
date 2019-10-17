@@ -62,7 +62,7 @@ initialize_homogeneous_uniform_aleatory_dist_params( short utype,
     break;
   }
   case Pecos::POISSON: {
-    RealArray puv_lambdas(num_vars, 5.);
+    RealArray puv_lambdas(num_vars, 100.);
     mvd_rep->push_parameters(utype, Pecos::P_LAMBDA, puv_lambdas);
     break;
   }
@@ -132,7 +132,7 @@ void generate_samples(short utype, int num_vars, int num_candidate_samples,
       }
     case Pecos::POISSON:
       {
-	Real poisson_lambda = 5;
+	Real poisson_lambda = 100.;
 	boost::poisson_distribution<> po_dist(poisson_lambda);
 	boost::variate_generator< boost::mt19937, 
 	  boost::poisson_distribution<> > po_rvt(gen, po_dist);
@@ -235,15 +235,14 @@ void test_uniform_leja_sequence(){
   int num_candidate_samples = 10000;
   int seed = 1;
 
-  int num_utype_tests = 2;
-  short utypes[] = { Pecos::STD_UNIFORM };//, Pecos::POISSON };
+  std::vector<short> utypes = { Pecos::STD_UNIFORM, Pecos::POISSON };
   RealMatrix candidate_samples;
 
-  for (int i=0; i< num_utype_tests; i++){
-    generate_samples( utypes[i], num_vars, num_candidate_samples, seed,
-		      candidate_samples );
+  for (auto ut : utypes) {
+    generate_samples(ut, num_vars, num_candidate_samples, seed,
+		     candidate_samples);
     
-    test_leja_sequence_helper(utypes[i], num_vars, num_initial_samples, 
+    test_leja_sequence_helper(ut, num_vars, num_initial_samples,
 			      num_new_samples, candidate_samples );
   }
 }
