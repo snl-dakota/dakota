@@ -123,14 +123,12 @@ void NIDRProblemDescDB::warn(const char *fmt, ...)
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
     IDR populates the IDRProblemDescDB object with the input file data. */
 void NIDRProblemDescDB::
-derived_parse_inputs(const ProgramOptions& prog_opts)
+derived_parse_inputs(const std::string& dakota_input_file,
+		     const std::string& dakota_input_string,
+		     const std::string& parser_options)
 {
   // set the pDDBInstance
   pDDBInstance = this;
-
-  const String& dakota_input_file = prog_opts.input_file();
-  const String& dakota_input_string = prog_opts.input_string();
-  const String& parser_options = prog_opts.parser_options();
 
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)

@@ -10,5 +10,10 @@ if(DAKOTA_ENABLE_TESTS AND PYTHONINTERP_FOUND AND
 	  PROPERTY ENVIRONMENT PYTHONPATH "$ENV{PYTHONPATH}:${CMAKE_SOURCE_DIR}/interfaces/Python")
 endif()
 
+# Install both tool (for backward comat) and tool.py (for Windows
+# extension-based lookup). For simplicity installs copies instead of
+# symlinks as the files are small
 install(PROGRAMS "pyprepro" DESTINATION "bin/")
+install(PROGRAMS "pyprepro" DESTINATION "bin/" RENAME "pyprepro.py")
 install(PROGRAMS "pyprepro" DESTINATION "bin/" RENAME "dprepro")
+install(PROGRAMS "pyprepro" DESTINATION "bin/" RENAME "dprepro.py")

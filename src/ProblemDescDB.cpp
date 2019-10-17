@@ -15,6 +15,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "dakota_preproc_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
@@ -218,12 +219,42 @@ parse_inputs(ProgramOptions& prog_opts,
         }
         prog_opts.input_string(stdin_string);
       }
-      
-      if (prog_opts.echo_input())
-	echo_input_file(prog_opts);
 
-      // Parse the input file using one of the derived parser-specific classes
-      derived_parse_inputs(prog_opts);
+      if (prog_opts.preproc_input()) {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
+			  " template");
+
+	std::string tmpl_file = prog_opts.input_file();
+	if (!prog_opts.input_string().empty())
+	  // must generate to file on disk for pyprepro
+	  tmpl_file = string_to_tmpfile(prog_opts.input_string());
+
+	// run the pre-processor on the file
+	std::string preproc_file = pyprepro_input(tmpl_file,
+						  prog_opts.preproc_cmd());
+
+	if (prog_opts.echo_input())
+	  echo_input_file(preproc_file, "");
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(preproc_file, "", prog_opts.parser_options());
+
+	boost::filesystem::remove(preproc_file);
+	if (!prog_opts.input_string().empty())
+	  boost::filesystem::remove(tmpl_file);
+      }
+      else {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string());
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(prog_opts.input_file(), prog_opts.input_string(),
+			     prog_opts.parser_options());
+
+      }
 
       // Allow user input by callback function.
       
@@ -330,10 +361,13 @@ void ProblemDescDB::post_process()
 
 
 void ProblemDescDB::
-derived_parse_inputs(const ProgramOptions& prog_opts)
+derived_parse_inputs(const std::string& dakota_input_file,
+		     const std::string& dakota_input_string,
+		     const std::string& parser_options)
 {
   if (dbRep)
-    dbRep->derived_parse_inputs(prog_opts);
+    dbRep->derived_parse_inputs(dakota_input_file, dakota_input_string,
+				parser_options);
   else { // this fn must be redefined
     Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
 	 << " function.\n       No default defined at base class." << std::endl;
@@ -3791,21 +3825,21 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 }
 
 
-void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
+void ProblemDescDB::echo_input_file(const std::string& dakota_input_file,
+				    const std::string& dakota_input_string,
+				    const std::string& tmpl_qualifier)
 {
-  const String& dakota_input_file = prog_opts.input_file();
-  const String& dakota_input_string = prog_opts.input_string();
   if (!dakota_input_string.empty()) {
     size_t header_len = 23;
     std::string header(header_len, '-');
     Cout << header << '\n';
-    Cout << "Begin DAKOTA input file\n";
+    Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
     if(dakota_input_file == "-")
       Cout << "(from standard input)\n";
     else
       Cout << "(from string)\n";
     Cout << header << std::endl;
-    Cout << prog_opts.input_string() << std::endl;
+    Cout << dakota_input_string << std::endl;
     Cout << "---------------------\n";
     Cout << "End DAKOTA input file\n";
     Cout << "---------------------\n" << std::endl;
@@ -3827,7 +3861,7 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 				   dakota_input_file.size());
       std::string header(header_len, '-');
       Cout << header << '\n';
-      Cout << "Begin DAKOTA input file\n";
+      Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
       Cout << dakota_input_file << "\n"; 
       Cout << header << std::endl;
       int inputchar = inputstream.get();
