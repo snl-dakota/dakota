@@ -1,0 +1,25 @@
+
+environment
+  tabular_data
+
+method
+  sampling seed 1234 samples 100
+
+variables
+  uniform_uncertain 1
+   descriptors 'x1' 
+  lower_bounds -1.0 
+  upper_bounds 2.0  
+
+responses 
+  response_functions 1
+  no_gradients
+  no_hessians
+
+interface
+  fork 
+  batch size 10
+   analysis_drivers 'python dakota_batch.py' 
+  parameters_file 'params.in'
+  results_file 'results.out'
+  file_save
