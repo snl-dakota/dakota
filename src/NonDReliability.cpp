@@ -39,11 +39,6 @@ NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1);
   }
 
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
-  // Note: initialize_random_variable_parameters() is performed at run time
-  initialize_random_variable_correlations();
-  verify_correlation_support(STD_NORMAL_U);
   initialize_final_statistics(); // default statistics set
 
   // RealVectors are sized within derived classes
@@ -61,11 +56,6 @@ bool NonDReliability::resize()
 {
   bool parent_reinit_comms = NonD::resize();
 
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
-  // Note: initialize_random_variable_parameters() is performed at run time
-  initialize_random_variable_correlations();
-  verify_correlation_support(STD_NORMAL_U);
   initialize_final_statistics(); // default statistics set
 
   // RealVectors are sized within derived classes
@@ -96,7 +86,7 @@ void NonDReliability::initialize_graphics(int iterator_server_id)
       size_t i;
       for (i=0; i<numFunctions; i++)
 	dakota_graphics.set_y_label2d(i, "Probability");
-      for (i=0; i<numUncertainVars; i++)
+      for (i=0; i<numContinuousVars; i++)
 	dakota_graphics.set_y_label2d(i+numFunctions, "Most Prob Point");
     }
 
@@ -110,6 +100,43 @@ void NonDReliability::initialize_graphics(int iterator_server_id)
     }
     */
   }
+}
+
+
+void NonDReliability::pre_run()
+{
+  Analyzer::pre_run();
+  
+  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // initialization of Model mappings for iteratedModel, but local recursions
+  // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
+  // > Note: part of this occurs at DataFit build time. Therefore, take
+  //         care to avoid redundancy using mappingInitialized flag.
+  if (!mppModel.is_null()) { // all except Mean Value
+    if (!mppModel.mapping_initialized()) {
+      ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+      /*bool var_size_changed =*/ mppModel.initialize_mapping(pl_iter);
+      //if (var_size_changed) resize();
+    }
+
+    // now that vars/labels/bounds/targets have flowed down at run-time from
+    // any higher level recursions, propagate them up local Model recursions
+    // so that they are correct when they propagate back down.
+    mppModel.update_from_subordinate_model(); // depth = max
+  }
+}
+
+
+void NonDReliability::post_run(std::ostream& s)
+{
+  ++numRelAnalyses;
+
+  if (!mppModel.is_null() && mppModel.mapping_initialized()) {
+    /*bool var_size_changed =*/ mppModel.finalize_mapping();
+    //if (var_size_changed) resize();
+  }
+
+  Analyzer::post_run(s);
 }
 
 } // namespace Dakota

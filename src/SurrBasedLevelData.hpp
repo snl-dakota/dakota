@@ -60,9 +60,12 @@ public:
   void initialize_data(const Variables& vars, const Response& approx_resp,
 		       const Response& truth_resp, bool uncorr = true);
   /// initialize model forms and discretization levels
-  void initialize_indices(size_t approx_form, size_t truth_form,
-			  size_t approx_level = _NPOS,
-			  size_t truth_level  = _NPOS);
+  void initialize_keys(unsigned short approx_form, unsigned short truth_form,
+		       unsigned short approx_level = USHRT_MAX,
+		       unsigned short truth_level  = USHRT_MAX);
+  /// initialize model forms and discretization levels
+  void initialize_keys(const UShortArray& approx_key,
+		       const UShortArray& truth_key);
 
   /// perform several reset operations to restore initialized state
   void reset();
@@ -106,7 +109,7 @@ public:
   void response_center(const Response& resp, short corr_response_type);
 
   IntResponsePair& response_star_pair(short corr_response_type);
- IntResponsePair& response_center_pair(short corr_response_type);
+  IntResponsePair& response_center_pair(short corr_response_type);
 
   void response_star_id(int eval_id, short corr_response_type);
   void response_center_id(int eval_id, short corr_response_type);
@@ -145,13 +148,13 @@ public:
 		       bool uncorr = true);
   void active_set_star(short request, short response_type, bool uncorr = true);
 
-  size_t approx_model_form();
-  size_t approx_model_level();
+  unsigned short approx_model_form();
+  unsigned short approx_model_level();
 
-  size_t truth_model_form();
-  size_t truth_model_level();
+  unsigned short truth_model_form();
+  unsigned short truth_model_level();
 
-  SizetSizet2DPair indices();
+  UShortArrayPair model_keys();
 
   const RealVector& tr_lower_bounds() const;
   Real tr_lower_bound(size_t i) const;
@@ -217,9 +220,9 @@ private:
   unsigned short softConvCount;
 
   /// model form and discretization level indices for the approximate model
-  SizetSizetPair approxModelIndices;
+  UShortArray approxModelKey;
   /// model form and discretization level indices for the truth model
-  SizetSizetPair truthModelIndices;
+  UShortArray truthModelKey;
 
   /// Trust region lower bounds
   RealVector trLowerBounds;
@@ -230,7 +233,7 @@ private:
 
 inline SurrBasedLevelData::SurrBasedLevelData():
   trustRegionFactor(1.), trustRegionStatus(NEW_CENTER | NEW_TR_FACTOR),
-  softConvCount(0), approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
+  softConvCount(0)//, approxModelKey(0, _NPOS), truthModelKey(0, _NPOS)
 { responseStarTruthCorrected.first = responseCenterTruthCorrected.first = 0; }
 
 
@@ -240,9 +243,14 @@ inline SurrBasedLevelData::~SurrBasedLevelData()
 
 inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
 {
-  trLowerBounds.sizeUninitialized(num_c_vars); // assign -DBL_MAX?
-  trUpperBounds.sizeUninitialized(num_c_vars); // assign +DBL_MAX?
+  trLowerBounds.sizeUninitialized(num_c_vars); // assign -dbl_inf?
+  trUpperBounds.sizeUninitialized(num_c_vars); // assign  dbl_inf?
 }
+
+
+inline void SurrBasedLevelData::
+initialize_keys(const UShortArray& approx_key, const UShortArray& truth_key)
+{ approxModelKey = approx_key; truthModelKey = truth_key; }
 
 
 inline unsigned short SurrBasedLevelData::status()
@@ -399,24 +407,24 @@ response_center_pair(IntResponsePair& pair, short corr_response_type)
 { response_center_pair(pair.first, pair.second, corr_response_type); }
 
 
-inline size_t SurrBasedLevelData::approx_model_form()
-{ return approxModelIndices.first; }
+inline unsigned short SurrBasedLevelData::approx_model_form()
+{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[0]; }
 
 
-inline size_t SurrBasedLevelData::truth_model_form()
-{ return truthModelIndices.first; }
+inline unsigned short SurrBasedLevelData::truth_model_form()
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[0]; }
 
 
-inline size_t SurrBasedLevelData::approx_model_level()
-{ return approxModelIndices.second; }
+inline unsigned short SurrBasedLevelData::approx_model_level()
+{ return (approxModelKey.size() > 1) ? approxModelKey.back() : USHRT_MAX; }
 
 
-inline size_t SurrBasedLevelData::truth_model_level()
-{ return truthModelIndices.second; }
+inline unsigned short SurrBasedLevelData::truth_model_level()
+{ return (truthModelKey.size() > 1) ? truthModelKey.back() : USHRT_MAX; }
 
 
-inline SizetSizet2DPair SurrBasedLevelData::indices()
-{ return std::make_pair(approxModelIndices, truthModelIndices); }
+inline UShortArrayPair SurrBasedLevelData::model_keys()
+{ return std::make_pair(approxModelKey, truthModelKey); }
 
 
 inline void SurrBasedLevelData::reset_filter()

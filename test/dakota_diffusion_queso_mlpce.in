@@ -1,19 +1,26 @@
 #@ *: DakotaConfig=HAVE_QUESO
+#@ s2: TimeoutDelay=180
 
 method,
 	model_pointer = 'HIERARCH'
 	bayes_calibration queso
-	  chain_samples = 2000 seed = 348
+	  chain_samples = 40000 seed = 348
 	  delayed_rejection
 	  emulator
 	    pce expansion_order = 2				#s0
-#	    mf_pce  expansion_order_sequence = 3 2 2 1 1	#s1
-#	    mf_sc sparse_grid_level_sequence = 3 2 2 1 1	#s2
-#	    ml_pce  expansion_order_sequence = 2		#s3
+#	    mf_pce   expansion_order_sequence = 3 2 2 1 1	#s1
+#	    mf_sc  sparse_grid_level_sequence = 3 2 2 1 1	#s2
+#	    ml_pce   expansion_order_sequence = 2		#s3
 #	      pilot_samples = 100 80 60 40 20			#s3
 #	      convergence_tolerance = .005			#s3
 #	      max_iterations = 5				#s3
-	    collocation_ratio = 0.9				#s0,#s1,#s3
+	      collocation_ratio = 0.9				#s0,#s1,#s3
+#	    mf_pce sparse_grid_level_sequence = 0     		#s4,#s5
+#	    mf_sc  sparse_grid_level_sequence = 0     		#s6,#s7,#s8,#s9
+#	      hierarchical		      			#s8,#s9
+#	      allocation_control greedy				#s4,#s6,#s8
+#	      p_refinement dimension_adaptive generalized	#s4,#s5,#s6,#s7,#s8,#s9
+#	      convergence_tolerance 1.e-4			#s4,#s5,#s6,#s7,#s8,#s9
 	  proposal_covariance
 	    derivatives
 	      update_period = 40

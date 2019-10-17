@@ -68,6 +68,8 @@ public:
   //
 
   void increment_grid();
+  void decrement_grid();
+  void evaluate_grid_increment();
 
   //
   //- Heading: Member functions
@@ -114,6 +116,8 @@ protected:
 
   void increment_grid_preference(const RealVector& dim_pref);
 
+  void increment_grid_preference();
+
   int num_samples() const;
 
 private:
@@ -127,6 +131,8 @@ private:
   /// convenience function used to make increment_grid_preference() more modular
   void increment_grid_preference(const RealVector& dim_pref,
 				 UShortArray& dim_quad_order);
+  /// convenience function used to make decrement_grid() more modular
+  void decrement_grid(UShortArray& dim_quad_order);
 
   /// calculate smallest dim_quad_order with at least min_samples
   void compute_minimum_quadrature_order(size_t min_samples,
@@ -153,6 +159,8 @@ private:
   /// and then rebalance
   void increment_dimension_quadrature_order(const RealVector& dim_pref,
 					    UShortArray& dim_quad_order);
+  /// decrement each dim_quad_order entry by 1
+  void decrement_dimension_quadrature_order(UShortArray& dim_quad_order);
 
   //
   //- Heading: Data
@@ -171,6 +179,10 @@ private:
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
   UShortArray dimQuadOrderRef;
+  /// value of dimQuadOrderRef prior to increment_grid(), for restoration in
+  /// decrement_grid() since increment must induce a change in grid size and
+  /// this adaptive increment in not reversible
+  UShortArray dimQuadOrderPrev;
 
   /// point generation mode: FULL_TENSOR, FILTERED_TENSOR, RANDOM_TENSOR
   short quadMode;
@@ -243,7 +255,22 @@ inline void NonDQuadrature::update()
 
 
 inline void NonDQuadrature::increment_grid()
-{ increment_grid(dimQuadOrderRef); }
+{
+  // for restoration in decrement_grid(): adaptive increment is not reversible
+  dimQuadOrderPrev = dimQuadOrderRef;
+
+  increment_grid(dimQuadOrderRef);
+}
+
+
+inline void NonDQuadrature::decrement_grid()
+{
+  // restoration from increment_grid(): adaptive increment is not reversible
+  dimQuadOrderRef = dimQuadOrderPrev;
+
+  if (nestedRules) tpqDriver->nested_quadrature_order(dimQuadOrderRef);
+  else             tpqDriver->quadrature_order(dimQuadOrderRef);
+}
 
 
 inline void NonDQuadrature::
@@ -251,13 +278,35 @@ increment_grid_preference(const RealVector& dim_pref)
 { increment_grid_preference(dim_pref, dimQuadOrderRef); }
 
 
+inline void NonDQuadrature::increment_grid_preference()
+{ increment_grid_preference(dimPrefSpec, dimQuadOrderRef); }
+
+
+inline void NonDQuadrature::evaluate_grid_increment()
+{
+  // *** TO DO: implement incremental build in Pecos::TensorProductDriver
+  // based on webbur::point_radial_tol_unique_index_inc2(), as in Pecos::
+  // IncrementalSparseGridDriver::increment_unique().
+  // (Relying on duplicate detection as below is insufficient for rebuilds
+  // since the point counts in latest incremental logic are wrong...)
+  //
+  // Note: this would require introduction of collocation indices into
+  // TensorProductDriver as the incremental evaluations in an updated grid
+  // would no longer be in tensor order.  For this reason, rely on duplication
+  // detection for now.
+
+  tpqDriver->compute_grid(allSamples);//Driver->compute_increment(allSamples);
+  evaluate_parameter_sets(iteratedModel, true, false);
+  ++numIntegrations;
+}
+
 inline int NonDQuadrature::num_samples() const
 {
   switch (quadMode) {
-  case FULL_TENSOR:             return tpqDriver->grid_size(); break;
-  case FILTERED_TENSOR: case RANDOM_TENSOR: return numSamples; break;
+  case FULL_TENSOR:                        return tpqDriver->grid_size(); break;
+  case FILTERED_TENSOR: case RANDOM_TENSOR:            return numSamples; break;
   }
-  return 0;
+  return 0; // should not happen
 }
 
 

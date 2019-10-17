@@ -150,8 +150,9 @@ environment statements and execution times.
 
 The output file is much more extensive, because it
 contains information on every function evaluation (See Figure
-\ref{tutorial:quickstart:rosenbrock_multidim:output}). It is 
-organized into three basic parts:
+\ref{tutorial:quickstart:rosenbrock_multidim:output}). Excluding the
+copy of the input file at the beginning and timing information at the end,
+the file is organized into three basic parts:
 \begin{enumerate}
 \item Information on the problem
 \begin{quote}
@@ -688,6 +689,11 @@ shows example results from this sampling method.  Note that your
 results will differ from those in this file if your \texttt{seed}
 value differs or if no \texttt{seed} is specified.
 
+In addition to the output files discussed in the previous examples, several
+\path{LHS*.out} files are generated. They are a byproduct of a software
+package, LHS~\cite{Swi04}, that Dakota utilizes to generate random samples and
+can be ignored.
+
 As shown in Figure~\ref{tutorial:results_mc}, 
 the statistical data on the 200 Monte Carlo samples is printed at the
 end of the output file in the section that starts with ``Statistics
@@ -956,20 +962,21 @@ arguments, a usage message similar to the following appears:
 \begin{small}
 \begin{verbatim}
 usage: dakota [options and <args>]
-        -help (Print this summary)
-        -version (Print Dakota version number)
-        -input <$val> (REQUIRED Dakota input file $val)
-        -output <$val> (Redirect Dakota standard output to file $val)
-        -error <$val> (Redirect Dakota standard error to file $val)
-        -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
-        -no_input_echo (Do not echo Dakota input file)
-        -check (Perform input checks)
-        -pre_run [$val] (Perform pre-run (variables generation) phase)
-        -run [$val] (Perform run (model evaluation) phase)
-        -post_run [$val] (Perform post-run (final results) phase)
-        -read_restart [$val] (Read an existing Dakota restart file $val)
-        -stop_restart <$val> (Stop restart file processing at evaluation $val)
-        -write_restart [$val] (Write a new Dakota restart file $val)
+	-help (Print this summary)
+	-version (Print DAKOTA version number)
+	-input <$val> (REQUIRED DAKOTA input file $val)
+	-preproc [$val] (Pre-process input file with pyprepro or tool $val)
+	-output <$val> (Redirect DAKOTA standard output to file $val)
+	-error <$val> (Redirect DAKOTA standard error to file $val)
+	-parser <$val> (Parsing technology: nidr[strict][:dumpfile])
+	-no_input_echo (Do not echo DAKOTA input file)
+	-check (Perform input checks)
+	-pre_run [$val] (Perform pre-run (variables generation) phase)
+	-run [$val] (Perform run (model evaluation) phase)
+	-post_run [$val] (Perform post-run (final results) phase)
+	-read_restart [$val] (Read an existing DAKOTA restart file $val)
+	-stop_restart <$val> (Stop restart file processing at evaluation $val)
+	-write_restart [$val] (Write a new DAKOTA restart file $val)
 \end{verbatim}
 \end{small}
 %$ this comment is here to trick xemacs into highlighting syntax correctly
@@ -982,7 +989,10 @@ the usage message above. The ``\texttt{-version}'' option prints the
 version number of the executable. The ``\texttt{-check}'' option
 invokes a dry-run mode in which the input file is processed and
 checked for errors, but the study is not performed. The
-``\texttt{-input}'' option provides the name of the Dakota input file.
+``\texttt{-input}'' option provides the name of the Dakota input file,
+which can optionally be pre-processed as a template using the
+``\texttt{-preproc}'' option.
+
 The ``\texttt{-output}'' and ``\texttt{-error}'' options provide file
 names for redirection of the Dakota standard output (stdout) and
 standard error (stderr), respectively. By default, Dakota will echo
@@ -1003,7 +1013,7 @@ line options can be abbreviated so long as the abbreviation is unique.
 Accordingly, the following are valid, unambiguous specifications: ``\texttt{-h}'',
 ``\texttt{-v}'', ``\texttt{-c}'', ``\texttt{-i}'', ``\texttt{-o}'',
 ``\texttt{-e}'', ``\texttt{-re}'', ``\texttt{-s}'', ``\texttt{-w}'',
-``\texttt{-pr}'', ``\texttt{-ru}'', and ``\texttt{-po}'' and can be used
+``\texttt{-ru}'', and ``\texttt{-po}'' and can be used
 in place of the longer forms of the command line options.
 
 To run Dakota with a particular input file, the following syntax can
@@ -1068,6 +1078,46 @@ symbol (\&) to the command with an embedded space, e.g.,
 
 Refer to~\cite{And86} for more information on Unix redirection and
 background commands.
+
+The specified Dakota input file may instead be an
+dprepro/aprepro-style template file to be pre-processed prior to
+running Dakota. For example it might contain template expressions in
+curly braces:
+\begin{small}
+\begin{verbatim}
+    # {MyLB = 2.0} {MyUB = 8.6}
+    variables
+      uniform_uncertain 3
+        upper_bounds {MyUB} {MyUB} {MyUB}
+        lower_bounds {MyLB} {MyLB} {MyLB}
+\end{verbatim}
+\end{small}
+
+(See Section~\ref{interfaces:dprepro-and-pyprepro} for more
+information and use cases.) To pre-process the input file, specify the
+\texttt{-preproc} flag which generates an intermediate temporary input
+file for use in Dakota. If Dakota's pyprepro.py utility is not
+available on the execution {\tt PATH} and/or additional pre-processing
+options are needed, the tool location and syntax can be specified, for
+example:
+
+\begin{small}
+\begin{verbatim}
+    # Assumes pyprepro.py is on PATH:
+    dakota -i dakota_rosen.tmpl -preproc
+    
+    # Specify path/name of pre-processor:
+    dakota -i dakota_rosen.tmpl \
+      -preproc "/home/user/dakota/bin/pyprepro"
+    
+    # Specify Python interpreter to use, for example on Windows
+    dakota -i dakota_rosen.tmpl -preproc "C:/python27/python.exe \
+      C:/dakota/6.10/bin/pyprepro/pyprepro.py"
+    
+    # Specify additional options to pyprepro, e.g., include file:
+    dakota -i dakota_rosen.tmpl -preproc "pyprepro.py -I default.params"
+\end{verbatim}
+\end{small}
 
 The ``\texttt{-pre\_run}'', ``\texttt{-run}'', and
 ``\texttt{-post\_run}'' options instruct Dakota to run one or more

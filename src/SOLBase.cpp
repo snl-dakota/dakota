@@ -12,7 +12,6 @@
 //- Checked by:
 
 #include "SOLBase.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaMinimizer.hpp"
 #include "DataMethod.hpp"
@@ -318,26 +317,9 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   }
 }
 
-void SOLBase::
-augment_bounds(RealVector& augmented_l_bnds,
-	       RealVector& augmented_u_bnds,
-	       const Model& model)
-{
-  const RealVector& lin_ineq_l_bnds = model.linear_ineq_constraint_lower_bounds();
-  const RealVector& lin_ineq_u_bnds = model.linear_ineq_constraint_upper_bounds();
-  const RealVector& lin_eq_targets  = model.linear_eq_constraint_targets();
-  const RealVector& nln_ineq_l_bnds = model.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_u_bnds = model.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets  = model.nonlinear_eq_constraint_targets();
-
-  return augment_bounds(augmented_l_bnds, augmented_u_bnds,
-         	        lin_ineq_l_bnds, lin_ineq_u_bnds, lin_eq_targets,
-         	        nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_targets);
-}
 
 void SOLBase::
-augment_bounds(RealVector& augmented_l_bnds,
-	       RealVector& augmented_u_bnds,
+augment_bounds(RealVector& augmented_l_bnds, RealVector& augmented_u_bnds,
 	       const RealVector& lin_ineq_l_bnds,
 	       const RealVector& lin_ineq_u_bnds,
 	       const RealVector& lin_eq_targets,

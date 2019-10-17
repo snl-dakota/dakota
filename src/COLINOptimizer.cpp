@@ -1040,9 +1040,8 @@ void COLINOptimizer::post_run(std::ostream& s)
 	Cerr << "\nWarning: Couldn't get objectives from Colin cache.";
       if (!cache_status.second)
 	Cerr << "\nWarning: Couldn't get constraints from Colin cache.";
-      Cerr << "\nAll function values from COLIN:";
-      write_data(Cout, tmpResponseHolder.function_values());
-      Cerr << std::endl;
+      Cerr << "\nAll function values from COLIN:"
+	   << tmpResponseHolder.function_values() << std::endl;
     }
 
     // BMA TODO: incorporate constraint tolerance, possibly via

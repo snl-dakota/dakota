@@ -90,6 +90,19 @@
 
 namespace Dakota {
 
+// Regular expressions used to substitute the names of parameters and resutls
+// files into driver strings
+boost::regex PARAMS_TOKEN("\\{PARAMETERS\\}");
+boost::regex RESULTS_TOKEN("\\{RESULTS\\}");
+
+/// Substitute parameters and results file names into driver strings
+String substitute_params_and_results(const String &driver, const String &params, const String &results) {
+  String params_subbed  = boost::regex_replace(driver, PARAMS_TOKEN,  params);
+  String results_subbed = boost::regex_replace(params_subbed, RESULTS_TOKEN,  results);
+  return results_subbed;  
+}
+
+
 ProcessApplicInterface::
 ProcessApplicInterface(const ProblemDescDB& problem_db):
   ApplicationInterface(problem_db), 
@@ -113,9 +126,7 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   dirSave(problem_db.get_bool("interface.dirSave")),
   linkFiles(problem_db.get_sa("interface.linkFiles")),
   copyFiles(problem_db.get_sa("interface.copyFiles")),
-  templateReplace(problem_db.get_bool("interface.templateReplace")),
-  analysisComponents(
-    problem_db.get_s2a("interface.application.analysis_components"))
+  templateReplace(problem_db.get_bool("interface.templateReplace"))
 {
   // When using work directory, relative analysis drivers starting
   // with . or .. may need to be converted to absolute so they work

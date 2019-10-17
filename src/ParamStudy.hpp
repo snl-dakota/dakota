@@ -58,8 +58,14 @@ public:
   void post_input();
   void post_run(std::ostream& s);
 
-protected:
+  /// Archive variables for parameter set idx
+  void archive_model_variables(const Model&, size_t idx) const override;
+  /// Archive responses for parameter set idx
+  void archive_model_response(const Response&, size_t idx) const override;
 
+protected:
+  /// Allocate space to archive parameters and responses
+  void archive_allocate_sets() const;
 private:
 
   //
@@ -162,6 +168,21 @@ private:
   void centered_header(const String& type, size_t var_index, int step,
 		       size_t hdr_index);
 
+  /// specialized per-variable slice output for centered param study
+  void archive_allocate_cps() const;
+
+  /// specialized per-variable slice output for centered param study
+  void archive_cps_vars(const Model& model, size_t idx) const;
+
+  /// specialized per-variable slice output for centered param study
+  void archive_cps_resp(const Response& response, size_t idx) const;
+
+  /// map an overall parameter study (zero-based) evaluation index to
+  /// the (zero-based) variable index (among all variables) and the
+  /// (zero-based) step index within that variable
+  void index_to_var_step(const size_t study_idx,
+			 size_t& var_idx, size_t& step_idx) const;
+
   //
   //- Heading: Data
   //
@@ -209,6 +230,13 @@ private:
   /// the number of times continuous/discrete step vectors are applied
   /// for vector_parameter_study (a specification option)
   int numSteps;
+
+  /// number of offsets in the plus and the minus direction for each
+  /// variable in a centered_parameter_study
+  /** The per-type step arrays below could be made views into this,
+      instead of duplicating, but if so, distribute() will not be
+      allowed to resize the individual vectors. */
+  IntVector stepsPerVariable;
 
   /// number of offsets in the plus and the minus direction for each
   /// continuous variable in a centered_parameter_study
@@ -316,22 +344,11 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
 
 #ifdef DEBUG
   Cout << "distribute():\n";
-  if (numContinuousVars) {
-    Cout << "continuous vector:\n";
-    write_data(Cout, c_data);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "discrete int vector:\n";
-    write_data(Cout, di_data);
-  }
-  if (numDiscreteStringVars) {
-    Cout << "discrete string vector:\n";
-    write_data(Cout, ds_data);
-  }
-  if (numDiscreteRealVars) {
-    Cout << "discrete real vector:\n";
-    write_data(Cout, dr_data);
-  }
+  if (numContinuousVars)   Cout << "continuous vector:\n"    << c_data;
+  if (numDiscreteIntVars)  Cout << "discrete int vector:\n"  << di_data;
+  if (numDiscreteStringVars)
+    { Cout << "discrete string vector:\n"; write_data(Cout, ds_data); }
+  if (numDiscreteRealVars) Cout << "discrete real vector:\n" << dr_data;
 #endif // DEBUG
 
   return false;
@@ -411,22 +428,11 @@ distribute(const std::vector<ScalarType>& all_data,
 
 #ifdef DEBUG
   Cout << "distribute():\n";
-  if (numContinuousVars) {
-    Cout << "continuous array:\n";
-    write_data(Cout, c_data);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "discrete int array:\n";
-    write_data(Cout, di_data);
-  }
-  if (numDiscreteStringVars) {
-    Cout << "discrete string array:\n";
-    write_data(Cout, ds_data);
-  }
-  if (numDiscreteRealVars) {
-    Cout << "discrete real array:\n";
-    write_data(Cout, dr_data);
-  }
+  if (numContinuousVars)   Cout << "continuous array:\n"    << c_data;
+  if (numDiscreteIntVars)  Cout << "discrete int array:\n"  << di_data;
+  if (numDiscreteStringVars)
+    { Cout << "discrete string array:\n"; write_data(Cout, ds_data); }
+  if (numDiscreteRealVars) Cout << "discrete real array:\n" << dr_data;
 #endif // DEBUG
 
   return false;
@@ -483,9 +489,21 @@ inline bool ParamStudy::check_steps_per_variable(const IntVector& steps_per_var)
     num_vars = numContinuousVars     + numDiscreteIntVars +
                numDiscreteStringVars + numDiscreteRealVars;
   // allow spv_len of 1 or num_vars
-  if (spv_len == num_vars)
+  if (spv_len == num_vars) {
     distribute(steps_per_var, contStepsPerVariable, discIntStepsPerVariable,
 	       discStringStepsPerVariable, discRealStepsPerVariable);
+    // the steps are ordered by type, not by user variable ordering,
+    // so the mapping to all steps vector must follow distribution
+    stepsPerVariable.sizeUninitialized(num_vars);
+    copy_data_partial(contStepsPerVariable, stepsPerVariable, 0);
+    copy_data_partial(discIntStepsPerVariable, stepsPerVariable,
+		      numContinuousVars);
+    copy_data_partial(discStringStepsPerVariable, stepsPerVariable,
+		      numContinuousVars + numDiscreteIntVars);
+    copy_data_partial(discRealStepsPerVariable, stepsPerVariable,
+		      numContinuousVars + numDiscreteIntVars +
+		      numDiscreteStringVars);
+  }
   else if (spv_len == 1) {
     int steps = steps_per_var[0];
     contStepsPerVariable.sizeUninitialized(numContinuousVars);
@@ -496,6 +514,8 @@ inline bool ParamStudy::check_steps_per_variable(const IntVector& steps_per_var)
     discStringStepsPerVariable = steps;
     discRealStepsPerVariable.sizeUninitialized(numDiscreteRealVars);
     discRealStepsPerVariable = steps;
+    stepsPerVariable.sizeUninitialized(num_vars);
+    stepsPerVariable = steps;
   }
   else {
     Cerr << "\nError: steps_per_variable must be of length 1 or " << num_vars

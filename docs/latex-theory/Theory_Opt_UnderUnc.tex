@@ -619,3 +619,22 @@ available, are instantaneous with no accumulation rate concerns.}.
 Instead, this consistency should only be enforced when sufficient high
 fidelity curvature information has been accumulated (e.g., after $n$
 rank one updates).
+
+
+
+\section{Sampling-based OUU}\label{ouu:sampling}
+
+Gradient-based OUU can also be performed using random sampling methods.
+In this case, the sample-average approximation to the design derivative
+of the mean and standard deviation are:
+\begin{eqnarray}
+  \frac{d\mu}{ds}    &=& \frac{1}{N} \sum_{i=1}^N \frac{dQ}{ds} \\
+  \frac{d\sigma}{ds} &=& \left[ \sum_{i=1}^N (Q \frac{dQ}{ds})
+    - N \mu \frac{d\mu}{ds} \right] / (\sigma (N-1))
+\end{eqnarray}
+This enables design sensitivities for mean,  standard deviation or
+variance (based on {\tt final\_moments} type), and forward/inverse
+reliability index mappings
+($\bar{z} \rightarrow \beta$, $\bar{\beta} \rightarrow z$).
+
+% TO DO: Multilevel MC ...

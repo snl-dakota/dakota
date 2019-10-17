@@ -1,0 +1,10 @@
+Blurb::
+Compute diagnostic metrics for Markov chain
+
+Description::
+While a Markov chain produced via Monte Carlo sampling eventually converges
+to a set of samples representative of an underlying probability distribution,
+the first set of samples may not accurately capture the target distribution.
+Chain diagnostic metrics provide measures of this convergence, and are intended
+to help users decide whether \c samples should be increased in Bayesian
+calibration exercises.

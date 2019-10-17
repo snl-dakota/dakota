@@ -1,14 +1,22 @@
 Blurb:: (Experimental) Write a summary file containing the final results
 
 Description::
-(Experimental) Final results from a %Dakota study can be output to
-dakota_results.txt by specifying \c results_output (optionally
-specifying an alternate file name with \c
-results_output_filename). The current experimental text file format is
-hierarchical and a precursor to planned output to structured text
-formats such as XML or YAML, and binary formats such as HDF5. The
-contents, organization, and format of results files are all under
-active development and are subject to change.
+(Experimental)
+
+%Dakota writes final results for most methods to the screen (console).
+This keyword enables experimental support for writing them to disk, as well.
+By default, they are written in a structured text format to a file named
+\c dakota_results.txt. Text format can be explicitly selected using the \c text
+sub-keyword. If Dakota was built with \c HDF5 enabled, the sub-keyword
+\c hdf5 causes results to be written in HDF5 format, as well. 
+
+The name of the results file can be changed using the \c results_output_file
+keyword.
+
+Text output eventually will be deprecated, and HDF5 will be enabled in all
+distributed builds of Dakota. The layout of the HDF5 file is described in
+the \ref hdf5_output section of this manual. The contents, organization, and 
+format of results files are all under active development and are subject to change.
 
 Topics::	dakota_output
 Examples::

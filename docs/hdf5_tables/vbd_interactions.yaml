@@ -1,0 +1,14 @@
+name: Interaction Effects
+dataset:
+  description: Sobol' indices for interactions
+  location: "order_<N>_interactions/<response descriptor>"
+  shape: "1-dimensional: number of Nth order interactions"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: variables
+    contents: Descriptors of the variables in the interaction
+    literal_contents: False
+    notes: Scales for interaction effects are 2D datasets with the dimensions (number of interactions, N)
+

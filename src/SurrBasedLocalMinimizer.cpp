@@ -420,11 +420,15 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   size_t wpp9 = write_precision+9;
   Cout << "\n**************************************************************"
        << "************\nBegin SBLM Iteration Number " << globalIterCount+1
-       << "\n\nCurrent Trust Region for surrogate model (form "
-       << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != _NPOS)
-    Cout << ", level " << tr_data.approx_model_level() + 1;
-  Cout << ")\n                 ";
+       << "\n\nCurrent Trust Region for surrogate model";
+  unsigned short form = tr_data.approx_model_form();
+  if (form != USHRT_MAX) {
+    Cout << " (form "  << form + 1;
+    unsigned short lev = tr_data.approx_model_level();
+    if (lev != USHRT_MAX) Cout << ", level " << lev + 1;
+    Cout << ")";
+  }
+  Cout << "\n                 ";
   if (tr_lower_truncation) Cout << std::setw(wpp9) << "Lower (truncated)";
   else                     Cout << std::setw(wpp9) << "Lower";
   if (cv_truncation)       Cout << std::setw(wpp9) << "Center (truncated)";
@@ -1297,10 +1301,10 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
       }
 
       // output of slacks required for postprocessing SBLM runs in Matlab
-      Cout << "\n<<<<< nonlinIneqLowerBndsSlack =\n";
-      write_data(Cout, nonlinIneqLowerBndsSlack);
-      Cout << "\n<<<<< nonlinIneqUpperBndsSlack =\n";
-      write_data(Cout, nonlinIneqUpperBndsSlack);
+      Cout << "\n<<<<< nonlinIneqLowerBndsSlack =\n"
+	   << nonlinIneqLowerBndsSlack
+	   << "\n<<<<< nonlinIneqUpperBndsSlack =\n"
+	   << nonlinIneqUpperBndsSlack;
     }
 
     // initialize equality constraint slack vectors
@@ -1315,8 +1319,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	  nonlinEqTargetsSlack[i] = nln_eq_con - tgt; // *** constraint tol?
       }
       // output of slacks required for postprocessing SBLM runs in Matlab
-      Cout << "\n<<<<< nonlinEqTargetsSlack =\n";
-      write_data(Cout, nonlinEqTargetsSlack);
+      Cout << "\n<<<<< nonlinEqTargetsSlack =\n" << nonlinEqTargetsSlack;
     }
 
     // initialize constraint relaxation parameters
@@ -1477,7 +1480,7 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   // tau_minimizer instantiation in relax_constraints()).
 
   // set active set vector in approxSubProbModel
-  size_t num_fns = sblmInstance->approxSubProbModel.num_functions(),
+  size_t num_fns = sblmInstance->approxSubProbModel.response_size(),
      num_obj_fns = num_fns - ncnln; // 1 if recast, numUserPrimaryFns if not
   ShortArray local_asv(num_fns, 0);
   for (int i=0; i<ncnln; ++i)

@@ -185,17 +185,17 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 {
   if (multiLev) {
-    iteratedModel.surrogate_model_indices(
+    iteratedModel.surrogate_model_key(
       trustRegions[tr_index].approx_model_form(),
       trustRegions[tr_index].approx_model_level());
-    iteratedModel.truth_model_indices(
+    iteratedModel.truth_model_key(
       trustRegions[tr_index].truth_model_form(),
       trustRegions[tr_index].truth_model_level());
   }
   else {
-    iteratedModel.surrogate_model_indices(
+    iteratedModel.surrogate_model_key(
       trustRegions[tr_index].approx_model_form());
-    iteratedModel.truth_model_indices(
+    iteratedModel.truth_model_key(
       trustRegions[tr_index].truth_model_form());
   }
 }

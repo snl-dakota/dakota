@@ -1,0 +1,4 @@
+# This is a dummy options file for the demo_tpl
+Solver: special_solver
+Iters : 10
+

@@ -1,0 +1,35 @@
+Blurb::
+Calculate model evidence (marginal likelihood of model) when using Bayesian methods
+
+Description::
+Model evidence is used in Bayesian model selection and model averaging. 
+It is defined as the probability of the data given the model, and 
+is calculated by averaging the likelihood of the model parameters 
+over all values of the model parameters according to their prior 
+distributions. In Dakota, one must calculate the 
+model evidence separately for each model and perform the normalization 
+to obtain the posterior model plausibility for each model. 
+
+<b> Default Behavior </b>
+
+When specifying \c model_evidence, there are two methods of 
+calculating it.  One or both may be specified.  They 
+include the Monte Carlo approximation, given by \c mc_approx 
+and the Laplace approximation, given by \c laplace_approx.  \c mc_approx 
+is the default approach. 
+
+<b> Expected Output </b>
+Currently, the model evidence will be printed in the screen output 
+with prefacing text indicating if it is calculated by 
+Monte Carlo sampling or the Laplace approximation. 
+
+<b> Usage Tips </b>
+
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

@@ -416,10 +416,10 @@ int SurfpackApproximation::recommended_coefficients() const
 }
 
 
-void SurfpackApproximation::build(size_t index)
+void SurfpackApproximation::build()
 {
   // base class implementation checks data set against min required
-  Approximation::build(index);
+  Approximation::build();
 
   // Surface object should have been created in constructor
   if (!factory) { 
@@ -731,7 +731,7 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
     abort_handler(-1);
   }
 
-  Cout << std::setw(20) << metric_type << std::setw(20) << approx_diag << '\n';
+  Cout << std::setw(20) << metric_type << "  " << approx_diag << '\n';
   return approx_diag;
 }
 
@@ -861,6 +861,7 @@ challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
 
 }
 
+
 RealArray SurfpackApproximation::cv_diagnostic(const StringArray& metric_types, 
                                                unsigned num_folds) {
   CrossValidationFitness CV_fitness(num_folds);
@@ -874,6 +875,7 @@ RealArray SurfpackApproximation::cv_diagnostic(const StringArray& metric_types,
   }
   return cv_metrics;
 }
+
 
 RealArray SurfpackApproximation::challenge_diagnostic(const StringArray& metric_types,
 			    const RealMatrix& challenge_points,
@@ -894,44 +896,52 @@ RealArray SurfpackApproximation::challenge_diagnostic(const StringArray& metric_
   return chal_metrics;
 }
 
+
 /** Copy the data stored in Dakota-style SurrogateData into
     Surfpack-style SurfPoint and SurfData objects. */
 SurfData* SurfpackApproximation::surrogates_to_surf_data()
 {
   SurfData* surf_data = new SurfData();
 
+  const Pecos::SurrogateData& approx_data = surrogate_data();
   // screen approximation data for failures
-  approxData.data_checks();
-
-  // some surrogates, e.g., global_polynomials and kriging, treat the anchor
-  // point specially as a constraint; other treat as a regular data point
-  SharedSurfpackApproxData* shared_surf_data_rep
-    = (SharedSurfpackApproxData*)sharedDataRep;
-  if (approxData.anchor()) {
-    if (factory->supports_constraints())
-      add_anchor_to_surfdata(*surf_data);
-    else
-      shared_surf_data_rep->
-	add_sd_to_surfdata(approxData.anchor_variables(),
-			   approxData.anchor_response(),
-			   approxData.failed_anchor_data(), *surf_data);
-  }
+  approx_data.data_checks();
   // add the remaining surrogate data points
   if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
     Cout << "Requested build data order is " << sharedDataRep->buildDataOrder
 	 << '\n';
-  size_t i, num_data_pts = approxData.points();
-  const Pecos::SDVArray& sdv_array = approxData.variables_data();
-  const Pecos::SDRArray& sdr_array = approxData.response_data();
-  const Pecos::SizetShortMap& failed_resp = approxData.failed_response_data();
+
+  SharedSurfpackApproxData* data_rep = (SharedSurfpackApproxData*)sharedDataRep;
+  size_t i, num_data_pts = approx_data.points();
+  const Pecos::SDVArray& sdv_array = approx_data.variables_data();
+  const Pecos::SDRArray& sdr_array = approx_data.response_data();
+  const Pecos::SizetShortMap& failed_resp = approx_data.failed_response_data();
   Pecos::SizetShortMap::const_iterator fit = failed_resp.begin();
-  for (i=0; i<num_data_pts; ++i) {
-    short fail_code = 0;
-    if (fit != failed_resp.end() && fit->first == i)
-      { fail_code = fit->second; ++fit; }
-    shared_surf_data_rep->add_sd_to_surfdata(sdv_array[i], sdr_array[i],
-					     fail_code, *surf_data);
+
+  // some surrogates, e.g., global_polynomials and kriging, treat the anchor
+  // point specially as a constraint; other treat as a regular data point
+  size_t constr_index = approx_data.anchor_index();
+  if (factory->supports_constraints() && constr_index != _NPOS) {
+    for (i=0; i<num_data_pts; ++i) {
+      short fail_code = 0;
+      if (fit != failed_resp.end() && fit->first == i)
+	{ fail_code = fit->second; ++fit; }
+      if (i == constr_index)
+	add_constraints_to_surfdata(sdv_array[i], sdr_array[i], fail_code,
+				    *surf_data);
+      else
+	data_rep->
+	  add_sd_to_surfdata(sdv_array[i], sdr_array[i], fail_code, *surf_data);
+    }
   }
+  else
+    for (i=0; i<num_data_pts; ++i) {
+      short fail_code = 0;
+      if (fit != failed_resp.end() && fit->first == i)
+	{ fail_code = fit->second; ++fit; }
+      data_rep->add_sd_to_surfdata(sdv_array[i], sdr_array[i], fail_code,
+				   *surf_data);
+    }
 
   return surf_data;
 }
@@ -939,10 +949,13 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 
 /** If there is an anchor point, add an equality constraint for its response
     value.  Also add constraints for gradient and hessian, if applicable. */
-void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
+void SurfpackApproximation::
+add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
+			    const Pecos::SurrogateDataResp& anchor_resp,
+			    short fail_code, SurfData& surf_data)
 {
   // coarse-grained fault tolerance for now: any failure qualifies for omission
-  if (approxData.failed_anchor_data())
+  if (fail_code)
     return;
 
   // Surfpack's RealArray is std::vector<double>
@@ -952,34 +965,33 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
   SurfpackMatrix<Real> hessian;
 
   // Print out the anchor continuous variables
-  SharedSurfpackApproxData* shared_surf_data_rep
+  SharedSurfpackApproxData* data_rep
     = (SharedSurfpackApproxData*)sharedDataRep;
-  shared_surf_data_rep->sdv_to_realarray(approxData.anchor_variables(), x);
+  data_rep->sdv_to_realarray(anchor_vars, x);
   if (sharedDataRep->outputLevel > NORMAL_OUTPUT)
     Cout << "Anchor point vars\n" << x;
 
   // At a minimum, there should be a response value
   unsigned short anchor_data_order = 1;
-  f = approxData.anchor_function();
+  f = anchor_resp.response_function();
   if (sharedDataRep->outputLevel > NORMAL_OUTPUT)
     Cout << "Anchor response: " << f << '\n';
 
   // Check for gradient in anchor point
-  const RealVector& anchor_grad = approxData.anchor_gradient();
+  const RealVector& anchor_grad = anchor_resp.response_gradient();
   if (!anchor_grad.empty()) {
     anchor_data_order |= 2;
     copy_data(anchor_grad, gradient);
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-      Cout << "Anchor gradient:\n";
-      write_data(Cout, anchor_grad);
+      Cout << "Anchor gradient:\n" << anchor_grad;
     }
   }
 
   // Check for hessian in anchor point
-  const RealSymMatrix& anchor_hess = approxData.anchor_hessian();
+  const RealSymMatrix& anchor_hess = anchor_resp.response_hessian();
   if (!anchor_hess.empty()) {
     anchor_data_order |= 4;
-    shared_surf_data_rep->copy_matrix(anchor_hess, hessian);
+    data_rep->copy_matrix(anchor_hess, hessian);
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
       Cout << "Anchor hessian:\n";
       write_data(Cout, anchor_hess, false, true, true);

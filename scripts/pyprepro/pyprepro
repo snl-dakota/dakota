@@ -24,12 +24,12 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20180426'
+__version__ = '20181203'
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
 DESCRIPTION="""\
-%(prog)s -- python input deck pre-proscessor and template engine.
+%(prog)s -- python-based input deck pre-processor and template engine.
 
 version: __version__
 
@@ -287,7 +287,7 @@ def _parse_cli(argv,positional_include=False):
         addvar = addvar.split('=',2)
         if len(addvar) != 2:
             sys.stderr.write('ERROR: --var must be of the form `--var "var=value"`\n')
-            sys.exit()
+            sys.exit(1)
         key,val = addvar
         
         key = key.strip()
@@ -302,6 +302,12 @@ def _parse_cli(argv,positional_include=False):
     # Read stdin if needed
     if args.infile == '-':
         args.infile = _touni(sys.stdin.read())
+    elif not os.path.isfile(args.infile):
+        # pyprepro function can take an input file or text but the CLI
+        # should always be a file
+        print('ERROR: `infile` must be a file or `-` to read from stdin',file=sys.stderr)
+        sys.exit(1)
+    
     
     return args,env
 
@@ -324,9 +330,8 @@ def _pyprepro_cli(argv):
     except (NameError,BlockCharacterError) as E:
         if DEBUGCLI:
             raise
-            
-        sys.stderr.write('Error occurred:\n  ' + E.args[0] + '\n')        
-        sys.exit(2)
+        sys.stderr.write(_error_msg(E))        
+        sys.exit(1)
     
     if args.outfile is None:
         sys.stdout.write(output)
@@ -702,6 +707,21 @@ def _delim_capture(txt,delim,sub=None):
         
     return captured,''.join(outtxt)
 
+def _error_msg(E):
+    msg = []
+    err = E.__class__.__name__
+    msg.append('Exception: {0}'.format(err))
+    if hasattr(E,'filename'):
+        msg.append('Filename: {0}'.format(E.filename))
+    if hasattr(E,'lineno'):
+        msg.append('Approximate Line Number: {0}'.format(E.lineno))
+#     if hasattr(E,'offset'): # Not reliable
+#         msg.append('Column: {0}'.format(E.offset))
+    if hasattr(E,'args') and len(E.args)>0:
+        msg.append('Message: {0}'.format(E.args[0]))
+    
+    msg = 'Error occurred\n' + '\n'.join('    ' + l for l in msg) + '\n'
+    return msg
 ###### Functions for inside templates  
 
 def _vartxt(env,return_values=True,comment=None):
@@ -999,9 +1019,9 @@ def _dprepro_cli(argv):
     else:
         try:
             params, results = di.read_parameters_file(parameters_file=args.include,results_file=di.UNNAMED)
-        except di.ParamsFormatError as e:
-            sys.stderr.write("Error occurred: " + e.args[0] + "\n")
-            sys.exit(2)
+        except di.ParamsFormatError as E:
+            sys.stderr.write(_error_msg(E))
+            sys.exit(1)
 
         env["DakotaParams"] = params
         for d, v in params.items():
@@ -1025,8 +1045,8 @@ def _dprepro_cli(argv):
         if DEBUGCLI:
             raise
             
-        sys.stderr.write('Error occurred:\n  ' + E.args[0] + '\n')        
-        sys.exit(2)
+        sys.stderr.write(_error_msg(E))        
+        sys.exit(1)
     
     if args.outfile is None:
         sys.stdout.write(output)
@@ -1042,7 +1062,7 @@ def dprepro(include=None, template=None, output=None, fmt='%0.10g', code='%',
         
         include(dict): Items to make available for substitution
         template(str or IO object): Template. If it has .read(), will be 
-            treated like a file. Otherwise, assumed to be the name of a file.
+            treated like a file. Otherwise, assumed to contain a template.
         output(str or IO object): If None (the default), the substituted
             template will be returned as a string. If it has .write(), will
             be treated like a file. Otherwise, assumed to be the name of a file.
@@ -1156,7 +1176,7 @@ class TemplateError(Exception):
 
 def _touni(s, enc=None, err='strict'):
     if enc is None:
-        # This ordering is intension since, anecdotally, some Windows-1252 will
+        # This ordering is intensional since, anecdotally, some Windows-1252 will
         # be decodable as UTF-16. The chardet module is the "correct" answer
         # but we don't want to add the dependency
         enc = ['utf8','Windows-1252','utf16','ISO-8859-1',]
@@ -1402,7 +1422,7 @@ class _StplParser(object):
     # This huge pile of voodoo magic splits python code into 8 different tokens.
     # We use the verbose (?x) regex mode to make this more manageable
 
-    _re_tok = _re_inl = r'''(?mx)(        # verbose and dot-matches-newline mode
+    _re_tok = _re_inl = r'''( # (?mx) will be added below for verbose and dotall mode
         [urbURB]*
         (?:  ''(?!')
             |""(?!")
@@ -1444,6 +1464,11 @@ class _StplParser(object):
     # Match inline statements (may contain python strings)
     _re_inl = r'''%%(inline_start)s((?:%s|[^'"\n]+?)*?)%%(inline_end)s''' % _re_inl
 
+    # Add back in the flags to avoid the deprecation warning
+    # verbose and dot-matches-newline mode
+    _re_tok = '(?mx)' + _re_tok
+    _re_inl = '(?mx)' + _re_inl
+    
     # default_syntax = '{% %} % { }'
 
     def __init__(self, source, syntax=None, encoding='utf8'):
@@ -1626,11 +1651,10 @@ def _template(tpl, env=None, return_env=False):
             return rendered
         return rendered,env
     except Exception as E:
-        if CLI_MODE and DEBUGCLI:
-            err = E.__class__.__name__
-            desc = unicode(E)
-            sys.stderr.write('Error occurred:\n  {0}: {1}\n'.format(err,desc))        
-            sys.exit(2)
+        if CLI_MODE and not DEBUGCLI:
+            msg = _error_msg(E)
+            sys.stderr.write(msg)        
+            sys.exit(1)
         else:
             raise
 ########################### six extracted codes ###########################
@@ -1683,6 +1707,7 @@ else:
 INIT_VARS = set(_template('BLA',return_env=True)[-1].keys())
 
 def main():
+    global CLI_MODE
     CLI_MODE = True 
     cmdname = sys.argv[0].lower()
     path, execname = os.path.split(cmdname)

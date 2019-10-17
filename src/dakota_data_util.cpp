@@ -193,6 +193,40 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
   }
 }
 
+void compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  avg_vals.resize(num_cols);
+  
+  RealVector ones_vec(num_rows);
+  ones_vec.putScalar(1.0);
+ 
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
+  }
+}
+
+void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
+                        RealVector& std_devs)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  std_devs.resize(num_cols);
+  RealVector res_vec(num_rows);
+
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    for(int j = 0; j<num_rows; ++j){
+      res_vec(j) = col_vec(j) - avg_vals(i);
+    }
+    std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
+  }
+}
+
 void remove_column(RealMatrix& matrix, int index)
 {
   int num_cols = matrix.numCols();

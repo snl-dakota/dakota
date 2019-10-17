@@ -47,8 +47,7 @@ public:
 		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
-		 bool track_uniq_prod_wts = true,
-		 bool track_colloc_indices = true);
+		 bool track_uniq_prod_wts = true);
 
   //
   //- Heading: Virtual function redefinitions
@@ -62,6 +61,15 @@ public:
   /// update ssgDriver::ssgAnisoLevelWts and increment ssgDriver::ssgLevel
   /// based on specified anisotropic weighting
   void increment_grid_weights(const RealVector& aniso_wts);
+  /// increment ssgDriver::ssgLevel based on existing anisotropic weighting
+  void increment_grid_weights();
+  /// decrement ssgDriver::ssgLevel
+  void decrement_grid();
+
+  void evaluate_grid_increment();
+  void push_grid_increment();
+  void pop_grid_increment();
+  void merge_grid_increment();
 
   /// set level and dimension preference within ssgDriver based on ssgLevelSpec
   /// and dimPrefSpec, following refinement or sequence advancement
@@ -77,23 +85,20 @@ public:
   void initialize_sets();
   /// invokes SparseGridDriver::update_reference()
   void update_reference();
-  /// invokes SparseGridDriver::push_trial_set()
+  /// invokes SparseGridDriver::increment_smolyak_multi_index()
   void increment_set(const UShortArray& set);
   /// invokes SparseGridDriver::unique_trial_points()
   int increment_size() const;
-  /// invokes SparseGridDriver::restore_set()
-  void restore_set();
+  /// invokes SparseGridDriver::push_set()
+  void push_set();
   /// invokes SparseGridDriver::compute_trial_grid()
   void evaluate_set();
-  /// invokes SparseGridDriver::pop_trial_set()
+  /// invokes SparseGridDriver::pop_set()
   void decrement_set();
   /// invokes SparseGridDriver::update_sets()
   void update_sets(const UShortArray& set_star);
   /// invokes SparseGridDriver::finalize_sets()
-  void finalize_sets(bool output_sets, bool converged_within_tol);
-
-  /// invokes SparseGridDriver::evaluate_grid_increment()
-  void evaluate_grid_increment();
+  void finalize_sets(bool output_sets, bool converged_within_tol,bool reverted);
 
   int num_samples() const;
 
@@ -118,35 +123,49 @@ protected:
 
   void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
 
+  //
+  //- Heading: Member functions
+  //
+
+  const RealVector& anisotropic_weights() const;
+
 private:
 
   //
   //- Heading: Data
   //
 
+  /// type of sparse grid driver: combined, incremental, hierarchical, ...
+  short ssgDriverType;
   /// convenience pointer to the numIntDriver representation
   Pecos::SparseGridDriver* ssgDriver;
 
   /// the user specification for the Smolyak sparse grid level, rendered
   /// anisotropic via dimPrefSpec
   unsigned short ssgLevelSpec;
-  /// reference point (e.g., lower bound) for the Smolyak sparse grid level
-  /// maintained within ssgDriver
-  unsigned short ssgLevelRef;
+  /// value of ssgDriver->level() prior to increment_grid(), for restoration
+  /// in decrement_grid() since increment must induce a change in grid size
+  /// and this adaptive increment in not reversible
+  unsigned short ssgLevelPrev;
 };
+
+
+inline void NonDSparseGrid::increment_grid_weights()
+{ increment_grid_weights(ssgDriver->anisotropic_weights()); }
+
+
+inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
+{ ssgLevelSpec = ssg_level; reset(); }
 
 
 inline void NonDSparseGrid::reset()
 {
   // restore user specification state prior to any uniform/adaptive refinement
-  ssgLevelRef = ssgLevelSpec;
-  ssgDriver->level(ssgLevelRef);
+  ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
+  // clear state to mandate a grid / grid size update
+  ssgDriver->clear_grid();
 }
-
-
-inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
-{ ssgLevelSpec = ssg_level; reset(); }
 
 
 inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const
@@ -166,15 +185,15 @@ inline void NonDSparseGrid::update_reference()
 
 
 inline void NonDSparseGrid::increment_set(const UShortArray& set)
-{ ssgDriver->push_trial_set(set); }
+{ ssgDriver->increment_smolyak_multi_index(set); }
 
 
 inline int NonDSparseGrid::increment_size() const
 { return ssgDriver->unique_trial_points(); }
 
 
-inline void NonDSparseGrid::restore_set()
-{ ssgDriver->restore_set(); }
+inline void NonDSparseGrid::push_set()
+{ ssgDriver->push_set(); }
 
 
 inline void NonDSparseGrid::evaluate_set()
@@ -186,7 +205,7 @@ inline void NonDSparseGrid::evaluate_set()
 
 
 inline void NonDSparseGrid::decrement_set()
-{ ssgDriver->pop_trial_set(); }
+{ ssgDriver->pop_set(); }
 
 
 inline void NonDSparseGrid::update_sets(const UShortArray& set_star)
@@ -194,20 +213,36 @@ inline void NonDSparseGrid::update_sets(const UShortArray& set_star)
 
 
 inline void NonDSparseGrid::
-finalize_sets(bool output_sets, bool converged_within_tol)
-{ ssgDriver->finalize_sets(output_sets, converged_within_tol); }
+finalize_sets(bool output_sets, bool converged_within_tol, bool reverted)
+{ ssgDriver->finalize_sets(output_sets, converged_within_tol, reverted); }
 
 
 inline void NonDSparseGrid::evaluate_grid_increment()
 {
-  ssgDriver->compute_grid_increment(allSamples);
+  ssgDriver->compute_increment(allSamples);
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }
 
 
+inline void NonDSparseGrid::push_grid_increment()
+{ ssgDriver->push_increment(); }
+
+
+inline void NonDSparseGrid::pop_grid_increment()
+{ ssgDriver->pop_increment(); }
+
+
+inline void NonDSparseGrid::merge_grid_increment()
+{ ssgDriver->merge_unique(); }
+
+
 inline int NonDSparseGrid::num_samples() const
 { return ssgDriver->grid_size(); }
+
+
+inline const RealVector& NonDSparseGrid::anisotropic_weights() const
+{ return ssgDriver->anisotropic_weights(); }
 
 } // namespace Dakota
 

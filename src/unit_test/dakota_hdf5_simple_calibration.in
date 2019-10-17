@@ -1,0 +1,35 @@
+environment
+  tabular_data
+    tabular_data_file 'simple_calibration.dat'
+  results_output  
+   results_output_file 'simple_calibration'
+   hdf5
+    model_selection all
+  write_restart 'simple_calibration.rst'
+
+method
+  nlssol
+
+variables
+  continuous_design 2
+    descriptors  'x1'      'x2'
+    lower_bounds -1        -3
+    upper_bounds 1.0       0.0
+
+  continuous_state 1
+    descriptors    'Y'
+    initial_state 2.0
+
+responses
+  descriptors 'displacement01'
+              'displacement02'
+              'g'
+
+  calibration_terms 2
+  nonlinear_inequality_constraints 1
+  numerical_gradients
+  no_hessians
+
+interface
+  direct
+   analysis_drivers 'text_book'

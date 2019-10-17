@@ -8,7 +8,9 @@
 
 #include "ExperimentDataUtils.hpp"
 #include "DakotaResponse.hpp"
+#include <algorithm>
 #include <iostream>
+#include <numeric>
 
 namespace Dakota {
 
@@ -72,6 +74,8 @@ void copy_field_data(const RealVector& fn_vals, RealMatrix& fn_grad,
   }
 }
 
+//----------------------------------------------------------------
+
 void interpolate_simulation_field_data( const Response &sim_resp, 
 					const RealMatrix &exp_coords,
 					size_t field_num, short total_asv,
@@ -104,6 +108,8 @@ void interpolate_simulation_field_data( const Response &sim_resp,
 		  interp_resp_offset, field_size, total_asv, 
 		  interp_resp);
 }
+
+//----------------------------------------------------------------
 
 void linear_interpolate_1d( const RealMatrix &build_pts, 
 			    const RealVector &build_vals, 
@@ -212,6 +218,8 @@ void linear_interpolate_1d( const RealMatrix &build_pts,
   }
 }
 
+//----------------------------------------------------------------
+
 CovarianceMatrix::CovarianceMatrix() : numDOF_(0), covIsDiagonal_(false) {}
 
 CovarianceMatrix::CovarianceMatrix( const CovarianceMatrix &source ){
@@ -223,11 +231,16 @@ CovarianceMatrix::~CovarianceMatrix(){}
 void CovarianceMatrix::copy( const CovarianceMatrix &source ){
   numDOF_=source.numDOF_;
   covIsDiagonal_ = source.covIsDiagonal_;
-  if ( source.covDiagonal_.length() > 0 )
-    covDiagonal_=source.covDiagonal_;
+  if ( source.covDiagonal_.length() > 0 ) {
+    // use assign instead of operator= to disconnect any Teuchos::View
+    covDiagonal_.sizeUninitialized(source.covDiagonal_.length());
+    covDiagonal_.assign(source.covDiagonal_);
+  }
   else if ( source.covMatrix_.numRows() > 0 )
   {
-    covMatrix_ = source.covMatrix_;
+    // use assign instead of operator= to disconnect any Teuchos::View
+    covMatrix_.shapeUninitialized(source.covMatrix_.numRows());
+    covMatrix_.assign(source.covMatrix_);
     // Copy covariance matrix cholesky factor from source.
     // WARNING: Using Teuchos::SerialDenseSpdSolver prevents copying of
     // covariance cholesky factor so it must be done again here.
@@ -243,6 +256,7 @@ CovarianceMatrix& CovarianceMatrix::operator=( const CovarianceMatrix &source ){
     return(*this); // Special case of source same as target
   
   copy( source );
+  return *this;
 }
 
 void CovarianceMatrix::dense_covariance(RealSymMatrix &cov) const
@@ -516,6 +530,9 @@ Real CovarianceMatrix::log_determinant() const
 
 ExperimentCovariance & ExperimentCovariance::operator=(const ExperimentCovariance& source)
 {
+  if(this == &source)
+    return *this; // Special case of source same as target
+
   numBlocks_ = source.numBlocks_;
   numDOF_ = source.numDOF_;
   covMatrices_.resize(source.covMatrices_.size());
@@ -730,6 +747,8 @@ Real ExperimentCovariance::log_determinant() const
 }
 
 
+//----------------------------------------------------------------
+
 void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
 					 RealVector &eigenvalues, 
 					 RealMatrix &eigenvectors )
@@ -779,6 +798,8 @@ void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix,
     }
 };
 
+//----------------------------------------------------------------
+
 void compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
 {
   int num_cols = matrix.numCols();
@@ -794,6 +815,51 @@ void compute_column_means( RealMatrix & matrix, RealVector & avg_vals )
     avg_vals(i) = col_vec.dot(ones_vec)/(Real) num_rows;
   }
 }
+
+//----------------------------------------------------------------
+
+void sort_vector( const RealVector & vec, RealVector & sort_vec, IntVector & indices )
+{
+  if( indices.length() != vec.length() )
+    indices.resize(vec.length()); // avoid initialization to 0.0
+
+  // initialize indices from 0 to vec.length()-1
+  std::iota(indices.values(), indices.values()+vec.length(), 0);
+
+  // Sort indices using values from incoming vec
+  std::sort( indices.values(), indices.values()+vec.length(), [&](Real i,Real j){return vec[i]<vec[j];} );
+
+  if( sort_vec.length() != vec.length() )
+    sort_vec.resize(vec.length()); // avoid initialization to 0.0
+
+  // Copy into target vector in sorted order
+  for( int i=0; i<vec.length(); ++i )
+    sort_vec[i] = vec[indices[i]];
+}
+
+//----------------------------------------------------------------
+
+void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat, IntMatrix & indices )
+{
+  if( (mat.numRows() != sort_mat.numRows()) ||
+      (mat.numCols() != sort_mat.numCols()) )
+    sort_mat.shapeUninitialized(mat.numRows(), mat.numCols()); // avoid initialization to 0.0
+
+  if( (mat.numRows() != indices.numRows()) ||
+      (mat.numCols() != indices.numCols()) )
+    indices.shapeUninitialized(mat.numRows(), mat.numCols()); // avoid initialization to 0.0
+
+  for( int i=0; i<mat.numCols(); ++i )
+  {
+    RealMatrix & nonconst_mat = const_cast<RealMatrix&>(mat);
+    const RealVector & unsrt_vec = Teuchos::getCol(Teuchos::View, nonconst_mat, i);
+    RealVector sorted_vec   = Teuchos::getCol(Teuchos::View, sort_mat, i);
+    IntVector  sort_indices = Teuchos::getCol(Teuchos::View, indices, i);
+    sort_vector( unsrt_vec, sorted_vec, sort_indices);
+  }
+}
+
+//----------------------------------------------------------------
 
 bool is_matrix_symmetric( const RealMatrix & matrix )
 {

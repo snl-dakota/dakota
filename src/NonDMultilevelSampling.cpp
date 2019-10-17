@@ -51,7 +51,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
   if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
+    aggregated_models_mode();
   else {
     Cerr << "Error: Multilevel Monte Carlo requires a hierarchical "
 	 << "surrogate model specification." << std::endl;
@@ -170,7 +170,8 @@ void NonDMultilevelSampling::core_run()
   // TO DO: following pilot sample across levels and fidelities in mixed case,
   // could pair models for CVMC based on estimation of rho2_LH.
 
-  size_t model_form = 0, num_mf = NLev.size();
+  unsigned short model_form = 0;
+  size_t num_mf = NLev.size();
   if (num_mf > 1) {
     size_t num_hf_lev = NLev.back().size();
     if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
@@ -184,10 +185,9 @@ void NonDMultilevelSampling::core_run()
     }
     else { // multiple model forms (only) --> CVMC
       // use nominal value from user input, ignoring solution_level_control
-      size_t soln_level = _NPOS;
-      SizetSizetPair lf_form_level(model_form,   soln_level),
-	             hf_form_level(model_form+1, soln_level);
-      control_variate_mc(lf_form_level, hf_form_level);
+      UShortArray lf_key(1);  lf_key[0] = model_form;     // ignore soln_level
+      UShortArray hf_key(1);  hf_key[0] = model_form + 1; // ignore soln_level
+      control_variate_mc(lf_key, hf_key);
     }
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
@@ -201,7 +201,7 @@ void NonDMultilevelSampling::core_run()
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
+void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
 {
   // Formulate as a coordinated progression towards convergence, where, e.g.,
   // time step is inferred from the spatial discretization (NOT an additional
@@ -232,9 +232,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   //      across major iterations (possible oscillation?  Or simple overlay
   //      of resolution reqmts?)
   // 2. Better: select N_l based on convergence in aggregated variance.
-  
-  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
-  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+
+  iteratedModel.surrogate_model_key(model_form);// soln lev not updated yet
+  iteratedModel.truth_model_key(model_form);    // soln lev not updated yet
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
@@ -262,21 +262,10 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      lev_cost = cost[lev];
-      if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
-	iteratedModel.surrogate_model_indices(model_form, lev-1);
-	iteratedModel.truth_model_indices(model_form,     lev);
-	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-      }
+      configure_indices(lev, model_form, cost, lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
@@ -289,10 +278,10 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
-	// export separate output files for each data set.  surrogate_model()
-	// has the correct model_form index for all levels.
+	// export separate output files for each data set.  truth_model()
+	// has the correct data when in bypass-surrogate mode.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -301,12 +290,9 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 	// update number of successful samples for each QoI
 	//if (iter == 0) accumulate_offsets(mu_hat[lev]);
 	accumulate_ml_Ysums(sum_Y, sum_YY, lev, mu_hat[lev], N_l[lev]);
-	if (outputLevel == DEBUG_OUTPUT) {
-	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n";
-	  write_data(Cout, sum_Y[1]); write_data(Cout, sum_Y[2]);
-	  write_data(Cout, sum_Y[3]); write_data(Cout, sum_Y[4]);
-	  write_data(Cout, sum_YY);   Cout << std::endl;
-	}
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n" << sum_Y[1]
+	       << sum_Y[2] << sum_Y[3] << sum_Y[4] << sum_YY << std::endl;
 	// update raw evaluation counts
 	raw_N_l[lev] += numSamples;
 
@@ -318,7 +304,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
-      // MSE reference is MC applied to HF:
+      // MSE reference is MLMC with pilot sample, prior to any N_l adaptation:
       if (iter == 0)
 	estimator_var0
 	  += aggregate_mse_Ysum(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
@@ -326,8 +312,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-    // discretization error, we compute an initial estimator variance and
-    // then seek to reduce it by a relative_factor <= 1.
+    // discretization error, we compute an initial estimator variance from MLMC
+    // on the pilot sample and then seek to reduce it by a relative_factor <= 1.
     if (iter == 0) { // eps^2 / 2 = var * relative factor
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
@@ -376,10 +362,10 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
+void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
 {
-  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
-  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+  iteratedModel.surrogate_model_key(model_form);// soln lev not updated yet
+  iteratedModel.truth_model_key(model_form);    // soln lev not updated yet
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
@@ -408,21 +394,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      lev_cost = cost[lev];
-      if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
-	iteratedModel.surrogate_model_indices(model_form, lev-1);
-	iteratedModel.truth_model_indices(model_form,     lev);
-	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-      }
+      configure_indices(lev, model_form, cost, lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
@@ -435,10 +410,10 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
-	// export separate output files for each data set.  surrogate_model()
-	// has the correct model_form index for all levels.
+	// export separate output files for each data set.  truth_model()
+	// has the correct data when in bypass-surrogate mode.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -448,12 +423,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 	//if (iter == 0) accumulate_offsets(mu_hat[lev]);
 	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev,
 			    mu_hat[lev], N_l[lev]);
-	if (outputLevel == DEBUG_OUTPUT) {
-	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n";
-	  write_data(Cout, sum_Ql[1]);   write_data(Cout, sum_Ql[2]);
-	  write_data(Cout, sum_Qlm1[1]); write_data(Cout, sum_Qlm1[2]);
-	  Cout << std::endl;
-	}
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n" << sum_Ql[1]
+	       << sum_Ql[2] << sum_Qlm1[1] << sum_Qlm1[2] << std::endl;
 	// update raw evaluation counts
 	raw_N_l[lev] += numSamples;
 
@@ -465,7 +437,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
-      // MSE reference is MC applied to HF:
+      // MSE reference is MLMC with pilot sample, prior to any N_l adaptation:
       if (iter == 0)
 	estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
 	  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],N_l[lev],lev);
@@ -551,18 +523,16 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 /** This function performs control variate MC across two combinations of 
     model form and discretization level. */
 void NonDMultilevelSampling::
-control_variate_mc(const SizetSizetPair& lf_form_level,
-		   const SizetSizetPair& hf_form_level)
+control_variate_mc(const UShortArray& lf_key, const UShortArray& hf_key)
 {
-  iteratedModel.surrogate_model_indices(lf_form_level);
-  iteratedModel.truth_model_indices(hf_form_level);
+  iteratedModel.surrogate_model_key(lf_key);
+  iteratedModel.truth_model_key(hf_key);
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
 
-  // retrieve active index (will differ from incoming soln levels when _NPOS
-  // is passed)
-  //size_t lf_lev_index = surr_model.solution_level_index(),
-  //       hf_lev_index = truth_model.solution_level_index();
+  // retrieve active index
+  //unsigned short lf_lev_index =  surr_model.solution_level_index(),
+  //               hf_lev_index = truth_model.solution_level_index();
   // retrieve cost estimates across model forms for a particular soln level
   Real lf_cost =  surr_model.solution_level_cost(),
        hf_cost = truth_model.solution_level_cost(),
@@ -570,7 +540,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   size_t iter = 0;
 
   IntRealVectorMap sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH;
-  initialize_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL,sum_LH);
+  initialize_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH);
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
             rho2_LH(numFunctions, false);
 
@@ -579,8 +549,9 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   load_pilot_sample(pilotSamples, NLev, delta_N_l);
 
   // NLev allocations currently enforce truncation to #HF levels (1)
-  SizetArray& N_lf = NLev[lf_form_level.first][0];//[lf_lev_index];
-  SizetArray& N_hf = NLev[hf_form_level.first][0];//[hf_lev_index];
+  unsigned short lf_model_form = lf_key.front(), hf_model_form = hf_key.front();
+  SizetArray& N_lf = NLev[lf_model_form][0];//[lf_lev_index];
+  SizetArray& N_hf = NLev[hf_model_form][0];//[hf_lev_index];
   size_t raw_N_lf = 0, raw_N_hf = 0;
   RealVector mu_hat;
 
@@ -589,8 +560,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // ---------------------
 
   // Initialize for pilot sample (shared sample count discarding any excess)
-  numSamples = std::min(delta_N_l[lf_form_level.first],
-			delta_N_l[hf_form_level.first]);
+  numSamples = std::min(delta_N_l[lf_model_form], delta_N_l[hf_model_form]);
   shared_increment(iter, 0);
   accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		     sum_HH, mu_hat, N_lf, N_hf);
@@ -634,7 +604,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // --------------------------------------------------
   // Compute LF increment based on the evaluation ratio
   // --------------------------------------------------
-  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+  uncorrected_surrogate_mode();
   if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++iter, 0)) { // level 0
     accumulate_cv_sums(sum_L_refined, mu_hat, N_lf);
     raw_N_lf += numSamples;
@@ -657,10 +627,11 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
     across two model forms to exploit correlation in the discrepancies
     at each level (Y_l). */
 void NonDMultilevelSampling::
-multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
+multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
+				    unsigned short hf_model_form)
 {
-  iteratedModel.surrogate_model_indices(lf_model_form); // for init levs,cost
-  iteratedModel.truth_model_indices(hf_model_form);     // for init levs,cost
+  iteratedModel.surrogate_model_key(lf_model_form); // for init levs,cost
+  iteratedModel.truth_model_key(hf_model_form);     // for init levs,cost
 
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -698,20 +669,10 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
   // now converge on sample counts per level (N_hf)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // surr resp
-    iteratedModel.surrogate_model_indices(hf_model_form, 0); // HF level 0
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      hf_lev_cost = hf_cost[lev];
-      if (lev) {
-	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // both resp
-	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
-	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
-	hf_lev_cost += hf_cost[lev-1]; // 2 levels
-      }
+      configure_indices(lev, hf_model_form, hf_cost, hf_lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_hf[lev];
@@ -725,12 +686,12 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
 	// export separate output files for each data set.  Note that
-	// surrogate_model() is indexed with hf_model_form at this stage for
+	// truth_model() is indexed with hf_model_form at this stage for
 	// all levels.  The exported discretization level (e.g., state variable
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -749,14 +710,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  lf_lev_cost = lf_cost[lev]; 
-	  if (lev) {
-	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	    iteratedModel.truth_model_indices(lf_model_form,     lev);
-	    lf_lev_cost += lf_cost[lev-1];
-	  }
-	  else
-	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	  configure_indices(lev, lf_model_form, lf_cost, lf_lev_cost);
 	  // compute allResp w/ LF model form reusing allVars from MLMC step
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for CV sums
@@ -764,13 +718,11 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 				sum_L_refined, sum_H, sum_LL, sum_LH,
 				sum_HH, lev, mu_L_hat, mu_H_hat,
 				N_lf[lev], N_hf[lev]);
-	  if (outputLevel == DEBUG_OUTPUT) {
+	  if (outputLevel == DEBUG_OUTPUT)
 	    Cout << "Accumulated sums (L_shared[1,2], L_refined[1,2], LH[1,2])"
-		 << ":\n";
-	    write_data(Cout,sum_L_shared[1]); write_data(Cout,sum_L_shared[2]);
-	    write_data(Cout,sum_L_refined[1]);write_data(Cout,sum_L_refined[2]);
-	    write_data(Cout,sum_LH[1]);       write_data(Cout,sum_LH[2]);
-	  }
+		 << ":\n" << sum_L_shared[1] << sum_L_shared[2]
+		 << sum_L_refined[1] << sum_L_refined[2]
+		 << sum_LH[1] << sum_LH[2];
 	  // update raw evaluation counts
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
@@ -788,11 +740,9 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  RealMatrix& sum_HH1 = sum_HH[1];
 	  accumulate_ml_Ysums(sum_H, sum_HH1, lev, mu_H_hat,
 			      N_hf[lev]); // sum_Y for lev>0
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (H[1], H[2], HH):\n";
-	    write_data(Cout, sum_H[1]); write_data(Cout, sum_H[2]);
-	    write_data(Cout, sum_HH1);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (H[1], H[2], HH):\n"
+		 << sum_H[1] << sum_H[2] << sum_HH1;
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -806,7 +756,9 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
       sum_sqrt_var_cost += (lev < num_cv_lev) ?
 	std::sqrt(agg_var_hf_l * hf_lev_cost / (1. - avg_rho2_LH[lev]))
 	  * Lambda[lev] : std::sqrt(agg_var_hf_l * hf_lev_cost);
-      // MSE reference is MC applied to HF Y aggregated across qoi & levels
+      // MSE reference is MLMF MC applied to {HF,LF} pilot sample aggregated
+      // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
+      // will result in no additional variance reduction beyond MLMC.
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
 	  aggregate_mse_Yvar(var_H[lev], N_hf[lev]) :
@@ -826,24 +778,15 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     // All CV lf_increment() calls now follow all ML level evals:
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
-	if (lev) {
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
-	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	  iteratedModel.truth_model_indices(lf_model_form,     lev);
-	}
-	else {
-	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
-	}
-	// now execute additional LF sample increment, if needed
+	configure_indices(lev, lf_model_form);
+
+	// execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
 	  accumulate_mlcv_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (L_refined[1,2]):\n";
-	    write_data(Cout, sum_L_refined[1]);
-	    write_data(Cout, sum_L_refined[2]);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (L_refined[1,2]):\n"
+		 << sum_L_refined[1] << sum_L_refined[2];
 	}
       }
     }
@@ -902,10 +845,11 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     to separately target correlations for each QoI level embedded
     within the level discrepancies. */
 void NonDMultilevelSampling::
-multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
+multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
+				    unsigned short hf_model_form)
 {
-  iteratedModel.surrogate_model_indices(lf_model_form); // for init levs,cost
-  iteratedModel.truth_model_indices(hf_model_form);     // for init levs,cost
+  iteratedModel.surrogate_model_key(lf_model_form); // for init levs,cost
+  iteratedModel.truth_model_key(hf_model_form);     // for init levs,cost
 
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -954,20 +898,10 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   // now converge on sample counts per level (N_hf)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // surr resp
-    iteratedModel.surrogate_model_indices(hf_model_form, 0); // HF level 0
-
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      hf_lev_cost = hf_cost[lev];
-      if (lev) {
-	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // both resp
-	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
-	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
-	hf_lev_cost += hf_cost[lev-1]; // 2 levels
-      }
+      configure_indices(lev, hf_model_form, hf_cost, hf_lev_cost);
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_hf[lev];
@@ -981,12 +915,12 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 
 	// export separate output files for each data set.  Note that
-	// surrogate_model() is indexed with hf_model_form at this stage for
+	// truth_model() is indexed with hf_model_form at this stage for
 	// all levels.  The exported discretization level (e.g., state variable
 	// value) can't capture a level discrepancy for lev>0 and will reflect
 	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
@@ -1005,14 +939,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
-	  lf_lev_cost = lf_cost[lev];
-	  if (lev) {
-	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	    iteratedModel.truth_model_indices(lf_model_form,     lev);
-	    lf_lev_cost += lf_cost[lev-1];
-	  }
-	  else
-	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	  configure_indices(lev, lf_model_form, lf_cost, lf_lev_cost);
 	  // eval allResp w/ LF model reusing allVars from ML step above
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for MLCV sums;
@@ -1023,13 +950,10 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 				sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
 				sum_Hlm1_Hlm1, lev, mu_L_hat, mu_H_hat,
 				N_lf[lev], N_hf[lev]);
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (Ll[1,2], L_refined[1,2], Hl[1,2]):\n";
-	    write_data(Cout, sum_Ll[1]); write_data(Cout, sum_Ll[2]);
-	    write_data(Cout, sum_Ll_refined[1]);
-	    write_data(Cout, sum_Ll_refined[2]);
-	    write_data(Cout, sum_Hl[1]); write_data(Cout, sum_Hl[2]);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (Ll[1,2], L_refined[1,2], Hl[1,2]):\n"
+		 << sum_Ll[1] << sum_Ll[2] << sum_Ll_refined[1]
+		 << sum_Ll_refined[2] << sum_Hl[1] << sum_Hl[2];
 	  // update raw evaluation counts
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
@@ -1051,11 +975,9 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  RealMatrix& sum_HH1 = sum_Hl_Hl[1];
 	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, mu_H_hat,
 			      N_hf[lev]); // sum_Y for lev>0
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n";
-	    write_data(Cout, sum_Hl[1]); write_data(Cout, sum_Hl[2]);
-	    write_data(Cout, sum_HH1);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n"
+		 << sum_Hl[1] << sum_Hl[2] << sum_HH1;
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
 	  if (outputLevel >= DEBUG_OUTPUT)
@@ -1069,7 +991,9 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
       sum_sqrt_var_cost += (lev < num_cv_lev) ?
 	std::sqrt(agg_var_hf_l * hf_lev_cost / (1. - avg_rho_dot2_LH[lev]))
 	  * Lambda[lev] : std::sqrt(agg_var_hf_l * hf_lev_cost);
-      // MSE reference is MC applied to HF Y aggregated across qoi & levels
+      // MSE reference is MLMF MC applied to {HF,LF} pilot sample aggregated
+      // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
+      // will result in no additional variance reduction beyond MLMC.
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
 	  aggregate_mse_Yvar(var_Yl[lev], N_hf[lev]) :
@@ -1096,25 +1020,16 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     //   similar Model eval sets for aggregated scheduling
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (delta_N_hf[lev]) {
-	if (lev) {
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
-	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	  iteratedModel.truth_model_indices(lf_model_form,     lev);
-	}
-	else {
-	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
-	}
+	configure_indices(lev, lf_model_form);
+
 	// now execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
 	  accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
 				N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (L_refined[1,2]):\n";
-	    write_data(Cout, sum_Ll_refined[1]);
-	    write_data(Cout, sum_Ll_refined[2]);
-	  }
+	  if (outputLevel == DEBUG_OUTPUT)
+	    Cout << "Accumulated sums (L_refined[1,2]):\n"
+		 << sum_Ll_refined[1] << sum_Ll_refined[2];
 	}
       }
     }
@@ -1337,7 +1252,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
 	++num_Q[qoi];
       }
     }
-    //Cout << r_it->first << ": "; write_data(Cout, sum_Q[1]);
+    //Cout << r_it->first << ": " << sum_Q[1];
   }
 }
 
@@ -1360,11 +1275,12 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODELS orders LF followed by HF
-	q_l_prod   = q_l   = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	q_l_prod   = q_l   = (os) ?  fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	q_lm1_prod = q_lm1 = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
-	q_lm1_prod = q_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -1404,8 +1320,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	  ++num_Q[qoi];
 	}
       }
-      //Cout << r_it->first << ": ";
-      //write_data(Cout, sum_Ql[1]); write_data(Cout, sum_Qlm1[1]);
+      //Cout << r_it->first << ": " << sum_Ql[1] << sum_Qlm1[1];
     }
   }
 }
@@ -1452,8 +1367,10 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
-	hf_prod = hf_fn = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	hf_prod = hf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	lf_prod = lf_fn = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
 	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
@@ -1484,7 +1401,7 @@ void NonDMultilevelSampling::
 accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
 		   SizetArray& num_L)
 {
-  // uses one set of allResponses in UNCORRECTED_SURROGATE mode
+  // uses one set of allResponses in BYPASS_SURROGATE mode
   // IntRealVectorMap is not a multilevel case --> no discrepancies
 
   using std::isfinite;
@@ -1538,8 +1455,10 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
-      hf_prod = hf_fn = (os) ?
+      // response mode AGGREGATED_MODELS orders HF (active model key)
+      // followed by LF (previous/decremented model key)
+      hf_prod = hf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+      lf_prod = lf_fn = (os) ?
 	fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	fn_vals[qoi+numFunctions];
 
@@ -1615,11 +1534,12 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	// response mode AGGREGATED_MODELS orders LF followed by HF
-	q_l_prod   = q_l   = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	q_l_prod   = q_l   = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	q_lm1_prod = q_lm1 = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
-	q_lm1_prod = q_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -1646,8 +1566,7 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	  ++num_Q[qoi];
 	}
       }
-      //Cout << r_it->first << ": ";
-      //write_data(Cout, sum_Ql[1]); write_data(Cout, sum_Qlm1[1]);
+      //Cout << r_it->first << ": " << sum_Ql[1] << sum_Qlm1[1];
     }
   }
 }
@@ -1657,7 +1576,7 @@ void NonDMultilevelSampling::
 accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 		      const RealVector& offset, SizetArray& num_Y)
 {
-  // uses one set of allResponses in UNCORRECTED_SURROGATE (level 0) or
+  // uses one set of allResponses in BYPASS_SURROGATE (level 0) or
   // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap is a multilevel
   // case with discrepancies, indexed by level.
 
@@ -1674,10 +1593,12 @@ accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	prod_l   = fn_l   = (os) ?
+	// response mode AGGREGATED_MODELS orders HF (active model key)
+	// followed by LF (previous/decremented model key)
+	prod_l   = fn_l   = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	prod_lm1 = fn_lm1 = (os) ?
 	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
 	  fn_vals[qoi+numFunctions];
-	prod_lm1 = fn_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	if (isfinite(fn_l) && isfinite(fn_lm1)) { // neither NaN nor +/-Inf
 	  y_it = sum_Y.begin(); ord = y_it->first; active_ord = 1;
@@ -1694,7 +1615,7 @@ accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
 	  ++num_Y[qoi];
 	}
       }
-      //Cout << r_it->first << ": "; write_data(Cout, sum_Y[1]);
+      //Cout << r_it->first << ": " << sum_Y[1];
     }
   }
 }
@@ -1800,11 +1721,11 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
-  // uses two sets of responses (LF & HF) in UNCORRECTED_SURROGATE (level 0) or
+  // uses two sets of responses (LF & HF) in BYPASS_SURROGATE (level 0) or
   // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap are for multilevel
   // case with discrepancies, indexed by level.
 
-  if (lev == 0) // UNCORRECTED_SURROGATE -> 1 set of qoi per response map
+  if (lev == 0) // BYPASS_SURROGATE -> 1 set of qoi per response map
     accumulate_mlcv_Qsums(lf_resp_map, hf_resp_map, sum_L_shared,
 			  sum_L_refined, sum_H, sum_LL, sum_LH, sum_HH,
 			  lev, lf_offset, hf_offset, num_L, num_H);
@@ -1826,16 +1747,18 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
+	// response mode AGGREGATED_MODELS orders level l (active model key)
+	// followed by level l-1 (previous/decremented model key)
 	lf_l_prod   = lf_l   = (lfos) ?
+	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
+	lf_lm1_prod = lf_lm1 = (lfos) ?
 	  lf_fn_vals[qoi+numFunctions] - lf_offset[qoi+numFunctions] :
 	  lf_fn_vals[qoi+numFunctions];
-	lf_lm1_prod = lf_lm1 = (lfos) ?
-	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
 	hf_l_prod   = hf_l   = (hfos) ?
+	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
+	hf_lm1_prod = hf_lm1 = (hfos) ?
 	  hf_fn_vals[qoi+numFunctions] - hf_offset[qoi+numFunctions] :
 	  hf_fn_vals[qoi+numFunctions];
-	hf_lm1_prod = hf_lm1 = (hfos) ?
-	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&
@@ -1923,7 +1846,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
-  // uses two sets of responses (LF & HF) in UNCORRECTED_SURROGATE (level 0) or
+  // uses two sets of responses (LF & HF) in BYPASS_SURROGATE (level 0) or
   // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap are for multilevel
   // case with discrepancies, indexed by level.
 
@@ -1952,16 +1875,18 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
+	// response mode AGGREGATED_MODELS orders level l (active model key)
+	// followed by level l-1 (previous/decremented model key)
 	lf_l_prod   = lf_l   = (lfos) ?
+	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
+	lf_lm1_prod = lf_lm1 = (lfos) ?
 	  lf_fn_vals[qoi+numFunctions] - lf_offset[qoi+numFunctions] :
 	  lf_fn_vals[qoi+numFunctions];
-	lf_lm1_prod = lf_lm1 = (lfos) ?
-	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
 	hf_l_prod   = hf_l   = (hfos) ?
+	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
+	hf_lm1_prod = hf_lm1 = (hfos) ?
 	  hf_fn_vals[qoi+numFunctions] - hf_offset[qoi+numFunctions] :
 	  hf_fn_vals[qoi+numFunctions];
-	hf_lm1_prod = hf_lm1 = (hfos) ?
-	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&
@@ -2105,7 +2030,7 @@ void NonDMultilevelSampling::shared_increment(size_t iter, size_t lev)
   else Cout << "\nCVMC iteration " << iter << " sample increments: ";
   Cout << "LF = " << numSamples << " HF = " << numSamples << '\n';
 
-  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+  aggregated_models_mode();
 
   // generate new MC parameter sets
   get_parameter_sets(iteratedModel);// pull dist params from any model
@@ -2158,10 +2083,10 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     // with finalCVRefinement=true.
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
     if (iter < max_iter || finalCVRefinement) {
-      // mode for hierarchical surrogate model can be uncorrected surrogate
-      // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
-      // --> set at calling level
-      //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+      // mode for hierarchical surrogate could be BYPASS_SURROGATE for
+      // CV or BYPASS_SURROGATE/AGGREGATED_MODELS for ML-CV MC (set at
+      // calling level)
+      //bypass_surrogate_mode();
 
       // compute allResponses from allVariables using hierarchical model
       evaluate_parameter_sets(iteratedModel, true, false);

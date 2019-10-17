@@ -42,14 +42,19 @@ public:
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      unsigned short num_int, const RealVector& dim_pref,
-		      short u_space_type, bool piecewise_basis,
-		      bool use_derivs);
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      unsigned short exp_order, const RealVector& dim_pref,
 		      size_t colloc_pts, Real colloc_ratio, int seed,
-		      short u_space_type, bool piecewise_basis, bool use_derivs,
-		      bool cv_flag, const String& import_build_pts_file,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      //short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs, bool cv_flag,
+		      const String& import_build_pts_file,
 		      unsigned short import_build_format,
 		      bool import_build_active_only);
 
@@ -74,13 +79,18 @@ protected:
   /// multilevel/multifidelity PCE using numerical integration
   NonDPolynomialChaos(unsigned short method_name, Model& model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
-		      short u_space_type, bool piecewise_basis,
-		      bool use_derivs);
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short ml_discrep, short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs);
   /// base constructor for lightweight construction of 
   /// multilevel/multifidelity PCE using regression
   NonDPolynomialChaos(unsigned short method_name, Model& model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
-		      short u_space_type, bool piecewise_basis, bool use_derivs,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short ml_discrep, //short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs,
 		      Real colloc_ratio, int seed, bool cv_flag);
 
   //
@@ -95,8 +105,8 @@ protected:
 
   void initialize_u_space_model();
 
-  /// form or import an orthogonal polynomial expansion using PCE methods
-  void compute_expansion(size_t index = _NPOS);
+  //void initialize_expansion();
+  void compute_expansion();
 
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
@@ -107,9 +117,10 @@ protected:
     RealMatrix& best_samples);
 
   void append_expansion(const RealMatrix& samples,
-			const IntResponseMap& resp_map, size_t index = _NPOS);
+			const IntResponseMap& resp_map);
 
   void increment_order_and_grid();
+  void decrement_order_and_grid();
 
   /// print the final coefficients and final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -126,7 +137,7 @@ protected:
   //
 
   /// generate new samples from numSamplesOnModel and update expansion
-  void append_expansion(size_t index = _NPOS);
+  void append_expansion();
 
   /// configure exp_orders from inputs
   void config_expansion_orders(unsigned short exp_order,
@@ -181,6 +192,13 @@ protected:
   /// option for regression PCE using a filtered set tensor-product points
   bool tensorRegression;
 
+  /// flag for use of cross-validation for selection of parameter settings
+  /// in regression approaches
+  bool crossValidation;
+  /// flag to restrict cross-validation to only estimate the noise
+  /// tolerance in order to manage computational cost
+  bool crossValidNoiseOnly;
+
   /// user specified import build points file
   String importBuildPointsFile;
   /// user specified import build file format
@@ -205,9 +223,17 @@ private:
   /// define a grid increment that is consistent with an advancement in
   /// expansion order
   void increment_grid_from_order();
+  /// revert a previous grid increment following an order decrement
+  void decrement_grid_from_order();
+
   /// define an expansion order that is consistent with an advancement in
   /// structured/unstructured grid level/density
   void increment_order_from_grid();
+
+  /// update numSamplesOnModel after an order increment/decrement
+  void update_samples_from_order();
+  /// publish numSamplesOnModel update to the DataFitSurrModel instance
+  void update_model_from_samples();
 
   /// convert an isotropic/anisotropic expansion_order vector into a scalar
   /// plus a dimension preference vector
@@ -225,13 +251,6 @@ private:
   /// seed for random number generator used for regression with LHS
   /// and sub-sampled tensor grids
   int randomSeed;
-
-  /// flag for use of cross-validation for selection of parameter settings
-  /// in regression approaches
-  bool crossValidation;
-  /// flag to restrict cross-validation to only estimate the noise
-  /// tolerance in order to manage computational cost
-  bool crossValidNoiseOnly;
 
   /// noise tolerance for compressive sensing algorithms; vector form used
   /// in cross-validation
@@ -272,8 +291,7 @@ private:
 
 
 inline void NonDPolynomialChaos::
-append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map,
-		 size_t index)
+append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   // adapt the expansion in sync with the dataset
   numSamplesOnModel += resp_map.size();
@@ -281,19 +299,21 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map,
     increment_order_from_grid();
 
   // utilize rebuild following expansion updates
-  uSpaceModel.append_approximation(samples, resp_map, true, index);
+  uSpaceModel.append_approximation(samples, resp_map, true);
 }
 
 
-inline void NonDPolynomialChaos::append_expansion(size_t index)
+inline void NonDPolynomialChaos::append_expansion()
 {
   // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
   //         increment_order_from_grid() called
 
-  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
+  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
   uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
 						    true, false);
-  uSpaceModel.run_dace_iterator(true, index); // appends and rebuilds
+  uSpaceModel.run_dace();
+  // append new DACE pts and rebuild expansion
+  uSpaceModel.append_approximation(true);
 }
 
 

@@ -16,6 +16,7 @@
 #include "DakotaModel.hpp"
 #include "DataTransformModel.hpp"
 #include "ScalingModel.hpp"
+#include "WeightingModel.hpp"
 #include "DakotaLeastSq.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
@@ -113,9 +114,9 @@ LeastSq::LeastSq(unsigned short method_name, Model& model, std::shared_ptr<Trait
 
 
 /** Setup Recast for weighting model.  The weighting transformation
-    doesn't resize, so use numUserPrimaryFns.  No vars, active set or
-    secondary mapping.  All indices are one-to-one mapped (no change
-    in counts). */
+    doesn't resize, and makes no vars, active set or secondary
+    mapping.  All indices are one-to-one mapped (no change in
+    counts). */
 void LeastSq::weight_model()
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -130,67 +131,9 @@ void LeastSq::weight_model()
       abort_handler(-1);
     }
 
-  // the size of the recast is the total numLeastSqTerms being iterated
-  size_t i;
-  Sizet2DArray var_map_indices(numContinuousVars), 
-    primary_resp_map_indices(numLeastSqTerms), 
-    secondary_resp_map_indices(numNonlinearConstraints);
-  bool nonlinear_vars_map = false;
-  BoolDequeArray nonlinear_resp_map(numLeastSqTerms+numNonlinearConstraints);
-
-  for (i=0; i<numContinuousVars; i++) {
-    var_map_indices[i].resize(1);
-    var_map_indices[i][0] = i;
-  }
-  for (i=0; i<numLeastSqTerms; i++) {
-    primary_resp_map_indices[i].resize(1);
-    primary_resp_map_indices[i][0] = i;
-    nonlinear_resp_map[i].resize(1);
-    nonlinear_resp_map[i][0] = false;
-  }
-  for (i=0; i<numNonlinearConstraints; i++) {
-    secondary_resp_map_indices[i].resize(1);
-    secondary_resp_map_indices[i][0] = numLeastSqTerms + i;
-    nonlinear_resp_map[numLeastSqTerms+i].resize(1);
-    nonlinear_resp_map[numLeastSqTerms+i][0] = false;
-  }
-
-  void (*vars_recast) (const Variables&, Variables&) = NULL;
-  void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
-  void (*pri_resp_recast) (const Variables&, const Variables&,
-                           const Response&, Response&)
-    = primary_resp_weighter;
-  void (*sec_resp_recast) (const Variables&, const Variables&,
-                           const Response&, Response&) = NULL;
-
-  size_t recast_secondary_offset = numNonlinearIneqConstraints;
-  SizetArray recast_vars_comps_total;  // default: empty; no change in size
-  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-  const Response& curr_resp = iteratedModel.current_response();
-  short recast_resp_order = 1; // recast resp order to be same as original resp
-  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
-  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
-
-  iteratedModel.assign_rep(new
-    RecastModel(iteratedModel, var_map_indices, recast_vars_comps_total, 
-		all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
-		set_recast, primary_resp_map_indices,
-		secondary_resp_map_indices, recast_secondary_offset,
-		recast_resp_order, nonlinear_resp_map, pri_resp_recast,
-		sec_resp_recast), false);
+  // TODO: pass sqrt to WeightingModel
+  iteratedModel.assign_rep(new WeightingModel(iteratedModel), false);
   ++myModelLayers;
-
-  // This transformation consumes weights, so the resulting wrapped
-  // model doesn't need them any longer, however don't want to recurse
-  // and wipe out in sub-models.  Be explicit in case later
-  // update_from_model() is used instead.
-  bool recurse_flag = false;
-  iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
-
-  // Preserve sense through the weighting transformation.
-  const BoolDeque& submodel_sense = 
-    iteratedModel.subordinate_model().primary_response_fn_sense();
-  iteratedModel.primary_response_fn_sense(submodel_sense);
 }
 
 
@@ -215,11 +158,12 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   //    for scaling/weighting): DakotaLeastSq::print_results
 
   // TODO: Need to add residual norm to baselines
-
+  
   // archive the single best point
   size_t num_best = 1, best_ind = 0;
-  archive_allocate_best(num_best);
-  archive_best(best_ind, bestVariablesArray.front(), bestResponseArray.front());
+  int eval_id;
+  //if(!calibrationDataFlag)
+  //  archive_allocate_residuals(num_best);
 
   // Print best calibration parameters.  Include any inactive
   // variables unless they are used as experiment configuration
@@ -229,7 +173,6 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     s << "<<<<< Best parameters          =\n" << best_vars;
   else {
     s << "<<<<< Best parameters (experiment config variables omitted) =\n";
-    bool active_only = true;
     best_vars.write(s, ACTIVE_VARS);
   }
 
@@ -246,8 +189,8 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     // interpolation cases as well.
     DataTransformModel* dt_model_rep =
       static_cast<DataTransformModel*>(dataTransformModel.model_rep());
-    dt_model_rep->print_best_responses(s, best_vars, bestResponseArray.front(),
-                                       num_best, best_ind);
+    dt_model_rep->print_best_responses(s, best_vars, 
+                                       bestResponseArray.front(), num_best, best_ind);
   }
   else {
     // otherwise the residuals worked on are same size/type as the
@@ -284,15 +227,17 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   Model orig_model = original_model();
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
-  ActiveSet search_set(orig_model.num_functions(), numContinuousVars);
+  ActiveSet search_set(orig_model.response_size(), numContinuousVars);
 
   activeSet.request_values(1);
   PRPCacheHIter cache_it = lookup_by_val(data_pairs,
     iteratedModel.interface_id(), best_vars, activeSet);
-  if (cache_it == data_pairs.get<hashed>().end())
+  if (cache_it == data_pairs.get<hashed>().end()) {
     s << "<<<<< Best data not found in evaluation cache\n\n";
+    eval_id = 0;
+  }
   else {
-    int eval_id = cache_it->eval_id();
+    eval_id = cache_it->eval_id();
     if (eval_id > 0)
       s << "<<<<< Best data captured at function evaluation " << eval_id
 	<< "\n\n";
@@ -309,10 +254,9 @@ void LeastSq::print_results(std::ostream& s, short results_state)
 
   if (!confBoundsLower.empty() && !confBoundsUpper.empty()) {
     // BMA: Not sure this warning is needed
-    if (expData.num_experiments() > 1) {
+    if (expData.num_experiments() > 1) 
       s << "Warning: Confidence intervals may be inaccurate when "
         << "num_experiments > 1\n";
-    }
 
     s << "Confidence Intervals on Calibrated Parameters:\n";
 
@@ -323,95 +267,6 @@ void LeastSq::print_results(std::ostream& s, short results_state)
 	<< setw(write_precision+6) << confBoundsLower[i] << ", "
 	<< setw(write_precision+6) << confBoundsUpper[i] << " ]\n";
   }
-}
-
-
-/** Apply weights to least squares residuals */
-void LeastSq::
-primary_resp_weighter(const Variables& unweighted_vars,
-		      const Variables& weighted_vars,
-		      const Response& unweighted_response,
-		      Response& weighted_response)
-{
-  if (leastSqInstance->outputLevel > NORMAL_OUTPUT) {
-    Cout << "\n--------------------------------------------------------";
-    Cout << "\nPost-processing Function Evaluation: Weighting Residuals";
-    Cout << "\n--------------------------------------------------------" 
-	 << std::endl;
-  }
-
-  // TODO: is the DVV management necessary here?
-
-  // apply any weights as necessary (consider code reuse with multi-objective?)
-  // for now, recast models don't have the appropriate data for weights
-  // TO DO: consider adding to the update from subordinate
-
-  // weighting is the last transformation, so weights are available in
-  // the first sub-model
-  const RealVector& lsq_weights = leastSqInstance->
-    iteratedModel.subordinate_model().primary_response_fn_weights();
-
-  size_t i,j,k;
-  SizetMultiArray var_ids;
-
-  const ShortArray& asv = weighted_response.active_set_request_vector();
-  const SizetArray& dvv = weighted_response.active_set_derivative_vector();
-  const size_t num_deriv_vars = dvv.size(); 
-
-  if (dvv == unweighted_vars.continuous_variable_ids()) {
-    var_ids.resize(boost::extents[unweighted_vars.cv()]);
-    var_ids = unweighted_vars.continuous_variable_ids();
-  }
-  else if (dvv == unweighted_vars.inactive_continuous_variable_ids()) {
-    var_ids.resize(boost::extents[unweighted_vars.icv()]);
-    var_ids = unweighted_vars.inactive_continuous_variable_ids();
-  }
-  else { // general derivatives
-    var_ids.resize(boost::extents[unweighted_vars.acv()]);
-    var_ids = unweighted_vars.all_continuous_variable_ids();
-  }
-
-  // TODO: review for efficiency (needless copies); can we just update
-  // from the unweighted response, then modify?
-  const RealVector& fn_vals = unweighted_response.function_values();
-  RealVector wt_fn_vals = weighted_response.function_values_view();
-  for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
-    // \Sum_i w_i T^2_i => residual scaling as \Sum_i [sqrt(w_i) T_i]^2
-    Real wt_i = std::sqrt(lsq_weights[i]);
-    // functions
-    if (asv[i] & 1)
-      wt_fn_vals[i] = wt_i * fn_vals[i];
-    // gradients
-    if (asv[i] & 2) {
-      const RealMatrix& fn_grads = unweighted_response.function_gradients();
-      RealMatrix wt_fn_grads = weighted_response.function_gradients_view();
-      for (j=0; j<num_deriv_vars; ++j) {
-	size_t xj_index = find_index(var_ids, dvv[j]);
-	if (xj_index != _NPOS)
-	  wt_fn_grads(xj_index,i) = wt_i * fn_grads(xj_index,i);
-      }
-    }
-    // hessians
-    if (asv[i] & 4) {
-      const RealSymMatrix& fn_hess = unweighted_response.function_hessian(i);
-      RealSymMatrix wt_fn_hess = weighted_response.function_hessian_view(i);
-      for (j=0; j<num_deriv_vars; ++j) {
-	size_t xj_index = find_index(var_ids, dvv[j]);
-	if (xj_index != _NPOS) {
-	  for (k=0; k<=j; ++k) {
-	    size_t xk_index = find_index(var_ids, dvv[k]);
-	    if (xk_index != _NPOS)
-	      wt_fn_hess(xj_index,xk_index) = wt_i * fn_hess(xj_index,xk_index);
-	  }
-	}
-      }
-    }
-  } // loop over least squares terms
-
-  if (leastSqInstance->outputLevel > NORMAL_OUTPUT)
-    Cout << "Least squares weight-transformed response:\n" << weighted_response 
-	 << std::endl;
-
 }
 
 
@@ -537,7 +392,7 @@ void LeastSq::post_run(std::ostream& s)
     // BMA TODO: Don't really need this whole response object
     // Could just cache the evalId here.. via cacheiter.
     Model orig_model = original_model();
-    Response found_resp(orig_model.current_response());
+    Response found_resp(orig_model.current_response().copy());
     ActiveSet search_set(found_resp.active_set());
     search_set.request_values(0);
     for (size_t i=0; i<numUserPrimaryFns; ++i)
@@ -575,7 +430,7 @@ void LeastSq::post_run(std::ostream& s)
     // cached by the solver and unscaled if needed below
     // BMA TODO: Don't really need this whole response object
     // Could just cache the evalId here.. via cacheiter.
-    Response found_resp(iteratedModel.current_response());
+    Response found_resp(iteratedModel.current_response().copy());
     ActiveSet search_set(found_resp.active_set());
     search_set.request_values(0);
     for (size_t i=0; i<numLeastSqTerms; ++i)
@@ -599,7 +454,7 @@ void LeastSq::post_run(std::ostream& s)
   // stores the gradients.  Try to lookup first.
   // We want the gradient of the transformed residuals
   // w.r.t. the original variables, so use the iteratedModel
-  Response found_resp(iteratedModel.current_response());
+  Response found_resp(iteratedModel.current_response().copy());
   ActiveSet search_set(found_resp.active_set());
   search_set.request_values(0);
   for (size_t i=0; i<numLeastSqTerms; ++i)
@@ -820,6 +675,24 @@ void LeastSq::get_confidence_intervals(const Variables& native_vars,
     confBoundsLower[j] = native_cv[j] - tdist * standard_error[j];
     confBoundsUpper[j] = native_cv[j] + tdist * standard_error[j];
   }
+}
+
+void LeastSq::archive_best_results() {
+  Minimizer::archive_best_results();
+  if(!resultsDB.active() || expData.num_experiments() > 1) return;
+
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("variables", cv_labels));
+  scales.emplace(1, StringScale("bounds", {"lower", "upper"}));
+  resultsDB.allocate_matrix(run_identifier(), {String("confidence_intervals")},
+      ResultsOutputType::REAL, confBoundsLower.length(),2, scales);
+  resultsDB.insert_into(run_identifier(), {String("confidence_intervals")},
+      confBoundsLower, 0, false);
+  resultsDB.insert_into(run_identifier(), {String("confidence_intervals")},
+      confBoundsUpper, 1, false);
+
 }
 
 } // namespace Dakota

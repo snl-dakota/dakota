@@ -1,4 +1,4 @@
-
+#@ *: DakotaConfig=HAVE_ROL
 environment,
 	method_pointer = 'SBLO'
 

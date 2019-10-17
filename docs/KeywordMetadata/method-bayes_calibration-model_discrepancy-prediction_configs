@@ -11,5 +11,8 @@ wish to be computed. See parent command for an example.
 <b> Usage Tips </b>
 
 If none of \c num_prediction_configs, \c prediction_configs, or
-\c import_prediction_configs is specified, Dakota sets \c 
-num_prediction_configs to 10. 
+\c import_prediction_configs is specified, the number of prediction 
+configurations is set to 10 for scalar responses. For field responses, the
+corrected model will be output at the input values of the configuration 
+variables. 
+

@@ -40,10 +40,16 @@ class SharedApproxData
   friend class Approximation;
   friend class TaylorApproximation;
   friend class TANA3Approximation;
+  friend class QMEApproximation;
   friend class GaussProcApproximation;
   friend class VPSApproximation;
-  friend class SurfpackApproximation;
   friend class PecosApproximation;
+#ifdef HAVE_C3
+  friend class C3Approximation;
+#endif // HAVE_C3
+#ifdef HAVE_SURFPACK
+  friend class SurfpackApproximation;
+#endif // HAVE_SURFPACK
 
 public:
 
@@ -71,44 +77,57 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// activate an approximation state based on its multi-index key
+  virtual void active_model_key(const UShortArray& mi_key);
+  /// return active multi-index key
+  virtual const UShortArray& active_model_key() const;
+  /// reset initial state by clearing all model keys for an approximation
+  virtual void clear_model_keys();
+
+  /// define data keys and active data index for aggregated response data
+  /// (SharedPecosApproxData)
+  virtual void link_multilevel_surrogate_data();
+
+  /// update approxDataKeys[activeDataIndex] with trailing surrogate key
+  virtual void surrogate_model_key(const UShortArray& key);
+  /// return trailing surrogate key from approxDataKeys[activeDataIndex]
+  virtual const UShortArray& surrogate_model_key() const;
+  /// update approxDataKeys[activeDataIndex] with leading truth key
+  virtual void truth_model_key(const UShortArray& key);
+  /// return leading truth key from approxDataKeys[activeDataIndex]
+  virtual const UShortArray& truth_model_key() const;
+
   /// builds the shared approximation data from scratch
-  virtual void build(size_t index = _NPOS);
+  virtual void build();
 
   /// rebuilds the shared approximation data incrementally
-  virtual void rebuild(size_t index = _NPOS);
+  virtual void rebuild();
   /// back out the previous increment to the shared approximation data 
   virtual void pop(bool save_surr_data);
   /// queries availability of pushing data associated with a trial set
   virtual bool push_available();
-  /// return index of trial set within popped bookkeeping sets
-  virtual size_t retrieval_index();
+  /// return index for restoring trial set within stored data sets
+  virtual size_t push_index(const UShortArray& key);
   /// push a previous state of the shared approximation data 
   virtual void pre_push();
   /// clean up popped bookkeeping following push 
   virtual void post_push();
-  /// return index of i-th trailing trial set within restorable bookkeeping sets
-  virtual size_t finalization_index(size_t i);
+  /// return index of i-th trial set within restorable bookkeeping sets
+  virtual size_t finalize_index(size_t i, const UShortArray& key);
   /// finalize the shared approximation data following a set of increments
   virtual void pre_finalize();
   /// clean up popped bookkeeping following aggregation
   virtual void post_finalize();
 
-  /// store the current state of the shared approximation data for
-  /// later combination (defaults to push_back)
-  virtual void store(size_t index = _NPOS);
-  /// restore a previous state of the shared approximation data
-  /// (defaults to pop_back from stored)
-  virtual void restore(size_t index = _NPOS);
-  /// remove an instance of stored approximation data prior to combination
-  /// (defaults to pop_back)
-  virtual void remove_stored(size_t index = _NPOS);
+  /// clear inactive approximation data
+  virtual void clear_inactive();
 
   /// aggregate the shared approximation data from current and stored states
-  virtual size_t pre_combine();
+  virtual void pre_combine();
   /// clean up stored data sets after aggregation
   virtual void post_combine();
-  /// clear stored approximation data
-  virtual void clear_stored();
+  /// promote aggregated data sets to active state
+  virtual void combined_to_active(bool clear_combined = true);
 
   //
   //- Heading: Member functions
@@ -116,6 +135,9 @@ public:
 
   // return the number of variables used in the approximation
   //int num_variables() const;
+
+  /// set activeDataIndex
+  void surrogate_data_index(size_t d_index);
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -167,11 +189,16 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
+  /// index of active approxData instance 
+  size_t activeDataIndex;
+  /// set of multi-index model keys (#surrData x #numKeys) to enumerate
+  /// when updating SurrogateData instances within each Approximation
+  UShort3DArray approxDataKeys;
+
   /// Prefix for model export files
   String modelExportPrefix;
-  /// Bitmapped format reques for exported models
+  /// Bitmapped format request for exported models
   unsigned short modelExportFormat;
-
 
   /// approximation continuous lower bounds (used by 3D graphics and
   /// Surfpack KrigingModel)
@@ -218,6 +245,21 @@ private:
 
 //inline int SharedApproxData::num_variables() const
 //{ return (dataRep) ? dataRep->numVars : numVars; }
+
+
+inline void SharedApproxData::surrogate_data_index(size_t d_index)
+{
+  if (dataRep)
+    dataRep->surrogate_data_index(d_index);
+  else { // not virtual: all derived classes use following definition
+    //if (d_index >= approxData.size()) {
+    //  Cerr << "Error: index out of range in SharedApproxData::"
+    //       << "surrogate_data_index()." << std::endl;
+    //  abort_handler(APPROX_ERROR);
+    //}
+    activeDataIndex = d_index;
+  }
+}
 
 
 inline void SharedApproxData::

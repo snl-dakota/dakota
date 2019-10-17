@@ -66,7 +66,8 @@ public:
                             StringMultiArrayConstView div_labels,
                             StringMultiArrayConstView dsv_labels,
                             StringMultiArrayConstView drv_labels,
-                            const StringArray& resp_labels) const;
+                            const StringArray& resp_labels, 
+                            const size_t &inc_id = 0) const;
 
   /// returns corrComputed to indicate whether compute_correlations()
   /// has been invoked

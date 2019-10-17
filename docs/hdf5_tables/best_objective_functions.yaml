@@ -1,0 +1,14 @@
+name: Best Objective Functions
+dataset:
+  description: "Best objective functions discovered by optimization"
+  location: "[set:<N>]/best_objective_functions"
+  notes: "The [set:<N>] group is present only when multiple final solutions are reported."
+  shape: "1-dimensional: number of objective functions"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: responses
+    contents: Response descriptors
+    literal_contents: False
+

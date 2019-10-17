@@ -70,14 +70,12 @@ public:
   /// destructor
   ~ActiveSubspaceModel();
 
-
   //
   //- Heading: Virtual function redefinitions
   //
 
   bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
-  bool mapping_initialized() const;
+  //bool finalize_mapping();
   bool resize_pending() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
@@ -87,7 +85,6 @@ public:
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   int serve_init_mapping(ParLevLIter pl_iter);
-
 
 protected:
 
@@ -124,6 +121,8 @@ protected:
   /// server operations when iteration on the ActiveSubspaceModel is complete
   void stop_servers();
 
+  void assign_instance();
+
   // ---
   // Construct time convenience functions
   // ---
@@ -145,6 +144,9 @@ protected:
   /// sample the model's gradient, computed the SVD, and form the active
   /// subspace rotation matrix.
   void build_subspace();
+
+  /// helper for shared code between lightweight ctor and initialize_mapping()
+  void initialize_subspace();
 
   /// sample the derivative at diff_samples points and leave temporary
   /// in dace_iterator
@@ -282,14 +284,8 @@ protected:
   /// Number of fullspace active continuous variables
   size_t numFullspaceVars;
 
-  /// Total number of response functions
-  size_t numFunctions;
-
   /// total construction samples evaluated so far
   unsigned int totalSamples;
-
-  /// boolean flag to determine if mapping has been fully initialized
-  bool subspaceInitialized;
 
   /// Normalization to use in the case of multiple QoI's
   unsigned short subspaceNormalization;
@@ -309,9 +305,9 @@ protected:
   /// current inactive variables
   RealVector inactiveVars;
 
-  /// matrix of derivative data with numFunctions columns per fullspace sample;
+  /// matrix of derivative data with numFns columns per fullspace sample;
   /// each column contains the gradient of one function at one sample point,
-  /// so total matrix size is numContinuousVars * (numFunctions * numSamples)
+  /// so total matrix size is numContinuousVars * (numFns * numSamples)
   /// [ D1 | D2 | ... | Dnum_samples]
   /// [ dy1/dx(k=1) | dy2/dx(k=1) | ... | dyM/dx(k=1) | k=2 | ... | k=n_s ]
   RealMatrix derivativeMatrix;
@@ -378,12 +374,12 @@ protected:
 };
 
 
-inline bool ActiveSubspaceModel::mapping_initialized() const
-{ return subspaceInitialized; }
-
-
 inline bool ActiveSubspaceModel::resize_pending() const
-{ return !subspaceInitialized; }
+{ return !mappingInitialized; }
+
+
+inline void ActiveSubspaceModel::assign_instance()
+{ asmInstance = this; }
 
 } // namespace Dakota
 

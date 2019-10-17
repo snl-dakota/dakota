@@ -1,0 +1,15 @@
+name: Simple Rank Correlations
+dataset:
+  description: Simple rank correlation matrix
+  location: "[increment:<N>]/simple_rank_correlations"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
+  shape: "2-dimensional: number of factors by number of factors"
+  type: Real
+scales:
+  - dimension: 0, 1
+    type: String
+    label: factors
+    contents: Variable and response descriptors
+    literal_contents: False
+    notes: The scales for both dimensions are identical
+

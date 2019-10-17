@@ -22,14 +22,14 @@
 //#ifdef HAVE_ACRO
 //#include "COLINOptimizer.hpp"
 //#endif
-#include "RecastModel.hpp"
-#include "DataFitSurrModel.hpp"
-#include "DakotaApproximation.hpp"
-#include "ProblemDescDB.hpp"
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
-#include "pecos_stat_util.hpp"
+#include "ProbabilityTransformModel.hpp"
+#include "DataFitSurrModel.hpp"
+#include "DakotaApproximation.hpp"
+#include "ProblemDescDB.hpp"
+#include "NormalRandomVariable.hpp"
 #include <boost/lexical_cast.hpp>
 
 //#define DEBUG
@@ -160,7 +160,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
   NonDLHSSampling* lhs_sampler_rep;
-  // instantiate the Nataf Recast and Gaussian Process DataFit recursions
+  // instantiate the Nataf ProbabilityTransform and GP DataFit recursions
   if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
     // The following uses on the fly derived ctor:
@@ -197,14 +197,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
       probDescDB.get_ushort("method.export_approx_format")), false);
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
-    // Recast g-hat(x) to G-hat(u)
-    transform_model(g_hat_x_model, uSpaceModel, true, 5.);// truncated dist bnds
+    // Recast g-hat(x) to G-hat(u); truncate dist bnds
+    uSpaceModel.assign_rep(new
+      ProbabilityTransformModel(g_hat_x_model, STD_NORMAL_U, true, 5.), false);
   }
   else { // DataFit( Recast( iteratedModel ) )
 
-    // Recast g(x) to G(u)
+    // Recast g(x) to G(u); truncate dist bnds
     Model g_u_model;
-    transform_model(iteratedModel, g_u_model, true, 5.); // truncated dist bnds
+    g_u_model.assign_rep(new
+      ProbabilityTransformModel(iteratedModel, STD_NORMAL_U, true, 5.), false);
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);
@@ -219,8 +221,6 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     //lhs_sampler_rep = new FSUDesignCompExp(g_u_model, samples, lhs_seed,
     //                                       dace_method);
     dace_iterator.assign_rep(lhs_sampler_rep, false);
-    // share nataf instance to provide data for performing inverse transforms
-    lhs_sampler_rep->initialize_random_variables(natafTransform); // shared rep
 
     // Construct G-hat(u) using a GP approximation over the active/uncertain
     // variables (using the same view as iteratedModel/g_u_model: not the
@@ -313,12 +313,6 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 			 rng, vary_pattern, integrationRefinement, cdfFlag,
 			 x_model_flag, use_model_bounds, track_extreme);
   importanceSampler.assign_rep(importance_sampler_rep, false);
-
-  // if approximation is built in x-space, then importanceSampler must perform
-  // inverse transformations on gp_inputs; if approximation is built in u-space,
-  // only the cdfFlag is needed to define which samples are failures
-  if (mppSearchType == EGRA_X) // share the ProbabilityTransformation rep
-    importance_sampler_rep->initialize_random_variables(natafTransform);
 }
 
 
@@ -387,10 +381,6 @@ void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
 
 void NonDGlobalReliability::core_run()
 {
-  // initialize the random variable arrays and the correlation Cholesky factor
-  initialize_random_variable_parameters();
-  transform_correlations();
-
   // set the object instance pointer for use within static member functions
   NonDGlobalReliability* prev_grel_instance = nondGlobRelInstance;
   nondGlobRelInstance = this;
@@ -398,7 +388,6 @@ void NonDGlobalReliability::core_run()
   // Optimize the GP for all levels and then use MAIS for _all_ levels
   optimize_gaussian_process();
   importance_sampling();
-  numRelAnalyses++;
 
   // restore in case of recursion
   nondGlobRelInstance = prev_grel_instance;
@@ -407,33 +396,28 @@ void NonDGlobalReliability::core_run()
 
 void NonDGlobalReliability::optimize_gaussian_process()
 {
-  // now that variables/labels/bounds/targets have flowed down at run-time from
-  // any higher level recursions, propagate them up the instantiate-on-the-fly
-  // Model recursion so that they are correct when they propagate back down.
-  mppModel.update_from_subordinate_model(); // depth = max
-
   if (mppSearchType == EGRA_X) {
-    // assign non-default global variable bounds for use in DACE.
-    // This does not affect any uncertain variable distribution bounds.
-    // Note 1: the interval defined in x-space will be sampled uniformly by
-    // DACE methods, which could result in very irregular coverage in u-space.
-    // It would be better to sample uniformly in u-space.
-    // Note 2: it would be preferable to set this up in the constructor.  The
-    // EGRA_U case can do this by setting the bounds in the actualModel of the
-    // DataFitSurrModel and then having them copied in the DataFitSurrModel
-    // ctor.  The EGRA_X case needs trans_U_to_X, which isn't available until
-    // after initialize_random_variable_parameters() is executed at run time.
-    // Therefore, this case sets the bounds for the DataFitSurrModel, which are
-    // then propagated to actualModel in DataFitSurrModel::update_actual_model()
-    RealVector u_l_bnds(numContinuousVars, false), x_l_bnds,
-               u_u_bnds(numContinuousVars, false), x_u_bnds;
-    u_l_bnds = -5.; u_u_bnds = 5.;
-    for (size_t i=0; i<numContDesVars; i++)
-      { u_l_bnds[i] = -1.; u_u_bnds[i] =  1.; }
-    for (size_t i=numContDesVars+numContAleatUncVars; i<numContinuousVars; i++)
-      { u_l_bnds[i] = -1.; u_u_bnds[i] =  1.; }
-    natafTransform.trans_U_to_X(u_l_bnds, x_l_bnds);
-    natafTransform.trans_U_to_X(u_u_bnds, x_u_bnds);
+    // Assign non-default global variable bounds for use in PStudyDACE methods
+    // that require a bounded region (NIDR default truncates infinite/semi-
+    // infinite tails using 3-sigma by default to allow use outside NonD). As
+    // defined for u-space in the ctor, we use a 5-sigma truncation for EGRA.
+    // Note: This does not affect any uncertain variable distribution bounds
+    //   or how NonD methods sample.  However, PStudyDACE will sample uniformly
+    //   in this x-space interval, which could result in very irregular coverage
+    //   in u-space (it would be preferable to sample uniformly in u-space).
+    // Note: this cannot currently be defined in the constructor.  EGRA_U does
+    //   this by defining bounds truncation in ProbabilityTransformModel, but
+    //   EGRA_X needs trans_U_to_X() which isn't available until dist parameters
+    //   are updated at run time.  Therefore, the code below sets the bounds
+    //   for the DataFitSurrModel, which then propagates to actualModel in
+    //   DataFitSurrModel::update_actual_model()
+    // Note: since u-space type is STD_NORMAL_U, u-space aleatory variables
+    //   are all unbounded and global bounds are set to +/-5.
+    Pecos::ProbabilityTransformation& nataf
+      = uSpaceModel.probability_transformation();
+    RealVector x_l_bnds, x_u_bnds;
+    nataf.trans_U_to_X(uSpaceModel.continuous_lower_bounds(), x_l_bnds);
+    nataf.trans_U_to_X(uSpaceModel.continuous_upper_bounds(), x_u_bnds);
     Model& g_hat_x_model = uSpaceModel.subordinate_model();
     g_hat_x_model.continuous_lower_bounds(x_l_bnds);
     g_hat_x_model.continuous_upper_bounds(x_u_bnds);
@@ -507,7 +491,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	BoolDequeArray nonlinear_resp_map(1, BoolDeque(1, true));
 	RecastModel* mpp_model_rep = (RecastModel*)mppModel.model_rep();
 	if (ria_flag) {
-	  // Standard RIA : min u'u  s.t. g = z_bar
+	  // Standard RIA : min u'u s.t. g = z_bar
 	  // use RIA evaluators to recast g into global opt subproblem
 	  //primary_resp_map.reshape(1);   // one objective, no contributors
 	  //secondary_resp_map.reshape(1); // one constraint, one contributor
@@ -519,7 +503,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  //  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  //  RIA_objective_eval, RIA_constraint_eval);
 
-	  // EFF formulation : max EFF  s.t. bound constraints
+	  // EFF formulation : max EFF s.t. bound constraints
 	  // use EFF evaluators to recast g into global opt subproblem
 	  primary_resp_map.resize(1);
 	  primary_resp_map[0].resize(1);
@@ -529,7 +513,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    EFF_objective_eval, NULL);
 	}
 	else {
-	  // Standard PMA : min/max g  s.t. u'u = beta_bar^2
+	  // Standard PMA : min/max g s.t. u'u = beta_bar^2
 	  // use PMA evaluators to recast g into global opt subproblem
 	  //void (*set_map) (const ShortArray& recast_asv,
 	  //                 ShortArray& sub_model_asv) =
@@ -578,8 +562,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  expected_feasibility(g_hat_fns, vars_star) :
 	  expected_improvement(g_hat_fns, vars_star);
     
-	Cout << "\nResults of EGRA iteration:\nFinal point (u-space)   =\n";
-	write_data(Cout, c_vars_u);
+	Cout << "\nResults of EGRA iteration:\nFinal point (u-space)   =\n"
+	     << c_vars_u;
 	size_t wpp7 = write_precision+7;
 	if (ria_flag) {
 	  Cout << "Expected Feasibility    =\n                     "
@@ -622,24 +606,22 @@ void NonDGlobalReliability::optimize_gaussian_process()
           maxIterations  = 25*numContinuousVars;
 	if (approxIters >= maxIterations || -exp_fns_star < convergenceTol)
 	  approxConverged = true;
-	else {
-	  // Evaluate response_star_truth
-	  uSpaceModel.component_parallel_mode(TRUTH_MODEL);
-	  RealVector c_vars_x;
-	  natafTransform.trans_U_to_X(c_vars_u, c_vars_x);
-	  iteratedModel.continuous_variables(c_vars_x);
-	  ActiveSet set = iteratedModel.current_response().active_set();
-	  set.request_values(0); set.request_value(dataOrder, respFnCount);
-	  iteratedModel.evaluate(set);
+	else if (mppSearchType == EGRA_X) {
+	  // Evaluate response_star_truth in x-space
+	  x_truth_evaluation(c_vars_u, dataOrder);
+	  // Update the GP approximation in x-space
 	  IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
 					  iteratedModel.current_response());
-
-	  // Update the GP approximation
-	  if (mppSearchType == EGRA_X) // update with x-space current vars
-	    uSpaceModel.append_approximation(
-	      iteratedModel.current_variables(), resp_star_truth, true);
-	  else                         // update with u-space vars_star
-	    uSpaceModel.append_approximation(vars_star, resp_star_truth, true);
+	  uSpaceModel.append_approximation(iteratedModel.current_variables(),
+					   resp_star_truth, true);
+	}
+	else { 
+	  // Evaluate response_star_truth in u-space
+	  u_truth_evaluation(c_vars_u, dataOrder);
+	  // Update the GP approximation in u-space
+	  IntResponsePair resp_star_truth(uSpaceModel.evaluation_id(),
+					  uSpaceModel.current_response());
+	  uSpaceModel.append_approximation(vars_star, resp_star_truth, true);
 	}
       } // end approx convergence while loop
       
@@ -675,7 +657,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	
 	if (mppSearchType == EGRA_X) {
 	  RealVector sams_u(num_vars);
-	  natafTransform.trans_X_to_U(sams,sams_u);
+	  uSpaceModel.probability_transformation().trans_X_to_U(sams,sams_u);
 	  
 	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)
@@ -713,16 +695,12 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  u_pt[0] = lbnd + float(i)*interval;
 	  for (size_t j=0; j<101; j++){
 	    u_pt[1] = lbnd + float(j)*interval;
-	    
-	    uSpaceModel.continuous_variables(u_pt);
-	    ActiveSet set = uSpaceModel.current_response().active_set();
-	    set.request_values(0); set.request_value(1, respFnCount);
-	    uSpaceModel.evaluate(set);
-	    const Response& gp_resp = uSpaceModel.current_response();
-	    const RealVector& gp_fn = gp_resp.function_values();
-	    
+
+	    u_evaluation(u_pt, 1);
+	    const Response&  gp_resp = uSpaceModel.current_response();
+	    const RealVector& gp_fns = gp_resp.function_values();
 	    gpOut << '\n' << std::setw(13) << u_pt[0] << ' ' << std::setw(13)
-		  << u_pt[1] << ' ' << std::setw(13) << gp_fn[respFnCount];
+		  << u_pt[1] << ' ' << std::setw(13) << gp_fns[respFnCount];
 	    
 	    RealVector variance;
 	    if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
@@ -738,25 +716,18 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    varOut << '\n' << std::setw(13) << u_pt[0] << ' ' << std::setw(13)
 		   << u_pt[1] << ' ' << std::setw(13) << variance[respFnCount];
 	    
-	    Real eff = expected_feasibility(gp_fn, u_pt);
+	    Real eff = expected_feasibility(gp_fns, u_pt);
 	    
 	    effOut << '\n' << std::setw(13) << u_pt[0] << ' ' << std::setw(13)
 		   << u_pt[1] << ' ' << std::setw(13) << -eff;
 
 	    // plotting the true function can be expensive, but is available
 	    if (true_plot) {
-	      uSpaceModel.component_parallel_mode(TRUTH_MODEL);
-	      natafTransform.trans_U_to_X(u_pt,x_pt);
-	      iteratedModel.continuous_variables(x_pt);
-	      set = iteratedModel.current_response().active_set();
-	      set.request_values(0); set.request_value(1, respFnCount);
-	      iteratedModel.evaluate(set);
-	      const Response& true_resp = iteratedModel.current_response();
-	      const RealVector& true_fn = true_resp.function_values();
-	      
+	      x_truth_evaluation(u_pt, 1);
+	      const Response& x_resp = iteratedModel.current_response();
 	      trueOut << '\n' << std::setw(13) << u_pt[0] << ' '
-		      << std::setw(13) << u_pt[1] << ' '
-		      << std::setw(13) << true_fn[respFnCount];
+		      << std::setw(13) << u_pt[1] << ' ' << std::setw(13)
+		      << x_resp.function_value(respFnCount);
 	    }
 	  }
 	  gpOut << std::endl; varOut << std::endl; effOut << std::endl;
@@ -793,14 +764,10 @@ void NonDGlobalReliability::importance_sampling()
 
     RealVectorArray gp_inputs;
     if (num_levels==0) {
-      uSpaceModel.component_parallel_mode(TRUTH_MODEL);
-      // don't use derivatives in the importance sampling
-      ActiveSet set = iteratedModel.current_response().active_set();
-      set.request_values(0); set.request_value(1, respFnCount);
-      iteratedModel.evaluate(set);
+      x_truth_evaluation(1); // c_vars_u?
       const Response& true_resp = iteratedModel.current_response();
-      const RealVector& true_fn = true_resp.function_values();
-      finalStatistics.function_value(true_fn[respFnCount], statCount);
+      finalStatistics.function_value(
+	true_resp.function_value(respFnCount), statCount);
     }
     else {
       // extract the approximation data from the surrogate model.
@@ -811,10 +778,11 @@ void NonDGlobalReliability::importance_sampling()
       //         levels for importance sampling efficiency.
       const Pecos::SurrogateData& gp_data
 	= uSpaceModel.approximation_data(respFnCount);
-      size_t num_data_pts = gp_data.points();
+      const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+      size_t num_data_pts = sdv_array.size();
       gp_inputs.resize(num_data_pts);
       for (i=0; i<num_data_pts; ++i)
-	gp_inputs[i] = gp_data.continuous_variables(i); // view OK
+	gp_inputs[i] = sdv_array[i].continuous_variables(); // view OK
     }
     statCount++;
 
@@ -1009,7 +977,8 @@ void NonDGlobalReliability::get_best_sample()
     true_vars_x_cv = Teuchos::getCol(Teuchos::View,
       const_cast<RealMatrix&>(true_vars_x), (int)i);
     if (mppSearchType == EGRA_X)
-      natafTransform.trans_X_to_U(true_vars_x_cv, true_c_vars_u[i]);
+      uSpaceModel.probability_transformation().trans_X_to_U(true_vars_x_cv,
+							    true_c_vars_u[i]);
     else
       true_c_vars_u[i] = true_vars_x_cv; // view OK
   }
@@ -1047,23 +1016,21 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
   else if (meritFunctionType == LAGRANGIAN_MERIT) {
 #ifdef DAKOTA_F90
     // form [A] = grad[u'u - beta^2]
-    RealVector A(numContAleatUncVars, false);
-    for (size_t i=0; i<numContAleatUncVars; i++)
+    int m = u.length();
+    RealVector A(m, false);
+    for (size_t i=0; i<m; i++)
       A[i] = 2.*u[i];
 
     // form -{grad_f} = m_grad_f = -grad[G_hat(u)]
     uSpaceModel.continuous_variables(u);
     uSpaceModel.evaluate();
-    const Real* grad_f = uSpaceModel.current_response().function_gradient(0);
-    RealVector m_grad_f(numContAleatUncVars, false);
-    for (size_t i=0; i<numContAleatUncVars; ++i)
-      m_grad_f[i] = -grad_f[i];
+    RealVector m_grad_f
+      = uSpaceModel.current_response().function_gradient_copy(0);
+    m_grad_f.scale(-1.);
 
     // solve for lambda : [A]{lambda} = {m_grad_f}
-    int ierr, nsetp, m = numContAleatUncVars, n = 1;
-    Real res_norm;
-    IntVector index(1);
-    RealVector lambda(1), w(1), bnd(2);
+    int ierr, nsetp, n = 1;    Real res_norm;
+    IntVector index(1);  RealVector lambda(1), w(1), bnd(2);
     // lawson_hanson2.f90: BVLS ignore bounds based on huge(), so +/-DBL_MAX
     // is sufficient here
     bnd[0] = -DBL_MAX; bnd[1] = DBL_MAX;

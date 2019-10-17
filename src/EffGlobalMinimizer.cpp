@@ -24,7 +24,7 @@
 #endif
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include <boost/lexical_cast.hpp>
 
 //#define DEBUG
@@ -66,7 +66,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
     approx_type = "global_gaussian";
 
-  String sample_reuse = "none";
+  String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
   UShortArray approx_order; // empty
   short corr_order = -1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
@@ -89,7 +89,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   // get point samples file
   const String& import_pts_file
     = probDescDB.get_string("method.import_build_points_file");
-  if (!import_pts_file.empty())
+  if (!import_pts_file.empty()) // *** TO DO: allow reuse separate from import
     { samples = 0; sample_reuse = "all"; }
 
   Iterator dace_iterator;
@@ -97,9 +97,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
     samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
   // only use derivatives if the user requested and they are available
-  ActiveSet dace_set = dace_iterator.active_set(); // copy
-  dace_set.request_values(dataOrder);
-  dace_iterator.active_set(dace_set);
+  dace_iterator.active_set_request_values(dataOrder);
 
   // Construct f-hat using a GP approximation for each response function over
   // the active/design vars (same view as iteratedModel: not the typical All
@@ -295,9 +293,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
       origNonlinIneqUpperBnds, origNonlinEqTargets);
 
-    Cout << "\nResults of EGO iteration:\nFinal point =\n";
-    write_data(Cout, c_vars);
-    Cout << "Expected Improvement    =\n                     "
+    Cout << "\nResults of EGO iteration:\nFinal point =\n" << c_vars
+	 << "Expected Improvement    =\n                     "
 	 << std::setw(write_precision+7) << -eif_star
 	 << "\n                     " << std::setw(write_precision+7)
 	 << aug_lag << " [merit]\n";
@@ -398,13 +395,15 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     std::ofstream samsOut(samsfile.c_str(),std::ios::out);
     samsOut << std::scientific;
     const Pecos::SurrogateData& gp_data = fHatModel.approximation_data(i);
+    const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+    const Pecos::SDRArray& sdr_array = gp_data.response_data();
     size_t num_data_pts = gp_data.size(), num_vars = fHatModel.cv();
     for (size_t j=0; j<num_data_pts; ++j) {
       samsOut << '\n';
-      const RealVector& sams = gp_data.continuous_variables(j);
+      const RealVector& sams = sdv_array[j].continuous_variables();
       for (size_t k=0; k<num_vars; k++)
 	samsOut << std::setw(13) << sams[k] << ' ';
-      samsOut << std::setw(13) << gp_data.response_function(j);
+      samsOut << std::setw(13) << sdr_array[j].response_function();
     }
     samsOut << std::endl;
 
@@ -605,11 +604,13 @@ void EffGlobalMinimizer::get_best_sample()
   // to determine fnStar for use in the expected improvement function
 
   const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
+  const Pecos::SDVArray& sdv_array = gp_data_0.variables_data();
+  const Pecos::SDRArray& sdr_array = gp_data_0.response_data();
 
   size_t i, sam_star_idx = 0, num_data_pts = gp_data_0.points();
   Real fn, fn_star = DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
-    const RealVector& sams = gp_data_0.continuous_variables(i);
+    const RealVector& sams = sdv_array[i].continuous_variables();
 
     fHatModel.continuous_variables(sams);
     fHatModel.evaluate();
@@ -624,15 +625,17 @@ void EffGlobalMinimizer::get_best_sample()
       sam_star_idx   = i;
       fn_star        = fn;
       meritFnStar    = fn;
-      truthFnStar[0] = gp_data_0.response_function(i);
+      truthFnStar[0] = sdr_array[i].response_function();
     }
   }
 
   // update truthFnStar with all additional primary/secondary fns corresponding
   // to lowest merit function value
-  for (i=1; i<numFunctions; ++i)
-    truthFnStar[i]
-      = fHatModel.approximation_data(i).response_function(sam_star_idx);
+  for (i=1; i<numFunctions; ++i) {
+    const Pecos::SDRArray& sdr_array
+      = fHatModel.approximation_data(i).response_data();
+    truthFnStar[i] = sdr_array[sam_star_idx].response_function();
+  }
 }
 
 
@@ -654,4 +657,14 @@ void EffGlobalMinimizer::update_penalty()
 #endif
 }
 
+// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+// when it's being used to evaluate a user-defined function (e.g. finding the correlation
+// lengths of Dakota's GP). 
+void EffGlobalMinimizer::declare_sources() {
+  if(setUpType == "user_functions") 
+    return;
+  else
+    Iterator::declare_sources();
+}
+ 
 } // namespace Dakota

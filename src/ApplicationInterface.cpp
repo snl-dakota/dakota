@@ -413,7 +413,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       fnLabels = response.function_labels();
   }
   if (outputLevel > SILENT_OUTPUT) {
-    if (interfaceId.empty())
+    if (interfaceId.empty() || interfaceId == "NO_ID")
       Cout << "\n---------------------\nBegin ";
     else
       Cout << "\n------------------------------\nBegin "
@@ -422,7 +422,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // This may be more confusing than helpful:
     //if (evalIdRefPt)
     //  Cout << " (local evaluation " << evalIdCntr - evalIdRefPt << ")";
-    if (interfaceId.empty()) Cout << "\n---------------------\n";
+    if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "\n---------------------\n";
     else Cout << "\n------------------------------\n";
   }
   if (outputLevel > QUIET_OUTPUT)
@@ -545,10 +545,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
   if (asynch_flag) {
     // Output appears here to support core | algebraic | both
     if (!duplicate && outputLevel > SILENT_OUTPUT) {
-      if(batchEval)
-        Cout << "(Batch job ";
-      else
-        Cout << "(Asynchronous job "; 
+      if(batchEval) Cout << "(Batch job ";
+      else Cout << "(Asynchronous job "; 
       Cout << evalIdCntr;
       if (interfaceId.empty()) Cout << " added to queue)\n";
       else Cout << " added to " << interfaceId << " queue)\n";
@@ -565,7 +563,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	Cout << "\nActive response data retrieved from database";
       else {
 	Cout << "\nActive response data for ";
-	if (!interfaceId.empty()) Cout << interfaceId << ' ';
+	if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
 	Cout << "evaluation " << evalIdCntr;
       }
       Cout << ":\n" << response << std::endl;
@@ -721,7 +719,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
   if (coreMappings) {
     size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
     Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
-    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
     Cout << "evaluations";
     if (cached_eval || hist_duplicates || queue_duplicates)
       Cout << ", " << cached_eval << " cached evaluations, and "
@@ -752,7 +750,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nBlocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!interfaceId.empty()) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -804,7 +802,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
     for (IntRespMCIter rr_iter = rawResponseMap.begin();
 	 rr_iter != rawResponseMap.end(); ++rr_iter) {
       Cout << "\nActive response data for ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << rr_iter->first
 	   << ":\n" << rr_iter->second;
     }
@@ -831,7 +829,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     if ( headerFlag && (core_prp_jobs || hist_duplicates) ) {
       Cout << "\nNonblocking synchronize of " << core_prp_jobs
 	   << " asynchronous ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluations";
       if (cached_eval || hist_duplicates || queue_duplicates)
 	Cout << ", " << cached_eval << " cached evaluations, and "
@@ -864,7 +862,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nNonblocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!interfaceId.empty()) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -943,7 +941,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     // output completed responses
     if (outputLevel > QUIET_OUTPUT) {
       Cout << "\nActive response data for ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << ":\n" << rr_iter->second;
     }
     // clean up bookkeeping
@@ -2910,7 +2908,7 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 {
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
-    if (interfaceId.empty()) Cout << "Evaluation ";
+    if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "Evaluation ";
     else Cout << interfaceId << " evaluation ";
     Cout << fn_eval_id << " has returned from ";
     if (peer_flag) Cout << "peer server " << server_id+1 << '\n';
@@ -2949,7 +2947,7 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
   }
 
   if (outputLevel > SILENT_OUTPUT) {
-    if (interfaceId.empty()) Cout << "Evaluation ";
+    if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "Evaluation ";
     else Cout << interfaceId << " evaluation ";
     Cout << fn_eval_id;
     if(batchEval) Cout << " (batch " << batchIdCntr << ")";
@@ -2974,7 +2972,7 @@ void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
     Cout << "Performing ";
-    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
     Cout << "evaluation " << fn_eval_id << std::endl;
   }
   rawResponseMap[fn_eval_id] = prp_it->response();

@@ -29,16 +29,14 @@ ScalingModel(Model& sub_model):
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
   RecastModel(sub_model, SizetArray(), BitArray(), BitArray(), 
-	      sub_model.num_primary_fns(), 
-	      sub_model.num_functions() - sub_model.num_primary_fns(),
+	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
 	      response_order(sub_model))
 {
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initializing scaling transformation" << std::endl;
 
-  scaleModelInstance = this;
-
+  modelId = RecastModel::recast_model_id(root_model_id(), "SCALING");
   // RecastModel is constructed, then later initialized because scaled
   // properties need to be set on the RecastModel, like bounds, but
   // the nonlinearity of the mapping is determined by the scales
@@ -51,8 +49,8 @@ ScalingModel(Model& sub_model):
 
   // No change in sizes for scaling
   size_t num_primary = sub_model.num_primary_fns(),
-    num_secondary = sub_model.num_functions() - sub_model.num_primary_fns(),
-    num_recast_fns = num_primary + num_secondary;
+    num_secondary    = sub_model.num_secondary_fns(),
+    num_recast_fns   = num_primary + num_secondary;
 
   // the scaling transformation doesn't change any counts of variables
   // or responses, but may require a nonlinear transformation of
@@ -209,17 +207,6 @@ secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                       native_fns, num_primary_fns());
 }
 
-short ScalingModel::response_order(const Model& sub_model)
-{
-  const Response& curr_resp = sub_model.current_response();
-
-  short recast_resp_order = 1; // recast resp order to be same as original resp
-  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
-  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
-
-  return recast_resp_order;
-} 
-
 
 /** Initialize scaling types, multipliers, and offsets.  Update the
     iteratedModel appropriately */
@@ -282,10 +269,10 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   // each responseScale* = [fnScale*, nonlinearIneqScale*, nonlinearEqScale*]
   // to make transformations faster at run time 
-  // numFunctions should reflect size of user-space model
-  responseScaleTypes.resize(num_functions());
-  responseScaleMultipliers.resize(num_functions());
-  responseScaleOffsets.resize(num_functions());
+  // numFns should reflect size of user-space model
+  responseScaleTypes.resize(numFns);
+  responseScaleMultipliers.resize(numFns);
+  responseScaleOffsets.resize(numFns);
 
   // -------------------------
   // OBJECTIVE FNS / LSQ TERMS
@@ -954,7 +941,7 @@ void ScalingModel::response_modify_n2s(const Variables& native_vars,
   }
 
   if (outputLevel > NORMAL_OUTPUT)
-    if (start_offset < scaleModelInstance->num_primary_fns())
+    if (start_offset < num_primary_fns())
       Cout << "Primary response after scaling transformation:\n";
     else
       Cout << "Secondary response after scaling transformation:\n";
@@ -1127,7 +1114,7 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
   }
 
   if (outputLevel > NORMAL_OUTPUT)
-    if (start_offset < scaleModelInstance->num_primary_fns())
+    if (start_offset < num_primary_fns())
       Cout << "Primary response after unscaling transformation:\n";
     else
       Cout << "Secondary response after unscaling transformation:\n";
@@ -1262,7 +1249,29 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
     Cout << std::endl;
 }
 
+ActiveSet ScalingModel::default_active_set() {
+  // A ScalingModel has the same number of responses as its
+  // submodel. It is also assumed to have supportEstimDerivs == true
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  bool has_deriv_vars = set.derivative_vector().size() != 0;
+  // The ScalingModel can return at least everything that the submodel can.
+  ShortArray asv(subModel.default_active_set().request_vector());
 
-
+  // In addition, if mixed or numerical gradients are active, the ScalingModel
+  // can return gradients for all responses
+  if(has_deriv_vars) {
+    if(gradientType != "none")
+      for(auto &a : asv)
+          a |=  2;
+    // Also, if mixed, numerical, or quasi hessians are active, the ScalingModel
+    // can return hessians for all responses
+    if(hessianType != "none")
+        for(auto &a : asv)
+          a |=  4;
+    }
+  set.request_vector(asv);
+  return set;
+}
 
 }  // namespace Dakota

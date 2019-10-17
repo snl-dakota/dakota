@@ -17,7 +17,7 @@
 
 #include "NonDReliability.hpp"
 #include "DakotaApproximation.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 
 #ifdef HAVE_OPTPP
 #include "globals.h"
@@ -197,6 +197,10 @@ private:
   /// compute factor for derivative of second-order probability with respect to
   /// reliability index (from differentiating BREITUNG or HOHENRACK expressions)
   Real dp2_dbeta_factor(Real beta, bool cdf_flag);
+
+  /// perform an evaluation of the actual model and store value,grad,Hessian
+  /// data in X,U spaces
+  void truth_evaluation(short mode);
 
   //
   //- Heading: Utility routines

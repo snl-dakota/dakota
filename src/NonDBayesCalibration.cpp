@@ -15,8 +15,10 @@
 #include "NonDBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
-#include "RecastModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "DataTransformModel.hpp"
+#include "ScalingModel.hpp"
+#include "WeightingModel.hpp"
 #include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLHSSampling.hpp"
@@ -40,6 +42,8 @@
 #include "dakota_data_util.hpp"
 //#include "dakota_tabular_io.hpp"
 #include "DiscrepancyCorrection.hpp"
+#include "bayes_calibration_utils.hpp"
+#include "dakota_stat_util.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -74,6 +78,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   batchEvals(probDescDB.get_int("method.batch_size")),
   mutualInfoAlg(probDescDB.get_bool("method.nond.mutual_info_ksg2") ?
 		MI_ALG_KSG2 : MI_ALG_KSG1),
+  readFieldCoords(probDescDB.get_bool("responses.read_field_coordinates")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -116,17 +121,22 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   posteriorStatsMutual(
     probDescDB.get_bool("method.posterior_stats.mutual_info")),
   posteriorStatsKDE(probDescDB.get_bool("method.posterior_stats.kde")),
+  chainDiagnostics(probDescDB.get_bool("method.chain_diagnostics")),
+  chainDiagnosticsCI(probDescDB.get_bool("method.chain_diagnostics.confidence_intervals")),
   calModelEvidence(probDescDB.get_bool("method.model_evidence")),
+  calModelEvidMC(probDescDB.get_bool("method.mc_approx")),
+  calModelEvidLaplace(probDescDB.get_bool("method.laplace_approx")),
   evidenceSamples(probDescDB.get_int("method.evidence_samples")),
   subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
   exportMCMCFilename(
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
-  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format"))
+  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format")),
+  scaleFlag(probDescDB.get_bool("method.scaling")),
+  weightFlag(!iteratedModel.primary_response_fn_weights().empty())
 {
   if (randomSeed != 0)
     Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
   else {
-    // Use NonD convenience function for system seed
     randomSeed = generate_system_seed();
     Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }
@@ -170,12 +180,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    standardizedSpace = true; break; // natafTransform defined w/i NonDExpansion
+  case PCE_EMULATOR:  case MF_PCE_EMULATOR:  case ML_PCE_EMULATOR:
+  case  SC_EMULATOR:  case  MF_SC_EMULATOR:
+    standardizedSpace = true; break; // nataf defined w/i ProbTransformModel
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
 
+    /*
     // define local natafTransform, whether standardized space or not,
     // since we utilize x-space bounds, moments, density routines
     initialize_random_variable_transformation();
@@ -187,6 +198,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // only needed if Nataf transform will actually be performed
     if (standardizedSpace)
       verify_correlation_support(ASKEY_U);
+    */
     break;
   }
 
@@ -198,9 +210,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
   if (calibrationData) {
-    residualModel.assign_rep
-      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-                              obsErrorMultiplierMode, mcmcDerivOrder), false);
+    residualModel.assign_rep(new
+      DataTransformModel(mcmcModel, expData, numHyperparams, 
+			 obsErrorMultiplierMode, mcmcDerivOrder), false);
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     for (size_t i=0; i<numHyperparams; ++i) {
@@ -211,8 +223,12 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   else
     residualModel = mcmcModel;  // shallow copy
 
-  // TODO: will need to be resized when data changes
-  construct_map_optimizer();
+  // Order is important: data transform, then scale, then weights
+  if (scaleFlag)   scale_model();
+  if (weightFlag)  weight_model();
+
+  init_map_optimizer();
+  construct_map_model();
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
@@ -235,6 +251,16 @@ void NonDBayesCalibration::construct_mcmc_model()
     short u_space_type = probDescDB.get_short("method.nond.expansion_type");
     const RealVector& dim_pref
       = probDescDB.get_rv("method.nond.dimension_preference");
+    short refine_type
+        = probDescDB.get_short("method.nond.expansion_refinement_type"),
+      refine_cntl
+        = probDescDB.get_short("method.nond.expansion_refinement_control"),
+      cov_cntl
+        = probDescDB.get_short("method.nond.covariance_control"),
+      rule_nest = probDescDB.get_short("method.nond.nesting_override"),
+      rule_growth = probDescDB.get_short("method.nond.growth_override");
+    bool pw_basis = probDescDB.get_bool("method.nond.piecewise_basis"),
+       use_derivs = probDescDB.get_bool("method.derivative_usage");
     NonDExpansion* se_rep;
 
     if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
@@ -242,16 +268,21 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_ushort("method.nond.sparse_grid_level");
       unsigned short tpq_order
 	= probDescDB.get_ushort("method.nond.quadrature_order");
-      if (ssg_level != USHRT_MAX)
-	se_rep = new NonDStochCollocation(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+      if (ssg_level != USHRT_MAX) {
+	short exp_coeff_approach = Pecos::COMBINED_SPARSE_GRID;
+	if (probDescDB.get_short("method.nond.expansion_basis_type") ==
+	    Pecos::HIERARCHICAL_INTERPOLANT)
+	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
+	else if (refine_cntl)
+	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
+	se_rep = new NonDStochCollocation(inbound_model, exp_coeff_approach,
+	  ssg_level, dim_pref, u_space_type, refine_type, refine_cntl,
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+      }
       else if (tpq_order != USHRT_MAX)
 	se_rep = new NonDStochCollocation(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
 
@@ -262,24 +293,29 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_ushort("method.nond.quadrature_order");
       unsigned short cub_int
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
-      if (ssg_level != USHRT_MAX) // PCE w/ spectral projection via sparse grid
-	se_rep = new NonDPolynomialChaos(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
-	  false, false);
+      if (ssg_level != USHRT_MAX) { // PCE sparse grid
+	short exp_coeff_approach = (refine_cntl) ?
+	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+	se_rep = new NonDPolynomialChaos(inbound_model, exp_coeff_approach,
+	  ssg_level, dim_pref, u_space_type, refine_type, refine_cntl,
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+      }
       else if (tpq_order != USHRT_MAX)
 	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, u_space_type, false, false);
+	  tpq_order, dim_pref, u_space_type, refine_type, refine_cntl,
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       else if (cub_int != USHRT_MAX)
 	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::CUBATURE,
-	  cub_int, dim_pref, u_space_type, false, false);
+	  cub_int, dim_pref, u_space_type, refine_type, refine_cntl,
+	  cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       else { // regression PCE: LeastSq/CS, OLI
 	se_rep = new NonDPolynomialChaos(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
 	  probDescDB.get_ushort("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sizet("method.nond.collocation_points"),
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  randomSeed, u_space_type, false,
-	  probDescDB.get_bool("method.derivative_usage"),	
+	  randomSeed, u_space_type, refine_type, refine_cntl, cov_cntl,
+	  /* rule_nest, rule_growth, */ pw_basis, use_derivs,
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
@@ -293,17 +329,27 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_usa("method.nond.sparse_grid_level");
       const UShortArray& tpq_order_seq
 	= probDescDB.get_usa("method.nond.quadrature_order");
-      bool derivs = probDescDB.get_bool("method.derivative_usage");
-      if (!ssg_level_seq.empty())
+      short ml_alloc_cntl
+	= probDescDB.get_short("method.nond.multilevel_allocation_control"),
+	ml_discrep
+	= probDescDB.get_short("method.nond.multilevel_discrepancy_emulation");
+      if (!ssg_level_seq.empty()) {
+	short exp_coeff_approach = Pecos::COMBINED_SPARSE_GRID;
+	if (probDescDB.get_short("method.nond.expansion_basis_type") ==
+	    Pecos::HIERARCHICAL_INTERPOLANT)
+	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
+	else if (refine_cntl)
+	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
 	se_rep = new NonDMultilevelStochCollocation(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+	  exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
+	  refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
+	  rule_nest, rule_growth, pw_basis, use_derivs);
+      }
       else if (!tpq_order_seq.empty())
 	se_rep = new NonDMultilevelStochCollocation(inbound_model,
-	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,
-	  probDescDB.get_bool("method.nond.piecewise_basis"),
-	  probDescDB.get_bool("method.derivative_usage"));
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
+	  rule_growth, pw_basis, use_derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
 
@@ -312,13 +358,23 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_usa("method.nond.sparse_grid_level");
       const UShortArray& tpq_order_seq
 	= probDescDB.get_usa("method.nond.quadrature_order");
-      if (!ssg_level_seq.empty())
+      short ml_alloc_cntl
+	= probDescDB.get_short("method.nond.multilevel_allocation_control"),
+	ml_discrep
+	= probDescDB.get_short("method.nond.multilevel_discrepancy_emulation");
+      if (!ssg_level_seq.empty()) {
+	short exp_coeff_approach = (refine_cntl) ?
+	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
-	  false, false);
+	  exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
+	  refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
+	  rule_nest, rule_growth, pw_basis, use_derivs);
+      }
       else if (!tpq_order_seq.empty())
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,false,false);
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
+	  rule_growth, pw_basis, use_derivs);
       else { // regression PCE: LeastSq/CS, OLI
 	SizetArray pilot; // empty for MF PCE
 	se_rep = new NonDMultilevelPolynomialChaos(
@@ -327,9 +383,9 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  pilot, randomSeed, u_space_type, false,
-	  probDescDB.get_bool("method.derivative_usage"),	
-	  probDescDB.get_bool("method.nond.cross_validation"),
+	  pilot, randomSeed, u_space_type, refine_type, refine_cntl, cov_cntl,
+	  ml_alloc_cntl, ml_discrep, /* rule_nest, rule_growth, */ pw_basis,
+	  use_derivs, probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
 	  probDescDB.get_bool("method.import_build_active_only"));
@@ -344,16 +400,22 @@ void NonDBayesCalibration::construct_mcmc_model()
 	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
 	probDescDB.get_sza("method.nond.pilot_samples"), randomSeed,
-	u_space_type, false, probDescDB.get_bool("method.derivative_usage"),
+	u_space_type, refine_type, refine_cntl, cov_cntl,
+	probDescDB.get_short("method.nond.multilevel_allocation_control"),
+	probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
+	/* rule_nest, rule_growth, */ pw_basis, use_derivs,
 	probDescDB.get_bool("method.nond.cross_validation"),
 	probDescDB.get_string("method.import_build_points_file"),
 	probDescDB.get_ushort("method.import_build_format"),
 	probDescDB.get_bool("method.import_build_active_only"));
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
-      // ML PCE includes iteration, so propagate controls from Bayes spec:
-      se_rep->maximum_iterations(maxIterations);
-      se_rep->convergence_tolerance(convergenceTol);
     }
+
+    // for adaptive exp refinement, propagate controls from Bayes method spec:
+    se_rep->maximum_iterations(maxIterations);
+    se_rep->maximum_refinement_iterations(
+      probDescDB.get_int("method.nond.max_refinement_iterations"));
+    se_rep->convergence_tolerance(convergenceTol);
 
     stochExpIterator.assign_rep(se_rep, false);
     // no CDF or PDF level mappings
@@ -362,7 +424,6 @@ void NonDBayesCalibration::construct_mcmc_model()
       empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
     mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
-    natafTransform = se_rep->variable_transformation();   // shared rep
     break;
   }
 
@@ -395,7 +456,8 @@ void NonDBayesCalibration::construct_mcmc_model()
     // these purposes, but +/-3 sigma has little to no effect in current tests.
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
-      transform_model(inbound_model, lhs_model, truncate_bnds);//, 3.);
+      lhs_model.assign_rep(new ProbabilityTransformModel(inbound_model,
+	ASKEY_U, truncate_bnds), false); //, 3.)
     else
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
@@ -404,11 +466,6 @@ void NonDBayesCalibration::construct_mcmc_model()
       NonDLHSSampling(lhs_model, sample_type, samples, randomSeed,
         probDescDB.get_string("method.random_number_generator"));
     lhs_iterator.assign_rep(lhs_rep, false);
-
-    // natafTransform is not fully updated at this point, but using
-    // a shallow copy allows run time updates to propagate
-    if (standardizedSpace)
-      lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
@@ -422,15 +479,16 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   case NO_EMULATOR:
     mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
-    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    if (standardizedSpace) transform_model(inbound_model, mcmcModel);//dist bnds
-    else                   mcmcModel = inbound_model; // shared rep
+    if (standardizedSpace)
+      mcmcModel.assign_rep(new
+	ProbabilityTransformModel(inbound_model, ASKEY_U), false);
+    else
+      mcmcModel = inbound_model; // shared rep
 
     if (mcmcModel.gradient_type() != "none") mcmcDerivOrder |= 2;
     if (mcmcModel.hessian_type()  != "none") mcmcDerivOrder |= 4;
     break;
   }
-
 }
 
 
@@ -483,111 +541,148 @@ void NonDBayesCalibration::init_hyper_parameters()
     Emulator:     on by default; can be overridden with "pre_solve none"
     No emulator: off by default; can be activated  with "pre_solve {sqp,nip}"
                  relies on mapOptimizer ctor to enforce min derivative support
+    Calculation of model evidence using Laplace approximation: 
+		 this requires a MAP solve. 
 */
-void NonDBayesCalibration::construct_map_optimizer() 
+void NonDBayesCalibration::init_map_optimizer() 
 {
-  if ( mapOptAlgOverride == SUBMETHOD_SQP || 
-       mapOptAlgOverride == SUBMETHOD_NIP ||
-       ( emulatorType && mapOptAlgOverride != SUBMETHOD_NONE ) ) {
-
-    size_t num_total_calib_terms = residualModel.num_primary_fns();
-    Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
-      secondary_resp_map_indices;
-    primary_resp_map_indices[0].resize(num_total_calib_terms);
-    for (size_t i=0; i<num_total_calib_terms; ++i)
-      primary_resp_map_indices[0][i] = i;
-    bool nonlinear_vars_map = false; BoolDequeArray nonlinear_resp_map(1);
-    nonlinear_resp_map[0] = BoolDeque(num_total_calib_terms, true);
-    SizetArray recast_vc_totals;  // empty: no change in size
-    BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
-
-    switch (mapOptAlgOverride) {
-    case SUBMETHOD_SQP:
+  switch (mapOptAlgOverride) {
+  case SUBMETHOD_SQP:
 #ifndef HAVE_NPSOL
-      Cerr << "\nWarning: this executable not configured with NPSOL SQP."
-	   << "\n         MAP pre-solve not available." << std::endl;
-      mapOptAlgOverride = SUBMETHOD_DEFAULT; // model,optimizer not constructed
+    Cerr << "\nWarning: this executable not configured with NPSOL SQP."
+	 << "\n         MAP pre-solve not available." << std::endl;
+    mapOptAlgOverride = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
-      break;
-    case SUBMETHOD_NIP:
+    break;
+  case SUBMETHOD_NIP:
 #ifndef HAVE_OPTPP
-      Cerr << "\nWarning: this executable not configured with OPT++ NIP."
-	   << "\n         MAP pre-solve not available." << std::endl;
-      mapOptAlgOverride = SUBMETHOD_DEFAULT; // model,optimizer not constructed
+    Cerr << "\nWarning: this executable not configured with OPT++ NIP."
+	 << "\n         MAP pre-solve not available." << std::endl;
+    mapOptAlgOverride = SUBMETHOD_NONE; // model,optimizer not constructed
 #endif
-      break;
-    case SUBMETHOD_DEFAULT: // use full Newton, if available
+    break;
+  case SUBMETHOD_DEFAULT: // use full Newton, if available
+    if (emulatorType || calModelEvidLaplace) {
 #ifdef HAVE_OPTPP
       mapOptAlgOverride = SUBMETHOD_NIP;
 #elif HAVE_NPSOL
       mapOptAlgOverride = SUBMETHOD_SQP;
 #else
+      mapOptAlgOverride = SUBMETHOD_NONE;
+#endif
+    }
+    break;
+  //case SUBMETHOD_NONE:
+  //  break;
+  }
+
+  // Errors / warnings
+  if (mapOptAlgOverride == SUBMETHOD_NONE) {
+    if (calModelEvidLaplace) {
+      Cout << "Error: You must specify a pre-solve method for the Laplace "
+	   << "approximation of model evidence." << std::endl; 
+      abort_handler(METHOD_ERROR);
+    }
+    if (emulatorType)
       Cerr << "\nWarning: this executable not configured with NPSOL or OPT++."
 	   << "\n         MAP pre-solve not available." << std::endl;
-#endif
-      break;
-    }
+  }      
+}
 
-    // recast ActiveSet requests if full-Newton NIP with gauss-Newton misfit
-    // (avoids error in unsupported Hessian requests in Model::manage_asv())
-    short nlp_resp_order = 3; // quasi-Newton optimization
-    void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
-    if (mapOptAlgOverride == SUBMETHOD_NIP) {
-      nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
-      if (mcmcDerivOrder == 3) // map asrv for Gauss-Newton approx
-        set_recast = gnewton_set_recast;
-    }
 
-    // RecastModel for bound-constrained argmin(misfit - log prior)
-    if (mapOptAlgOverride)
-      negLogPostModel.assign_rep(new 
-	RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
-		    all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
-		    set_recast, primary_resp_map_indices, 
-		    secondary_resp_map_indices, 0, nlp_resp_order, 
-		    nonlinear_resp_map, neg_log_post_resp_mapping, NULL),false);
+void NonDBayesCalibration::construct_map_model() 
+{
+  if (mapOptAlgOverride == SUBMETHOD_NONE) return;
 
-    switch (mapOptAlgOverride) {
+  size_t num_total_calib_terms = residualModel.num_primary_fns();
+  Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
+    secondary_resp_map_indices;
+  primary_resp_map_indices[0].resize(num_total_calib_terms);
+  for (size_t i=0; i<num_total_calib_terms; ++i)
+    primary_resp_map_indices[0][i] = i;
+  bool nonlinear_vars_map = false; BoolDequeArray nonlinear_resp_map(1);
+  nonlinear_resp_map[0] = BoolDeque(num_total_calib_terms, true);
+  SizetArray recast_vc_totals;  // empty: no change in size
+  BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
+
+  // recast ActiveSet requests if full-Newton NIP with gauss-Newton misfit
+  // (avoids error in unsupported Hessian requests in Model::manage_asv())
+  short nlp_resp_order = 3; // quasi-Newton optimization
+  void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
+  if (mapOptAlgOverride == SUBMETHOD_NIP) {
+    nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
+    if (mcmcDerivOrder == 3) // map asrv for Gauss-Newton approx
+      set_recast = gnewton_set_recast;
+  }
+
+  // RecastModel for bound-constrained argmin(misfit - log prior)
+  negLogPostModel.assign_rep(new 
+    RecastModel(residualModel, vars_map_indices, recast_vc_totals, 
+		all_relax_di, all_relax_dr, nonlinear_vars_map, NULL,
+		set_recast, primary_resp_map_indices, 
+		secondary_resp_map_indices, 0, nlp_resp_order, 
+		nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
+}
+
+
+void NonDBayesCalibration::construct_map_optimizer() 
+{
+  // Note: this fn may get invoked repeatedly but assign_rep() manages the
+  // outgoing pointer
+
+  switch (mapOptAlgOverride) {
 #ifdef HAVE_NPSOL
-    case SUBMETHOD_SQP: {
-      // SQP with BFGS Hessians
-      int npsol_deriv_level = 3;
-      mapOptimizer.assign_rep(new
-	NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),
-	false);
-      break;
-    }
+  case SUBMETHOD_SQP: {
+    // SQP with BFGS Hessians
+    int npsol_deriv_level = 3;
+    mapOptimizer.assign_rep(new
+      NPSOLOptimizer(negLogPostModel, npsol_deriv_level, convergenceTol),false);
+    break;
+  }
 #endif
 #ifdef HAVE_OPTPP
-    case SUBMETHOD_NIP:
-      // full Newton (OPTPP::OptBCNewton)
-      mapOptimizer.assign_rep(new 
-	SNLLOptimizer("optpp_newton", negLogPostModel), false);
-      break;
+  case SUBMETHOD_NIP:
+    // full Newton (OPTPP::OptBCNewton)
+    mapOptimizer.assign_rep(new 
+      SNLLOptimizer("optpp_newton", negLogPostModel), false);
+    break;
 #endif
-    }
   }
 }
+
 
 NonDBayesCalibration::~NonDBayesCalibration()
 { }
 
 
+void NonDBayesCalibration::pre_run()
+{
+  Analyzer::pre_run();
 
+  // now that vars/labels/bounds/targets have flowed down at run-time from
+  // any higher level recursions, propagate them up local Model recursions
+  // so that they are correct when they propagate back down.
+  if (!negLogPostModel.is_null())
+    negLogPostModel.update_from_subordinate_model(); // depth = max
+  else
+    residualModel.update_from_subordinate_model();   // depth = max
+
+  // needs to follow bounds updates so that correct OPT++ optimizer is selected
+  // (OptBCNewtonLike or OptNewtonLike)
+  construct_map_optimizer();
+}
 
 
 void NonDBayesCalibration::core_run()
 {
   nonDBayesInstance = this;
 
-  if (adaptExpDesign)
-    // use meta-iteration in this class
+  if (adaptExpDesign) // use meta-iteration in this class
     calibrate_to_hifi();
-  else
-    // delegate to base class calibration
+  else                // delegate to base class calibration
     calibrate();
-  if (calModelDiscrepancy)
-    // calibrate a model discrepancy function
+
+  if (calModelDiscrepancy) // calibrate a model discrepancy function
     build_model_discrepancy();
     //print_discrepancy_results();
 }
@@ -595,17 +690,19 @@ void NonDBayesCalibration::core_run()
 
 void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
-  //iteratedModel.init_communicators(maxEvalConcurrency);
-
   // stochExpIterator and mcmcModel use NoDBBaseConstructor,
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
+  case PCE_EMULATOR:    case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.init_communicators(pl_iter);              break;
-  default:
-    mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
+  //default:
+  //  mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
   }
+  residualModel.init_communicators(pl_iter, maxEvalConcurrency);
+
+  if (!mapOptimizer.is_null())
+    mapOptimizer.init_communicators(pl_iter);
 
   if (!hifiSampler.is_null())
     hifiSampler.init_communicators(pl_iter);
@@ -615,17 +712,20 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-  //iteratedModel.set_communicators(maxEvalConcurrency);
 
   // stochExpIterator and mcmcModel use NoDBBaseConstructor,
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
+  case PCE_EMULATOR:    case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.set_communicators(pl_iter);              break;
-  default:
-    mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
+  //default:
+  //  mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
   }
+  residualModel.set_communicators(pl_iter, maxEvalConcurrency);
+
+  if (!mapOptimizer.is_null())
+    mapOptimizer.set_communicators(pl_iter);
 
   if (!hifiSampler.is_null())
     hifiSampler.set_communicators(pl_iter);
@@ -634,18 +734,20 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
 
 void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
-  switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    stochExpIterator.free_communicators(pl_iter);              break;
-  default:
-    mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
-  }
-
-  //iteratedModel.free_communicators(maxEvalConcurrency);
-
   if (!hifiSampler.is_null())
     hifiSampler.free_communicators(pl_iter);
+
+  if (!mapOptimizer.is_null())
+    mapOptimizer.free_communicators(pl_iter);
+
+  residualModel.free_communicators(pl_iter, maxEvalConcurrency);
+  switch (emulatorType) {
+  case PCE_EMULATOR:    case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
+    stochExpIterator.free_communicators(pl_iter);              break;
+  //default:
+  //  mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
+  }
 }
 
 
@@ -658,9 +760,9 @@ void NonDBayesCalibration::initialize_model()
     stochExpIterator.run(pl_iter); break;
   }
   default: // GPs and NO_EMULATOR
-    initialize_random_variable_parameters(); // standardizedSpace or not
+    //initialize_random_variable_parameters(); // standardizedSpace or not
     //resize_final_statistics_gradients(); // not required
-    if (standardizedSpace) transform_correlations();
+    //if (standardizedSpace) transform_correlations();
     if (emulatorType)      mcmcModel.build_approximation();
     break;
   }
@@ -729,9 +831,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     mcmcModel.continuous_variables(initial_point);
-    residualModel.assign_rep
-      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-			      obsErrorMultiplierMode, mcmcDerivOrder), false);
+    residualModel.assign_rep(new
+      DataTransformModel(mcmcModel, expData, numHyperparams,
+			 obsErrorMultiplierMode, mcmcDerivOrder), false);
     construct_map_optimizer();
 
     // Run the underlying calibration solver (MCMC)
@@ -1194,8 +1296,15 @@ void NonDBayesCalibration::build_model_discrepancy()
   size_t num_field_groups = expData.num_fields();
   if (num_field_groups == 0)
     build_scalar_discrepancy();
-  else
-    build_field_discrepancy();
+  else {
+    if (readFieldCoords)
+      build_field_discrepancy();
+    else {
+      Cout << "You must specify read_field_coodinates in input file in order "
+           << "to calculate model discrepancy\n";
+      abort_handler(METHOD_ERROR);
+    }
+  }
 }
 
 void NonDBayesCalibration::build_scalar_discrepancy()
@@ -1589,7 +1698,7 @@ void NonDBayesCalibration::build_GP_field(const RealMatrix& discrep_vars_mat,
   Approximation gpApproximation(sharedData);
 
   // build the GP for the discrepancy
-  gpApproximation.add(discrep_vars_mat,concat_disc);
+  gpApproximation.add_array(discrep_vars_mat,concat_disc);
   gpApproximation.build();
   //gpApproximations.export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
   int pred_length = discrep_vars_pred.numCols();
@@ -1906,7 +2015,8 @@ void NonDBayesCalibration::prior_cholesky_factorization()
   int i, j, num_params = numContinuousVars + numHyperparams;
   priorCovCholFactor.shape(num_params, num_params); // init to 0
 
-  if (!standardizedSpace && natafTransform.x_correlation()) {
+  if (!standardizedSpace &&
+      iteratedModel.multivariate_distribution().correlation()) { // x_dist
     Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
     RealSymMatrix prior_cov_matrix;//= ();
 
@@ -1922,18 +2032,23 @@ void NonDBayesCalibration::prior_cholesky_factorization()
 	priorCovCholFactor(i, j) = prior_cov_matrix(i, j);
   }
   else {
-    RealRealPairArray dist_moments = (standardizedSpace) ?
-      natafTransform.u_moments() : natafTransform.x_moments();
+    // SVD index conversion is more general, but not required for current uses
+    //const SharedVariablesData& svd
+    //  = mcmcModel.current_variables().shared_data();
+    RealVector dist_stdevs  // u_dist (decorrelated)
+      = mcmcModel.multivariate_distribution().std_deviations();
     for (i=0; i<numContinuousVars; ++i)
-      priorCovCholFactor(i,i) = dist_moments[i].second;
+      priorCovCholFactor(i,i) = dist_stdevs[i];
+	//= dist_stdevs[svd.cv_index_to_active_index(i)];
+
     // for now we assume a variance when the inv gamma has infinite moments
-    for (i=0; i<numHyperparams; ++i)
-      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
-        priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) = 
-          invGammaDists[i].standard_deviation();
-      else
-        priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) =
-          0.05*(invGammaDists[i].mode());
+    Real alpha;
+    for (i=0; i<numHyperparams; ++i) {
+      invGammaDists[i].pull_parameter(Pecos::IGA_ALPHA, alpha);
+      priorCovCholFactor(numContinuousVars + i, numContinuousVars + i) =
+	(alpha > 2.) ? invGammaDists[i].standard_deviation()
+	             : invGammaDists[i].mode() * 0.05;
+    }
   }
 }
 
@@ -1981,8 +2096,8 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
   //    min_eigval = std::min( eigenvalues[i], min_eigval );
 
 #ifdef DEBUG
-  Cout << "eigenvalues from symmetric_eigenvalue_decomposition:\n";
-  write_data(Cout, eigenvalues);
+  Cout << "eigenvalues from symmetric_eigenvalue_decomposition:\n"
+       << eigenvalues;
 #endif
 
   /*
@@ -2039,16 +2154,13 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 			       prior_chol_fact, covariance);
 
   if (output_lev > NORMAL_OUTPUT) {
-    Cout << "Hessian of negative log-likelihood (from misfit):\n";
-    write_data(Cout, hessian, true, true, true);
+    Cout << "Hessian of negative log-likelihood (from misfit):\n" << hessian;
     //Cout << "2x2 determinant = " << hessian(0,0) * hessian(1,1) -
     //  hessian(0,1) * hessian(1,0) << '\n';
 
-    //Cout << "Cholesky factor of prior covariance:\n";
-    //write_data(Cout, prior_chol_fact, true, true, true);
+    //Cout << "Cholesky factor of prior covariance:\n" << prior_chol_fact;
 
-    Cout << "Prior-preconditioned misfit Hessian:\n";
-    write_data(Cout, LT_H_L, true, true, true);
+    Cout << "Prior-preconditioned misfit Hessian:\n" << LT_H_L;
     //Cout << "2x2 determinant = " << LT_H_L(0,0) * LT_H_L(1,1) -
     //  LT_H_L(0,1) * LT_H_L(1,0) << '\n';
     if (num_neglect)
@@ -2056,8 +2168,8 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
            << " eigenvalues based on " << eigenval_tol << " tolerance.\n";
   }
   if (output_lev > NORMAL_OUTPUT) {
-    Cout << "Positive definite covariance from inverse of Hessian:\n";
-    write_data(Cout, covariance, true, true, true);
+    Cout << "Positive definite covariance from inverse of Hessian:\n"
+	 << covariance;
     //Cout << "2x2 determinant = " << covariance(0,0) * covariance(1,1) -
     //  covariance(0,1) * covariance(1,0) << '\n';
   }
@@ -2114,10 +2226,8 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
        nonDBayesInstance->numContinuousVars, log_grad);
     // Add the contribution from -log(prior)
     nonDBayesInstance->augment_gradient_with_log_prior(log_grad, c_vars);
-    if (output_flag) {
-      Cout << "MAP pre-solve: negative log posterior gradient:\n";
-      write_data(Cout, log_grad);
-    }
+    if (output_flag)
+      Cout << "MAP pre-solve: negative log posterior gradient:\n" << log_grad;
   }
 
   if (nlpost_req & 4) {
@@ -2132,10 +2242,8 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
        nonDBayesInstance->numContinuousVars, log_hess);
     // Add the contribution from -log(prior)
     nonDBayesInstance->augment_hessian_with_log_prior(log_hess, c_vars);
-    if (output_flag) {
-      Cout << "MAP pre-solve: negative log posterior Hessian:\n";
-      write_data(Cout, log_hess);
-    }
+    if (output_flag)
+      Cout << "MAP pre-solve: negative log posterior Hessian:\n" << log_hess;
   }
 
   //Cout << "nlpost_resp:\n" << nlpost_resp;
@@ -2170,7 +2278,7 @@ void NonDBayesCalibration::compute_statistics()
 
   NonDSampling::compute_moments(filtered_chain, chainStats, STANDARD_MOMENTS);
   NonDSampling::compute_moments(filteredFnVals,    fnStats, STANDARD_MOMENTS);
-  if (outputLevel >= NORMAL_OUTPUT)
+  if (!requestedProbLevels[0].empty())
     compute_intervals();
 
   // Print tabular file for the filtered chain
@@ -2299,24 +2407,19 @@ void NonDBayesCalibration::compute_intervals()
       Pred_interval_minima[i] = Pred_ave[i] - 2*Pred_stdevs[i];
       Pred_interval_maxima[i] = Pred_ave[i] + 2*Pred_stdevs[i];
       interval_stream << std::setw(width) << resp[i] << " ";
-      interval_stream << Pred_interval_minima[i]<< ", "<<Pred_interval_maxima[i] 
-	         << '\n';
+      interval_stream << Pred_interval_minima[i] << ", "
+		      << Pred_interval_maxima[i] << '\n';
     }
   }
-    interval_stream << "\n";
+  interval_stream << "\n";
   // Calculate intervals with sorting - print to screen and interval file
   size_t num_levels = 0;
-  for(int i = 0; i < numFunctions; ++i){
+  for(int i = 0; i < numFunctions; ++i)
     num_levels += requestedProbLevels[i].length();
-  }
-  if (num_levels > 0){
+  if (num_levels > 0)
     print_intervals_file(interval_stream, filtered_fn_vals_transpose, 
       			   predVals, num_filtered, num_concatenated);
-  }
-#ifdef DEBUG
-  if (expData.variance_active())
-    write_data(interval_stream, predVals);
-#endif
+
   interval_stream << "acceptedVals = " << acceptedFnVals << '\n';
   interval_stream << "predVals = " << predVals << '\n';
 }
@@ -2335,14 +2438,15 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   
   // Augment function values with experimental uncertainty for prediction ints
   // Generate normal errors using LHS
-  /*int num_res = residualModel.current_response().num_functions();
+  /*int num_res = residualModel.response_size();
     RealVector means_vec(num_res), lower_bnds(num_res), upper_bnds(num_res);
     */
   RealVector means_vec(numFunctions), lower_bnds(numFunctions), 
 	     upper_bnds(numFunctions);
   means_vec.putScalar(0.0);
-  lower_bnds.putScalar(-DBL_MAX);
-  upper_bnds.putScalar(DBL_MAX);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
+  lower_bnds.putScalar(-dbl_inf);
+  upper_bnds.putScalar( dbl_inf);
   RealMatrix lhs_normal_samples;
   unsigned short sample_type = SUBMETHOD_LHS;
   short sample_ranks_mode = 0; //IGNORE RANKS
@@ -2353,45 +2457,10 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   for (e=0; e<num_exp; ++e) {
     //int lhs_seed = (randomSeed > 0) ? randomSeed : generate_system_seed();
     lhsDriver.generate_normal_samples(means_vec, std_deviations[e], lower_bnds,
-              upper_bnds, num_filtered, correl_matrices[e],lhs_normal_samples);
+              upper_bnds, correl_matrices[e], num_filtered, lhs_normal_samples);
     for (s=0; s<num_filtered; ++s, ++cntr)
       for (r=0; r<numFunctions; ++r)
 	predVals(r,cntr) = filtered_fn_vals(r,s) + lhs_normal_samples(r,s);
-  }
-}
-
-void NonDBayesCalibration::
-compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
-{
-  int num_cols = matrix.numCols();
-  int num_rows = matrix.numRows();
-
-  avg_vals.resize(num_cols);
-  
-  RealVector ones_vec(num_rows);
-  ones_vec.putScalar(1.0);
- 
-  for(int i=0; i<num_cols; ++i){
-    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
-    avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
-  }
-}
-
-void NonDBayesCalibration::
-compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_devs)
-{
-  int num_cols = matrix.numCols();
-  int num_rows = matrix.numRows();
-
-  std_devs.resize(num_cols);
-  RealVector res_vec(num_rows);
-
-  for(int i=0; i<num_cols; ++i){
-    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
-    for(int j = 0; j<num_rows; ++j){
-      res_vec(j) = col_vec(j) - avg_vals(i);
-    }
-    std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
   }
 }
 
@@ -2524,30 +2593,102 @@ calculate_kde()
 
 void NonDBayesCalibration::calculate_evidence()
 {
-  //int num_prior_samples = chainSamples; //KAM: replace later
-  int num_prior_samples = (evidenceSamples>0) ? evidenceSamples : chainSamples;
-  int num_params = numContinuousVars + numHyperparams;
-  // Draw samples from prior distribution 
-  RealMatrix prior_dist_samples(num_params, num_prior_samples);
-  prior_sample_matrix(prior_dist_samples);
-  // Calculate likelihood for each sample
-  double sum_like = 0.;
-  for (int i = 0; i < num_prior_samples; i++) {
-    RealVector params = Teuchos::getCol(Teuchos::View, prior_dist_samples, i);
-    RealVector cont_params = params;
-    cont_params.resize(numContinuousVars);  
-    residualModel.continuous_variables(cont_params);
-    residualModel.evaluate();
-    RealVector residual = residualModel.current_response().function_values();
-    mcmcModel.continuous_variables(cont_params);
-    mcmcModel.evaluate();
-    RealVector mcmc = mcmcModel.current_response().function_values();
-    double log_like = log_likelihood(residual, params);
-    sum_like += std::exp(log_like);
+  // set default to MC approximation if neither method specified
+  if (!calModelEvidMC && !calModelEvidLaplace)
+    calModelEvidMC = true;
+  if (calModelEvidMC) {
+    //int num_prior_samples = chainSamples; //KAM: replace later
+    int num_prior_samples = (evidenceSamples>0) ? evidenceSamples : chainSamples;
+    int num_params = numContinuousVars + numHyperparams;
+    // Draw samples from prior distribution 
+    RealMatrix prior_dist_samples(num_params, num_prior_samples);
+    prior_sample_matrix(prior_dist_samples);
+    // Calculate likelihood for each sample
+    double sum_like = 0.;
+    for (int i = 0; i < num_prior_samples; i++) {
+      RealVector params = Teuchos::getCol(Teuchos::View, prior_dist_samples, i);
+      RealVector cont_params = params;
+      cont_params.resize(numContinuousVars);  
+      residualModel.continuous_variables(cont_params);
+      residualModel.evaluate();
+      RealVector residual = residualModel.current_response().function_values();
+      double log_like = log_likelihood(residual, params);
+      sum_like += std::exp(log_like);
+    }
+    double evidence = sum_like/num_prior_samples;
+    Cout << "Model evidence (Monte Carlo) = " << evidence << '\n';
+    //Cout << "num samples = " << num_prior_samples << '\n';
   }
-  double evidence = sum_like/num_prior_samples;
-  Cout << "Model evidence = " << evidence << '\n';
-  Cout << "num samples = " << num_prior_samples << '\n';
+  if (calModelEvidLaplace) {
+    if (obsErrorMultiplierMode > CALIBRATE_NONE) {
+      Cout << "The Laplace approximation of model evidence currently " 
+           << "does not work when error multipliers are specified."<< std::endl;
+      abort_handler(METHOD_ERROR);
+    } 
+    //if (mapOptAlgOverride == SUBMETHOD_NONE) {
+    //  Cout << "You must specify a pre-solve method for the Laplace " 
+    //       << "approximation of model evidence." << std::endl;
+    //  abort_handler(METHOD_ERROR);
+    //} 
+    Cout << "Starting Laplace approximation of model evidence, first " 
+         << "\nobtain MAP point from pre-solve.\n";
+    const RealVector& map_c_vars
+      = mapOptimizer.variables_results().continuous_variables();
+    //estimate likelihood at MAP point: 
+    residualModel.continuous_variables(map_c_vars);
+    ActiveSet resAS = residualModel.current_response().active_set();
+    resAS.request_values(7);
+    residualModel.evaluate(resAS);
+    RealVector residual = residualModel.current_response().function_values();
+    Real laplace_like = log_likelihood(residual, map_c_vars);
+    //obtain prior density at MAP point: 
+    Real laplace_prior =  nonDBayesInstance->log_prior_density(map_c_vars);
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Residual at MAP point" << residualModel.current_response() << '\n';
+      Cout << "Log_likelihood at MAP Point" << laplace_like << '\n';
+      Cout << "Laplace_prior " << laplace_prior << "\n";
+    }
+    Response nlpost_resp = negLogPostModel.current_response().copy();
+    ActiveSet as2 = nlpost_resp.active_set();
+    as2.request_values(7);
+    nlpost_resp.active_set(as2);
+    neg_log_post_resp_mapping(mapOptimizer.variables_results(), mapOptimizer.variables_results(), 
+      residualModel.current_response(), nlpost_resp);
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Negative log posterior function values " << nlpost_resp.function_values() << '\n';
+      Cout << "Negative log posterior Hessian " << nlpost_resp.function_hessian_view(0) << '\n';
+      //Cout << nlpost_resp << '\n';
+    }
+    RealSymMatrix log_hess;
+    nonDBayesInstance->
+      expData.build_hessian_of_sum_square_residuals(residualModel.current_response(), log_hess);
+    // Add the contribution from 1/2*log(det(Cov))
+    nonDBayesInstance->expData.half_log_cov_det_hessian
+      (0, nonDBayesInstance->obsErrorMultiplierMode, 
+      nonDBayesInstance->numContinuousVars, log_hess);
+    // Add the contribution from -log(prior)
+    nonDBayesInstance->augment_hessian_with_log_prior(log_hess, map_c_vars);
+    Cout << "Laplace approximation: negative log posterior Hessian:\n"
+         <<  log_hess << "\n";
+    CovarianceMatrix local_log_post_hess; 
+    // for now, the matrix passed to set_covariance is a RealMatrix, not RealSymMatrix
+    RealMatrix clog_hess(numContinuousVars, numContinuousVars);
+    for (int i=0; i<numContinuousVars; i++) {
+      for (int j=0; j<numContinuousVars; j++) {
+        clog_hess(i,j)=log_hess(i,j);
+      }
+    }
+    try {
+      local_log_post_hess.set_covariance(const_cast<RealMatrix&>(clog_hess)); 
+      Cout << "log determinant post" << local_log_post_hess.log_determinant() <<std::endl; 
+      double lpres= laplace_prior+laplace_like+numContinuousVars*HALF_LOG_2PI-0.5*local_log_post_hess.log_determinant();
+      Cout << "Model evidence (Laplace) = " << std::exp(lpres) <<  '\n';
+    }
+    catch (const std::runtime_error& re){
+      Cout << "Can't compute model evidence because the Hessian of the negative log posterior distribution " 
+           << "is not positive definite. " << re.what();
+    }
+  }
 }
 
 void NonDBayesCalibration::print_intervals_file
@@ -2702,6 +2843,9 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
   NonDSampling::print_moments(s, fnStats, RealMatrix(), 
       "response function", STANDARD_MOMENTS, resp_labels, false); 
   
+  // Print chain diagnostics for variables
+  if (chainDiagnostics)
+    print_chain_diagnostics(s);
   // Print credibility and prediction intervals to screen
   if (requestedProbLevels[0].length() > 0 && outputLevel >= NORMAL_OUTPUT) {
     int num_filtered = filteredFnVals.numCols();
@@ -3156,6 +3300,127 @@ void NonDBayesCalibration::print_kl(std::ostream& s)
 {
   s << "Information gained from prior to posterior = " << kl_est;
   s << '\n';
+}
+
+void NonDBayesCalibration::print_chain_diagnostics(std::ostream& s)
+{
+  s << "\nChain diagnostics\n";
+  if (chainDiagnosticsCI)
+    print_batch_means_intervals(s);
+}
+
+void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
+{
+  size_t width = write_precision+7;
+  Real alpha = 0.95;
+  
+  int num_vars = acceptanceChain.numRows();
+  StringArray var_labels;
+  copy_data(residualModel.continuous_variable_labels(),	var_labels);
+  RealMatrix variables_mean_interval_mat, variables_mean_batch_means;
+  batch_means_interval(acceptanceChain, variables_mean_interval_mat,
+                       variables_mean_batch_means, 1, alpha);
+  RealMatrix variables_var_interval_mat, variables_var_batch_means;
+  batch_means_interval(acceptanceChain, variables_var_interval_mat,
+                       variables_var_batch_means, 2, alpha);
+  
+  int num_responses = acceptedFnVals.numRows();
+  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  RealMatrix responses_mean_interval_mat, responses_mean_batch_means;
+  batch_means_interval(acceptedFnVals, responses_mean_interval_mat,
+                       responses_mean_batch_means, 1, alpha);
+  RealMatrix responses_var_interval_mat, responses_var_batch_means;
+  batch_means_interval(acceptedFnVals, responses_var_interval_mat,
+                       responses_var_batch_means, 2, alpha);
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    for (int i = 0; i < num_vars; i++) {
+      s << "\tBatch means of mean for variable ";
+      s << var_labels[i] << '\n';
+      const RealVector& mean_vec = Teuchos::getCol(Teuchos::View,
+                                  variables_mean_batch_means, i);
+      s << mean_vec ;
+      s << "\tBatch means of variance for variable ";
+      const RealVector& var_vec = Teuchos::getCol(Teuchos::View,
+                                  variables_var_batch_means, i);
+      s << var_labels[i] << '\n';
+      s << var_vec ;
+    }
+    for (int i = 0; i < num_responses; i++) {
+      s << "\tBatch means of mean for response ";
+      s << resp_labels[i] << '\n';
+      const RealVector mean_vec = Teuchos::getCol(Teuchos::View,
+                                  responses_mean_batch_means, i);
+      s << mean_vec ;
+      s << "\tBatch means of variance for response ";
+      s << resp_labels[i] << '\n';
+      const RealVector var_vec = Teuchos::getCol(Teuchos::View, 
+                                 responses_var_batch_means, i);
+      s << var_vec ;
+    }
+  }
+
+  s << "\t95% Confidence Intervals of means\n";
+  for (int i = 0; i < num_vars; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         variables_mean_interval_mat, i);
+    s << '\t' << std::setw(width) << var_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  for (int i = 0; i < num_responses; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         responses_mean_interval_mat, i);
+    s << '\t' << std::setw(width) << resp_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  s << "\t95% Confidence Intervals of variances\n";
+  for (int i = 0; i < num_vars; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         variables_var_interval_mat, i);
+    s << '\t' << std::setw(width) << var_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+  for (int i = 0; i < num_responses; i++) {
+    RealVector col_vec = Teuchos::getCol(Teuchos::View,
+                                         responses_var_interval_mat, i);
+    s << '\t' << std::setw(width) << resp_labels[i]
+      << " = [" << col_vec[0] << ", " << col_vec[1] << "]\n";
+  }
+}
+
+
+/** Wrap the residualModel in a scaling transformation, such that
+    residualModel now contains a scaling recast model. */
+void NonDBayesCalibration::scale_model()
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initializing scaling transformation" << std::endl;
+
+  // residualModel becomes the sub-model of a RecastModel:
+  residualModel.assign_rep(new ScalingModel(residualModel), false);
+  // scalingModel = residualModel;
+}
+
+
+/** Setup Recast for weighting model.  The weighting transformation
+    doesn't resize, and makes no vars, active set or secondary mapping.
+    All indices are one-to-one mapped (no change in counts). */
+void NonDBayesCalibration::weight_model()
+{
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initializing weighting transformation" << std::endl;
+
+  // we assume sqrt(w_i) will be applied to each residual, therefore:
+  const RealVector& lsq_weights = residualModel.primary_response_fn_weights();
+  for (int i=0; i<lsq_weights.length(); ++i)
+    if (lsq_weights[i] < 0) {
+      Cerr << "\nError: Calibration term weights must be nonnegative. "
+	   << "Specified weights are:\n" << lsq_weights << '\n';
+      abort_handler(-1);
+    }
+
+  // TODO: pass sqrt to WeightingModel
+  residualModel.assign_rep(new WeightingModel(residualModel), false);
 }
 
 } // namespace Dakota

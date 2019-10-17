@@ -8,7 +8,7 @@
 
 #ifndef DAKOTA_DATA_UTIL_H
 #define DAKOTA_DATA_UTIL_H
-
+#include <exception>
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr
 #include "dakota_data_types.hpp"
@@ -160,6 +160,18 @@ bool operator!=(typename boost::multi_array<T, 1>::template
 // miscellaneous numerical utilities
 // ---------------------------------
 
+/// checks for any non-zero value in std::vector(); useful for determining
+/// whether an array of request codes (e.g., an ASV) has any actionable content
+template <typename OrdinalType>
+bool non_zero(const std::vector<OrdinalType>& vec)
+{
+  size_t i, len = vec.size();
+  for (i=0; i<len; ++i)
+    if (vec[i] != 0)
+      return true;
+  return false; // includes case of empty vector (no actions)
+}
+
 /// Computes relative change between RealVectors using Euclidean L2 norm
 Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv);
 
@@ -189,6 +201,11 @@ bool is_equal_vec( const RealVector & vec1,
 // Misc matrix utilities 
 // ---------------------
 
+/// Computes means of columns of matrix
+void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+/// Computes standard deviations of columns of matrix
+void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
+      			  RealVector& std_devs);
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 
@@ -303,6 +320,28 @@ inline void build_labels_partial(StringArray& label_array,
     build_label(label_array[start_index+i], root_label, i+1);
 }
 
+
+// --------------------------
+// templated assign functions
+// --------------------------
+
+/// assign a value to an arbitrary vector
+template <typename vecType, typename valueType>
+void assign_value(vecType& target, valueType val)
+{
+  size_t i, len = target.size();
+  for (i=0; i<len; ++i)
+    target[i] = val;
+}
+
+/// assign a value to a portion of an arbitrary vector
+template <typename vecType, typename valueType>
+void assign_value(vecType& target, valueType val, size_t start, size_t len)
+{
+  size_t i, end = start + len;
+  for (i=start; i<end; ++i)
+    target[i] = val;
+}
 
 // ----------------------------
 // non-templated copy functions
@@ -631,16 +670,16 @@ void copy_data(const std::map<int, T>& im, std::vector<T>& da)
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to same
-/// (used in place of operator= when a deep copy of a vector view is needed) - used by SensAnalysisGlobal::valid_sample_matrix - RWH
+/// (used in place of operator= when a deep copy is required) -
+/// used by Response - MSE
 template <typename OrdinalType, typename ScalarType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv1,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv2)
 {
   OrdinalType size_sdv1 = sdv1.length();
-  if (size_sdv1 != sdv2.length())
+  if (sdv2.length() != size_sdv1)
     sdv2.sizeUninitialized(size_sdv1);
-  for (OrdinalType i=0; i<size_sdv1; ++i)
-    sdv2[i] = sdv1[i];
+  sdv2.assign(sdv1);
 }
 
 /// copy Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> to same
@@ -681,18 +720,30 @@ inline void copy_data( const RealMatrix &source, RealMatrix &dest,
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
-/// std::vector<ScalarType> - used by SurfpackApproximation constructor - RWH
-template <typename OrdinalType, typename ScalarType, typename VectorType> 
+/// VecType - used by APPS for HOPS vector types
+template <typename OrdinalType, typename ScalarType, typename VecType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv,
-	             VectorType& vec)
+	       VecType& vec)
 {
   OrdinalType size_sdv = sdv.length();
-  if (size_sdv > vec.size())
+  if (size_sdv != vec.size())
     vec.resize(size_sdv);
   for (OrdinalType i=0; i<size_sdv; ++i)
     vec[i] = sdv[i];
 }
 
+/// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
+/// std::vector<ScalarType> - used by DakotaModel
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2> 
+void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& sdv,
+	       std::vector<ScalarType2>& vec)
+{
+  OrdinalType size_sdv = sdv.length();
+  if (size_sdv != vec.size())
+    vec.resize(size_sdv);
+  for (OrdinalType i=0; i<size_sdv; ++i)
+    vec[i] = (ScalarType2)sdv[i];
+}
 
 /// copy Array<ScalarType> to
 /// Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by NOWPACOptimizer - MSE
@@ -1062,10 +1113,11 @@ const ScalarType& set_index_to_value(OrdinalType index,
 				     const std::set<ScalarType>& values)
 {
   // TO DO: conditional activation for automatic bounds checking
-  if (index < 0 || index >= values.size()) {
-    Cerr << "\nError: index out of range in set_index_to_value()" << std::endl;
-    abort_handler(-1);
-  }
+  if (index < 0 || index >= values.size()) 
+    throw std::out_of_range(String("Error: index ") + std::to_string(index) +  
+        " must be between 0 and " + std::to_string(values.size() - 1) + 
+        " in set_index_to_value()");
+  
   typename std::set<ScalarType>::const_iterator cit = values.begin();
   std::advance(cit, index);
   return *cit;
@@ -1310,9 +1362,7 @@ find_if(const ListT& c,
 // copy std::vector<VecType> to Real*
 // VectorType must support the length() method. 
 template<typename VectorType, typename ScalarType>
-void copy_data(const std::vector<VectorType>& va,
-               ScalarType * ptr,
-               int ptr_len)
+void copy_data(const std::vector<VectorType>& va, ScalarType * ptr, int ptr_len)
 {
   size_t total_len=0, cntr=0, num_vec = va.size();
   for( size_t i=0; i<num_vec; ++i)

@@ -35,8 +35,8 @@ namespace Dakota {
 
 Minimizer* SNLLBase::optLSqInstance(NULL);
 bool       SNLLBase::modeOverrideFlag(false);
-EvalType   SNLLBase::lastFnEvalLocn(NLFEvaluator);
-int        SNLLBase::lastEvalMode(1);
+EvalType   SNLLBase::lastFnEvalLocn(NO_EVALUATOR);
+int        SNLLBase::lastEvalMode(0);
 RealVector SNLLBase::lastEvalVars;
 
 

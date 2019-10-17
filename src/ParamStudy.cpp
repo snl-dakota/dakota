@@ -9,7 +9,7 @@
 //- Class:       ParamStudy
 //- Description: Implementation code for the ParamStudy class
 //- Owner:       Mike Eldred
-
+#include <exception>
 #include "dakota_system_defs.hpp"
 #include "dakota_tabular_io.hpp"
 #include "ParamStudy.hpp"
@@ -257,6 +257,8 @@ void ParamStudy::pre_run()
 
 void ParamStudy::core_run()
 {
+
+  archive_allocate_sets();
   // perform the evaluations; multidim exception
   bool log_resp_flag = (methodName == MULTIDIM_PARAMETER_STUDY)
     ? (!subIteratorFlag) : false;
@@ -264,6 +266,124 @@ void ParamStudy::core_run()
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
+void ParamStudy::archive_model_variables(const Model& model, size_t idx) const
+{
+  // Let's try to write resultsDB stuff here - RWH
+  if(resultsDB.active())
+  {
+    const RealVector& c_vars  = model.continuous_variables();
+    const IntVector & di_vars = model.discrete_int_variables();
+    StringMultiArrayConstView ds_vars = model.discrete_string_variables();
+    const RealVector& dr_vars = model.discrete_real_variables();
+
+    if( numContinuousVars )
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("parameter_sets"), String("continuous_variables")},
+	  c_vars,  idx );
+    if( numDiscreteIntVars )
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("parameter_sets"), String("discrete_integer_variables")},
+	  di_vars, idx );
+    if( numDiscreteStringVars )
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("parameter_sets"), String("discrete_string_variables")},
+	  ds_vars, idx );
+    if( numDiscreteRealVars )
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("parameter_sets"), String("discrete_real_variables")},
+	  dr_vars, idx );
+
+    if (methodName == CENTERED_PARAMETER_STUDY)
+      archive_cps_vars(model, idx);
+  }
+}
+
+
+void ParamStudy::archive_model_response(const Response& response, size_t idx) const
+{
+  // Let's try to write resultsDB stuff here - RWH
+  if(resultsDB.active())
+  {
+    const RealVector& resp_vec = response.function_values();
+    resultsDB.insert_into
+      ( run_identifier(),
+	{String("parameter_sets"), String("responses")}, resp_vec, idx );
+
+    if (methodName == CENTERED_PARAMETER_STUDY)
+      archive_cps_resp(response, idx);
+  }
+}
+
+
+void ParamStudy::archive_allocate_sets() const
+{
+  if(resultsDB.active())
+  {
+    size_t num_evals = (compactMode) ? allSamples.numCols() : allVariables.size();
+
+    StringMultiArrayConstView cv_labels
+                = iteratedModel.continuous_variable_labels();
+    StringMultiArrayConstView div_labels
+                = iteratedModel.discrete_int_variable_labels();
+    StringMultiArrayConstView dsv_labels
+                = iteratedModel.discrete_string_variable_labels();
+    StringMultiArrayConstView drv_labels
+                = iteratedModel.discrete_real_variable_labels();
+
+    const StringArray& resp_labels 
+                = iteratedModel.response_labels();
+
+    if( numContinuousVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", cv_labels));
+      resultsDB.allocate_matrix
+	( run_identifier(),
+	  {String("parameter_sets"), String("continuous_variables")},
+          Dakota::ResultsOutputType::REAL, num_evals, numContinuousVars,
+	  scales );
+    }
+    if( numDiscreteIntVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", div_labels));
+      resultsDB.allocate_matrix
+	( run_identifier(),
+	  {String("parameter_sets"), String("discrete_integer_variables")},
+          Dakota::ResultsOutputType::INTEGER, num_evals, numDiscreteIntVars,
+	  scales );
+    }
+    if( numDiscreteStringVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", dsv_labels));
+      resultsDB.allocate_matrix
+	( run_identifier(),
+	  {String("parameter_sets"), String("discrete_string_variables")},
+          Dakota::ResultsOutputType::STRING, num_evals, numDiscreteStringVars,
+	  scales );
+    }
+    if( numDiscreteRealVars ) {
+      DimScaleMap scales;
+      scales.emplace(1, StringScale("variables", drv_labels));
+      resultsDB.allocate_matrix
+	( run_identifier(),
+	  {String("parameter_sets"), String("discrete_real_variables")},
+          Dakota::ResultsOutputType::REAL, num_evals, numDiscreteRealVars,
+	  scales );
+    }
+    DimScaleMap scales;
+    scales.emplace(1, StringScale("responses", resp_labels));
+    resultsDB.allocate_matrix
+      ( run_identifier(), {String("parameter_sets"), String("responses")},
+        Dakota::ResultsOutputType::REAL, num_evals, numFunctions, scales );
+
+    if (methodName == CENTERED_PARAMETER_STUDY)
+      archive_allocate_cps();
+  }
+
+}
 
 void ParamStudy::post_input()
 {
@@ -276,10 +396,22 @@ void ParamStudy::post_input()
 void ParamStudy::post_run(std::ostream& s)
 {
   bool log_resp_flag = (!subIteratorFlag);
-  if (methodName == MULTIDIM_PARAMETER_STUDY && log_resp_flag)
+  if (methodName == MULTIDIM_PARAMETER_STUDY && log_resp_flag) {
     pStudyDACESensGlobal.compute_correlations(allVariables, allResponses, 
       iteratedModel.discrete_set_string_values()); // to map string variable
                                                    // values back to indices
+    if(resultsDB.active()) {
+      StringMultiArrayConstView
+        cv_labels  = iteratedModel.continuous_variable_labels(),
+        div_labels = iteratedModel.discrete_int_variable_labels(),
+        dsv_labels = iteratedModel.discrete_string_variable_labels(),
+        drv_labels = iteratedModel.discrete_real_variable_labels();
+      pStudyDACESensGlobal.archive_correlations(run_identifier(), resultsDB, cv_labels,
+                                        div_labels, dsv_labels, drv_labels,
+                                        iteratedModel.response_labels());
+    }
+
+  }
 
   Analyzer::post_run(s);
 }
@@ -651,15 +783,22 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
 	//  err = true;
 	//}
 	// if set indices:
-	list_div_i[j]
-	  = set_index_to_value(div_combined[j], dsi_values[dsi_cntr]);
+        try {
+          list_div_i[j]
+            = set_index_to_value(div_combined[j], dsi_values[dsi_cntr]);
+        } catch(std::out_of_range e) {
+          Cerr << e.what() << " for variable '" 
+            << iteratedModel.discrete_int_variable_labels()[j] << "' in method '" 
+            << method_id() << "'\n";
+          abort_handler(-1);
+        }
 	++dsi_cntr;
       }
       else // range values
 	list_div_i[j] = div_combined[j];
     }
 
-    for (j=0; j<numDiscreteStringVars; ++j)
+    for (j=0; j<numDiscreteStringVars; ++j) {
       // if set values:
       //if (set_value_to_index(list_dsv_i[j], dss_values[j]) == _NPOS) {
       //  Cerr << "\nError: list value " << list_dsv_i[j] << " not admissible "
@@ -667,10 +806,18 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       //  err = true;
       //}
       // if set indices:
-      list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
+      try {
+          list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
+      } catch(std::out_of_range e) {
+          Cerr << e.what() << " for variable '" 
+            << iteratedModel.discrete_string_variable_labels()[j] << "' in method '" 
+            << method_id() << "'\n";
+          abort_handler(-1);
+      }
+    }
 
     if (numDiscreteRealVars) list_drv_i.sizeUninitialized(numDiscreteRealVars);
-    for (j=0; j<numDiscreteRealVars; ++j)
+    for (j=0; j<numDiscreteRealVars; ++j) {
       // if set values:
       //if (set_value_to_index(list_drv_i[j], dsr_values[j]) == _NPOS) {
       //  Cerr << "\nError: list value " << list_drv_i[j] << " not admissible "
@@ -678,29 +825,31 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       //  err = true;
       //}
       // if set indices:
-      list_drv_i[j] = set_index_to_value(drv_indices[j], dsr_values[j]);
+      try {
+          list_drv_i[j] = set_index_to_value(drv_indices[j], dsr_values[j]);
+      } catch (std::out_of_range e) {
+          Cerr << e.what() << " for variable '" 
+            << iteratedModel.discrete_real_variable_labels()[j] << "' in method '" 
+            << method_id() << "'\n";
+          abort_handler(-1);
+      }
+    }
   }
 
 #ifdef DEBUG
   Cout << "distribute_list_of_points():\n";
   for (i=0; i<numEvals; ++i) {
-    if (numContinuousVars) {
-      Cout << "Eval " << i << " continuous:\n";
-      write_data(Cout, listCVPoints[i]);
-    }
-    if (numDiscreteIntVars) {
-      Cout << "Eval " << i << " discrete int:\n";
-      write_data(Cout, listDIVPoints[i]);
-    }
+    if (numContinuousVars)
+      Cout << "Eval " << i << " continuous:\n" << listCVPoints[i];
+    if (numDiscreteIntVars)
+      Cout << "Eval " << i << " discrete int:\n" << listDIVPoints[i];
     if (numDiscreteStringVars) {
       Cout << "Eval " << i << " discrete string:\n";
       write_data(Cout,
 	listDSVPoints[boost::indices[i][idx_range(0, numDiscreteStringVars)]]);
     }
-    if (numDiscreteRealVars) {
-      Cout << "Eval " << i << " discrete real:\n";
-      write_data(Cout, listDRVPoints[i]);
-    }
+    if (numDiscreteRealVars)
+      Cout << "Eval " << i << " discrete real:\n" << listDRVPoints[i];
   }
 #endif // DEBUG
 
@@ -751,12 +900,14 @@ void ParamStudy::distribute_partitions()
     part = discIntVarPartitions[i];
     if (part) {
       initialDIVPoint[i] = di_l_bnds[i];
-      int range = (di_set_bits[i]) ? dsi_values[dsi_cntr++].size() - 1 :
+      int range = (di_set_bits[i]) ? dsi_values[dsi_cntr].size() - 1 :
 	                             di_u_bnds[i] - di_l_bnds[i];
       discIntStepVector[i] = integer_step(range, part);
     }
     else
       { initialDIVPoint[i] = di_vars[i]; discIntStepVector[i] = 0; }
+    // must increment the discrete set integer counter even if no partition:
+    if (di_set_bits[i]) ++dsi_cntr;
   }
   for (i=0; i<numDiscreteStringVars; ++i) {
     part = discStringVarPartitions[i];
@@ -780,32 +931,25 @@ void ParamStudy::distribute_partitions()
 
 #ifdef DEBUG
   Cout << "distribute_partitions():\n";
-  if (numContinuousVars) {
-    Cout << "c_vars:\n";             write_data(Cout, c_vars);
-    Cout << "c_l_bnds:\n";           write_data(Cout, c_l_bnds);
-    Cout << "c_u_bnds:\n";           write_data(Cout, c_u_bnds);
-    Cout << "initialCVPoint:\n";     write_data(Cout, initialCVPoint);
-    Cout << "contStepVector:\n";     write_data(Cout, contStepVector);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "di_vars:\n";            write_data(Cout, di_vars);
-    Cout << "di_l_bnds:\n";          write_data(Cout, di_l_bnds);
-    Cout << "di_u_bnds:\n";          write_data(Cout, di_u_bnds);
-    Cout << "initialDIVPoint:\n";    write_data(Cout, initialDIVPoint);
-    Cout << "discIntStepVector:\n";  write_data(Cout, discIntStepVector);
-  }
+  if (numContinuousVars)
+    Cout << "c_vars:\n"   << c_vars   << "c_l_bnds:\n"       << c_l_bnds
+	 << "c_u_bnds:\n" << c_u_bnds << "initialCVPoint:\n" << initialCVPoint
+	 << "contStepVector:\n" << contStepVector;
+  if (numDiscreteIntVars)
+    Cout << "di_vars:\n" << di_vars << "di_l_bnds:\n" << di_l_bnds
+	 << "di_u_bnds:\n" << di_u_bnds
+	 << "initialDIVPoint:\n" << initialDIVPoint
+	 << "discIntStepVector:\n" << discIntStepVector;
   if (numDiscreteStringVars) {
     Cout << "ds_vars:\n";              write_data(Cout, ds_vars);
     Cout << "initialDSVPoint:\n";      write_data(Cout, initialDSVPoint);
     Cout << "discStringStepVector:\n"; write_data(Cout, discStringStepVector);
   }
-  if (numDiscreteRealVars) {
-    Cout << "dr_vars:\n";            write_data(Cout, dr_vars);
-    Cout << "dr_l_bnds:\n";          write_data(Cout, dr_l_bnds);
-    Cout << "dr_u_bnds:\n";          write_data(Cout, dr_u_bnds);
-    Cout << "initialDRVPoint:\n";    write_data(Cout, initialDRVPoint);
-    Cout << "discRealStepVector:\n"; write_data(Cout, discRealStepVector);
-  }
+  if (numDiscreteRealVars)
+    Cout << "dr_vars:\n" << dr_vars << "dr_l_bnds:\n" << dr_l_bnds
+	 << "dr_u_bnds:\n" << dr_u_bnds
+	 << "initialDRVPoint:\n" << initialDRVPoint
+	 << "discRealStepVector:\n" << discRealStepVector;
 #endif // DEBUG
 }
 
@@ -865,22 +1009,16 @@ void ParamStudy::final_point_to_step_vector()
 
 #ifdef DEBUG
   Cout << "final_point_to_step_vector():\n";
-  if (numContinuousVars) {
-    Cout << "continuous step vector:\n";
-    write_data(Cout, contStepVector);
-  }
-  if (numDiscreteIntVars) {
-    Cout << "discrete int step vector:\n";
-    write_data(Cout, discIntStepVector);
-  }
+  if (numContinuousVars)
+    Cout << "continuous step vector:\n" << contStepVector;
+  if (numDiscreteIntVars)
+    Cout << "discrete int step vector:\n" << discIntStepVector;
   if (numDiscreteStringVars) {
     Cout << "discrete string step vector:\n";
     write_data(Cout, discStringStepVector);
   }
-  if (numDiscreteRealVars) {
-    Cout << "discrete real step vector:\n";
-    write_data(Cout, discRealStepVector);
-  }
+  if (numDiscreteRealVars)
+    Cout << "discrete real step vector:\n" << discRealStepVector;
 #endif // DEBUG
 }
 
@@ -948,5 +1086,255 @@ check_sets(const IntVector& c_steps,  const IntVector& di_steps,
 
   return err;
 }
+
+
+void ParamStudy::archive_allocate_cps() const
+{
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  StringMultiArrayConstView dsv_labels
+    = iteratedModel.discrete_string_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
+  const StringArray& resp_labels
+    = iteratedModel.response_labels();
+
+  DimScaleMap resp_scales;
+  resp_scales.emplace(1, StringScale("responses", resp_labels));
+
+  // For centered parameter study, allocate a group per variable
+  for (size_t i=0; i<numContinuousVars; ++i) {
+    resultsDB.allocate_vector
+      ( run_identifier(),
+	{String("variable_slices"), cv_labels[i], String("steps")},
+	Dakota::ResultsOutputType::REAL,
+	2*contStepsPerVariable[i] + 1 );
+    resultsDB.allocate_matrix
+      (run_identifier(),
+       {String("variable_slices"), cv_labels[i], String("responses")},
+       Dakota::ResultsOutputType::REAL,
+       2*contStepsPerVariable[i] + 1, numFunctions, resp_scales );
+  }
+  for (size_t i=0; i<numDiscreteIntVars; ++i) {
+    resultsDB.allocate_vector\
+      ( run_identifier(),
+	{String("variable_slices"), div_labels[i], String("steps")},
+	Dakota::ResultsOutputType::INTEGER,
+	2*discIntStepsPerVariable[i] + 1 );
+    resultsDB.allocate_matrix
+      ( run_identifier(),
+	{"variable_slices", div_labels[i], String("responses")},
+	Dakota::ResultsOutputType::REAL,
+	2*discIntStepsPerVariable[i] + 1, numFunctions, resp_scales );
+  }
+  for (size_t i=0; i<numDiscreteStringVars; ++i) {
+    resultsDB.allocate_vector
+      ( run_identifier(),
+	{String("variable_slices"), dsv_labels[i], String("steps")},
+	Dakota::ResultsOutputType::STRING,
+	2*discStringStepsPerVariable[i] + 1 );
+    resultsDB.allocate_matrix
+      ( run_identifier(),
+	{String("variable_slices"), dsv_labels[i], String("responses")},
+	Dakota::ResultsOutputType::REAL,
+	2*discStringStepsPerVariable[i] + 1, numFunctions, resp_scales );
+  }
+  for (size_t i=0; i<numDiscreteRealVars; ++i) {
+    resultsDB.allocate_vector
+      ( run_identifier(),
+	{String("variable_slices"), drv_labels[i], String("steps")},
+	Dakota::ResultsOutputType::REAL,
+	2*discRealStepsPerVariable[i] + 1 );
+    resultsDB.allocate_matrix
+      ( run_identifier(),
+	{String("variable_slices"), drv_labels[i], String("responses")},
+	Dakota::ResultsOutputType::REAL,
+	2*discRealStepsPerVariable[i] + 1, numFunctions, resp_scales );
+  }
+}
+
+void ParamStudy::archive_cps_vars(const Model& model, size_t idx) const
+{
+  const RealVector& c_vars  = model.continuous_variables();
+  const IntVector & di_vars = model.discrete_int_variables();
+  StringMultiArrayConstView ds_vars = model.discrete_string_variables();
+  const RealVector& dr_vars = model.discrete_real_variables();
+
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  StringMultiArrayConstView dsv_labels
+    = iteratedModel.discrete_string_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
+  const StringArray& resp_labels
+    = iteratedModel.response_labels();
+
+  // center point: store values in midpoint of each var's step results
+  if (idx == 0) {
+    for (size_t i=0; i<numContinuousVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), cv_labels[i], String("steps")},
+	  c_vars[i], contStepsPerVariable[i] );
+    for (size_t i=0; i<numDiscreteIntVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), div_labels[i], String("steps")},
+	  di_vars[i], discIntStepsPerVariable[i] );
+    for (size_t i=0; i<numDiscreteStringVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), dsv_labels[i], String("steps")},
+	  ds_vars[i], discStringStepsPerVariable[i] );
+    for (size_t i=0; i<numDiscreteRealVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), drv_labels[i], String("steps")},
+	  dr_vars[i], discRealStepsPerVariable[i] );
+    return;
+  }
+
+  // non-center points; get the variable and within-variable step indices
+  size_t var_idx = 0, step_idx = 0;
+  index_to_var_step(idx, var_idx, step_idx);
+
+  if (var_idx < numContinuousVars) {
+    size_t cv_idx = var_idx;
+    resultsDB.insert_into
+      ( run_identifier(),
+	{String("variable_slices"), cv_labels[cv_idx], String("steps")},
+	c_vars[cv_idx], step_idx );
+  }
+  else if (var_idx < numContinuousVars + numDiscreteIntVars) {
+    size_t div_idx = var_idx - numContinuousVars;
+    resultsDB.insert_into
+      ( run_identifier(),
+        {String("variable_slices"), div_labels[div_idx], String("steps")},
+        di_vars[div_idx], step_idx );
+  }
+  else if (var_idx <
+	   numContinuousVars + numDiscreteIntVars + numDiscreteStringVars) {
+    size_t dsv_idx = var_idx - numContinuousVars - numDiscreteIntVars;
+    resultsDB.insert_into
+      ( run_identifier(),
+	{String("variable_slices"), dsv_labels[dsv_idx], String("steps")},
+	ds_vars[dsv_idx], step_idx );
+  }
+  else {
+    size_t drv_idx =
+      var_idx - numContinuousVars - numDiscreteIntVars - numDiscreteStringVars;
+    resultsDB.insert_into
+      ( run_identifier(),
+        {String("variable_slices"), drv_labels[drv_idx], String("steps")},
+        dr_vars[drv_idx], step_idx );
+  }
+}
+
+
+void ParamStudy::archive_cps_resp(const Response& response, size_t idx) const
+{
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  StringMultiArrayConstView dsv_labels
+    = iteratedModel.discrete_string_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
+  const StringArray& resp_labels
+    = iteratedModel.response_labels();
+
+  const RealVector& resp_vec = response.function_values();
+
+  // center point: store values in midpoint of each var's response results
+  if (idx == 0) {
+    for (size_t i=0; i<numContinuousVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), cv_labels[i], String("responses")},
+	  resp_vec, contStepsPerVariable[i] );
+    for (size_t i=0; i<numDiscreteIntVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), div_labels[i], String("responses")},
+	  resp_vec, discIntStepsPerVariable[i] );
+    for (size_t i=0; i<numDiscreteStringVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), dsv_labels[i], String("responses")},
+	  resp_vec, discStringStepsPerVariable[i] );
+    for (size_t i=0; i<numDiscreteRealVars; ++i)
+      resultsDB.insert_into
+	( run_identifier(),
+	  {String("variable_slices"), drv_labels[i], String("responses")},
+	  resp_vec, discRealStepsPerVariable[i] );
+    return;
+  }
+
+  // non-center points; get the variable and within-variable step indices
+   size_t var_idx = 0, step_idx = 0;
+   index_to_var_step(idx, var_idx, step_idx);
+
+   if (var_idx < numContinuousVars) {
+     size_t cv_idx = var_idx;
+     resultsDB.insert_into
+       ( run_identifier(),
+	 {String("variable_slices"), cv_labels[cv_idx], String("responses")},
+	 resp_vec, step_idx );
+   }
+   else if (var_idx < numContinuousVars + numDiscreteIntVars) {
+     size_t div_idx = var_idx - numContinuousVars;
+     resultsDB.insert_into
+       ( run_identifier(),
+	 {String("variable_slices"), div_labels[div_idx], String("responses")},
+	 resp_vec, step_idx );
+   }
+   else if (var_idx <
+	    numContinuousVars + numDiscreteIntVars + numDiscreteStringVars) {
+     size_t dsv_idx = var_idx - numContinuousVars - numDiscreteIntVars;
+     resultsDB.insert_into
+       ( run_identifier(),
+	 {String("variable_slices"), dsv_labels[dsv_idx], String("responses")},
+	 resp_vec, step_idx );
+   }
+   else {
+     size_t drv_idx =
+       var_idx - numContinuousVars - numDiscreteIntVars - numDiscreteStringVars;
+     resultsDB.insert_into
+       ( run_identifier(),
+	 {String("variable_slices"), drv_labels[drv_idx], String("responses")},
+	 resp_vec, step_idx );
+   }
+}
+
+
+void ParamStudy::index_to_var_step(const size_t study_idx,
+				   size_t& var_idx, size_t& step_idx) const
+{
+  size_t num_vars = numContinuousVars + numDiscreteIntVars
+    + numDiscreteStringVars + numDiscreteRealVars;
+
+  // 0 <= study_idx <= sum_i(2*spv[i])
+
+  // the zero-th eval is the center point; the steps for the first
+  // variable start at offset index = 1
+  size_t offset = 1;
+  for (var_idx = 0; var_idx < num_vars; ++var_idx) {
+    if (study_idx < offset + 2*stepsPerVariable[var_idx])
+      break;
+    offset += 2*stepsPerVariable[var_idx];
+  }
+
+  // determine the index into the var_idx-th variable steps,
+  // accounting for the missing center point in the middle, where
+  // step_idx is the middle index
+  step_idx = ( study_idx - offset < stepsPerVariable[var_idx] ) ?
+    (study_idx - offset) : (study_idx - offset + 1);
+}
+
 
 } // namespace Dakota

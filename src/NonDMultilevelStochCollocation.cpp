@@ -10,16 +10,16 @@
 //- Description: Implementation code for NonDMultilevelStochCollocation class
 //- Owner:       Mike Eldred
 
-#include "dakota_system_defs.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSparseGrid.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "PecosApproximation.hpp"
 #include "SharedInterpPolyApproxData.hpp"
+#include "dakota_system_defs.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
 //#define DEBUG
@@ -32,25 +32,29 @@ namespace Dakota {
 NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   NonDStochCollocation(BaseConstructor(), problem_db, model),
+  mlmfAllocControl(
+    probDescDB.get_short("method.nond.multilevel_allocation_control")),
   quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)
 {
+  assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
+  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -80,9 +84,10 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation; support surrogate gradient evals
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
@@ -111,11 +116,18 @@ NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 			       const UShortArray& num_int_seq,
 			       const RealVector& dim_pref, short u_space_type,
-			       bool piecewise_basis, bool use_derivs):
+			       short refine_type, short refine_control,
+			       short covar_control, short ml_alloc_cntl,
+			       short ml_discrep, short rule_nest,
+			       short rule_growth, bool piecewise_basis,
+			       bool use_derivs):
   NonDStochCollocation(MULTIFIDELITY_STOCH_COLLOCATION, model,
-		       exp_coeffs_approach, piecewise_basis, use_derivs),
-  sequenceIndex(0)
+		       exp_coeffs_approach, refine_type, refine_control,
+		       covar_control, ml_discrep, rule_nest, rule_growth,
+		       piecewise_basis, use_derivs),
+  mlmfAllocControl(ml_alloc_cntl), sequenceIndex(0)
 {
+  assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
   switch (expansionCoeffsApproach) {
@@ -123,18 +135,19 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   default:                 ssgLevelSeqSpec = num_int_seq; break;
   }
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
+  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -156,9 +169,11 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // TO DO: support surr Hessian evals in helper mode
-                            // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation.
+  // TO DO: support surrogate Hessians in helper mode.
+  ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
@@ -170,6 +185,82 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 
 NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 { }
+
+
+void NonDMultilevelStochCollocation::assign_discrepancy_mode()
+{
+  // assign alternate defaults for correction and discrepancy emulation types
+  switch (iteratedModel.correction_type()) {
+  //case ADDITIVE_CORRECTION:
+  //case MULTIPLICATIVE_CORRECTION:
+  case NO_CORRECTION: // assign method-specific default
+    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
+  }
+
+  switch (multilevDiscrepEmulation) {
+  /*
+  case DISTINCT_EMULATION:
+    if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
+      Cerr << "Error: DISTINCT_EMULATION not currently supported for "
+	   << "Multilevel SC with hierarchical interpolants." << std::endl;
+      abort_handler(-1);
+    }
+    break;
+  case RECURSIVE_EMULATION:
+    if (expansionBasisType == Pecos::NODAL_INTERPOLANT) {
+      Cerr << "Error: RECURSIVE_EMULATION not currently supported for "
+	   << "Multilevel SC with nodal interpolants." << std::endl;
+      abort_handler(-1);
+    }
+    break;
+  */
+  case DEFAULT_EMULATION: // assign method-specific default
+    multilevDiscrepEmulation =
+      //(expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
+      //RECURSIVE_EMULATION :
+      DISTINCT_EMULATION;
+    break;
+  }
+}
+
+
+void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
+{
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+
+  if (iteratedModel.surrogate_type() != "hierarchical") {
+    Cerr << "Error: multilevel/multifidelity expansions require a "
+	 << "hierarchical model." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // Hierarchical SC is already based on surpluses, so default behavior could
+  // differ from PCE (see assign_discrepancy_mode())
+  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  else
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
+  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
+}
+
+
+void NonDMultilevelStochCollocation::initialize_u_space_model()
+{
+  // For greedy ML, activate combined stats now for propagation to Pecos
+  // > don't call statistics_type() as ExpansionConfigOptions not initialized
+  //if (mlmfAllocControl == GREEDY_REFINEMENT)
+  //  statsType = Pecos::COMBINED_EXPANSION_STATS;
+
+  // initializes ExpansionConfigOptions, among other things
+  NonDStochCollocation::initialize_u_space_model();
+
+  // Bind more than one SurrogateData instance via DataFitSurrModel ->
+  // PecosApproximation
+  uSpaceModel.link_multilevel_approximation_data();
+}
 
 
 bool NonDMultilevelStochCollocation::resize()
@@ -187,34 +278,25 @@ bool NonDMultilevelStochCollocation::resize()
 void NonDMultilevelStochCollocation::core_run()
 {
   initialize_expansion();
+  sequenceIndex = 0;
 
-  /* *** TO DO: *** sanity checks;  Allow model forms?
-  size_t num_mf = iteratedModel.subordinate_models(false).size(),
-     num_hf_lev = iteratedModel.truth_model().solution_levels();
-     // for now, only SimulationModel supports solution_levels()
-  if (num_mf > 1 && num_hf_lev == 1)                     // multifidelity PCE
-    NonDExpansion::multifidelity_expansion();
-  else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
-	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-
-  }
-  else {
-    Cerr << "Error: unsupported combination of fidelities and levels within "
-	 << "NonDMultilevelStochCollocation::core_run()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  */
-
+  bool multifid_uq = true;
   switch (methodName) {
   case MULTIFIDELITY_STOCH_COLLOCATION:
-    multifidelity_expansion(); // from NonDExpansion
+    // algorithms inherited from NonDExpansion:
+    switch (mlmfAllocControl) {
+    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
+    default:                   multifidelity_expansion(refineType); break;
+    }
     break;
-  // case MULTILEVEL_STOCH_COLLOCATION:
-  //   if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-  //     recursive_sparse_grid(0);
-  //   else
-  //     multilevel_sparse_grid(0);
-  //   break;
+  //case MULTILEVEL_STOCH_COLLOCATION:
+  //  multifid_uq = false;
+  //  switch (mlmfAllocControl) {
+  //  case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
+  //  case DEFAULT_MLMF_CONTROL: multifidelity_expansion(refineType); break;
+  //  default:                   multilevel_sparse_grid();            break;
+  //  }
+  //  break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelStochCollocation::"
 	 << "core_run()" << std::endl;
@@ -222,20 +304,53 @@ void NonDMultilevelStochCollocation::core_run()
     break;
   }
 
-  // generate final results
-  Cout << "\n----------------------------------------------------"
-       << "\nMultifidelity UQ: approximated high fidelity results"
+  Cout << "\n----------------------------------------------------\n";
+  if (multifid_uq) Cout << "Multifidelity UQ: ";
+  else             Cout <<    "Multilevel UQ: ";
+  Cout << "approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";
-  annotated_results(); // full set of statistics and debug traces (default)
-  if (!summaryOutputFlag) // post_run() output is suppressed, leading to
-    print_results(Cout);  // intermediate output wth no final output
+  compute_statistics(FINAL_RESULTS);
+  // Override summaryOutputFlag control (see Analyzer::post_run()) for ML case
+  // to avoid intermediate output with no final output
+  if (!summaryOutputFlag) print_results(Cout, FINAL_RESULTS);
 
   // clean up for re-entrancy of ML SC
-  uSpaceModel.clear_stored();
+  uSpaceModel.clear_inactive();
 
-  ++numUncertainQuant;
+  finalize_expansion();
 }
 
+
+void NonDMultilevelStochCollocation::assign_specification_sequence()
+{
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE: {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    if (sequenceIndex < quadOrderSeqSpec.size())
+      nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
+    else if (refineControl)
+      nond_quad->reset();   // reset driver to pre-refinement state
+    break;
+  }
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    if (sequenceIndex < ssgLevelSeqSpec.size())
+      nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
+    else if (refineControl)
+      nond_sparse->reset(); // reset driver to pre-refinement state
+    break;
+  }
+  default:
+    Cerr << "Error: unsupported expansion coefficient estimation approach in "
+	 << "NonDMultilevelStochCollocation::assign_specification_sequence()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+}
 
 void NonDMultilevelStochCollocation::increment_specification_sequence()
 {
@@ -251,7 +366,8 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       nond_quad->reset();   // reset driver to pre-refinement state
     break;
   }
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
@@ -269,6 +385,50 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
     abort_handler(METHOD_ERROR);
     break;
   }
+}
+
+
+/*
+void NonDMultilevelStochCollocation::combined_to_active()
+{
+  switch (expansionBasisType) {
+  case Pecos::NODAL_INTERPOLANT:
+    NonDExpansion::combined_to_active(); break;
+  case Pecos::HIERARCHICAL_INTERPOLANT:
+    uSpaceModel.combine_approximation();
+    // copy combined to active, but retain combined for use in hybrid stats.
+    // *** This is a short term solution; best solution may be to
+    //     support complete set of stats using the combined data.
+    uSpaceModel.combined_to_active(false);
+    // don't force update to active statistics; allow hybrid approach where
+    // combined can still be used when needed (integrate_response_moments())
+    //statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false); // don't restore
+    statistics_type(Pecos::COMBINED_EXPANSION_STATS, false); // override
+    break;
+  }
+}
+*/
+
+
+void NonDMultilevelStochCollocation::
+print_results(std::ostream& s, short results_state)
+{
+  switch (results_state) {
+  //case REFINEMENT_RESULTS:
+  //case INTERMEDIATE_RESULTS:
+  //  break;
+  case FINAL_RESULTS:
+    if (!NLev.empty()) {
+      s << "<<<<< Samples per solution level:\n";
+      print_multilevel_evaluation_summary(s, NLev);
+      s << "<<<<< Equivalent number of high fidelity evaluations: "
+	<< equivHFEvals << std::endl;
+    }
+    break;
+  }
+
+  // nothing defined at NonDStochCollocation level
+  NonDExpansion::print_results(s, results_state);
 }
 
 } // namespace Dakota

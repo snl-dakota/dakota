@@ -1,0 +1,88 @@
+<table  class="spec-table">
+<tr>
+ <th width="2%" class="border-heavy-right"></th>
+ <th class="border-heavy-right" colspan="3"><b>Study Attributes</b> </td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <th class="border-light-right" width="15%">Label</th>
+ <th class="border-light-right" width="15%">Type</th>
+ <th class="border-light-right" width="58%">Description</th>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>dakota_version</td>
+ <td>String</td>
+ <td>Version of Dakota used to run the study</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>dakota_revision</td>
+ <td>String</td>
+ <td>Dakota version control information</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>output_version</td>
+ <td>String</td>
+ <td>Version of the output file</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>input</td>
+ <td>String</td>
+ <td>Dakota input file</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>top_method</td>
+ <td>String</td>
+ <td>Id of the top-level method</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>total_cpu_time</td>
+ <td>Real</td>
+ <td>Combined parent and child CPU time in seconds</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>parent_cpu_time</td>
+ <td>Real</td>
+ <td>Parent CPU time in seconds (when Dakota is built with UTILIB)</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>child_cpu_time</td>
+ <td>Real</td>
+ <td>Child CPU time in seconds (when Dakota is built with UTILIB)</td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>total_wallclock_time</td>
+ <td>Real</td>
+ <td>Total wallclock time in seconds (when Dakota is built with UTILIB)</td>
+</tr>
+
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>mpi_init_wallclock_time</td>
+ <td>Real</td>
+ <td>Wallclock time to MPI_Init in seconds (when Dakota is built with UTILIB and run in parallel)</td>
+</tr>
+
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>run_wallclock_time</td>
+ <td>Real</td>
+ <td>Wallclock time since MPI_Init in seconds (when Dakota is built with UTILIB and run in parallel)</td>
+</tr>
+
+<tr>
+ <th class="border-heavy-right"></th>
+ <td>mpi_wallclock_time</td>
+ <td>Real</td>
+ <td>Wallclock time since MPI_Init in seconds (when Dakota is not built with UTILIB and run in parallel)</td>
+</tr>
+</table>
+

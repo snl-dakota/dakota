@@ -1,8 +1,6 @@
-# DAKOTA/Python linked interface demonstration
-#  * Requires DAKOTA compiled with and linked against Python
+# Dakota/Python linked interface demonstration
+#  * Requires Dakota compiled with and linked against Python
 #  * Exercise the Python interface using list or numpy
-#  * If DAKOTA found numpy it will be used; there's no user toggle for
-#    this currently
 
 method,						
 	optpp_newton
@@ -20,10 +18,10 @@ interface,
 	python
 # the current analysis driver format is module:function	
 # use this for the list method of passing the data		
-	  analysis_drivers = 'rosenbrock:rosenbrock_list'	#0,#2
+	  analysis_drivers = 'rosenbrock:rosenbrock_list'	#0
 # use this for the numpy array method of passing the data	
-#	  analysis_drivers = 'rosenbrock:rosenbrock_numpy' 	#1,#3
-#           numpy						#1,#3
+#	  analysis_drivers = 'rosenbrock:rosenbrock_numpy' 	#1
+#           numpy						#1
 #	  analysis_components = 'optarg1'
 
 responses,				

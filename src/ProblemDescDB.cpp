@@ -15,6 +15,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "dakota_preproc_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
@@ -184,7 +185,7 @@ ProblemDescDB::~ProblemDescDB()
     DB setup phase 2: optionally insert additional data via late sets.
     Rank 0 only. */
 void ProblemDescDB::
-parse_inputs(const ProgramOptions& prog_opts, 
+parse_inputs(ProgramOptions& prog_opts, 
 	     DbCallbackFunctionPtr callback, void *callback_data)
 {
   if (dbRep) {
@@ -207,11 +208,53 @@ parse_inputs(const ProgramOptions& prog_opts,
 	abort_handler(PARSE_ERROR);
       }
 
-      if (prog_opts.echo_input())
-	echo_input_file(prog_opts);
+      // Read the input from stdin if the user provided "-" as the filename
+      if(prog_opts.input_file() == "-") {
+        Cout << "Reading Dakota input from standard input" << std::endl;
+        String stdin_string;
+        char in = std::cin.get();
+        while(std::cin.good()) {
+          stdin_string.push_back(in);
+          in = std::cin.get();
+        }
+        prog_opts.input_string(stdin_string);
+      }
 
-      // Parse the input file using one of the derived parser-specific classes
-      derived_parse_inputs(prog_opts);
+      if (prog_opts.preproc_input()) {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
+			  " template");
+
+	std::string tmpl_file = prog_opts.input_file();
+	if (!prog_opts.input_string().empty())
+	  // must generate to file on disk for pyprepro
+	  tmpl_file = string_to_tmpfile(prog_opts.input_string());
+
+	// run the pre-processor on the file
+	std::string preproc_file = pyprepro_input(tmpl_file,
+						  prog_opts.preproc_cmd());
+
+	if (prog_opts.echo_input())
+	  echo_input_file(preproc_file, "");
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(preproc_file, "", prog_opts.parser_options());
+
+	boost::filesystem::remove(preproc_file);
+	if (!prog_opts.input_string().empty())
+	  boost::filesystem::remove(tmpl_file);
+      }
+      else {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string());
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(prog_opts.input_file(), prog_opts.input_string(),
+			     prog_opts.parser_options());
+
+      }
 
       // Allow user input by callback function.
       
@@ -272,6 +315,7 @@ void ProblemDescDB::broadcast()
     // to all other ranks.
     if (parallelLib.world_size() > 1) {
       if (parallelLib.world_rank() == 0) {
+	enforce_unique_ids();
 	derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
@@ -296,6 +340,7 @@ void ProblemDescDB::broadcast()
 	   << dataVariablesList << dataInterfaceList << dataResponsesList
 	   << std::endl;
 #endif // DEBUG
+      enforce_unique_ids();
       derived_broadcast();
     }
   }
@@ -316,10 +361,13 @@ void ProblemDescDB::post_process()
 
 
 void ProblemDescDB::
-derived_parse_inputs(const ProgramOptions& prog_opts)
+derived_parse_inputs(const std::string& dakota_input_file,
+		     const std::string& dakota_input_string,
+		     const std::string& parser_options)
 {
   if (dbRep)
-    dbRep->derived_parse_inputs(prog_opts);
+    dbRep->derived_parse_inputs(dakota_input_file, dakota_input_string,
+				parser_options);
   else { // this fn must be redefined
     Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
 	 << " function.\n       No default defined at base class." << std::endl;
@@ -480,7 +528,7 @@ void ProblemDescDB::set_db_list_nodes(const String& method_tag)
   // through: do not update iterators or locks, such that previous
   // specification settings remain active (NO_SPECIFICATION instances
   // within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_METHOD_ID_")) {
     set_db_method_node(method_tag);
     if (methodDBLocked) {
       modelDBLocked = variablesDBLocked = interfaceDBLocked
@@ -581,7 +629,7 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
   // through: do not update dataMethodIter or methodDBLocked, such that
   // previous specification settings remain active (NO_SPECIFICATION
   // instances within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_METHOD_ID_")) {
     // set the correct Index values for all Data class lists.
     if (method_tag.empty()) { // no pointer specification
       if (dataMethodList.size() == 1) // no ambiguity if only one spec
@@ -693,9 +741,11 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
   // through: do not update model iterators or locks, such that previous
   // specification settings remain active (NO_SPECIFICATION instances
   // within a recursion do not alter list node sequencing).
-  else if (model_tag != "NO_SPECIFICATION") {
+  else if (! (model_tag == "NO_SPECIFICATION" || 
+        strbegins(model_tag, "NOSPEC_MODEL_ID_") ||
+        strbegins(model_tag, "RECAST_"))) {
     // set dataModelIter from model_tag
-    if (model_tag.empty()) { // no pointer specification
+    if (model_tag.empty() || model_tag == "NO_MODEL_ID") { // no pointer specification
       if (dataModelList.empty()) { // Note: check_input() prevents this
 	DataModel data_model; // for library mode
 	dataModelList.push_back(data_model);
@@ -825,10 +875,10 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
   // through: do not update dataInterfaceIter or interfaceDBLocked, such
   // that previous specification remains active (NO_SPECIFICATION
   // instances within a recursion do not alter list node sequencing).
-  else if (interface_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(interface_tag, "NOSPEC_INTERFACE_ID_")) {
     DataModelRep *MoRep = dataModelIter->dataModelRep;
     // set dataInterfaceIter from interface_tag
-    if (interface_tag.empty()) { // no pointer specification
+    if (interface_tag.empty() || interface_tag == "NO_ID") { // no pointer specification
       if (dataInterfaceList.size() == 1) // no ambiguity if only one spec
 	dataInterfaceIter = dataInterfaceList.begin();
       else { // try to match to a interface without an id
@@ -996,7 +1046,9 @@ const Iterator& ProblemDescDB::get_iterator()
   // Reuse logic works in both cases -> only a single unreferenced iterator
   // may exist, which corresponds to the last method spec and is reused for
   // all untagged instantiations.
-  const String& id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  String id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
                    boost::bind(&Iterator::method_id, _1) == id_method);
@@ -1004,7 +1056,7 @@ const Iterator& ProblemDescDB::get_iterator()
     Iterator new_iterator(*this);
     dbRep->iteratorList.push_back(new_iterator);
     i_it = --dbRep->iteratorList.end();
-  }
+  } 
   return *i_it;
 }
 
@@ -1019,7 +1071,9 @@ const Iterator& ProblemDescDB::get_iterator(Model& model)
     abort_handler(PARSE_ERROR);
   }
 
-  const String& id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  String id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
                    boost::bind(&Iterator::method_id, _1) == id_method);
@@ -1092,7 +1146,9 @@ const Model& ProblemDescDB::get_model()
   // The DB list nodes are set prior to calling get_model():
   // >    model_ptr spec -> id_model must be defined
   // > no model_ptr spec -> id_model is ignored, model spec is last parsed
-  const String& id_model = dbRep->dataModelIter->dataModelRep->idModel;
+  String id_model = dbRep->dataModelIter->dataModelRep->idModel;
+  if(id_model.empty())
+    id_model = "NO_MODEL_ID";
   ModelLIter m_it
     = std::find_if(dbRep->modelList.begin(), dbRep->modelList.end(),
                    boost::bind(&Model::model_id, _1) == id_model);
@@ -1180,8 +1236,11 @@ const Interface& ProblemDescDB::get_interface()
   // The DB list nodes are set prior to calling get_interface():
   // >    interface_ptr spec -> id_interface must be defined
   // > no interface_ptr spec -> id_interf ignored, interf spec = last parsed
-  const String& id_interface
+  String id_interface
     = dbRep->dataInterfaceIter->dataIfaceRep->idInterface;
+  if(id_interface.empty())
+    id_interface = "NO_ID";
+  
   InterfLIter i_it
     = std::find_if(dbRep->interfaceList.begin(), dbRep->interfaceList.end(),
                    boost::bind(&Interface::interface_id, _1) == id_interface);
@@ -2513,6 +2572,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"active_subspace.cv.relative_tolerance", P relTolerance},
       {"active_subspace.truncation_method.energy.truncation_tolerance", P truncationTolerance},
       {"adapted_basis.collocation_ratio", P adaptedBasisCollocRatio},
+      {"c3function_train.rounding_tolerance", P roundingTolerance},
+      {"c3function_train.solver_tolerance", P solverTolerance},
       {"convergence_tolerance", P convergenceTolerance},
       {"surrogate.discont_grad_thresh", P discontGradThresh},
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
@@ -2612,11 +2673,12 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"active_subspace.dimension", P subspaceDimension},
-	{"initial_samples", P initialSamples},
-	{"max_function_evals", P maxFunctionEvals},
-	{"max_iterations", P maxIterations},
-	{"nested.iterator_servers", P subMethodServers},
-	{"nested.processors_per_iterator", P subMethodProcs},
+
+        {"initial_samples", P initialSamples},
+        {"max_function_evals", P maxFunctionEvals},
+        {"max_iterations", P maxIterations},
+        {"nested.iterator_servers", P subMethodServers},
+        {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
         {"soft_convergence_limit", P softConvergenceLimit},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
@@ -2677,6 +2739,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.final_moments", P finalMomentsType},
 	{"nond.growth_override", P growthOverride},
 	{"nond.least_squares_regression_type", P lsRegressionType},
+	{"nond.multilevel_allocation_control", P mlmfAllocControl},
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.regression_type", P regressionType},
@@ -2767,8 +2830,11 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataEnvironmentRep::
     static KW<unsigned short, DataEnvironmentRep> UShde[] = { 
       // must be sorted by string (key)
+        {"interface_evals_selection", P interfEvalsSelection},
+        {"model_evals_selection", P modelEvalsSelection},
         {"post_run_input_format", P postRunInputFormat},
         {"pre_run_output_format", P preRunOutputFormat},
+        {"results_output_format", P resultsOutputFormat},
         {"tabular_format", P tabularFormat}};
     #undef P
 
@@ -2898,6 +2964,27 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     KW<size_t, DataMethodRep> *kw;
     if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "model."))) {
+    if (dbRep->modelDBLocked)
+	Locked_db();
+    #define P &DataModelRep::
+    static KW<size_t, DataModelRep> Szmo[] = {	
+      // must be sorted by string (key)
+      // must be sorted by string (key)
+        {"c3function_train.kick_rank", P kickRank},
+        {"c3function_train.max_cross_iterations", P crossMaxIter},
+        {"c3function_train.max_order", P maxOrder},
+      	{"c3function_train.max_rank", P maxRank},
+        {"c3function_train.start_order", P startOrder},
+        {"c3function_train.start_rank", P startRank}//,
+      //{"c3function_train.verbosity", P verbosity}
+    };
+    #undef P
+
+    KW<size_t, DataModelRep> *kw;
+    if ((kw = (KW<size_t, DataModelRep>*)Binsearch(Szmo, L)))
+	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
@@ -3042,6 +3129,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataMethodRep> Bdme[] = {	
       // must be sorted by string (key)
 	{"backfill", P backfillFlag},
+        {"chain_diagnostics", P chainDiagnostics},
+        {"chain_diagnostics.confidence_intervals", P chainDiagnosticsCI},
 	{"coliny.constant_penalty", P constantPenalty},
 	{"coliny.expansion", P expansionFlag},
 	{"coliny.randomize", P randomizeOrderFlag},
@@ -3051,8 +3140,10 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"import_approx_active_only", P importApproxActive},
 	{"import_build_active_only", P importBuildActive},
+        {"laplace_approx", P modelEvidLaplace},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
+        {"mc_approx", P modelEvidMC},
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
         {"model_evidence", P modelEvidence},
 	{"mutation_adaptive", P mutationAdaptive},
@@ -3104,6 +3195,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"active_subspace.truncation_method.constantine", P subspaceIdConstantine},
 	{"active_subspace.truncation_method.cv", P subspaceIdCV},
 	{"active_subspace.truncation_method.energy", P subspaceIdEnergy},
+        {"c3function_train.adapt_rank", P adaptRank},
 	{"hierarchical_tags", P hierarchicalTags},
 	{"nested.identity_resp_map", P identityRespMap},
 	{"surrogate.auto_refine", P autoRefine},
@@ -3734,13 +3826,25 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 }
 
 
-void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
+void ProblemDescDB::echo_input_file(const std::string& dakota_input_file,
+				    const std::string& dakota_input_string,
+				    const std::string& tmpl_qualifier)
 {
-  const String& dakota_input_file = prog_opts.input_file();
-  if (!dakota_input_file.empty()) {
-    bool input_is_stdin = 
-      ( dakota_input_file.size() == 1 && dakota_input_file[0] == '-');
-    if (!input_is_stdin) {
+  if (!dakota_input_string.empty()) {
+    size_t header_len = 23;
+    std::string header(header_len, '-');
+    Cout << header << '\n';
+    Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
+    if(dakota_input_file == "-")
+      Cout << "(from standard input)\n";
+    else
+      Cout << "(from string)\n";
+    Cout << header << std::endl;
+    Cout << dakota_input_string << std::endl;
+    Cout << "---------------------\n";
+    Cout << "End DAKOTA input file\n";
+    Cout << "---------------------\n" << std::endl;
+  } else if(!dakota_input_file.empty()) {
       std::ifstream inputstream(dakota_input_file.c_str());
       if (!inputstream.good()) {
 	Cerr << "\nError: Could not open input file '" << dakota_input_file 
@@ -3758,7 +3862,7 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 				   dakota_input_file.size());
       std::string header(header_len, '-');
       Cout << header << '\n';
-      Cout << "Begin DAKOTA input file\n";
+      Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
       Cout << dakota_input_file << "\n"; 
       Cout << header << std::endl;
       int inputchar = inputstream.get();
@@ -3769,20 +3873,62 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
       Cout << "---------------------\n";
       Cout << "End DAKOTA input file\n";
       Cout << "---------------------\n" << std::endl;
+  }
+}
+
+/** Require string idenfitiers id_* to be unique across all blocks of
+    each type (method, model, variables, interface, responses
+
+    For now, this allows duplicate empty ID strings. Would be better
+    to require unique IDs when more than one block of a given type
+    appears in the input file (instead of use-the-last-parsed)
+*/
+void ProblemDescDB::enforce_unique_ids()
+{
+  bool found_error = false;
+  std::multiset<String> block_ids;
+
+  // Lambda to detect duplicate for the passed id, issuing error
+  // message for the specified block_type. Modifies set of block_ids
+  // and found_error status.
+  auto check_unique = [&block_ids, &found_error] (String block_type, String id) {
+    if (!id.empty()) {
+      block_ids.insert(id);
+      // (Only warn once per unique ID name)
+      if (block_ids.count(id) == 2) {
+	Cerr << "Error: id_" << block_type << " '" << id
+	     << "' appears more than once.\n";
+	found_error = true;
+      }
     }
-  }
-  else if (!prog_opts.input_string().empty()) {
-    size_t header_len = 23;
-    std::string header(header_len, '-');
-    Cout << header << '\n';
-    Cout << "Begin DAKOTA input file\n";
-    Cout << "(from string)\n"; 
-    Cout << header << std::endl;
-    Cout << prog_opts.input_string() << std::endl;
-    Cout << "---------------------\n";
-    Cout << "End DAKOTA input file\n";
-    Cout << "---------------------\n" << std::endl;
-  }
+  };
+
+  // This could be written more generically if the member was always
+  // called idString instead of a different name (idMethod, idModel,
+  // etc.) for each Data* class...; then the same code could apply to
+  // all data*List
+  for (auto data_cont : dataMethodList)
+    check_unique("method", data_cont.data_rep()->idMethod);
+  block_ids.clear();
+
+  for (auto data_cont : dataModelList)
+    check_unique("model", data_cont.data_rep()->idModel);
+  block_ids.clear();
+
+  for (auto data_cont : dataVariablesList)
+    check_unique("variables", data_cont.data_rep()->idVariables);
+  block_ids.clear();
+
+  for (auto data_cont : dataInterfaceList)
+    check_unique("interface", data_cont.data_rep()->idInterface);
+  block_ids.clear();
+
+  for (auto data_cont : dataResponsesList)
+    check_unique("responses", data_cont.data_rep()->idResponses);
+  block_ids.clear();
+
+  if (found_error)
+    abort_handler(PARSE_ERROR);
 }
 
 } // namespace Dakota

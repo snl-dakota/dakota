@@ -47,6 +47,9 @@ enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
 /// (active model for parallel scheduling)
 enum { SURROGATE_MODEL=1, TRUTH_MODEL };
 
+/// define special values for distParamDerivs
+enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS }; 
+
 
 /// Body class for model specification data.
 
@@ -356,6 +359,30 @@ public:
   /// Contains which cutoff method to use in the cross validation metric
   unsigned short subspaceIdCVMethod;
 
+
+  // Function-Train Options
+
+  /// Optimization tolerance for FT regression
+  double solverTolerance;
+  /// Rounding tolerance for adaptive algorithms
+  double roundingTolerance;
+  /// starting polynomial order
+  size_t startOrder;
+  /// maximum order of basis polynomials
+  size_t maxOrder;
+  /// starting rank
+  size_t startRank;
+  /// rank increase increment
+  size_t kickRank;
+  /// maximum rank
+  size_t maxRank;
+  /// whether or not to adapt rank
+  bool adaptRank;
+  /// maximum number of cross iterations
+  size_t crossMaxIter;
+  // Verbosity level
+  //size_t verbosity;
+    
 
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;

@@ -1,0 +1,7 @@
+name: Variable Slices
+dataset:
+  description: "Steps, including center/initial point, for a single variable" 
+  location: "variable_slices/<variable descriptor>/steps"
+  shape: "1-dimensional: number of user-specified steps for this variable"
+  type: Real, String, or Integer, as applicable
+

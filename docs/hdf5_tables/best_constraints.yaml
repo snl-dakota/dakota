@@ -1,0 +1,14 @@
+name: Best Nonlinear Constraints
+dataset:
+  description: "Best nonlinear constraints discovered by optimization or calibration"
+  location: "[set:<N>]/best_constraints"
+  notes: "The [set:<N>] group is present only when multiple final solutions are reported."
+  shape: "1-dimensional: number of nonlinear constraints"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: responses
+    contents: Response descriptors
+    literal_contents: False
+

@@ -123,8 +123,22 @@ public:
   /// ApproximationInterface (used by DataFitSurrModels).
   virtual int recommended_points(bool constraint_flag) const;
 
+  /// activate an approximation state based on its multi-index key
+  virtual void active_model_key(const UShortArray& mi_key);
+  /// reset initial state by removing all model keys for an approximation
+  virtual void clear_model_keys();
+
+  /// assign key for the surrogate model within a {truth,surrogate} pairing
+  virtual void surrogate_model_key(const UShortArray& key);
+  /// assign key for the truth model within a {truth,surrogate} pairing
+  virtual void truth_model_key(const UShortArray& key);
+
   /// set the (currently active) approximation function index set
   virtual void approximation_function_indices(const IntSet& approx_fn_indices);
+
+  /// link together more than one SurrogateData instance within an
+  /// ApproximationInterface
+  virtual void link_multilevel_approximation_data();
 
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
@@ -150,17 +164,16 @@ public:
   virtual void build_approximation(const RealVector& c_l_bnds,
     const RealVector&  c_u_bnds, const IntVector&  di_l_bnds,
     const IntVector&  di_u_bnds, const RealVector& dr_l_bnds,
-    const RealVector& dr_u_bnds, size_t index = _NPOS);
+    const RealVector& dr_u_bnds);
 
   /// export the approximation to disk
   virtual void export_approximation();
 
   /// rebuilds the approximation after a data update
-  virtual void rebuild_approximation(const BoolDeque& rebuild_deque,
-				     size_t index = _NPOS);
+  virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
 
   /// removes data from last append from the approximation
-  virtual void pop_approximation(bool save_surr_data);
+  virtual void pop_approximation(bool save_data);
 
   /// retrieves approximation data from a previous state (negates pop)
   virtual void push_approximation();
@@ -170,20 +183,13 @@ public:
   /// finalizes the approximation by applying all trial increments
   virtual void finalize_approximation();
 
-  /// move the current approximation into storage for later combination;
-  /// the index of the stored approximation can be passed to allow
-  /// replacement instead of augmentation (default is push_back)
-  virtual void store_approximation(size_t index = _NPOS);
-  /// return an approximation from storage; the index identifies a
-  /// particular stored data set (default is pop_back from stored)
-  virtual void restore_approximation(size_t index = _NPOS);
-  /// remove a stored approximation, due to redundancy with the current
-  /// approximation, prior to combination (default for no index is pop_back)
-  virtual void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current approximation with previously stored data sets
   virtual void combine_approximation();
-  /// clear stored approximation data
-  virtual void clear_stored();
+  /// promote the combined approximation to the currently active one
+  virtual void combined_to_active(bool clear_combined = true);
+
+  /// clear inactive approximation data
+  virtual void clear_inactive();
 
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
@@ -193,11 +199,9 @@ public:
 					  const RealMatrix& challenge_pts);
 
   /// clears current data from an approximation interface
-  virtual void clear_current();
+  virtual void clear_current_active_data();
   /// clears all data from an approximation interface
-  virtual void clear_all();
-  /// clears bookkeeping for popped data sets from an approximation interface
-  virtual void clear_popped();
+  virtual void clear_active_data();
 
   /// retrieve the SharedApproxData within an ApproximationInterface
   virtual SharedApproxData& shared_approximation();
@@ -205,7 +209,8 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve the approximation data from a particular Approximation
   /// within an ApproximationInterface
-  virtual const Pecos::SurrogateData& approximation_data(size_t index);
+  virtual const Pecos::SurrogateData&
+    approximation_data(size_t fn_index, size_t d_index = _NPOS);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface
@@ -222,6 +227,9 @@ public:
   /// retrieve the analysis drivers specification for application interfaces
   virtual const StringArray& analysis_drivers() const;
 
+  /// retrieve the analysis components, if available
+  virtual const String2DArray & analysis_components() const;
+
   /// return flag indicating usage of the global evaluation cache
   virtual bool evaluation_cache() const;
   /// return flag indicating usage of the restart file
@@ -229,6 +237,7 @@ public:
 
   /// clean up any interface parameter/response files when aborting
   virtual void file_cleanup() const;
+
 
   //
   //- Heading: Set and Inquire functions
@@ -397,6 +406,8 @@ protected:
   /// whether to append the interface ID to the prefix during map (default true)
   bool appendIfaceId;
 
+  /// Analysis components for interface types that support them
+  String2DArray analysisComponents;
 private:
 
   //
@@ -410,9 +421,20 @@ private:
   /// evaluation call to make
   int algebraic_function_type(String);
 
+  /// return the next available interface ID for no-ID user methods
+  static String user_auto_id();
+
+  /// return the next available interface ID for on-the-fly methods
+  static String no_spec_id();
+
+
   //
   //- Heading: Data
   //
+
+  /// the last used interface ID number for on-the-fly instantiations
+  /// (increment before each use)
+  static size_t noSpecIdNum;
 
   /// set of variable tags from AMPL stub.col
   StringArray algebraicVarTags;

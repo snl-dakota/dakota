@@ -54,9 +54,9 @@ protected:
 
   int min_coefficients() const;
 
-  int num_constraints()  const;
+  //int num_constraints() const;
 
-  void build(size_t index = _NPOS);
+  void build();
 
   Real value(const Variables& vars);
 
@@ -64,7 +64,7 @@ protected:
 
   //const RealMatrix& hessian(const Variables& vars);
 
-  void clear_current();
+  void clear_current_active_data();
 
 private:
 
@@ -75,7 +75,8 @@ private:
   /// compute TANA coefficients based on scaled inputs
   void find_scaled_coefficients();
 
-  /// based on minX, apply offset scaling to x to define s
+  /// based on minX, offset original parameters (x) to define positive
+  /// parameters (s)
   void offset(const RealVector& x, RealVector& s);
 
   //
@@ -83,9 +84,9 @@ private:
   //
 
   RealVector pExp; ///< vector of exponent values
-  RealVector minX; ///< vector of minimum parameter values used in scaling
-  RealVector scX1; ///< vector of scaled x1 values
-  RealVector scX2; ///< vector of scaled x2 values
+  RealVector minX; ///< vector of minimum param values used for offset/scaling
+  RealVector scX1; ///< vector of scaled and/or offset x1 values
+  RealVector scX2; ///< vector of scaled and/or offset x2 values
   Real H; ///< the scalar Hessian value in the TANA-3 approximation
 };
 
@@ -113,14 +114,26 @@ inline TANA3Approximation::~TANA3Approximation()
 
 
 /** Redefine default implementation to support history mechanism. */
-inline void TANA3Approximation::clear_current()
+inline void TANA3Approximation::clear_current_active_data()
 {
-  approxData.clear_data();
-  if (approxData.anchor()) { // anchor becomes previous expansion point
-    approxData.push_back(approxData.anchor_variables(),
-			 approxData.anchor_response());
-    approxData.clear_anchor();
+  size_t d, num_d = approxData.size();
+  const UShort3DArray& keys = sharedDataRep->approxDataKeys;
+  for (d=0; d<num_d; ++d) {
+    Pecos::SurrogateData& approx_data = approxData[d];
+    approx_data.clear_anchor_index();
+    approx_data.history_target(1, keys[d]);
   }
+
+  /*
+  Pecos::SurrogateData& approx_data
+    = approxData[sharedDataRep->activeDataIndex];
+  // demote from anchor to regular/previous data
+  // (for completeness; TANA no longer uses anchor designation)
+  approx_data.clear_anchor_index();
+  //  previous is deleted and anchor moved to previous
+  if (approx_data.points() > 1)
+    approx_data.pop_front();
+  */
 }
 
 } // namespace Dakota

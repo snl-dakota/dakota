@@ -138,6 +138,17 @@ protected:
   void compute_vbd_stats(const int num_samples, 
 			 const IntResponseMap& resp_samples);
 
+  /// archive VBD-based Sobol indices
+  void archive_sobol_indices() const;
+
+  /// archive model evaluation points
+  virtual void archive_model_variables(const Model&, size_t idx) const
+    { /* no-op */ }
+
+  /// archive model evaluation responses
+  virtual void archive_model_response(const Response&, size_t idx) const
+    { /* no-op */ }
+
   /// convenience function for reading variables/responses (used in
   /// derived classes post_input)
   void read_variables_responses(int num_evals, size_t num_vars);

@@ -6,7 +6,7 @@ method
   samples 400 
   seed 1337
   ### TODO: Add keywords to generate data for CDFs and to estimate the 
-  ###       probabilities that stress will exceed 1e5 psi and displacement 
+  ###       probabilities that stress will exceed 5.0e3 psi and displacement 
   ###       will exceed 0.001 in. 
 
 variables
@@ -19,8 +19,11 @@ responses
   no_hessians
 
 interface
-  analysis_drivers 'driver.sh'
+  # analysis_drivers 'powershell.exe -File driver.ps1' # For Windows
+  analysis_drivers 'driver.sh'                         # For Linux/Mac
     fork
+	  # aprepro # For Windows
       work_directory 
-        link_files 'cantilever' 'cantilever.template'
+        # copy_files 'cantilever.template' 'cantilever' 'driver.ps1' # For Windows
+        link_files 'cantilever' 'cantilever.template'                # For Linux/Mac
   asynchronous evaluation_concurrency 4

@@ -1,4 +1,7 @@
-dnominal = [ 2.2786458300000001e+02 2.6133333299999998e+04 1.8042803500000000e+00 ];
+% To generate the data, run dakota dakota_cantilever_nominal.in and extract
+   % the nominal response values; then run this script in Matlab to add noise
+
+dnominal = [ 2.2786458300000001e+02 2.7440000000000000e+04 1.8042803500000000e+00 ];
 
 num_data = [1 5 10 50 100];
 rel_std_dev = [0.10 0.05 0.02 0.01 0.005 0.001];

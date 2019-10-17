@@ -1,0 +1,80 @@
+Blurb::
+Calculate the confidence intervals on estimates of first and second moments
+
+Description::
+During Bayesian calibration, a chain of samples is produced, which represents
+the underlying posterior distribution of model parameters. For each parameter
+sample, the corresponding model response is computed. The 
+\c confidence_intervals keyword indicates the calculation of a 95% confidence
+interval on the estimated mean and variance of each parameter and each 
+response. 
+
+As of Dakota 6.10, these confidence intervals are calculated using the 
+asymptotically valid interval estimator,
+
+\f[
+\bar{g}_{n} \pm t_{*}\frac{\hat{\sigma}_{n}}{\sqrt{n}},
+\f]
+
+where \f$\bar{g}_{n}\f$ is the moment (i.e. mean or variance), \f$t_{*}\f$ is
+the Student's \f$t\f$-value for the 95th quantile, \f$n\f$ is the sample size, and
+\f$\hat{\sigma}_{n}\f$ is an estimate of the
+standard error whose square is obtained using batch means estimation. The 
+Markov chain produced during calibration is broken up into "batches," the
+sample moment is calculated for each batch, and \f$\hat{\sigma}_{n}\f$ is an
+unbiased estimate of the standard deviation in these batch moment calculations.
+
+<b> Expected Output </b>
+
+If \c confidence_intervals is specified, the 95% confidence interval for the
+mean and variance for each parameter and for each response will be output to 
+the screen. If \c output is set to \c debug, the mean of the moment calculated
+for each batch will also be output to the screen.
+
+<b> Additional Discussion </b> 
+
+Confidence intervals may be used to indicate to the user whether \c samples
+needs to be increased during the Bayesian calibration. For example, if the 
+width of the intervals (one, many, or all) is below some threshold value, that
+may indicate that enough samples have been drawn.
+
+Examples::
+Below is a \c method block of a Dakota input file that indicates the calculation
+of confidence intervals
+
+\verbatim
+method,
+       bayes_calibration queso
+          dram
+          seed = 34785
+          chain_samples = 1000
+          chain_diagnostics
+             confidence_intervals
+\endverbatim
+
+The calculated confidence intervals are output to the screen under "Chain
+diagnostics":
+
+\verbatim
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  2.8609959149e+07  1.4417714265e+05  8.0289072766e-01  7.8655956160e-02
+             w  2.5016445558e+00  3.8306697138e-03 -1.2217188066e-01  3.8866929786e-02
+
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+        stress  2.6282814617e+03  8.9765361327e+01  1.3400226598e-01  4.9239052296e-02
+  displacement  2.9604502307e-01  1.0636886950e-02 -3.5080744509e-01 -1.2381836901e-01
+
+Chain diagnostics
+  95% Confidence Intervals of means
+                  E = [2.8570364780e+07, 2.8649553519e+07]
+                  w = [2.5009524557e+00, 2.5023366559e+00]
+             stress = [2.6120609285e+03, 2.6445019948e+03]
+       displacement = [2.9337418438e-01, 2.9871586175e-01]
+  95% Confidence Intervals of variances
+                  E = [1.5074828429e+10, 2.6499268497e+10]
+                  w = [1.1359880885e-05, 1.7988180028e-05]
+             stress = [6.2340446164e+03, 9.8815955721e+03]
+       displacement = [8.8187472572e-05, 1.3809925539e-04]
+\endverbatim

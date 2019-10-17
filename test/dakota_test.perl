@@ -56,7 +56,7 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 # 101 killed due to stale output
 # 102 killed due to no output
 # 103 aborted by SIG_INT
-# 104 error or abort appeared in output
+# 104 (disabled) error or abort appeared in output
 # 105 unknown or other FAIL
 my $summary_exitcode = 0;
 
@@ -338,17 +338,21 @@ foreach my $file (@test_inputs) {
     #print "[exit = $exit_value, signal = $signal_num, core = $dumped_core ";
     #print "protected test code = $pt_code] ";
 
+    # BMA: This historical check was useful for catching otherwise
+    # unreported MPI errors, but also causes false failed tests when a
+    # TPL emits the text abort or error to stderr. Disabled it.
+    #
     # If there's anything from stderr, check it first, since MPI
     # might return $exit_code = 0 though there was an error on a child
-    if ($exit_value == 0 && open (ERROR_FILE, $error)) {
-      while (<ERROR_FILE>) {
-	if (/error/i || /abort/i) {
-	  $exit_value = 104;
-	  last;
-	}
-      }
-      close (ERROR_FILE);
-    }
+    ##if ($exit_value == 0 && open (ERROR_FILE, $error)) {
+    ##  while (<ERROR_FILE>) {
+    ##	if (/error/i || /abort/i) {
+    ##	  $exit_value = 104;
+    ##	  last;
+    ##	}
+    ##  }
+    ##  close (ERROR_FILE);
+    ##}
 
     # iff the test succeeded, parse out the results subset of interest
     if ($exit_value == 0) {
@@ -1302,7 +1306,7 @@ sub parse_test_output {
       print TEST_OUT;
     }
     
-    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Information gained from prior to posterior|Mutual information =)/) {
+    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Information gained from prior to posterior|Mutual information =|Model evidence \()/) {
       print;
       print TEST_OUT;
     }

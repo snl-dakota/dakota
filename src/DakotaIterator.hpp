@@ -27,7 +27,7 @@ namespace Dakota {
 class ProblemDescDB;
 class Variables;
 class Response;
-
+class EvaluationStore;
 
 /// Base class for the iterator class hierarchy.
 
@@ -108,6 +108,19 @@ public:
   
   /// restore initial state for repeated sub-iterator executions
   virtual void reset();
+
+  /// set primaryA{CV,DIV,DRV}MapIndices, secondaryA{CV,DIV,DRV}MapTargets
+  /// within derived Iterators; supports computation of higher-level
+  /// sensitivities in nested contexts (e.g., derivatives of statistics
+  /// w.r.t. inserted design variables)
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
 
   /// used by IteratorScheduler to set the starting data for a run
   virtual void initialize_iterator(int job_index);
@@ -205,6 +218,9 @@ public:
   /// reinitializes iterator based on new variable size
   virtual bool resize();
 
+  /// Declare sources to the evaluations database
+  virtual void declare_sources();
+
   //
   //- Heading: Member functions
   //
@@ -290,24 +306,24 @@ public:
   /// set the number of solutions to retain in best variables/response arrays
   void num_final_solutions(size_t num_final);
 
-  /// set the default active set vector (for use with iterators that
-  /// employ evaluate_parameter_sets())
+  /// set the default active set (for use with iterators that employ
+  /// evaluate_parameter_sets())
   void active_set(const ActiveSet& set);
-  /// return the default active set vector (used by iterators that
-  /// employ evaluate_parameter_sets())
+  /// return the default active set (used by iterators that employ
+  /// evaluate_parameter_sets())
   const ActiveSet& active_set() const;
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  void active_set_request_vector(const ShortArray& asv);
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  const ShortArray& active_set_request_vector() const;
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  void active_set_request_values(short asv_val);
 
   /// set subIteratorFlag (and update summaryOutputFlag if needed)
   void sub_iterator_flag(bool si_flag);
-  /// set primaryA{CV,DIV,DRV}MapIndices, secondaryA{CV,DIV,DRV}MapTargets
-  void active_variable_mappings(const SizetArray& c_index1,
-				const SizetArray& di_index1,
-				const SizetArray& ds_index1,
-				const SizetArray& dr_index1,
-				const ShortArray& c_target2,
-				const ShortArray& di_target2,
-				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
 
   /// function to check iteratorRep (does this envelope contain a letter?)
   bool is_null() const;
@@ -333,6 +349,12 @@ public:
   // level control!
   //virtual void operator++();  // increment operator
   //virtual void operator--();  // decrement operator
+
+  /// Return whether the iterator is the top level iterator
+  bool top_level();
+
+  /// Set the iterator's top level flag
+  void top_level(const bool &tflag);
 
 protected:
 
@@ -435,30 +457,6 @@ protected:
   /// flag indicating if this Iterator is a sub-iterator
   /// (NestedModel::subIterator or DataFitSurrModel::daceIterator)
   bool subIteratorFlag;
-  /// "primary" all continuous variable mapping indices flowed down
-  /// from higher level iteration
-  SizetArray primaryACVarMapIndices;
-  /// "primary" all discrete int variable mapping indices flowed down from
-  /// higher level iteration
-  SizetArray primaryADIVarMapIndices;
-  /// "primary" all discrete string variable mapping indices flowed down from
-  /// higher level iteration
-  SizetArray primaryADSVarMapIndices;
-  /// "primary" all discrete real variable mapping indices flowed down from
-  /// higher level iteration
-  SizetArray primaryADRVarMapIndices;
-  /// "secondary" all continuous variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryACVarMapTargets;
-  /// "secondary" all discrete int variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryADIVarMapTargets;
-  /// "secondary" all discrete string variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryADSVarMapTargets;
-  /// "secondary" all discrete real variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryADRVarMapTargets;
 
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
@@ -468,6 +466,12 @@ protected:
 
   /// reference to the global iterator results database
   ResultsManager& resultsDB;
+  /// reference to the global evaluation database
+  EvaluationStore& evaluationsDB;
+
+  /// State of evaluations DB for this iterator
+  EvaluationsDBState evaluationsDBState;
+
   /// valid names for iterator results
   ResultsNames resultsNames;
 
@@ -475,6 +479,10 @@ protected:
   /// or child thereof
   std::shared_ptr<TraitsBase> methodTraits;
 
+  /// Whether this is the top level iterator
+  bool topLevel;
+
+  
 private:
 
   //
@@ -488,15 +496,30 @@ private:
   /// Used by the envelope to instantiate the correct letter class
   Iterator* get_iterator(const String& method_string, Model& model);
 
+  /// return the next available method ID for no-ID user methods
+  static String user_auto_id();
+
+  /// return the next available method ID for on-the-fly methods
+  static String no_spec_id();
+
   //
   //- Heading: Data
   //
 
-  /// method identifier string from the input file
+  /// method identifier string from the input file, or an
+  /// auto-generated ID, such that each instance of an Iterator has a
+  /// unique ID
   String methodId;
 
-  /// an execution number for this instance of the class, unique
-  /// across all instances of same methodName/methodId
+  // Data for numbering methods and their executions
+
+  /// the last used method ID number for on-the-fly instantiations
+  /// (increment before each use)
+  static size_t noSpecIdNum;
+
+  /// An execution number for this instance of the class. Now that
+  /// each instance has a unique methodId, this is just a simple
+  /// counter.
   size_t execNum;
 
   /// track the available configurations that have been created
@@ -644,36 +667,24 @@ inline const ActiveSet& Iterator::active_set() const
 { return (iteratorRep) ? iteratorRep->activeSet : activeSet; }
 
 
-inline void Iterator::
-active_variable_mappings(const SizetArray& c_index1,
-			 const SizetArray& di_index1,
-			 const SizetArray& ds_index1,
-			 const SizetArray& dr_index1,
-			 const ShortArray& c_target2,
-			 const ShortArray& di_target2,
-			 const ShortArray& ds_target2,
-			 const ShortArray& dr_target2)
+inline void Iterator::active_set_request_vector(const ShortArray& asv)
 {
-  if (iteratorRep) {
-    iteratorRep->primaryACVarMapIndices    = c_index1;
-    iteratorRep->primaryADIVarMapIndices   = di_index1;
-    iteratorRep->primaryADSVarMapIndices   = ds_index1;
-    iteratorRep->primaryADRVarMapIndices   = dr_index1;
-    iteratorRep->secondaryACVarMapTargets  = c_target2;
-    iteratorRep->secondaryADIVarMapTargets = di_target2;
-    iteratorRep->secondaryADSVarMapTargets = ds_target2;
-    iteratorRep->secondaryADRVarMapTargets = dr_target2;
-  }
-  else {
-    primaryACVarMapIndices    = c_index1;
-    primaryADIVarMapIndices   = di_index1;
-    primaryADSVarMapIndices   = ds_index1;
-    primaryADRVarMapIndices   = dr_index1;
-    secondaryACVarMapTargets  = c_target2;
-    secondaryADIVarMapTargets = di_target2;
-    secondaryADSVarMapTargets = ds_target2;
-    secondaryADRVarMapTargets = dr_target2;
-  }
+  if (iteratorRep) iteratorRep->activeSet.request_vector(asv);
+  else             activeSet.request_vector(asv);
+}
+
+
+inline const ShortArray& Iterator::active_set_request_vector() const
+{
+  return (iteratorRep) ? iteratorRep->activeSet.request_vector()
+                       : activeSet.request_vector();
+}
+
+
+inline void Iterator::active_set_request_values(short asv_val)
+{
+  if (iteratorRep) iteratorRep->activeSet.request_values(asv_val);
+  else             activeSet.request_values(asv_val);
 }
 
 

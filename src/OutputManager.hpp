@@ -261,6 +261,17 @@ public:
 
 
   // -----
+  // Results DB outputs
+  // -----
+
+  /// At runtime, initialize the global ResultsManager, tagging
+  /// filename with MPI worldRank + 1 if needed
+  void init_results_db();
+
+  /// Archive the input file to the results database
+  void archive_input(const ProgramOptions &prog_opts) const;
+
+  // -----
   // Data to later be made private
   // -----
 
@@ -276,6 +287,11 @@ public:
 
   String tabularDataFile;   ///< filename for tabulation of graphics data
   String resultsOutputFile; ///< filename for results data
+
+  /// Models selected to store their evaluations
+  unsigned short modelEvalsSelection;
+  /// Interfaces selected to store their evaluations
+  unsigned short interfEvalsSelection;
 
 private:
 
@@ -301,9 +317,6 @@ private:
 
   /// set of tags for various input/output files (default none)
   StringArray fileTags;
-
-  /// temporary variable to prevent recursive tagging initially
-  bool redirCalled;
 
   /// set of redirections for Dakota::Cout; stores any tagged filename
   /// when there are concurrent Iterators
@@ -345,8 +358,9 @@ private:
   /// output level (for debugging only; not passed in)
   short outputLevel;
 
-};  // class OutputManager
-
+  /// Output results  format
+  unsigned short resultsOutputFormat;
+};
 
 } //namespace Dakota
 

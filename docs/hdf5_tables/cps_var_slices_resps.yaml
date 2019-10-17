@@ -1,0 +1,13 @@
+name: "Variable Slices - Responses"
+dataset:
+  description: "Responses for variable slices"
+  location: "variable_slices/<variable descriptor>/responses"
+  shape: "2-dimensional: number of evaluations by number of responses"
+  type: Real
+scales:
+  - dimension: 1
+    type: String
+    label: responses
+    contents: Response descriptors
+    literal_contents: False
+

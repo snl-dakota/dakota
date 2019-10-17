@@ -95,12 +95,9 @@ private:
   /// Wrap iteratedModel in a RecastModel that weights the residuals
   void weight_model();
 
-  /// Recast callback function to weight least squares residuals,
-  /// gradients, and Hessians
-  static void primary_resp_weighter(const Variables& unweighted_vars,
-				    const Variables& weighted_vars,
-				    const Response& unweighted_response,
-				    Response& weighted_response);
+  void archive_best_results();
+  /// Write the confidence intervals to the results output
+//  void archive_confidence_intervals();
 
   //
   //- Heading: Data

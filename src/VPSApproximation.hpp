@@ -151,11 +151,11 @@ namespace Dakota
         /// build the derived class approximation type in numVars dimensions
         int min_coefficients() const;
 
-        /// return the number of constraints to be enforced via an anchor point
-        int num_constraints()  const;
+        // return the number of constraints to be enforced via an anchor point
+        //int num_constraints()  const;
 
         /// builds the approximation from scratch
-        void build(size_t index = _NPOS);
+        void build();
 
         /// retrieve the predicted function value for a given parameter set
         Real value(const Variables& vars);

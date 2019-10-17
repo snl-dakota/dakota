@@ -1,0 +1,14 @@
+name: Probability Levels
+dataset:
+  description: "Response levels corresponding to user-specified probability levels"
+  location: "[increment:<N>]/probability_levels/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
+  shape: "1-dimensional: number of requested levels for the response"
+  type: Real
+scales:
+  - dimension: 0
+    type: Real
+    label: probability_levels
+    contents: User-specified probability levels
+    literal_contents: False
+

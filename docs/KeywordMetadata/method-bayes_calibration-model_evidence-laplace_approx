@@ -1,0 +1,35 @@
+Blurb::
+Calculate model evidence using the Laplace approximation
+
+Description::
+The \c laplace_approx keyword for model evidence indicates that 
+a pre-solve will be used prior to the Bayesian MCMC sampling 
+to estimate the Maximum A Posteriori (MAP) point.  The Laplace 
+approximation assumes the posterior density is nearly 
+Gaussian and is given by a formula which involves the likelihood 
+at the MAP point, the prior density at the MAP point, and the 
+Hessian of the log-posterior at the MAP point.  The formula is 
+given in the Dakota User's manual.  This method is efficient 
+at estimating the model evidence for posterior densities with weak
+non-Gaussian characteristics but it does require a MAP 
+solve (so \c pre-solve should be specified) and it does 
+require gradient and Hessians of the response to be on. 
+
+<b> Default Behavior </b>
+
+
+<b> Expected Output </b>
+Currently, the model evidence will be printed in the screen output 
+with prefacing text indicating if it is calculated by 
+the Laplace approximation.
+
+<b> Usage Tips </b>
+
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

@@ -56,6 +56,10 @@ protected:
 
   pid_t create_evaluation_process(bool block_flag);
 
+  //
+  //- Heading: Data
+  //
+
 private:
 
   //

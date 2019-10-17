@@ -1,0 +1,57 @@
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=1200
+
+environment,
+	output_precision = 16
+
+method,
+        polynomial_chaos					#s0,#s1
+#	stoch_collocation					#s2,#s3,#s4,#s5
+#	  hierarchical						#s2,#s3
+	  p_refinement dimension_adaptive generalized		#s0,#s2,#s4
+	    convergence_tolerance 1.e-8				#s0,#s2,#s4
+#	  p_refinement uniform		  			#s1,#s3,#s5
+#	    convergence_tolerance 1.e-2				#s1,#s3,#s5
+	  sparse_grid_level = 0 unrestricted
+	output silent
+#	variance_based_decomp
+
+#model,
+#	id_model = 'SIM1'
+#	simulation
+#	  solution_level_control = 'mesh_size'
+#	  solution_level_cost = 1. 8. 64. 512. 4096.
+
+variables,
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+      	  set_values = 4 8 16 32 64
+      	  initial_state = 64
+      	  descriptors = 'mesh_size'
+    	real = 4
+      	  elements_per_variable = 2 2 1 1
+      	  set_values = 0.1 1 # field mean
+                       0.5 4 # field std dev
+                       1     # kernel order
+                       0.2   # kernel length
+      	  descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+      	  initial_state = 1 4 1 0.2
+	string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	  elements_per_variable = 2 2
+	  initial_state = 'cosine' 'off'
+      	  set_values = 'cosine' 'exponential'
+                       'off' 'on'
+      	  descriptors = 'kernel_type' 'positivity'
+
+interface,
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate restart_file
+
+responses,
+	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
+	no_gradients
+	no_hessians

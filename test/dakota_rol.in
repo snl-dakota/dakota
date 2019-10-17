@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_ROL
 # Tests for Rapid Optimization Library (ROL)
 # s0: (verification) constrained textbook with known minimum f(0.5, 0.5) = 0.125
 

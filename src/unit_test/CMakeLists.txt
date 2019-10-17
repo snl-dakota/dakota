@@ -77,6 +77,30 @@ dakota_add_unit_test(NAME leja_sampling
   LINK_DAKOTA_LIBS
   )
 
+# Unit test: h5py_hdf5
+if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GREATER 2.6)
+  execute_process(COMMAND python -c "import h5py" RESULT_VARIABLE missing_h5py
+	  OUTPUT_QUIET ERROR_QUIET)
+  if(NOT missing_h5py)
+    # Module to extract Dakota console output -- used by all h5py unit tests
+    dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/h5py_console_extract.py
+      ${CMAKE_CURRENT_BINARY_DIR}/h5py_console_extract.py dakota_unit_test_copied_files)
+
+    # tests
+    dakota_add_h5py_test(mixed_sampling)
+    dakota_add_h5py_test(incremental_sampling)
+    dakota_add_h5py_test(simple_calibration)
+    dakota_add_h5py_test(surrogate_sens)
+    dakota_add_h5py_test(discrete_vps)
+    dakota_add_h5py_test(multistart)
+    dakota_add_h5py_test(pareto)
+    #dakota_add_h5py_test(calibration_with_data)
+    #dakota_add_h5py_test(mutlisolution_opt)
+  endif()
+endif()
+
+
+
 
 # Unit test: experiment data and readers
 # Demonstration of Teuchos test framework to driver several tests related to
@@ -109,6 +133,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
 
   set(dakota_opt_unit_tests
     opt_api_core_data_xfers.cpp
+    opt_tpl_adapters.cpp
     opt_tpl_api.cpp
     opt_api_traits.cpp
     rol_adapters.cpp
@@ -152,18 +177,32 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
     )
-endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
-
 
 # Unit test: Dakota output to binary HDF5 (depends on Teuchos and HDF5)
-if(DAKOTA_HAVE_HDF5)
-  include_directories(${HDF5_INCLUDE_DIRS})
-  link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
-  dakota_add_unit_test(NAME binary_io_test SOURCES binary_io_test.cpp
-    LINK_LIBS ${Teuchos_LIBRARIES} ${TEUCHOS_LIBRARY}
-              ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES}
-    )
-endif()
+  if(DAKOTA_HAVE_HDF5)
+    include_directories(${HDF5_INCLUDE_DIRS})
+    link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
+    dakota_add_unit_test(NAME hdf5_tests SOURCES teuchos_unit_test_driver hdf5_test_serial.cpp hdf5_utils.cpp ResultsDBHDF5_Test.cpp
+      LINK_DAKOTA_LIBS
+      )
+  endif() # DAKOTA_HAVE_HDF5
+
+
+  if(DAKOTA_TEST_PREPROC)
+    dakota_add_unit_test(NAME preproc_tests SOURCES test_preproc.cpp
+      LINK_DAKOTA_LIBS)
+    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.tmpl"
+      "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.tmpl"
+      dakota_unit_test_copied_files
+      )
+    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.base"
+      "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.base"
+      dakota_unit_test_copied_files
+      )
+  endif()
+
+endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
+
 
 
 # Add a single target for all copied files

@@ -1,0 +1,34 @@
+Blurb::
+Calculate model evidence using a Monte Carlo sampling approach
+
+Description::
+The \c mc_approx keyword for model evidence indicates that 
+sample values will be generated from the prior distribution,
+and then the simulation model will be evaluated at these 
+sample values to obtain corresponding likelihood values. 
+The average of the likelihood weighted by the prior is the 
+model evidence. The accuracy of this approximation depends 
+on the number of samples taken, which is specified by 
+the \c evidence_samples keyword. 
+
+<b> Default Behavior </b>
+
+If \c evidence_samples is not specified with \c mc_approx, Dakota 
+uses the number of chain samples from the MCMC (\c chain_samples) 
+as the number of samples to use for calculating the model evidence. 
+
+<b> Expected Output </b>
+Currently, the model evidence will be printed in the screen output 
+with prefacing text indicating if it is calculated by 
+Monte Carlo sampling.
+
+<b> Usage Tips </b>
+
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

@@ -21,11 +21,14 @@ variables
     initial_state  90.0  500.0  2.9e7 400.0  500.0
 
 interface
-  analysis_drivers 'driver.sh'
+  # analysis_drivers 'powershell.exe -File driver.ps1' # For Windows
+  analysis_drivers 'driver.sh'                         # For Linux/Mac
     fork
+      # aprepro # For Windows
       work_directory named 'workdir/run'
         directory_tag directory_save
-        link_files 'cantilever.template' 'cantilever'
+        # copy_files 'cantilever.template' 'cantilever' 'driver.ps1' # For Windows
+        link_files 'cantilever.template' 'cantilever'                # For Linux/Mac
       parameters_file 'params.in'
       results_file 'results.out'
     deactivate active_set_vector

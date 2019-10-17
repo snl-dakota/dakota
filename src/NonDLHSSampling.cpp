@@ -12,19 +12,19 @@
 //- Checked by:
 //- Version:
 
-#include "dakota_system_defs.hpp"
-#include "dakota_data_io.hpp"
-#include "DakotaModel.hpp"
-#include "DakotaResponse.hpp"
 #include "NonDLHSSampling.hpp"
+#include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
+#include "DakotaApproximation.hpp"
+#include "ProbabilityTransformModel.hpp"
+#include "ProbabilityTransformation.hpp"
 #include "ReducedBasis.hpp"
 #include "dakota_linear_algebra.hpp"
-
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
 #include "Teuchos_LAPACK.hpp"
 #include "Teuchos_SerialDenseSolver.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
-#include "DakotaApproximation.hpp"
 //#include <Teuchos_MatrixMarket_Raw_Writer.hpp>
 #include "nested_sampling.hpp"
 #include "BasisPolynomial.hpp"
@@ -61,35 +61,39 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
     numResponseFunctions = model.num_primary_fns();
 
   if (dOptimal) {
-    if (numDesignVars || numEpistemicUncVars || numStateVars) {
+    const SharedVariablesData& svd = model.current_variables().shared_data();
+    const SizetArray& ac_totals = svd.active_components_totals();
+    if (ac_totals[TOTAL_CDV]   || ac_totals[TOTAL_DDIV]  ||
+	ac_totals[TOTAL_DDSV]  || ac_totals[TOTAL_DDRV]  ||
+	ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV] ||
+	ac_totals[TOTAL_CSV]   || ac_totals[TOTAL_DSIV]  ||
+	ac_totals[TOTAL_DSSV]  || ac_totals[TOTAL_DSRV]) {
       Cerr << "\nError: 'd_optimal' sampling not supported for design, "
 	   << "epistemic, or state\n       variables. Consider aleatory "
 	   << "uncertain variables instead.\n";
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
-    bool leja = (oversampleRatio > 0.0);
+    bool leja = (oversampleRatio > 0.);
     if (leja) {
-      if (oversampleRatio < 1.0) {
+      if (oversampleRatio < 1.) {
         Cerr << "\nError: 'leja_oversample_ratio' must be at least 1.0\n";
-        abort_handler(-1);
+        abort_handler(METHOD_ERROR);
       }
-      if (numPoissonVars || numBinomialVars || numNegBinomialVars ||
-	  numGeometricVars || numHyperGeomVars || numHistogramPtIntVars ||
-	  numHistogramPtStringVars || numHistogramPtRealVars) {
-        Cerr << "\nError: 'd_optimal', 'leja_oversample_ratio' does not support "
-             << "discrete variables.\n";
-        abort_handler(-1);
+      if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+        Cerr << "\nError: 'd_optimal', 'leja_oversample_ratio' does not "
+             << "support discrete variables.\n";
+        abort_handler(METHOD_ERROR);
       }
     }
-    else {
-      // classical D-optimal
+    else { // classical D-optimal
       if (numCandidateDesigns == 0)
         numCandidateDesigns = 100;
     }
     // NOTE: Classical D-optimal works with regular LHS by generating
     // candidate designs that are Latin and picking the best.
     if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT)
-      if (refineSamples.length() > 0)
+      if (refineSamples.length())
         Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
              << " refined LHS \n         sampling" << std::endl;
       else if (leja)
@@ -182,6 +186,8 @@ void NonDLHSSampling::pre_run()
 
   bool increm_lhs_active
     = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
+
+  /* TO DO: update for refactor...
   if (dOptimal)
     // initialize nataf transform for generating basis
     initialize_random_variables(EXTENDED_U);
@@ -192,6 +198,7 @@ void NonDLHSSampling::pre_run()
     // Capture any run-time updates for x-space distributions
     initialize_random_variable_parameters();
   }
+  */
   resize_final_statistics_gradients(); // finalStats ASV available at run time
 
   // BMA TODO: D-optimal incremental LHS (challenging due to set/get ranks)
@@ -230,8 +237,8 @@ void NonDLHSSampling::pre_run()
   // variable counts suffice?
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
-	      dsv_start, num_dsv, drv_start, num_drv);
+  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
   int previous_samples = 0, total_samples = samples_vec.normOne();
     
@@ -280,8 +287,8 @@ void NonDLHSSampling::
 initial_increm_lhs_set(int new_samples, 
                        RealMatrix& full_samples, IntMatrix& full_ranks)
 {
-  int num_vars = numContinuousVars + numDiscreteIntVars 
-    + numDiscreteRealVars + numDiscreteStringVars;
+  int num_vars = numContinuousVars   + numDiscreteIntVars 
+               + numDiscreteRealVars + numDiscreteStringVars;
 
   // sub-matrix to populate
   RealMatrix batch_samples(Teuchos::View, full_samples, 
@@ -293,7 +300,6 @@ initial_increm_lhs_set(int new_samples,
   IntMatrix batch_ranks(Teuchos::View, full_ranks,
                         num_vars, new_samples, 0, 0);
   store_ranks(batch_samples, batch_ranks);
-
 }
 
 
@@ -303,16 +309,16 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
 {
   // BMA NOTE: this could likely be extended to grow by any power of 2
   if (previous_samples != new_samples) {
-    Cout << "Error: For incremental LHS, the total number of samples must double"
-         << " each time.\n       For example, samples = 20 refinement_samples = "
-         << "20 40 80." << std::endl;
-    abort_handler(-1);
+    Cout << "Error: For incremental LHS, the total number of samples must "
+	 << "double each time.\n       For example, samples = 20 refinement_"
+	 << "samples = 20 40 80." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
-   
+
   // BMA TODO: are these sizes correct for cases where we are sampling inactive?
   // Should this be based on mode_counts instead of these? See DakotaNonD.cpp
-  const int num_vars = numContinuousVars + numDiscreteIntVars 
-    + numDiscreteRealVars + numDiscreteStringVars;
+  const int num_vars = numContinuousVars   + numDiscreteIntVars 
+                     + numDiscreteRealVars + numDiscreteStringVars;
 
   const int total_samples = previous_samples + new_samples;
 
@@ -338,7 +344,7 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   BoolDequeArray switch_ranks(numContinuousVars, 
                               BoolDeque(previous_samples, false));
   const std::vector<Pecos::RandomVariable>& x_ran_vars
-    = natafTransform.x_random_variables();
+    = iteratedModel.multivariate_distribution().random_variables();
   for (int v=0; v<numContinuousVars; ++v) {
     const Pecos::RandomVariable& rv = x_ran_vars[v];
     for (int s=0; s<previous_samples; ++s) {
@@ -360,8 +366,8 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   store_ranks(increm_samples, increm_ranks);
 
 #ifdef DEBUG
-  Cout << "increm_sample\n"; write_data(Cout, increm_samples, false);
-  Cout << "increm_ranks\n" << increm_ranks;
+  Cout << "increm_sample\n" << increm_samples
+       << "increm_ranks\n"  << increm_ranks;
 #endif // DEBUG
 
   // Calculate the combined ranks of continuous vars, populating sampleRanks
@@ -408,10 +414,8 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
 
 #ifdef DEBUG
   Cout << "rank_combined\n" << sampleRanks << '\n';// updated by SET_GET_RANKS
-  Cout << "Full sample set allSamples\n" ; 
-  write_data(Cout,allSamples,false,true,true); 
+  Cout << "Full sample set allSamples\n" << allSamples; 
 #endif //DEBUG
-
 }
 
 
@@ -467,7 +471,6 @@ void NonDLHSSampling::
 combine_discrete_ranks(const RealMatrix& initial_values, 
                        const RealMatrix& increm_values)
 {
-
   const int num_vars = initial_values.numRows();
   const int previous_samples = initial_values.numCols();
   const int new_samples = increm_values.numCols();
@@ -512,15 +515,14 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // BMA TODO: verify we can use numerically generated for discrete types
 
   // BMA TODO: can allow MC or LHS with new strategy, including
-  // incremental if we want; pick the new Latin design that maximizes
-  // det.
+  // incremental if we want; pick the new Latin design that maximizes det.
 
   // BMA TODO: Sampling supports modes beyond just active; this gets
   // counts for more cases, but may not cover all use cases
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
-	      dsv_start, num_dsv, drv_start, num_drv);
+  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
 
   int total_samples = previous_samples + new_samples;
@@ -535,21 +537,27 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   RealMatrix selected_samples(Teuchos::View, full_samples, 
 			      num_vars, total_samples, 0, 0);
 
+  const Pecos::MultivariateDistribution& x_dist
+    = iteratedModel.multivariate_distribution();
+  Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
+  ProbabilityTransformModel::
+    initialize_distribution_types(EXTENDED_U, x_dist, u_dist);
+  u_dist.pull_distribution_parameters(x_dist);
+  Pecos::ProbabilityTransformation nataf("nataf"); // for now
+  nataf.x_distribution(x_dist);  nataf.u_distribution(u_dist);
+
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;
   std::vector<Pecos::BasisPolynomial> poly_basis;
   ShortArray basis_types, colloc_rules;
   Pecos::SharedOrthogPolyApproxData::
-    construct_basis(natafTransform.u_types(),
-		    iteratedModel.aleatory_distribution_parameters(), 
-		    bc_options, poly_basis, basis_types, colloc_rules);
-  Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true,
-							     basis_types,
-							     poly_basis);
+    construct_basis(u_dist, bc_options, poly_basis, basis_types, colloc_rules);
+  Pecos::SharedPolyApproxData::
+    update_basis_distribution_parameters(u_dist, poly_basis);
+  Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true, poly_basis);
 
   // transform from x to u space; should we make a copy?
-  bool x_to_u = true;
-  transform_samples(initial_samples, x_to_u);
+  transform_samples(nataf, initial_samples, 0, true); // x_to_u
 
   bool leja = (oversampleRatio > 0.0);
   if (leja) {
@@ -567,7 +575,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     RealMatrix candidate_samples(num_vars, num_candidates);
     get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
     // transform from x to u space; should we make a copy?
-    transform_samples(candidate_samples, x_to_u);
+    transform_samples(nataf, candidate_samples, 0, true); // x_to_u
 
     // BMA TODO: construct and preserve the LejaSampler if possible
     // BMA TODO: discuss with John what's needed...
@@ -606,7 +614,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     for (int cand_i = 0; cand_i < numCandidateDesigns; ++cand_i) {
 
       get_parameter_sets(iteratedModel, new_samples, curr_new_samples, false);
-      transform_samples(curr_new_samples, x_to_u);
+      transform_samples(nataf, curr_new_samples, 0, true); // x_to_u
 
       // build basis matrix from total sample set (selected_samples
       // includes intiial and new samples)
@@ -625,16 +633,16 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     curr_new_samples.assign(best_new_samples);
   }
   // transform whole samples matrix from u back to x space
-  bool u_to_x = false;
-  transform_samples(selected_samples, u_to_x);
+  transform_samples(nataf, selected_samples, 0, false); // u_to_x
 }
+
 
 void NonDLHSSampling::post_input()
 {
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
-	      dsv_start, num_dsv, drv_start, num_drv);
+  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
   // call convenience function from Analyzer
   read_variables_responses(numSamples, num_vars);
@@ -655,15 +663,22 @@ void NonDLHSSampling::post_run(std::ostream& s)
 {
   // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
-  if (statsFlag)
-    if(varBasedDecompFlag)
+  if (statsFlag) {
+    if(varBasedDecompFlag) {
       compute_vbd_stats(numSamples, allResponses);
-    else if(!summaryOutputFlag)
+      archive_sobol_indices();
+    }
+    else if(!summaryOutputFlag) {
       // To support incremental reporting of statistics, compute_statistics is 
       // iteratively called by print_results. However, when the sampling iterator 
       // is a subiterator (e.g. in a nested model), print_results isn't called.
       // Compute stats here for all samples.
       compute_statistics(allSamples, allResponses);
+      // JAS TODO
+      archive_results(numSamples); 
+    }
+  }
+
   Analyzer::post_run(s);
  
   if (pcaFlag)
@@ -760,7 +775,8 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
     for (samp=0; samp<numSamples; ++samp) {
       for (fn=0; fn<numFunctions; ++fn) {
 	s << principal_comp(samp,fn) << "  " ;
-	myfile <<  std::fixed << std::setprecision(16) << principal_comp(samp,fn) << "  " ;
+	myfile << std::fixed << std::setprecision(16) << principal_comp(samp,fn)
+	       << "  " ;
       }
       s << '\n';
       myfile << '\n';
@@ -816,7 +832,7 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }           
   for (int i = 0; i < num_signif_Pcomps; ++i) {
     RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-    gpApproximations[i].add(allSamples, factor_i );
+    gpApproximations[i].add_array(allSamples, factor_i);
     gpApproximations[i].build();
     std::stringstream ss;
     ss << i;
@@ -877,6 +893,7 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }
 }
 
+
 void NonDLHSSampling::print_header_and_statistics(std::ostream& s, 
     const int& num_samples)
 {
@@ -892,12 +909,12 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
   if (!numResponseFunctions) // DACE mode w/ opt or NLS
     Analyzer::print_results(s, results_state);
-
   if (varBasedDecompFlag)
     print_sobol_indices(s);
   else if (statsFlag) {
     if(refineSamples.length() == 0) {
       compute_statistics(allSamples, allResponses);
+      archive_results(numSamples);
       int actual_samples = allSamples.numCols();
       print_header_and_statistics(s, actual_samples);
     } else {  // iterate over refinement_samples to generate incremental stats
@@ -909,7 +926,9 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
       copy_data_partial(refineSamples, samples_vec, 1);
       IntResponseMap::iterator start_resp = allResponses.begin();
       IntResponseMap inc_responses; // block of responses for this increment
-      for(const int &inc_size : samples_vec) {
+      for(size_t i = 0; i < samples_vec.size(); ++i) {
+        int inc_size = samples_vec[i];
+        size_t inc_id = i + 1;
         running_total += inc_size;
         RealMatrix inc_samples(Teuchos::View, allSamples, // block of samples for
             allSamples.numRows(), running_total);         // this increment
@@ -919,11 +938,74 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
         // cheap.
         inc_responses.insert(start_resp, end_resp);
         compute_statistics(inc_samples, inc_responses);
+        archive_results(running_total,inc_id);
         print_header_and_statistics(s, running_total);
         start_resp = end_resp;
       }
     }
   }
+}
+
+
+void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
+  if(epistemicStats) {
+    archive_extreme_responses(inc_id);
+  } else {
+  // Archive moments
+    if(functionMomentsComputed) {
+      archive_moments(inc_id);
+      archive_moment_confidence_intervals(inc_id);
+      functionMomentsComputed = false; // reset for next increment
+    }
+    // Archive level mappings and pdfs
+    if(totalLevelRequests) {
+      for(int i = 0; i < numFunctions; ++i) {
+        archive_from_resp(i,inc_id);
+        archive_to_resp(i,inc_id);
+        if(pdfOutput && pdfComputed[i]) {
+          archive_pdf(i, inc_id);
+          pdfComputed[i] = false; // reset for next increment
+        }
+      }
+    }
+  }
+  // Archive correlations
+  if(!subIteratorFlag) {
+    // Regenerating the labels for every increment is not ideal.
+    StringMultiArrayConstView
+      acv_labels  = iteratedModel.all_continuous_variable_labels(),
+      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
+      adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
+      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
+    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+      drv_start, num_drv;
+    mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+		num_div, dsv_start, num_dsv, drv_start, num_drv);
+    StringMultiArrayConstView
+      cv_labels  =
+        acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
+      div_labels =
+        adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
+      dsv_labels =
+        adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
+      drv_labels =
+        adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
+
+    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
+                                      div_labels, dsv_labels, drv_labels,
+                                      iteratedModel.response_labels(),inc_id);   
+  }
+  // Associate number of samples attribute with the increment for incremental samplee
+  AttributeArray ns_attr({ResultAttribute<int>("samples", num_samples)}); 
+  if(inc_id) {
+    StringArray location({String("increment:") + std::to_string(inc_id)});
+    resultsDB.add_metadata_to_object(run_identifier(), location, ns_attr);
+  }
+  // Associate number of samples with the execution on the final increment (or when
+  // there are no increments). 1 must be added to the length of refineSamples to
+  // account for the initial samples 
+  if(inc_id == 0 || inc_id == refineSamples.length() + 1)
+    resultsDB.add_metadata_to_execution(run_identifier(), ns_attr); 
 }
 
 } // namespace Dakota

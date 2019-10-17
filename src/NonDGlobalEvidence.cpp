@@ -113,16 +113,19 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
 
   const Pecos::SurrogateData& gp_data
     = fHatModel.approximation_data(respFnCntr);
+  const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+  const Pecos::SDRArray& sdr_array = gp_data.response_data();
 
   // GT:
   // We want to make sure that we pick a data point that lies inside the cell
   size_t i, j, index_star, num_data_pts = gp_data.points();
   truthFnStar = (maximize) ? -DBL_MAX : DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
-    const Real&      truth_fn = gp_data.response_function(i);
-    const RealVector&  c_vars = gp_data.continuous_variables(i);
-    const IntVector&  di_vars = gp_data.discrete_int_variables(i);
-    const RealVector& dr_vars = gp_data.discrete_real_variables(i);
+    const Real&      truth_fn = sdr_array[i].response_function();
+    const Pecos::SurrogateDataVars& sdv = sdv_array[i];
+    const RealVector&  c_vars = sdv.continuous_variables();
+    const IntVector&  di_vars = sdv.discrete_int_variables();
+    const RealVector& dr_vars = sdv.discrete_real_variables();
     bool in_bounds = true;
     for (j=0; j<numContIntervalVars; ++j)
       if (c_vars[j] < cellContLowerBounds[cellCntr][j] ||
@@ -170,15 +173,13 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
 	  cellRealSetBounds[cellCntr][i], i);
     }
     else {
+      const Pecos::SurrogateDataVars& sdv = sdv_array[index_star];
       if (numContIntervalVars)
-	fHatModel.continuous_variables(
-	  gp_data.continuous_variables(index_star));
+	fHatModel.continuous_variables(sdv.continuous_variables());
       if (numDiscIntervalVars || numDiscSetIntUncVars)
-	fHatModel.discrete_int_variables(
-          gp_data.discrete_int_variables(index_star));
+	fHatModel.discrete_int_variables(sdv.discrete_int_variables());
       if (numDiscSetRealUncVars)
-	fHatModel.discrete_real_variables(
-          gp_data.discrete_real_variables(index_star));
+	fHatModel.discrete_real_variables(sdv.discrete_real_variables());
     }
 		
     ActiveSet set = fHatModel.current_response().active_set();

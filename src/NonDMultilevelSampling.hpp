@@ -65,23 +65,22 @@ private:
 
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using discrepancy accumulators (sum_Y)
-  void multilevel_mc_Ysum(size_t model_form);
+  void multilevel_mc_Ysum(unsigned short model_form);
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
-  void multilevel_mc_Qsum(size_t model_form);
+  void multilevel_mc_Qsum(unsigned short model_form);
   /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc(const SizetSizetPair& lf_form_level,
-			  const SizetSizetPair& hf_form_level);
+  void control_variate_mc(const UShortArray& lf_key, const UShortArray& hf_key);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Y (LH correlations for level discrepancies)
-  void multilevel_control_variate_mc_Ycorr(size_t lf_model_form,
-					   size_t hf_model_form);
+  void multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
+					   unsigned short hf_model_form);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
-  void multilevel_control_variate_mc_Qcorr(size_t lf_model_form,
-					   size_t hf_model_form);
+  void multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
+					   unsigned short hf_model_form);
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
@@ -89,6 +88,19 @@ private:
   /// perform final LF sample increment as indicated by the evaluation ratio
   bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 		    const SizetArray& N_hf, size_t iter, size_t lev);
+
+  /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
+  void aggregated_models_mode();
+  /// synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
+  void bypass_surrogate_mode();
+  /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
+  void uncorrected_surrogate_mode();
+
+  /// manage response mode, model indices, and aggregate level cost
+  void configure_indices(unsigned short lev, unsigned short model_form,
+			 const RealVector& cost, Real& lev_cost);
+  /// manage response mode and model indices
+  void configure_indices(unsigned short lev, unsigned short model_form);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -425,10 +437,6 @@ private:
   /// compute average of a set of observations
   Real average(const SizetArray& sa) const;
 
-  /// compute a one-sided sample increment to move current sampling level
-  /// to a new target
-  size_t one_sided_delta(Real current, Real target);
-
   //
   //- Heading: Data
   //
@@ -459,6 +467,65 @@ private:
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
 };
+
+
+inline void NonDMultilevelSampling::aggregated_models_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
+    // synch activeSet with iteratedModel.response_size()
+    activeSet.reshape(2*numFunctions);
+    activeSet.request_values(1);
+  }
+}
+
+
+inline void NonDMultilevelSampling::bypass_surrogate_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // LF
+    activeSet.reshape(numFunctions);// synch with model.response_size()
+  }
+}
+
+
+inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    activeSet.reshape(numFunctions);// synch with model.response_size()
+  }
+}
+
+
+inline void NonDMultilevelSampling::
+configure_indices(unsigned short lev, unsigned short model_form)
+{
+  iteratedModel.truth_model_key(model_form, lev);
+  if (lev) {
+    //if (lev == 1) // update responseMode for levels to follow (1:num_lev-1)
+    aggregated_models_mode();
+    iteratedModel.surrogate_model_key(model_form, lev-1);
+  }
+  else
+    bypass_surrogate_mode();
+
+  // Not currently necessary, since no surrogate data:
+  //iteratedModel.active_model_key(iteratedModel.truth_model_key());
+}
+
+
+inline void NonDMultilevelSampling::
+configure_indices(unsigned short lev, unsigned short model_form,
+		  const RealVector& cost, Real& lev_cost)
+{
+  // discrepancies incur 2 level costs
+  lev_cost = (lev) ?
+    cost[lev] + cost[lev-1] : // aggregated {LF,HF} mode
+    cost[lev];                //     uncorrected LF mode
+
+  configure_indices(lev, model_form);
+}
 
 
 inline void NonDMultilevelSampling::
@@ -813,10 +880,6 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
     sum += sa[i];
   return (Real)sum / (Real)len;
 }
-
-
-inline size_t NonDMultilevelSampling::one_sided_delta(Real current, Real target)
-{ return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
 
 } // namespace Dakota
 

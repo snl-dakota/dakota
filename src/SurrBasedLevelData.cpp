@@ -45,14 +45,24 @@ initialize_data(const Variables& vars, const Response& approx_resp,
 
 
 void SurrBasedLevelData::
-initialize_indices(size_t approx_form,  size_t truth_form,
-		   size_t approx_level, size_t truth_level)
+initialize_keys(unsigned short approx_form,  unsigned short truth_form,
+		unsigned short approx_level, unsigned short truth_level)
 {
-  approxModelIndices.first  = approx_form;
-  approxModelIndices.second = approx_level;
+  if (approx_level == USHRT_MAX)
+    approxModelKey.resize(1);
+  else {
+    approxModelKey.resize(2);
+    approxModelKey[1] = approx_level;
+  }    
+  approxModelKey[0] = approx_form;
 
-  truthModelIndices.first   = truth_form;
-  truthModelIndices.second  = truth_level;
+  if (truth_level == USHRT_MAX)
+    truthModelKey.resize(1);
+  else {
+    truthModelKey.resize(2);
+    truthModelKey[1] = truth_level;
+  }
+  truthModelKey[0] = truth_form;
 }
 
 

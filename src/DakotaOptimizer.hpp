@@ -437,10 +437,26 @@ public:
 
 //----------------------------------------------------------------
 
+  /** Convenience method for common optimizer stopping criteria vectors */
+  void get_common_stopping_criteria(int    & max_fn_evals,
+                                    int    & max_iters,
+                                    double & conv_tol,
+                                    double & min_var_chg,
+                                    double & obj_target )
+  { 
+    max_fn_evals =  maxFunctionEvals;
+    max_iters = maxIterations;
+    conv_tol = convergenceTol;
+    min_var_chg = probDescDB.get_real("method.variable_tolerance");
+    obj_target = probDescDB.get_real("method.solution_target");
+  }
+
+//----------------------------------------------------------------
+
   int num_nonlin_ineq_constraints_found() const
     { return numNonlinearIneqConstraintsFound; }
 
-  /** Adapter for transferring variable bounds from Dakota data to TPL data */
+  /** Method for transferring variable bounds from Dakota data to TPL data */
   template <typename AdapterT>
     bool get_variable_bounds_from_dakota(
         typename AdapterT::VecT & lower,
@@ -454,7 +470,7 @@ public:
                             upper);
     }
 
-  /** Adapter for transferring responses from Dakota data to TPL data */
+  /** Method for transferring responses from Dakota data to TPL data */
   template <typename VecT>
     void get_responses_from_dakota(
         const RealVector & dak_fn_vals,
@@ -471,6 +487,8 @@ public:
                             cEqs,
                             cIneqs);
     }
+
+  
 protected:
 
   //
@@ -501,11 +519,9 @@ protected:
   void finalize_run();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  // helper/adapter methods
+  // Configure data transfer helper/adapters
   void configure_constraint_maps();
-  //void mapped_function_values(const RealVector& function_vals); // use constraints and traits for format
-  //const Real& mapped_function_value(size_t i) const;
-  
+
   //
   //- Heading: Data
   //
@@ -566,7 +582,7 @@ protected:
   {
     bool split_into_one_sided = true;
     if( (ctype == CONSTRAINT_TYPE::NONLINEAR) &&
-        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED) )
+        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY) )
       split_into_one_sided = false;
 
     return configure_equality_constraint_maps(
@@ -748,7 +764,7 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
                          const std::vector<double> constraint_map_offsets,
                                ResponseArray & response_array)
 {
-  RealVector best_fns(model.num_functions());
+  RealVector best_fns(model.response_size());
 
   size_t num_nl_eq_constr = model.num_nonlinear_eq_constraints();
   size_t num_nl_ineq_constr = model.num_nonlinear_ineq_constraints();
@@ -845,7 +861,7 @@ void get_variables( Model & model,
   const StringSetArray& pt_set_string = model.discrete_set_string_values();
 
   int offset = 0;
-  copy_data(cvars, vec);
+  copy_data_partial(cvars, 0, vec, offset, cvars.length());
 
   offset = cvars.length();
   copy_data(divars, int_set_bits, pt_set_int, vec, offset, divars.length());
@@ -930,7 +946,7 @@ void get_nonlinear_eq_constraints( Model & model,
 
 //----------------------------------------------------------------
 
-/** Data adapter to transfer data from Dakota to third-party opt packages */
+/** Data adapter to transfer data from Dakota to third-party opt packages (ROL-specific) */
 template <typename VecT>
 void get_nonlinear_ineq_constraints( const Model & model,
                                            VecT & values)
@@ -949,10 +965,10 @@ void get_nonlinear_ineq_constraints( const Model & model,
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename VecT>
-void get_nonlinear_constraints( Model & model,
-                                VecT & nonlin_ineq_lower,
-                                VecT & nonlin_ineq_upper,
-                                VecT & nonlin_eq_targets)
+void get_nonlinear_bounds( Model & model,
+                           VecT & nonlin_ineq_lower,
+                           VecT & nonlin_ineq_upper,
+                           VecT & nonlin_eq_targets)
 {
   const RealVector& nln_ineq_lwr_bnds = model.nonlinear_ineq_constraint_lower_bounds();
   const RealVector& nln_ineq_upr_bnds = model.nonlinear_ineq_constraint_upper_bounds();

@@ -51,7 +51,9 @@ public:
 
   /// parses the input file and populates the problem description
   /// database using NIDR.
-  void derived_parse_inputs(const ProgramOptions& prog_opts);
+  void derived_parse_inputs(const std::string& dakota_input_file,
+			    const std::string& dakota_input_string,
+			    const std::string& parser_options);
   /// perform any data processing that must be coordinated with DB buffer
   /// broadcasting (performed prior to broadcasting the DB buffer on rank 0
   /// and after receiving the DB buffer on other processor ranks)
@@ -93,8 +95,30 @@ public:
   /// DataVariables members back to flat NIDR arrays if needed.
   static void check_variables(std::list<DataVariables>*);
   static void check_responses(std::list<DataResponses>*);
-  /// Validate user-supplied descriptors
-  static void check_descriptors(const StringArray &labels);
+  /// Validate format user-supplied descriptors 
+  static void check_descriptor_format(const StringArray &labels);
+  /// Ensure no response descriptors are repeated
+  static void check_descriptors_for_repeats(const StringArray &labels);
+  /// Ensure no variable descriptors are repeated
+  static void check_descriptors_for_repeats(
+                               const StringArray &cd_labels,
+                               const StringArray &ddr_labels,
+                               const StringArray &ddsi_labels,
+                               const StringArray &ddss_labels,
+                               const StringArray &ddsr_labels,
+                               const StringArray &cs_labels,
+                               const StringArray &dsr_labels,
+                               const StringArray &dssi_labels,
+                               const StringArray &dsss_labels,
+                               const StringArray &dssr_labels,
+                               const StringArray &cau_labels,
+                               const StringArray &diau_labels,
+                               const StringArray &dsau_labels,
+                               const StringArray &drau_labels,
+                               const StringArray &ceu_labels,
+                               const StringArray &dieu_labels,
+                               const StringArray &dseu_labels,
+                               const StringArray &dreu_labels);
   /// Bounds and initial point check and inferred bounds generation
   static void make_variable_defaults(std::list<DataVariables>*);
   static void make_response_defaults(std::list<DataResponses>*);
@@ -177,6 +201,7 @@ public:
   KWH(model_order);
   KWH(model_pint);
   KWH(model_shint);
+  KWH(model_sizet);
   KWH(model_start);
   KWH(model_stop);
   KWH(model_str);

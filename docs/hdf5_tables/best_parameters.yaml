@@ -1,0 +1,14 @@
+name: Best Parameters
+dataset:
+  description: "Best parameters discovered by optimization or calibration"
+  location: "[set:<N>]/best_parameters/{continuous, discrete_integer, discrete_string, discrete_real}"
+  notes: "The [set:<N>] group is present only when multiple final solutions are reported."
+  shape: "1-dimensional: number of variables"
+  type: Real, String, or Integer, as applicable
+scales:
+  - dimension: 0
+    type: String
+    label: variables
+    contents: Variable descriptors
+    literal_contents: False
+

@@ -84,7 +84,7 @@ void APPSOptimizer::core_run()
 //     setBestVariables(...)
 //     setBestResponses(...)
 
-  set_variables<HOPSPACK::Vector>(bestX, iteratedModel, bestVariablesArray.front());
+  set_variables<>(bestX, iteratedModel, bestVariablesArray.front());
 
   // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.

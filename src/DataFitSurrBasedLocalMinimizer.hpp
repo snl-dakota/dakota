@@ -103,7 +103,7 @@ protected:
   void verify();
 
   bool build_global();
-  bool build_local();
+  bool build_centered();
   void compute_center_correction(bool embed_correction);
 
   unsigned short converged();
@@ -124,11 +124,13 @@ protected:
   /// container for trust region variable/response data
   SurrBasedLevelData trustRegionData;
 
-  /// flags the use of a global data fit surrogate (rsm, ann, mars, kriging)
+  /// flags the use of a global data fit surrogate (NN, MARS, GP, RBF, et al.)
   bool globalApproxFlag;
-  /// flags the use of a multipoint data fit surrogate (TANA)
-  bool multiptApproxFlag;
-  /// flags the use of a local data fit surrogate (Taylor series)
+  /// flags the use of a multipoint data fit surrogate (MPEA et al.)
+  bool multiPtApproxFlag;
+  /// flags the use of a two-point data fit surrogate (TANA)
+  bool twoPtApproxFlag;
+  /// flags the use of a local/single-point data fit surrogate (Taylor series)
   bool localApproxFlag;
 
   // flag indicating inclusion of the center point in the DACE

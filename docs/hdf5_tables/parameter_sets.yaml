@@ -1,0 +1,13 @@
+name: Parameter Sets
+dataset:
+  description: "Parameter study evaluations in a tabular-like listing"
+  location: "parameter_sets/{continuous_variables, discrete_integer_variables, discrete_string_variables, discrete_real_variables, responses}"
+  shape: "2-dimensional: number of evaluations by number of variables or responses"
+  type: Real, String, or Integer, as applicable
+scales:
+  - dimension: 1
+    type: String
+    label: variables or responses
+    contents: Variable or response descriptors
+    literal_contents: False
+

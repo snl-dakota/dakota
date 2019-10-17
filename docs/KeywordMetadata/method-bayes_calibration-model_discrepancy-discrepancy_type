@@ -15,6 +15,6 @@ they are functions of the configuration variable \f$x\f$. The order
 of the trend function may be selected using the \c correction_order command
 by specifying \c constant, \c linear, or \c quadratic.
 
-Note that for Dakota 6.8 and earlier, this keyword only applies to discrepancy 
+Note that for Dakota 6.9 and earlier, this keyword only applies to discrepancy 
 calculations for scalar responses. For field responses, a Gaussian process
 model with a quadratic function is used by default.

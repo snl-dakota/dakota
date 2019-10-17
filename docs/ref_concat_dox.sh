@@ -18,6 +18,7 @@ echo "\\endverbatim" >> DakotaInputSpec.dox
 # Some are header files, plus the collected topics and keyword pages, 
 # and the input spec summary
 cat $src_docs/Ref_Main.dox \
+  $src_docs/Ref_HDF5_Output.dox \
   $src_docs/Ref_Sample_Inputs.dox \
   $src_docs/Ref_Test_Problems.dox \
   $src_docs/Ref_Input_Spec.dox \

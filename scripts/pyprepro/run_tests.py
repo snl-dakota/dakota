@@ -10,11 +10,22 @@ import os
 import sys
 import shlex
 import shutil
+import random
+
+# Find the best implementation available on this platform
+try:
+    from cStringIO import StringIO
+except ImportError:
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
 
 sys.dont_write_bytecode = True
-
+PY3 = False
 if sys.version_info >= (3,):
     unicode = str
+    PY3 = True
     from itertools import zip_longest
 else:
     from itertools import izip_longest as zip_longest
@@ -49,6 +60,47 @@ import unittest
 #         if exc_type is None: 
 #             raise FailedToRaiseError
 
+class CLI_Error(object):
+    """
+    mimic the CLI mode and capute stdout and stderr. See the attribute
+    `exit_code` (which is 0 for success otherwise, depends on the exit)    
+    """
+    def __init__(self):
+        self.exit_code = 0
+    def __enter__(self):
+        self._stdout = sys.stdout
+        self._stderr = sys.stderr
+        self._CLI_MODE = pyprepro.CLI_MODE
+        self._DEBUGCLI = pyprepro.DEBUGCLI
+        
+        # Monkey patch
+        pyprepro.DEBUGCLI = False
+        pyprepro.CLI_MODE = True
+        self.stdout_tmp = sys.stdout = StringIO()
+        self.stderr_tmp = sys.stderr = StringIO()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, traceback):
+        self.stdout_tmp.flush()
+        self.stderr_tmp.flush()
+        
+        self.stdout = self.stdout_tmp.getvalue()
+        self.stderr = self.stderr_tmp.getvalue()
+        
+        # Reverse all monkey patch
+        pyprepro.CLI_MODE = self._CLI_MODE
+        pyprepro.DEBUGCLI = self._DEBUGCLI
+        
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
+        
+        # Catch *just* SystemExit
+        if isinstance(exc_val,SystemExit):
+            self.exit_code = exc_val.code
+            return True
+        
+        
+
 ################
 import pyprepro
 
@@ -75,14 +127,19 @@ def read(filename):
     with open(filename,'rt',encoding='utf8') as FF:
         return FF.read()
 
-def compare_lines(A,B):
+def compare_lines(A,B,verbose=False):
     """
     Compares the equality of lines with rstrip applied
     """
+    A = A.strip()
+    B = B.strip()
     for a,b in zip_longest(A.split('\n'),B.split('\n'),fillvalue=''):
         if len(a.strip()) == 0 and len(b.strip()) == 0:
             continue
         if a.rstrip() != b.rstrip():
+            if verbose:
+                print('a',a.rstrip())
+                print('b',b.rstrip())                
             return False
     return True
 
@@ -406,6 +463,13 @@ class invocation_and_options(unittest.TestCase):
                 read('test_output/cli_var.inp.4'),
                 read('test_gold/cli_var.gold.4')))
 
+    def test_cli_no_infile(self):
+        cmd = 'fake_file_' + ''.join(random.choice('123456789') for _ in range(10))
+        with CLI_Error() as E:
+            pyprepro._pyprepro_cli(shsplit(cmd))
+        self.assert_(E.exit_code != 0)
+        self.assert_(E.stderr.strip() == 'ERROR: `infile` must be a file or `-` to read from stdin')
+            
     def test_change_code_delims(self):
         """
         Test changing the code delimiters. Also test when you do *not* do it
@@ -833,32 +897,23 @@ class misc(unittest.TestCase):
         self.assert_(compare_lines(output2,gold2))
         self.assert_(compare_lines(output3,gold2))
 
+    def test_white_space(self):
+        """
+        Check that trialing \\ before a code block works as expected
+        """
+        # Test via the command line since python (not pyprepro) gets wonky around
+        # some of the strings
+        cmd = ' --no-warn test_files/white_space.inp test_output/white_space.out'
+        pyprepro._pyprepro_cli(shsplit(cmd))
+        
+        self.assert_(compare_lines(read('test_output/white_space.out'),
+                                   read('test_gold/white_space.gold')))
+    
     def test_division(self):
         """
         Make sure 3/2 == 1.5
         """
         self.assert_(pyprepro.pyprepro('{3/2}') == '1.5')
-
-    def test_failure_no_var(self):
-        """
-        Test that it fails when presented with an undefined variable
-        """
-        input="""\
-        {param1 = 10}
-        {param2}
-        """
-    
-        # Test via module
-        self.assertRaises(NameError,pyprepro.pyprepro,input) # Should fail
-    
-        # test via cli
-        with open('_testin.inp','w') as F:
-            F.write(input)
-            
-        self.assertRaises(SystemExit,pyprepro._pyprepro_cli,['_testin.inp',['_out.inp']])
-        os.remove('_testin.inp')
-        #os.remove('_out.inp')
-
 
     def test_non_templated(self):
         """
@@ -868,9 +923,85 @@ class misc(unittest.TestCase):
         """
     
         self.assert_(pyprepro.pyprepro('test nothing').strip() == 'test nothing')
-
-
     
+class error_capture(unittest.TestCase):
+    def test_name(self):
+        """
+        Test that it fails when presented with an undefined variable
+        """
+        input="""\
+        {param1 = 10}
+        {param2}
+        """
+        if sys.version_info < (2,7):
+            print('Skipping error_capture tests for 2.6',file=sys.stderr)
+            return
+
+        with open('_testin.inp','w') as F:
+            F.write(input)
+
+        with CLI_Error() as E:
+            pyprepro.pyprepro('_testin.inp')
+        
+        # make sure it failed
+        self.assert_(E.exit_code != 0)
+        stderr = pyprepro._touni(E.stderr)
+        gold = '''
+Error occurred
+    Exception: NameError
+    Message: name 'param2' is not defined
+'''
+        self.assert_(compare_lines(stderr,gold))
+        
+        # Also test when it is called
+        with CLI_Error() as E2: 
+            pyprepro.pyprepro("%include('_testin.inp')")
+        self.assert_(E.exit_code != 0)
+        self.assert_(compare_lines(pyprepro._touni(E2.stderr),gold))
+
+        os.remove('_testin.inp')
+        
+        # Via module
+        self.assertRaises(NameError,pyprepro.pyprepro,input) # Should fail
+    
+    def test_syntax(self):
+        input="""\
+        This should throw a SyntaxError on line 4
+
+        Error Statement: {'{0}'.format('hi'}
+        """
+        if sys.version_info < (2,7):
+            print('Skipping error_capture tests for 2.6',file=sys.stderr)
+            return
+        with open('_testin.inp','w') as F:
+            F.write(input)
+
+        with CLI_Error() as E:
+            pyprepro.pyprepro('_testin.inp')
+                    
+        # make sure it failed
+        self.assert_(E.exit_code != 0)
+        stderr = pyprepro._touni(E.stderr)
+        gold = '''
+Error occurred
+    Exception: SyntaxError
+    Filename: {}
+    Approximate Line Number: 4
+    Message: {}
+'''.format(os.path.abspath('_testin.inp'),'invalid syntax' if not PY3 else 'unexpected EOF while parsing')
+        self.assert_(compare_lines(stderr,gold))
+        
+        # Also test when it is called
+        with CLI_Error() as E2: 
+            pyprepro.pyprepro("%include('_testin.inp')")
+        self.assert_(E.exit_code != 0)
+        self.assert_(compare_lines(pyprepro._touni(E2.stderr),gold))
+
+        os.remove('_testin.inp')
+        
+        # Via module
+        self.assertRaises(SyntaxError,pyprepro.pyprepro,input) # Should fail
+ 
 if __name__ == '__main__':
     unittest.main()
 # 

@@ -1,0 +1,31 @@
+Blurb:: Write evaluation data for all interfaces to HDF5
+
+Description::
+
+When this option is selected, evaluation data for all interfaces, including
+both simulations and approximations, will be written to HDF5.
+
+HDF5 output is an experimental feature, and the contents and organization of 
+the output file is subject to change. The current organization and a
+brief explanation of HDF5 is provided in the \ref hdf5_output section
+of this manual.
+
+Topics:: dakota_output
+
+Examples::
+
+For the example input in the parent keyword, the following interface groups would be 
+written:
+
+- \c /interfaces/truth/truth_m/
+- \c /interfaces/APPROX_INTERFACE_1/surr/
+
+Depending on the \ref environment-results_output-hdf5-model_selection, the following links 
+may be added to model \c sources groups.
+
+- \c /models/simulation/truth_m/sources/truth \f$ \rightarrow \f$ \c /interfaces/truth/truth_m/
+- \c /models/surrogate/surr/sources/APPROX_INTERFACE_1 \f$ \rightarrow \f$ \c /interfaces/APPROX_INTERFACE_1/surr/
+
+Theory::
+Faq::
+See_Also::

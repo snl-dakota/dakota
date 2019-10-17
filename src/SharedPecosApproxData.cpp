@@ -110,4 +110,107 @@ void SharedPecosApproxData::integration_iterator(const Iterator& iterator)
     integration_rep->driver().driver_rep());
 }
 
+
+void SharedPecosApproxData::link_multilevel_surrogate_data()
+{
+  // Manage approxDataKeys and activeDataIndex.  {surr,modSurr}Data instances
+  // managed in PecosApproximation::link_multilevel_surrogate_data()
+
+  switch (pecosSharedDataRep->discrepancy_type()) {
+  case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
+    // expand approxDataKeys from default for discrepancy management:
+    approxDataKeys.resize(2); // for surrData and modSurrData
+    UShort2DArray&     surr_keys = approxDataKeys[0];
+    UShort2DArray& mod_surr_keys = approxDataKeys[1];
+    // surrData has either HF or HF,LF keys (raw data: level 0 or levels 1-L)
+    // modSurrData has HF key (combined data / discrepancy)
+    surr_keys.resize(2);  mod_surr_keys.resize(1);
+    //surr_keys[0] = mod_surr_keys[0] = pecosSharedDataRep->active_key();
+
+    // Configure active approxData (surrData for pushing raw data)
+    activeDataIndex = 0;
+    // 0 for pushing raw data, 1 for pulling processed data ?
+    // (other classes access the discrepancy/surplus data)
+    //pushActiveDataIndex = 0;  pullActiveDataIndex = 1;
+    break;
+  }
+  default: // default ctor linkages are sufficient
+    break;
+  }
+}
+
+
+void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
+{
+  // keys are organized in a 3D array: approxData instance by {truth,surrogate}
+  // by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
+  // as does ApproximationInterface::*_add()
+
+  // Base class default implementation updates only for activeDataIndex:
+  //UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+  // Here, we ignore activeDataIndex and update the unmodified raw approxData
+  // instance (modSurrData aggregates {HF,LF} and is keyed based on truth key).
+
+  //size_t d, num_d = approxDataKeys.size();
+  UShort2DArray& raw_data_keys = approxDataKeys[0];
+  if (key.empty()) // prune second entry from each set of approxDataKeys
+    /*
+    for (i=0; i<num_sd; ++i)
+    //if (maxNumKeys[i] > 1)      // need separate attribute to manage #keys
+      if (surrogate_data_keys(i)) // since approxDataKeys shrinks/expands
+        approxDataKeys[i].resize(1);
+    */
+    raw_data_keys.resize(1); // approxDataKeys[1] remains size 1
+  else {
+    //for (d=0; i<num_d; ++d)
+    //  if (surrogate_data_keys(i)) {
+    raw_data_keys.resize(2);
+    const UShortArray& hf_key = raw_data_keys[0]; // HF
+    UShortArray&       lf_key = raw_data_keys[1]; // LF
+    // Assign incoming LF key
+    lf_key = key;
+    // Alter key to distinguish a particular aggregation used for modeling
+    // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...) by
+    // appending the HF key that matches this LF data
+    lf_key.insert(lf_key.end(), hf_key.begin(), hf_key.end());
+    //  }
+  }
+}
+
+
+void SharedPecosApproxData::truth_model_key(const UShortArray& key)
+{
+  // keys are organized in a 3D array: approxData instance by {truth,surrogate}
+  // by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
+  // as does ApproximationInterface::*_add()
+
+  // Base class default implementation updates only for activeDataIndex:
+  //UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+  // but here we will update across approxData instances (surrData,modSurrData}.
+
+  size_t d, num_d = approxDataKeys.size();
+  for (d=0; d<num_d; ++d) {
+    UShort2DArray& keys_d = approxDataKeys[d];
+    //if (truth_data_keys(i)) { // for completeness
+    switch (keys_d.size()) { // can remain 1 if no surrogate aggregation
+    case 0: keys_d.push_back(key); break;
+    case 1: keys_d[0] = key;       break;
+    case 2: {
+      UShortArray& hf_key = keys_d[0];
+      UShortArray& lf_key = keys_d[1];
+      if (hf_key != key) {
+	// Assign HF key
+	hf_key = key;
+	// Alter LF key to distinguish a particular model pair that defines a
+	// discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
+	lf_key.resize(lf_key.size() - key.size());
+	lf_key.insert(lf_key.end(), key.begin(), key.end());
+      }
+      break;
+    }
+    }
+    //}
+  }
+}
+
 } // namespace Dakota

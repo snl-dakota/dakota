@@ -154,6 +154,44 @@ TEUCHOS_UNIT_TEST(data_conversion, mat2mat_sym)
 
 //----------------------------------------------------------------
 
+TEUCHOS_UNIT_TEST(data_conversion, mat_swap)
+{
+  RealMatrix mat( 5, 5 );
+  mat.random();
+  RealMatrix copy_mat(Teuchos::Copy, mat);
+
+  RealMatrix mat_swap( 2, 3 );
+  mat_swap.random();
+  RealMatrix copy_mat_swap(Teuchos::Copy, mat_swap);
+
+  //Cout <<  "swap() -- swap the values and attributes of two matrices ";
+  mat_swap.swap(mat);
+  bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
+  //Cout << "shallow swap results -- "<< (op_result ? "successful" : "failed" )<<std::endl;
+  if( !op_result )
+    TEST_ASSERT( false );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(data_conversion, sym_mat_swap)
+{
+  RealSymMatrix mat( 5 );
+  mat.random();
+  RealSymMatrix copy_mat(mat);
+
+  RealSymMatrix mat_swap( 3 );
+  mat_swap.random();
+  RealSymMatrix copy_mat_swap(mat_swap);
+
+  mat_swap.swap(mat);
+  bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
+  if( !op_result )
+    TEST_ASSERT( false );
+}
+
+//----------------------------------------------------------------
+
 TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
 {
   const int NROWS = 5;

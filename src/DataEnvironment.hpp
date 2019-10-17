@@ -93,7 +93,12 @@ public:
   bool resultsOutputFlag;
   /// named file for results output
   String resultsOutputFile;
-
+  /// Results output format
+  unsigned short resultsOutputFormat;
+  /// Model selection for eval storage
+  unsigned short modelEvalsSelection;
+  /// Interface selection for eval storage
+  unsigned short interfEvalsSelection;
   /// method identifier for the environment (from the \c top_method_pointer
   /// specification
   String topMethodPointer;

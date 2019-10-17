@@ -7,8 +7,8 @@
     _______________________________________________________________________ */
 
 #include "predator_prey.hpp"
-#include "MathTools.hpp"
-#include "LinearAlgebra.hpp"
+#include "math_tools.hpp"
+#include "linear_algebra.hpp"
 
 namespace Dakota {
 
@@ -41,7 +41,7 @@ void PredatorPreyModel::set_time( Real final_time, Real dt )
   dt_ = dt;
   finalTime_ = final_time;
   N_ = ( finalTime_ / dt_ ) + 1;
-  Pecos::linspace( time_, 0., finalTime_, N_ );
+  Pecos::util::linspace( time_, 0., finalTime_, N_ );
 
   dtVector_.sizeUninitialized( N_-1 );
   for ( int n = 0 ; n < N_-1; n++ )
@@ -241,7 +241,7 @@ void PredatorPreyModel::evaluate( const RealVector &x,
 	  
 	  RealMatrix dsol;
 	  //qr_solve( J, res, dsol );
-	  Pecos::lu_solve( J, res, dsol, false, Teuchos::NO_TRANS );
+	  Pecos::util::lu_solve( J, res, dsol, false, Teuchos::NO_TRANS );
 	  //int rank;
 	  //RealVector singular_values;
 	  //svd_solve( J, res, dsol, singular_values, rank );
@@ -303,7 +303,7 @@ void PredatorPreyModel::evaluate( const RealVector &x,
 	}
       RealMatrix dsol;
       //qr_solve( J, psol, dsol );
-      Pecos::lu_solve( J, psol, dsol , false, Teuchos::NO_TRANS  );
+      Pecos::util::lu_solve( J, psol, dsol , false, Teuchos::NO_TRANS  );
       //int rank;
       //RealVector singular_values;
       //svd_solve( J, psol, dsol, singular_values, rank );

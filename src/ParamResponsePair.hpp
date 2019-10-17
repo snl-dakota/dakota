@@ -286,7 +286,7 @@ inline void ParamResponsePair::read(std::istream& s)
 inline void ParamResponsePair::write(std::ostream& s) const
 {
   s << "Parameters:\n" << prpVariables;
-  if (!evalInterfaceIds.second.empty())
+  if (!(evalInterfaceIds.second.empty() || evalInterfaceIds.second == "NO_ID"))
     s << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
   s << "\nActive response data:\n"<< prpResponse << std::endl;
 }

@@ -1,0 +1,12 @@
+name: Best Model Responses
+dataset:
+  description: "Original model responses for the best residuals discovered"
+  location: "best_model_responses"
+  shape: "1-dimensional: number of model responses"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: responses
+    contents: Response descriptors
+    literal_contents: False

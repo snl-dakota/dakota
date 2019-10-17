@@ -13,10 +13,11 @@
 #include "dakota_system_defs.hpp"
 #include "NonDStochCollocation.hpp"
 #include "NonDSparseGrid.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
+#include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "SharedInterpPolyApproxData.hpp"
 
@@ -32,19 +33,20 @@ NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model)
 {
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
+  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -68,9 +70,10 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation; support surrogate grad evals at most
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
@@ -98,22 +101,27 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
 NonDStochCollocation::
 NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     unsigned short num_int, const RealVector& dim_pref,
-		     short u_space_type, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach,
-		piecewise_basis, use_derivs)
+		     short u_space_type, short refine_type,
+		     short refine_control, short covar_control,
+		     short rule_nest, short rule_growth,
+		     bool piecewise_basis, bool use_derivs):
+  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, DEFAULT_EMULATION, rule_nest,
+		rule_growth, piecewise_basis, use_derivs)
 {
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
+  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -135,9 +143,11 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // TO DO: support surr Hessian evals in helper mode
-                            // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation.
+  // TO DO: support surrogate Hessians in helper mode.
+  ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
@@ -160,10 +170,13 @@ NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
-		     short exp_coeffs_approach, bool piecewise_basis,
-		     bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
-		use_derivs)
+		     short exp_coeffs_approach, short refine_type,
+		     short refine_control, short covar_control,
+		     short ml_discrep, short rule_nest, short rule_growth,
+		     bool piecewise_basis, bool use_derivs):
+  NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
+		refine_control, covar_control, ml_discrep, rule_nest,
+		rule_growth, piecewise_basis, use_derivs)
 {
   // Logic delegated to derived class constructor...
 }
@@ -188,24 +201,40 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
   // -------------------------
   if (quad_order != USHRT_MAX) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
+    // TensorProductDriver does not currently support a hierarchical grid via
+    // increment_grid(), etc., although default rule type is set to nested
+    // within NonDExpansion::construct_quadrature() for refinement cases
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref);
   }
   else if (ssg_level != USHRT_MAX) {
     switch (expansionBasisType) {
     case Pecos::HIERARCHICAL_INTERPOLANT:
-      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
+      // Note: nestedRules not defined until construct_sparse_grid()
+      if (ruleNestingOverride == Pecos::NON_NESTED) {
+	Cerr << "Error: hierarchical interpolants currently require nested "
+	     << "rules.  Please remove \"non_nested\" override." << std::endl;
+	abort_handler(-1);
+      }
+      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
+      break;
     case Pecos::NODAL_INTERPOLANT:
-      expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;              break;
+      expansionCoeffsApproach = (refineControl) ?
+	Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+      break;
     case Pecos::DEFAULT_BASIS:
-      if ( u_space_type == STD_UNIFORM_U && nestedRules &&// TO DO:retire nested
-	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
-	     refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL ) ) {
+      // hierarchical interpolation currently requires nested rules, which
+      // are fairly limited outside of CC, F2, Gauss-Patterson --> use Nodal
+      // as default unless conditions are just right.
+      // Note: nestedRules not defined until construct_sparse_grid()
+      if (u_space_type == STD_UNIFORM_U && refineControl &&
+	  ruleNestingOverride != Pecos::NON_NESTED) {//TO DO: rm this constraint
 	expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
 	expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
       }
       else {
-	expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
+	expansionCoeffsApproach = (refineControl) ?
+	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
 	expansionBasisType = Pecos::NODAL_INTERPOLANT;
       }
       break;
@@ -245,7 +274,7 @@ config_integration(short exp_coeffs_approach, unsigned short num_int,
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
-  case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_sparse_grid(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
@@ -329,12 +358,20 @@ resolve_inputs(short& u_space_type, short& data_order)
 
   // override u_space_type to STD_UNIFORM_U for global Hermite interpolation
   if (useDerivs && !piecewiseBasis) {
-    if (u_space_type == ASKEY_U) // non-default
-      Cerr << "\nWarning: overriding ASKEY to STD_UNIFORM for Hermite "
-	   << "interpolation.\n" << std::endl;
-    else if (u_space_type == STD_NORMAL_U) // non-default
-      Cerr << "\nWarning: overriding WIENER to STD_UNIFORM for Hermite "
-	   << "interpolation.\n" << std::endl;
+
+    switch (u_space_type) {
+    //case EXTENDED_U: // default; not user-selectable -> quiet default reassign
+    //  break;
+    case ASKEY_U: case PARTIAL_ASKEY_U: // non-default
+      Cerr << "\nWarning: overriding transformation from ASKEY to STD_UNIFORM "
+	   << "for Hermite interpolation.\n" << std::endl;
+      break;
+    case STD_NORMAL_U: // non-default
+      Cerr << "\nWarning: overriding transformation from WIENER to STD_UNIFORM "
+	   << "for Hermite interpolation.\n" << std::endl;
+      break;
+    }
+
     u_space_type = STD_UNIFORM_U;
   }
 }
@@ -342,121 +379,265 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDStochCollocation::initialize_u_space_model()
 {
-  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
-  // passed through the DataFitSurrModel ctor chain.  Additional data needed
-  // by InterpPolyApproximation are passed using Pecos::BasisConfigOptions.
-  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
-  Pecos::BasisConfigOptions bc_options(nestedRules, piecewiseBasis,
-				       true, useDerivs);
-
-  // build a polynomial basis for purposes of defining collocation pts/wts
-  std::vector<Pecos::BasisPolynomial> driver_basis;
-  Pecos::SharedInterpPolyApproxData::construct_basis(natafTransform.u_types(),
-    iteratedModel.aleatory_distribution_parameters(), bc_options, driver_basis);
-
-  // set the polynomial basis within the NonDIntegration instance
-  NonDIntegration* u_space_sampler_rep
-    = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-  u_space_sampler_rep->initialize_grid(driver_basis);
-
-  // perform last due to numSamplesOnModel update
   NonDExpansion::initialize_u_space_model();
+
+  // initialize product accumulators with PolynomialApproximation pointers
+  // used in covariance calculations
+  if ( expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT &&
+       refineControl && ( refineMetric == Pecos::COVARIANCE_METRIC ||
+			  refineMetric == Pecos::MIXED_STATS_METRIC ) )
+    initialize_covariance();
+
+  // Precedes construct_basis() since basis is stored in Pecos driver
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  shared_data_rep->integration_iterator(uSpaceModel.subordinate_iterator());
+
+  // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
+  const Pecos::MultivariateDistribution& u_mvd
+    = uSpaceModel.multivariate_distribution();
+  // construct the polynomial basis (shared by integration drivers)
+  shared_data_rep->construct_basis(u_mvd);
+  // mainly a run-time requirement, but also needed at construct time
+  // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
+  shared_data_rep->update_basis_distribution_parameters(u_mvd);
+
+  initialize_u_space_grid();
 }
 
 
-void NonDStochCollocation::update_expansion(size_t index)
+void NonDStochCollocation::initialize_covariance()
 {
-  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
-    // grid levels have been updated, now evaluate the new points
-    NonDSparseGrid* nond_sparse = (NonDSparseGrid*)
-      uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_sparse->evaluate_grid_increment(); // like NonDSG::evaluate_set()
-    // append the new data to the existing approximation and rebuild
-    uSpaceModel.append_approximation(index, true); // rebuild
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  size_t i, j;
+  for (i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    pa_rep_i->clear_covariance_pointers();
+    for (j=0; j<=i; ++j) {
+      PecosApproximation* pa_rep_j
+	= (PecosApproximation*)poly_approxs[j].approx_rep();
+      pa_rep_i->initialize_covariance(pa_rep_j);
+    }
   }
-  else
-    NonDExpansion::update_expansion(index); // default: build from scratch
 }
 
 
-Real NonDStochCollocation::compute_covariance_metric()
+void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
-  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
-    size_t i, j;
-    RealSymMatrix delta_resp_covar(numFunctions, false);
-    bool warn_flag = false,
-      all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    for (i=0; i<numFunctions; ++i) {
-      PecosApproximation* pa_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (pa_rep_i->expansion_coefficient_flag())
-	for (j=0; j<=i; ++j) {
-	  PecosApproximation* pa_rep_j
-	    = (PecosApproximation*)poly_approxs[j].approx_rep();
-	  if (pa_rep_j->expansion_coefficient_flag())
-	    delta_resp_covar(i,j) = (all_vars) ?
-	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
-	      pa_rep_i->delta_covariance(pa_rep_j);
-	  else
-	    { warn_flag = true; delta_resp_covar(i,j) = 0.; }
-	}
-      else {
-	warn_flag = true;
-	for (j=0; j<=i; ++j)
-	  delta_resp_covar(i,j) = 0.;
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false;
+
+  if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
+  for (size_t i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag()) {
+      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	// refinement assessed for impact on combined expansion from roll up
+	deltaRespMean[i] = (allVars) ?
+	  pa_rep_i->delta_combined_mean(initialPtU) :
+	  pa_rep_i->delta_combined_mean();
+      else // refinement assessed for impact on the current expansion
+	deltaRespMean[i] = (allVars) ?
+	  pa_rep_i->delta_mean(initialPtU) : pa_rep_i->delta_mean();
+
+      if (update_ref) {
+	Real new_mean = pa_rep_i->moment(0) + deltaRespMean[i];
+	pa_rep_i->moment(new_mean, 0);
       }
     }
-    if (warn_flag)
-      Cerr << "Warning: expansion coefficients unavailable in "
-	   << "NonDStochCollocation::compute_covariance_metric().\n         "
-	   << "Zeroing affected delta_covariance terms." << std::endl;
-    // reference covariance gets restored in NonDExpansion::increment_sets()
-    respCovariance += delta_resp_covar;
-    return delta_resp_covar.normFrobenius();
+    else
+      { warn_flag = true; deltaRespMean[i] = 0.; }
   }
-  else // use default implementation
-    return NonDExpansion::compute_covariance_metric();
+
+  // no current need for printing mean values by themselves:
+  //if (print_metric) print_mean(Cout, deltaRespMean, "Change in");
+  // mean values not tracked outside PolynomialApproximation:
+  //if (update_ref)   respMean += deltaRespMean;
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonD"
+	 << "StochCollocation::compute_delta_mean().\n         "
+	 << "Zeroing affected deltaRespMean terms." << std::endl;
 }
 
 
-Real NonDStochCollocation::compute_final_statistics_metric()
+void NonDStochCollocation::
+compute_delta_variance(bool update_ref, bool print_metric)
 {
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false;
+
+  if (deltaRespVariance.empty())
+    deltaRespVariance.sizeUninitialized(numFunctions);
+  for (size_t i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    Real& delta = deltaRespVariance[i];
+    if (pa_rep_i->expansion_coefficient_flag()) {
+      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	// refinement assessed for impact on combined expansion from roll up
+	delta = (allVars) ? pa_rep_i->delta_combined_variance(initialPtU) :
+	  pa_rep_i->delta_combined_variance();
+      else // refinement assessed for impact on the current expansion
+	delta = (allVars) ? pa_rep_i->delta_variance(initialPtU) :
+	  pa_rep_i->delta_variance();
+
+      if (update_ref) {
+	respVariance[i] += delta;
+	pa_rep_i->moment(respVariance[i], 1);
+      }
+    }
+    else
+      { warn_flag = true; delta = 0.; }
+  }
+
+  if (print_metric) print_variance(Cout, deltaRespVariance, "Change in");
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
+	 << "Collocation::compute_delta_variance().\n         "
+	 << "Zeroing affected deltaRespVariance terms." << std::endl;
+}
+
+
+void NonDStochCollocation::
+compute_delta_covariance(bool update_ref, bool print_metric)
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool warn_flag = false;
+  size_t i, j;
+
+  if (deltaRespCovariance.empty())
+    deltaRespCovariance.shapeUninitialized(numFunctions);
+  for (i=0; i<numFunctions; ++i) {
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (pa_rep_i->expansion_coefficient_flag()) {
+      for (j=0; j<=i; ++j) {
+	PecosApproximation* pa_rep_j
+	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	Real& delta = deltaRespCovariance(i,j);
+	if (pa_rep_j->expansion_coefficient_flag()) {
+	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	    // refinement assessed for impact on combined exp from roll up
+	    delta = (allVars) ?
+	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_combined_covariance(pa_rep_j);
+	  else // refinement assessed for impact on the current expansion
+	    delta = (allVars) ?
+	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_covariance(pa_rep_j);
+
+	  if (update_ref) {
+	    respCovariance(i,j) += delta;
+	    if (i == j) pa_rep_i->moment(respCovariance(i,i), 1);
+	  }
+	}
+	else
+	  { warn_flag = true; delta = 0.; }
+      }
+    }
+    else {
+      warn_flag = true;
+      for (j=0; j<=i; ++j)
+	deltaRespCovariance(i,j) = 0.;
+    }
+  }
+
+  if (print_metric) print_covariance(Cout, deltaRespCovariance, "Change in");
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
+	 << "Collocation::compute_delta_covariance().\n         "
+	 << "Zeroing affected deltaRespCovariance terms." << std::endl;
+}
+
+
+Real NonDStochCollocation::
+compute_covariance_metric(bool revert, bool print_metric)
+{
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
+    bool update_ref = !revert;
+
+    // augment delta covar -> ref covar with delta_mean -> ref mean;
+    // > supports base compute/print requirements without incurring overhead
+    //   of metric_roll_up(), avoiding need to more broadly redefine
+    //   compute_statistics(), print_results(), pull_*(), push_*() to
+    //   exclude compute_moments()
+    compute_delta_mean(update_ref);
+
+    // Metric scale is determined from reference covariance.  While defining
+    // the scale from an updated covariance would eliminate problems with zero
+    // covariance for adaptations from level 0, different refinement candidates
+    // would score equally at 1 (induced 100% of change in updated covariance)
+    // in this initial set of candidates.  Therefore, use reference covariance
+    // as the scale and mitigate underflow of its norm.
+    Real scale, delta_norm;
+    switch (covarianceControl) {
+    case DIAGONAL_COVARIANCE: {
+      if (relativeMetric) // norm of reference variance, bounded from zero
+	scale = std::max(Pecos::SMALL_NUMBER, respVariance.normFrobenius());
+      compute_delta_variance(update_ref, print_metric);
+      delta_norm = deltaRespVariance.normFrobenius();
+      break;
+    }
+    case FULL_COVARIANCE: {
+      if (relativeMetric) // norm of reference covariance, bounded from zero
+	scale = std::max(Pecos::SMALL_NUMBER, respCovariance.normFrobenius());
+      compute_delta_covariance(update_ref, print_metric);
+      delta_norm = deltaRespCovariance.normFrobenius();
+      break;
+    }
+    }
+
+    return (relativeMetric) ? delta_norm / scale : delta_norm;
+  }
+  else // use default implementation
+    return NonDExpansion::compute_covariance_metric(revert, print_metric);
+}
+
+
+Real NonDStochCollocation::
+compute_level_mappings_metric(bool revert, bool print_metric)
+{
+  // Focus only on level mappings and neglect moment deltas
+
   // combine delta_beta() and delta_z() from HierarchInterpPolyApproximation
   // with default definition of delta-{p,beta*}
 
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
-    // Note: from a generality perspective, it would be desirable to map through
-    // support for delta_mean() and delta_std_deviation().  But how to manage
-    // user requests (w/o nested response mappings)?  Since delta in response
-    // covariance (the default metric) is preferred to either delta-sigma or
-    // delta-mu, we will omit mean/std deviation for now.  With a finer-grained
-    // adaptivity specification, they could be readily added to the logic below.
+    // Note: it would be desirable to include support for all active statistics,
+    // including delta_mean() and delta_std_deviation().  With access to nested
+    // response mappings passed down from an outer context, a more comprehensive
+    // set of stats could be supported in the logic below.
+
     bool beta_map = false, numerical_map = false; size_t i, j, cntr;
     for (i=0; i<numFunctions; ++i) {
-      if ( !requestedRelLevels[i].empty() || ( !requestedRespLevels[i].empty()
-	   && respLevelTarget == RELIABILITIES ) )
-	beta_map = true;
-      if ( !requestedProbLevels[i].empty() || !requestedGenRelLevels[i].empty()
-	   || ( !requestedRespLevels[i].empty() &&
-		respLevelTarget != RELIABILITIES ) )
+      if (!requestedRelLevels[i].empty()) beta_map = true;
+      if (!requestedProbLevels[i].empty() || !requestedGenRelLevels[i].empty())
 	numerical_map = true;
+      if (!requestedRespLevels[i].empty()) {
+	if (respLevelTarget == RELIABILITIES) beta_map = true;
+	else                             numerical_map = true;
+      }
     }
     if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
-      RealVector delta_final_stats;
+
+      RealVector level_maps_ref, level_maps_new;
+      pull_level_mappings(level_maps_ref);
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
-        delta_final_stats  = finalStatistics.function_values();     // deep copy
-	compute_statistics(false);                         // intermediate stats
-	delta_final_stats -= finalStatistics.function_values(); // compute delta
+	//metric_roll_up(); // TO DO: support combined exp in numerical stats
+	compute_numerical_level_mappings();
+	pull_level_mappings(level_maps_new);// analytic mappings overlaid at end
+	deltaLevelMaps = level_maps_new;  deltaLevelMaps -= level_maps_ref;
       }
-#ifdef DEBUG
-      else
-        delta_final_stats.size(finalStatistics.num_functions());
-#endif // DEBUG
-      bool warn_flag = false,
-	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+      else {
+        deltaLevelMaps.size(totalLevelRequests);              // init to 0
+        if (!revert) level_maps_new.size(totalLevelRequests); // init to 0
+      }
+
+      bool warn_flag = false;
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-      Real delta, sum_sq = 0.;
+      Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
 	size_t rl_len = requestedRespLevels[i].length(),
 	       pl_len = requestedProbLevels[i].length(),
@@ -464,37 +645,223 @@ Real NonDStochCollocation::compute_final_statistics_metric()
 	       gl_len = requestedGenRelLevels[i].length();
 	PecosApproximation* pa_rep_i
 	  = (PecosApproximation*)poly_approxs[i].approx_rep();
-	cntr += 2; // skip moments
 	if (pa_rep_i->expansion_coefficient_flag()) {
 	  if (respLevelTarget == RELIABILITIES)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
-#ifdef DEBUG
-	      delta = delta_final_stats[cntr] = (all_vars) ?
-#else
-	      delta = (all_vars) ? 
-#endif // DEBUG
-		pa_rep_i->delta_beta(initialPtU, cdfFlag,
-				     requestedRespLevels[i][j]) :
-		pa_rep_i->delta_beta(cdfFlag, requestedRespLevels[i][j]);
+	      z_bar = requestedRespLevels[i][j];
+	      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+		delta = deltaLevelMaps[cntr] = (allVars) ?
+		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
+		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
+	      else
+		delta = deltaLevelMaps[cntr] = (allVars) ?
+		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
+		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
+	      // avoid proliferating numerical exception:
+	      ref = level_maps_ref[cntr];
+	      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
+		// ref is undefined and delta neglects term;
+		// recompute new w/o delta in analytic_delta_level_mappings()
+
+		// do not increment scale for dummy beta value --> may result
+		// in SMALL_NUMBER scaling below if no meaningful refs exist
+	      }
+	      else if (relativeMetric)
+		scale_sq += ref * ref;// ref,delta are valid --> update scale
 	    }
 	  else
-	    for (j=0; j<rl_len; ++j, ++cntr)
-	      sum_sq += delta_final_stats[cntr] * delta_final_stats[cntr];
-	  for (j=0; j<pl_len; ++j, ++cntr)
-	    sum_sq += delta_final_stats[cntr] * delta_final_stats[cntr];
-	  for (j=0; j<bl_len; ++j, ++cntr) {
-#ifdef DEBUG
-	    delta = delta_final_stats[cntr] = (all_vars) ?
-#else
-	    delta = (all_vars) ?
-#endif // DEBUG
-	      pa_rep_i->delta_z(initialPtU, cdfFlag, requestedRelLevels[i][j]) :
-	      pa_rep_i->delta_z(cdfFlag, requestedRelLevels[i][j]);
-	    sum_sq += delta * delta;
+	    for (j=0; j<rl_len; ++j, ++cntr) {
+	      delta = deltaLevelMaps[cntr]; sum_sq += delta * delta;
+	      if (relativeMetric)
+		{ ref = level_maps_ref[cntr]; scale_sq += ref * ref; }
+	    }
+	  for (j=0; j<pl_len; ++j, ++cntr) {
+	    delta = deltaLevelMaps[cntr]; sum_sq += delta * delta;
+	    if (relativeMetric)
+	      { ref = level_maps_ref[cntr]; scale_sq += ref * ref; }
 	  }
-	  for (j=0; j<gl_len; ++j, ++cntr)
-	    sum_sq += delta_final_stats[cntr] * delta_final_stats[cntr];
+	  for (j=0; j<bl_len; ++j, ++cntr) {
+	    beta_bar = requestedRelLevels[i][j];
+	    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	      delta = deltaLevelMaps[cntr] = (allVars) ?
+		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
+		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);
+	    else
+	      delta = deltaLevelMaps[cntr] = (allVars) ?
+		pa_rep_i->delta_z(initialPtU, cdfFlag, beta_bar) :
+		pa_rep_i->delta_z(cdfFlag, beta_bar);
+	    sum_sq += delta * delta;
+	    ref = level_maps_ref[cntr];
+	    if (relativeMetric) scale_sq += ref * ref;
+	  }
+	  for (j=0; j<gl_len; ++j, ++cntr) {
+	    delta = deltaLevelMaps[cntr]; sum_sq += delta * delta;
+	    if (relativeMetric)
+	      { ref = level_maps_ref[cntr]; scale_sq += ref * ref; }
+	  }
+	}
+	else {
+	  warn_flag = true;
+	  cntr += rl_len + pl_len + bl_len + gl_len;
+	}
+      }
+      if (warn_flag)
+	Cerr << "Warning: expansion coefficients unavailable in "
+	     << "NonDStochCollocation::compute_level_mappings_metric().\n"
+	     << "         Omitting affected level mappings." << std::endl;
+      // As for compute_delta_covariance(), print level mapping deltas
+      // (without a moment offset as for final_stats):
+      if (print_metric)
+	print_level_mappings(Cout, deltaLevelMaps, false, "Change in");
+
+      // Level mappings: promote to new or revert to previous (if required)
+      if (!revert) { // retain updated values
+        analytic_delta_level_mappings(level_maps_ref, level_maps_new);
+	push_level_mappings(level_maps_new);
+      }
+      else if (numerical_map) // restore ref values that were overwritten
+	push_level_mappings(level_maps_ref); // restore reference
+      //else deltaLevelMaps does not impact existing level mappings
+
+      // Metric scale is determined from reference stats, not updated stats,
+      // as consistent with compute_covariance_metric() above.
+      if (relativeMetric) {
+	Real scale = std::max(Pecos::SMALL_NUMBER, std::sqrt(scale_sq));
+	return std::sqrt(sum_sq) / scale;
+      }
+      else
+	return std::sqrt(sum_sq);
+    }
+    else // use default implementation if no beta-mapping increments
+      return
+	NonDExpansion::compute_level_mappings_metric(revert, print_metric);
+  }
+  else // use default implementation for Nodal
+    return NonDExpansion::compute_level_mappings_metric(revert, print_metric);
+}
+
+
+/*
+Real NonDStochCollocation::
+compute_final_statistics_metric(bool revert, bool print_metric)
+{
+  // Focus only on level mappings and neglect moment deltas
+
+  // combine delta_beta() and delta_z() from HierarchInterpPolyApproximation
+  // with default definition of delta-{p,beta*}
+
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
+    // Note: it would be desirable to include support for all active statistics,
+    // including delta_mean() and delta_std_deviation().  With access to nested
+    // response mappings passed down from an outer context, a more comprehensive
+    // set of stats could be supported in the logic below.
+    bool beta_map = false, numerical_map = false; size_t i, j, cntr;
+    for (i=0; i<numFunctions; ++i) {
+      if (!requestedRelLevels[i].empty()) beta_map = true;
+      if (!requestedProbLevels[i].empty() || !requestedGenRelLevels[i].empty())
+	numerical_map = true;
+      if (!requestedRespLevels[i].empty()) {
+	if (respLevelTarget == RELIABILITIES) beta_map = true;
+	else                             numerical_map = true;
+      }
+    }
+    if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
+
+      RealVector delta_final_stats, final_stats_new,
+	final_stats_ref = finalStatistics.function_values();
+      // *** Note: this requires that the reference includes FINAL_RESULTS,
+      // *** which is not currently true (only INTERMEDIATE_RESULTS)
+      if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
+	compute_statistics(FINAL_RESULTS);//no finalStats for REFINEMENT_RESULTS
+	delta_final_stats = final_stats_new = finalStatistics.function_values();
+	delta_final_stats -= final_stats_ref; // compute delta
+      }
+      else {
+	size_t num_stats = finalStatistics.num_functions();
+        delta_final_stats.size(num_stats);            // init to 0
+        if (!revert) final_stats_new.size(num_stats); // init to 0
+      }
+
+      bool warn_flag = false;
+      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
+      for (i=0, cntr=0; i<numFunctions; ++i) {
+	size_t rl_len = requestedRespLevels[i].length(),
+	       pl_len = requestedProbLevels[i].length(),
+	       bl_len = requestedRelLevels[i].length(),
+	       gl_len = requestedGenRelLevels[i].length();
+	PecosApproximation* pa_rep_i
+	  = (PecosApproximation*)poly_approxs[i].approx_rep();
+	cntr += moment_offset; // skip moments if present
+	if (pa_rep_i->expansion_coefficient_flag()) {
+	  if (respLevelTarget == RELIABILITIES)
+	    for (j=0; j<rl_len; ++j, ++cntr) {
+	      z_bar = requestedRespLevels[i][j];
+	      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+		delta = delta_final_stats[cntr] = (allVars) ?
+		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
+		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
+	      else
+		delta = delta_final_stats[cntr] = (allVars) ?
+		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
+		  pa_rep_i->delta_beta(cdfFlag, z_bar);
+	      sum_sq += delta * delta;
+	      ref = final_stats_ref[cntr];
+	      // Note: this captures the more likely of the Pecos::
+	      // HierarchInterpPolyApproximation::delta_beta_map() exceptions
+	      // (sigma_ref = 0), but not rare case of sigma_new = 0 by itself.
+	      if (std::abs(ref) == Pecos::LARGE_NUMBER) {
+		// ref is undefined and delta neglects term; must compute new
+		if (!revert) {
+		  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+		    final_stats_new[cntr] = (allVars) ?
+		      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
+		      pa_rep_i->combined_beta(cdfFlag, z_bar);
+		  else
+		    final_stats_new[cntr] = (allVars) ?
+		      pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
+		      pa_rep_i->beta(cdfFlag, z_bar);
+		}
+		// do not increment scale for dummy beta value --> may result
+		// in SMALL_NUMBER scaling below if no meaningful refs exist
+	      }
+	      else { // ref and delta are valid --> update scale and new
+		if (relativeMetric) scale_sq += ref * ref;
+		if (!revert) final_stats_new[cntr] = ref + delta;
+	      }
+	    }
+	  else
+	    for (j=0; j<rl_len; ++j, ++cntr) {
+	      delta = delta_final_stats[cntr]; sum_sq += delta * delta;
+	      if (relativeMetric)
+		{ ref = final_stats_ref[cntr]; scale_sq += ref * ref; }
+	    }
+	  for (j=0; j<pl_len; ++j, ++cntr) {
+	    delta = delta_final_stats[cntr]; sum_sq += delta * delta;
+	    if (relativeMetric)
+	      { ref = final_stats_ref[cntr]; scale_sq += ref * ref; }
+	  }
+	  for (j=0; j<bl_len; ++j, ++cntr) {
+	    beta_bar = requestedRelLevels[i][j];
+	    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	      delta = delta_final_stats[cntr] = (allVars) ?
+		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
+		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);
+	    else
+	      delta = delta_final_stats[cntr] = (allVars) ?
+		pa_rep_i->delta_z(initialPtU, cdfFlag, beta_bar) :
+		pa_rep_i->delta_z(cdfFlag, beta_bar);
+	    sum_sq += delta * delta;
+	    ref = final_stats_ref[cntr];
+	    if (relativeMetric) scale_sq += ref * ref;
+	    if (!revert) final_stats_new[cntr] = ref + delta;
+	  }
+	  for (j=0; j<gl_len; ++j, ++cntr) {
+	    delta = delta_final_stats[cntr]; sum_sq += delta * delta;
+	    if (relativeMetric)
+	      { ref = final_stats_ref[cntr]; scale_sq += ref * ref; }
+	  }
 	}
 	else {
 	  warn_flag = true;
@@ -505,18 +872,153 @@ Real NonDStochCollocation::compute_final_statistics_metric()
 	Cerr << "Warning: expansion coefficients unavailable in "
 	     << "NonDStochCollocation::compute_final_statistics_metric().\n"
 	     << "         Omitting affected final statistics." << std::endl;
-#ifdef DEBUG
-      Cout << "In compute_final_statistics_metric(), delta_final_stats =\n";
-      write_data(Cout, delta_final_stats);
-#endif // DEBUG
-      return std::sqrt(sum_sq); // neglect moment deltas
-      //return delta_final_stats.normFrobenius();
+
+      // As for compute_delta_covariance(), print level mapping deltas:
+      if (print_metric) {
+        bool moments = (finalMomentsType > NO_MOMENTS);
+	print_level_mappings(Cout, delta_final_stats, moments, "Change in");
+      }
+      // Final stats: revert to previous or promote to new
+      if (!revert)
+	finalStatistics.function_values(final_stats_new);
+      else if (numerical_map) // revert from final_stats_new to final_stats_ref
+	finalStatistics.function_values(final_stats_ref);
+
+      // Metric scale is determined from reference stats, not updated stats,
+      // as consistent with compute_covariance_metric() above.
+      if (relativeMetric) {
+	Real scale = std::max(Pecos::SMALL_NUMBER, std::sqrt(scale_sq));
+	return std::sqrt(sum_sq) / scale;
+      }
+      else
+	return std::sqrt(sum_sq);
     }
     else // use default implementation if no beta-mapping increments
-      return NonDExpansion::compute_final_statistics_metric();
+      return
+	NonDExpansion::compute_final_statistics_metric(revert, print_metric);
   }
   else // use default implementation for Nodal
-    return NonDExpansion::compute_final_statistics_metric();
+    return NonDExpansion::compute_final_statistics_metric(revert, print_metric);
+}
+*/
+
+
+/* Calculate analytic and numerical statistics from the expansion and
+    log results within final_stats for use in OUU.
+void NonDStochCollocation::compute_statistics(short results_state)
+{
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
+    // specialize base implementation since metric_roll_up() is not used and
+    // extra stats that require roll-up no longer come for free
+    switch (results_state) {
+    case REFINEMENT_RESULTS:
+      // compute_{covariance,level_mapping,final_statistics}_metric() performs
+      // only the necessary computations for resolving delta.norm()
+
+      // augment delta covar -> ref covar with delta_mean -> ref mean;
+      // > supports base compute/print requirements without incurring overhead
+      //   of metric_roll_up(), avoiding need to more broadly redefine
+      //   compute_statistics(), print_results(), pull_*(), push_*() to
+      //   exclude compute_moments()
+      compute_delta_mean(true); // update ref
+      break;
+    //case INTERMEDIATE_RESULTS:  case FINAL_RESULTS:  break;
+    }
+
+  NonDExpansion::compute_statistics(results_state);
+}
+
+
+void NonDStochCollocation::pull_candidate(RealVector& stats_star)
+{
+  if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT)
+    // If pulling updated values as in NonDExpansion
+    switch (refineMetric) {
+    case Pecos::COVARIANCE_METRIC: {
+      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      PecosApproximation* poly_approx_rep;
+      bool full_covar = (covarianceControl == FULL_COVARIANCE);
+      size_t vec_len = (full_covar) ?
+	(numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
+      if (stats_star.length() != vec_len) stats_star.sizeUninitialized(vec_len);
+      // pull means
+      for (size_t i=0; i<numFunctions; ++i) {
+	poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+	stats_star[i] = poly_approx_rep->moment(0) + deltaRespMean[i];
+      }
+      // pull resp{V,Cov}ariance
+      if (full_covar) {
+	RealSymMatrix new_covar(respCovariance);
+	new_covar += deltaRespCovariance;
+	pull_lower_triangle(new_covar, stats_star, numFunctions);
+      }
+      else
+	for (size_t i=0; i<numFunctions; ++i)
+	  stats_star[i+numFunctions] = respVariance[i] + deltaRespVariance[i];
+      break;
+    }
+    default:
+      pull_level_mappings(stats_star); // pull updated numerical stats
+      analytic_delta_level_mappings(stats_star, stats_star); // update analytic
+                 // (stats_star provides ref and becomes new for these entries)
+      break;
+    }
+  else
+    NonDExpansion::pull_candidate(stats_star);
+}
+*/
+
+
+/** In this function, we leave numerical stats alone, updating
+    analytic level stats either using ref+delta or, if ref is invalid,
+    though recomputation. */
+void NonDStochCollocation::
+analytic_delta_level_mappings(const RealVector& level_maps_ref,
+			      RealVector& level_maps_new)
+{
+  // preserve existing as this may be an overlay
+  if (level_maps_new.length() != totalLevelRequests)
+    level_maps_new.resize(totalLevelRequests);
+
+  size_t i, j, cntr, rl_len, pl_len, bl_len, gl_len, pl_bl_gl_len;
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
+  for (i=0, cntr=0; i<numFunctions; ++i) {
+    rl_len = requestedRespLevels[i].length();
+    pl_len = requestedProbLevels[i].length();
+    bl_len = requestedRelLevels[i].length();
+    gl_len = requestedGenRelLevels[i].length();
+    pl_bl_gl_len = pl_len+bl_len+gl_len;
+    PecosApproximation* pa_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (respLevelTarget == RELIABILITIES)
+      for (j=0; j<rl_len; ++j, ++cntr) {
+	// Note: this captures the more likely of the Pecos::
+	// HierarchInterpPolyApproximation::delta_beta_map() exceptions
+	// (sigma_ref = 0), but not rare case of sigma_new = 0 by itself.
+	ref = level_maps_ref[cntr];
+	if (std::abs(ref) == Pecos::LARGE_NUMBER) {
+	  // ref is undefined and delta neglects term; must compute new
+	  z_bar = requestedRespLevels[i][j];
+	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	    level_maps_new[cntr] = (allVars) ?
+	      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
+	      pa_rep_i->combined_beta(cdfFlag, z_bar);
+	  else
+	    level_maps_new[cntr] = (allVars) ?
+	      pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
+	      pa_rep_i->beta(cdfFlag, z_bar);
+	}
+	else // ref and delta are valid
+	  level_maps_new[cntr] = ref + deltaLevelMaps[cntr];
+      }
+    else
+      cntr += rl_len;
+    cntr += pl_len;
+    for (j=0; j<bl_len; ++j)
+      level_maps_new[cntr] = level_maps_ref[cntr] + deltaLevelMaps[cntr];
+    cntr += gl_len;
+  }
 }
 
 } // namespace Dakota

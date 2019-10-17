@@ -34,6 +34,7 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
   dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference"))
   //standAloneMode(true)
 {
+  /*
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete random variables are not currently supported in "
@@ -46,6 +47,7 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
   // Note: initialize_random_variable_parameters() is performed at run time
   initialize_random_variable_correlations();
   verify_correlation_support(EXTENDED_U);
+  */
   initialize_final_statistics(); // default statistics set
 }
 
@@ -57,10 +59,6 @@ NonDIntegration::NonDIntegration(unsigned short method_name, Model& model):
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
   // standard space and does not include a DataFit recursion.
-
-  // initialize_random_variables(natafTransform) is called externally (e.g.,
-  // NonDExpansion::initialize_u_space_model()) to allow access to data from
-  // outer context.
 }
 
 
@@ -74,15 +72,12 @@ NonDIntegration(unsigned short method_name, Model& model,
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
   // standard space and does not include a DataFit recursion.
-
-  // initialize_random_variables(natafTransform) is called externally (e.g.,
-  // NonDExpansion::initialize_u_space_model()) to allow access to data from
-  // outer context.
 }
 
 
 NonDIntegration::~NonDIntegration()
 { }
+
 
 bool NonDIntegration::resize()
 {
@@ -101,7 +96,7 @@ void NonDIntegration::core_run()
   //if (standAloneMode)
   //  initialize_random_variable_parameters(); // capture any dist param updates
   //else
-  check_variables(natafTransform.x_random_variables());//deferred from alt ctors
+  //  check_variables(x_dist.random_variables());//deferred from alt ctors
 
   // generate integration points
   get_parameter_sets(iteratedModel);
@@ -119,7 +114,7 @@ void NonDIntegration::core_run()
 
 
 /** Virtual function called from probDescDB-based constructors and from
-    NonDIntegration::core_run() */
+    NonDIntegration::core_run()
 void NonDIntegration::
 check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars)
 {
@@ -147,6 +142,7 @@ check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars)
   if (err_flag)
     abort_handler(-1);
 }
+*/
 
 
 void NonDIntegration::print_points_weights(const String& tabular_name)
@@ -171,6 +167,46 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
       pts_wts_file << '\n';
     }
   }
+}
+
+
+void NonDIntegration::evaluate_grid_increment()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "evaluate_grid_increment()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDIntegration::push_grid_increment()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "push_grid_increment()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDIntegration::pop_grid_increment()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "pop_grid_increment()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDIntegration::merge_grid_increment()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "merge_grid_increment()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDIntegration::update_reference()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "update_reference()." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -245,6 +281,17 @@ void NonDIntegration::increment_grid_preference(const RealVector& dim_pref)
 }
 
 
+void NonDIntegration::increment_grid_preference()
+{
+  // derived classes must provide at least one of increment_grid_preference()
+  // or increment_grid_weights(), but need not provide both.  Therefore, the
+  // default base class implementation of increment_grid_preference(pref) is
+  // to convert pref to wts and invoke increment_grid_weights(wts)
+
+  increment_grid_weights();
+}
+
+
 void NonDIntegration::increment_grid_weights(const RealVector& aniso_wts)
 {
   // derived classes must provide at least one of increment_grid_preference()
@@ -257,6 +304,17 @@ void NonDIntegration::increment_grid_weights(const RealVector& aniso_wts)
   for (i=0; i<num_wts; ++i)
     dim_pref[i] = 1./aniso_wts[i];
   increment_grid_preference(dim_pref);
+}
+
+
+void NonDIntegration::increment_grid_weights()
+{
+  // derived classes must provide at least one of increment_grid_preference()
+  // or increment_grid_weights(), but need not provide both.  Therefore, the
+  // default base class implementation of increment_grid_weights(wts) is to
+  // convert wts to pref and invoke increment_grid_preference(pref)
+
+  increment_grid_preference();
 }
 
 } // namespace Dakota

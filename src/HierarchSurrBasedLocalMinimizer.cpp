@@ -60,7 +60,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 				    ml_iter->current_response(),
 				    (++ml_iter)->current_response());
     // assign the approx / truth model forms
-    trustRegions[i].initialize_indices(i, i+1);
+    trustRegions[i].initialize_keys(i, i+1);
   }
 
   // Simpler case than DFSBLM:
@@ -631,7 +631,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
       = tr_data.response_center(UNCORR_TRUTH_RESPONSE).copy();
     for (j=next_index; j<num_tr; ++j)
       iteratedModel.single_apply(center_vars, corrected_resp,
-				 trustRegions[j].indices());
+				 trustRegions[j].model_keys());
     tr_data.response_center(corrected_resp, CORR_TRUTH_RESPONSE);
   }
 }
@@ -655,7 +655,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
       = tr_data.response_star(UNCORR_TRUTH_RESPONSE).copy();
     for (j=next_index; j<num_tr; ++j)
       iteratedModel.single_apply(star_vars, corrected_resp,
-				 trustRegions[j].indices());
+				 trustRegions[j].model_keys());
     tr_data.response_star(corrected_resp, CORR_TRUTH_RESPONSE);
   }
 }
@@ -676,7 +676,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_approx(size_t tr_index)
     = tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
   for (j=tr_index; j<num_tr; ++j)
     iteratedModel.single_apply(center_vars, corrected_resp,
-			       trustRegions[j].indices());
+			       trustRegions[j].model_keys());
   tr_data.response_center(corrected_resp, CORR_APPROX_RESPONSE);
 }
 
@@ -696,7 +696,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_approx(size_t tr_index)
     = tr_data.response_star(UNCORR_APPROX_RESPONSE).copy();
   for (j=tr_index; j<num_tr; ++j)
     iteratedModel.single_apply(star_vars, corrected_resp,
-			       trustRegions[j].indices());
+			       trustRegions[j].model_keys());
   tr_data.response_star(corrected_resp, CORR_APPROX_RESPONSE);
 }
 

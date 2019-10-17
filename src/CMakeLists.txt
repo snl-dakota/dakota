@@ -388,7 +388,8 @@ endif(DAKOTA_HAVE_MPI)
 if(DAKOTA_HAVE_HDF5)
   add_definitions("-DDAKOTA_HAVE_HDF5")
   list(APPEND EXT_TPL_INCDIRS ${HDF5_INCLUDE_DIRS})
-  list(APPEND EXT_TPL_LIBS ${HDF5_HL_LIBRARY} ${HDF5_LIBRARIES})
+  list(APPEND EXT_TPL_LIBDIRS ${HDF5_LIBRARY_DIRS})
+  list(APPEND EXT_TPL_LIBS ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES})
 endif(DAKOTA_HAVE_HDF5)
 
 
@@ -404,16 +405,16 @@ function(CheckPackage package)
 endfunction(CheckPackage)
 
 
-CheckPackage(PECOS)
-list(APPEND DAKOTA_PKG_LIBS ${Pecos_LINK_LIBRARIES})
-list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 if(HAVE_PECOS)
-  list(APPEND DAKOTA_INCDIRS ${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
-    ${VPISparseGrid_SOURCE_DIR}/src)
+  add_definitions("-DHAVE_${package}")
+  list(APPEND DAKOTA_INCDIRS ${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/util/src
+    ${Pecos_SOURCE_DIR}/src ${VPISparseGrid_SOURCE_DIR}/src)
+  list(APPEND DAKOTA_PKG_LIBS ${Pecos_LINK_LIBRARIES})
+  list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 else()
   message(FATAL_ERROR
     "DAKOTA cannot currently be configured without PECOS: ${Pecos_SOURCE_DIR}")
-endif(HAVE_PECOS)
+endif()
 
 
 ## DAKOTA library sources.  Depend on NIDR_keywds.hpp to force generation
@@ -423,18 +424,19 @@ set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_data_io.cpp dakota_global_defs.cpp 
-    dakota_linear_algebra.cpp dakota_tabular_io.cpp 
+    dakota_linear_algebra.cpp dakota_preproc_util.cpp
+    dakota_stat_util.cpp dakota_tabular_io.cpp
     CommandLineHandler.cpp DakotaGraphics.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
-    predator_prey.cpp
+    predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
+    DakotaTPLDataTransfer.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
-  #list(APPEND util_src ResultsDBHDF5.cpp)
-  list(APPEND util_src BinaryIO_Helper.cpp)
+  list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp )
 endif()
 
 if(DAKOTA_DL_SOLVER)
@@ -459,8 +461,8 @@ set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
 ## Model sources.
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp
   RecastModel.cpp DataTransformModel.cpp ProbabilityTransformModel.cpp
-  ScalingModel.cpp SurrogateModel.cpp DataFitSurrModel.cpp HierarchSurrModel.cpp
-  ActiveSubspaceModel.cpp RandomFieldModel.cpp DiscrepancyCorrection.cpp
+  ScalingModel.cpp WeightingModel.cpp SurrogateModel.cpp DataFitSurrModel.cpp
+  HierarchSurrModel.cpp ActiveSubspaceModel.cpp RandomFieldModel.cpp DiscrepancyCorrection.cpp
   AdaptedBasisModel.cpp)
 
 ## Constraint sources.
@@ -469,7 +471,7 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
 
 ## Interface sources.
 set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
-    DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp
+    DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp QMEApproximation.cpp
     GaussProcApproximation.cpp VPSApproximation.cpp 
     PecosApproximation.cpp SharedApproxData.cpp
     SharedPecosApproxData.cpp
@@ -610,6 +612,27 @@ if(Boost_FOUND)
   list(APPEND EXT_TPL_LIBS ${Boost_LIBRARIES})
 endif()
 
+CheckPackage(C3)
+if(HAVE_C3)
+  set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp)
+  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp)
+  # BMA: disabled these includes as we aren't including c3.h
+  ##list(APPEND DAKOTA_INCDIRS
+  ##  ${C3_SOURCE_DIR}/include
+  ##  ${C3_SOURCE_DIR}/src/lib_stringmanip
+  ##  ${C3_SOURCE_DIR}/src/lib_array
+  ##  ${C3_SOURCE_DIR}/src/lib_linalg
+  ##  ${C3_SOURCE_DIR}/src/lib_quadrature
+  ##  ${C3_SOURCE_DIR}/src/lib_optimization
+  ##  ${C3_SOURCE_DIR}/src/lib_funcs
+  ##  ${C3_SOURCE_DIR}/src/lib_clinalg
+  ##  ${C3_SOURCE_DIR}/src/lib_probability
+  ##  ${C3_SOURCE_DIR}/src/lib_superlearn
+  ##  ${C3_SOURCE_DIR}/src/lib_interface
+  ##  )
+  list(APPEND DAKOTA_PKG_LIBS c3)
+endif()
+
 CheckPackage(CONMIN)
 if(HAVE_CONMIN)
   list(APPEND DAKOTA_LIBDIRS ${CONMIN_LIB_DIRS})
@@ -696,6 +719,9 @@ endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
+  set(DAKOTA_NOWPAC_ROOT_DIR   "${Dakota_SOURCE_DIR}/packages/external/nowpac")
+  set(DAKOTA_NOWPAC_NLOPT_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/nlopt")
+  set(DAKOTA_NOWPAC_EIGEN_ROOT "${Dakota_BINARY_DIR}/packages/external/nowpac/nowpac/external/eigen")
   list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT}/include/eigen3)
   link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib) # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
@@ -738,6 +764,17 @@ if(HAVE_ROL)
   add_definitions("-DHAVE_ROL")
   set(iterator_src ${iterator_src} ROLOptimizer.cpp)
 endif(HAVE_ROL)
+
+if(HAVE_DEMO_TPL)
+  set(DAKOTA_DEMOTPL_ROOT_DIR "${Dakota_SOURCE_DIR}/packages/external/demo_tpl")
+  list(APPEND DAKOTA_INCDIRS 
+    ${DAKOTA_DEMOTPL_ROOT_DIR}/dakota_src
+    ${DAKOTA_DEMOTPL_ROOT_DIR}/src)
+  set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp)
+  list(APPEND DAKOTA_PKG_LIBS demo_tpl)
+  list(APPEND EXPORT_TARGETS demo_tpl)
+  add_definitions("-DHAVE_DEMO_TPL")
+endif(HAVE_DEMO_TPL)
 
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
@@ -802,6 +839,11 @@ if(DAKOTA_HAVE_GSL)
 endif(DAKOTA_HAVE_GSL)
 
 list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
+# BMA: Should probably use only ATLAS when enabling C3...
+if(HAVE_C3)
+  message(WARNING "Dakota/C3: Duplicate include of ATLAS and BLAS/LAPACK")
+  list(INSERT EXT_TPL_LIBS 0 "${atlas_lib}")
+endif()
 
 # Now that packages and TPLs are processed, set include/link directories
 include_directories(${DAKOTA_INCDIRS} ${EXT_TPL_INCDIRS})
@@ -839,6 +881,12 @@ list(APPEND DAKOTA_ALL_LIBS ${EXT_TPL_LIBS})
 
 if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
+endif()
+
+if(HAVE_NOWPAC)
+  # Require Eigen and NLOPT ExternalProjects to be downloaded, built,
+  # and installed before building Dakota sources
+  add_dependencies(dakota_src EIGEN NLOPT)
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary

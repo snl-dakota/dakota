@@ -132,16 +132,14 @@ void COLINApplication::set_problem(Model& model) {
     _int_upper_bounds = upper;
   }
 
-  _num_nonlinear_constraints = model.num_nonlinear_ineq_constraints() +
-    model.num_nonlinear_eq_constraints();
+  _num_nonlinear_constraints = model.num_secondary_fns();
 
   // For multiobjective, this will be taken from the RecastModel and
   // will be consistent with the COLIN iterator's view
 
   //_num_objectives = 
   //  model.num_functions() - num_nonlinear_constraints.as<size_t>();
-  size_t numObj = 
-    model.num_functions() - num_nonlinear_constraints.as<size_t>();
+  size_t numObj = model.num_primary_fns();
   _num_objectives = numObj;
  
   const BoolDeque& max_sense = model.primary_response_fn_sense();
@@ -171,7 +169,7 @@ void COLINApplication::set_problem(Model& model) {
     RealVector ineq_upper; // will be sized in adapter call
     RealVector eq_targets; // will be sized in adapter call
 
-    get_nonlinear_constraints( model, ineq_lower, ineq_upper, eq_targets);
+    get_nonlinear_bounds( model, ineq_lower, ineq_upper, eq_targets);
     copy_data_partial(ineq_lower, bounds, 0 );
     copy_data_partial(eq_targets, bounds, ineq_lower.length() );
     _nonlinear_constraint_lower_bounds = bounds;
@@ -404,7 +402,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   // TODO: gradient support
 
-  ShortArray asv(iteratedModel.num_functions());
+  ShortArray asv(iteratedModel.response_size());
 
   AppRequest::request_map_t::const_iterator req_it  = requests.begin();
   AppRequest::request_map_t::const_iterator req_end = requests.end();

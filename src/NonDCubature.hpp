@@ -19,6 +19,10 @@
 #include "NonDIntegration.hpp"
 #include "CubatureDriver.hpp"
 
+namespace Pecos {
+class MultivariateDistribution; // fwd declaration
+}
+
 namespace Dakota {
 
 
@@ -38,8 +42,7 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDCubature(Model& model, const Pecos::ShortArray& u_types,
-	       unsigned short cub_int_order);
+  NonDCubature(Model& model, unsigned short cub_int_order);
 
   //
   //- Heading: Member functions
@@ -69,6 +72,8 @@ protected:
 
   void increment_grid();
   void increment_grid_preference(const RealVector& dim_pref);
+  void increment_grid_preference();
+  void decrement_grid();
 
   int num_samples() const;
 
@@ -78,12 +83,8 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// verify self-consistency of integration specification
-  void check_integration(const Pecos::ShortArray& u_types,
-			 const Pecos::AleatoryDistParams& adp);
-
-  /// increment each cubIntOrderRef entry by 1
-  void increment_reference();
+  /// define cubIntRule from random variable type
+  void assign_rule(const Pecos::MultivariateDistribution& mvd);
 
   //
   //- Heading: Data
@@ -107,14 +108,13 @@ inline unsigned short NonDCubature::integrand_order() const
 { return cubDriver->integrand_order(); }
 
 
-/** cubIntOrderRef is a reference point for CubatureDriver::cubIntOrder,
-    e.g., a lower bound */
-inline void NonDCubature::increment_reference()
-{ cubIntOrderRef += 1; }
-
-
-/** Should not be used, but pure virtual must be defined. */
+/** Should not be used, but one of virtual function pair must be defined. */
 inline void NonDCubature::increment_grid_preference(const RealVector& dim_pref)
+{ increment_grid(); } // ignore dim_pref
+
+
+/** Should not be used, but one of virtual function pair must be defined. */
+inline void NonDCubature::increment_grid_preference()
 { increment_grid(); } // ignore dim_pref
 
 

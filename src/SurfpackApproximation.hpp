@@ -71,7 +71,7 @@ protected:
 
   /// SurfData object will be created from Dakota's SurrogateData,
   /// and the appropriate Surfpack build method will be invoked
-  void build(size_t index = _NPOS);
+  void build();
 
   /// export the Surpack model to disk or console
   void export_model(const String& fn_label, const String& export_prefix = "", 
@@ -140,7 +140,9 @@ private:
 
   /// set the anchor point (including gradient and hessian if present)
   /// into surf_data
-  void add_anchor_to_surfdata(SurfData& surf_data);
+  void add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
+				   const Pecos::SurrogateDataResp& anchor_resp,
+				   short fail_code, SurfData& surf_data);
 
   //
   //- Heading: Data

@@ -1,0 +1,7 @@
+name: Analysis Components
+dataset:
+  description: "Values of the analysis components in evaluations"
+  location: "metadata/analysis_components"
+  shape: "1-dimensional: number of analysis components"
+  type: String
+
