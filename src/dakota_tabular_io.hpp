@@ -157,8 +157,8 @@ void write_data_tabular(const std::string& output_filename,
 bool exists_extra_data(std::istream& tabular_file);
 
 /// read and discard header line from the stream
-void read_header_tabular(std::istream& input_stream, 
-			 unsigned short tabular_format);
+StringArray read_header_tabular(std::istream& input_stream,
+				unsigned short tabular_format);
 
 /// read leading columns [ int eval_id [ String iface_id ] ]
 void read_leading_columns(std::istream& input_stream,

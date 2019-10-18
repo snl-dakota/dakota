@@ -283,14 +283,17 @@ void write_data_tabular(const std::string& output_filename,
 
 /** Discard header row from tabular file; alternate could read into a
     string array.  Requires header to be delimited by a newline. */
-void read_header_tabular(std::istream& input_stream,
-			 unsigned short tabular_format)
+StringArray read_header_tabular(std::istream& input_stream,
+				unsigned short tabular_format)
 {
+  StringArray header_fields;
   if (tabular_format & TABULAR_HEADER) {
     input_stream >> std::ws;
-    String discard_labels;
-    getline(input_stream, discard_labels);
+    String header;
+    getline(input_stream, header);
+    return strsplit(header);
   }
+  return StringArray();
 }
 
 
@@ -576,7 +579,41 @@ void read_data_tabular(const std::string& input_filename,
   String iface_id;
   open_file(data_stream, input_filename, context_message);
 
-  read_header_tabular(data_stream, tabular_format);
+  StringArray header_fields = read_header_tabular(data_stream, tabular_format);
+  // Focusing on variables first; then on all length validation
+  // TODO: warn vs. error; validate response labels; side-by-side diff
+  if (header_fields.size() > 0) {
+    StringArray expected_vars =
+      vars.ordered_labels(active_only ? ACTIVE_VARS : ALL_VARS);
+    size_t num_expected = expected_vars.size();
+
+    // skip any leading columns
+    auto hf_it = header_fields.begin();
+    if (tabular_format & TABULAR_EVAL_ID) ++hf_it;
+    if (tabular_format & TABULAR_IFACE_ID) ++hf_it;
+    // num read will count variables and responses
+    size_t num_read = std::distance(hf_it, header_fields.end());
+
+    bool equal_labels = (num_expected > num_read) ? false :
+      std::equal(expected_vars.begin(), expected_vars.end(), hf_it);
+    if (!equal_labels) {
+      Cout << "\nWarning (" << context_message
+	   << "): Variable labels in header of tabular\nfile "
+	   << input_filename << " do not match variables being imported to."
+	   << std::endl;
+      if (verbose) {
+	std::ostream_iterator<String> out_it (Cout, " ");
+	Cout << "\nExpected labels (for "
+	     << ((active_only) ? "active" : "all")
+	     << " variables):\n  ";
+	std::copy(expected_vars.begin(), expected_vars.end(), out_it);
+	Cout << std::endl << "Instead found these in header (including "
+	     << "variable and response labels):\n  ";
+	std::copy(hf_it, header_fields.end(), out_it);
+	Cout << std::endl;
+      }
+    }
+  }
 
   // shouldn't need both good and eof checks
   data_stream >> std::ws;
