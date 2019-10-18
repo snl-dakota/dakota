@@ -279,6 +279,12 @@ inline bool strends(const std::string& input, const std::string& test)
 inline bool strcontains(const std::string& input, const std::string& test)
 { return(boost::contains(input, test)); }
 
+/// Trim then split a string on {space, tab} and return as vector of strings
+std::vector<std::string> strsplit(const std::string& input);
+
+/// Return the length of the longest string in the passed vector
+std::string::size_type longest_strlen(const std::vector<std::string>& vecstr);
+
 
 // --------------------------------------------
 // Utility functions for creating string arrays

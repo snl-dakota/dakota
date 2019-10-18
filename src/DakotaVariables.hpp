@@ -505,6 +505,9 @@ public:
   /// return all discrete real variable position identifiers
   SizetMultiArrayConstView all_discrete_real_variable_ids() const;
 
+  /// get all or active labels in input spec order
+  StringArray ordered_labels(unsigned short vars_part = ALL_VARS) const;
+
   /// a deep variables copy for use in history mechanisms
   /// (SharedVariablesData uses a shallow copy by default)
   Variables copy(bool deep_svd = false) const;

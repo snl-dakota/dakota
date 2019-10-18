@@ -14,6 +14,7 @@
 
 #include "dakota_data_util.hpp"
 #include <boost/math/special_functions/round.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace Dakota {
 
@@ -242,6 +243,25 @@ void remove_column(RealMatrix& matrix, int index)
   }
   matrix.reshape(matrix.numRows(), num_cols-1);
   matrix = matrix_new;
+}
+
+
+std::vector<std::string> strsplit(const std::string& input)
+{
+  std::vector<std::string> fields;
+  std::string trimmed_input(boost::trim_copy(input));
+  boost::split(fields, trimmed_input, boost::is_any_of(" \t"),
+	       boost::token_compress_on);
+  return fields;
+}
+
+
+std::string::size_type longest_strlen(const std::vector<std::string>& vecstr)
+{
+  auto size_less = [](const std::string& a, const std::string& b)
+    { return a.size() < b.size(); };
+
+  return std::max_element(vecstr.begin(), vecstr.end(), size_less)->size();
 }
 
 
