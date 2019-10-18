@@ -197,6 +197,7 @@ public:
   //
 
   size_t tv()         const; ///< total number of vars
+  size_t total_active() const; ///< total number of active vars
   size_t cv()         const; ///< number of active continuous vars
   size_t cv_start()   const; ///< start index of active continuous vars
   size_t div()        const; ///< number of active discrete int vars
@@ -657,6 +658,13 @@ inline size_t Variables::tv() const
   return (variablesRep) ? variablesRep->tv() :
     allContinuousVars.length()   + allDiscreteIntVars.length() +
     allDiscreteStringVars.size() + allDiscreteRealVars.length();
+}
+
+
+inline size_t Variables::total_active() const
+{
+  return (variablesRep) ? variablesRep->total_active() :
+    cv() + div() + dsv() + drv();
 }
 
 

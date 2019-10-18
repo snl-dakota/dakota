@@ -48,7 +48,7 @@ void print_expected_format(std::ostream& s, unsigned short tabular_format,
   if (num_rows)
     s << "; " << num_rows << " rows";
   if (num_cols)
-    s << "; " << num_rows << " columns";
+    s << "; " << num_cols << " columns";
   s << std::endl;
 }
 
@@ -580,21 +580,28 @@ void read_data_tabular(const std::string& input_filename,
   open_file(data_stream, input_filename, context_message);
 
   StringArray header_fields = read_header_tabular(data_stream, tabular_format);
+
+  size_t num_lead = 0;
+  if (tabular_format & TABULAR_EVAL_ID) ++num_lead;
+  if (tabular_format & TABULAR_IFACE_ID) ++num_lead;
+  size_t num_vars = active_only ? vars.total_active() : vars.tv();
+  size_t num_resp = resp.num_functions();
+  size_t num_cols = num_lead + num_vars + num_resp;
+
   // Focusing on variables first; then on all length validation
   // TODO: warn vs. error; validate response labels; side-by-side diff
-  if (header_fields.size() > 0) {
+  // TODO: it's possible it's annotated and the first line just has whitespace
+  if (/* tabular_format & TABULAR_HEADER && */ header_fields.size() > 0) {
     StringArray expected_vars =
       vars.ordered_labels(active_only ? ACTIVE_VARS : ALL_VARS);
     size_t num_expected = expected_vars.size();
 
     // skip any leading columns
-    auto hf_it = header_fields.begin();
-    if (tabular_format & TABULAR_EVAL_ID) ++hf_it;
-    if (tabular_format & TABULAR_IFACE_ID) ++hf_it;
-    // num read will count variables and responses
-    size_t num_read = std::distance(hf_it, header_fields.end());
+    auto hf_it = header_fields.begin() + num_lead;
+    // num read will count read variables and responses
+    size_t num_read_vr = std::distance(hf_it, header_fields.end());
 
-    bool equal_labels = (num_expected > num_read) ? false :
+    bool equal_labels = (num_expected > num_read_vr) ? false :
       std::equal(expected_vars.begin(), expected_vars.end(), hf_it);
     if (!equal_labels) {
       Cout << "\nWarning (" << context_message
@@ -615,14 +622,33 @@ void read_data_tabular(const std::string& input_filename,
     }
   }
 
+  size_t line = (tabular_format & TABULAR_HEADER) ? 1 : 0;
   // shouldn't need both good and eof checks
   data_stream >> std::ws;
   while (data_stream.good() && !data_stream.eof()) {
     try {
-      // read the leading columns 
-      read_leading_columns(data_stream, tabular_format, eval_id, iface_id);
-      vars.read_tabular(data_stream, (active_only ? ACTIVE_VARS : ALL_VARS) );
-      resp.read_tabular(data_stream);
+
+      // Read a line, then use existing vars/resp read functions
+      data_stream >> std::ws;
+      String row_str;
+      getline(data_stream, row_str);
+      ++line;
+
+      size_t num_read = strsplit(row_str).size(); // TODO: count without storing
+      if (num_read != num_cols) {
+	// TODO: more detailed message about column contents
+	Cerr << "\nError (" << context_message
+	     << "): wrong number of columns on line " << line << "\nof file '"
+	     << input_filename << "'; expected " << num_cols << ", found "
+	     << num_read << ".\n";
+	print_expected_format(Cerr, tabular_format, 0, num_cols);
+	abort_handler(-1);
+      }
+
+      std::istringstream row_iss(row_str);
+      read_leading_columns(row_iss, tabular_format, eval_id, iface_id);
+      vars.read_tabular(row_iss, (active_only ? ACTIVE_VARS : ALL_VARS) );
+      resp.read_tabular(row_iss);
     }
     catch (const TabularDataTruncated& tdtrunc) {
       // this will be thrown if either Variables or Response was truncated

@@ -2083,8 +2083,7 @@ import_points(unsigned short tabular_format, bool active_only)
     actualModel.current_variables().copy(); 
   Response  resp = actualModel.is_null() ? currentResponse.copy() : 
     actualModel.current_response().copy();
-  size_t num_vars = active_only ? 
-    (vars.cv() + vars.div() + vars.dsv() + vars.drv()) : vars.tv();
+  size_t num_vars = active_only ? vars.total_active() : vars.tv();
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieving points with " << num_vars
