@@ -366,7 +366,7 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
     }
     completionSet.insert(pair.eval_id());
   }
-
+  results_file.close();
   file_and_workdir_cleanup(paramsFileWritten, resultsFileWritten, createdDir, batch_id_tag);
 
 }
