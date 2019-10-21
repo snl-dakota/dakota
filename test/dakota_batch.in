@@ -17,9 +17,10 @@ responses
   no_hessians
 
 interface
-  fork 
+  # Using a system interface so Windows will use python interpreter for the driver
+  system 
   batch size 10
-   analysis_drivers 'python dakota_batch.py' 
+   analysis_drivers 'dakota_batch.py' 
   parameters_file 'params.in'
   results_file 'results.out'
   file_save
