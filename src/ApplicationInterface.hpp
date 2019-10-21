@@ -699,11 +699,11 @@ inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
   if (outputLevel > SILENT_OUTPUT) {
     if(batchEval) {
       Cout << "Adding ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!interfaceId.empty() && interfaceId != "NO_ID") Cout << interfaceId << ' ';
       Cout << "evaluation " << prp_it->eval_id() << " to batch " << batchIdCntr + 1 << std::endl;
     } else {
       Cout << "Initiating ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!interfaceId.empty() && interfaceId != "NO_ID") Cout << interfaceId << ' ';
       Cout << "evaluation " << prp_it->eval_id() << '\n';
     }
   }

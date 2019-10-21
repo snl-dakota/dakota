@@ -548,7 +548,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       if(batchEval) Cout << "(Batch job ";
       else Cout << "(Asynchronous job "; 
       Cout << evalIdCntr;
-      if (interfaceId.empty()) Cout << " added to queue)\n";
+      if (interfaceId.empty() || interfaceId == "NO_ID") Cout << " added to queue)\n";
       else Cout << " added to " << interfaceId << " queue)\n";
     }
   }
