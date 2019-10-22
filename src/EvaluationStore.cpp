@@ -449,6 +449,7 @@ store_parameters_for_continuous_design(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::CONTINUOUS_RANGE
   // parameters: Pecos::CR_LWR_BND, Pecos::CR_UPR_BND
   RealArray lbs, ubs;
@@ -462,6 +463,9 @@ store_parameters_for_continuous_design(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -469,6 +473,7 @@ store_parameters_for_discrete_design_range(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_RANGE
   // parameters: Pecos::DR_LWR_BND, Pecos::DR_UPR_BND
   IntArray lbs, ubs;
@@ -482,6 +487,9 @@ store_parameters_for_discrete_design_range(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -489,6 +497,7 @@ store_parameters_for_discrete_design_set_int(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_SET_INT
   // parameters: Pecos::DSI_VALUES
   IntSetArray isa;
@@ -515,6 +524,9 @@ store_parameters_for_discrete_design_set_int(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -522,6 +534,7 @@ store_parameters_for_discrete_design_set_string(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_SET_INT
   // parameters: Pecos::DSI_VALUES
   StringSetArray ssa;
@@ -548,6 +561,9 @@ store_parameters_for_discrete_design_set_string(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -555,6 +571,7 @@ store_parameters_for_discrete_design_set_real(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_SET_INT
   // parameters: Pecos::DSI_VALUES
   RealSetArray rsa;
@@ -581,6 +598,9 @@ store_parameters_for_discrete_design_set_real(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -588,6 +608,7 @@ store_parameters_for_normal_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::NORMAL, Pecos::BOUNDED_NORMAL
   // parameters: Pecos::N_MEAN, Pecos::N_STD_DEV, Pecos::N_LWR_BND, Pecos::N_UPR_BND
   // Use count-based API for lookup since there are two possible Pecos var types
@@ -608,6 +629,9 @@ store_parameters_for_normal_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, std_devs, "std_deviation");
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -615,6 +639,7 @@ store_parameters_for_uniform_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::UNIFORM
   // parameters: Pecos::U_LWR_BND, Pecos::U_UPR_BND
   // Use count-based API for lookup since there are two possible Pecos var types
@@ -629,6 +654,9 @@ store_parameters_for_uniform_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -636,6 +664,7 @@ store_parameters_for_lognormal_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::LOGNORMAL, BOUNDED_LOGNORMAL
   // parameters: (LN_MEAN with LN_STD_DEV or LN_ERR_FACT) OR
   //             (LN_LAMBDA with LN_ZETA)
@@ -666,6 +695,9 @@ store_parameters_for_lognormal_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, err_facts, "error_factor");
   hdf5Stream->set_vector_scalar_field(location, lambdas, "lambda");
   hdf5Stream->set_vector_scalar_field(location, zetas, "zeta");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -673,6 +705,7 @@ store_parameters_for_loguniform_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::LOGUNIFORM
   // parameters:  LU_LWR_BND, LU_UPR_BND   
   RealArray lbs, ubs;
@@ -686,6 +719,9 @@ store_parameters_for_loguniform_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -693,6 +729,7 @@ store_parameters_for_triangular_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::TRIANGULAR
   // parameters:  T_LWR_BND, T_UPR_BND, T_MODE
   RealArray lbs, ubs, modes;
@@ -709,6 +746,9 @@ store_parameters_for_triangular_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, modes, "mode");
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -716,6 +756,7 @@ store_parameters_for_exponential_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::EXPONENTIAL
   // parameters:  E_BETA
   RealArray betas;
@@ -726,6 +767,9 @@ store_parameters_for_exponential_uncertain(const size_t start_rv,
   IntArray dims = {int(num_rv)};
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -733,6 +777,7 @@ store_parameters_for_beta_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::BETA
   // parameters:  BE_ALPHA, BE_BETA, BE_LWR_BND, BE_UPR_BND
   RealArray alphas, betas, lbs, ubs;
@@ -752,6 +797,9 @@ store_parameters_for_beta_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, betas, "beta");
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -759,6 +807,7 @@ store_parameters_for_gamma_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::GAMMA
   // parameters:  GA_ALPHA, GA_BETA
   RealArray alphas, betas;
@@ -772,6 +821,9 @@ store_parameters_for_gamma_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
   hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -779,6 +831,7 @@ store_parameters_for_gumbel_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::GUMBEL
   // parameters:  GU_ALPHA, GU_BETA
   RealArray alphas, betas;
@@ -792,6 +845,9 @@ store_parameters_for_gumbel_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
   hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -799,6 +855,7 @@ store_parameters_for_frechet_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::FRECHET
   // parameters:  F_ALPHA, F_BETA
   RealArray alphas, betas;
@@ -812,6 +869,9 @@ store_parameters_for_frechet_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
   hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -819,6 +879,7 @@ store_parameters_for_weibull_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::WEIBULL
   // parameters:  W_ALPHA, W_BETA
   RealArray alphas, betas;
@@ -832,6 +893,9 @@ store_parameters_for_weibull_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, alphas, "alpha");
   hdf5Stream->set_vector_scalar_field(location, betas, "beta");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -839,6 +903,7 @@ store_parameters_for_histogram_bin_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::HISTOGRAM_BIN
   // parameters: Pecos::H_BIN_PAIRS
   RealRealMapArray bin_pairs;
@@ -874,6 +939,9 @@ store_parameters_for_histogram_bin_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, abscissas, max_num_elements, "abscissas");
   hdf5Stream->set_vector_vector_field(location, counts, max_num_elements, "counts");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -881,6 +949,7 @@ store_parameters_for_poisson_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::POISSON
   // parameters: P_LAMBDA
   RealArray lambdas;
@@ -891,6 +960,9 @@ store_parameters_for_poisson_uncertain(const size_t start_rv,
   IntArray dims = {int(num_rv)};
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, lambdas, "lambda");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -898,6 +970,7 @@ store_parameters_for_binomial_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::BINOMIAL
   // parameters: BI_P_PER_TRIAL, BI_TRIALS
   RealArray p_per_trial;
@@ -912,6 +985,9 @@ store_parameters_for_binomial_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, p_per_trial, "probability_per_trial");
   hdf5Stream->set_vector_scalar_field(location, trials, "num_trials");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -919,6 +995,7 @@ store_parameters_for_negative_binomial_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::NEGATIVE_BINOMIAL
   // parameters: NBI_P_PER_TRIAL, NBI_TRIALS
   RealArray p_per_trial;
@@ -933,6 +1010,9 @@ store_parameters_for_negative_binomial_uncertain(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, p_per_trial, "probability_per_trial");
   hdf5Stream->set_vector_scalar_field(location, trials, "num_trials");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -940,6 +1020,7 @@ store_parameters_for_geometric_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::GEOMETRIC
   // parameters: GE_P_PER_TRIAL
   RealArray p_per_trial;
@@ -950,6 +1031,9 @@ store_parameters_for_geometric_uncertain(const size_t start_rv,
   IntArray dims = {int(num_rv)};
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, p_per_trial, "probability_per_trial");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -957,6 +1041,7 @@ store_parameters_for_hypergeometric_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv types: Pecos::HYPERGEOMETRIC
   // parameters: HGE_TOT_POP, HGE_SEL_POP, HGE_DRAWN
   UIntArray tot_pop, sel_pop, num_drawn;
@@ -973,6 +1058,9 @@ store_parameters_for_hypergeometric_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, tot_pop, "total_population");
   hdf5Stream->set_vector_scalar_field(location, sel_pop, "selected_population");
   hdf5Stream->set_vector_scalar_field(location, num_drawn, "num_drawn");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -980,6 +1068,7 @@ store_parameters_for_histogram_point_uncertain_int(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::HISTOGRAM_PT_INT
   // parameters: Pecos::H_PT_INT_PAIRS
   IntRealMapArray bin_pairs;
@@ -1015,6 +1104,9 @@ store_parameters_for_histogram_point_uncertain_int(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, abscissas, max_num_elements, "abscissas");
   hdf5Stream->set_vector_vector_field(location, counts, max_num_elements, "counts");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1022,6 +1114,7 @@ store_parameters_for_histogram_point_uncertain_string(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::HISTOGRAM_PT_STRING
   // parameters: Pecos::H_PT_STR_PAIRS
   StringRealMapArray bin_pairs;
@@ -1057,6 +1150,9 @@ store_parameters_for_histogram_point_uncertain_string(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, abscissas, max_num_elements, "abscissas");
   hdf5Stream->set_vector_vector_field(location, counts, max_num_elements, "counts");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1064,6 +1160,7 @@ store_parameters_for_histogram_point_uncertain_real(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::HISTOGRAM_PT_REAL
   // parameters: Pecos::H_PT_REAL_PAIRS
   RealRealMapArray bin_pairs;
@@ -1099,6 +1196,9 @@ store_parameters_for_histogram_point_uncertain_real(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, abscissas, max_num_elements, "abscissas");
   hdf5Stream->set_vector_vector_field(location, counts, max_num_elements, "counts");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1106,6 +1206,7 @@ store_parameters_for_continuous_interval_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::CONTINUOUS_INTERVAL_UNCERTAIN
   // parameters: Pecos::CIU_BPA
   RealRealPairRealMapArray intervals;
@@ -1147,6 +1248,9 @@ store_parameters_for_continuous_interval_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_vector_field(location, probs, max_num_elements, "interval_probabilities");
   hdf5Stream->set_vector_vector_field(location, lbs, max_num_elements, "lower_bounds");
   hdf5Stream->set_vector_vector_field(location, ubs, max_num_elements, "upper_bounds");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1154,6 +1258,7 @@ store_parameters_for_discrete_interval_uncertain(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_INTERVAL_UNCERTAIN
   // parameters: Pecos::DIU_BPA
   IntIntPairRealMapArray intervals;
@@ -1195,6 +1300,9 @@ store_parameters_for_discrete_interval_uncertain(const size_t start_rv,
   hdf5Stream->set_vector_vector_field(location, probs, max_num_elements, "interval_probabilities");
   hdf5Stream->set_vector_vector_field(location, lbs, max_num_elements, "lower_bounds");
   hdf5Stream->set_vector_vector_field(location, ubs, max_num_elements, "upper_bounds");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1202,6 +1310,7 @@ store_parameters_for_discrete_uncertain_set_int(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_UNCERTAIN_SET_INT
   // parameters: Pecos::DUSI_VALUES_PROBS
   IntRealMapArray sets;
@@ -1237,6 +1346,9 @@ store_parameters_for_discrete_uncertain_set_int(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, elements, max_num_elements, "elements");
   hdf5Stream->set_vector_vector_field(location, probs, max_num_elements, "set_probabilities");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1244,6 +1356,7 @@ store_parameters_for_discrete_uncertain_set_string(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_UNCERTAIN_SET_STRING
   // parameters: Pecos::DUSS_VALUES_PROBS
   StringRealMapArray sets;
@@ -1279,6 +1392,9 @@ store_parameters_for_discrete_uncertain_set_string(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, elements, max_num_elements, "elements");
   hdf5Stream->set_vector_vector_field(location, probs, max_num_elements, "set_probabilities");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1286,6 +1402,7 @@ store_parameters_for_discrete_uncertain_set_real(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_UNCERTAIN_SET_REAL
   // parameters: Pecos::DUSR_VALUES_PROBS
   RealRealMapArray sets;
@@ -1321,6 +1438,9 @@ store_parameters_for_discrete_uncertain_set_real(const size_t start_rv,
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, elements, max_num_elements, "elements");
   hdf5Stream->set_vector_vector_field(location, probs, max_num_elements, "set_probabilities");
+#else
+  return;
+#endif
 }
 
 
@@ -1329,6 +1449,7 @@ store_parameters_for_continuous_state(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::CONTINUOUS_RANGE
   // parameters: Pecos::CR_LWR_BND, Pecos::CR_UPR_BND
   RealArray lbs, ubs;
@@ -1342,6 +1463,9 @@ store_parameters_for_continuous_state(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1349,6 +1473,7 @@ store_parameters_for_discrete_state_range(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_RANGE
   // parameters: Pecos::DR_LWR_BND, Pecos::DR_UPR_BND
   IntArray lbs, ubs;
@@ -1362,6 +1487,9 @@ store_parameters_for_discrete_state_range(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, lbs, "lower_bound");
   hdf5Stream->set_vector_scalar_field(location, ubs, "upper_bound");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1369,6 +1497,7 @@ store_parameters_for_discrete_state_set_int(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_SET_INT
   // parameters: Pecos::DSI_VALUES
   IntSetArray isa;
@@ -1395,6 +1524,9 @@ store_parameters_for_discrete_state_set_int(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1402,6 +1534,7 @@ store_parameters_for_discrete_state_set_string(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_SET_INT
   // parameters: Pecos::DSI_VALUES
   StringSetArray ssa;
@@ -1428,6 +1561,9 @@ store_parameters_for_discrete_state_set_string(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+#else
+  return;
+#endif
 }
 
 void EvaluationStore::
@@ -1435,6 +1571,7 @@ store_parameters_for_discrete_state_set_real(const size_t start_rv,
     const size_t num_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
   // pecos rv type: Pecos::DISCRETE_SET_INT
   // parameters: Pecos::DSI_VALUES
   RealSetArray rsa;
@@ -1461,12 +1598,16 @@ store_parameters_for_discrete_state_set_real(const size_t start_rv,
   hdf5Stream->create_empty_dataset(location, dims, fields);
   hdf5Stream->set_vector_scalar_field(location, num_elements, "num_elements");
   hdf5Stream->set_vector_vector_field(location, all_elements, max_num_elements, "elements");
+#else
+  return;
+#endif
 }
 
 /// Store parameters for a single "domain" (e.g. all continuous variables)
 void EvaluationStore::store_parameters_for_domain(const String &root_group,
     const UShortMultiArrayConstView &types,  const SizetMultiArrayConstView &ids,
     const StringMultiArrayView &labels, Pecos::MarginalsCorrDistribution *mvd_rep) {
+#ifdef DAKOTA_HAVE_HDF5
 
   String scale_root = create_scale_root(root_group); // root_group already has
                                                      // variable_parameters
@@ -1585,6 +1726,9 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
     first_idx = last_idx + 1;
     last_it = std::find_end(first_it, types.end(), to_find.begin(), to_find.end());
   }
+#else
+  return;
+#endif
 }
 
 
