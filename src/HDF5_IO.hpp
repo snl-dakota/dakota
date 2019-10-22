@@ -38,27 +38,41 @@ namespace Dakota
 
 //----------------------------------------------------------------
 
-// Some free functions to try to consolidate data type specs
+// Data written to HDF5 must have source (memory) datatype and
+// sink (file) datatype. These free functions return the HDF5
+// DataTypes that correspond to the C++ types of data that Dakota
+// wants to write out. They enable writing code that is templated
+// on those C++ types. The h5_mem_type functions return NATIVE_*
+// types that may be platform dependent: a NATIVE_INT may be 32
+// bits and little endian on one platform, and 64 bits and big
+// endian on another. HDF5 handles those details, promising
+// that NATIVE_INT can be used to access a C/C++ int in memory
+// on THIS platform. For h5_file_types, we choose a particular
+// size and endianness, regardless of the platform, which means
+// that all Dakota HDF5 files, regardless of what's native to
+// the platform where they were generated, are consistent.
 
-/// Return the HDF5 datatype to store a Real
-inline H5::DataType h5_file_dtype( const Real & )
-{ return H5::PredType::IEEE_F64LE; }
+// File Types
+
+/// Return the HDF5 datatype to store a short
+inline H5::DataType h5_file_dtype( const short & )
+{ return H5::PredType::STD_I16LE; }
 
 /// Return the HDF5 datatype to store a int
 inline H5::DataType h5_file_dtype( const int & )
 { return H5::PredType::STD_I32LE; }
 
-/// Return the HDF5 datatype to store an unsigned long (maybe a size_t)
-inline H5::DataType h5_file_dtype( const unsigned long & )
-{ return H5::PredType::STD_U64LE; }
-
-/// Return the HDF5 datatype to store a uint
+//// Return the HDF5 datatype to store a uint
 inline H5::DataType h5_file_dtype( const unsigned int & )
 { return H5::PredType::STD_U32LE; }
 
-/// Return the HDF5 datatype to store a short
-inline H5::DataType h5_file_dtype( const short & )
-{ return H5::PredType::STD_I16LE; }
+// Return the HDF5 datatype to store an unsigned long (maybe a size_t)
+inline H5::DataType h5_file_dtype( const unsigned long & )
+{ return H5::PredType::STD_U64LE; }
+
+/// Return the HDF5 datatype to store a Real
+inline H5::DataType h5_file_dtype( const Real & )
+{ return H5::PredType::IEEE_F64LE; }
 
 /// Return the HDF5 datatype to store a string
 inline H5::DataType h5_file_dtype( const char * )
@@ -68,17 +82,37 @@ inline H5::DataType h5_file_dtype( const char * )
   return str_type;
 }
 
+/// Overloads for ResultsOutputType (used when creating empty datasets)
+inline H5::DataType h5_file_dtype(const ResultsOutputType t) {
+  switch(t) {
+    case ResultsOutputType::REAL:
+      return h5_file_dtype(double(0.0)); break;
+    case ResultsOutputType::INTEGER:
+      return h5_file_dtype(int(0)); break;
+    case ResultsOutputType::UINTEGER:
+      return h5_file_dtype(unsigned(0)); break;
+    case ResultsOutputType::STRING:
+      return h5_file_dtype(""); break;
+  }
+}
+
 /// Return the HDF5 datatype to store a string
-inline H5::DataType h5_file_dtype( const String )
+inline H5::DataType h5_file_dtype( const String &)
 {
   H5::StrType str_type(0, H5T_VARIABLE);
   str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
   return str_type;
 }
 
+// Memory Types
+
 /// Return the HDF5 datatype to read a Real in memory
 inline H5::DataType h5_mem_dtype( const Real & )
 { return H5::PredType::NATIVE_DOUBLE; }
+
+/// Return the HDF5 datatype to read a short in memory
+inline H5::DataType h5_mem_dtype( const short & )
+{ return H5::PredType::NATIVE_SHORT; }
 
 /// Return the HDF5 datatype to read an int in memory
 inline H5::DataType h5_mem_dtype( const int & )
@@ -92,10 +126,6 @@ inline H5::DataType h5_mem_dtype( const unsigned long & )
 inline H5::DataType h5_mem_dtype( const unsigned int & )
 { return H5::PredType::NATIVE_UINT; }
 
-/// Return the HDF5 datatype to read a short in memory
-inline H5::DataType h5_mem_dtype( const short & )
-{ return H5::PredType::NATIVE_SHORT; }
-
 /// Return the HDF5 datatype to read a string in memory
 inline H5::DataType h5_mem_dtype( const char * )
 {
@@ -105,11 +135,25 @@ inline H5::DataType h5_mem_dtype( const char * )
 }
 
 /// Return the HDF5 datatype to read a string in memory
-inline H5::DataType h5_mem_dtype( const String )
+inline H5::DataType h5_mem_dtype( const String &)
 {
   H5::StrType str_type(0, H5T_VARIABLE);
   str_type.setCset(H5T_CSET_UTF8);  // set character encoding to UTF-8
   return str_type;
+}
+
+/// Overloads for ResultsOutputType (used when creating empty datasets)
+inline H5::DataType h5_mem_dtype(const ResultsOutputType t) {
+  switch(t) {
+    case ResultsOutputType::REAL:
+      return h5_mem_dtype(double(0.0)); break;
+    case ResultsOutputType::INTEGER:
+      return h5_mem_dtype(int(0)); break;
+    case ResultsOutputType::UINTEGER:
+      return h5_mem_dtype(unsigned(0)); break;
+    case ResultsOutputType::STRING:
+      return h5_mem_dtype(""); break;
+  }
 }
 
 /// Return the length of seeral types

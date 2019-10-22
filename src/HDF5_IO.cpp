@@ -357,25 +357,8 @@ create_empty_dataset(const String &dset_name, const IntArray &dims,
                   const void* fill_val) 
 {
   create_groups(dset_name);
-  H5::DataType h5_type, fill_type;
-  switch (stored_type) {
-    case ResultsOutputType::REAL:
-      h5_type = h5_file_dtype(double(0.0));
-      fill_type = h5_mem_dtype(double(0.0));
-      break;
-    case ResultsOutputType::INTEGER:
-      h5_type = h5_file_dtype(int(0));
-      fill_type = h5_mem_dtype(int(0));
-      break;
-    case ResultsOutputType::UINTEGER:
-      h5_type = h5_file_dtype(unsigned(0));
-      fill_type = h5_mem_dtype(unsigned(0));
-      break;
-    case ResultsOutputType::STRING:
-      h5_type = h5_file_dtype(String(""));
-      fill_type = h5_mem_dtype(String(""));
-      break;
-  }
+  H5::DataType h5_type = h5_file_dtype(stored_type);
+  H5::DataType fill_type = h5_mem_dtype(stored_type);
   hsize_t element_size = h5_type.getSize();
   int rank = dims.size();
   //hsize_t fdims[rank];
@@ -449,46 +432,13 @@ void HDF5IOHelper::create_empty_dataset(const String &dset_name, const IntArray 
   std::vector< std::unique_ptr<H5::DataType> > field_t;
   for(const auto &f : fields) {
     if(f.dims.empty()) { // scalar
-      switch(f.type) {
-        case ResultsOutputType::REAL:
-          field_t.emplace(field_t.end(), 
-              new H5::DataType(h5_file_dtype(double(0.0))));
-        break;
-        case ResultsOutputType::INTEGER:
-          field_t.emplace(field_t.end(),
-              new H5::DataType(h5_file_dtype(int(0))));
-        break;
-        case ResultsOutputType::UINTEGER:
-          field_t.emplace(field_t.end(),
-              new H5::DataType(h5_file_dtype(unsigned(0))));
-        break;
-        case ResultsOutputType::STRING:
-          field_t.emplace(field_t.end(),
-              new H5::DataType(h5_file_dtype(String(""))));
-        break;
-      }
+      field_t.emplace(field_t.end(), new H5::DataType(h5_file_dtype(f.type)));
     } else { // non-scalar dataset field
       int ndims = f.dims.size();
       std::unique_ptr<hsize_t[]> field_dims(new hsize_t[ndims]);
       std::copy(f.dims.begin(), f.dims.end(), field_dims.get());
-      switch(f.type) {
-        case ResultsOutputType::REAL:
-          field_t.emplace(field_t.end(),
-              new H5::ArrayType(h5_file_dtype(double(0.0)), ndims, field_dims.get()));
-        break;
-        case ResultsOutputType::INTEGER:
-          field_t.emplace(field_t.end(),
-              new H5::ArrayType(h5_file_dtype(int(0)), ndims, field_dims.get()));
-        break;
-        case ResultsOutputType::UINTEGER:
-          field_t.emplace(field_t.end(),
-              new H5::ArrayType(h5_file_dtype(unsigned(0)), ndims, field_dims.get()));
-        break;
-        case ResultsOutputType::STRING:
-          field_t.emplace(field_t.end(),
-              new H5::ArrayType(h5_file_dtype(String("")), ndims, field_dims.get()));
-        break;
-      }
+      field_t.emplace(field_t.end(),
+          new H5::ArrayType(h5_file_dtype(f.type), ndims, field_dims.get()));
     }
   }
   size_t comp_t_size = 0;
