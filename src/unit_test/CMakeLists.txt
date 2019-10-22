@@ -79,7 +79,7 @@ dakota_add_unit_test(NAME leja_sampling
 
 # Unit test: h5py_hdf5
 if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GREATER 2.6)
-  execute_process(COMMAND python -c "import h5py" RESULT_VARIABLE missing_h5py
+	execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import h5py" RESULT_VARIABLE missing_h5py
 	  OUTPUT_QUIET ERROR_QUIET)
   if(NOT missing_h5py)
     # Module to extract Dakota console output -- used by all h5py unit tests
