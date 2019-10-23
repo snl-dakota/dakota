@@ -89,7 +89,9 @@ if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GRE
     # tests
     dakota_add_h5py_test(mixed_sampling)
     dakota_add_h5py_test(incremental_sampling)
-    dakota_add_h5py_test(simple_calibration)
+    if(HAVE_NPSOL)
+      dakota_add_h5py_test(simple_calibration)
+    endif()
     dakota_add_h5py_test(surrogate_sens)
     dakota_add_h5py_test(discrete_vps)
     dakota_add_h5py_test(multistart)
