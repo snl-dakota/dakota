@@ -343,10 +343,12 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   // be switched or not.  The switch matrix is only for continuous variables
   BoolDequeArray switch_ranks(numContinuousVars, 
                               BoolDeque(previous_samples, false));
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
   const std::vector<Pecos::RandomVariable>& x_ran_vars
     = iteratedModel.multivariate_distribution().random_variables();
   for (int v=0; v<numContinuousVars; ++v) {
-    const Pecos::RandomVariable& rv = x_ran_vars[v];
+    const Pecos::RandomVariable& rv = x_ran_vars[svd.cv_index_to_all_index(v)];
     for (int s=0; s<previous_samples; ++s) {
       Real val  = initial_samples[s][v];
       int rank1 = initial_ranks(v,s), index = rank1 - 1;

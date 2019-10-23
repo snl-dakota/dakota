@@ -3191,6 +3191,8 @@ void NonDExpansion::update_final_statistics_gradients()
     // this approach is more efficient but less general.  If we can assume
     // that the DVV only contains design/state vars, then we know they are
     // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
+    const SharedVariablesData& svd
+      = iteratedModel.current_variables().shared_data();
     SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
     const SizetArray& final_dvv
       = finalStatistics.active_set_derivative_vector();
@@ -3206,7 +3208,7 @@ void NonDExpansion::update_final_statistics_gradients()
       size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
       if ( deriv_j < startCAUV || deriv_j >= end_cauv ) {
 	// augmented design var sensitivity: 2/range (see jacobian_dZ_dX())
-	factor = x_ran_vars[deriv_j].pdf(x)
+	factor = x_ran_vars[svd.cv_index_to_all_index(deriv_j)].pdf(x)
 	       / Pecos::UniformRandomVariable::std_pdf();
 	for (i=0; i<num_final_stats; ++i)
 	  final_stat_grads(j,i) *= factor;

@@ -1544,7 +1544,7 @@ size_t SharedVariablesDataRep::
 dsv_index_to_all_index(size_t dsv_index,
 		       bool ddv, bool dauv, bool deuv, bool dsv) const
 {
-  // *** TO DO: a mapping from CV to spec order must account for individual
+  // *** TO DO: a mapping from DSV to spec order must account for individual
   //            var relaxation indices, not just the aggregate counts
 
   size_t num_cv, num_div, num_dsv, num_drv;

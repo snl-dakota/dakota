@@ -42,8 +42,10 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   // 1-to-1 mapping with consistent ordering
   Pecos::MultivariateDistribution& x_dist
     = subModel.multivariate_distribution();
-  size_t i, num_active_rv = x_dist.active_variables().count();
-  //size_t num_rv = x_dist.random_variables().size(); // *** TO DO: manage active subsets within NatafTransformation
+  const BitArray& active_vars = x_dist.active_variables();
+  size_t i, num_active_rv = (active_vars.empty()) ?
+    x_dist.random_variables().size() : active_vars.count();
+  // *** TO DO: generalize vars_map across multiple active types
   vars_map.resize(num_active_rv);
   for (i=0; i<num_active_rv; ++i)
     { vars_map[i].resize(1);         vars_map[i][0] = i; }
@@ -178,8 +180,8 @@ void ProbabilityTransformModel::initialize_dakota_variable_types()
       discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
-  else
-    rv_cntr += num_dsiv + num_dssv + num_dsrv;
+  //else
+  //  rv_cntr += num_dsiv + num_dssv + num_dsrv;
 }
 
 
@@ -554,6 +556,27 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 	      }
 	  ++corr_i;
 	}
+
+      /*
+      for (i=0; i<num_rv; ++i)
+	if (u_types[i] != Pecos::STD_NORMAL) {
+	  // since we don't check all rows, check all columns despite symmetry
+	  corr_i = rv_index_to_corr_index(i);
+	  if (corr_i != _NPOS)
+	    for (j=0, corr_j=0; j<num_rv; ++j)
+	      if (i != j) {
+		corr_j = rv_index_to_corr_index(j);
+		if (corr_j != _NPOS &&
+		    std::abs(x_corr(corr_i, corr_j)) > Pecos::SMALL_NUMBER) {
+		  Cerr << "\nWarning: u-space type for random variable " << i+1
+		       << " changed to\n         STD_NORMAL due to "
+		       << "decorrelation requirements.\n";
+		  mvDist.random_variable_type(Pecos::STD_NORMAL, i);
+		  break; // out of inner loop
+		}
+	      }
+	}
+      */
     }
 
     // Check for correlations among variable types (bounded normal, bounded
@@ -568,7 +591,7 @@ void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 	if (x_type == Pecos::BOUNDED_NORMAL    || x_type == Pecos::LOGUNIFORM ||
 	    x_type == Pecos::BOUNDED_LOGNORMAL || x_type == Pecos::TRIANGULAR ||
 	    x_type == Pecos::BETA || x_type == Pecos::HISTOGRAM_BIN)
-	  // since we don't check all rows, check *all* columns despite symmetry
+	  // since we don't check all rows, check all columns despite symmetry
 	  for (j=0, corr_j=0; j<num_rv; ++j)
 	    if (no_mask || active_corr[j]) {
 	      if (i != j &&
@@ -831,35 +854,34 @@ set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
   //else
   if (x_dist.correlation()) {
     const SizetArray& u_dvv = u_set.derivative_vector();
-    SizetMultiArrayConstView cv_ids = u_vars.continuous_variable_ids();
-    SizetMultiArrayConstView icv_ids
-      = u_vars.inactive_continuous_variable_ids();
-    bool std_dvv = (u_dvv == cv_ids || u_dvv == icv_ids);
+    bool std_dvv = (u_dvv == u_vars.continuous_variable_ids() ||
+		    u_dvv == u_vars.inactive_continuous_variable_ids());
     if (!std_dvv) { // partial random variable derivatives: check correlations
-      SizetMultiArrayConstView acv_ids = u_vars.all_continuous_variable_ids();
-      size_t i, j, num_cv = cv_ids.size(), num_acv = acv_ids.size();
       SizetArray x_dvv;
+      SizetMultiArrayConstView acv_ids = u_vars.all_continuous_variable_ids();
+      size_t i, j, corr_i, corr_j, acv_id_i, num_acv = acv_ids.size();
       const RealSymMatrix& corr_x = x_dist.correlation_matrix();
       for (i=0; i<num_acv; ++i) { // insert in ascending order
-        size_t acv_id = acv_ids[i];
-        if (contains(u_dvv, acv_id))
-          x_dvv.push_back(acv_id);
+        acv_id_i = acv_ids[i];
+        if (contains(u_dvv, acv_id_i))
+          x_dvv.push_back(acv_id_i);
         else {
-          size_t cv_index = find_index(cv_ids, acv_id);
-          if (cv_index != _NPOS) { // random var: check correlation
-            for (j=0; j<num_cv; ++j) {
-              if (cv_index != j && std::abs(corr_x(cv_index, j)) >
-		  Pecos::SMALL_NUMBER && contains(u_dvv, cv_ids[j])) {
-                x_dvv.push_back(acv_id);
-                break;
-              }
-            }
-          }
+	  corr_i = ptmInstance->acv_index_to_corr_index(i);
+	  if (corr_i != _NPOS)
+	    for (j=0; j<num_acv; ++j)
+	      if (j != i) {
+		corr_j = ptmInstance->acv_index_to_corr_index(j);
+		if (corr_j != _NPOS &&
+		    std::abs(corr_x(corr_i, corr_j)) > Pecos::SMALL_NUMBER &&
+		    contains(u_dvv, acv_ids[j]))
+		  { x_dvv.push_back(acv_id_i);  break; }
+	      }
         }
       }
       x_set.derivative_vector(x_dvv);
     }
   }
+  // else copying DVV in RecastModel::transform_set() is sufficient
 }
 
 }  // namespace Dakota
