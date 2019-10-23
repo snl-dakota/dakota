@@ -594,13 +594,13 @@ def read_restart_file(restart_file):
     return data
 
               
-def run_dakota(input_file):
+def run_dakota(dakota, input_file):
     """Run Dakota on the input_file and capture output
 
     input_file: string containing a path to the input file
 
     """
     global _OUTPUT
-    output = subprocess.check_output(["../dakota",input_file], stderr=subprocess.STDOUT)
+    output = subprocess.check_output([dakota,input_file], stderr=subprocess.STDOUT)
     _OUTPUT = output.split('\n')
     
