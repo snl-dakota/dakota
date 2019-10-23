@@ -55,7 +55,7 @@ macro(dakota_add_h5py_test TEST_NAME)
     ${CMAKE_CURRENT_BINARY_DIR}/dakota_hdf5_${TEST_NAME}.in dakota_unit_test_copied_files)
 
   add_test(NAME dakota_hdf5_${TEST_NAME}_test 
-    COMMAND ${PYTHON_EXECUTABLE} -B hdf5_${TEST_NAME}.py --dakota $<TARGET_FILE:dakota> 
+    COMMAND ${PYTHON_EXECUTABLE} -B hdf5_${TEST_NAME}.py --bindir $<TARGET_FILE_DIR:dakota>
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   set_property(TEST dakota_hdf5_${TEST_NAME}_test PROPERTY LABELS UnitTest)
 endmacro() 

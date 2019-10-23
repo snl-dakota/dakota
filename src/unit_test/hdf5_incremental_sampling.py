@@ -327,14 +327,14 @@ class TabularData(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # do some gyrations to extract the --dakota option from the comamnd line
+    # do some gyrations to extract the --bindir option from the comamnd line
     # while leaving the unittest options intact for it to parse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dakota', dest="dakota")
+    parser.add_argument('--bindir', dest="bindir")
     parser.add_argument('unittest_args', nargs='*')
     args = parser.parse_args()
-    hce.run_dakota(args.dakota,"dakota_hdf5_" + _TEST_NAME + ".in")
+    hce.set_executable_dir(args.bindir)
+    hce.run_dakota("dakota_hdf5_" + _TEST_NAME + ".in")
     # Now set the sys.argv to the unittest_args (leaving sys.argv[0] alone)
     sys.argv[1:] = args.unittest_args
     unittest.main()
-
