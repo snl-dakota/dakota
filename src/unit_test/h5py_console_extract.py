@@ -283,12 +283,12 @@ def extract_best_parameter_confidence_intervals():
     Return as a list of dictionaries. The keys of the dictionaries are variable
       descriptors, and the values are tuples of lower and upper bounds
     """
-    line_re = re.compile(r"\s+(.+?):\s+\[\s+(.+?),\s+(.+)\s+\]")
+    line_re = re.compile(r"(.+?):\s+\[\s+(.+?),\s+(.+)\s+\]")
     cis = []
     lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("Confidence Intervals on Cal"):
-            nline = next(lines_iter).strip() # the first variable
+            nline = next(lines_iter).strip() #the first variable
             ci = {}
             while(nline):
                 m = line_re.match(nline)
