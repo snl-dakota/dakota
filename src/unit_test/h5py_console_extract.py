@@ -27,13 +27,13 @@ def extract_moments():
         if line.startswith("Sample moment statistics"):
             next(lines_iter)
             moments.append({})
-            moments_line = next(lines_iter)
-            while moments_line != '':
+            moments_line = next(lines_iter).strip()
+            while(moments_line):
                 tokens = moments_line.split()
                 resp_desc = tokens[0]
                 moments_values = np.array([float(t) for t in tokens[1:]])
                 moments[-1][resp_desc] = moments_values
-                moments_line = next(lines_iter)
+                moments_line = next(lines_iter).strip()
     return moments
 
 def extract_moment_confidence_intervals():
@@ -53,7 +53,7 @@ def extract_moment_confidence_intervals():
         if line.startswith("95% confidence intervals"):
             cis.append({})
             nline = next(lines_iter) # discard header
-            nline = next(lines_iter) # first line of data
+            nline = next(lines_iter).strip() # first line of data
             while nline:
                 tokens = nline.split()
                 response = tokens[0]
@@ -62,7 +62,7 @@ def extract_moment_confidence_intervals():
                 values.append( [row_values[0], row_values[2]])
                 values.append( [row_values[1], row_values[3]])
                 cis[-1][response] = values
-                nline = next(lines_iter)
+                nline = next(lines_iter).strip()
     return cis
 
 
@@ -82,17 +82,17 @@ def extract_pdfs():
     for line in lines_iter:
         if line.startswith("Probability Density Function (PDF)"):
             pdfs.append({})
-            nline = next(lines_iter) # get either 'PDF for <descriptor>:" or a blank line
-            while nline != '':  # Loop over the responses
+            nline = next(lines_iter).strip() # get either 'PDF for <descriptor>:" or a blank line
+            while nline:  # Loop over the responses
                 desc = nline.split()[-1][:-1]
                 pdf_for_resp = []
                 next(lines_iter)  # Skip heading "Bin Lower..."
                 next(lines_iter)  # Skip heading "----..."
                 nline = next(lines_iter) # Get the first line of data for this response
-                while not nline.startswith("PDF for") and nline != '':  # loop over data
+                while not nline.startswith("PDF for") and nline:  # loop over data
                     values = [float(t) for t in nline.split()]
                     pdf_for_resp.append(values)
-                    nline = next(lines_iter)
+                    nline = next(lines_iter).strip()
                 pdfs[-1][desc] = pdf_for_resp
     return pdfs
 
@@ -135,7 +135,7 @@ def extract_level_mappings():
     for line in lines_iter:
         if line.startswith("Level mappings for each"):
             mappings.append({})
-            nline = next(lines_iter) # get 'Cumulative Distribution..'
+            nline = next(lines_iter).strip() # get 'Cumulative Distribution..'
             while nline and not nline.startswith('--'):  # Loop over the responses
                 desc = nline.split()[-1][:-1]
                 mappings_for_resp = []
@@ -147,7 +147,7 @@ def extract_level_mappings():
                         nline:  # loop over data
                     values = extract_level_mapping_row(nline)
                     mappings_for_resp.append(values)
-                    nline = next(lines_iter)
+                    nline = next(lines_iter).strip()
                 mappings[-1][desc] = mappings_for_resp
     return mappings
 
@@ -211,7 +211,7 @@ def extract_partial_correlations_helper(corr_type = None):
             responses = nline.split()
             for r in responses: 
                 inc_corr[r] = ([], [])
-            nline = next(lines_iter)
+            nline = next(lines_iter).strip()
             while(nline):
                 tokens = nline.split()
                 var = tokens[0]
@@ -219,7 +219,7 @@ def extract_partial_correlations_helper(corr_type = None):
                 for i, r in enumerate(responses):
                     inc_corr[r][0].append(var)
                     inc_corr[r][1].append(val[i])
-                nline = next(lines_iter)
+                nline = next(lines_iter).strip()
             correlations.append(inc_corr)
     return correlations
 
@@ -288,12 +288,12 @@ def extract_best_parameter_confidence_intervals():
     lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("Confidence Intervals on Cal"):
-            nline = next(lines_iter) # the first variable
+            nline = next(lines_iter).strip() # the first variable
             ci = {}
             while(nline):
                 m = line_re.match(nline)
                 ci[m.group(1)] = (float(m.group(2)), float(m.group(3)))
-                nline = next(lines_iter)
+                nline = next(lines_iter).strip()
             cis.append(ci)
     return cis
 
