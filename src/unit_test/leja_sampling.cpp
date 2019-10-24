@@ -183,6 +183,9 @@ void test_leja_sequence_helper(short utype, int num_vars,
   Pecos::SharedOrthogPolyApproxData::
     construct_basis(mvd, bc_options, poly_basis, basis_types, colloc_rules);
 
+  Pecos::SharedPolyApproxData::
+    update_basis_distribution_parameters(mvd, poly_basis);
+
   // Initialize sampling object
   LejaSampler sampler;
   sampler.set_precondition(true);
@@ -236,7 +239,7 @@ void test_uniform_leja_sequence(){
   int seed = 1;
 
   // NEGATIVE_BINOMIAL fails on RHEL7, BINOMIAL and POISSON give inf basis matrices on Windows
-  std::vector<short> utypes = { Pecos::STD_UNIFORM }; // , Pecos::POISSON };
+  std::vector<short> utypes = { Pecos::STD_UNIFORM, Pecos::POISSON };
   RealMatrix candidate_samples;
 
   for (auto ut : utypes) {
