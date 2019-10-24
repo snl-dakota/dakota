@@ -47,6 +47,7 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 # exit code summarizing worst test condition found (higher is nominally "worse")
 # might need to change if we go back to baselines that permit failures
 #   0 PASS
+#   0 SKIP (considered code 50, but it's not really a failure)
 #  70 PASS, but baseline lookup failure (unused)
 #  80 DIFF
 #  90 FAIL, consistent with baseline
@@ -964,7 +965,12 @@ sub check_dakota_config {
   if (-f "../src/Makefile.export.Dakota") {
     $makefile_export = "../src/Makefile.export.Dakota";
   }
+  # legacy install layout assuming dakota/test/
   elsif (-f "../include/Makefile.export.Dakota") {
+    $makefile_export = "../include/Makefile.export.Dakota";
+  }
+  # current install layout assuming dakota/share/dakota/test/
+  elsif (-f "../../../include/Makefile.export.Dakota") {
     $makefile_export = "../include/Makefile.export.Dakota";
   }
   return if (! ${makefile_export});
