@@ -41,6 +41,10 @@ HDF5IOHelper::HDF5IOHelper(const std::string& file_name, bool overwrite) :
   // create or open a file
   //H5::Exception::dontPrint();
   if( overwrite ) {
+    // In H5F_ACC_TRUNC mode, if the file exists, HDF5 tries to open it
+    // in read/write mode. This fails if the file is corrupt, so we
+    // need to remove it first.  
+    std::remove(fileName.c_str());
     h5File = H5::H5File(fileName.c_str(), H5F_ACC_TRUNC);
   } else {
     try {
