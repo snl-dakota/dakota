@@ -568,6 +568,47 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
+/// return indices (relative to first variable position) into the read
+/// var labels that yield input spec ordered vars
+std::vector<size_t>
+find_vars_map(const StringArray::const_iterator& read_vars_begin,
+	      const StringArray& expected_vars)
+{
+  // Pre-condition: read var labels are a permutation of expected
+  size_t num_vars = expected_vars.size();
+  std::vector<size_t> var_inds(num_vars);
+  for(size_t i=0; i<num_vars; ++i) {
+    auto lab_it = std::find(read_vars_begin, read_vars_begin + num_vars,
+			    expected_vars[i]);
+    var_inds[i] = std::distance(read_vars_begin, lab_it);
+  }
+  return var_inds;
+}
+
+
+/// Given a row of a tabular file, reorder the variables, leaving
+/// leading cols and responses as-is. var_inds are zero-based indices
+/// into the variables only in the read row
+std::string reorder_row(const std::string& read_str,
+			std::vector<size_t> var_inds, size_t num_lead)
+{
+  if (var_inds.empty()) return read_str; // no reordering needed
+
+  StringArray row_vals = strsplit(read_str);
+
+  // create a new string with reordered vars
+  std::ostringstream ordered_str;
+  std::ostream_iterator<String> os_it(ordered_str, " ");
+  auto num_vars = var_inds.size();
+  std::copy(row_vals.begin(), row_vals.begin() + num_lead, os_it);
+  for (const auto v_index : var_inds)
+    ordered_str << row_vals[num_lead + v_index] + " ";
+  std::copy(row_vals.begin() + num_lead + num_vars, row_vals.end(), os_it);
+
+  return ordered_str.str();
+}
+
+
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, Response resp, PRPList& input_prp,
@@ -588,26 +629,31 @@ void read_data_tabular(const std::string& input_filename,
   size_t num_resp = resp.num_functions();
   size_t num_cols = num_lead + num_vars + num_resp;
 
+  // whether reordering is requested
+  // TODO: only allow reorder if annotated and populated; error if can't reorder
+  bool reorder_vars_req = true;
+  // only populated if reordering
+  std::vector<size_t> var_inds;
+
   // Focusing on variables first; then on all length validation
   // TODO: warn vs. error; validate response labels; side-by-side diff
   // TODO: it's possible it's annotated and the first line just has whitespace
-  if (/* tabular_format & TABULAR_HEADER && */ header_fields.size() > 0) {
+  if (tabular_format & TABULAR_HEADER && header_fields.size() > 0) {
     StringArray expected_vars =
       vars.ordered_labels(active_only ? ACTIVE_VARS : ALL_VARS);
-    size_t num_expected = expected_vars.size();
 
-    // skip any leading columns
-    auto hf_it = header_fields.begin() + num_lead;
-    // num read will count read variables and responses
-    size_t num_read_vr = std::distance(hf_it, header_fields.end());
+    // iterator to start of read vars, skipping any leading columns
+    const auto read_vars_begin = header_fields.begin() + num_lead;
+    // count read variables and responses
+    size_t num_read_vr = std::distance(read_vars_begin, header_fields.end());
 
-    bool equal_labels = (num_expected > num_read_vr) ? false :
-      std::equal(expected_vars.begin(), expected_vars.end(), hf_it);
-    if (!equal_labels) {
+    bool vars_equal = (num_vars > num_read_vr) ? false :
+      std::equal(expected_vars.begin(), expected_vars.end(), read_vars_begin);
+    if (!vars_equal) {
       Cout << "\nWarning (" << context_message
 	   << "): Variable labels in header of tabular\nfile "
-	   << input_filename << " do not match variables being imported to."
-	   << std::endl;
+	   << input_filename << " do not match " << num_vars << " variables being"
+	   <<" imported to." << std::endl;
       if (verbose) {
 	std::ostream_iterator<String> out_it (Cout, " ");
 	Cout << "\nExpected labels (for "
@@ -616,11 +662,45 @@ void read_data_tabular(const std::string& input_filename,
 	std::copy(expected_vars.begin(), expected_vars.end(), out_it);
 	Cout << std::endl << "Instead found these in header (including "
 	     << "variable and response labels):\n  ";
-	std::copy(hf_it, header_fields.end(), out_it);
+	std::copy(read_vars_begin, header_fields.end(), out_it);
 	Cout << std::endl;
       }
-    }
-  }
+
+      if (num_vars > num_read_vr ) {
+	if (reorder_vars_req)
+	  Cout << "Info: Cannot reorder variables as requested; insufficient "
+	       << "labels in tabular file\nheader." << std::endl;
+      }
+      else {
+
+	// Is there a mapping between expected and first num_vars read?
+	// Assumes: unique variable labels in an input variables block (they are)
+	bool vars_permuted =
+	  std::is_permutation(expected_vars.begin(), expected_vars.end(),
+			      read_vars_begin);
+	if (vars_permuted) {
+	  if (reorder_vars_req) {
+	    Cout << "Info: Attempting to reorder variables based on labels."
+		 << std::endl;
+	    var_inds = find_vars_map(read_vars_begin, expected_vars);
+	  }
+	  else {
+	    Cout << "Info: variable labels in tabular file header are a "
+		 << "permutation of expected\nvariable labels; consider using "
+		 << "reorder_variables keyword." << std::endl;
+	  }
+	}
+	else if (reorder_vars_req) {
+	  Cout << "Info: Cannot reorder variables as requested; first "
+	       << num_vars << "labels in tabular file\nheader are not a "
+	       << "permutation of expected variable labels." << std::endl;
+	}
+      }
+      // Else unable to reconcile, but we decided not a hard error for now
+      // TODO: Can we guide the user further when data appear active vs. all?
+
+    } // if vars_equal
+  } // if parse header
 
   size_t line = (tabular_format & TABULAR_HEADER) ? 1 : 0;
   // shouldn't need both good and eof checks
@@ -645,7 +725,9 @@ void read_data_tabular(const std::string& input_filename,
 	abort_handler(-1);
       }
 
-      std::istringstream row_iss(row_str);
+      std::istringstream row_iss(var_inds.empty() ? row_str :
+				 reorder_row(row_str, var_inds, num_lead));
+
       read_leading_columns(row_iss, tabular_format, eval_id, iface_id);
       vars.read_tabular(row_iss, (active_only ? ACTIVE_VARS : ALL_VARS) );
       resp.read_tabular(row_iss);
