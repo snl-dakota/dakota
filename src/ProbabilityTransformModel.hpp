@@ -131,6 +131,11 @@ protected:
     const Pecos::MultivariateDistribution& x_dist,
     const Pecos::MultivariateDistribution& u_dist) const;
 
+  /// convert vector<RandomVariable> index to active correlation index
+  size_t rv_index_to_corr_index(size_t rv_index);
+  /// convert allContinuousVars index to active correlation index
+  size_t acv_index_to_corr_index(size_t acv_index);
+
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations
   unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type,
@@ -388,6 +393,11 @@ nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
 }
 
 
+inline Pecos::ProbabilityTransformation& ProbabilityTransformModel::
+probability_transformation()
+{ return natafTransform; }
+
+
 inline void ProbabilityTransformModel::assign_instance()
 { ptmInstance = this; }
 
@@ -410,11 +420,6 @@ vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 					   u_vars.continuous_variables_view());
   // *** TO DO: active discrete {int,string,real}
 }
-
-
-inline Pecos::ProbabilityTransformation& ProbabilityTransformModel::
-probability_transformation()
-{ return natafTransform; }
 
 
 inline void ProbabilityTransformModel::
@@ -457,6 +462,33 @@ trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
   SizetArray x_dvv; copy_data(cv_ids, x_dvv);
   natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x,
 				   x_dvv, cv_ids);
+}
+
+
+inline size_t ProbabilityTransformModel::
+rv_index_to_corr_index(size_t rv_index)
+{
+  const Pecos::BitArray& active_corr
+    = subModel.multivariate_distribution().active_correlations();
+  if (active_corr.empty())
+    return rv_index; // no mask
+  else if (active_corr[rv_index]) { // offset RV index to account for mask
+    size_t i, corr_index = 0;
+    for (i=0; i<rv_index; ++i)
+      if (active_corr[i])
+	++corr_index;
+    return corr_index;
+  }
+  else // RV not active in correlated variable subset
+    return _NPOS;
+}
+
+
+inline size_t ProbabilityTransformModel::
+acv_index_to_corr_index(size_t acv_index)
+{
+  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  return rv_index_to_corr_index(svd.acv_index_to_all_index(acv_index));
 }
 
 } // namespace Dakota

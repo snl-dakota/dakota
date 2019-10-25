@@ -622,6 +622,7 @@ void NonDLocalReliability::mean_value()
 	  for (j=0; j<i; ++j, ++cntr) // collect both off diagonal terms
 	    imp_fact[cntr]
 	      = terms_i * ranVarStdDevsX[j] * x_corr_mat(i,j) * fn_grad[j];
+	  // TO DO: model.cv_index_to_corr_index() for general use cases
 	}
       }
       else
@@ -1088,6 +1089,7 @@ void NonDLocalReliability::initial_taylor_series()
 	    for (k=0; k<numContinuousVars; ++k) {
 	      Real cov_jk = ranVarStdDevsX[j] * ranVarStdDevsX[k] 
 		          * x_corr_mat(j,k);//covariance(j,k);
+	      // TO DO: model.cv_index_to_corr_index() for general use cases
 	      if (t2nq) v1 += cov_jk * fnHessiansMeanX[i](j,k);
 	      v2 += cov_jk * fn_grad_ji * fnGradsMeanX(k,i);
 	    }

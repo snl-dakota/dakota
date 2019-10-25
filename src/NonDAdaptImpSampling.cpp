@@ -620,11 +620,11 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
       = uSpaceModel.multivariate_distribution().distribution_bounds();
     const SharedVariablesData& svd
       = uSpaceModel.current_variables().shared_data();
-    size_t rv_index;
+    size_t bnd_index;
     for (i=0, j=startCAUV; i<numCAUV; ++i, ++j) {
-      rv_index = svd.cv_index_to_active_index(j);
-      n_l_bnds[i] = u_bnds[rv_index].first;
-      n_u_bnds[i] = u_bnds[rv_index].second;
+      bnd_index = svd.cv_index_to_active_index(j);
+      n_l_bnds[i] = u_bnds[bnd_index].first;
+      n_u_bnds[i] = u_bnds[bnd_index].second;
     }
   }
 
