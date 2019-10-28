@@ -43,7 +43,8 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
   maxIterations(1000),//(problem_db.get_int("model.max_iterations")),
-  crossMaxIter(problem_db.get_sizet("model.c3function_train.max_cross_iterations")),
+  crossMaxIter(
+    problem_db.get_sizet("model.c3function_train.max_cross_iterations")),
   verbose(0)//problem_db.get_sizet("model.c3function_train.verbosity")),
 {
   // printf("CONSTRUCTING SHAREDC3APPROX\n");

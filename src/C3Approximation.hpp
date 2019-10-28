@@ -87,9 +87,6 @@ public:
     C3Approximation(const SharedApproxData& shared_data);
     ~C3Approximation(); // destructor
 
-    void eval_flag(bool); //whether or not to build expansion for QOI
-    void gradient_flag(bool); // whether or not to build expansion for dQoi/dNonRand
-    
     //
     //- Heading: Member functions
     //
@@ -145,8 +142,8 @@ public:
     // gradient with respect fixed variables
     const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
 
-    Real covariance(Approximation* approx_2);                    // covariance between two functions
-    Real covariance(const RealVector& x, Approximation* approx_2); // covariance with respect so subset
+    Real covariance(Approximation& approx_2);                    // covariance between two functions
+    Real covariance(const RealVector& x, Approximation& approx_2); // covariance with respect so subset
 
     Real skewness();
     Real kurtosis();
@@ -183,10 +180,8 @@ private:
 
     void base_init();
     
-    bool evalFlag; // build a function_train for the quantity of interest
-    bool gradFlag; // build a function_train for the gradient of a quantity of interest
-    bool expansion_coefficient_flag_var;
-    bool expansion_coefficient_gradient_flag_var;
+    bool expansionCoeffFlag; // build a function_train for the quantity of interest
+    bool expansionCoeffGradFlag; // build a function_train for the gradient of a quantity of interest
     
     //
     //- Heading: Convenience member functions
@@ -231,19 +226,19 @@ private:
 };
 
 inline void C3Approximation::expansion_coefficient_flag(bool coeff_flag)
-{ this->expansion_coefficient_flag_var = coeff_flag; }
+{ this->expansionCoeffFlag = coeff_flag; }
 
 
 inline bool C3Approximation::expansion_coefficient_flag() const
-{ return this->expansion_coefficient_flag_var; }
+{ return this->expansionCoeffFlag; }
 
 
 inline void C3Approximation::expansion_gradient_flag(bool grad_flag)
-{ this->expansion_coefficient_gradient_flag_var = grad_flag; }
+{ this->expansionCoeffGradFlag = grad_flag; }
 
 
 inline bool C3Approximation::expansion_gradient_flag() const
-{ return this->expansion_coefficient_gradient_flag_var; }
+{ return this->expansionCoeffGradFlag; }
 
 
 inline const RealVector& C3Approximation::expansion_moments() const

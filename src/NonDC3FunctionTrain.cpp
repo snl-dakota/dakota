@@ -193,16 +193,15 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
   
   // if all variables mode, initialize key to random variable subset
   // NOT SURE WHAT TO DO BELOW --AG
-  //if (numContDesVars || numContEpistUncVars || numContStateVars) {
-  //  Pecos::BitArray random_vars_key(numContinuousVars);
-  //  size_t i, num_cdv_cauv = numContDesVars + numContAleatUncVars;
-  //  for (i=0; i<numContinuousVars; ++i)
-  //    random_vars_key[i] = (i >= numContDesVars && i < num_cdv_cauv);
-  //  shared_data_rep->random_variables_key(random_vars_key);
-  //}
+  // Still needs to be fully propagated --MSE
+  if (numCAUV != numContinuousVars) {
+    BitArray random_vars_key(numContinuousVars);
+    assign_value(random_vars_key, true, startCAUV, numCAUV);
+    shared_data_rep->random_variables_key(random_vars_key);
+  }
 
   // perform last due to numSamplesOnModel update
-  //NonDExpansion::initialize_u_space_model(); // assumes SharedPecosApproxData
+  //NonDExpansion::initialize_u_space_model(); // uses Pecos poly basis
 }
 
 

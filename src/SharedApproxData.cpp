@@ -569,44 +569,6 @@ void SharedApproxData::post_finalize()
 }
 
 
-/*
-void SharedApproxData::store(size_t index)
-{
-  if (dataRep)
-    dataRep->store(index);
-  else {
-    Cerr << "\nError: store() not defined for this shared approximation type."
-	 << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-}
-
-
-void SharedApproxData::restore(size_t index)
-{
-  if (dataRep)
-    dataRep->restore(index);
-  else {
-    Cerr << "\nError: restore() not defined for this shared approximation type."
-	 << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-}
-
-
-void SharedApproxData::remove_stored(size_t index)
-{
-  if (dataRep)
-    dataRep->remove_stored(index);
-  else {
-    Cerr << "\nError: remove_stored() not defined for this shared "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-}
-*/
-
-
 void SharedApproxData::clear_inactive()
 {
   if (dataRep)
@@ -643,6 +605,76 @@ void SharedApproxData::combined_to_active(bool clear_combined)
     dataRep->combined_to_active(clear_combined);
   //else
   //  default: no op
+}
+
+
+void SharedApproxData::
+update_basis_distribution_parameters(const Pecos::MultivariateDistribution& mvd)
+{
+  if (dataRep)
+    dataRep->update_basis_distribution_parameters(mvd);
+  //else
+  //  default: no op
+}
+
+
+void SharedApproxData::
+configuration_options(const Pecos::ExpansionConfigOptions& ec_options)
+{
+  if (dataRep)
+    dataRep->configuration_options(ec_options);
+  //else
+  //  default: no op
+}
+
+
+void SharedApproxData::
+configuration_options(const Pecos::BasisConfigOptions& bc_options)
+{
+  if (dataRep)
+    dataRep->configuration_options(bc_options);
+  //else
+  //  default: no op
+}
+
+
+void SharedApproxData::
+configuration_options(const Pecos::RegressionConfigOptions& rc_options)
+{
+  if (dataRep)
+    dataRep->configuration_options(rc_options);
+  //else
+  //  default: no op
+}
+
+
+void SharedApproxData::random_variables_key(const BitArray& random_vars_key)
+{
+  if (dataRep)
+    dataRep->random_variables_key(random_vars_key);
+  //else
+  //  default: no op
+}
+
+
+void SharedApproxData::refinement_statistics_type(short stats_type)
+{
+  if (dataRep)
+    dataRep->refinement_statistics_type(stats_type);
+  //else
+  //  default: no op
+}
+
+
+const Pecos::BitArrayULongMap& SharedApproxData::sobol_index_map() const
+{
+  if (!dataRep) {
+    Cerr << "Error: sobol_index_map() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return dataRep->sobol_index_map();
 }
 
 } // namespace Dakota

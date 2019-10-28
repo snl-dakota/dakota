@@ -78,6 +78,18 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  // Activate as additional features (and basis types) come online
+  
+  //void update_basis_distribution_parameters(        // beyond STD_{NORMAL,
+  //  const Pecos::MultivariateDistribution& u_dist); //             UNIFORM}
+
+  //void configuration_options(const Pecos::ExpansionConfigOptions& ec_options);
+  //void configuration_options(const Pecos::BasisConfigOptions&     bc_options);
+
+  //void random_variables_key(const BitArray& random_vars_key);
+  //void refinement_statistics_type(short stats_type);
+  //const Pecos::BitArrayULongMap& SharedApproxData::sobol_index_map();
+
   //
   //- Heading: Data
   //

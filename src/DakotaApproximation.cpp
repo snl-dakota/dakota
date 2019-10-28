@@ -510,7 +510,7 @@ Real Approximation::mean()
   return approxRep->mean();
 }
 
-Real Approximation::mean(const RealVector & x)
+Real Approximation::mean(const RealVector& x)
 {
   if (!approxRep) {
     Cerr << "Error:mean(x) not available for this approximation "
@@ -523,26 +523,27 @@ Real Approximation::mean(const RealVector & x)
 
 const RealVector& Approximation::mean_gradient()
 {
-    if (!approxRep) {
-        Cerr << "Error: mean_gradient() not available for this approximation type."
-        << std::endl;
-        abort_handler(APPROX_ERROR);
-    }
-        
-    return approxRep->mean_gradient();
+  if (!approxRep) {
+    Cerr << "Error: mean_gradient() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->mean_gradient();
 }
 
-const RealVector& Approximation::mean_gradient(const RealVector &x, const SizetArray & ind)
+const RealVector& Approximation::
+mean_gradient(const RealVector& x, const SizetArray& ind)
 {
-    if (!approxRep) {
-        Cerr << "Error: mean_gradient(x, ind) not available for this approximation type."
-        << std::endl;
-        abort_handler(APPROX_ERROR);
-    }
-        
-    return approxRep->mean_gradient(x,ind);
+  if (!approxRep) {
+    Cerr << "Error: mean_gradient(x, ind) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->mean_gradient(x,ind);
 } 
-    
+
 Real Approximation::variance()
 {
   if (!approxRep) {
@@ -554,11 +555,11 @@ Real Approximation::variance()
   return approxRep->variance();
 }
 
-Real Approximation::variance(const RealVector &x)
+Real Approximation::variance(const RealVector& x)
 {
   if (!approxRep) {
-    Cerr << "Error:variance(x) not available for this approximation "
-	 << "type." << std::endl;
+    Cerr << "Error:variance(x) not available for this approximation type."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
@@ -567,16 +568,17 @@ Real Approximation::variance(const RealVector &x)
 
 const RealVector& Approximation::variance_gradient()
 {
-    if (!approxRep) {
-        Cerr << "Error: variance_gradient() not available for this approximation type."
-        << std::endl;
-        abort_handler(APPROX_ERROR);
-    }
-        
-    return approxRep->variance_gradient();
+  if (!approxRep) {
+    Cerr << "Error: variance_gradient() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->variance_gradient();
 }
 
-const RealVector& Approximation::variance_gradient(const RealVector &x, const SizetArray & ind)
+const RealVector& Approximation::
+variance_gradient(const RealVector& x, const SizetArray& ind)
 {
   if (!approxRep) {
     Cerr << "Error: variance_gradient(x, ind) not available for this "
@@ -586,27 +588,50 @@ const RealVector& Approximation::variance_gradient(const RealVector &x, const Si
 
   return approxRep->variance_gradient(x,ind);
 }
-    
-Real Approximation::covariance(Approximation* approx_2)
+
+Real Approximation::covariance(Approximation& approx_2)
 {
   if (!approxRep) {
-    Cerr << "Error:covariance(other) not available for this approximation "
+    Cerr << "Error: covariance(other) not available for this approximation "
 	 << "type." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
   return approxRep->covariance(approx_2);
 }
-    
-Real Approximation::covariance(const RealVector &x, Approximation* approx_2)
+   
+Real Approximation::covariance(const RealVector& x, Approximation& approx_2)
 {
   if (!approxRep) {
-    Cerr << "Error:covariance(x, other) not available for this approximation "
+    Cerr << "Error: covariance(x, other) not available for this approximation "
 	 << "type." << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
   return approxRep->covariance(x, approx_2);
+}
+
+Real Approximation::combined_covariance(Approximation& approx_2)
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_covariance(other) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_covariance(approx_2);
+}
+   
+Real Approximation::
+combined_covariance(const RealVector& x, Approximation& approx_2)
+{
+  if (!approxRep) {
+    Cerr << "Error:combined_covariance(x, other) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_covariance(x, approx_2);
 }
 
 void Approximation::compute_moments(bool full_stats, bool combined_stats)
@@ -998,33 +1023,6 @@ int Approximation::recommended_points(bool constraint_flag) const
 }
 
 
-/*
-void Approximation::eval_flag(bool flag)
-{
-  if (approxRep){
-    approxRep->eval_flag(flag);
-  }
-  else{
-      Cerr << "Error: eval_flag() not available for this approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-}
-
-void Approximation::gradient_flag(bool flag)
-{
-  if (approxRep){
-    approxRep->gradient_flag(flag);
-  }
-  else{
-      Cerr << "Error: gradient_flag() not available for this approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-}
-*/
-
-
 void Approximation::expansion_coefficient_flag(bool flag)
 {
   if (approxRep)
@@ -1039,13 +1037,10 @@ void Approximation::expansion_coefficient_flag(bool flag)
 
 bool Approximation::expansion_coefficient_flag() const
 {
-  if (!approxRep) {
-    Cerr << "Error: expansion_coefficient_flag() not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-
-  return approxRep->expansion_coefficient_flag();
+  if (approxRep)
+    return approxRep->expansion_coefficient_flag();
+  else
+    return false;
 }
 
 
@@ -1063,14 +1058,18 @@ void Approximation::expansion_gradient_flag(bool flag)
 
 bool Approximation::expansion_gradient_flag() const
 {
-  if (!approxRep) {
-    Cerr << "Error: expansion_gradient_flag() not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-
-  return approxRep->expansion_gradient_flag();
+  if (approxRep)
+    return approxRep->expansion_gradient_flag();
+  else
+    return false;
 }    
+
+
+void Approximation::clear_computed_bits()
+{
+  if (approxRep) approxRep->clear_computed_bits();
+  //else no-op
+}
 
 
 void Approximation::

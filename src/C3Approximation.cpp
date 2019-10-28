@@ -120,16 +120,6 @@ namespace Dakota {
         ft_derived_functions_free(&(this->ft_derived_functions));
     }
 
-    void C3Approximation::eval_flag(bool flag)
-    {
-        this->evalFlag = flag;
-    }
-
-    void C3Approximation::gradient_flag(bool flag)
-    {
-        this->evalFlag = flag;
-    }
-
     void C3Approximation::build()
     {
         printf("Calling build from c3 approximation\n");
@@ -498,9 +488,9 @@ namespace Dakota {
 
     
 
-    Real C3Approximation::covariance(Approximation* approx_2)
+    Real C3Approximation::covariance(Approximation& approx_2)
     {
-        C3Approximation* ft2 = (C3Approximation*)approx_2;
+        C3Approximation* ft2 = (C3Approximation*)approx_2.approx_rep();
         Real mean1 = this->mean();
         Real mean2 = ft2->mean();
 
@@ -515,9 +505,9 @@ namespace Dakota {
         return retval;
     }
 
-    Real C3Approximation::covariance(const RealVector& x, Approximation* approx_2)
+    Real C3Approximation::covariance(const RealVector& x, Approximation& approx_2)
     {
-        C3Approximation* ft2 = (C3Approximation*)approx_2;
+        C3Approximation* ft2 = (C3Approximation*)approx_2.approx_rep();
 
         fprintf(stderr,"covariance(x,ft2) in C3Approximation is not implemented because Alex\n");
         fprintf(stderr,"is not sure how what it means\n");

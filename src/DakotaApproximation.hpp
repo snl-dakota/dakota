@@ -69,9 +69,9 @@ public:
   /// builds the approximation from scratch
   virtual void build();
   /// exports the approximation
-  virtual void export_model(const String& fn_label = "", 
-      const String& export_prefix = "", 
-      const unsigned short export_format = NO_MODEL_FORMAT );
+  virtual void export_model(const String& fn_label = "",
+    const String& export_prefix = "",
+    const unsigned short export_format = NO_MODEL_FORMAT);
   /// rebuilds the approximation incrementally
   virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data
@@ -116,13 +116,28 @@ public:
   virtual const RealVector& mean_gradient();      
   virtual const RealVector& mean_gradient(const RealVector& x,
 					  const SizetArray& dvv);     
+
+  /// return the variance of the expansion, where all active vars are random
   virtual Real variance();
-  virtual Real variance(const RealVector&);           
+  /// return the variance of the expansion for a given parameter vector,
+  /// where a subset of the active variables are random
+  virtual Real variance(const RealVector& x);           
   virtual const RealVector& variance_gradient();      
   virtual const RealVector& variance_gradient(const RealVector& x,
 					      const SizetArray& dvv);
-  virtual Real covariance(Approximation* approx_2);
-  virtual Real covariance(const RealVector& x, Approximation* approx_2);
+  /// return the covariance between two response expansions, treating
+  /// all variables as random
+  virtual Real covariance(Approximation& approx_2);
+  /// return the covariance between two response expansions, treating
+  /// a subset of the variables as random
+  virtual Real covariance(const RealVector& x, Approximation& approx_2);
+  /// return the covariance between two combined response expansions,
+  /// where all active variables are random
+  virtual Real combined_covariance(Approximation& approx_2);
+  /// return the covariance between two combined response expansions,
+  /// where a subset of the active variables are random
+  virtual Real combined_covariance(const Pecos::RealVector& x,
+				   Approximation& approx_2);
 
   virtual void compute_moments(bool full_stats = true,
 			       bool combined_stats = false);
@@ -194,13 +209,15 @@ public:
   /* *** Additions for C3 ***
   /// clear current build data in preparation for next build
   virtual void clear_current();
-  virtual void eval_flag(bool);
-  virtual void gradient_flag(bool);
   */
   virtual void expansion_coefficient_flag(bool);
   virtual bool expansion_coefficient_flag() const;    
   virtual void expansion_gradient_flag(bool);
   virtual bool expansion_gradient_flag() const;
+
+  /// clear tracking of computed moments, due to (expansion) change
+  /// that invalidates previous results
+  virtual void clear_computed_bits();
 
   //
   //- Heading: Member functions

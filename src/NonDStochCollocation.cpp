@@ -414,11 +414,8 @@ void NonDStochCollocation::initialize_covariance()
     PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     pa_rep_i->clear_covariance_pointers();
-    for (j=0; j<=i; ++j) {
-      PecosApproximation* pa_rep_j
-	= (PecosApproximation*)poly_approxs[j].approx_rep();
-      pa_rep_i->initialize_covariance(pa_rep_j);
-    }
+    for (j=0; j<=i; ++j)
+      pa_rep_i->initialize_covariance(poly_approxs[j]);
   }
 }
 
@@ -514,19 +511,18 @@ compute_delta_covariance(bool update_ref, bool print_metric)
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (pa_rep_i->expansion_coefficient_flag()) {
       for (j=0; j<=i; ++j) {
-	PecosApproximation* pa_rep_j
-	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	Approximation& approx_j = poly_approxs[j];
 	Real& delta = deltaRespCovariance(i,j);
-	if (pa_rep_j->expansion_coefficient_flag()) {
+	if (approx_j.expansion_coefficient_flag()) {
 	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	    // refinement assessed for impact on combined exp from roll up
 	    delta = (allVars) ?
-	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
-	      pa_rep_i->delta_combined_covariance(pa_rep_j);
+	      pa_rep_i->delta_combined_covariance(initialPtU, approx_j) :
+	      pa_rep_i->delta_combined_covariance(approx_j);
 	  else // refinement assessed for impact on the current expansion
 	    delta = (allVars) ?
-	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
-	      pa_rep_i->delta_covariance(pa_rep_j);
+	      pa_rep_i->delta_covariance(initialPtU, approx_j) :
+	      pa_rep_i->delta_covariance(approx_j);
 
 	  if (update_ref) {
 	    respCovariance(i,j) += delta;
