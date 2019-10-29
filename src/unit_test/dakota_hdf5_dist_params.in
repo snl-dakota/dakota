@@ -1,0 +1,155 @@
+environment
+  results_output
+    results_output_file 'dist_params'
+    hdf5
+
+method
+  sampling 
+  seed 1337
+  samples 100
+
+interface
+  direct
+    analysis_drivers 'text_book'
+
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+
+variables
+  active all
+  continuous_design 2
+    lower_bounds -4.0 -3.9
+    upper_bounds  4.0  3.9
+  discrete_design_range 2
+    lower_bounds   -3  -2
+    upper_bounds    3   2
+  discrete_design_set
+    integer 2
+      elements_per_variable 2 3
+      elements 1 2 3 4 5
+    string 2
+      elements_per_variable 2 3
+      elements 'a' 'b' 'c' 'd' 'e'
+    real 2
+      elements_per_variable 2 3
+      elements -2.5 -1.5 0.5 1.5 2.5
+  
+  normal_uncertain 2
+    means -0.4 0.4
+    std_deviations 0.1 0.2
+    lower_bounds -0.7 -inf
+    upper_bounds  inf  0.6
+  lognormal_uncertain 2
+    means 0.6 0.7
+    std_deviations 0.15 0.25
+    lower_bounds 1e-3 0.1
+    upper_bounds 1e5 1.5
+  uniform_uncertain 2
+    lower_bounds -2.0 -1.5
+    upper_bounds  1.5 2.0
+  loguniform_uncertain 2
+    lower_bounds 0.5 1e-4
+    upper_bounds 1.5 1.0
+  triangular_uncertain 2
+    modes 1.5 2.5
+    lower_bounds 0.1 0.2
+    upper_bounds 2.0 3.0
+  exponential_uncertain 2
+    betas 0.75 1.25
+  beta_uncertain 2
+    alphas 0.6 1.2
+    betas  0.1 0.2
+    lower_bounds 0.0 0.1
+    upper_bounds 4.0 5.0 
+  gamma_uncertain 2
+    alphas 1.1 1.3
+    betas  0.25 0.35
+  gumbel_uncertain 2
+    alphas 1.25 1.35
+    betas  0.3 0.4
+  frechet_uncertain 2
+    alphas 2.1 2.2
+    betas  0.01 0.02
+  weibull_uncertain 2
+    alphas 0.06  0.07
+    betas  0.015 0.025
+  histogram_bin_uncertain 2
+    pairs_per_variable 3 4
+    abscissas 0 1 2  4 5 6 7
+    counts    1 2 0  3 2 1 0
+  poisson_uncertain 2
+    lambdas 0.66 1.32
+  binomial_uncertain 2
+    probability_per_trial 0.17 0.34
+    num_trials 3 6
+  negative_binomial_uncertain 2
+    probability_per_trial 0.23 0.46
+    num_trials 2 4
+  geometric_uncertain 2
+    probability_per_trial 0.21 0.42
+  hypergeometric_uncertain 2
+    total_population 8 12
+    selected_population 3 5
+    num_drawn 1 3
+  histogram_point_uncertain
+    integer 2
+      pairs_per_variable 3 4
+      abscissas 1 2 3  2 3 4 5
+      counts    3 2 1  1 2 2 1
+# h5py limitation
+#    string 2
+#      pairs_per_variable 3 4
+#      abscissas 'a' 'b' 'c'  'd' 'e' 'f' 'g'
+#      counts     1   2   1    4   3   2   2
+    real 2
+      pairs_per_variable 3 4
+      abscissas 1.5 2.0 2.5  1.0 1.75 2.5 3.25
+      counts      2   1   2    4    1   1    4
+  continuous_interval_uncertain 2
+    num_intervals 2 3
+    interval_probabilities 0.4 0.6  0.3 0.5 0.2
+    lower_bounds 1.0  1.1  2.0  2.1  2.2
+    upper_bounds 2.0  2.1  3.0  3.1  3.2
+  discrete_interval_uncertain 2
+    num_intervals 2 3
+    interval_probabilities 0.6 0.4  0.2 0.3 0.5
+    lower_bounds 1 2  3 4 5
+    upper_bounds 3 4  5 6 7
+  discrete_uncertain_set 
+     integer 2
+      elements_per_variable 3 4
+      elements             2   3   4     3   4    5  6
+      set_probabilities  0.1 0.7 0.2  0.35 0.3 0.25 0.1
+#    h5py limitation
+#    string 2
+#      elements_per_variable 3 4
+#      elements            'ab'   'bb'  'cb'   'db' 'eb' 'fb' 'gb'
+#      set_probabilities   0.25   0.35   0.4   0.3   0.3  0.3  0.1
+    real 2
+      elements_per_variable 3 4
+      elements               0.9  1.8  2.7  2.1  4.2  8.4  16.8
+      set_probabilities      0.35 0.25 0.4  0.1  0.2  0.3  0.4
+
+  continuous_state 2
+    lower_bounds -0.6 -0.5
+    upper_bounds  0.3 0.4
+  discrete_state_range 2
+    lower_bounds -1  -4
+    upper_bounds  2  3
+  discrete_state_set 
+     integer 2
+      elements_per_variable 3 4
+      elements             3  4  5   1 2 3 4 
+    string 2
+      elements_per_variable 3 4
+      elements            'ab'   'bb'  'cb'   'db' 'eb' 'fb' 'gb'
+    real 2
+      elements_per_variable 3 4
+      elements               0.9  1.8  2.7  2.1  4.2  8.4  16.8
+
+   
+    
+  
+

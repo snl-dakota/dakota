@@ -96,6 +96,7 @@ if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GRE
     dakota_add_h5py_test(discrete_vps)
     dakota_add_h5py_test(multistart)
     dakota_add_h5py_test(pareto)
+    dakota_add_h5py_test(dist_params)
     #dakota_add_h5py_test(calibration_with_data)
     #dakota_add_h5py_test(mutlisolution_opt)
   endif()
