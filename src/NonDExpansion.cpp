@@ -978,12 +978,15 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
     update_expansion();
 
     // combine expansions if necessary for stats computation:
     // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
     metric_roll_up();
+    RealVector stats_ref;
+    if (revert) pull_reference(stats_ref);
+
     // assess increment by computing refinement metric:
     // defer revert (pass false) -> simplifies best candidate tracking to follow
     // Note: covariance metric seems more self-consistent for Sobol'-weighted
@@ -1000,9 +1003,12 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     if (print_metric) print_results(Cout, REFINEMENT_RESULTS); // augment output
     pull_candidate(levelStatsStar); // pull compute_*_metric() + augmented stats
 
-    if (revert) pop_increment();
-    else        merge_grid();
+    if (revert)
+      { pop_increment();  push_reference(stats_ref); }
+    else
+      merge_grid();
     break;
+  }
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: // SSG only
     // Dimension adaptive refinement using generalized sparse grids.
     // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
