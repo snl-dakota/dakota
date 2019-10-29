@@ -1,4 +1,3 @@
-#@ s*: Label=AcceptanceTest
 #@ s*: DakotaConfig=HAVE_ACRO
 environment,
 	  method_pointer = 'SBGO'
