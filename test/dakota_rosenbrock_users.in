@@ -71,9 +71,6 @@
 ##   dakota -i rosen_syscall.in -o rosen_syscall.out > rosen_syscall.stdout   #s7
 
 environment
-## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-## Consider newer capabilities in the Dakota GUI     	     	      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-  graphics
   tabular_data
     tabular_data_file = 'rosen_multidim.dat'            #s0
 #    tabular_data_file = 'rosen_ps_vector.dat' 		      #s1

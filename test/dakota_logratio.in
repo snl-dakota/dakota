@@ -23,9 +23,6 @@
 # (6) MPP search with no linearizations     (traditional FORM)
 
 environment
-## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s5
-## Consider newer capabilities in the Dakota GUI     	     	      #s5
-  graphics
 
 method
   local_reliability

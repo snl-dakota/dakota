@@ -11,9 +11,6 @@
 # DAKOTA INPUT FILE : dakota_dace.in
 
 environment,
-## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s0
-## Consider newer capabilities in the Dakota GUI     	     	      #s0
-	  graphics
 	  tabular_data
 #	    tabular_data_file 'dakota_dace.9.dat'	#s9
 #	    tabular_data_file 'dakota_dace.7.dat'	#s7
