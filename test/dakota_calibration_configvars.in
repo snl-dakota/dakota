@@ -44,7 +44,8 @@ variables,
           descriptors 't' 'R' 'X' 'Y'
 
 interface,
-        fork
+        fork                                  #s0,#s2,#s3,#s4,#s5
+#        direct                               #s1
           analysis_driver = 'mod_cantilever'
 #        asynchronous                         #s3,#s4,#s5
 #	   evaluation_concurrency = 10 	      #s5
