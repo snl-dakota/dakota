@@ -1,0 +1,14 @@
+Blurb::
+Limit the number of evaluations in a batch
+
+Description::
+
+When \c batch execution is enabled, the default behavior is to
+add all available evaluations to the current batch. The \c size
+keyword limits the number of evaluations in a batch.
+
+Topics::  concurrency_and_parallelism
+Examples::
+Theory::
+Faq::
+See_Also::	

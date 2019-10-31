@@ -1,0 +1,65 @@
+Blurb::
+Perform evaluations in batches
+
+Description::
+When the optional \c batch keyword is used, %Dakota performs
+evaluations in batches. In batch mode, %Dakota writes the parameters
+for multiple (a batch of) evaluations to a single file, invokes 
+the analysis driver once for the whole batch, and expects 
+to find results for the entire batch in a single file after
+the analysis driver has exited. Batch mode may be useful 
+when a user desires to take greater control over job management.
+For example, the analysis driver can perform the evaluations in 
+the batch in any sequence or in concurrent sub-batches.
+
+The names of the parameters file and results file are provided
+as command line arguments to the analysis driver, just as in
+a conventional, non-batch evaluation. By default, all currently
+available evaluations will be performed in a single batch, but
+the batch size can be limited using the \ref interface-batch-size
+keyword.
+
+Batch mode has a few important limitations.
+
+\li Only one batch at a time may be executed. Asynchronous
+    execution of multiple concurrent batches is not supported.
+\li No \ref interface-analysis_drivers-input_filter or 
+    \ref interface-analysis_drivers-output_filter is permitted.
+\li Only one \c analysis_driver is allowed.
+\li \c failure_capture modes are restricted to 
+    \ref interface-failure_capture-abort and 
+    \ref interface-failure_capture-recover.
+
+Some of these restrictions may be lifted in future %Dakota releases.
+
+<b>File Formats</b>
+
+A batch parameters file written by %Dakota is simply a
+concatenated set of parameters files for the set of evaluations, either
+in \ref interface-analysis_drivers-fork-aprepro or default Dakota
+format.
+
+The batch results file is also a concatenated set of results files
+for the individual evaluations. However, because %Dakota's results 
+file format is not as rich as its parameters file format, 
+evaluations in the batch results file must be separated by a line 
+that begins with the '#' character.
+
+The order of evaluations in the batch results file must match the order
+in the batch parameters file.
+
+<b>Tagging and Work Directories</b>
+
+When %Dakota's \ref interface-analysis_drivers-fork-work_directory
+feature is enabled, one directory is created per batch. If 
+\ref interface-analysis_drivers-fork-file_tag or 
+\ref interface-analysis_drivers-fork-work_directory-directory_tag
+is used, parameters/results files and work directories are tagged
+with a batch Id, which is an integer that begins with 1 and increments
+for each new batch.
+
+Topics::	concurrency_and_parallelism
+Examples::
+Theory::
+Faq::
+See_Also::	
