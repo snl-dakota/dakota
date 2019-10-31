@@ -646,6 +646,7 @@ void read_data_tabular(const std::string& input_filename,
     // count read variables and responses
     size_t num_read_vr = std::distance(read_vars_begin, header_fields.end());
 
+    // TODO: Reorder logic and warn/error flow not warn then error in same pass
     bool vars_equal = (num_vars > num_read_vr) ? false :
       std::equal(expected_vars.begin(), expected_vars.end(), read_vars_begin);
     if (!vars_equal) {
@@ -666,9 +667,11 @@ void read_data_tabular(const std::string& input_filename,
       }
 
       if (num_vars > num_read_vr ) {
-	if (use_var_labels)
-	  Cout << "Info: Cannot reorder variables as requested; insufficient "
+	if (use_var_labels) {
+	  Cerr << "\nError: Cannot use variable labels as requested; insufficient "
 	       << "labels in tabular file\nheader." << std::endl;
+	  abort_handler(IO_ERROR);
+	}
       }
       else {
 
@@ -679,20 +682,21 @@ void read_data_tabular(const std::string& input_filename,
 			      read_vars_begin);
 	if (vars_permuted) {
 	  if (use_var_labels) {
-	    Cout << "Info: Attempting to reorder variables based on labels."
+	    Cout << "Info: Reordering imported variables based on labels."
 		 << std::endl;
 	    var_inds = find_vars_map(read_vars_begin, expected_vars);
 	  }
 	  else {
 	    Cout << "Info: variable labels in tabular file header are a "
 		 << "permutation of expected\nvariable labels; consider using "
-		 << "reorder_variables keyword." << std::endl;
+		 << "use_variable_labels keyword." << std::endl;
 	  }
 	}
 	else if (use_var_labels) {
-	  Cout << "Info: Cannot reorder variables as requested; first "
+	  Cerr << "\nError: Cannot reorder variables as requested; first "
 	       << num_vars << "labels in tabular file\nheader are not a "
 	       << "permutation of expected variable labels." << std::endl;
+	  abort_handler(IO_ERROR);
 	}
       }
       // Else unable to reconcile, but we decided not a hard error for now
@@ -721,7 +725,7 @@ void read_data_tabular(const std::string& input_filename,
 	     << input_filename << "'; expected " << num_cols << ", found "
 	     << num_read << ".\n";
 	print_expected_format(Cerr, tabular_format, 0, num_cols);
-	abort_handler(-1);
+	abort_handler(IO_ERROR);
       }
 
       std::istringstream row_iss(var_inds.empty() ? row_str :
@@ -736,12 +740,12 @@ void read_data_tabular(const std::string& input_filename,
       Cerr << "\nError (" << context_message
 	   << "): could not read variables or responses from file "
 	   << input_filename << ";\n  "  << tdtrunc.what() << std::endl;
-      abort_handler(-1);
+      abort_handler(IO_ERROR);
     }
     catch(...) {
       Cerr << "\nError (" << context_message << "): could not read file " 
 	   << input_filename << " (unknown error).";
-      abort_handler(-1);
+      abort_handler(IO_ERROR);
     }
     if (verbose) {
       Cout << "Variables read:\n" << vars;
