@@ -5836,12 +5836,16 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ import_build_points_file ALIAS import_points_file ALIAS samples_file STRING {N_mom(str,importBuildPtsFile)}
         [ 
           ( custom_annotated {N_mom(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ header {N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)}
+              [ use_variable_labels {N_mom(true,importUseVariableLabels)} ]
+             ]
             [ eval_id {N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
             [ interface_id {N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
            )
           |
-          annotated {N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          ( annotated {N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            [ use_variable_labels {N_mom(true,importUseVariableLabels)} ]
+           )
           |
           freeform {N_mom(utype,importBuildFormat_TABULAR_NONE)}
          ]

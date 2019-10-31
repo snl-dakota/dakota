@@ -341,7 +341,7 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(unsigned short tabular_format, bool active_only);
+  void import_points(unsigned short tabular_format, bool use_var_labels, bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// finalize file stream for exporting surrogate evaluations

@@ -209,7 +209,8 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       Variables vars, Response resp, PRPList& input_prp,
 		       unsigned short tabular_format,
-		       bool verbose=false, bool active_only=false);
+		       bool verbose=false, bool use_var_labels=false,
+		       bool active_only=false);
 
 /// Tabular read for import_approx_points_file: read
 /// whitespace-separated data with optional row and column headers

@@ -613,7 +613,7 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       Variables vars, Response resp, PRPList& input_prp,
 		       unsigned short tabular_format, bool verbose,
-		       bool active_only)
+		       bool use_var_labels, bool active_only)
 {
   std::ifstream data_stream;
   int eval_id = 0;  // number the evals starting from 1 if not contained in file
@@ -629,9 +629,8 @@ void read_data_tabular(const std::string& input_filename,
   size_t num_resp = resp.num_functions();
   size_t num_cols = num_lead + num_vars + num_resp;
 
-  // whether reordering is requested
+  // whether use of labels / reordering is requested
   // TODO: only allow reorder if annotated and populated; error if can't reorder
-  bool reorder_vars_req = true;
   // only populated if reordering
   std::vector<size_t> var_inds;
 
@@ -667,7 +666,7 @@ void read_data_tabular(const std::string& input_filename,
       }
 
       if (num_vars > num_read_vr ) {
-	if (reorder_vars_req)
+	if (use_var_labels)
 	  Cout << "Info: Cannot reorder variables as requested; insufficient "
 	       << "labels in tabular file\nheader." << std::endl;
       }
@@ -679,7 +678,7 @@ void read_data_tabular(const std::string& input_filename,
 	  std::is_permutation(expected_vars.begin(), expected_vars.end(),
 			      read_vars_begin);
 	if (vars_permuted) {
-	  if (reorder_vars_req) {
+	  if (use_var_labels) {
 	    Cout << "Info: Attempting to reorder variables based on labels."
 		 << std::endl;
 	    var_inds = find_vars_map(read_vars_begin, expected_vars);
@@ -690,7 +689,7 @@ void read_data_tabular(const std::string& input_filename,
 		 << "reorder_variables keyword." << std::endl;
 	  }
 	}
-	else if (reorder_vars_req) {
+	else if (use_var_labels) {
 	  Cout << "Info: Cannot reorder variables as requested; first "
 	       << num_vars << "labels in tabular file\nheader are not a "
 	       << "permutation of expected variable labels." << std::endl;

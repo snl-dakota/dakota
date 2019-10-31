@@ -149,6 +149,8 @@ public:
   String importBuildPtsFile;
   /// tabular format for the build point import file
   unsigned short importBuildFormat;
+  /// whether to parse/validate variable labels from header
+  bool importUseVariableLabels;
   /// whether to import active variables only
   bool importBuildActive;
 

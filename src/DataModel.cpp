@@ -23,7 +23,8 @@ DataModelRep::DataModelRep():
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), exportSurrogate(false),
   modelExportPrefix("exported_surrogate"), modelExportFormat(NO_MODEL_FORMAT),
-  importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
+  importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
+  importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
@@ -65,7 +66,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateType << actualModelPointer << orderedModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importBuildActive
+    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
@@ -106,7 +108,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> surrogateType >> actualModelPointer >> orderedModelPointers
     >> pointsTotal >> pointsManagement >> approxPointReuse
     >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
-    >> modelExportPrefix >> modelExportFormat >> importBuildActive
+    >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
+    >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat 
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
@@ -147,7 +150,8 @@ void DataModelRep::write(std::ostream& s) const
     << surrogateType << actualModelPointer << orderedModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importBuildActive
+    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag

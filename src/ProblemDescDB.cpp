@@ -3206,6 +3206,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"surrogate.domain_decomp", P domainDecomp},
 	{"surrogate.export_surrogate", P exportSurrogate},
 	{"surrogate.import_build_active_only", P importBuildActive},
+	{"surrogate.import_use_variable_labels", P importUseVariableLabels},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
     #undef P

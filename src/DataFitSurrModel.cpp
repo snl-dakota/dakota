@@ -169,6 +169,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
   if (import_pts)
     import_points(problem_db.get_ushort("model.surrogate.import_build_format"),
+		  problem_db.get_bool("model.surrogate.import_use_variable_labels"),
       problem_db.get_bool("model.surrogate.import_build_active_only"));
   if (export_pts)
     initialize_export();
@@ -305,7 +306,10 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
 
-  if (import_pts) import_points(import_build_format, import_build_active_only);
+  // TODO: pass import_use_var_labels from lightweight DFSModel ctor
+  bool import_use_var_labels = false;
+  if (import_pts) import_points(import_build_format, import_use_var_labels,
+				import_build_active_only);
   if (export_pts) initialize_export();
   if (import_pts || export_pts) manage_data_recastings();
 }
@@ -2074,7 +2078,7 @@ asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
     Surrogate data imports default to active/inactive variables, but
     user can override to active only */
 void DataFitSurrModel::
-import_points(unsigned short tabular_format, bool active_only)
+import_points(unsigned short tabular_format, bool use_var_labels, bool active_only)
 {
   // Temporary objects to use to read correct size vars/resp; use copies
   // so that read_data_tabular() does not alter state of vars/resp objects
@@ -2096,7 +2100,7 @@ import_points(unsigned short tabular_format, bool active_only)
   TabularIO::read_data_tabular(importPointsFile, 
 			       "DataFitSurrModel samples file", vars, resp,
 			       import_prp_list, tabular_format, verbose,
-			       active_only);
+			       use_var_labels, active_only);
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieved " << import_prp_list.size()
 	 << " total points." << std::endl;

@@ -3626,12 +3626,16 @@
 		<optional>
 		  <oneOf label="Tabular Format" >
 		    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Custom Annotated"  >
-		      <keyword  id="header" name="header" code="{N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="Header"  minOccurs="0" />
+		      <keyword  id="header" name="header" code="{N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="Header"  minOccurs="0" >
+			<keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mom(true,importUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+		      </keyword>
 		      <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)}" label="Eval ID"  minOccurs="0" />
 		      <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)}" label="Interface ID"  minOccurs="0"/>
 		    </keyword>
 
-		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}" label="Annotated"   default="annotated" />
+		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}" label="Annotated"   default="annotated" >
+		      <keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mom(true,importUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+		    </keyword>
 		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Freeform"   default="annotated" />
 		  </oneOf>
 		</optional>
