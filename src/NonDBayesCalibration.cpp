@@ -622,6 +622,10 @@ void NonDBayesCalibration::construct_map_model()
 		set_recast, primary_resp_map_indices, 
 		secondary_resp_map_indices, 0, nlp_resp_order, 
 		nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
+
+  // capture any initial guess from the variables specification (mapSoln
+  // used both for initial guess and for warm starting after refinement)
+  //copy_data(negLogPostModel.continuous_variables(), mapSoln);
 }
 
 

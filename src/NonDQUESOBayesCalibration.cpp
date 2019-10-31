@@ -190,36 +190,37 @@ void NonDQUESOBayesCalibration::calibrate()
 
 void NonDQUESOBayesCalibration::map_pre_solve()
 {
-  // Pre-solve for MAP point using optimization prior to MCMC.
   // Management of pre_solve spec options occurs in NonDBayesCalibration ctor,
   // manifesting here as a valid mapOptimizer instance.
-  if (!mapOptimizer.is_null()) {
-    Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
-	 << std::endl;
-    // set initial point (update gets pulled at run time by optimizer)
-    if (mapSoln.empty()) // no previous map solution
-      copy_gsl_partial(*paramInitials, 0,
-        negLogPostModel.current_variables().continuous_variables_view());
-    else // warm start using map soln from previous emulator
-      negLogPostModel.current_variables().continuous_variables(mapSoln);
+  if (mapOptimizer.is_null()) return;
+  
+  // Pre-solve for MAP point using optimization prior to MCMC.
 
-    // Perform optimization
-    mapOptimizer.run();
-    //negLogPostModel.print_evaluation_summary(Cout);
-    //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
-    Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
-	 << "\n(will be used as initial point for MCMC chain):\n";
-    const RealVector& map_c_vars
-      = mapOptimizer.variables_results().continuous_variables();
-    print_variables(Cout, map_c_vars);
-    Cout << std::endl;
+  Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
+       << std::endl;
+  // set initial point (update gets pulled at run time by optimizer)
+  if (mapSoln.empty()) // no previous map solution
+    copy_gsl_partial(*paramInitials, 0,
+      negLogPostModel.current_variables().continuous_variables_view());
+  else // warm start using map soln from previous emulator
+    negLogPostModel.current_variables().continuous_variables(mapSoln);
 
-    // propagate map solution to paramInitials for starting point of MCMC chain.
-    // This propagates further to mcmcModel::currentVariables either within the
-    // derivative preconditioning or within the likelihood evaluator.
-    copy_gsl_partial(map_c_vars, *paramInitials, 0);
-    if (adaptPosteriorRefine) copy_data(map_c_vars, mapSoln);//deep copy of view
-  }
+  // Perform optimization
+  mapOptimizer.run();
+  //negLogPostModel.print_evaluation_summary(Cout);
+  //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
+  Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
+       << "\n(will be used as initial point for MCMC chain):\n";
+  const RealVector& map_c_vars
+    = mapOptimizer.variables_results().continuous_variables();
+  print_variables(Cout, map_c_vars);
+  Cout << std::endl;
+
+  // propagate map solution to paramInitials for starting point of MCMC chain.
+  // This propagates further to mcmcModel::currentVariables either within the
+  // derivative preconditioning or within the likelihood evaluator.
+  copy_gsl_partial(map_c_vars, *paramInitials, 0);
+  if (adaptPosteriorRefine) copy_data(map_c_vars, mapSoln); //deep copy of view
 }
 
 

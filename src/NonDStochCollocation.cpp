@@ -400,7 +400,7 @@ void NonDStochCollocation::initialize_u_space_model()
   shared_data_rep->construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
   // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
-  shared_data_rep->update_basis_distribution_parameters(u_mvd);
+  //shared_data_rep->update_basis_distribution_parameters(u_mvd);
 
   initialize_u_space_grid();
 }

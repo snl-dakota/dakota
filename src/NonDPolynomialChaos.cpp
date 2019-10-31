@@ -880,7 +880,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   shared_data_rep->construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
   // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
-  shared_data_rep->update_basis_distribution_parameters(u_mvd);
+  //shared_data_rep->update_basis_distribution_parameters(u_mvd);
   // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
   // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
   shared_data_rep->coefficients_norms_flag(true);
@@ -892,8 +892,10 @@ void NonDPolynomialChaos::initialize_u_space_model()
 		  expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID);
   if ( num_int || ( tensorRegression && numSamplesOnModel ) ) {
     shared_data_rep->integration_iterator(uSpaceModel.subordinate_iterator());
-    initialize_u_space_grid();
+    initialize_u_space_grid(); // propagates dist param updates
   }
+  else // propagate dist param updates in case without IntegrationDriver
+    shared_data_rep->update_basis_distribution_parameters(u_mvd);
 }
 
 

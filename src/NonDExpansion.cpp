@@ -503,7 +503,7 @@ void NonDExpansion::initialize_u_space_grid()
     { /* callResize = true; */ }
   else {
     //
-    // Note: not used by C3; Pecosu restriction is appropriate (PCE/SC basis)
+    // Note: not used by C3; Pecos restriction is appropriate (PCE/SC basis)
     //
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
@@ -663,14 +663,9 @@ void NonDExpansion::initialize_expansion()
   // RecastModel::update_from_model() had insufficient context to update
   // distribution parameters for variables that were not transformed, but
   // ProbabilityTransformModel::update_from_model() can now handle this.
-  bool single_fid = (methodName == POLYNOMIAL_CHAOS ||
-    methodName == STOCH_COLLOCATION || methodName == C3_FUNCTION_TRAIN);
-  size_t depth = (!single_fid && // multilevel/multifidelity
-		  multilevDiscrepEmulation == DISTINCT_EMULATION) ?
-    2    : // limit depth to avoid warning at HierarchSurrModel
-    _NPOS; // max depth
-  uSpaceModel.update_from_subordinate_model(depth);
+  uSpaceModel.update_from_subordinate_model();
 
+  //////////////////////////////////////////////////////////////////////////////
   // Propagate updated distribution parameters to the polynomial basis
   // Note: PCE always has an approximation basis, which is shared with the
   //   IntegrationDriver in projection cases (not regression) --> one update
@@ -681,6 +676,7 @@ void NonDExpansion::initialize_expansion()
     = uSpaceModel.shared_approximation().data_rep();
   shared_data_rep->update_basis_distribution_parameters(
     uSpaceModel.multivariate_distribution());
+  //////////////////////////////////////////////////////////////////////////////
 
   // if a sub-iterator, reset any refinements that may have occurred
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
@@ -688,6 +684,7 @@ void NonDExpansion::initialize_expansion()
       !u_space_sampler.is_null())
     u_space_sampler.reset();
 
+  //////////////////////////////////////////////////////////////////////////////
   // set initialPtU which is used in this class for all-variables mode and local
   // sensitivity calculations, and by external classes for queries on the PCE
   // emulator model (e.g., NonDBayesCalibration).  In the case of design,
@@ -708,14 +705,44 @@ void NonDExpansion::initialize_expansion()
     for (i=startCAUV + numCAUV; i<numContinuousVars; ++i)
       initialPtU[i] = pt_u[i]; // epistemic/state
   }
+  /*
+  //////////////////////////////////////////////////////////////////////////////
+  // set initialPtU which is used in this class for all-variables mode and local
+  // sensitivity calculations, and by external classes for queries on the PCE
+  // emulator model (e.g., NonDBayesCalibration).  In the case of design,
+  // epistemic, and state vars, it captures the current values for this UQ
+  // execution; for aleatory vars, it reflects the u-space mean values (which
+  // are invariant in std distribution cases despite updates from above).
+  initialPtU.size(numContinuousVars);
+  if (allVars)
+    uSpaceModel.probability_transformation().trans_X_to_U(
+      iteratedModel.continuous_variables(), initialPtU);
+  RealVector u_means = uSpaceModel.multivariate_distribution().means();
+  for (size_t i=startCAUV; i<numCAUV; ++i)
+    initialPtU[i] = u_means[i];
+  //////////////////////////////////////////////////////////////////////////////
+  // set initialPtU which is used in this class for all-variables mode and local
+  // sensitivity calculations, and by external classes for queries on the PCE
+  // emulator model (e.g., NonDBayesCalibration).  In the case of design,
+  // epistemic, and state vars, it captures the current values for this UQ
+  // execution; for aleatory vars, it reflects the x-space mean values (which
+  // admit updates from above).
+  RealVector x_means = iteratedModel.multivariate_distribution().means();
+  for (size_t i=startCAUV; i<numCAUV; ++i)
+    iteratedModel.continuous_variable(x_means[i], i);
+  uSpaceModel.probability_transformation().trans_X_to_U(
+    iteratedModel.continuous_variables(), initialPtU);
+  //////////////////////////////////////////////////////////////////////////////
+  */
 
-  // transform any points imported into expansionSampler from user space into
-  // standardized space (must follow initialize_random_variable_parameters())
+  // transform any points imported into expansionSampler from user space
+  // into standardized space (must follow any dist param updates)
   if (expansionSampler.method_name() == LIST_SAMPLING &&
       numUncertainQuant == 0) {
     NonDSampling* exp_sampler_rep
       = (NonDSampling*)expansionSampler.iterator_rep();
-    exp_sampler_rep->transform_samples(nataf);
+    exp_sampler_rep->
+      transform_samples(uSpaceModel.probability_transformation());
   }
 }
 

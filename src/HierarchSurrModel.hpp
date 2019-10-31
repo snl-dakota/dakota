@@ -521,7 +521,8 @@ inline void HierarchSurrModel::resize_from_subordinate_model(size_t depth)
 inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
 {
   switch (responseMode) {
-  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+  case UNCORRECTED_SURROGATE:      // LF only
+  case AUTO_CORRECTED_SURROGATE: { // LF is active
     Model& lf_model = surrogate_model();
     // bottom-up data flow, so recurse first
     if (depth == std::numeric_limits<size_t>::max())
@@ -532,7 +533,8 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
     update_from_model(lf_model);
     break;
   }
-  case BYPASS_SURROGATE: {
+  case BYPASS_SURROGATE:   case NO_SURROGATE:        // HF only
+  case AGGREGATED_MODELS:  case MODEL_DISCREPANCY: { // prefer truth model
     Model& hf_model = truth_model();
     // bottom-up data flow, so recurse first
     if (depth == std::numeric_limits<size_t>::max())
@@ -543,12 +545,6 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
     update_from_model(hf_model);
     break;
   }
-  default:
-    Cerr << "Warning: an aggregation mode is active in HierarchSurrModel. "
-	 << "Cannot update from a\n         single model in update_from_"
-	 << "subordinate_model()" << std::endl;
-    //abort_handler(MODEL_ERROR);
-    break;
   }
 }
 

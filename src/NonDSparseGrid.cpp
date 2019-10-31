@@ -185,13 +185,11 @@ void NonDSparseGrid::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   numIntDriver.initialize_grid(poly_basis);
+  numIntDriver.initialize_grid_parameters(
+    iteratedModel.multivariate_distribution());
+
   ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
-
-  // the u-space model must have details for parameterized u-space distributions
-  // in order to enable initial grid size calculation
-  ssgDriver->
-    initialize_grid_parameters(iteratedModel.multivariate_distribution());
 
   maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }

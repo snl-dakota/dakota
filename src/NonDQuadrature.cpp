@@ -76,6 +76,7 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 				       equidist_rules, use_derivs);
 
   tpqDriver->initialize_grid(u_dist, ec_options, bc_options);
+  tpqDriver->initialize_grid_parameters(u_dist);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
 
@@ -161,6 +162,8 @@ void NonDQuadrature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   tpqDriver->initialize_grid(poly_basis);
+  tpqDriver->
+    initialize_grid_parameters(iteratedModel.multivariate_distribution());
 
   switch (quadMode) {
   case FULL_TENSOR:
@@ -231,7 +234,7 @@ compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref,
 void NonDQuadrature::get_parameter_sets(Model& model)
 {
   // capture any distribution parameter insertions
-  if (!numIntegrations || subIteratorFlag)
+  if (subIteratorFlag)
     tpqDriver->initialize_grid_parameters(model.multivariate_distribution());
 
   // Precompute quadrature rules (e.g., by defining maximal order for
