@@ -325,8 +325,8 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
   default_instantiate_q_newton(user_obj_eval, user_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., 100, 1000, 1.e-4,
-			1.e-4, 1000., boundConstraintFlag, numConstraints,
+  snll_post_instantiate(numContinuousVars, false, "", 0., 100000, 100000, 1.e-14,
+			1.e-14, 100000., boundConstraintFlag, numConstraints,
 			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
 
   // this can be called from the ctor (avoids caching of constraint arrays
@@ -819,14 +819,17 @@ void SNLLOptimizer::initialize_run()
 }
 
 
-void SNLLOptimizer::core_run()
-{ theOptimizer->optimize(); }
+void SNLLOptimizer::core_run(){
+  theOptimizer->optimize();
+}
 
 
 void SNLLOptimizer::post_run(std::ostream& s)
 {
+  return_flag = theOptimizer->getReturnCode();
   Cout << "********************************************************" <<  '\n';
   Cout << "             OPT++ TERMINATION CRITERION                " <<  '\n';
+  Cout << "             Return Code                " << theOptimizer->getReturnCode() << " " << return_flag <<  '\n';
   if(theOptimizer->getReturnCode() > 0)
      Cout << "\t  SUCCESS - " << method_enum_to_string(methodName)
 	  << " converged to a solution\n";

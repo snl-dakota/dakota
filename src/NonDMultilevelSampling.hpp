@@ -1079,35 +1079,28 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
                        ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2lm1_sq
                      - 2. * (-1. / (Nlq * Nlq) * mu_P2lP2lm1 +
                              (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
-  /*
-    RealVector grad_fd, term1_fd, term2_fd, term3_fd, term1_grad, term2_grad, term3_grad;
-    Real h = 0.05;
-    grad_fd.size(num_lev);
-    term1_fd.size(num_lev);
-    term2_fd.size(num_lev);
-    term3_fd.size(num_lev);
-    term1_grad.size(num_lev);
-    term2_grad.size(num_lev);
-    term3_grad.size(num_lev);
 
-    term1_fd[lev] = (((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
+    Real grad_fd, term1_fd, term2_fd, term3_fd, term1_grad, term2_grad, term3_grad;
+    Real h = 0.05;
+
+    term1_fd = (((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
                      (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
                      - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq)) / h;
-    term2_fd[lev] = (((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
+    term2_fd = (((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
                      (cm4lm1 - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2lm1_sq)
                      - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq)) / h;
-    term3_fd[lev] = (2. * (mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.))) -
+    term3_fd = (2. * (mu_P2lP2lm1 / (Nlq + h) + term / ((Nlq + h) * ((Nlq + h) - 1.))) -
                      2. * (mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.)))) / h;
 
-    term1_grad[lev] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+    term1_grad = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
                       ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
                       - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
                         ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
-    term2_grad[lev] = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+    term2_grad = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
                       ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4lm1
                       - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
                         ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2lm1_sq;
-    term3_grad[lev] =
+    term3_grad =
         2. * (-1. / (Nlq * Nlq) * mu_P2lP2lm1 + (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
 
     Real fd_upper = ((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
@@ -1118,57 +1111,41 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
     Real fd_lower = ((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq)
                      + (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq)
                      - 2. * (mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.))));
-    grad_fd[lev] = (fd_upper - fd_lower) / h;
-    */
-/*
-#ifdef HAVE_NPSOL
-#elif HAVE_OPTPP
-    if(mode & OPTPP::NLPGradient){
+    grad_fd = (fd_upper - fd_lower) / h;
+
+
+//#ifdef HAVE_NPSOL
+//#elif HAVE_OPTPP
+//    if(mode & OPTPP::NLPGradient){
 
       Cout << "Gradients: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << grad_g[0][i] << " ";
-      }
+      Cout << grad_g << " ";
       Cout << "\n";
       Cout << "Gradients FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << grad_fd[i] << " ";
-      }
+        Cout << grad_fd << " ";
       Cout << "\n";
       Cout << "term1 Grad: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term1_grad[i] << " ";
-      }
+        Cout << term1_grad << " ";
       Cout << "\n";
       Cout << "term1 FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term1_fd[i] << " ";
-      }
+        Cout << term1_fd << " ";
       Cout << "\n";
       Cout << "term2 Grad: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term2_grad[i] << " ";
-      }
+        Cout << term2_grad << " ";
       Cout << "\n";
       Cout << "term2 FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term2_fd[i] << " ";
-      }
+        Cout << term2_fd << " ";
       Cout << "\n";
       Cout << "term3 Grad: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term3_grad[i] << " ";
-      }
+        Cout << term3_grad << " ";
       Cout << "\n";
       Cout << "term3 FD: ";
-      for(int i = 0; i < num_lev; ++i){
-        Cout << term3_fd[i] << " ";
-      }
+        Cout << term3_fd << " ";
       Cout << "\n";
     }
-#endif
- */
-  }
+//#endif
+
+//  }
   return var_of_var;
 }
 

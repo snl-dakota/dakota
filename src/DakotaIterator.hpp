@@ -208,6 +208,8 @@ public:
   /// Declare sources to the evaluations database
   virtual void declare_sources();
 
+  virtual int getReturnFlag() const;
+
   //
   //- Heading: Member functions
   //
@@ -502,7 +504,8 @@ protected:
   /// Whether this is the top level iterator
   bool topLevel;
 
-  
+  /// convencience flag telling about success of optimizer
+  int return_flag;
 private:
 
   //
@@ -551,7 +554,13 @@ private:
   Iterator* iteratorRep;
   /// number of objects sharing iteratorRep
   int referenceCount;
+
 };
+
+
+inline int Iterator::getReturnFlag() const {
+  return return_flag;
+}
 
 inline std::shared_ptr<TraitsBase> Iterator::traits() const
 {

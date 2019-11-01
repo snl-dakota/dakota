@@ -158,13 +158,33 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
                  nonlin_ineq_upper_bnds, nonlin_eq_targets);
 
   // Set NPSOL options (mostly use defaults)
-  std::string vlevel_s("Verify Level                = -1");
+  std::string vlevel_s("Verify Level                = 3");
   vlevel_s.resize(72, ' ');
   NPOPTN2_F77( vlevel_s.data() );
 
-  std::string plevel_s("Major Print Level           = 0");
+  std::string plevel_s("Major Print Level           = 30");
   plevel_s.resize(72, ' ');
   NPOPTN2_F77( plevel_s.data() );
+
+  std::string mplevel_s("Minor Print Level           = 30");
+  mplevel_s.resize(72, ' ');
+  NPOPTN2_F77( mplevel_s.data() );
+
+  std::string fplevel_s("Function Precision           = 1e-15");
+  fplevel_s.resize(72, ' ');
+  NPOPTN2_F77( fplevel_s.data() );
+
+  std::string ftlevel_s("Feasibility Tolerance           = 1e-15");
+  ftlevel_s.resize(72, ' ');
+  NPOPTN2_F77( ftlevel_s.data() );
+
+  std::string lftlevel_s("Linear Feasibility Tolerance           = 1e-15");
+  lftlevel_s.resize(72, ' ');
+  NPOPTN2_F77( lftlevel_s.data() );
+
+  std::string nlftlevel_s("Nonlinear Feasibility Tolerance           = 1e-15");
+  nlftlevel_s.resize(72, ' ');
+  NPOPTN2_F77( nlftlevel_s.data() );
 
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
@@ -470,6 +490,12 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
 	     initialPoint.values(), &intWorkSpace[0], intWorkSpaceSize,
 	     &realWorkSpace[0], realWorkSpaceSize );
 
+  // NPSOL completed. Do post-processing/output of final NPSOL info and data:
+  Cout << "\nNPSOL exits with INFORM code = " << informResult
+       << " (see \"Interpretation of output\" section in NPSOL manual)\n";
+
+  return_flag = informResult;
+
   bestVariablesArray.front().continuous_variables(initialPoint);
   // user-functions mode is restricted to single-objective optimization
   RealVector best_fns(numFunctions, false);
@@ -480,6 +506,7 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
               local_c_vals.values() + nlnConstraintArraySize,
               best_fns.values() + 1);
   bestResponseArray.front().function_values(best_fns);
+
 }
 
 // This override exists purely to prevent an optimizer/minimizer from declaring sources 
