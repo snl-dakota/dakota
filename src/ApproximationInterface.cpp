@@ -965,14 +965,17 @@ approximation_variances(const Variables& vars)
     to active only.  */
 void ApproximationInterface::read_challenge_points(bool active_only)
 {
+  bool use_var_labels = true;
+
   size_t num_fns = functionSurfaces.size();
+  String context_msg = "Surrogate model, interface id '" + interface_id() +
+    "' import_challenge_points_file";
+  bool verbose = (outputLevel > NORMAL_OUTPUT);
   // use a Variables object to easily read active vs. all
-  RealArray pts_array;
-  RealMatrix pts_matrix;
-  TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
+  TabularIO::read_data_tabular(challengeFile, context_msg,
 			       actualModelVars.copy(), num_fns, challengePoints,
                                challengeResponses, challengeFormat,
-			       challengeActiveOnly);
+			       verbose, use_var_labels, challengeActiveOnly);
 }
 
 } // namespace Dakota
