@@ -37,6 +37,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
   challengeFormat(
     problem_db.get_ushort("model.surrogate.challenge_points_file_format")),
+  challengeUseVarLabels(
+    problem_db.get_bool("model.surrogate.challenge_use_variable_labels")),
   challengeActiveOnly(
     problem_db.get_bool("model.surrogate.challenge_points_file_active")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
@@ -699,10 +701,9 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
       // the indices for which surrogates are being built
       
       // BMA TODO: can this move to ctor?
-      bool active_only = false;
       if (!challengeFile.empty()) {
         if (challengePoints.empty())
-          read_challenge_points(active_only);
+          read_challenge_points();
         functionSurfaces[fn_index].challenge_diagnostics(fn_index,
 	  challengePoints, Teuchos::getCol(Teuchos::View, challengeResponses,
 					   fn_index));
@@ -963,10 +964,8 @@ approximation_variances(const Variables& vars)
 // data?!?  Is a Response object available too?
 /** Challenge data defaults to active/inactive, but user can override
     to active only.  */
-void ApproximationInterface::read_challenge_points(bool active_only)
+void ApproximationInterface::read_challenge_points()
 {
-  bool use_var_labels = true;
-
   size_t num_fns = functionSurfaces.size();
   String context_msg = "Surrogate model, interface id '" + interface_id() +
     "' import_challenge_points_file";
@@ -975,7 +974,8 @@ void ApproximationInterface::read_challenge_points(bool active_only)
   TabularIO::read_data_tabular(challengeFile, context_msg,
 			       actualModelVars.copy(), num_fns, challengePoints,
                                challengeResponses, challengeFormat,
-			       verbose, use_var_labels, challengeActiveOnly);
+			       verbose, challengeUseVarLabels,
+			       challengeActiveOnly);
 }
 
 } // namespace Dakota

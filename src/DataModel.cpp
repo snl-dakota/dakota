@@ -36,7 +36,8 @@ DataModelRep::DataModelRep():
   decompDiscontDetect(false), discontJumpThresh(0.0), discontGradThresh(0.0),
   trendOrder("reduced_quadratic"), pointSelection(false),
   crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
-  importChallengeFormat(TABULAR_ANNOTATED), importChallengeActive(false),
+  importChallengeFormat(TABULAR_ANNOTATED), importChalUseVariableLabels(false),
+  importChallengeActive(false),
   identityRespMap(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), initialSamples(0),
@@ -80,7 +81,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
-    << importChallengeFormat << importChallengeActive
+    << importChallengeFormat << importChalUseVariableLabels
+    << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 
@@ -122,7 +124,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> decompDiscontDetect >> discontJumpThresh >> discontGradThresh
     >> trendOrder >> pointSelection >> diagMetrics >> crossValidateFlag
     >> numFolds >> percentFold >> pressFlag >> importChallengePtsFile
-    >> importChallengeFormat >> importChallengeActive
+    >> importChallengeFormat >> importChalUseVariableLabels 
+    >> importChallengeActive
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
     >> primaryRespCoeffs >> secondaryRespCoeffs >> identityRespMap
     >> subMethodServers >> subMethodProcs >> subMethodScheduling 
@@ -164,7 +167,8 @@ void DataModelRep::write(std::ostream& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
-    << importChallengeFormat << importChallengeActive
+    << importChallengeFormat << importChalUseVariableLabels
+    << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 

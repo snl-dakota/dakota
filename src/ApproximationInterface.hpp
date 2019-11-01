@@ -173,7 +173,7 @@ private:
   void restore_data_key();
 
   /// Load approximation test points from user challenge points file
-  void read_challenge_points(bool active_only);
+  void read_challenge_points();
 
   //
   //- Heading: Data
@@ -213,6 +213,8 @@ private:
   String challengeFile;
   /// tabular format of the challenge points file
   unsigned short challengeFormat;
+  /// whether to validate variable labels in header
+  bool challengeUseVarLabels;
   /// whether to import active only
   bool challengeActiveOnly;
   /// container for the challenge points data (variables only)

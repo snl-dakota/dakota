@@ -35,7 +35,7 @@ model,
 #          active_only                                                  #s6
         polynomial quadratic                   
         challenge_points_file = 'dakota_surrogate_import.ff.dat' freeform        #s0,#s3,#s11
-#        challenge_points_file = 'dakota_surrogate_import.dat' annotated         #s1,#s2,#s4,#s5
+#        challenge_points_file = 'dakota_surrogate_import.dat' annotated use_variable_labels        #s1,#s2,#s4,#s5
 #        challenge_points_file = 'dakota_surrogate_import.unc_ff.dat' freeform   #s6
 #        active_only                                                         #s6
         metrics = "root_mean_squared" "mean_abs" "rsquared" #s0,#s11
