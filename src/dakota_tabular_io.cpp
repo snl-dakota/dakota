@@ -608,6 +608,21 @@ std::string reorder_row(const std::string& read_str,
   return ordered_str.str();
 }
 
+void print_expected_labels(bool active_only,
+			   const StringArray& expected_vars,
+			   const StringArray::const_iterator& read_vars_begin,
+			   const StringArray::const_iterator& header_fields_end)
+{
+  std::ostream_iterator<String> out_it (Cout, " ");
+  Cout << "\nExpected labels (for "
+       << ((active_only) ? "active" : "all")
+       << " variables):\n  ";
+  std::copy(expected_vars.begin(), expected_vars.end(), out_it);
+  Cout << std::endl << "Instead found these in header (including "
+       << "variable and response labels):\n  ";
+  std::copy(read_vars_begin, header_fields_end, out_it);
+  Cout << '\n' << std::endl;
+}
 
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
@@ -616,96 +631,89 @@ void read_data_tabular(const std::string& input_filename,
 		       bool use_var_labels, bool active_only)
 {
   std::ifstream data_stream;
-  int eval_id = 0;  // number the evals starting from 1 if not contained in file
-  String iface_id;
   open_file(data_stream, input_filename, context_message);
-
-  StringArray header_fields = read_header_tabular(data_stream, tabular_format);
 
   size_t num_lead = 0;
   if (tabular_format & TABULAR_EVAL_ID) ++num_lead;
   if (tabular_format & TABULAR_IFACE_ID) ++num_lead;
   size_t num_vars = active_only ? vars.total_active() : vars.tv();
-  size_t num_resp = resp.num_functions();
-  size_t num_cols = num_lead + num_vars + num_resp;
 
-  // whether use of labels / reordering is requested
-  // TODO: only allow reorder if annotated and populated; error if can't reorder
-  // only populated if reordering
-  std::vector<size_t> var_inds;
+  // TODO: Validate response labels
+  // TODO: Side-by-side diff of labels
+  // TODO: Can we guide the user further when data appear active vs. all?
 
-  // Focusing on variables first; then on all length validation
-  // TODO: warn vs. error; validate response labels; side-by-side diff
-  // TODO: it's possible it's annotated and the first line just has whitespace
-  if (tabular_format & TABULAR_HEADER && header_fields.size() > 0) {
-    StringArray expected_vars =
-      vars.ordered_labels(active_only ? ACTIVE_VARS : ALL_VARS);
+  StringArray expected_vars =
+    vars.ordered_labels(active_only ? ACTIVE_VARS : ALL_VARS);
+  StringArray header_fields = read_header_tabular(data_stream, tabular_format);
+  size_t read_fields = header_fields.size();
 
-    // iterator to start of read vars, skipping any leading columns
-    const auto read_vars_begin = header_fields.begin() + num_lead;
-    // count read variables and responses
-    size_t num_read_vr = std::distance(read_vars_begin, header_fields.end());
+  std::vector<size_t> var_inds;  // only populated if reordering
 
-    // TODO: Reorder logic and warn/error flow not warn then error in same pass
-    bool vars_equal = (num_vars > num_read_vr) ? false :
-      std::equal(expected_vars.begin(), expected_vars.end(), read_vars_begin);
+  // iterator to start of read vars, skipping any leading columns;
+  // take care to not advance beyond end()
+  auto read_vars_begin = (num_lead < read_fields) ?
+    header_fields.begin() + num_lead : header_fields.end();
+
+  bool vars_equal = (num_lead + num_vars > read_fields) ? false :
+    std::equal(expected_vars.begin(), expected_vars.end(), read_vars_begin);
+
+  bool vars_permuted = (num_lead + num_vars > read_fields) ? false :
+    std::is_permutation(expected_vars.begin(), expected_vars.end(),
+			read_vars_begin);
+
+  if (use_var_labels) {
+    // Input spec restricts to TABULAR_HEADER case; require equal or permutation
+    if (vars_equal) {
+      ; // no map needed (no-op to simplify logic)
+    }
+    else if (vars_permuted ) {
+      Cout << "\nInfo (" << context_message << "):\n"
+	   << "Reordering variables imported from tabular file '"
+	   << input_filename << "'\nbased on labels in header.\n" << std::endl;
+      var_inds = find_vars_map(read_vars_begin, expected_vars);
+    }
+    else {
+      Cerr << "\nError (" << context_message << "):\n"
+	   << "Cannot reorder variables imported from tabular file '"
+	   << input_filename << "'\nas requested by use_variable_labels. First "
+	   << num_vars << " variable labels in tabular\nfile header are not a "
+	   << "permutation of expected variable labels." << std::endl;
+      if (verbose)
+	print_expected_labels(active_only, expected_vars, read_vars_begin,
+			      header_fields.end());
+      abort_handler(IO_ERROR);
+    }
+
+  }
+  else if (tabular_format & TABULAR_HEADER) {
     if (!vars_equal) {
-      Cout << "\nWarning (" << context_message
-	   << "): Variable labels in header of tabular\nfile "
-	   << input_filename << " do not match " << num_vars << " variables being"
-	   <<" imported to." << std::endl;
-      if (verbose) {
-	std::ostream_iterator<String> out_it (Cout, " ");
-	Cout << "\nExpected labels (for "
-	     << ((active_only) ? "active" : "all")
-	     << " variables):\n  ";
-	std::copy(expected_vars.begin(), expected_vars.end(), out_it);
-	Cout << std::endl << "Instead found these in header (including "
-	     << "variable and response labels):\n  ";
-	std::copy(read_vars_begin, header_fields.end(), out_it);
-	Cout << std::endl;
-      }
-
-      if (num_vars > num_read_vr ) {
-	if (use_var_labels) {
-	  Cerr << "\nError: Cannot use variable labels as requested; insufficient "
-	       << "labels in tabular file\nheader." << std::endl;
-	  abort_handler(IO_ERROR);
-	}
+      if (vars_permuted) {
+	Cout << "\nWarning (" << context_message << "):\n"
+	     << "Variable labels in header of tabular file '" << input_filename
+	     << "' are a\npermutation of expected variable labels;"
+	     << "consider use_variable_labels keyword." << std::endl;
+	if (verbose)
+	  print_expected_labels(active_only, expected_vars, read_vars_begin,
+				header_fields.end());
       }
       else {
-
-	// Is there a mapping between expected and first num_vars read?
-	// Assumes: unique variable labels in an input variables block (they are)
-	bool vars_permuted =
-	  std::is_permutation(expected_vars.begin(), expected_vars.end(),
-			      read_vars_begin);
-	if (vars_permuted) {
-	  if (use_var_labels) {
-	    Cout << "Info: Reordering imported variables based on labels."
-		 << std::endl;
-	    var_inds = find_vars_map(read_vars_begin, expected_vars);
-	  }
-	  else {
-	    Cout << "Info: variable labels in tabular file header are a "
-		 << "permutation of expected\nvariable labels; consider using "
-		 << "use_variable_labels keyword." << std::endl;
-	  }
-	}
-	else if (use_var_labels) {
-	  Cerr << "\nError: Cannot reorder variables as requested; first "
-	       << num_vars << "labels in tabular file\nheader are not a "
-	       << "permutation of expected variable labels." << std::endl;
-	  abort_handler(IO_ERROR);
-	}
+	Cout << "\nWarning (" << context_message << "):\n"
+	     << "Variable labels in header of tabular file '" << input_filename
+	     << "'\ndo not match " << num_vars << " variables being"
+	     <<" imported to." << std::endl;
+	if (verbose)
+	  print_expected_labels(active_only, expected_vars, read_vars_begin,
+				header_fields.end());
       }
-      // Else unable to reconcile, but we decided not a hard error for now
-      // TODO: Can we guide the user further when data appear active vs. all?
+    }
+    // Can't guide further as unable to reconcile vars vs. responses,
+    // but we decided not a hard error for now
+  }
 
-    } // if vars_equal
-  } // if parse header
-
+  int eval_id = 0;  // number the evals starting from 1 if not contained in file
+  String iface_id;
   size_t line = (tabular_format & TABULAR_HEADER) ? 1 : 0;
+  size_t num_cols = num_lead + num_vars + resp.num_functions();;
   // shouldn't need both good and eof checks
   data_stream >> std::ws;
   while (data_stream.good() && !data_stream.eof()) {
