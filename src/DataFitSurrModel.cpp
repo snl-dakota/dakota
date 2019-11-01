@@ -2091,14 +2091,15 @@ import_points(unsigned short tabular_format, bool use_var_labels, bool active_on
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieving points with " << num_vars
-	 << " variables and " << numFns << " response functions from file "
-	 << importPointsFile << '\n';
+	 << " variables and " << numFns << " response\nfunctions from file '"
+	 << importPointsFile << "'\n";
   // Preserves eval and interface ids in the PRPList, if annotated format
   // If no eval ID, will number successively from 1
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
-  TabularIO::read_data_tabular(importPointsFile, 
-			       "DataFitSurrModel samples file", vars, resp,
+  String context_msg = "Surrogate model with id '" + model_id() +
+    "' import_build_points";
+  TabularIO::read_data_tabular(importPointsFile, context_msg, vars, resp,
 			       import_prp_list, tabular_format, verbose,
 			       use_var_labels, active_only);
   if (outputLevel >= NORMAL_OUTPUT)

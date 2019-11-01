@@ -267,6 +267,8 @@ public:
   String importChallengePtsFile;
   /// tabular format of the challenge data file
   unsigned short importChallengeFormat;
+  /// whether to parse/validate variable labels from header
+  bool importChalUseVariableLabels;
   /// whether to import active variables only
   bool importChallengeActive;
 
