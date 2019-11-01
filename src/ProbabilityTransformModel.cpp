@@ -78,6 +78,8 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   // not imported and response values are not transformed, an inverse variables
   // transformation is sufficient for this purpose.
   inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
+  // initialize currentVariables based on subModel initial state
+  inverse_transform_variables(subModel.current_variables(), currentVariables);
 }
 
 

@@ -233,7 +233,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // now that variables/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
-  eifModel.update_from_subordinate_model(); // depth = max
+  // There is no need to recur below iteratedModel.
+  size_t layers = 2;
+  eifModel.update_from_subordinate_model(layers-1); // recur once
 
   // (We might want a more selective update from submodel, or make a
   // new EIFModel specialization of RecastModel.)  Always want to

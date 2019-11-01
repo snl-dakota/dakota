@@ -55,7 +55,7 @@ protected:
 				const ShortArray& dr_target2);
 
   bool resize();
-  void pre_run();
+  //void pre_run();
   void post_run(std::ostream& s);
 
   /// initialize graphics customized for reliability methods

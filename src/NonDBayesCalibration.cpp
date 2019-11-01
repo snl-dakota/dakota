@@ -202,10 +202,27 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
-  // should be independent of data resizes
+  // Construct emulator objects for raw QoI, prior to data residual recast
   construct_mcmc_model();
-
+  // define variable augmentation within residualModel
   init_hyper_parameters();
+
+  // expand initial point by numHyperparams for use in negLogPostModel
+  // TO DO: review other QUESO uses of mapSoln
+  size_t i, num_orig_cv = iteratedModel.cv(),
+    num_augment_cv = num_orig_cv + numHyperparams;
+  mapSoln.sizeUninitialized(num_augment_cv);
+  // if (standardizedSpace) {
+  //   RealVector init_pt_u;
+  //   mcmcModel.probability_transformation().trans_X_to_U(
+  //     iteratedModel.continuous_variables(), init_pt_u);
+  //   copy_data_partial(init_pt_u, mapSoln, 0);
+  // }
+  // else
+  //   copy_data_partial(iteratedModel.continuous_variables(), mapSoln, 0);
+  copy_data_partial(mcmcModel.continuous_variables(), mapSoln, 0);
+  for (i=0; i<numHyperparams; ++i)
+    mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
 
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
@@ -215,7 +232,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			 obsErrorMultiplierMode, mcmcDerivOrder), false);
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
-    for (size_t i=0; i<numHyperparams; ++i) {
+    for (i=0; i<numHyperparams; ++i) {
       residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
       residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
@@ -666,6 +683,7 @@ void NonDBayesCalibration::pre_run()
   // now that vars/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up local Model recursions
   // so that they are correct when they propagate back down.
+  // *** TO DO: count Model recursion layers on top of iteratedModel 
   if (!negLogPostModel.is_null())
     negLogPostModel.update_from_subordinate_model(); // depth = max
   else

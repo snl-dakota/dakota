@@ -265,7 +265,13 @@ void NonDGlobalInterval::core_run()
   NonDGlobalInterval* prev_instance = nondGIInstance;
   nondGIInstance = this;
 
-  intervalOptModel.update_from_subordinate_model();
+  // now that vars/labels/bounds/targets have flowed down at run-time from
+  // any higher level recursions, propagate them up local Model recursions
+  // so that they are correct when they propagate back down.  There is no
+  // need to recur below iteratedModel.
+  size_t layers = (gpModelFlag) ? 2 : 1;
+  intervalOptModel.update_from_subordinate_model(layers-1);
+
   // Build initial GP once for all response functions
   if (gpModelFlag)
     fHatModel.build_approximation();

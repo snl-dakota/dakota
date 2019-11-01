@@ -358,6 +358,7 @@ init_constraints(size_t num_recast_secondary_fns,
       sub_model_cons.num_linear_eq_constraints());
 }
 
+
 void RecastModel::inverse_mappings(
     void (*inv_vars_map)     (const Variables& recast_vars,
 			      Variables& sub_model_vars),
@@ -787,7 +788,7 @@ void RecastModel::update_from_model(Model& model)
 bool RecastModel::update_variables_from_model(Model& model)
 {
   bool update_active_complement = true;
-  if (invVarsMapping) {
+  if (invVarsMapping) { // inv mapping provided: sub-model -> recast
     assign_instance();
 
     // generally restricted to active variables
@@ -797,7 +798,7 @@ bool RecastModel::update_variables_from_model(Model& model)
     // constraints and values, but there's currently no mechanism to
     // do so.  The client of a RecastModel must manage this.
   }
-  else if (variablesMapping) {
+  else if (variablesMapping) { // only fwd mapping for recast -> sub-model
     // no reasonable default for active vars
 
     // can't just apply variables mapping to values/bounds, since need inverse

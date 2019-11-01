@@ -660,10 +660,12 @@ void NonDExpansion::initialize_expansion()
   // now that data has flowed down at run-time from any higher level recursions
   // to iteratedModel, it must be propagated up through the local g_u_model and
   // uSpaceModel recursions (so they are correct when propagated back down).
+  // There is no need to recur below iteratedModel.
   // RecastModel::update_from_model() had insufficient context to update
   // distribution parameters for variables that were not transformed, but
   // ProbabilityTransformModel::update_from_model() can now handle this.
-  uSpaceModel.update_from_subordinate_model();
+  size_t layers = 2;
+  uSpaceModel.update_from_subordinate_model(layers-1); // recur once
 
   //////////////////////////////////////////////////////////////////////////////
   // Propagate updated distribution parameters to the polynomial basis
@@ -684,6 +686,7 @@ void NonDExpansion::initialize_expansion()
       !u_space_sampler.is_null())
     u_space_sampler.reset();
 
+  /*
   //////////////////////////////////////////////////////////////////////////////
   // set initialPtU which is used in this class for all-variables mode and local
   // sensitivity calculations, and by external classes for queries on the PCE
@@ -705,7 +708,7 @@ void NonDExpansion::initialize_expansion()
     for (i=startCAUV + numCAUV; i<numContinuousVars; ++i)
       initialPtU[i] = pt_u[i]; // epistemic/state
   }
-  /*
+  */
   //////////////////////////////////////////////////////////////////////////////
   // set initialPtU which is used in this class for all-variables mode and local
   // sensitivity calculations, and by external classes for queries on the PCE
@@ -720,6 +723,7 @@ void NonDExpansion::initialize_expansion()
   RealVector u_means = uSpaceModel.multivariate_distribution().means();
   for (size_t i=startCAUV; i<numCAUV; ++i)
     initialPtU[i] = u_means[i];
+  /*
   //////////////////////////////////////////////////////////////////////////////
   // set initialPtU which is used in this class for all-variables mode and local
   // sensitivity calculations, and by external classes for queries on the PCE

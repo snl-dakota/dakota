@@ -267,6 +267,11 @@ protected:
   /// order of derivatives used in MCMC process (bitwise like ASV)
   short mcmcDerivOrder;
 
+  /// solution for most recent MAP pre-solve; also serves as initial guess
+  /// for initializing the first solve and warm-starting the next solve
+  /// (posterior emulator refinement)
+  RealVector mapSoln;
+
   // settings specific to adaptive DOE
 
   /// whether to perform iterative design of experiments with
