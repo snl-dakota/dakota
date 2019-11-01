@@ -189,7 +189,9 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       Variables vars, size_t num_fns,
 		       RealMatrix& vars_matrix, RealMatrix& resp_matrix, 
-                       unsigned short tabular_format, bool active_only);
+                       unsigned short tabular_format,
+		       bool verbose=false, bool use_var_labels=false,
+		       bool active_only=false);
 
 /// Tabular read for PCE import: read possibly header-annotated
 /// whitespace-separated data of unknown length where each row has

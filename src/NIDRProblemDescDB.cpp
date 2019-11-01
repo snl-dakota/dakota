@@ -7467,6 +7467,7 @@ static bool
       //MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(importChallengeActive),
+	MP_(importChalUseVariableLabels),
 	MP_(importUseVariableLabels),
 	MP_(modelUseDerivsFlag),
         MP_(domainDecomp),

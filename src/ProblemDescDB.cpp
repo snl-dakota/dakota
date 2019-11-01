@@ -3200,6 +3200,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nested.identity_resp_map", P identityRespMap},
 	{"surrogate.auto_refine", P autoRefine},
 	{"surrogate.challenge_points_file_active", P importChallengeActive},
+	{"surrogate.challenge_use_variable_labels", P importChalUseVariableLabels},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
