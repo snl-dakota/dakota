@@ -474,7 +474,7 @@ validate_header(std::ifstream& data_stream,
 	Cout << "\nWarning (" << context_message << "):\n"
 	     << "Variable labels in header of tabular file '" << input_filename
 	     << "' are a\npermutation of expected variable labels;"
-	     << "consider use_variable_labels keyword." << std::endl;
+	     << " consider use_variable_labels keyword." << std::endl;
 	if (verbose)
 	  print_expected_labels(active_only, expected_vars, read_vars_begin,
 				header_fields.end());
