@@ -4,6 +4,7 @@
 #@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=3600
 #@ s*: TimeoutDelay=1200
+#@ p*: TimeoutDelay=1200
 
 #environment,
 
