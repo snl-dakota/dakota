@@ -1979,7 +1979,9 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
-    if (!vbdOrderLimit) // no order limit --> component used within total
+    if (vbdOrderLimit) // prevent print/export of uninitialized memory
+      approx_i.clear_component_effects();
+    else // no order limit --> component used within total
       approx_i.compute_component_effects();
     approx_i.compute_total_effects(); // from scratch or using component
 
