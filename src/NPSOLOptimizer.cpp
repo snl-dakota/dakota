@@ -494,8 +494,6 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   Cout << "\nNPSOL exits with INFORM code = " << informResult
        << " (see \"Interpretation of output\" section in NPSOL manual)\n";
 
-  return_flag = informResult;
-
   bestVariablesArray.front().continuous_variables(initialPoint);
   // user-functions mode is restricted to single-objective optimization
   RealVector best_fns(numFunctions, false);

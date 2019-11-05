@@ -826,10 +826,9 @@ void SNLLOptimizer::core_run(){
 
 void SNLLOptimizer::post_run(std::ostream& s)
 {
-  return_flag = theOptimizer->getReturnCode();
   Cout << "********************************************************" <<  '\n';
   Cout << "             OPT++ TERMINATION CRITERION                " <<  '\n';
-  Cout << "             Return Code                " << theOptimizer->getReturnCode() << " " << return_flag <<  '\n';
+  Cout << "             Return Code                " << theOptimizer->getReturnCode() <<  '\n';
   if(theOptimizer->getReturnCode() > 0)
      Cout << "\t  SUCCESS - " << method_enum_to_string(methodName)
 	  << " converged to a solution\n";

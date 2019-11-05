@@ -465,9 +465,13 @@ private:
                                         RealVector& grad_f, int& result_mode);
   static void target_var_constraint_eval_optpp(int mode, int n, const RealVector& x, RealVector& g,
                                          RealMatrix& grad_g, int& result_mode);
-  /// NPSOL definition
+  static void target_var_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
+                                               RealMatrix& grad_g, int& result_mode);
+  /// NPSOL definition (Wrapper using OPTPP implementation above under the hood)
   static void target_var_objective_eval_npsol(int& mode, int& n, double* x, double& f, double* gradf, int& nstate);
   static void target_var_constraint_eval_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+  static void target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate);
+
 
   //
   //- Heading: Data
@@ -979,11 +983,12 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, In
              ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
              - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
                ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
-    //RealVector grad_fd;
-    //Real h = 0.05;
-    //grad_fd.size(num_lev);
-    //grad_fd[0] = ( ( (Nlq + h) - 1.) / ( (Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
-    //               - (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) ) / h;
+    Real grad_fd, fd_upper, fd_lower;
+    Real h = 0.00001;
+    fd_upper = std::log(( (Nlq + h) - 1.) / ( (Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq) );
+    fd_lower = std::log((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) );
+    grad_fd = (fd_upper - fd_lower)/h;
+    //grad_g = grad_fd;
   }
   //[fm] bias correction for var_P2l
   return var_of_var;
@@ -1081,7 +1086,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
                              (-2. * Nlq + 1.) / ((Nlq * Nlq - Nlq) * (Nlq * Nlq - Nlq)) * term);
 
     Real grad_fd, term1_fd, term2_fd, term3_fd, term1_grad, term2_grad, term3_grad;
-    Real h = 0.05;
+    Real h = 0.00001;
 
     term1_fd = (((Nlq + h) - 1.) / ((Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) *
                      (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq)
@@ -1111,7 +1116,8 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
     Real fd_lower = ((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq)
                      + (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4lm1 - (Nlq - 3.) / (Nlq - 1.) * cm2lm1_sq)
                      - 2. * (mu_P2lP2lm1 / Nlq + term / (Nlq * (Nlq - 1.))));
-    grad_fd = (fd_upper - fd_lower) / h;
+    grad_fd = (std::log(fd_upper) - std::log(fd_lower)) / h;
+    //grad_g = grad_fd;
 
 
 //#ifdef HAVE_NPSOL

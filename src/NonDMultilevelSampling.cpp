@@ -433,6 +433,34 @@ namespace Dakota {
     Cout << "Cons Mode after npsol: " << mode << ", " << nstate << "\n";
   }
 
+
+  void NonDMultilevelSampling::target_var_constraint_eval_logscale_npsol(int& mode, int& m, int& n, int& ldJ, int* needc, double* x, double* g, double* grad_g, int& nstate){
+    RealVector optpp_x;
+    RealVector optpp_g;
+    RealMatrix optpp_grad_g(1, n);
+    optpp_x.size(n);
+    optpp_g.size(n);
+
+    Cout << "Cons Mode: "<< mode << ", nstate: " << nstate << ", needc: " << *needc << ", n: " << n << ", and m: " << m << "\n";
+
+    for (size_t i = 0; i < n; ++i) {
+      optpp_x[i] = x[i];
+    }
+
+    target_var_constraint_eval_logscale_optpp(mode, n, optpp_x, optpp_g, optpp_grad_g, nstate);
+
+    Cout << "cons and grad val npsol: " << "\n";
+    g[0] = optpp_g[0];
+    Cout << g[0] << "\n";
+    for (size_t i = 0; i < n && mode; ++i) {
+      grad_g[i] = optpp_grad_g[0][i];
+      Cout << "(ldJ:" << ldJ << " , "<< grad_g[i] << ") ";
+    }
+    Cout << "\n";
+    Cout << "Cons Mode after npsol: " << mode << ", " << nstate << "\n";
+
+  }
+
   void NonDMultilevelSampling::target_var_objective_eval_optpp(int mode, int n, const RealVector &x, double &f,
                                                                RealVector &grad_f, int &result_mode) {
     f = 0;
@@ -470,6 +498,32 @@ namespace Dakota {
 #endif
 
   }
+
+  void NonDMultilevelSampling::target_var_constraint_eval_logscale_optpp(int mode, int n, const RealVector& x, RealVector& g,
+                                                        RealMatrix& grad_g, int& result_mode){
+    Real agg_estim_var = 0;
+    size_t num_lev = n;
+    target_var_constraint_eval_optpp(mode, n, x, g, grad_g, result_mode);
+    agg_estim_var = g[0];
+#ifdef HAVE_NPSOL
+#elif HAVE_OPTPP
+    if(mode & OPTPP::NLPFunction) {
+#endif
+    g[0] = std::log(g[0]); // - (*static_eps_sq_div_2);
+#ifdef HAVE_NPSOL
+#elif HAVE_OPTPP
+    }
+    if(mode & OPTPP::NLPGradient) {
+#endif
+    for (size_t lev = 0; lev < num_lev; ++lev) {
+      grad_g[0][lev] = grad_g[0][lev]/agg_estim_var;
+    }
+#ifdef HAVE_NPSOL
+#elif HAVE_OPTPP
+    }
+#endif
+  }
+
 
   void NonDMultilevelSampling::target_var_constraint_eval_optpp(int mode, int n, const RealVector &x, RealVector &g,
                                                                 RealMatrix &grad_g, int &result_mode) {
@@ -511,31 +565,34 @@ namespace Dakota {
     size_t Nlq_pilot = (*static_Nlq_pilot)[lev];
     size_t qoi = *static_qoi;
     size_t num_lev = n;
-    Real agg_estim_var;
+    RealVector agg_estim_var_l;
+    agg_estim_var_l.size(num_lev);
+    Real agg_estim_var = 0;
 
-    agg_estim_var = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
+
+    agg_estim_var_l[0] = var_of_var_ml_l0(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi,
                                      compute_gradient, grad_g[0][0]);
-
+    agg_estim_var += agg_estim_var_l[0];
     for (lev = 1; lev < num_lev; ++lev) {
       Nlq = x[lev];
       Nlq_pilot = (*static_Nlq_pilot)[lev];
 
-      agg_estim_var += var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
+      agg_estim_var_l[lev] = var_of_var_ml_l(*static_sum_Ql, *static_sum_Qlm1, *static_sum_QlQlm1, Nlq_pilot, Nlq, qoi, lev,
                                        compute_gradient, grad_g[0][lev]);
+      agg_estim_var += agg_estim_var_l[lev];
     }
 
-
+    g[0] = agg_estim_var; // - (*static_eps_sq_div_2);
 #ifdef HAVE_NPSOL
 #elif HAVE_OPTPP
     if (mode & OPTPP::NLPFunction){
 #endif
-    g[0] = agg_estim_var; // - (*static_eps_sq_div_2);
     Cout << "###C Design val and constraint: " << "\n";
     for (int i = 0; i < n; ++i) {
       Cout << x[i] << " ";
     }
     Cout << g[0] << "\n";
-    Cout << "Constraint var - target = diff: " << agg_estim_var<< " - " << *static_eps_sq_div_2 << " = "
+    Cout << "Constraint var - target = diff: " << g[0]<< " - " << *static_eps_sq_div_2 << " = "
          << g[0] - *static_eps_sq_div_2 << "\n";
 #ifdef HAVE_NPSOL
 #elif HAVE_OPTPP
@@ -547,7 +604,7 @@ namespace Dakota {
     if (mode & OPTPP::NLPGradient){
 #endif
     Cout << "grad val: " << "\n";
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < num_lev; ++i) {
       Cout << grad_g[0][i] << " ";
     }
     Cout << "\n";
@@ -806,8 +863,8 @@ namespace Dakota {
             cur_x.size(2);
             cur_c.size(2);
             grad_f.size(2);
-            int domain_size = 750; //148
-            Real grid_space = 2; //1
+            int domain_size = 148; //150; //148
+            Real grid_space = 1; //10; //1
 
             xx.size(domain_size);
             yy.size(domain_size);
@@ -851,7 +908,6 @@ namespace Dakota {
               myfile << "\n";
             }
             myfile.close();
-
           }
 
           Cout << "Before SNL Run. Initial point: \n";
@@ -883,8 +939,7 @@ namespace Dakota {
 
           optimizer->output_level(DEBUG_OUTPUT);
           optimizer->run();
-          int return_flag = optimizer->getReturnFlag();
-          bool found_improved_design = false;
+
           Cout << "After SNL Run. Initial point: \n";
           for (int i = 0; i < initial_point.length(); ++i) {
             Cout << initial_point[i] << " ";
@@ -892,22 +947,53 @@ namespace Dakota {
           //Cout << optimizer->all_variables() << std::endl;
           Cout << "After SNL Run. Best point: \n";
           Cout << optimizer->variables_results().continuous_variables() << std::endl;
+          Cout << "Objective: " << optimizer->response_results().function_value(0) << std::endl;
+          Cout << "Constraint: " << optimizer->response_results().function_value(1) << std::endl;
+          Cout << "Relative Constraint violation: " << std::abs(1 - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) << std::endl;
           Cout << "\n";
 
-          for (lev = 0; lev < num_lev; ++lev) {
-            if( std::abs(optimizer->variables_results().continuous_variable(lev) - initial_point[lev]) > 1e-11 ){
-              found_improved_design = true;
-              break;
+          if(std::abs(1 - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) > 1e-5){
+            Cout << "Relative Constraint violation violated: " << std::endl;
+            for (lev = 0; lev < N_l.size(); ++lev) {
+              initial_point[lev] = optimizer->variables_results().continuous_variable(lev);
             }
+            nonlin_eq_targets[0] = std::log(convergenceTol);
+#ifdef HAVE_NPSOL
+            optimizer = new NPSOLOptimizer(initial_point,
+                                           var_lower_bnds, var_upper_bnds,
+                                           lin_ineq_coeffs, lin_ineq_lower_bnds,
+                                           lin_ineq_upper_bnds, lin_eq_coeffs,
+                                           lin_eq_targets, nonlin_ineq_lower_bnds,
+                                           nonlin_ineq_upper_bnds, nonlin_eq_targets,
+                                           &target_var_objective_eval_npsol,
+                                           &target_var_constraint_eval_logscale_npsol,
+                                           3, 1e-15); //derivative_level = 3 means user_supplied gradients
+#elif HAVE_OPTPP
+            optimizer = new SNLLOptimizer(initial_point,
+                        var_lower_bnds,      var_upper_bnds,
+                        lin_ineq_coeffs, lin_ineq_lower_bnds,
+                        lin_ineq_upper_bnds, lin_eq_coeffs,
+                        lin_eq_targets,     nonlin_ineq_lower_bnds,
+                        nonlin_ineq_upper_bnds, nonlin_eq_targets,
+                        &target_var_objective_eval_optpp,
+                        &target_var_constraint_eval_logscale_optpp);
+#endif
+            optimizer->output_level(DEBUG_OUTPUT);
+            optimizer->run();
+            Cout << "Second try, Initial point: \n";
+            for (int i = 0; i < initial_point.length(); ++i) {
+              Cout << initial_point[i] << " ";
+            }
+            //Cout << optimizer->all_variables() << std::endl;
+            Cout << "Second try, final point: \n";
+            Cout << optimizer->variables_results().continuous_variables() << std::endl;
+            Cout << "Objective: " << optimizer->response_results().function_value(0) << std::endl;
+            Cout << "Constraint: " << optimizer->response_results().function_value(1) << std::endl;
+            Cout << "Relative Constraint violation: " << std::abs(1 - optimizer->response_results().function_value(1)/nonlin_eq_targets[0]) << std::endl;
+            Cout << "\n";
           }
           for (lev = 0; lev < num_lev; ++lev) {
-            if( return_flag <= 0 && !found_improved_design){
-              Cout << "Optimization " << "failed and we found no better design with flag: " << return_flag << std::endl;
-              N_target_qoi[lev][qoi] =  optimizer->variables_results().continuous_variable(lev); //pilot_samples[lev] + std::pow(2., 2.*(num_lev - lev - 1));
-            }else{
-              Cout << "Optimization " << "successful with flag: " << return_flag << std::endl;
               N_target_qoi[lev][qoi] =  optimizer->variables_results().continuous_variable(lev);
-            }
           }
           delete optimizer;
         }
