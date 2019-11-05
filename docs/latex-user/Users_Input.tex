@@ -233,14 +233,18 @@ additional information on this specification.
 
 Global data fit surrogates, including some stochastic expansions, may
 be constructed from a variety of data sources.  One of these sources
-is an auxiliary data file, as specified by the keyword \texttt{import\
-  points\_file = \emph{STRING}}.  The file may be in annotated
-(default), custom\_annotated, or free-form format with columns
-corresponding to variables and responses.  Surfpack global surrogate
-models may also be evaluated at a user-provided file containing
-\texttt{challenge\_points}.  Refer to the Model Specification chapter
-in the Dakota Reference Manual~\cite{RefMan} for additional
-information on this specification.
+is an auxiliary data file, as specified by the keyword
+\texttt{import\_build\_points\_file = \emph{STRING}}.  The file may be
+in annotated (default), custom\_annotated, or free-form format with
+columns corresponding to variables and responses.  Surfpack global
+surrogate models may also be evaluated at a user-provided file
+containing \texttt{challenge\_points}.  For global surrogates
+specified directly via \texttt{model surrogate global}, the
+\texttt{use\_variable\_labels} keyword will trigger validation and
+potential reordering of imported variable columns based on labels
+provided in the tabular header. Refer to the Model
+Specification chapter in the Dakota Reference Manual~\cite{RefMan} for
+additional information on these specifications.
 
 \subsection{Variables/responses import to post-run}
 
