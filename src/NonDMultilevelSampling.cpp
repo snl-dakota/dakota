@@ -810,6 +810,24 @@ namespace Dakota {
           Cout << "\n";
         }
       //}else{
+
+        ///TODO
+        /// 1. Input spec:
+        ///         - Target variance
+        /// 2. Optimization hierarchy:
+        ///         - NPSOL
+        ///         - OPTPP
+        ///         - Fabio heuristic
+        /// 3. Sample distribution:
+        ///         - Aggregated variance
+        ///         - or Max sample allocation over QoI for each level (worst case)
+        ///         - or Specify target QoI for building profile
+        /// 4. Input spec:
+        ///         - For 3.
+        ///         - Absolute vs. relative convergence tolerance
+        /// 5. Explore under-relaxation
+
+
         Cout << "Before SNL Run. num point: " << numFunctions << "\n";
         for (qoi = 0; qoi < numFunctions && !target_mean; ++qoi) {
           RealVector initial_point, pilot_samples;
