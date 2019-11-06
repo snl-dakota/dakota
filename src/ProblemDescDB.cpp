@@ -2614,7 +2614,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.prop_cov_update_period", P proposalCovUpdatePeriod},
 	{"nond.pushforward_samples", P numPushforwardSamples},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
-	{"nond.surrogate_order", P emulatorOrder},
+  {"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},
@@ -2922,6 +2922,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_parents", P numParents},
 	{"nond.collocation_points", P collocationPoints},
 	{"nond.expansion_samples", P expansionSamples},
+  {"nond.target_moment", P targetMoment},
 	{"num_candidate_designs", P numCandidateDesigns},
 	{"num_candidates", P numCandidates},
 	{"num_prediction_configs", P numPredConfigs}

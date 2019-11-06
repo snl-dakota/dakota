@@ -485,6 +485,12 @@ private:
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
 
+  /// store the target_moment input specification, prior to run-time
+  /// Options right now:
+  ///     - 1 = First moment (Mean)
+  ///     - 2 = Second moment (Variance or standard deviation depending on moments central or standard)
+  size_t targetMoment;
+
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
   /// equivalent number of high fidelity evaluations accumulated using samples

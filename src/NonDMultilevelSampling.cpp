@@ -40,6 +40,7 @@ namespace Dakota {
   NonDMultilevelSampling(ProblemDescDB &problem_db, Model &model) :
       NonDSampling(problem_db, model),
       pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
+      targetMoment(probDescDB.get_sizet("method.nond.target_moment")),
       finalCVRefinement(true),
       exportSampleSets(probDescDB.get_bool("method.nond.export_sample_sequence")),
       exportSamplesFormat(
@@ -826,7 +827,7 @@ namespace Dakota {
         ///         - For 3.
         ///         - Absolute vs. relative convergence tolerance
         /// 5. Explore under-relaxation
-
+        Cout << "Target Moment: " << targetMoment << std::endl;
 
         Cout << "Before SNL Run. num point: " << numFunctions << "\n";
         for (qoi = 0; qoi < numFunctions && !target_mean; ++qoi) {
