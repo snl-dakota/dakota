@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 # Dakota will execute this script as
 #   rosenbrock_bb_di.py params.in results.out
 #  The command line arguments will be extracted by dakota.interfacing automatically.
@@ -42,10 +42,10 @@ rosen_params['asv'] = [active_set_vector]
 rosen_params['functions'] = 1
 
 # execute the rosenbrock analysis as a separate Python module
-print "Running rosenbrock..."
+print("Running rosenbrock...")
 from rosenbrock import rosenbrock_list
 rosen_results = rosenbrock_list(**rosen_params)
-print "Rosenbrock complete."
+print("Rosenbrock complete.")
 
 
 # ----------------------------
