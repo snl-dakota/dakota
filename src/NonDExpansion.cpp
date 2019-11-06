@@ -665,6 +665,7 @@ void NonDExpansion::initialize_expansion()
   // ProbabilityTransformModel::update_from_model() can now handle this.
   uSpaceModel.update_from_subordinate_model();
 
+  /*
   //////////////////////////////////////////////////////////////////////////////
   // Propagate updated distribution parameters to the polynomial basis
   // Note: PCE always has an approximation basis, which is shared with the
@@ -677,6 +678,7 @@ void NonDExpansion::initialize_expansion()
   shared_data_rep->update_basis_distribution_parameters(
     uSpaceModel.multivariate_distribution());
   //////////////////////////////////////////////////////////////////////////////
+  */
 
   // if a sub-iterator, reset any refinements that may have occurred
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
