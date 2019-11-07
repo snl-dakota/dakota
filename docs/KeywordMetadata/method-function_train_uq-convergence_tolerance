@@ -1,1 +1,5 @@
-DUPLICATE-convergence_tolerance
+Blurb::
+Placeholder keyword
+
+Description::
+This general UQ control is not currently implemented in function_train_uq
