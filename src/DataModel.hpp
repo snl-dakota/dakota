@@ -366,7 +366,9 @@ public:
 
   // Function-Train Options
 
-  /// Optimization tolerance for FT regression
+  /// max iterations for optimization solver used in FT regression
+  int maxSolverIterations;
+  /// optimization tolerance for FT regression
   double solverTolerance;
   /// Rounding tolerance for adaptive algorithms
   double roundingTolerance;
@@ -383,7 +385,7 @@ public:
   /// whether or not to adapt rank
   bool adaptRank;
   /// maximum number of cross iterations
-  size_t crossMaxIter;
+  int crossMaxIter;
   // Verbosity level
   //size_t verbosity;
     

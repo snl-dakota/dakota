@@ -3422,8 +3422,9 @@
                 </keyword>
 
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
-		  <!-- Model includes solver {iterations,tolerance} -->
-		  &default_max_solver_iterations;
+		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 		    <param type="REAL" />
 		  </keyword>
@@ -3493,7 +3494,7 @@
 		  <keyword  id="verbosity" name="verbosity" code="{N_mom(sizet,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword> -->
-		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(sizet,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 		  <!--

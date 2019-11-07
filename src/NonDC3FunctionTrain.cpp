@@ -225,14 +225,14 @@ void NonDC3FunctionTrain::push_c3_options()
   size_t kick_rank  = probDescDB.get_sizet("model.c3function_train.kick_rank");
   size_t max_rank   = probDescDB.get_sizet("model.c3function_train.max_rank");
   bool   adapt_rank = probDescDB.get_bool("model.c3function_train.adapt_rank");
-  size_t cross_max_iter
-    = probDescDB.get_sizet("model.c3function_train.max_cross_iterations");
+  int cross_max_iter
+    = probDescDB.get_int("model.c3function_train.max_cross_iterations");
   double solver_tol
     = probDescDB.get_real("model.c3function_train.solver_tolerance");
   double rounding_tol
     = probDescDB.get_real("model.c3function_train.rounding_tolerance");
-  //size_t max_iters  = probDescDB.get_int("model.max_iterations");
-  size_t verbose    = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
+  //int max_solv_iters = probDescDB.get_int("model.max_solver_iterations");
+  int verbosity     = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
 
   //probDescDB.set_db_model_nodes(model_index); // restore
 
@@ -247,8 +247,8 @@ void NonDC3FunctionTrain::push_c3_options()
   shared_data_rep->set_parameter("solver_tol",      &solver_tol);
   shared_data_rep->set_parameter("rounding_tol",    &rounding_tol);
   shared_data_rep->set_parameter("max_cross_iterations", &cross_max_iter);
-  //shared_data_rep->set_parameter("max_iterations", &max_iters);
-  shared_data_rep->set_parameter("verbose",         &verbose);
+  //shared_data_rep->set_parameter("max_solver_iterations", &max_solv_iters);
+  shared_data_rep->set_parameter("verbosity",       &verbosity);
 
   //Cout << "solver_tol = " << solver_tol << "\n";
   //Cout << "adapt_rank = " << adapt_rank << "\n";

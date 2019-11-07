@@ -21,7 +21,7 @@ method,
 model,
 	id_model = 'FT'
 	surrogate global function_train
-	  max_order = 5
+	  start_order = 5 # max_order not used for current adaptation options
 	  start_rank = 2  kick_rank = 2  max_rank = 10
 	  adapt_rank
 	  solver_tolerance   = 1e-12

@@ -1,7 +1,7 @@
 Blurb::
-Placeholder keyword
+(Initial) polynomial order of each univariate function within the functional tensor train.
 
 Description::
-In future adaptation options, this will specify the initial polynomial order of each univariate function that makes up the functional tensor train decomposition.  Adaptation of polynomial order starts from this value and is limited by \c max_order.  Within current regression procedures it is not used, but will become active in future cross-approximation adaptation options.
+This specifies the initial polynomial order of each univariate function that makes up the functional tensor train decomposition.  In future adaptation options (cross-approximation adaptation), polynomial order starts from this value and is then advanced; its maximum value is limited by \c max_order.
 
 See_Also::	model-surrogate-global-function_train-max_order

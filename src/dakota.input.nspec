@@ -5623,7 +5623,7 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mom(nnint,maxSolverIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTolerance)} ]
         [ rounding_tolerance REAL {N_mom(Real,roundingTolerance)} ]
         [ start_order INTEGER >= 0 {N_mom(sizet,startOrder)} ]
@@ -5632,7 +5632,7 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ kick_rank INTEGER >= 0 {N_mom(sizet,kickRank)} ]
         [ max_rank INTEGER >= 0 {N_mom(sizet,maxRank)} ]
         [ adapt_rank {N_mom(true,adaptRank)} ]
-        [ max_cross_iterations INTEGER >= 0 {N_mom(sizet,crossMaxIter)} ]
+        [ max_cross_iterations INTEGER >= 0 {N_mom(nnint,crossMaxIter)} ]
        )
       |
       ( neural_network {N_mom(lit,surrogateType_global_neural_network)}

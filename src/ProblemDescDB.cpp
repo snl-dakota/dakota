@@ -2673,10 +2673,11 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"active_subspace.dimension", P subspaceDimension},
-
+        {"c3function_train.max_cross_iterations", P crossMaxIter},
         {"initial_samples", P initialSamples},
         {"max_function_evals", P maxFunctionEvals},
         {"max_iterations", P maxIterations},
+	{"max_solver_iterations", P maxSolverIterations},
         {"nested.iterator_servers", P subMethodServers},
         {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
@@ -2973,7 +2974,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       // must be sorted by string (key)
       // must be sorted by string (key)
         {"c3function_train.kick_rank", P kickRank},
-        {"c3function_train.max_cross_iterations", P crossMaxIter},
         {"c3function_train.max_order", P maxOrder},
       	{"c3function_train.max_rank", P maxRank},
         {"c3function_train.start_order", P startOrder},

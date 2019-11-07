@@ -42,10 +42,10 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
   roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
-  maxIterations(1000),//(problem_db.get_int("model.max_iterations")),
+  maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
-    problem_db.get_sizet("model.c3function_train.max_cross_iterations")),
-  verbose(0)//problem_db.get_sizet("model.c3function_train.verbosity")),
+    problem_db.get_int("model.c3function_train.max_cross_iterations")),
+  c3Verbosity(0)//problem_db.get_int("model.c3function_train.verbosity")),
 {
   // printf("CONSTRUCTING SHAREDC3APPROX\n");
 
@@ -57,7 +57,10 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
     struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
     ope_opts_set_lb(opts,-2);
     ope_opts_set_ub(opts,2);
-    ope_opts_set_nparams(opts,maxOrder+1); // maxnum = maxord + 1
+    ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
+    // Note: maxOrder unused for regression;
+    //       to be used for adaptation by cross-approximation
+    ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
     this->oneApproxOpts[ii] = one_approx_opts_alloc(POLYNOMIAL,opts);
     multi_approx_opts_set_dim(this->approxOpts,ii,this->oneApproxOpts[ii]);
     // this->oneApproxOpts[ii] = NULL;
@@ -97,9 +100,9 @@ SharedC3ApproxData(const String& approx_type,
 
   this->solverTol = 1e-10;
   this->roundingTol = 1e-10;
-  this->maxIterations = 1000;
+  this->maxSolverIterations = 1000;
   this->crossMaxIter = 5;
-  this->verbose = 0;
+  this->c3Verbosity = 0;
 }
 
 SharedC3ApproxData::~SharedC3ApproxData()
@@ -132,11 +135,11 @@ void SharedC3ApproxData::set_parameter(String var, void * val)
   else if (var.compare("rounding_tol") == 0)
     this->roundingTol = *(double*)val;
   else if (var.compare("max_cross_iterations") == 0)
-    this->crossMaxIter = *(size_t*)val;
-  else if (var.compare("max_iterations") == 0)
-    this->maxIterations = *(size_t*)val;
-  else if (var.compare("verbose") == 0)
-    this->verbose = *(size_t*)val;
+    this->crossMaxIter = *(int*)val;
+  else if (var.compare("max_solver_iterations") == 0)
+    this->maxSolverIterations = *(int*)val;
+  else if (var.compare("verbosity") == 0)
+    this->c3Verbosity = *(int*)val;
   else
     std::cerr << "Unrecognized approximation parameter: " << var << std::endl;
 }
@@ -165,7 +168,10 @@ construct_basis(const Pecos::MultivariateDistribution& u_dist)
       break;
     }
     // printf("push_back\n");
-    ope_opts_set_nparams(opts,this->maxOrder+1);
+    ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
+    // Note: maxOrder unused for regression;
+    //       to be used for adaptation by cross-approximation
+    ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
     one_approx_opts_free_deep(&(this->oneApproxOpts[i]));
     this->oneApproxOpts[i] = one_approx_opts_alloc(POLYNOMIAL,opts);
     // printf("set i\n");

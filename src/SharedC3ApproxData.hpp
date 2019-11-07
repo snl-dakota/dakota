@@ -110,9 +110,9 @@ protected:
 
   double roundingTol;
   double solverTol;
-  size_t maxIterations;
-  size_t crossMaxIter;
-  size_t verbose;
+  int maxSolverIterations;
+  int crossMaxIter;
+  int c3Verbosity;
 
   //void build();
   //void rebuild();
