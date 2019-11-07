@@ -1,0 +1,26 @@
+Blurb::
+UQ method leveraging a functional tensor train surrogate model.
+
+Description::
+Tensor train decompositions are approximations that exploit low rank structure
+in an input-output mapping.  Refer to the \c function_train surrogate model
+for additional details.
+
+<b> Usage Tips </b>
+
+This method is mostly a generic UQ shell for the \c function_train
+surrogate model.  Rank controls and other function train specifics are
+managed in the model specification.
+
+Topics::
+
+Examples::
+\verbatim
+method,
+	function_train_uq
+	  samples_on_emulator = 100000
+	  variance_based_decomp
+	model_pointer = 'FT'
+\endverbatim
+
+See_Also::	model-surrogate-global-function_train

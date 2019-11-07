@@ -1,0 +1,7 @@
+Blurb::
+Maximum number of iterations for cross-approximation during a rank adaptation.
+
+Description::
+The number of iterations for the cross-approximation algorithm is limited within the \c adapt_rank procedure.
+
+See_Also::	model-surrogate-global-function_train-adapt_rank

@@ -1,7 +1,6 @@
 #@ *: Label=Experimental
 #@ *: DakotaConfig=HAVE_QUESO
-#@ s1: TimeoutAbsolute=3600
-#@ s2: TimeoutAbsolute=3600
+#@ s*: TimeoutAbsolute=3600
 #@ s1: ReqFiles=dakota_bayes_expdesign.dat
 #@ s2: ReqFiles=dakota_bayes_expdesign.dat,dakota_bayes_expdesign.cand.dat
 #@ s2: UserMan=bayes_experimental_design

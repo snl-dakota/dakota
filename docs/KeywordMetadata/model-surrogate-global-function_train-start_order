@@ -1,0 +1,7 @@
+Blurb::
+Placeholder keyword
+
+Description::
+In future adaptation options, this will specify the initial polynomial order of each univariate function that makes up the functional tensor train decomposition.  Adaptation of polynomial order starts from this value and is limited by \c max_order.  Within current regression procedures it is not used, but will become active in future cross-approximation adaptation options.
+
+See_Also::	model-surrogate-global-function_train-max_order

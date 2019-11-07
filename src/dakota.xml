@@ -2340,8 +2340,8 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="surrogate_based_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
-          <alias name="function_train_uq"/>
+        <keyword  id="function_train_uq" name="function_train_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
+          <!-- <alias name="surrogate_based_uq"/> TO DO: GENERIC UQ SPECIFICATION -->
 	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
           <!-- Rely on DFSModel data import, if possible
 	  &import_build; -->
@@ -2357,12 +2357,12 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+        <!-- <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" > -->
 	  <!-- TO DO: FT can support an ML regression approach with profile shaping based on rank*dim^2 -->
 	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
-	  &expansion_options;
-	  &method_optional_model_pointer;
-        </keyword>
+	  <!-- &expansion_options; -->
+	  <!-- &method_optional_model_pointer; -->
+        <!-- </keyword> -->
 
 	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
 	  <alias name="nond_polynomial_chaos"/>
@@ -2524,8 +2524,9 @@
 	  &default_max_iterations;
 	  &default_convergence_tolerance;
 	  &default_final_moments;
-	  &response_levels_compute_prob_gen; <!-- TO DO -->
-	  &distribution_cumul_compl;
+	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
+	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
+	  &distribution_cumul_compl;               <!-- inactive without mappings -->
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
