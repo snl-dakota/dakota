@@ -690,6 +690,17 @@ void Approximation::moment(Real mom, size_t i)
   }
 }
 
+void Approximation::clear_component_effects()
+{
+  if (approxRep)
+    approxRep->clear_component_effects();
+  else {
+    Cerr << "Error: clear_component_effects() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
 void Approximation::compute_component_effects()
 {
   if (approxRep)

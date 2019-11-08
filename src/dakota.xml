@@ -2340,8 +2340,8 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="surrogate_based_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
-          <alias name="function_train_uq"/>
+        <keyword  id="function_train_uq" name="function_train_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
+          <!-- <alias name="surrogate_based_uq"/> TO DO: GENERIC UQ SPECIFICATION -->
 	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
           <!-- Rely on DFSModel data import, if possible
 	  &import_build; -->
@@ -2357,12 +2357,12 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+        <!-- <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" > -->
 	  <!-- TO DO: FT can support an ML regression approach with profile shaping based on rank*dim^2 -->
 	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
-	  &expansion_options;
-	  &method_optional_model_pointer;
-        </keyword>
+	  <!-- &expansion_options; -->
+	  <!-- &method_optional_model_pointer; -->
+        <!-- </keyword> -->
 
 	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
 	  <alias name="nond_polynomial_chaos"/>
@@ -2524,8 +2524,9 @@
 	  &default_max_iterations;
 	  &default_convergence_tolerance;
 	  &default_final_moments;
-	  &response_levels_compute_prob_gen; <!-- TO DO -->
-	  &distribution_cumul_compl;
+	  <!-- &response_levels_compute_rel; TO DO: support moment-based mappings -->
+	  <!-- &reliability_levels;          TO DO: support moment-based mappings -->
+	  &distribution_cumul_compl;               <!-- inactive without mappings -->
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3421,8 +3422,9 @@
                 </keyword>
 
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
-		  <!-- Model includes solver {iterations,tolerance} -->
-		  &default_max_solver_iterations;
+		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
 		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 		    <param type="REAL" />
 		  </keyword>
@@ -3492,7 +3494,7 @@
 		  <keyword  id="verbosity" name="verbosity" code="{N_mom(sizet,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword> -->
-		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(sizet,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
 		  <!--
@@ -3709,11 +3711,15 @@
 		<optional>
 		  <oneOf label="Tabular Format" >
 		    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Custom Annotated"  >
-		      <keyword  id="header" name="header" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)}" label="Header"  minOccurs="0" />
+		      <keyword  id="header" name="header" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)}" label="Header"  minOccurs="0" >
+			<keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mom(true,importChalUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+		      </keyword>
 		      <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)}" label="Eval ID"  minOccurs="0" />
 		      <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)}" label="Interface ID"  minOccurs="0" />
 		    </keyword>
-		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}" label="Annotated"   default="annotated" />
+		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}" label="Annotated"   default="annotated" >
+		      <keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mom(true,importChalUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+		    </keyword>
 		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Freeform"   default="annotated" />
 		  </oneOf>
 		</optional>

@@ -36,7 +36,8 @@ DataModelRep::DataModelRep():
   decompDiscontDetect(false), discontJumpThresh(0.0), discontGradThresh(0.0),
   trendOrder("reduced_quadratic"), pointSelection(false),
   crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
-  importChallengeFormat(TABULAR_ANNOTATED), importChallengeActive(false),
+  importChallengeFormat(TABULAR_ANNOTATED), importChalUseVariableLabels(false),
+  importChallengeActive(false),
   identityRespMap(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), initialSamples(0),
@@ -47,7 +48,8 @@ DataModelRep::DataModelRep():
   subspaceNormalization(SUBSPACE_NORM_DEFAULT),
   numReplicates(100), relTolerance(1.0e-6),
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
-  subspaceIdCVMethod(CV_ID_DEFAULT), solverTolerance(1.e-10),
+  subspaceIdCVMethod(CV_ID_DEFAULT),
+  maxSolverIterations(1000), solverTolerance(1.e-10),
   roundingTolerance(1.e-8), startOrder(2), maxOrder(4), startRank(2),
   kickRank(2), maxRank(3), adaptRank(false), crossMaxIter(1),//verbosity(0),
   autoRefine(false), maxFunctionEvals(1000),
@@ -80,7 +82,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
-    << importChallengeFormat << importChallengeActive
+    << importChallengeFormat << importChalUseVariableLabels
+    << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 
@@ -88,10 +91,10 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
-    << solverTolerance << roundingTolerance << startOrder << maxOrder
-    << startRank << kickRank << maxRank << adaptRank << crossMaxIter
-    << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
-    << adaptedBasisSparseGridLev << adaptedBasisExpOrder
+    << maxSolverIterations << solverTolerance << roundingTolerance
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << crossMaxIter << autoRefine << maxFunctionEvals << refineCVMetric
+    << refineCVFolds << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
@@ -122,7 +125,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> decompDiscontDetect >> discontJumpThresh >> discontGradThresh
     >> trendOrder >> pointSelection >> diagMetrics >> crossValidateFlag
     >> numFolds >> percentFold >> pressFlag >> importChallengePtsFile
-    >> importChallengeFormat >> importChallengeActive
+    >> importChallengeFormat >> importChalUseVariableLabels 
+    >> importChallengeActive
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
     >> primaryRespCoeffs >> secondaryRespCoeffs >> identityRespMap
     >> subMethodServers >> subMethodProcs >> subMethodScheduling 
@@ -130,10 +134,10 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> convergenceTolerance >> softConvergenceLimit >> subspaceIdBingLi 
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
     >> subspaceDimension >> subspaceNormalization >> numReplicates
-    >> solverTolerance >> roundingTolerance >> startOrder >> maxOrder
-    >> startRank >> kickRank >> maxRank >> adaptRank >> crossMaxIter
-    >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
-    >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
+    >> maxSolverIterations >> solverTolerance >> roundingTolerance
+    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
+    >> crossMaxIter >> autoRefine >> maxFunctionEvals >> refineCVMetric
+    >> refineCVFolds >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
     >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
     >> subspaceSampleType >> subspaceIdCV >> relTolerance
@@ -164,7 +168,8 @@ void DataModelRep::write(std::ostream& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
-    << importChallengeFormat << importChallengeActive
+    << importChallengeFormat << importChalUseVariableLabels
+    << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
     << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
     << subMethodServers << subMethodProcs << subMethodScheduling 
@@ -172,10 +177,10 @@ void DataModelRep::write(std::ostream& s) const
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
-    << solverTolerance << roundingTolerance << startOrder << maxOrder
-    << startRank << kickRank << maxRank << adaptRank << crossMaxIter
-    << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
-    << adaptedBasisSparseGridLev << adaptedBasisExpOrder
+    << maxSolverIterations << solverTolerance << roundingTolerance
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << crossMaxIter << autoRefine << maxFunctionEvals << refineCVMetric
+    << refineCVFolds << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance

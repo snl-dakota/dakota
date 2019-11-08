@@ -1,0 +1,54 @@
+Blurb:: Validate/use variable labels from tabular file header
+
+Description::
+When importing global surrogate training data (or challenge evaluation
+points) from a tabular data file containing a header (\c annotated or
+\c custom_annotated \c header), this keyword toggles validation of
+variable labels present in the header row.
+
+The labels are validated against the descriptors of the variables
+being imported to. If the tabular file labels can be rearranged to
+match the expected labels, the columns in the data file will be
+reordered on read to match the Dakota variable order. If the read
+labels are not a permutation of, nor equal to, the expected labels, an
+error will result.
+
+<b> Default Behavior </b>
+
+When not specified, variable labels will be read, but not strictly
+enforced or reordered. A warning will be issued if the variable labels
+are not as expected, and guidance offered if they can be permuted to
+match expectations.
+
+<b> Expected Output </b>
+
+Console output will be generated for any warnings, as well as to
+indicate whether any variable reordering is taking place.
+
+<b> Usage Tips </b>
+
+The use of this keyword is recommended when importing header-annotated
+tabular data files where the variables are appropriately
+labeled. Tabular files do not always contain response labels, so no
+attempt is made to disambiguate variable from response labels. The
+variable labels must appear contiguously in the header after any
+leading column IDs such as 'eval_id' or 'interface'.
+
+Topics::
+
+Examples::
+This example enforces variable labels for both build and challenge points
+\verbatim
+model
+  id_model = 'SURR'
+  surrogate global
+    polynomial quadratic
+    import_build_points_file = 'dakota_surrogate_import.unc_fixedothers.dat'
+      annotated  use_variable_labels
+    challenge_points_file = 'dakota_surrogate_import.dat'
+      annotated  use_variable_labels
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

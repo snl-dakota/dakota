@@ -1025,105 +1025,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( surrogate_based_uq ALIAS function_train_uq {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
-    [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-    [ sample_type {0}
-      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-      |
-      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-     ]
-    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-    [ rng {0}
-      mt19937 {N_mdm(lit,rngName_mt19937)}
-      |
-      rnum2 {N_mdm(lit,rngName_rnum2)}
-     ]
-    [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
-      |
-      adapt_import {N_mdm(utype,integrationRefine_AIS)}
-      |
-      mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-      [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-     ]
-    [ final_moments {0}
-      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-      |
-      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-      |
-      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-      [ compute {0}
-        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-        |
-        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
-        |
-        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-        [ system {0}
-          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-          |
-          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-         ]
-       ]
-     ]
-    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
-      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
-     ]
-    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
-      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
-     ]
-    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
-      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
-     ]
-    [ distribution {0}
-      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-      |
-      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-     ]
-    [ variance_based_decomp {N_mdm(true,vbdFlag)}
-      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
-      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-     ]
-    [ 
-      diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
-      |
-      full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-     ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
-      [ 
-        ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
-        annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
-        |
-        freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-       ]
-      [ active_only {N_mdm(true,importApproxActive)} ]
-     ]
-    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-      [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
-        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-        |
-        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-       ]
-     ]
-    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
-   )
-  |
-  ( multifidelity_function_train {N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}
+  ( function_train_uq {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2452,19 +2354,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
       |
       central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-     ]
-    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-      [ compute {0}
-        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-        |
-        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-        [ system {0}
-          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-          |
-          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-         ]
-       ]
      ]
     [ distribution {0}
       cumulative {N_mdm(type,distributionType_CUMULATIVE)}
@@ -5734,7 +5623,7 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mom(nnint,maxSolverIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTolerance)} ]
         [ rounding_tolerance REAL {N_mom(Real,roundingTolerance)} ]
         [ start_order INTEGER >= 0 {N_mom(sizet,startOrder)} ]
@@ -5743,7 +5632,7 @@ KEYWORD model {N_mom3(start,0,stop)}
         [ kick_rank INTEGER >= 0 {N_mom(sizet,kickRank)} ]
         [ max_rank INTEGER >= 0 {N_mom(sizet,maxRank)} ]
         [ adapt_rank {N_mom(true,adaptRank)} ]
-        [ max_cross_iterations INTEGER >= 0 {N_mom(sizet,crossMaxIter)} ]
+        [ max_cross_iterations INTEGER >= 0 {N_mom(nnint,crossMaxIter)} ]
        )
       |
       ( neural_network {N_mom(lit,surrogateType_global_neural_network)}
@@ -5890,12 +5779,16 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ import_challenge_points_file ALIAS challenge_points_file STRING {N_mom(str,importChallengePtsFile)}
         [ 
           ( custom_annotated {N_mom(utype,importChallengeFormat_TABULAR_NONE)}
-            [ header {N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)} ]
+            [ header {N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)}
+              [ use_variable_labels {N_mom(true,importChalUseVariableLabels)} ]
+             ]
             [ eval_id {N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)} ]
             [ interface_id {N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)} ]
            )
           |
-          annotated {N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}
+          ( annotated {N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}
+            [ use_variable_labels {N_mom(true,importChalUseVariableLabels)} ]
+           )
           |
           freeform {N_mom(utype,importChallengeFormat_TABULAR_NONE)}
          ]

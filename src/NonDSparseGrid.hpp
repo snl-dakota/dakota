@@ -71,9 +71,12 @@ public:
   void pop_grid_increment();
   void merge_grid_increment();
 
-  /// set level and dimension preference within ssgDriver based on ssgLevelSpec
-  /// and dimPrefSpec, following refinement or sequence advancement
+  /// reset ssgDriver level and dimension preference back to
+  /// {ssgLevel,dimPref}Spec for the active key, following refinement
+  /// or sequence advancement
   void reset();
+  /// blow away all data for all keys
+  void reset_all();
 
   /// returns SparseGridDriver::active_multi_index()
   const std::set<UShortArray>& active_multi_index() const;
@@ -160,11 +163,31 @@ inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
 
 inline void NonDSparseGrid::reset()
 {
-  // restore user specification state prior to any uniform/adaptive refinement
+  // reset the grid for the current active key to its original user spec,
+  // prior to any grid refinement (will invoke clear_size() if a grid size
+  // update is required)
   ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
-  // clear state to mandate a grid / grid size update
-  ssgDriver->clear_grid();
+
+  // Generalized refinement does not advance grid level, so need explicit
+  // clear in this case.  But harmless for other refinement types.
+  //if (ssgDriver->refinement_control()
+  //    == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
+  ssgDriver->clear_size();
+
+  // This fn does not clear history, such as accumulated 1D pts/wts -->
+  // reset_all() or reset_1d_collocation_points_weights() should be used
+  // when distribution param updates invalidate this history
+}
+
+
+inline void NonDSparseGrid::reset_all()
+{
+  // This "nuclear option" is not currently used
+
+  ssgDriver->clear_keys();
+  ssgDriver->update_active_iterators();
+  reset();
 }
 
 

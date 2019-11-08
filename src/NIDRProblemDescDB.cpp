@@ -1487,6 +1487,17 @@ model_pint(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+model_nnint(const char *keyname, Values *val, void **g, void *v)
+{
+  int n = *val->i;
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
+#endif
+  (*(Mod_Info**)g)->dmo->**(int DataModelRep::**)v = n;
+}
+
+void NIDRProblemDescDB::
 model_type(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
@@ -7415,8 +7426,8 @@ static Real
 	MP_(percentFold),
 	MP_(truncationTolerance),
 	MP_(relTolerance),
-    MP_(solverTolerance),
-    MP_(roundingTolerance),
+	MP_(solverTolerance),
+	MP_(roundingTolerance),
 	MP_(decreaseTolerance);
 
 static RealVector
@@ -7467,6 +7478,7 @@ static bool
       //MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(importChallengeActive),
+	MP_(importChalUseVariableLabels),
 	MP_(importUseVariableLabels),
 	MP_(modelUseDerivsFlag),
         MP_(domainDecomp),
@@ -7497,10 +7509,12 @@ static short
 	MP_(rbfMinPartition);
 
 static int
+        MP_(crossMaxIter),
         MP_(decompSupportLayers),
         MP_(initialSamples),
         MP_(maxFunctionEvals),
         MP_(maxIterations),
+	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
@@ -7512,7 +7526,6 @@ static int
         MP_(subspaceCVMaxRank);
 
 static size_t
-    MP_(crossMaxIter),
     MP_(kickRank),
     MP_(maxOrder),        
     MP_(maxRank),

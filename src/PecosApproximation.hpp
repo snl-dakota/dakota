@@ -63,10 +63,12 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
-  /// Performs global sensitivity analysis using Sobol' Indices by
+  /// clear unused Sobol' indices
+  void clear_component_effects();
+  /// Performs global sensitivity analysis using Sobol' indices by
   /// computing component (main and interaction) effects
   void compute_component_effects();
-  /// Performs global sensitivity analysis using Sobol' Indices by
+  /// Performs global sensitivity analysis using Sobol' indices by
   /// computing total effects
   void compute_total_effects();
 
@@ -354,6 +356,10 @@ inline void PecosApproximation::expansion_gradient_flag(bool grad_flag)
 
 inline bool PecosApproximation::expansion_gradient_flag() const
 { return polyApproxRep->expansion_coefficient_gradient_flag(); }
+
+
+inline void PecosApproximation::clear_component_effects()
+{ polyApproxRep->clear_component_sobol(); }
 
 
 inline void PecosApproximation::compute_component_effects()

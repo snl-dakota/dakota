@@ -667,24 +667,12 @@ void NonDExpansion::initialize_expansion()
   size_t layers = 2;
   uSpaceModel.update_from_subordinate_model(layers-1); // recur once
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Propagate updated distribution parameters to the polynomial basis
-  // Note: PCE always has an approximation basis, which is shared with the
-  //   IntegrationDriver in projection cases (not regression) --> one update
-  //   to approximation basis is sufficient
-  // Note: SC always has a driver basis, but this is not shared with the
-  //   num_vars x num_levels interpolant basis
-  SharedApproxData* shared_data_rep
-    = uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->update_basis_distribution_parameters(
-    uSpaceModel.multivariate_distribution());
-  //////////////////////////////////////////////////////////////////////////////
-
   // if a sub-iterator, reset any refinements that may have occurred
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  if (subIteratorFlag && numUncertainQuant && refineType &&
-      !u_space_sampler.is_null())
-    u_space_sampler.reset();
+  if (subIteratorFlag && numUncertainQuant && refineType) {
+    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+    if (!u_space_sampler.is_null())
+      u_space_sampler.reset();
+  }
 
   /*
   //////////////////////////////////////////////////////////////////////////////
@@ -1983,7 +1971,9 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
-    if (!vbdOrderLimit) // no order limit --> component used within total
+    if (vbdOrderLimit) // prevent print/export of uninitialized memory
+      approx_i.clear_component_effects();
+    else // no order limit --> component used within total
       approx_i.compute_component_effects();
     approx_i.compute_total_effects(); // from scratch or using component
 

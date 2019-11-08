@@ -147,6 +147,7 @@ public:
   virtual Real moment(size_t i) const;
   virtual void moment(Real mom, size_t i);
 
+  virtual void clear_component_effects();
   virtual void compute_component_effects();
   virtual void compute_total_effects();
   virtual const RealVector& sobol_indices() const;

@@ -38,7 +38,7 @@ namespace Dakota {
         if (this->adaptive_construction == 0){
             double absxtol = 1e-10;
             this->optimizer  = c3opt_create(BFGS);
-            c3opt_set_maxiter(this->optimizer,this->sharedC3DataRep->maxIterations);
+            c3opt_set_maxiter(this->optimizer,this->sharedC3DataRep->maxSolverIterations);
             c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->solverTol);
             c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->solverTol);
             c3opt_set_absxtol(this->optimizer,absxtol);
@@ -147,10 +147,10 @@ namespace Dakota {
             ft_regress_set_maxrank( ftr,this->sharedC3DataRep->maxRank);
             ft_regress_set_kickrank(ftr,this->sharedC3DataRep->kickRank);
             ft_regress_set_roundtol(ftr,this->sharedC3DataRep->roundingTol);
-            ft_regress_set_verbose( ftr,this->sharedC3DataRep->verbose);
+            ft_regress_set_verbose( ftr,this->sharedC3DataRep->c3Verbosity);
 
-            c3opt_set_verbose(this->optimizer,this->sharedC3DataRep->verbose);
-            c3opt_set_maxiter(this->optimizer,this->sharedC3DataRep->maxIterations);
+            c3opt_set_verbose(this->optimizer,this->sharedC3DataRep->c3Verbosity);
+            c3opt_set_maxiter(this->optimizer,this->sharedC3DataRep->maxSolverIterations);
             c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->solverTol);
             c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->solverTol);
 
