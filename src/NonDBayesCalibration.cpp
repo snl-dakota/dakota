@@ -185,20 +185,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     standardizedSpace = true; break; // nataf defined w/i ProbTransformModel
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-
-    /*
-    // define local natafTransform, whether standardized space or not,
-    // since we utilize x-space bounds, moments, density routines
-    initialize_random_variable_transformation();
-    initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
-    // initialize_random_variable_parameters() is performed at run time
-    initialize_random_variable_correlations();
-    //initialize_final_statistics(); // statistics set is not default
-
-    // only needed if Nataf transform will actually be performed
-    if (standardizedSpace)
-      verify_correlation_support(ASKEY_U);
-    */
     break;
   }
 
