@@ -665,26 +665,12 @@ void NonDExpansion::initialize_expansion()
   // ProbabilityTransformModel::update_from_model() can now handle this.
   uSpaceModel.update_from_subordinate_model();
 
-  /*
-  //////////////////////////////////////////////////////////////////////////////
-  // Propagate updated distribution parameters to the polynomial basis
-  // Note: PCE always has an approximation basis, which is shared with the
-  //   IntegrationDriver in projection cases (not regression) --> one update
-  //   to approximation basis is sufficient
-  // Note: SC always has a driver basis, but this is not shared with the
-  //   num_vars x num_levels interpolant basis
-  SharedApproxData* shared_data_rep
-    = uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->update_basis_distribution_parameters(
-    uSpaceModel.multivariate_distribution());
-  //////////////////////////////////////////////////////////////////////////////
-  */
-
   // if a sub-iterator, reset any refinements that may have occurred
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  if (subIteratorFlag && numUncertainQuant && refineType &&
-      !u_space_sampler.is_null())
-    u_space_sampler.reset();
+  if (subIteratorFlag && numUncertainQuant && refineType) {
+    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+    if (!u_space_sampler.is_null())
+      u_space_sampler.reset();
+  }
 
   //////////////////////////////////////////////////////////////////////////////
   // set initialPtU which is used in this class for all-variables mode and local
