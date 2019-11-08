@@ -75,8 +75,8 @@ public:
   /// {ssgLevel,dimPref}Spec for the active key, following refinement
   /// or sequence advancement
   void reset();
-  // blow away all data for all keys
-  //void reset_all();
+  /// blow away all data for all keys
+  void reset_all();
 
   /// returns SparseGridDriver::active_multi_index()
   const std::set<UShortArray>& active_multi_index() const;
@@ -168,19 +168,27 @@ inline void NonDSparseGrid::reset()
   // update is required)
   ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
-  // This does not clear history, such as accumulated 1D pts/wts --> reset_all()
-  // should be used when distribution param updates invalidate this history
+
+  // Generalized refinement does not advance grid level, so need explicit
+  // clear in this case.  But harmless for other refinement types.
+  //if (ssgDriver->refinement_control()
+  //    == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
+  ssgDriver->clear_size();
+
+  // This fn does not clear history, such as accumulated 1D pts/wts -->
+  // reset_all() or reset_1d_collocation_points_weights() should be used
+  // when distribution param updates invalidate this history
 }
 
 
-/*
 inline void NonDSparseGrid::reset_all()
 {
+  // This "nuclear option" is not currently used
+
   ssgDriver->clear_keys();
-  //ssgDriver->update_active_iterators(); // needed?
-  //reset_active();                       // needed?
+  ssgDriver->update_active_iterators();
+  reset();
 }
-*/
 
 
 inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const
