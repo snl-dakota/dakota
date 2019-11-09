@@ -194,18 +194,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   init_hyper_parameters();
 
   // expand initial point by numHyperparams for use in negLogPostModel
-  // TO DO: review other QUESO uses of mapSoln
   size_t i, num_orig_cv = iteratedModel.cv(),
     num_augment_cv = num_orig_cv + numHyperparams;
   mapSoln.sizeUninitialized(num_augment_cv);
-  // if (standardizedSpace) {
-  //   RealVector init_pt_u;
-  //   mcmcModel.probability_transformation().trans_X_to_U(
-  //     iteratedModel.continuous_variables(), init_pt_u);
-  //   copy_data_partial(init_pt_u, mapSoln, 0);
-  // }
-  // else
-  //   copy_data_partial(iteratedModel.continuous_variables(), mapSoln, 0);
   copy_data_partial(mcmcModel.continuous_variables(), mapSoln, 0);
   for (i=0; i<numHyperparams; ++i)
     mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
@@ -625,10 +616,6 @@ void NonDBayesCalibration::construct_map_model()
 		set_recast, primary_resp_map_indices, 
 		secondary_resp_map_indices, 0, nlp_resp_order, 
 		nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
-
-  // capture any initial guess from the variables specification (mapSoln
-  // used both for initial guess and for warm starting after refinement)
-  //copy_data(negLogPostModel.continuous_variables(), mapSoln);
 }
 
 
@@ -2028,7 +2015,7 @@ void NonDBayesCalibration::prior_cholesky_factorization()
     Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
     RealSymMatrix prior_cov_matrix;//= ();
 
-    Cerr << "prior_cholesky_factorization() not yet implmented for this case."
+    Cerr << "prior_cholesky_factorization() not yet implemented for this case."
 	 << std::endl;
     abort_handler(-1);
 

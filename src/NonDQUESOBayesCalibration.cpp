@@ -200,11 +200,8 @@ void NonDQUESOBayesCalibration::map_pre_solve()
 
   Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
        << std::endl;
-  // set initial point (update gets pulled at run time by optimizer)
-  //if (mapSoln.empty()) // no previous map solution
-  //  copy_gsl_partial(*paramInitials, 0,
-  //    negLogPostModel.current_variables().continuous_variables_view());
-  //else // warm start using map soln from previous emulator
+  // set initial point pulled from mcmcModel at construct time or
+  // warm start from previous map soln computed from previous emulator
   negLogPostModel.current_variables().continuous_variables(mapSoln);
 
   // Perform optimization
@@ -218,12 +215,13 @@ void NonDQUESOBayesCalibration::map_pre_solve()
   print_variables(Cout, map_c_vars);
   Cout << std::endl;
 
-  // propagate map solution to paramInitials for starting point of MCMC chain.
-  // This propagates further to mcmcModel::currentVariables either within the
-  // derivative preconditioning or within the likelihood evaluator.
+  // propagate MAP to paramInitials for starting point of MCMC chain.  
+  // Note: init_parameter_domain() happens once per calibrate(),
+  // upstream of map_pre_solve()
   copy_gsl(map_c_vars, *paramInitials);
-  if (adaptPosteriorRefine)
-    copy_data(map_c_vars, mapSoln); //deep copy of view
+  // if multiple pre-solves, propagate MAP as initial guess for next pre-solve
+  if (adaptPosteriorRefine || adaptExpDesign)
+    copy_data(map_c_vars, mapSoln); // deep copy of view
 }
 
 
@@ -887,32 +885,9 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 		    ("param_", *paramSpace, paramMins, paramMaxs));
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
-  /*
-  // const RealVector& init_pt = mcmcModel.continuous_variables();
-  // if (standardizedSpace) { // param domain in u-space
-  //   switch (emulatorType) {
-  //   case PCE_EMULATOR: case SC_EMULATOR:// init_pt already in u-space
-  //   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-  //     copy_gsl_partial(init_pt, *paramInitials, 0);
-  //     break;
-  //   default: { // init_pt not yet in u-space: use prob transform
-  //     RealVector u_pt;
-  //     mcmcModel.probability_transformation().trans_X_to_U(init_pt, u_pt);
-  //     copy_gsl_partial(u_pt, *paramInitials, 0);
-  //     break;
-  //   }
-  //   }
-  // }
-  // else // init_pt and param domain in x-space
-  //   copy_gsl_partial(init_pt, *paramInitials, 0);
-  copy_gsl_partial(mcmcModel.continuous_variables(), *paramInitials, 0);
-
-  // Hyper-parameters: inverse gamma mode is defined for all alpha,
-  // beta. Would prefer to use the mean (or 1.0), but would require
-  // conditional logic (or user control).
-  for (size_t i=0; i<numHyperparams; ++i)
-    (*paramInitials)[numContinuousVars + i] = invGammaDists[i].mode();
-  */
+  // paramInitials started from mapSoln, which encompasses either:
+  // > most recent solution from map_pre_solve(), if used, or
+  // > initial guess (user-specified or default initial values)
   copy_gsl(mapSoln, *paramInitials);
 
   if (outputLevel > NORMAL_OUTPUT)

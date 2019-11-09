@@ -686,10 +686,10 @@ void NonDExpansion::initialize_expansion()
     uSpaceModel.probability_transformation().trans_X_to_U(
       iteratedModel.continuous_variables(), initialPtU);
   RealVector u_means = uSpaceModel.multivariate_distribution().means();
-  const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+  //const SharedVariablesData& svd
+  //  = iteratedModel.current_variables().shared_data();
   for (size_t i=startCAUV; i<numCAUV; ++i)
-    initialPtU[i] = u_means[svd.cv_index_to_all_index(i)];
+    initialPtU[i] = u_means[i];//[svd.cv_index_to_active_index(i)];
 
   // transform any points imported into expansionSampler from user space
   // into standardized space (must follow any dist param updates)
