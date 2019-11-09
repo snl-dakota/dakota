@@ -379,6 +379,30 @@ void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
 }
 
 
+void NonDGlobalReliability::pre_run()
+{
+  Analyzer::pre_run();
+
+  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // initialization of Model mappings for iteratedModel, but local recursions
+  // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
+  // > Note: part of this occurs at DataFit build time. Therefore, take
+  //         care to avoid redundancy using mappingInitialized flag.
+  if (!mppModel.mapping_initialized()) {
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    /*bool var_size_changed =*/ mppModel.initialize_mapping(pl_iter);
+    //if (var_size_changed) resize();
+  }
+
+  // now that vars/labels/bounds/targets have flowed down at run-time from
+  // any higher level recursions, propagate them up local Model recursions
+  // so that they are correct when they propagate back down.  There is no
+  // need to recur below iteratedModel.
+  size_t layers = 3;  // DFSModel + PTModel + RModel
+  mppModel.update_from_subordinate_model(layers-1); // recur twice
+}
+
+
 void NonDGlobalReliability::core_run()
 {
   // set the object instance pointer for use within static member functions

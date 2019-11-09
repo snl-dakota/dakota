@@ -103,30 +103,6 @@ void NonDReliability::initialize_graphics(int iterator_server_id)
 }
 
 
-void NonDReliability::pre_run()
-{
-  Analyzer::pre_run();
-  
-  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
-  // initialization of Model mappings for iteratedModel, but local recursions
-  // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
-  // > Note: part of this occurs at DataFit build time. Therefore, take
-  //         care to avoid redundancy using mappingInitialized flag.
-  if (!mppModel.is_null()) { // all except Mean Value
-    if (!mppModel.mapping_initialized()) {
-      ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-      /*bool var_size_changed =*/ mppModel.initialize_mapping(pl_iter);
-      //if (var_size_changed) resize();
-    }
-
-    // now that vars/labels/bounds/targets have flowed down at run-time from
-    // any higher level recursions, propagate them up local Model recursions
-    // so that they are correct when they propagate back down.
-    mppModel.update_from_subordinate_model(); // depth = max
-  }
-}
-
-
 void NonDReliability::post_run(std::ostream& s)
 {
   ++numRelAnalyses;

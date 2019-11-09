@@ -125,9 +125,6 @@ void NonDQUESOBayesCalibration::calibrate()
   tk_factory_dipc.set_callback(nonDQUESOInstance);
   tk_factory_dipclogit.set_callback(nonDQUESOInstance);
 
-  // build the emulator and initialize transformations, as needed
-  initialize_model();
-
   // initialize the ASV request value for preconditioning and
   // construct a Response for use in residual computation
   if (proposalCovarType == "derivatives")
@@ -138,8 +135,13 @@ void NonDQUESOBayesCalibration::calibrate()
   //  short request_value_needed = 1 | precondRequestValue;
   //  init_residual_response(request_value_needed);
 
+  // pull vars data prior to emulator build
   init_parameter_domain();
 
+  // build the emulator and initialize transformations, as needed
+  initialize_model();
+
+  // may pull Hessian data from emulator
   init_proposal_covariance();
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
@@ -198,12 +200,9 @@ void NonDQUESOBayesCalibration::map_pre_solve()
 
   Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
        << std::endl;
-  // set initial point (update gets pulled at run time by optimizer)
-  if (mapSoln.empty()) // no previous map solution
-    copy_gsl_partial(*paramInitials, 0,
-      negLogPostModel.current_variables().continuous_variables_view());
-  else // warm start using map soln from previous emulator
-    negLogPostModel.current_variables().continuous_variables(mapSoln);
+  // set initial point pulled from mcmcModel at construct time or
+  // warm start from previous map soln computed from previous emulator
+  negLogPostModel.current_variables().continuous_variables(mapSoln);
 
   // Perform optimization
   mapOptimizer.run();
@@ -216,11 +215,13 @@ void NonDQUESOBayesCalibration::map_pre_solve()
   print_variables(Cout, map_c_vars);
   Cout << std::endl;
 
-  // propagate map solution to paramInitials for starting point of MCMC chain.
-  // This propagates further to mcmcModel::currentVariables either within the
-  // derivative preconditioning or within the likelihood evaluator.
-  copy_gsl_partial(map_c_vars, *paramInitials, 0);
-  if (adaptPosteriorRefine) copy_data(map_c_vars, mapSoln); //deep copy of view
+  // propagate MAP to paramInitials for starting point of MCMC chain.  
+  // Note: init_parameter_domain() happens once per calibrate(),
+  // upstream of map_pre_solve()
+  copy_gsl(map_c_vars, *paramInitials);
+  // if multiple pre-solves, propagate MAP as initial guess for next pre-solve
+  if (adaptPosteriorRefine || adaptExpDesign)
+    copy_data(map_c_vars, mapSoln); // deep copy of view
 }
 
 
@@ -231,7 +232,8 @@ void NonDQUESOBayesCalibration::run_chain()
     precondition_proposal(0);
 
   if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "QUESO: Running chain with " << chainSamples << " samples." << std::endl;
+    Cout << "QUESO: Running chain with " << chainSamples << " samples."
+	 << std::endl;
     if (propCovUpdatePeriod < std::numeric_limits<int>::max())
       Cout << "QUESO: Updating proposal covariance every "
 	   << propCovUpdatePeriod << " samples." << std::endl;
@@ -883,29 +885,10 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 		    ("param_", *paramSpace, paramMins, paramMaxs));
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
-  const RealVector& init_pt = mcmcModel.continuous_variables();
-  if (standardizedSpace) { // param domain in u-space
-    switch (emulatorType) {
-    case PCE_EMULATOR: case SC_EMULATOR:// init_pt already propagated to u-space
-    case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-      copy_gsl_partial(init_pt, *paramInitials, 0);
-      break;
-    default: { // init_pt not already propagated to u-space: use prob transform
-      RealVector u_pt;
-      mcmcModel.probability_transformation().trans_X_to_U(init_pt, u_pt);
-      copy_gsl_partial(u_pt, *paramInitials, 0);
-      break;
-    }
-    }
-  }
-  else // init_pt and param domain in x-space
-    copy_gsl_partial(init_pt, *paramInitials, 0);
-
-  // Hyper-parameters: inverse gamma mode is defined for all alpha,
-  // beta. Would prefer to use the mean (or 1.0), but would require
-  // conditional logic (or user control).
-  for (size_t i=0; i<numHyperparams; ++i)
-    (*paramInitials)[numContinuousVars + i] = invGammaDists[i].mode();
+  // paramInitials started from mapSoln, which encompasses either:
+  // > most recent solution from map_pre_solve(), if used, or
+  // > initial guess (user-specified or default initial values)
+  copy_gsl(mapSoln, *paramInitials);
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Initial Parameter values sent to QUESO (may be in scaled)\n"
@@ -1395,21 +1378,21 @@ copy_gsl(const RealVector& rv, QUESO::GslVector& qv)
 
 
 void NonDQUESOBayesCalibration::
-copy_gsl_partial(const QUESO::GslVector& qv, size_t start, RealVector& rv)
+copy_gsl_partial(const QUESO::GslVector& qv, size_t start_qv, RealVector& rv)
 {
   // copy part of qv into all of rv
   size_t ri, qi, size_rv = rv.length();
-  for (ri=0, qi=start; ri<size_rv; ++ri, ++qi)
+  for (ri=0, qi=start_qv; ri<size_rv; ++ri, ++qi)
     rv[ri] = qv[qi];
 }
 
 
 void NonDQUESOBayesCalibration::
-copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv, size_t start)
+copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv, size_t start_qv)
 {
   // copy all of rv into part of qv
   size_t ri, qi, size_rv = rv.length();
-  for (ri=0, qi=start; ri<size_rv; ++ri, ++qi)
+  for (ri=0, qi=start_qv; ri<size_rv; ++ri, ++qi)
     qv[qi] = rv[ri];
 }
 

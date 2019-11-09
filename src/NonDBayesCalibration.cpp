@@ -185,27 +185,21 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     standardizedSpace = true; break; // nataf defined w/i ProbTransformModel
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-
-    /*
-    // define local natafTransform, whether standardized space or not,
-    // since we utilize x-space bounds, moments, density routines
-    initialize_random_variable_transformation();
-    initialize_random_variable_types(ASKEY_U); // need ranVarTypesX below
-    // initialize_random_variable_parameters() is performed at run time
-    initialize_random_variable_correlations();
-    //initialize_final_statistics(); // statistics set is not default
-
-    // only needed if Nataf transform will actually be performed
-    if (standardizedSpace)
-      verify_correlation_support(ASKEY_U);
-    */
     break;
   }
 
-  // should be independent of data resizes
+  // Construct emulator objects for raw QoI, prior to data residual recast
   construct_mcmc_model();
-
+  // define variable augmentation within residualModel
   init_hyper_parameters();
+
+  // expand initial point by numHyperparams for use in negLogPostModel
+  size_t i, num_orig_cv = iteratedModel.cv(),
+    num_augment_cv = num_orig_cv + numHyperparams;
+  mapSoln.sizeUninitialized(num_augment_cv);
+  copy_data_partial(mcmcModel.continuous_variables(), mapSoln, 0);
+  for (i=0; i<numHyperparams; ++i)
+    mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
 
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
@@ -215,7 +209,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 			 obsErrorMultiplierMode, mcmcDerivOrder), false);
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
-    for (size_t i=0; i<numHyperparams; ++i) {
+    for (i=0; i<numHyperparams; ++i) {
       residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
       residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
@@ -622,10 +616,6 @@ void NonDBayesCalibration::construct_map_model()
 		set_recast, primary_resp_map_indices, 
 		secondary_resp_map_indices, 0, nlp_resp_order, 
 		nonlinear_resp_map, neg_log_post_resp_mapping, NULL), false);
-
-  // capture any initial guess from the variables specification (mapSoln
-  // used both for initial guess and for warm starting after refinement)
-  //copy_data(negLogPostModel.continuous_variables(), mapSoln);
 }
 
 
@@ -666,6 +656,7 @@ void NonDBayesCalibration::pre_run()
   // now that vars/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up local Model recursions
   // so that they are correct when they propagate back down.
+  // *** TO DO: count Model recursion layers on top of iteratedModel 
   if (!negLogPostModel.is_null())
     negLogPostModel.update_from_subordinate_model(); // depth = max
   else
@@ -2024,7 +2015,7 @@ void NonDBayesCalibration::prior_cholesky_factorization()
     Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
     RealSymMatrix prior_cov_matrix;//= ();
 
-    Cerr << "prior_cholesky_factorization() not yet implmented for this case."
+    Cerr << "prior_cholesky_factorization() not yet implemented for this case."
 	 << std::endl;
     abort_handler(-1);
 

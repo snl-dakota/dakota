@@ -660,10 +660,13 @@ void NonDExpansion::initialize_expansion()
   // now that data has flowed down at run-time from any higher level recursions
   // to iteratedModel, it must be propagated up through the local g_u_model and
   // uSpaceModel recursions (so they are correct when propagated back down).
+  // There is no need to recur below iteratedModel.
   // RecastModel::update_from_model() had insufficient context to update
   // distribution parameters for variables that were not transformed, but
   // ProbabilityTransformModel::update_from_model() can now handle this.
-  uSpaceModel.update_from_subordinate_model();
+  size_t layers = 2; // PTModel, DFSModel
+  // recur once (beyond layer 1) so that layer 2 pulls from iteratedModel
+  uSpaceModel.update_from_subordinate_model(layers-1);
 
   // if a sub-iterator, reset any refinements that may have occurred
   if (subIteratorFlag && numUncertainQuant && refineType) {
@@ -672,29 +675,6 @@ void NonDExpansion::initialize_expansion()
       u_space_sampler.reset();
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  // set initialPtU which is used in this class for all-variables mode and local
-  // sensitivity calculations, and by external classes for queries on the PCE
-  // emulator model (e.g., NonDBayesCalibration).  In the case of design,
-  // epistemic, and state vars, it captures the current values for this UQ
-  // execution; for aleatory vars, it captures the initial values from user
-  // specifications or mean defaults.
-  Pecos::ProbabilityTransformation& nataf
-    = uSpaceModel.probability_transformation();
-  if (numUncertainQuant == 0) // initial UQ: full update of initialPtU
-    nataf.trans_X_to_U(iteratedModel.continuous_variables(), initialPtU);
-  else if (allVars) {
-    // subsequent UQ for all vars mode: partial update of initialPtU; store
-    // current design/epistemic/state but don't overwrite initial aleatory
-    RealVector pt_u;  size_t i;
-    nataf.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
-    for (i=0; i<startCAUV; ++i)
-      initialPtU[i] = pt_u[i]; // design
-    for (i=startCAUV + numCAUV; i<numContinuousVars; ++i)
-      initialPtU[i] = pt_u[i]; // epistemic/state
-  }
-  /*
-  //////////////////////////////////////////////////////////////////////////////
   // set initialPtU which is used in this class for all-variables mode and local
   // sensitivity calculations, and by external classes for queries on the PCE
   // emulator model (e.g., NonDBayesCalibration).  In the case of design,
@@ -706,22 +686,10 @@ void NonDExpansion::initialize_expansion()
     uSpaceModel.probability_transformation().trans_X_to_U(
       iteratedModel.continuous_variables(), initialPtU);
   RealVector u_means = uSpaceModel.multivariate_distribution().means();
+  //const SharedVariablesData& svd
+  //  = iteratedModel.current_variables().shared_data();
   for (size_t i=startCAUV; i<numCAUV; ++i)
-    initialPtU[i] = u_means[i];
-  //////////////////////////////////////////////////////////////////////////////
-  // set initialPtU which is used in this class for all-variables mode and local
-  // sensitivity calculations, and by external classes for queries on the PCE
-  // emulator model (e.g., NonDBayesCalibration).  In the case of design,
-  // epistemic, and state vars, it captures the current values for this UQ
-  // execution; for aleatory vars, it reflects the x-space mean values (which
-  // admit updates from above).
-  RealVector x_means = iteratedModel.multivariate_distribution().means();
-  for (size_t i=startCAUV; i<numCAUV; ++i)
-    iteratedModel.continuous_variable(x_means[i], i);
-  uSpaceModel.probability_transformation().trans_X_to_U(
-    iteratedModel.continuous_variables(), initialPtU);
-  //////////////////////////////////////////////////////////////////////////////
-  */
+    initialPtU[i] = u_means[i];//[svd.cv_index_to_active_index(i)];
 
   // transform any points imported into expansionSampler from user space
   // into standardized space (must follow any dist param updates)

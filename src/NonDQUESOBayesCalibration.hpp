@@ -261,9 +261,6 @@ private:
   /// cache previous expansion coefficients for assessing convergence of
   /// emulator refinement process
   RealVectorArray prevCoeffs;
-  /// store MAP estimate for warm-starting pre-solves
-  RealVector mapSoln;
-  
 };
 
 } // namespace Dakota

@@ -110,9 +110,6 @@ protected:
 
   /// instantiate and initialize natafTransform
   void initialize_nataf();
-  // alternate form: initialize natafTransform based on incoming data
-  //void initialize_nataf(const Pecos::ProbabilityTransformation& transform,
-  //			bool deep_copy = false);
 
   // x-space correlations assigned in Model and u-space is uncorrelated
   //void update_distribution_correlations();
@@ -279,25 +276,19 @@ inline void ProbabilityTransformModel::initialize_nataf()
 }
 
 
-/* This function is commonly used to publish tranformation data when
-   the Model variables are in a transformed space (e.g., u-space) and
-   ProbabilityTransformation::ranVarTypes et al. may not be generated
-   directly.  This allows for the use of inverse transformations to
-   return the transformed space variables to their original states.
-void ProbabilityTransformModel::
-initialize_nataf(const Pecos::ProbabilityTransformation& transform,
-		 bool deep_copy)
+inline void ProbabilityTransformModel::update_transformation()
 {
-  if (deep_copy) {
-    initialize_nataf();
-    natafTransform.copy(transform);
-    // TO DO: deep copy of randomVarsX not yet implemented in
-    // Pecos::ProbabilityTransformation::copy()
-  }
-  else
-    natafTransform = transform; // shared rep
+  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
+  // x-space correlations assigned in Model and u-space is uncorrelated
+  //update_distribution_correlations();
+
+  // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
+  // Since the uncertain variable distributions (means, std devs, correlations)
+  // may change, update of correlation warpings is performed regularly.
+  natafTransform.transform_correlations();
+
+  update_model_bounds(truncatedBounds, boundVal);
 }
-*/
 
 
 inline void ProbabilityTransformModel::
@@ -313,25 +304,9 @@ initialize_transformation(short u_space_type)
   initialize_dakota_variable_types();
   verify_correlation_support(u_space_type);
 
-  // pull reference values for distribution params as there are some run-time
-  // operations that require them (e.g. grid_size() for maxConcurrency).
-  // These params are updated below at run time.
-  mvDist.pull_distribution_parameters(x_dist);
-}
-
-
-inline void ProbabilityTransformModel::update_transformation()
-{
-  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
-  // x-space correlations assigned in Model and u-space is uncorrelated
-  //update_distribution_correlations();
-
-  // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
-  // Since the uncertain variable distributions (means, std devs, correlations)
-  // may change, update of correlation warpings is performed regularly.
-  natafTransform.transform_correlations();
-
-  update_model_bounds(truncatedBounds, boundVal);
+  // also perform run-time update as some construct-time operations require it
+  // (e.g. grid_size() for maxConcurrency, inverse vars transform in ctor).
+  update_transformation();
 }
 
 
