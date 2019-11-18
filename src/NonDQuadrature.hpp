@@ -217,7 +217,7 @@ quadrature_order(const Pecos::UShortArray& dim_quad_order)
 
 
 inline void NonDQuadrature::quadrature_order(unsigned short quad_order)
-{ quadOrderSpec = quad_order; reset(); }
+{ quadOrderSpec = quad_order;  reset(); }
 
 
 inline void NonDQuadrature::samples(size_t samples)

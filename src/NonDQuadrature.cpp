@@ -273,13 +273,14 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // ----------------------------------------------------------------------
   // Probabilistic collocation from random sampling of a tensor multi-index
   // ----------------------------------------------------------------------
-  case RANDOM_TENSOR:
+  case RANDOM_TENSOR: {
     Cout << numSamples << " samples drawn randomly from tensor grid.\n";
+    allSamples.shapeUninitialized(numContinuousVars, numSamples);
+
     const Pecos::UShortArray& lev_index = tpqDriver->level_index();
-    tpqDriver->update_1d_collocation_points_weights(quad_order, lev_index);
+    tpqDriver->assign_1d_collocation_points_weights(quad_order, lev_index);
     const Pecos::Real3DArray& colloc_pts_1d
       = tpqDriver->collocation_points_1d();
-    allSamples.shapeUninitialized(numContinuousVars, numSamples);
 
     // prevent case of all lhs_const variables, which is an lhs_prep error
     bool lhs_error_trap = true;
@@ -315,6 +316,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
       }
     }
     break;
+  }
   }
 }
 

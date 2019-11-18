@@ -221,7 +221,6 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
 
   if (!asynch_flag && log_resp_flag) allResponses.clear();
 
-
   // Loop over parameter sets and compute responses.  Collect data
   // and track best evaluations based on flags.
   for (i=0; i<num_evals; i++) {
@@ -264,10 +263,11 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
         for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
           update_best(allVariables[i], r_cit->first, r_cit->second);
     }
-    if(resultsDB.active()) {
+    if (resultsDB.active()) {
       IntRespMCIter r_cit;
       for(r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
-        archive_model_response(r_cit->second, std::distance(resp_map.begin(), r_cit));
+        archive_model_response(r_cit->second,
+			       std::distance(resp_map.begin(), r_cit));
     }
   }
 }

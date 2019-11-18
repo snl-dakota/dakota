@@ -184,12 +184,18 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
 void NonDSparseGrid::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
-  numIntDriver.initialize_grid(poly_basis);
-  numIntDriver.initialize_grid_parameters(
-    iteratedModel.multivariate_distribution());
+  // called at construct time from NonDExpansion::initialize_u_space_grid()
+
+  numIntDriver.initialize_grid(poly_basis);     // sets basis, numVars
 
   ssgDriver->level(ssgLevelSpec);
-  ssgDriver->dimension_preference(dimPrefSpec);
+  ssgDriver->dimension_preference(dimPrefSpec); // requires numVars
+
+  // this data may be replaced on first execution by a top-level iterator,
+  // but it is still needed for certain construct time initializations
+  // (e.g., max concurrency below):
+  numIntDriver.initialize_grid_parameters(
+    iteratedModel.multivariate_distribution()); // 1D pts/wts use level
 
   maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }
@@ -202,7 +208,9 @@ NonDSparseGrid::~NonDSparseGrid()
 void NonDSparseGrid::get_parameter_sets(Model& model)
 {
   // capture any run-time updates to distribution parameters
-  if (subIteratorFlag)
+  // > Note: top-level Iterator + NestedModel may change params between
+  //   initialize_grid() and 1st execution, so always perform this step
+  if (subIteratorFlag) //&& numIntegrations)
     ssgDriver->initialize_grid_parameters(model.multivariate_distribution());
 
   // Precompute quadrature rules (e.g., by defining maximal order for

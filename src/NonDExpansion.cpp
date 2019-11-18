@@ -668,11 +668,11 @@ void NonDExpansion::initialize_expansion()
   // recur once (beyond layer 1) so that layer 2 pulls from iteratedModel
   uSpaceModel.update_from_subordinate_model(layers-1);
 
-  // if a sub-iterator, reset any refinements that may have occurred
-  if (subIteratorFlag && numUncertainQuant && refineType) {
+  // if a sub-iterator, reset previous history (e.g. grid refinements) as needed
+  if (subIteratorFlag) { //&& numUncertainQuant && refineType) {
     Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
     if (!u_space_sampler.is_null())
-      u_space_sampler.reset();
+      u_space_sampler.reset();// clear previous prior to next grid generate/eval
   }
 
   // set initialPtU which is used in this class for all-variables mode and local
@@ -3023,12 +3023,11 @@ void NonDExpansion::archive_sobol_indices() {
     for (Pecos::BAULMCIter map_cit=sobol_map.begin();
 	 map_cit!=sobol_map.end(); ++map_cit) { // loop in key sorted order
       const BitArray& set = map_cit->first;
-      const int &order = set.count();
       unsigned long index = map_cit->second; // 0-way -> n 1-way -> interaction
       if (index > numContinuousVars) {       // an interaction
         if( sobol_labels.find(index) == sobol_labels.end())
           sobol_labels[index] = std::vector<const char *>();
-        orders[index] = order;
+        orders[index] = set.count();
 	for (j=0; j<numContinuousVars; ++j) {
 	  if (set[j])
 	    sobol_labels[index].push_back(cv_labels[j].c_str());
