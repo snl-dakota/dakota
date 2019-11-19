@@ -75,6 +75,8 @@ protected:
   void increment_grid_preference();
   void decrement_grid();
 
+  void reset();
+
   int num_samples() const;
 
 private:
@@ -102,6 +104,15 @@ private:
   /// the isotropic cubature integration rule
   unsigned short cubIntRule;
 };
+
+
+inline void NonDCubature::reset()
+{
+  // reset dimensional quadrature order to specification
+  //cubIntOrderRef = cubIntOrderSpec;
+  // clear dist param update trackers
+  cubDriver->reset();
+}
 
 
 inline unsigned short NonDCubature::integrand_order() const

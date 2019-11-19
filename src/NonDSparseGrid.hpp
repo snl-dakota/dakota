@@ -164,16 +164,16 @@ inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
 inline void NonDSparseGrid::reset()
 {
   // reset the grid for the current active key to its original user spec,
-  // prior to any grid refinement (will invoke clear_size() if a grid size
-  // update is required)
-  ssgDriver->level(ssgLevelSpec);               // TO DO: reset all keys ?
-  ssgDriver->dimension_preference(dimPrefSpec); // TO DO: reset all keys ?
+  // prior to any grid refinement
+  // > also invokes SparseGridDriver::clear_size() if change is induced
+  // > updates to other keys are managed by {assign,increment}_specification_
+  //   sequence() in multilevel expansion methods
+  ssgDriver->level(ssgLevelSpec);
+  ssgDriver->dimension_preference(dimPrefSpec);
 
-  // Generalized refinement does not advance grid level, so need explicit
-  // clear in this case.  But harmless for other refinement types.
-  //if (ssgDriver->refinement_control()
-  //    == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
-  ssgDriver->reset();//clear_size();            // TO DO: reset all keys ?
+  // Clear grid size (may vary with either dist param change or grid
+  // level/anisotropy) and clear dist param update trackers
+  ssgDriver->reset();
 
   // This fn does not clear history, such as accumulated 1D pts/wts -->
   // reset_all() or reset_1d_collocation_points_weights() should be used

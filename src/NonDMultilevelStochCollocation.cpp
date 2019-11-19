@@ -329,8 +329,8 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
       = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
-    else if (refineControl)
-      nond_quad->reset();   // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_quad->reset();   // reset refinement, capture dist param updates
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -339,8 +339,8 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
-    else if (refineControl)
-      nond_sparse->reset(); // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_sparse->reset(); // reset refinement, capture dist param updates
     break;
   }
   default:
@@ -362,8 +362,8 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     }
-    else if (refineControl)
-      nond_quad->reset();   // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_quad->reset();   // reset refinement, capture dist param updates
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -374,8 +374,8 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     }
-    else if (refineControl)
-      nond_sparse->reset(); // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_sparse->reset(); // reset refinement, capture dist param updates
     break;
   }
   default:

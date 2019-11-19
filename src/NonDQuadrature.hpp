@@ -198,8 +198,14 @@ private:
 
 inline void NonDQuadrature::reset()
 {
+  // reset dimensional quadrature order to specification, prior to any grid
+  // refinement, for the current active key
+  // > updates to other keys are managed by {assign,increment}_specification_
+  //   sequence() in multilevel expansion methods
   initialize_dimension_quadrature_order(quadOrderSpec, dimPrefSpec,
 					dimQuadOrderRef);
+  // clear dist param update trackers
+  tpqDriver->reset();
 }
 
 
@@ -217,7 +223,7 @@ quadrature_order(const Pecos::UShortArray& dim_quad_order)
 
 
 inline void NonDQuadrature::quadrature_order(unsigned short quad_order)
-{ quadOrderSpec = quad_order;  reset(); }
+{ quadOrderSpec = quad_order; reset(); }
 
 
 inline void NonDQuadrature::samples(size_t samples)
