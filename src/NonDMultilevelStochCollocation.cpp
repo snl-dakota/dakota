@@ -187,66 +187,6 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 { }
 
 
-void NonDMultilevelStochCollocation::assign_discrepancy_mode()
-{
-  // assign alternate defaults for correction and discrepancy emulation types
-  switch (iteratedModel.correction_type()) {
-  //case ADDITIVE_CORRECTION:
-  //case MULTIPLICATIVE_CORRECTION:
-  case NO_CORRECTION: // assign method-specific default
-    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
-  }
-
-  switch (multilevDiscrepEmulation) {
-  /*
-  case DISTINCT_EMULATION:
-    if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
-      Cerr << "Error: DISTINCT_EMULATION not currently supported for "
-	   << "Multilevel SC with hierarchical interpolants." << std::endl;
-      abort_handler(-1);
-    }
-    break;
-  case RECURSIVE_EMULATION:
-    if (expansionBasisType == Pecos::NODAL_INTERPOLANT) {
-      Cerr << "Error: RECURSIVE_EMULATION not currently supported for "
-	   << "Multilevel SC with nodal interpolants." << std::endl;
-      abort_handler(-1);
-    }
-    break;
-  */
-  case DEFAULT_EMULATION: // assign method-specific default
-    multilevDiscrepEmulation =
-      //(expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
-      //RECURSIVE_EMULATION :
-      DISTINCT_EMULATION;
-    break;
-  }
-}
-
-
-void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
-{
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-
-  if (iteratedModel.surrogate_type() != "hierarchical") {
-    Cerr << "Error: multilevel/multifidelity expansions require a "
-	 << "hierarchical model." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  // Hierarchical SC is already based on surpluses, so default behavior could
-  // differ from PCE (see assign_discrepancy_mode())
-  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  else
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
-  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
-  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
-}
-
-
 void NonDMultilevelStochCollocation::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos

@@ -2357,10 +2357,6 @@
 	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
           <!-- Rely on DFSModel data import, if possible
 	  &import_build; -->
-	  <!-- Short term work-around for FT model spec independent of DFSModel/SimulationModel.  Don't think this is needed anymore...
-          <keyword  id="model_param_spec" name="model_param_spec" code="{N_mdm(str,modelParamSpec)}" label="Model Parameters for UQ" help="" minOccurs="1" >
-            <param type="STRING" in_taglist="model" />
-          </keyword> -->
 	  <!-- Rely on DACE specification, as identified by DFSModel
           <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
             <param type="INTEGER" constraint=">= 0" />

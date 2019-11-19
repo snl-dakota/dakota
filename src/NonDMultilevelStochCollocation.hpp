@@ -72,11 +72,6 @@ private:
   //- Heading: Utility functions
   //
 
-  /// verify supported and define default discrepancy emulation mode
-  void assign_discrepancy_mode();
-  /// define the surrogate response mode for a hierarchical model in 
-  /// multilevel/multifidelity expansions
-  void assign_hierarchical_response_mode();
 
   //
   //- Heading: Data

@@ -6,29 +6,26 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       NonDMultilevelPolynomialChaos
+//- Class:       NonDMultilevelFunctionTrain
 //- Description: Iterator to compute/employ Polynomial Chaos expansions
 //- Owner:       Mike Eldred, Sandia National Laboratories
 
-#ifndef NOND_MULTILEVEL_POLYNOMIAL_CHAOS_H
-#define NOND_MULTILEVEL_POLYNOMIAL_CHAOS_H
+#ifndef NOND_MULTILEVEL_FUNCTION_TRAIN_H
+#define NOND_MULTILEVEL_FUNCTION_TRAIN_H
 
-#include "NonDPolynomialChaos.hpp"
+#include "NonDC3FunctionTrain.hpp"
 
 namespace Dakota {
 
 /// Nonintrusive polynomial chaos expansion approaches to uncertainty
 /// quantification
 
-/** The NonDMultilevelPolynomialChaos class uses a polynomial chaos
-    expansion (PCE) approach to approximate the effect of parameter
-    uncertainties on response functions of interest.  It utilizes the
-    OrthogPolyApproximation class to manage multiple types of
-    orthogonal polynomials within a Wiener-Askey scheme to PCE.  It
-    supports PCE coefficient estimation via sampling, quadrature,
-    point-collocation, and file import. */
+/** The NonDMultilevelFunctionTrain class uses a set of function train
+    (FT) expansions, one per model fidelity or resolution, to
+    approximate the effect of parameter uncertainties on response
+    functions of interest. */
 
-class NonDMultilevelPolynomialChaos: public NonDPolynomialChaos
+class NonDMultilevelFunctionTrain: public NonDC3FunctionTrain
 {
 public:
 
@@ -37,35 +34,27 @@ public:
   //
  
   /// standard constructor
-  NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model);
-  /// alternate constructor for numerical integration (tensor, sparse, cubature)
-  NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
-				short exp_coeffs_approach,
-				const UShortArray& num_int_seq,
-				const RealVector& dim_pref, short u_space_type,
-				short refine_type, short refine_control,
-				short covar_control, short ml_alloc_cntl,
-				short ml_discrep, short rule_nest,
-				short rule_growth, bool piecewise_basis,
-				bool use_derivs);
-  /// alternate constructor for regression (least squares, CS, OLI)
-  NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
-				short exp_coeffs_approach,
-				const UShortArray& exp_order_seq,
-				const RealVector& dim_pref,
-				const SizetArray& colloc_pts_seq,
-				Real colloc_ratio, const SizetArray& pilot,
-				int seed, short u_space_type, short refine_type,
-				short refine_control, short covar_control,
-				short ml_alloc_cntl, short ml_discrep,
-				//short rule_nest, short rule_growth,
-				bool piecewise_basis, bool use_derivs,
-				bool cv_flag,
-				const String& import_build_pts_file,
-				unsigned short import_build_format,
-				bool import_build_active_only);
+  NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model);
+  /*
+  /// alternate constructor for regression
+  NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
+			      short exp_coeffs_approach,
+			      const UShortArray& exp_order_seq,
+			      const RealVector& dim_pref,
+			      const SizetArray& colloc_pts_seq,
+			      Real colloc_ratio, const SizetArray& pilot,
+			      int seed, short u_space_type, short refine_type,
+			      short refine_control, short covar_control,
+			      short ml_alloc_cntl, short ml_discrep,
+			      //short rule_nest, short rule_growth,
+			      bool piecewise_basis, bool use_derivs,
+			      bool cv_flag,
+			      const String& import_build_pts_file,
+			      unsigned short import_build_format,
+			      bool import_build_active_only);
+  */
   /// destructor
-  ~NonDMultilevelPolynomialChaos();
+  ~NonDMultilevelFunctionTrain();
 
   //
   //- Heading: Virtual function redefinitions
@@ -81,8 +70,11 @@ protected:
 
   void initialize_u_space_model();
   void core_run();
+
+  void assign_hierarchical_response_mode();
   void assign_specification_sequence();
   void increment_specification_sequence();
+
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
@@ -141,12 +133,6 @@ private:
   UShortArray expOrderSeqSpec;
   /// user specification for collocation_points (array for multifidelity)
   SizetArray collocPtsSeqSpec;
-  /// user specification for expansion_samples (array for multifidelity)
-  SizetArray expSamplesSeqSpec;
-  /// user request of quadrature order
-  UShortArray quadOrderSeqSpec;
-  /// user request of sparse grid level
-  UShortArray ssgLevelSeqSpec;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 

@@ -6,15 +6,13 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       NonDMultilevelPolynomialChaos
-//- Description: Implementation code for NonDMultilevelPolynomialChaos class
+//- Class:       NonDMultilevelFunctionTrain
+//- Description: Implementation code for NonDMultilevelFunctionTrain class
 //- Owner:       Mike Eldred, Sandia National Laboratories
 
-#include "NonDMultilevelPolynomialChaos.hpp"
+#include "NonDMultilevelFunctionTrain.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
-#include "NonDQuadrature.hpp"
-#include "NonDSparseGrid.hpp"
 #include "DataFitSurrModel.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "SharedPecosApproxData.hpp"
@@ -27,16 +25,13 @@ namespace Dakota {
 
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
-NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
-  NonDPolynomialChaos(BaseConstructor(), problem_db, model),
+NonDMultilevelFunctionTrain::
+NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
+  NonDC3FunctionTrain(/*BaseConstructor(),*/ problem_db, model),
   mlmfAllocControl(
     probDescDB.get_short("method.nond.multilevel_allocation_control")),
-  expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
-  collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
-  expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
-  quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
+  //expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
+  //collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   sequenceIndex(0),
   kappaEstimatorRate(
     probDescDB.get_real("method.nond.multilevel_estimator_rate")),
@@ -84,54 +79,39 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     = probDescDB.get_usa("method.nond.tensor_grid_order");
 
   // extract sequences and invoke shared helper fn with a scalar...
-  unsigned short exp_order = USHRT_MAX, quad_order = USHRT_MAX,
-    ssg_level = USHRT_MAX, cub_int = USHRT_MAX;
-  size_t SZ_MAX = std::numeric_limits<size_t>::max(),
-    colloc_pts = SZ_MAX, exp_samples = SZ_MAX;
+  unsigned short exp_order = USHRT_MAX;
+  size_t SZ_MAX = std::numeric_limits<size_t>::max(), colloc_pts = SZ_MAX;
   if (!expOrderSeqSpec.empty())
     exp_order = (sequenceIndex < expOrderSeqSpec.size()) ?
       expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
   if (!collocPtsSeqSpec.empty())
     colloc_pts = (sequenceIndex < collocPtsSeqSpec.size()) ?
       collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-  if (!expSamplesSeqSpec.empty())
-    exp_samples = (sequenceIndex < expSamplesSeqSpec.size()) ?
-      expSamplesSeqSpec[sequenceIndex] : expSamplesSeqSpec.back();
-  if (!quadOrderSeqSpec.empty())
-    quad_order = (sequenceIndex < quadOrderSeqSpec.size()) ?
-      quadOrderSeqSpec[sequenceIndex] : quadOrderSeqSpec.back();
-  if (!ssgLevelSeqSpec.empty())
-    ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
-      ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
 
   Iterator u_space_sampler;
   String approx_type;
   UShortArray exp_orders; // defined for expansion_samples/regression
   config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
 
-  if (!config_integration(quad_order, ssg_level, cubIntSpec,
-			  u_space_sampler, g_u_model, approx_type) &&
-      !config_expectation(exp_samples, sample_type, rng, u_space_sampler,
-			  g_u_model, approx_type) &&
-      !config_regression(exp_orders, colloc_pts, colloc_ratio_terms_order,
+  if (!config_regression(exp_orders, colloc_pts, colloc_ratio_terms_order,
 			 regress_type, ls_regress_type, tensor_grid_order,
 			 sample_type, rng, pt_reuse, u_space_sampler,
 			 g_u_model, approx_type)) {
-    Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
+    Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   // mlmfAllocControl config and specification checks:
-  if (methodName == MULTILEVEL_POLYNOMIAL_CHAOS) {
+  if (methodName == MULTILEVEL_FUNCTION_TRAIN) {
     if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
       Cerr << "Error: unsupported solver configuration within "
-	   << "NonDMultilevelPolynomialChaos::core_run()." << std::endl;
+	   << "NonDMultilevelFunctionTrain::core_run()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
 
     switch (mlmfAllocControl) {
-    case RIP_SAMPLING:
+    case RANK_SAMPLING:
       // use OMP for robustness (over or under-determined)
       if (expansionCoeffsApproach == Pecos::DEFAULT_REGRESSION)
 	expansionCoeffsApproach    = Pecos::ORTHOG_MATCH_PURSUIT;
@@ -174,94 +154,15 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 			      importApproxActiveOnly);
 
   if (parallelLib.command_line_check())
-    Cout << "\nPolynomial_chaos construction completed: initial grid size of "
+    Cout << "\nFunction train construction completed: initial grid size of "
 	 << numSamplesOnModel << " evaluations to be performed." << std::endl;
 }
 
 
 /** This constructor is used for helper iterator instantiation on the fly
-    that employ numerical integration (quadrature, sparse grid, cubature). */
-NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
-			      short exp_coeffs_approach,
-			      const UShortArray& num_int_seq,
-			      const RealVector& dim_pref, short u_space_type,
-			      short refine_type, short refine_control,
-			      short covar_control, short ml_alloc_control,
-			      short ml_discrep, short rule_nest,
-			      short rule_growth, bool piecewise_basis,
-			      bool use_derivs):
-  NonDPolynomialChaos(/*method_name*/MULTIFIDELITY_POLYNOMIAL_CHAOS, model,
-		      exp_coeffs_approach, dim_pref, u_space_type, refine_type,
-		      refine_control, covar_control, ml_discrep, rule_nest,
-		      rule_growth, piecewise_basis, use_derivs), 
-  mlmfAllocControl(ml_alloc_control), sequenceIndex(0), kappaEstimatorRate(2.),
-  gammaEstimatorScale(1.)
-{
-  assign_discrepancy_mode();
-  assign_hierarchical_response_mode();
-
-  // ----------------
-  // Resolve settings
-  // ----------------
-  short data_order;
-  resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
-
-  // -------------------
-  // Recast g(x) to G(u)
-  // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    uSpaceType), false); // retain dist bounds
-
-  // -------------------------
-  // Construct u_space_sampler
-  // -------------------------
-  unsigned short quad_order = USHRT_MAX, ssg_level = USHRT_MAX,
-                 cub_int    = USHRT_MAX;
-  unsigned short num_int = (sequenceIndex < num_int_seq.size()) ?
-    num_int_seq[sequenceIndex] : num_int_seq.back();
-  switch (exp_coeffs_approach) {
-  case Pecos::QUADRATURE:
-    quadOrderSeqSpec = num_int_seq; quad_order = num_int; break;
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
-    ssgLevelSeqSpec  = num_int_seq; ssg_level  = num_int; break;
-  case Pecos::CUBATURE:             cubIntSpec = num_int; break;
-  default:
-    Cerr << "Error: Unsupported expansion coefficients approach." << std::endl;
-    abort_handler(METHOD_ERROR); break;
-  }
-  Iterator u_space_sampler; String approx_type;
-  config_integration(quad_order, ssg_level, cubIntSpec,
-		     u_space_sampler, g_u_model, approx_type);
-
-  // --------------------------------
-  // Construct G-hat(u) = uSpaceModel
-  // --------------------------------
-  // G-hat(u) uses an orthogonal polynomial approximation over the
-  // active/uncertain variables (using same view as iteratedModel/g_u_model:
-  // not the typical All view for DACE).  No correction is employed.
-  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  UShortArray exp_orders; String pt_reuse; // empty for integration approaches
-  short corr_order = -1, corr_type = NO_CORRECTION;
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
-  // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
-  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
-  ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse), false);
-  initialize_u_space_model();
-
-  // no expansionSampler, no numSamplesOnExpansion
-}
-
-
-/** This constructor is used for helper iterator instantiation on the fly
-    that employ regression (least squares, CS, OLI). */
-NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
+    that employ regression.
+NonDMultilevelFunctionTrain::
+NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			      short exp_coeffs_approach,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
@@ -276,7 +177,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      bool cv_flag, const String& import_build_pts_file,
 			      unsigned short import_build_format,
 			      bool import_build_active_only):
-  NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
+  NonDC3FunctionTrain(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
 		      ml_discrep, //rule_nest, rule_growth,
 		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
@@ -345,13 +246,40 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 
   // no expansionSampler, no numSamplesOnExpansion
 }
+*/
 
 
-NonDMultilevelPolynomialChaos::~NonDMultilevelPolynomialChaos()
+NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 { }
 
 
-void NonDMultilevelPolynomialChaos::initialize_u_space_model()
+void NonDMultilevelFunctionTrain::assign_hierarchical_response_mode()
+{
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+
+  // *** TO DO ***: iteratedModel should be DataFitSurr on top of HierarchSurr
+
+  if (iteratedModel.surrogate_type() != "hierarchical") {
+    Cerr << "Error: multilevel/multifidelity expansions require a "
+	 << "hierarchical model." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // ML-MF FT is based on model discrepancies, but multi-index FT may evolve
+  // towards BYPASS_SURROGATE as sparse grids in model space will manage QoI
+  // differences.  (See also hierarchical multilevel SC.)
+  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  else
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
+  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
+}
+
+
+void NonDMultilevelFunctionTrain::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
@@ -359,7 +287,7 @@ void NonDMultilevelPolynomialChaos::initialize_u_space_model()
   //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
-  NonDPolynomialChaos::initialize_u_space_model();
+  NonDC3FunctionTrain::initialize_u_space_model();
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
@@ -367,195 +295,27 @@ void NonDMultilevelPolynomialChaos::initialize_u_space_model()
 }
 
 
-/*
-bool NonDMultilevelPolynomialChaos::resize()
-{
-  //resizedFlag = true;
-
-  bool parent_reinit_comms = NonDExpansion::resize();
-  
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dimPrefSpec);
-
-  // ----------------
-  // Resolve settings
-  // ----------------
-  short data_order;
-  resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
-
-  // -------------------
-  // Recast g(x) to G(u)
-  // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    uSpaceType), false); // retain dist bounds
-
-  // -------------------------
-  // Construct u_space_sampler
-  // -------------------------
-  // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
-  // generated using active sampling view:
-  Iterator u_space_sampler;
-  UShortArray exp_order; // empty for numerical integration approaches
-  switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE:
-    construct_quadrature(u_space_sampler,  g_u_model,
-                         quadOrderSeqSpec[sequenceIndex], dimPrefSpec);
-    break;
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
-    construct_sparse_grid(u_space_sampler, g_u_model,
-                          ssgLevelSeqSpec[sequenceIndex], dimPrefSpec);
-    break;
-  case Pecos::CUBATURE:
-    construct_cubature(u_space_sampler, g_u_model, cubIntSpec);
-    break;
-  default:
-    if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
-	expOrderSeqSpec.empty()) {
-      // extract number of collocation points
-      numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
-	collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-      // Construct u_space_sampler
-      String rng("mt19937");
-      construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
-    }
-    else { // expansion_order-based
-      // resolve expansionBasisType, exp_terms, numSamplesOnModel
-      if (!expansionBasisType)
-	expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
-	  Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
-      unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
-	expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
-	dimPrefSpec, numContinuousVars, exp_order);
-
-      size_t exp_terms;
-      switch (expansionBasisType) {
-      case Pecos::TOTAL_ORDER_BASIS:
-      case Pecos::ADAPTED_BASIS_GENERALIZED:
-      case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
-	exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-	break;
-      case Pecos::TENSOR_PRODUCT_BASIS:
-	exp_terms
-	  = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
-	break;
-      }
-    
-      if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
-	collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
-      else if (collocRatio > 0.)     // define colloc pts from collocRatio
-	numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-
-      // Construct u_space_sampler
-      if (tensorRegression) // tensor sub-sampling
-	// define nominal quadrature order as exp_order + 1
-	// (m > p avoids most of the 0's in the Psi measurement matrix)
-	construct_quadrature(u_space_sampler, g_u_model, scalar+1, dimPrefSpec);
-      else {
-	String rng("mt19937");
-	construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-		      numSamplesOnModel, randomSeed, rng, false, ACTIVE);
-      }
-    }
-    break;
-  }
-
-  // --------------------------------
-  // Construct G-hat(u) = uSpaceModel
-  // --------------------------------
-  // G-hat(u) uses an orthogonal polynomial approximation over the
-  // active/uncertain variables (using same view as iteratedModel/g_u_model:
-  // not the typical All view for DACE).  No correction is employed.
-  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  short corr_order = -1, corr_type = NO_CORRECTION;
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
-  // DFSModel: consume any QoI aggregation. Resize: support approx Hessians.
-  ShortArray asv(g_u_model.qoi(), 7);
-  ActiveSet pce_set(asv, recast_set.derivative_vector());
-  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
-      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::CUBATURE) {
-    String pt_reuse, approx_type = "global_projection_orthogonal_polynomial";
-    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-      outputLevel, pt_reuse), false);
-  }
-  else {
-    String pt_reuse, approx_type = "global_regression_orthogonal_polynomial";
-
-    if (!importBuildPointsFile.empty())
-      pt_reuse = "all";
-
-    uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-      pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-      outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-      importBuildActiveOnly), false);
-  }
-
-  initialize_u_space_model();
-
-  // -------------------------------------
-  // (Re)Construct expansionSampler, if needed
-  // -------------------------------------
-  construct_expansion_sampler(importApproxPointsFile, importApproxFormat,
-			      importApproxActiveOnly);
-
-  return true; // Always need to re-initialize communicators
-}
-*/
-
-
-void NonDMultilevelPolynomialChaos::core_run()
+void NonDMultilevelFunctionTrain::core_run()
 {
   initialize_expansion();
   sequenceIndex = 0;
 
-  // Options for import of discrepancy data.
-  // > There is no good way for import to segregate the desired Q^l sample sets
-  //   from among paired sets for Q^0, Q^1 - Q^0, Q^2 - Q^1, ..., Q^L - Q^Lm1.
-  //   Would have to develop special processing to match up sample pairs (e.g.,
-  //   top down starting from Q^L or bottom up starting from Q^0).
-  // > Could import discrepancy data for lev > 0.  But violates use of low level
-  //   data within restart (the transfer mechanism), and lookup can't use 2
-  //   solution control levels -- would have to rely on, e.g., higher level and
-  //   propagate this level from HF model vars to HierarchSurr vars to DataFit
-  //   vars to capture imported data in build_global()).  Less clean, more
-  //   hack-ish, although may still need better solution level propagation
-  //   across models for import consistency() checks to work properly.
-  // > Migrate to recursive approximation, where each level only imports one
-  //   set of sample data (no solution control hacks or sampling pairing reqd).
-  //   Diverges from MLMC, but is more consistent with HierarchInterpPolyApprox.
-  //   Other advantages: sample set freedom across levels, reduced cost from
-  //   not requiring additional Q^lm1 observations, telescoping consistency of
-  //   level surrogates, local error estimates relative to previous surrogate.
-  //   >> supporting recursive and distinct emulation cases would lead to
-  //      uneven support for import.  Best to implement, verify, migrate?
-  //   >> want to support import for MF PCE as well, including future
-  //      adaptive MF PCE.
-
   bool multifid_uq = false;
   switch (methodName) {
-  case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+  case MULTIFIDELITY_FUNCTION_TRAIN:
     multifid_uq = true;
     // general-purpose algorithms inherited from NonDExpansion:
     switch (mlmfAllocControl) {
-    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
-    default:                   multifidelity_expansion(refineType); break;
+    case GREEDY_REFINEMENT:  greedy_multifidelity_expansion();     break;
+    default:                 multifidelity_expansion(refineType);  break;
     }
     break;
-  case MULTILEVEL_POLYNOMIAL_CHAOS:
-    // Projection-based approaches are precluded by the ML PCE spec.
-    // TO DO: assign a default ML alloc_control (don't default to MF)
+  case MULTILEVEL_FUNCTION_TRAIN:
+    // TO DO: assign a default ML alloc_control = RANK_SAMPLING
     multilevel_regression();
     break;
   default:
-    Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
+    Cerr << "Error: bad configuration in NonDMultilevelFunctionTrain::"
 	 << "core_run()" << std::endl;
     abort_handler(METHOD_ERROR);
     break;
@@ -572,140 +332,50 @@ void NonDMultilevelPolynomialChaos::core_run()
   // to avoid intermediate output with no final output
   if (!summaryOutputFlag) print_results(Cout, FINAL_RESULTS);
 
-  // clean up for re-entrancy of ML PCE
+  // clean up for re-entrancy of ML FT
   uSpaceModel.clear_inactive();
 
   finalize_expansion();
 }
 
 
-void NonDMultilevelPolynomialChaos::assign_specification_sequence()
+void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
   bool update_exp = false, update_sampler = false, update_from_ratio = false;
-  switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE: {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-    if (sequenceIndex < quadOrderSeqSpec.size())
-      nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
-    else //if (refineControl)
-      nond_quad->reset();   // reset refinement, capture dist param updates
-    break;
+
+  // regression
+  // assign expansionOrder and/or collocationPoints, as admissible
+  if (sequenceIndex <  expOrderSeqSpec.size()) update_exp = true;
+  if (sequenceIndex < collocPtsSeqSpec.size()) {
+    numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+    update_sampler = true;
   }
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
-  case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    if (sequenceIndex < ssgLevelSeqSpec.size())
-      nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
-    else //if (refineControl)
-      nond_sparse->reset(); // reset refinement, capture dist param updates
-    break;
-  }
-  case Pecos::CUBATURE:
-    Cerr << "Error: cubature sequences not supported in NonDMultilevel"
-	 << "PolynomialChaos::increment_specification_sequence()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
-  case Pecos::SAMPLING: {
-    // assign expansionOrder and/or expansionSamples, as admissible
-    if (sequenceIndex <   expOrderSeqSpec.size()) update_exp = true;
-    if (sequenceIndex < expSamplesSeqSpec.size()) {
-      numSamplesOnModel = expSamplesSeqSpec[sequenceIndex];
-      update_sampler = true;
-    }
-    break;
-  }
-  case Pecos::ORTHOG_LEAST_INTERPOLATION:
-    // assign collocationPoints
-    if (sequenceIndex < collocPtsSeqSpec.size()) {
-      numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
-      update_sampler = true;
-    }
-    break;
-  default: { // regression
-    // assign expansionOrder and/or collocationPoints, as admissible
-    if (sequenceIndex <  expOrderSeqSpec.size()) update_exp = true;
-    if (sequenceIndex < collocPtsSeqSpec.size()) {
-      numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
-      update_sampler = true;
-    }
-    if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-      update_from_ratio = update_sampler = true;
-    break;
-  }
-  }
+  if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+    update_from_ratio = update_sampler = true;
 
   update_from_specification(update_exp, update_sampler, update_from_ratio);
 }
 
 
-void NonDMultilevelPolynomialChaos::increment_specification_sequence()
+void NonDMultilevelFunctionTrain::increment_specification_sequence()
 {
   bool update_exp = false, update_sampler = false, update_from_ratio = false;
-  switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE: {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-    if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
-      ++sequenceIndex;      // advance order sequence if sufficient entries
-      nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
-    }
-    else //if (refineControl)
-      nond_quad->reset();   // reset refinement, capture dist param updates
-    break;
-  }
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
-  case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
-      ++sequenceIndex;      // advance level sequence if sufficient entries
-      nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
-    }
-    else //if (refineControl)
-      nond_sparse->reset(); // reset refinement, capture dist param updates
-    break;
-  }
-  case Pecos::CUBATURE:
-    Cerr << "Error: cubature sequences not supported in NonDMultilevel"
-	 << "PolynomialChaos::increment_specification_sequence()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
-  case Pecos::SAMPLING: {
-    // advance expansionOrder and/or expansionSamples, as admissible
-    size_t next_i = sequenceIndex + 1;
-    if (next_i <   expOrderSeqSpec.size()) update_exp = true;
-    if (next_i < expSamplesSeqSpec.size())
-      { numSamplesOnModel = expSamplesSeqSpec[next_i]; update_sampler = true; }
-    if (update_exp || update_sampler) ++sequenceIndex;
-    break;
-  }
-  case Pecos::ORTHOG_LEAST_INTERPOLATION:
-    // advance collocationPoints
-    if (sequenceIndex+1 < collocPtsSeqSpec.size()) {
-      update_sampler = true; ++sequenceIndex;
-      numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
-    }
-    break;
-  default: { // regression
-    // advance expansionOrder and/or collocationPoints, as admissible
-    size_t next_i = sequenceIndex + 1;
-    if (next_i <  expOrderSeqSpec.size()) update_exp = true;
-    if (next_i < collocPtsSeqSpec.size())
-      { numSamplesOnModel = collocPtsSeqSpec[next_i]; update_sampler = true; }
-    if (update_exp || update_sampler) ++sequenceIndex;
-    if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-      update_from_ratio = update_sampler = true;
-    break;
-  }
-  }
+
+  // regression
+  // advance expansionOrder and/or collocationPoints, as admissible
+  size_t next_i = sequenceIndex + 1;
+  if (next_i <  expOrderSeqSpec.size()) update_exp = true;
+  if (next_i < collocPtsSeqSpec.size())
+    { numSamplesOnModel = collocPtsSeqSpec[next_i]; update_sampler = true; }
+  if (update_exp || update_sampler) ++sequenceIndex;
+  if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+    update_from_ratio = update_sampler = true;
 
   update_from_specification(update_exp, update_sampler, update_from_ratio);
 }
 
 
-void NonDMultilevelPolynomialChaos::
+void NonDMultilevelFunctionTrain::
 update_from_specification(bool update_exp, bool update_sampler,
 			  bool update_from_ratio)
 {
@@ -756,33 +426,22 @@ update_from_specification(bool update_exp, bool update_sampler,
 }
 
 
-void NonDMultilevelPolynomialChaos::
+void NonDMultilevelFunctionTrain::
 increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 {
   numSamplesOnModel = new_samp;
 
   bool update_exp = false, update_sampler = false, update_from_ratio = false,
     err_flag = false;
-  switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE:            case Pecos::CUBATURE:
-  case Pecos::COMBINED_SPARSE_GRID:  case Pecos::INCREMENTAL_SPARSE_GRID:
-  case Pecos::HIERARCHICAL_SPARSE_GRID:
-    err_flag = true; break;
-  case Pecos::SAMPLING:
-    //if () update_exp = true;
-    update_sampler = true; break;
-  case Pecos::ORTHOG_LEAST_INTERPOLATION:
-    update_sampler = true; break;
-  default: // regression
-    update_exp = update_sampler = true;
-    // fix the basis cardinality in the case of RIP_SAMPLING
-    if (mlmfAllocControl != RIP_SAMPLING) {
-      if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-	update_from_ratio = true;
-      else // config via collocation pts sequence not supported
-	err_flag = true;
-    }
-    break;
+
+  // regression
+  update_exp = update_sampler = true;
+  // fix the basis cardinality in the case of RANK_SAMPLING
+  if (mlmfAllocControl != RANK_SAMPLING) {
+    if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+      update_from_ratio = true;
+    else // config via collocation pts sequence not supported
+      err_flag = true;
   }
 
   if (update_exp) {
@@ -828,14 +487,14 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   }
 
   if (err_flag) {
-    Cerr << "Error: option not yet supported in NonDMultilevelPolynomialChaos::"
+    Cerr << "Error: option not yet supported in NonDMultilevelFunctionTrain::"
 	 << "increment_sample_sequence." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 }
 
 
-void NonDMultilevelPolynomialChaos::multilevel_regression()
+void NonDMultilevelFunctionTrain::multilevel_regression()
 {
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
@@ -849,12 +508,12 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   size_t num_lev, iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
   RealVector cost;
-  bool multilev, optional_cost = (mlmfAllocControl == RIP_SAMPLING),
+  bool multilev, optional_cost = (mlmfAllocControl == RANK_SAMPLING),
     recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   configure_levels(num_lev, form, multilev, false);
   configure_cost(num_lev, multilev, cost);
   SizetArray cardinality;  RealVector level_metric(num_lev);
-  if (mlmfAllocControl == RIP_SAMPLING)
+  if (mlmfAllocControl == RANK_SAMPLING)
     cardinality.resize(num_lev);
 
   // Multilevel variance aggregation requires independent sample sets
@@ -872,7 +531,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       Cout << "\nPilot sample to include imported build points.\n";
     else {
       Cerr << "Error: build data import only supported for recursive emulation "
-	   << "in NonDMultilevelPolynomialChaos::multilevel_regression()."
+	   << "in NonDMultilevelFunctionTrain::multilevel_regression()."
 	   << std::endl;
       abort_handler(METHOD_ERROR);
     }
@@ -924,7 +583,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       }
 
       switch (mlmfAllocControl) {
-      case RIP_SAMPLING: // use RMS of sparsity across QoI
+      case RANK_SAMPLING: // use RMS of sparsity across QoI
 	if (delta_N_l[lev] > 0)
 	  sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
 	break;
@@ -942,7 +601,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
     }
 
     switch (mlmfAllocControl) {
-    case RIP_SAMPLING:
+    case RANK_SAMPLING:
       compute_sample_increment(cardinality, 2., level_metric, NLev, delta_N_l);
       break;
     default: //case ESTIMATOR_VARIANCE:
@@ -956,17 +615,17 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       break;
     }
     ++iter;
-    Cout << "\nML PCE iteration " << iter << " sample increments:\n"
+    Cout << "\nML FT iteration " << iter << " sample increments:\n"
 	 << delta_N_l << std::endl;
   }
   compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
-  combined_to_active(); // combine PCE terms and promote to active expansion
+  combined_to_active(); // combine FT terms and promote to active expansion
   // Final annotated results are computed / printed in core_run()
 }
 
 
-void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
+void NonDMultilevelFunctionTrain::aggregate_variance(Real& agg_var_l)
 {
   // case ESTIMATOR_VARIANCE:
   // statsType remains as Pecos::ACTIVE_EXPANSION_STATS
@@ -989,10 +648,10 @@ void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 
 /* Retrieve basis cardinality and compute power mean of sparsity
    (common power values: 1 = average, 2 = root mean square). */
-void NonDMultilevelPolynomialChaos::
+void NonDMultilevelFunctionTrain::
 sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l, Real power)
 {
-  // case RIP_SAMPLING:
+  // case RANK_SAMPLING:
 
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
@@ -1014,7 +673,7 @@ sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l, Real power)
 }
 
 
-void NonDMultilevelPolynomialChaos::
+void NonDMultilevelFunctionTrain::
 compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 			 Real sum_root_var_cost, Real eps_sq_div_2,
 			 const SizetArray& N_l, SizetArray& delta_N_l)
@@ -1059,12 +718,12 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 }
 
 
-void NonDMultilevelPolynomialChaos::
+void NonDMultilevelFunctionTrain::
 compute_sample_increment(const SizetArray& cardinality, Real factor,
 			 const RealVector& sparsity, const SizetArray& N_l,
 			 SizetArray& delta_N_l)
 {
-  // case RIP_SAMPLING:
+  // case RANK_SAMPLING:
 
   // update targets based on sparsity estimates
   Real s/*, card*/; size_t lev, num_lev = N_l.size();
@@ -1088,7 +747,7 @@ compute_sample_increment(const SizetArray& cardinality, Real factor,
 }
 
 
-void NonDMultilevelPolynomialChaos::
+void NonDMultilevelFunctionTrain::
 scale_profile(const SizetArray& cardinality, Real factor, RealVector& new_N_l)
 {
   size_t lev, num_lev = cardinality.size();
@@ -1105,7 +764,7 @@ scale_profile(const SizetArray& cardinality, Real factor, RealVector& new_N_l)
 }
 
 
-void NonDMultilevelPolynomialChaos::
+void NonDMultilevelFunctionTrain::
 print_results(std::ostream& s, short results_state)
 {
   switch (results_state) {
@@ -1124,7 +783,7 @@ print_results(std::ostream& s, short results_state)
     break;
   }
 
-  // skip over NonDPolynomialChaos::print_results()
+  // skip over NonDC3FunctionTrain::print_results()
   NonDExpansion::print_results(s, results_state);
 }
 

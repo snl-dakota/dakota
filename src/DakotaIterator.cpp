@@ -107,6 +107,7 @@
 #endif
 #ifdef HAVE_C3
 #include "NonDC3FunctionTrain.hpp"
+#include "NonDMultilevelFunctionTrain.hpp"
 #endif
 #ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
@@ -459,8 +460,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_C3
   case C3_FUNCTION_TRAIN:
     return new NonDC3FunctionTrain(problem_db, model); break;
-  //case MULTIFIDELITY_FUNCTION_TRAIN:
-  //  return new NonDMultilevelFunctionTrain(problem_db, model); break;
+  case MULTILEVEL_FUNCTION_TRAIN: case MULTIFIDELITY_FUNCTION_TRAIN:
+    return new NonDMultilevelFunctionTrain(problem_db, model); break;
 #endif
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification

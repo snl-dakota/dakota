@@ -1251,6 +1251,54 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel)
 }
 
 
+void NonDExpansion::assign_discrepancy_mode()
+{
+  // assign alternate defaults for correction and discrepancy emulation types
+  switch (iteratedModel.correction_type()) {
+  //case ADDITIVE_CORRECTION:
+  //case MULTIPLICATIVE_CORRECTION:
+  case NO_CORRECTION: // assign method-specific default
+    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
+  }
+
+  switch (multilevDiscrepEmulation) {
+  // HIERARCHICAL_INTERPOLANT approaches are already recursive ...
+  //case DISTINCT_EMULATION:
+  //  consider disallowing for basis type Pecos::HIERARCHICAL_INTERPOLANT
+  //case RECURSIVE_EMULATION:
+  //  consider disallowing for basis type Pecos::NODAL_INTERPOLANT
+  case DEFAULT_EMULATION: // assign method-specific default
+    multilevDiscrepEmulation =
+      //(expBasisType==Pecos::HIERARCHICAL_INTERPOLANT) ? RECURSIVE_EMULATION :
+      DISTINCT_EMULATION;
+    break;
+  }
+}
+
+
+void NonDExpansion::assign_hierarchical_response_mode()
+{
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+
+  if (iteratedModel.surrogate_type() != "hierarchical") {
+    Cerr << "Error: multilevel/multifidelity expansions require a "
+	 << "hierarchical model." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // Hierarchical SC is already based on surpluses, so default behavior could
+  // differ from PCE (see assign_discrepancy_mode())
+  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  else
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
+  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
+}
+
+
 void NonDExpansion::
 compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
 {
