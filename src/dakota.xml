@@ -578,7 +578,7 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY ml_alloc_control '
+    <!ENTITY mlpce_alloc_control '
       	     <keyword  id="allocation_control" name="allocation_control" code="{0}" label="allocation_control" help="" minOccurs="0" >
 	       <oneOf label="Multilevel Sample Allocation Control">
 		 <keyword  id="estimator_variance" name="estimator_variance" code="{N_mdm(type,mlmfAllocControl_ESTIMATOR_VARIANCE)}" label="estimator_variance" help="" >
@@ -587,7 +587,19 @@
 		   </keyword>
 		 </keyword>
 		 <keyword  id="rip_sampling" name="rip_sampling" code="{N_mdm(type,mlmfAllocControl_RIP_SAMPLING)}" label="rip_sampling" help="" />
-		 <keyword  id="greedy" name="greedy" code="{N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}" label="greedy" help="" />
+	       </oneOf>
+	     </keyword>
+	     ' >
+
+    <!ENTITY mlft_alloc_control '
+      	     <keyword  id="allocation_control" name="allocation_control" code="{0}" label="allocation_control" help="" minOccurs="0" >
+	       <oneOf label="Multilevel Sample Allocation Control">
+		 <keyword  id="estimator_variance" name="estimator_variance" code="{N_mdm(type,mlmfAllocControl_ESTIMATOR_VARIANCE)}" label="estimator_variance" help="" >
+		   <keyword  id="estimator_rate" name="estimator_rate" code="{N_mdm(Real,multilevEstimatorRate)}" label="estimator_rate" help="" minOccurs="0" default="2" >
+		     <param type="REAL" />
+		   </keyword>
+		 </keyword>
+		 <keyword  id="rank_sampling" name="rank_sampling" code="{N_mdm(type,mlmfAllocControl_RANK_SAMPLING)}" label="rank_sampling" help="" />
 	       </oneOf>
 	     </keyword>
 	     ' >
@@ -739,7 +751,7 @@
 
     <!ENTITY bayes_pce '
 	     <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce"  minOccurs="1" >
-	       &pce_refinement;    <!-- NEW -->
+	       &pce_refinement;
 	       <oneOf>
 		 &expansion_quadrature;
 		 &pce_sparse_grid;
@@ -755,8 +767,8 @@
     <!ENTITY bayes_ml_pce '
       	     <keyword  id="ml_pce" name="ml_pce" code="{N_mdm(type,emulatorType_ML_PCE_EMULATOR)}" label="ml_pce"  minOccurs="1" >
 	       &ml_pilot_samples;
-	       &ml_alloc_control;  <!-- NEW -->
-	       &discrep_emulation; <!-- NEW -->
+	       &mlpce_alloc_control;
+	       &discrep_emulation;
 	       <oneOf>
 		 &pce_expansion_order_sequence;
 		 &pce_orthog_least_interp_sequence;
@@ -769,9 +781,9 @@
 
     <!ENTITY bayes_mf_pce '
       	     <keyword  id="mf_pce" name="mf_pce" code="{N_mdm(type,emulatorType_MF_PCE_EMULATOR)}" label="mf_pce"  minOccurs="1" >
-	       &pce_refinement;    <!-- NEW -->
-	       &mf_alloc_control;  <!-- NEW -->
-	       &discrep_emulation; <!-- NEW -->
+	       &pce_refinement;
+	       &mf_alloc_control;
+	       &discrep_emulation;
 	       <oneOf>
 		 &expansion_quadrature_sequence;
 		 &pce_sparse_grid_sequence;
@@ -791,7 +803,7 @@
 
     <!ENTITY bayes_sc '
      	     <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc"  minOccurs="1" >
-	       &sc_refinement;    <!-- NEW -->
+	       &sc_refinement;
 	       <oneOf label="Interpolation Grid Type">
 		 &expansion_quadrature;
 		 &sc_sparse_grid;
@@ -803,9 +815,9 @@
 
     <!ENTITY bayes_mf_sc '
       	     <keyword  id="mf_sc" name="mf_sc" code="{N_mdm(type,emulatorType_MF_SC_EMULATOR)}" label="mf_sc"  minOccurs="1" >
-	       &sc_refinement;      <!-- NEW -->
-	       &mf_alloc_control;   <!-- NEW -->
-	       &discrep_emulation;  <!-- NEW -->
+	       &sc_refinement;
+	       &mf_alloc_control;
+	       &discrep_emulation;
 	       <oneOf label="Interpolation Grid Type">
 		 &expansion_quadrature_sequence;
 		 &sc_sparse_grid_sequence;
@@ -2353,16 +2365,30 @@
           <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
             <param type="INTEGER" constraint=">= 0" />
           </keyword> -->
+	  <!-- &ft_options; -->
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
 
-        <!-- <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" > -->
-	  <!-- TO DO: FT can support an ML regression approach with profile shaping based on rank*dim^2 -->
-	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
-	  <!-- &expansion_options; -->
-	  <!-- &method_optional_model_pointer; -->
-        <!-- </keyword> -->
+        <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+	  <!-- &ft_refinement; INDIVIDUAL ADAPTIVE REFINEMENT PER LEVEL (currently use adapt_rank within Model) -->
+	  &mf_alloc_control;
+	  &discrep_emulation;
+	  <!-- &ft_options; -->
+	  &expansion_options;
+	  &method_optional_model_pointer;
+        </keyword>
+
+        <keyword  id="multilevel_function_train" name="multilevel_function_train" code="{N_mdm(utype,methodName_MULTILEVEL_FUNCTION_TRAIN)}" label="multilevel_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+	  &default_max_iterations;
+	  &ml_pilot_samples;   <!-- optional (MLMC uses default pilot = 100) -->
+	  &mlft_alloc_control; <!-- default is DEFAULT_MLMF_CONTROL -->
+	  &discrep_emulation;
+	  <!-- INTEGRATED ADAPTIVE REFINEMENT ACROSS LEVELS: ML regression approach with profile shaping based on rank*dim^2 -->
+	  <!-- &ft_options; -->
+	  &expansion_options;
+	  &method_optional_model_pointer;
+        </keyword>
 
 	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
 	  <alias name="nond_polynomial_chaos"/>
@@ -2393,7 +2419,7 @@
 	    &pce_expansion_order_sequence;
 	    &pce_orthog_least_interp_sequence;
 	    <!-- <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE"   >
-		 <param type="INPUT_FILE" />
+	      <param type="INPUT_FILE" />
 	    </keyword> -->
 	  </oneOf>
 	  &pce_options;
@@ -2402,16 +2428,15 @@
 	</keyword>
 
 	<keyword  id="multilevel_polynomial_chaos" name="multilevel_polynomial_chaos" code="{N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}" label="multilevel_polynomial_chaos"  minOccurs="1" group="Uncertainty Quantification" >
-	  <!-- &pce_refinement; -->
 	  &default_max_iterations;
 	  &ml_pilot_samples;
-	  &ml_alloc_control;
+	  &mlpce_alloc_control; <!-- default is DEFAULT_MLMF_CONTROL (ESTIMATOR_VARIANCE) -->
 	  &discrep_emulation;
 	  <oneOf label="Coefficient Computation Approach">
 	    &pce_expansion_order_sequence;
 	    &pce_orthog_least_interp_sequence;
-	    <!-- <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE"   >
-		 <param type="INPUT_FILE" />
+	    <!-- <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE" >
+	      <param type="INPUT_FILE" />
 	    </keyword> -->
 	  </oneOf>
 	  &pce_options;
@@ -3491,7 +3516,7 @@
 		  </keyword>
 		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mom(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false"/>
 		  <!-- Carry over from method spec (for now)
-		  <keyword  id="verbosity" name="verbosity" code="{N_mom(sizet,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
+		  <keyword  id="verbosity" name="verbosity" code="{N_mom(nnint,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword> -->
 		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">

@@ -289,13 +289,11 @@ void NonDMultilevelStochCollocation::core_run()
     default:                   multifidelity_expansion(refineType); break;
     }
     break;
+  // There is no regression / unstructured grid option for SC.
+  // ML SC would require rounding to closest SSG level/TPQ order.
   //case MULTILEVEL_STOCH_COLLOCATION:
   //  multifid_uq = false;
-  //  switch (mlmfAllocControl) {
-  //  case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
-  //  case DEFAULT_MLMF_CONTROL: multifidelity_expansion(refineType); break;
-  //  default:                   multilevel_sparse_grid();            break;
-  //  }
+  //  multilevel_sparse_grid();
   //  break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelStochCollocation::"

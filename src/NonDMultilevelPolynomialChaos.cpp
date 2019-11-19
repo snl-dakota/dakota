@@ -591,12 +591,9 @@ void NonDMultilevelPolynomialChaos::core_run()
     }
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
-    switch (mlmfAllocControl) {
-    case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();  break;
-    // Projection-based approaches would require multifidelity_expansion(),
-    // but these options are currently precluded by the ML PCE specification.
-    default:                   multilevel_regression();           break;
-    }
+    // Projection-based approaches are precluded by the ML PCE spec.
+    // TO DO: assign a default ML alloc_control (don't default to MF)
+    multilevel_regression();
     break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
@@ -604,7 +601,7 @@ void NonDMultilevelPolynomialChaos::core_run()
     abort_handler(METHOD_ERROR);
     break;
   }
-  
+
   // generate final results
   Cout << "\n----------------------------------------------------\n";
   if (multifid_uq) Cout << "Multifidelity UQ: ";
