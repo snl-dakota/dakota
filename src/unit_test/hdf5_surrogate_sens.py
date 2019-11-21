@@ -194,6 +194,7 @@ class RestartData(unittest.TestCase):
         rdata = hce.read_restart_file(_TEST_NAME + ".rst")
         variables = ["x1", "x2","x3"]
         responses = ["f"]
+        ac = ["component1","component2"]
         self.assertItemsEqual(variables, rdata["variables"]["continuous"].keys())
         self.assertItemsEqual(responses, rdata["response"].keys())
         
@@ -208,7 +209,7 @@ class RestartData(unittest.TestCase):
             hresps_g = h["/interfaces/NO_ID/truth_m/responses/gradients"]
             hasv = h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]
             hdvv = h["/interfaces/NO_ID/truth_m/metadata/derivative_variables_vector"]
-
+            hac = h["/interfaces/NO_ID/truth_m/metadata/analysis_components"]
             # ASV
             for r_asv, h_asv in zip(rdata["asv"], h["/interfaces/NO_ID/truth_m/metadata/active_set_vector"]):
                 for r_a, h_a in zip(r_asv, h_asv):
@@ -221,6 +222,10 @@ class RestartData(unittest.TestCase):
                     if dvv_bool == 1:
                         h_dvv_ids.append(dvv_id)
                 self.assertItemsEqual(r_dvv, h_dvv_ids)
+            # Analysis Components
+            self.assertEqual(len(ac), len(hac), "Unexpected number of analysis components")
+            for e, h in zip(ac, hac):
+                self.assertEqual(e,h,"Analysis components in file not as expected.")
             # Responses
             # extract the portion of the gradient corresponding to the DVV
             def extract_gradient(full_grad, dvv):

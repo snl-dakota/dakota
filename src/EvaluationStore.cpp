@@ -1866,12 +1866,13 @@ void EvaluationStore::allocate_metadata(const String &root_group, const Variable
     hdf5Stream->attach_scale(dvv_name, metadata_scale_root + "dvv", "variable_ids", 1);
   }
   // Analysis Components
-  // TODO: these perhaps should be stored as a 2D dataset
+  // TODO: these perhaps should be stored as a 2D dataset, with shape
+  // (analysis drivers x components per driver)
   if(an_comps.size()) {
     StringArray all_comps;
     for(const auto &v : an_comps)
       all_comps.insert(all_comps.end(), v.begin(), v.end());
-    hdf5Stream->store_vector(metadata_root, all_comps);
+    hdf5Stream->store_vector(metadata_root + "analysis_components", all_comps);
   }
 #else
   return;
