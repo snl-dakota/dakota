@@ -51,7 +51,7 @@ enum { DEFAULT_METHOD=0,
        DACE, FSU_CVT, FSU_HALTON, FSU_HAMMERSLEY, PSUADE_MOAT,
        // NonD Analyzers:
        LOCAL_RELIABILITY=(ANALYZER_BIT | NOND_BIT), GLOBAL_RELIABILITY,
-       POLYNOMIAL_CHAOS, MULTILEVEL_POLYNOMIAL_CHAOS,
+       SURROGATE_BASED_UQ, POLYNOMIAL_CHAOS, MULTILEVEL_POLYNOMIAL_CHAOS,
        MULTIFIDELITY_POLYNOMIAL_CHAOS, STOCH_COLLOCATION,
        MULTIFIDELITY_STOCH_COLLOCATION, C3_FUNCTION_TRAIN,
        MULTILEVEL_FUNCTION_TRAIN, MULTIFIDELITY_FUNCTION_TRAIN,
@@ -125,8 +125,7 @@ enum { DEFAULT_CONFIG, PUSH_DOWN, PUSH_UP };
 // ----
 // NonD
 // ----
-// define special values for u_space_type in
-// NonD::initialize_random_variable_types()
+// define special values for u-space type used for random var transformations
 enum { STD_NORMAL_U, STD_UNIFORM_U, PARTIAL_ASKEY_U, ASKEY_U, EXTENDED_U };
 // define special values for covarianceControl
 enum { DEFAULT_COVARIANCE, NO_COVARIANCE, DIAGONAL_COVARIANCE,
@@ -767,11 +766,29 @@ public:
 
   // NonD C3 Function Train
 
-  // pointer to model parameters for UQ
-  //String modelParamSpec;
-  // Number of LHS used for construction
-  //size_t numSamplesForConstruct;
-    
+  /// maximum number of cross iterations
+  int maxCrossIterations;
+  /// optimization tolerance for FT regression
+  double solverTolerance;
+  /// Rounding tolerance for adaptive algorithms
+  double roundingTolerance;
+  /// starting polynomial order
+  size_t startOrder;
+  /// maximum order of basis polynomials
+  size_t maxOrder;
+  /// starting rank
+  size_t startRank;
+  /// rank increase increment
+  size_t kickRank;
+  /// maximum rank
+  size_t maxRank;
+  /// whether or not to adapt rank
+  bool adaptRank;
+  /// starting polynomial order
+  SizetArray startOrderSeq;
+  /// starting rank
+  SizetArray startRankSeq;
+
   // NonD & DACE
 
   /// the \c samples specification for NonD & DACE methods

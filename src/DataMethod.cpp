@@ -113,6 +113,10 @@ DataMethodRep::DataMethodRep():
   initMeshSize(1.0), minMeshSize(1.e-6), historyFile("mads_history"),
   displayFormat("bbe obj"), vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),
+  // C3 FT
+  maxCrossIterations(1), solverTolerance(1.e-10), roundingTolerance(1.e-8),
+  startOrder(2), maxOrder(4), startRank(2), kickRank(2), maxRank(3),
+  adaptRank(false),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -267,6 +271,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
     << neighborOrder << showAllEval << useSurrogate;
+
+  // C3 FT
+  s << maxCrossIterations << solverTolerance << roundingTolerance << startOrder
+    << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
@@ -423,6 +432,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> initMeshSize >> minMeshSize >> historyFile >> displayFormat >> vns
     >> neighborOrder >> showAllEval >> useSurrogate;
 
+  // C3 FT
+  s >> maxCrossIterations >> solverTolerance >> roundingTolerance >> startOrder
+    >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
+    >> startOrderSeq >> startRankSeq;
+
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
     >> vbdFlag >> vbdDropTolerance >> backfillFlag >> pcaFlag
@@ -577,6 +591,11 @@ void DataMethodRep::write(std::ostream& s) const
   // MADS
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
     << neighborOrder << showAllEval << useSurrogate;
+
+  // C3 FT
+  s << maxCrossIterations << solverTolerance << roundingTolerance << startOrder
+    << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << startOrderSeq << startRankSeq;
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag

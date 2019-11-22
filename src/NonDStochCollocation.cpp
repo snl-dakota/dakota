@@ -39,7 +39,6 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -114,7 +113,6 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)

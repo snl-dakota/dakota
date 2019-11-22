@@ -368,6 +368,8 @@ public:
 
   /// max iterations for optimization solver used in FT regression
   int maxSolverIterations;
+  /// maximum number of cross iterations
+  int maxCrossIterations;
   /// optimization tolerance for FT regression
   double solverTolerance;
   /// Rounding tolerance for adaptive algorithms
@@ -384,8 +386,6 @@ public:
   size_t maxRank;
   /// whether or not to adapt rank
   bool adaptRank;
-  /// maximum number of cross iterations
-  int crossMaxIter;
   // Verbosity level
   //size_t verbosity;
     

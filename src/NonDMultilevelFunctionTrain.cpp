@@ -42,12 +42,13 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
+  /*  Redundant with C3 base class
+
   // ----------------
   // Resolve settings
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -77,6 +78,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
   const UShortArray& tensor_grid_order
     = probDescDB.get_usa("method.nond.tensor_grid_order");
+  */
 
   // extract sequences and invoke shared helper fn with a scalar...
   unsigned short exp_order = USHRT_MAX;
@@ -193,7 +195,6 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)

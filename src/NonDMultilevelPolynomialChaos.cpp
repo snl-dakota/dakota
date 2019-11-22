@@ -52,7 +52,6 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -206,7 +205,6 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -292,7 +290,6 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -384,7 +381,6 @@ bool NonDMultilevelPolynomialChaos::resize()
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)

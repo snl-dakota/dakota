@@ -60,7 +60,6 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
   short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -72,14 +71,12 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     // All fn train model settings are pulled in that ctor chain
     uSpaceModel = iteratedModel; // shared rep
 
-    // TO DO: how to best manage the u-space transformation?
-
+    // Notes on managing the u-space transformation:
     // > wrapping iteratedModel here applies the transformation on top of the
     //   incoming DataFitSurrModel --> insufficient for internal build.
-    //uSpaceModel.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    //  u_space_type), false); // only affects exp_sampler
-
-    // > intruding into the DataFitSurrModel ctor is awkward because the
+    //     uSpaceModel.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    //       u_space_type), false); // only affects exp_sampler
+    // > modifying the DataFitSurrModel ctor requires care because the
     //   daceIterator spec points to the actualModel spec (when DACE is active)
     //   and daceIterator should sample in u-space for a u-space approx.  This
     //   requires recasting + reinserting the model + re-initializing DACE (no
@@ -105,6 +102,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     //   >> allows pathway to specification-based {orthog,interp} as well
 
     // publish random variable types
+    // TO DO: needs to be integrated within Model-driven workflow
     initialize_data_fit_surrogate(iteratedModel);
   }
   else { // wrap iteratedModel in prob transform + DataFit (as in PCE/SC)
@@ -174,7 +172,10 @@ NonDC3FunctionTrain::~NonDC3FunctionTrain()
 void NonDC3FunctionTrain::
 resolve_inputs(short& u_space_type, short& data_order)
 {
-  // May want this eventually to manage different transformation options...
+  NonDExpansion::resolve_inputs(u_space_type, data_order);
+
+  // May eventually manage different transformation options, but hardwired
+  // to PARTIAL_ASKEY_U for now
 
   data_order = 1; // no deriv enhancement for now...
 }
@@ -185,8 +186,7 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     dfs_model.shared_approximation().data_rep();
 
-  // For PCE, the approximation and integration bases are the same.  We (always)
-  // construct it for the former and (conditionally) pass it in to the latter.
+  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
     = dfs_model.truth_model().multivariate_distribution();
   shared_data_rep->construct_basis(u_dist);
@@ -207,7 +207,11 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
 
 void NonDC3FunctionTrain::push_c3_options()
 {
-  //size_t model_index    = probDescDB.get_db_model_node(); // for restoration
+  // ********************
+  // NOT CURRENTLY ACTIVE
+  // ********************
+
+  //size_t model_index = probDescDB.get_db_model_node(); // for restoration
   //String model_ptr_name
   //  = probDescDB.get_string("method.c3function_train.model_param_spec");
   // String model_ptr_name  = "FT";

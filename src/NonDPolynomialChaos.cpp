@@ -79,7 +79,6 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -187,7 +186,6 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -272,7 +270,6 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -672,7 +669,6 @@ bool NonDPolynomialChaos::resize()
   // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)

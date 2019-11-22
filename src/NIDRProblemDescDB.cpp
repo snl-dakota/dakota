@@ -6841,11 +6841,13 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
+	MP_(roundingTolerance),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
+	MP_(solverTolerance),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -6895,7 +6897,9 @@ static unsigned short
 static SizetArray
 	MP_(collocationPointsSeq),
         MP_(expansionSamplesSeq),
-  	MP_(pilotSamples);
+  	MP_(pilotSamples),
+  	MP_(startOrderSeq),
+  	MP_(startRankSeq);
 
 static UShortArray
         MP_(expansionOrderSeq),
@@ -6949,6 +6953,7 @@ static StringArray
 static bool
 	MP_(adaptExpDesign),
 	MP_(adaptPosteriorRefine),
+        MP_(adaptRank),
 	MP_(backfillFlag),
 	MP_(calModelDiscrepancy),
 	MP_(chainDiagnostics),
@@ -7016,6 +7021,7 @@ static int
         MP_(evidenceSamples),
         MP_(iteratorServers),
 	MP_(jumpStep),
+	MP_(maxCrossIterations),
 	MP_(maxFunctionEvaluations),
 	MP_(maxHifiEvals),
 	MP_(maxIterations),
@@ -7044,15 +7050,19 @@ static int
 static size_t
 	MP_(collocationPoints),
         MP_(expansionSamples),
+        MP_(kickRank),
+        MP_(maxOrder),        
+        MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
-    MP_(numDesigns),
-    MP_(numFinalSolutions),
+	MP_(numDesigns),
+	MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
-  	MP_(numPredConfigs);
-
+  	MP_(numPredConfigs),
+        MP_(startOrder),
+        MP_(startRank);
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -7248,8 +7258,9 @@ static Method_mp_utype
         MP2s(methodName,POF_DARTS),
 	MP2s(methodName,RKD_DARTS),
 	MP2s(methodName,POLYNOMIAL_CHAOS),
-	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,STOCH_COLLOCATION),
+	MP2s(methodName,SURROGATE_BASED_UQ),
+	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,NONLINEAR_CG),
 	MP2s(methodName,NPSOL_SQP),
 	MP2s(methodName,OPTPP_CG),
@@ -7409,28 +7420,28 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
         MP2s(randomFieldIdForm,RF_PCA_GP),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_GRAD),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_LOCAL_GRAD),
-	      MP2s(subspaceSampleType,SUBMETHOD_LHS),
-	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM),
-	      MP2s(subspaceIdCVMethod,MINIMUM_METRIC),
-	      MP2s(subspaceIdCVMethod,RELATIVE_TOLERANCE),
-	      MP2s(subspaceIdCVMethod,DECREASE_TOLERANCE);
+	MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
+	MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_GRAD),
+	MP2s(subspaceNormalization,SUBSPACE_NORM_LOCAL_GRAD),
+	MP2s(subspaceSampleType,SUBMETHOD_LHS),
+	MP2s(subspaceSampleType,SUBMETHOD_RANDOM),
+	MP2s(subspaceIdCVMethod,MINIMUM_METRIC),
+	MP2s(subspaceIdCVMethod,RELATIVE_TOLERANCE),
+	MP2s(subspaceIdCVMethod,DECREASE_TOLERANCE);
 
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
 	MP_(convergenceTolerance),
+	MP_(decreaseTolerance),
         MP_(discontGradThresh),
         MP_(discontJumpThresh),
 	MP_(krigingNugget),
 	MP_(percentFold),
 	MP_(truncationTolerance),
 	MP_(relTolerance),
-	MP_(solverTolerance),
 	MP_(roundingTolerance),
-	MP_(decreaseTolerance);
+	MP_(solverTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),
@@ -7486,12 +7497,12 @@ static bool
         MP_(domainDecomp),
         MP_(pointSelection),
         MP_(pressFlag),
-  MP_(subspaceIdBingLi),
-  MP_(subspaceIdConstantine),
-  MP_(subspaceIdEnergy),
-  MP_(subspaceBuildSurrogate),
-  MP_(subspaceIdCV),
-  MP_(subspaceCVIncremental);
+        MP_(subspaceIdBingLi),
+        MP_(subspaceIdConstantine),
+        MP_(subspaceIdEnergy),
+        MP_(subspaceBuildSurrogate),
+        MP_(subspaceIdCV),
+        MP_(subspaceCVIncremental);
 
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
@@ -7511,9 +7522,9 @@ static short
 	MP_(rbfMinPartition);
 
 static int
-        MP_(crossMaxIter),
         MP_(decompSupportLayers),
         MP_(initialSamples),
+        MP_(maxCrossIterations),
         MP_(maxFunctionEvals),
         MP_(maxIterations),
 	MP_(maxSolverIterations),

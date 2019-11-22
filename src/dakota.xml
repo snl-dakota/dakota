@@ -73,6 +73,7 @@
                </oneOf>
              </optional>
 	     ' >
+
     <!ENTITY model_full_surfpack_export_format '
 	     <keyword  id="export_model" name="export_model" minOccurs="0" maxOccurs="1" code="{N_mom(true,exportSurrogate)}" label="Export Surrogate Model"  complexity="1">
                <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mom(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
@@ -86,6 +87,7 @@
                </keyword>
 	     </keyword>
 	     ' >
+
     <!ENTITY model_partial_surfpack_export_format '
 	     <keyword  id="export_model" name="export_model" minOccurs="0" maxOccurs="1" code="{N_mom(true,exportSurrogate)}" label="Export Surrogate Model"  complexity="1">
                <keyword  id="filename_prefix" name="filename_prefix" minOccurs="0" code="{N_mom(str,modelExportPrefix)}" label="Exported Surrogate Filename Prefix"  default="exported_surrogate" complexity="1">
@@ -125,30 +127,36 @@
                <param type="REAL" />
              </keyword>
 	     ' >
+
     <!ENTITY default_max_iterations '<keyword  id="max_iterations" name="max_iterations" code="{N_mdm(nnint,maxIterations)}" label="Maximum iterations"  minOccurs="0" default="100 (exceptions: fsu_cvt , local_reliability: 25; global_{reliability , interval_est , evidence} / efficient_global: 25*n)" >
              <param type="INTEGER" constraint=">= 0" />
     </keyword>
     ' >
+
     <!ENTITY default_max_solver_iterations '
 	     <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
+
     <!ENTITY default_max_refinement_iterations '
 	     <keyword  id="max_refinement_iterations" name="max_refinement_iterations" code="{N_mdm(nnint,maxRefineIterations)}" label="Maximum refinement iterations"  minOccurs="0" default="100" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
+
     <!ENTITY default_constraint_tolerance '
 	     <keyword  id="constraint_tolerance" name="constraint_tolerance" code="{N_mdm(Real,constraintTolerance)}" label="Constraint tolerance"  minOccurs="0" default="Library default" >
                <param type="REAL" />
 	     </keyword>
 	     ' >
+
     <!ENTITY default_max_function_evaluations '
 	     <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mdm(nnint,maxFunctionEvaluations)}" label="Maximum function evaluations"  minOccurs="0" default="1000" >
                <param type="INTEGER" constraint=">= 0" />
 	     </keyword>
 	     ' >
+
     <!ENTITY default_trust_region '
 	     <keyword  id="trust_region" name="trust_region" code="{0,0,NIDRProblemDescDB::method_tr_final}" label="Trust region group specification"  minOccurs="0" >
                <keyword  id="initial_size" name="initial_size" code="{N_mdm(RealDL,trustRegionInitSize)}" label="Trust region initial size (relative to bounds)"  minOccurs="0" >
@@ -171,6 +179,7 @@
 	       </keyword>
 	     </keyword>
 	     ' >
+
     <!ENTITY default_final_moments '
 	     <keyword  id="final_moments" name="final_moments" code="{0}" label="Type of moments in final statistics"  minOccurs="0" default="standard" >
                <oneOf label="Objective Formulation">
@@ -180,9 +189,11 @@
                </oneOf>
 	     </keyword>
 	     ' >
+
     <!ENTITY default_speculative '
 	     <keyword  id="speculative" name="speculative" code="{N_mdm(true,speculativeFlag)}" label="Speculative gradients and Hessians"  minOccurs="0" default="no speculation" />
 	     ' >
+
     <!ENTITY default_scaling '
 	     <keyword  id="scaling" name="scaling" code="{N_mdm(true,methodScaling)}" label="Scaling flag"  minOccurs="0" default="no scaling" />
 	     ' >
@@ -437,7 +448,6 @@
 	     </keyword>
 	     ' >
 
-
     <!ENTITY pce_regression_opts '
 	     &pce_regression_alg_select;
 	     <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation"  minOccurs="0" >
@@ -542,8 +552,7 @@
 	       <alias name="reuse_samples"/>
 	     </keyword>
 	     &import_build;
-	     '
-	     >
+	     ' >
 
     <!ENTITY pce_orthog_least_interp_sequence '
       	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  minOccurs="1" >
@@ -714,6 +723,108 @@
 	       </oneOf>
 	     </optional>
 	     <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag"  minOccurs="0" default="use function values only" />
+	     ' >
+
+    <!ENTITY ft_method_controls '
+		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		    <param type="REAL" />
+		  </keyword>
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		    <param type="REAL" />
+		  </keyword>
+	     ' >
+
+    <!ENTITY ft_method_max_order '
+		  <keyword  id="max_order" name="max_order" code="{N_mdm(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+	     ' >
+
+    <!ENTITY ft_method_order '
+		  <keyword  id="start_order" name="start_order" code="{N_mdm(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		    <alias name="order"/>
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  &ft_method_max_order;
+	     ' >
+
+    <!ENTITY mlft_method_order_sequence '
+		  <keyword  id="start_order_sequence" name="start_order_sequence" code="{N_mdm(szarray,startOrderSeq)}" label="Starting univariate polynomial order for approximation sequence" help="" minOccurs="0" default="2">
+		    <alias name="order_sequence"/>
+		    <param type="INTEGERLIST" />
+		  </keyword>
+		  &ft_method_max_order;
+	     ' >
+
+    <!ENTITY ft_method_adapt_rank '
+		  <keyword  id="kick_rank" name="kick_rank" code="{N_mdm(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mdm(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false" />
+	     ' >
+
+    <!ENTITY ft_method_rank '
+		  <keyword  id="start_rank" name="start_rank" code="{N_mdm(sizet,startRank)}" label="Starting rank for approximation" help="" minOccurs="0" default="2">
+		    <alias name="rank"/>
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  &ft_method_adapt_rank;
+	     ' >
+
+    <!ENTITY mlft_method_rank_sequence '
+		  <keyword  id="start_rank_sequence" name="start_rank_sequence" code="{N_mdm(szarray,startRankSeq)}" label="Starting rank for approximation sequence" help="" minOccurs="0" default="2">
+		    <alias name="rank_sequence"/>
+		    <param type="INTEGERLIST" />
+		  </keyword>
+		  &ft_method_adapt_rank;
+	     ' >
+
+    <!ENTITY ft_model_controls '
+		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		    <param type="REAL" />
+		  </keyword>
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		    <param type="REAL" />
+		  </keyword>
+	     ' >
+
+    <!ENTITY ft_model_order '
+		  <keyword  id="start_order" name="start_order" code="{N_mom(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		    <alias name="order"/>
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="max_order" name="max_order" code="{N_mom(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+	     ' >
+
+    <!ENTITY ft_model_rank '
+		  <keyword  id="start_rank" name="start_rank" code="{N_mom(sizet,startRank)}" label="Starting rank for approximation" help="" minOccurs="0" default="2">
+		    <alias name="rank"/>
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="max_rank" name="max_rank" code="{N_mom(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
+		    <param type="INTEGER" constraint=">= 0" />
+		  </keyword>
+		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mom(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false"/>
 	     ' >
 
     <!ENTITY bayes_seed_rng '
@@ -2352,25 +2463,38 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="function_train_uq" name="function_train_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
-          <!-- <alias name="surrogate_based_uq"/> TO DO: GENERIC UQ SPECIFICATION -->
-	  <!-- &ft_refinement; Future context-specific refinements... (currently use adapt_rank within Model) -->
-          <!-- Rely on DFSModel data import, if possible
-	  &import_build; -->
-	  <!-- Rely on DACE specification, as identified by DFSModel
-          <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
-            <param type="INTEGER" constraint=">= 0" />
-          </keyword> -->
-	  <!-- &ft_options; -->
+        <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_SURROGATE_BASED_UQ)}" label="surrogate_based_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
+          <!-- Current target is Model-based PCE,SC,FT expansions: support expansion_options. -->
+	  &expansion_options;
+          <!-- DFSModel spec defines approximation, DACE, data import, etc. -->
+	  &method_optional_model_pointer;
+        </keyword>
+
+        <keyword  id="function_train" name="function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
+	  <!-- &ft_refinement; -->
+	  <!-- &import_build; Rely on DFSModel data import -->
+	  <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" minOccurs="0" default="20"  >
+	    <param type="INTEGER" constraint=">= 0" />
+	    <!-- &pce_regression_opts; cross val, derivs, tensor, etc. -->
+	  </keyword>
+	  &ft_method_controls;
+	  &ft_method_order;
+	  &ft_method_rank;
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
 
         <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
-	  <!-- &ft_refinement; INDIVIDUAL ADAPTIVE REFINEMENT PER LEVEL (currently use adapt_rank within Model) -->
+	  <!-- &ft_refinement; INDIVIDUAL ADAPTIVE REFINEMENT PER LEVEL (currently use adapt_rank) -->
 	  &mf_alloc_control;
 	  &discrep_emulation;
-	  <!-- &ft_options; -->
+	  &ft_method_controls;
+	  <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs"   >
+	    <param type="INTEGERLIST" />
+	    <!-- &pce_regression_opts; cross val, derivs, tensor, etc. -->
+	  </keyword>
+	  &mlft_method_order_sequence;
+	  &mlft_method_rank_sequence;
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
@@ -2380,8 +2504,12 @@
 	  &ml_pilot_samples;   <!-- optional (MLMC uses default pilot = 100) -->
 	  &mlft_alloc_control; <!-- default is DEFAULT_MLMF_CONTROL -->
 	  &discrep_emulation;
-	  <!-- INTEGRATED ADAPTIVE REFINEMENT ACROSS LEVELS: ML regression approach with profile shaping based on rank*dim^2 -->
-	  <!-- &ft_options; -->
+	  &ft_method_controls;
+	  <!-- No sequence spec (for now), only pilot
+	  <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" >
+	    <param type="INTEGERLIST" />
+	  </keyword>
+	  -->
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>
@@ -3443,27 +3571,13 @@
                 </keyword>
 
 		<keyword  id="function_train" name="function_train" code="{N_mom(lit,surrogateType_global_function_train)}" label="Low rank approximation model" help="ModelCommands.html#ModelSurrG" minOccurs="1" group="Surrogate-based Methods">
-		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
-		    <param type="REAL" />
-		  </keyword>
-		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
-		    <param type="REAL" />
-		  </keyword>
+		  &ft_model_controls;
+		  &ft_model_order;
+		  &ft_model_rank;
 		  <!-- Need a better name for this...
 		  <keyword  id="num_param" name="num_param" code="{N_mom(sizet,numParam)}" label="Number of parameters in univariate function" help="" minOccurs="0" default="">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  -->
-		  <keyword  id="start_order" name="start_order" code="{N_mom(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="max_order" name="max_order" code="{N_mom(sizet,maxOrder)}" label="Maximum order of polynomials" help="" minOccurs="0" default="4">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <!-- 
 		  <keyword id="num_coeff_check" name="num_coeff_check" code="{N_mom(sizet,numCoeffCheck)}" label="Number of polynomial coefficients to check for convergence" help="" minOccurs="0" default="2">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
@@ -3500,25 +3614,9 @@
                       <keyword id="regress" name="regress" code="{N_mom(utype,polyType_REGRESS)}" label="regress" />
 		    </oneOf>
 		  </keyword>
-		  -->
-		  <keyword  id="start_rank" name="start_rank" code="{N_mom(sizet,startRank)}" label="Starting rank for approximation" help="" minOccurs="0" default="2">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="kick_rank" name="kick_rank" code="{N_mom(sizet,kickRank)}" label="Rank increase increment for adaptive schmes" help="" minOccurs="0" default="2">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="max_rank" name="max_rank" code="{N_mom(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="adapt_rank" name="adapt_rank" code="{N_mom(true,adaptRank)}" label="Flag for whether or not to adapt the rank" help="" minOccurs="0" default="false"/>
-		  <!-- Carry over from method spec (for now)
 		  <keyword  id="verbosity" name="verbosity" code="{N_mom(nnint,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword> -->
-		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,crossMaxIter)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
-		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <!--
 		  <keyword id="regress_type" name="regress_type" code="{0}" label="Regress_type" minOccurs="0" default="">
 		    <oneOf label="Regress Type">
                       <keyword id="ls" name="ls" code="{N_mom(utype,regressType_LS)}" label="ls" />
@@ -3837,7 +3935,7 @@
 	      <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer"  minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
-	      <keyword  id="initial_samples" name="initial_samples" code="{N_mom(int,initialSamples)}" label="Initial Samples"  minOccurs="0" default="model-dependent">
+	  <keyword  id="initial_samples" name="initial_samples" code="{N_mom(int,initialSamples)}" label="Initial Samples"  minOccurs="0" default="model-dependent">
 	    <param type="INTEGER" />
 	  </keyword>
 	  <keyword  id="sample_type" name="sample_type" code="{0}" label="Sample Type"  minOccurs="0" default="random" >

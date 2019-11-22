@@ -170,9 +170,6 @@ protected:
   /// helper for initializing a numerical integration grid
   void initialize_u_space_grid();
 
-  // common constructor code for initialization of natafTransform
-  //void initialize_random(short u_space_type);
-
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
 

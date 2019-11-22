@@ -255,20 +255,6 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 }
 
 
-/*
-void NonDExpansion::initialize_random(short u_space_type)
-{
-  // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(u_space_type); // need x/u_types below
-  initialize_random_variable_correlations();
-  // for lightweight ctor, defer until call to requested_levels()
-  //initialize_final_statistics();
-  verify_correlation_support(u_space_type); // correlation warping factors
-}
-*/
-
-
 void NonDExpansion::
 construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 		   unsigned short cub_int_order)
@@ -549,7 +535,7 @@ construct_expansion_sampler(const String& import_approx_file,
       "imported approx samples file", x_samples, numContinuousVars,
       import_approx_format); //, import_build_active_only);
     numSamplesOnExpansion = x_samples.numCols();
-    // transform to u space must follow initialize_random_variable_parameters(),
+    // transform to u space must follow runtime dist param updates,
     // so pass x_samples for now and transform at runtime
     exp_sampler_rep = new NonDSampling(uSpaceModel, x_samples);//u_samples);
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
@@ -652,7 +638,6 @@ void NonDExpansion::initialize_expansion()
   // as well as evaluation of uSpaceModel by expansion sampler. Therefore, take
   // care to avoid redundancy using mappingInitialized flag.
 
-  //initialize_random_variable_parameters();// capture any dist param insertions
   if (totalLevelRequests) initialize_level_mappings(); // size computed*Levels
   resize_final_statistics_gradients(); // finalStats ASV available at run time
   //transform_correlations();
