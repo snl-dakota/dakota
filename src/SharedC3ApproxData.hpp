@@ -104,9 +104,9 @@ protected:
   size_t maxOrder;
 
   size_t startRank;
-  size_t kickRank;
-  size_t maxRank;
-  bool adaptRank; // converted to size_t (0 no, 1 yes) for C3
+  size_t  kickRank;
+  size_t   maxRank;
+  bool   adaptRank; // converted to size_t (0 no, 1 yes) for C3
 
   double roundingTol;
   double solverTol;

@@ -26,6 +26,7 @@
 #include "NonDStochCollocation.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 //#include "NonDMultilevelStochCollocation.hpp"
+#include "NonDSurrogateExpansion.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
@@ -463,6 +464,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_FUNCTION_TRAIN: case MULTIFIDELITY_FUNCTION_TRAIN:
     return new NonDMultilevelFunctionTrain(problem_db, model); break;
 #endif
+  case SURROGATE_BASED_UQ:
+    return new NonDSurrogateExpansion(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
