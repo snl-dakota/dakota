@@ -23,96 +23,87 @@ namespace Dakota {
 
 /** The NonDC3FunctionTrain class uses ... */
 
-  class NonDC3FunctionTrain: public NonDExpansion
-  {
-  public:
+class NonDC3FunctionTrain: public NonDExpansion
+{
+public:
 
-    //
-    //- Heading: Constructors and destructor
-    //
+  //
+  //- Heading: Constructors and destructor
+  //
 
-    /// standard constructor
-    NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model);
-    /// destructor
-    ~NonDC3FunctionTrain();
+  /// standard constructor
+  NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model);
+  /// destructor
+  ~NonDC3FunctionTrain();
 
-    //
-    //- Heading: Virtual function redefinitions
-    //
+  //
+  //- Heading: Virtual function redefinitions
+  //
 
-    /// TODO
-    // void compute_expansion();
-    /// perform a forward uncertainty propagation using PCE/SC methods
-    // void core_run();
-    /// TODO
+  /// TODO
+  // void compute_expansion();
+  /// perform a forward uncertainty propagation using PCE/SC methods
+  // void core_run();
+  /// TODO
 
-  protected:
+protected:
 
-    //
-    //- Heading: Virtual function redefinitions
-    //
+  //
+  //- Heading: Virtual function redefinitions
+  //
 
-    void resolve_inputs(short& u_space_type, short& data_order);
+  void resolve_inputs(short& u_space_type, short& data_order);
 
-    //
-    //- Heading: Member function definitions
-    //
+  /// override certain print functions
+  // I should not have to define my own print functions -- AG
+  // This suggests there needs to be some refactoring to truly separate
+  // computing things and printing things
+  // The only thing I should have to print is FT specific results 
+  void print_results(std::ostream&);
+  void print_moments(std::ostream& s);
+  void print_sobol_indices(std::ostream& s);
 
-    void initialize_data_fit_surrogate(Model& dfs_model);
+  //
+  //- Heading: Member function definitions
+  //
 
-    /// Publish options from C3 input specification (not needed if model-driven
-    /// specification: already extracted by iteratedModel)
-    void push_c3_options();
+  /// configure u_space_sampler and approx_type based on regression
+  /// specification
+  bool config_regression(size_t colloc_pts, Iterator& u_space_sampler,
+			 Model& g_u_model);
 
-  private:
+  void initialize_data_fit_surrogate(Model& dfs_model);
 
-    //static int qoi_eval(size_t num_samp,        // number of evaluations
-    // 			const double* var_sets, // num_vars x num_evals
-    // 			double* qoi_sets,       // num_fns x num_evals
-    // 			void* args);            // optional arguments
+  /// Publish options from C3 input specification (not needed if model-driven
+  /// specification: already extracted by iteratedModel)
+  void push_c3_options();
 
-    //
-    //- Heading: Data
-    //
+  //
+  //- Heading: Data
+  //
 
-    /// pointer to the active object instance used within the static evaluator
-    /// functions in order to avoid the need for static data
-    static NonDC3FunctionTrain* c3Instance;
+  size_t numSamplesOnModel;
+  //int numSamplesOnEmulator;
 
-    unsigned int randomSeed;
+private:
 
-    size_t numSamplesOnModel;
-   
-    // other data ...
-    /// The number of samples used to evaluate the emulator
-    //int numSamplesOnEmulator;
+  //
+  //- Heading: Member function definitions
+  //
 
-    // user specified import build points file
-    //String importBuildPointsFile;
-    // user specified import build file format
-    //unsigned short importBuildFormat;
-    // user specified import build active only
-    //bool importBuildActiveOnly;
+  //static int qoi_eval(size_t num_samp,        // number of evaluations
+  // 			const double* var_sets, // num_vars x num_evals
+  // 			double* qoi_sets,       // num_fns x num_evals
+  // 			void* args);            // optional arguments
 
-    // user specified import approx. points file
-    //String importApproxPointsFile;
-    // user specified import approx. file format
-    //unsigned short importApproxFormat;
-    // user specified import approx. active only
-    //bool importApproxActiveOnly;
-    // file name from \c export_approx_points_file specification
-    //String exportPointsFile;
+  //
+  //- Heading: Data
+  //
 
-    /// override certain print functions
-    // I should not have to define my own print functions -- AG
-    // This suggests there needs to be some refactoring to truly separate
-    // computing things and printing things
-    // The only thing I should have to print is FT specific results 
-    void print_results(std::ostream&);
-    void print_moments(std::ostream& s);
-    void print_sobol_indices(std::ostream& s);
-
-  };
+  // pointer to the active object instance used within the static evaluator
+  // functions in order to avoid the need for static data
+  //static NonDC3FunctionTrain* c3Instance;
+};
     
 } // namespace Dakota
 

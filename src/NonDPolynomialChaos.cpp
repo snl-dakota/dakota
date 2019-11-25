@@ -565,8 +565,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
       exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_orders);
       break;
     case Pecos::TENSOR_PRODUCT_BASIS:
-      exp_terms
-	= Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders);
+      exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders);
       break;
     }
     termsOrder = colloc_ratio_terms_order;

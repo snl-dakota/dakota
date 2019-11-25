@@ -30,8 +30,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDC3FunctionTrain(/*BaseConstructor(),*/ problem_db, model),
   mlmfAllocControl(
     probDescDB.get_short("method.nond.multilevel_allocation_control")),
-  //expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
-  //collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
+  collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   sequenceIndex(0),
   kappaEstimatorRate(
     probDescDB.get_real("method.nond.multilevel_estimator_rate")),
