@@ -36,23 +36,27 @@ public:
   /// destructor
   ~NonDC3FunctionTrain();
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  /// TODO
-  // void compute_expansion();
-  /// perform a forward uncertainty propagation using PCE/SC methods
-  // void core_run();
-  /// TODO
-
 protected:
+
+  //
+  //- Heading: Constructors
+  //
+
+  /// base constructor for DB construction of multilevel/multifidelity PCE
+  NonDC3FunctionTrain(BaseConstructor, ProblemDescDB& problem_db, Model& model);
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   void resolve_inputs(short& u_space_type, short& data_order);
+
+  void initialize_u_space_model();
+
+  // TODO
+  //void compute_expansion();
+  // perform a forward uncertainty propagation using PCE/SC methods
+  //void core_run();
 
   /// override certain print functions
   // I should not have to define my own print functions -- AG
@@ -71,8 +75,6 @@ protected:
   /// specification
   bool config_regression(size_t colloc_pts, Iterator& u_space_sampler,
 			 Model& g_u_model);
-
-  void initialize_data_fit_surrogate(Model& dfs_model);
 
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)

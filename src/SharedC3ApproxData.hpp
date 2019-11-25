@@ -94,6 +94,12 @@ protected:
   //- Heading: Data
   //
 
+  // *************
+  // *** TO DO ***:
+  // *************
+  // This data is shared per QoI, but may not be shared per level...
+  // What parts should be independent (e.g. actual rank, but not rank spec)
+
   struct OneApproxOpts ** oneApproxOpts;
   struct MultiApproxOpts * approxOpts;
 

@@ -36,7 +36,7 @@ public:
   /// standard constructor
   NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model);
   /*
-  /// alternate constructor for regression
+  /// alternate constructor for helper iterator
   NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			      short exp_coeffs_approach,
 			      const UShortArray& exp_order_seq,
@@ -129,8 +129,6 @@ private:
   /// within multilevel / multifidelity methods
   short mlmfAllocControl;
 
-  /// user specification for expansion_order (array for multifidelity)
-  UShortArray expOrderSeqSpec;
   /// user specification for collocation_points (array for multifidelity)
   SizetArray collocPtsSeqSpec;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec

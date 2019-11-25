@@ -45,6 +45,13 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   //numSamplesOnModel(probDescDB.get_sizet(
   //  "method.c3function_train.num_samples_for_construction"))
 {
+  if (iteratedModel.model_type()     == "surrogate" &&
+      iteratedModel.surrogate_type() == "global_function_train") {
+    Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
+	 << "function train specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   // ----------------
   // Resolve settings
   // ----------------
@@ -57,16 +64,6 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-
-  if (iteratedModel.model_type()     == "surrogate" &&
-      iteratedModel.surrogate_type() == "global_function_train") {
-    Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
-	 << "function train specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  // wrap iteratedModel in prob transform + DataFit (as in PCE/SC)
-
   Model g_u_model;
   g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
     u_space_type), false); // retain dist bnds
@@ -93,7 +90,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   const String& import_build_pts_file
     = probDescDB.get_string("method.import_build_points_file");
   String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
@@ -103,7 +100,6 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   UShortArray approx_order; // empty
   ActiveSet ft_set = g_u_model.current_response().active_set(); // copy
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
-  String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     ft_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, import_build_pts_file,
@@ -111,14 +107,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
-
-  initialize_data_fit_surrogate(uSpaceModel);
-
-  // TO DO: method and model spec are redundant.  How to encapsulate an
-  // XML entity for {method,model} to allow it in either location?
-  // > Defining a shared spec class with instances in Data{Method,Model} works
-  //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
-  push_c3_options();
+  initialize_u_space_model();
 
   // -------------------------------
   // Construct expSampler, if needed
@@ -127,6 +116,25 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.import_approx_points_file"),
     probDescDB.get_ushort("method.import_approx_format"), 
     probDescDB.get_bool("method.import_approx_active_only"));
+}
+
+
+/** This constructor is called by derived class constructors. */
+NonDC3FunctionTrain::
+NonDC3FunctionTrain(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+  NonDExpansion(problem_db, model)
+  //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
+  //numSamplesOnModel(probDescDB.get_sizet(
+  //  "method.c3function_train.num_samples_for_construction"))
+{
+  if (iteratedModel.model_type()     == "surrogate" &&
+      iteratedModel.surrogate_type() == "global_function_train") {
+    Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
+	 << "function train specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // Rest is in derived class...
 }
 
 
@@ -200,14 +208,14 @@ config_regression(size_t colloc_pts, Iterator& u_space_sampler,
 }
 
 
-void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
+void NonDC3FunctionTrain::initialize_u_space_model()
 {
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    dfs_model.shared_approximation().data_rep();
+    uSpaceModel.shared_approximation().data_rep();
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
-    = dfs_model.truth_model().multivariate_distribution();
+    = uSpaceModel.truth_model().multivariate_distribution();
   shared_data_rep->construct_basis(u_dist);
   
   // if all variables mode, initialize key to random variable subset
@@ -218,6 +226,12 @@ void NonDC3FunctionTrain::initialize_data_fit_surrogate(Model& dfs_model)
     assign_value(random_vars_key, true, startCAUV, numCAUV);
     shared_data_rep->random_variables_key(random_vars_key);
   }
+
+  // TO DO: method and model spec are redundant.  How to encapsulate an
+  // XML entity for {method,model} to allow it in either location?
+  // > Defining a shared spec class with instances in Data{Method,Model} works
+  //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
+  push_c3_options();
 
   // perform last due to numSamplesOnModel update
   //NonDExpansion::initialize_u_space_model(); // uses Pecos poly basis

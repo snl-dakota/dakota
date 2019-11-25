@@ -193,6 +193,12 @@ private:
     //- Heading: Data
     //
 
+  // *************
+  // *** TO DO ***:
+  // *************
+  // Pecos::*PolyApproximation manages keyed data inside the library interface,
+  // but C3 does not.  Therefore, employ keyed set of pointers here in the
+  // Dakota interface class.
 
     ////////////////
     // Reading in from dakota interface

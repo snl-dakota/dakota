@@ -15,8 +15,8 @@
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
 #include "ProbabilityTransformModel.hpp"
-#include "SharedPecosApproxData.hpp"
-#include "PecosApproximation.hpp"
+#include "SharedC3ApproxData.hpp"
+#include "C3Approximation.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_system_defs.hpp"
 
@@ -27,7 +27,7 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
-  NonDC3FunctionTrain(/*BaseConstructor(),*/ problem_db, model),
+  NonDC3FunctionTrain(BaseConstructor(), problem_db, model),
   mlmfAllocControl(
     probDescDB.get_short("method.nond.multilevel_allocation_control")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
@@ -41,92 +41,40 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  /*  Redundant with C3 base class
-
   // ----------------
   // Resolve settings
   // ----------------
   short data_order;
-  resolve_inputs(uSpaceType, data_order);
-
-  // --------------------
-  // Data import settings
-  // --------------------
-  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
-  if (!importBuildPointsFile.empty() && pt_reuse.empty())
-    pt_reuse = "all"; // reassign default if data import
+  // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
+  // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
+  short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
-    uSpaceType), false); // retain dist bounds
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-
-  // pull DB settings
-  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
-  short regress_type = probDescDB.get_short("method.nond.regression_type"),
-    ls_regress_type
-      = probDescDB.get_short("method.nond.least_squares_regression_type");
-  Real colloc_ratio_terms_order
-    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
-  const UShortArray& tensor_grid_order
-    = probDescDB.get_usa("method.nond.tensor_grid_order");
-  */
-
   // extract sequences and invoke shared helper fn with a scalar...
-  unsigned short exp_order = USHRT_MAX;
-  size_t SZ_MAX = std::numeric_limits<size_t>::max(), colloc_pts = SZ_MAX;
-  if (!expOrderSeqSpec.empty())
-    exp_order = (sequenceIndex < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+  size_t colloc_pts = std::numeric_limits<size_t>::max();
   if (!collocPtsSeqSpec.empty())
     colloc_pts = (sequenceIndex < collocPtsSeqSpec.size()) ?
       collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-
   Iterator u_space_sampler;
-  String approx_type;
-  UShortArray exp_orders; // defined for expansion_samples/regression
-  config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
-
-  if (!config_regression(exp_orders, colloc_pts, colloc_ratio_terms_order,
-			 regress_type, ls_regress_type, tensor_grid_order,
-			 sample_type, rng, pt_reuse, u_space_sampler,
-			 g_u_model, approx_type)) {
+  if (!config_regression(colloc_pts, u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   // mlmfAllocControl config and specification checks:
-  if (methodName == MULTILEVEL_FUNCTION_TRAIN) {
-    if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
-      Cerr << "Error: unsupported solver configuration within "
-	   << "NonDMultilevelFunctionTrain::core_run()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-
-    switch (mlmfAllocControl) {
-    case RANK_SAMPLING:
-      // use OMP for robustness (over or under-determined)
-      if (expansionCoeffsApproach == Pecos::DEFAULT_REGRESSION)
-	expansionCoeffsApproach    = Pecos::ORTHOG_MATCH_PURSUIT;
-      // Require CV, else OMP will compute #terms = #samples.
-      // Use noise only to avoid interaction with any order progression.
-      //if (!crossValidation)     Cerr << "Warning: \n";
-      //if (!crossValidNoiseOnly) Cerr << "Warning: \n";
-      crossValidation = crossValidNoiseOnly = true;
-      // Main accuracy control is shared expansion order / dictionary size
-      break;
-    default: //case ESTIMATOR_VARIANCE: case GREEDY_REFINEMENT:
-      break;
-    }
-  }
+  //if (mlmfAllocControl == RANK_SAMPLING)
+  //  crossValidation = crossValidNoiseOnly = true;
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -136,14 +84,21 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
+  const String& import_build_pts_file
+    = probDescDB.get_string("method.import_build_points_file");
+  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
+  if (!import_build_pts_file.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+  String approx_type = "global_function_train";
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
-  ActiveSet pce_set(asv, recast_set.derivative_vector());
+  ActiveSet mlft_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-    importBuildActiveOnly,
+    mlft_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse, import_build_pts_file,
+    probDescDB.get_ushort("method.import_build_format"),
+    probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
@@ -259,8 +214,6 @@ void NonDMultilevelFunctionTrain::assign_hierarchical_response_mode()
   // comms for the ordered Models within HierarchSurrModel::set_communicators(),
   // which precedes mode updates in {multifidelity,multilevel}_expansion().
 
-  // *** TO DO ***: iteratedModel should be DataFitSurr on top of HierarchSurr
-
   if (iteratedModel.surrogate_type() != "hierarchical") {
     Cerr << "Error: multilevel/multifidelity expansions require a "
 	 << "hierarchical model." << std::endl;
@@ -341,67 +294,30 @@ void NonDMultilevelFunctionTrain::core_run()
 
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
-  bool update_exp = false, update_sampler = false, update_from_ratio = false;
-
   // regression
-  // assign expansionOrder and/or collocationPoints, as admissible
-  if (sequenceIndex <  expOrderSeqSpec.size()) update_exp = true;
-  if (sequenceIndex < collocPtsSeqSpec.size()) {
+  if (sequenceIndex < collocPtsSeqSpec.size())
     numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
-    update_sampler = true;
-  }
-  if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-    update_from_ratio = update_sampler = true;
 
-  update_from_specification(update_exp, update_sampler, update_from_ratio);
+  update_from_specification();
 }
 
 
 void NonDMultilevelFunctionTrain::increment_specification_sequence()
 {
-  bool update_exp = false, update_sampler = false, update_from_ratio = false;
-
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i <  expOrderSeqSpec.size()) update_exp = true;
   if (next_i < collocPtsSeqSpec.size())
-    { numSamplesOnModel = collocPtsSeqSpec[next_i]; update_sampler = true; }
-  if (update_exp || update_sampler) ++sequenceIndex;
-  if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-    update_from_ratio = update_sampler = true;
+    { numSamplesOnModel = collocPtsSeqSpec[next_i]; ++sequenceIndex; }
+  //else leave at previous value
 
-  update_from_specification(update_exp, update_sampler, update_from_ratio);
+  update_from_specification();
 }
 
 
 void NonDMultilevelFunctionTrain::
-update_from_specification(bool update_exp, bool update_sampler,
-			  bool update_from_ratio)
+update_from_specification(bool update_sampler, bool update_from_ratio)
 {
-  UShortArray exp_order;
-  if (update_exp) {
-    // update expansion order within Pecos::SharedOrthogPolyApproxData
-    NonDIntegration::dimension_preference_to_anisotropic_order(
-      expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
-      exp_order);
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
-    shared_data_rep->expansion_order(exp_order);
-    if (update_from_ratio) { // update numSamplesOnModel from collocRatio
-      size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
-	Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
-	Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-      numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-    }
-  }
-  else if (update_sampler && tensorRegression) {
-    // extract unchanged expansion order from Pecos::SharedOrthogPolyApproxData
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
-    exp_order = shared_data_rep->expansion_order();
-  }
-
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler) {
     if (tensorRegression) {
@@ -411,7 +327,7 @@ update_from_specification(bool update_exp, bool update_sampler,
       if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
 	UShortArray dim_quad_order(numContinuousVars);
 	for (size_t i=0; i<numContinuousVars; ++i)
-	  dim_quad_order[i] = exp_order[i] + 1;
+	  dim_quad_order[i] = exp_order[i] + 1; // *** startOrder or tensor order spec ???
         nond_quad->quadrature_order(dim_quad_order);
       }
       nond_quad->update(); // sanity check on sizes, likely a no-op
@@ -427,69 +343,32 @@ update_from_specification(bool update_exp, bool update_sampler,
 
 
 void NonDMultilevelFunctionTrain::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
+increment_sample_sequence(size_t new_samp)//, size_t total_samp, size_t lev)
 {
   numSamplesOnModel = new_samp;
 
-  bool update_exp = false, update_sampler = false, update_from_ratio = false,
-    err_flag = false;
-
-  // regression
-  update_exp = update_sampler = true;
-  // fix the basis cardinality in the case of RANK_SAMPLING
-  if (mlmfAllocControl != RANK_SAMPLING) {
-    if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-      update_from_ratio = true;
-    else // config via collocation pts sequence not supported
-      err_flag = true;
-  }
-
-  if (update_exp) {
-    //increment_order_from_grid(); // need total samples
-    unsigned short exp_order = (lev < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[lev] : expOrderSeqSpec.back();
-    // reset lower bound for each level
-    UShortArray exp_orders;
-    config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
-
-    if (update_from_ratio) // update the exp_orders based on total_samp
-      ratio_samples_to_order(collocRatio, total_samp, exp_orders, false);
-
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
-    shared_data_rep->expansion_order(exp_orders);
-  }
-
-  // udpate sampler settings (NonDQuadrature or NonDSampling)
-  if (update_sampler) {
-    Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
-    if (tensorRegression) {
-      NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
-      nond_quad->samples(numSamplesOnModel);
-      if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-	SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-	  uSpaceModel.shared_approximation().data_rep();
-	const UShortArray& exp_orders = shared_data_rep->expansion_order();
-	UShortArray dim_quad_order(numContinuousVars);
-	for (size_t i=0; i<numContinuousVars; ++i)
-	  dim_quad_order[i] = exp_orders[i] + 1;
-	nond_quad->quadrature_order(dim_quad_order);
-      }
-      nond_quad->update(); // sanity check on sizes, likely a no-op
+  // update sampler settings (NonDQuadrature or NonDSampling)
+  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
+  if (tensorRegression) {
+    NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
+    nond_quad->samples(numSamplesOnModel);
+    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
+      SharedC3pproxData* shared_data_rep = (SharedC3ApproxData*)
+	uSpaceModel.shared_approximation().data_rep();
+      const UShortArray& exp_orders = shared_data_rep->expansion_order();
+      UShortArray dim_quad_order(numContinuousVars);
+      for (size_t i=0; i<numContinuousVars; ++i)
+	dim_quad_order[i] = exp_orders[i] + 1; // *** startOrder or tensor order spec ???
+      nond_quad->quadrature_order(dim_quad_order);
     }
-    // test for valid sampler for case of build data import (unstructured grid)
-    else if (sub_iter_rep != NULL) { // enforce increment using sampling_reset()
-      sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
-      DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-      // total including reuse from DB/file (does not include previous ML iter)
-      dfs_model->total_points(numSamplesOnModel);
-    }
+    nond_quad->update(); // sanity check on sizes, likely a no-op
   }
-
-  if (err_flag) {
-    Cerr << "Error: option not yet supported in NonDMultilevelFunctionTrain::"
-	 << "increment_sample_sequence." << std::endl;
-    abort_handler(METHOD_ERROR);
+  // test for valid sampler for case of build data import (unstructured grid)
+  else if (sub_iter_rep != NULL) { // enforce increment using sampling_reset()
+    sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
+    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+    // total including reuse from DB/file (does not include previous ML iter)
+    dfs_model->total_points(numSamplesOnModel);
   }
 }
 
@@ -635,8 +514,8 @@ void NonDMultilevelFunctionTrain::aggregate_variance(Real& agg_var_l)
   agg_var_l = 0.;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    PecosApproximation* poly_approx_q
-      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+    C3Approximation* poly_approx_q
+      = (C3Approximation*)poly_approxs[qoi].approx_rep();
     Real var_l = poly_approx_q->variance(); // for active level
     agg_var_l += var_l;
     if (outputLevel >= DEBUG_OUTPUT)
@@ -653,15 +532,15 @@ sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l, Real power)
 {
   // case RANK_SAMPLING:
 
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   cardinality_l = shared_data_rep->expansion_terms();// shared multiIndex.size()
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real sum = 0.; bool pow1 = (power == 1.); // simple average
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    PecosApproximation* poly_approx_q
-      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+    C3Approximation* poly_approx_q
+      = (C3Approximation*)poly_approxs[qoi].approx_rep();
     size_t sparsity_l = poly_approx_q->sparsity();
     sum += (pow1) ? sparsity_l : std::pow((Real)sparsity_l, power);
     //if (outputLevel >= DEBUG_OUTPUT)
