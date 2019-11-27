@@ -141,7 +141,7 @@ namespace Dakota {
                 ft_regress_alloc(this->dim,
                                  this->sharedC3DataRep->approxOpts,
                                  this->start_ranks.values());
-            ft_regress_set_alg_and_obj(ftr,AIO,FTLS);
+            ft_regress_set_alg_and_obj(ftr,AIO,FTLS);//this->sharedC3DataRep->regressType); // *** TO DO: here (alg,obj) or ft_regress_set_type (type)?; mapping of enum values FT_LS,FT_RLS2,...
 	    size_t r_adapt = this->sharedC3DataRep->adaptRank ? 1 : 0;
             ft_regress_set_adapt(   ftr,r_adapt);
             ft_regress_set_maxrank( ftr,this->sharedC3DataRep->maxRank);
@@ -154,8 +154,8 @@ namespace Dakota {
             c3opt_set_gtol   (this->optimizer,this->sharedC3DataRep->solverTol);
             c3opt_set_relftol(this->optimizer,this->sharedC3DataRep->solverTol);
 
-	    // *** TO DO: Alex will add mappings for latest XML attributes.
-	    
+	    // *** TO DO (AAG): add mappings for latest XML attributes
+
             // free if previously built
             function_train_free(this->ft);      this->ft          = NULL;
             ft1d_array_free(this->ft_gradient); this->ft_gradient = NULL;

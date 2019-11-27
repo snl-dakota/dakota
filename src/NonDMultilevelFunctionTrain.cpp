@@ -391,9 +391,7 @@ void NonDMultilevelFunctionTrain::multilevel_regression()
     recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   configure_levels(num_lev, form, multilev, false);
   configure_cost(num_lev, multilev, cost);
-  SizetArray cardinality;  RealVector level_metric(num_lev);
-  if (mlmfAllocControl == RANK_SAMPLING)
-    cardinality.resize(num_lev);
+  RealVector level_metric(num_lev);
 
   // Multilevel variance aggregation requires independent sample sets
   Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
@@ -462,9 +460,9 @@ void NonDMultilevelFunctionTrain::multilevel_regression()
       }
 
       switch (mlmfAllocControl) {
-      case RANK_SAMPLING: // use RMS of sparsity across QoI
+      case RANK_SAMPLING: // use RMS of rank across QoI
 	if (delta_N_l[lev] > 0)
-	  sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
+	  rank_metrics(level_metric[lev], 2.);
 	break;
       default: { //case ESTIMATOR_VARIANCE:
 	Real& agg_var_l = level_metric[lev];
@@ -481,7 +479,7 @@ void NonDMultilevelFunctionTrain::multilevel_regression()
 
     switch (mlmfAllocControl) {
     case RANK_SAMPLING:
-      compute_sample_increment(cardinality, 2., level_metric, NLev, delta_N_l);
+      compute_sample_increment(2., level_metric, NLev, delta_N_l);
       break;
     default: //case ESTIMATOR_VARIANCE:
       if (iter == 0) { // eps^2 / 2 = var * relative factor
@@ -525,30 +523,24 @@ void NonDMultilevelFunctionTrain::aggregate_variance(Real& agg_var_l)
 }
 
 
-/* Retrieve basis cardinality and compute power mean of sparsity
-   (common power values: 1 = average, 2 = root mean square). */
-void NonDMultilevelFunctionTrain::
-sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l, Real power)
+/* Compute power mean of rank (common power values: 1 = average, 2 = RMS). */
+void NonDMultilevelFunctionTrain::rank_metrics(Real& rank_metric_l, Real power)
 {
   // case RANK_SAMPLING:
-
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  cardinality_l = shared_data_rep->expansion_terms();// shared multiIndex.size()
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real sum = 0.; bool pow1 = (power == 1.); // simple average
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     C3Approximation* poly_approx_q
       = (C3Approximation*)poly_approxs[qoi].approx_rep();
-    size_t sparsity_l = poly_approx_q->sparsity();
-    sum += (pow1) ? sparsity_l : std::pow((Real)sparsity_l, power);
+    size_t rank_l = poly_approx_q->rank();
+    sum += (pow1) ? rank_l : std::pow((Real)rank_l, power);
     //if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << sparsity_l << '\n';
+      Cout << "Rank(" /*lev " << lev << ", "*/ << "qoi " << qoi
+	/* << ", iter " << iter */ << ") = " << rank_l << '\n';
   }
   sum /= numFunctions;
-  sparsity_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
+  rank_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
 }
 
 
@@ -598,48 +590,26 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 
 
 void NonDMultilevelFunctionTrain::
-compute_sample_increment(const SizetArray& cardinality, Real factor,
-			 const RealVector& sparsity, const SizetArray& N_l,
-			 SizetArray& delta_N_l)
+compute_sample_increment(Real factor, const RealVector& rank,
+			 const SizetArray& N_l, SizetArray& delta_N_l)
 {
   // case RANK_SAMPLING:
+  // > sample requirements scale as O(r^2 d), which shapes the profile
+  // > *** TO DO: adapt profile factor in coordination with adapt_rank ?
 
-  // update targets based on sparsity estimates
-  Real s/*, card*/; size_t lev, num_lev = N_l.size();
+  // update targets based on rank estimates
+  Real r;  size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
-  for (lev=0; lev<num_lev; ++lev) {
-    s = sparsity[lev]; //card = (Real)cardinality[lev];
-    // RIP samples ~= s log^3(s) log(C), but we are more interested in the shape
-    // of the profile, since the actual values are conservative upper bounds
-    // --> can omit constant terms that don't affect shape, e.g. log(C)
-    new_N_l[lev] = s * std::pow(std::log(s), 3.); //* std::log(card);
-  }
+  Real r, fact_var = factor * numContinuousVars;
+  for (lev=0; lev<num_lev; ++lev)
+    { r = rank[lev];  new_N_l[lev] = fact_var * r * r; }
 
-  // Sparsity estimates tend to grow for compressible QoI as increased samples
-  // drive increased accuracy in less important terms --> CV scores improve for
-  // dense solutions.  To control this effect, we retain the shape of the
-  // profile but enforce an upper bound on one of the levels.
-  scale_profile(cardinality, factor, new_N_l); // bound = cardinality * factor
+  // Retain the shape of the profile but enforce an upper bound
+  //scale_profile(..., new_N_l);
 
+  delta_N_l.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev)
     delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l[lev]);
-}
-
-
-void NonDMultilevelFunctionTrain::
-scale_profile(const SizetArray& cardinality, Real factor, RealVector& new_N_l)
-{
-  size_t lev, num_lev = cardinality.size();
-  Real curr_factor, max_curr_factor = 0., factor_ratio;
-  for (lev=0; lev<num_lev; ++lev) {
-    curr_factor = new_N_l[lev] / cardinality[lev];
-    if (curr_factor > max_curr_factor)
-      max_curr_factor = curr_factor;
-  }
-  factor_ratio = factor / max_curr_factor;
-  if (factor_ratio < 1.) // exceeds upper bound -> scale back
-    for (lev=0; lev<num_lev; ++lev)
-      new_N_l[lev] *= factor_ratio;
 }
 
 

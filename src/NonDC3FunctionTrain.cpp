@@ -263,10 +263,10 @@ void NonDC3FunctionTrain::push_c3_options()
     = probDescDB.get_real("method.nond.c3function_train.rounding_tolerance");
   int cross_max_iter
     = probDescDB.get_int("method.nond.c3function_train.max_cross_iterations");
+
+  short regress_type = probDescDB.get_short("method.nond.regression_type");
   int max_solv_iters = probDescDB.get_int("method.nond.max_solver_iterations");
   int verbosity = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
-
-  //probDescDB.set_db_model_nodes(model_index); // restore
 
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
@@ -276,14 +276,12 @@ void NonDC3FunctionTrain::push_c3_options()
   shared_data_rep->set_parameter("kick_rank",       &kick_rank);
   shared_data_rep->set_parameter("max_rank",        &max_rank);
   shared_data_rep->set_parameter("adapt_rank",      &adapt_rank);
+  shared_data_rep->set_parameter("regress_type",    &regress_type);
   shared_data_rep->set_parameter("solver_tol",      &solver_tol);
   shared_data_rep->set_parameter("rounding_tol",    &rounding_tol);
   shared_data_rep->set_parameter("max_cross_iterations",  &cross_max_iter);
   shared_data_rep->set_parameter("max_solver_iterations", &max_solv_iters);
   shared_data_rep->set_parameter("verbosity",       &verbosity);
-
-  //Cout << "solver_tol = " << solver_tol << "\n";
-  //Cout << "adapt_rank = " << adapt_rank << "\n";
 }
 
 
@@ -308,13 +306,16 @@ void NonDC3FunctionTrain::print_results(std::ostream& s)
    > refine_expansion() --> {pre,core,post}_refinement()
 
 This function was used to perform the Model samples for purposes of 
-adaptation (as opposed to the regression case.
+adaptation (as opposed to the regression case).
 
-TO DO: will want to reactivate something like this for "adapt | regress"
+Rather than a grid increment inducing a batch of samples, the cross
+option checks new evaluation points, one at a time.
+
+TO DO: will want to reactivate something like this for "cross | regress"
 This fn would be passed into the C3 library for its adaptation scheme
 at the bottom of C3Approximation::build() -- see Warning there.
 
-Flag for "adapt | regress" is being added to the FT Model specification.
+Flag for "cross | regress" is being added to the FT Model specification.
 
 int NonDC3FunctionTrain::
 qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)

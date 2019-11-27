@@ -40,6 +40,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
   maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
+  regressType(problem_db.get_short("model.surrogate.regression_type")),
   roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
@@ -98,6 +99,7 @@ SharedC3ApproxData(const String& approx_type,
   this->maxRank = 10;
   this->adaptRank = false;
 
+  this->regressType = FT_LS; // default: (non-regularized) least sq
   this->solverTol = 1e-10;
   this->roundingTol = 1e-10;
   this->maxSolverIterations = 1000;
@@ -130,6 +132,8 @@ void SharedC3ApproxData::set_parameter(String var, void * val)
     this->maxRank = *(size_t*)val;
   else if (var.compare("adapt_rank") == 0)
     this->adaptRank = *(bool*)val;
+  else if (var.compare("regress_type") == 0)
+    this->regressType = *(short*)val;
   else if (var.compare("solver_tol") == 0)
     this->solverTol = *(double*)val;
   else if (var.compare("rounding_tol") == 0)

@@ -199,6 +199,9 @@ private:
   // Pecos::*PolyApproximation manages keyed data inside the library interface,
   // but C3 does not.  Therefore, employ keyed set of pointers here in the
   // Dakota interface class.
+  // PROPOSAL: wrap everything below in another class and contain a vector of them in C3Approximation
+  //           then this->ft_derived_functions.second_central_moment
+  //           becomes levIter->ft_derived_functions.second_central_moment
 
     ////////////////
     // Reading in from dakota interface

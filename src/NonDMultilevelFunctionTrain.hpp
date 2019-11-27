@@ -90,10 +90,8 @@ protected:
 
   /// Aggregate variance across the set of QoI for a particular model level
   void aggregate_variance(Real& agg_var_l);
-  /// Retrieve the cardinality of the basis and the maximum number of sparse
-  /// coefficients across the set of QoI for a particular model level
-  void sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l,
-			Real power);
+  /// Compute an effective rank across the set of QoI for a model level
+  void rank_metrics(Real& rank_metric_l, Real power);
 
   /// compute delta_N_l for ESTIMATOR_VARIANCE case
   void compute_sample_increment(const RealVector& agg_var,
@@ -101,8 +99,7 @@ protected:
 				Real eps_sq_div_2, const SizetArray& N_l,
 				SizetArray& delta_N_l);
   /// compute delta_N_l for RIP_SAMPLING case
-  void compute_sample_increment(const SizetArray& cardinality, Real factor,
-				const RealVector& sparsity,
+  void compute_sample_increment(Real factor, const RealVector& rank,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
 private:
@@ -116,10 +113,8 @@ private:
   void update_from_specification(bool update_exp, bool update_sampler,
 				 bool update_from_ratio);
 
-  /// scale sample profile new_N_l to retain shape while enforcing an upper
-  /// bound of cardinality * factor
-  void scale_profile(const SizetArray& cardinality, Real factor,
-		     RealVector& new_N_l);
+  // scale sample profile to retain shape while enforcing an upper bound
+  //void scale_profile(..., RealVector& new_N_l);
 
   //
   //- Heading: Data

@@ -726,6 +726,15 @@
 	     ' >
 
     <!ENTITY ft_method_controls '
+		  <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
+		    <oneOf label="Regression Type">
+                      <keyword id="ls" name="ls" code="{N_mdm(type,regressionType_FT_LS)}" label="ls" />
+                      <keyword id="rls2" name="rls2" code="{N_mdm(type,regressionType_FT_RLS2)}" label="rls2" />
+                      <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mdm(type,regressionType_FT_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
+                      <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mdm(type,regressionType_FT_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
+                      <!-- <keyword id="rls1" name="rls1" code="{N_mdm(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
+		    </oneOf>
+		  </keyword>
 		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mdm(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
@@ -789,6 +798,15 @@
 	     ' >
 
     <!ENTITY ft_model_controls '
+		  <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
+		    <oneOf label="Regression Type">
+                      <keyword id="ls" name="ls" code="{N_mom(type,regressionType_LS)}" label="ls" />
+                      <keyword id="rls2" name="rls2" code="{N_mom(type,regressionType_RLS2)}" label="rls2" />
+                      <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mom(type,regressionType_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
+                      <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mom(type,regressionType_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
+                      <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_RLS1)}" label="rls1" />             EXPERIMENTAL -->
+		    </oneOf>
+		  </keyword>
 		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
@@ -3574,7 +3592,7 @@
 		  &ft_model_controls;
 		  &ft_model_order;
 		  &ft_model_rank;
-		  <!-- Need a better name for this...
+		  <!-- num_param is identical to start_order in polynomial case, but could be useful generalization for future non-polynomial cases
 		  <keyword  id="num_param" name="num_param" code="{N_mom(sizet,numParam)}" label="Number of parameters in univariate function" help="" minOccurs="0" default="">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
@@ -3584,12 +3602,11 @@
 		  <keyword id="adapt_coeff_tolerance" name="adapt_coeff_tolerance" code="{N_mom(Real,adaptCoeffTolerance)}" label="Polynomial coefficient adaptation tolerance" help="" minOccurs="0" default="1.0e-10">
 		    <param type="REAL" constraint=">= 0" />
 		  </keyword>
-		  <keyword id="piecewise_min_interval" name="piecewise_min_interval" code="{N_mom(Real,piecewiseMinInterval)}" label="Minimum Size of an interval for Piecewise Polynomials" help="" minOccurs="0" default="1.0e-2">
-		    <param type="REAL" constraint=">= 0" />
-		  </keyword>
-		  <keyword id="piecewise_num_regions" name="piecewise_num_regions" code="{N_mom(sizet,piecewiseNumRegions)}" label="Number of regions for splitting Piecewise Polynomials" help="" minOccurs="0" default="5">
+		  <keyword  id="verbosity" name="verbosity" code="{N_mom(nnint,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
+		  -->
+		  <!-- Can be automated for a particular method context, e.g., UQ, but could be retained for Model lacking an Iterator context.
 		  <keyword id="polynomial_type" name="polynomial_type" code="{0}" label="Polynomial type" minOccurs="0" default="">
 		    <oneOf label="Polynomial Type">
                       <keyword id="legendre" name="legendre" code="{N_mom(utype,polyType_LEGENDRE)}" label="legendre" />
@@ -3599,6 +3616,8 @@
                       <keyword id="fourier" name="fourier" code="{N_mom(utype,polyType_FOURIER)}" label="fourier" />
 		    </oneOf>
 		  </keyword>
+		  -->
+		  <!-- Seems useful for both method and model, but can induce some measure restrictions as for piecewise SC.
 		  <keyword id="function_class" name="function_class" code="{0}" label="Function_type" minOccurs="0" default="">
 		    <oneOf label="Function Type">
                       <keyword id="piecewise" name="piecewise" code="{N_mom(utype,polyType_PIECEWISE)}" label="piecewise" />
@@ -3608,22 +3627,12 @@
                       <keyword id="kernel" name="kernel" code="{N_mom(utype,polyType_KERNEL)}" label="kernel" />
 		    </oneOf>
 		  </keyword>
+		  -->
+		  <!-- Not ready for this just yet; cross will require the addition of the QoI evaluator API for per-evaluation search.
 		  <keyword id="c3_build_type" name="c3_build_type" code="{0}" label="c3_build_type" minOccurs="0" default="regress">
 		    <oneOf label="C3 Build Type">
-                      <keyword id="adapt" name="adapt" code="{N_mom(utype, c3BuildType_ADAPT)}" label="adapt" />
-                      <keyword id="regress" name="regress" code="{N_mom(utype,polyType_REGRESS)}" label="regress" />
-		    </oneOf>
-		  </keyword>
-		  <keyword  id="verbosity" name="verbosity" code="{N_mom(nnint,verbosity)}" label="Verbosity level during building of the FT" help="" minOccurs="0" default="0">
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword id="regress_type" name="regress_type" code="{0}" label="Regress_type" minOccurs="0" default="">
-		    <oneOf label="Regress Type">
-                      <keyword id="ls" name="ls" code="{N_mom(utype,regressType_LS)}" label="ls" />
-                      <keyword id="rls2" name="rls2" code="{N_mom(utype,regressType_rls2)}" label="rls2" />
-                      <keyword id="rlsd2" name="rlsd2" code="{N_mom(utype,regressType_RLSD2)}" label="rlsd2" />
-                      <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mom(utype,regressType_RLSRKHS)}" label="rlsrkhs" />
-                      <keyword id="rls1" name="rls1" code="{N_mom(utype,regressType_RLS1)}" label="rls1" />
+                      <keyword id="cross" name="cross" code="{N_mom(utype, c3BuildType_CROSS_APPROXIMATION)}" label="cross approximation" />
+                      <keyword id="regress" name="regress" code="{N_mom(utype,polyType_REGRESSION)}" label="regress" />
 		    </oneOf>
 		  </keyword>
 		  -->

@@ -7126,6 +7126,8 @@ static Method_mp_type
 	MP2p(regressionType,LEAST_ANGLE_REGRESSION),       // Pecos enumeration
 	MP2p(regressionType,ORTHOG_LEAST_INTERPOLATION),   // Pecos enumeration
 	MP2p(regressionType,ORTHOG_MATCH_PURSUIT),         // Pecos enumeration
+	MP2s(regressionType,FT_LS),
+	MP2s(regressionType,FT_RLS2),
 	MP2s(responseLevelTarget,GEN_RELIABILITIES),
 	MP2s(responseLevelTarget,PROBABILITIES),
 	MP2s(responseLevelTarget,RELIABILITIES),
@@ -7385,6 +7387,8 @@ static Model_mp_type
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
+	MP2s(regressionType,FT_LS),
+	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),

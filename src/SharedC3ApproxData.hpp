@@ -114,6 +114,7 @@ protected:
   size_t   maxRank;
   bool   adaptRank; // converted to size_t (0 no, 1 yes) for C3
 
+  short  regressType;
   double roundingTol;
   double solverTol;
   int maxSolverIterations;

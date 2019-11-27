@@ -1125,6 +1125,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   |
   ( function_train {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
     [ collocation_points INTEGER >= 0 {N_mdm(sizet,collocationPoints)} ]
+    [ regression_type {0}
+      ls {N_mdm(type,regressionType_FT_LS)}
+      |
+      rls2 {N_mdm(type,regressionType_FT_RLS2)}
+     ]
     [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(nnint,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTolerance)} ]
@@ -1240,6 +1245,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+     ]
+    [ regression_type {0}
+      ls {N_mdm(type,regressionType_FT_LS)}
+      |
+      rls2 {N_mdm(type,regressionType_FT_RLS2)}
      ]
     [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(nnint,maxCrossIterations)} ]
@@ -1363,6 +1373,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
       recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+     ]
+    [ regression_type {0}
+      ls {N_mdm(type,regressionType_FT_LS)}
+      |
+      rls2 {N_mdm(type,regressionType_FT_RLS2)}
      ]
     [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
     [ max_cross_iterations INTEGER >= 0 {N_mdm(nnint,maxCrossIterations)} ]
@@ -5957,6 +5972,11 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
+        [ regression_type {0}
+          ls {N_mom(type,regressionType_LS)}
+          |
+          rls2 {N_mom(type,regressionType_RLS2)}
+         ]
         [ max_solver_iterations INTEGER >= 0 {N_mom(nnint,maxSolverIterations)} ]
         [ max_cross_iterations INTEGER >= 0 {N_mom(nnint,maxCrossIterations)} ]
         [ solver_tolerance REAL {N_mom(Real,solverTolerance)} ]

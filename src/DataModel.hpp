@@ -50,6 +50,11 @@ enum { SURROGATE_MODEL=1, TRUTH_MODEL };
 /// define special values for distParamDerivs
 enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS }; 
 
+// define special values for regressionType in C3 FT (outside of Pecos).
+// Note that C3 and Pecos are mutually exclusive: use of values from multiple
+// enums should not conflict
+enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
+
 
 /// Body class for model specification data.
 
@@ -366,6 +371,8 @@ public:
 
   // Function-Train Options
 
+  /// type of (regularized) regression: FT_LS or FT_RLS2
+  short regressionType;
   /// max iterations for optimization solver used in FT regression
   int maxSolverIterations;
   /// maximum number of cross iterations

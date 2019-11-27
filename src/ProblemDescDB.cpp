@@ -2785,7 +2785,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"surrogate.rbf_bases", P rbfBases},
 	{"surrogate.rbf_max_pts", P rbfMaxPts},
 	{"surrogate.rbf_max_subsets", P rbfMaxSubsets},
-	{"surrogate.rbf_min_partition", P rbfMinPartition}};
+	{"surrogate.rbf_min_partition", P rbfMinPartition},
+	{"surrogate.regression_type", P regressionType}
+    };
     #undef P
 
     KW<short, DataModelRep> *kw;
