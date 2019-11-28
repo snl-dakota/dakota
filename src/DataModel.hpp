@@ -373,6 +373,8 @@ public:
 
   /// type of (regularized) regression: FT_LS or FT_RLS2
   short regressionType;
+  /// penalty parameter for regularized regression (FT_RLS2)
+  Real regressionL2Penalty;
   /// max iterations for optimization solver used in FT regression
   int maxSolverIterations;
   /// maximum number of cross iterations

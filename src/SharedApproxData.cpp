@@ -200,7 +200,7 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
     return new SharedPecosApproxData(problem_db, num_vars);
 #ifdef HAVE_C3
   else if (approx_type == "global_function_train")
-    return new SharedC3ApproxData(problem_db,num_vars);
+    return new SharedC3ApproxData(problem_db, num_vars);
 #endif
   //else if (approx_type == "global_gaussian")
   //  return new SharedGaussProcApproxData(problem_db, num_vars);

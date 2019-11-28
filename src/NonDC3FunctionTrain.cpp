@@ -210,31 +210,21 @@ config_regression(size_t colloc_pts, Iterator& u_space_sampler,
 
 void NonDC3FunctionTrain::initialize_u_space_model()
 {
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+  NonDExpansion::initialize_u_space_model();
+  //configure_options(); // pulled out of base because C3 does not use it
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   shared_data_rep->construct_basis(u_dist);
-  
-  // if all variables mode, initialize key to random variable subset
-  // NOT SURE WHAT TO DO BELOW --AG
-  // Still needs to be fully propagated --MSE
-  if (numCAUV != numContinuousVars) {
-    BitArray random_vars_key(numContinuousVars);
-    assign_value(random_vars_key, true, startCAUV, numCAUV);
-    shared_data_rep->random_variables_key(random_vars_key);
-  }
 
   // TO DO: method and model spec are redundant.  How to encapsulate an
   // XML entity for {method,model} to allow it in either location?
   // > Defining a shared spec class with instances in Data{Method,Model} works
   //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
   push_c3_options();
-
-  // perform last due to numSamplesOnModel update
-  //NonDExpansion::initialize_u_space_model(); // uses Pecos poly basis
 }
 
 
@@ -245,43 +235,34 @@ void NonDC3FunctionTrain::push_c3_options()
   // by OrthogPolyApproximation are passed using Pecos::BasisConfigOptions.
   // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
 
-  size_t start_order
-    = probDescDB.get_sizet("method.nond.c3function_train.start_order");
-  size_t max_order
-    = probDescDB.get_sizet("method.nond.c3function_train.max_order");
-  size_t start_rank
-    = probDescDB.get_sizet("method.nond.c3function_train.start_rank");
-  size_t kick_rank
-    = probDescDB.get_sizet("method.nond.c3function_train.kick_rank");
-  size_t max_rank
-    = probDescDB.get_sizet("method.nond.c3function_train.max_rank");
-  bool adapt_rank
-    = probDescDB.get_bool("method.nond.c3function_train.adapt_rank");
-  double solver_tol
-    = probDescDB.get_real("method.nond.c3function_train.solver_tolerance");
-  double rounding_tol
-    = probDescDB.get_real("method.nond.c3function_train.rounding_tolerance");
-  int cross_max_iter
-    = probDescDB.get_int("method.nond.c3function_train.max_cross_iterations");
-
-  short regress_type = probDescDB.get_short("method.nond.regression_type");
-  int max_solv_iters = probDescDB.get_int("method.nond.max_solver_iterations");
-  int verbosity = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
-
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->set_parameter("start_poly_order",&start_order);
-  shared_data_rep->set_parameter("max_poly_order",  &max_order);
-  shared_data_rep->set_parameter("start_rank",      &start_rank);
-  shared_data_rep->set_parameter("kick_rank",       &kick_rank);
-  shared_data_rep->set_parameter("max_rank",        &max_rank);
-  shared_data_rep->set_parameter("adapt_rank",      &adapt_rank);
-  shared_data_rep->set_parameter("regress_type",    &regress_type);
-  shared_data_rep->set_parameter("solver_tol",      &solver_tol);
-  shared_data_rep->set_parameter("rounding_tol",    &rounding_tol);
-  shared_data_rep->set_parameter("max_cross_iterations",  &cross_max_iter);
-  shared_data_rep->set_parameter("max_solver_iterations", &max_solv_iters);
-  shared_data_rep->set_parameter("verbosity",       &verbosity);
+  shared_data_rep->set_parameter("start_poly_order",
+    probDescDB.get_sizet("method.nond.c3function_train.start_order"));
+  shared_data_rep->set_parameter("max_poly_order",
+    probDescDB.get_sizet("method.nond.c3function_train.max_order"););
+  shared_data_rep->set_parameter("start_rank",
+    probDescDB.get_sizet("method.nond.c3function_train.start_rank"));
+  shared_data_rep->set_parameter("kick_rank",
+    probDescDB.get_sizet("method.nond.c3function_train.kick_rank"));
+  shared_data_rep->set_parameter("max_rank",
+    probDescDB.get_sizet("method.nond.c3function_train.max_rank"));
+  shared_data_rep->set_parameter("adapt_rank",
+    probDescDB.get_bool("method.nond.c3function_train.adapt_rank"));
+  shared_data_rep->set_parameter("regress_type",
+    probDescDB.get_short("method.nond.regression_type"));
+  shared_data_rep->set_parameter("regularization_parameter",
+    probDescDB.get_real("method.nond.regression_penalty"));
+  shared_data_rep->set_parameter("solver_tol",
+    probDescDB.get_real("method.nond.c3function_train.solver_tolerance"));
+  shared_data_rep->set_parameter("rounding_tol",
+    probDescDB.get_real("method.nond.c3function_train.rounding_tolerance"));
+  shared_data_rep->set_parameter("max_cross_iterations",
+    probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
+  shared_data_rep->set_parameter("max_solver_iterations",
+    probDescDB.get_int("method.nond.max_solver_iterations"));
+  int verbosity = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
+  shared_data_rep->set_parameter("verbosity", verbosity);
 }
 
 

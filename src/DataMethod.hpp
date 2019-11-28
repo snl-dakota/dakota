@@ -765,6 +765,7 @@ public:
   String useSurrogate;
 
   // NonD C3 Function Train
+  // Note: regressionType,maxSolverIterations,regressionL2Penalty are shared
 
   /// maximum number of cross iterations
   int maxCrossIterations;

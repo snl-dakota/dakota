@@ -17,35 +17,50 @@ namespace Dakota {
     
 struct FTDerivedFunctions
 {
-
-    int set;
+  int set;
     
-    struct FunctionTrain * ft_squared;
-    struct FunctionTrain * ft_cubed;
-    struct FunctionTrain * ft_constant_at_mean;
-    struct FunctionTrain * ft_diff_from_mean;
-    struct FunctionTrain * ft_diff_from_mean_squared;
-    struct FunctionTrain * ft_diff_from_mean_cubed;    
-    struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan 
-    struct FunctionTrain * ft_diff_from_mean_normalized;
-    struct FunctionTrain * ft_diff_from_mean_normalized_squared;
-    struct FunctionTrain * ft_diff_from_mean_normalized_cubed;
+  struct FunctionTrain * ft_squared;
+  struct FunctionTrain * ft_cubed;
+  struct FunctionTrain * ft_constant_at_mean;
+  struct FunctionTrain * ft_diff_from_mean;
+  struct FunctionTrain * ft_diff_from_mean_squared;
+  struct FunctionTrain * ft_diff_from_mean_cubed;    
+  struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan 
+  struct FunctionTrain * ft_diff_from_mean_normalized;
+  struct FunctionTrain * ft_diff_from_mean_normalized_squared;
+  struct FunctionTrain * ft_diff_from_mean_normalized_cubed;
 
-    // raw moments
-    double first_moment;
-    double second_moment;
-    double third_moment;
+  // raw moments
+  double first_moment;
+  double second_moment;
+  double third_moment;
 
-    // central moments
-    double second_central_moment;
-    double third_central_moment;
-    double fourth_central_moment;
+  // central moments
+  double second_central_moment;
+  double third_central_moment;
+  double fourth_central_moment;
 
-    // standardized moments
-    double std_dev;
-    double skewness;
-    double kurtosis;
+  // standardized moments
+  double std_dev;
+  double skewness;
+  double kurtosis;
 };
+
+
+class FnTrainPtrs
+{
+public:
+
+  // Add ctor and dtor to better manage these pointers...
+
+  struct FunctionTrain * ft;
+  struct FT1DArray * ft_gradient;
+  struct FT1DArray * ft_hessian;
+  struct MultiApproxOpts * ft_opts; // <-- This is really shared
+  struct FTDerivedFunctions ft_derived_functions;
+  struct C3SobolSensitivity * ft_sobol;
+}
+
 
 void ft_derived_functions_init_null(struct FTDerivedFunctions * );
     
@@ -67,172 +82,141 @@ class SharedC3ApproxData;
     used for polynomial chaos expansions and interpolation polynomials
     used for stochastic collocation. */
 
-
-    
 class C3Approximation: public Approximation
 {
 public:
 
-    //
-    //- Heading: Constructor and destructor
-    //
+  //
+  //- Heading: Constructor and destructor
+  //
 
-    /// default constructor
-    C3Approximation();
-    /// standard ProblemDescDB-driven constructor
-    C3Approximation(ProblemDescDB& problem_db,
-                    const SharedApproxData& shared_data,
-                    const String& approx_label);
-    /// alternate constructor
-    C3Approximation(const SharedApproxData& shared_data);
-    ~C3Approximation(); // destructor
+  /// default constructor
+  C3Approximation();
+  /// standard ProblemDescDB-driven constructor
+  C3Approximation(ProblemDescDB& problem_db,
+		  const SharedApproxData& shared_data,
+		  const String& approx_label);
+  /// alternate constructor
+  C3Approximation(const SharedApproxData& shared_data);
+  ~C3Approximation(); // destructor
 
-    //
-    //- Heading: Member functions
-    //
+  //
+  //- Heading: Member functions
+  //
 
-
-
-    /// I Dont know what the next 4 are for, but I will leave them in
-    /// in case I ever find out!
+  /// I Dont know what the next 4 are for, but I will leave them in
+  /// in case I ever find out!
     
-    /// set pecosBasisApprox.configOptions.expansionCoeffFlag
-    void expansion_coefficient_flag(bool coeff_flag);
-    /// get pecosBasisApprox.configOptions.expansionCoeffFlag
-    bool expansion_coefficient_flag() const;
+  /// set pecosBasisApprox.configOptions.expansionCoeffFlag
+  void expansion_coefficient_flag(bool coeff_flag);
+  /// get pecosBasisApprox.configOptions.expansionCoeffFlag
+  bool expansion_coefficient_flag() const;
 
-    /// set pecosBasisApprox.configOptions.expansionGradFlag
-    void expansion_gradient_flag(bool grad_flag);
-    /// get pecosBasisApprox.configOptions.expansionGradFlag
-    bool expansion_gradient_flag() const;
+  /// set pecosBasisApprox.configOptions.expansionGradFlag
+  void expansion_gradient_flag(bool grad_flag);
+  /// get pecosBasisApprox.configOptions.expansionGradFlag
+  bool expansion_gradient_flag() const;
 
-    void compute_moments(bool full_stats = true, bool combined_stats = false);
-    void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
-			 bool combined_stats = false);
-    const RealVector& moments() const;
-    Real moment(size_t i) const;
-    void moment(Real mom, size_t i);
+  void compute_moments(bool full_stats = true, bool combined_stats = false);
+  void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
+		       bool combined_stats = false);
+  const RealVector& moments() const;
+  Real moment(size_t i) const;
+  void moment(Real mom, size_t i);
 
-    /// Performs global sensitivity analysis using Sobol' Indices by
-    /// computing component (main and interaction) effects
-    void compute_component_effects();
-    /// Performs global sensitivity analysis using Sobol' Indices by
-    /// computing total effects
-    void compute_total_effects();
+  /// Performs global sensitivity analysis using Sobol' Indices by
+  /// computing component (main and interaction) effects
+  void compute_component_effects();
+  /// Performs global sensitivity analysis using Sobol' Indices by
+  /// computing total effects
+  void compute_total_effects();
 
-    void compute_all_sobol_indices(size_t); // computes total and interacting sobol indices
-    Real total_sobol_index(size_t);         // returns total sobol index
-    Real main_sobol_index(size_t);          // returns main sobol index
-    // iterate over sobol indices and apply a function
-    void sobol_iterate_apply(void (*)(double, size_t, size_t*,void*), void*); 
+  void compute_all_sobol_indices(size_t); // computes total and interacting sobol indices
+  Real total_sobol_index(size_t);         // returns total sobol index
+  Real main_sobol_index(size_t);          // returns main sobol index
+  // iterate over sobol indices and apply a function
+  void sobol_iterate_apply(void (*)(double, size_t, size_t*,void*), void*); 
     
-    Real mean();                            // expectation with respect to all variables
-    Real mean(const RealVector &);          // expectation with respect to uncertain variables
-    const RealVector& mean_gradient();      // NOT SURE
-    // gradient with respect fixed variables
-    const RealVector& mean_gradient(const RealVector &, const SizetArray &); 
+  Real mean();                            // expectation with respect to all variables
+  Real mean(const RealVector &);          // expectation with respect to uncertain variables
+  const RealVector& mean_gradient();      // NOT SURE
+  // gradient with respect fixed variables
+  const RealVector& mean_gradient(const RealVector &, const SizetArray &); 
     
-//     inline const Pecos::RealVector& PecosApproximation::
-// mean_gradient(const Pecos::RealVector& x, const Pecos::SizetArray& dvv)
-// { return polyApproxRep->mean_gradient(x, dvv); }
+  //     inline const Pecos::RealVector& PecosApproximation::
+  // mean_gradient(const Pecos::RealVector& x, const Pecos::SizetArray& dvv)
+  // { return polyApproxRep->mean_gradient(x, dvv); }
 
-    Real variance();                        // variance with respect to all variables
-    Real variance(const RealVector&);       // variance with respect to RV, others fixed
-    const RealVector& variance_gradient();      // NOT SURE
-    // gradient with respect fixed variables
-    const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
+  Real variance();                        // variance with respect to all variables
+  Real variance(const RealVector&);       // variance with respect to RV, others fixed
+  const RealVector& variance_gradient();      // NOT SURE
+  // gradient with respect fixed variables
+  const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
 
-    Real covariance(Approximation& approx_2);                    // covariance between two functions
-    Real covariance(const RealVector& x, Approximation& approx_2); // covariance with respect so subset
+  Real covariance(Approximation& approx_2);                    // covariance between two functions
+  Real covariance(const RealVector& x, Approximation& approx_2); // covariance with respect so subset
 
-    Real skewness();
-    Real kurtosis();
-    Real third_central();
-    Real fourth_central();
+  Real skewness();
+  Real kurtosis();
+  Real third_central();
+  Real fourth_central();
 
-    const RealVector& expansion_moments() const;
-    const RealVector& numerical_integration_moments() const;
+  const RealVector& expansion_moments() const;
+  const RealVector& numerical_integration_moments() const;
 
 protected:
 
-    //
-    //- Heading: Virtual function redefinitions
-    //
+  //
+  //- Heading: Virtual function redefinitions
+  //
   
-    Real                 value(const Variables& vars);
-    const RealVector&    gradient(const Variables& vars);
-    const RealSymMatrix& hessian(const Variables& vars);
+  Real                 value(const Variables& vars);
+  const RealVector&    gradient(const Variables& vars);
+  const RealSymMatrix& hessian(const Variables& vars);
 
-    void build();
-    //void rebuild();
-    //void finalize();
-    //void store(size_t index);
-    //void restore(size_t index);
-    //void remove_stored(size_t index);
+  void build();
+  //void rebuild();
+  //void finalize();
 
-    bool expansion_coefficient;
-    bool expansion_gradient;
-    int min_coefficients() const;
+  bool expansion_coefficient;
+  bool expansion_gradient;
+  int min_coefficients() const;
 
+  SharedC3ApproxData * sharedC3DataRep;
 
-    SharedC3ApproxData * sharedC3DataRep;
 private:
 
-    void base_init();
+  void base_init();
     
-    bool expansionCoeffFlag; // build a function_train for the quantity of interest
-    bool expansionCoeffGradFlag; // build a function_train for the gradient of a quantity of interest
+  bool expansionCoeffFlag;     // build a fn train for the QoI
+  bool expansionCoeffGradFlag; // build a fn train for the gradient of the QoI
     
-    //
-    //- Heading: Convenience member functions
-    //
-    void compute_derived_statistics(bool overwrite);
-    struct FunctionTrain * subtract_const(Real val);
+  //
+  //- Heading: Convenience member functions
+  //
 
-    //
-    //- Heading: Data
-    //
+  void compute_derived_statistics(bool overwrite);
+  struct FunctionTrain * subtract_const(Real val);
 
-  // *************
-  // *** TO DO ***:
-  // *************
+  //
+  //- Heading: Data
+  //
+
+  // containers allowing const ref return of latest result (active key)
+  RealVector     moment_vector;
+  RealVector num_moment_vector;
+
   // Pecos::*PolyApproximation manages keyed data inside the library interface,
   // but C3 does not.  Therefore, employ keyed set of pointers here in the
-  // Dakota interface class.
-  // PROPOSAL: wrap everything below in another class and contain a vector of them in C3Approximation
-  //           then this->ft_derived_functions.second_central_moment
-  //           becomes levIter->ft_derived_functions.second_central_moment
-
-    ////////////////
-    // Reading in from dakota interface
-    int adaptive_construction; // 0 if
-    size_t dim;
-    size_t num_random;
-    size_t num_det;
-    
-    size_t * ind_random;
-    
-    RealVector grad;
-    RealSymMatrix hess;
-    RealVector moment_vector, num_moment_vector;
-
-    // Regression information
-    SizetVector start_ranks;
-    bool cv;
-    struct c3Opt * optimizer;
-    size_t ndata;
-    double * xtrain;
-    double * ytrain;
-
-    // Model
-    //std::vector<struct FunctionTrain *> storedFT;
-    struct FunctionTrain * ft;
-    struct FT1DArray * ft_gradient;
-    struct FT1DArray * ft_hessian;
-    struct MultiApproxOpts * ft_opts; // <-- This is really shared
-    struct FTDerivedFunctions ft_derived_functions;
-    struct C3SobolSensitivity * ft_sobol;
+  // Dakota interface class.  Then
+  //      this->ft_derived_functions.second_central_moment
+  // becomes
+  //   levIter->ft_derived_functions.second_central_moment
+  std::map<UShortArray, FnTrainPtrs> levelApprox;
+  // iterator to active levelApprox
+  std::map<UShortArray, FnTrainPtrs>::iterator levApproxIter;
 };
+
 
 inline void C3Approximation::expansion_coefficient_flag(bool coeff_flag)
 { this->expansionCoeffFlag = coeff_flag; }

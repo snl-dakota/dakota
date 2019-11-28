@@ -849,6 +849,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 void NonDPolynomialChaos::initialize_u_space_model()
 {
   NonDExpansion::initialize_u_space_model();
+  configure_options(); // pulled out of base because C3 does not use it
 
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();

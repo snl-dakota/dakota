@@ -378,6 +378,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 void NonDStochCollocation::initialize_u_space_model()
 {
   NonDExpansion::initialize_u_space_model();
+  configure_options(); // pulled out of base because C3 does not use it
 
   // initialize product accumulators with PolynomialApproximation pointers
   // used in covariance calculations

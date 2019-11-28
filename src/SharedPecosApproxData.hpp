@@ -148,11 +148,6 @@ protected:
   void post_combine();
   void combined_to_active(bool clear_combined = true);
 
-  /*
-  void store(size_t index = _NPOS);
-  void restore(size_t index = _NPOS);
-  void remove_stored(size_t index = _NPOS);
-  */
   void clear_inactive();
 
 private:
@@ -248,20 +243,6 @@ inline void SharedPecosApproxData::pre_finalize()
 
 inline void SharedPecosApproxData::post_finalize()
 { pecosSharedDataRep->post_finalize_data(); }
-
-
-/*
-inline void SharedPecosApproxData::store(size_t index)
-{ pecosSharedDataRep->store_data(index); }
-
-
-inline void SharedPecosApproxData::restore(size_t index)
-{ pecosSharedDataRep->restore_data(index); }
-
-
-inline void SharedPecosApproxData::remove_stored(size_t index)
-{ pecosSharedDataRep->remove_stored_data(index); }
-*/
 
 
 inline void SharedPecosApproxData::clear_inactive()

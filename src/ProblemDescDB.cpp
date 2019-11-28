@@ -2555,7 +2555,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"trust_region.expand_threshold", P trustRegionExpandTrigger},
 	{"trust_region.expansion_factor", P trustRegionExpand},
 	{"trust_region.minimum_size", P trustRegionMinSize},
-  {"variable_tolerance", P threshStepLength},
+	{"variable_tolerance", P threshStepLength},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
 	{"volume_boxsize_limit", P volBoxSize},
@@ -2584,6 +2584,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"surrogate.neural_network_range", P annRange},
       {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold},
+      {"surrogate.regression_penalty", P regressionL2Penalty},
       {"truncation_tolerance", P truncationTolerance}};
     #undef P
 

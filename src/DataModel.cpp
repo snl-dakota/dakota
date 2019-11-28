@@ -49,9 +49,9 @@ DataModelRep::DataModelRep():
   numReplicates(100), relTolerance(1.0e-6),
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
   subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
-  maxSolverIterations(1000), maxCrossIterations(1), solverTolerance(1.e-10),
-  roundingTolerance(1.e-8), startOrder(2), maxOrder(4), startRank(2),
-  kickRank(2), maxRank(3), adaptRank(false),
+  regressionL2Penalty(0.), maxSolverIterations(1000), maxCrossIterations(1),
+  solverTolerance(1.e-10), roundingTolerance(1.e-8), startOrder(2), maxOrder(4),
+  startRank(2), kickRank(2), maxRank(3), adaptRank(false),
   autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
@@ -91,9 +91,9 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
-    << regressionType << maxSolverIterations << maxCrossIterations
-    << solverTolerance << roundingTolerance << startOrder << maxOrder
-    << startRank << kickRank << maxRank << adaptRank
+    << regressionType << regressionL2Penalty << maxSolverIterations
+    << maxCrossIterations << solverTolerance << roundingTolerance
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
@@ -135,9 +135,9 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> convergenceTolerance >> softConvergenceLimit >> subspaceIdBingLi 
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
     >> subspaceDimension >> subspaceNormalization >> numReplicates
-    >> regressionType >> maxSolverIterations >> maxCrossIterations
-    >> solverTolerance >> roundingTolerance >> startOrder >> maxOrder
-    >> startRank >> kickRank >> maxRank >> adaptRank
+    >> regressionType >> regressionL2Penalty >> maxSolverIterations
+    >> maxCrossIterations >> solverTolerance >> roundingTolerance
+    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
     >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
     >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
@@ -179,9 +179,9 @@ void DataModelRep::write(std::ostream& s) const
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
-    << regressionType << maxSolverIterations << maxCrossIterations
-    << solverTolerance << roundingTolerance << startOrder << maxOrder
-    << startRank << kickRank << maxRank << adaptRank
+    << regressionType << regressionL2Penalty << maxSolverIterations
+    << maxCrossIterations << solverTolerance << roundingTolerance
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance

@@ -533,8 +533,8 @@ void NonDMultilevelFunctionTrain::rank_metrics(Real& rank_metric_l, Real power)
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     C3Approximation* poly_approx_q
       = (C3Approximation*)poly_approxs[qoi].approx_rep();
-    size_t rank_l = poly_approx_q->rank();
-    sum += (pow1) ? rank_l : std::pow((Real)rank_l, power);
+    Real rank_l = poly_approx_q->average_rank(); // power 1 average, *** ADD IN C3Approx
+    sum += (pow1) ? rank_l : std::pow(rank_l, power);
     //if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Rank(" /*lev " << lev << ", "*/ << "qoi " << qoi
 	/* << ", iter " << iter */ << ") = " << rank_l << '\n';
@@ -596,7 +596,15 @@ compute_sample_increment(Real factor, const RealVector& rank,
   // case RANK_SAMPLING:
   // > sample requirements scale as O(r^2 d), which shapes the profile
   // > *** TO DO: adapt profile factor in coordination with adapt_rank ?
-
+  // > there is a dependence on the polynomial order, but this should not
+  //   grow very high, could just fix this factor at ~10.
+  // > The function function_train_get_nparams(const struct FunctionTrain *);
+  //   is more direct in returning the number of unknowns in the regression
+  //   (per QoI, per level) which is directly (p r^2 d) without over-sampling
+  //   excluding the need to average r over d.  I then need to add any factor
+  //   on top of this, maybe 2 instead of 10.
+  // > TO DO: repurpose collocation_ratio spec to allow user tuning.
+  
   // update targets based on rank estimates
   Real r;  size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);

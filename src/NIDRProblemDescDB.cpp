@@ -7442,10 +7442,11 @@ static Real
         MP_(discontJumpThresh),
 	MP_(krigingNugget),
 	MP_(percentFold),
-	MP_(truncationTolerance),
+	MP_(regressionL2Penalty),
 	MP_(relTolerance),
 	MP_(roundingTolerance),
-	MP_(solverTolerance);
+	MP_(solverTolerance),
+	MP_(truncationTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),

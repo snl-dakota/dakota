@@ -454,6 +454,17 @@ void NonDExpansion::initialize_u_space_model()
       refineMetric = Pecos::COVARIANCE_METRIC;
   }
 
+  // if all variables mode, initialize key to random variable subset
+  if (allVars) {
+    BitArray random_vars_key(numContinuousVars); // init to false
+    assign_value(random_vars_key, true, startCAUV, numCAUV);
+    shared_data_rep->random_variables_key(random_vars_key);
+  }
+}
+
+
+void NonDExpansion::configure_options()
+{
   // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
   // passed via the DataFitSurrModel ctor chain.  Additional data needed by
   // {Orthog,Interp}PolyApproximation are passed in Pecos::
@@ -470,15 +481,6 @@ void NonDExpansion::initialize_u_space_model()
   Pecos::BasisConfigOptions
     bc_options(nestedRules, piecewiseBasis, true, useDerivs);
   shared_data_rep->configuration_options(bc_options);
-
-  // if all variables mode, initialize key to random variable subset
-  if (allVars) {
-    Pecos::BitArray random_vars_key(numContinuousVars); // init to false
-    size_t i, end_cauv = startCAUV + numCAUV;
-    for (i=startCAUV; i<end_cauv; ++i)
-      random_vars_key.set(i);
-    shared_data_rep->random_variables_key(random_vars_key);
-  }
 }
 
 
