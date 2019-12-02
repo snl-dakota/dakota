@@ -1,0 +1,148 @@
+
+#cmakedefine TEUCHOS_STANDALONE_PACKAGE
+
+#cmakedefine BUILD_SHARED_LIBS
+
+#cmakedefine HAVE_TEUCHOS_PARAMETERLIST
+
+/* Define the Fortran name mangling to be used for the BLAS */
+#ifndef F77_BLAS_MANGLE
+ #define F77_BLAS_MANGLE@F77_BLAS_MANGLE@
+#endif
+
+/* Define to dummy `main' function (if any) required to link to the Fortran
+   libraries. */
+#ifndef F77_DUMMY_MAIN
+ #cmakedefine F77_DUMMY_MAIN
+#endif
+
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case), which must not contain underscores, for linking with Fortran. */
+#ifndef F77_FUNC
+ #define F77_FUNC@F77_FUNC@
+#endif
+
+/* As F77_FUNC, but for C identifiers containing underscores. */
+#ifndef F77_FUNC_
+ #define F77_FUNC_@F77_FUNC_@
+#endif
+
+/* Define if F77 and FC dummy `main' functions are identical. */
+#ifndef FC_DUMMY_MAIN_EQ_F77
+ #cmakedefine FC_DUMMY_MAIN_EQ_F77
+#endif
+
+/* Define to 1 if you have the <fpu_control.h> header file. */
+#cmakedefine HAVE_FPU_CONTROL_H
+
+/* Define if the compiler supports abi::__cxa_demangle(...) */
+#cmakedefine HAVE_GCC_ABI_DEMANGLE
+
+/* Define if the C++ compiler knows how to compile __attribute__((constructor)) */
+#cmakedefine HAVE_TEUCHOS_CXX_ATTRIBUTE_CONSTRUCTOR
+
+/* Define if the C++ compiler knows how to compile __attribute__((weak)), and
+   if a program can test weak functions and call them if they are not NULL. */
+#cmakedefine HAVE_TEUCHOS_CXX_ATTRIBUTE_WEAK
+
+/* Define if the C++ compiler knows how to compile "#pragma weak", and
+   if a program can test weak functions and call them if they are not NULL. */
+#cmakedefine HAVE_TEUCHOS_CXX_PRAGMA_WEAK
+
+/* Define if building dynamic shared libraries (instead of static libraries) */
+#cmakedefine HAVE_TEUCHOS_DYNAMIC_LIBS
+
+/* Define if the (Windows) compiler has intrinsic datatype __int64 */
+#cmakedefine HAVE_TEUCHOS___INT64
+
+/* Not namespaced so should be deprecated. */
+#cmakedefine HAVE_MPI
+
+#cmakedefine HAVE_TEUCHOS_MPI
+
+/* detected problems with the blas and solution methods */
+#cmakedefine HAVE_TEUCHOS_BLASFLOAT
+#cmakedefine HAVE_TEUCHOS_BLASFLOAT_APPLE_VECLIB_BUGFIX
+#cmakedefine HAVE_TEUCHOS_BLASFLOAT_DOUBLE_RETURN
+
+#cmakedefine HAVE_SLAPY2_PROBLEM
+#cmakedefine HAVE_SLAPY2_DOUBLE_RETURN
+
+#cmakedefine HAVE_COMPLEX_BLAS
+#cmakedefine HAVE_COMPLEX_BLAS_PROBLEM
+#cmakedefine HAVE_FIXABLE_COMPLEX_BLAS_PROBLEM
+#cmakedefine HAVE_VECLIB_COMPLEX_BLAS
+
+/* define if the compiler supports access of protected templated nested
+   classes in derived classes */
+#cmakedefine HAVE_PROTECTED_NESTED_TEMPLATE_CLASS_ACCESS
+
+#cmakedefine HAVE_TEUCHOS_ARRAY_BOUNDSCHECK
+
+#cmakedefine HAVE_TEUCHOS_THREAD_SAFE
+
+#cmakedefine HAVE_TEUCHOS_LAPACKLARND
+
+/* Deprecated */
+#cmakedefine HAVE_TEUCHOS_BOOST
+
+/* Deprecated */
+#cmakedefine HAVE_TEUCHOS_QT
+
+#cmakedefine HAVE_TEUCHOS_QD
+
+#cmakedefine HAVE_TEUCHOSNUMERICS_EIGEN
+
+#cmakedefine HAVE_TEUCHOS_DOUBLE_TO_QD
+
+#cmakedefine HAVE_TEUCHOS_ARPREC
+
+#cmakedefine HAVE_TEUCHOS_DOUBLE_TO_ARPREC
+
+#cmakedefine HAVE_TEUCHOS_COMM_TIMERS
+
+#cmakedefine HAVE_TEUCHOS_FLOAT
+
+#define TEUCHOS_ORDINAL_TYPE @Teuchos_ORDINAL_TYPE@
+
+#cmakedefine HAVE_TEUCHOS_COMPLEX
+
+#cmakedefine HAVE_TEUCHOS_LONG_LONG_INT
+
+#cmakedefine HAVE_TEUCHOS_DEBUG
+
+#cmakedefine HAVE_TEUCHOS_DEBUG_RCP_NODE_TRACING
+
+#cmakedefine HAVE_TEUCHOS_DEMANGLE
+
+#cmakedefine HAVE_TEUCHOS_EXPAT
+
+#cmakedefine HAVE_TEUCHOS_EXPLICIT_INSTANTIATION
+
+#cmakedefine HAVE_TEUCHOS_EXTENDED
+
+#cmakedefine HAVE_TEUCHOS_GNU_MP
+
+#cmakedefine HAVE_TEUCHOS_LIBXML2
+
+#cmakedefine HAVE_TEUCHOS_C_EXCEPTIONS
+
+#cmakedefine HAVE_TEUCHOS_LINK
+
+#cmakedefine HAVE_TEUCHOS_BFD
+
+#cmakedefine HAVE_TEUCHOS_STACKTRACE
+
+#cmakedefine HAVE_TEUCHOS_DEFAULT_STACKTRACE
+
+#cmakedefine HAVE_TEUCHOS_GLOBALLY_REDUCE_UNITTEST_RESULTS
+
+#cmakedefine HAVE_TEUCHOS_TIME_MASSIF_SNAPSHOTS
+
+#cmakedefine HAVE_TEUCHOS_KOKKOS_PROFILING
+
+/* template qualifier required for calling template methods from non-template
+   code */
+#define INVALID_TEMPLATE_QUALIFIER @INVALID_TEMPLATE_QUALIFIER@
+
+@TEUCHOS_DEPRECATED_DECLARATIONS@

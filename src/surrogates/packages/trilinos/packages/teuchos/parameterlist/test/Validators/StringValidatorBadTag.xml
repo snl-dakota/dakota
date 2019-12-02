@@ -1,0 +1,13 @@
+<ParameterList name="String Validator List">
+  <Parameter isDefault="false" isUsed="true" name="non default" type="string" validatorId="0" value="kurtis"/>
+  <Validators>
+    <Validator type="StringValidator" validatorId="0">
+      <baddness value="value1"/>
+      <String value="cheese"/>
+      <String value="kurtis"/>
+      <String value="is"/>
+      <String value="awesome"/>
+    </Validator>
+  </Validators>
+</ParameterList>
+

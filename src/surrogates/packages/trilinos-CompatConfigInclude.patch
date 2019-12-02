@@ -1,0 +1,21 @@
+diff --git a/cmake/tribits/core/package_arch/TribitsGlobalMacros.cmake b/cmake/tribits/core/package_arch/TribitsGlobalMacros.cmake
+index 93cd1c1..fe68482 100644
+--- a/cmake/tribits/core/package_arch/TribitsGlobalMacros.cmake
++++ b/cmake/tribits/core/package_arch/TribitsGlobalMacros.cmake
+@@ -2684,7 +2684,7 @@ MACRO(TRIBITS_SETUP_FOR_INSTALLATION)
+     IF (${PROJECT_NAME}_ENABLE_INSTALL_CMAKE_CONFIG_FILES)
+       # TEMPORARY: Install a compatibility copy of ${PROJECT_NAME}Config.cmake
+       # where was previously installed to warn and load the new file.
+-      SET(COMPATIBILITY_CONFIG_INCLUDE ${CMAKE_BINARY_DIR}/${PROJECT_NAME}Config.cmake)
++      SET(COMPATIBILITY_CONFIG_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config_compat.cmake)
+       CONFIGURE_FILE(
+         ${${PROJECT_NAME}_TRIBITS_DIR}/${TRIBITS_CMAKE_INSTALLATION_FILES_DIR}/TribitsConfigInclude.cmake.in
+         ${COMPATIBILITY_CONFIG_INCLUDE}
+@@ -2693,6 +2693,7 @@ MACRO(TRIBITS_SETUP_FOR_INSTALLATION)
+       INSTALL(
+         FILES ${COMPATIBILITY_CONFIG_INCLUDE}
+         DESTINATION "${${PROJECT_NAME}_INSTALL_INCLUDE_DIR}"
++	RENAME ${PROJECT_NAME}Config.cmake
+         )
+     ENDIF()
+ 

@@ -1,0 +1,3 @@
+*** Base Git Repo: Trilinos
+5a47d43 [Tue Apr 3 15:25:56 2018 -0600] <dridzal@sandia.gov>
+Merge branch 'develop' of github.com:trilinos/Trilinos into develop

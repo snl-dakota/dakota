@@ -1,0 +1,100 @@
+diff --git a/packages/rol/adapters/arrayfire/src/CMakeLists.txt b/packages/rol/adapters/arrayfire/src/CMakeLists.txt
+index 2c6b4b0..6184d3d 100644
+--- a/packages/rol/adapters/arrayfire/src/CMakeLists.txt
++++ b/packages/rol/adapters/arrayfire/src/CMakeLists.txt
+@@ -36,4 +36,4 @@ IF (ROL_ENABLE_ArrayFireCPU)
+  )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/belos/src/CMakeLists.txt b/packages/rol/adapters/belos/src/CMakeLists.txt
+index 109f28e..3749b75 100644
+--- a/packages/rol/adapters/belos/src/CMakeLists.txt
++++ b/packages/rol/adapters/belos/src/CMakeLists.txt
+@@ -39,4 +39,4 @@ IF (ROL_ENABLE_Belos)
+   )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/eigen/src/CMakeLists.txt b/packages/rol/adapters/eigen/src/CMakeLists.txt
+index ff3c0a5..f9a96f6 100644
+--- a/packages/rol/adapters/eigen/src/CMakeLists.txt
++++ b/packages/rol/adapters/eigen/src/CMakeLists.txt
+@@ -36,4 +36,4 @@ IF (ROL_ENABLE_Eigen)
+  )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/epetra/src/CMakeLists.txt b/packages/rol/adapters/epetra/src/CMakeLists.txt
+index f2b329b..d96b18d 100644
+--- a/packages/rol/adapters/epetra/src/CMakeLists.txt
++++ b/packages/rol/adapters/epetra/src/CMakeLists.txt
+@@ -42,4 +42,4 @@ IF (ROL_ENABLE_Epetra)
+   )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/minitensor/src/CMakeLists.txt b/packages/rol/adapters/minitensor/src/CMakeLists.txt
+index 0da2642..d91a4a7 100644
+--- a/packages/rol/adapters/minitensor/src/CMakeLists.txt
++++ b/packages/rol/adapters/minitensor/src/CMakeLists.txt
+@@ -67,4 +67,4 @@ IF (ROL_ENABLE_Boost AND ROL_ENABLE_MiniTensor)
+   )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/sacado/src/CMakeLists.txt b/packages/rol/adapters/sacado/src/CMakeLists.txt
+index 278a5ab..0d41232 100644
+--- a/packages/rol/adapters/sacado/src/CMakeLists.txt
++++ b/packages/rol/adapters/sacado/src/CMakeLists.txt
+@@ -37,4 +37,4 @@ IF (ROL_ENABLE_Sacado)
+   )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/teuchos/src/CMakeLists.txt b/packages/rol/adapters/teuchos/src/CMakeLists.txt
+index eb36b79..dc5b4b2 100644
+--- a/packages/rol/adapters/teuchos/src/CMakeLists.txt
++++ b/packages/rol/adapters/teuchos/src/CMakeLists.txt
+@@ -41,4 +41,4 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/function)
+ )
+ 
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/thyra/src/CMakeLists.txt b/packages/rol/adapters/thyra/src/CMakeLists.txt
+index 3308c52..2832284 100644
+--- a/packages/rol/adapters/thyra/src/CMakeLists.txt
++++ b/packages/rol/adapters/thyra/src/CMakeLists.txt
+@@ -50,4 +50,4 @@ IF (ROL_ENABLE_Thyra)
+   )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/tpetra/src/CMakeLists.txt b/packages/rol/adapters/tpetra/src/CMakeLists.txt
+index 1367681..65d0cb3 100644
+--- a/packages/rol/adapters/tpetra/src/CMakeLists.txt
++++ b/packages/rol/adapters/tpetra/src/CMakeLists.txt
+@@ -46,4 +46,4 @@ IF (ROL_ENABLE_Tpetra)
+   )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
+diff --git a/packages/rol/adapters/trikota/src/CMakeLists.txt b/packages/rol/adapters/trikota/src/CMakeLists.txt
+index 37d3c0e..bca4b82 100644
+--- a/packages/rol/adapters/trikota/src/CMakeLists.txt
++++ b/packages/rol/adapters/trikota/src/CMakeLists.txt
+@@ -45,4 +45,4 @@ IF (ROL_ENABLE_TriKota)
+   )
+ ENDIF()
+ 
+-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})
++INSTALL(FILES ${HEADERS} DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR})

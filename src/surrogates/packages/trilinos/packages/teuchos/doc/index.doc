@@ -1,0 +1,639 @@
+/*! \mainpage Teuchos:  The Trilinos Tools Library
+
+\section Teuchos_outline Outline
+
+<ul>
+<li>\ref Teuchos_intro
+<li>\ref Teuchos_contributors
+<li>\ref Teuchos_startup
+  <ul>
+  <li>\ref TeuchosCore_src
+  <li>\ref TeuchosParameterList_src
+  <li>\ref TeuchosComm_src
+  <li>\ref TeuchosNumerics_src
+  <li>\ref TeuchosParser_src
+  <li>\ref TeuchosRemainder_src
+  </ul>
+<li>\ref Teuchos_browser
+</ul>
+
+\section Teuchos_intro Introduction
+
+Teuchos provides a suite of common tools for many Trilinos packages.
+These tools include memory management classes such as "smart" pointers
+and arrays, "parameter lists" for communicating hierarchical lists of
+parameters between library or application layers, templated wrappers
+for the BLAS and LAPACK, XML parsers, and other utilities.  They
+provide a unified "look and feel" across Trilinos packages, and help
+avoid common programming mistakes.
+
+We encourage the addition of new utilities to Teuchos.  Please contact
+the Teuchos developer team (see below for contact information) if you
+would like to share your utility.
+
+\section Teuchos_contributors Teuchos Contributors
+
+The following people have contributed to the development of Teuchos:
+
+<ul>
+  <li> Chris Baker, Oak Ridge National Lab, bakercg@ornl.gov
+  <li> Roscoe Bartlett, Sandia National Labs, rabartl@sandia.gov
+  <li> Michael Heroux, Sandia National Labs, maherou@sandia.gov
+  <li> Mark Hoemmen, Sandia National Labs, mhoemme@sandia.gov
+  <li> Daniel Ibanez, Sandia National Labs, daibane@sandia.gov
+  <li> Kris Kampshoff, University of Minnesota, kamp@cs.umn.edu
+  <li> Kevin Long, Sandia National Labs, krlong@sandia.gov
+  <li> Kurtis Nusbaum, University of Illinois Urbana-Champaign, klnusbaum@gmail.com
+  <li> Paul Sexton, University of Illinois-Chicago, pmsext@software.sandia.gov
+  <li> Heidi Thornquist (Package Lead), Sandia National Labs, hkthorn@sandia.gov
+</ul>
+
+\section Teuchos_config_options Summary of Teuchos' Configuration Options
+
+Teuchos has several different build options which change its behavior.
+You must set these options before building Trilinos, when configuring
+the build using CMake.
+
+<ul>
+<li> <b>Bounds checking:</b> You may enable bounds checking and other
+  safety checks for some of the memory management and container
+  classes by setting the <tt>Teuchos_ENABLE_DEBUG:BOOL=ON</tt> CMake 
+  option.  Bounds checking is off by default.  It incurs a significant
+  performance penalty and so is not recommended for production builds.
+
+<li> <b>Complex arithmetic:</b> Teuchos does not support complex
+  arithmetic (the std::complex template class) by default.  This saves
+  build time and makes libraries smaller.  To enable support for
+  complex arithmetic, set the <tt>Teuchos_ENABLE_COMPLEX:BOOL=ON</tt> 
+  CMake option.
+</ul>
+
+\section Teuchos_startup Overview of Teuchos Subpackages
+
+Teuchos contains several different types of software.  These different
+collections are organized into different subpackages.
+
+\subsection TeuchosCore_src Teuchos Core Subpackage
+
+The Teuchos Core subpackage (<tt>Trilinos_ENABLE_TeuchosCore:BOOL=ON</tt>) 
+contains basic, general-purpose utilities.
+
+<ul>
+
+<li> <b> Memory Management: </b>
+
+  For a detailed description of the Teuchos memory management classes, see the
+  report <a href="TeuchosMemoryManagementSAND.pdf">Teuchos C++ Memory
+  Management Classes, Idioms, and Related Topics: The Complete Reference</a>.
+  An abbreviated table of contents can be found in the Preface of the
+  document.
+
+  The classes are:
+
+  <ul>
+
+  <li> Teuchos::Ptr:  Light-weight smart pointer class for replacing the use
+  of raw C++ pointers for pointing to a single object in funtion argument
+  lists.  This is only for non-persisting relationships.
+
+  <li> Teuchos::RCP: Reference-counted smart pointer class for
+  managing dynamically allocated memory to a single object.
+  Teuchos::RCP is safe under multiple inheritance.  This is only for
+  persisting relationships.  Please refer to the 
+  <a href="RefCountPtrBeginnersGuideSAND.pdf">Teuchos::RCP Beginner's Guide</a>.
+
+  <li> Teuchos::ArrayRCP: Reference-counted smart pointer class for
+  managing dynamically allocated arrays.  This is a general
+  replacement for a raw C++ pointer to handle an array.  This is only
+  for persisting relationships.
+
+  <li> Teuchos::ArrayView: Light-weight replacement for raw pointers for
+  passing arrays into functions.  This is only for non-persisting
+  relationships.
+
+  <li> Teuchos::Array: Templated array class idential to the STL vector,
+  but with optional very strong debug-mode runtime checking and full
+  integration with the other array types here.
+
+  <li> Teuchos::Tuple: Compile-time sized array class.
+
+  <li> Teuchos::ConstNonconstObjectContainer: A simple wrapper class for
+  implementing the "runtime protection of const" idiom.
+
+  </ul>
+
+  By default, these classes are not thread-safe but when configured with
+  <tt>-DTeuchos_ENABLE_THREAD_SAFE=ON</tt> (or
+  <tt>-DTrilinos_ENABLE_THREAD_SAFE=ON</tt>), they become thread-safe.  (The
+  default may be switched to on in a future version.)
+
+  All the Teuchos memory management classes are configured by default
+  to be as efficient as possible.  When building Trilinos, you may set
+  configure options to enable various run-time correctness and safety
+  checks.  These options are OFF by default, for maximum performance.
+
+  You may turn on run-time debug checking in the above classes by
+  setting the <tt>-D Teuchos_ENABLE_DEBUG:BOOL=ON</tt> CMake option at
+  configure time.  You may also turn on strong run-time checking of
+  reference counting, including
+  <ul>
+  <li> Detection of circular references
+  <li> Detection of duplicate owning references
+  <li> Detection of dangling nonowning references
+  </ul>
+  by setting the 
+  <tt>-D Teuchos_ENABLE_DEBUG_RCP_NODE_TRACING:BOOL=ON</tt> CMake option.
+  In order to get the strongest debug-mode run-time checking, you must also
+  enable support for <a href="http://www.boost.org">Boost</a> by setting
+  the <tt>-D Teuchos_ENABLE_BOOST=ON</tt> and building Trilinos against an 
+  installation of Boost.
+
+<li> <b> Low-Level Language Support: </b>
+
+  <ul>
+
+  <li> Abstract factories:
+    <ul>
+    <li> Teuchos::AbstractFactory - defines a basic "Abstract Factory" interface
+         that allocates objects and returns them wrapped in <tt>Teuchos::RCP</tt>
+         objects.
+    <li> Teuchos::AbstractFactoryStd - defines a general concrete implementation of 
+         Teuchos::AbstractFactory that allows creating quick concrete subclass
+         implementations for concrete types.
+    </ul>
+
+  <li> Dynamic casting: Teuchos::dyn_cast - a wrapper for
+  <tt>dynamic_cast<></tt> that throws <tt>std::bad_cast</tt>
+  exceptions with very detailed error messages on what types are involved.
+
+  <li> <tt>Teuchos::getConst()</tt> is a simple templated function
+  that returns a constant reference, given a nonconst reference.  This
+  function allows a piece of code to access the <tt>const</tt> version
+  of a member function given a non-<tt>const</tt> reference to an
+  object.
+
+  </ul>
+
+<li> <b> Output support </b>
+
+  <ul>
+
+  <li><tt>Teuchos::FancyOStream</tt> wraps any <tt>std::ostream</tt> object and
+  produces nicely indented outputting.  It can also add prefixes to each line
+  of output such as the processor rank.
+
+  <li><tt>Teuchos::OSTab</tt> is used in conjunction with a
+  <tt>Teuchos::FancyOStream</tt> object to generate exception-safe
+  indentation control, as well as to set other information related to
+  the line prefix.
+
+  <li> <tt>Teuchos::Describable</tt> defines an interface that objects
+  may implement in order to make them self-descriptive.  It allows the
+  creation of formated output of an object's state complete with
+  indentation control.  This class has default definitions for all of
+  its virtual member functions, but to be useful, subclasses should
+  override at least the description() method.
+
+  <li><tt>Teuchos::VerboseObject</tt> is an interface that objects may
+  implement in order to let them describe what they are doing as they
+  are doing it, with a user-specified verbosity level.  Any C++ class
+  may inherit from this without requiring any function overrides, but
+  to be useful the class object must use the embedded output stream
+  and verbosity level to print its activities.
+
+  <li><tt>Teuchos::oblackholestream</tt> is a concrete subclass of
+  <tt>std::ostream</tt> that ignores all output.  (Output "disappears"
+  into a "black hole.")  This class is very useful in writing SPMD
+  parallel programs and controlling which process(es) produce output.
+  Generally only the the root process uses a real
+  <tt>std::ostream</tt> object while the other processes use a
+  <tt>Teuchos::oblackholestream</tt> for console output.
+
+  </ul>
+
+<li> <b> Exception Handling </b>
+
+  <ul>
+
+  <li> <em>Testing for Exceptions</em>: The TEUCHOS_TEST_FOR_EXCEPTION() macro
+  accepts a logical test, an exception handler, and a message.  It then throws
+  an "intelligent" exception informing the user of the file, line, and message
+  where the exception was thrown.  The macro TEUCHOS_TEST_FOR_EXCEPT() is a
+  shorter macro that just accepts a logic test and is therefore easier to
+  write.  Please use TEUCHOS_TEST_FOR_EXCEPT(!test) as a safer, more
+  informative alternative to assert(test).  For related error handling
+  utilties, see \ref TestForException_grp</li>
+
+  <li> <em>Stack Tracing</em>: When a debug build is enabled
+  (CMAKE_BUILD_TYPE=DEBUG OR Trilinos_ENABLE_DEBUG=ON) and when using GCC and
+  when enabling BinUtils (TPL_ENABLE_BinUtils=ON) then the
+  TEUCHOS_TEST_FOR_EXCEPTION() family of macros
+  will take snapshopts of the stacktrace when exceptions are thrown.  These
+  stacktraces can be printed out after an exception is thrown using the
+  funciton Teuchos::get_stored_stacktrace().  The standard catch macro
+  TEUCHOS_STANDARD_CATCH_STATEMENTS() automatically invokes this function so
+  all main() programs written using this macro will automatically print out
+  stack trace information when uncaught exceptions are encountered.  A program
+  can also cause strack tracing info to be printed when an segfault occurs by
+  calling Teuchos::print_stack_on_segfault() before main() runs.  More fine
+  tuning of stacktracing can be controlled at configure time using the CMake
+  options Teuchos_ENABLE_STACKTRACE and Teuchos_ENABLE_DEFAULT_STACKTRACE.
+  When Teuchos_ENABLE_STACKTRACE=ON, then stracktracing of exceptions can be
+  turned on and off at runtime using the function
+  Teuchos::TestForException_setEnableStacktrace().  The configure variable
+  Teuchos_ENABLE_DEFAULT_STACKTRACE determines if stack tracing is on or off
+  by default at runtime.
+
+  NOTE: Stacktracing is always off by default in any build type except
+  CMAKE_BUILD_TYPE=DEBUG and/or Trilinos_ENABLE_DEBUG=ON.  Therefore,
+  by default an optimized build of the code will never have stack
+  tracking enabled and will suffer no performance penalty due to stack
+  tracing.  It is just debug builds that it is enabled for (and then
+  only by default; it can be disabled even for a debug build).
+
+  NOTE: Stacktracing is only enabled when the using GCC and when the binutils
+  libraries are available (see teuchos/CMakeLists.txt and cmake configure
+  output for details).
+
+  <b>WARNING:</b> Printing stacktraces can be very
+  expensive if your program throws a lot of exceptions.  Therefore, the
+  testing infrastructure for Trilinos with the checkin-test.py script turns
+  off stack tracing by default by configuring with
+  Teuchos_ENABLE_DEFAULT_STACKTRACE=OFF.
+
+  </li>
+
+  </ul>
+
+<li> <b> Containers </b>
+
+  <ul>
+  <li> Teuchos::Hashtable is a templated dictionary (set of
+    (key,value) pairs) with constant-time lookup for any key.
+  <li> Teuchos::HashSet is a templated set with constant-time lookup.
+  </ul>
+
+<li> <b> Testing Unit Support </b>
+
+  Teuchos contains some utilities that make it easier to write unit tests.
+  See the native \ref Teuchos_UnitTest_grp "Unit Testing Support Code".
+
+<li> Numerical scalar traits : Teuchos::ScalarTraits - a traits class
+  defining basic properties and elementary functions for various
+  scalar data types to be used in numerical computations.
+
+</ul>
+
+
+\subsection TeuchosParameterList_src Teuchos ParameterList Subpackage
+
+The Teuchos ParameterList subpackage
+(Trilinos_ENABLE_TeuchosParameterList=ON) contains the
+Teuchos::ParameterList class and related utilities.  The
+Teuchos::ParameterList class is a serializable hierarchical object
+database.  Many Trilinos packages let users specify run-time options
+and flags as a Teuchos::ParameterList.  They also use it internally to
+pass information between different software layers.
+
+<ul>
+
+<li> <b> Parameter Options: </b>
+
+  <ul>
+
+  <li> Parameter Entry: Teuchos::ParameterEntry - A structure that
+       holds a Teuchos::any object as the value and information on the
+       status of the parameter.  The type of parameter is chosen
+       through the templated set/get methods.  Teuchos::ParameterEntry
+       object is held as the "value" in the Teuchos::ParameterList
+       map.
+
+  <li> Parameter List: Teuchos::ParameterList - A templated parameter
+       list which holds a map of (key,value) pairs, where the "value"
+       is a Teuchos::ParameterEntry object and the "key" is a string.
+       The type of parameter is chosen through the templated set/get
+       methods, which allows it to have any type.  This includes
+       standard types such as float, double, or int, another parameter
+       list, or any desired type.
+
+  <li> Command-line arguments: Teuchos::CommandLineProcessor -
+       processes command-line arguments from (argc,argv[]) in a
+       validated manner and automatically generates a documented
+       "--help" command-line option.
+
+  </ul>
+
+<li> <b> XML </b>
+
+  <ul>
+  
+  <li> Teuchos::XMLObject is an object representation of a subset of XML data. Supported XML features
+  are tags, attributes, and character content. 
+  
+  <li> Teuchos::FileInputSource can read XML from a file and produce a Teuchos::XMLObject
+  
+  <li> Teuchos::StringInputSource can read XML from a character string and produce a Teuchos::XMLObject
+  
+  </ul>
+
+</ul>
+
+
+\subsection TeuchosComm_src Teuchos Communication Subpackage
+
+The Teuchos Comm subpackage (Trilinos_ENABLE_TeuchosComm=ON) contains support
+for SPMD parallel programs and useful utilities that depend on these.
+
+<ul>
+
+<li> <b>Single Program Multiple Data (SPMD)</b>
+
+  <ul>
+  <li> Teuchos::Comm provides an abstract interface to a small subset
+  of the Message Passing Interface (MPI), whether or not Trilinos was
+  actually built with MPI support.
+
+  <li> Teuchos::MpiComm is a subclass of Teuchos::Comm that uses MPI.
+
+  <li> Teuchos::SerialComm is a subclass of Teuchos::Comm for
+  single-process programs.  It works whether or not Trilinos was built
+  with MPI support.
+  </ul>
+
+<li> <b> Performance Monitoring </b>
+
+  <ul>
+  <li> Teuchos::Time: A platform-independent timer implementation.
+    This may be used either by itself, or in combination with
+    Teuchos::TimeMonitor for tracking global timer statistics over
+    processes.
+    If Teuchos is configured with <tt>TPL_ENABLE_Valgrind=ON</tt> and
+    <tt>Teuchos_TIME_MASSIF_SNAPSHOTS=ON</tt> Valgrind Massif snapshots are
+    taken before and after each Teuchos::Time invocation.
+    The resulting memory profile can be plotted using the script
+    <tt>core/utils/plotMassifMemoryUsage.py</tt>.
+
+  <li> Teuchos::TimeMonitor: A class that automates (and makes
+    exception safe) the process of starting and stopping timers, lets
+    users create timers that are automatically registered and tracked,
+    and provides functions for computing timer statistics over any
+    given set of parallel processes.
+
+  <li> Teuchos::Flops - Provides functions that count and report the
+    number of executed floating-point operations (flop).  Many Teuchos
+    computational classes accumulate flop counts associated with the
+    \e this object of the computations.
+  </ul>
+
+</ul>
+
+
+\subsection TeuchosNumerics_src Teuchos Numerics Subpackage
+
+The Teuchos Numerics subpackage (Trilinos_ENABLE_TeuchosNumerics=ON) contains
+BLAS and LAPACK C++ wrappers and C++ classes that use these for dense serial
+matrices and vectors.
+
+<ul>
+
+<li> BLAS wrapper class: Teuchos::BLAS - A ``thin'' layer of C++ code wrapping the basic linear algebra subprograms (BLAS).
+     This class provides a single instance interface between Teuchos and the BLAS.  In this way we can easily
+     switch BLAS interfaces and manage the C++/Fortran translation differences that exist between different
+     computer systems.  This class also provides a very convenient
+     way to templatize the BLAS.
+
+<li> LAPACK wrapper class: Teuchos::LAPACK - A ``thin'' layer of C++ code wrapping LAPACK.  Like Teuchos::BLAS,
+     it provides nice C++ access to LAPACK.
+
+<li> Serial Dense Matrix class:  Teuchos::SerialDenseMatrix - A templated dense matrix class.  It provides basic
+     operations like addition, multiplication, scaling, logical comparison, norms, etc.  This class also provides support for a dense
+     matrix that needs to be replicated across processors in a parallel application.  Teuchos::SerialDenseVector inherits from
+     Teuchos::SerialDenseMatrix, providing some additional methods that are useful to dense vectors.  Bounds checking
+     can be turned on at compile time with the
+     <tt>Teuchos_ENABLE_DEBUG=ON</tt> configure flag.
+
+</ul>
+
+
+\subsection TeuchosParser_src Teuchos Parser Subpackage
+
+The Teuchos Parser subpackage (Trilinos_ENABLE_TeuchosParser=ON) contains
+classes to parse text-based file formats described as formal grammars.
+It can be used to parse XML, YAML, and other complex textual input formats.
+It can be thought of as a version of
+<a href="https://github.com/westes/flex">Flex</a> and
+<a href="https://www.gnu.org/software/bison/">Bison</a>
+which is a set of C++ functions acting on C++ objects as opposed to a set
+of programs acting on source files.
+The two main classes in Teuchos Parser are:
+
+<ul>
+<li> Teuchos::Language: Stores the user's specification of the file format as a Context Free Grammar
+     plus token regular expressions. </li>
+<li> Teuchos::Reader: Is subclassed by the user to specify what actions to perform at each
+     stage of parsing a text stream. </li>
+</ul>
+
+
+\subsection TeuchosRemainder_src Teuchos Remainder Subpackage
+
+The Teuchos Remainder subpackage (Trilinos_ENABLE_TeuchosRemainder=ON)contains
+left over stuff that does not fit will into the above subpackages or is slated
+to be deprecated and removed.
+
+
+\section Teuchos_browser Browse all of Teuchos
+
+You can browse all of Teuchos as a <A HREF="../../browser/doc/html/index.html">single
+doxygen collection</A>.  This is not the recommended way to learn
+about Teuchos software.  However, it is a good way to browse the <a
+href="../../browser/doc/html/dirs.html">directory structure of Teuchos</a> or to <a
+href="../../browser/doc/html/files.html">locate specific files</a>.
+
+*/
+
+
+/** \defgroup Teuchos_Deprecated_grp Deprecated Teuchos Code
+
+All of the code that shows up here is deprecated and should not be used by
+clients (because it will be removed at some point).
+
+*/
+
+
+/** \defgroup Teuchos_UnitTest_grp Unit Testing Support
+
+Teuchos contains simple but effective native unit testing support.
+Unit tests can be defined in separate files.  This can be as simple
+as:
+
+\code
+
+// Int_UnitTests.cpp
+
+#include "Teuchos_UnitTestHarness.hpp"
+
+namespace {
+
+TEUCHOS_UNIT_TEST( Int, Basic )
+{
+  int i1 = 5;
+  TEST_EQUALITY_CONST( i1, 5 );
+}
+
+TEUCHOS_UNIT_TEST( Int, Assignment )
+{
+  int i1 = 4;
+  int i2 = i1;
+  TEST_EQUALITY( i2, i1 );
+}
+
+} // namespace
+
+\endcode
+
+and then compiled along with other unit testing definition files into
+executables along with a simple main function like:
+
+\code
+
+// UnitTestMain.cpp
+
+#include "Teuchos_UnitTestRepository.hpp"
+#include "Teuchos_GlobalMPISession.hpp"
+
+int main( int argc, char* argv[] )
+{
+  Teuchos::GlobalMPISession mpiSession(&argc, &argv);
+  return Teuchos::UnitTestRepository::runUnitTestsFromMain(argc, argv);
+}
+
+\endcode
+
+using CMake code like:
+
+\code
+
+PACKAGE_ADD_EXECUTABLE_AND_TEST(
+  MyUnitTests
+  SOURCES
+    UnitTestMain.cpp
+    Int_UnitTests.cpp
+    ... other unit test files ...
+  STANDARD_PASS_OUTPUT
+  )
+
+\endcode
+
+Once the Unit test exectuable is built, it will run with CTest automatically and
+produce output indicating which tests passed or failed.  It is just run as:
+
+\verbatim
+  ./MyPackage_MyUnitTest.exe
+\endverbatim
+
+One of the most useful properties of this simple unit testing support code
+is that the unit testing exectuable (created by the above CMake code)
+accepts command-line arguments for showing more or less output, runing only
+particular sets of tests, etc.  Just pass in the <tt>--help</tt> flag to see all
+of the options as:
+
+\verbatim
+  ./MyPackage_MyUnitTest.exe --help
+\endverbatim
+
+Now learn about unit tests, for example, at:
+
+  http://www.oreillynet.com/pub/a/oreilly/oracle/utplsql/news/fulldoc.html
+
+References for Teuchos Unit Testing Support:
+
+<ul>
+
+<li> \ref Teuchos_UnitTestDefinitionMacros_grp "Unit Testing Definition
+Macros": Macros used to define individual unit test blocks line TEUCHOS_UNIT_TEST().
+
+<li> \ref Teuchos_UnitTestAssertMacros_grp "Unit Testing Assert Macros": Used
+within a given unit test to individual statement-level checks like
+TEST_EQUALITY().
+
+</ul>
+
+Suggestions for unit testing:
+
+<ul>
+
+<li> Put all unit tests for a given class <tt>MyClass</tt> into a single
+file with the name <tt>MyClass_UnitTests.cpp</tt>.  This makes the unit
+tests for a class easy to find and maintain.
+
+<li> Aggregate unit tests for related classes and functionality into single
+executables.  Putting lots of related unit tests in the same exectuable
+ensures the process startup and shutdown for a given exectuable run by CTest
+does not overwelm the cost of the the actual unit tests.  If well defined,
+you can run thousands of unit tests in a single exectuable in a fraction of
+a second.
+
+<li> Don't bother writing you own simple UnitTestMain.cpp like above, just include the standard
+one <tt>teuchos/core/test/UnitTest/Teuchos_StandardUnitTestMain.cpp</tt> in your
+PACKAGE_ADD_EXECUTABLE_AND_TEST(...) CMake macro.  If you are using a TriBITS build in a downstream package, you can just use the global CMake variable <tt>${TEUCHOS_STD_UNIT_TEST_MAIN}</tt>.
+
+<li> For parallel tests (using MPI), you can turn on automatic reductions across processes of pass/fail.  To enable this by default for your unit tests, use the standard main source file <tt>teuchos/comm/test/UnitTesting/Teuchos_StandardParallelUnitTestMain.cpp</tt> and see the option <tt>Teuchos::UnitTestRepository::setGloballyReduceTestResult()</tt>.  If you are using a TriBITS build in a downstream package, you can just use the global CMake variable <tt>${TEUCHOS_STD_PARALLEL_UNIT_TEST_MAIN}</tt>.
+
+<li> When doing Test-Driven Development (TDD), write a single unit
+test at a time (fail, pass, refactor) and constantly be rebuilding and
+rerunning the unit test executable.
+
+<li> Get an idea of all the different ways you can write unit tests by
+searching for unit test examples in Trilinos by doing:
+
+\verbatim
+$ find . -name "*" -exec grep -l 'TEUCHOS_UNIT_TEST' {} \;
+\endverbatim
+
+Just open a bunch of those files and see how people use these unit testing tools.
+
+Search packages like Teuchos, Tpetra, and Thyra first since these are the most numerous
+and mature unit testing examples you will find in Trilinos.
+
+</ul>
+
+*/
+
+
+/** \defgroup Teuchos_UnitTestDefinitionMacros_grp Unit Testing Definition Macros
+
+\ingroup Teuchos_UnitTest_grp
+
+There macros are used to define individual unit test code blocks.  For example:
+
+\code
+TEUCHOS_UNIT_TEST(SomeTestGroup, SomeTestName)
+{
+  int i = 1;
+  TEST_EQUALITY_CONST(i, 1);
+  int j = 2;
+  TEST_EQUALITY_CONST(j, 2);
+  TEST_INEQUALITY_CONST(i, j);
+  ...
+}
+\endcode
+
+*/
+
+
+/** \defgroup Teuchos_UnitTestAssertMacros_grp Unit Testing Assert Macros
+
+\ingroup Teuchos_UnitTest_grp
+
+These are macros used to define individual checks within an single unit test
+(e.g. defined by TEUCHOS_UNIT_TEST()).
+
+NOTE: When a single check fails, the unit test is not aborted but instead will
+just print the failure to the local stream 'out' with the line number and
+continue on.
+
+NOTE: The local unit test stream object 'out' will be written to and the
+variable 'success' will be set to 'false' if a test fails.
+
+*/

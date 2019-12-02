@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2c966b8..4943616 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -63,7 +63,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11 FATAL_ERROR)
+ 
+ # Must set the project name as a variable at very beginning before including anything else
+ # We set the project name in a separate file so CTest scripts can use it.
+-INCLUDE(${CMAKE_SOURCE_DIR}/ProjectName.cmake)
++INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/ProjectName.cmake)
+ 
+ # CMake requires that you declare the CMake project in the top-level file and
+ # not in an include file :-(
