@@ -47,7 +47,6 @@ class DataScaler {
 
 };
 
-/*
 class NormalizationScaler: public DataScaler {
   public:
     NormalizationScaler();
@@ -57,7 +56,6 @@ class NormalizationScaler: public DataScaler {
     NormalizationScaler(const MatrixXd &features, const bool mean_normalization, 
                         const Real norm_factor = 1.0);
 };
-*/
 
 class StandardizationScaler: public DataScaler {
   public:

@@ -191,12 +191,10 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
   matrix_teuchos_to_eigen(samples,samplesEigen);
   
   /* Scale the data */
-  /*
   if (scaler_type == "mean normalization")
-    dataScaler = std::make_shared<NormalizationScaler>(samples,true);
+    dataScaler = std::make_shared<NormalizationScaler>(samplesEigen,true);
   else if (scaler_type == "min-max normalization")
-    dataScaler = std::make_shared<NormalizationScaler>(samples,false);
-    */
+    dataScaler = std::make_shared<NormalizationScaler>(samplesEigen,false);
   if (scaler_type == "standardization")
     dataScaler = std::make_shared<StandardizationScaler>(samplesEigen);
   else if (scaler_type == "none" )
