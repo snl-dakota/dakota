@@ -18,8 +18,23 @@ using Eigen::VectorXd;
 namespace Surrogates {
 
 /**
- This class contains functions that scale the input data.
-*/
+ *  \brief The DataScaler class computes the scaling coefficients and scales
+ *         a 2D matrix of features.
+ *
+ *  There are currently 3 scaling options for the DataScaler class:
+ *
+ *  1. Standardization - transform each feature to have zero mean and unit
+ *  variance.
+ *
+ *  2. Normalization - normalizies each feature uses the max and min
+ *  value divivded by either the mean value (mean_normalization = true)
+ *  or min value (mean_normalization = false)
+ *  Also allows for a norm_factor scaling, required for the direct
+ *  neural network.
+ *
+ *  3. No scaling - scaling coefficients amount to an identity operation
+ */
+
 
 class DataScaler {
 
