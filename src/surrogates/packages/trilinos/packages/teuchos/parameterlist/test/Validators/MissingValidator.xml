@@ -1,3 +1,0 @@
-<ParameterList>
-	<Parameter name="blah" type="int" validatorId="0" value="2"/>
-</ParameterList>

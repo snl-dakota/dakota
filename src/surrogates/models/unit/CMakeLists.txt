@@ -7,10 +7,11 @@
 #  _______________________________________________________________________
 
 # CMakeLists.txt for linear_solvers "unit" tests
-message("${Surrogates_SOURCE_DIR}")
+message("Teuchos_INCLUDE_DIRS ${Teuchos_INCLUDE_DIRS}")
+message("Teuchos_LIBRARIES ${Teuchos_LIBRARIES}")
 
-include_directories(${Surrogates_SOURCE_DIR}/models/src
-                    ${Teuchos_INCLUDE_DIRS})
+include_directories(${Dakota_SOURCE_DIR}/src/surrogates/models/src)
+include_directories(${DAKOTA_INCDIRS})
 
 # WDTD
 #remove_definitions("-DHAVE_CONFIG_H")
@@ -20,7 +21,7 @@ set(gp_test
 )
 
 add_executable(gp_test teuchos_unit_test_driver.cpp ${gp_test} )
-target_link_libraries(gp_test surrogates_models ${Surrogates_TPL_LIBS})
+target_link_libraries(gp_test surrogates_models ${LINK_DAKOTA_LIBS} ${Teuchos_LIBRARIES})
 
 #add_test(gp_test gp_test)
 

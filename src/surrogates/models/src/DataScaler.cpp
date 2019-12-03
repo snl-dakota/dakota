@@ -9,7 +9,7 @@
 // Two scalers:
 // - Normalizing scaler - performs mean or max-min normalization
 // - Standarization - makes each feature zero mean and unit variance
-#include <DataScaler.hpp>
+#include "DataScaler.hpp"
 
 namespace Surrogates {
 

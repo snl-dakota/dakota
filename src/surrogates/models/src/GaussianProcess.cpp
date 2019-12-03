@@ -6,7 +6,7 @@
     For more information, see the README file in the top Pecos directory.
     _______________________________________________________________________ */
 
-#include <GaussianProcess.hpp>
+#include "GaussianProcess.hpp"
 
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_XMLParameterListHelpers.hpp"

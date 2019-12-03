@@ -8,8 +8,8 @@
 
 #include <fstream>
 #include <Teuchos_UnitTestHarness.hpp>
-#include <teuchos_data_types.hpp>
-#include <GaussianProcess.hpp>
+#include "teuchos_data_types.hpp"
+#include "GaussianProcess.hpp"
 
 using namespace Surrogates;
 

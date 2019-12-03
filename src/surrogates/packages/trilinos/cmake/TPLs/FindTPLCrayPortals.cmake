@@ -1,4 +1,0 @@
-
-TRIBITS_TPL_FIND_INCLUDE_DIRS_AND_LIBRARIES( CrayPortals
-  REQUIRED_HEADERS portals/portals3.h
-  )

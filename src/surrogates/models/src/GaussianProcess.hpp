@@ -9,8 +9,10 @@
 #ifndef SURROGATES_GAUSSIAN_PROCESS_HPP
 #define SURROGATES_GAUSSIAN_PROCESS_HPP
 
+#include <memory>
+
 #include "teuchos_data_types.hpp"
-#include <DataScaler.hpp>
+#include "DataScaler.hpp"
 
 #include "Eigen/Dense"
 #include "Eigen/StdVector"

@@ -13,6 +13,7 @@ SET(HEADERS GaussianProcess.hpp rol_object.hpp
       DataScaler.hpp)
 
 include_directories(${Surrogates_SOURCE_DIR}/models/src
+	            ${DAKOTA_INCDIRS}
 	            ${Teuchos_INCLUDE_DIRS}
               ${ROL_INCLUDE_DIRS})
 

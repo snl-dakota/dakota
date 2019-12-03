@@ -1,3 +1,0 @@
-The KokkosCompat subpackage of Teuchos implements a compatibility
-layer between the Teuchos memory management data structures, and
-Kokkos data structures.

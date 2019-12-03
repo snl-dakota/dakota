@@ -1,8 +1,0 @@
-<ParameterList>
-  <Validators>
-    <Validator type="ArrayValidator(FilenameValidator, string)" validatorId="0" prototypeId="1"/>
-  </Validators>
-  <ParameterList>
-    <Parameter name="blah" value="balh" type="string"/>
-  </ParameterList>
-</ParameterList>
