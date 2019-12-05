@@ -5979,9 +5979,9 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       ( function_train {N_mom(lit,surrogateType_global_function_train)}
         [ regression_type {0}
-          ls {N_mom(type,regressionType_LS)}
+          ls {N_mom(type,regressionType_FT_LS)}
           |
-          ( rls2 {N_mom(type,regressionType_RLS2)}
+          ( rls2 {N_mom(type,regressionType_FT_RLS2)}
             l2_penalty REAL {N_mom(Real,regressionL2Penalty)}
            )
          ]

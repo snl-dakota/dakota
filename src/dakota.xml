@@ -804,15 +804,15 @@
     <!ENTITY ft_model_controls '
 		  <keyword id="regression_type" name="regression_type" code="{0}" label="Objective formulation for FT regression" minOccurs="0" default="">
 		    <oneOf label="Regression Type">
-                      <keyword id="ls" name="ls" code="{N_mom(type,regressionType_LS)}" label="ls" />
-                      <keyword id="rls2" name="rls2" code="{N_mom(type,regressionType_RLS2)}" label="rls2" >
+                      <keyword id="ls" name="ls" code="{N_mom(type,regressionType_FT_LS)}" label="ls" />
+                      <keyword id="rls2" name="rls2" code="{N_mom(type,regressionType_FT_RLS2)}" label="rls2" >
                         <keyword  id="l2_penalty" name="l2_penalty" code="{N_mom(Real,regressionL2Penalty)}" label="l2_penalty"  minOccurs="1" >
 		          <param type="REAL" />
 		        </keyword>
                       </keyword>
-                      <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mom(type,regressionType_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
-                      <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mom(type,regressionType_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
-                      <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_RLS1)}" label="rls1" />             EXPERIMENTAL -->
+                      <!-- <keyword id="rlsd2" name="rlsd2" code="{N_mom(type,regressionType_FT_RLSD2)}" label="rlsd2" />         EXPERIMENTAL -->
+                      <!-- <keyword id="rlsrkhs" name="rlsrkhs" code="{N_mom(type,regressionType_FT_RLSRKHS)}" label="rlsrkhs" /> EXPERIMENTAL -->
+                      <!-- <keyword id="rls1" name="rls1" code="{N_mom(type,regressionType_FT_RLS1)}" label="rls1" />             EXPERIMENTAL -->
 		    </oneOf>
 		  </keyword>
 		  <keyword  id="max_solver_iterations" name="max_solver_iterations" code="{N_mom(nnint,maxSolverIterations)}" label="Maximum solver iterations"  minOccurs="0" default="100" >

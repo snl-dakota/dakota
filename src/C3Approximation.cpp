@@ -19,95 +19,120 @@ namespace Dakota {
 
 void C3FnTrainPtrs::ft_derived_functions_init_null()
 {
-  ft_derived_functions->set = 0;
+  ft_derived_fns.set = 0;
         
-  ft_derived_functions->ft_squared                = NULL;
-  ft_derived_functions->ft_cubed                  = NULL;
-  ft_derived_functions->ft_constant_at_mean       = NULL;
-  ft_derived_functions->ft_diff_from_mean         = NULL;
-  ft_derived_functions->ft_diff_from_mean_squared = NULL;
-  ft_derived_functions->ft_diff_from_mean_cubed   = NULL;        
+  ft_derived_fns.ft_squared = NULL;
+  ft_derived_fns.ft_cubed   = NULL;
+  ft_derived_fns.ft_constant_at_mean = NULL;
+  ft_derived_fns.ft_diff_from_mean   = NULL;
+  ft_derived_fns.ft_diff_from_mean_squared = NULL;
+  ft_derived_fns.ft_diff_from_mean_cubed   = NULL;        
 
-  ft_derived_functions->ft_diff_from_mean_tesseracted = NULL;
-  ft_derived_functions->ft_diff_from_mean_normalized  = NULL;
+  ft_derived_fns.ft_diff_from_mean_tesseracted = NULL;
+  ft_derived_fns.ft_diff_from_mean_normalized  = NULL;
 
-  ft_derived_functions->ft_diff_from_mean_normalized_squared = NULL;
-  ft_derived_functions->ft_diff_from_mean_normalized_cubed   = NULL;
+  ft_derived_fns.ft_diff_from_mean_normalized_squared = NULL;
+  ft_derived_fns.ft_diff_from_mean_normalized_cubed   = NULL;
 }
 
 
 void C3FnTrainPtrs::ft_derived_functions_create(struct MultiApproxOpts * opts)
 {
-  // printf("CREATE DERIVED_FUNCTIONS\n");
+  ft_derived_fns.ft_squared = function_train_product(ft,ft);
+
+  ft_derived_fns.ft_cubed
+    = function_train_product(ft_derived_fns.ft_squared,ft);
+  //ft_derived_fns.ft_tesseracted
+  //  = function_train_product(ft_derived_fns.ft_squared,
+  //                           ft_derived_fns.ft_squared);
+
+  ft_derived_fns.first_moment   = function_train_integrate_weighted(ft);
+  ft_derived_fns.ft_constant_at_mean
+    = function_train_constant(-ft_derived_fns.first_moment,opts);
+  ft_derived_fns.ft_diff_from_mean
+    = function_train_sum(ft,ft_derived_fns.ft_constant_at_mean);
+  ft_derived_fns.ft_diff_from_mean_squared =
+    function_train_product(ft_derived_fns.ft_diff_from_mean,
+			   ft_derived_fns.ft_diff_from_mean);
+  ft_derived_fns.ft_diff_from_mean_cubed =
+    function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
+			   ft_derived_fns.ft_diff_from_mean);        
+  ft_derived_fns.ft_diff_from_mean_tesseracted =
+    function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
+			   ft_derived_fns.ft_diff_from_mean_squared);
+
+  ft_derived_fns.second_central_moment
+    = function_train_integrate_weighted(
+      ft_derived_fns.ft_diff_from_mean_squared); // var
         
-  ft_derived_functions->ft_squared     = function_train_product(ft,ft);
-
-  ft_derived_functions->ft_cubed       = function_train_product(ft_derived_functions->ft_squared,ft);
-  // ft_derived_functions->ft_tesseracted = function_train_product(ft_derived_functions->ft_squared, ft_derived_functions->ft_squared);
-
-  ft_derived_functions->first_moment        = function_train_integrate_weighted(ft);
-  ft_derived_functions->ft_constant_at_mean = function_train_constant(-ft_derived_functions->first_moment,opts);
-  ft_derived_functions->ft_diff_from_mean   = function_train_sum(ft,ft_derived_functions->ft_constant_at_mean);
-  ft_derived_functions->ft_diff_from_mean_squared =
-    function_train_product(ft_derived_functions->ft_diff_from_mean,
-			   ft_derived_functions->ft_diff_from_mean);
-  ft_derived_functions->ft_diff_from_mean_cubed =
-    function_train_product(ft_derived_functions->ft_diff_from_mean_squared,
-			   ft_derived_functions->ft_diff_from_mean);        
-  ft_derived_functions->ft_diff_from_mean_tesseracted =
-    function_train_product(ft_derived_functions->ft_diff_from_mean_squared,
-			   ft_derived_functions->ft_diff_from_mean_squared);
-
-  ft_derived_functions->second_central_moment = function_train_integrate_weighted(ft_derived_functions->ft_diff_from_mean_squared); // var
+  ft_derived_fns.third_central_moment
+    = function_train_integrate_weighted(ft_derived_fns.ft_diff_from_mean_cubed);
         
-  ft_derived_functions->third_central_moment = function_train_integrate_weighted(ft_derived_functions->ft_diff_from_mean_cubed); // var        
-        
-  ft_derived_functions->fourth_central_moment = function_train_integrate_weighted(ft_derived_functions->ft_diff_from_mean_tesseracted);
+  ft_derived_fns.fourth_central_moment
+    = function_train_integrate_weighted(
+      ft_derived_fns.ft_diff_from_mean_tesseracted);
 
-  ft_derived_functions->second_moment = function_train_integrate_weighted(ft_derived_functions->ft_squared);
-  ft_derived_functions->third_moment =  function_train_integrate_weighted(ft_derived_functions->ft_cubed);
+  ft_derived_fns.second_moment
+    = function_train_integrate_weighted(ft_derived_fns.ft_squared);
+  ft_derived_fns.third_moment
+    = function_train_integrate_weighted(ft_derived_fns.ft_cubed);
 
-  ft_derived_functions->std_dev =  sqrt(ft_derived_functions->second_central_moment);
+  ft_derived_fns.std_dev
+    = sqrt(ft_derived_fns.second_central_moment);
 
-  ft_derived_functions->ft_diff_from_mean_normalized = function_train_copy(ft_derived_functions->ft_diff_from_mean);
-  function_train_scale(ft_derived_functions->ft_diff_from_mean_normalized,1.0/ft_derived_functions->std_dev);
+  ft_derived_fns.ft_diff_from_mean_normalized
+    = function_train_copy(ft_derived_fns.ft_diff_from_mean);
+  function_train_scale(ft_derived_fns.ft_diff_from_mean_normalized,
+		       1.0/ft_derived_fns.std_dev);
 
+  ft_derived_fns.ft_diff_from_mean_normalized_squared =
+    function_train_product(ft_derived_fns.ft_diff_from_mean_normalized,
+			   ft_derived_fns.ft_diff_from_mean_normalized);
 
-  ft_derived_functions->ft_diff_from_mean_normalized_squared =
-    function_train_product(ft_derived_functions->ft_diff_from_mean_normalized,
-			   ft_derived_functions->ft_diff_from_mean_normalized);
+  ft_derived_fns.ft_diff_from_mean_normalized_cubed =
+    function_train_product(ft_derived_fns.ft_diff_from_mean_normalized_squared,
+			   ft_derived_fns.ft_diff_from_mean_normalized);
 
-  ft_derived_functions->ft_diff_from_mean_normalized_cubed =
-    function_train_product(ft_derived_functions->ft_diff_from_mean_normalized_squared,
-			   ft_derived_functions->ft_diff_from_mean_normalized);
+  ft_derived_fns.skewness
+    = function_train_integrate_weighted(
+      ft_derived_fns.ft_diff_from_mean_normalized_cubed);
+  ft_derived_fns.kurtosis = ft_derived_fns.fourth_central_moment
+    / ft_derived_fns.second_central_moment
+    / ft_derived_fns.second_central_moment;
 
-  ft_derived_functions->skewness = function_train_integrate_weighted(ft_derived_functions->ft_diff_from_mean_normalized_cubed);
-  ft_derived_functions->kurtosis = ft_derived_functions->fourth_central_moment / ft_derived_functions->second_central_moment / ft_derived_functions->second_central_moment;
-
-  ft_derived_functions->set = 1;
+  ft_derived_fns.set = 1;
 }
 
 
 void C3FnTrainPtrs::ft_derived_functions_free()
 {
-  function_train_free(ft_derived_functions->ft_squared);                ft_derived_functions->ft_squared          = NULL;
-  function_train_free(ft_derived_functions->ft_cubed);                  ft_derived_functions->ft_cubed            = NULL;
-  function_train_free(ft_derived_functions->ft_constant_at_mean);       ft_derived_functions->ft_constant_at_mean = NULL;
-  function_train_free(ft_derived_functions->ft_diff_from_mean);         ft_derived_functions->ft_diff_from_mean   = NULL;
-  function_train_free(ft_derived_functions->ft_diff_from_mean_squared); ft_derived_functions->ft_diff_from_mean_squared = NULL;
+  function_train_free(ft_derived_fns.ft_squared);
+  ft_derived_fns.ft_squared          = NULL;
+  function_train_free(ft_derived_fns.ft_cubed);
+  ft_derived_fns.ft_cubed            = NULL;
+  function_train_free(ft_derived_fns.ft_constant_at_mean);
+  ft_derived_fns.ft_constant_at_mean = NULL;
+  function_train_free(ft_derived_fns.ft_diff_from_mean);
+  ft_derived_fns.ft_diff_from_mean   = NULL;
+  function_train_free(ft_derived_fns.ft_diff_from_mean_squared);
+  ft_derived_fns.ft_diff_from_mean_squared = NULL;
 
-  function_train_free(ft_derived_functions->ft_diff_from_mean_cubed); ft_derived_functions->ft_diff_from_mean_cubed = NULL;        
+  function_train_free(ft_derived_fns.ft_diff_from_mean_cubed);
+  ft_derived_fns.ft_diff_from_mean_cubed = NULL;        
 
-  function_train_free(ft_derived_functions->ft_diff_from_mean_tesseracted); ft_derived_functions->ft_diff_from_mean_tesseracted = NULL;
-  function_train_free(ft_derived_functions->ft_diff_from_mean_normalized);  ft_derived_functions->ft_diff_from_mean_normalized  = NULL;
+  function_train_free(ft_derived_fns.ft_diff_from_mean_tesseracted);
+  ft_derived_fns.ft_diff_from_mean_tesseracted = NULL;
+  function_train_free(ft_derived_fns.ft_diff_from_mean_normalized);
+  ft_derived_fns.ft_diff_from_mean_normalized  = NULL;
 
-  function_train_free(ft_derived_functions->ft_diff_from_mean_normalized_squared);
-  ft_derived_functions->ft_diff_from_mean_normalized_squared = NULL;
+  function_train_free(ft_derived_fns.
+		      ft_diff_from_mean_normalized_squared);
+  ft_derived_fns.ft_diff_from_mean_normalized_squared = NULL;
 
-  function_train_free(ft_derived_functions->ft_diff_from_mean_normalized_cubed);
-  ft_derived_functions->ft_diff_from_mean_normalized_cubed = NULL;
+  function_train_free(ft_derived_fns.ft_diff_from_mean_normalized_cubed);
+  ft_derived_fns.ft_diff_from_mean_normalized_cubed = NULL;
 
-  ft_derived_functions->set = 0;
+  ft_derived_fns.set = 0;
 }
 
 
@@ -115,14 +140,14 @@ C3Approximation::
 C3Approximation(ProblemDescDB& problem_db,
 		const SharedApproxData& shared_data,
 		const String& approx_label):
-  Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
-  sharedC3DataRep((SharedC3ApproxData*)sharedDataRep)
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
+  //sharedC3DataRep((SharedC3ApproxData*)sharedDataRep)
 { base_init(); }
 
 
 C3Approximation::C3Approximation(const SharedApproxData& shared_data):
-  Approximation(NoDBBaseConstructor(), shared_data),
-  sharedC3DataRep((SharedC3ApproxData*)sharedDataRep)
+  Approximation(NoDBBaseConstructor(), shared_data)
+  //sharedC3DataRep((SharedC3ApproxData*)sharedDataRep)
 { base_init(); }
 
 
@@ -143,13 +168,14 @@ void C3Approximation::base_init()
 
 void C3Approximation::build()
 {
-  if (outputLevel >= DEBUG_OUTPUT)
+  if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
     Cout << "Calling C3Approximation::build()\n";
-        
+
   // base class implementation checks data set against min required
   Approximation::build();
 
-  if (sharedDataRep->adaptConstruct) {
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  if (data_rep->adaptConstruct) {
     Cerr << "Error: Adaptive construction not yet implemented in "
 	 << "C3Approximation." << std::endl;
     abort_handler(APPROX_ERROR);
@@ -157,9 +183,9 @@ void C3Approximation::build()
   else {
     double absxtol = 1e-10;
     struct c3Opt* optimizer = c3opt_create(BFGS);
-    c3opt_set_maxiter(optimizer,sharedC3DataRep->maxSolverIterations);
-    c3opt_set_gtol   (optimizer,sharedC3DataRep->solverTol);
-    c3opt_set_relftol(optimizer,sharedC3DataRep->solverTol);
+    c3opt_set_maxiter(optimizer,data_rep->maxSolverIterations);
+    c3opt_set_gtol   (optimizer,data_rep->solverTol);
+    c3opt_set_relftol(optimizer,data_rep->solverTol);
     c3opt_set_absxtol(optimizer,absxtol);
     c3opt_set_verbose(optimizer,0);
 
@@ -167,37 +193,35 @@ void C3Approximation::build()
     SizetVector start_ranks(num_v+1);  
     start_ranks(0) = 1;  start_ranks(num_v) = 1;
     for (i = 1; i < num_v; ++i)
-      start_ranks(i) = sharedC3DataRep->startRank;
+      start_ranks(i) = data_rep->startRank;
 
     struct FTRegress * ftr
-      = ft_regress_alloc(num_v, sharedC3DataRep->approxOpts,
-			 start_ranks.values());
+      = ft_regress_alloc(num_v, data_rep->approxOpts, start_ranks.values());
 	    
-    if (sharedC3DataRep->regressType == FT_RLS2) {
+    if (data_rep->regressType == FT_RLS2) {
       ft_regress_set_alg_and_obj(ftr,AIO,FTLS_SPARSEL2);
       // reg param is required (no reasonable default due to scaling)
-      ft_regress_set_regularization_weight(ftr,
-					   sharedC3DataRep->regressRegParam);
+      ft_regress_set_regularization_weight(ftr, data_rep->regressRegParam);
     }
     else // default
       ft_regress_set_alg_and_obj(ftr,AIO,FTLS);
 
-    size_t r_adapt = sharedC3DataRep->adaptRank ? 1 : 0;
+    size_t r_adapt = data_rep->adaptRank ? 1 : 0;
     ft_regress_set_adapt(   ftr,r_adapt);
-    ft_regress_set_maxrank( ftr,sharedC3DataRep->maxRank);
-    ft_regress_set_kickrank(ftr,sharedC3DataRep->kickRank);
-    ft_regress_set_roundtol(ftr,sharedC3DataRep->roundingTol);
-    ft_regress_set_verbose( ftr,sharedC3DataRep->c3Verbosity);
+    ft_regress_set_maxrank( ftr,data_rep->maxRank);
+    ft_regress_set_kickrank(ftr,data_rep->kickRank);
+    ft_regress_set_roundtol(ftr,data_rep->roundingTol);
+    ft_regress_set_verbose( ftr,data_rep->c3Verbosity);
 
-    c3opt_set_verbose(optimizer,sharedC3DataRep->c3Verbosity);
-    c3opt_set_maxiter(optimizer,sharedC3DataRep->maxSolverIterations);
-    c3opt_set_gtol   (optimizer,sharedC3DataRep->solverTol);
-    c3opt_set_relftol(optimizer,sharedC3DataRep->solverTol);
+    c3opt_set_verbose(optimizer,data_rep->c3Verbosity);
+    c3opt_set_maxiter(optimizer,data_rep->maxSolverIterations);
+    c3opt_set_gtol   (optimizer,data_rep->solverTol);
+    c3opt_set_relftol(optimizer,data_rep->solverTol);
 
     // free if previously built
-    levApproxIter->free_ft();
+    levApproxIter->second.free_ft();
 
-    if (sharedDataRep->crossVal) // future capability for poly orders
+    if (data_rep->crossVal) // future capability for poly orders
       Cerr << "Warning: CV is not yet implemented in C3Approximation.  "
 	   << "Ignoring CV request.\n";
 
@@ -222,10 +246,13 @@ void C3Approximation::build()
     }
 
     // Build FT model
-    levApproxIter->ft = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
+    levApproxIter->second.ft
+      = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
     // *** TO DO: add flag/final_asv control of this (wasteful calculations if not needed)
-    levApproxIter->ft_gradient = function_train_gradient(levApproxIter->ft);
-    levApproxIter->ft_hessian  = ft1d_array_jacobian(levApproxIter->ft_gradient);
+    levApproxIter->second.ft_gradient
+      = function_train_gradient(levApproxIter->second.ft);
+    levApproxIter->second.ft_hessian
+      = ft1d_array_jacobian(levApproxIter->second.ft_gradient);
 
     // free approximation stuff
     free(xtrain);          xtrain    = NULL;
@@ -238,50 +265,41 @@ void C3Approximation::build()
 
 void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
 {
-  if (ft_sobol == NULL){
-    ft_sobol
-      = c3_sobol_sensitivity_calculate(levApproxIter->ft,interaction_order);
-  }
-  else{
-    c3_sobol_sensitivity_free(ft_sobol);
-    ft_sobol
-      = c3_sobol_sensitivity_calculate(levApproxIter->ft,interaction_order);
-  }
+  C3SobolSensitivity* fts = levApproxIter->second.ft_sobol;
+  if (fts) c3_sobol_sensitivity_free(fts);
+  fts = c3_sobol_sensitivity_calculate(levApproxIter->second.ft,
+				       interaction_order);
 }
 
 
 void C3Approximation::compute_derived_statistics(bool overwrite)
 {
-  if (levApproxIter->ft_derived_functions.set == 0)
-    levApproxIter->ft_derived_functions_create(sharedC3DataRep->approxOpts);
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  if (levApproxIter->second.ft_derived_fns.set == 0)
+    levApproxIter->second.ft_derived_functions_create(data_rep->approxOpts);
   else if (overwrite == true) {
-    levApproxIter->ft_derived_functions_free();
-    levApproxIter->ft_derived_functions_create(sharedC3DataRep->approxOpts);
+    levApproxIter->second.ft_derived_functions_free();
+    levApproxIter->second.ft_derived_functions_create(data_rep->approxOpts);
   }
 }
 
 
 void C3Approximation::compute_moments(bool full_stats, bool combined_stats)
 {
-  expansionMoments[0] = mean();
-  expansionMoments[1] = variance();
-  expansionMoments[2] = third_central();
-  expansionMoments[3] = fourth_central();
+  expansionMoments[0] = mean();          expansionMoments[1] = variance();
+  expansionMoments[2] = third_central(); expansionMoments[3] = fourth_central();
 }
 
 
 void C3Approximation::
 compute_moments(const RealVector& x, bool full_stats, bool combined_stats)
-{
-  expansionMoments[0] = mean(x);
-  expansionMoments[1] = variance(x);
-}
+{ expansionMoments[0] = mean(x);         expansionMoments[1] = variance(x); }
 
 
 Real C3Approximation::mean()
 {
   compute_derived_statistics(false);
-  return levApproxIter->ft_derived_functions.first_moment;
+  return levApproxIter->second.ft_derived_fns.first_moment;
 }
 
 
@@ -289,9 +307,10 @@ Real C3Approximation::mean(const RealVector &x)
 {
   // compute_derived_statistics(false);
 
-  const SizetVector& rand_indices = sharedDataRep->randomIndices;
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  const SizetVector& rand_indices = data_rep->randomIndices;
   struct FunctionTrain * ftnonrand =
-    function_train_integrate_weighted_subset(levApproxIter->ft,
+    function_train_integrate_weighted_subset(levApproxIter->second.ft,
       rand_indices.length(),rand_indices.values());
 
   double out = function_train_eval(ftnonrand,x.values());
@@ -321,7 +340,7 @@ mean_gradient(const RealVector &x,const SizetArray & dvv)
 Real C3Approximation::variance()
 {
   compute_derived_statistics(false);
-  return levApproxIter->ft_derived_functions.second_central_moment;
+  return levApproxIter->second.ft_derived_fns.second_central_moment;
 }
 
 
@@ -329,10 +348,11 @@ Real C3Approximation::variance(const RealVector &x)
 {
   compute_derived_statistics(false);
 
-  const SizetVector& rand_indices = sharedDataRep->randomIndices;
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  const SizetVector& rand_indices = data_rep->randomIndices;
   struct FunctionTrain * ftnonrand =
     function_train_integrate_weighted_subset(
-      levApproxIter->ft_derived_functions.ft_squared,
+      levApproxIter->second.ft_derived_fns.ft_squared,
       rand_indices.length(),rand_indices.values());
 
   //size_t num_det = sharedDataRep->numVars - num_rand;
@@ -340,8 +360,8 @@ Real C3Approximation::variance(const RealVector &x)
   //  pt_det[ii] = x(ii);
   //double var = function_train_eval(ftnonrand,pt_det) - mean * mean;
 
-  Real mean = mean(),
-        var = function_train_eval(ftnonrand,x.values()) - mean * mean;
+  Real mu = mean(),
+      var = function_train_eval(ftnonrand,x.values()) - mu * mu;
     
   function_train_free(ftnonrand); //ftnonrand = NULL;
     
@@ -372,8 +392,11 @@ variance_gradient(const RealVector &x,const SizetArray & dvv)
 
 struct FunctionTrain * C3Approximation::subtract_const(Real val)
 {
-  struct FunctionTrain * ftconst = function_train_constant(val,sharedC3DataRep->approxOpts);
-  struct FunctionTrain * updated = function_train_sum(levApproxIter->ft,ftconst);
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  struct FunctionTrain * ftconst
+    = function_train_constant(val,data_rep->approxOpts);
+  struct FunctionTrain * updated
+    = function_train_sum(levApproxIter->second.ft,ftconst);
 
   function_train_free(ftconst); ftconst = NULL;
   return updated;
@@ -422,7 +445,7 @@ int C3Approximation::min_coefficients() const
 // ignore discrete variables for now
 Real C3Approximation::value(const Variables& vars)
 {
-  return function_train_eval(levApproxIter->ft,
+  return function_train_eval(levApproxIter->second.ft,
 			     vars.continuous_variables().values());
 }
 
@@ -430,13 +453,13 @@ Real C3Approximation::value(const Variables& vars)
 // ignore discrete variables for now
 const RealVector& C3Approximation::gradient(const Variables& vars)
 {
-  size_t num_v = sharedDataRep->numVars;
+  size_t i, num_v = sharedDataRep->numVars;
   if (approxGradient.empty())
     approxGradient.sizeUninitialized(num_v);
   const Real* c_vars = vars.continuous_variables().values();
-  for (size_t i = 0; i < num_v; ++i)
+  for (i = 0; i < num_v; ++i)
     approxGradient(i)
-      = function_train_eval(levApproxIter->ft_gradient->ft[i], c_vars);
+      = function_train_eval(levApproxIter->second.ft_gradient->ft[i], c_vars);
   return approxGradient;
 }
 
@@ -444,14 +467,15 @@ const RealVector& C3Approximation::gradient(const Variables& vars)
 // ignore discrete variables for now
 const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
 {
-  size_t num_v = sharedDataRep->numVars;
+  size_t i, j, num_v = sharedDataRep->numVars;
   if (approxHessian.empty())
     approxHessian.shapeUninitialized(num_v);
   const Real* c_vars = vars.continuous_variables().values();
-  for (size_t i = 0; i < num_v; ++i)
-    for (size_t j = 0; j <= i; ++j)
+  for (i = 0; i < num_v; ++i)
+    for (j = 0; j <= i; ++j)
       approxHessian(i,j)
-	= function_train_eval(levApproxIter->ft_hessian->ft[i+j*num_v], c_vars);
+	= function_train_eval(levApproxIter->second.ft_hessian->ft[i+j*num_v],
+			      c_vars);
   return approxHessian;
 }
 

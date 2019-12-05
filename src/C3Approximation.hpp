@@ -63,7 +63,7 @@ public:
   //- Heading: Member functions
   //
 
-  void deallocate();
+  void free_ft();
 
   void ft_derived_functions_init_null();
 
@@ -79,14 +79,14 @@ public:
   struct FunctionTrain * ft;
   struct FT1DArray * ft_gradient;
   struct FT1DArray * ft_hessian;
-  struct FTDerivedFunctions ft_derived_functions;
+  struct FTDerivedFunctions ft_derived_fns;
   struct C3SobolSensitivity * ft_sobol;
-}
+};
 
 
 inline C3FnTrainPtrs::C3FnTrainPtrs():
   ft(NULL), ft_gradient(NULL), ft_hessian(NULL), ft_sobol(NULL)
-{ ft_derived_functions_init_null(&ft_derived_functions); }
+{ ft_derived_functions_init_null(); }
 
 
 inline void C3FnTrainPtrs::free_ft()
@@ -103,7 +103,7 @@ inline C3FnTrainPtrs::~C3FnTrainPtrs()
 {
   free_ft();
 
-  ft_derived_functions_free(&ft_derived_functions);
+  ft_derived_functions_free();
   if (ft_sobol)  c3_sobol_sensitivity_free(ft_sobol);
   ft_sobol = NULL;
 }
@@ -222,7 +222,7 @@ protected:
   bool expansion_gradient;
   int min_coefficients() const;
 
-  SharedC3ApproxData * sharedC3DataRep;
+  //SharedC3ApproxData* sharedC3DataRep;
 
 private:
 
@@ -310,28 +310,28 @@ inline const RealVector& C3Approximation::numerical_integration_moments() const
 inline Real C3Approximation::third_central()
 {
   compute_derived_statistics(false);
-  return levApproxIter->ft_derived_functions.third_central_moment;
+  return levApproxIter->second.ft_derived_fns.third_central_moment;
 }
 
 
 inline Real C3Approximation::fourth_central()
 {
   compute_derived_statistics(false);
-  return levApproxIter->ft_derived_functions.fourth_central_moment;
+  return levApproxIter->second.ft_derived_fns.fourth_central_moment;
 }
 
 
 inline Real C3Approximation::skewness()
 {
   compute_derived_statistics(false);
-  return levApproxIter->ft_derived_functions.skewness;
+  return levApproxIter->second.ft_derived_fns.skewness;
 }
 
 
 inline Real C3Approximation::kurtosis()
 {
   compute_derived_statistics(false);
-  return levApproxIter->ft_derived_functions.kurtosis;
+  return levApproxIter->second.ft_derived_fns.kurtosis;
 }
 
 
@@ -355,17 +355,17 @@ inline void C3Approximation::compute_total_effects()
 
 
 inline Real C3Approximation::main_sobol_index(size_t dim)
-{ return c3_sobol_sensitivity_get_main(levApproxIter->ft_sobol,dim); }
+{ return c3_sobol_sensitivity_get_main(levApproxIter->second.ft_sobol,dim); }
 
 
 inline Real C3Approximation::total_sobol_index(size_t dim)
-{ return c3_sobol_sensitivity_get_total(levApproxIter->ft_sobol,dim); }
+{ return c3_sobol_sensitivity_get_total(levApproxIter->second.ft_sobol,dim); }
 
 
 inline void C3Approximation::
 sobol_iterate_apply(void (*f)(double val, size_t ninteract,
 			      size_t*interactions,void* arg), void* args)
-{ c3_sobol_sensitivity_apply_external(levApproxIter->ft_sobol,f,args); }
+{ c3_sobol_sensitivity_apply_external(levApproxIter->second.ft_sobol,f,args); }
 
 } // end namespace
 
