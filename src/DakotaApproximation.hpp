@@ -66,6 +66,11 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// activate an approximation state based on its multi-index key
+  virtual void active_model_key(const UShortArray& sd_key);
+  /// reset initial state by removing all model keys for an approximation
+  virtual void clear_model_keys();
+
   /// builds the approximation from scratch
   virtual void build();
   /// exports the approximation
@@ -281,10 +286,6 @@ public:
   // end of SurrogateData::{vars,resp}Data, based on size of last data append)
   //size_t pop_count(size_t key_index) const;
 
-  /// activate an approximation state based on its multi-index key
-  void active_model_key(const UShortArray& sd_key);
-  /// reset initial state by removing all model keys for an approximation
-  void clear_model_keys();
   /// clear SurrogateData::{vars,resp}Data for all approxDataKeys
   void clear_data();
   /// clear active approximation data

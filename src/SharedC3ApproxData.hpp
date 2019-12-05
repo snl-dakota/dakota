@@ -79,6 +79,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void active_model_key(const UShortArray& mi_key);
+  const UShortArray& active_model_key() const;
+  void clear_model_keys();
+
   // Activate as additional features (and basis types) come online
   
   //void update_basis_distribution_parameters(        // beyond STD_{NORMAL,
@@ -152,11 +156,26 @@ private:
   //- Heading: Data
   //
 
+  /// key identifying the currently active model index and associated
+  /// approximation level
+  UShortArray activeKey;
 };
 
 
 inline SharedC3ApproxData::SharedC3ApproxData()
 { }
+
+
+inline void SharedC3ApproxData::active_model_key(const UShortArray& mi_key)
+{ activeKey = mi_key; }
+
+
+inline const UShortArray& SharedC3ApproxData::active_model_key() const
+{ return activeKey; }
+
+
+inline void SharedC3ApproxData::clear_model_keys()
+{ activeKey.clear(); } // no shared data is currently keyed
 
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)

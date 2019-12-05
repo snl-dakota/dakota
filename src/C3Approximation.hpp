@@ -47,31 +47,68 @@ struct FTDerivedFunctions
 };
 
 
-class FnTrainPtrs
+class C3FnTrainPtrs
 {
 public:
 
-  // Add ctor and dtor to better manage these pointers...
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  C3FnTrainPtrs();  ///< default constructor
+
+  ~C3FnTrainPtrs(); ///< destructor
+
+  //
+  //- Heading: Member functions
+  //
+
+  void deallocate();
+
+  void ft_derived_functions_init_null();
+
+  // pass in sharedC3DataRep->approxOpts
+  void ft_derived_functions_create(struct MultiApproxOpts * opts);
+
+  void ft_derived_functions_free();
+
+  //
+  //- Heading: Data
+  //
 
   struct FunctionTrain * ft;
   struct FT1DArray * ft_gradient;
   struct FT1DArray * ft_hessian;
-  struct MultiApproxOpts * ft_opts; // <-- This is really shared
   struct FTDerivedFunctions ft_derived_functions;
   struct C3SobolSensitivity * ft_sobol;
 }
 
 
-void ft_derived_functions_init_null(struct FTDerivedFunctions * );
-    
-void ft_derived_functions_create(struct FTDerivedFunctions * func,
-                                 struct FunctionTrain * ft,
-                                 struct MultiApproxOpts * opts);
-
-void ft_derived_functions_free(struct FTDerivedFunctions *);
+inline C3FnTrainPtrs::C3FnTrainPtrs():
+  ft(NULL), ft_gradient(NULL), ft_hessian(NULL), ft_sobol(NULL)
+{ ft_derived_functions_init_null(&ft_derived_functions); }
 
 
-    
+inline void C3FnTrainPtrs::free_ft()
+{
+  if (ft)          function_train_free(ft);
+  if (ft_gradient) ft1d_array_free(ft_gradient);
+  if (ft_hessian)  ft1d_array_free(ft_hessian);
+
+  ft = NULL;  ft_gradient = NULL;  ft_hessian = NULL;
+}
+
+
+inline C3FnTrainPtrs::~C3FnTrainPtrs()
+{
+  free_ft();
+
+  ft_derived_functions_free(&ft_derived_functions);
+  if (ft_sobol)  c3_sobol_sensitivity_free(ft_sobol);
+  ft_sobol = NULL;
+}
+
+
 class SharedC3ApproxData;
 
 
@@ -169,7 +206,10 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
-  
+
+  void active_model_key(const UShortArray& key);
+  void clear_model_keys();
+
   Real                 value(const Variables& vars);
   const RealVector&    gradient(const Variables& vars);
   const RealSymMatrix& hessian(const Variables& vars);
@@ -203,43 +243,96 @@ private:
   //
 
   // containers allowing const ref return of latest result (active key)
-  RealVector     moment_vector;
-  RealVector num_moment_vector;
+  RealVector expansionMoments;
+  RealVector numericalMoments;
 
-  // Pecos::*PolyApproximation manages keyed data inside the library interface,
-  // but C3 does not.  Therefore, employ keyed set of pointers here in the
-  // Dakota interface class.  Then
-  //      this->ft_derived_functions.second_central_moment
-  // becomes
-  //   levIter->ft_derived_functions.second_central_moment
-  std::map<UShortArray, FnTrainPtrs> levelApprox;
-  // iterator to active levelApprox
-  std::map<UShortArray, FnTrainPtrs>::iterator levApproxIter;
+  /// set of pointers to QoI approximation data for each model key
+  std::map<UShortArray, C3FnTrainPtrs> levelApprox;
+  /// iterator to active levelApprox
+  std::map<UShortArray, C3FnTrainPtrs>::iterator levApproxIter;
 };
 
 
+inline void C3Approximation::active_model_key(const UShortArray& key)
+{
+  // Test for change
+  if (levApproxIter != levelApprox.end() && levApproxIter->first == key)
+    return;
+
+  levApproxIter = levelApprox.find(key);
+  if (levApproxIter == levelApprox.end()) {
+    // Note: C3FT pointers not allocated until build()
+    std::pair<UShortArray, C3FnTrainPtrs> ftp_pair(key, C3FnTrainPtrs());
+    levApproxIter = levelApprox.insert(ftp_pair).first;
+  }
+
+  // sets approxData keys
+  Approximation::active_model_key(key);
+}
+
+
 inline void C3Approximation::expansion_coefficient_flag(bool coeff_flag)
-{ this->expansionCoeffFlag = coeff_flag; }
+{ expansionCoeffFlag = coeff_flag; }
 
 
 inline bool C3Approximation::expansion_coefficient_flag() const
-{ return this->expansionCoeffFlag; }
+{ return expansionCoeffFlag; }
 
 
 inline void C3Approximation::expansion_gradient_flag(bool grad_flag)
-{ this->expansionCoeffGradFlag = grad_flag; }
+{ expansionCoeffGradFlag = grad_flag; }
 
 
 inline bool C3Approximation::expansion_gradient_flag() const
-{ return this->expansionCoeffGradFlag; }
+{ return expansionCoeffGradFlag; }
+
+
+inline const RealVector& C3Approximation::moments() const
+{ return expansionMoments; }
+
+
+inline Real C3Approximation::moment(size_t i) const
+{ return expansionMoments[i]; }
+
+
+inline void C3Approximation::moment(Real mom, size_t i)
+{ expansionMoments[i] = mom; }
 
 
 inline const RealVector& C3Approximation::expansion_moments() const
-{ return moment_vector; } // populated
+{ return expansionMoments; } // populated
 
 
 inline const RealVector& C3Approximation::numerical_integration_moments() const
-{ return num_moment_vector; } // empty
+{ return numericalMoments; } // empty
+
+
+inline Real C3Approximation::third_central()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->ft_derived_functions.third_central_moment;
+}
+
+
+inline Real C3Approximation::fourth_central()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->ft_derived_functions.fourth_central_moment;
+}
+
+
+inline Real C3Approximation::skewness()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->ft_derived_functions.skewness;
+}
+
+
+inline Real C3Approximation::kurtosis()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->ft_derived_functions.kurtosis;
+}
 
 
 // Next two. Should access through compute_all_sobol_indices()
@@ -259,8 +352,21 @@ inline void C3Approximation::compute_total_effects()
     sharedDataRep->numVars;
   compute_all_sobol_indices(interaction_order); 
 }    
-    
-    
+
+
+inline Real C3Approximation::main_sobol_index(size_t dim)
+{ return c3_sobol_sensitivity_get_main(levApproxIter->ft_sobol,dim); }
+
+
+inline Real C3Approximation::total_sobol_index(size_t dim)
+{ return c3_sobol_sensitivity_get_total(levApproxIter->ft_sobol,dim); }
+
+
+inline void C3Approximation::
+sobol_iterate_apply(void (*f)(double val, size_t ninteract,
+			      size_t*interactions,void* arg), void* args)
+{ c3_sobol_sensitivity_apply_external(levApproxIter->ft_sobol,f,args); }
+
 } // end namespace
 
 #endif
