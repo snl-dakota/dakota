@@ -237,6 +237,7 @@ if ( ${ConfigStatus} EQUAL 0 )
     execute_process( COMMAND ${CMAKE_CTEST_COMMAND}
       -L ${unit_test_subset}
       -O ${CTEST_BINARY_DIRECTORY}/unit_test/${unit_test_subset}.out
+      -C ${CTEST_BUILD_CONFIGURATION}
       WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
       RESULT_VARIABLE CtestStatus
       )

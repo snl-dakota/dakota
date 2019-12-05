@@ -99,14 +99,6 @@ Four files should have been created:
     interrupted, it can be often be restarted without losing all
     progress.
 \end{enumerate}
-When running on Unix operating systems with Dakota's legacy X
-Windows-based graphics enabled, some plots are created as well, due to
-the specification of \texttt{graphics}. These can be helpful when
-processing the data or diagnosing unexpected results.  If your
-particular installation or build of Dakota does not support graphics,
-you will instead get a warning to this effect. The Dakota GUI can also
-plot the results of studies.
-
 Dakota has some data processing capabilities for output analysis. 
 The output file will contain the relevant results. 
 In this case, the output file has details
@@ -962,20 +954,21 @@ arguments, a usage message similar to the following appears:
 \begin{small}
 \begin{verbatim}
 usage: dakota [options and <args>]
-        -help (Print this summary)
-        -version (Print Dakota version number)
-        -input <$val> (REQUIRED Dakota input file $val)
-        -output <$val> (Redirect Dakota standard output to file $val)
-        -error <$val> (Redirect Dakota standard error to file $val)
-        -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
-        -no_input_echo (Do not echo Dakota input file)
-        -check (Perform input checks)
-        -pre_run [$val] (Perform pre-run (variables generation) phase)
-        -run [$val] (Perform run (model evaluation) phase)
-        -post_run [$val] (Perform post-run (final results) phase)
-        -read_restart [$val] (Read an existing Dakota restart file $val)
-        -stop_restart <$val> (Stop restart file processing at evaluation $val)
-        -write_restart [$val] (Write a new Dakota restart file $val)
+	-help (Print this summary)
+	-version (Print DAKOTA version number)
+	-input <$val> (REQUIRED DAKOTA input file $val)
+	-preproc [$val] (Pre-process input file with pyprepro or tool $val)
+	-output <$val> (Redirect DAKOTA standard output to file $val)
+	-error <$val> (Redirect DAKOTA standard error to file $val)
+	-parser <$val> (Parsing technology: nidr[strict][:dumpfile])
+	-no_input_echo (Do not echo DAKOTA input file)
+	-check (Perform input checks)
+	-pre_run [$val] (Perform pre-run (variables generation) phase)
+	-run [$val] (Perform run (model evaluation) phase)
+	-post_run [$val] (Perform post-run (final results) phase)
+	-read_restart [$val] (Read an existing DAKOTA restart file $val)
+	-stop_restart <$val> (Stop restart file processing at evaluation $val)
+	-write_restart [$val] (Write a new DAKOTA restart file $val)
 \end{verbatim}
 \end{small}
 %$ this comment is here to trick xemacs into highlighting syntax correctly
@@ -988,7 +981,10 @@ the usage message above. The ``\texttt{-version}'' option prints the
 version number of the executable. The ``\texttt{-check}'' option
 invokes a dry-run mode in which the input file is processed and
 checked for errors, but the study is not performed. The
-``\texttt{-input}'' option provides the name of the Dakota input file.
+``\texttt{-input}'' option provides the name of the Dakota input file,
+which can optionally be pre-processed as a template using the
+``\texttt{-preproc}'' option.
+
 The ``\texttt{-output}'' and ``\texttt{-error}'' options provide file
 names for redirection of the Dakota standard output (stdout) and
 standard error (stderr), respectively. By default, Dakota will echo
@@ -1009,7 +1005,7 @@ line options can be abbreviated so long as the abbreviation is unique.
 Accordingly, the following are valid, unambiguous specifications: ``\texttt{-h}'',
 ``\texttt{-v}'', ``\texttt{-c}'', ``\texttt{-i}'', ``\texttt{-o}'',
 ``\texttt{-e}'', ``\texttt{-re}'', ``\texttt{-s}'', ``\texttt{-w}'',
-``\texttt{-pr}'', ``\texttt{-ru}'', and ``\texttt{-po}'' and can be used
+``\texttt{-ru}'', and ``\texttt{-po}'' and can be used
 in place of the longer forms of the command line options.
 
 To run Dakota with a particular input file, the following syntax can
@@ -1074,6 +1070,46 @@ symbol (\&) to the command with an embedded space, e.g.,
 
 Refer to~\cite{And86} for more information on Unix redirection and
 background commands.
+
+The specified Dakota input file may instead be an
+dprepro/aprepro-style template file to be pre-processed prior to
+running Dakota. For example it might contain template expressions in
+curly braces:
+\begin{small}
+\begin{verbatim}
+    # {MyLB = 2.0} {MyUB = 8.6}
+    variables
+      uniform_uncertain 3
+        upper_bounds {MyUB} {MyUB} {MyUB}
+        lower_bounds {MyLB} {MyLB} {MyLB}
+\end{verbatim}
+\end{small}
+
+(See Section~\ref{interfaces:dprepro-and-pyprepro} for more
+information and use cases.) To pre-process the input file, specify the
+\texttt{-preproc} flag which generates an intermediate temporary input
+file for use in Dakota. If Dakota's pyprepro.py utility is not
+available on the execution {\tt PATH} and/or additional pre-processing
+options are needed, the tool location and syntax can be specified, for
+example:
+
+\begin{small}
+\begin{verbatim}
+    # Assumes pyprepro.py is on PATH:
+    dakota -i dakota_rosen.tmpl -preproc
+    
+    # Specify path/name of pre-processor:
+    dakota -i dakota_rosen.tmpl \
+      -preproc "/home/user/dakota/bin/pyprepro"
+    
+    # Specify Python interpreter to use, for example on Windows
+    dakota -i dakota_rosen.tmpl -preproc "C:/python27/python.exe \
+      C:/dakota/6.10/bin/pyprepro/pyprepro.py"
+    
+    # Specify additional options to pyprepro, e.g., include file:
+    dakota -i dakota_rosen.tmpl -preproc "pyprepro.py -I default.params"
+\end{verbatim}
+\end{small}
 
 The ``\texttt{-pre\_run}'', ``\texttt{-run}'', and
 ``\texttt{-post\_run}'' options instruct Dakota to run one or more

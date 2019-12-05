@@ -19,6 +19,10 @@
 #include "NonDIntegration.hpp"
 #include "CubatureDriver.hpp"
 
+namespace Pecos {
+class MultivariateDistribution; // fwd declaration
+}
+
 namespace Dakota {
 
 
@@ -38,8 +42,7 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDCubature(Model& model, const Pecos::ShortArray& u_types,
-	       unsigned short cub_int_order);
+  NonDCubature(Model& model, unsigned short cub_int_order);
 
   //
   //- Heading: Member functions
@@ -72,6 +75,8 @@ protected:
   void increment_grid_preference();
   void decrement_grid();
 
+  void reset();
+
   int num_samples() const;
 
 private:
@@ -80,9 +85,8 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// verify self-consistency of integration specification
-  void check_integration(const Pecos::ShortArray& u_types,
-			 const Pecos::AleatoryDistParams& adp);
+  /// define cubIntRule from random variable type
+  void assign_rule(const Pecos::MultivariateDistribution& mvd);
 
   //
   //- Heading: Data
@@ -100,6 +104,15 @@ private:
   /// the isotropic cubature integration rule
   unsigned short cubIntRule;
 };
+
+
+inline void NonDCubature::reset()
+{
+  // reset dimensional quadrature order to specification
+  //cubIntOrderRef = cubIntOrderSpec;
+  // clear dist param update trackers
+  cubDriver->reset();
+}
 
 
 inline unsigned short NonDCubature::integrand_order() const

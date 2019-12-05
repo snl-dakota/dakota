@@ -45,8 +45,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void wait_local_evaluations(PRPQueue& prp_queue);
-  void test_local_evaluations(PRPQueue& prp_queue);
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue);
+  void test_local_evaluation_sequence(PRPQueue& prp_queue);
 
   /// spawn a child process for an analysis component within an
   /// evaluation using fork()/execvp() and wait for completion

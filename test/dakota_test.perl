@@ -47,6 +47,7 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 # exit code summarizing worst test condition found (higher is nominally "worse")
 # might need to change if we go back to baselines that permit failures
 #   0 PASS
+#   0 SKIP (considered code 50, but it's not really a failure)
 #  70 PASS, but baseline lookup failure (unused)
 #  80 DIFF
 #  90 FAIL, consistent with baseline
@@ -56,7 +57,7 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 # 101 killed due to stale output
 # 102 killed due to no output
 # 103 aborted by SIG_INT
-# 104 error or abort appeared in output
+# 104 (disabled) error or abort appeared in output
 # 105 unknown or other FAIL
 my $summary_exitcode = 0;
 
@@ -338,17 +339,21 @@ foreach my $file (@test_inputs) {
     #print "[exit = $exit_value, signal = $signal_num, core = $dumped_core ";
     #print "protected test code = $pt_code] ";
 
+    # BMA: This historical check was useful for catching otherwise
+    # unreported MPI errors, but also causes false failed tests when a
+    # TPL emits the text abort or error to stderr. Disabled it.
+    #
     # If there's anything from stderr, check it first, since MPI
     # might return $exit_code = 0 though there was an error on a child
-    if ($exit_value == 0 && open (ERROR_FILE, $error)) {
-      while (<ERROR_FILE>) {
-	if (/error/i || /abort/i) {
-	  $exit_value = 104;
-	  last;
-	}
-      }
-      close (ERROR_FILE);
-    }
+    ##if ($exit_value == 0 && open (ERROR_FILE, $error)) {
+    ##  while (<ERROR_FILE>) {
+    ##	if (/error/i || /abort/i) {
+    ##	  $exit_value = 104;
+    ##	  last;
+    ##	}
+    ##  }
+    ##  close (ERROR_FILE);
+    ##}
 
     # iff the test succeeded, parse out the results subset of interest
     if ($exit_value == 0) {
@@ -960,7 +965,12 @@ sub check_dakota_config {
   if (-f "../src/Makefile.export.Dakota") {
     $makefile_export = "../src/Makefile.export.Dakota";
   }
+  # legacy install layout assuming dakota/test/
   elsif (-f "../include/Makefile.export.Dakota") {
+    $makefile_export = "../include/Makefile.export.Dakota";
+  }
+  # current install layout assuming dakota/share/dakota/test/
+  elsif (-f "../../../include/Makefile.export.Dakota") {
     $makefile_export = "../include/Makefile.export.Dakota";
   }
   return if (! ${makefile_export});

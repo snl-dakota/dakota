@@ -75,10 +75,10 @@ RelaxedVariables(const ProblemDescDB& problem_db,
 
   size_t i, ardi_cntr = 0, ardr_cntr = 0,
     acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0,
-    num_ddrv  = ddrv.length(),  num_ddsiv = ddsiv.length(),
+    num_ddrv  =  ddrv.length(), num_ddsiv = ddsiv.length(),
     num_ddsrv = ddsrv.length(), num_dauiv = dauiv.length(),
     num_daurv = daurv.length(), num_deuiv = deuiv.length(),
-    num_deurv = deurv.length(), num_dsrv  = dsrv.length(),
+    num_deurv = deurv.length(), num_dsrv  =  dsrv.length(),
     num_dssiv = dssiv.length(), num_dssrv = dssrv.length();
   const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();

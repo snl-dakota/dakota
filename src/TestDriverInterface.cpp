@@ -4235,11 +4235,12 @@ int TestDriverInterface::bayes_linear()
   RealVector n_means, n_std_devs, n_l_bnds, n_u_bnds;
   n_means.resize(numFns); n_std_devs.resize(numFns); 
   n_l_bnds.resize(numFns); n_u_bnds.resize(numFns);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   for (i=0; i<numFns; i++) {
     n_means(i)=mean_pred;
     n_std_devs(i)=0.0316; // initial lambda = 1000.
-    n_l_bnds(i)=-DBL_MAX;
-    n_u_bnds(i)=DBL_MAX;
+    n_l_bnds(i)=-dbl_inf;
+    n_u_bnds(i)= dbl_inf;
   }
 
   NonDLHSSampling* normal_sampler;

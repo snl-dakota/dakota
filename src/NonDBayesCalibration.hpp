@@ -16,6 +16,7 @@
 #define NOND_BAYES_CALIBRATION_H
 
 #include "NonDCalibration.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include "InvGammaRandomVariable.hpp"
 #include "GaussianKDE.hpp"
 #include "ANN/ANN.h" 
@@ -86,6 +87,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void pre_run();
   void core_run();
 
   void derived_init_communicators(ParLevLIter pl_iter);
@@ -103,11 +105,9 @@ protected:
   /// Perform Bayesian calibration (all derived classes must implement)
   virtual void calibrate() = 0;
 
-
   //
   //- Heading: Member functions
   //
-
 
   /// construct mcmcModel (no emulation, GP, PCE, or SC) that wraps
   /// inbound Model
@@ -116,8 +116,11 @@ protected:
   /// initialize the hyper-parameter priors
   void init_hyper_parameters();
 
-  /// construct the negative log posterior RecastModel (wraps
-  /// residualModel) and corresponding MAP optimizer
+  /// initialize the MAP optimizer selection
+  void init_map_optimizer();
+  /// construct the negative log posterior RecastModel (negLogPostModel)
+  void construct_map_model();
+  /// construct the MAP optimizer for minimization of negLogPostModel
   void construct_map_optimizer();
 
   /// initialize emulator model and probability space transformations
@@ -212,6 +215,12 @@ protected:
                                         const Response& model_resp,
                                         Response& nlpost_resp);
 
+  /// Wrap iteratedModel in a RecastModel that performs response scaling
+  void scale_model();
+
+  /// Wrap iteratedModel in a RecastModel that weights the residuals
+  void weight_model();
+
   //
   //- Heading: Data
   //
@@ -257,6 +266,11 @@ protected:
 
   /// order of derivatives used in MCMC process (bitwise like ASV)
   short mcmcDerivOrder;
+
+  /// solution for most recent MAP pre-solve; also serves as initial guess
+  /// for initializing the first solve and warm-starting the next solve
+  /// (posterior emulator refinement)
+  RealVector mapSoln;
 
   // settings specific to adaptive DOE
 
@@ -368,6 +382,11 @@ protected:
   /// flag indicating the calculation of the kernel density estimate of the
   /// posteriors
   bool posteriorStatsKDE;
+  /// flag indicating calculation of chain diagnostics
+  bool chainDiagnostics;
+  /// flag indicating calculation of confidence intervals as a chain
+  /// diagnositc
+  bool chainDiagnosticsCI;
   /// flag indicating calculation of the evidence of the model
   bool calModelEvidence;
   /// flag indicating use of Monte Carlo approximation to calculate evidence
@@ -444,9 +463,6 @@ protected:
   void compute_prediction_vals(RealMatrix& filtered_fn_vals,
       			       RealMatrix& PredVals, int num_filtered,
 			       size_t num_exp, size_t num_concatenated);
-  void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
-  void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
-      			  RealVector& std_devs);
   void print_intervals_file(std::ostream& stream, RealMatrix& functionvalsT,
   			      RealMatrix& predvalsT, int length, 
 			      size_t aug_length);
@@ -464,7 +480,7 @@ protected:
   void kl_post_prior(RealMatrix& acceptanceChain);
   void prior_sample_matrix(RealMatrix& prior_dist_samples);
   void mutual_info_buildX();
-  static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
+  static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2,
      		RealVector& distances, int NX, int NY, int dim2, IntVector& k, 
 		double eps);
   static void ann_dist(const ANNpointArray matrix1, 
@@ -473,6 +489,17 @@ protected:
 		IntVector& k, double eps);
   Real kl_est;	
   void print_kl(std::ostream& stream);		
+  void print_chain_diagnostics(std::ostream& s);
+  void print_batch_means_intervals(std::ostream& s); 
+
+  /// whether response scaling is active
+  bool scaleFlag;
+  // /// Shallow copy of the scaling transformation model, when present
+  // /// (cached in case further wrapped by other transformations)
+  // Model scalingModel;
+
+  /// whether weight scaling is active
+  bool weightFlag;
 
 private:
 
@@ -490,23 +517,58 @@ inline const Model& NonDBayesCalibration::algorithm_space_model() const
 template <typename VectorType> 
 Real NonDBayesCalibration::prior_density(const VectorType& vec)
 {
+  // template supports QUESO::GslVector which has to use long form
+
   // TO DO: consider QUESO-based approach for this using priorRv.pdf(),
   // which may in turn call back to our GenericVectorRV prior plug-in
 
-  if (natafTransform.x_correlation()) {
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  if (mv_dist.correlation()) {
     Cerr << "Error: prior_density() uses a product of marginal densities\n"
 	 << "       and can only be used for independent random variables."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
+  size_t v, num_rv = mv_dist.random_variables().size();
+  const BitArray& active_vars = mv_dist.active_variables();
   Real pdf = 1.;
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.u_pdf(vec[i], i);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      pdf *= natafTransform.x_pdf(vec[i], i);
+  if (active_vars.empty()) {
+    if (num_rv != numContinuousVars) {
+      Cerr << "Error: active variable size mismatch in NonDBayesCalibration::"
+	   << "log_prior_density()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    for (v=0; v<num_rv; ++v)
+      pdf *= mv_dist.pdf(vec[v], v);
+  }
+  else {
+    size_t av_cntr = 0;
+    for (v=0; v<num_rv; ++v)
+      if (active_vars[v])
+	pdf *= mv_dist.pdf(vec[av_cntr++], v);
+  }
+
+  // the estimated param is mult^2 ~ invgamma(alpha,beta)
+  for (size_t i=0; i<numHyperparams; ++i)
+    pdf *= invGammaDists[i].pdf(vec[numContinuousVars + i]);
+
+  return pdf;
+}
+
+
+template <> 
+inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
+{
+  // template specialization supports RealVector (e.g., for MAP pre-solve)
+
+  Real pdf = (standardizedSpace) ?
+    mcmcModel.multivariate_distribution().pdf(vec) :    // u_dist
+    iteratedModel.multivariate_distribution().pdf(vec); // x_dist
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -519,20 +581,51 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
 template <typename VectorType> 
 Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 {
-  if (natafTransform.x_correlation()) {
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  if (mv_dist.correlation()) {
     Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
 	 << "       and can only be used for independent random variables."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
+  size_t v, num_rv = mv_dist.random_variables().size();
+  const BitArray& active_vars = mv_dist.active_variables();
   Real log_pdf = 0.;
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.u_log_pdf(vec[i], i);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_pdf += natafTransform.x_log_pdf(vec[i], i);
+  if (active_vars.empty()) {
+    if (num_rv != numContinuousVars) {
+      Cerr << "Error: active variable size mismatch in NonDBayesCalibration::"
+	   << "log_prior_density()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    for (v=0; v<num_rv; ++v)
+      log_pdf += mv_dist.log_pdf(vec[v], v);
+  }
+  else {
+    size_t av_cntr = 0;
+    for (v=0; v<num_rv; ++v)
+      if (active_vars[v])
+	log_pdf += mv_dist.log_pdf(vec[av_cntr++], v);
+  }
+
+  // the estimated param is mult^2 ~ invgamma(alpha,beta)
+  for (size_t i=0; i<numHyperparams; ++i)
+    log_pdf += invGammaDists[i].log_pdf(vec[numContinuousVars + i]);
+
+  return log_pdf;
+}
+
+
+template <> 
+inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
+{
+  Real log_pdf = (standardizedSpace) ?
+    mcmcModel.multivariate_distribution().log_pdf(vec) :    // u_dist
+    iteratedModel.multivariate_distribution().log_pdf(vec); // x_dist
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -545,20 +638,24 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 template <typename Engine> 
 void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
 {
-  if (natafTransform.x_correlation()) {
+  if (prior_samples.empty())
+    prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
+
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const Pecos::MarginalsCorrDistribution* mv_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+  if (mv_dist_rep->correlation()) {
     Cerr << "Error: prior_sample() does not support correlated prior samples."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
-
-  if (prior_samples.empty())
-    prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = natafTransform.draw_u_sample(i, rng);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      prior_samples[i] = natafTransform.draw_x_sample(i, rng);
+  for (size_t i=0; i<numContinuousVars; ++i)
+    prior_samples[i]
+      = mv_dist_rep->draw_sample(svd.cv_index_to_all_index(i), rng);
 
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
@@ -570,16 +667,18 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
 template <typename VectorType>
 void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 {
-  if (standardizedSpace) {
-    RealRealPairArray u_moments = natafTransform.u_moments();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      mean_vec[i] = u_moments[i].first;
-  }
-  else {
-    RealVector x_means = natafTransform.x_means();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      mean_vec[i] = x_means[i];
-  }
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd
+  //  = iteratedModel.current_variables().shared_data();
+
+  // returns set of means that correspond to activeVars
+  RealVector mvd_means
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution().means()
+    : iteratedModel.multivariate_distribution().means();
+
+  for (size_t i=0; i<numContinuousVars; ++i)
+    mean_vec[i] = mvd_means[i];//[svd.cv_index_to_active_index(i)];
+
   for (size_t i=0; i<numHyperparams; ++i)
     mean_vec[numContinuousVars + i] = invGammaDists[i].mean();
 }
@@ -589,28 +688,43 @@ void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 template <typename MatrixType>
 void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
 {
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd
+  //  = iteratedModel.current_variables().shared_data();
+
   if (standardizedSpace) {
-    RealRealPairArray u_moments = natafTransform.u_moments();
-    for (size_t i=0; i<numContinuousVars; ++i) {
-      const Real& u_std_i = u_moments[i].second;
-      var_mat(i,i) = u_std_i * u_std_i;
-    }
+    // returns set of RV variances that correspond to activeVars
+    RealVector u_var = mcmcModel.multivariate_distribution().variances();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      var_mat(i,i) = u_var[i];//[svd.cv_index_to_active_index(i)];
   }
   else {
-    RealVector x_std = natafTransform.x_std_deviations();
-    if (natafTransform.x_correlation()) {
-      const RealSymMatrix& x_correl = natafTransform.x_correlation_matrix();
-      for (size_t i=0; i<numContinuousVars; ++i) {
-	var_mat(i,i) = x_std[i] * x_std[i];
-	for (size_t j=1; j<numContinuousVars; ++j)
+    const Pecos::MultivariateDistribution& x_dist
+      = iteratedModel.multivariate_distribution();
+    if (x_dist.correlation()) {
+      // returns set of RV stdevs that correspond to activeVars
+      RealVector x_std = x_dist.std_deviations();
+      const RealSymMatrix& x_correl = x_dist.correlation_matrix();
+      size_t i, j;//, rv_i, rv_j;
+      for (i=0; i<numContinuousVars; ++i) {
+	//rv_i = svd.cv_index_to_active_index(i);
+	var_mat(i,i) = x_std[i] * x_std[i];//x_std[rv_i] * x_std[rv_i];
+	for (j=0; j<i; ++j) {
+	  //rv_j = svd.cv_index_to_active_index(j);
 	  var_mat(i,j) = var_mat(j,i) = x_correl(i,j) * x_std[i] * x_std[j];
+	  //var_mat(i,j) = var_mat(j,i)
+	  //  = x_correl(rv_i,rv_j) * x_std[rv_i] * x_std[rv_j];
+	}
       }
     }
     else {
+      // returns set of RV variances that correspond to activeVars
+      RealVector x_var = x_dist.variances();
       for (size_t i=0; i<numContinuousVars; ++i)
-	var_mat(i,i) = x_std[i] * x_std[i];
+	var_mat(i,i) = x_var[i];//[svd.cv_index_to_active_index(i)];
     }
   }
+
   for (size_t i=0; i<numHyperparams; ++i)
     var_mat(numContinuousVars + i, numContinuousVars + i) = 
       invGammaDists[i].variance();
@@ -623,12 +737,15 @@ augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
 {
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -= natafTransform.u_log_pdf_gradient(vec[i], i);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_grad[i] -= natafTransform.x_log_pdf_gradient(vec[i], i);
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+
+  for (size_t i=0; i<numContinuousVars; ++i)
+    log_grad[i] -=
+      mv_dist.log_pdf_gradient(vec[i], svd.cv_index_to_all_index(i));
 }
 
 
@@ -638,13 +755,46 @@ augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
 {
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
-  if (standardizedSpace)
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -= natafTransform.u_log_pdf_hessian(vec[i], i);
-  else
-    for (size_t i=0; i<numContinuousVars; ++i)
-      log_hess(i, i) -= natafTransform.x_log_pdf_hessian(vec[i], i);
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = iteratedModel.current_variables().shared_data();
+
+  for (size_t i=0; i<numContinuousVars; ++i)
+    log_hess(i, i) -=
+      mv_dist.log_pdf_hessian(vec[i], svd.cv_index_to_all_index(i));
 }
+
+
+/*
+template <> 
+inline void NonDBayesCalibration::
+augment_gradient_with_log_prior(RealVector& log_grad, const RealVector& vec)
+{
+  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
+  // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+
+  log_grad -= mv_dist.log_pdf_gradient(vec);
+}
+
+
+template <> 
+inline void NonDBayesCalibration::
+augment_hessian_with_log_prior(RealSymMatrix& log_hess, const RealVector& vec)
+{
+  // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
+  // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
+  const Pecos::MultivariateDistribution& mv_dist
+    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    : iteratedModel.multivariate_distribution();
+
+  log_hess -= mv_dist.log_pdf_hessian(vec); // only need diagonal correction...
+}
+*/
 
 
 inline void NonDBayesCalibration::

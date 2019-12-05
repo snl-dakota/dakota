@@ -1,7 +1,10 @@
 # CMakeLists.txt for DAKOTA packages
+option(HAVE_ACRO "Build the ACRO package." ON)
 option(HAVE_AMPL "Build the AMPL package." ON)
+option(HAVE_C3 "Build the Compressed Continuous Computation package." OFF)
 option(HAVE_CONMIN "Build the CONMIN package." ON)
 option(HAVE_DDACE "Build the DDACE package." ON)
+option(HAVE_DEMO_TPL "Build the Demo_TPL package." OFF)
 option(HAVE_DOT "Build the DOT package." ON)
 option(HAVE_DREAM "Build the DREAM package." ON)
 option(HAVE_FSUDACE "Build the FSUDACE package." ON)
@@ -192,6 +195,10 @@ if(HAVE_ACRO)
   add_subdirectory(external/acro)
 endif(HAVE_ACRO)
 
+if(HAVE_C3)
+  add_subdirectory(external/C3)
+endif()
+
 if(HAVE_DDACE)
   add_subdirectory(external/DDACE)
 endif(HAVE_DDACE)
@@ -253,6 +260,10 @@ if(HAVE_NLPQL)
     set(HAVE_NLPQL OFF CACHE BOOL "Build the NLPQL package" FORCE)
   endif()
 endif(HAVE_NLPQL)
+
+if(HAVE_DEMO_TPL)
+  add_subdirectory(external/demo_tpl)
+endif(HAVE_DEMO_TPL)
 
 if(HAVE_NOMAD)
   add_subdirectory(external/NOMAD)

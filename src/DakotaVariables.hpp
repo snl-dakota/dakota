@@ -197,6 +197,7 @@ public:
   //
 
   size_t tv()         const; ///< total number of vars
+  size_t total_active() const; ///< total number of active vars
   size_t cv()         const; ///< number of active continuous vars
   size_t cv_start()   const; ///< start index of active continuous vars
   size_t div()        const; ///< number of active discrete int vars
@@ -498,6 +499,15 @@ public:
 
   /// return all continuous variable position identifiers
   SizetMultiArrayConstView all_continuous_variable_ids() const;
+  /// return all discrete integer variable position identifiers
+  SizetMultiArrayConstView all_discrete_int_variable_ids() const;
+  /// return all discrete string variable position identifiers
+  SizetMultiArrayConstView all_discrete_string_variable_ids() const;
+  /// return all discrete real variable position identifiers
+  SizetMultiArrayConstView all_discrete_real_variable_ids() const;
+
+  /// get all or active labels in input spec order
+  StringArray ordered_labels(unsigned short vars_part = ALL_VARS) const;
 
   /// a deep variables copy for use in history mechanisms
   /// (SharedVariablesData uses a shallow copy by default)
@@ -648,6 +658,13 @@ inline size_t Variables::tv() const
   return (variablesRep) ? variablesRep->tv() :
     allContinuousVars.length()   + allDiscreteIntVars.length() +
     allDiscreteStringVars.size() + allDiscreteRealVars.length();
+}
+
+
+inline size_t Variables::total_active() const
+{
+  return (variablesRep) ? variablesRep->total_active() :
+    cv() + div() + dsv() + drv();
 }
 
 
@@ -1501,6 +1518,15 @@ all_discrete_real_variable_types() const
 
 inline SizetMultiArrayConstView Variables::all_continuous_variable_ids() const
 { return shared_data().all_continuous_ids(0, acv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_int_variable_ids() const
+{ return shared_data().all_discrete_int_ids(0, adiv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_string_variable_ids() const
+{ return shared_data().all_discrete_string_ids(0, adsv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_real_variable_ids() const
+{ return shared_data().all_discrete_real_ids(0, adrv()); }
 
 
 inline const std::pair<short,short>& Variables::view() const

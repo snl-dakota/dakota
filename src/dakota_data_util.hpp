@@ -201,6 +201,11 @@ bool is_equal_vec( const RealVector & vec1,
 // Misc matrix utilities 
 // ---------------------
 
+/// Computes means of columns of matrix
+void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+/// Computes standard deviations of columns of matrix
+void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
+      			  RealVector& std_devs);
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 
@@ -274,6 +279,12 @@ inline bool strends(const std::string& input, const std::string& test)
 inline bool strcontains(const std::string& input, const std::string& test)
 { return(boost::contains(input, test)); }
 
+/// Trim then split a string on {space, tab} and return as vector of strings
+std::vector<std::string> strsplit(const std::string& input);
+
+/// Return the length of the longest string in the passed vector
+std::string::size_type longest_strlen(const std::vector<std::string>& vecstr);
+
 
 // --------------------------------------------
 // Utility functions for creating string arrays
@@ -315,6 +326,28 @@ inline void build_labels_partial(StringArray& label_array,
     build_label(label_array[start_index+i], root_label, i+1);
 }
 
+
+// --------------------------
+// templated assign functions
+// --------------------------
+
+/// assign a value to an arbitrary vector
+template <typename vecType, typename valueType>
+void assign_value(vecType& target, valueType val)
+{
+  size_t i, len = target.size();
+  for (i=0; i<len; ++i)
+    target[i] = val;
+}
+
+/// assign a value to a portion of an arbitrary vector
+template <typename vecType, typename valueType>
+void assign_value(vecType& target, valueType val, size_t start, size_t len)
+{
+  size_t i, end = start + len;
+  for (i=start; i<end; ++i)
+    target[i] = val;
+}
 
 // ----------------------------
 // non-templated copy functions
@@ -693,16 +726,29 @@ inline void copy_data( const RealMatrix &source, RealMatrix &dest,
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
-/// std::vector<ScalarType> - used by SurfpackApproximation constructor - RWH
-template <typename OrdinalType, typename ScalarType, typename VectorType> 
+/// VecType - used by APPS for HOPS vector types
+template <typename OrdinalType, typename ScalarType, typename VecType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv,
-	             VectorType& vec)
+	       VecType& vec)
 {
   OrdinalType size_sdv = sdv.length();
-  if (size_sdv > vec.size())
+  if (size_sdv != vec.size())
     vec.resize(size_sdv);
   for (OrdinalType i=0; i<size_sdv; ++i)
     vec[i] = sdv[i];
+}
+
+/// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
+/// std::vector<ScalarType> - used by DakotaModel
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2> 
+void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& sdv,
+	       std::vector<ScalarType2>& vec)
+{
+  OrdinalType size_sdv = sdv.length();
+  if (size_sdv != vec.size())
+    vec.resize(size_sdv);
+  for (OrdinalType i=0; i<size_sdv; ++i)
+    vec[i] = (ScalarType2)sdv[i];
 }
 
 /// copy Array<ScalarType> to
@@ -1322,9 +1368,7 @@ find_if(const ListT& c,
 // copy std::vector<VecType> to Real*
 // VectorType must support the length() method. 
 template<typename VectorType, typename ScalarType>
-void copy_data(const std::vector<VectorType>& va,
-               ScalarType * ptr,
-               int ptr_len)
+void copy_data(const std::vector<VectorType>& va, ScalarType * ptr, int ptr_len)
 {
   size_t total_len=0, cntr=0, num_vec = va.size();
   for( size_t i=0; i<num_vec; ++i)

@@ -323,7 +323,7 @@ namespace Dakota
         _xmax = new double[_n_dim];
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
-            _xmin[idim] = DBL_MAX;
+            _xmin[idim] =  DBL_MAX;
             _xmax[idim] = -DBL_MAX;
         }
 

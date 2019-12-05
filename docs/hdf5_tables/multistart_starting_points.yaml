@@ -1,0 +1,19 @@
+name: Starting Points (multi_start)
+dataset:
+  description: "Starting points for multi_start"
+  location: "starting_points/continuous"
+  notes: Currently only continuous starting points are supported by multi_start
+  shape: "2-dimensional: number of sets by number of variables"
+  type: Real
+scales:
+  - dimension: 0
+    type: Integer
+    label: set_ids
+    contents: set Ids
+    literal_contents: False
+  - dimension: 1
+    type: String
+    label: variables
+    contents: Variable descriptors
+    literal_contents: False
+

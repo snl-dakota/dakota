@@ -51,16 +51,32 @@ extern double HALF_LOG_2PI;
 /// These need to be in range [-63, -1], so exit code (256+enum) is in
 /// [193, 255].  See RATIONALE in dakota_global_defs.cpp.
 enum {
-  APPROX_ERROR    = -8, // error with Approximation
-  METHOD_ERROR    = -7, // error with Iterator/MetaIterator
-  MODEL_ERROR     = -6, // error within Model recursion
-  IO_ERROR        = -5, // error with core file I/O
-  INTERFACE_ERROR = -4, // error with map invocation (user workflow/driver): 
-                        // analysis driver, if/of
+  VARS_ERROR      = -10, // error with Variables
+  RESP_ERROR      = -9,  // error with Response
+  APPROX_ERROR    = -8,  // error with Approximation
+  METHOD_ERROR    = -7,  // error with Iterator/MetaIterator
+  MODEL_ERROR     = -6,  // error within Model
+  IO_ERROR        = -5,  // error with core file I/O
+  INTERFACE_ERROR = -4,  // error with map invocation (user workflow/driver): 
+                         // analysis driver, if/of
   CONSTRUCT_ERROR = -3,
   PARSE_ERROR     = -2,
-  OTHER_ERROR     = -1  // the historical Dakota default error
+  OTHER_ERROR     = -1   // the historical Dakota default error
 };
+
+/// enum for selecting the models that store evaluations
+enum { 
+      MODEL_EVAL_STORE_TOP_METHOD = 0,
+      MODEL_EVAL_STORE_NONE,
+      MODEL_EVAL_STORE_ALL,
+      MODEL_EVAL_STORE_ALL_METHODS};
+
+/// enum for selecting the interfaces that store evaluations
+enum {
+      INTERF_EVAL_STORE_SIMULATION = 0,
+      INTERF_EVAL_STORE_NONE,
+      INTERF_EVAL_STORE_ALL};
+
 
 /// enum for dakota abort behaviors
 enum {ABORT_EXITS, ABORT_THROWS};
@@ -190,5 +206,12 @@ void register_signal_handlers();
 void mpi_debug_hold();
 
 } // namespace Dakota
+
+/// Return type for EvaluationStore::model_allocate and interface_allocate
+/// UNITIALIZED: Model constructor has this as its default
+/// ACTIVE: The database is open and this model or interface should write to it
+/// INACTIVE: The database is either closed, or this model or interface should not
+///           write to it.
+enum class EvaluationsDBState {UNINITIALIZED, ACTIVE, INACTIVE};
 
 #endif // DAKOTA_GLOBAL_DEFS_H

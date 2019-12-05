@@ -10,8 +10,8 @@ Y = 500.0;
 X = 350.0;
 E = 2.9e7;
 
-alpha = 600*Y;
-beta = 600*X;
+%alpha = 600*Y;
+%beta = 600*X;
 
 dakotared  =[0.83 0    0   ]; %inputs
 dakotagreen=[0    0.8  0   ]; %constraints
@@ -31,8 +31,8 @@ set(gca,'Fontsize',16);
 xlabel('w','Fontsize',18);
 ylabel('t','Fontsize',18); 
 
-stress = 600*Y./(w.*t.^2) + 600*X./(w.^2.*t);
-contour(w,t,stress,[1.0e5 1.0e5],'linecolor',dakotared,'linewidth',4, 'linestyle','--')
+stress = 6*L*Y./(w.*t.^2) + 6*L*X./(w.^2.*t);
+contour(w,t,stress,[5.0e3 5.0e3],'linecolor',dakotared,'linewidth',4, 'linestyle','--')
 
 s1 = (Y./(t.^2)).^2;
 s2 = (X./(w.^2)).^2;
@@ -42,7 +42,7 @@ contour(w,t,displ,[0.001 0.001],'linecolor',dakotagreen,'linewidth',4, 'linestyl
   
 hold off
 
-h=legend('mass','stress = 1.0e5','displacement = 0.001', ...
+h=legend('mass','stress = 5.0e3','displacement = 0.001', ...
          'location','northeast');
 set(h,'fontsize',16);
 

@@ -14,7 +14,7 @@ rem
 rem see if the path where this .bat was launched is already in the PATH; if so
 rem do not add
 rem  _______________________________________________________________________
-echo "%PATH%" | find "%~dp0" > NUL 2>&1 || set PATH=%~dp0;%~dp0\..\lib;%PATH%;%~dp0\..\test
+echo "%PATH%" | find "%~dp0" > NUL 2>&1 || set PATH=%~dp0;%~dp0\..\lib;%PATH%;%~dp0\..\share\dakota\test
  
 rem  _______________________________________________________________________
 rem

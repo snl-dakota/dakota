@@ -164,7 +164,7 @@ public:
 
   /// Return ROL format for nonlinear equality constraints
   NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
-   { return NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED; }
+   { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
 
   /// Return flag indicating ROL supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }

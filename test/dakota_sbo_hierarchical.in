@@ -18,9 +18,6 @@
 # parallel configuration between interface and sub-model.
 
 environment,
-## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s0
-## Consider newer capabilities in the Dakota GUI     	     	      #s0
-	graphics
 	tabular_data
 	top_method_pointer = 'SBLO'
 

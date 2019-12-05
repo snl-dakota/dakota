@@ -636,7 +636,7 @@ void NonDGPMSABayesCalibration::cache_acceptance_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      natafTransform.trans_U_to_X(u_rv, x_rv);
+      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
     }

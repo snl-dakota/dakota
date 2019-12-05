@@ -1,10 +1,12 @@
-#@ s*: ReqFiles=dakota_surrogate_import.dat,dakota_surrogate_import.ff.dat,dakota_surrogate_import.unc.dat,dakota_surrogate_import.unc_ff.dat,dakota_surrogate_import.design_fixedothers.dat,dakota_surrogate_import.unc_fixedothers.dat,dakota_surrogate_import.design_state.dat,dakota_surrogate_import.unc_state.dat
+#@ s*: ReqFiles=dakota_surrogate_import.dat,dakota_surrogate_import.ff.dat,dakota_surrogate_import.unc.dat,dakota_surrogate_import.unc_ff.dat,dakota_surrogate_import.design_fixedothers.dat,dakota_surrogate_import.unc_fixedothers.dat,dakota_surrogate_import.design_state.dat,dakota_surrogate_import.unc_state.dat,dakota_surrogate_import.permute.dat
 ## DAKOTA INPUT FILE - dakota_surrogate_import.in
 
 # Test s6 imports only the (active) uncertain variable values from
 # tabular data, using the default values for the inactive variables.
 # Would have same results as s5, were the inactive held constant in
 # the build data for s5.
+
+# Test s11 mirros s0, but with permuted variable order to test ordering by labels
 
 environment
           tabular_data
@@ -22,51 +24,65 @@ method,
 model,                                         
         id_model = 'SURR'                        
         surrogate global,                        
-        import_build_points_file = 'dakota_surrogate_import.dat' annotated        #s0,#s2
-#        import_build_points_file = 'dakota_surrogate_import.ff.dat' freeform     #s1,#s3
+        import_build_points_file = 'dakota_surrogate_import.dat' annotated       #s0,#s2,#s9
+#        import_build_points_file = 'dakota_surrogate_import.ff.dat' freeform     #s1,#s3,#s10
 #        import_build_points_file = 'dakota_surrogate_import.design_fixedothers.dat' annotated  #s4
-#        import_build_points_file = 'dakota_surrogate_import.unc_fixedothers.dat' annotated   #s5
+#        import_build_points_file = 'dakota_surrogate_import.unc_fixedothers.dat' annotated use_variable_labels  #s5
 #        import_build_points_file = 'dakota_surrogate_import.unc.dat' annotated   #s6
-#        import_build_points_file = 'dakota_surrogate_import.design_state.dat' annotated   #s7
+#        import_build_points_file = 'dakota_surrogate_import.design_state.dat' annotated  use_variable_labels #s7
 #        import_build_points_file = 'dakota_surrogate_import.unc_state.dat' annotated   #s8
+#        import_build_points_file = 'dakota_surrogate_import.permute.dat' annotated use_variable_labels  #s11
 #          active_only                                                  #s6
         polynomial quadratic                   
-        challenge_points_file = 'dakota_surrogate_import.ff.dat' freeform        #s0,#s3
-#        challenge_points_file = 'dakota_surrogate_import.dat' annotated         #s1,#s2,#s4,#s5
+        challenge_points_file = 'dakota_surrogate_import.ff.dat' freeform        #s0,#s3,#s11
+#        challenge_points_file = 'dakota_surrogate_import.dat' annotated use_variable_labels        #s1,#s2,#s4,#s5
 #        challenge_points_file = 'dakota_surrogate_import.unc_ff.dat' freeform   #s6
 #        active_only                                                         #s6
-        metrics = "root_mean_squared" "mean_abs" "rsquared" #s0
+        metrics = "root_mean_squared" "mean_abs" "rsquared" #s0,#s11
 #        metrics = "sum_squared" "mean_squared" "root_mean_squared" "sum_abs" "mean_abs" "max_abs" "rsquared" #s1,#s2
 #        metrics = "sum_squared" "root_mean_squared" "mean_abs" "max_abs" "rsquared" #s3,#s4
 #        metrics = "sum_squared" "mean_squared" "root_mean_squared" "sum_abs" "mean_abs" "max_abs" "rsquared" #s5,#s6
 #        cross_validation folds = 5 #s1,#s3,#s5
 #        press #s1,#s2,#s4,#s6
+#        dace_method_pointer 'DACE'  #s9,#s10
+#        total_points 200            #s9,#s10
+#        reuse_points all            #s9,#s10
+
+#method                              #s9,#s10
+#  id_method 'DACE'                  #s9,#s10
+#  sampling samples 1 seed 1334      #s9,#s10 
+#  model_pointer 'TRUTH'             #s9,#s10
+
+#model                               #s9,#s10
+#  id_model 'TRUTH'                  #s9,#s10
+#  simulation                        #s9,#s10
+
 
 variables,
-  active all          #s0,#s1,#s2,#s3
+  active all          #s0,#s1,#s2,#s3,#s9,#s10,#s11
 #  active design      #s4,#s7
 #  active uncertain   #s5,#s6,#s8
-  discrete_design_range = 1		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-	  initial_point      3		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-    lower_bounds       0		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-    upper_bounds       6		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-    descriptors      'd1'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-  discrete_design_set			 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-    integer = 1				 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-	    initial_point = 6		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-      set_values = 2 4 6 8 10		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-      descriptors      'd2'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-    real = 1				 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-      set_values = 1. 3. 5. 7. 9.	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-      descriptors      'd3'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-  uniform_uncertain = 2			 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
-    upper_bounds = 1.4 1.5               #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
-    lower_bounds = 0.2 0.3		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
-    descriptors      'u4' 'u5'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
-  binomial_uncertain = 1		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
-    prob_per_trial    =  0.3		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
-    num_trials        =  10		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
-    descriptors       =  'u6'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8
+  discrete_design_range = 1		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+	  initial_point      3		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+    lower_bounds       0		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+    upper_bounds       6		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+    descriptors      'd1'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+  discrete_design_set			 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+    integer = 1				 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+	    initial_point = 6		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+      set_values = 2 4 6 8 10		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+      descriptors      'd2'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+    real = 1				 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+      set_values = 1. 3. 5. 7. 9.	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+      descriptors      'd3'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s9,#s10,#s11
+  uniform_uncertain = 2			 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
+    upper_bounds = 1.4 1.5               #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
+    lower_bounds = 0.2 0.3		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
+    descriptors      'u4' 'u5'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
+  binomial_uncertain = 1		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
+    prob_per_trial    =  0.3		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
+    num_trials        =  10		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
+    descriptors       =  'u6'		 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9,#s10,#s11
   discrete_state_set
     integer = 1
       initial_state = 2

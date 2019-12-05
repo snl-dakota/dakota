@@ -243,8 +243,8 @@ inline SurrBasedLevelData::~SurrBasedLevelData()
 
 inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
 {
-  trLowerBounds.sizeUninitialized(num_c_vars); // assign -DBL_MAX?
-  trUpperBounds.sizeUninitialized(num_c_vars); // assign +DBL_MAX?
+  trLowerBounds.sizeUninitialized(num_c_vars); // assign -dbl_inf?
+  trUpperBounds.sizeUninitialized(num_c_vars); // assign  dbl_inf?
 }
 
 

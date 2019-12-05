@@ -16,6 +16,13 @@
 
 #include "dakota_data_util.hpp"
 
+namespace Pecos {
+class MultivariateDistribution;
+class ExpansionConfigOptions;
+class BasisConfigOptions;
+class RegressionConfigOptions;
+}
+
 namespace Dakota {
 
 class ProblemDescDB;
@@ -43,8 +50,13 @@ class SharedApproxData
   friend class QMEApproximation;
   friend class GaussProcApproximation;
   friend class VPSApproximation;
-  friend class SurfpackApproximation;
   friend class PecosApproximation;
+#ifdef HAVE_C3
+  friend class C3Approximation;
+#endif // HAVE_C3
+#ifdef HAVE_SURFPACK
+  friend class SurfpackApproximation;
+#endif // HAVE_SURFPACK
 
 public:
 
@@ -123,6 +135,32 @@ public:
   virtual void post_combine();
   /// promote aggregated data sets to active state
   virtual void combined_to_active(bool clear_combined = true);
+
+  /// propagate updates to random variable distribution parameters to a
+  /// polynomial basis
+  virtual void update_basis_distribution_parameters(
+    const Pecos::MultivariateDistribution& mvd);
+
+  /// set ExpansionConfigOptions instance as a group specification
+  virtual void configuration_options(
+    const Pecos::ExpansionConfigOptions& ec_options);
+  /// set BasisConfigOptions instance as a group specification
+  virtual void configuration_options(
+    const Pecos::BasisConfigOptions& bc_options);
+  /// set BasisConfigOptions instance as a group specification
+  virtual void configuration_options(
+    const Pecos::RegressionConfigOptions& rc_options);
+
+  /// assign key identifying a subset of variables that are to be
+  /// treated as random for statistical purposes (e.g. expectation)
+  virtual void random_variables_key(const BitArray& random_vars_key);
+
+  /// assign statistics mode: {ACTIVE,COMBINED}_EXPANSION_STATS
+  virtual void refinement_statistics_type(short stats_type);
+
+  /// return set of Sobol indices that have been requested (e.g., as constrained
+  /// by throttling) and are computable by a (sparse) expansion of limited order
+  virtual const Pecos::BitArrayULongMap& sobol_index_map() const;
 
   //
   //- Heading: Member functions

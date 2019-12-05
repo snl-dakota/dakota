@@ -227,6 +227,9 @@ public:
   /// retrieve the analysis drivers specification for application interfaces
   virtual const StringArray& analysis_drivers() const;
 
+  /// retrieve the analysis components, if available
+  virtual const String2DArray & analysis_components() const;
+
   /// return flag indicating usage of the global evaluation cache
   virtual bool evaluation_cache() const;
   /// return flag indicating usage of the restart file
@@ -234,6 +237,7 @@ public:
 
   /// clean up any interface parameter/response files when aborting
   virtual void file_cleanup() const;
+
 
   //
   //- Heading: Set and Inquire functions
@@ -322,7 +326,7 @@ protected:
 			Response& total_response);
 
   /// form and return the final evaluation ID tag, appending iface ID if needed
-  String final_eval_id_tag(int fn_eval_id);
+  virtual String final_eval_id_tag(int fn_eval_id);
 
   //
   //- Heading: Data
@@ -349,8 +353,6 @@ protected:
   /// iterator master as well as server processors.  Currently, this is
   /// set prior to all invocations of derived_map() for all processors.
   int currEvalId;
-  // TO DO: what's the right behavior for derived_map_asynch()?  This is
-  // secondary, since DirectApplicInterface provides the main use case.
 
   // evaluation counters specific to each interface instance that track
   // counts on the iterator master processor
@@ -404,6 +406,8 @@ protected:
   /// whether to append the interface ID to the prefix during map (default true)
   bool appendIfaceId;
 
+  /// Analysis components for interface types that support them
+  String2DArray analysisComponents;
 private:
 
   //
@@ -417,9 +421,20 @@ private:
   /// evaluation call to make
   int algebraic_function_type(String);
 
+  /// return the next available interface ID for no-ID user methods
+  static String user_auto_id();
+
+  /// return the next available interface ID for on-the-fly methods
+  static String no_spec_id();
+
+
   //
   //- Heading: Data
   //
+
+  /// the last used interface ID number for on-the-fly instantiations
+  /// (increment before each use)
+  static size_t noSpecIdNum;
 
   /// set of variable tags from AMPL stub.col
   StringArray algebraicVarTags;

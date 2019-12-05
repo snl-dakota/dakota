@@ -73,18 +73,26 @@ protected:
   short correction_type();
   void  correction_type(short corr_type);
 
-  /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
-  /// restore state in preparation for next initialization
   bool finalize_mapping();
 
-  /// portion of evaluate() specific to HierarchSurrModel
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short query_distribution_parameter_derivatives() const;
+
+  void check_submodel_compatibility(const Model& sub_model);
+
   void derived_evaluate(const ActiveSet& set);
-  /// portion of evaluate_nowait() specific to HierarchSurrModel
   void derived_evaluate_nowait(const ActiveSet& set);
-  /// portion of synchronize() specific to HierarchSurrModel
   const IntResponseMap& derived_synchronize();
-  /// portion of synchronize_nowait() specific to HierarchSurrModel
   const IntResponseMap& derived_synchronize_nowait();
 
   /// return the active low fidelity model
@@ -297,15 +305,49 @@ inline HierarchSurrModel::~HierarchSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+inline void HierarchSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to actualModel:
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,
+					      dr_index1, c_target2, di_target2,
+					      ds_target2, dr_target2);
+}
+
+
+inline const SizetArray& HierarchSurrModel::nested_acv1_indices() const
+{ return orderedModels[truthModelKey.front()].nested_acv1_indices(); }
+
+
+inline const ShortArray& HierarchSurrModel::nested_acv2_targets() const
+{ return orderedModels[truthModelKey.front()].nested_acv2_targets(); }
+
+
+inline short HierarchSurrModel::query_distribution_parameter_derivatives() const
+{
+  return orderedModels[truthModelKey.front()].
+    query_distribution_parameter_derivatives();
+}
+
+
 inline size_t HierarchSurrModel::qoi() const
 {
   switch (responseMode) {
-  // Note: resize_response() aggregaates {truth,surrogate}_model().num_fns(),
+  // Note: resize_response() aggregates {truth,surrogate}_model().num_fns(),
   //       such that code below is a bit more general that currResp num_fns/2
   case AGGREGATED_MODELS:
     return orderedModels[truthModelKey.front()].qoi();  break;
   default:
-    return response_size();                               break;
+    return response_size();                             break;
   }
 }
 
@@ -479,7 +521,8 @@ inline void HierarchSurrModel::resize_from_subordinate_model(size_t depth)
 inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
 {
   switch (responseMode) {
-  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+  case UNCORRECTED_SURROGATE:      // LF only
+  case AUTO_CORRECTED_SURROGATE: { // LF is active
     Model& lf_model = surrogate_model();
     // bottom-up data flow, so recurse first
     if (depth == std::numeric_limits<size_t>::max())
@@ -490,7 +533,8 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
     update_from_model(lf_model);
     break;
   }
-  case BYPASS_SURROGATE: {
+  case BYPASS_SURROGATE:   case NO_SURROGATE:        // HF only
+  case AGGREGATED_MODELS:  case MODEL_DISCREPANCY: { // prefer truth model
     Model& hf_model = truth_model();
     // bottom-up data flow, so recurse first
     if (depth == std::numeric_limits<size_t>::max())
@@ -501,12 +545,6 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
     update_from_model(hf_model);
     break;
   }
-  default:
-    Cerr << "Warning: an aggregation mode is active in HierarchSurrModel. "
-	 << "Cannot update from a\n         single model in update_from_"
-	 << "subordinate_model()" << std::endl;
-    //abort_handler(MODEL_ERROR);
-    break;
   }
 }
 

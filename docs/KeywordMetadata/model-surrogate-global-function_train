@@ -1,0 +1,39 @@
+Blurb::
+Global surrogate model based on functional tensor train decomposition
+
+Description::
+Tensor train decompositions are approximations that exploit low rank structure
+in an input-output mapping.  In the current implementation, orthogonal
+polynomial basis functions are employed as the basis functions, although the
+C3 library will enable additional options in the future.
+
+<b> Usage Tips </b>
+
+This new capability is under active development.  It is not included
+in the Dakota build by default, as some C3 library dependencies can
+induce small differences in our regression suite.
+
+This capability is also being used as a prototype to explore
+model-based versus method-based specification of stochastic
+expansions.  While the model specification is stand-alone, it
+currently requires a corresponding method specification to exercise
+the model, which can be either a \c function_train_uq method
+specification or more generic UQ strategy such as a \c sampling
+method.  The intent is to migrate function train, polynomial chaos,
+and stochastic collocation toward model-only specifications that can
+then be employed in any surrogate/emulator context.
+
+Topics::
+
+Examples::
+\verbatim
+model,
+	id_model = 'FT'
+	surrogate global function_train
+	  max_order = 5
+	  start_rank = 2  kick_rank = 2  max_rank = 10
+	  adapt_rank
+	dace_method_pointer = 'SAMPLING'
+\endverbatim
+
+See_Also::	method-function_train_uq

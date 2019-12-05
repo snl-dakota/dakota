@@ -863,89 +863,127 @@ void SharedVariablesDataRep::initialize_all_types()
 
 void SharedVariablesDataRep::initialize_all_ids()
 {
-  size_t i, id, acv_cntr = 0, adiv_cntr = 0, adrv_cntr = 0,
+  size_t i = 0, id = 1, // identifiers are 1-based (indices are 0-based)
+    // counters for id insertion
+    acv_cntr = 0, adiv_cntr = 0, adsv_cntr = 0, adrv_cntr = 0,
+    // counters for relax BitArrays
+    relax_int_cntr = 0, relax_real_cntr = 0,
+
     num_cdv   = variablesCompsTotals[TOTAL_CDV],
     num_ddiv  = variablesCompsTotals[TOTAL_DDIV],
     num_ddsv  = variablesCompsTotals[TOTAL_DDSV],
     num_ddrv  = variablesCompsTotals[TOTAL_DDRV],
+
     num_cauv  = variablesCompsTotals[TOTAL_CAUV],
     num_dauiv = variablesCompsTotals[TOTAL_DAUIV],
     num_dausv = variablesCompsTotals[TOTAL_DAUSV],
     num_daurv = variablesCompsTotals[TOTAL_DAURV],
+
     num_ceuv  = variablesCompsTotals[TOTAL_CEUV],
     num_deuiv = variablesCompsTotals[TOTAL_DEUIV],
     num_deusv = variablesCompsTotals[TOTAL_DEUSV],
     num_deurv = variablesCompsTotals[TOTAL_DEURV],
+
     num_csv   = variablesCompsTotals[TOTAL_CSV],
     num_dsiv  = variablesCompsTotals[TOTAL_DSIV],
     num_dssv  = variablesCompsTotals[TOTAL_DSSV],
     num_dsrv  = variablesCompsTotals[TOTAL_DSRV],
-    num_acv   = num_cdv + num_cauv + num_ceuv + num_csv;
+
+    num_acv    = num_cdv  + num_cauv  + num_ceuv  + num_csv,
+    num_adiv   = num_ddiv + num_dauiv + num_deuiv + num_dsiv,
+    num_adsv   = num_ddsv + num_dausv + num_deusv + num_dssv,
+    num_adrv   = num_ddrv + num_daurv + num_deurv + num_dsrv;
 
   // aggregateBitArrays defined over all discrete int,real
   bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
-  if (relax) // include discrete design/uncertain/state
+  if (relax) {
+    // include relaxed discrete int/real design/uncertain/state in continuous
     num_acv += allRelaxedDiscreteInt.count() + allRelaxedDiscreteReal.count();
+    // omit relaxed discrete int/real design/uncertain/state from discrete counts
+    num_adiv -= allRelaxedDiscreteInt.count();
+    num_adrv -= allRelaxedDiscreteReal.count();
+  }
+
   allContinuousIds.resize(boost::extents[num_acv]);
+  allDiscreteIntIds.resize(boost::extents[num_adiv]);
+  allDiscreteStringIds.resize(boost::extents[num_adsv]);
+  allDiscreteRealIds.resize(boost::extents[num_adrv]);
 
   // DESIGN
-  id = 1; // identifiers are 1-based (indices are 0-based)
-  for (i=0; i<num_cdv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_ddiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_ddsv;
-    for (i=0; i<num_ddrv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
-  else
-    id += num_ddiv + num_ddsv + num_ddrv;
+  for (i=0; i<num_cdv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_ddiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_ddsv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_ddrv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 
   // ALEATORY UNCERTAIN
-  for (i=0; i<num_cauv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_dauiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_dausv;
-    for (i=0; i<num_daurv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
-  else
-    id += num_dauiv + num_dausv + num_daurv;
+  for (i=0; i<num_cauv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_dauiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_dausv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_daurv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 
   // EPISTEMIC UNCERTAIN
-  for (i=0; i<num_ceuv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_deuiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_deusv;
-    for (i=0; i<num_deurv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
-  else
-    id += num_deuiv + num_deusv + num_deurv;
+  for (i=0; i<num_ceuv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_deuiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_deusv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_deurv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 
   // STATE
-  for (i=0; i<num_csv; ++i, ++acv_cntr, ++id)
-    allContinuousIds[acv_cntr] = id;
-  if (relax) {
-    for (i=0; i<num_dsiv; ++i, ++adiv_cntr, ++id)
-      if (allRelaxedDiscreteInt[adiv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-    id += num_dssv;
-    for (i=0; i<num_dsrv; ++i, ++adrv_cntr, ++id)
-      if (allRelaxedDiscreteReal[adrv_cntr])
-	allContinuousIds[acv_cntr++] = id;
-  }
+  for (i=0; i<num_csv; ++i, ++id)
+    allContinuousIds[acv_cntr++] = id;
+
+  for (i=0; i<num_dsiv; ++i, ++relax_int_cntr, ++id)
+    if (allRelaxedDiscreteInt.any() && allRelaxedDiscreteInt[relax_int_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteIntIds[adiv_cntr++] = id;
+
+  for (i=0; i<num_dssv; ++i, ++id)
+      allDiscreteStringIds[adsv_cntr++] = id;
+
+  for (i=0; i<num_dsrv; ++i, ++relax_real_cntr, ++id)
+    if (allRelaxedDiscreteReal.any() && allRelaxedDiscreteReal[relax_real_cntr])
+      allContinuousIds[acv_cntr++] = id;
+    else
+      allDiscreteRealIds[adrv_cntr++] = id;
 }
 
 
@@ -1385,6 +1423,885 @@ void SharedVariablesDataRep::copy_rep(SharedVariablesDataRep* svd_rep)
 
   allRelaxedDiscreteInt  = svd_rep->allRelaxedDiscreteInt;
   allRelaxedDiscreteReal = svd_rep->allRelaxedDiscreteReal;
+}
+
+
+size_t SharedVariablesDataRep::
+cv_index_to_all_index(size_t cv_index,
+		      bool cdv, bool cauv, bool ceuv, bool csv) const
+{
+  // *** TO DO: a mapping from CV to spec order must account for individual
+  //            var relaxation indices, not just the aggregate counts
+
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (cdv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  else
+    offset += num_cv;
+  offset += num_div + num_dsv + num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  else
+    offset += num_cv;
+  offset += num_div + num_dsv + num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  else
+    offset += num_cv;
+  offset += num_div + num_dsv + num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  //else
+  //  offset += num_cv;
+  //offset += num_div + num_dsv + num_drv;
+
+  Cerr << "Error: CV index out of range in SharedVariablesDataRep::"
+       << "cv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesDataRep::
+div_index_to_all_index(size_t div_index,
+		       bool ddv, bool dauv, bool deuv, bool dsv) const
+{
+  // *** TO DO: a mapping from DIV to spec order must account for individual
+  //            var relaxation indices, not just the aggregate counts
+
+  size_t num_cv, num_div, num_dsv, num_drv;
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t bound = 0, offset = num_cv;
+  if (ddv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+  }
+  else
+    offset += num_div;
+  offset += num_dsv + num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv;
+  if (dauv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+  }
+  else
+    offset += num_div;
+  offset += num_dsv + num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv;
+  if (deuv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+  }
+  else
+    offset += num_div;
+  offset += num_dsv + num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv;
+  if (dsv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+  }
+  //else
+  //  offset += num_div;
+  //offset += num_dsv + num_drv;
+
+  Cerr << "Error: DIV index out of range in SharedVariablesDataRep::"
+       << "div_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesDataRep::
+dsv_index_to_all_index(size_t dsv_index,
+		       bool ddv, bool dauv, bool deuv, bool dsv) const
+{
+  // *** TO DO: a mapping from DSV to spec order must account for individual
+  //            var relaxation indices, not just the aggregate counts
+
+  size_t num_cv, num_div, num_dsv, num_drv;
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t bound = 0, offset = num_cv + num_div;
+  if (ddv) {
+    bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+  }
+  else
+    offset += num_dsv;
+  offset += num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv + num_div;
+  if (dauv) {
+    bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+  }
+  else
+    offset += num_dsv;
+  offset += num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv + num_div;
+  if (deuv) {
+    bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+  }
+  else
+    offset += num_dsv;
+  offset += num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv + num_div;
+  if (dsv) {
+    bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+  }
+  //else
+  //  offset += num_dsv;
+  //offset += num_drv;
+
+  Cerr << "Error: DSV index out of range in SharedVariablesDataRep::"
+       << "dsv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesDataRep::
+drv_index_to_all_index(size_t drv_index,
+		       bool ddv, bool dauv, bool deuv, bool dsv) const
+{
+  // *** TO DO: a mapping from DRV to spec order must account for individual
+  //            var relaxation indices, not just the aggregate counts
+
+  size_t num_cv, num_div, num_dsv, num_drv;
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t bound = 0, offset = num_cv + num_div + num_dsv;
+  if (ddv) {
+    bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+  else
+    offset += num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv + num_div + num_dsv;
+  if (dauv) {
+    bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+  else
+    offset += num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv + num_div + num_dsv;
+  if (deuv) {
+    bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+  else
+    offset += num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  offset += num_cv + num_div + num_dsv;
+  if (dsv) {
+    bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+  //else
+  //  offset += num_drv;
+
+  Cerr << "Error: DRV index out of range in SharedVariablesDataRep::"
+       << "drv_index_to_all_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+BitArray SharedVariablesDataRep::
+cv_to_all_mask(bool cdv, bool cauv, bool ceuv, bool csv) const
+{
+  size_t num_cv, num_div, num_dsv, num_drv;
+  all_counts(num_cv, num_div, num_dsv, num_drv);
+  BitArray all_mask(num_cv + num_div + num_dsv + num_drv); // init bits to false
+
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t i, all_index = 0;
+  if (cdv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_cv;
+  all_index += num_div + num_dsv + num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_cv;
+  all_index += num_div + num_dsv + num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_cv;
+  all_index += num_div + num_dsv + num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  //else
+  //  all_index += num_cv;
+  //all_index += num_div + num_dsv + num_drv;
+
+  return all_mask;
+}
+
+
+BitArray SharedVariablesDataRep::
+div_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
+{
+  size_t num_cv, num_div, num_dsv, num_drv;
+  all_counts(num_cv, num_div, num_dsv, num_drv);
+  BitArray all_mask(num_cv + num_div + num_dsv + num_drv); // init bits to false
+
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t i, all_index = num_cv;
+  if (ddv)
+    for (i=0; i<num_div; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_div;
+  all_index += num_dsv + num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv;
+  if (dauv)
+    for (i=0; i<num_div; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_div;
+  all_index += num_dsv + num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv;
+  if (deuv)
+    for (i=0; i<num_div; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_div;
+  all_index += num_dsv + num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv;
+  if (dsv)
+    for (i=0; i<num_div; ++i, ++all_index)
+      all_mask.set(all_index);
+  //else
+  //  all_index += num_div;
+  //all_index += num_dsv + num_drv;
+
+  return all_mask;
+}
+
+
+BitArray SharedVariablesDataRep::
+dsv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
+{
+  size_t num_cv, num_div, num_dsv, num_drv;
+  all_counts(num_cv, num_div, num_dsv, num_drv);
+  BitArray all_mask(num_cv + num_div + num_dsv + num_drv); // init bits to false
+
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t i, all_index = num_cv + num_div;
+  if (ddv)
+    for (i=0; i<num_dsv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_dsv;
+  all_index += num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv + num_div;
+  if (dauv)
+    for (i=0; i<num_dsv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_dsv;
+  all_index += num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv + num_div;
+  if (deuv)
+    for (i=0; i<num_dsv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_dsv;
+  all_index += num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv + num_div;
+  if (dsv)
+    for (i=0; i<num_dsv; ++i, ++all_index)
+      all_mask.set(all_index);
+  //else
+  //  all_index += num_dsv;
+  //all_index += num_drv;
+
+  return all_mask;
+}
+
+
+BitArray SharedVariablesDataRep::
+drv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const
+{
+  size_t num_cv, num_div, num_dsv, num_drv;
+  all_counts(num_cv, num_div, num_dsv, num_drv);
+  BitArray all_mask(num_cv + num_div + num_dsv + num_drv); // init bits to false
+
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t i, all_index = num_cv + num_div + num_dsv;
+  if (ddv)
+    for (i=0; i<num_drv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv + num_div + num_dsv;
+  if (dauv)
+    for (i=0; i<num_drv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv + num_div + num_dsv;
+  if (deuv)
+    for (i=0; i<num_drv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  all_index += num_cv + num_div + num_dsv;
+  if (dsv)
+    for (i=0; i<num_drv; ++i, ++all_index)
+      all_mask.set(all_index);
+  //else
+  //  all_index += num_drv;
+
+  return all_mask;
+}
+
+
+size_t SharedVariablesData::cv_index_to_active_index(size_t cv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (cdv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  if (ddv)
+    offset += num_div + num_dsv + num_drv;
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  if (dauv)
+    offset += num_div + num_dsv + num_drv;
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+  if (deuv)
+    offset += num_div + num_dsv + num_drv;
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv) {
+    bound += num_cv;
+    if (cv_index < bound)
+      return offset + cv_index;
+  }
+
+  Cerr << "Error: CV index out of range in SharedVariablesData::"
+       << "cv_index_to_active_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::div_index_to_active_index(size_t div_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (cdv)
+    offset += num_cv;
+  if (ddv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+    offset += num_dsv + num_drv;
+  }
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv)
+    offset += num_cv;
+  if (dauv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+    offset += num_dsv + num_drv;
+  }
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv)
+    offset += num_cv;
+  if (deuv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+    offset += num_dsv + num_drv;
+  }
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv)
+    offset += num_cv;
+  if (dsv) {
+    bound += num_div;
+    if (div_index < bound)
+      return offset + div_index;
+    //offset += num_dsv + num_drv;
+  }
+
+  Cerr << "Error: DIV index out of range in SharedVariablesData::"
+       << "div_index_to_active_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::dsv_index_to_active_index(size_t dsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (cdv)
+    offset += num_cv;
+  if (ddv) {
+    offset += num_div;  bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+    offset += num_drv;
+  }
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv)
+    offset += num_cv;
+  if (dauv) {
+    offset += num_div;  bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+    offset += num_drv;
+  }
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv)
+    offset += num_cv;
+  if (deuv) {
+    offset += num_div;  bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+    offset += num_drv;
+  }
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv)
+    offset += num_cv;
+  if (dsv) {
+    offset += num_div;  bound += num_dsv;
+    if (dsv_index < bound)
+      return offset + dsv_index;
+    //offset += num_drv;
+  }
+
+  Cerr << "Error: DSV index out of range in SharedVariablesData::"
+       << "dsv_index_to_active_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::drv_index_to_active_index(size_t drv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (cdv)
+    offset += num_cv;
+  if (ddv) {
+    offset += num_div + num_dsv;  bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv)
+    offset += num_cv;
+  if (dauv) {
+    offset += num_div + num_dsv;  bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv)
+    offset += num_cv;
+  if (deuv) {
+    offset += num_div + num_dsv;  bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv)
+    offset += num_cv;
+  if (dsv) {
+    offset += num_div + num_dsv;  bound += num_drv;
+    if (drv_index < bound)
+      return offset + drv_index;
+  }
+
+  Cerr << "Error: DRV index out of range in SharedVariablesData::"
+       << "drv_index_to_active_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::ccv_index_to_acv_index(size_t ccv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (cdv) {
+    bound += num_cv;
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += num_cv;
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (cauv) {
+    bound += num_cv;
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += num_cv;
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (ceuv) {
+    bound += num_cv;
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  else
+    offset += num_cv;
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (csv) {
+    bound += num_cv;
+    if (ccv_index < bound)
+      return offset + ccv_index;
+  }
+  //else
+  //  offset += num_cv;
+
+  Cerr << "Error: CCV index out of range in SharedVariablesData::"
+       << "ccv_index_to_acv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::cdiv_index_to_adiv_index(size_t cdiv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t offset = 0, bound = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (ddv) {
+    bound += num_div;
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += num_div;
+
+  if (dauv) {
+    bound += num_div;
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += num_div;
+
+  if (deuv) {
+    bound += num_div;
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  else
+    offset += num_div;
+
+  if (dsv) {
+    bound += num_div;
+    if (cdiv_index < bound)
+      return offset + cdiv_index;
+  }
+  //else
+  //  offset += num_div;
+
+  Cerr << "Error: CDIV index out of range in SharedVariablesData::"
+       << "cdiv_index_to_adiv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::cdsv_index_to_adsv_index(size_t cdsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t bound = 0, offset = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (ddv) {
+    bound += num_dsv;
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += num_dsv;
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (dauv) {
+    bound += num_dsv;
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += num_dsv;
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (deuv) {
+    bound += num_dsv;
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+  else
+    offset += num_dsv;
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (dsv) {
+    bound += num_dsv;
+    if (cdsv_index < bound)
+      return offset + cdsv_index;
+  }
+
+  Cerr << "Error: CDSV index out of range in SharedVariablesData::"
+       << "cdsv_index_to_adsv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+size_t SharedVariablesData::cdrv_index_to_adrv_index(size_t cdrv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  // This mapping is insensitive to var relaxation ADIV/ADRV -> ACV, as
+  // source+target variable set orderings are impacted the same way
+
+  size_t bound = 0, offset = 0, num_cv, num_div, num_dsv, num_drv;
+  svdRep->design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  if (ddv) {
+    bound += num_drv;
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += num_drv;
+
+  svdRep->aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (dauv) {
+    bound += num_drv;
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += num_drv;
+
+  svdRep->epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  if (deuv) {
+    bound += num_drv;
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+  else
+    offset += num_drv;
+
+  svdRep->state_counts(num_cv, num_div, num_dsv, num_drv);
+  if (dsv) {
+    bound += num_drv;
+    if (cdrv_index < bound)
+      return offset + cdrv_index;
+  }
+
+  Cerr << "Error: CDRV index out of range in SharedVariablesData::"
+       << "cdrv_index_to_adrv_index()" << std::endl;
+  abort_handler(VARS_ERROR);
+  return _NPOS;
+}
+
+
+void SharedVariablesData::assemble_all_labels(StringArray& all_labels) const
+{
+  const StringMultiArray&  acv_labels = svdRep->allContinuousLabels;
+  const StringMultiArray& adiv_labels = svdRep->allDiscreteIntLabels;
+  const StringMultiArray& adsv_labels = svdRep->allDiscreteStringLabels;
+  const StringMultiArray& adrv_labels = svdRep->allDiscreteRealLabels;
+
+  size_t num_av =  acv_labels.size() + adiv_labels.size()
+                + adsv_labels.size() + adrv_labels.size();
+  all_labels.resize(num_av);
+
+  size_t num_cv, num_div, num_dsv, num_drv, cv_start = 0, div_start = 0,
+    dsv_start = 0, drv_start = 0, all_start = 0;
+  design_counts(num_cv, num_div, num_dsv, num_drv); // includes relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;    cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  all_start += num_drv;  drv_start += num_drv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;    cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  all_start += num_drv;  drv_start += num_drv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);// w/ relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;    cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  all_start += num_drv;  drv_start += num_drv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);              // w/ relaxation
+  copy_data_partial(acv_labels,   cv_start, all_labels, all_start, num_cv);
+  all_start += num_cv;   // cv_start += num_cv;
+  copy_data_partial(adiv_labels, div_start, all_labels, all_start, num_div);
+  all_start += num_div;  //div_start += num_div;
+  copy_data_partial(adsv_labels, dsv_start, all_labels, all_start, num_dsv);
+  all_start += num_dsv;  //dsv_start += num_dsv;
+  copy_data_partial(adrv_labels, drv_start, all_labels, all_start, num_drv);
+  //all_start += num_drv;  drv_start += num_drv;
 }
 
 

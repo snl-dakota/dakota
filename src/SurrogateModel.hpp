@@ -45,7 +45,8 @@ protected:
   SurrogateModel(ProblemDescDB& problem_db);
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-		 const SharedVariablesData& svd, const SharedResponseData& srd,
+		 const SharedVariablesData& svd, bool share_svd,
+		 const SharedResponseData&  srd, bool share_srd,
 		 const ActiveSet& set, short corr_type, short output_level);
   /// destructor
   ~SurrogateModel();
@@ -54,10 +55,23 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
-  /// return mappingInitialized
-  bool mapping_initialized() const;
+  Pecos::ProbabilityTransformation& probability_transformation();
+
+  void activate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives();
+
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
+
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
 
   /// return truth_model()
   Model& subordinate_model();
@@ -89,6 +103,11 @@ protected:
   virtual void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 			 ShortArray& approx_asv, bool build_flag);
 
+  /// verify compatibility between SurrogateModel attributes and
+  /// attributes of the submodel (DataFitSurrModel::actualModel or
+  /// HierarchSurrModel::highFidelityModel)
+  virtual void check_submodel_compatibility(const Model& sub_model);
+
   //
   //- Heading: Member functions
   //
@@ -98,10 +117,6 @@ protected:
   /// return the level index from active high fidelity model key
   unsigned short truth_level_index() const;
 
-  /// verify compatibility between SurrogateModel attributes and
-  /// attributes of the submodel (DataFitSurrModel::actualModel or
-  /// HierarchSurrModel::highFidelityModel)
-  void check_submodel_compatibility(const Model& sub_model);
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
 
@@ -223,11 +238,6 @@ private:
   /// copy of the truth model constraints object used to simplify conversion 
   /// among differing variable views in force_rebuild()
   Constraints truthModelCons;
-
-  /// track use of initialize_mapping() and finalize_mapping() due to
-  /// potential redundancy between IteratorScheduler::run_iterator()
-  /// and {Analyzer,Minimizer}::initialize_run()
-  bool mappingInitialized;
 };
 
 
@@ -235,22 +245,42 @@ inline SurrogateModel::~SurrogateModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
-inline bool SurrogateModel::initialize_mapping(ParLevLIter pl_iter)
-{
-  mappingInitialized = true;
-  return Model::initialize_mapping(pl_iter);
-}
+inline Pecos::ProbabilityTransformation& SurrogateModel::
+probability_transformation()
+{ return truth_model().probability_transformation(); } // forward along
 
 
-inline bool SurrogateModel::finalize_mapping()
-{
-  mappingInitialized = false;
-  return Model::finalize_mapping();
-}
+inline void SurrogateModel::activate_distribution_parameter_derivatives()
+{ truth_model().activate_distribution_parameter_derivatives(); }
 
 
-inline bool SurrogateModel::mapping_initialized() const
-{ return mappingInitialized; }
+inline void SurrogateModel::deactivate_distribution_parameter_derivatives()
+{ truth_model().deactivate_distribution_parameter_derivatives(); }
+
+
+inline void SurrogateModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+
+
+inline void SurrogateModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+
+
+inline void SurrogateModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+
+
+inline void SurrogateModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+		  const RealVector& fn_grad_x)
+{ truth_model().trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
 
 
 inline Model& SurrogateModel::subordinate_model()

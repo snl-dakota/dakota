@@ -17,6 +17,7 @@
 #include "NonDCubature.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "MarginalsCorrDistribution.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDCubature.cpp,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
@@ -33,18 +34,15 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
   cubIntOrderRef(probDescDB.get_ushort("method.nond.cubature_integrand"))
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
+  numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
+  cubDriver    = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
 
-  // natafTransform available: initialize_random_variables() called in
-  // NonDIntegration ctor
-  const Pecos::ShortArray& u_types = natafTransform.u_types();
-  check_variables(natafTransform.x_random_variables());
-  check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
+  // additional initializations in NonDIntegration ctor
+  Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
+  assign_rule(mv_dist); // assign cubIntRule
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
-  cubDriver->initialize_grid(u_types, cubIntOrderRef, cubIntRule);
-  //cubDriver->precompute_rules(); // not implemented
+  cubDriver->initialize_grid(mv_dist, cubIntOrderRef, cubIntRule);
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 
@@ -52,20 +50,15 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical cubature points. */
 NonDCubature::
-NonDCubature(Model& model, const Pecos::ShortArray& u_types,
-	     unsigned short cub_int_order): 
+NonDCubature(Model& model, unsigned short cub_int_order): 
   NonDIntegration(CUBATURE_INTEGRATION, model), cubIntOrderRef(cub_int_order)
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
+  numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
+  cubDriver    = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
   cubDriver->integrand_order(cubIntOrderRef);
 
-  // local natafTransform not yet updated: x_types would have to be passed in
-  // from NonDExpansion if check_variables() needed to be called here.  Instead,
-  // it is deferred until run time in NonDIntegration::core_run().
-  //check_variables(x_ran_vars);
-  check_integration(u_types, iteratedModel.aleatory_distribution_parameters());
+  assign_rule(model.multivariate_distribution());
 }
 
 
@@ -73,7 +66,6 @@ void NonDCubature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   cubDriver->initialize_grid(poly_basis);
-  //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 
@@ -81,52 +73,23 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 NonDCubature::~NonDCubature()
 { }
 
-
+  
 void NonDCubature::
-check_integration(const Pecos::ShortArray& u_types,
-		  const Pecos::AleatoryDistParams& adp)
+assign_rule(const Pecos::MultivariateDistribution& mvd)
 {
-  bool err_flag = false;
+  const ShortArray& rv_types = mvd.random_variable_types();
+  short rv_type0 = rv_types[0];  size_t i, num_rv = rv_types.size();
+  for (size_t i=1; i<num_rv; ++i)
+    if (rv_types[i] != rv_type0) {
+      Cerr << "Error: homogeneity required in random variable types for "
+	   << "NonDCubature integration." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
 
-  // For parameterized polynomials (including numerically-generated), check
-  // u_types and dp for isotropy; for other polynomials, check u_types only.
-  short type0 = u_types[0];
-  switch (type0) {
-  case Pecos::STD_BETA: { // verify isotropy in u_type and dp
-    const RealVector& beuv_alphas = adp.beta_alphas();
-    const RealVector& beuv_betas  = adp.beta_betas();
-    const Real& alpha0 = beuv_alphas[0]; const Real& beta0 = beuv_betas[0];
-    for (size_t i=1; i<numContinuousVars; ++i)
-      if (u_types[i]    != type0 || beuv_alphas[i] != alpha0 ||
-	  beuv_betas[i] != beta0)
-	err_flag = true;
-    break;
-  }
-  case Pecos::STD_GAMMA: { // verify isotropy in u_type and dp
-    const RealVector& gauv_alphas = adp.gamma_alphas();
-    const Real& alpha0 = gauv_alphas[0];
-    for (size_t i=1; i<numContinuousVars; ++i)
-      if (u_types[i] != type0 || gauv_alphas[i] != alpha0)
-	err_flag = true;
-    break;
-  }
+  // Note: homogeneity of distribution parameters is verified at run time
+  // in Pecos::CubatureDriver::initialize_grid_parameters()
 
-  // TO DO: Golub-Welsch parameter checks!
-
-  default: // no dp; verify isotropy in u_type only
-    for (size_t i=1; i<numContinuousVars; ++i)
-      if (u_types[i] != type0)
-	err_flag = true;
-    break;
-  }
-
-  if (err_flag) {
-    Cerr << "Error: homogeneous u-space types required for NonDCubature "
-	 << "integration." << std::endl;
-    abort_handler(-1);
-  }
-
-  switch (type0) {
+  switch (rv_type0) {
   case Pecos::STD_NORMAL:
     cubIntRule = Pecos::GAUSS_HERMITE;      break;
   case Pecos::STD_UNIFORM:
@@ -146,9 +109,11 @@ check_integration(const Pecos::ShortArray& u_types,
 void NonDCubature::get_parameter_sets(Model& model)
 {
   // capture any distribution parameter insertions
+  Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
   if (!numIntegrations || subIteratorFlag)
-    cubDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.aleatory_distribution_parameters());
+    cubDriver->initialize_grid_parameters(mv_dist);
+
+  //cubDriver->precompute_rules(); // not implemented
 
   size_t i, j, num_cub_points = cubDriver->grid_size();
   Cout << "\nCubature integrand order = " << cubDriver->integrand_order()
@@ -156,7 +121,6 @@ void NonDCubature::get_parameter_sets(Model& model)
 
   // Compute the cubature grid and store in allSamples
   cubDriver->compute_grid(allSamples);
-
   if (outputLevel > NORMAL_OUTPUT)
     print_points_weights("dakota_cubature_tabular.dat");
 }

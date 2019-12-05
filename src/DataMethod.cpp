@@ -146,15 +146,14 @@ DataMethodRep::DataMethodRep():
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
   posteriorStatsKL(false), posteriorStatsMutual(false),
-  posteriorStatsKDE(false), modelEvidence(false),
-  modelEvidMC(false), modelEvidLaplace(false),
+  posteriorStatsKDE(false), chainDiagnostics(false), chainDiagnosticsCI(false),
+  modelEvidence(false), modelEvidMC(false), modelEvidLaplace(false),
   preSolveMethod(SUBMETHOD_DEFAULT), priorPropCovMult(1.0),
   proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
   burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
-  //numPredConfigs (BMA TODO this is not initialized...)
-  importPredConfigFormat(TABULAR_ANNOTATED),
+  numPredConfigs(0), importPredConfigFormat(TABULAR_ANNOTATED),
   modelDiscrepancyType("global_kriging"),
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
@@ -169,7 +168,7 @@ DataMethodRep::DataMethodRep():
   // Wasabi
   numPushforwardSamples(10000),
   // Parameter Study
-  numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
+  numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
   refinementRate(2.),
   // Point import/export files
@@ -299,6 +298,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
+    << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC 
     << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod
@@ -453,6 +453,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
+    >> chainDiagnostics >> chainDiagnosticsCI
     >> modelEvidence >> modelEvidLaplace >> modelEvidMC 
     >> preSolveMethod >> proposalCovType >> priorPropCovMult
     >> proposalCovUpdatePeriod
@@ -607,6 +608,7 @@ void DataMethodRep::write(std::ostream& s) const
     << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
+    << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC 
     << preSolveMethod << proposalCovType << priorPropCovMult
     << proposalCovUpdatePeriod

@@ -11,12 +11,12 @@
 //- Owner:       Mike Eldred, Sandia National Laboratories
 
 #include "NonDMultilevelPolynomialChaos.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSparseGrid.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "dakota_data_io.hpp"
@@ -47,12 +47,12 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -65,7 +65,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -154,9 +155,10 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
@@ -184,28 +186,34 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
 			      short exp_coeffs_approach,
 			      const UShortArray& num_int_seq,
 			      const RealVector& dim_pref, short u_space_type,
-			      bool piecewise_basis, bool use_derivs):
+			      short refine_type, short refine_control,
+			      short covar_control, short ml_alloc_control,
+			      short ml_discrep, short rule_nest,
+			      short rule_growth, bool piecewise_basis,
+			      bool use_derivs):
   NonDPolynomialChaos(/*method_name*/MULTIFIDELITY_POLYNOMIAL_CHAOS, model,
-		      exp_coeffs_approach, dim_pref, u_space_type,
-		      piecewise_basis, use_derivs), 
-  mlmfAllocControl(DEFAULT_MLMF_CONTROL), sequenceIndex(0),
-  kappaEstimatorRate(2.), gammaEstimatorScale(1.)
+		      exp_coeffs_approach, dim_pref, u_space_type, refine_type,
+		      refine_control, covar_control, ml_discrep, rule_nest,
+		      rule_growth, piecewise_basis, use_derivs), 
+  mlmfAllocControl(ml_alloc_control), sequenceIndex(0), kappaEstimatorRate(2.),
+  gammaEstimatorScale(1.)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -237,10 +245,10 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   UShortArray exp_orders; String pt_reuse; // empty for integration approaches
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                             // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
+  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
@@ -260,32 +268,38 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      const SizetArray& colloc_pts_seq,
 			      Real colloc_ratio, const SizetArray& pilot,
 			      int seed, short u_space_type,
+			      short refine_type, short refine_control,
+			      short covar_control, short ml_alloc_control,
+			      short ml_discrep,
+			      //short rule_nest, short rule_growth,
 			      bool piecewise_basis, bool use_derivs,
 			      bool cv_flag, const String& import_build_pts_file,
 			      unsigned short import_build_format,
 			      bool import_build_active_only):
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
-		      u_space_type, piecewise_basis, use_derivs, colloc_ratio,
-		      seed, cv_flag), 
-  mlmfAllocControl(DEFAULT_MLMF_CONTROL), expOrderSeqSpec(exp_order_seq),
+		      u_space_type, refine_type, refine_control, covar_control,
+		      ml_discrep, //rule_nest, rule_growth,
+		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
+  mlmfAllocControl(ml_alloc_control), expOrderSeqSpec(exp_order_seq),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), pilotSamples(pilot)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -318,11 +332,11 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
   if (!import_build_pts_file.empty()) pt_reuse = "all";
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                             // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
+  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse, import_build_pts_file, import_build_format,
@@ -406,18 +420,19 @@ bool NonDMultilevelPolynomialChaos::resize()
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize(uSpaceType);
+  //initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    uSpaceType), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -499,8 +514,10 @@ bool NonDMultilevelPolynomialChaos::resize()
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7);
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Resize: support approx Hessians.
+  ShortArray asv(g_u_model.qoi(), 7);
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
@@ -602,7 +619,7 @@ void NonDMultilevelPolynomialChaos::core_run()
   // clean up for re-entrancy of ML PCE
   uSpaceModel.clear_inactive();
 
-  ++numUncertainQuant;
+  finalize_expansion();
 }
 
 
@@ -615,8 +632,8 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
-    else if (refineControl)
-      nond_quad->reset();   // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_quad->reset();   // reset refinement, capture dist param updates
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -625,8 +642,8 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
-    else if (refineControl)
-      nond_sparse->reset(); // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_sparse->reset(); // reset refinement, capture dist param updates
     break;
   }
   case Pecos::CUBATURE:
@@ -678,8 +695,8 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     }
-    else if (refineControl)
-      nond_quad->reset();   // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_quad->reset();   // reset refinement, capture dist param updates
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -690,8 +707,8 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     }
-    else if (refineControl)
-      nond_sparse->reset(); // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_sparse->reset(); // reset refinement, capture dist param updates
     break;
   }
   case Pecos::CUBATURE:

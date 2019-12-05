@@ -341,7 +341,9 @@ short Variables::method_map(short view_spec, bool relaxed) const
   default:
     Cerr << "Error: unsupported view selection in Variables::method_map()"
 	 << std::endl;
-    abort_handler(-1);                                      break;
+    abort_handler(-1);
+    return EMPTY_VIEW;
+    break;
   }
 }
 
@@ -847,6 +849,20 @@ void Variables::write(MPIPackBuffer& s) const
     // types/ids not required
   }
   // else empty envelope: send nothing other than initial bool
+}
+
+
+StringArray Variables::ordered_labels(unsigned short vars_part) const
+{
+  if (variablesRep)
+    return variablesRep->ordered_labels(vars_part);
+  else {
+    // for convenience, use tabular writer tailored to mixed/relaxed
+    // TODO: generalize the writer to use a helper that builds an array
+    std::ostringstream oss;
+    write_tabular_labels(oss, vars_part);
+    return strsplit(oss.str());
+  }
 }
 
 

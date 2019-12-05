@@ -75,6 +75,8 @@ public:
   /// return points required for build according to pointsManagement mode
   int required_points();
 
+  void declare_sources();
+
 protected:
 
   //
@@ -87,23 +89,31 @@ protected:
   short correction_type();
   void  correction_type(short corr_type);
 
-  /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
-  /// restore state in preparation for next initialization
   bool finalize_mapping();
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short query_distribution_parameter_derivatives() const;
+
+  void check_submodel_compatibility(const Model& sub_model);
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs approxInterface.map()/synch()/
   // synch_nowait() where approxInterface is a local, multipoint, or global
   // approximation.
-  //
-  /// portion of evaluate() specific to DataFitSurrModel
+
   void derived_evaluate(const ActiveSet& set);
-  /// portion of evaluate_nowait() specific to DataFitSurrModel
   void derived_evaluate_nowait(const ActiveSet& set);
-  /// portion of synchronize() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize();
-  /// portion of synchronize_nowait() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize_nowait();
 
   /// map incoming ASV into actual request for surrogate construction, managing
@@ -300,6 +310,8 @@ protected:
   /// set the warm start flag, including actualModel
   void warm_start_flag(const bool flag);
 
+  ActiveSet default_interface_active_set();
+
   //
   //- Heading: Data members
   //
@@ -329,7 +341,7 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(unsigned short tabular_format, bool active_only);
+  void import_points(unsigned short tabular_format, bool use_var_labels, bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// finalize file stream for exporting surrogate evaluations
@@ -429,6 +441,39 @@ private:
 /** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
 { if (!exportPointsFile.empty()) finalize_export(); }
+
+
+inline void DataFitSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to actualModel:
+  if (!actualModel.is_null())
+    actualModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+					 dr_index1, c_target2, di_target2,
+					 ds_target2, dr_target2);
+}
+
+
+inline const SizetArray& DataFitSurrModel::nested_acv1_indices() const
+{ return actualModel.nested_acv1_indices(); }
+
+
+inline const ShortArray& DataFitSurrModel::nested_acv2_targets() const
+{ return actualModel.nested_acv2_targets(); }
+
+
+inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
+{
+  return (actualModel.is_null()) ? NO_DERIVS :
+    actualModel.query_distribution_parameter_derivatives(); // forward along
+}
 
 
 inline size_t DataFitSurrModel::qoi() const
@@ -672,7 +717,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
   //   MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
   // > Management of multiple SurrogateData instances is complicated in the
   //   heterogeneous setting where level 0 uses a single instance and levels
-  //   1-L use two isntances.  In the future, could manage activation explicitly
+  //   1-L use two instances.  In the future, could manage activation explicitly
   //   using functions shown below.  For now, SurrogateData::{push,pop}() are
   //   hardened for inactive instances.
   switch (mode) {

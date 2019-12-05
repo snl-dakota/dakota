@@ -1,0 +1,35 @@
+<keyword  id="function_train_uq" name="function_train_uq" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train_uq" help="" minOccurs="1" group="Uncertainty Quantification" >
+  <alias name="nond_function_train_uq"/>
+  <!-- Old reference default; samples = 0 -->
+  <keyword  id="samples_on_emulator6" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" >
+	<alias name="samples" />
+	<param type="INTEGER" />
+  </keyword>
+  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
+	<param type='INTEGER' constraint='> 0' />
+  </keyword>
+  <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
+  &default_max_refinement_iterations;
+  &default_convergence_tolerance;
+  <keyword  id="import_build_points_file1" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+	<alias name="import_points_file"/>
+	<param type="INPUT_FILE" />
+	&method_import_build_format;
+	<keyword  id="active_only1" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+  </keyword>
+  <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition (VBD)" help="MethodCommands.html#MethodNonDMC" minOccurs="0" default="no variance-based decomposition" >
+	<keyword  id="interaction_order" name="interaction_order" code="{N_mdm(ushint,vbdOrder)}" label="Restriction of order of VBD interations" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="Unrestricted (VBD includes all interaction orders present in the expansion)" >
+	  <param type="INTEGER" constraint='> 0' />
+	</keyword>
+	<keyword  id="drop_tolerance" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="VBD tolerance for omitting small indices" help="MethodCommands.html#MethodNonDMC" minOccurs="0" default="All VBD indices displayed" >
+	  <param type="REAL" />
+	</keyword>
+  </keyword>
+  <keyword  id="model_param_spec" name="model_param_spec" code="{N_mdm(str,modelParamSpec)}" label="Model Parameters for UQ" help="" minOccurs="1" >
+    <param type="STRING" in_taglist="model" />
+  </keyword>
+  <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
+	<param type="INTEGER" constraint=">= 0" />
+  </keyword>
+</keyword>
+

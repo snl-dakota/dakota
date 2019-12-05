@@ -17,6 +17,7 @@
 
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
+#include "DakotaTPLDataTransfer.hpp"
 #include "ExperimentData.hpp"
 
 namespace Dakota {
@@ -67,6 +68,10 @@ public:
                                size_t num_best, size_t best_index,
                                std::ostream& s);
 
+
+  // Accessor for data transfer helper/adapters
+  std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const
+    { return dataTransferHandler; }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -293,6 +298,9 @@ protected:
 
   /// convenience flag for gradient_type == numerical && method_source == vendor
   bool vendorNumericalGradFlag;
+
+  /// Emerging helper class for handling data transfers to/from Dakota and the underlying TPL
+  std::shared_ptr<TPLDataTransfer> dataTransferHandler;
 
 private:
 

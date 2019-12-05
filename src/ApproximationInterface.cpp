@@ -25,6 +25,8 @@ namespace Dakota {
 
 extern PRPCache data_pairs;
 
+size_t ApproximationInterface::approxIdNum = 0;
+
 ApproximationInterface::
 ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
@@ -35,6 +37,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
   challengeFormat(
     problem_db.get_ushort("model.surrogate.challenge_points_file_format")),
+  challengeUseVarLabels(
+    problem_db.get_bool("model.surrogate.challenge_use_variable_labels")),
   challengeActiveOnly(
     problem_db.get_bool("model.surrogate.challenge_points_file_active")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
@@ -44,7 +48,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   // be incorrect since there is no longer an approximation interface
   // specification (assign_rep() is used from DataFitSurrModel).
   // Override these inherited settings.
-  interfaceId = "APPROX_INTERFACE"; interfaceType = APPROX_INTERFACE;
+  interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);
+  interfaceType = APPROX_INTERFACE;
   algebraicMappings = false; // for now; *** TO DO ***
 
   // process approxFnIndices.  IntSets are sorted and unique.  Error checking
@@ -133,7 +138,8 @@ ApproximationInterface(const String& approx_type,
   actualModelVars(am_vars.copy()),
   actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
 {
-  interfaceId = "APPROX_INTERFACE"; interfaceType = APPROX_INTERFACE;
+  interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);
+  interfaceType = APPROX_INTERFACE;
 
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
@@ -374,9 +380,15 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
     else { // non-unique eval ids from restart/file import
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
-      ParamResponsePair search_pr(vars, actualModelInterfaceId,
-				  response_pr.second);
-      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      if(actualModelInterfaceId.empty()) {
+        ParamResponsePair search_pr(vars, "NO_ID",
+  				  response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      } else {
+        ParamResponsePair search_pr(vars, actualModelInterfaceId,
+  				  response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      }
     }
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, true);
@@ -423,9 +435,15 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
-	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        if(actualModelInterfaceId.empty()) {
+	  ParamResponsePair search_pr(actualModelVars, "NO_ID",
+	  			    r_it->second);
+	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+	  ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+	  			    r_it->second);
+	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
@@ -474,9 +492,15 @@ update_approximation(const VariablesArray& vars_array,
       else { // nonunique eval ids from restart/file import
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
-	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(vars_array[i], "NO_ID",
 				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+				    r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
@@ -513,9 +537,15 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
     else { // nonunique eval ids from restart/file import
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
-      ParamResponsePair search_pr(vars, actualModelInterfaceId,
+      if(actualModelInterfaceId.empty()) {
+        ParamResponsePair search_pr(vars, "NO_ID",
 				  response_pr.second);
-      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      } else {
+        ParamResponsePair search_pr(vars, actualModelInterfaceId,
+				  response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      }
     }
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, false);
@@ -561,9 +591,15 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
-	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(actualModelVars, "NO_ID",
 				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+				    r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
@@ -611,9 +647,15 @@ append_approximation(const VariablesArray& vars_array,
       else { // nonunique eval ids from restart/file import
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
-	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(vars_array[i], "NO_ID",
 				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+				    r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
@@ -659,10 +701,9 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
       // the indices for which surrogates are being built
       
       // BMA TODO: can this move to ctor?
-      bool active_only = false;
       if (!challengeFile.empty()) {
         if (challengePoints.empty())
-          read_challenge_points(active_only);
+          read_challenge_points();
         functionSurfaces[fn_index].challenge_diagnostics(fn_index,
 	  challengePoints, Teuchos::getCol(Teuchos::View, challengeResponses,
 					   fn_index));
@@ -923,15 +964,17 @@ approximation_variances(const Variables& vars)
 // data?!?  Is a Response object available too?
 /** Challenge data defaults to active/inactive, but user can override
     to active only.  */
-void ApproximationInterface::read_challenge_points(bool active_only)
+void ApproximationInterface::read_challenge_points()
 {
   size_t num_fns = functionSurfaces.size();
+  String context_msg = "Surrogate model, interface id '" + interface_id() +
+    "' import_challenge_points_file";
+  bool verbose = (outputLevel > NORMAL_OUTPUT);
   // use a Variables object to easily read active vs. all
-  RealArray pts_array;
-  RealMatrix pts_matrix;
-  TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
+  TabularIO::read_data_tabular(challengeFile, context_msg,
 			       actualModelVars.copy(), num_fns, challengePoints,
                                challengeResponses, challengeFormat,
+			       verbose, challengeUseVarLabels,
 			       challengeActiveOnly);
 }
 

@@ -420,11 +420,15 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   size_t wpp9 = write_precision+9;
   Cout << "\n**************************************************************"
        << "************\nBegin SBLM Iteration Number " << globalIterCount+1
-       << "\n\nCurrent Trust Region for surrogate model (form "
-       << tr_data.approx_model_form() + 1;
-  if (tr_data.approx_model_level() != _NPOS)
-    Cout << ", level " << tr_data.approx_model_level() + 1;
-  Cout << ")\n                 ";
+       << "\n\nCurrent Trust Region for surrogate model";
+  unsigned short form = tr_data.approx_model_form();
+  if (form != USHRT_MAX) {
+    Cout << " (form "  << form + 1;
+    unsigned short lev = tr_data.approx_model_level();
+    if (lev != USHRT_MAX) Cout << ", level " << lev + 1;
+    Cout << ")";
+  }
+  Cout << "\n                 ";
   if (tr_lower_truncation) Cout << std::setw(wpp9) << "Lower (truncated)";
   else                     Cout << std::setw(wpp9) << "Lower";
   if (cv_truncation)       Cout << std::setw(wpp9) << "Center (truncated)";

@@ -437,10 +437,26 @@ public:
 
 //----------------------------------------------------------------
 
+  /** Convenience method for common optimizer stopping criteria vectors */
+  void get_common_stopping_criteria(int    & max_fn_evals,
+                                    int    & max_iters,
+                                    double & conv_tol,
+                                    double & min_var_chg,
+                                    double & obj_target )
+  { 
+    max_fn_evals =  maxFunctionEvals;
+    max_iters = maxIterations;
+    conv_tol = convergenceTol;
+    min_var_chg = probDescDB.get_real("method.variable_tolerance");
+    obj_target = probDescDB.get_real("method.solution_target");
+  }
+
+//----------------------------------------------------------------
+
   int num_nonlin_ineq_constraints_found() const
     { return numNonlinearIneqConstraintsFound; }
 
-  /** Adapter for transferring variable bounds from Dakota data to TPL data */
+  /** Method for transferring variable bounds from Dakota data to TPL data */
   template <typename AdapterT>
     bool get_variable_bounds_from_dakota(
         typename AdapterT::VecT & lower,
@@ -454,7 +470,7 @@ public:
                             upper);
     }
 
-  /** Adapter for transferring responses from Dakota data to TPL data */
+  /** Method for transferring responses from Dakota data to TPL data */
   template <typename VecT>
     void get_responses_from_dakota(
         const RealVector & dak_fn_vals,
@@ -471,6 +487,8 @@ public:
                             cEqs,
                             cIneqs);
     }
+
+  
 protected:
 
   //
@@ -501,12 +519,9 @@ protected:
   void finalize_run();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  // helper/adapter methods
+  // Configure data transfer helper/adapters
   void configure_constraint_maps();
-  //void mapped_function_values(const RealVector& function_vals); // use constraints and traits for format
-  //const Real& mapped_function_value(size_t i) const;
 
-  
   //
   //- Heading: Data
   //
@@ -567,7 +582,7 @@ protected:
   {
     bool split_into_one_sided = true;
     if( (ctype == CONSTRAINT_TYPE::NONLINEAR) &&
-        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED) )
+        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY) )
       split_into_one_sided = false;
 
     return configure_equality_constraint_maps(
@@ -662,12 +677,12 @@ inline void Optimizer::not_available(const std::string& package_name)
 // Data utilities supporting Opt TPL refactor which may eventually be promoted
 // to a more generally accessible location - RWH
 template <typename VectorType1, typename VectorType2, typename SetArray>
-void copy_data( const VectorType1 & source, 
-                const BitArray & set_bits,
-                const SetArray& set_vars, 
-                      VectorType2 & dest, 
-                      size_t offset,
-                      size_t len)
+void copy_variables( const VectorType1 & source, 
+                     const BitArray & set_bits,
+                     const SetArray& set_vars, 
+                           VectorType2 & dest, 
+                           size_t offset,
+                           size_t len)
 {
   size_t i, index, set_cntr;
 
@@ -695,11 +710,11 @@ void copy_data( const VectorType1 & source,
 
 
 template <typename VectorType1, typename VectorType2, typename SetArray>
-void copy_data( const VectorType1 & source, 
-                const SetArray& set_vars, 
-                      VectorType2 & dest, 
-                      size_t offset,
-                      size_t len)
+void copy_variables( const VectorType1 & source, 
+                     const SetArray& set_vars, 
+                           VectorType2 & dest, 
+                           size_t offset,
+                           size_t len)
 {
   size_t i, index;
   for(i=0; i<len; ++i)
@@ -717,12 +732,12 @@ void copy_data( const VectorType1 & source,
 //----------------------------------------------------------------
 
 template <typename VectorType1, typename VectorType2>
-void copy_data( const VectorType1 & source, 
-                      VectorType2 & dest, 
-                const BitArray & int_set_bits, 
-                const IntSetArray& set_int_vars, 
-                size_t offset,
-                size_t len)
+void copy_variables( const VectorType1 & source, 
+                           VectorType2 & dest, 
+                     const BitArray & int_set_bits, 
+                     const IntSetArray& set_int_vars, 
+                     size_t offset,
+                     size_t len)
 {
   size_t i, dsi_cntr;
   for(i=0, dsi_cntr=0; i<len; ++i)
@@ -806,7 +821,7 @@ void set_variables( const VectorType & source,
   copy_data_partial(source, 0, contVars, 0, num_cont_vars);
   vars.continuous_variables(contVars);
 
-  copy_data(source, discIntVars, int_set_bits, set_int_vars, num_cont_vars, num_disc_int_vars);
+  copy_variables(source, discIntVars, int_set_bits, set_int_vars, num_cont_vars, num_disc_int_vars);
   vars.discrete_int_variables(discIntVars);
 
   // Does this work for more than one discrete Real variables set? - RWH
@@ -846,16 +861,16 @@ void get_variables( Model & model,
   const StringSetArray& pt_set_string = model.discrete_set_string_values();
 
   int offset = 0;
-  copy_data(cvars, vec);
+  copy_data_partial(cvars, 0, vec, offset, cvars.length());
 
   offset = cvars.length();
-  copy_data(divars, int_set_bits, pt_set_int, vec, offset, divars.length());
+  copy_variables(divars, int_set_bits, pt_set_int, vec, offset, divars.length());
 
   offset += divars.length();
-  copy_data(drvars, pt_set_real, vec, offset, drvars.length());
+  copy_variables(drvars, pt_set_real, vec, offset, drvars.length());
 
   offset = drvars.length();
-  copy_data(dsvars, pt_set_string, vec, offset, dsvars.size());
+  copy_variables(dsvars, pt_set_string, vec, offset, dsvars.size());
 }
 
 //----------------------------------------------------------------
@@ -931,7 +946,7 @@ void get_nonlinear_eq_constraints( Model & model,
 
 //----------------------------------------------------------------
 
-/** Data adapter to transfer data from Dakota to third-party opt packages */
+/** Data adapter to transfer data from Dakota to third-party opt packages (ROL-specific) */
 template <typename VecT>
 void get_nonlinear_ineq_constraints( const Model & model,
                                            VecT & values)
@@ -950,10 +965,10 @@ void get_nonlinear_ineq_constraints( const Model & model,
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename VecT>
-void get_nonlinear_constraints( Model & model,
-                                VecT & nonlin_ineq_lower,
-                                VecT & nonlin_ineq_upper,
-                                VecT & nonlin_eq_targets)
+void get_nonlinear_bounds( Model & model,
+                           VecT & nonlin_ineq_lower,
+                           VecT & nonlin_ineq_upper,
+                           VecT & nonlin_eq_targets)
 {
   const RealVector& nln_ineq_lwr_bnds = model.nonlinear_ineq_constraint_lower_bounds();
   const RealVector& nln_ineq_upr_bnds = model.nonlinear_ineq_constraint_upper_bounds();

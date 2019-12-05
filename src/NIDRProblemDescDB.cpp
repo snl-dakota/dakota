@@ -19,6 +19,21 @@
 #include "WorkdirHelper.hpp"     // for copy/link file op utilities
 #include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
+#include "LognormalRandomVariable.hpp"
+#include "LoguniformRandomVariable.hpp"
+#include "TriangularRandomVariable.hpp"
+#include "BetaRandomVariable.hpp"
+#include "GammaRandomVariable.hpp"
+#include "GumbelRandomVariable.hpp"
+#include "FrechetRandomVariable.hpp"
+#include "WeibullRandomVariable.hpp"
+#include "HistogramBinRandomVariable.hpp"
+#include "PoissonRandomVariable.hpp"
+#include "BinomialRandomVariable.hpp"
+#include "NegBinomialRandomVariable.hpp"
+#include "GeometricRandomVariable.hpp"
+#include "HypergeometricRandomVariable.hpp"
+#include "DiscreteSetRandomVariable.hpp"
 #include <functional>
 #include <string>
 #include <sstream>
@@ -108,14 +123,12 @@ void NIDRProblemDescDB::warn(const char *fmt, ...)
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
     IDR populates the IDRProblemDescDB object with the input file data. */
 void NIDRProblemDescDB::
-derived_parse_inputs(const ProgramOptions& prog_opts)
+derived_parse_inputs(const std::string& dakota_input_file,
+		     const std::string& dakota_input_string,
+		     const std::string& parser_options)
 {
   // set the pDDBInstance
   pDDBInstance = this;
-
-  const String& dakota_input_file = prog_opts.input_file();
-  const String& dakota_input_string = prog_opts.input_string();
-  const String& parser_options = prog_opts.parser_options();
 
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)
@@ -799,9 +812,23 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   DataInterfaceRep *di = ii->di;
 
   StringArray& analysis_drivers = di->analysisDrivers;
+  bool ife = di->inputFilter.empty();
+  bool ofe = di->outputFilter.empty();
   int nd = analysis_drivers.size();
   int ac = di->asynchLocalAnalysisConcurrency;
   int ec = di->asynchLocalEvalConcurrency;
+
+  if(di->batchEvalFlag && (nd > 1 || !ife || !ofe))
+    squawk("For batch evaluation, specification of an input_filter, output_filter,\n\t"
+        "or more than one analysis_drivers is disallowed");
+  if(di->batchEvalFlag && ec == 1) {
+    warn("batch option not required for evaluation concurrency == 1.\n\t"
+        "Sequential operation will be used");
+      di->batchEvalFlag = false;
+  }
+
+  if(di->batchEvalFlag && ! (di->failAction == "abort" || di->failAction == "recover"))
+    squawk("For batch evaluation, only failure_capture abort and recover are supported");
 
   if (di->algebraicMappings == "" && nd == 0)
     squawk("interface specification must provide algebraic_mappings,\n\t"
@@ -815,7 +842,7 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
     warn("asynchronous option not required for evaluation and analysis.\n\t"
 	 "Concurrency limited to %d and %d.\n\t"
 	 "Synchronous operations will be used", ec, ac);
-    di->interfaceSynchronization = SYNCHRONOUS_INTERFACE;
+    di->asynchFlag = false;
   }
 
   // validate each of the analysis_drivers
@@ -1460,6 +1487,17 @@ model_pint(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+model_nnint(const char *keyname, Values *val, void **g, void *v)
+{
+  int n = *val->i;
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
+#endif
+  (*(Mod_Info**)g)->dmo->**(int DataModelRep::**)v = n;
+}
+
+void NIDRProblemDescDB::
 model_type(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
@@ -1485,6 +1523,19 @@ model_shint(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(short DataModelRep::**)v = (short)*val->i;
 }
 
+
+void NIDRProblemDescDB::
+model_sizet(const char *keyname, Values *val, void **g, void *v)
+{
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
+#endif
+  (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
+}
+
+    
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1514,6 +1565,7 @@ model_str(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(String DataModelRep::**)v = *val->s;
 }
 
+   
 void NIDRProblemDescDB::
 model_strL(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1680,9 +1732,11 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 	    "nonlinear_inequality", aln_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 	    "nonlinear_equality", aln_scaletypes);
-  if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
-    squawk("Specify calibration weights or experimental errors, not both.");
-  }
+  // The following check was relevant prior to refactoring the way transformations
+  // are applied (now in a layered manner)
+  // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
+  //   squawk("Specify calibration weights or experimental errors, not both.");
+  // }
   if ((n = dr->responseLabels.size()) > 0) {
     if (!(k = dr->numResponseFunctions)) {
       if (!(k = dr->numObjectiveFunctions))
@@ -3017,9 +3071,9 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
 }
 
 
-/// Check the histogram bin input data, normalize the counts and
-/// populate the histogramUncBinPairs map data structure; map keys are
-/// guaranteed unique since the abscissas must increase
+/// Check the histogram bin input data, normalize the counts and populate
+/// the histogramUncBinPairs map data structure; map keys are guaranteed
+/// unique since the abscissas must increase
 static void 
 Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -3030,7 +3084,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   Real x, y, bin_width, count_sum;
 
   if (hba = vi->hba) { // abscissas are required
-    num_a = hba->length();                         // abscissas
+    num_a = hba->length();                            // abscissas
     hbo = vi->hbo; num_o = (hbo) ? hbo->length() : 0; // ordinates
     hbc = vi->hbc; num_c = (hbc) ? hbc->length() : 0; // counts
     if (num_o && num_o != num_a) {
@@ -3046,7 +3100,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       key = true;
       m = nhbp->size();
       //dv->numHistogramBinUncVars = m;
-      for(i=tothbp=0; i<m; ++i) {
+      for (i=tothbp=0; i<m; ++i) {
 	tothbp += nhbpi = (*nhbp)[i];
 	if (nhbpi < 2) {
 	  Squawk("pairs_per_variable must be >= 2");
@@ -3077,25 +3131,22 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       count_sum = 0.;
       for (j=0; j<nhbpi; ++j, ++cntr) {
 	Real x = (*hba)[cntr];                          // abscissas
-	Real y = (num_o) ? (*hbo)[cntr] : (*hbc)[cntr]; // ordinates/counts
+	Real y = (num_c) ? (*hbc)[cntr] : (*hbo)[cntr]; // ordinates/counts
 	if (j<nhbpi-1) {
 	  Real bin_width = (*hba)[cntr+1] - x;
-	  if (bin_width <= 0.) {
-	    Squawk("histogram bin x values must increase");
-	    return;
+	  if (bin_width <= 0.)
+	    { Squawk("histogram bin x values must increase");          return; }
+	  if (y <= 0.)
+	    { Squawk("nonpositive intermediate histogram bin y value");return; }
+	  if (num_c) {
+	    count_sum += y; // accumulate counts
+	    y /= bin_width; // convert counts to ordinates (probability density)
 	  }
-	  if (y <= 0.) {
-	    Squawk("nonpositive intermediate histogram bin y value");
-	    return;
-	  }
-	  if (num_o) // convert from ordinates (probability density) to counts
-	    y *= bin_width;
-	  count_sum += y;
+	  else
+	    count_sum += y * bin_width; // accumulate counts
 	}
-	else if (y != 0) {
-	  Squawk("histogram bin y values must end with 0");
-	  return;
-	}
+	else if (y != 0.)
+	  { Squawk("histogram bin y values must end with 0"); return; }
 	// insert without checking since keys (abscissas) must increase
 	hbpi[x] = y;
       }
@@ -3422,7 +3473,7 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<int>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -3548,7 +3599,7 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
       // for string-valued histograms, mean and stddev are of
       // zero-based indices from beginning of the map
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<String>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -3667,7 +3718,7 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<Real>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -5643,7 +5694,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   static IntArray   *Var_Info::* Ia_delete[]
     = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, 
 	AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss, AVI ndusr, 
-	AVI ndssi, AVI ndssr };
+	AVI ndssi, AVI ndsss, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp,
 	AVI DSIp, AVI DSSp, AVI DSRp,
@@ -5652,9 +5703,10 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 	AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
-    = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
+    = { AVI ddsi, AVI DIlb, AVI DIub, AVI hpia, AVI dusi, AVI dssi,
+        AVI ddsia, AVI ddssa, AVI ddsra };
   static StringArray *Var_Info::* Sa_delete[]
-    = { AVI ddss, AVI duss, AVI dsss };
+    = { AVI ddss, AVI hpsa, AVI duss, AVI dsss };
 #undef AVI
 
   Var_Info *vi = (Var_Info*)v;
@@ -6189,7 +6241,6 @@ check_variables(std::list<DataVariables>* dvl)
   // input keyword not accounted for below
 
 
-
   if (pDDBInstance) {
     std::list<void*>::iterator It, Ite = pDDBInstance->VIL.end();
     for(It = pDDBInstance->VIL.begin(); It != Ite; ++It)
@@ -6204,7 +6255,7 @@ check_variables(std::list<DataVariables>* dvl)
     RealSymMatrix *rsm;
     IntVector *iv_a;
     StringArray *sa_a;
-    RealVector *rv, *rv_a, *rv_c;
+    RealVector *rv, *rv_a, *rv_o, *rv_c;
     RealVectorArray *rva;
     Var_Info *vi;
     size_t i, j, m, n, cntr;
@@ -6243,28 +6294,27 @@ check_variables(std::list<DataVariables>* dvl)
 	flatten_rsa(&dv->discreteDesignSetReal,     &vi->ddsr);
       }
       // histogram bin uncertain vars
-      // convert RealRealMapArray to RealVectors of abscissas and counts
+      // convert RealRealMapArray to RealVectors of abscissas + ordinates
       const RealRealMapArray& hbp = dv->histogramUncBinPairs;
       if ((m = hbp.size())) {
 	vi->nhbp = ia = new IntArray(m);
 	for(i = 0; i < m; ++i)
 	  total_prs += (*ia)[i] = hbp[i].size();
 	vi->hba = rv_a = new RealVector(total_prs); // abscissas
-	vi->hbc = rv_c = new RealVector(total_prs); // counts
-	vi->hbo = NULL;                            // no ordinates
+	vi->hbo = rv_o = new RealVector(total_prs); // ordinates only
+	vi->hbc = NULL;                             // no counts
 	for(i = cntr = 0; i < m; ++i) {
-	  RRMCIter it = hbp[i].begin();
-	  RRMCIter it_end = hbp[i].end();
+	  RRMCIter it = hbp[i].begin(), it_end = hbp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*rv_a)[cntr] = it->first;   // abscissas
-	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
+	    (*rv_a)[cntr] = it->first;  // abscissas
+	    (*rv_o)[cntr] = it->second; // ordinates only (no counts)
 	  }
 	  // normalization occurs in Vchk_HistogramBinUnc going other direction
 	}
       }
 
       // histogram point int uncertain vars
-      // convert IntRealMapArray to Int/RealVectors of abscissas and counts
+      // convert IntRealMapArray to Int/RealVectors of abscissas + counts
       const IntRealMapArray& hpip = dv->histogramUncPointIntPairs;
       if ((m = hpip.size())) {
 	vi->nhpip = ia = new IntArray(m);
@@ -6276,7 +6326,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  IRMCIter it = hpip[i].begin();
 	  IRMCIter it_end = hpip[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*iv_a)[cntr] = it->first;   // abscissas
+	    (*iv_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6284,7 +6334,7 @@ check_variables(std::list<DataVariables>* dvl)
       }
 
       // histogram point string uncertain vars
-      // convert StringRealMapArray to String/RealVectors of abscissas and counts
+      // convert StringRealMapArray to String/RealVectors of abscissas + counts
       const StringRealMapArray& hpsp = dv->histogramUncPointStrPairs;
       if ((m = hpsp.size())) {
 	vi->nhpsp = ia = new IntArray(m);
@@ -6296,7 +6346,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  SRMCIter it = hpsp[i].begin();
 	  SRMCIter it_end = hpsp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*sa_a)[cntr] = it->first;   // abscissas
+	    (*sa_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6304,7 +6354,7 @@ check_variables(std::list<DataVariables>* dvl)
       }
 
       // histogram point real uncertain vars
-      // convert RealRealMapArray to RealVectors of abscissas and counts
+      // convert RealRealMapArray to RealVectors of abscissas + counts
       const RealRealMapArray& hprp = dv->histogramUncPointRealPairs;
       if ((m = hprp.size())) {
 	vi->nhprp = ia = new IntArray(m);
@@ -6316,7 +6366,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  RRMCIter it = hprp[i].begin();
 	  RRMCIter it_end = hprp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*rv_a)[cntr] = it->first;   // abscissas
+	    (*rv_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6550,9 +6600,7 @@ static Iface_mp_type
 	MP2s(evalScheduling,PEER_DYNAMIC_SCHEDULING),
 	MP2s(evalScheduling,PEER_STATIC_SCHEDULING),
 	MP2s(asynchLocalEvalScheduling,DYNAMIC_SCHEDULING),
-        MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING),
-        MP2s(interfaceSynchronization,ASYNCHRONOUS_INTERFACE),
-        MP2s(interfaceSynchronization,SYNCHRONOUS_INTERFACE);
+        MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING);
 
 static Iface_mp_utype
 	MP2s(interfaceType,TEST_INTERFACE),
@@ -6586,6 +6634,8 @@ static bool
 	MP_(activeSetVectorFlag),
 	MP_(allowExistingResultsFlag),
 	MP_(apreproFlag),
+	MP_(asynchFlag),
+	MP_(batchEvalFlag),
 	MP_(dirSave),
 	MP_(dirTag),
 	MP_(evalCacheFlag),
@@ -6888,7 +6938,7 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-        MP_(subModelPointer);
+    MP_(subModelPointer);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6901,6 +6951,8 @@ static bool
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
 	MP_(calModelDiscrepancy),
+	MP_(chainDiagnostics),
+	MP_(chainDiagnosticsCI),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(crossValidNoiseOnly),
@@ -6994,12 +7046,13 @@ static size_t
         MP_(expansionSamples),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
-        MP_(numDesigns),
-        MP_(numFinalSolutions),
+    MP_(numDesigns),
+    MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
   	MP_(numPredConfigs);
+
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -7140,6 +7193,7 @@ static Method_mp_utype
 	MP2s(integrationRefine,MMAIS),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
 	MP2s(methodName,BRANCH_AND_BOUND),
+    MP2s(methodName,C3_FUNCTION_TRAIN),
 	MP2s(methodName,COLINY_BETA),
 	MP2s(methodName,COLINY_COBYLA),
 	MP2s(methodName,COLINY_DIRECT),
@@ -7166,6 +7220,7 @@ static Method_mp_utype
 	MP2s(methodName,MULTI_START),
   MP2s(methodName,NCSU_DIRECT),
   MP2s(methodName,ROL),
+  MP2s(methodName,DEMO_TPL),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
@@ -7183,6 +7238,7 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTIFIDELITY_FUNCTION_TRAIN),
 	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
 	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
@@ -7285,6 +7341,7 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
 	MP2(surrogateType,global_mars),
@@ -7369,6 +7426,8 @@ static Real
 	MP_(percentFold),
 	MP_(truncationTolerance),
 	MP_(relTolerance),
+	MP_(solverTolerance),
+	MP_(roundingTolerance),
 	MP_(decreaseTolerance);
 
 static RealVector
@@ -7409,6 +7468,7 @@ static StringArray
         MP_(secondaryVarMaps);
 
 static bool
+        MP_(adaptRank),
 	MP_(autoRefine),
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
@@ -7418,6 +7478,8 @@ static bool
       //MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(importChallengeActive),
+	MP_(importChalUseVariableLabels),
+	MP_(importUseVariableLabels),
 	MP_(modelUseDerivsFlag),
         MP_(domainDecomp),
         MP_(pointSelection),
@@ -7447,10 +7509,12 @@ static short
 	MP_(rbfMinPartition);
 
 static int
+        MP_(crossMaxIter),
         MP_(decompSupportLayers),
         MP_(initialSamples),
         MP_(maxFunctionEvals),
         MP_(maxIterations),
+	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
@@ -7461,6 +7525,14 @@ static int
         MP_(subspaceDimension),
         MP_(subspaceCVMaxRank);
 
+static size_t
+    MP_(kickRank),
+    MP_(maxOrder),        
+    MP_(maxRank),
+    MP_(startOrder),
+    MP_(startRank);
+//  MP_(verbosity);
+    
 #undef MP2s
 #undef MP2
 #undef MP_
@@ -7587,7 +7659,14 @@ static Env_mp_utype
         MP2s(tabularFormat,TABULAR_IFACE_ID),
         MP2s(tabularFormat,TABULAR_ANNOTATED),
         MP2s(resultsOutputFormat,RESULTS_OUTPUT_TEXT),
-        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5);
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_TOP_METHOD),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_NONE),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL_METHODS),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_SIMULATION),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_NONE),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_ALL);
 
 static String
         MP_(errorFile),

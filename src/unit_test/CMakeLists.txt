@@ -79,7 +79,7 @@ dakota_add_unit_test(NAME leja_sampling
 
 # Unit test: h5py_hdf5
 if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GREATER 2.6)
-  execute_process(COMMAND python -c "import h5py" RESULT_VARIABLE missing_h5py
+	execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import h5py" RESULT_VARIABLE missing_h5py
 	  OUTPUT_QUIET ERROR_QUIET)
   if(NOT missing_h5py)
     # Module to extract Dakota console output -- used by all h5py unit tests
@@ -89,7 +89,14 @@ if(DAKOTA_HAVE_HDF5 AND PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GRE
     # tests
     dakota_add_h5py_test(mixed_sampling)
     dakota_add_h5py_test(incremental_sampling)
-    dakota_add_h5py_test(simple_calibration)
+    if(HAVE_NPSOL)
+      dakota_add_h5py_test(simple_calibration)
+    endif()
+    dakota_add_h5py_test(surrogate_sens)
+    dakota_add_h5py_test(discrete_vps)
+    dakota_add_h5py_test(multistart)
+    dakota_add_h5py_test(pareto)
+    dakota_add_h5py_test(dist_params)
     #dakota_add_h5py_test(calibration_with_data)
     #dakota_add_h5py_test(mutlisolution_opt)
   endif()
@@ -129,6 +136,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
 
   set(dakota_opt_unit_tests
     opt_api_core_data_xfers.cpp
+    opt_tpl_adapters.cpp
     opt_tpl_api.cpp
     opt_api_traits.cpp
     rol_adapters.cpp
@@ -179,10 +187,22 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     link_directories(${Teuchos_LIBRARY_DIRS} ${HDF5_LIBRARY_DIRS})
     dakota_add_unit_test(NAME hdf5_tests SOURCES teuchos_unit_test_driver hdf5_test_serial.cpp hdf5_utils.cpp ResultsDBHDF5_Test.cpp
       LINK_DAKOTA_LIBS
-      LINK_LIBS ${HDF5_LIBRARIES}
       )
-    target_link_libraries(hdf5_tests ${HDF5_LIBRARIES})
   endif() # DAKOTA_HAVE_HDF5
+
+
+  if(DAKOTA_TEST_PREPROC)
+    dakota_add_unit_test(NAME preproc_tests SOURCES test_preproc.cpp
+      LINK_DAKOTA_LIBS)
+    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.tmpl"
+      "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.tmpl"
+      dakota_unit_test_copied_files
+      )
+    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.base"
+      "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.base"
+      dakota_unit_test_copied_files
+      )
+  endif()
 
 endif() # DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS
 

@@ -19,7 +19,7 @@ dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 9)
+set(Dakota_VERSION_MINOR 11)
 set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
@@ -34,10 +34,11 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
 # using the Git rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
-set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
+#set(Dakota_RELEASE_DATE "Nov 15 2019")    # Versioned release date Mmm dd yyyy
+set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date
 
 # Dakota version to use for naming archives
+
 set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
 
 # Dakota version to use in source/docs (could use for tarball names?)
@@ -276,6 +277,7 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
+# TODO: Update to use CMake BLAS/LAPACK probes and properly use their output
 if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
   # Historically on MSVC, tried to use CMake config file approach first.  
   # Could probably just use the Unix logic below instead...
@@ -321,23 +323,15 @@ endif()
 # and test subdirectories
 option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 if(DAKOTA_HAVE_HDF5)
-	find_package(HDF5 REQUIRED COMPONENTS "C;HL;CXX")
-  if(HDF5_VERSION VERSION_LESS "1.10.2")
-    message( SEND_ERROR "Found HDF5 version ${HDF5_VERSION}. Minimum required is 1.10.")
+  find_package(HDF5 REQUIRED COMPONENTS "C;HL;CXX")
+  if(HDF5_VERSION VERSION_LESS "1.10.4")
+    message( SEND_ERROR "Found HDF5 version ${HDF5_VERSION}. Minimum required is 1.10.4")
   endif()
 endif() # DAKOTA_HAVE_HDF5
 
 # Mandate a system or user-provided Boost, including some libraries
 set(dakota_boost_components
   "filesystem;program_options;regex;serialization;system")
-
-# Acro requires the signals library in addition
-option(HAVE_ACRO "Build the ACRO package." ON)
-if(HAVE_ACRO)
-  list(APPEND dakota_boost_components "signals")
-  # Acro uses Boost.Signals (deprecated) instead of Boost.Signals2
-  add_definitions("-DBOOST_SIGNALS_NO_DEPRECATION_WARNING")
-endif()
 
 # Queso requires the program_options library in addition
 option(HAVE_QUESO "Build the QUESO package." OFF)
@@ -392,8 +386,13 @@ set(ExportTarget DakotaTargets CACHE STRING
 option(HAVE_ROL "Build the ROL package." ON)
 if (NOT BUILD_IN_TRILINOS)
 
-  # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
-  find_package(Trilinos QUIET)
+  # Workaround to skip finding system Trilinos until this probe is
+  # simplified and follows find_package semantics. Double negative to
+  # preserve historical behavior without overcomplicating things.
+  if(NOT DAKOTA_NO_FIND_TRILINOS)
+    # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
+    find_package(Trilinos QUIET)
+  endif()
 
   if(Trilinos_FOUND)
     if(Trilinos_DIR)
@@ -401,6 +400,13 @@ if (NOT BUILD_IN_TRILINOS)
 	"Dakota using previously specified Trilinos in ${Trilinos_DIR}")
     else()
       message(STATUS "Dakota using external Trilinos")
+    endif()
+    # TODO: Make this a hard error and check for version during find_package
+    if(DEFINED Trilinos_VERSION AND Trilinos_VERSION VERSION_LESS 12.16)
+      message(WARNING
+	"Dakota requires Trilinos 12.16 or newer; found ${Trilinos_VERSION}"
+	"Hint: Set DAKOTA_NO_FIND_TRILINOS:BOOL=TRUE to use Dakota's copy"
+	)
     endif()
   else()
 
@@ -461,8 +467,12 @@ if (NOT BUILD_IN_TRILINOS)
       set(Trilinos_GENERATE_REPO_VERSION_FILE OFF CACHE BOOL
         "Dakota disabling generation of TrilinosRepoVersion.txt")
 
-      set(Teuchos_ENABLE_COMPLEX TRUE CACHE BOOL
-	"Pecos requires some complex blas wrappers")
+      # BMA: Since Pecos surrogates not using complex yet, disabled this
+      ##set(Trilinos_ENABLE_COMPLEX_DOUBLE TRUE CACHE BOOL
+      ##  "Pecos requires some complex blas wrappers")
+
+      set(Teuchos_HIDE_DEPRECATED_CODE TRUE CACHE BOOL
+        "Teuchos deprecated code clashes with operator<< in Dakota")
 
       add_subdirectory(packages/external/trilinos)
 

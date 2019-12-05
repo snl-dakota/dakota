@@ -106,6 +106,7 @@ Includes
 // Dakota includes.
 #include <JEGAOptimizer.hpp>
 #include <ProblemDescDB.hpp>
+#include <MarginalsCorrDistribution.hpp>
 
 // Eddy utility includes.
 #include <utilities/include/EDDY_DebugScope.hpp>
@@ -968,13 +969,20 @@ JEGAOptimizer::LoadDakotaResponses(
 //     mapped one entry at a time.
 //     String variables also need to be remapped.
 
-    const StringSetArray& dssv_values = 
-      iteratedModel.discrete_design_set_string_values();
+    const Pecos::MultivariateDistribution& mv_dist
+      = iteratedModel.multivariate_distribution();
+    const Pecos::MarginalsCorrDistribution* mvd_dist_rep
+      = (const Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    StringSetArray ddss_values;
+    mvd_dist_rep->
+      pull_parameters(this->numContinuousVars+this->numDiscreteIntVars,
+		      this->numDiscreteStringVars, Pecos::DSS_VALUES,
+		      ddss_values);
     for(size_t i=0; i<this->numDiscreteStringVars; ++i) {
       const int &element_index = static_cast<int>(des.GetVariableValue(i +
 	    this->numContinuousVars + this->numDiscreteIntVars +
 	    this->numDiscreteRealVars));
-      const String &ds_var = set_index_to_value(element_index, dssv_values[i]);
+      const String &ds_var = set_index_to_value(element_index, ddss_values[i]);
       vars.discrete_string_variable(ds_var, i);
     }
     vars.continuous_variables(c_vars);
@@ -2011,10 +2019,12 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     const BitArray& di_set_bits = this->_model.discrete_int_sets();
     for(i=0; i<num_div; ++i, ++dvi_cntr)
     {
-      if (di_set_bits[i]) // set variables are discrete nature in JEGA
+      if (di_set_bits[i]) { // set variables are discrete nature in JEGA
         EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
-      else // range variables are continuum nature in JEGA
+      }
+      else { // range variables are continuum nature in JEGA
         EDDY_ASSERT(dvis[dvi_cntr]->IsContinuum());
+      }
       intoDiscInt[i] = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
     }
 
@@ -2238,7 +2248,7 @@ JEGAOptimizer::Evaluator::Evaluate(
         IntRespMCIter r_cit = response_map.begin();
 
         // Record the set of responses in the DesignGroup
-        for(it=group.BeginDV(); it!=e; ++it, ++r_cit)
+        for(it=group.BeginDV(); it!=e; ++it)
         {
             // we didn't send already-evaluated Designs out for evaluation
             // so skip them here as well.
@@ -2252,6 +2262,9 @@ JEGAOptimizer::Evaluator::Evaluate(
 
             // now check the feasibility of this design
             target.CheckFeasibility(**it);
+
+	    // only increment for newly evaluated points contained in response_map
+	    ++r_cit;
         }
     }
 

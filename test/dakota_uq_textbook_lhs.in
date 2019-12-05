@@ -23,17 +23,20 @@ method,
 #	  sample_type random   				#s1,#s3
 
 variables,
-#	active all                                    #s8
+#	active all                                    #s8,#s10
 #       discrete_design_range = 2                     #s8
 #         lower_bounds  = 0. 0.                       #s8
 #         upper_bounds  = 5. 5.                       #s8
-#       discrete_design_set  			      #s8
+#       discrete_design_set  			      #s8,#s10
 #         integer = 2                  		      #s8
 #           num_set_values = 2 3                      #s8
 #           set_values = 4 5 1 2 7                    #s8
 #         real = 2                  		      #s8
 #           num_set_values = 3 2                      #s8
 #           set_values = 1.2 2.3 3.4 7.7 8.8          #s8
+#         string = 2                                  #s10
+#           num_set_values = 3 2                      #s10
+#           set_values = 'a' 'b' 'c' 'd' 'e'          #s10
 #       discrete_state_range = 2                      #s8
 #         lower_bounds  = 10. 10.                     #s8
 #         upper_bounds  = 12. 12.                     #s8
@@ -44,10 +47,10 @@ variables,
 #         real = 2                   		      #s8
 #           num_set_values = 2 2                      #s8
 #           set_values = 1.2 2.3 7.7 8.8              #s8
-	normal_uncertain = 2                          #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#p0
-	  means             =  248.89, 593.33         #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#p0
-	  std_deviations    =   12.4,   29.7          #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#p0
-	  descriptors       =  'TF1n'  'TF2n'         #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#p0
+	normal_uncertain = 2                          #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s10,#p0
+	  means             =  248.89, 593.33         #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s10,#p0
+	  std_deviations    =   12.4,   29.7          #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s10,#p0
+	  descriptors       =  'TF1n'  'TF2n'         #s0,#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s10,#p0
 	uniform_uncertain = 2                         #s0,#s1,#s2,#s3,#s4,#s5,#s7,#p0
 	  lower_bounds      =  199.3,  474.63         #s0,#s1,#s2,#s3,#s4,#s5,#s7,#p0
 	  upper_bounds      =  298.5,  712.           #s0,#s1,#s2,#s3,#s4,#s5,#s7,#p0
@@ -106,8 +109,8 @@ variables,
 #	    set_values = 3.1 5.2 6.3 7.4	      #s9
 
 interface,
-#  direct
-	system asynch evaluation_concurrency = 5
+#  direct                                            #s10
+	system asynch evaluation_concurrency = 5     #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0
 	  analysis_driver = 'text_book'
 
 responses,

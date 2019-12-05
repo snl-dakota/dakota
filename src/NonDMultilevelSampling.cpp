@@ -304,7 +304,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
-      // MSE reference is MC applied to HF:
+      // MSE reference is MLMC with pilot sample, prior to any N_l adaptation:
       if (iter == 0)
 	estimator_var0
 	  += aggregate_mse_Ysum(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
@@ -312,8 +312,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(unsigned short model_form)
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-    // discretization error, we compute an initial estimator variance and
-    // then seek to reduce it by a relative_factor <= 1.
+    // discretization error, we compute an initial estimator variance from MLMC
+    // on the pilot sample and then seek to reduce it by a relative_factor <= 1.
     if (iter == 0) { // eps^2 / 2 = var * relative factor
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
@@ -437,7 +437,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form)
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
-      // MSE reference is MC applied to HF:
+      // MSE reference is MLMC with pilot sample, prior to any N_l adaptation:
       if (iter == 0)
 	estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
 	  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],N_l[lev],lev);
@@ -756,7 +756,9 @@ multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
       sum_sqrt_var_cost += (lev < num_cv_lev) ?
 	std::sqrt(agg_var_hf_l * hf_lev_cost / (1. - avg_rho2_LH[lev]))
 	  * Lambda[lev] : std::sqrt(agg_var_hf_l * hf_lev_cost);
-      // MSE reference is MC applied to HF Y aggregated across qoi & levels
+      // MSE reference is MLMF MC applied to {HF,LF} pilot sample aggregated
+      // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
+      // will result in no additional variance reduction beyond MLMC.
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
 	  aggregate_mse_Yvar(var_H[lev], N_hf[lev]) :
@@ -989,7 +991,9 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
       sum_sqrt_var_cost += (lev < num_cv_lev) ?
 	std::sqrt(agg_var_hf_l * hf_lev_cost / (1. - avg_rho_dot2_LH[lev]))
 	  * Lambda[lev] : std::sqrt(agg_var_hf_l * hf_lev_cost);
-      // MSE reference is MC applied to HF Y aggregated across qoi & levels
+      // MSE reference is MLMF MC applied to {HF,LF} pilot sample aggregated
+      // across qoi.  Note: if the pilot sample for LF is not shaped, then r=1
+      // will result in no additional variance reduction beyond MLMC.
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
 	  aggregate_mse_Yvar(var_Yl[lev], N_hf[lev]) :

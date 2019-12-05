@@ -83,6 +83,8 @@ protected:
 
   const Model& algorithm_space_model() const;
 
+  virtual void declare_sources();
+
 private:
 
   //

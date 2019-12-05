@@ -103,6 +103,41 @@ returns
 
 Note that escaping the trailing delimiter (e.g. `\}`) is optional.
 
+## Whitespace Control
+
+Expressions span the entire line which can possibly introduce undesired white space. Ending a line with `\\` will prevent the additional space. Consider the following:
+
+    BLOCK \\
+    {%
+    if True:
+        block = 10
+    else:
+        block = 20
+    end
+    %}
+    {block}
+
+will render to
+
+    BLOCK 10
+
+but without the trailing `\\`
+
+    BLOCK
+    10
+
+This can also be abused to allow spacing. Consider the following:
+
+    I want this to \\
+    %
+    render as \\
+    %
+    one line
+
+Since the `%` symbolize a code block (empty in this case), it will render
+
+    I want this to render as one line
+
 # Immutable Variables
 
 Variables can be fixed such that they cannot be redefined (without explicitly allowing it). 

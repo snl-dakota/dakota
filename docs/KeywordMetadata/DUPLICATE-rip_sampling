@@ -1,0 +1,52 @@
+Blurb:: Sample allocation based on restricted isometry property (RIP) within multilevel polynomial chaos
+
+Description:: 
+Multilevel polynomial chaos with compressed sensing may allocate the
+number of samples per level based on the restricted isometry property
+(RIP), applied to recovery at level \f$l\f$:
+
+\f[ N_l ~ \geq ~ s_l ~ log^3(s_l) ~ L_l ~ log(C_l) \f]
+
+for sparsity \f$s\f$, cardinality \f$C\f$, and mutual coherence \f$L\f$.
+The adaptive algorithm starts from a pilot sample, shapes the profile
+based on observed sparsity, and iterates until convergence.  In practice,
+RIP sampling levels are quite conservative, and a collocation ratio
+constraint (\f$N_l \leq r C_l\f$, where \f$r\f$ defaults to 2) must be
+enforced on the profile.
+
+The algorithm relies on observed sparsity, it is appropriate for use
+with regularized solvers for compressed sensing.  It employs
+orthogonal matching pursuit (OMP) by default and automatically
+activates cross-validation in order to choose the best noise parameter
+value for the recovery.
+
+This capability is \b experimental.  Sample allocation by greedy
+refinement is generally preferred.
+
+Topics::
+
+Examples::
+
+This example starts with sparse recovery for a second-order candidate
+expansion at each level.  As the number of samples is adapted for each
+level, as dictated by the number of sparse coefficient sets recovered
+for each level, the candidate expansion order is incremented as needed
+in order to synchronize with the specified collocation ratio.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multilevel_polynomial_chaos
+	  orthogonal_matching_pursuit
+	  expansion_order_sequence = 2
+	  pilot_samples = 10
+	  collocation_ratio = .9
+	  allocation_control rip_sampling
+	  seed = 1237
+	  convergence_tolerance = .01
+\endverbatim
+
+Theory::
+
+Faq::
+See_Also::

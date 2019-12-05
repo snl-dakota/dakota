@@ -42,7 +42,7 @@ The directories contained in Dakota distributions include:
 Distribution  Directory	 Description
 Type
 ------------  ---------  --------------------------------------------------  
-bin-dist      bin	 Binary files for Dakota, restart utility, dprepo
+bin-dist      bin	 Binary files for Dakota, restart utility, dprepro
                          and various third-party libraries (TPLs).
 src-dist      scripts    Source files for some scripts installed to bin-dist:bin
 
@@ -104,7 +104,7 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
    e.g. /usr/local. 
 
        $ cd /path/to/Dakota/install/directory
-       $ tar xzvf /path/to/dakota-<release>.src.tar.gz
+       $ tar xzvf /path/to/dakota-<release>.tar.gz
    
    Rename the extracted Dakota binary executable directory:
 
@@ -138,7 +138,8 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
 
    Bash shell
    ----------
-   a. Edit the startup file ~/.bashrc in your favorite text editor
+   a. Edit the startup file ~/.bashrc (~/.bash_profile on OS X) in your 
+      favorite text editor.
    b. Modify and export PATH variable. Type the following line, replacing
       $INSTALL_DIR with the absolute path to your installation directory,
       e.g. /home/username.
@@ -146,10 +147,10 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
          export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$PATH
      
    c. Save and close file.
-   d. Update changes in your terminal window. At
+   d. Update changes in your terminal window by sourcing the startup file
+      that you modified, ~/.bashrc or ~/.bash_profile (source ~/.bashrc), 
+      or by closing and re-opening your terminal.
       
-      $ source ~/.bashrc
-
    C shell
    -------
    a. Edit the startup file ~/.cshrc in your favorite text editor
@@ -233,9 +234,9 @@ III. Test Binary Distribution installation.
    expected environment variables and can be used instead of the executable
    name. To test the Dakota installation use the following command:
 
-	Windows Command Terminal: dakota.bat -v
-	Linux:			  dakota.sh -v
-	Mac OS X:		  dakota.sh -v
+       Windows Command Terminal: dakota.bat -v
+       Linux:                    dakota.sh -v
+       Mac OS X:                 dakota.sh -v
 
 2. Refer to the "Tutorial" section of the User's Manual for instructions
    on using the dakota executables or see the Quick Start page on the Dakota
@@ -256,7 +257,7 @@ The following are instructions for building Dakota on a Unix-like platform
 in a Bash shell. You may need to use appropriate commands to work for your
 particular platform or shell.
 
-1. Install CMake 3.1 (or later) and ensure it is in your $PATH.
+1. Install CMake 3.10 (or later) and ensure it is in your $PATH.
 
 2. Extract Dakota source archive file. In the example below, Dakota will
    be extracted into the user's home directory, /home/username. 

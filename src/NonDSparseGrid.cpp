@@ -55,7 +55,10 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // initialize_random_variables() called in NonDIntegration ctor
-  check_variables(natafTransform.x_random_variables());
+  //check_variables(x_dist.random_variables());
+  // TO DO: create a ProbabilityTransformModel, if needed
+  const Pecos::MultivariateDistribution& u_dist
+    = model.multivariate_distribution();
 
   // define ExpansionConfigOptions
   short refine_metric = (refine_control) ? Pecos::COVARIANCE_METRIC :
@@ -63,14 +66,14 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   short refine_stats  = (refine_control) ? Pecos::ACTIVE_EXPANSION_STATS :
     Pecos::NO_EXPANSION_STATS;
   Pecos::ExpansionConfigOptions ec_options(ssgDriverType, exp_basis_type,
-    iteratedModel.correction_type(),
+    model.correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
     outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
     probDescDB.get_ushort("method.nond.vbd_interaction_order"), //refine_type,
     refine_control, refine_metric, refine_stats,
     probDescDB.get_int("method.nond.max_refinement_iterations"),
     probDescDB.get_int("method.nond.max_solver_iterations"), convergenceTol,
-    probDescDB.get_ushort("method.soft_convergence_limit"));
+    probDescDB.get_ushort("method.sofmake NonDSt_convergence_limit"));
 
   // define BasisConfigOptions
   bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
@@ -107,35 +110,32 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   case Pecos::COMBINED_SPARSE_GRID: {
     bool track_colloc = false, track_uniq_prod_wts = false; // defaults
     ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
-		      ec_options, bc_options, growth_rate, track_colloc,
-		      track_uniq_prod_wts);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate, track_colloc, track_uniq_prod_wts);
     break;
   }
   case Pecos::INCREMENTAL_SPARSE_GRID: {
     bool track_uniq_prod_wts = false; // default
     ((Pecos::IncrementalSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
-		      ec_options, bc_options, growth_rate, track_uniq_prod_wts);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate, track_uniq_prod_wts);
     break;
   }
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     bool track_colloc = false; // non-default
     ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
-		      ec_options, bc_options, growth_rate, track_colloc);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate, track_colloc);
     break;
   }
   default: // SparseGridDriver
     ssgDriver->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
-		      ec_options, bc_options, growth_rate);
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+		      growth_rate);
     break;
   }
-  ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
-    iteratedModel.aleatory_distribution_parameters());
-
-  maxEvalConcurrency *= ssgDriver->grid_size(); // requires polyParams
+  ssgDriver->initialize_grid_parameters(u_dist);
+  maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }
 
 
@@ -178,26 +178,26 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
 	track_collocation_indices(true);
     break;
   }
-
-  // local natafTransform not yet updated: x_ran_vars would have to be passed in
-  // from NonDExpansion if check_variables() needed to be called here.  Instead,
-  // it is deferred until run time in NonDIntegration::core_run().
-  //check_variables(x_ran_vars);
 }
 
 
 void NonDSparseGrid::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
-  numIntDriver.initialize_grid(poly_basis);
+  // called at construct time from NonDExpansion::initialize_u_space_grid()
+
+  numIntDriver.initialize_grid(poly_basis);     // sets basis, numVars
+
   ssgDriver->level(ssgLevelSpec);
-  ssgDriver->dimension_preference(dimPrefSpec);
+  ssgDriver->dimension_preference(dimPrefSpec); // requires numVars
 
-  // Precompute quadrature rules (e.g., by defining maximal order for
-  // NumGenOrthogPolynomial::solve_eigenproblem()):
-  ssgDriver->precompute_rules(); // efficiency optimization
+  // this data may be replaced on first execution by a top-level iterator,
+  // but it is still needed for certain construct time initializations
+  // (e.g., max concurrency below):
+  numIntDriver.initialize_grid_parameters(
+    iteratedModel.multivariate_distribution()); // 1D pts/wts use level
 
-  maxEvalConcurrency *= ssgDriver->grid_size(); // requires polyParams
+  maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }
 
 
@@ -208,9 +208,14 @@ NonDSparseGrid::~NonDSparseGrid()
 void NonDSparseGrid::get_parameter_sets(Model& model)
 {
   // capture any run-time updates to distribution parameters
-  if (subIteratorFlag)
-    ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.aleatory_distribution_parameters());
+  // > Note: top-level Iterator + NestedModel may change params between
+  //   initialize_grid() and 1st execution, so always perform this step
+  if (subIteratorFlag) //&& numIntegrations)
+    ssgDriver->initialize_grid_parameters(model.multivariate_distribution());
+
+  // Precompute quadrature rules (e.g., by defining maximal order for
+  // NumGenOrthogPolynomial::solve_eigenproblem()):
+  ssgDriver->precompute_rules(); // efficiency optimization
 
   // compute grid and retrieve point/weight sets
   ssgDriver->compute_grid(allSamples);

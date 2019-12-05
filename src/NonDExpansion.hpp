@@ -37,7 +37,9 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, bool piecewise_basis,
+		short exp_coeffs_approach, short refine_type,
+		short refine_control, short covar_control, short ml_discrep,
+		short rule_nest, short rule_growth, bool piecewise_basis,
 		bool use_derivs);
   /// destructor
   ~NonDExpansion();
@@ -50,6 +52,15 @@ public:
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
 
   /// perform a forward uncertainty propagation using PCE/SC methods
   void core_run();
@@ -72,6 +83,15 @@ public:
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// return maxRefineIterations
+  int maximum_refinement_iterations() const;
+  /// set maxRefineIterations
+  void maximum_refinement_iterations(int max_refine_iter);
+
 protected:
 
   //
@@ -86,6 +106,8 @@ protected:
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
   virtual void compute_expansion();
+  /// finalize mappings for the uSpaceModel
+  virtual void finalize_expansion();
   /// uniformly increment the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void increment_order_and_grid();
@@ -98,14 +120,13 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
-  /// update reference statistics used as refinement metrics
-  virtual void update_reference_stats();
-  /// update reference statistics used as refinement metrics
-  virtual void increment_reference_stats();
   /// combine coefficients, promote to active, and update statsType
   virtual void combined_to_active();
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
+
+  /// perform any required expansion roll-ups prior to metric computation
+  virtual void metric_roll_up();
 
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric(bool revert, bool print_metric);
@@ -113,6 +134,17 @@ protected:
   virtual Real compute_level_mappings_metric(bool revert, bool print_metric);
   // compute 2-norm of change in final statistics
   //virtual Real compute_final_statistics_metric(bool revert,bool print_metric);
+
+  /// calculate analytic and numerical statistics from the expansion,
+  /// supporting {REFINEMENT,INTERMEDIATE,FINAL}_RESULTS modes
+  virtual void compute_statistics(short results_state = FINAL_RESULTS);
+  /// extract statistics from native stats arrays for a selected candidate
+  virtual void pull_candidate(RealVector& stats_star);
+  /// restore statistics into native stats arrays for a selected candidate
+  virtual void push_candidate(const RealVector& stats_star);
+
+  /// print global sensitivity indices
+  virtual void print_sobol_indices(std::ostream& s);
 
   //
   //- Heading: Virtual function redefinitions
@@ -126,11 +158,14 @@ protected:
   void update_final_statistics_gradients();
 
   //
-  //- Heading: Member function definitions
+  //- Heading: Member functions
   //
 
-  /// common constructor code for initialization of natafTransform
-  void initialize_random(short u_space_type);
+  /// helper for initializing a numerical integration grid
+  void initialize_u_space_grid();
+
+  // common constructor code for initialization of natafTransform
+  //void initialize_random(short u_space_type);
 
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
@@ -220,10 +255,7 @@ protected:
   void pop_increment();
 
   /// update statsType, here and in Pecos::ExpansionConfigOptions
-  void statistics_type(short stats_type);
-
-  /// perform any required expansion roll-ups prior to metric computation
-  void metric_roll_up();
+  void statistics_type(short stats_type, bool clear_bits = true);
 
   /// calculate the response covariance (diagonal or full matrix) for
   /// the expansion indicated by statsType
@@ -255,13 +287,12 @@ protected:
   /// approach for incremental statistics (no derivatives, no finalStatistics
   /// update)
   void compute_level_mappings();
+  /// compute only numerical level mappings; this uses a lightweight approach
+  /// for incremental statistics (no derivatives, no finalStatistics update)
+  void compute_numerical_level_mappings();
   /// compute Sobol' indices for main, interaction, and total effects; this
   /// is intended for incremental statistics
   void compute_sobol_indices();
-
-  /// calculate analytic and numerical statistics from the expansion,
-  /// supporting {REFINEMENT,INTERMEDIATE,FINAL}_RESULTS modes
-  void compute_statistics(short results_state = FINAL_RESULTS);
 
   /// print resp{Variance,Covariance}
   void print_covariance(std::ostream& s);
@@ -277,6 +308,16 @@ protected:
 
   /// archive the Sobol' indices to the resultsDB
   void archive_sobol_indices();
+
+  void pull_reference(RealVector& stats_ref);
+  void push_reference(const RealVector& stats_ref);
+
+  /// pull lower triangle of symmetric matrix into vector
+  void pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec,
+			   size_t offset = 0);
+  /// push vector into lower triangle of symmetric matrix
+  void push_lower_triangle(const RealVector& vec, RealSymMatrix& mat,
+			   size_t offset = 0);
 
   //
   //- Heading: Data
@@ -296,6 +337,10 @@ protected:
   /// type of statistical metric: NO_EXPANSION_STATS,
   /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
   short statsType;
+
+  /// flag for combined variable expansions which include a
+  /// non-probabilistic subset (design, epistemic, state)
+  bool allVars;
 
   /// emulation approach for multilevel discrepancy: distinct or recursive
   short multilevDiscrepEmulation;
@@ -319,8 +364,16 @@ protected:
   bool relativeMetric;
 
   /// flag for indicating state of \c nested and \c non_nested overrides of
-  /// default rule nesting, which depends on the type of integration driver
+  /// default rule nesting, which depends on the type of integration driver;
+  /// this is defined in construct_{quadrature,sparse_grid}(), such that
+  /// override attributes (defined in ctors) must be used upstream
   bool nestedRules;
+  /// user override of default rule nesting: NO_NESTING_OVERRIDE,
+  /// NESTED, or NON_NESTED
+  short ruleNestingOverride;
+  /// user override of default rule growth: NO_GROWTH_OVERRIDE,
+  /// RESTRICTED, or UNRESTRICTED
+  short ruleGrowthOverride;
 
   /// flag for \c piecewise specification, indicating usage of local
   /// basis polynomials within the stochastic expansion
@@ -335,6 +388,9 @@ protected:
       to auxilliary variables (design, epistemic) for computing derivatives of
       aleatory expansion statistics with respect to these variables. */
   bool useDerivs;
+
+  /// stores the initial variables data in u-space
+  RealVector initialPtU;
 
   /// refinement type: NO_REFINEMENT, P_REFINEMENT, or H_REFINEMENT
   short refineType;
@@ -360,14 +416,19 @@ protected:
   /// vector of response variances (diagonal response covariance option)
   RealVector respVariance;
 
-  /// stores the initial variables data in u-space
-  RealVector initialPtU;
+  /// stats of the best candidate for the current level
+  RealVector levelStatsStar;
+  /// stats of the best candidate across all levels
+  RealVector statsStar;
 
 private:
 
   //
   //- Heading: Convenience function definitions
   //
+
+  /// initialize data based on variable counts
+  void initialize_counts();
 
   /// set response mode to AGGREGATED_MODELS and recur response size updates
   void aggregated_models_mode();
@@ -388,6 +449,12 @@ private:
 
   /// promote selected candidate into reference grid + expansion
   void select_candidate(size_t best_candidate);
+  /// promote selected index set candidate into reference grid + expansion
+  void select_index_set_candidate(
+    std::set<UShortArray>::const_iterator cit_star);
+  /// promote selected refinement increment candidate into reference
+  /// grid + expansion
+  void select_increment_candidate();
 
   /// analytic portion of compute_statistics() from post-processing of
   /// expansion coefficients (used for FINAL_RESULTS)
@@ -412,21 +479,12 @@ private:
   
   /// print expansion and numerical moments
   void print_moments(std::ostream& s);
-  /// print global sensitivity indices
-  void print_sobol_indices(std::ostream& s);
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
 
   //
   //- Heading: Data
   //
-
-  /// user override of default rule nesting: NO_NESTING_OVERRIDE,
-  /// NESTED, or NON_NESTED
-  short ruleNestingOverride;
-  /// user override of default rule growth: NO_GROWTH_OVERRIDE,
-  /// RESTRICTED, or UNRESTRICTED
-  short ruleGrowthOverride;
 
   /// Iterator used for sampling on the uSpaceModel to generate approximate
   /// probability/reliability/response level statistics.  Currently this is
@@ -466,6 +524,30 @@ private:
   /// refinement samples for expansion sampler
   IntVector refinementSamples;
 };
+
+
+inline void NonDExpansion::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
+}
+
+
+inline int NonDExpansion::maximum_refinement_iterations() const
+{ return maxRefineIterations; }
+
+
+inline void NonDExpansion::maximum_refinement_iterations(int max_refine_iter)
+{ maxRefineIterations = max_refine_iter; }
 
 
 inline const Model& NonDExpansion::algorithm_space_model() const
@@ -537,8 +619,9 @@ level_cost(unsigned short lev, const RealVector& cost)
 
 inline void NonDExpansion::metric_roll_up()
 {
-  // greedy_ML-MF expansions assess level candidates using combined stats
-  // --> roll up approx for combined stats
+  // greedy_multifidelity_expansion() assesses level candidates using combined
+  // stat metrics, which by default require expansion combination (overridden
+  // for hierarchical SC)
   if (statsType == Pecos::COMBINED_EXPANSION_STATS)
     uSpaceModel.combine_approximation();
 }
@@ -602,6 +685,41 @@ inline void NonDExpansion::compute_covariance()
 }
 
 
+inline void NonDExpansion::
+pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec, size_t offset)
+{
+  size_t i, j, cntr = offset, nr = mat.numRows(),
+    sm_len = (nr*nr + nr)/2, vec_len = offset + sm_len;
+  if (vec.length() != vec_len) vec.resize(vec_len);
+  for (i=0; i<nr; ++i)
+    for (j=0; j<=i; ++j, ++cntr)
+      vec[cntr] = mat(i,j); // pull from lower triangle
+}
+
+
+inline void NonDExpansion::
+push_lower_triangle(const RealVector& vec, RealSymMatrix& mat, size_t offset)
+{
+  size_t i, j, cntr = offset, nr = mat.numRows();
+  if (vec.length() != offset + (nr*nr + nr)/2) {
+    Cerr << "Error: inconsistent vector length in NonDExpansion::"
+	 << "push_lower_triangle()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=0; i<nr; ++i)
+    for (j=0; j<=i; ++j, ++cntr)
+      mat(i,j) = vec[cntr]; // push to lower triangle
+}
+
+
+inline void NonDExpansion::pull_candidate(RealVector& stats_star)
+{ pull_reference(stats_star); } // default implementation: candidate same as ref
+
+
+inline void NonDExpansion::push_candidate(const RealVector& stats_star)
+{ push_reference(stats_star); } // default implementation: candidate same as ref
+
+
 inline void NonDExpansion::update_final_statistics()
 {
   // aleatory final stats & their grads are updated directly within
@@ -629,14 +747,14 @@ check_dimension_preference(const RealVector& dim_pref) const
       Cerr << "Error: length of dimension preference specification (" << len
 	   << ") is inconsistent with continuous expansion variables ("
 	   << numContinuousVars << ")." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
     else
       for (size_t i=0; i<len; ++i)
 	if (dim_pref[i] < 0.) { // allow zero preference
 	  Cerr << "Error: bad dimension preference value (" << dim_pref[i]
 	       << ")." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(METHOD_ERROR);
 	}
   }
 }

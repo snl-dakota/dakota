@@ -198,8 +198,14 @@ private:
 
 inline void NonDQuadrature::reset()
 {
+  // reset dimensional quadrature order to specification, prior to any grid
+  // refinement, for the current active key
+  // > updates to other keys are managed by {assign,increment}_specification_
+  //   sequence() in multilevel expansion methods
   initialize_dimension_quadrature_order(quadOrderSpec, dimPrefSpec,
 					dimQuadOrderRef);
+  // clear dist param update trackers
+  tpqDriver->reset();
 }
 
 
@@ -295,7 +301,7 @@ inline void NonDQuadrature::evaluate_grid_increment()
   // would no longer be in tensor order.  For this reason, rely on duplication
   // detection for now.
 
-  tpqDriver->compute_grid(allSamples);//compute_increment(allSamples);
+  tpqDriver->compute_grid(allSamples);//Driver->compute_increment(allSamples);
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }

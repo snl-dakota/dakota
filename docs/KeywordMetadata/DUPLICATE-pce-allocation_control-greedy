@@ -1,0 +1,65 @@
+Blurb:: Sample allocation based on greedy refinement within multilevel/multifidelity polynomial chaos
+
+Description::
+Multilevel and multifidelity polynomial chaos both support greedy
+refinement strategies, spanning regression and projection approaches
+for computing expansion coefficients.  The key idea is that each level
+of the model hierarchy being approximated can generate one or more
+candidates for refinement.  These candidates are competed against each
+other within a unified competition, and the candidate that induces the
+largest change in the statistical QoI (response covariance by default,
+or results of any \f$z/p/\beta/\beta^*\f$ level mappings when specified),
+normalized by relative cost of evaluating the candidate, is selected
+and then used to generate additional candidates for consideration at
+its model level.
+
+Topics::
+
+Examples::
+
+The following example of greedy multilevel regression starts from a
+zeroth-order reference expansion (a constant) for each level, and
+generates candidate refinements for each level that are competed in a
+greedy competition.  The number of new samples for the incremented
+candidate expansion order is determined from the collocation ratio.
+In this case, the number of candidates for each level is limited to
+one uniform refinement of the current expansion order.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multilevel_polynomial_chaos # or multifidelity
+	  allocation_control greedy
+	  p_refinement uniform
+	    expansion_order_sequence = 0
+	    collocation_ratio = .9  seed = 160415
+	    orthogonal_matching_pursuit
+	    convergence_tolerance 1.e-2
+\endverbatim
+
+The next example employs generalized sparse grids within a greedy
+multilevel competition.  Each modeling level starts from a level 0
+reference grid (a single point) and generates multiple admissible
+index set candidates.  The full set of candidates across all model
+levels is competed within a unified greedy competition, where the
+greedy selection metric is the induced change in the statistical QoI,
+normalized by the aggregate simulation cost of the index set
+candidate.  In this case, there are multiple candidates for each model
+level and the number of candidates grows rapidly with random dimension
+and grid level.
+
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multilevel_polynomial_chaos # or multifidelity
+	  allocation_control greedy
+	  p_refinement dimension_adaptive generalized
+	    sparse_grid_level_sequence = 0 unrestricted
+	    convergence_tolerance 1.e-8
+\endverbatim
+
+
+Theory::
+
+Faq::
+See_Also::

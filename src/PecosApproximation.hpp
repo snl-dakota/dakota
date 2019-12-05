@@ -63,10 +63,12 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
-  /// Performs global sensitivity analysis using Sobol' Indices by
+  /// clear unused Sobol' indices
+  void clear_component_effects();
+  /// Performs global sensitivity analysis using Sobol' indices by
   /// computing component (main and interaction) effects
   void compute_component_effects();
-  /// Performs global sensitivity analysis using Sobol' Indices by
+  /// Performs global sensitivity analysis using Sobol' indices by
   /// computing total effects
   void compute_total_effects();
 
@@ -87,7 +89,7 @@ public:
   void allocate_arrays();
 
   /// initialize covariance accumulators with pointers to other QoI
-  void initialize_covariance(PecosApproximation* pecos_approx_2);
+  void initialize_covariance(Approximation& approx_2);
   /// clear covariance pointers to other QoI
   void clear_covariance_pointers();
   /// initialize covariance accumulators (also reinitialize after change
@@ -124,18 +126,17 @@ public:
 
   /// return the covariance between two response expansions, treating
   /// all variables as random
-  Real covariance(PecosApproximation* pecos_approx_2);
+  Real covariance(Approximation& approx_2);
   /// return the covariance between two response expansions, treating
   /// a subset of the variables as random
-  Real covariance(const Pecos::RealVector& x,
-		  PecosApproximation* pecos_approx_2);
+  Real covariance(const Pecos::RealVector& x, Approximation& approx_2);
   /// return the covariance between two combined response expansions,
   /// where all active variables are random
-  Real combined_covariance(PecosApproximation* pecos_approx_2);
+  Real combined_covariance(Approximation& approx_2);
   /// return the covariance between two combined response expansions,
   /// where a subset of the active variables are random
   Real combined_covariance(const Pecos::RealVector& x,
-			   PecosApproximation* pecos_approx_2);
+			   Approximation& approx_2);
 
   /// return the reliability index (mapped from z_bar), where all active
   /// variables are random
@@ -150,33 +151,58 @@ public:
   /// variables as random
   Real combined_beta(const RealVector& x, bool cdf_flag, Real z_bar);
 
-  /// return the change in covariance resulting from expansion refinement,
-  /// where all active variables are random
-  Real delta_covariance(PecosApproximation* pecos_approx_2);
-  /// return the change in covariance resulting from expansion refinement,
-  /// where a subset of the active variables are random
-  Real delta_covariance(const Pecos::RealVector& x,
-			PecosApproximation* pecos_approx_2);
-  /// return the change in covariance resulting from expansion refinement,
-  /// where all active variables are random
-  Real delta_combined_covariance(PecosApproximation* pecos_approx_2);
-  /// return the change in covariance resulting from expansion refinement,
-  /// where a subset of the active variables are random
-  Real delta_combined_covariance(const Pecos::RealVector& x,
-				 PecosApproximation* pecos_approx_2);
-
   /// return the change in mean resulting from expansion refinement,
   /// where all active variables are random
   Real delta_mean();
   /// return the change in mean resulting from expansion refinement,
   /// treating a subset of variables as random
   Real delta_mean(const RealVector& x);
+  /// return the change in mean resulting from combined expansion refinement,
+  /// where all active variables are random
+  Real delta_combined_mean();
+  /// return the change in mean resulting from combined expansion refinement,
+  /// treating a subset of variables as random
+  Real delta_combined_mean(const RealVector& x);
+
   /// return the change in standard deviation resulting from expansion
   /// refinement, where all active variables are random
   Real delta_std_deviation();
   /// return the change in standard deviation resulting from expansion
   /// refinement, treating a subset of variables as random
   Real delta_std_deviation(const RealVector& x);
+  /// return the change in standard deviation resulting from combined
+  /// expansion refinement, where all active variables are random
+  Real delta_combined_std_deviation();
+  /// return the change in standard deviation resulting from combined
+  /// expansion refinement, treating a subset of variables as random
+  Real delta_combined_std_deviation(const RealVector& x);
+
+  /// return the change in variance resulting from expansion
+  /// refinement, where all active variables are random
+  Real delta_variance();
+  /// return the change in variance resulting from expansion
+  /// refinement, treating a subset of variables as random
+  Real delta_variance(const RealVector& x);
+  /// return the change in variance resulting from combined
+  /// expansion refinement, where all active variables are random
+  Real delta_combined_variance();
+  /// return the change in variance resulting from combined
+  /// expansion refinement, treating a subset of variables as random
+  Real delta_combined_variance(const RealVector& x);
+
+  /// return the change in covariance resulting from expansion refinement,
+  /// where all active variables are random
+  Real delta_covariance(Approximation& approx_2);
+  /// return the change in covariance resulting from expansion refinement,
+  /// where a subset of the active variables are random
+  Real delta_covariance(const Pecos::RealVector& x, Approximation& approx_2);
+  /// return the change in covariance resulting from expansion refinement,
+  /// where all active variables are random
+  Real delta_combined_covariance(Approximation& approx_2);
+  /// return the change in covariance resulting from expansion refinement,
+  /// where a subset of the active variables are random
+  Real delta_combined_covariance(const Pecos::RealVector& x,
+				 Approximation& approx_2);
 
   /// return the change in reliability index (mapped from z_bar) resulting
   /// from expansion refinement, where all active variables are random
@@ -184,18 +210,19 @@ public:
   /// return the change in reliability index (mapped from z_bar) resulting
   /// from expansion refinement, treating a subset of variables as random
   Real delta_beta(const RealVector& x, bool cdf_flag, Real z_bar);
-  /// return the change in response level (mapped from beta_bar) resulting
-  /// from expansion refinement, where all active variables are random
-  Real delta_z(bool cdf_flag, Real beta_bar);
-  /// return the change in response level (mapped from beta_bar) resulting from
-  /// expansion refinement, where a subset of the active variables are random
-  Real delta_z(const RealVector& x, bool cdf_flag, Real beta_bar);
   /// return the change in reliability index (mapped from z_bar) resulting
   /// from expansion refinement, where all active variables are random
   Real delta_combined_beta(bool cdf_flag, Real z_bar);
   /// return the change in reliability index (mapped from z_bar) resulting
   /// from expansion refinement, treating a subset of variables as random
   Real delta_combined_beta(const RealVector& x, bool cdf_flag, Real z_bar);
+
+  /// return the change in response level (mapped from beta_bar) resulting
+  /// from expansion refinement, where all active variables are random
+  Real delta_z(bool cdf_flag, Real beta_bar);
+  /// return the change in response level (mapped from beta_bar) resulting from
+  /// expansion refinement, where a subset of the active variables are random
+  Real delta_z(const RealVector& x, bool cdf_flag, Real beta_bar);
   /// return the change in response level (mapped from beta_bar) resulting
   /// from expansion refinement, where all active variables are random
   Real delta_combined_z(bool cdf_flag, Real beta_bar);
@@ -210,15 +237,22 @@ public:
   /// by the Pecos polynomial approximation
   void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
 		       bool combined_stats = false);
-  /// return virtual Pecos::PolynomialApproximation::moments()
+  /// return Pecos::PolynomialApproximation::moments()
   const RealVector& moments() const;
+  /// set Pecos::PolynomialApproximation::moments()
+  void moments(const RealVector& mom);
+  /// return Pecos::PolynomialApproximation::moment(i)
+  Real moment(size_t i) const;
+  /// set Pecos::PolynomialApproximation::moment(i)
+  void moment(Real mom, size_t i);
   /// return Pecos::PolynomialApproximation::expansionMoments
   const RealVector& expansion_moments() const;
   /// return Pecos::PolynomialApproximation::numericalMoments
   const RealVector& numerical_integration_moments() const;
-  /// standardize the central moments returned from Pecos
-  void standardize_moments(const Pecos::RealVector& central_moments,
-			   Pecos::RealVector& std_moments);
+
+  /// clear tracking of computed moments, due to a change that invalidates
+  /// previous results
+  void clear_computed_bits();
 
   /// construct the Vandermonde matrix "A" for PCE regression for Ax = b
   void build_linear_system(RealMatrix& A, const UShort2DArray& multi_index);
@@ -324,6 +358,10 @@ inline bool PecosApproximation::expansion_gradient_flag() const
 { return polyApproxRep->expansion_coefficient_gradient_flag(); }
 
 
+inline void PecosApproximation::clear_component_effects()
+{ polyApproxRep->clear_component_sobol(); }
+
+
 inline void PecosApproximation::compute_component_effects()
 { polyApproxRep->compute_component_sobol(); }
 
@@ -360,9 +398,11 @@ inline void PecosApproximation::allocate_arrays()
 { polyApproxRep->allocate_arrays(); }
 
 
-inline void PecosApproximation::
-initialize_covariance(PecosApproximation* pecos_approx_2)
-{ polyApproxRep->initialize_covariance(pecos_approx_2->polyApproxRep); }
+inline void PecosApproximation::initialize_covariance(Approximation& approx_2)
+{
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  polyApproxRep->initialize_covariance(pa_2->polyApproxRep);
+}
 
 
 inline void PecosApproximation::clear_covariance_pointers()
@@ -411,25 +451,34 @@ variance_gradient(const Pecos::RealVector& x, const Pecos::SizetArray& dvv)
 { return polyApproxRep->variance_gradient(x, dvv); }
 
 
-inline Real PecosApproximation::
-covariance(PecosApproximation* pecos_approx_2)
-{ return polyApproxRep->covariance(pecos_approx_2->polyApproxRep); }
+inline Real PecosApproximation::covariance(Approximation& approx_2)
+{
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->covariance(pa_2->polyApproxRep);
+}
 
 
 inline Real PecosApproximation::
-covariance(const Pecos::RealVector& x, PecosApproximation* pecos_approx_2)
-{ return polyApproxRep->covariance(x, pecos_approx_2->polyApproxRep); }
+covariance(const Pecos::RealVector& x, Approximation& approx_2)
+{
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->covariance(x, pa_2->polyApproxRep);
+}
+
+
+inline Real PecosApproximation::combined_covariance(Approximation& approx_2)
+{
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->combined_covariance(pa_2->polyApproxRep);
+}
 
 
 inline Real PecosApproximation::
-combined_covariance(PecosApproximation* pecos_approx_2)
-{ return polyApproxRep->combined_covariance(pecos_approx_2->polyApproxRep); }
-
-
-inline Real PecosApproximation::
-combined_covariance(const Pecos::RealVector& x,
-		    PecosApproximation* pecos_approx_2)
-{ return polyApproxRep->combined_covariance(x, pecos_approx_2->polyApproxRep); }
+combined_covariance(const Pecos::RealVector& x, Approximation& approx_2)
+{
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->combined_covariance(x, pa_2->polyApproxRep);
+}
 
 
 inline Real PecosApproximation::beta(bool cdf_flag, Real z_bar)
@@ -458,6 +507,14 @@ inline Real PecosApproximation::delta_mean(const RealVector& x)
 { return polyApproxRep->delta_mean(x); }
 
 
+inline Real PecosApproximation::delta_combined_mean()
+{ return polyApproxRep->delta_combined_mean(); }
+
+
+inline Real PecosApproximation::delta_combined_mean(const RealVector& x)
+{ return polyApproxRep->delta_combined_mean(x); }
+
+
 inline Real PecosApproximation::delta_std_deviation()
 { return polyApproxRep->delta_std_deviation(); }
 
@@ -466,30 +523,59 @@ inline Real PecosApproximation::delta_std_deviation(const RealVector& x)
 { return polyApproxRep->delta_std_deviation(x); }
 
 
-inline Real PecosApproximation::
-delta_covariance(PecosApproximation* pecos_approx_2)
-{ return polyApproxRep->delta_covariance(pecos_approx_2->polyApproxRep); }
+inline Real PecosApproximation::delta_combined_std_deviation()
+{ return polyApproxRep->delta_combined_std_deviation(); }
 
 
 inline Real PecosApproximation::
-delta_covariance(const Pecos::RealVector& x, PecosApproximation* pecos_approx_2)
-{ return polyApproxRep->delta_covariance(x, pecos_approx_2->polyApproxRep); }
+delta_combined_std_deviation(const RealVector& x)
+{ return polyApproxRep->delta_combined_std_deviation(x); }
 
 
-inline Real PecosApproximation::
-delta_combined_covariance(PecosApproximation* pecos_approx_2)
+inline Real PecosApproximation::delta_variance()
+{ return polyApproxRep->delta_variance(); }
+
+
+inline Real PecosApproximation::delta_variance(const RealVector& x)
+{ return polyApproxRep->delta_variance(x); }
+
+
+inline Real PecosApproximation::delta_combined_variance()
+{ return polyApproxRep->delta_combined_variance(); }
+
+
+inline Real PecosApproximation::delta_combined_variance(const RealVector& x)
+{ return polyApproxRep->delta_combined_variance(x); }
+
+
+inline Real PecosApproximation::delta_covariance(Approximation& approx_2)
 {
-  return polyApproxRep->
-    delta_combined_covariance(pecos_approx_2->polyApproxRep);
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->delta_covariance(pa_2->polyApproxRep);
 }
 
 
 inline Real PecosApproximation::
-delta_combined_covariance(const Pecos::RealVector& x,
-			  PecosApproximation* pecos_approx_2)
+delta_covariance(const Pecos::RealVector& x, Approximation& approx_2)
 {
-  return polyApproxRep->
-    delta_combined_covariance(x, pecos_approx_2->polyApproxRep);
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->delta_covariance(x, pa_2->polyApproxRep);
+}
+
+
+inline Real PecosApproximation::
+delta_combined_covariance(Approximation& approx_2)
+{
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->delta_combined_covariance(pa_2->polyApproxRep);
+}
+
+
+inline Real PecosApproximation::
+delta_combined_covariance(const Pecos::RealVector& x, Approximation& approx_2)
+{
+  PecosApproximation* pa_2 = (PecosApproximation*)approx_2.approx_rep();
+  return polyApproxRep->delta_combined_covariance(x, pa_2->polyApproxRep);
 }
 
 
@@ -502,15 +588,6 @@ delta_beta(const RealVector& x, bool cdf_flag, Real z_bar)
 { return polyApproxRep->delta_beta(x, cdf_flag, z_bar); }
 
 
-inline Real PecosApproximation::delta_z(bool cdf_flag, Real beta_bar)
-{ return polyApproxRep->delta_z(cdf_flag, beta_bar); }
-
-
-inline Real PecosApproximation::
-delta_z(const RealVector& x, bool cdf_flag, Real beta_bar)
-{ return polyApproxRep->delta_z(x, cdf_flag, beta_bar); }
-
-
 inline Real PecosApproximation::delta_combined_beta(bool cdf_flag, Real z_bar)
 { return polyApproxRep->delta_combined_beta(cdf_flag, z_bar); }
 
@@ -518,6 +595,15 @@ inline Real PecosApproximation::delta_combined_beta(bool cdf_flag, Real z_bar)
 inline Real PecosApproximation::
 delta_combined_beta(const RealVector& x, bool cdf_flag, Real z_bar)
 { return polyApproxRep->delta_combined_beta(x, cdf_flag, z_bar); }
+
+
+inline Real PecosApproximation::delta_z(bool cdf_flag, Real beta_bar)
+{ return polyApproxRep->delta_z(cdf_flag, beta_bar); }
+
+
+inline Real PecosApproximation::
+delta_z(const RealVector& x, bool cdf_flag, Real beta_bar)
+{ return polyApproxRep->delta_z(x, cdf_flag, beta_bar); }
 
 
 inline Real PecosApproximation::delta_combined_z(bool cdf_flag, Real beta_bar)
@@ -544,6 +630,18 @@ inline const RealVector& PecosApproximation::moments() const
 { return polyApproxRep->moments(); }
 
 
+inline void PecosApproximation::moments(const RealVector& mom)
+{ polyApproxRep->moments(mom); }
+
+
+inline Real PecosApproximation::moment(size_t i) const
+{ return polyApproxRep->moment(i); }
+
+
+inline void PecosApproximation::moment(Real mom, size_t i)
+{ polyApproxRep->moment(mom, i); }
+
+
 inline const RealVector& PecosApproximation::expansion_moments() const
 { return polyApproxRep->expansion_moments(); }
 
@@ -551,12 +649,6 @@ inline const RealVector& PecosApproximation::expansion_moments() const
 inline const RealVector& PecosApproximation::
 numerical_integration_moments() const
 { return polyApproxRep->numerical_integration_moments(); }
-
-
-inline void PecosApproximation::
-standardize_moments(const Pecos::RealVector& central_moments,
-		    Pecos::RealVector& std_moments)
-{ polyApproxRep->standardize_moments(central_moments, std_moments); }
 
 
 inline void PecosApproximation::
@@ -632,13 +724,13 @@ inline void PecosApproximation::rebuild()
   //if (curr_pts > curr_pecos_pts)
     pecosBasisApprox.increment_coefficients();
   //else if (curr_pts < curr_pecos_pts)
-  //  pecosBasisApprox.decrement_coefficients();
+  //  pecosBasisApprox.pop_coefficients();
   //else: if number of points is consistent, leave as is
 }
 
 
 inline void PecosApproximation::pop_coefficients(bool save_data)
-{ pecosBasisApprox.decrement_coefficients(save_data); }
+{ pecosBasisApprox.pop_coefficients(save_data); }
 
 
 inline void PecosApproximation::push_coefficients()
@@ -656,6 +748,10 @@ inline void PecosApproximation::combine_coefficients()
 inline void PecosApproximation::
 combined_to_active_coefficients(bool clear_combined)
 { pecosBasisApprox.combined_to_active(clear_combined); }
+
+
+inline void PecosApproximation::clear_computed_bits()
+{ polyApproxRep->clear_computed_bits(); }
 
 
 inline void PecosApproximation::clear_inactive_coefficients()

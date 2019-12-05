@@ -1,0 +1,545 @@
+<table  class="spec-table">
+<tr>
+ <th width="2%" class="border-heavy-right"></th>
+ <th class="border-heavy-right" colspan="4"><b>Distribution Parameters</b> </td>
+</tr>
+<tr>
+ <th class="border-heavy-right"></th>
+ <th class="border-heavy-right" width="30%"><b>Variable Type</b> </td>
+ <th class="border-heavy-right" width="30%"><b>Parameter Name</b> </td>
+ <th class="border-heavy-right" width="20%"><b>Type</b> </td>
+ <th class="border-heavy-right" width="20%"><b>Rank</b> </td>
+</tr>
+
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">continuous_design</td>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_design_range</td>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_design_set_int</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_design_set_string</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">string</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_design_set_real</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="4"></th>
+ <td class="border-light-right" rowspan="4" valign="middle">normal_uncertain</td>
+ <td class="border-light-right">mean</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">std_deviation</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="7"></th>
+ <td class="border-light-right" rowspan="7" valign="middle">lognormal_uncertain</td>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">mean</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">std_deviation</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">error_factor</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">lambda</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">zeta</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">uniform_uncertain</td>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">loguniform_uncertain</td>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="3"></th>
+ <td class="border-light-right" rowspan="3" valign="middle">triangular_uncertain</td>
+ <td class="border-light-right">mode</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="1"></th>
+ <td class="border-light-right" rowspan="1" valign="middle">exponential_uncertain</td>
+ <td class="border-light-right">beta</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="4"></th>
+ <td class="border-light-right" rowspan="4" valign="middle">beta_uncertain</td>
+ <td class="border-light-right">alpha</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">beta</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">gamma_uncertain</td>
+ <td class="border-light-right">alpha</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">beta</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">gumbel_uncertain</td>
+ <td class="border-light-right">alpha</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">beta</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">frechet_uncertain</td>
+ <td class="border-light-right">alpha</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">beta</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">weibull_uncertain</td>
+ <td class="border-light-right">alpha</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">beta</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="3"></th>
+ <td class="border-light-right" rowspan="3" valign="middle">histogram_bin_uncertain</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">abscissas</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">counts</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="1"></th>
+ <td class="border-light-right" rowspan="1" valign="middle">poisson_uncertain</td>
+ <td class="border-light-right">lambda</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">binomial_uncertain</td>
+ <td class="border-light-right">probability_per_trial</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">num_trials</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">negative_binomial_uncertain</td>
+ <td class="border-light-right">probability_per_trial</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">num_trials</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="1"></th>
+ <td class="border-light-right" rowspan="1" valign="middle">geometric_uncertain</td>
+ <td class="border-light-right">probability_per_trial</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="3"></th>
+ <td class="border-light-right" rowspan="3" valign="middle">hypergeometric_uncertain</td>
+ <td class="border-light-right">total_population</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">selected_population</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">num_drawn</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="3"></th>
+ <td class="border-light-right" rowspan="3" valign="middle">histogram_point_uncertain_int</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">abscissas</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">counts</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="3"></th>
+ <td class="border-light-right" rowspan="3" valign="middle">histogram_point_uncertain_real</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">abscissas</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">counts</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="4"></th>
+ <td class="border-light-right" rowspan="4" valign="middle">continuous_interval_uncertain</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">interval_probabilities</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">lower_bounds</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bounds</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="4"></th>
+ <td class="border-light-right" rowspan="4" valign="middle">discrete_interval_uncertain</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">interval_probabilities</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">lower_bounds</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bounds</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="3"></th>
+ <td class="border-light-right" rowspan="3" valign="middle">discrete_uncertain_set_int</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">set_probabilities</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="3"></th>
+ <td class="border-light-right" rowspan="3" valign="middle">discrete_uncertain_set_real</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">set_probabilities</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">continuous_state</td>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_state_range</td>
+ <td class="border-light-right">lower_bound</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">upper_bound</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_state_set_int</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_state_set_string</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">string</td>
+ <td class="border-light-right">vector</td>
+</tr>
+<tr>
+ <th width="2%" class="border-heavy-right" rowspan="2"></th>
+ <td class="border-light-right" rowspan="2" valign="middle">discrete_state_set_real</td>
+ <td class="border-light-right">num_elements</td>
+ <td class="border-light-right">integer</td>
+ <td class="border-light-right">scalar</td>
+</tr>
+</tr>
+<tr>
+ <td class="border-light-right">elements</td>
+ <td class="border-light-right">real</td>
+ <td class="border-light-right">vector</td>
+</tr>
+</table>

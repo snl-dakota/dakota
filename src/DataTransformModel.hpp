@@ -80,6 +80,11 @@ public:
 
 protected:
 
+  void assign_instance();
+
+  void update_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
+
   // ---
   // Construct time convenience functions
   // ---
@@ -237,6 +242,34 @@ protected:
   IntIntResponseMapMap cachedResp;
 
 };
+
+
+inline void DataTransformModel::assign_instance()
+{ dtModelInstance = this; }
+
+
+inline void DataTransformModel::update_from_subordinate_model(size_t depth)
+{
+  // data flows from the bottom-up, so recurse first
+  if (depth == std::numeric_limits<size_t>::max())
+    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.update_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> update this level only
+
+  // Instead of RecastModel::update_from_model(subModel), manage pieces
+  // of the base implementation to avoid indexing inconsistencies due to
+  // hyper-parameter insertion:
+
+  bool update_active_complement = update_variables_from_model(subModel);
+  // Can't do this due if complement variables are re-indexed due to
+  // hyper-parameter insertion.
+  // *** TO DO: write new update fns for this type of variable growth -> don't
+  // *** break chain of updates for additional Model recursions above this one.
+  if (update_active_complement && !numHyperparams)
+    update_variables_active_complement_from_model(subModel);
+  update_response_from_model(subModel);
+}
 
 } // namespace Dakota
 

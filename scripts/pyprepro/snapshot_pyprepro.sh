@@ -8,4 +8,4 @@ if [ -z $pyprepro ]; then
   exit 2
 fi
 
-rsync -rlp --exclude '.git' ${pyprepro}/* .
+rsync -rLp --exclude '.git' ${pyprepro}/* .

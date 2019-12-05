@@ -16,9 +16,6 @@
 # s10-s11: test correct traits coverage of various Minimizer TPLs
 
 environment
-## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s9
-## Consider newer capabilities in the Dakota GUI     	     	      #s9
-  graphics                #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 #  tabular_data                                     #s9
 #    tabular_data_file = 'textbook_opt_conmin.dat'  #s9
 #   top_method_pointer = 'SBGO'                     #s10

@@ -62,9 +62,12 @@ public:
   /// set pecosBasisApprox.driverRep
   void integration_iterator(const Iterator& iterator);
 
-  /// invoke Pecos::SharedOrthogPolyApproxData::construct_basis()
-  void construct_basis(const Pecos::ShortArray& u_types,
-		       const Pecos::AleatoryDistParams& adp);
+  /// invoke Pecos::SharedPolyApproxData::construct_basis()
+  void construct_basis(const Pecos::MultivariateDistribution& u_dist);
+
+  /// invoke Pecos::SharedPolyApproxData::update_basis_distribution_parameters()
+  void update_basis_distribution_parameters(
+    const Pecos::MultivariateDistribution& u_dist);
 
   // set Pecos::SharedOrthogPolyApproxData::basisTypes
   //void basis_types(const Pecos::ShortArray& basis_types);
@@ -283,12 +286,14 @@ random_variables_key(const Pecos::BitArray& random_vars_key)
 
 
 inline void SharedPecosApproxData::
-construct_basis(const Pecos::ShortArray& u_types,
-		const Pecos::AleatoryDistParams& adp)
-{
-  ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    construct_basis(u_types, adp);
-}
+construct_basis(const Pecos::MultivariateDistribution& u_dist)
+{ pecosSharedDataRep->construct_basis(u_dist); }
+
+
+inline void SharedPecosApproxData::
+update_basis_distribution_parameters(
+  const Pecos::MultivariateDistribution& u_dist)
+{ pecosSharedDataRep->update_basis_distribution_parameters(u_dist); }
 
 
 /*
@@ -310,26 +315,17 @@ inline const Pecos::ShortArray& SharedPecosApproxData::basis_types() const
 
 inline void SharedPecosApproxData::
 polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis)
-{
-  ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    polynomial_basis(poly_basis);
-}
+{ pecosSharedDataRep->polynomial_basis(poly_basis); }
 
 
 inline const std::vector<Pecos::BasisPolynomial>& SharedPecosApproxData::
 polynomial_basis() const
-{
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    polynomial_basis();
-}
+{ return pecosSharedDataRep->polynomial_basis(); }
 
 
 inline std::vector<Pecos::BasisPolynomial>& SharedPecosApproxData::
 polynomial_basis()
-{
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    polynomial_basis();
-}
+{ return pecosSharedDataRep->polynomial_basis(); }
 
 
 inline void SharedPecosApproxData::allocate(const UShort2DArray& mi)

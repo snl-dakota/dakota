@@ -215,7 +215,14 @@ sub compare_output {
       # TODO: could test that the code and message are the same
       (my $test_code, $msg) = $test =~ /failed with exit code (\d+)([\(\) \w]*)$/;
       (my $base_code) = $base =~ /failed with exit code (\d+)$/;
-      if ($test_code) {
+      if ($test =~ /^Test Number \d+ skipped/) {
+	# No further parsing of test or base if skipped, but returning
+	# 0 as not an error
+        print "SKIP test $test_num\n";
+	$exitcode = 0;
+	return;
+      }
+      elsif ($test_code) {
 	$test_fail = 1;
 	# determine if test failure is consistent in baseline
 	if ($base_code) {

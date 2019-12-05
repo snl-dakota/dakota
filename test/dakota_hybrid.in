@@ -34,9 +34,6 @@
 
 environment
   top_method_pointer = 'HS'
-## Activate Dakota's legacy X Windows-based graphics on Unix systems    #s0,#s4
-## Consider newer capabilities in the Dakota GUI                        #s0,#s4
-  graphics
 
 method
   id_method = 'HS'

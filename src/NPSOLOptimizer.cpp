@@ -263,7 +263,7 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 {
   // NPSOL computes constraints first, then the objective function.  However, 
   // Dakota assumes that the objective and constraint function values are all 
-  // computed in a single fn. evaluation. A numNonlinearConstraints check is
+  // computed in a single fn. evaluation.  A numNonlinearConstraints check is
   // therefore needed to ensure that 1 and only 1 mapping occurs.
 
   // Handle special cases with asv_request (see SOLBase::constraint_eval)
@@ -482,4 +482,14 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   bestResponseArray.front().function_values(best_fns);
 }
 
+// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+// when it's being used to evaluate a user-defined function (e.g. finding the correlation
+// lengths of Dakota's GP). 
+void NPSOLOptimizer::declare_sources() {
+  if(setUpType == "user_functions") 
+    return;
+  else
+    Iterator::declare_sources();
+}
+ 
 } // namespace Dakota

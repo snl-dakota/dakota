@@ -51,7 +51,9 @@ public:
 
   /// parses the input file and populates the problem description
   /// database using NIDR.
-  void derived_parse_inputs(const ProgramOptions& prog_opts);
+  void derived_parse_inputs(const std::string& dakota_input_file,
+			    const std::string& dakota_input_string,
+			    const std::string& parser_options);
   /// perform any data processing that must be coordinated with DB buffer
   /// broadcasting (performed prior to broadcasting the DB buffer on rank 0
   /// and after receiving the DB buffer on other processor ranks)
@@ -198,7 +200,9 @@ public:
   KWH(model_lit);
   KWH(model_order);
   KWH(model_pint);
+  KWH(model_nnint);
   KWH(model_shint);
+  KWH(model_sizet);
   KWH(model_start);
   KWH(model_stop);
   KWH(model_str);

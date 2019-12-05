@@ -24,7 +24,7 @@
 #endif
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include <boost/lexical_cast.hpp>
 
 //#define DEBUG
@@ -233,7 +233,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // now that variables/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
-  eifModel.update_from_subordinate_model(); // depth = max
+  // There is no need to recur below iteratedModel.
+  size_t layers = 2;
+  eifModel.update_from_subordinate_model(layers-1); // recur once
 
   // (We might want a more selective update from submodel, or make a
   // new EIFModel specialization of RecastModel.)  Always want to
@@ -657,4 +659,14 @@ void EffGlobalMinimizer::update_penalty()
 #endif
 }
 
+// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+// when it's being used to evaluate a user-defined function (e.g. finding the correlation
+// lengths of Dakota's GP). 
+void EffGlobalMinimizer::declare_sources() {
+  if(setUpType == "user_functions") 
+    return;
+  else
+    Iterator::declare_sources();
+}
+ 
 } // namespace Dakota

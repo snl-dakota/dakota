@@ -66,10 +66,15 @@ public:
 			   int start_offset, int num_responses,
 			   bool response_unscale = true) const;
   
+  ActiveSet default_active_set();
+
 protected:
 
-  /// helper to compute the recast response order during member initialization
-  static short response_order(const Model& sub_model);
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void assign_instance();
 
   // ---
   // Scaling initialization helper functions
@@ -190,6 +195,10 @@ protected:
   RealVector linearEqScaleOffsets;       ///< offsets for linear constraints
 
 };
+
+
+inline void ScalingModel::assign_instance()
+{ scaleModelInstance = this; }
 
 } // namespace Dakota
 
