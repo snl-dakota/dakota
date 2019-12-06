@@ -466,9 +466,9 @@ void NonDMultilevelFunctionTrain::multilevel_regression()
       }
 
       switch (mlmfAllocControl) {
-      case RANK_SAMPLING: // use RMS of rank across QoI
+      case RANK_SAMPLING: // use RMS of system size across QoI
 	if (delta_N_l[lev] > 0)
-	  rank_metrics(level_metric[lev], 2.);
+	  regression_metric(level_metric[lev], 2.);
 	break;
       default: { //case ESTIMATOR_VARIANCE:
 	Real& agg_var_l = level_metric[lev];
@@ -530,23 +530,35 @@ void NonDMultilevelFunctionTrain::aggregate_variance(Real& agg_var_l)
 
 
 /* Compute power mean of rank (common power values: 1 = average, 2 = RMS). */
-void NonDMultilevelFunctionTrain::rank_metrics(Real& rank_metric_l, Real power)
+void NonDMultilevelFunctionTrain::
+regression_metric(Real& regress_metric_l, Real power)
 {
   // case RANK_SAMPLING:
+  // > sample requirements scale as O(p r^2 d), which shapes the profile
+  // > there is a weak dependence on the polynomial order p, but this should
+  //   not grow very high (could just fix this factor at ~10).
+  // > The function function_train_get_nparams(const struct FunctionTrain*),
+  //   accessed through C3Approximation::regression_size(), returns the number
+  //   of unknowns in the regression (per QoI, per level) which is directly
+  //   O(p r^2 d) without over-sampling.  Given this, only need to average
+  //   over numFunctions (below) and then add any over-sampling factor
+  //   (applied in compute_sample_increment())
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real sum = 0.; bool pow1 = (power == 1.); // simple average
+  Real sum = 0.; bool pow1 = (power == 1.); // detect simple average
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     C3Approximation* poly_approx_q
       = (C3Approximation*)poly_approxs[qoi].approx_rep();
-    Real rank_l = poly_approx_q->average_rank(); // power 1 over dims (average)
-    sum += (pow1) ? rank_l : std::pow(rank_l, power);
+    // Don't need to track average ranks as regression_size() is more direct:
+    //Real regress_l = poly_approx_q->average_rank(); // average rank over dims
+    Real regress_l = poly_approx_q->regression_size(); // number of unknowns
+    sum += (pow1) ? regress_l : std::pow(regress_l, power);
     //if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Rank(" /*lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << rank_l << '\n';
+      Cout << "System size(" /*lev " << lev << ", "*/ << "qoi " << qoi
+	/* << ", iter " << iter */ << ") = " << regress_l << '\n';
   }
   sum /= numFunctions;
-  rank_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
+  regress_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
 }
 
 
@@ -596,31 +608,29 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 
 
 void NonDMultilevelFunctionTrain::
-compute_sample_increment(Real factor, const RealVector& rank,
+compute_sample_increment(Real factor, const RealVector& regress_metric,
 			 const SizetArray& N_l, SizetArray& delta_N_l)
 {
   // case RANK_SAMPLING:
-  // > sample requirements scale as O(r^2 d), which shapes the profile
-  // > *** TO DO: adapt profile factor in coordination with adapt_rank ?
-  // > there is a dependence on the polynomial order, but this should not
-  //   grow very high, could just fix this factor at ~10.
-  // > The function function_train_get_nparams(const struct FunctionTrain *);
-  //   is more direct in returning the number of unknowns in the regression
-  //   (per QoI, per level) which is directly (p r^2 d) without over-sampling
-  //   excluding the need to average r over d.  I then need to add any factor
-  //   on top of this, maybe 2 instead of 10.
-  // > TO DO: repurpose collocation_ratio spec to allow user tuning.
   
-  // update targets based on rank estimates
+  /* update targets based on rank estimates
+  // > sample requirements scale as O(p r^2 d), which shapes the profile
   size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
   Real r, fact_var = factor * numContinuousVars;
   for (lev=0; lev<num_lev; ++lev)
     { r = rank[lev];  new_N_l[lev] = fact_var * r * r; }
+  */
+
+  // update targets based on regression size
+  // > TO DO: repurpose collocation_ratio spec to allow user tuning of factor
+  RealVector new_N_l = regress_metric; // number of unknowns (RMS across QoI)
+  new_N_l.scale(factor); // over-sample
 
   // Retain the shape of the profile but enforce an upper bound
   //scale_profile(..., new_N_l);
 
+  size_t lev, num_lev = N_l.size();
   delta_N_l.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev)
     delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l[lev]);

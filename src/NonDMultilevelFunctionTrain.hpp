@@ -91,7 +91,7 @@ protected:
   /// Aggregate variance across the set of QoI for a particular model level
   void aggregate_variance(Real& agg_var_l);
   /// Compute an effective rank across the set of QoI for a model level
-  void rank_metrics(Real& rank_metric_l, Real power);
+  void regression_metric(Real& regress_metric_l, Real power);
 
   /// compute delta_N_l for ESTIMATOR_VARIANCE case
   void compute_sample_increment(const RealVector& agg_var,
@@ -99,7 +99,7 @@ protected:
 				Real eps_sq_div_2, const SizetArray& N_l,
 				SizetArray& delta_N_l);
   /// compute delta_N_l for RIP_SAMPLING case
-  void compute_sample_increment(Real factor, const RealVector& rank,
+  void compute_sample_increment(Real factor, const RealVector& regress_metric,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
 private:
