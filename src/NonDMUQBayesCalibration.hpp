@@ -17,6 +17,11 @@
 
 #include "NonDBayesCalibration.hpp"
 
+#include "MUQ/Modeling/WorkGraph.h"
+#include "MUQ/SamplingAlgorithms/MarkovChain.h"
+#include "MUQ/SamplingAlgorithms/SamplingProblem.h"
+#include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"
+
 
 namespace Dakota {
 
@@ -52,17 +57,17 @@ protected:
   //- Heading: Data
   //
 
-  MUQ::WorkGraph workGraph;
+  muq::Modeling::WorkGraph workGraph;
 
-  std::shared_ptr<MUQ::IdentityOperator>       thetaPtr;
-  std::shared_ptr<MUQPriorInterface>           priorPtr;
-  std::shared_ptr<MUQModelInterface>           modelPtr;
-  std::shared_ptr<MUQLikelihoodInterface> likelihoodPtr;
-  std::shared_ptr<MUQ::DensityProduct>     posteriorPtr;
+  std::shared_ptr<muq::Modeling::IdentityOperator>       thetaPtr;
+  //std::shared_ptr<muq::Modeling::PriorInterface>           priorPtr;
+  //std::shared_ptr<muq::Modeling::ModelInterface>           modelPtr;
+  //std::shared_ptr<muq::Modeling::LikelihoodInterface> likelihoodPtr;
+  //std::shared_ptr<muq::Modeling::DensityProduct>     posteriorPtr;
 
-  std::shared_ptr<MUQ::SamplingProblem> samplingProbPtr;
-  std::shared_ptr<MUQ::MCMCSampling>     mcmcSamplerPtr;
-  std::shared_ptr<MUQ::MarkovChain>    mcmcSampleSetPtr;
+  std::shared_ptr<muq::SamplingAlgorithms::SamplingProblem> samplingProbPtr;
+  //std::shared_ptr<muq::Modeling::MCMCSampling>     mcmcSamplerPtr;
+  std::shared_ptr<muq::SamplingAlgorithms::MarkovChain>    mcmcSampleSetPtr;
 
 private:
 
@@ -98,8 +103,8 @@ protected:
   //
 
   void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
-  void GradientImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
-		    ...index_of_input_like_DVV...);
+//  void GradientImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
+//		    ...index_of_input_like_DVV...);
 
   //
   //- Heading: Data
@@ -112,7 +117,7 @@ protected:
 };
 
 
-inline MUQModelInterface::MUQModelInterface():
+inline MUQModelInterface::MUQModelInterface(Model & model):
   muq::Modeling::ModPiece(2*Eigen::VectorXi::Ones(1), // inputSizes  = [1]
 			  2*Eigen::VectorXi::Ones(1)) // outputSizes = [1]
 { }
@@ -138,7 +143,7 @@ protected:
   //
 
   // evaluate log prior(x)
-  double LogDensityImpl(ref_vector< Eigen::VectorXd > const& inputs)
+  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs);
 
   //
   //- Heading: Data
@@ -175,7 +180,7 @@ protected:
   //   observational data as inputs.at(1) from another ModPiece
   //   (another inherited class or as a "ConstantPiece")
   // Approach 2: pass obs data is through the ctor and store as member data
-  double LogDensityImpl(ref_vector< Eigen::VectorXd > const& inputs)
+  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs);
 
   //
   //- Heading: Data

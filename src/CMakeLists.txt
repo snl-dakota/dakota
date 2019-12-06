@@ -527,6 +527,7 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDSampling.cpp NonDLHSSampling.cpp
     NonDMultilevelSampling.cpp NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp 
     NonDPOFDarts.cpp NonDRKDDarts.cpp
+    NonDMUQBayesCalibration.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaTraitsBase.cpp
     DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
     SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp SurrBasedLevelData.cpp
@@ -758,6 +759,25 @@ if(HAVE_OPTPP)
   list(APPEND DAKOTA_PKG_LIBS optpp)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
+
+# Need to conditionally enable this based on HAVE_EIGEN and surrogate module enabled - RWH
+SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
+find_package(Eigen3 3.3 REQUIRED CONFIG)
+#message(STATUS "Here: EIGEN3_FOUND = ${EIGEN3_FOUND}")
+#message(STATUS "Here: EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
+#message(STATUS "Here: EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
+list(APPEND DAKOTA_INCDIRS ${EIGEN3_INCLUDE_DIRS})
+add_definitions("-DHAVE_EIGEN")
+
+#SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Dakota_SOURCE_DIR}/packages/external/muq2/CMake)
+include(${Dakota_SOURCE_DIR}/packages/external/muq2/CMake/MUQ_PRIVATE/MUQ_PRIVATEConfig.cmake)
+list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/muq2/include)
+list(APPEND DAKOTA_INCDIRS ${MUQ_INCLUDE_DIRS})
+#link_directories($(MUQ_LIBRARY_DIR))
+list(APPEND DAKOTA_PKG_LIBS ${MUQ_LIBRARIES})
+list(APPEND DAKOTA_LIBDIRS ${MUQ_LIBRARY_DIR})
+#add_subdirectory(surrogates/models/src)
+#add_subdirectory(surrogates/models/unit)
 
 if(HAVE_ROL)
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
