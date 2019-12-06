@@ -86,7 +86,7 @@ protected:
   void multilevel_regression();
 
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
-  void increment_sample_sequence(size_t new_samp,size_t total_samp,size_t lev);
+  void increment_sample_sequence(size_t new_samp);
 
   /// Aggregate variance across the set of QoI for a particular model level
   void aggregate_variance(Real& agg_var_l);
@@ -110,8 +110,7 @@ private:
 
   /// perform specification updates (shared code from
   // {assign,increment}_specification_sequence())
-  void update_from_specification(bool update_exp, bool update_sampler,
-				 bool update_from_ratio);
+  void update_from_specification();
 
   // scale sample profile to retain shape while enforcing an upper bound
   //void scale_profile(..., RealVector& new_N_l);
@@ -136,6 +135,9 @@ private:
 
   /// number of initial samples specified by the user
   SizetArray pilotSamples;
+
+  /// used for importing a pilot sample
+  String importBuildPointsFile;
 };
 
 } // namespace Dakota

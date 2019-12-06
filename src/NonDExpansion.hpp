@@ -200,10 +200,17 @@ protected:
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
 
+  /// configure expansion and basis configuration options for Pecos
+  /// polynomial approximations
+  void configure_pecos_options();
+
   /// construct the expansionSampler for evaluating samples on uSpaceModel
   void construct_expansion_sampler(const String& import_approx_file,
     unsigned short import_approx_format = TABULAR_ANNOTATED,
     bool import_approx_active_only = false);
+
+  /// generate numSamplesOnModel and append to approximations
+  void append_approximation();
 
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
@@ -617,6 +624,20 @@ level_cost(unsigned short lev, const RealVector& cost)
       lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
     return lev_cost;
   }
+}
+
+
+inline void NonDExpansion::append_approximation()
+{
+  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
+  //         increment_order_from_grid() called
+
+  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
+  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
+						    true, false);
+  uSpaceModel.run_dace();
+  // append new DACE pts and rebuild expansion
+  uSpaceModel.append_approximation(true);
 }
 
 

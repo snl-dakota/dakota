@@ -141,6 +141,10 @@ public:
   //- Heading: Member functions
   //
 
+  size_t regression_size();
+  size_t average_rank();
+  size_t maximum_rank();
+
   /// I Dont know what the next 4 are for, but I will leave them in
   /// in case I ever find out!
     
@@ -226,15 +230,12 @@ protected:
 
 private:
 
-  void base_init();
-    
-  bool expansionCoeffFlag;     // build a fn train for the QoI
-  bool expansionCoeffGradFlag; // build a fn train for the gradient of the QoI
-    
   //
   //- Heading: Convenience member functions
   //
 
+  void base_init();
+    
   void compute_derived_statistics(bool overwrite);
   struct FunctionTrain * subtract_const(Real val);
 
@@ -242,6 +243,9 @@ private:
   //- Heading: Data
   //
 
+  bool expansionCoeffFlag;     // build a fn train for the QoI
+  bool expansionCoeffGradFlag; // build a fn train for the gradient of the QoI
+    
   // containers allowing const ref return of latest result (active key)
   RealVector expansionMoments;
   RealVector numericalMoments;
@@ -269,6 +273,28 @@ inline void C3Approximation::active_model_key(const UShortArray& key)
   // sets approxData keys
   Approximation::active_model_key(key);
 }
+
+
+inline void C3Approximation::clear_model_keys()
+{
+  // sets approxData keys
+  Approximation::clear_model_keys();
+
+  levelApprox.clear();  levApproxIter = levelApprox.end();
+}
+
+
+/** this replaces the need to model data requirements as O(r^2 d) */
+inline size_t C3Approximation::regression_size()
+{ return function_train_get_nparams(levApproxIter->second.ft); }
+
+
+inline size_t C3Approximation::average_rank()
+{ return function_train_get_avgrank(levApproxIter->second.ft); }
+
+
+inline size_t C3Approximation::maximum_rank()
+{ return function_train_get_maxrank(levApproxIter->second.ft); }
 
 
 inline void C3Approximation::expansion_coefficient_flag(bool coeff_flag)

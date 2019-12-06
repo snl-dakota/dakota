@@ -248,7 +248,10 @@ void C3Approximation::build()
     // Build FT model
     levApproxIter->second.ft
       = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
-    // *** TO DO: add flag/final_asv control of this (wasteful calculations if not needed)
+    // *** TO DO: wasteful calculations if not needed
+    // > clarify expansions of derivatives w.r.t. non-random variables
+    //   vs. random deriv-enhanced builds vs. eval of derivs of expansions
+    // > then add flags / final_asv control of these
     levApproxIter->second.ft_gradient
       = function_train_gradient(levApproxIter->second.ft);
     levApproxIter->second.ft_hessian

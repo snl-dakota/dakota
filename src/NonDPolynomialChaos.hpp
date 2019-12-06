@@ -136,9 +136,6 @@ protected:
   //- Heading: Member functions
   //
 
-  /// generate new samples from numSamplesOnModel and update expansion
-  void append_expansion();
-
   /// configure exp_orders from inputs
   void config_expansion_orders(unsigned short exp_order,
 			       const RealVector& dim_pref,
@@ -189,7 +186,8 @@ protected:
   /// factor applied to terms^termsOrder in computing number of regression
   /// points, either user specified or inferred
   Real collocRatio;
-  /// option for regression PCE using a filtered set tensor-product points
+  /// option for regression PCE using a filtered set of tensor-product
+  /// quadrature points
   bool tensorRegression;
 
   /// flag for use of cross-validation for selection of parameter settings
@@ -300,20 +298,6 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 
   // utilize rebuild following expansion updates
   uSpaceModel.append_approximation(samples, resp_map, true);
-}
-
-
-inline void NonDPolynomialChaos::append_expansion()
-{
-  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
-  //         increment_order_from_grid() called
-
-  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
-  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
-						    true, false);
-  uSpaceModel.run_dace();
-  // append new DACE pts and rebuild expansion
-  uSpaceModel.append_approximation(true);
 }
 
 

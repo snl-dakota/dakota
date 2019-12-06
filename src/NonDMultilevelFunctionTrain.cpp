@@ -17,6 +17,7 @@
 #include "ProbabilityTransformModel.hpp"
 #include "SharedC3ApproxData.hpp"
 #include "C3Approximation.hpp"
+#include "NonDQuadrature.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_system_defs.hpp"
 
@@ -35,7 +36,9 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   kappaEstimatorRate(
     probDescDB.get_real("method.nond.multilevel_estimator_rate")),
   gammaEstimatorScale(1.),
-  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
+  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
+  importBuildPointsFile(
+    probDescDB.get_string("method.import_build_points_file"))
   //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
@@ -83,11 +86,10 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  UShortArray approx_order; // unused by C3
   short corr_order = -1, corr_type = NO_CORRECTION;
-  const String& import_build_pts_file
-    = probDescDB.get_string("method.import_build_points_file");
   String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
-  if (!import_build_pts_file.empty() && pt_reuse.empty())
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
   String approx_type = "global_function_train";
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
@@ -95,8 +97,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet mlft_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    mlft_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_build_pts_file,
+    mlft_set, approx_type, approx_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
@@ -106,8 +108,10 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(importApproxPointsFile, importApproxFormat, 
-			      importApproxActiveOnly);
+  construct_expansion_sampler(
+    probDescDB.get_string("method.import_approx_points_file"),
+    probDescDB.get_ushort("method.import_approx_format"),
+    probDescDB.get_bool("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nFunction train construction completed: initial grid size of "
@@ -139,7 +143,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
   mlmfAllocControl(ml_alloc_control), expOrderSeqSpec(exp_order_seq),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
-  gammaEstimatorScale(1.), pilotSamples(pilot)
+  gammaEstimatorScale(1.), importBuildPointsFile(import_build_pts_file),
+  pilotSamples(pilot)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -188,14 +193,14 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  if (!import_build_pts_file.empty()) pt_reuse = "all";
+  if (!importBuildPointsFile.empty()) pt_reuse = "all";
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_build_pts_file, import_build_format,
+    outputLevel, pt_reuse, importBuildPointsFile, import_build_format,
     import_build_active_only), false);
   initialize_u_space_model();
 
@@ -315,35 +320,35 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
 }
 
 
-void NonDMultilevelFunctionTrain::
-update_from_specification(bool update_sampler, bool update_from_ratio)
+void NonDMultilevelFunctionTrain::update_from_specification()
 {
   // udpate sampler settings (NonDQuadrature or NonDSampling)
-  if (update_sampler) {
-    if (tensorRegression) {
-      NonDQuadrature* nond_quad
-	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_quad->samples(numSamplesOnModel);
-      if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-	UShortArray dim_quad_order(numContinuousVars);
-	for (size_t i=0; i<numContinuousVars; ++i)
-	  dim_quad_order[i] = exp_order[i] + 1; // *** startOrder or tensor order spec ???
-        nond_quad->quadrature_order(dim_quad_order);
-      }
-      nond_quad->update(); // sanity check on sizes, likely a no-op
+  if (tensorRegression) {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_quad->samples(numSamplesOnModel);
+    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
+      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+	uSpaceModel.shared_approximation().data_rep();
+      size_t ft_start_order = shared_data_rep->polynomial_order();
+      UShortArray dim_quad_order(numContinuousVars);
+      for (size_t i=0; i<numContinuousVars; ++i)
+	//dim_quad_order[i] = exp_order[i] + 1;
+	dim_quad_order[i] = ft_start_order + 1;// or tensor order user spec ?
+      nond_quad->quadrature_order(dim_quad_order);
     }
-    else { // enforce increment through sampling_reset()
-      // no lower bound on samples in the subiterator
-      uSpaceModel.subordinate_iterator().sampling_reference(0);
-      DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-      dfs_model->total_points(numSamplesOnModel);
-    }
+    nond_quad->update(); // sanity check on sizes, likely a no-op
+  }
+  else { // enforce increment through sampling_reset()
+    // no lower bound on samples in the subiterator
+    uSpaceModel.subordinate_iterator().sampling_reference(0);
+    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+    dfs_model->total_points(numSamplesOnModel);
   }
 }
 
 
-void NonDMultilevelFunctionTrain::
-increment_sample_sequence(size_t new_samp)//, size_t total_samp, size_t lev)
+void NonDMultilevelFunctionTrain::increment_sample_sequence(size_t new_samp)
 {
   numSamplesOnModel = new_samp;
 
@@ -353,12 +358,13 @@ increment_sample_sequence(size_t new_samp)//, size_t total_samp, size_t lev)
     NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
     nond_quad->samples(numSamplesOnModel);
     if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-      SharedC3pproxData* shared_data_rep = (SharedC3ApproxData*)
+      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
 	uSpaceModel.shared_approximation().data_rep();
-      const UShortArray& exp_orders = shared_data_rep->expansion_order();
+      size_t ft_start_order = shared_data_rep->polynomial_order();
       UShortArray dim_quad_order(numContinuousVars);
       for (size_t i=0; i<numContinuousVars; ++i)
-	dim_quad_order[i] = exp_orders[i] + 1; // *** startOrder or tensor order spec ???
+	//dim_quad_order[i] = exp_order[i] + 1;
+	dim_quad_order[i] = ft_start_order + 1;// or tensor order user spec ?
       nond_quad->quadrature_order(dim_quad_order);
     }
     nond_quad->update(); // sanity check on sizes, likely a no-op
@@ -434,7 +440,7 @@ void NonDMultilevelFunctionTrain::multilevel_regression()
 	  uSpaceModel.update_from_subordinate_model(); // max depth
 
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
+	increment_sample_sequence(delta_N_l[lev]);
 	if (lev == 0 || import_pilot)
 	  compute_expansion(); // init + import + build; not recursive
 	else
@@ -454,9 +460,9 @@ void NonDMultilevelFunctionTrain::multilevel_regression()
       }
       else if (delta_N_l[lev]) {
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	// Note: import build data is not re-processed by append_expansion()
-	append_expansion(); // not recursive
+	increment_sample_sequence(delta_N_l[lev]);
+	// Note: import build data is not re-processed by append_approximation()
+	append_approximation();
       }
 
       switch (mlmfAllocControl) {
@@ -533,7 +539,7 @@ void NonDMultilevelFunctionTrain::rank_metrics(Real& rank_metric_l, Real power)
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     C3Approximation* poly_approx_q
       = (C3Approximation*)poly_approxs[qoi].approx_rep();
-    Real rank_l = poly_approx_q->average_rank(); // power 1 average, *** ADD IN C3Approx
+    Real rank_l = poly_approx_q->average_rank(); // power 1 over dims (average)
     sum += (pow1) ? rank_l : std::pow(rank_l, power);
     //if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Rank(" /*lev " << lev << ", "*/ << "qoi " << qoi
@@ -606,7 +612,7 @@ compute_sample_increment(Real factor, const RealVector& rank,
   // > TO DO: repurpose collocation_ratio spec to allow user tuning.
   
   // update targets based on rank estimates
-  Real r;  size_t lev, num_lev = N_l.size();
+  size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
   Real r, fact_var = factor * numContinuousVars;
   for (lev=0; lev<num_lev; ++lev)
@@ -626,11 +632,11 @@ print_results(std::ostream& s, short results_state)
 {
   switch (results_state) {
   case REFINEMENT_RESULTS:  case INTERMEDIATE_RESULTS:
-    if (outputLevel == DEBUG_OUTPUT)   print_coefficients(s);
+    //if (outputLevel == DEBUG_OUTPUT)   print_coefficients(s);
     break;
   case FINAL_RESULTS:
-    if (outputLevel >= NORMAL_OUTPUT)  print_coefficients(s);
-    if (!expansionExportFile.empty())  export_coefficients();
+    //if (outputLevel >= NORMAL_OUTPUT)  print_coefficients(s);
+    //if (!expansionExportFile.empty())  export_coefficients();
     if (!NLev.empty()) {
       s << "<<<<< Samples per solution level:\n";
       print_multilevel_evaluation_summary(s, NLev);

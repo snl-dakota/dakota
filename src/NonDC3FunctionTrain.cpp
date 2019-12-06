@@ -40,7 +40,8 @@ struct SPrintArgs
     instantiation using the ProblemDescDB. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model)
+  NonDExpansion(problem_db, model),
+  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
   //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
   //numSamplesOnModel(probDescDB.get_sizet(
   //  "method.c3function_train.num_samples_for_construction"))
@@ -97,7 +98,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   if (!import_build_pts_file.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
   String approx_type = "global_function_train";
-  UShortArray approx_order; // empty
+  UShortArray approx_order; // unused by C3
   ActiveSet ft_set = g_u_model.current_response().active_set(); // copy
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
@@ -122,7 +123,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
 /** This constructor is called by derived class constructors. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(BaseConstructor, ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model)
+  NonDExpansion(problem_db, model),
+  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
   //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
   //numSamplesOnModel(probDescDB.get_sizet(
   //  "method.c3function_train.num_samples_for_construction"))
@@ -211,7 +213,7 @@ config_regression(size_t colloc_pts, Iterator& u_space_sampler,
 void NonDC3FunctionTrain::initialize_u_space_model()
 {
   NonDExpansion::initialize_u_space_model();
-  //configure_options(); // pulled out of base because C3 does not use it
+  //configure_pecos_options(); // C3 does not use Pecos options
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
@@ -240,7 +242,7 @@ void NonDC3FunctionTrain::push_c3_options()
   shared_data_rep->set_parameter("start_poly_order",
     probDescDB.get_sizet("method.nond.c3function_train.start_order"));
   shared_data_rep->set_parameter("max_poly_order",
-    probDescDB.get_sizet("method.nond.c3function_train.max_order"););
+    probDescDB.get_sizet("method.nond.c3function_train.max_order"));
   shared_data_rep->set_parameter("start_rank",
     probDescDB.get_sizet("method.nond.c3function_train.start_rank"));
   shared_data_rep->set_parameter("kick_rank",

@@ -456,6 +456,9 @@ void NonDExpansion::initialize_u_space_model()
 
   // if all variables mode, initialize key to random variable subset
   if (allVars) {
+    SharedApproxData* shared_data_rep =
+      uSpaceModel.shared_approximation().data_rep();
+
     BitArray random_vars_key(numContinuousVars); // init to false
     assign_value(random_vars_key, true, startCAUV, numCAUV);
     shared_data_rep->random_variables_key(random_vars_key);
@@ -463,15 +466,15 @@ void NonDExpansion::initialize_u_space_model()
 }
 
 
-void NonDExpansion::configure_options()
+void NonDExpansion::configure_pecos_options()
 {
   // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
   // passed via the DataFitSurrModel ctor chain.  Additional data needed by
   // {Orthog,Interp}PolyApproximation are passed in Pecos::
   // {Expansion,Basis,Regression}ConfigOptions.   Note: passing outputLevel
   // and useDerivs again is redundant with the DataFitSurrModel ctor.
-  SharedApproxData* shared_data_rep =
-    uSpaceModel.shared_approximation().data_rep();
+  SharedPecosApproxData* shared_data_rep =
+    (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,

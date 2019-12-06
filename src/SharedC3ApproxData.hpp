@@ -73,6 +73,9 @@ public:
   // get SharedOrthogPolyApproxData::basisTypes
   //const ShortArray& basis_types() const;
 
+  /// return current basis polynomial order (startOrder for now)
+  size_t polynomial_order() const;
+
 protected:
 
   //
@@ -127,7 +130,7 @@ protected:
   bool   adaptRank; // converted to size_t (0 no, 1 yes) for C3
 
   short  regressType;
-  double regressRegParam; // if regularized regression  *** TO DO 
+  double regressRegParam; // penalty parameter if regularized regression
   double roundingTol;
   double solverTol;
   int maxSolverIterations;
@@ -176,6 +179,10 @@ inline const UShortArray& SharedC3ApproxData::active_model_key() const
 
 inline void SharedC3ApproxData::clear_model_keys()
 { activeKey.clear(); } // no shared data is currently keyed
+
+
+inline size_t SharedC3ApproxData::polynomial_order() const
+{ return startOrder; }
 
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)

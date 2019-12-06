@@ -915,8 +915,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       else if (delta_N_l[lev]) {
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	// Note: import build data is not re-processed by append_expansion()
-	append_expansion(); // not recursive
+	// Note: import build data is not re-processed by append_approximation()
+	append_approximation();
       }
 
       switch (mlmfAllocControl) {

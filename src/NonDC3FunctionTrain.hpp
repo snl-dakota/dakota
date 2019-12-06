@@ -84,6 +84,10 @@ protected:
   //- Heading: Data
   //
 
+  /// option for regression FT using a filtered set of tensor-product
+  /// quadrature points
+  bool tensorRegression;
+
   size_t numSamplesOnModel;
   //int numSamplesOnEmulator;
 

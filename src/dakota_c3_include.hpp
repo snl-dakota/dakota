@@ -58,6 +58,10 @@ extern "C"
     // Function Train and analysis
     struct FunctionTrain;
     size_t function_train_get_dim(const struct FunctionTrain *);
+    size_t function_train_get_nparams(const struct FunctionTrain *);
+    size_t function_train_get_avgrank(const struct FunctionTrain *);
+    size_t function_train_get_maxrank(const struct FunctionTrain *);
+
     void function_train_free(struct FunctionTrain *);
     struct FunctionTrain * function_train_constant(double, struct MultiApproxOpts *);
     void function_train_scale(struct FunctionTrain *, double);
