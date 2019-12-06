@@ -1519,12 +1519,31 @@ select_refinement_points(const RealVectorArray& candidate_samples,
 }
 
 
+void NonDExpansion::append_expansion()
+{
+  // default implementation (may be overridden by derived classes)
+
+  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
+  //         if necessary (PCE), increment_order_from_grid() has been called
+
+  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
+  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
+						    true, false);
+  uSpaceModel.run_dace();
+  // append new DACE pts and rebuild expansion
+  uSpaceModel.append_approximation(true);
+}
+
+
 void NonDExpansion::
 append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
-       << "       NonDExpansion does not support data appending." << std::endl;
-  abort_handler(METHOD_ERROR);
+  // default implementation (may be overridden by derived classes)
+
+  // increment the dataset
+  numSamplesOnModel += resp_map.size();
+  // utilize rebuild
+  uSpaceModel.append_approximation(samples, resp_map, true);
 }
 
 

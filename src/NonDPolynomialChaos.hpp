@@ -291,13 +291,17 @@ private:
 inline void NonDPolynomialChaos::
 append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  // adapt the expansion in sync with the dataset
-  numSamplesOnModel += resp_map.size();
-  if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION)
+  switch (expansionCoeffsApproach) {
+  case Pecos::ORTHOG_LEAST_INTERPOLATION: // no exp order update
+    NonDExpansion::append_expansion(samples, resp_map); break;
+  default:
+    // adapt the expansion in sync with the dataset
+    numSamplesOnModel += resp_map.size();
     increment_order_from_grid();
-
-  // utilize rebuild following expansion updates
-  uSpaceModel.append_approximation(samples, resp_map, true);
+    // utilize rebuild following expansion updates
+    uSpaceModel.append_approximation(samples, resp_map, true);
+    break;
+  }
 }
 
 

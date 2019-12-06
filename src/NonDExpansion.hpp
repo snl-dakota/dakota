@@ -79,7 +79,11 @@ public:
     const RealVectorArray& candidate_samples, unsigned short batch_size,
     RealMatrix& best_samples);
 
-  /// append new data to uSpaceModel and update expansion order (PCE only)
+  /// generate numSamplesOnModel, append to approximation data, and update
+  /// QoI expansions
+  virtual void append_expansion();
+  /// append new data to uSpaceModel and, when appropriate,
+  /// update expansion order
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
 
@@ -208,9 +212,6 @@ protected:
   void construct_expansion_sampler(const String& import_approx_file,
     unsigned short import_approx_format = TABULAR_ANNOTATED,
     bool import_approx_active_only = false);
-
-  /// generate numSamplesOnModel and append to approximations
-  void append_approximation();
 
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
@@ -624,20 +625,6 @@ level_cost(unsigned short lev, const RealVector& cost)
       lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
     return lev_cost;
   }
-}
-
-
-inline void NonDExpansion::append_approximation()
-{
-  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
-  //         increment_order_from_grid() called
-
-  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
-  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
-						    true, false);
-  uSpaceModel.run_dace();
-  // append new DACE pts and rebuild expansion
-  uSpaceModel.append_approximation(true);
 }
 
 
