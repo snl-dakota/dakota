@@ -5,7 +5,7 @@ environment,
 
 method,
 # These cases exercise FT as a method (like PCE/SC) on a Sim Model:
-	function_train_uq				#s0,#s1,#s2,#s3
+	function_train 	  				#s0,#s1,#s2,#s3
 	  start_order = 5			     	#s0,#s1,#s2,#s3
 	  start_rank = 2  kick_rank = 2  max_rank = 10	#s0,#s1,#s2,#s3
 	  adapt_rank   	  	      	 	    	#s0,#s1,#s2,#s3

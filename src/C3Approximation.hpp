@@ -56,20 +56,22 @@ public:
   //
 
   C3FnTrainPtrs();  ///< default constructor
-
+  C3FnTrainPtrs(C3FnTrainPtrs& c3ft_ptrs);  ///< copy constructor
   ~C3FnTrainPtrs(); ///< destructor
 
   //
   //- Heading: Member functions
   //
 
+  void copy(const C3FnTrainPtrs& ptrs);
+
   void free_ft();
+  void free_all();
 
+  // Manage stats (FTDerivedFunctions) computed from approx (FunctionTrain):
   void ft_derived_functions_init_null();
-
   // pass in sharedC3DataRep->approxOpts
   void ft_derived_functions_create(struct MultiApproxOpts * opts);
-
   void ft_derived_functions_free();
 
   //
@@ -89,6 +91,26 @@ inline C3FnTrainPtrs::C3FnTrainPtrs():
 { ft_derived_functions_init_null(); }
 
 
+  inline void C3FnTrainPtrs::copy()//(bool deep = true)
+{
+  if (ft) function_train_free(ft);
+  ft = function_train_copy(c3ft_ptrs.ft);
+
+  //ft_gradient = ;
+  //ft_hessian = ;
+  //ft_derived_fns = ;
+  //ft_sobol = ;
+}
+
+
+// TO DO: shallow copy would be better for this case, but requires ref counting
+inline C3FnTrainPtrs::C3FnTrainPtrs(C3FnTrainPtrs& c3ft_ptrs):
+  //ft(c3ft_ptrs.ft), ft_gradient(c3ft_ptrs.ft_gradient),
+  //ft_hessian(c3ft_ptrs.ft_hessian), ft_derived_fns(c3ft_ptrs.ft_derived_fns),
+  //ft_sobol(c3ft_ptrs.ft_sobol)
+{ copy(c3ft_ptrs); }
+
+
 inline void C3FnTrainPtrs::free_ft()
 {
   if (ft)          function_train_free(ft);
@@ -99,7 +121,7 @@ inline void C3FnTrainPtrs::free_ft()
 }
 
 
-inline C3FnTrainPtrs::~C3FnTrainPtrs()
+inline void C3FnTrainPtrs::free_all()
 {
   free_ft();
 
@@ -107,6 +129,10 @@ inline C3FnTrainPtrs::~C3FnTrainPtrs()
   if (ft_sobol)  c3_sobol_sensitivity_free(ft_sobol);
   ft_sobol = NULL;
 }
+
+
+inline C3FnTrainPtrs::~C3FnTrainPtrs()
+{ free_all(); }
 
 
 class SharedC3ApproxData;
@@ -219,14 +245,15 @@ protected:
   const RealSymMatrix& hessian(const Variables& vars);
 
   void build();
-  //void rebuild();
-  //void finalize();
+  void rebuild(); // build from scratch, but push C3 pointers to prev
+  void pop_coefficients(bool save_data);
+  void push_coefficients();
+  //void finalize_coefficients();
+  void combine_coefficients(); // use c3axpy
+  void combined_to_active_coefficients(bool clear_combined = true);
+  void clear_inactive_coefficients();
 
-  bool expansion_coefficient;
-  bool expansion_gradient;
   int min_coefficients() const;
-
-  //SharedC3ApproxData* sharedC3DataRep;
 
 private:
 
@@ -237,11 +264,22 @@ private:
   void base_init();
     
   void compute_derived_statistics(bool overwrite);
+
   struct FunctionTrain * subtract_const(Real val);
 
   //
   //- Heading: Data
   //
+
+  /// set of pointers to QoI approximation data for each model key
+  std::map<UShortArray, C3FnTrainPtrs> levelApprox;
+  /// iterator to active levelApprox
+  std::map<UShortArray, C3FnTrainPtrs>::iterator levApproxIter;
+
+  /// the previous approximation, cached for restoration
+  C3FnTrainPtrs prevC3FTPtrs;
+  /// the combined approximation, summed across model keys
+  C3FnTrainPtrs combinedC3FTPtrs;
 
   bool expansionCoeffFlag;     // build a fn train for the QoI
   bool expansionCoeffGradFlag; // build a fn train for the gradient of the QoI
@@ -249,11 +287,6 @@ private:
   // containers allowing const ref return of latest result (active key)
   RealVector expansionMoments;
   RealVector numericalMoments;
-
-  /// set of pointers to QoI approximation data for each model key
-  std::map<UShortArray, C3FnTrainPtrs> levelApprox;
-  /// iterator to active levelApprox
-  std::map<UShortArray, C3FnTrainPtrs>::iterator levApproxIter;
 };
 
 
@@ -284,7 +317,7 @@ inline void C3Approximation::clear_model_keys()
 }
 
 
-/** this replaces the need to model data requirements as O(r^2 d) */
+/** this replaces the need to model data requirements as O(p r^2 d) */
 inline size_t C3Approximation::regression_size()
 { return function_train_get_nparams(levApproxIter->second.ft); }
 

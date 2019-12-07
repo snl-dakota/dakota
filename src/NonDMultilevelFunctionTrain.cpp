@@ -622,6 +622,14 @@ compute_sample_increment(Real factor, const RealVector& regress_metric,
     { r = rank[lev];  new_N_l[lev] = fact_var * r * r; }
   */
 
+  // *** NOTE: feedback of new samples inducing increased rank can happen but
+  //     can be controlled with the rounding tolerance.
+  // > Alex checks 2 things before advancing the rank: (1) if CV error decreases
+  //   and if ranks decrease when rounding, then done
+  // > May need to tune this user spec (and its default)
+
+
+  
   // update targets based on regression size
   // > TO DO: repurpose collocation_ratio spec to allow user tuning of factor
   RealVector new_N_l = regress_metric; // number of unknowns (RMS across QoI)

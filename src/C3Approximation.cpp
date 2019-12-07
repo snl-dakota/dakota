@@ -36,6 +36,7 @@ void C3FnTrainPtrs::ft_derived_functions_init_null()
 }
 
 
+// RENAME TO INDICATE THAT THIS IS REALLY ALLOCATING/FILLING STATS MEMORY DOWNSTREAM
 void C3FnTrainPtrs::ft_derived_functions_create(struct MultiApproxOpts * opts)
 {
   ft_derived_fns.ft_squared = function_train_product(ft,ft);
@@ -181,18 +182,10 @@ void C3Approximation::build()
     abort_handler(APPROX_ERROR);
   }
   else {
-    double absxtol = 1e-10;
-    struct c3Opt* optimizer = c3opt_create(BFGS);
-    c3opt_set_maxiter(optimizer,data_rep->maxSolverIterations);
-    c3opt_set_gtol   (optimizer,data_rep->solverTol);
-    c3opt_set_relftol(optimizer,data_rep->solverTol);
-    c3opt_set_absxtol(optimizer,absxtol);
-    c3opt_set_verbose(optimizer,0);
-
     size_t i, j, num_v = sharedDataRep->numVars;
     SizetVector start_ranks(num_v+1);  
     start_ranks(0) = 1;  start_ranks(num_v) = 1;
-    for (i = 1; i < num_v; ++i)
+    for (i=1; i<num_v; ++i)
       start_ranks(i) = data_rep->startRank;
 
     struct FTRegress * ftr
@@ -213,10 +206,13 @@ void C3Approximation::build()
     ft_regress_set_roundtol(ftr,data_rep->roundingTol);
     ft_regress_set_verbose( ftr,data_rep->c3Verbosity);
 
-    c3opt_set_verbose(optimizer,data_rep->c3Verbosity);
+    double absxtol = 1e-10;
+    struct c3Opt* optimizer = c3opt_create(BFGS);
     c3opt_set_maxiter(optimizer,data_rep->maxSolverIterations);
     c3opt_set_gtol   (optimizer,data_rep->solverTol);
     c3opt_set_relftol(optimizer,data_rep->solverTol);
+    c3opt_set_absxtol(optimizer,absxtol);
+    c3opt_set_verbose(optimizer,data_rep->c3Verbosity);
 
     // free if previously built
     levApproxIter->second.free_ft();
@@ -248,14 +244,20 @@ void C3Approximation::build()
     // Build FT model
     levApproxIter->second.ft
       = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
-    // *** TO DO: wasteful calculations if not needed
+    // Avoid these calculations if not needed
     // > clarify expansions of derivatives w.r.t. non-random variables
-    //   vs. random deriv-enhanced builds vs. eval of derivs of expansions
+    //   vs. random deriv-enhanced builds vs. eval of derivs of expansions:
+    //   --> These derivatives are functions that can then be evaluated after
+    //       the build at particular points.
     // > then add flags / final_asv control of these
-    levApproxIter->second.ft_gradient
-      = function_train_gradient(levApproxIter->second.ft);
-    levApproxIter->second.ft_hessian
-      = ft1d_array_jacobian(levApproxIter->second.ft_gradient);
+    //   --> the logic on whether or not to precompute these needs to be based
+    //       on whether we expect emulator grad/Hessian evals downstream.
+    if (false) { // *** TO DO
+      levApproxIter->second.ft_gradient
+	= function_train_gradient(levApproxIter->second.ft);
+      levApproxIter->second.ft_hessian
+	= ft1d_array_jacobian(levApproxIter->second.ft_gradient);
+    }
 
     // free approximation stuff
     free(xtrain);          xtrain    = NULL;
@@ -263,6 +265,119 @@ void C3Approximation::build()
     ft_regress_free(ftr);  ftr       = NULL;
     c3opt_free(optimizer); optimizer = NULL;
   }
+}
+
+
+void C3Approximation::rebuild()
+{
+  SharedRegressOrthogPolyApproxData* data_rep
+    = (SharedRegressOrthogPolyApproxData*)sharedDataRep;
+  update_active_iterators(data_rep->activeKey); // redundant but needed for
+                                                // prevExp prior to compute
+  // for use in pop_coefficients()
+  prevC3FTPtrs.copy(levApproxIter->second); // deep copy
+
+  build(); // from scratch
+}
+
+
+void C3Approximation::pop_coefficients(bool save_data)
+{
+  SharedRegressOrthogPolyApproxData* data_rep
+    = (SharedRegressOrthogPolyApproxData*)sharedDataRep;
+  const UShortArray& key = data_rep->activeKey;
+
+  // likely overkill, but multilevel roll up after increment modifies and
+  // then restores active key
+  update_active_iterators(key);
+
+  C3FnTrainPtrs& c3ft_ptrs = levApproxIter->second;
+
+  // store the incremented coeff state for possible push
+  //if (save_data)
+  //  poppedC3FTPtrs[key].push_back(c3ft_ptrs);
+
+  // reset expansion
+  c3ft_ptrs.copy(prevC3FTPtrs);
+
+  //clear_computed_bits();
+}
+
+
+void C3Approximation::push_coefficients()
+{
+  SharedRegressOrthogPolyApproxData* data_rep
+    = (SharedRegressOrthogPolyApproxData*)sharedDataRep;
+  const UShortArray& key = data_rep->activeKey;
+
+  // synchronize expansionCoeff{s,Grads} and approxData
+  update_active_iterators(key);
+
+  // SharedPolyApproxData::candidate_index() currently returns 0 for
+  // all cases other than generalized sparse grids
+  size_t p_index = data_rep->push_index();
+
+  // store current state for use in pop_coefficients()
+  prevC3FTPtrs.copy(levApproxIter->second); // deep copy
+
+  // retrieve a previously popped state
+  //std::map<UShortArray, C3FnTrainPtrs>::iterator prv_it
+  //  = poppedC3FTPtrs.find(key);
+  //C3FnTrainPtrsDeque::iterator rv_it;
+  //if (prv_it != poppedC3FTPtrs.end()) {
+  //  rv_it = prv_it->second.begin();      std::advance(rv_it, p_index);
+  //  levApproxIter->second.copy(*rv_it);  prv_it->second.erase(rv_it);
+  //}
+
+  //clear_computed_bits();
+}
+
+
+void C3Approximation::combine_coefficients()
+{
+  // Option 1: adds x to y and overwrites y (I allocate x and y)
+  combinedC3FTPtrs.free_ft();
+  std::map<UShortArray, C3FnTrainPtrs>::iterator it = levApprox.begin();
+  combinedC3FTPtrs.ft = function_train_copy(it->second.ft); ++it;
+  for (; it!= levApprox.end(); ++it)
+    c3axpy(1., it->second.ft, combinedC3FTPtrs.ft, 1.e-8);
+
+  // Option 2: function_train_sum (I allocate a and b and C3 allocates c)
+  // > remember to deallocate c when done
+  //struct FunctionTrain * c = function_train_sum(a, b);
+}
+
+void C3Approximation::combined_to_active_coefficients(bool clear_combined)
+{
+  SharedOrthogPolyApproxData* data_rep
+    = (SharedOrthogPolyApproxData*)sharedDataRep;
+  update_active_iterators(data_rep->activeKey);
+
+  levApproxIter->second.copy(combinedC3FTPtrs);
+  if (clear_combined)
+    combinedC3FTPtrs.free_all();
+
+  //allocate_component_sobol();  // size sobolIndices from shared sobolIndexMap
+
+  // If outgoing stats type is active (e.g., as in Dakota::NonDExpansion::
+  // multifidelity_expansion()), then previous active stats are invalidated.
+  // But if outgoing stats type is combined, then can avoid recomputation
+  // and carry over current moment stats from combined to active. 
+  // Note: this reuse optimization introduces an order dependency --> updating
+  //       stats type from COMBINED to ACTIVE must occur after this function
+  //if (data_rep->expConfigOptions.refineStatsType == ACTIVE_EXPANSION_STATS)
+  //  clear_computed_bits();
+}
+
+
+void C3Approximation::clear_inactive_coefficients();
+{
+  std::map<UShortArray, C3FnTrainPtrs>::iterator it = levelApprox.begin();
+  while (it != levelApprox.end())
+    if (it == levApproxIter) // preserve active
+      ++it;
+    else // clear inactive: postfix increments manage iterator invalidations
+      levelApprox.erase(it++);
 }
 
 

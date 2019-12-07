@@ -106,9 +106,8 @@ protected:
   //- Heading: Data
   //
 
-  // This data is shared per QoI, but may not be shared per level...
-  // What parts should be independent (e.g. actual rank i/o rank spec)
-
+  // This data is shared per QoI _and_ per level
+  //
   /// 1D approximation options (basis type, poly order, etc.)
   struct OneApproxOpts ** oneApproxOpts;
   /// n-D approximation options, augmenting 1D options
@@ -116,7 +115,7 @@ protected:
 
   // these are stored in oneApproxOpts, but currently need to be cached
   // to persist between set_parameter() and construct_basis()
-
+  //
   /// starting point for polynomial order (not currently adapted for regression)
   size_t startOrder; // Sequence?
   /// maximum value for polynomial order (if adapted)
@@ -144,8 +143,7 @@ protected:
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
-  /* stored locally rather than passed along to library (as in Pecos) */
-  //BitArray ranVarsKey;
+  //BitArray ranVarsKey; // stored locally rather than passed to library (Pecos)
   /// indices for random subset when approximating in all-variables mode
   SizetVector randomIndices;
 
