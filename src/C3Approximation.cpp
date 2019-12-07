@@ -270,9 +270,8 @@ void C3Approximation::build()
 
 void C3Approximation::rebuild()
 {
-  SharedRegressOrthogPolyApproxData* data_rep
-    = (SharedRegressOrthogPolyApproxData*)sharedDataRep;
-  update_active_iterators(data_rep->activeKey); // redundant but needed for
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  active_model_key(data_rep->activeKey); // redundant but needed for
                                                 // prevExp prior to compute
   // for use in pop_coefficients()
   prevC3FTPtrs.copy(levApproxIter->second); // deep copy
@@ -283,13 +282,12 @@ void C3Approximation::rebuild()
 
 void C3Approximation::pop_coefficients(bool save_data)
 {
-  SharedRegressOrthogPolyApproxData* data_rep
-    = (SharedRegressOrthogPolyApproxData*)sharedDataRep;
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   const UShortArray& key = data_rep->activeKey;
 
   // likely overkill, but multilevel roll up after increment modifies and
   // then restores active key
-  update_active_iterators(key);
+  active_model_key(key);
 
   C3FnTrainPtrs& c3ft_ptrs = levApproxIter->second;
 
@@ -306,23 +304,22 @@ void C3Approximation::pop_coefficients(bool save_data)
 
 void C3Approximation::push_coefficients()
 {
-  SharedRegressOrthogPolyApproxData* data_rep
-    = (SharedRegressOrthogPolyApproxData*)sharedDataRep;
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   const UShortArray& key = data_rep->activeKey;
 
   // synchronize expansionCoeff{s,Grads} and approxData
-  update_active_iterators(key);
+  active_model_key(key);
 
   // SharedPolyApproxData::candidate_index() currently returns 0 for
   // all cases other than generalized sparse grids
-  size_t p_index = data_rep->push_index();
+  //size_t p_index = data_rep->push_index(key); // *** TO DO
 
   // store current state for use in pop_coefficients()
   prevC3FTPtrs.copy(levApproxIter->second); // deep copy
 
   // retrieve a previously popped state
   //std::map<UShortArray, C3FnTrainPtrs>::iterator prv_it
-  //  = poppedC3FTPtrs.find(key);
+  //  = poppedC3FTPtrs.find(key); // *** TO DO
   //C3FnTrainPtrsDeque::iterator rv_it;
   //if (prv_it != poppedC3FTPtrs.end()) {
   //  rv_it = prv_it->second.begin();      std::advance(rv_it, p_index);
@@ -337,21 +334,21 @@ void C3Approximation::combine_coefficients()
 {
   // Option 1: adds x to y and overwrites y (I allocate x and y)
   combinedC3FTPtrs.free_ft();
-  std::map<UShortArray, C3FnTrainPtrs>::iterator it = levApprox.begin();
+  std::map<UShortArray, C3FnTrainPtrs>::iterator it = levelApprox.begin();
   combinedC3FTPtrs.ft = function_train_copy(it->second.ft); ++it;
-  for (; it!= levApprox.end(); ++it)
-    c3axpy(1., it->second.ft, combinedC3FTPtrs.ft, 1.e-8);
+  for (; it!= levelApprox.end(); ++it)
+    c3axpy(1., it->second.ft, &combinedC3FTPtrs.ft, 1.e-8);
 
   // Option 2: function_train_sum (I allocate a and b and C3 allocates c)
   // > remember to deallocate c when done
   //struct FunctionTrain * c = function_train_sum(a, b);
 }
 
+
 void C3Approximation::combined_to_active_coefficients(bool clear_combined)
 {
-  SharedOrthogPolyApproxData* data_rep
-    = (SharedOrthogPolyApproxData*)sharedDataRep;
-  update_active_iterators(data_rep->activeKey);
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  active_model_key(data_rep->activeKey);
 
   levApproxIter->second.copy(combinedC3FTPtrs);
   if (clear_combined)
@@ -370,7 +367,7 @@ void C3Approximation::combined_to_active_coefficients(bool clear_combined)
 }
 
 
-void C3Approximation::clear_inactive_coefficients();
+void C3Approximation::clear_inactive_coefficients()
 {
   std::map<UShortArray, C3FnTrainPtrs>::iterator it = levelApprox.begin();
   while (it != levelApprox.end())

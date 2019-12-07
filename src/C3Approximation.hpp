@@ -56,7 +56,7 @@ public:
   //
 
   C3FnTrainPtrs();  ///< default constructor
-  C3FnTrainPtrs(C3FnTrainPtrs& c3ft_ptrs);  ///< copy constructor
+  C3FnTrainPtrs(const C3FnTrainPtrs& c3ft_ptrs);  ///< copy constructor
   ~C3FnTrainPtrs(); ///< destructor
 
   //
@@ -91,7 +91,8 @@ inline C3FnTrainPtrs::C3FnTrainPtrs():
 { ft_derived_functions_init_null(); }
 
 
-  inline void C3FnTrainPtrs::copy()//(bool deep = true)
+inline void C3FnTrainPtrs::
+copy(const C3FnTrainPtrs& c3ft_ptrs)//, bool deep = true)
 {
   if (ft) function_train_free(ft);
   ft = function_train_copy(c3ft_ptrs.ft);
@@ -104,7 +105,7 @@ inline C3FnTrainPtrs::C3FnTrainPtrs():
 
 
 // TO DO: shallow copy would be better for this case, but requires ref counting
-inline C3FnTrainPtrs::C3FnTrainPtrs(C3FnTrainPtrs& c3ft_ptrs):
+inline C3FnTrainPtrs::C3FnTrainPtrs(const C3FnTrainPtrs& c3ft_ptrs)//:
   //ft(c3ft_ptrs.ft), ft_gradient(c3ft_ptrs.ft_gradient),
   //ft_hessian(c3ft_ptrs.ft_hessian), ft_derived_fns(c3ft_ptrs.ft_derived_fns),
   //ft_sobol(c3ft_ptrs.ft_sobol)
