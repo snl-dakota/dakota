@@ -47,7 +47,12 @@ struct FTDerivedFunctions
 };
 
 
-class C3FnTrainPtrs
+// C3FnTrainPtrs already resembles a handle managing pointers.  However, the
+// ref count has to be shared/managed along with the shared representation(s).
+// So resorting to the standard handle-body approach and adding a
+// C3FnTrainPtrsRep class. (Note: could also consider C++ smart pointer.)
+
+class C3FnTrainPtrsRep
 {
 public:
 
@@ -55,15 +60,14 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  C3FnTrainPtrs();  ///< default constructor
-  C3FnTrainPtrs(const C3FnTrainPtrs& c3ft_ptrs);  ///< copy constructor
-  ~C3FnTrainPtrs(); ///< destructor
+  C3FnTrainPtrsRep();  ///< default constructor
+  ~C3FnTrainPtrsRep(); ///< destructor
 
   //
   //- Heading: Member functions
   //
 
-  void copy(const C3FnTrainPtrs& ptrs);
+  //void copy(const C3FnTrainPtrsRep& ptrs);
 
   void free_ft();
   void free_all();
@@ -81,62 +85,204 @@ public:
   struct FunctionTrain * ft;
   struct FT1DArray * ft_gradient;
   struct FT1DArray * ft_hessian;
+
+  // allocated downstream in compute_derived_statistics() for storing stats
   struct FTDerivedFunctions ft_derived_fns;
+  // allocated downstream in compute_all_sobol_indices() for storing indices
   struct C3SobolSensitivity * ft_sobol;
+
+  int referenceCount; ///< number of handle objects sharing pointers
 };
 
 
-inline C3FnTrainPtrs::C3FnTrainPtrs():
-  ft(NULL), ft_gradient(NULL), ft_hessian(NULL), ft_sobol(NULL)
+inline C3FnTrainPtrsRep::C3FnTrainPtrsRep():
+  ft(NULL), ft_gradient(NULL), ft_hessian(NULL), ft_sobol(NULL),
+  referenceCount(1)
 { ft_derived_functions_init_null(); }
 
 
-inline void C3FnTrainPtrs::
-copy(const C3FnTrainPtrs& c3ft_ptrs)//, bool deep = true)
+inline void C3FnTrainPtrsRep::free_ft()
 {
-  if (ft) function_train_free(ft);
-  ft = function_train_copy(c3ft_ptrs.ft);
+  if (ft)          { function_train_free(ft);      ft          = NULL; }
+  if (ft_gradient) { ft1d_array_free(ft_gradient); ft_gradient = NULL; }
+  if (ft_hessian)  { ft1d_array_free(ft_hessian);  ft_hessian  = NULL; }
+}
 
-  //ft_gradient = ;
-  //ft_hessian = ;
-  //ft_derived_fns = ;
-  //ft_sobol = ;
+
+inline void C3FnTrainPtrsRep::free_all()
+{
+  free_ft();
+  ft_derived_functions_free();
+  if (ft_sobol)
+    { c3_sobol_sensitivity_free(ft_sobol); ft_sobol = NULL; }
+}
+
+
+inline C3FnTrainPtrsRep::~C3FnTrainPtrsRep()
+{ free_all(); }
+
+
+class C3FnTrainPtrs
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  C3FnTrainPtrs();                         ///< default constructor
+  C3FnTrainPtrs(const C3FnTrainPtrs& ftp); ///< copy constructor
+  ~C3FnTrainPtrs();                        ///< destructor
+
+  /// assignment operator
+  C3FnTrainPtrs& operator=(const C3FnTrainPtrs& ftp);
+
+  //
+  //- Heading: Member functions
+  //
+
+  C3FnTrainPtrs copy() const;
+
+  void free_ft();
+  void free_all();
+
+  // Manage stats (FTDerivedFunctions) computed from approx (FunctionTrain):
+  void derived_functions_init_null();
+  // pass in sharedC3DataRep->approxOpts
+  void derived_functions_create(struct MultiApproxOpts* opts);
+  void derived_functions_free();
+
+  struct FunctionTrain *      function_train();
+  struct FT1DArray *          function_train_gradient();
+  struct FT1DArray *          function_train_hessian();
+  void function_train(struct FunctionTrain * ft);
+  void function_train_gradient(struct FT1DArray * ftg);
+  void function_train_hessian(struct FT1DArray * fth);
+
+  const struct FTDerivedFunctions& derived_functions();
+  struct C3SobolSensitivity * sobol();
+
+  //
+  //- Heading: Data
+  //
+
+  C3FnTrainPtrsRep* ftpRep; ///< number of handle objects sharing pointers
+};
+
+
+inline C3FnTrainPtrs::C3FnTrainPtrs(): ftpRep(new C3FnTrainPtrsRep())
+{ } // body allocated with null FT pointers
+
+
+inline C3FnTrainPtrs C3FnTrainPtrs::copy() const
+{
+  C3FnTrainPtrs ftp; // new envelope with ftpRep default allocated
+
+  ftp.ftpRep->ft          = function_train_copy(ftpRep->ft);
+  ftp.ftpRep->ft_gradient = ft1d_array_copy(ftpRep->ft_gradient);
+  ftp.ftpRep->ft_hessian  = ft1d_array_copy(ftpRep->ft_hessian);
+
+  // ft_derived_fns,ft_sobol have been assigned NULL and can be allocated
+  // downsteam when needed for stats,indices
+
+  return ftp;
 }
 
 
 // TO DO: shallow copy would be better for this case, but requires ref counting
-inline C3FnTrainPtrs::C3FnTrainPtrs(const C3FnTrainPtrs& c3ft_ptrs)//:
-  //ft(c3ft_ptrs.ft), ft_gradient(c3ft_ptrs.ft_gradient),
-  //ft_hessian(c3ft_ptrs.ft_hessian), ft_derived_fns(c3ft_ptrs.ft_derived_fns),
-  //ft_sobol(c3ft_ptrs.ft_sobol)
-{ copy(c3ft_ptrs); }
-
-
-inline void C3FnTrainPtrs::free_ft()
+inline C3FnTrainPtrs::C3FnTrainPtrs(const C3FnTrainPtrs& ftp)
 {
-  if (ft)          function_train_free(ft);
-  if (ft_gradient) ft1d_array_free(ft_gradient);
-  if (ft_hessian)  ft1d_array_free(ft_hessian);
-
-  ft = NULL;  ft_gradient = NULL;  ft_hessian = NULL;
-}
-
-
-inline void C3FnTrainPtrs::free_all()
-{
-  free_ft();
-
-  ft_derived_functions_free();
-  if (ft_sobol)  c3_sobol_sensitivity_free(ft_sobol);
-  ft_sobol = NULL;
+  // Increment new (no old to decrement)
+  ftpRep = ftp.ftpRep;
+  if (ftpRep) // Check for an assignment of NULL
+    ++ftpRep->referenceCount;
 }
 
 
 inline C3FnTrainPtrs::~C3FnTrainPtrs()
-{ free_all(); }
+{
+  if (ftpRep) { // Check for NULL
+    --ftpRep->referenceCount; // decrement
+    if (ftpRep->referenceCount == 0)
+      delete ftpRep;
+  }
+}
 
 
-class SharedC3ApproxData;
+inline C3FnTrainPtrs& C3FnTrainPtrs::operator=(const C3FnTrainPtrs& ftp)
+{
+  if (ftpRep != ftp.ftpRep) { // prevent re-assignment of same rep
+    // Decrement old
+    if (ftpRep) // Check for NULL
+      if ( --ftpRep->referenceCount == 0 ) 
+	delete ftpRep;
+    // Increment new
+    ftpRep = ftp.ftpRep;
+    if (ftpRep) // Check for an assignment of NULL
+      ++ftpRep->referenceCount;
+  }
+  // else if assigning same rep, then leave referenceCount as is
+
+  return *this;
+}
+
+// Note: the following functions init/create/free ft memory within an ftpRep
+//       but do not alter ftpRep accounting
+
+inline void C3FnTrainPtrs::free_ft()
+{ ftpRep->free_ft(); }
+
+
+inline void C3FnTrainPtrs::free_all()
+{ ftpRep->free_all(); }
+
+
+inline void C3FnTrainPtrs::derived_functions_init_null()
+{ ftpRep->ft_derived_functions_init_null(); }
+
+
+inline void C3FnTrainPtrs::
+derived_functions_create(struct MultiApproxOpts * opts)
+{ ftpRep->ft_derived_functions_create(opts); }
+
+
+inline void C3FnTrainPtrs::derived_functions_free()
+{ ftpRep->ft_derived_functions_free(); }
+
+
+inline struct FunctionTrain * C3FnTrainPtrs::function_train()
+{ return ftpRep->ft; }
+
+
+inline struct FT1DArray * C3FnTrainPtrs::function_train_gradient()
+{ return ftpRep->ft_gradient; }
+
+
+inline struct FT1DArray * C3FnTrainPtrs::function_train_hessian()
+{ return ftpRep->ft_hessian; }
+
+
+inline void C3FnTrainPtrs::function_train(struct FunctionTrain * ft)
+{ ftpRep->ft = ft; }
+
+
+inline void C3FnTrainPtrs::function_train_gradient(struct FT1DArray * ftg)
+{ ftpRep->ft_gradient = ftg; }
+
+
+inline void C3FnTrainPtrs::function_train_hessian(struct FT1DArray * fth)
+{ ftpRep->ft_hessian = fth; }
+
+
+inline const struct FTDerivedFunctions& C3FnTrainPtrs::derived_functions()
+{ return ftpRep->ft_derived_fns; }
+
+
+inline struct C3SobolSensitivity * C3FnTrainPtrs::sobol()
+{ return ftpRep->ft_sobol; }
+
+
+class SharedC3ApproxData;  // forward declare
 
 
 /// Derived approximation class for global basis polynomials.
@@ -320,15 +466,15 @@ inline void C3Approximation::clear_model_keys()
 
 /** this replaces the need to model data requirements as O(p r^2 d) */
 inline size_t C3Approximation::regression_size()
-{ return function_train_get_nparams(levApproxIter->second.ft); }
+{ return function_train_get_nparams(levApproxIter->second.function_train()); }
 
 
 inline size_t C3Approximation::average_rank()
-{ return function_train_get_avgrank(levApproxIter->second.ft); }
+{ return function_train_get_avgrank(levApproxIter->second.function_train()); }
 
 
 inline size_t C3Approximation::maximum_rank()
-{ return function_train_get_maxrank(levApproxIter->second.ft); }
+{ return function_train_get_maxrank(levApproxIter->second.function_train()); }
 
 
 inline void C3Approximation::expansion_coefficient_flag(bool coeff_flag)
@@ -370,28 +516,28 @@ inline const RealVector& C3Approximation::numerical_integration_moments() const
 inline Real C3Approximation::third_central()
 {
   compute_derived_statistics(false);
-  return levApproxIter->second.ft_derived_fns.third_central_moment;
+  return levApproxIter->second.derived_functions().third_central_moment;
 }
 
 
 inline Real C3Approximation::fourth_central()
 {
   compute_derived_statistics(false);
-  return levApproxIter->second.ft_derived_fns.fourth_central_moment;
+  return levApproxIter->second.derived_functions().fourth_central_moment;
 }
 
 
 inline Real C3Approximation::skewness()
 {
   compute_derived_statistics(false);
-  return levApproxIter->second.ft_derived_fns.skewness;
+  return levApproxIter->second.derived_functions().skewness;
 }
 
 
 inline Real C3Approximation::kurtosis()
 {
   compute_derived_statistics(false);
-  return levApproxIter->second.ft_derived_fns.kurtosis;
+  return levApproxIter->second.derived_functions().kurtosis;
 }
 
 
@@ -415,17 +561,17 @@ inline void C3Approximation::compute_total_effects()
 
 
 inline Real C3Approximation::main_sobol_index(size_t dim)
-{ return c3_sobol_sensitivity_get_main(levApproxIter->second.ft_sobol,dim); }
+{ return c3_sobol_sensitivity_get_main(levApproxIter->second.sobol(),dim); }
 
 
 inline Real C3Approximation::total_sobol_index(size_t dim)
-{ return c3_sobol_sensitivity_get_total(levApproxIter->second.ft_sobol,dim); }
+{ return c3_sobol_sensitivity_get_total(levApproxIter->second.sobol(),dim); }
 
 
 inline void C3Approximation::
 sobol_iterate_apply(void (*f)(double val, size_t ninteract,
 			      size_t*interactions,void* arg), void* args)
-{ c3_sobol_sensitivity_apply_external(levApproxIter->second.ft_sobol,f,args); }
+{ c3_sobol_sensitivity_apply_external(levApproxIter->second.sobol(),f,args); }
 
 } // end namespace
 

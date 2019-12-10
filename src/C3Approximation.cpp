@@ -8,16 +8,14 @@
 
 #include "ProblemDescDB.hpp"
 #include "C3Approximation.hpp"
-
 #include "SharedC3ApproxData.hpp"
-//#include "NonDIntegration.hpp"
 
 //#define DEBUG
 
 namespace Dakota {
 
 
-void C3FnTrainPtrs::ft_derived_functions_init_null()
+void C3FnTrainPtrsRep::ft_derived_functions_init_null()
 {
   ft_derived_fns.set = 0;
         
@@ -36,8 +34,8 @@ void C3FnTrainPtrs::ft_derived_functions_init_null()
 }
 
 
-// RENAME TO INDICATE THAT THIS IS REALLY ALLOCATING/FILLING STATS MEMORY DOWNSTREAM
-void C3FnTrainPtrs::ft_derived_functions_create(struct MultiApproxOpts * opts)
+void C3FnTrainPtrsRep::
+ft_derived_functions_create(struct MultiApproxOpts * opts)
 {
   ft_derived_fns.ft_squared = function_train_product(ft,ft);
 
@@ -105,7 +103,7 @@ void C3FnTrainPtrs::ft_derived_functions_create(struct MultiApproxOpts * opts)
 }
 
 
-void C3FnTrainPtrs::ft_derived_functions_free()
+void C3FnTrainPtrsRep::ft_derived_functions_free()
 {
   function_train_free(ft_derived_fns.ft_squared);
   ft_derived_fns.ft_squared          = NULL;
@@ -242,8 +240,8 @@ void C3Approximation::build()
     }
 
     // Build FT model
-    levApproxIter->second.ft
-      = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
+    levApproxIter->second.function_train(
+      ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain));
     // Avoid these calculations if not needed
     // > clarify expansions of derivatives w.r.t. non-random variables
     //   vs. random deriv-enhanced builds vs. eval of derivs of expansions:
@@ -253,10 +251,10 @@ void C3Approximation::build()
     //   --> the logic on whether or not to precompute these needs to be based
     //       on whether we expect emulator grad/Hessian evals downstream.
     if (false) { // *** TO DO
-      levApproxIter->second.ft_gradient
-	= function_train_gradient(levApproxIter->second.ft);
-      levApproxIter->second.ft_hessian
-	= ft1d_array_jacobian(levApproxIter->second.ft_gradient);
+      levApproxIter->second.function_train_gradient(
+	function_train_gradient(levApproxIter->second.function_train()));
+      levApproxIter->second.function_train_hessian(
+	ft1d_array_jacobian(levApproxIter->second.function_train_gradient()));
     }
 
     // free approximation stuff
@@ -271,10 +269,10 @@ void C3Approximation::build()
 void C3Approximation::rebuild()
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  active_model_key(data_rep->activeKey); // redundant but needed for
-                                                // prevExp prior to compute
+  active_model_key(data_rep->activeKey);
+
   // for use in pop_coefficients()
-  prevC3FTPtrs.copy(levApproxIter->second); // deep copy
+  prevC3FTPtrs = levApproxIter->second.copy(); // deep copy
 
   build(); // from scratch
 }
@@ -289,14 +287,14 @@ void C3Approximation::pop_coefficients(bool save_data)
   // then restores active key
   active_model_key(key);
 
-  C3FnTrainPtrs& c3ft_ptrs = levApproxIter->second;
+  C3FnTrainPtrs& active_ftp = levApproxIter->second;
 
   // store the incremented coeff state for possible push
   //if (save_data)
-  //  poppedC3FTPtrs[key].push_back(c3ft_ptrs);
+  //  poppedC3FTPtrs[key].push_back(active_ftp.copy()); // *** TO DO: swap() ?
 
   // reset expansion
-  c3ft_ptrs.copy(prevC3FTPtrs);
+  active_ftp = prevC3FTPtrs; // *** TO DO: shallow?
 
   //clear_computed_bits();
 }
@@ -315,15 +313,15 @@ void C3Approximation::push_coefficients()
   //size_t p_index = data_rep->push_index(key); // *** TO DO
 
   // store current state for use in pop_coefficients()
-  prevC3FTPtrs.copy(levApproxIter->second); // deep copy
+  prevC3FTPtrs = levApproxIter->second.copy(); // deep copy
 
   // retrieve a previously popped state
-  //std::map<UShortArray, C3FnTrainPtrs>::iterator prv_it
+  //std::map<UShortArray, C3FnTrainPtrsDeque>::iterator prv_it
   //  = poppedC3FTPtrs.find(key); // *** TO DO
   //C3FnTrainPtrsDeque::iterator rv_it;
   //if (prv_it != poppedC3FTPtrs.end()) {
-  //  rv_it = prv_it->second.begin();      std::advance(rv_it, p_index);
-  //  levApproxIter->second.copy(*rv_it);  prv_it->second.erase(rv_it);
+  //  rv_it = prv_it->second.begin();         std::advance(rv_it, p_index);
+  //  levApproxIter->second = rv_it->copy();  prv_it->second.erase(rv_it);
   //}
 
   //clear_computed_bits();
@@ -335,13 +333,20 @@ void C3Approximation::combine_coefficients()
   // Option 1: adds x to y and overwrites y (I allocate x and y)
   combinedC3FTPtrs.free_ft();
   std::map<UShortArray, C3FnTrainPtrs>::iterator it = levelApprox.begin();
-  combinedC3FTPtrs.ft = function_train_copy(it->second.ft); ++it;
+  struct FunctionTrain * y = function_train_copy(it->second.function_train());
+  ++it;
   for (; it!= levelApprox.end(); ++it)
-    c3axpy(1., it->second.ft, &combinedC3FTPtrs.ft, 1.e-8);
+    c3axpy(1., it->second.function_train(), &y, 1.e-8);
+  combinedC3FTPtrs.function_train(y);
+
+  // Could also do this at the C3FnTrainPtrs level with ft1d_array support:
+  //combinedC3FTPtrs = it->second.copy(); ++it;
+  //for (; it!= levelApprox.end(); ++it)
+  //  sum ft,ft_gradient,ft_hessian...
 
   // Option 2: function_train_sum (I allocate a and b and C3 allocates c)
   // > remember to deallocate c when done
-  //struct FunctionTrain * c = function_train_sum(a, b);
+  //struct FunctionTrain* c = function_train_sum(a, b);
 }
 
 
@@ -350,9 +355,9 @@ void C3Approximation::combined_to_active_coefficients(bool clear_combined)
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   active_model_key(data_rep->activeKey);
 
-  levApproxIter->second.copy(combinedC3FTPtrs);
-  if (clear_combined)
-    combinedC3FTPtrs.free_all();
+  levApproxIter->second = combinedC3FTPtrs;//.copy();
+  //if (clear_combined)
+  //  combinedC3FTPtrs.free_all();
 
   //allocate_component_sobol();  // size sobolIndices from shared sobolIndexMap
 
@@ -380,9 +385,9 @@ void C3Approximation::clear_inactive_coefficients()
 
 void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
 {
-  C3SobolSensitivity* fts = levApproxIter->second.ft_sobol;
+  C3SobolSensitivity* fts = levApproxIter->second.sobol();
   if (fts) c3_sobol_sensitivity_free(fts);
-  fts = c3_sobol_sensitivity_calculate(levApproxIter->second.ft,
+  fts = c3_sobol_sensitivity_calculate(levApproxIter->second.function_train(),
 				       interaction_order);
 }
 
@@ -390,11 +395,11 @@ void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
 void C3Approximation::compute_derived_statistics(bool overwrite)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  if (levApproxIter->second.ft_derived_fns.set == 0)
-    levApproxIter->second.ft_derived_functions_create(data_rep->approxOpts);
+  if (levApproxIter->second.derived_functions().set == 0)
+    levApproxIter->second.derived_functions_create(data_rep->approxOpts);
   else if (overwrite == true) {
-    levApproxIter->second.ft_derived_functions_free();
-    levApproxIter->second.ft_derived_functions_create(data_rep->approxOpts);
+    levApproxIter->second.derived_functions_free();
+    levApproxIter->second.derived_functions_create(data_rep->approxOpts);
   }
 }
 
@@ -414,7 +419,7 @@ compute_moments(const RealVector& x, bool full_stats, bool combined_stats)
 Real C3Approximation::mean()
 {
   compute_derived_statistics(false);
-  return levApproxIter->second.ft_derived_fns.first_moment;
+  return levApproxIter->second.derived_functions().first_moment;
 }
 
 
@@ -425,8 +430,9 @@ Real C3Approximation::mean(const RealVector &x)
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   const SizetVector& rand_indices = data_rep->randomIndices;
   struct FunctionTrain * ftnonrand =
-    function_train_integrate_weighted_subset(levApproxIter->second.ft,
-      rand_indices.length(),rand_indices.values());
+    function_train_integrate_weighted_subset(
+      levApproxIter->second.function_train(), rand_indices.length(),
+      rand_indices.values());
 
   double out = function_train_eval(ftnonrand,x.values());
   function_train_free(ftnonrand); //ftnonrand = NULL;
@@ -455,7 +461,7 @@ mean_gradient(const RealVector &x,const SizetArray & dvv)
 Real C3Approximation::variance()
 {
   compute_derived_statistics(false);
-  return levApproxIter->second.ft_derived_fns.second_central_moment;
+  return levApproxIter->second.derived_functions().second_central_moment;
 }
 
 
@@ -467,7 +473,7 @@ Real C3Approximation::variance(const RealVector &x)
   const SizetVector& rand_indices = data_rep->randomIndices;
   struct FunctionTrain * ftnonrand =
     function_train_integrate_weighted_subset(
-      levApproxIter->second.ft_derived_fns.ft_squared,
+      levApproxIter->second.derived_functions().ft_squared,
       rand_indices.length(),rand_indices.values());
 
   //size_t num_det = sharedDataRep->numVars - num_rand;
@@ -511,7 +517,7 @@ struct FunctionTrain * C3Approximation::subtract_const(Real val)
   struct FunctionTrain * ftconst
     = function_train_constant(val,data_rep->approxOpts);
   struct FunctionTrain * updated
-    = function_train_sum(levApproxIter->second.ft,ftconst);
+    = function_train_sum(levApproxIter->second.function_train(),ftconst);
 
   function_train_free(ftconst); ftconst = NULL;
   return updated;
@@ -556,11 +562,11 @@ int C3Approximation::min_coefficients() const
   return sharedDataRep->numVars + 1;
 }
 
-    
+
 // ignore discrete variables for now
 Real C3Approximation::value(const Variables& vars)
 {
-  return function_train_eval(levApproxIter->second.ft,
+  return function_train_eval(levApproxIter->second.function_train(),
 			     vars.continuous_variables().values());
 }
 
@@ -573,8 +579,8 @@ const RealVector& C3Approximation::gradient(const Variables& vars)
     approxGradient.sizeUninitialized(num_v);
   const Real* c_vars = vars.continuous_variables().values();
   for (i = 0; i < num_v; ++i)
-    approxGradient(i)
-      = function_train_eval(levApproxIter->second.ft_gradient->ft[i], c_vars);
+    approxGradient(i) = function_train_eval(
+      levApproxIter->second.function_train_gradient()->ft[i], c_vars);
   return approxGradient;
 }
 
@@ -588,9 +594,8 @@ const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
   const Real* c_vars = vars.continuous_variables().values();
   for (i = 0; i < num_v; ++i)
     for (j = 0; j <= i; ++j)
-      approxHessian(i,j)
-	= function_train_eval(levApproxIter->second.ft_hessian->ft[i+j*num_v],
-			      c_vars);
+      approxHessian(i,j) = function_train_eval(
+	levApproxIter->second.function_train_hessian()->ft[i+j*num_v], c_vars);
   return approxHessian;
 }
 

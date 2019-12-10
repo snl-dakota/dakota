@@ -94,6 +94,7 @@ extern "C"
     };
     struct FT1DArray * function_train_gradient(const struct FunctionTrain *);
     struct FT1DArray * ft1d_array_jacobian(const struct FT1DArray *);
+    struct FT1DArray * ft1d_array_copy(const struct FT1DArray *);
     void ft1d_array_free(struct FT1DArray *);
     
     // General approximation options
