@@ -18,6 +18,7 @@
 #include "ProbabilityTransformation.hpp"
 #include "NonDSampling.hpp"
 
+#include <boost/property_tree/ptree.hpp>
 
 namespace Dakota {
 
@@ -31,74 +32,74 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
 {
   // prior,likelihood could be objects of same class w/ different fns passed in
   thetaPtr      = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
-//  priorPtr      = std::make_shared<MUQPriorInterface>(...);
-//  modelPtr      = std::make_shared<MUQModelInterface>(iteratedModel);
-//  // Gaussian class inherited from Distribution could be helpful for likelihood
-//  likelihoodPtr = std::make_shared<MUQLikelihoodInterface>(...data...);
-//  posteriorPtr  = std::make_shared<MUQ::DensityProduct>(2);
-//
-//  //////////////////////
-//  // DEFINE THE GRAPH //
-//  //////////////////////
-//  workGraph.AddNode(thetaPtr,      "Parameters");
-//  workGraph.AddNode(likelihoodPtr, "Likelihood");
-//  workGraph.AddNode(priorPtr,      "Prior");
-//  workGraph.AddNode(postPtr,       "Posterior");
-//  workGraph.AddNode(modelPtr,      "Forward Model"); // ***
-//
-//  // Define graph: prior(theta) dependent on theta
-//  workGraph.AddEdge("Parameters", 0, "Prior", 0); // 0 = index of input,output
-//
-//  // Define graph: simulation model G(theta) dependent on theta
-//  workGraph.AddEdge("Parameters", 0, "Forward Model", 0);
-//
-//  // Define graph: likelihood dependent on simulation model G(theta);
-//  //               misfit = (G - G-bar)^T Gamma^{-1} (G - G-bar)
-//  //               (G-bar data dependence is currently hidden)
-//  workGraph.AddEdge("Forward Model", 0, "Likelihood", 0);
-//  // If "Approach 1", then likelihood has two inputs: G(theta) and data
-//  //workGraph.AddEdge("Data", 0, "Likelihood", 1); // if Approach 1
-//
-//  // Define graph: posterior dependent on prior and likelihood;
-//  workGraph.AddEdge("Prior",      0, "Posterior", 0);
-//  workGraph.AddEdge("Likelihood", 0, "Posterior", 1);
-//
-//  // More advanced graphs could be considered for, e.g.., Model selection.....
-//
-//  ///////////////////////////////
-//  // DEFINE THE DESIRED OUTPUT //
-//  ///////////////////////////////
-//  // Register the desired end point / output from the graph: this registration
-//  // is distinct from creating a potentially larger graph.  It defines the
-//  // exact context that we care about at this time --> could define a
-//  // large graph-based ecosystem and then activate the relevant portion
-//  // for a particular study.
-//  auto post_distrib = MUQ::WorkGraph::CreateModPiece("Posterior");
-//
-//  // Dump out a visualization of the work graph
-//  if (outputLevel >= DEBUG_OUTPUT)
-//    workGraph.Visualize("muq_graph.pdf");
-//
-//  /////////////////////////////////
-//  // DEFINE THE PROBLEM TO SOLVE //
-//  /////////////////////////////////
-//  samplingProbPtr = std::make_shared<MUQ::SamplingProblem>(post_distrib);
-//  
-//  /////////////////////////////
-//  // DEFINE THE MCMC SAMPLER //
-//  /////////////////////////////
-//  // input specification is communicated using Boost property trees
-//  boost::property_tree::ptree pt; // TO DO: look at options...
-//  // *** Copied from MCMCTests.cpp example
-//  pt::ptree pt;
-//  pt.put("NumSamples", N); // number of Monte Carlo samples
-//  pt.put("PrintLevel",0);
-//  pt.put("KernelList", "Kernel1"); // the transition kernel
-//  pt.put("Kernel1.Method","MHKernel"); // Metropolis-Hastings (have AM) (DR is in muq1, but maybe not yet available in MUQ2)
-//  pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
-//  pt.put("Kernel1.MyProposal.Method", "MHProposal");
-//  pt.put("Kernel1.MyProposal.ProposalVariance", 0.5); // the variance of the isotropic MH proposal
-//
+  priorPtr      = std::make_shared<MUQPriorInterface>();
+  modelPtr      = std::make_shared<MUQModelInterface>(iteratedModel /* or model ? */);
+  // Gaussian class inherited from Distribution could be helpful for likelihood
+  likelihoodPtr = std::make_shared<MUQLikelihoodInterface>();
+  posteriorPtr  = std::make_shared<muq::Modeling::DensityProduct>(2);
+
+  //////////////////////
+  // DEFINE THE GRAPH //
+  //////////////////////
+  workGraph.AddNode(thetaPtr,      "Parameters");
+  workGraph.AddNode(likelihoodPtr, "Likelihood");
+  workGraph.AddNode(priorPtr,      "Prior");
+  workGraph.AddNode(posteriorPtr,       "Posterior");
+  workGraph.AddNode(modelPtr,      "Forward Model"); // ***
+
+  // Define graph: prior(theta) dependent on theta
+  workGraph.AddEdge("Parameters", 0, "Prior", 0); // 0 = index of input,output
+
+  // Define graph: simulation model G(theta) dependent on theta
+  workGraph.AddEdge("Parameters", 0, "Forward Model", 0);
+
+  // Define graph: likelihood dependent on simulation model G(theta);
+  //               misfit = (G - G-bar)^T Gamma^{-1} (G - G-bar)
+  //               (G-bar data dependence is currently hidden)
+  workGraph.AddEdge("Forward Model", 0, "Likelihood", 0);
+  // If "Approach 1", then likelihood has two inputs: G(theta) and data
+  //workGraph.AddEdge("Data", 0, "Likelihood", 1); // if Approach 1
+
+  // Define graph: posterior dependent on prior and likelihood;
+  workGraph.AddEdge("Prior",      0, "Posterior", 0);
+  workGraph.AddEdge("Likelihood", 0, "Posterior", 1);
+
+  // More advanced graphs could be considered for, e.g.., Model selection.....
+
+  ///////////////////////////////
+  // DEFINE THE DESIRED OUTPUT //
+  ///////////////////////////////
+  // Register the desired end point / output from the graph: this registration
+  // is distinct from creating a potentially larger graph.  It defines the
+  // exact context that we care about at this time --> could define a
+  // large graph-based ecosystem and then activate the relevant portion
+  // for a particular study.
+  auto post_distrib = workGraph.CreateModPiece("Posterior");
+
+  // Dump out a visualization of the work graph
+  if (outputLevel >= DEBUG_OUTPUT)
+    workGraph.Visualize("muq_graph.pdf");
+
+  /////////////////////////////////
+  // DEFINE THE PROBLEM TO SOLVE //
+  /////////////////////////////////
+  //samplingProbPtr = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(post_distrib);
+  
+  /////////////////////////////
+  // DEFINE THE MCMC SAMPLER //
+  /////////////////////////////
+  // input specification is communicated using Boost property trees
+  boost::property_tree::ptree pt; // TO DO: look at options...
+  // *** Copied from MCMCTests.cpp example
+  int N = 100;
+  pt.put("NumSamples", N); // number of Monte Carlo samples
+  pt.put("PrintLevel",0);
+  pt.put("KernelList", "Kernel1"); // the transition kernel
+  pt.put("Kernel1.Method","MHKernel"); // Metropolis-Hastings (have AM) (DR is in muq1, but maybe not yet available in MUQ2)
+  pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
+  pt.put("Kernel1.MyProposal.Method", "MHProposal");
+  pt.put("Kernel1.MyProposal.ProposalVariance", 0.5); // the variance of the isotropic MH proposal
+
 //  mcmcSamplerPtr = std::make_shared<MUQ::MCMCSampling>(samplingProbPtr, pt);
 }
 

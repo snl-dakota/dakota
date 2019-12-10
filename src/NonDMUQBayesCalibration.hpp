@@ -21,10 +21,16 @@
 #include "MUQ/SamplingAlgorithms/MarkovChain.h"
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"
+#include "MUQ/Modeling/Distributions/Gaussian.h"
+#include "MUQ/Modeling/Distributions/Density.h"
+#include "MUQ/Modeling/Distributions/DensityProduct.h"
 
 
 namespace Dakota {
 
+class MUQPriorInterface;
+class MUQModelInterface;
+class MUQLikelihoodInterface;
 
 /// Dakota interface to MUQ (MIT Uncertainty Quantification) library
 
@@ -60,10 +66,10 @@ protected:
   muq::Modeling::WorkGraph workGraph;
 
   std::shared_ptr<muq::Modeling::IdentityOperator>       thetaPtr;
-  //std::shared_ptr<muq::Modeling::PriorInterface>           priorPtr;
-  //std::shared_ptr<muq::Modeling::ModelInterface>           modelPtr;
-  //std::shared_ptr<muq::Modeling::LikelihoodInterface> likelihoodPtr;
-  //std::shared_ptr<muq::Modeling::DensityProduct>     posteriorPtr;
+  std::shared_ptr<MUQPriorInterface>           priorPtr;
+  std::shared_ptr<MUQModelInterface>           modelPtr;
+  std::shared_ptr<MUQLikelihoodInterface> likelihoodPtr;
+  std::shared_ptr<muq::Modeling::DensityProduct>     posteriorPtr;
 
   std::shared_ptr<muq::SamplingAlgorithms::SamplingProblem> samplingProbPtr;
   //std::shared_ptr<muq::Modeling::MCMCSampling>     mcmcSamplerPtr;
@@ -89,7 +95,7 @@ public:
   /// standard constructor
   MUQModelInterface(Model& model);
   /// destructor
-  ~MUQModelInterface();
+  ~MUQModelInterface() { }
 
   //
   //- Heading: Static callback functions required by MUQ
@@ -132,9 +138,9 @@ public:
   //
 
   /// standard constructor
-  MUQPriorInterface();
+  MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()) { }
   /// destructor
-  ~MUQPriorInterface();
+  ~MUQPriorInterface() { }
 
 protected:
 
@@ -143,7 +149,8 @@ protected:
   //
 
   // evaluate log prior(x)
-  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs);
+  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs) 
+  { return 0.0; }
 
   //
   //- Heading: Data
@@ -163,9 +170,9 @@ public:
   //
 
   /// standard constructor
-  MUQLikelihoodInterface();
+  MUQLikelihoodInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()){ }
   /// destructor
-  ~MUQLikelihoodInterface();
+  ~MUQLikelihoodInterface() { }
 
 protected:
 
@@ -180,7 +187,8 @@ protected:
   //   observational data as inputs.at(1) from another ModPiece
   //   (another inherited class or as a "ConstantPiece")
   // Approach 2: pass obs data is through the ctor and store as member data
-  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs);
+  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs)
+  { return 0.0; }
 
   //
   //- Heading: Data
