@@ -1,17 +1,19 @@
 /*  _______________________________________________________________________
 
-    PECOS: Parallel Environment for Creation Of Stochastics
-    Copyright (c) 2011, Sandia National Laboratories.
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
     This software is distributed under the GNU Lesser General Public License.
-    For more information, see the README file in the top Pecos directory.
+    For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
 #include <fstream>
 #include <Teuchos_UnitTestHarness.hpp>
 #include "teuchos_data_types.hpp"
 #include "GaussianProcess.hpp"
+#include "Eigen/Dense"
 
 using namespace Surrogates;
+using namespace Eigen;
 
 namespace {
 
@@ -86,6 +88,30 @@ int test_gp(Real atol){
   int num_restarts = 10;
   int gp_seed = 42;
   double nugget = 1.0e-12;
+
+  VectorXd xs_u_eigen(7);
+
+  std::cout << "\n";
+  std::cout << "xs_u:" << std::endl;
+
+  xs_u_eigen << 0.05536604, 0.28730518, 0.30391231, 0.40768703,
+                0.45035059, 0.52639952, 0.78853488;
+
+  std::cout << xs_u_eigen << std::endl;
+
+  MatrixXd gold_cov_array_eigen(6,6);
+
+  gold_cov_array_eigen << 0.000291366, -3.13983e-05, -2.05299e-07, 2.82111e-05, -2.23603e-05, -0.000337062,
+                         -3.13983e-05, 4.14595e-06, 3.16567e-08, -4.86909e-06, 4.17091e-06, 6.60782e-05,
+                         -2.05299e-07, 3.16567e-08, 2.81647e-10, -4.93076e-08, 4.72685e-08, 8.16402e-07,
+                          2.82111e-05, -4.86909e-06, -4.93076e-08, 1.00675e-05, -1.12689e-05, -0.000225718,
+                         -2.23603e-05, 4.17091e-06, 4.72685e-08, -1.12689e-05, 1.54364e-05, 0.00039519,
+                         -0.000337062, 6.60782e-05, 8.16402e-07, -0.000225718, 0.00039519, 0.0147636;
+
+  std::cout << "\n";
+  std::cout << "gold_cov_array:" << std::endl;
+  std::cout << gold_cov_array_eigen << std::endl;
+
 
   Real xs_u_array[] = {0.05536604, 0.28730518, 0.30391231, 0.40768703,
                        0.45035059, 0.52639952, 0.78853488};

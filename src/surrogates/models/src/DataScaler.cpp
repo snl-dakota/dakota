@@ -1,14 +1,11 @@
 /*  _______________________________________________________________________
 
-    PECOS: Parallel Environment for Creation Of Stochastics
-    Copyright (c) 2011, Sandia National Laboratories.
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
     This software is distributed under the GNU Lesser General Public License.
-    For more information, see the README file in the top Pecos directory.
+    For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-// Two scalers:
-// - Normalizing scaler - performs mean or max-min normalization
-// - Standarization - makes each feature zero mean and unit variance
 #include "DataScaler.hpp"
 
 namespace Surrogates {
@@ -16,16 +13,6 @@ namespace Surrogates {
 DataScaler::DataScaler(){}
 
 DataScaler::~DataScaler(){}
-
-VectorXd DataScaler::scaleFeatures(const VectorXd &unscaled_x) {
-  int M = unscaled_x.size();
-  VectorXd scaledInput(M);
-  for (int i = 0; i < M; i++) {
-    scaledInput(i) = (unscaled_x(i) - scalerFeaturesOffsets(i))/
-                     scalerFeaturesScaleFactors(i);
-  }
-  return scaledInput;
-}
 
 MatrixXd DataScaler::scaleSamples(const MatrixXd &unscaled_samples) {
   const int num_features = unscaled_samples.rows();
