@@ -12,7 +12,7 @@
 #include "Teuchos_XMLParameterListHelpers.hpp"
 #include "Teuchos_oblackholestream.hpp"
 
-#include "rol_object.hpp"
+#include "GP_Objective.hpp"
 #include "ROL_Algorithm.hpp"
 #include "ROL_Bounds.hpp"
 
@@ -244,7 +244,7 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
   std::string paramfile = "rol_params.xml";
   auto rol_params = Teuchos::rcp(new Teuchos::ParameterList);
   Teuchos::updateParametersFromXmlFile(paramfile, rol_params.ptr());
-  auto rol_objective = std::make_shared<ROL_Object>(this);
+  auto gp_objective = std::make_shared<GP_Objective>(this);
   int dim = numVariables + 1;
   ROL::Algorithm<double> algo("Line Search",*rol_params);
 
@@ -279,7 +279,7 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
     for (int j = 0; j < dim; ++j) {
       (*x_ptr)[j] = initial_guesses(i,j);
     }
-    output = algo.run(x, *rol_objective, *bound, true, *outStream);
+    output = algo.run(x, *gp_objective, *bound, true, *outStream);
     for (int j = 0; j < thetaValues.size(); ++j) {
       thetaValues(j) = (*x_ptr)[j];
     }

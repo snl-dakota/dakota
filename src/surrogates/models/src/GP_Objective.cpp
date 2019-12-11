@@ -6,11 +6,11 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "rol_object.hpp"
+#include "GP_Objective.hpp"
 
 namespace Surrogates{
 
-ROL_Object::ROL_Object(GaussianProcess* gp_model) {
+GP_Objective::GP_Objective(GaussianProcess* gp_model) {
   gp = gp_model;
   VectorXd theta = gp->get_theta_values();
   nopt = theta.size();
@@ -21,9 +21,9 @@ ROL_Object::ROL_Object(GaussianProcess* gp_model) {
   Jold = -2.0;
 }
 
-ROL_Object::~ROL_Object() {}
+GP_Objective::~GP_Objective() {}
 
-double ROL_Object::value(const ROL::Vector<double>& p, double&) {
+double GP_Objective::value(const ROL::Vector<double>& p, double&) {
   ROL::Ptr<const std::vector<double> > xp = getVector(p);
   double obj_val;
   VectorXd grad(nopt);
@@ -36,7 +36,7 @@ double ROL_Object::value(const ROL::Vector<double>& p, double&) {
   return Jold;
 }
 
-void ROL_Object::gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p, double&) {
+void GP_Objective::gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p, double&) {
   ROL::Ptr<const std::vector<double> > xp = getVector(p);
   ROL::Ptr<std::vector<double> > gpointer = getVector(g);
   double obj_val;
@@ -57,7 +57,7 @@ void ROL_Object::gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p, 
 }
 
 // parameter diffs
-bool ROL_Object::pdiff(const std::vector<double>& pnew) {
+bool GP_Objective::pdiff(const std::vector<double>& pnew) {
   double diffnorm = 0.0;
   for (int i = 0; i < nopt; ++i) {
     diffnorm += pow(pnew[i] - pold(i),2.0);

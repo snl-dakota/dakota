@@ -6,9 +6,9 @@
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
-SET(SOURCES GaussianProcess.cpp rol_object.cpp
+SET(SOURCES GaussianProcess.cpp GP_Objective.cpp
       DataScaler.cpp)
-SET(HEADERS GaussianProcess.hpp rol_object.hpp
+SET(HEADERS GaussianProcess.hpp GP_Objective.hpp
 	    teuchos_data_types.hpp
       DataScaler.hpp)
 

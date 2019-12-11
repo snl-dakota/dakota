@@ -17,15 +17,15 @@
 
 namespace Surrogates {
 
-class ROL_Object : public ROL::Objective<double> {
+class GP_Objective : public ROL::Objective<double> {
 
   typedef ROL::Vector<double> V;
   typedef ROL::StdVector<double> SV;
 
   public:
 
-    ROL_Object(GaussianProcess* gp_model);
-    ~ROL_Object();
+    GP_Objective(GaussianProcess* gp_model);
+    ~GP_Objective();
 
     double value(const V& p, double& tol);
     void gradient(V& g, const V& p, double&);
