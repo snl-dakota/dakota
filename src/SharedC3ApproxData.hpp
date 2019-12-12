@@ -102,6 +102,11 @@ protected:
   //void build();
   //void rebuild();
   
+  void   pop(bool save_surr_data);
+  bool   push_available();
+  size_t push_index(const UShortArray& key);
+  void   post_push();
+
   //
   //- Heading: Data
   //
@@ -245,6 +250,46 @@ random_variables_key(const BitArray& random_vars_key)
       if (random_vars_key[i])
 	randomIndices[cntr++] = i;
   }
+}
+
+
+inline void SharedC3ApproxData::pop(bool save_surr_data)
+{
+  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  if (it == poppedCounts.end())
+    poppedCounts[activeKey] = 1;
+  else
+    ++it->second; // increment count
+}
+
+
+inline bool SharedC3ApproxData::push_available()
+{
+  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  return (it != poppedCounts.end() && it->second > 0);
+}
+
+
+inline size_t SharedC3ApproxData::push_index(const UShortArray& key)
+{
+  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  if (it == poppedCounts.end() || it->second == 0) {
+    Cerr << "Error: bad lookup in SharedC3ApproxData::push_index(key)"
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+  // there should only be a single refinement candidate per level (as for
+  // uniform refinement cases in Pecos), but this is more general:
+  else
+    return it->second - 1; // last in, first out
+}
+
+
+inline void SharedC3ApproxData::post_push()
+{
+  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  if (it != poppedCounts.end() && it->second > 0)
+    --it->second; // decrement count
 }
 
 } // namespace Dakota

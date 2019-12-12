@@ -481,7 +481,7 @@ void SharedApproxData::pop(bool save_surr_data)
 {
   if (dataRep)
     dataRep->pop(save_surr_data);
-  //else no-op (implementation not required for shared data)
+  //else no-op (derived implementation not required)
 }
 
 
@@ -513,11 +513,7 @@ void SharedApproxData::pre_push()
 {
   if (dataRep)
     dataRep->pre_push();
-  else {
-    Cerr << "\nError: pre_push() not defined for this shared approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  //else no-op (derived implementation not required)
 }
 
 
@@ -525,11 +521,7 @@ void SharedApproxData::post_push()
 {
   if (dataRep)
     dataRep->post_push();
-  else {
-    Cerr << "\nError: post_push() not defined for this shared approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  //else no-op (derived implementation not required)
 }
 
 
@@ -549,11 +541,7 @@ void SharedApproxData::pre_finalize()
 {
   if (dataRep)
     dataRep->pre_finalize();
-  else {
-    Cerr << "\nError: pre_finalize() not defined for this shared approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  //else no-op (derived implementation not required)
 }
 
 
@@ -561,11 +549,7 @@ void SharedApproxData::post_finalize()
 {
   if (dataRep)
     dataRep->post_finalize();
-  else {
-    Cerr << "\nError: post_finalize() not defined for this shared "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  //else no-op (derived implementation not required)
 }
 
 
@@ -582,11 +566,7 @@ void SharedApproxData::pre_combine()
 {
   if (dataRep)
     dataRep->pre_combine();
-  else {
-    Cerr << "\nError: pre_combine() not defined for this shared approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  //else no-op (derived implementation not required)
 }
 
 
@@ -594,8 +574,7 @@ void SharedApproxData::post_combine()
 {
   if (dataRep)
     dataRep->post_combine();
-  //else
-  //  default: no post combine required
+  //else no-op (derived implementation not required)
 }
 
 
@@ -603,8 +582,7 @@ void SharedApproxData::combined_to_active(bool clear_combined)
 {
   if (dataRep)
     dataRep->combined_to_active(clear_combined);
-  //else
-  //  default: no op
+  //else no-op (derived implementation not required)
 }
 
 
@@ -613,8 +591,7 @@ update_basis_distribution_parameters(const Pecos::MultivariateDistribution& mvd)
 {
   if (dataRep)
     dataRep->update_basis_distribution_parameters(mvd);
-  //else
-  //  default: no op
+  //else no-op (derived implementation not required)
 }
 
 
@@ -623,8 +600,7 @@ configuration_options(const Pecos::ExpansionConfigOptions& ec_options)
 {
   if (dataRep)
     dataRep->configuration_options(ec_options);
-  //else
-  //  default: no op
+  //else no-op (derived implementation not required)
 }
 
 
@@ -633,8 +609,7 @@ configuration_options(const Pecos::BasisConfigOptions& bc_options)
 {
   if (dataRep)
     dataRep->configuration_options(bc_options);
-  //else
-  //  default: no op
+  //else no-op (derived implementation not required)
 }
 
 
@@ -643,8 +618,7 @@ configuration_options(const Pecos::RegressionConfigOptions& rc_options)
 {
   if (dataRep)
     dataRep->configuration_options(rc_options);
-  //else
-  //  default: no op
+  //else no-op (derived implementation not required)
 }
 
 
@@ -652,8 +626,7 @@ void SharedApproxData::random_variables_key(const BitArray& random_vars_key)
 {
   if (dataRep)
     dataRep->random_variables_key(random_vars_key);
-  //else
-  //  default: no op
+  //else no-op (derived implementation not required)
 }
 
 
@@ -661,8 +634,7 @@ void SharedApproxData::refinement_statistics_type(short stats_type)
 {
   if (dataRep)
     dataRep->refinement_statistics_type(stats_type);
-  //else
-  //  default: no op
+  //else no-op (derived implementation not required)
 }
 
 

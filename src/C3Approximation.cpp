@@ -240,8 +240,9 @@ void C3Approximation::build()
     }
 
     // Build FT model
-    levApproxIter->second.function_train(
-      ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain));
+    struct FunctionTrain * ft
+      = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
+    levApproxIter->second.function_train(ft);
     // Avoid these calculations if not needed
     // > clarify expansions of derivatives w.r.t. non-random variables
     //   vs. random deriv-enhanced builds vs. eval of derivs of expansions:
@@ -250,11 +251,12 @@ void C3Approximation::build()
     // > then add flags / final_asv control of these
     //   --> the logic on whether or not to precompute these needs to be based
     //       on whether we expect emulator grad/Hessian evals downstream.
-    if (false) { // *** TO DO
-      levApproxIter->second.function_train_gradient(
-	function_train_gradient(levApproxIter->second.function_train()));
-      levApproxIter->second.function_train_hessian(
-	ft1d_array_jacobian(levApproxIter->second.function_train_gradient()));
+    if (expansionCoeffGradFlag) {
+      struct FT1DArray * ftg = function_train_gradient(ft);
+      levApproxIter->second.function_train_gradient(ftg);
+      // *** TO DO: refine logic.  Consider compute on demand, to support
+      //     Hessian-based operations (MAP pre-solves, MCMC preconditioning).
+      levApproxIter->second.function_train_hessian(ft1d_array_jacobian(ftg));
     }
 
     // free approximation stuff
@@ -274,7 +276,7 @@ void C3Approximation::rebuild()
   // for use in pop_coefficients()
   prevC3FTPtrs = levApproxIter->second.copy(); // deep copy
 
-  build(); // from scratch
+  build(); // updates levApproxIter->second
 }
 
 
@@ -288,13 +290,13 @@ void C3Approximation::pop_coefficients(bool save_data)
   active_model_key(key);
 
   C3FnTrainPtrs& active_ftp = levApproxIter->second;
-
   // store the incremented coeff state for possible push
-  //if (save_data)
-  //  poppedC3FTPtrs[key].push_back(active_ftp.copy()); // *** TO DO: swap() ?
-
-  // reset expansion
-  active_ftp = prevC3FTPtrs; // *** TO DO: shallow?
+  if (save_data) // shallow copy enabled by swap to follow
+    poppedLevelApprox[key].push_back(active_ftp);
+  // reset expansion to previous state.  After swap of reps / ref counts,
+  // poppedLevelApprox[key].back() shares Rep with prevC3FTPtrs.  prevC3FTPtrs
+  // then gets replaced with a new instance in rebuild or push_coefficients().
+  active_ftp.swap(prevC3FTPtrs);
 
   //clear_computed_bits();
 }
@@ -308,21 +310,36 @@ void C3Approximation::push_coefficients()
   // synchronize expansionCoeff{s,Grads} and approxData
   active_model_key(key);
 
-  // SharedPolyApproxData::candidate_index() currently returns 0 for
-  // all cases other than generalized sparse grids
-  //size_t p_index = data_rep->push_index(key); // *** TO DO
-
   // store current state for use in pop_coefficients()
   prevC3FTPtrs = levApproxIter->second.copy(); // deep copy
 
   // retrieve a previously popped state
-  //std::map<UShortArray, C3FnTrainPtrsDeque>::iterator prv_it
-  //  = poppedC3FTPtrs.find(key); // *** TO DO
-  //C3FnTrainPtrsDeque::iterator rv_it;
-  //if (prv_it != poppedC3FTPtrs.end()) {
-  //  rv_it = prv_it->second.begin();         std::advance(rv_it, p_index);
-  //  levApproxIter->second = rv_it->copy();  prv_it->second.erase(rv_it);
-  //}
+  std::map<UShortArray, std::deque<C3FnTrainPtrs> >::iterator prv_it
+    = poppedLevelApprox.find(key);
+  bool err_flag = false;
+  if (prv_it == poppedLevelApprox.end())
+    err_flag = true;
+  else {
+    // SharedPolyApproxData::candidate_index() currently returns 0 for
+    // all cases other than generalized sparse grids
+    size_t p_index = data_rep->push_index(key); // *** TO DO
+    std::deque<C3FnTrainPtrs>& ftp_deque = prv_it->second;
+    if (p_index >= ftp_deque.size())
+      err_flag = true;
+    else {
+      std::deque<C3FnTrainPtrs>::iterator rv_it	= ftp_deque.begin() + p_index;
+      // reset expansion to popped state.  Shallow copy is appropriate
+      // (levApprox assumes popped state prior to erase from bookkeeping).
+      levApproxIter->second = *rv_it; // shallow copy of popped state
+      ftp_deque.erase(rv_it);         // removal of original
+    }
+  }
+
+  if (err_flag) {
+    Cerr << "Error: lookup of previously popped data failed in C3Approximation"
+	 << "::push_coefficients()." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
 
   //clear_computed_bits();
 }

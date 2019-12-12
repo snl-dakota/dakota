@@ -141,7 +141,10 @@ public:
   //- Heading: Member functions
   //
 
+  /// perform a deep copy (unlike copy ctor and operator=, which are shallow)
   C3FnTrainPtrs copy() const;
+  /// swap ftpReps between two envelopes
+  void swap(C3FnTrainPtrs& ftp);
 
   void free_ft();
   void free_all();
@@ -186,6 +189,15 @@ inline C3FnTrainPtrs C3FnTrainPtrs::copy() const
   // downsteam when needed for stats,indices
 
   return ftp;
+}
+
+
+inline void C3FnTrainPtrs::swap(C3FnTrainPtrs& ftp)
+{
+  // reference counts for each ftpRep are unmodified by swap()
+  C3FnTrainPtrsRep* save_rep = ftpRep;
+  ftpRep                     = ftp.ftpRep;
+  ftp.ftpRep                 = save_rep;
 }
 
 
@@ -425,6 +437,9 @@ private:
 
   /// the previous approximation, cached for restoration
   C3FnTrainPtrs prevC3FTPtrs;
+  /// bookkeeping for previously evaluated FT approximations that may
+  /// be restored
+  std::map<UShortArray, std::deque<C3FnTrainPtrs> > poppedLevelApprox;
   /// the combined approximation, summed across model keys
   C3FnTrainPtrs combinedC3FTPtrs;
 
