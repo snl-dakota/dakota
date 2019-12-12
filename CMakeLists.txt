@@ -17,6 +17,8 @@ message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
 include(DakotaCxxOptions)
 dakota_cxx_standard()
 
+include(DakotaOptions)
+
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
 set(Dakota_VERSION_MINOR 11)
@@ -209,9 +211,6 @@ elseif(UNIX)
      CACHE STRING "Set the RPATH in Dakota executables and libraries")
 endif()
 
-option(DAKOTA_INSTALL_DYNAMIC_DEPS
-  "Install Dakota's dynamic dependencies to CMAKE_INSTALL_PREFIX/bin/" ON)
-
 
 # Manage developer convenience options (experimental)
 if(DevDebug)
@@ -241,12 +240,10 @@ find_package(Perl REQUIRED)
 # for the interpreter here at top-level:
 include(FindPythonInterp)
 
-# Locate MPI compiler and library settings (must be after lanugages enabled)
+# Locate MPI compiler and library settings (must be after languages enabled)
+# The DakotaFindMPI() function checks whether the option is enabled
 include(DakotaMPI)
-option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
-if(DAKOTA_HAVE_MPI)
-  DakotaFindMPI()
-endif()
+DakotaFindMPI()
 
 
 include(FortranCInterface)
@@ -268,8 +265,6 @@ add_definitions("-DHAVE_CONFIG_H")
 #set(CMAKE_C_FLAGS_DISTRIBUTION "-O2")
 #set(CMAKE_CXX_FLAGS_DISTRIBUTION "-O2")
 #set(CMAKE_Fortran_FLAGS_DISTRIBUTION "-O2")
-
-option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
 
 # Note: May need this in some Cygwin builds as well
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
@@ -305,7 +300,6 @@ endif()
 
 # GSL check at top-level due to need for settings in BOTH packages
 # and src subdirectories
-option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
 if(DAKOTA_HAVE_GSL)
   # One may want to provide an alternate CBLAS library via
   # DAKOTA_CBLAS_LIBS to use in place of GSL's CBLAS.  On many
@@ -321,7 +315,6 @@ endif()
 
 # HDF5 check at top-level due to need for settings in BOTH src
 # and test subdirectories
-option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 if(DAKOTA_HAVE_HDF5)
   find_package(HDF5 REQUIRED COMPONENTS "C;HL;CXX")
   if(HDF5_VERSION VERSION_LESS "1.10.4")
@@ -332,30 +325,6 @@ endif() # DAKOTA_HAVE_HDF5
 # Mandate a system or user-provided Boost, including some libraries
 set(dakota_boost_components
   "filesystem;program_options;regex;serialization;system")
-
-# Queso requires the program_options library in addition
-option(HAVE_QUESO "Build the QUESO package." OFF)
-option(HAVE_QUESO_GPMSA "Use the QUESO GPMSA package when QUESO enabled." ON)
-option(HAVE_QUESO_GRVY "Use optional QUESO GRVY package; not recommended." OFF)
-option(DAKOTA_QUESO_CMAKE "Experimental: Dakota building QUESO with CMake" ON)
-
-
-option(HAVE_APPROXNN "Build the Approximate Nearest Neighbor package." ON)
-
-# Options for adaptive sampling that affect both packages and src
-option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" ON)
-option(HAVE_MORSE_SMALE 
-  "Use Morse-Smale; requires APPROXNN and Dionysus libraries" OFF)
-if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
-  if (NOT HAVE_APPROXNN)
-    set(HAVE_APPROXNN TRUE CACHE BOOL 
-      "HAVE_APPROXNN enabled for Morse-Smale Adaptive Sampling")
-  endif()
-endif()
-
-# Options that affect both src/ and test/
-option(DAKOTA_MODELCENTER "Toggle ModelCenter support, default is disabled" OFF)
-
 if(WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
 endif()
@@ -383,7 +352,6 @@ set(ExportTarget DakotaTargets CACHE STRING
 
 # TODO: Have etphipp remove Trilinos-specific code and instead set in TriKota
 # when building inside Trilinos, the path to Teuchos will already be set
-option(HAVE_ROL "Build the ROL package." ON)
 if (NOT BUILD_IN_TRILINOS)
 
   # Workaround to skip finding system Trilinos until this probe is
@@ -492,9 +460,9 @@ if (NOT BUILD_IN_TRILINOS)
 endif() # NOT BUILD_IN_TRILINOS
 
 
-# Manage option for graphics (default ON if possible)
+# BMA TODO: Pull this code into DakotaXGraphics.cmake
+# Manage option for X-Windows graphics
 include(DakotaXGraphics)
-option(HAVE_X_GRAPHICS "Build the Dakota/Motif Graphics package." OFF)
 if(HAVE_X_GRAPHICS)
   if(WIN32)
     message(STATUS "HAVE_X_GRAPHICS requested, but not supported on Windows; "
@@ -519,55 +487,14 @@ if(HAVE_X_GRAPHICS)
   endif()  # WIN32
 endif()  # HAVE_X_GRAPHICS
 
-# Manage option for f90 (default ON)
-option(DAKOTA_F90 "Build the f90, bvls_wrapper." ON)
 if(DAKOTA_F90)
   FortranCInterface_HEADER(dak_f90_config.h MACRO_NAMESPACE DAK_F90_)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
 
-option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
-# Option to turn off key DAKOTA TPL tests, default OFF
-# Needs to go before adding the packages subdirectory
-option(DAKOTA_ENABLE_TPL_TESTS "Enable DAKOTA TPL tests?" OFF)
-if(DAKOTA_ENABLE_TPL_TESTS)
-  set(DDACE_ENABLE_TESTS    ON CACHE BOOL "Enable DDACE tests.")
-  set(HOPSPACK_ENABLE_TESTS ON CACHE BOOL "Enable HOPSPACK tests.")
-  set(LHS_ENABLE_TESTS      ON CACHE BOOL "Enable LHS tests.")
-  set(OPTPP_ENABLE_TESTS    ON CACHE BOOL "Enable OPT++ tests.")
-  set(PECOS_ENABLE_TESTS    ON CACHE BOOL "Enable PECOS tests.")
-else()
-  set(DDACE_ENABLE_TESTS    OFF CACHE BOOL "Enable DDACE tests.")
-  set(HOPSPACK_ENABLE_TESTS OFF CACHE BOOL "Enable HOPSPACK tests.")
-  set(LHS_ENABLE_TESTS      OFF CACHE BOOL "Enable LHS tests.")
-  set(OPTPP_ENABLE_TESTS    OFF CACHE BOOL "Enable OPT++ tests.")
-  set(PECOS_ENABLE_TESTS    OFF CACHE BOOL "Enable PECOS tests.")
-endif()
 
 add_subdirectory(packages)
 
-# The Dakota DLL API should build on all platforms, though the
-# ModelCenter portion will not
-option(DAKOTA_DLL_API "Enable DAKOTA DLL API." ON)
-
-option(ENABLE_SPEC_MAINT "Enable DAKOTA specification maintenance mode." OFF)
-if(ENABLE_SPEC_MAINT AND NOT UNIX)
-  message(FATAL_ERROR 
-    "DAKOTA specification maintenance mode only available on UNIX platforms")
-endif()
-
-option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
-if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
-  message(FATAL_ERROR 
-    "DAKOTA documentation build only available on UNIX platforms")
-endif()
-
-# Option to build an unsupported Java wrapper for Dakota's library mode that 
-# has a Java callback for performing function evaluations.  This is a non-
-# functioning capability that should only be enabled by developers.  It does 
-# not relate to compiling or using Dakota's graphical user interface.
-option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
-mark_as_advanced(DAKOTA_API_JAVA)
 
 if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS OR DAKOTA_API_JAVA)
   # Each of these requires compiling Java code with Java 1.6 or newer 
