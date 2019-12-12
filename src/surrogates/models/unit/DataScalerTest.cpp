@@ -53,20 +53,20 @@ bool matrix_equals(const MatrixXd &A, const MatrixXd &B, Real tol)
   return true;
 }
 
-MatrixXd create_single_sample_matrix()
+MatrixXd create_single_feature_matrix()
 {
-  MatrixXd single_sample_matrix(1, 7);
-  single_sample_matrix << 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7;
-  return single_sample_matrix;
+  MatrixXd single_feature_matrix(1, 7);
+  single_feature_matrix << 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7;
+  return single_feature_matrix;
 }
 
-MatrixXd create_multiple_sample_matrix()
+MatrixXd create_multiple_features_matrix()
 {
-  MatrixXd multiple_sample_matrix(3, 7);
-  multiple_sample_matrix << 0.1, 1, 10, 100, 1000, 10000, 100000,
+  MatrixXd multiple_features_matrix(3, 7);
+  multiple_features_matrix << 0.1, 1, 10, 100, 1000, 10000, 100000,
                             0.2, 3, 20, 300, 3000, 30000, 500000,
                             0.5, 6, 50, 700, 8000, 40000, 700000;
-  return multiple_sample_matrix;
+  return multiple_features_matrix;
 }
 
 /**
@@ -90,8 +90,8 @@ double variance(VectorXd vec)
 
 TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNormalizationTrue)
 {
-  const int norm_factor = 1.0;
-  NormalizationScaler ns(create_single_sample_matrix(), true, norm_factor);
+  const double norm_factor = 1.0;
+  NormalizationScaler ns(create_single_feature_matrix(), true, norm_factor);
 
   MatrixXd matrix_actual(1, 7);
   MatrixXd matrix_expected(1, 7);
@@ -107,8 +107,8 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNorm
 
 TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalse)
 {
-  const int norm_factor = 1.0;
-  NormalizationScaler ns(create_single_sample_matrix(), false, norm_factor);
+  const double norm_factor = 1.0;
+  NormalizationScaler ns(create_single_feature_matrix(), false, norm_factor);
 
   MatrixXd matrix_actual(1, 7);
   MatrixXd matrix_expected(1, 7);
@@ -124,8 +124,8 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNorm
 
 TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalseWithMultipleSamples)
 {
-  const int norm_factor = 1.0;
-  NormalizationScaler ns(create_multiple_sample_matrix(), false, norm_factor);
+  const double norm_factor = 1.0;
+  NormalizationScaler ns(create_multiple_features_matrix(), false, norm_factor);
 
   MatrixXd matrix_actual(3, 7);
   MatrixXd matrix_expected(3, 7);
@@ -143,8 +143,8 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNorm
 
 TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestNormFactor)
 {
-  const int norm_factor = 2.0;
-  NormalizationScaler ns(create_single_sample_matrix(), true, norm_factor);
+  const double norm_factor = 2.0;
+  NormalizationScaler ns(create_single_feature_matrix(), true, norm_factor);
 
   MatrixXd matrix_actual(1, 7);
   MatrixXd matrix_expected(1, 7);
@@ -160,7 +160,7 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestNormFact
 
 TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestDefault)
 {
-  StandardizationScaler ss(create_single_sample_matrix());
+  StandardizationScaler ss(create_single_feature_matrix());
 
   MatrixXd matrix_actual(1, 7);
   MatrixXd matrix_expected(1, 7);
@@ -173,15 +173,15 @@ TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestDefaul
 
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
   // For StandardizationScaler, mean should be effectively zero.
-  TEST_ASSERT(matrix_actual.row(0).mean() < 1.0e-14); 
+  TEST_ASSERT(std::abs(matrix_actual.row(0).mean()) < 1.0e-14); 
   // For StandardizationScaler, variance should be effectively one.
-  const int UNIT_VARIANCE = 1;
-  TEST_ASSERT(variance(matrix_actual.row(0)) - UNIT_VARIANCE < 1.0e-14);
+  const double UNIT_VARIANCE = 1.0;
+  TEST_ASSERT(std::abs(variance(matrix_actual.row(0)) - UNIT_VARIANCE) < 1.0e-14);
 }
 
 TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestMultipleSamples)
 {
-  StandardizationScaler ss(create_multiple_sample_matrix());
+  StandardizationScaler ss(create_multiple_features_matrix());
 
   MatrixXd matrix_actual(3, 7);
   MatrixXd matrix_expected(3, 7);
@@ -196,25 +196,25 @@ TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestMultip
 
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
   // For StandardizationScaler, mean should be effectively zero.
-  TEST_ASSERT(matrix_actual.row(0).mean() < 1.0e-14); 
-  TEST_ASSERT(matrix_actual.row(1).mean() < 1.0e-14); 
-  TEST_ASSERT(matrix_actual.row(2).mean() < 1.0e-14);
+  TEST_ASSERT(std::abs(matrix_actual.row(0).mean()) < 1.0e-14); 
+  TEST_ASSERT(std::abs(matrix_actual.row(1).mean()) < 1.0e-14); 
+  TEST_ASSERT(std::abs(matrix_actual.row(2).mean()) < 1.0e-14);
   // For StandardizationScaler, variance should be effectively one.
-  const int UNIT_VARIANCE = 1;
-  TEST_ASSERT(variance(matrix_actual.row(0)) - UNIT_VARIANCE < 1.0e-14);
-  TEST_ASSERT(variance(matrix_actual.row(1)) - UNIT_VARIANCE < 1.0e-14);
-  TEST_ASSERT(variance(matrix_actual.row(2)) - UNIT_VARIANCE < 1.0e-14);
+  const double UNIT_VARIANCE = 1.0;
+  TEST_ASSERT(std::abs(variance(matrix_actual.row(0)) - UNIT_VARIANCE) < 1.0e-14);
+  TEST_ASSERT(std::abs(variance(matrix_actual.row(1)) - UNIT_VARIANCE) < 1.0e-14);
+  TEST_ASSERT(std::abs(variance(matrix_actual.row(2)) - UNIT_VARIANCE) < 1.0e-14);
 }
 
 TEUCHOS_UNIT_TEST(surrogates, NoScaler_getScaledFeatures_TestDefault)
 {
-  NoScaler ns(create_single_sample_matrix());
+  NoScaler ns(create_single_feature_matrix());
 
   MatrixXd matrix_actual(1, 7);
   MatrixXd matrix_expected(1, 7);
   
   matrix_actual = ns.getScaledFeatures();
-  matrix_expected = create_single_sample_matrix();
+  matrix_expected = create_single_feature_matrix();
 
   //std::cout << matrix_expected << std::endl;
   //std::cout << matrix_actual << std::endl;
