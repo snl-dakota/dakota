@@ -1,36 +1,4 @@
-# CMakeLists.txt for DAKOTA packages
-option(HAVE_ACRO "Build the ACRO package." ON)
-option(HAVE_AMPL "Build the AMPL package." ON)
-option(HAVE_C3 "Build the Compressed Continuous Computation package." OFF)
-option(HAVE_CONMIN "Build the CONMIN package." ON)
-option(HAVE_DDACE "Build the DDACE package." ON)
-option(HAVE_DEMO_TPL "Build the Demo_TPL package." OFF)
-option(HAVE_DOT "Build the DOT package." ON)
-option(HAVE_DREAM "Build the DREAM package." ON)
-option(HAVE_FSUDACE "Build the FSUDACE package." ON)
-option(HAVE_HOPSPACK "Build the hopspack package." ON)
-option(HAVE_JEGA "Build the JEGA package." ON)
-option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
-option(HAVE_NL2SOL "Build the NL2SOL package." ON)
-option(HAVE_NLPQL "Build the NLPQL package." ON)
-option(HAVE_NOMAD "Build the NOMAD package." ON)
-option(HAVE_NOWPAC "Build the NOWPAC package (experimental)." OFF)
-option(HAVE_NPSOL "Build the NPSOL package." ON)
-option(HAVE_OPTPP "Build the OPTPP package." ON)
-option(HAVE_PECOS "Build the Pecos package." ON)
-option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
-option(HAVE_PSUADE "Build the PSUADE package." ON)
-option(HAVE_ROL "Build the ROL package." ON)
-option(HAVE_SURFPACK "Build the Surfpack package." ON)
-# Packages formerly underneath Pecos
-option(HAVE_FFT "Use either the fftw or dfftpack packages" ON)
-option(HAVE_DFFTPACK "Build the dfftpack package.  This OPTION has no effect if
-  HAVE_FFT is OFF" ON)
-option(HAVE_FFTW "Find and use an installed fftw package. This OPTION has no
-  effect if HAVE_FFT is OFF" OFF)
-
-option(HAVE_LHS "Build the LHS package." ON)
-option(HAVE_SPARSE_GRID "Build the VPISparseGrid package." ON)
+# All Dakota options for packages have been moved to top-level
 
 # For managing additional packages that packages like pecos and surfpack depend on
 include(ManageRelocatablePackage)

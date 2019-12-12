@@ -75,6 +75,8 @@ option(HAVE_X_GRAPHICS "Build the Dakota/Motif Graphics package." OFF)
 # Dakota packages/ TPLs
 # -----
 
+option(HAVE_ACRO "Build the ACRO package." ON)
+
 # BMA NOTE: NonDBayes and MorseSmale unconditionally depend on ANN
 option(HAVE_APPROXNN "Build the Approximate Nearest Neighbor package." ON)
 
@@ -82,6 +84,7 @@ option(HAVE_APPROXNN "Build the Approximate Nearest Neighbor package." ON)
 option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" ON)
 option(HAVE_MORSE_SMALE 
   "Use Morse-Smale; requires APPROXNN and Dionysus libraries" OFF)
+
 # BMA TODO: Remove this once we remove AdaptiveSampling
 if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
   if (NOT HAVE_APPROXNN)
@@ -89,6 +92,39 @@ if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
       "HAVE_APPROXNN enabled for Morse-Smale Adaptive Sampling")
   endif()
 endif()
+
+option(HAVE_AMPL "Build the AMPL package." ON)
+option(HAVE_C3 "Build the Compressed Continuous Computation package." OFF)
+option(HAVE_CONMIN "Build the CONMIN package." ON)
+option(HAVE_DDACE "Build the DDACE package." ON)
+option(HAVE_DEMO_TPL "Build the Demo_TPL package." OFF)
+option(HAVE_DOT "Build the DOT package." ON)
+option(HAVE_DREAM "Build the DREAM package." ON)
+
+# Formerly sub-packages of Pecos
+option(HAVE_FFT "Use either the fftw or dfftpack packages" ON)
+option(HAVE_DFFTPACK "Build the dfftpack package.  This OPTION has no effect if
+  HAVE_FFT is OFF" ON)
+option(HAVE_FFTW "Find and use an installed fftw package. This OPTION has no
+  effect if HAVE_FFT is OFF" OFF)
+
+option(HAVE_FSUDACE "Build the FSUDACE package." ON)
+option(HAVE_HOPSPACK "Build the hopspack package." ON)
+option(HAVE_JEGA "Build the JEGA package." ON)
+
+# Formerly sub-package of Pecos
+option(HAVE_LHS "Build the LHS package." ON)
+
+option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
+option(HAVE_NL2SOL "Build the NL2SOL package." ON)
+option(HAVE_NLPQL "Build the NLPQL package." ON)
+option(HAVE_NOMAD "Build the NOMAD package." ON)
+option(HAVE_NOWPAC "Build the NOWPAC package (experimental)." OFF)
+option(HAVE_NPSOL "Build the NPSOL package." ON)
+option(HAVE_OPTPP "Build the OPTPP package." ON)
+option(HAVE_PECOS "Build the Pecos package." ON)
+option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
+option(HAVE_PSUADE "Build the PSUADE package." ON)
 
 # QUESO: Affect both packages and src
 option(HAVE_QUESO "Build the QUESO package." OFF)
@@ -98,6 +134,11 @@ option(HAVE_QUESO_GRVY "Use optional QUESO GRVY package; not recommended." OFF)
 option(DAKOTA_QUESO_CMAKE "Experimental: Dakota building QUESO with CMake" ON)
 
 option(HAVE_ROL "Build the Trilinos/ROL package." ON)
+
+# Formerly sub-package of Pecos
+option(HAVE_SPARSE_GRID "Build the VPISparseGrid package." ON)
+
+option(HAVE_SURFPACK "Build the Surfpack package." ON)
 
 
 # -----
