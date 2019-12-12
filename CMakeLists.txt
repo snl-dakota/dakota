@@ -17,6 +17,15 @@ message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
 include(DakotaCxxOptions)
 dakota_cxx_standard()
 
+# Developer convenience options first so take precedence over default options
+if(DevDebug)
+  include(DakotaDebug)
+  include(DakotaDev)
+elseif (DevDistro)
+  include(DakotaDistro)
+  include(DakotaDev)
+endif()
+
 # Publish all top-level and Dakota package options
 include(DakotaOptions)
 
@@ -210,16 +219,6 @@ if(APPLE)
 elseif(UNIX)
    set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin"
      CACHE STRING "Set the RPATH in Dakota executables and libraries")
-endif()
-
-
-# Manage developer convenience options (experimental)
-if(DevDebug)
-  include(DakotaDebug)
-  include(DakotaDev)
-elseif (DevDistro)
-  include(DakotaDistro)
-  include(DakotaDev)
 endif()
 
 
