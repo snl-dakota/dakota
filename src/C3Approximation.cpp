@@ -243,21 +243,22 @@ void C3Approximation::build()
     struct FunctionTrain * ft
       = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
     levApproxIter->second.function_train(ft);
-    // Avoid these calculations if not needed
-    // > clarify expansions of derivatives w.r.t. non-random variables
-    //   vs. random deriv-enhanced builds vs. eval of derivs of expansions:
-    //   --> These derivatives are functions that can then be evaluated after
-    //       the build at particular points.
-    // > then add flags / final_asv control of these
-    //   --> the logic on whether or not to precompute these needs to be based
-    //       on whether we expect emulator grad/Hessian evals downstream.
-    if (true) { // *** TO DO: grads currently needed for local sensitivity calc
-      struct FT1DArray * ftg = function_train_gradient(ft);
-      levApproxIter->second.function_train_gradient(ftg);
-      // *** TO DO: Consider compute on demand, to support Hessian-based
-      //            operations (MAP pre-solves, MCMC preconditioning).
-      levApproxIter->second.function_train_hessian(ft1d_array_jacobian(ftg));
-    }
+    // Important distinction among derivative cases:
+    // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
+    //   non-random vars (not yet supported, but would be managed here)
+    // > derivative-enhanced regression (derivs w.r.t. active/build vars;
+    //   not yet supported, but would be managed here)
+    // > evaluation of derivs of expansions w.r.t. build variables: build a
+    //   separate FT expansion by differentiating the value-based expansion;
+    //   these new functions that can then be interrogated at particular points.
+    //   >> This _is_ currently supported, but rather than precomputing based
+    //      on flags / potential for future deriv evals, compute derivative
+    //      expansions on demand using helper fns within evaluators
+    //if (...supportDerivEvals...) {
+    //  struct FT1DArray * ftg = function_train_gradient(ft);
+    //  levApproxIter->second.ft_gradient(ftg);
+    //  levApproxIter->second.ft_hessian(ft1d_array_jacobian(ftg));
+    //}
 
     // free approximation stuff
     free(xtrain);          xtrain    = NULL;
@@ -581,6 +582,39 @@ int C3Approximation::min_coefficients() const
 }
 
 
+void C3Approximation::check_function_gradient()
+{
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  if (ftp.ft_gradient() == NULL) {
+    struct FunctionTrain * ft  = ftp.function_train();
+    if (ft == NULL) {
+      Cerr << "Error: function train required in C3Approximation::"
+	   << "check_function_gradient()" << std::endl;
+      abort_handler(APPROX_ERROR);
+    }
+    else
+      ftp.ft_gradient(function_train_gradient(ft)); // differentiate ft
+  }
+
+  if (approxGradient.empty())
+    approxGradient.sizeUninitialized(sharedDataRep->numVars);
+}
+
+
+void C3Approximation::check_function_hessian()
+{
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  if (ftp.ft_hessian() == NULL) {
+    check_function_gradient(); // allocate ftg if needed
+    struct FT1DArray * ftg = ftp.ft_gradient();
+    ftp.ft_hessian(ft1d_array_jacobian(ftg)); // differentiate ftg
+  }
+
+  if (approxHessian.empty())
+    approxHessian.shapeUninitialized(sharedDataRep->numVars);
+}
+
+
 // ignore discrete variables for now
 Real C3Approximation::value(const Variables& vars)
 {
@@ -592,13 +626,13 @@ Real C3Approximation::value(const Variables& vars)
 // ignore discrete variables for now
 const RealVector& C3Approximation::gradient(const Variables& vars)
 {
-  size_t i, num_v = sharedDataRep->numVars;
-  if (approxGradient.empty())
-    approxGradient.sizeUninitialized(num_v);
+  check_function_gradient();
+
+  struct FT1DArray * ftg = levApproxIter->second.ft_gradient();
   const Real* c_vars = vars.continuous_variables().values();
-  for (i = 0; i < num_v; ++i)
-    approxGradient(i) = function_train_eval(
-      levApproxIter->second.function_train_gradient()->ft[i], c_vars);
+  size_t i, num_v = sharedDataRep->numVars;
+  for (i=0; i<num_v; ++i)
+    approxGradient(i) = function_train_eval(ftg->ft[i], c_vars);
   return approxGradient;
 }
 
@@ -606,14 +640,14 @@ const RealVector& C3Approximation::gradient(const Variables& vars)
 // ignore discrete variables for now
 const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
 {
-  size_t i, j, num_v = sharedDataRep->numVars;
-  if (approxHessian.empty())
-    approxHessian.shapeUninitialized(num_v);
+  check_function_hessian();
+
+  struct FT1DArray * fth = levApproxIter->second.ft_hessian();
   const Real* c_vars = vars.continuous_variables().values();
-  for (i = 0; i < num_v; ++i)
-    for (j = 0; j <= i; ++j)
-      approxHessian(i,j) = function_train_eval(
-	levApproxIter->second.function_train_hessian()->ft[i+j*num_v], c_vars);
+  size_t i, j, num_v = sharedDataRep->numVars;
+  for (i=0; i<num_v; ++i)
+    for (j=0; j<=i; ++j)
+      approxHessian(i,j) = function_train_eval(fth->ft[i+j*num_v], c_vars);
   return approxHessian;
 }
 

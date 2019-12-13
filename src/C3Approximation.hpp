@@ -155,14 +155,14 @@ public:
   void derived_functions_create(struct MultiApproxOpts* opts);
   void derived_functions_free();
 
-  struct FunctionTrain *      function_train();
+  struct FunctionTrain * function_train();
   void function_train(struct FunctionTrain * ft);
 
-  struct FT1DArray *          function_train_gradient();
-  void function_train_gradient(struct FT1DArray * ftg);
+  struct FT1DArray *     ft_gradient();
+  void ft_gradient(struct FT1DArray * ftg);
 
-  struct FT1DArray *          function_train_hessian();
-  void function_train_hessian(struct FT1DArray * fth);
+  struct FT1DArray *     ft_hessian();
+  void ft_hessian(struct FT1DArray * fth);
 
   const struct FTDerivedFunctions& derived_functions();
 
@@ -274,19 +274,19 @@ inline void C3FnTrainPtrs::function_train(struct FunctionTrain * ft)
 { ftpRep->ft = ft; }
 
 
-inline struct FT1DArray * C3FnTrainPtrs::function_train_gradient()
+inline struct FT1DArray * C3FnTrainPtrs::ft_gradient()
 { return ftpRep->ft_gradient; }
 
 
-inline void C3FnTrainPtrs::function_train_gradient(struct FT1DArray * ftg)
+inline void C3FnTrainPtrs::ft_gradient(struct FT1DArray * ftg)
 { ftpRep->ft_gradient = ftg; }
 
 
-inline struct FT1DArray * C3FnTrainPtrs::function_train_hessian()
+inline struct FT1DArray * C3FnTrainPtrs::ft_hessian()
 { return ftpRep->ft_hessian; }
 
 
-inline void C3FnTrainPtrs::function_train_hessian(struct FT1DArray * fth)
+inline void C3FnTrainPtrs::ft_hessian(struct FT1DArray * fth)
 { ftpRep->ft_hessian = fth; }
 
 
@@ -433,6 +433,11 @@ private:
   void compute_derived_statistics(bool overwrite);
 
   struct FunctionTrain * subtract_const(Real val);
+
+  /// differentiate the ft to form its gradient, if not previously performed
+  void check_function_gradient();
+  /// differentiate the ftg to form the ft Hessian, if not previously performed
+  void check_function_hessian();
 
   //
   //- Heading: Data
