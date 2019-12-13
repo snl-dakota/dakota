@@ -9,11 +9,10 @@ method,
 	  start_order = 5			     	#s0,#s1,#s2,#s3
 	  start_rank = 2  kick_rank = 2  max_rank = 10	#s0,#s1,#s2,#s3
 	  adapt_rank   	  	      	 	    	#s0,#s1,#s2,#s3
-	  solver_tolerance   = 1e-12			#s0,#s1,#s2,#s3
-	  rounding_tolerance = 1e-12			#s0,#s1,#s2,#s3
-	  convergence_tol = 1e-6			#s0,#s1,#s2,#s3
-#      	  build_samples = 100 (defined by DACE spec)
-#      	  import_build_points_file = "rosenbrock_samples.dat"
+	  solver_tolerance    = 1e-12			#s0,#s1,#s2,#s3
+	  rounding_tolerance  = 1e-12			#s0,#s1,#s2,#s3
+	  convergence_tol     = 1e-6			#s0,#s1,#s2,#s3
+	  collocation_points  = 100			#s0,#s1,#s2,#s3
 	  samples_on_emulator = 100000			#s0,#s1,#s2,#s3
 	  variance_based_decomp #interaction_order = 1	#s0,#s1,#s2,#s3
 	  model_pointer = 'SIM'				#s0,#s1,#s2,#s3

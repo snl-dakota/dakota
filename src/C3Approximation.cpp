@@ -139,14 +139,14 @@ C3Approximation::
 C3Approximation(ProblemDescDB& problem_db,
 		const SharedApproxData& shared_data,
 		const String& approx_label):
-  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
-  //sharedC3DataRep((SharedC3ApproxData*)sharedDataRep)
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
+  levApproxIter(levelApprox.end())
 { base_init(); }
 
 
 C3Approximation::C3Approximation(const SharedApproxData& shared_data):
-  Approximation(NoDBBaseConstructor(), shared_data)
-  //sharedC3DataRep((SharedC3ApproxData*)sharedDataRep)
+  Approximation(NoDBBaseConstructor(), shared_data),
+  levApproxIter(levelApprox.end())
 { base_init(); }
 
 
@@ -251,11 +251,11 @@ void C3Approximation::build()
     // > then add flags / final_asv control of these
     //   --> the logic on whether or not to precompute these needs to be based
     //       on whether we expect emulator grad/Hessian evals downstream.
-    if (expansionCoeffGradFlag) {
+    if (true) { // *** TO DO: grads currently needed for local sensitivity calc
       struct FT1DArray * ftg = function_train_gradient(ft);
       levApproxIter->second.function_train_gradient(ftg);
-      // *** TO DO: refine logic.  Consider compute on demand, to support
-      //     Hessian-based operations (MAP pre-solves, MCMC preconditioning).
+      // *** TO DO: Consider compute on demand, to support Hessian-based
+      //            operations (MAP pre-solves, MCMC preconditioning).
       levApproxIter->second.function_train_hessian(ft1d_array_jacobian(ftg));
     }
 
@@ -406,6 +406,7 @@ void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
   if (fts) c3_sobol_sensitivity_free(fts);
   fts = c3_sobol_sensitivity_calculate(levApproxIter->second.function_train(),
 				       interaction_order);
+  levApproxIter->second.sobol(fts);
 }
 
 

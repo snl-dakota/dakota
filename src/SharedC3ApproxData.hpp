@@ -152,6 +152,10 @@ protected:
   /// indices for random subset when approximating in all-variables mode
   SizetVector randomIndices;
 
+  /// number of instances within the popped arrays (mostly a placeholder for
+  /// supporting push_available())
+  std::map<UShortArray, size_t> poppedCounts;
+
 private:
 
   //
@@ -272,7 +276,7 @@ inline bool SharedC3ApproxData::push_available()
 
 inline size_t SharedC3ApproxData::push_index(const UShortArray& key)
 {
-  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(activeKey);
+  std::map<UShortArray, size_t>::iterator it = poppedCounts.find(key);
   if (it == poppedCounts.end() || it->second == 0) {
     Cerr << "Error: bad lookup in SharedC3ApproxData::push_index(key)"
 	 << std::endl;
