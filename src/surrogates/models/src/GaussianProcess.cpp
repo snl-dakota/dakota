@@ -206,7 +206,7 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
 
   /* size of thetaValues for squared exponential kernel and one QoI */
   thetaValues.resize(numVariables+1);
-  optimalThetaValues.resize(numVariables+1);
+  bestThetaValues.resize(numVariables+1);
   /* set the size of the GramMatrix and its derivatives */
   GramMatrix.resize(numSamples, numSamples);
   GramMatrixDerivs.resize(numVariables+1);
@@ -270,7 +270,7 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
   std::vector<std::string> output;
 
   objectiveFunctionHistory.resize(num_restarts);
-  finalObjFunValue = 1.0e300;
+  bestObjFunValue = 1.0e300;
 
   double final_obj_value;
   VectorXd final_obj_gradient(dim);
@@ -285,22 +285,22 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
     }
     /* get the final objective function value */
     negative_marginal_log_likelihood(final_obj_value, final_obj_gradient);
-    if (final_obj_value < finalObjFunValue) {
-      finalObjFunValue = final_obj_value;
-      optimalThetaValues = thetaValues;
+    if (final_obj_value < bestObjFunValue) {
+      bestObjFunValue = final_obj_value;
+      bestThetaValues = thetaValues;
     }
     objectiveFunctionHistory(i) = final_obj_value;
     algo.reset();
   }
 
-  thetaValues = optimalThetaValues;
+  thetaValues = bestThetaValues;
 
   /*
   std::cout << "\n";
   std::cout << objectiveFunctionHistory << std::endl;
   std::cout << "optimal theta values in log-space:" << std::endl;
-  std::cout << optimalThetaValues << std::endl;
-  std::cout << "best objective function value is " <<  finalObjFunValue << std::endl;
+  std::cout << bestThetaValues << std::endl;
+  std::cout << "best objective function value is " <<  bestObjFunValue << std::endl;
   std::cout << "best objective function gradient norm is " <<  final_obj_gradient.norm() << std::endl;
   */
 
