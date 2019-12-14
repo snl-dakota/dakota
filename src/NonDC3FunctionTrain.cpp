@@ -41,10 +41,12 @@ struct SPrintArgs
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
+  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
   //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
   //numSamplesOnModel(probDescDB.get_sizet(
-  //  "method.c3function_train.num_samples_for_construction"))
+  //  "method.c3function_train.num_samples_for_construction")),
+  importBuildPointsFile(
+    probDescDB.get_string("method.import_build_points_file"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {
@@ -92,10 +94,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  const String& import_build_pts_file
-    = probDescDB.get_string("method.import_build_points_file");
   String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
-  if (!import_build_pts_file.empty() && pt_reuse.empty())
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
   String approx_type = "global_function_train";
   UShortArray approx_order; // unused by C3
@@ -103,7 +103,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     ft_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_build_pts_file,
+    outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
@@ -124,10 +124,12 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(BaseConstructor, ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
+  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
   //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
   //numSamplesOnModel(probDescDB.get_sizet(
-  //  "method.c3function_train.num_samples_for_construction"))
+  //  "method.c3function_train.num_samples_for_construction")),
+  importBuildPointsFile(
+    probDescDB.get_string("method.import_build_points_file"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {
@@ -317,7 +319,8 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
     else {
       c3Instance->iteratedModel.evaluate();
       // pack Dakota resp data into qoi_sets...
-      const RealVector& fns_i = c3Instance->iteratedModel.current_response().function_values();
+      const RealVector& fns_i
+        = c3Instance->iteratedModel.current_response().function_values();
       copy_data(fns_i, qoi_sets+num_fns*i, num_fns);
     }
   }
@@ -354,7 +357,8 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();  
   for (size_t i=0; i<numFunctions; ++i) {
-      C3Approximation* poly_approx_rep_i = (C3Approximation*)poly_approxs[i].approx_rep();
+      C3Approximation* poly_approx_rep_i
+	= (C3Approximation*)poly_approxs[i].approx_rep();
        if (i==0 || !prev_exception)
 	 s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
 	   << std::setw(width+1)  << "Skewness" << std::setw(width+2)
@@ -370,7 +374,8 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
 }
 
 
-void print_c3_sobol_indices(double value, size_t ninteract, size_t * interactions, void * arg)
+void print_c3_sobol_indices(double value, size_t ninteract,
+			    size_t * interactions, void * arg)
 {
   if (ninteract > 1){
     struct SPrintArgs * pa = (struct SPrintArgs *)arg;
@@ -392,13 +397,15 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 
   const StringArray& fn_labels = iteratedModel.response_labels();
 
-  StringMultiArrayConstView cv_labels = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
 
   // print sobol indices per response function
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   size_t wpp7 = write_precision+7;
   for (size_t i=0; i<numFunctions; ++i) {
-    C3Approximation* poly_approx_rep_i = (C3Approximation*)poly_approxs[i].approx_rep();
+    C3Approximation* poly_approx_rep_i
+      = (C3Approximation*)poly_approxs[i].approx_rep();
         
     // Print Main and Total effects
     s << fn_labels[i] << " Sobol' indices:\n" << std::setw(38) << "Main"

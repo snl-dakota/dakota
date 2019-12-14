@@ -91,6 +91,9 @@ protected:
   size_t numSamplesOnModel;
   //int numSamplesOnEmulator;
 
+  /// user-specified file for importing build points
+  String importBuildPointsFile;
+
 private:
 
   //

@@ -586,7 +586,7 @@ void C3Approximation::check_function_gradient()
 {
   C3FnTrainPtrs& ftp = levApproxIter->second;
   if (ftp.ft_gradient() == NULL) {
-    struct FunctionTrain * ft  = ftp.function_train();
+    struct FunctionTrain * ft = ftp.function_train();
     if (ft == NULL) {
       Cerr << "Error: function train required in C3Approximation::"
 	   << "check_function_gradient()" << std::endl;
@@ -623,10 +623,9 @@ Real C3Approximation::value(const Variables& vars)
 }
 
 
-// ignore discrete variables for now
 const RealVector& C3Approximation::gradient(const Variables& vars)
 {
-  check_function_gradient();
+  check_function_gradient(); // compute on demand
 
   struct FT1DArray * ftg = levApproxIter->second.ft_gradient();
   const Real* c_vars = vars.continuous_variables().values();
@@ -637,10 +636,9 @@ const RealVector& C3Approximation::gradient(const Variables& vars)
 }
 
 
-// ignore discrete variables for now
 const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
 {
-  check_function_hessian();
+  check_function_hessian(); // compute on demand
 
   struct FT1DArray * fth = levApproxIter->second.ft_hessian();
   const Real* c_vars = vars.continuous_variables().values();

@@ -29,17 +29,8 @@ namespace Dakota {
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDC3FunctionTrain(BaseConstructor(), problem_db, model),
-  mlmfAllocControl(
-    probDescDB.get_short("method.nond.multilevel_allocation_control")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
-  sequenceIndex(0),
-  kappaEstimatorRate(
-    probDescDB.get_real("method.nond.multilevel_estimator_rate")),
-  gammaEstimatorScale(1.),
-  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
-  importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file"))
-  //resizedFlag(false), callResize(false)
+  sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -123,28 +114,27 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     that employ regression.
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
-			      short exp_coeffs_approach,
-			      const UShortArray& exp_order_seq,
-			      const RealVector& dim_pref,
-			      const SizetArray& colloc_pts_seq,
-			      Real colloc_ratio, const SizetArray& pilot,
-			      int seed, short u_space_type,
-			      short refine_type, short refine_control,
-			      short covar_control, short ml_alloc_control,
-			      short ml_discrep,
-			      //short rule_nest, short rule_growth,
-			      bool piecewise_basis, bool use_derivs,
-			      bool cv_flag, const String& import_build_pts_file,
-			      unsigned short import_build_format,
-			      bool import_build_active_only):
+			    short exp_coeffs_approach,
+			    const UShortArray& exp_order_seq,
+			    const RealVector& dim_pref,
+			    const SizetArray& colloc_pts_seq,
+			    Real colloc_ratio, const SizetArray& pilot,
+			    int seed, short u_space_type,
+			    short refine_type, short refine_control,
+			    short covar_control, short ml_alloc_control,
+			    short ml_discrep,
+			    //short rule_nest, short rule_growth,
+			    bool piecewise_basis, bool use_derivs,
+			    bool cv_flag, const String& import_build_pts_file,
+			    unsigned short import_build_format,
+			    bool import_build_active_only):
   NonDC3FunctionTrain(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
-		      ml_discrep, //rule_nest, rule_growth,
+		      ml_alloc_control, ml_discrep, pilot,
+		      //rule_nest, rule_growth,
 		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
-  mlmfAllocControl(ml_alloc_control), expOrderSeqSpec(exp_order_seq),
-  collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
-  gammaEstimatorScale(1.), importBuildPointsFile(import_build_pts_file),
-  pilotSamples(pilot)
+  expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
+  sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -193,14 +183,14 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  if (!importBuildPointsFile.empty()) pt_reuse = "all";
+  if (!import_build_pts_file.empty()) pt_reuse = "all";
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile, import_build_format,
+    outputLevel, pt_reuse, import_build_pts_file, import_build_format,
     import_build_active_only), false);
   initialize_u_space_model();
 
@@ -269,8 +259,9 @@ void NonDMultilevelFunctionTrain::core_run()
     }
     break;
   case MULTILEVEL_FUNCTION_TRAIN:
-    // TO DO: assign a default ML alloc_control = RANK_SAMPLING
+    // general-purpose algorithm inherited from NonDExpansion:
     multilevel_regression();
+    // TO DO: assign a default ML alloc_control = RANK_SAMPLING
     break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelFunctionTrain::"
@@ -348,9 +339,11 @@ void NonDMultilevelFunctionTrain::update_from_specification()
 }
 
 
-void NonDMultilevelFunctionTrain::increment_sample_sequence(size_t new_samp)
+void NonDMultilevelFunctionTrain::
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 {
   numSamplesOnModel = new_samp;
+  // total_samp,lev not required for this derived implementation
 
   // update sampler settings (NonDQuadrature or NonDSampling)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
@@ -379,161 +372,33 @@ void NonDMultilevelFunctionTrain::increment_sample_sequence(size_t new_samp)
 }
 
 
-void NonDMultilevelFunctionTrain::multilevel_regression()
+void NonDMultilevelFunctionTrain::
+initialize_ml_regression(size_t num_lev, bool& import_pilot)
 {
-  // remove default key (empty activeKey) since this interferes with
-  // combine_approximation().  Also useful for ML/MF re-entrancy.
-  uSpaceModel.clear_model_keys();
-  // all stats are level stats
-  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
-
-  // Allow either model forms or discretization levels, but not both
-  // (discretization levels take precedence)
-  unsigned short lev, form;
-  size_t num_lev, iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
-  RealVector cost;
-  bool multilev, optional_cost = (mlmfAllocControl == RANK_SAMPLING),
-    recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  configure_levels(num_lev, form, multilev, false);
-  configure_cost(num_lev, multilev, cost);
-  RealVector level_metric(num_lev);
-
-  // Multilevel variance aggregation requires independent sample sets
-  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
-  if (u_sub_iter != NULL)
-    ((Analyzer*)u_sub_iter)->vary_pattern(true);
+  NonDExpansion::initialize_ml_regression(num_lev, import_pilot);
 
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a
   // collocation pts/ratio enforcement (pts/ratio controls take over on
   // subsequent iterations).
-  bool import_pilot = (!importBuildPointsFile.empty());// && recursive);
-  if (import_pilot) {
-    if (recursive)
+  if (!importBuildPointsFile.empty()) {
+    if (multilevDiscrepEmulation == RECURSIVE_EMULATION) {
       Cout << "\nPilot sample to include imported build points.\n";
-    else {
-      Cerr << "Error: build data import only supported for recursive emulation "
-	   << "in NonDMultilevelFunctionTrain::multilevel_regression()."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
+      import_pilot = true;
     }
-  }
-  // Load the pilot sample from user specification
-  SizetArray delta_N_l(num_lev);
-  load_pilot_sample(pilotSamples, delta_N_l);
-
-  // now converge on sample counts per level (NLev)
-  NLev.assign(num_lev, 0);
-  while ( iter <= max_iter &&
-	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
-
-    sum_root_var_cost = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
-
-      configure_indices(lev, form, multilev);
-
-      if (iter == 0) { // initial expansion build
-	// Update solution control variable in uSpaceModel to support
-	// DataFitSurrModel::consistent() logic
-	if (import_pilot)
-	  uSpaceModel.update_from_subordinate_model(); // max depth
-
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev]);
-	if (lev == 0 || import_pilot)
-	  compute_expansion(); // init + import + build; not recursive
-	else
-	  update_expansion();  // just build; not recursive
-
-	if (import_pilot) { // update counts to include imported data
-	  NLev[lev] = delta_N_l[lev]
-	    = uSpaceModel.approximation_data(0).points();
-	  Cout << "Pilot count including import = " << delta_N_l[lev] << "\n\n";
-	  // Trap zero samples as it will cause FPE downstream
-	  if (NLev[lev] == 0) { // no pilot spec, no import match
-	    Cerr << "Error: insufficient sample recovery for level " << lev
-		 << " in multilevel_regression()." << std::endl;
-	    abort_handler(METHOD_ERROR);
-	  }
-	}
-      }
-      else if (delta_N_l[lev]) {
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev]);
-	// Note: import build data is not re-processed by append_expansion()
-	append_expansion();
-      }
-
-      switch (mlmfAllocControl) {
-      case RANK_SAMPLING: // use RMS of system size across QoI
-	if (delta_N_l[lev] > 0)
-	  regression_metric(level_metric[lev], 2.);
-	break;
-      default: { //case ESTIMATOR_VARIANCE:
-	Real& agg_var_l = level_metric[lev];
-	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
-	sum_root_var_cost += std::pow(agg_var_l *
-	  std::pow(level_cost(lev, cost), kappaEstimatorRate),
-	  1./(kappaEstimatorRate+1.));
-        // MSE reference is ML MC aggregation for pilot(+import) sample:
-	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
-	break;
-      }
-      }
-    }
-
-    switch (mlmfAllocControl) {
-    case RANK_SAMPLING:
-      compute_sample_increment(2., level_metric, NLev, delta_N_l);
-      break;
-    default: //case ESTIMATOR_VARIANCE:
-      if (iter == 0) { // eps^2 / 2 = var * relative factor
-	eps_sq_div_2 = estimator_var0 * convergenceTol;
-	if (outputLevel == DEBUG_OUTPUT)
-	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
-      }
-      compute_sample_increment(level_metric, cost, sum_root_var_cost,
-			       eps_sq_div_2, NLev, delta_N_l);
-      break;
-    }
-    ++iter;
-    Cout << "\nML FT iteration " << iter << " sample increments:\n"
-	 << delta_N_l << std::endl;
-  }
-  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
-
-  combined_to_active(); // combine FT terms and promote to active expansion
-  // Final annotated results are computed / printed in core_run()
-}
-
-
-void NonDMultilevelFunctionTrain::aggregate_variance(Real& agg_var_l)
-{
-  // case ESTIMATOR_VARIANCE:
-  // statsType remains as Pecos::ACTIVE_EXPANSION_STATS
-
-  // control ML using aggregated variance across the vector of QoI
-  // (alternate approach: target QoI with largest variance)
-  agg_var_l = 0.;
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    C3Approximation* poly_approx_q
-      = (C3Approximation*)poly_approxs[qoi].approx_rep();
-    Real var_l = poly_approx_q->variance(); // for active level
-    agg_var_l += var_l;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Variance(" /*"lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << var_l << '\n';
+    else
+      Cerr << "Warning: build data import only supported for recursive "
+	   << "emulation in multilevel_regression()." << std::endl;
   }
 }
 
 
 /* Compute power mean of rank (common power values: 1 = average, 2 = RMS). */
 void NonDMultilevelFunctionTrain::
-regression_metric(Real& regress_metric_l, Real power)
+level_metric(Real& regress_metric_l, Real power, size_t lev)
 {
-  // case RANK_SAMPLING:
+  // case RANK_SAMPLING in NonDExpansion::multilevel_regression():
+
   // > sample requirements scale as O(p r^2 d), which shapes the profile
   // > there is a weak dependence on the polynomial order p, but this should
   //   not grow very high (could just fix this factor at ~10).
@@ -563,76 +428,28 @@ regression_metric(Real& regress_metric_l, Real power)
 
 
 void NonDMultilevelFunctionTrain::
-compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
-			 Real sum_root_var_cost, Real eps_sq_div_2,
+compute_sample_increment(Real factor, const RealVector& regress_metrics,
 			 const SizetArray& N_l, SizetArray& delta_N_l)
 {
-  // case ESTIMATOR_VARIANCE:
+  // case RANK_SAMPLING in NonDExpansion::multilevel_regression():
 
-  // eps^2 / 2 target computed based on relative tolerance: total MSE = eps^2
-  // which is equally apportioned (eps^2 / 2) among discretization MSE and
-  // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
-  // discretization error, we compute an initial estimator variance and then
-  // seek to reduce it by a relative_factor <= 1.
+  // update targets based on rank estimates: sample requirements scale as
+  // O(p r^2 d), which shapes the profile
+  //size_t lev, num_lev = N_l.size();
+  //RealVector new_N_l(num_lev, false);
+  //Real r, fact_var = factor * numContinuousVars;
+  //for (lev=0; lev<num_lev; ++lev)
+  //  { r = rank[lev];  new_N_l[lev] = fact_var * r * r; }
 
-  // We assume a functional dependence of estimator variance on NLev
-  // for minimizing aggregate cost subject to an MSE error balance:
-  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
-  // where Monte Carlo has gamma = kappa = 1.  To fit these parameters,
-  // one approach is to numerically estimate the variance in the mean
-  // estimator (alpha_0) from two sources:
-  // > from variation across k folds for the selected CV settings
-  // > from var decrease as NLev increases across iters
-
-  // compute and accumulate variance of mean estimator from the set of
-  // k-fold results within the selected settings from cross-validation:
-  //Real cv_var_i = poly_approx_rep->
-  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
-  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
-  //   cv_iterator class scope)
-  // To validate this approach, the actual estimator variance can be
-  // computed and compared with the CV variance approximation (as for
-  // traditional CV error plots, but predicting estimator variance
-  // instead of L2 fit error).
-
-  // update targets based on variance estimates
-  Real new_N_l; size_t lev, num_lev = N_l.size();
-  Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
-		       1. / kappaEstimatorRate);
-  for (lev=0; lev<num_lev; ++lev) {
-    new_N_l = std::pow(agg_var[lev] / level_cost(lev, cost),
-		       1. / (kappaEstimatorRate+1.)) * fact;
-    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
-  }
-}
-
-
-void NonDMultilevelFunctionTrain::
-compute_sample_increment(Real factor, const RealVector& regress_metric,
-			 const SizetArray& N_l, SizetArray& delta_N_l)
-{
-  // case RANK_SAMPLING:
-  
-  /* update targets based on rank estimates
-  // > sample requirements scale as O(p r^2 d), which shapes the profile
-  size_t lev, num_lev = N_l.size();
-  RealVector new_N_l(num_lev, false);
-  Real r, fact_var = factor * numContinuousVars;
-  for (lev=0; lev<num_lev; ++lev)
-    { r = rank[lev];  new_N_l[lev] = fact_var * r * r; }
-  */
-
-  // *** NOTE: feedback of new samples inducing increased rank can happen but
-  //     can be controlled with the rounding tolerance.
+  // NOTE: feedback of new samples inducing increased rank can happen but
+  //       can be controlled with the rounding tolerance.
   // > Alex checks 2 things before advancing the rank: (1) if CV error decreases
   //   and if ranks decrease when rounding, then done
   // > May need to tune this user spec (and its default)
 
-
-  
   // update targets based on regression size
   // > TO DO: repurpose collocation_ratio spec to allow user tuning of factor
-  RealVector new_N_l = regress_metric; // number of unknowns (RMS across QoI)
+  RealVector new_N_l = regress_metrics; // number of unknowns (RMS across QoI)
   new_N_l.scale(factor); // over-sample
 
   // Retain the shape of the profile but enforce an upper bound

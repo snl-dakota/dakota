@@ -30,19 +30,12 @@ namespace Dakota {
 NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDPolynomialChaos(BaseConstructor(), problem_db, model),
-  mlmfAllocControl(
-    probDescDB.get_short("method.nond.multilevel_allocation_control")),
   expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
   quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
-  sequenceIndex(0),
-  kappaEstimatorRate(
-    probDescDB.get_real("method.nond.multilevel_estimator_rate")),
-  gammaEstimatorScale(1.),
-  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
-  //resizedFlag(false), callResize(false)
+  sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -160,8 +153,9 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-    importBuildActiveOnly,
+    outputLevel, pt_reuse, importBuildPointsFile,
+    probDescDB.get_ushort("method.import_build_format"),
+    probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
@@ -169,8 +163,10 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(importApproxPointsFile, importApproxFormat, 
-			      importApproxActiveOnly);
+  construct_expansion_sampler(
+    probDescDB.get_string("method.import_approx_points_file"),
+    probDescDB.get_ushort("method.import_approx_format"),
+    probDescDB.get_bool("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
@@ -192,10 +188,10 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
 			      bool use_derivs):
   NonDPolynomialChaos(/*method_name*/MULTIFIDELITY_POLYNOMIAL_CHAOS, model,
 		      exp_coeffs_approach, dim_pref, u_space_type, refine_type,
-		      refine_control, covar_control, ml_discrep, rule_nest,
-		      rule_growth, piecewise_basis, use_derivs), 
-  mlmfAllocControl(ml_alloc_control), sequenceIndex(0), kappaEstimatorRate(2.),
-  gammaEstimatorScale(1.)
+		      refine_control, covar_control, ml_alloc_control,
+		      ml_discrep, rule_nest, rule_growth, piecewise_basis,
+		      use_derivs), 
+  sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -276,11 +272,11 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      bool import_build_active_only):
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
-		      ml_discrep, //rule_nest, rule_growth,
+		      ml_alloc_control, ml_discrep, pilot,
+		      //rule_nest, rule_growth,
 		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
-  mlmfAllocControl(ml_alloc_control), expOrderSeqSpec(exp_order_seq),
-  collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
-  gammaEstimatorScale(1.), pilotSamples(pilot)
+  expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
+  sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -488,19 +484,23 @@ bool NonDMultilevelPolynomialChaos::resize()
     if (!importBuildPointsFile.empty())
       pt_reuse = "all";
 
+    //DataFitSurrModel* orig_dfs_model
+    //  = (DataFitSurrModel*)uSpaceModel.model_rep();
+    //unsigned short import_format = orig_dfs_model->import_build_format();
+    //bool      import_active_only = orig_dfs_model->import_build_active_only();
+
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
       pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-      outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-      importBuildActiveOnly), false);
+      outputLevel, pt_reuse), false); // no import after resize
+    //, importBuildPointsFile, import_format, import_active_only), false);
   }
 
   initialize_u_space_model();
 
-  // -------------------------------------
+  // -----------------------------------------
   // (Re)Construct expansionSampler, if needed
-  // -------------------------------------
-  construct_expansion_sampler(importApproxPointsFile, importApproxFormat,
-			      importApproxActiveOnly);
+  // -----------------------------------------
+  construct_expansion_sampler(); // no import after resize
 
   return true; // Always need to re-initialize communicators
 }
@@ -546,9 +546,10 @@ void NonDMultilevelPolynomialChaos::core_run()
     }
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
+    // general-purpose algorithm inherited from NonDExpansion:
+    multilevel_regression();
     // Projection-based approaches are precluded by the ML PCE spec.
     // TO DO: assign a default ML alloc_control (don't default to MF)
-    multilevel_regression();
     break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
@@ -831,168 +832,41 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 }
 
 
-void NonDMultilevelPolynomialChaos::multilevel_regression()
+void NonDMultilevelPolynomialChaos::
+initialize_ml_regression(size_t num_lev, bool& import_pilot)
 {
-  // remove default key (empty activeKey) since this interferes with
-  // combine_approximation().  Also useful for ML/MF re-entrancy.
-  uSpaceModel.clear_model_keys();
-  // all stats are level stats
-  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
-
-  // Allow either model forms or discretization levels, but not both
-  // (discretization levels take precedence)
-  unsigned short lev, form;
-  size_t num_lev, iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
-  RealVector cost;
-  bool multilev, optional_cost = (mlmfAllocControl == RIP_SAMPLING),
-    recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  configure_levels(num_lev, form, multilev, false);
-  configure_cost(num_lev, multilev, cost);
-  SizetArray cardinality;  RealVector level_metric(num_lev);
-  if (mlmfAllocControl == RIP_SAMPLING)
-    cardinality.resize(num_lev);
-
-  // Multilevel variance aggregation requires independent sample sets
-  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
-  if (u_sub_iter != NULL)
-    ((Analyzer*)u_sub_iter)->vary_pattern(true);
+  NonDExpansion::initialize_ml_regression(num_lev, import_pilot);
 
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a
   // collocation pts/ratio enforcement (pts/ratio controls take over on
   // subsequent iterations).
-  bool import_pilot = (!importBuildPointsFile.empty());// && recursive);
-  if (import_pilot) {
-    if (recursive)
+  if (!importBuildPointsFile.empty()) {
+    if (multilevDiscrepEmulation == RECURSIVE_EMULATION) {
       Cout << "\nPilot sample to include imported build points.\n";
-    else {
-      Cerr << "Error: build data import only supported for recursive emulation "
-	   << "in NonDMultilevelPolynomialChaos::multilevel_regression()."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
+      import_pilot = true;
     }
+    else
+      Cerr << "Warning: build data import only supported for recursive "
+	   << "emulation in multilevel_regression()." << std::endl;
   }
-  // Load the pilot sample from user specification
-  SizetArray delta_N_l(num_lev);
-  load_pilot_sample(pilotSamples, delta_N_l);
 
-  // now converge on sample counts per level (NLev)
-  NLev.assign(num_lev, 0);
-  while ( iter <= max_iter &&
-	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
-
-    sum_root_var_cost = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
-
-      configure_indices(lev, form, multilev);
-
-      if (iter == 0) { // initial expansion build
-	// Update solution control variable in uSpaceModel to support
-	// DataFitSurrModel::consistent() logic
-	if (import_pilot)
-	  uSpaceModel.update_from_subordinate_model(); // max depth
-
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	if (lev == 0 || import_pilot)
-	  compute_expansion(); // init + import + build; not recursive
-	else
-	  update_expansion();  // just build; not recursive
-
-	if (import_pilot) { // update counts to include imported data
-	  NLev[lev] = delta_N_l[lev]
-	    = uSpaceModel.approximation_data(0).points();
-	  Cout << "Pilot count including import = " << delta_N_l[lev] << "\n\n";
-	  // Trap zero samples as it will cause FPE downstream
-	  if (NLev[lev] == 0) { // no pilot spec, no import match
-	    Cerr << "Error: insufficient sample recovery for level " << lev
-		 << " in multilevel_regression()." << std::endl;
-	    abort_handler(METHOD_ERROR);
-	  }
-	}
-      }
-      else if (delta_N_l[lev]) {
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	// Note: import build data is not re-processed by append_expansion()
-	NonDExpansion::append_expansion(); // compiler requires qualification
-      }
-
-      switch (mlmfAllocControl) {
-      case RIP_SAMPLING: // use RMS of sparsity across QoI
-	if (delta_N_l[lev] > 0)
-	  sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
-	break;
-      default: { //case ESTIMATOR_VARIANCE:
-	Real& agg_var_l = level_metric[lev];
-	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
-	sum_root_var_cost += std::pow(agg_var_l *
-	  std::pow(level_cost(lev, cost), kappaEstimatorRate),
-	  1./(kappaEstimatorRate+1.));
-        // MSE reference is ML MC aggregation for pilot(+import) sample:
-	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
-	break;
-      }
-      }
-    }
-
-    switch (mlmfAllocControl) {
-    case RIP_SAMPLING:
-      compute_sample_increment(cardinality, 2., level_metric, NLev, delta_N_l);
-      break;
-    default: //case ESTIMATOR_VARIANCE:
-      if (iter == 0) { // eps^2 / 2 = var * relative factor
-	eps_sq_div_2 = estimator_var0 * convergenceTol;
-	if (outputLevel == DEBUG_OUTPUT)
-	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
-      }
-      compute_sample_increment(level_metric, cost, sum_root_var_cost,
-			       eps_sq_div_2, NLev, delta_N_l);
-      break;
-    }
-    ++iter;
-    Cout << "\nML PCE iteration " << iter << " sample increments:\n"
-	 << delta_N_l << std::endl;
-  }
-  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
-
-  combined_to_active(); // combine PCE terms and promote to active expansion
-  // Final annotated results are computed / printed in core_run()
-}
-
-
-void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
-{
-  // case ESTIMATOR_VARIANCE:
-  // statsType remains as Pecos::ACTIVE_EXPANSION_STATS
-
-  // control ML using aggregated variance across the vector of QoI
-  // (alternate approach: target QoI with largest variance)
-  agg_var_l = 0.;
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    PecosApproximation* poly_approx_q
-      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
-    Real var_l = poly_approx_q->variance(); // for active level
-    agg_var_l += var_l;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Variance(" /*"lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << var_l << '\n';
-  }
+  if (mlmfAllocControl == RIP_SAMPLING)
+    expansionCardinality.resize(num_lev);
 }
 
 
 /* Retrieve basis cardinality and compute power mean of sparsity
    (common power values: 1 = average, 2 = root mean square). */
 void NonDMultilevelPolynomialChaos::
-sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l, Real power)
+level_metric(Real& sparsity_metric_l, Real power, size_t lev)
 {
-  // case RIP_SAMPLING:
+  // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+  SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  cardinality_l = shared_data_rep->expansion_terms();// shared multiIndex.size()
+  // candidate basis is size of shared multiIndex, not size of (sparse) coeffs
+  expansionCardinality[lev] = data_rep->expansion_terms();
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real sum = 0.; bool pow1 = (power == 1.); // simple average
@@ -1011,62 +885,16 @@ sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l, Real power)
 
 
 void NonDMultilevelPolynomialChaos::
-compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
-			 Real sum_root_var_cost, Real eps_sq_div_2,
+compute_sample_increment(Real factor, const RealVector& sparsity,
 			 const SizetArray& N_l, SizetArray& delta_N_l)
 {
-  // case ESTIMATOR_VARIANCE:
-
-  // eps^2 / 2 target computed based on relative tolerance: total MSE = eps^2
-  // which is equally apportioned (eps^2 / 2) among discretization MSE and
-  // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
-  // discretization error, we compute an initial estimator variance and then
-  // seek to reduce it by a relative_factor <= 1.
-
-  // We assume a functional dependence of estimator variance on NLev
-  // for minimizing aggregate cost subject to an MSE error balance:
-  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
-  // where Monte Carlo has gamma = kappa = 1.  To fit these parameters,
-  // one approach is to numerically estimate the variance in the mean
-  // estimator (alpha_0) from two sources:
-  // > from variation across k folds for the selected CV settings
-  // > from var decrease as NLev increases across iters
-
-  // compute and accumulate variance of mean estimator from the set of
-  // k-fold results within the selected settings from cross-validation:
-  //Real cv_var_i = poly_approx_rep->
-  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
-  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
-  //   cv_iterator class scope)
-  // To validate this approach, the actual estimator variance can be
-  // computed and compared with the CV variance approximation (as for
-  // traditional CV error plots, but predicting estimator variance
-  // instead of L2 fit error).
-
-  // update targets based on variance estimates
-  Real new_N_l; size_t lev, num_lev = N_l.size();
-  Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
-		       1. / kappaEstimatorRate);
-  for (lev=0; lev<num_lev; ++lev) {
-    new_N_l = std::pow(agg_var[lev] / level_cost(lev, cost),
-		       1. / (kappaEstimatorRate+1.)) * fact;
-    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
-  }
-}
-
-
-void NonDMultilevelPolynomialChaos::
-compute_sample_increment(const SizetArray& cardinality, Real factor,
-			 const RealVector& sparsity, const SizetArray& N_l,
-			 SizetArray& delta_N_l)
-{
-  // case RIP_SAMPLING:
+  // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
   // update targets based on sparsity estimates
   Real s/*, card*/; size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
   for (lev=0; lev<num_lev; ++lev) {
-    s = sparsity[lev]; //card = (Real)cardinality[lev];
+    s = sparsity[lev]; //card = (Real)expansionCardinality[lev];
     // RIP samples ~= s log^3(s) log(C), but we are more interested in the shape
     // of the profile, since the actual values are conservative upper bounds
     // --> can omit constant terms that don't affect shape, e.g. log(C)
@@ -1077,20 +905,9 @@ compute_sample_increment(const SizetArray& cardinality, Real factor,
   // drive increased accuracy in less important terms --> CV scores improve for
   // dense solutions.  To control this effect, we retain the shape of the
   // profile but enforce an upper bound on one of the levels.
-  scale_profile(cardinality, factor, new_N_l); // bound = cardinality * factor
-
-  for (lev=0; lev<num_lev; ++lev)
-    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l[lev]);
-}
-
-
-void NonDMultilevelPolynomialChaos::
-scale_profile(const SizetArray& cardinality, Real factor, RealVector& new_N_l)
-{
-  size_t lev, num_lev = cardinality.size();
   Real curr_factor, max_curr_factor = 0., factor_ratio;
   for (lev=0; lev<num_lev; ++lev) {
-    curr_factor = new_N_l[lev] / cardinality[lev];
+    curr_factor = new_N_l[lev] / expansionCardinality[lev];
     if (curr_factor > max_curr_factor)
       max_curr_factor = curr_factor;
   }
@@ -1098,6 +915,10 @@ scale_profile(const SizetArray& cardinality, Real factor, RealVector& new_N_l)
   if (factor_ratio < 1.) // exceeds upper bound -> scale back
     for (lev=0; lev<num_lev; ++lev)
       new_N_l[lev] *= factor_ratio;
+
+  // Now compute the one-sided sample increments
+  for (lev=0; lev<num_lev; ++lev)
+    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l[lev]);
 }
 
 

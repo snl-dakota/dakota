@@ -75,32 +75,18 @@ protected:
   void assign_specification_sequence();
   void increment_specification_sequence();
 
+  void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  void increment_sample_sequence(size_t new_samp, size_t total_samp,
+				 size_t lev);
+  void level_metric(Real& regress_metric_l, Real power, size_t lev);
+  void compute_sample_increment(Real factor, const RealVector& regress_metrics,
+				const SizetArray& N_l, SizetArray& delta_N_l);
+
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions
   //
-
-  /// option within core_run() for multilevel allocation of samples
-  /// (mirroring NonDMultilevelSampling for PCE regression)
-  void multilevel_regression();
-
-  /// increment the sequence in numSamplesOnModel for multilevel_regression()
-  void increment_sample_sequence(size_t new_samp);
-
-  /// Aggregate variance across the set of QoI for a particular model level
-  void aggregate_variance(Real& agg_var_l);
-  /// Compute an effective rank across the set of QoI for a model level
-  void regression_metric(Real& regress_metric_l, Real power);
-
-  /// compute delta_N_l for ESTIMATOR_VARIANCE case
-  void compute_sample_increment(const RealVector& agg_var,
-				const RealVector& cost, Real sum_root_var_cost,
-				Real eps_sq_div_2, const SizetArray& N_l,
-				SizetArray& delta_N_l);
-  /// compute delta_N_l for RIP_SAMPLING case
-  void compute_sample_increment(Real factor, const RealVector& regress_metric,
-				const SizetArray& N_l, SizetArray& delta_N_l);
 
 private:
 
@@ -119,25 +105,10 @@ private:
   //- Heading: Data
   //
 
-  /// type of sample allocation scheme for discretization levels / model forms
-  /// within multilevel / multifidelity methods
-  short mlmfAllocControl;
-
   /// user specification for collocation_points (array for multifidelity)
   SizetArray collocPtsSeqSpec;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
-
-  /// rate parameter for estimator variance in ML PCE
-  Real kappaEstimatorRate;
-  /// scale parameter for estimator variance in ML PCE
-  Real gammaEstimatorScale;
-
-  /// number of initial samples specified by the user
-  SizetArray pilotSamples;
-
-  /// used for importing a pilot sample
-  String importBuildPointsFile;
 };
 
 } // namespace Dakota

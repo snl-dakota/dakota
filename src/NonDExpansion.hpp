@@ -38,9 +38,10 @@ public:
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
 		short exp_coeffs_approach, short refine_type,
-		short refine_control, short covar_control, short ml_discrep,
-		short rule_nest, short rule_growth, bool piecewise_basis,
-		bool use_derivs);
+		short refine_control, short covar_control,
+		short ml_alloc_control, short ml_discrep,
+		const SizetArray& pilot, short rule_nest, short rule_growth,
+		bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -153,6 +154,21 @@ protected:
   /// restore statistics into native stats arrays for a selected candidate
   virtual void push_candidate(const RealVector& stats_star);
 
+  /// initializations for multilevel_regression()
+  virtual void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  /// increment sequence in numSamplesOnModel for multilevel_regression()
+  virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
+					 size_t lev);
+  /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
+  virtual void level_metric(Real& lev_metric_l, Real power, size_t lev);
+  /// compute delta_N_l for {RIP,RANK}_SAMPLING cases
+  virtual void compute_sample_increment(Real factor,
+					const RealVector& lev_metrics,
+					const SizetArray& N_l,
+					SizetArray& delta_N_l);
+  /// finalizations for multilevel_regression()
+  virtual void finalize_ml_regression();
+
   /// print global sensitivity indices
   virtual void print_sobol_indices(std::ostream& s);
 
@@ -209,7 +225,7 @@ protected:
   void configure_pecos_options();
 
   /// construct the expansionSampler for evaluating samples on uSpaceModel
-  void construct_expansion_sampler(const String& import_approx_file,
+  void construct_expansion_sampler(const String& import_approx_file = String(),
     unsigned short import_approx_format = TABULAR_ANNOTATED,
     bool import_approx_active_only = false);
 
@@ -219,6 +235,9 @@ protected:
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
   void greedy_multifidelity_expansion();
+  /// allocate a multilevel expansion based on some approximation to an
+  /// optimal resource allocation across model forms/discretization levels
+  void multilevel_regression();
 
   /// configure fidelity/level counts from model hierarchy
   void configure_levels(size_t& num_lev, unsigned short& model_form,
@@ -233,6 +252,13 @@ protected:
   Real level_cost(unsigned short lev, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation
   void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
+
+  /// compute increment in samples for multilevel_regression() based
+  /// on ESTIMATOR_VARIANCE
+  void compute_sample_increment(const RealVector& agg_var,
+				const RealVector& cost, Real sum_root_var_cost,
+				Real eps_sq_div_2, const SizetArray& N_l,
+				SizetArray& delta_N_l);
 
   /// creat a model key from level index, form index, and multilevel flag
   void form_key(unsigned short lev, unsigned short form, bool multilevel,
@@ -267,6 +293,9 @@ protected:
 
   /// update statsType, here and in Pecos::ExpansionConfigOptions
   void statistics_type(short stats_type, bool clear_bits = true);
+
+  /// Aggregate variance across the set of QoI for a particular model level
+  void aggregate_variance(Real& agg_var_l);
 
   /// calculate the response covariance (diagonal or full matrix) for
   /// the expansion indicated by statsType
@@ -353,17 +382,26 @@ protected:
   /// non-probabilistic subset (design, epistemic, state)
   bool allVars;
 
+  /// type of sample allocation scheme for discretization levels / model forms
+  /// within multilevel / multifidelity methods
+  short mlmfAllocControl;
   /// emulation approach for multilevel discrepancy: distinct or recursive
   short multilevDiscrepEmulation;
+  /// number of initial samples per level, when an optimal sample profile is
+  /// the target of iteration (e.g. multilevel_regression())
+  SizetArray pilotSamples;
   /// number of samples allocated to each level of a discretization/model
   /// hierarchy within multilevel/multifidelity methods
   SizetArray NLev;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
-
-  /// number of invocations of core_run()
-  size_t numUncertainQuant;
+  /// rate parameter for allocation by ESTIMATOR_VARIANCE in
+  /// multilevel_regression()
+  Real kappaEstimatorRate;
+  /// scale parameter for allocation by ESTIMATOR_VARIANCE in
+  /// multilevel_regression()
+  Real gammaEstimatorScale;
 
   /// number of truth samples performed on g_u_model to form the expansion
   int numSamplesOnModel;
@@ -431,6 +469,9 @@ protected:
   RealVector levelStatsStar;
   /// stats of the best candidate across all levels
   RealVector statsStar;
+
+  /// number of invocations of core_run()
+  size_t numUncertainQuant;
 
 private:
 

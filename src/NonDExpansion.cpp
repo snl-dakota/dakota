@@ -41,9 +41,14 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
+  mlmfAllocControl(
+    probDescDB.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
-  numUncertainQuant(0), numSamplesOnModel(0),
+  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
+  kappaEstimatorRate(
+    probDescDB.get_real("method.nond.multilevel_estimator_rate")),
+  gammaEstimatorScale(1.), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
   relativeMetric(true), nestedRules(false),
   piecewiseBasis(probDescDB.get_bool("method.nond.piecewise_basis")),
@@ -53,6 +58,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_short("method.nond.expansion_refinement_control")),
   refineMetric(Pecos::NO_METRIC),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
+  numUncertainQuant(0),
   maxRefineIterations(
     probDescDB.get_int("method.nond.max_refinement_iterations")),
   maxSolverIterations(probDescDB.get_int("method.nond.max_solver_iterations")),
@@ -81,18 +87,20 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, short refine_type,
-	      short refine_control, short covar_control, short ml_discrep,
-	      short rule_nest, short rule_growth, bool piecewise_basis,
-	      bool use_derivs):
+	      short refine_control, short covar_control, short ml_alloc_control,
+	      short ml_discrep, const SizetArray& pilot, short rule_nest,
+	      short rule_growth, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
-  statsType(Pecos::ACTIVE_EXPANSION_STATS),
-  multilevDiscrepEmulation(ml_discrep), numUncertainQuant(0),
-  numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
-  nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
+  statsType(Pecos::ACTIVE_EXPANSION_STATS), mlmfAllocControl(ml_alloc_control),
+  multilevDiscrepEmulation(ml_discrep), pilotSamples(pilot),
+  kappaEstimatorRate(2.), gammaEstimatorScale(1.), numSamplesOnModel(0),
+  numSamplesOnExpansion(0), relativeMetric(true), nestedRules(false),
+  piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(refine_type), refineControl(refine_control),
-  refineMetric(Pecos::NO_METRIC), softConvLimit(3), maxRefineIterations(100),
-  maxSolverIterations(-1), ruleNestingOverride(rule_nest),
+  refineMetric(Pecos::NO_METRIC), softConvLimit(3), numUncertainQuant(0),
+  maxRefineIterations(100), maxSolverIterations(-1),
+  ruleNestingOverride(rule_nest),
   ruleGrowthOverride(rule_growth), vbdFlag(false), vbdOrderLimit(0),
   vbdDropTol(-1.), covarianceControl(covar_control)
 {
@@ -1456,6 +1464,135 @@ void NonDExpansion::greedy_multifidelity_expansion()
 }
 
 
+void NonDExpansion::multilevel_regression()
+{
+  // Allow either model forms or discretization levels, but not both
+  // (discretization levels take precedence)
+  unsigned short lev, form;  bool multilev, import_pilot;
+  size_t num_lev, iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
+  configure_levels(num_lev, form, multilev, false);
+  RealVector cost, level_metrics(num_lev);
+  configure_cost(num_lev, multilev, cost);
+
+  initialize_ml_regression(num_lev, import_pilot);
+
+  // Load the pilot sample from user specification
+  SizetArray delta_N_l(num_lev);
+  load_pilot_sample(pilotSamples, delta_N_l);
+
+  // now converge on sample counts per level (NLev)
+  NLev.assign(num_lev, 0);
+  while ( iter <= max_iter &&
+	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
+
+    sum_root_var_cost = 0.;
+    for (lev=0; lev<num_lev; ++lev) {
+
+      configure_indices(lev, form, multilev);
+
+      if (iter == 0) { // initial expansion build
+	// Update solution control variable in uSpaceModel to support
+	// DataFitSurrModel::consistent() logic
+	if (import_pilot)
+	  uSpaceModel.update_from_subordinate_model(); // max depth
+
+	NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
+	if (lev == 0 || import_pilot)
+	  compute_expansion(); // init + import + build; not recursive
+	else
+	  update_expansion();  // just build; not recursive
+
+	if (import_pilot) { // update counts to include imported data
+	  NLev[lev] = delta_N_l[lev]
+	    = uSpaceModel.approximation_data(0).points();
+	  Cout << "Pilot count including import = " << delta_N_l[lev] << "\n\n";
+	  // Trap zero samples as it will cause FPE downstream
+	  if (NLev[lev] == 0) { // no pilot spec, no import match
+	    Cerr << "Error: insufficient sample recovery for level " << lev
+		 << " in multilevel_regression()." << std::endl;
+	    abort_handler(METHOD_ERROR);
+	  }
+	}
+      }
+      else if (delta_N_l[lev]) {
+	NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
+	// Note: import build data is not re-processed by append_expansion()
+	append_expansion();
+      }
+
+      switch (mlmfAllocControl) {
+      case ESTIMATOR_VARIANCE: {
+	Real& agg_var_l = level_metrics[lev];
+	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
+	sum_root_var_cost += std::pow(agg_var_l *
+	  std::pow(level_cost(lev, cost), kappaEstimatorRate),
+	  1./(kappaEstimatorRate+1.));
+        // MSE reference is ML MC aggregation for pilot(+import) sample:
+	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
+	break;
+      }
+      default:
+	if (delta_N_l[lev] > 0)
+	  level_metric(level_metrics[lev], 2., lev);
+	//else sparsity,rank metric for this level same as previous iteration
+	break;
+      }
+    }
+
+    switch (mlmfAllocControl) {
+    case ESTIMATOR_VARIANCE:
+      if (iter == 0) { // eps^2 / 2 = var * relative factor
+	eps_sq_div_2 = estimator_var0 * convergenceTol;
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
+      }
+      compute_sample_increment(level_metrics, cost, sum_root_var_cost,
+			       eps_sq_div_2, NLev, delta_N_l);
+      break;
+    default:
+      compute_sample_increment(2., level_metrics, NLev, delta_N_l);
+      break;
+    }
+    ++iter;
+    Cout << "\nML regression iteration " << iter << " sample increments:\n"
+	 << delta_N_l << std::endl;
+  }
+  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
+
+  finalize_ml_regression();
+  // Final annotated results are computed / printed in core_run()
+}
+
+
+void NonDExpansion::initialize_ml_regression(size_t num_lev, bool& import_pilot)
+{
+  // remove default key (empty activeKey) since this interferes with
+  // combine_approximation().  Also useful for ML/MF re-entrancy.
+  uSpaceModel.clear_model_keys();
+
+  // all stats are level stats
+  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
+
+  // Multilevel variance aggregation requires independent sample sets
+  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
+  if (u_sub_iter != NULL)
+    ((Analyzer*)u_sub_iter)->vary_pattern(true);
+
+  // Default (overridden in derived classes)
+  import_pilot = false;
+}
+
+
+void NonDExpansion::finalize_ml_regression()
+{
+  // combine level expansions and promote to active expansion:
+  combined_to_active();
+}
+
+
 void NonDExpansion::select_candidate(size_t best_candidate)
 {
   // permanently apply best increment and update references for next increment
@@ -1662,27 +1799,6 @@ void NonDExpansion::combined_to_active()
   // update approach for computing statistics; don't clear bits as
   // combined_to_active() can transfer bits from combined to active
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false);
-}
-
-
-void NonDExpansion::assign_specification_sequence()
-{
-  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
-
-  Cerr << "Error: no default implementation for assign_specification_"
-       << "sequence() used by multifidelity expansions." << std::endl;
-  abort_handler(METHOD_ERROR);
-}
-
-
-/** Default implementation redefined by Multilevel derived classes. */
-void NonDExpansion::increment_specification_sequence()
-{
-  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
-
-  Cerr << "Error: no default implementation for increment_specification_"
-       << "sequence() used by multifidelity expansions." << std::endl;
-  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1973,6 +2089,117 @@ compute_final_statistics_metric(bool revert, bool print_metric)
     return std::sqrt(sum_sq);
 }
 */
+
+
+void NonDExpansion::
+compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
+			 Real sum_root_var_cost, Real eps_sq_div_2,
+			 const SizetArray& N_l, SizetArray& delta_N_l)
+{
+  // case ESTIMATOR_VARIANCE:
+
+  // eps^2 / 2 target computed based on relative tolerance: total MSE = eps^2
+  // which is equally apportioned (eps^2 / 2) among discretization MSE and
+  // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
+  // discretization error, we compute an initial estimator variance and then
+  // seek to reduce it by a relative_factor <= 1.
+
+  // We assume a functional dependence of estimator variance on NLev
+  // for minimizing aggregate cost subject to an MSE error balance:
+  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
+  // where Monte Carlo has gamma = kappa = 1.  To fit these parameters,
+  // one approach is to numerically estimate the variance in the mean
+  // estimator (alpha_0) from two sources:
+  // > from variation across k folds for the selected CV settings
+  // > from var decrease as NLev increases across iters
+
+  // compute and accumulate variance of mean estimator from the set of
+  // k-fold results within the selected settings from cross-validation:
+  //Real cv_var_i = poly_approx_rep->
+  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
+  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
+  //   cv_iterator class scope)
+  // To validate this approach, the actual estimator variance can be
+  // computed and compared with the CV variance approximation (as for
+  // traditional CV error plots, but predicting estimator variance
+  // instead of L2 fit error).
+
+  // update targets based on variance estimates
+  Real new_N_l; size_t lev, num_lev = N_l.size();
+  Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
+		       1. / kappaEstimatorRate);
+  for (lev=0; lev<num_lev; ++lev) {
+    new_N_l = std::pow(agg_var[lev] / level_cost(lev, cost),
+		       1. / (kappaEstimatorRate+1.)) * fact;
+    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
+  }
+}
+
+
+void NonDExpansion::aggregate_variance(Real& agg_var_l)
+{
+  // case ESTIMATOR_VARIANCE:
+  // statsType remains as Pecos::ACTIVE_EXPANSION_STATS
+
+  // control ML using aggregated variance across the vector of QoI
+  // (alternate approach: target QoI with largest variance)
+  agg_var_l = 0.;  Real var_l;
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    var_l = poly_approxs[qoi].variance(); // for active level
+    agg_var_l += var_l;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Variance(" << "qoi " << qoi+1 << ") = " << var_l << '\n';
+  }
+}
+
+
+void NonDExpansion::assign_specification_sequence()
+{
+  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
+
+  Cerr << "Error: no default implementation for assign_specification_"
+       << "sequence() used by multifidelity expansions." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+/** Default implementation redefined by Multilevel derived classes. */
+void NonDExpansion::increment_specification_sequence()
+{
+  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
+
+  Cerr << "Error: no default implementation for increment_specification_"
+       << "sequence() used by multifidelity expansions." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDExpansion::
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
+{
+  Cerr << "Error: no default implementation for increment_sample_sequence() "
+       << "defined for multilevel_regression()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDExpansion::level_metric(Real& lev_metric_l, Real power, size_t lev)
+{
+  Cerr << "Error: no default implementation for level_metric() "
+       << "defined for multilevel_regression()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDExpansion::
+compute_sample_increment(Real factor, const RealVector& lev_metrics,
+			 const SizetArray& N_l,	SizetArray& delta_N_l)
+{
+  Cerr << "Error: no default implementation for compute_sample_increment() "
+       << "defined for multilevel_regression()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
 
 
 void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
