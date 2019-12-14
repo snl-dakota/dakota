@@ -16,7 +16,13 @@
 #include "ROL_Algorithm.hpp"
 #include "ROL_Bounds.hpp"
 
-namespace Surrogates {
+namespace dakota {
+
+using util::NormalizationScaler;
+using util::NoScaler;
+using util::StandardizationScaler;
+
+namespace surrogates {
 
 /* need to add in size checks */
 
@@ -367,4 +373,7 @@ void GaussianProcess::hessian(const RealMatrix &samples, int qoi, RealMatrixList
 }
 */
 
-}  // namespace Surrogates
+
+}  // namespace surrogates
+}  // namespace dakota
+

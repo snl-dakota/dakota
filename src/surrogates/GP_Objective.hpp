@@ -6,16 +6,17 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef rol_object_hpp
-#define rol_object_hpp
+#ifndef DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
+#define DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 
 #include <ROL_Objective.hpp>
 #include <ROL_StdVector.hpp>
 #include <ROL_Types.hpp>
 #include "GaussianProcess.hpp"
-#include "teuchos_data_types.hpp"
+#include "util_data_types.hpp"
 
-namespace Surrogates {
+namespace dakota {
+namespace surrogates {
 
 class GP_Objective : public ROL::Objective<double> {
 
@@ -51,6 +52,8 @@ class GP_Objective : public ROL::Objective<double> {
     bool pdiff(const std::vector<double>&);
 };
 
-}
+}  // namespace surrogates
+}  // namespace dakota
 
-#endif
+
+#endif  // include guard

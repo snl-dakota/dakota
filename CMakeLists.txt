@@ -214,6 +214,18 @@ endif(DAKOTA_F90)
 
 add_subdirectory(packages)
 
+# --- New surrogates module
+# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
+# first, then optionally Pecos, Surfpack, surrogates.
+if(DAKOTA_MODULE_UTIL)
+  add_subdirectory(src/util)
+endif()
+if(DAKOTA_MODULE_SURROGATES)
+  add_subdirectory(src/surrogates)
+endif()
+
+if(DAKOTA_MODULE_DAKOTA)
+
 add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
 if(DAKOTA_ENABLE_TESTS)
@@ -232,6 +244,8 @@ add_subdirectory(interfaces)
 # NOTE: This directory manages dynamic library manipulation at install time,
 # as the install script must be called after src/ and test/ are installed.
 add_subdirectory("scripts")
+
+endif()  # DAKOTA_MODULE_DAKOTA
 
 
 # -----

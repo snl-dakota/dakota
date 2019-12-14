@@ -23,9 +23,6 @@ set(DAKOTA_EXTPROJ_LIBS)
 # External third-party libraries installed on the system
 set(EXT_TPL_LIBS)
 
-# Hard-coded on for now ... Need to conditionally enable - RWH
-list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/src/surrogates/models/src)
-
 list(APPEND DAKOTA_INCDIRS 
   ${Dakota_BINARY_DIR}/generated/src
   # Consider removing these two paths and moving to generated...
@@ -761,17 +758,6 @@ if(HAVE_OPTPP)
   list(APPEND DAKOTA_PKG_LIBS optpp)
   list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
-
-# Need to conditionally enable this based on HAVE_EIGEN and surrogate module enabled - RWH
-SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/share/eigen3/cmake)
-find_package(Eigen3 3.3 REQUIRED CONFIG)
-#message(STATUS "Here: EIGEN3_FOUND = ${EIGEN3_FOUND}")
-#message(STATUS "Here: EIGEN3_INCLUDE_DIRS = ${EIGEN3_INCLUDE_DIRS}")
-#message(STATUS "Here: EIGEN3_INCLUDE_DIR = ${EIGEN3_INCLUDE_DIR}")
-list(APPEND DAKOTA_INCDIRS ${EIGEN3_INCLUDE_DIRS})
-add_definitions("-DHAVE_EIGEN")
-add_subdirectory(surrogates/models/src)
-add_subdirectory(surrogates/models/unit)
 
 if(HAVE_ROL)
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})

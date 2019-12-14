@@ -8,7 +8,8 @@
 
 #include "DataScaler.hpp"
 
-namespace Surrogates {
+namespace dakota {
+namespace util {
 
 DataScaler::DataScaler(){}
 
@@ -110,4 +111,5 @@ NoScaler::NoScaler(const MatrixXd &features) {
 }
 
 
-}  // namespace Surrogates
+}  // namespace util
+}  // namespace dakota

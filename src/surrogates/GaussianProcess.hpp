@@ -6,12 +6,12 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef SURROGATES_GAUSSIAN_PROCESS_HPP
-#define SURROGATES_GAUSSIAN_PROCESS_HPP
+#ifndef DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
+#define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
 #include <memory>
 
-#include "teuchos_data_types.hpp"
+#include "util_data_types.hpp"
 #include "DataScaler.hpp"
 
 #include "Eigen/Dense"
@@ -20,7 +20,14 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-namespace Surrogates {
+namespace dakota {
+
+// BMA TODO: Decide how we want to handle cross-namespace references
+// probably don't want these in a header?
+using util::RealMatrix;
+using util::RealVector;
+
+namespace surrogates {
 
 class GaussianProcess {
 
@@ -107,7 +114,7 @@ private:
   VectorXd posteriorStdDevEigen;
 
   /// scaler for the input data
-  std::shared_ptr<DataScaler> dataScaler;
+  std::shared_ptr<util::DataScaler> dataScaler;
 
   const double PI = 3.14159265358979323846;
 
@@ -131,6 +138,9 @@ private:
 
 }; // class GaussianProcess
 
-}  // namespace Surrogates
+
+}  // namespace surrogates
+}  // namespace dakota
+
 
 #endif  // include guard

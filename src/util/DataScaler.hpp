@@ -6,16 +6,17 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef SURROGATES_DATA_SCALER_HPP
-#define SURROGATES_DATA_SCALER_HPP
+#ifndef DAKOTA_UTIL_DATA_SCALER_HPP
+#define DAKOTA_UTIL_DATA_SCALER_HPP
 
-#include "teuchos_data_types.hpp"
+#include "util_data_types.hpp"
 #include "Eigen/Dense"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-namespace Surrogates {
+namespace dakota {
+namespace util {
 
 /**
  *  \brief The DataScaler class computes the scaling coefficients and scales
@@ -168,6 +169,7 @@ class NoScaler: public DataScaler {
 };
 
 
-}  // namespace Surrogates
+}  // namespace util
+}  // namespace dakota
 
 #endif  // include guard
