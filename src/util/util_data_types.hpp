@@ -6,15 +6,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef SURROGATES_UTIL_TEUCHOS_DATA_TYPES_HPP
-#define SURROGATES_UTIL_TEUCHOS_DATA_TYPES_HPP
+#ifndef DAKOTA_UTIL_DATA_TYPES_HPP
+#define DAKOTA_UTIL_DATA_TYPES_HPP
 
 #include <complex>
 #include <memory>
 #include "Teuchos_SerialDenseVector.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 
-namespace Surrogates {
+namespace dakota {
+namespace util {
 
 typedef double Real;
 typedef std::complex<double> Complex;
@@ -36,6 +37,7 @@ typedef Teuchos::SerialSymDenseMatrix<int, int> IntSymMatrix;
 typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
 typedef Teuchos::SerialSymDenseMatrix<int, Complex> ComplexSymMatrix;
 
-}  // namespace Surrogates
+}  // namespace util
+}  // namespace dakota
 
 #endif  // include guard

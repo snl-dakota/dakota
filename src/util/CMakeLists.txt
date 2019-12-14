@@ -7,28 +7,30 @@
 #  _______________________________________________________________________
 
 
-set(surrogates_sources
-  GaussianProcess.cpp 
-  GP_Objective.cpp
+# BMA TODO: Do we want to have each module be its own project?
+#project(DakotaUtil LANGUAGES CXX)
+
+set(util_sources
+  DataScaler.cpp
   )
 
-set(surrogates_headers
-  GaussianProcess.hpp GP_Objective.hpp
-)
+set(util_headers
+  DataScaler.hpp
+  util_data_types.hpp
+  )
 
-add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
+add_library(dakota_util ${util_sources} ${util_headers})
 
 # BMA TODO: CMake config at top-level per RWH example
 set(EIGEN3_INCLUDE_DIRS
   "${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3")
 # BMA TODO: CMake best practice for PUBLIC?
-target_include_directories(dakota_surrogates PUBLIC 
-  "${CMAKE_CURRENT_SOURCE_DIR}/../util"
-  "${ROL_INCLUDE_DIRS}"
-  "${EIGEN3_INCLUDE_DIRS}"
-  )
-target_link_libraries(dakota_surrogates dakota_util)
+target_include_directories(dakota_util PUBLIC
+  ${Teuchos_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+#target_link_directories()
+#target_link_libraries()
 
-install(FILES ${surrogates_headers} DESTINATION "include")
+
+install(FILES ${util_headers} DESTINATION "include")
 
 add_subdirectory(unit)

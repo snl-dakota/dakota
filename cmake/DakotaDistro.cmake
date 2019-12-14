@@ -2,8 +2,14 @@
 # CMake options for DAKOTA testing builds
 
 # This no longer works as Trilinos CMake rejects custom CMAKE_BUILD_TYPE
-# Use distribution build options (-O2)
+# Add CMAKE_BUILD_TYPE for DISTRIBUTION to match historical tests / releases
 #set(CMAKE_BUILD_TYPE "DISTRIBUTION" CACHE STRING "Type of build")
+#set(CMAKE_C_FLAGS_DISTRIBUTION "-O2")
+#set(CMAKE_CXX_FLAGS_DISTRIBUTION "-O2")
+#set(CMAKE_Fortran_FLAGS_DISTRIBUTION "-O2")
+
+
+
 
 # CMake build flags to match historical baselines and releases
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Dakota Dev Release")

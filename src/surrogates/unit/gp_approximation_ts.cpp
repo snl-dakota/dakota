@@ -8,11 +8,13 @@
 
 #include <fstream>
 #include <Teuchos_UnitTestHarness.hpp>
-#include "teuchos_data_types.hpp"
+#include "util_data_types.hpp"
 #include "GaussianProcess.hpp"
 #include "Eigen/Dense"
 
-using namespace Surrogates;
+// BMA TODO: Review with team for best practice
+using namespace dakota::surrogates;
+using namespace dakota::util;
 using namespace Eigen;
 
 namespace {

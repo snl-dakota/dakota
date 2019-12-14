@@ -8,7 +8,8 @@
 
 #include "GP_Objective.hpp"
 
-namespace Surrogates{
+namespace dakota {
+namespace surrogates {
 
 GP_Objective::GP_Objective(GaussianProcess* gp_model) {
   gp = gp_model;
@@ -70,4 +71,6 @@ bool GP_Objective::pdiff(const std::vector<double>& pnew) {
     return true;
 }
 
-} // namespace Surrogates
+
+}  // namespace surrogates
+}  // namespace dakota
