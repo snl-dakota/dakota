@@ -395,7 +395,7 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 
 /* Compute power mean of rank (common power values: 1 = average, 2 = RMS). */
 void NonDMultilevelFunctionTrain::
-level_metric(Real& regress_metric_l, Real power, size_t lev)
+level_metric(Real& regress_metric_l, Real power)
 {
   // case RANK_SAMPLING in NonDExpansion::multilevel_regression():
 

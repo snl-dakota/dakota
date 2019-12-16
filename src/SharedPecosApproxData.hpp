@@ -84,8 +84,11 @@ public:
   /// set Pecos::SharedOrthogPolyApproxData::multiIndex and allocate
   /// associated arrays
   void allocate(const UShort2DArray& mi);
-  /// get Pecos::SharedOrthogPolyApproxData::multiIndex
+
+  /// get active Pecos::SharedOrthogPolyApproxData::multiIndex
   const UShort2DArray& multi_index() const;
+  /// get Pecos::SharedOrthogPolyApproxData::multiIndex
+  const std::map<UShortArray, UShort2DArray>& multi_index_map() const;
 
   /// return Pecos::SharedPolyApproxData::sobolIndexMap
   const Pecos::BitArrayULongMap& sobol_index_map() const;
@@ -317,6 +320,14 @@ inline const UShort2DArray& SharedPecosApproxData::multi_index() const
 {
   return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
     multi_index();
+}
+
+
+inline const std::map<UShortArray, UShort2DArray>& SharedPecosApproxData::
+multi_index_map() const
+{
+  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
+    multi_index_map();
 }
 
 

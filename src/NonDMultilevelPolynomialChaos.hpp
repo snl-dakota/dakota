@@ -88,7 +88,7 @@ protected:
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
 				 size_t lev);
-  void level_metric(Real& sparsity_metric_l, Real power, size_t lev);
+  void level_metric(Real& sparsity_metric_l, Real power);
   void compute_sample_increment(Real factor, const RealVector& sparsity,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
@@ -125,10 +125,6 @@ private:
   UShortArray ssgLevelSeqSpec;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
-
-  /// number of expansion terms, one size per model level
-  /// (used for RIP_SAMPLING allocations)
-  SizetArray expansionCardinality;
 };
 
 } // namespace Dakota

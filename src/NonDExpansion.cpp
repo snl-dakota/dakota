@@ -1536,7 +1536,7 @@ void NonDExpansion::multilevel_regression()
       }
       default:
 	if (delta_N_l[lev] > 0)
-	  level_metric(level_metrics[lev], 2., lev);
+	  level_metric(level_metrics[lev], 2.);
 	//else sparsity,rank metric for this level same as previous iteration
 	break;
       }
@@ -2184,7 +2184,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 }
 
 
-void NonDExpansion::level_metric(Real& lev_metric_l, Real power, size_t lev)
+void NonDExpansion::level_metric(Real& lev_metric_l, Real power)
 {
   Cerr << "Error: no default implementation for level_metric() "
        << "defined for multilevel_regression()." << std::endl;

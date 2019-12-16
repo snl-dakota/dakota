@@ -160,7 +160,7 @@ protected:
   virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
 					 size_t lev);
   /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
-  virtual void level_metric(Real& lev_metric_l, Real power, size_t lev);
+  virtual void level_metric(Real& lev_metric_l, Real power);
   /// compute delta_N_l for {RIP,RANK}_SAMPLING cases
   virtual void compute_sample_increment(Real factor,
 					const RealVector& lev_metrics,

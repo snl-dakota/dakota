@@ -850,23 +850,15 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
       Cerr << "Warning: build data import only supported for recursive "
 	   << "emulation in multilevel_regression()." << std::endl;
   }
-
-  if (mlmfAllocControl == RIP_SAMPLING)
-    expansionCardinality.resize(num_lev);
 }
 
 
-/* Retrieve basis cardinality and compute power mean of sparsity
-   (common power values: 1 = average, 2 = root mean square). */
+/* Compute power mean of sparsity (common power values: 1 = average,
+   2 = root mean square). */
 void NonDMultilevelPolynomialChaos::
-level_metric(Real& sparsity_metric_l, Real power, size_t lev)
+level_metric(Real& sparsity_metric_l, Real power)
 {
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
-
-  SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  // candidate basis is size of shared multiIndex, not size of (sparse) coeffs
-  expansionCardinality[lev] = data_rep->expansion_terms();
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real sum = 0.; bool pow1 = (power == 1.); // simple average
@@ -894,7 +886,7 @@ compute_sample_increment(Real factor, const RealVector& sparsity,
   Real s/*, card*/; size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
   for (lev=0; lev<num_lev; ++lev) {
-    s = sparsity[lev]; //card = (Real)expansionCardinality[lev];
+    s = sparsity[lev]; //card = (Real)cit->second.size();
     // RIP samples ~= s log^3(s) log(C), but we are more interested in the shape
     // of the profile, since the actual values are conservative upper bounds
     // --> can omit constant terms that don't affect shape, e.g. log(C)
@@ -906,8 +898,14 @@ compute_sample_increment(Real factor, const RealVector& sparsity,
   // dense solutions.  To control this effect, we retain the shape of the
   // profile but enforce an upper bound on one of the levels.
   Real curr_factor, max_curr_factor = 0., factor_ratio;
-  for (lev=0; lev<num_lev; ++lev) {
-    curr_factor = new_N_l[lev] / expansionCardinality[lev];
+  SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  const std::map<UShortArray, UShort2DArray>& mi_map
+    = data_rep->multi_index_map();
+  std::map<UShortArray, UShort2DArray>::const_iterator cit;
+  for (lev=0, cit=mi_map.begin(); lev<num_lev && cit!=mi_map.end();
+       ++lev, ++cit) {
+    curr_factor = new_N_l[lev] / cit->second.size();// samples/cardinality ratio
     if (curr_factor > max_curr_factor)
       max_curr_factor = curr_factor;
   }
