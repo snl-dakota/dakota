@@ -301,3 +301,35 @@ endif(HAVE_PSUADE)
 if(HAVE_X_GRAPHICS)
   add_subdirectory(external/sciplot)
 endif(HAVE_X_GRAPHICS)
+
+
+# BMA TODO: Merge option to top-level once cmake_transparency branch merged
+option(HAVE_MUQ "Enable MIT MUQ library for Bayesian calibration" OFF)
+if(HAVE_MUQ)
+  message(STATUS "Dakota configuring MUQ as external project")
+  # Managing MUQ as an external project until we can work with upstream
+  # to resolve in-tree build issues.
+  include(ExternalProject)
+  ExternalProject_Add(MUQ
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/muq2"
+    PREFIX "${CMAKE_CURRENT_BINARY_DIR}/external/muq2"
+    CMAKE_CACHE_ARGS
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/external/muq2
+    # MUQ TPLs
+    # BMA TODO: Generalize this (not currently robust)
+    -DMUQ_BOOST_DIR:STRING=${Boost_INCLUDE_DIR}/..
+    # BMA TODO: Flex this to allow external Eigen
+    -DMUQ_EIGEN3_DIR:STRING=${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3
+    # BMA TODO: Generalize this (not currently robust)
+    -DMUQ_HDF5_DIR:STRING=${HDF5_INCLUDE_DIRS}/..
+    # MUQ minimal opts
+    -DMUQ_ENABLEGROUP_DEFAULT:BOOL=OFF
+    -DMUQ_ENABLEGROUP_SAMPLING_ALGORITHM:BOOL=ON
+    # Avoid NANOFLANN internal build
+    -DMUQ_ENABLEGROUP_MODELING_FLANN:BOOL=OFF
+    # Avoid SUNDIALS internal build
+    -DMUQ_ENABLEGROUP_MODELING_SUNDIALS_MODELS:BOOL=OFF
+    # Avoid NLOPT internal build
+    -DMUQ_USE_NLOPT:BOOL=OFF
+    )
+endif()

@@ -769,15 +769,24 @@ find_package(Eigen3 3.3 REQUIRED CONFIG)
 list(APPEND DAKOTA_INCDIRS ${EIGEN3_INCLUDE_DIRS})
 add_definitions("-DHAVE_EIGEN")
 
-#SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Dakota_SOURCE_DIR}/packages/external/muq2/CMake)
-include(${Dakota_SOURCE_DIR}/packages/external/muq2/CMake/MUQ_PRIVATE/MUQ_PRIVATEConfig.cmake)
-list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/muq2/include)
-list(APPEND DAKOTA_INCDIRS ${MUQ_INCLUDE_DIRS})
-#link_directories($(MUQ_LIBRARY_DIR))
-list(APPEND DAKOTA_PKG_LIBS ${MUQ_LIBRARIES})
-list(APPEND DAKOTA_LIBDIRS ${MUQ_LIBRARY_DIR})
-#add_subdirectory(surrogates/models/src)
-#add_subdirectory(surrogates/models/unit)
+if(HAVE_MUQ)
+  ##  #SET( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${Dakota_SOURCE_DIR}/packages/external/muq2/CMake)
+  ##  include(${Dakota_SOURCE_DIR}/packages/external/muq2/CMake/MUQ_PRIVATE/MUQ_PRIVATEConfig.cmake)
+  ##  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/muq2/include)
+  ##  list(APPEND DAKOTA_INCDIRS ${MUQ_INCLUDE_DIRS})
+  ##  #link_directories($(MUQ_LIBRARY_DIR))
+  ##  list(APPEND DAKOTA_PKG_LIBS ${MUQ_LIBRARIES})
+  ##  list(APPEND DAKOTA_LIBDIRS ${MUQ_LIBRARY_DIR})
+  ##  #add_subdirectory(surrogates/models/src)
+  ##  #add_subdirectory(surrogates/models/unit)
+
+  # BMA TODO: Would prefer find_package / config mode as RWH demoed above
+  # lib/ dir isn't sufficiently general, though MUQ hard-codes it
+  # BMA TODO: Make sure the exports and install rules work properly
+  list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
+  list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
+  list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
+endif()
 
 if(HAVE_ROL)
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
