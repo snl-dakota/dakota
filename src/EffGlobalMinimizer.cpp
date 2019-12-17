@@ -9,6 +9,11 @@
 //- Class:       EffGlobalMinimizer
 //- Description: Implementation code for the EffGlobalMinimizer class
 //- Owner:       Barron J Bichon, Vanderbilt University
+//- Checked by:
+//- Version:
+
+//- Edited by:   Anh Tran on 12/21/2019
+
 
 #include "EffGlobalMinimizer.hpp"
 #include "dakota_system_defs.hpp"
@@ -36,8 +41,7 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 
 
 // This constructor accepts a Model
-EffGlobalMinimizer::
-EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model): 
+EffGlobalMinimizer::EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
   setUpType("model"), dataOrder(1)
 {
@@ -78,8 +82,8 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
     if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
   }
-  int db_samples = probDescDB.get_int("method.samples");  
-  int samples = (db_samples > 0) ? db_samples : 
+  int db_samples = probDescDB.get_int("method.samples");
+  int samples = (db_samples > 0) ? db_samples :
     (numContinuousVars+1)*(numContinuousVars+2)/2;
   int lhs_seed = probDescDB.get_int("method.random_seed");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
@@ -141,10 +145,10 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   int max_iterations = 10000, max_fn_evals = 50000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU
-  approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations, 
+  approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations,
     max_fn_evals, min_box_size, vol_box_size), false);
 #else
-  Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. " 
+  Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
        << "Aborting process." << std::endl;
   abort_handler(METHOD_ERROR);
 #endif //HAVE_NCSU
@@ -153,14 +157,13 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
 /* This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB.
-EffGlobalMinimizer::
-EffGlobalMinimizer(Model& model, int max_iter, int max_eval) :
+EffGlobalMinimizer::EffGlobalMinimizer(Model& model, int max_iter, int max_eval) :
   SurrBasedMinimizer(EFFICIENT_GLOBAL, model), setUpType("model")
 { maxIterations = max_iter; maxFunctionEvals = max_eval; }
 */
 
 
-EffGlobalMinimizer::~EffGlobalMinimizer() 
+EffGlobalMinimizer::~EffGlobalMinimizer()
 { }
 
 
@@ -225,38 +228,17 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   //------------------------------------------------------------------
   //     Solve the problem.
   //------------------------------------------------------------------
-
-  // set the object instance pointers for use within the static member fns
   EffGlobalMinimizer* prev_instance = effGlobalInstance;
-  effGlobalInstance = this;
-
-  // now that variables/labels/bounds/targets have flowed down at run-time from
-  // any higher level recursions, propagate them up the instantiate-on-the-fly
-  // Model recursion so that they are correct when they propagate back down.
-  // There is no need to recur below iteratedModel.
-  size_t layers = 2;
-  eifModel.update_from_subordinate_model(layers-1); // recur once
-
-  // (We might want a more selective update from submodel, or make a
-  // new EIFModel specialization of RecastModel.)  Always want to
-  // minimize the negative expected improvement as posed in the
-  // eifModel, which consumes min/max sense and weights, and recasts
-  // nonlinear constraints, so we don't let these propagate to the
-  // approxSubproblemMinimizer.
-  eifModel.primary_response_fn_sense(BoolDeque());
-  eifModel.primary_response_fn_weights(RealVector(), false); // no recursion
-  eifModel.reshape_constraints(0, 0, eifModel.num_linear_ineq_constraints(),
-			       eifModel.num_linear_eq_constraints());
-
-  // Build initial GP once for all response functions
-  fHatModel.build_approximation();
+  // set the object instance pointers for use within the static member fns
+  initialize(); // Edited by AT
 
   // Iterate until EGO converges
   unsigned short eif_convergence_cntr = 0, dist_convergence_cntr = 0,
-    eif_convergence_limit = 2, dist_convergence_limit = 1;
+  eif_convergence_limit = 2, dist_convergence_limit = 1;
   globalIterCount = 0;
   bool approx_converged = false;
-  // Decided for now (10-25-2013) to have EGO take the maxIterations 
+
+  // Decided for now (10-25-2013) to have EGO take the maxIterations
   // as the default from minimizer, so it will be initialized as 100
   //  maxIterations  = 25*numContinuousVars;
   RealVector prev_cv_star;
@@ -290,16 +272,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     fHatModel.continuous_variables(c_vars);
     fHatModel.evaluate();
     const RealVector& mean = fHatModel.current_response().function_values();
-    Real aug_lag = augmented_lagrangian_merit(mean,
-      iteratedModel.primary_response_fn_sense(),
-      iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
-      origNonlinIneqUpperBnds, origNonlinEqTargets);
 
-    Cout << "\nResults of EGO iteration:\nFinal point =\n" << c_vars
-	 << "Expected Improvement    =\n                     "
-	 << std::setw(write_precision+7) << -eif_star
-	 << "\n                     " << std::setw(write_precision+7)
-	 << aug_lag << " [merit]\n";
+    Real aug_lag = get_augmented_lagrangian(mean, c_vars, eif_star); // Edited by AT
 
 #ifdef DEBUG
     RealVector variance = fHatModel.approximation_variances(vars_star);
@@ -308,46 +282,21 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     for (size_t i=0; i<numFunctions; i++)
       stdv[i] = std::sqrt(variance[i]);
     Cout << "\nexpected values    =\n" << mean
-	 << "\nstandard deviation =\n" << stdv
-	 << "\nexpected violation =\n" << ev << std::endl;
+   << "\nstandard deviation =\n" << stdv
+   << "\nexpected violation =\n" << ev << std::endl;
 #endif //DEBUG
 
-    // Check for convergence based on max EIF
-    if ( -eif_star < convergenceTol )
-      ++eif_convergence_cntr;
-
-    // Check for convergence based in distance between successive points.
-    // If the dist between successive points is very small, then there is
-    // little value in updating the GP since the new training point will
-    // essentially be the previous optimal point.
-
-    Real dist_cstar = (prev_cv_star.empty()) ? DBL_MAX :
-      rel_change_L2(c_vars, prev_cv_star);
-    // update prev_cv_star
-    copy_data(c_vars, prev_cv_star);
-    if (dist_cstar < distanceTol)
-      ++dist_convergence_cntr;
-
-    // If DIRECT failed to find a point with EIF>0, it returns the
-    //   center point as the optimal solution. EGO may have converged,
-    //   but DIRECT may have just failed to find a point with a good
-    //   EIF value. Adding this midpoint can alter the GPs enough to
-    //   to allow DIRECT to find something useful, so we force 
-    //   max(EIF)<tol twice to make sure. Note that we cannot make
-    //   this check more than 2 because it would cause EGO to add
-    //   the center point more than once, which will damage the GPs.
-    //   Unfortunately, when it happens the second time, it may still
-    //   be that DIRECT failed and not that EGO converged.
+    check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr); // Edited by AT
 
 #ifdef DEBUG
     Cout << "EGO Iteration " << globalIterCount << "\neif_star " << eif_star
-	 << "\ndist_cstar "  << dist_cstar      << "\ndist_convergence_cntr "
-	 << dist_convergence_cntr << '\n';
+   << "\ndistCstar "  << distCstar      << "\ndist_convergence_cntr "
+   << dist_convergence_cntr << '\n';
 #endif //DEBUG
 
     if ( dist_convergence_cntr >= dist_convergence_limit ||
-	 eif_convergence_cntr  >= eif_convergence_limit || 
-	 globalIterCount       >= maxIterations )
+   eif_convergence_cntr  >= eif_convergence_limit ||
+   globalIterCount       >= maxIterations )
       approx_converged = true;
     else {
       // Evaluate response_star_truth
@@ -357,18 +306,18 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       set.request_values(dataOrder);
       iteratedModel.evaluate(set);
       IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
-				      iteratedModel.current_response());
-    
+              iteratedModel.current_response());
+
       if (numNonlinearConstraints) {
-	// Update the merit function parameters
-	// Logic follows Conn, Gould, and Toint, section 14.4:
-	const RealVector& fns_star_truth
-	  = resp_star_truth.second.function_values();
-	Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
-	if (norm_cv_star < etaSequence)
-	  update_augmented_lagrange_multipliers(fns_star_truth);
-	else
-	  update_penalty();
+  // Update the merit function parameters
+  // Logic follows Conn, Gould, and Toint, section 14.4:
+  const RealVector& fns_star_truth
+    = resp_star_truth.second.function_values();
+  Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
+  if (norm_cv_star < etaSequence)
+    update_augmented_lagrange_multipliers(fns_star_truth);
+  else
+    update_penalty();
       }
 
       // Update the GP approximation
@@ -378,7 +327,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   } // end approx convergence while loop
 
   // Set best variables and response for use by strategy level.
-  // c_vars, fmin contain the optimal design 
+  // c_vars, fmin contain the optimal design
   get_best_sample(); // pull optimal result from sample data
   bestVariablesArray.front().continuous_variables(varStar);
   bestResponseArray.front().function_values(truthFnStar);
@@ -388,7 +337,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
 #ifdef DEBUG_PLOTS
   // DEBUG - output set of samples used to build the GP
-  // If problem is 2d, output a grid of points on the GP 
+  // If problem is 2d, output a grid of points on the GP
   //   and truth (if requested)
   for (size_t i=0; i<numFunctions; i++) {
     std::string samsfile("ego_sams");
@@ -431,12 +380,12 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 	test_pt[0] = lbnd[0] + float(j)*interval0;
 	for (size_t k=0; k<101; k++){
 	  test_pt[1] = lbnd[1] + float(k)*interval1;
-      
+
 	  fHatModel.continuous_variables(test_pt);
 	  fHatModel.evaluate();
 	  const Response& gp_resp = fHatModel.current_response();
 	  const RealVector& gp_fn = gp_resp.function_values();
-	  
+
 	  gpOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
 		<< test_pt[1] << ' ' << std::setw(13) << gp_fn[i];
 
@@ -457,7 +406,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
 	    Real ei = expected_improvement(merit, test_pt);
 
-	    eifOut << '\n' << std::setw(13) << test_pt[0] << ' ' 
+	    eifOut << '\n' << std::setw(13) << test_pt[0] << ' '
 		   << std::setw(13) << test_pt[1] << ' ' << std::setw(13) << ei;
 	  }
 	}
@@ -474,8 +423,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
 /** To maximize expected improvement, the approxSubProbMinimizer will
     minimize -(expected_improvement). */
-void EffGlobalMinimizer::
-EIF_objective_eval(const Variables& sub_model_vars,
+void EffGlobalMinimizer::EIF_objective_eval(const Variables& sub_model_vars,
 		   const Variables& recast_vars,
 		   const Response& sub_model_response,
 		   Response& recast_response)
@@ -493,8 +441,7 @@ EIF_objective_eval(const Variables& sub_model_vars,
 }
 
 
-Real EffGlobalMinimizer::
-expected_improvement(const RealVector& means, const RealVector& variances)
+Real EffGlobalMinimizer::expected_improvement(const RealVector& means, const RealVector& variances)
 {
   // Objective calculation will incorporate any sense changes or
   // weights, such that this is an objective to minimize.
@@ -524,7 +471,7 @@ expected_improvement(const RealVector& means, const RealVector& variances)
     cdf=(snv>0.0)?1.0:0.0;
   }
   else{
-    snv/=stdv; 
+    snv/=stdv;
     cdf = Pecos::NormalRandomVariable::std_cdf(snv);
     pdf = Pecos::NormalRandomVariable::std_pdf(snv);
   }
@@ -535,8 +482,7 @@ expected_improvement(const RealVector& means, const RealVector& variances)
 }
 
 
-RealVector EffGlobalMinimizer::
-expected_violation(const RealVector& means, const RealVector& variances)
+RealVector EffGlobalMinimizer::expected_violation(const RealVector& means, const RealVector& variances)
 {
   RealVector ev(numNonlinearConstraints);
 
@@ -650,7 +596,7 @@ void EffGlobalMinimizer::update_penalty()
   penaltyParameter *= 10.;
   //penaltyParameter = std::min(penaltyParameter, 1.e+20); // cap the max penalty?
   Real mu = 1./2./penaltyParameter; // conversion between r_p and mu penalties
-  etaSequence = eta*std::pow(mu, alphaEta);
+  etaSequence = eta * std::pow(mu, alphaEta);
 
 #ifdef DEBUG
   Cout << "Penalty updated: " << penaltyParameter << '\n'
@@ -659,14 +605,96 @@ void EffGlobalMinimizer::update_penalty()
 #endif
 }
 
-// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+
+// This override exists purely to prevent an optimizer/minimizer from declaring sources
 // when it's being used to evaluate a user-defined function (e.g. finding the correlation
-// lengths of Dakota's GP). 
+// lengths of Dakota's GP).
 void EffGlobalMinimizer::declare_sources() {
-  if(setUpType == "user_functions") 
+  if(setUpType == "user_functions")
     return;
   else
     Iterator::declare_sources();
 }
- 
+
+
+Real EffGlobalMinimizer::get_augmented_lagrangian(const RealVector& mean,
+                                    const RealVector& c_vars,
+                                    const Real& eif_star) { // Edited by AT
+  Real aug_lag = augmented_lagrangian_merit(mean,
+      iteratedModel.primary_response_fn_sense(),
+      iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
+      origNonlinIneqUpperBnds, origNonlinEqTargets);
+
+  // print out message
+    Cout << "\nResults of EGO iteration:\nFinal point =\n" << c_vars
+   << "Expected Improvement    =\n                     "
+   << std::setw(write_precision+7) << -eif_star
+   << "\n                     " << std::setw(write_precision+7)
+   << aug_lag << " [merit]\n";
+   return aug_lag;
+}
+
+
+void EffGlobalMinimizer::check_convergence(const Real& eif_star,
+                                          const RealVector& c_vars,
+                                          RealVector prev_cv_star,
+                                          unsigned short eif_convergence_cntr,
+                                          unsigned short dist_convergence_cntr) { // Edited by AT
+  // Check for convergence based on max EIF
+  if ( -eif_star < convergenceTol )
+    ++eif_convergence_cntr;
+
+  // Check for convergence based in distance between successive points.
+  // If the dist between successive points is very small, then there is
+  // little value in updating the GP since the new training point will
+  // essentially be the previous optimal point.
+
+  Real distCstar = (prev_cv_star.empty()) ? DBL_MAX :
+    rel_change_L2(c_vars, prev_cv_star);
+  // update prev_cv_star
+  copy_data(c_vars, prev_cv_star);
+  if (distCstar < distanceTol)
+    ++dist_convergence_cntr;
+
+  // If DIRECT failed to find a point with EIF>0, it returns the
+  //   center point as the optimal solution. EGO may have converged,
+  //   but DIRECT may have just failed to find a point with a good
+  //   EIF value. Adding this midpoint can alter the GPs enough to
+  //   to allow DIRECT to find something useful, so we force
+  //   max(EIF)<tol twice to make sure. Note that we cannot make
+  //   this check more than 2 because it would cause EGO to add
+  //   the center point more than once, which will damage the GPs.
+  //   Unfortunately, when it happens the second time, it may still
+  //   be that DIRECT failed and not that EGO converged.
+
+  return;
+
+}
+
+void EffGlobalMinimizer::initialize() { // Edited by AT
+  // set the object instance pointers for use within the static member fns
+  effGlobalInstance = this;
+
+  // now that variables/labels/bounds/targets have flowed down at run-time from
+  // any higher level recursions, propagate them up the instantiate-on-the-fly
+  // Model recursion so that they are correct when they propagate back down.
+  eifModel.update_from_subordinate_model(); // depth = max
+
+  // (We might want a more selective update from submodel, or make a
+  // new EIFModel specialization of RecastModel.)  Always want to
+  // minimize the negative expected improvement as posed in the
+  // eifModel, which consumes min/max sense and weights, and recasts
+  // nonlinear constraints, so we don't let these propagate to the
+  // approxSubproblemMinimizer.
+  eifModel.primary_response_fn_sense(BoolDeque());
+  eifModel.primary_response_fn_weights(RealVector(), false); // no recursion
+  eifModel.reshape_constraints(0, 0, eifModel.num_linear_ineq_constraints(),
+             eifModel.num_linear_eq_constraints());
+
+  // Build initial GP once for all response functions
+  fHatModel.build_approximation();
+
+  return;
+}
+
 } // namespace Dakota
