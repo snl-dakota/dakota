@@ -83,6 +83,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   dfftpack	    Public Domain
   DOT		    Commercial license (optional add-on)
   dream		    GNU Lesser General Public License (LGPL)
+  eigen3            MPL2 (cf http://www.mozilla.org/MPL/2.0)
   fftw	    	    GNU General Public License (GPL; disabled by default)
   FSUDace	    GNU Lesser General Public License (LGPL)
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
