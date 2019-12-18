@@ -15,6 +15,8 @@
 // Imports //
 /////////////
 
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 #include <math.h>
 #include <Teuchos_UnitTestHarness.hpp>
 #include "util_data_types.hpp"
@@ -74,14 +76,12 @@ MatrixXd create_multiple_features_matrix()
  */
 double variance(VectorXd vec)
 {
-	const double mean = vec.mean();
-	double variance = 0;
-	for(int i = 0; i < vec.size(); i++)
-	{
-		variance += std::pow((vec(i) - mean), 2);
-	}
-	variance = variance / vec.size();
-	return variance;
+  boost::accumulators::accumulator_set<double, boost::accumulators::features<boost::accumulators::tag::variance>> acc;
+  for(int i = 0; i < vec.size(); i++)
+  {
+    acc(vec(i));
+  }
+  return boost::accumulators::variance(acc);
 }
 
 ////////////////
@@ -204,6 +204,46 @@ TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestMultip
   TEST_ASSERT(std::abs(variance(matrix_actual.row(0)) - UNIT_VARIANCE) < 1.0e-14);
   TEST_ASSERT(std::abs(variance(matrix_actual.row(1)) - UNIT_VARIANCE) < 1.0e-14);
   TEST_ASSERT(std::abs(variance(matrix_actual.row(2)) - UNIT_VARIANCE) < 1.0e-14);
+}
+
+TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_scaleSamples)
+{
+  StandardizationScaler ss(create_multiple_features_matrix());
+
+  MatrixXd matrix_actual_unscaled = create_multiple_features_matrix();
+  MatrixXd matrix_actual_scaled(3, 7);
+  MatrixXd matrix_expected(3, 7);
+  
+  matrix_actual_scaled = ss.scaleSamples(matrix_actual_unscaled);
+  matrix_expected << -0.45993,  -0.459904, -0.459643, -0.457035, -0.430957, -0.170175,   2.43765,
+                     -0.439588, -0.439572, -0.439474, -0.437858, -0.42228,  -0.266498,   2.44527,
+                     -0.441129, -0.441107, -0.440925, -0.438244, -0.408139, -0.276169,   2.44571;
+
+  //std::cout << matrix_expected << std::endl;
+  //std::cout << matrix_actual_scaled << std::endl;
+
+  TEST_ASSERT(matrix_equals(matrix_actual_scaled, matrix_expected, 1.0e-4));
+  // For StandardizationScaler, mean should be effectively zero.
+  TEST_ASSERT(std::abs(matrix_actual_scaled.row(0).mean()) < 1.0e-14); 
+  TEST_ASSERT(std::abs(matrix_actual_scaled.row(1).mean()) < 1.0e-14); 
+  TEST_ASSERT(std::abs(matrix_actual_scaled.row(2).mean()) < 1.0e-14);
+  // For StandardizationScaler, variance should be effectively one.
+  const double UNIT_VARIANCE = 1.0;
+  TEST_ASSERT(std::abs(variance(matrix_actual_scaled.row(0)) - UNIT_VARIANCE) < 1.0e-14);
+  TEST_ASSERT(std::abs(variance(matrix_actual_scaled.row(1)) - UNIT_VARIANCE) < 1.0e-14);
+  TEST_ASSERT(std::abs(variance(matrix_actual_scaled.row(2)) - UNIT_VARIANCE) < 1.0e-14);
+}
+
+TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_scaleSamples_wrongSize)
+{
+  StandardizationScaler ss(create_multiple_features_matrix());
+
+  MatrixXd wrong_size_matrix(7, 3);
+  wrong_size_matrix << 0.1, 1, 10, 100, 1000, 10000, 100000,
+                       0.2, 3, 20, 300, 3000, 30000, 500000,
+                       0.5, 6, 50, 700, 8000, 40000, 700000;
+  
+  TEST_THROW(ss.scaleSamples(wrong_size_matrix), std::runtime_error);
 }
 
 TEUCHOS_UNIT_TEST(surrogates, NoScaler_getScaledFeatures_TestDefault)
