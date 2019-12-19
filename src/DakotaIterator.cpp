@@ -120,6 +120,9 @@
 #ifdef HAVE_ADAPTIVE_SAMPLING 
 #include "NonDAdaptiveSampling.hpp"
 #endif
+#ifdef HAVE_MUQ 
+#include "NonDMUQBayesCalibration.hpp"
+#endif
 #include "OptDartsOptimizer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -503,6 +506,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_ADAPTIVE_SAMPLING
   case ADAPTIVE_SAMPLING:
     return new NonDAdaptiveSampling(problem_db, model);  break;
+#endif
+#ifdef HAVE_MUQ
+  case MUQ_SAMPLING:
+    return new NonDMUQBayesCalibration(problem_db, model);  break;
 #endif
   case RANDOM_SAMPLING:
     return new NonDLHSSampling(problem_db, model); break;

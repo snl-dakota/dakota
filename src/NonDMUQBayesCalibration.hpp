@@ -19,6 +19,7 @@
 
 #include "MUQ/Modeling/WorkGraph.h"
 #include "MUQ/SamplingAlgorithms/MarkovChain.h"
+#include "MUQ/SamplingAlgorithms/MCMCFactory.h"
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"
 #include "MUQ/Modeling/Distributions/Gaussian.h"
@@ -72,7 +73,7 @@ protected:
   std::shared_ptr<muq::Modeling::DensityProduct>     posteriorPtr;
 
   std::shared_ptr<muq::SamplingAlgorithms::SamplingProblem> samplingProbPtr;
-  //std::shared_ptr<muq::Modeling::MCMCSampling>     mcmcSamplerPtr;
+  std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>     mcmcSamplerPtr;
   std::shared_ptr<muq::SamplingAlgorithms::MarkovChain>    mcmcSampleSetPtr;
 
 private:

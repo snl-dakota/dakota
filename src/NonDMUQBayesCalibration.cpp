@@ -74,7 +74,11 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // exact context that we care about at this time --> could define a
   // large graph-based ecosystem and then activate the relevant portion
   // for a particular study.
-  auto post_distrib = workGraph.CreateModPiece("Posterior");
+  //auto post_distrib = workGraph.CreateModPiece("Posterior");
+
+  double hard_coded_mu  = 0.0;
+  double hard_coded_cov = 0.0;
+  auto post_distrib = std::make_shared<muq::Modeling::Gaussian>(hard_coded_mu, hard_coded_cov)->AsDensity(); // standard normal Gaussian
 
   // Dump out a visualization of the work graph
   if (outputLevel >= DEBUG_OUTPUT)
@@ -83,7 +87,7 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   /////////////////////////////////
   // DEFINE THE PROBLEM TO SOLVE //
   /////////////////////////////////
-  //samplingProbPtr = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(post_distrib);
+  samplingProbPtr = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(post_distrib);
   
   /////////////////////////////
   // DEFINE THE MCMC SAMPLER //
@@ -100,7 +104,7 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   pt.put("Kernel1.MyProposal.Method", "MHProposal");
   pt.put("Kernel1.MyProposal.ProposalVariance", 0.5); // the variance of the isotropic MH proposal
 
-//  mcmcSamplerPtr = std::make_shared<MUQ::MCMCSampling>(samplingProbPtr, pt);
+  mcmcSamplerPtr = muq::SamplingAlgorithms::MCMCFactory::CreateSingleChain(pt, samplingProbPtr);
 }
 
 

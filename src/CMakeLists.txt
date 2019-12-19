@@ -783,6 +783,8 @@ if(HAVE_MUQ)
   # BMA TODO: Would prefer find_package / config mode as RWH demoed above
   # lib/ dir isn't sufficiently general, though MUQ hard-codes it
   # BMA TODO: Make sure the exports and install rules work properly
+  add_definitions("-DHAVE_MUQ")
+  set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
   list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
   list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
   list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
