@@ -84,6 +84,9 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   DOT		    Commercial license (optional add-on)
   dream		    GNU Lesser General Public License (LGPL)
   eigen3            MPL2 (cf http://www.mozilla.org/MPL/2.0)
+                    *** Dakota enables the -DEIGENMPL2_ONLY compiler flag to
+                        avoid bringing in additional eigen TPLs having potentially 
+                        different license restrictions.
   fftw	    	    GNU General Public License (GPL; disabled by default)
   FSUDace	    GNU Lesser General Public License (LGPL)
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
