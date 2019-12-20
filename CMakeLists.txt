@@ -212,8 +212,6 @@ endif(DAKOTA_F90)
 # Configuration of Dakota components
 # -----
 
-add_subdirectory(packages)
-
 # --- New surrogates module
 # BMA TODO: Finer granularity in packages to build Trilinos, Eigen
 # first, then optionally Pecos, Surfpack, surrogates.
@@ -225,6 +223,8 @@ if(DAKOTA_MODULE_SURROGATES)
 endif()
 
 if(DAKOTA_MODULE_DAKOTA)
+
+add_subdirectory(packages)
 
 add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF
