@@ -27,6 +27,8 @@ set(EIGEN3_INCLUDE_DIRS
 # BMA TODO: CMake best practice for PUBLIC?
 target_include_directories(dakota_util PUBLIC
   ${Teuchos_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+target_compile_definitions(dakota_util PUBLIC
+  "HAVE_EIGEN" "EIGEN_MPL2_ONLY")
 #target_link_directories()
 #target_link_libraries()
 

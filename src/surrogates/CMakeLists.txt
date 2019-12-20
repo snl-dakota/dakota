@@ -27,6 +27,8 @@ target_include_directories(dakota_surrogates PUBLIC
   "${ROL_INCLUDE_DIRS}"
   "${EIGEN3_INCLUDE_DIRS}"
   )
+target_compile_definitions(dakota_surrogates PUBLIC
+  "HAVE_EIGEN" "EIGEN_MPL2_ONLY")
 target_link_libraries(dakota_surrogates dakota_util)
 
 install(FILES ${surrogates_headers} DESTINATION "include")

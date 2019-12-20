@@ -18,6 +18,8 @@ dakota_add_unit_test(NAME gp_test
   )
 target_include_directories(gp_test PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/.." "${Teuchos_INCLUDE_DIRS}")
+target_compile_definitions(gp_test PRIVATE
+  "HAVE_EIGEN" "EIGEN_MPL2_ONLY")
 # BMA NOTE: I think we only need state the immediate deps? So no dakota_util
 target_link_libraries(gp_test dakota_surrogates ${Teuchos_LIBRARIES})
 
