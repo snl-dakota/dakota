@@ -113,8 +113,9 @@ void SharedPecosApproxData::integration_iterator(const Iterator& iterator)
 
 void SharedPecosApproxData::link_multilevel_surrogate_data()
 {
-  // Manage approxDataKeys and activeDataIndex.  {surr,modSurr}Data instances
-  // managed in PecosApproximation::link_multilevel_surrogate_data()
+  // Manage approxDataKeys and original/modified approxData indices.
+  // {surr,modSurr}Data instances are managed in PecosApproximation::
+  // link_multilevel_surrogate_data()
 
   switch (pecosSharedDataRep->discrepancy_type()) {
   case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
@@ -127,11 +128,8 @@ void SharedPecosApproxData::link_multilevel_surrogate_data()
     surr_keys.resize(2);  mod_surr_keys.resize(1);
     //surr_keys[0] = mod_surr_keys[0] = pecosSharedDataRep->active_key();
 
-    // Configure active approxData (surrData for pushing raw data)
-    activeDataIndex = 0;
-    // 0 for pushing raw data, 1 for pulling processed data ?
-    // (other classes access the discrepancy/surplus data)
-    //pushActiveDataIndex = 0;  pullActiveDataIndex = 1;
+    //origSurrDataIndex = 0;  // same as initialized value
+    modSurrDataIndex = 1; // update from initialized value
     break;
   }
   default: // default ctor linkages are sufficient
@@ -142,18 +140,28 @@ void SharedPecosApproxData::link_multilevel_surrogate_data()
 
 void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
 {
-  // keys are organized in a 3D array: approxData instance by {truth,surrogate}
-  // by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
-  // as does ApproximationInterface::*_add()
+  // approxDataKeys are organized in a 3D array: approxData instance by
+  // {truth,surrogate} by multi-index key.  Note that AGGREGATED_MODELS mode
+  // uses {HF,LF} order, as does ApproximationInterface::*_add()
 
-  // Base class default implementation updates only for activeDataIndex:
-  //UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
-  // Here, we ignore activeDataIndex and update the unmodified raw approxData
-  // instance (modSurrData aggregates {HF,LF} and is keyed based on truth key).
+  // Base/derived implementations assign/remove LF key for origSurrDataIndex.
+  // Here, we modify the incoming LF key to allow association with its HF key.
 
+  // *** NOTE: When managing distinct sets of paired truth,surrogate data (e.g.,
+  // one set of data for discrepancy Q_l - Q_lm1 and another for Q_lm1 - Q_lm2,
+  // it is important to identify the lm1 data with a specific pairing:
+  // > Current approach: alter LF key (only) to disambiguate truth from
+  //   surrogate key for the same model level
+  // > Another approach: embed a tuple index to identify the key location; then
+  //   an l,lm1 key concatenation could instead be used for discrepancy data in
+  //   modSurrData (which must also include a tuple field to disambiguate:
+  //   tuple-key1-[key2])
+  //   >> Potential issue: this works fine for a recursive hierarchy, but is
+  //      insufficient if lm1 could involve additional pairings
+  
   //size_t d, num_d = approxDataKeys.size();
   UShort2DArray& raw_data_keys = approxDataKeys[0];
-  if (key.empty()) // prune second entry from each set of approxDataKeys
+  if (key.empty()) { // prune second entry from each set of approxDataKeys
     /*
     for (i=0; i<num_sd; ++i)
     //if (maxNumKeys[i] > 1)      // need separate attribute to manage #keys
@@ -161,6 +169,7 @@ void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
         approxDataKeys[i].resize(1);
     */
     raw_data_keys.resize(1); // approxDataKeys[1] remains size 1
+  }
   else {
     //for (d=0; i<num_d; ++d)
     //  if (surrogate_data_keys(i)) {
@@ -169,9 +178,6 @@ void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
     UShortArray&       lf_key = raw_data_keys[1]; // LF
     // Assign incoming LF key
     lf_key = key;
-    // Alter key to distinguish a particular aggregation used for modeling
-    // a discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...) by
-    // appending the HF key that matches this LF data
     lf_key.insert(lf_key.end(), hf_key.begin(), hf_key.end());
     //  }
   }
@@ -180,13 +186,12 @@ void SharedPecosApproxData::surrogate_model_key(const UShortArray& key)
 
 void SharedPecosApproxData::truth_model_key(const UShortArray& key)
 {
-  // keys are organized in a 3D array: approxData instance by {truth,surrogate}
-  // by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
-  // as does ApproximationInterface::*_add()
+  // approxDataKeys are organized in a 3D array: approxData instance by
+  // {truth,surrogate} by multi-index key.  Note that AGGREGATED_MODELS mode
+  // uses {HF,LF} order, as does ApproximationInterface::*_add()
 
-  // Base class default implementation updates only for activeDataIndex:
-  //UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
-  // but here we will update across approxData instances (surrData,modSurrData}.
+  // Base class implementation updates only for origSurrDataIndex.  Here, we
+  // will update across all approxData instances indicated in approxDataKeys.
 
   size_t d, num_d = approxDataKeys.size();
   for (d=0; d<num_d; ++d) {
@@ -201,8 +206,7 @@ void SharedPecosApproxData::truth_model_key(const UShortArray& key)
       if (hf_key != key) {
 	// Assign HF key
 	hf_key = key;
-	// Alter LF key to distinguish a particular model pair that defines a
-	// discrepancy (e.g., keep lm1 distinct among l-lm1, lm1-lm2, ...)
+	// Update modified LF key (disambiguates pairings, see above)
 	lf_key.resize(lf_key.size() - key.size());
 	lf_key.insert(lf_key.end(), key.begin(), key.end());
       }

@@ -251,7 +251,7 @@ protected:
   Model& surrogate_model();
   /// set surrogate model key within subModel
   void surrogate_model_key(unsigned short lf_model_index,
-			   unsigned short lf_soln_lev_index);
+			   unsigned short lf_soln_lev_index = USHRT_MAX);
   /// set surrogate model key within subModel
   void surrogate_model_key(const UShortArray& lf_key);
   /// return surrogate model key from subModel
@@ -261,7 +261,7 @@ protected:
   Model& truth_model();
   /// set truth model key within subModel
   void truth_model_key(unsigned short hf_model_index,
-		       unsigned short hf_soln_lev_index);
+		       unsigned short hf_soln_lev_index = USHRT_MAX);
   /// set truth model key within subModel
   void truth_model_key(const UShortArray& hf_key);
   /// return truth model key from subModel

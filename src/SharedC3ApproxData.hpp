@@ -86,6 +86,10 @@ protected:
   const UShortArray& active_model_key() const;
   void clear_model_keys();
 
+  void link_multilevel_surrogate_data();
+  void surrogate_model_key(const UShortArray& key);
+  void truth_model_key(const UShortArray& key);
+
   // Activate as additional features (and basis types) come online
   
   //void update_basis_distribution_parameters(        // beyond STD_{NORMAL,
@@ -212,7 +216,9 @@ inline void SharedC3ApproxData::set_parameter(String var, bool val)
 
 inline void SharedC3ApproxData::set_parameter(String var, short val)
 {
-  if (var.compare("regress_type") == 0)  regressType = val;
+  if (var.compare("regress_type") == 0) regressType = val;
+  else if (var.compare("discrepancy_type") == 0)
+    expConfigOptions.discrepancyType = val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 

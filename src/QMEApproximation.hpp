@@ -141,7 +141,7 @@ inline void QMEApproximation::clear_current_active_data()
   // is the expansion/anchor point) and zero or more points without derivatives
   // (rejected iterates for which gradients were never computed).
 
-  Pecos::SurrogateData& approx_data = surrogate_data();
+  Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t ndv = sharedDataRep->numVars, num_pts = approx_data.points(), num_pop;
   currGradIndex = approx_data.anchor_index();
 

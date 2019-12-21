@@ -219,7 +219,7 @@ void C3Approximation::build()
       Cerr << "Warning: CV is not yet implemented in C3Approximation.  "
 	   << "Ignoring CV request.\n";
 
-    const Pecos::SurrogateData& approx_data = surrogate_data();
+    const Pecos::SurrogateData& approx_data = modified_surrogate_data();
     const Pecos::SDVArray& sdv_array = approx_data.variables_data();
     const Pecos::SDRArray& sdr_array = approx_data.response_data();
     size_t ndata = approx_data.points();
@@ -398,6 +398,88 @@ void C3Approximation::clear_inactive_coefficients()
       ++it;
     else // clear inactive: postfix increments manage iterator invalidations
       levelApprox.erase(it++);
+}
+
+
+void C3Approximation::link_multilevel_surrogate_data()
+{
+  // Manage {surr,modSurr}Data instances:
+  // > SurrogateModel::aggregate_response() uses order of HF,LF
+  // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
+  //   data to each approxData instance in turn.
+
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  switch (data_rep->expConfigOptions.discrepancyType) {
+  case Pecos::DISTINCT_DISCREP:  case Pecos::RECURSIVE_DISCREP: {
+    // push another SurrogateData instance for modSurrData
+    // (allows consolidation of Approximation::push/pop operations)
+    const UShortArray& key = approxData.back().active_key();
+    Pecos::SurrogateData mod_surr(key); // new instance
+    approxData.push_back(mod_surr);
+    // Note: {orig,mod}SurrDataIndex set to {0,1} in SharedC3ApproxData::
+    //       link_multilevel_surrogate_data()
+    break;
+  }
+  default: // default ctor linkages are sufficient
+    break;
+  }
+}
+
+
+void C3Approximation::synchronize_surrogate_data()
+{
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  switch (data_rep->expConfigOptions.discrepancyType) {
+  //case RECURSIVE_DISCREP:
+  //  response_data_to_surplus_data();     break;
+  case DISTINCT_DISCREP:
+    response_data_to_discrepancy_data(); break;
+  default: // allow use of surrData or modSurrData, even if no modifications
+    // depending on ctor for modSurrData, may be NULL or just empty
+    if (modSurrData.is_null()) // shared rep (linking once is sufficient)
+      modSurrData = surrData;
+    else if (modSurrData.points() == 0) // retain independence: shallow data cp
+      modSurrData.copy_active(surrData, SHALLOW_COPY, SHALLOW_COPY);
+    break;
+  }
+}
+
+
+void C3Approximation::response_data_to_discrepancy_data()
+{
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  const UShortArray& hf_key = data_rep->activeKey;
+  SurrogateData& surr_data = approxData.front();
+  if (hf_key != surr_data.active_key()) {
+    PCerr << "Error: active key mismatch in C3Approximation::"
+	  << "response_data_to_discrepancy_data()." << std::endl;
+    abort_handler(-1);
+  }
+  SurrogateData& mod_surr_data = approxData.back();
+
+  // Keep surrData and modSurrData distinct (don't share reps since copy() will
+  // not restore independence when it is needed).  Rather use distinct arrays
+  // with shallow copies of SDV,SDR instances when they will not be modified.
+  // > level 0 mode is BYPASS_SURROGATE: both SDVs & SDRs can be shallow copies
+  // > shallow copies of popped arrays support replicated pops on modSurrData
+  //   (applied to distinct arrays of shared instances)
+  std::map<UShortArray, SDRArray>::const_iterator r_cit
+    = surr_data.response_data_map().begin();
+  if (hf_key == r_cit->first) { // first entry -> no discrepancy/surplus
+    if (mod_surr_data.is_null()) mod_surr_data = SurrogateData(hf_key);
+    else                         mod_surr_data.active_key(hf_key);
+    mod_surr_data.copy_active(surr_data, SHALLOW_COPY, SHALLOW_COPY);
+  }
+  else {
+    // TO DO: improve encapsulation by passing surrogate key (currently
+    //        replicates logic in NonDExpansion::configure_indices())
+    UShortArray lf_key;  paired_lf_key(hf_key, lf_key);
+    // compute response discrepancies and store in mod_surr_data
+    DiscrepancyCalculator::compute(surr_data, hf_key, lf_key, mod_surr_data,
+				   data_rep->expConfigOptions.combineType);
+    // compute faults from scratch (aggregates LF,HF failures)
+    mod_surr_data.data_checks();
+  }
 }
 
 

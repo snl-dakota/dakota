@@ -950,7 +950,6 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   SharedApproxData&          shared_approx = uSpaceModel.shared_approximation();
   SharedPecosApproxData* shared_data_rep
     = (SharedPecosApproxData*)shared_approx.data_rep();
-  // returns approxData[activeDataIndex] (= Pecos::modSurrData) by default
   const Pecos::SDVArray& sdv_array
     = poly_approxs[0].surrogate_data().variables_data();
   int num_surr_data_pts = sdv_array.size();

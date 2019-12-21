@@ -260,7 +260,7 @@ namespace Dakota
         std::cout << std::endl;
         std::cout << "-- Problem Info --" << std::endl;
         
-	const Pecos::SurrogateData& approx_data = surrogate_data();
+	const Pecos::SurrogateData& approx_data = modified_surrogate_data();
         numObs = approx_data.points(); // number of points
         size_t num_v = sharedDataRep->numVars;  // number of variables
         
@@ -853,7 +853,7 @@ namespace Dakota
         }
         else if (_vps_subsurrogate == GP)
         {
-	    const Pecos::SurrogateData& approx_data = surrogate_data();
+	    const Pecos::SurrogateData& approx_data = modified_surrogate_data();
             const SDVArray& training_vars = approx_data.variables_data();
             const SDRArray& training_resp = approx_data.response_data();
             
@@ -3241,7 +3241,7 @@ namespace Dakota
     }
 
     //int VPSApproximation::num_constraints() const
-    //{ return (surrogate_data().anchor()) ? 1 : 0; }
+    //{ return (modified_surrogate_data().anchor()) ? 1 : 0; }
 
     void VPSApproximation::build()
     {

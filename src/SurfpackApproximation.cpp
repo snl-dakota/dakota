@@ -903,7 +903,7 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 {
   SurfData* surf_data = new SurfData();
 
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   // screen approximation data for failures
   approx_data.data_checks();
   // add the remaining surrogate data points

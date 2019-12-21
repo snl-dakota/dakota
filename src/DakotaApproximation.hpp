@@ -245,12 +245,16 @@ public:
   /// finalize SurrogateData by applying all remaining trial sets
   void finalize_data();
 
-  /// return approxData[sharedDataRep->activeDataIndex]
+  /// return approxData[sharedDataRep->origSurrDataIndex]
   const Pecos::SurrogateData& surrogate_data() const;
-  /// return approxData[sharedDataRep->activeDataIndex]
+  /// return approxData[sharedDataRep->origSurrDataIndex]
   Pecos::SurrogateData& surrogate_data();
-  /// return approxData[d_index]
+  /// return approxData[d_index], resorting to default if _NPOS
   const Pecos::SurrogateData& surrogate_data(size_t d_index) const;
+  /// return approxData[sharedDataRep->modSurrDataIndex]
+  const Pecos::SurrogateData& modified_surrogate_data() const;
+  /// return approxData[sharedDataRep->modSurrDataIndex]
+  Pecos::SurrogateData& modified_surrogate_data();
 
   /// append to SurrogateData::varsData
   void add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag,
@@ -390,7 +394,7 @@ inline const Pecos::SurrogateData& Approximation::surrogate_data() const
   if (approxRep)
     return approxRep->surrogate_data();
   else
-    return approxData[sharedDataRep->activeDataIndex];
+    return approxData[sharedDataRep->origSurrDataIndex];
 }
 
 
@@ -399,7 +403,7 @@ inline Pecos::SurrogateData& Approximation::surrogate_data()
   if (approxRep)
     return approxRep->surrogate_data();
   else
-    return approxData[sharedDataRep->activeDataIndex];
+    return approxData[sharedDataRep->origSurrDataIndex];
 }
 
 
@@ -409,7 +413,7 @@ surrogate_data(size_t d_index) const
   if (approxRep)
     return approxRep->surrogate_data(d_index);
   else if (d_index == _NPOS)
-    return approxData[sharedDataRep->activeDataIndex]; // defaults to front()
+    return approxData[sharedDataRep->origSurrDataIndex]; // defaults to front()
   else {
     if (d_index >= approxData.size()) {
       Cerr << "Error: index out of range in Approximation::surrogate_data()."
@@ -421,6 +425,25 @@ surrogate_data(size_t d_index) const
 }
 
 
+inline const Pecos::SurrogateData& Approximation::
+modified_surrogate_data() const
+{
+  if (approxRep)
+    return approxRep->modified_surrogate_data();
+  else
+    return approxData[sharedDataRep->modSurrDataIndex];
+}
+
+
+inline Pecos::SurrogateData& Approximation::modified_surrogate_data()
+{
+  if (approxRep)
+    return approxRep->modified_surrogate_data();
+  else
+    return approxData[sharedDataRep->modSurrDataIndex];
+}
+
+
 inline void Approximation::
 add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag, bool deep_copy,
     size_t key_index)
@@ -428,9 +451,9 @@ add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag, bool deep_copy,
   if (approxRep)
     approxRep->add(sdv, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
-    size_t data_index = sharedDataRep->activeDataIndex;
+    size_t data_index = sharedDataRep->origSurrDataIndex;
     Pecos::SurrogateData& approx_data = approxData[data_index];
-    const UShort2DArray&  data_keys = sharedDataRep->approxDataKeys[data_index];
+    const UShort2DArray& data_keys = sharedDataRep->approxDataKeys[data_index];
     if (key_index == _NPOS) key_index = 0; // make front() the default
     if (key_index >= data_keys.size()) {
       Cerr << "Error: index out of range in Approximation::add()" << std::endl;
@@ -501,7 +524,7 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, bool deep_copy,
   if (approxRep)
     approxRep->add(sdr, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
-    size_t data_index = sharedDataRep->activeDataIndex;
+    size_t data_index = sharedDataRep->origSurrDataIndex;
     Pecos::SurrogateData& approx_data = approxData[data_index];
     const UShort2DArray&  data_keys = sharedDataRep->approxDataKeys[data_index];
     if (key_index == _NPOS) key_index = 0; // make front() the default
@@ -537,9 +560,9 @@ inline size_t Approximation::pop_count(size_t key_index) const
 {
   if (approxRep) return approxRep->pop_count(key_index);
   else {
-    size_t data_index = sharedDataRep->activeDataIndex;
+    size_t data_index = sharedDataRep->origSurrDataIndex;
     Pecos::SurrogateData& approx_data = approxData[data_index];
-    const UShort2DArray&  data_keys = sharedDataRep->approxDataKeys[data_index];
+    const UShort2DArray& data_keys = sharedDataRep->approxDataKeys[data_index];
     approx_data.active_key(data_keys[key_index]);// no-op if key already active
     return approx_data.pop_count();
   }
@@ -551,9 +574,9 @@ inline void Approximation::pop_count(size_t count, size_t key_index)
 {
   if (approxRep) approxRep->pop_count(count, key_index);
   else {
-    size_t data_index = sharedDataRep->activeDataIndex;
+    size_t data_index = sharedDataRep->origSurrDataIndex;
     Pecos::SurrogateData& approx_data = approxData[data_index];
-    const UShort2DArray&  data_keys = sharedDataRep->approxDataKeys[data_index];
+    const UShort2DArray& data_keys = sharedDataRep->approxDataKeys[data_index];
     approx_data.active_key(data_keys[key_index]);// no-op if key already active
     approx_data.pop_count(count);
   }

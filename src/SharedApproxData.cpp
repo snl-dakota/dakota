@@ -39,7 +39,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), activeDataIndex(0), 
+  buildDataOrder(1), origSurrDataIndex(0), modSurrDataIndex(0),
   modelExportPrefix(
     problem_db.get_string("model.surrogate.model_export_prefix")),
   modelExportFormat(
@@ -109,8 +109,8 @@ SharedApproxData::
 SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		 size_t num_vars, short data_order, short output_level):
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
-  activeDataIndex(0), modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
-  dataRep(NULL), referenceCount(1)
+  origSurrDataIndex(0), modSurrDataIndex(0), modelExportFormat(NO_MODEL_FORMAT),
+  modelExportPrefix(""), dataRep(NULL), referenceCount(1)
 {
   bool global_approx = strbegins(approxType, "global_");
   buildDataOrder = 1;
@@ -406,7 +406,7 @@ void SharedApproxData::surrogate_model_key(const UShortArray& key)
   if (dataRep)
     dataRep->surrogate_model_key(key);
   else { // default implementation: no key augmentation
-    UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+    UShort2DArray& data_keys = approxDataKeys[origSurrDataIndex];
     // AGGREGATED_MODELS mode uses {HF,LF} order, as does
     // ApproximationInterface::*_add()
     if (key.empty()) // prune second entry, if present, from approxDataKeys
@@ -424,7 +424,7 @@ void SharedApproxData::truth_model_key(const UShortArray& key)
   if (dataRep)
     dataRep->truth_model_key(key);
   else { // default implementation: no key augmentation
-    UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+    UShort2DArray& data_keys = approxDataKeys[origSurrDataIndex];
     // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
     switch  (data_keys.size()) {
     case 0:  data_keys.push_back(key); break;
@@ -434,12 +434,15 @@ void SharedApproxData::truth_model_key(const UShortArray& key)
 }
 
 
+/* These would need to be virtual as well, to prevent publishing keys that
+   have been modified / appended for disambiguating discrepancy data sets.
+   Can their purpose be replaced instead?
 const UShortArray& SharedApproxData::surrogate_model_key() const
 {
   if (dataRep)
     return dataRep->surrogate_model_key();
   else { // default implementation
-    const UShort2DArray& data_keys = approxDataKeys[activeDataIndex];
+    const UShort2DArray& data_keys = approxDataKeys[origSurrDataIndex];
     if (data_keys.size() < 2) {
       Cerr << "Error: no key defined in SharedApproxData::surrogate_model_key()"
 	   << std::endl;
@@ -449,14 +452,17 @@ const UShortArray& SharedApproxData::surrogate_model_key() const
     return data_keys.back();
   }
 }
+*/
 
 
+// THIS SHOULD NOT PROLIFERATE.  OK FOR RIGHT NOW, BUT COULD PUBLISH
+// POTENTIALLY MODIFIED FORMATS TO PARTS OF THE CODE THAT DON'T MODIFY KEYS.
 const UShortArray& SharedApproxData::truth_model_key() const
 {
   if (dataRep)
     return dataRep->truth_model_key();
   else // default implementation
-    return approxDataKeys[activeDataIndex].front();
+    return approxDataKeys[origSurrDataIndex].front();
 }
 
 

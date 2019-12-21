@@ -51,7 +51,7 @@ int TANA3Approximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
   // the number of constraints within current approxData anchor point.
-  return (surrogate_data().anchor()) ? sharedDataRep->numVars+1 : 0;
+  return (modified_surrogate_data().anchor()) ? sharedDataRep->numVars+1 : 0;
 }
 */
 
@@ -66,7 +66,7 @@ void TANA3Approximation::build()
 
   // Sanity checking verifies 1 or 2 points with gradients (Hessians ignored)
 
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
   if (num_pts < 1 || num_pts > 2) {
     Cerr << "Error: wrong number of data points (" << num_pts
@@ -127,7 +127,7 @@ void TANA3Approximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   const Pecos::SDVArray& sdv_array = approx_data.variables_data();
   const Pecos::SDRArray& sdr_array = approx_data.response_data();
 
@@ -272,7 +272,7 @@ Real TANA3Approximation::value(const Variables& vars)
 {
   Real approx_val;
   const RealVector& x = vars.continuous_variables();
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t i, num_v = sharedDataRep->numVars, num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
@@ -329,7 +329,7 @@ Real TANA3Approximation::value(const Variables& vars)
 
 const RealVector& TANA3Approximation::gradient(const Variables& vars)
 {
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)

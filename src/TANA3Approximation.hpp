@@ -126,7 +126,7 @@ inline void TANA3Approximation::clear_current_active_data()
 
   /*
   Pecos::SurrogateData& approx_data
-    = approxData[sharedDataRep->activeDataIndex];
+    = approxData[sharedDataRep->origSurrDataIndex];
   // demote from anchor to regular/previous data
   // (for completeness; TANA no longer uses anchor designation)
   approx_data.clear_anchor_index();

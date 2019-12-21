@@ -1242,9 +1242,10 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel)
   else            uSpaceModel.truth_model_key(lev);
 
   // Notes:
-  // > truth and (modified) surrogate model keys get stored for use in
-  //   distinguishing data set relationships within SurrogateData
-  // > only the truth key gets activated for Model/Interface/Approximation/...
+  // > truth and (modified) surrogate model keys get stored in approxDataKeys
+  //   for use in distinguishing data set relationships within SurrogateData
+  // > only the truth key (which remains unmodified) gets activated for
+  //   Model/Interface/Approximation/...
   activate_key(uSpaceModel.truth_model_key());
 }
 

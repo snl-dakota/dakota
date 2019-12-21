@@ -77,12 +77,12 @@ protected:
   Model& subordinate_model();
 
   void surrogate_model_key(unsigned short model_index,
-			   unsigned short soln_lev_index);
+			   unsigned short soln_lev_index = USHRT_MAX);
   void surrogate_model_key(const UShortArray& key);
   const UShortArray& surrogate_model_key() const;
 
   void truth_model_key(unsigned short model_index,
-		       unsigned short soln_lev_index);
+		       unsigned short soln_lev_index = USHRT_MAX);
   void truth_model_key(const UShortArray& key);
   const UShortArray& truth_model_key() const;
 

@@ -241,6 +241,7 @@ void NonDC3FunctionTrain::push_c3_options()
 
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
+
   shared_data_rep->set_parameter("start_poly_order",
     probDescDB.get_sizet("method.nond.c3function_train.start_order"));
   shared_data_rep->set_parameter("max_poly_order",
@@ -265,6 +266,8 @@ void NonDC3FunctionTrain::push_c3_options()
     probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",
     probDescDB.get_int("method.nond.max_solver_iterations"));
+
+  shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
   int verbosity = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
   shared_data_rep->set_parameter("verbosity", verbosity);
 }

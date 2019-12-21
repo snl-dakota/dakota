@@ -407,6 +407,8 @@ protected:
   void active_model_key(const UShortArray& key);
   void clear_model_keys();
 
+  void link_multilevel_surrogate_data();
+
   Real                 value(const Variables& vars);
   const RealVector&    gradient(const Variables& vars);
   const RealSymMatrix& hessian(const Variables& vars);
@@ -485,7 +487,7 @@ inline void C3Approximation::active_model_key(const UShortArray& key)
 
 inline void C3Approximation::clear_model_keys()
 {
-  // sets approxData keys
+  // clears approxData keys
   Approximation::clear_model_keys();
 
   levelApprox.clear();  levApproxIter = levelApprox.end();

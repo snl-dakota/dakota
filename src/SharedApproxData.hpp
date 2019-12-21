@@ -95,13 +95,13 @@ public:
   /// (SharedPecosApproxData)
   virtual void link_multilevel_surrogate_data();
 
-  /// update approxDataKeys[activeDataIndex] with trailing surrogate key
+  /// update approxDataKeys[origSurrDataIndex] with incoming surrogate key
   virtual void surrogate_model_key(const UShortArray& key);
-  /// return trailing surrogate key from approxDataKeys[activeDataIndex]
-  virtual const UShortArray& surrogate_model_key() const;
-  /// update approxDataKeys[activeDataIndex] with leading truth key
+  /// update approxDataKeys[origSurrDataIndex] with incoming truth key
   virtual void truth_model_key(const UShortArray& key);
-  /// return leading truth key from approxDataKeys[activeDataIndex]
+  // return surrogate key, extracted from approxDataKeys[origSurrDataIndex]
+  //virtual const UShortArray& surrogate_model_key() const;
+  /// return truth key, extracted from approxDataKeys[origSurrDataIndex]
   virtual const UShortArray& truth_model_key() const;
 
   /// builds the shared approximation data from scratch
@@ -169,8 +169,10 @@ public:
   // return the number of variables used in the approximation
   //int num_variables() const;
 
-  /// set activeDataIndex
+  /// set origSurrDataIndex
   void surrogate_data_index(size_t d_index);
+  /// set modSurrDataIndex
+  void modified_surrogate_data_index(size_t d_index);
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -222,8 +224,12 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
-  /// index of active approxData instance 
-  size_t activeDataIndex;
+  /// index of approxData instance corresponding to original SurrogateData
+  size_t origSurrDataIndex;
+  /// index of approxData instance corresponding to modified SurrogateData
+  /// (e.g., discrepancy data from differencing two keys from original data)
+  size_t modSurrDataIndex;
+
   /// set of multi-index model keys (#surrData x #numKeys) to enumerate
   /// when updating SurrogateData instances within each Approximation
   UShort3DArray approxDataKeys;
@@ -290,7 +296,22 @@ inline void SharedApproxData::surrogate_data_index(size_t d_index)
     //       << "surrogate_data_index()." << std::endl;
     //  abort_handler(APPROX_ERROR);
     //}
-    activeDataIndex = d_index;
+    origSurrDataIndex = d_index;
+  }
+}
+
+
+inline void SharedApproxData::modified_surrogate_data_index(size_t d_index)
+{
+  if (dataRep)
+    dataRep->modified_surrogate_data_index(d_index);
+  else { // not virtual: all derived classes use following definition
+    //if (d_index >= approxData.size()) {
+    //  Cerr << "Error: index out of range in SharedApproxData::"
+    //       << "modified_surrogate_data_index()." << std::endl;
+    //  abort_handler(APPROX_ERROR);
+    //}
+    modSurrDataIndex = d_index;
   }
 }
 

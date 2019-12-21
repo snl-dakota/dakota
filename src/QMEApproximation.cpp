@@ -53,7 +53,7 @@ int QMEApproximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
   // the number of constraints within active approxData's anchor point.
-  return (surrogate_data().anchor()) ? sharedDataRep->numVars+1 : 0;
+  return (modified_surrogate_data().anchor()) ? sharedDataRep->numVars+1 : 0;
 }
 */
 
@@ -66,7 +66,7 @@ void QMEApproximation::build()
   // New data is appended via push_back(), so leading data (index 0) is older
   // (previous iterate) and trailing data (index 1) is newer (current iterate)
 
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
   if (num_pts < 1 ) {// || num_pts > 2) {
     Cerr << "Error: wrong number of data points (" << num_pts
@@ -146,7 +146,7 @@ void QMEApproximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
   size_t k=num_pts-1, p=num_pts-2; // indices to current and previous points
 //size_t k=currGradIndex, p=prevGradIndex;
@@ -394,7 +394,7 @@ void QMEApproximation::offset(const RealVector& x, RealVector& s)
 Real QMEApproximation::apxfn_value(const RealVector& x)
 {
   Real approx_val;
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t i, num_v = sharedDataRep->numVars, num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
@@ -479,7 +479,7 @@ Real QMEApproximation::value(const Variables& vars)
 
 const RealVector& QMEApproximation::gradient(const Variables& vars)
 {
-  const Pecos::SurrogateData& approx_data = surrogate_data();
+  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
   size_t num_pts = approx_data.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)

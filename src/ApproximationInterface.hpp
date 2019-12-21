@@ -296,6 +296,8 @@ inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
 {
   //sharedData.surrogate_data_index(d_index); // if also passed
   sharedData.surrogate_model_key(key);
+  // Note: Model's surrModelKey updates approxDataKeys, but may not be 1:1
+  //       (approxDataKeys ensures unique data groupings among key pairings)
 }
 
 
@@ -309,7 +311,7 @@ inline void ApproximationInterface::truth_model_key(const UShortArray& key)
 /** Restore active key to leading key for first approxData
     (only updates model key if needed). */
 inline void ApproximationInterface::restore_data_key()
-{ active_model_key(sharedData.truth_model_key()); }
+{ active_model_key(sharedData.truth_model_key()); } // *** breaks encapsulation between basic and paired/tuple keys, although not yet a bug (truth keys are not currently modified)
 
 
 inline void ApproximationInterface::

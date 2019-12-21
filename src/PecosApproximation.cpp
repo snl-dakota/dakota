@@ -78,8 +78,8 @@ PecosApproximation(ProblemDescDB& problem_db,
 
 void PecosApproximation::link_multilevel_surrogate_data()
 {
-  // Manage {surr,modSurr}Data instances (approxDataKeys and activeDataIndex
-  // are managed in SharedPecosApproxData).
+  // Manage {surr,modSurr}Data instances (approxDataKeys and original/modified
+  // approxData indices are managed in SharedPecosApproxData).
   // > SurrogateModel::aggregate_response() uses order of HF,LF
   // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
   //   data to each approxData instance in turn.

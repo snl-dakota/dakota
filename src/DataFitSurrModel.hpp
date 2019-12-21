@@ -136,13 +136,13 @@ protected:
   /// return this model instance
   Model& surrogate_model();
   void surrogate_model_key(unsigned short lf_model_index,
-			   unsigned short lf_soln_lev_index);
+			   unsigned short lf_soln_lev_index = USHRT_MAX);
   void surrogate_model_key(const UShortArray& lf_key);
 
   /// return actualModel
   Model& truth_model();
   void truth_model_key(unsigned short hf_model_index,
-		       unsigned short hf_soln_lev_index);
+		       unsigned short hf_soln_lev_index = USHRT_MAX);
   void truth_model_key(const UShortArray& hf_key);
 
   /// return actualModel (and optionally its sub-models)
