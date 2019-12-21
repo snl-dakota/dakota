@@ -159,7 +159,7 @@ void SharedC3ApproxData::link_multilevel_surrogate_data()
   // Note: {surr,modSurr}Data instances are managed in PecosApproximation::
   //       link_multilevel_surrogate_data()
 
-  switch (expConfigOptions.discrepancyType) {
+  switch (discrepancyType) {
   case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
     // expand approxDataKeys from default for discrepancy management:
     approxDataKeys.resize(2); // for surrData and modSurrData

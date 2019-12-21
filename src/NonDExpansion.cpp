@@ -1220,12 +1220,12 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel)
   }
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
-    UShortArray surr_key(truth_key);
-    --surr_key.back();// decrement trailing index (lev if multilevel, else form)
+    UShortArray surr_key(truth_key); --surr_key.back();
     uSpaceModel.surrogate_model_key(surr_key);
   }
   activate_key(truth_key);
   */
+
 
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0) {
@@ -1247,6 +1247,25 @@ configure_indices(unsigned short lev, unsigned short form, bool multilevel)
   // > only the truth key (which remains unmodified) gets activated for
   //   Model/Interface/Approximation/...
   activate_key(uSpaceModel.truth_model_key());
+
+
+  /* Standardize on DiscrepancyCalculator::modified_lf_key()
+
+  if (multilevel) uSpaceModel.truth_model_key(form, lev);
+  else            uSpaceModel.truth_model_key(lev);
+
+  const UShortArray& hf_key = uSpaceModel.truth_model_key();
+  UShortArray lf_key; DiscrepancyCalculator::modified_lf_key(hf_key, lf_key);
+  uSpaceModel.surrogate_model_key(lf_key); // includes empty key
+
+  // assume bottom-up sweep through levels (avoid redundant mode updates)
+  if (lev == 0)
+    bypass_surrogate_mode();
+  else if (multilevDiscrepEmulation == DISTINCT_EMULATION)
+    aggregated_models_mode();
+
+  activate_key(hf_key);
+  */
 }
 
 

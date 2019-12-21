@@ -150,6 +150,11 @@ protected:
   /// C3 FT can support CV over polynomial order in addition to adapt_rank
   bool crossVal;       // inactive placeholder for now
 
+  /// type of discrepancy calculation: additive, multiplicative, or both
+  short combineType;
+  /// type of multilevel discrepancy emulation: distinct or recursive
+  short discrepancyType;
+
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
   //BitArray ranVarsKey; // stored locally rather than passed to library (Pecos)
@@ -216,9 +221,9 @@ inline void SharedC3ApproxData::set_parameter(String var, bool val)
 
 inline void SharedC3ApproxData::set_parameter(String var, short val)
 {
-  if (var.compare("regress_type") == 0) regressType = val;
-  else if (var.compare("discrepancy_type") == 0)
-    expConfigOptions.discrepancyType = val;
+  if      (var.compare("regress_type")     == 0)     regressType = val;
+  else if (var.compare("discrepancy_type") == 0) discrepancyType = val;
+  else if (var.compare("combine_type")     == 0)     combineType = val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
