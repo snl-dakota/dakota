@@ -1572,8 +1572,8 @@ store_parameters_for_discrete_state_set_real(const size_t start_rv,
     const String &location,
     Pecos::MarginalsCorrDistribution *mvd_rep) {
 #ifdef DAKOTA_HAVE_HDF5
-  // pecos rv type: Pecos::DISCRETE_SET_INT
-  // parameters: Pecos::DSI_VALUES
+  // pecos rv type: Pecos::DISCRETE_SET_REAL
+  // parameters: Pecos::DSR_VALUES
   RealSetArray rsa;
   mvd_rep->pull_parameters(start_rv, num_rv, Pecos::DSR_VALUES, rsa);
   // Because h5py barfs on vlen datasets of vlen strings, we have to
@@ -1608,7 +1608,6 @@ void EvaluationStore::store_parameters_for_domain(const String &root_group,
     const UShortMultiArrayConstView &types,  const SizetMultiArrayConstView &ids,
     const StringMultiArrayView &labels, Pecos::MarginalsCorrDistribution *mvd_rep) {
 #ifdef DAKOTA_HAVE_HDF5
-
   String scale_root = create_scale_root(root_group); // root_group already has
                                                      // variable_parameters
   // The loop below chunks up the set of variables by Dakota type (e.g. normal_uncertain)
