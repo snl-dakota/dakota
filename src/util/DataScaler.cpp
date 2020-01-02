@@ -37,7 +37,7 @@ NormalizationScaler::NormalizationScaler(){}
 NormalizationScaler::~NormalizationScaler(){}
 
 NormalizationScaler::NormalizationScaler(const MatrixXd &features, 
-                                         const bool mean_normalization, const Real norm_factor) {
+                                         const bool mean_normalization, const double norm_factor) {
 
   const int num_features = features.rows();
   const int num_samples = features.cols();
@@ -46,7 +46,7 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
   scalerFeaturesScaleFactors.resize(num_features);
   scaledFeatures.resize(num_features,num_samples);
 
-  Real min_val, max_val, mean_val;
+  double min_val, max_val, mean_val;
   
   for (int i = 0; i < num_features; i++) {
     min_val = features.row(i).minCoeff();
@@ -69,7 +69,7 @@ StandardizationScaler::StandardizationScaler(){}
 StandardizationScaler::~StandardizationScaler(){}
 
 StandardizationScaler::StandardizationScaler(const MatrixXd &features, 
-                                             const Real norm_factor) {
+                                             const double norm_factor) {
 
   const int num_features = features.rows();
   const int num_samples = features.cols();
@@ -78,7 +78,7 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
   scalerFeaturesScaleFactors.resize(num_features);
   scaledFeatures.resize(num_features,num_samples);
 
-  Real mean_val, var_val;
+  double mean_val, var_val;
   
   for (int i = 0; i < num_features; i++) {
     mean_val = features.row(i).mean();

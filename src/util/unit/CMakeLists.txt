@@ -18,6 +18,8 @@ dakota_add_unit_test(NAME DataScalerTest
   )
 #target_include_directories(DataScalerTest PRIVATE
 #  "${CMAKE_CURRENT_SOURCE_DIR}/.." "${Teuchos_INCLUDE_DIRS}")
+
+target_include_directories(DataScalerTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_link_libraries(DataScalerTest PRIVATE dakota_util ${Teuchos_LIBRARIES})
 
 # Add a single target for all copied files

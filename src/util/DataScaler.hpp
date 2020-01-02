@@ -9,7 +9,6 @@
 #ifndef DAKOTA_UTIL_DATA_SCALER_HPP
 #define DAKOTA_UTIL_DATA_SCALER_HPP
 
-#include "util_data_types.hpp"
 #include "Eigen/Dense"
 
 using Eigen::MatrixXd;
@@ -116,7 +115,7 @@ class NormalizationScaler: public DataScaler {
  *                               Has a default value of 1.0 .
  */
     NormalizationScaler(const MatrixXd &features, const bool mean_normalization, 
-                        const Real norm_factor = 1.0);
+                        const double norm_factor = 1.0);
 };
 
 /**
@@ -141,7 +140,7 @@ class StandardizationScaler: public DataScaler {
  * \param[in] norm_factor        Optional scaling factor applied to each feature.
  *                               Has a default value of 1.0 .
  */
-    StandardizationScaler(const MatrixXd &features, const Real norm_factor = 1.0);
+    StandardizationScaler(const MatrixXd &features, const double norm_factor = 1.0);
 };
 
 /**

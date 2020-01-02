@@ -24,45 +24,6 @@ using util::StandardizationScaler;
 
 namespace surrogates {
 
-/* need to add in size checks */
-
-void GaussianProcess::vector_teuchos_to_eigen(const RealVector &x,
-                                              VectorXd &y) {
-  int N = x.length();
-  for (int i = 0; i < N; i++)
-    y(i) = x(i);
-}
-
-void GaussianProcess::matrix_teuchos_to_eigen(const RealMatrix &A,
-                                              MatrixXd &B) {
-  int M = A.numRows();
-  int N = A.numCols();
-  for (int i = 0; i < M; i++) {
-    for (int j = 0; j < N; j++) {
-      B(i,j) = A(i,j);
-    }
-  }
-}
-
-void GaussianProcess::vector_eigen_to_teuchos(const VectorXd &x,
-                                              RealVector &y) {
-  int N = x.size();
-  for (int i = 0; i < N; i++)
-    y(i) = x(i);
-}
-
-void GaussianProcess::matrix_eigen_to_teuchos(const MatrixXd &A,
-                                              RealMatrix &B) {
-  int M = A.rows();
-  int N = A.cols();
-  for (int i = 0; i < M; i++) {
-    for (int j = 0; j < N; j++) {
-      B(i,j) = A(i,j);
-    }
-  }
-}
-
-
 GaussianProcess::GaussianProcess(){}
 GaussianProcess::~GaussianProcess(){}
 
@@ -179,8 +140,8 @@ void GaussianProcess::compute_Gram_pred(const MatrixXd &samples, MatrixXd &Gram_
 
 }
 
-GaussianProcess::GaussianProcess(const RealMatrix &samples, 
-                                 const RealMatrix &response, 
+GaussianProcess::GaussianProcess(const MatrixXd &samples, 
+                                 const MatrixXd &response, 
                                  const VectorXd &sigma_bounds,
                                  const MatrixXd &length_scale_bounds,
                                  const std::string scaler_type,
@@ -188,23 +149,19 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
                                  const double nugget_val,
                                  const int seed) {
 
-  MatrixXd samplesEigen;
-  numVariables = samples.numRows();
-  numSamples = samples.numCols();
-  targetValues.resize(numSamples,1);
-  samplesEigen.resize(numVariables,numSamples);
-  matrix_teuchos_to_eigen(response,targetValues);
-  matrix_teuchos_to_eigen(samples,samplesEigen);
+  numVariables = samples.rows();
+  numSamples = samples.cols();
+  targetValues = response;
   
   /* Scale the data */
   if (scaler_type == "mean normalization")
-    dataScaler = std::make_shared<NormalizationScaler>(samplesEigen,true);
+    dataScaler = std::make_shared<NormalizationScaler>(samples,true);
   else if (scaler_type == "min-max normalization")
-    dataScaler = std::make_shared<NormalizationScaler>(samplesEigen,false);
+    dataScaler = std::make_shared<NormalizationScaler>(samples,false);
   if (scaler_type == "standardization")
-    dataScaler = std::make_shared<StandardizationScaler>(samplesEigen);
+    dataScaler = std::make_shared<StandardizationScaler>(samples);
   else if (scaler_type == "none" )
-    dataScaler = std::make_shared<NoScaler>(samplesEigen);
+    dataScaler = std::make_shared<NoScaler>(samples);
   else
     throw(std::string("Invalid scaler type"));
 
@@ -312,18 +269,15 @@ GaussianProcess::GaussianProcess(const RealMatrix &samples,
 
 }
 
-void GaussianProcess::value(const RealMatrix &samples, RealMatrix &approx_values) {
-  const int numPredictionPts = samples.numCols();
-  if (numPredictionPts != approx_values.numRows()) {
+void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
+  const int numPredictionPts = samples.cols();
+  if (numPredictionPts != approx_values.rows()) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
           " Number of samples and approximation sizes do not match"));
   }
 
   /* scale the samples (prediction points) */
-  MatrixXd samplesEigen;
-  samplesEigen.resize(numVariables,numPredictionPts);
-  matrix_teuchos_to_eigen(samples,samplesEigen);
-  MatrixXd scaled_pred_pts = dataScaler->scaleSamples(samplesEigen);
+  MatrixXd scaled_pred_pts = dataScaler->scaleSamples(samples);
 
   /* compute the Gram matrix and its Cholesky factorization */
   compute_Gram(false);
@@ -337,42 +291,19 @@ void GaussianProcess::value(const RealMatrix &samples, RealMatrix &approx_values
   chol_solve_pred_mat = CholFact.solve(pred_mat.transpose());
 
   /* value */
-  MatrixXd approx_values_Eigen(numPredictionPts,1);
-  approx_values_Eigen = pred_mat*chol_solve_target;
+  approx_values = pred_mat*chol_solve_target;
 
   /* compute the covariance matrix and standard deviation */
-  MatrixXd Gram_pred, posterior_cov_Eigen;
-  posteriorCov.reshape(numPredictionPts,numPredictionPts);
-  posterior_cov_Eigen.resize(numPredictionPts,numPredictionPts);
-
+  MatrixXd Gram_pred;
   compute_Gram_pred(scaled_pred_pts,Gram_pred);
-  posterior_cov_Eigen = Gram_pred - pred_mat*chol_solve_pred_mat;
+  posteriorCov = Gram_pred - pred_mat*chol_solve_pred_mat;
 
   posteriorStdDev.resize(numPredictionPts);
   for (int i = 0; i < numPredictionPts; i++) {
-    posteriorStdDev(i) = sqrt(posterior_cov_Eigen(i,i));
+    posteriorStdDev(i) = sqrt(posteriorCov(i,i));
   }
 
-  /* convert back to Teuchos */
-  matrix_eigen_to_teuchos(approx_values_Eigen,approx_values);
-  matrix_eigen_to_teuchos(posterior_cov_Eigen,posteriorCov);
-
 }
-
-/*
-void GaussianProcess::gradient(const RealMatrix &samples, int qoi, RealMatrix &gradients) {
-  throw(std::string("This Function type does not provide gradients"));
-}
-
-void GaussianProcess::jacobian(const RealVector &sample, RealMatrix &jacobian) {
-  throw(std::string("This Function type does not provide a jacobian"));
-}
-
-void GaussianProcess::hessian(const RealMatrix &samples, int qoi, RealMatrixList &hessians) {
-  throw(std::string("This Function type does not provide hessians"));
-}
-*/
-
 
 }  // namespace surrogates
 }  // namespace dakota

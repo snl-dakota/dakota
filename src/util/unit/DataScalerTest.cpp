@@ -19,9 +19,7 @@
 #include <boost/accumulators/statistics.hpp>
 #include <math.h>
 #include <Teuchos_UnitTestHarness.hpp>
-#include "util_data_types.hpp"
 #include "DataScaler.hpp"
-#include "Eigen/Dense"
 
 ///////////////
 // Namespace //
@@ -41,7 +39,7 @@ void error(const std::string msg)
   throw(std::runtime_error(msg));
 }
 
-bool matrix_equals(const MatrixXd &A, const MatrixXd &B, Real tol)
+bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
 {
   if ( (A.rows()!=B.rows()) || (A.cols()!=B.cols())){
     std::cout << A.rows() << "," << A.cols() << std::endl;

@@ -21,12 +21,6 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 namespace dakota {
-
-// BMA TODO: Decide how we want to handle cross-namespace references
-// probably don't want these in a header?
-using util::RealMatrix;
-using util::RealVector;
-
 namespace surrogates {
 
 /**
@@ -73,7 +67,7 @@ public:
  * \param[in] nugget_val Value of the Gaussian process's nugget - a small positive constant
  * \param[in] seed Seed for the random number generator. This affects the initial guesses.
  */
-  GaussianProcess(const RealMatrix &samples, const RealMatrix &response,
+  GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
                   const VectorXd &sigma_bounds,
                   const MatrixXd &length_scale_bounds,
                   const std::string scaler_type = "mean_normalization",
@@ -85,14 +79,14 @@ public:
  *  passed to value.
  *  \returns Vector of standard deviations for the prediction points.
 */
-  RealVector get_posterior_std_dev() {return posteriorStdDev;}
+  VectorXd get_posterior_std_dev() {return posteriorStdDev;}
 
 /**
  *  \brief Get the covariance matrix for a set of prediction points
  *  passed to value.
  *  \returns Covariance matrix for the prediction points.
 */
-  RealMatrix get_posterior_covariance() {return posteriorCov;}
+  MatrixXd get_posterior_covariance() {return posteriorCov;}
 
 /**
  *  \brief Get the vector of log-space hyperparameters (theta).
@@ -120,16 +114,7 @@ public:
  *  \param[out] approx_values Mean of the Gaussian process at the prediction
  *  points.
 */
-  void value(const RealMatrix &samples, RealMatrix &approx_values);
-
-  /// Convert a Teuchos vector to an Eigen vector.
-  void vector_teuchos_to_eigen(const RealVector &x, VectorXd &y);
-  /// Convert a Teuchos matrix to an Eigen matrix.
-  void matrix_teuchos_to_eigen(const RealMatrix &A, MatrixXd &B);
-  /// Convert an Eigen vector to a Teuchos vector.
-  void vector_eigen_to_teuchos(const VectorXd &x, RealVector &y);
-  /// Convert an Eigen matrix to a Teuchos matrix.
-  void matrix_eigen_to_teuchos(const MatrixXd &A, RealMatrix &B);
+  void value(const MatrixXd &samples, MatrixXd &approx_values);
 
 private:
 
@@ -166,15 +151,11 @@ private:
   /// Pivoted Cholesky factorization.
   Eigen::LDLT<MatrixXd> CholFact;
 
-  /// Posterior covariance matrix for prediction points (Teuchos).
-  RealMatrix posteriorCov;
-  /// Posterior covariance matrix for prediction points (Eigen).
-  MatrixXd posteriorCovEigen;
+  /// Posterior covariance matrix for prediction points.
+  MatrixXd posteriorCov;
 
-  /// Vector of posterior standard deviation at prediction points (Teuchos).
-  RealVector posteriorStdDev;
-  /// Vector of posterior standard deviation at prediction points (Eigen).
-  VectorXd posteriorStdDevEigen;
+  /// Vector of posterior standard deviation at prediction points.
+  VectorXd posteriorStdDev;
 
   /// DataScaler for the surrogate data.
   std::shared_ptr<util::DataScaler> dataScaler;

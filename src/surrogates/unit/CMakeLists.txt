@@ -18,6 +18,7 @@ dakota_add_unit_test(NAME gp_test
   )
 
 # BMA NOTE: I think we only need state the immediate deps? So no dakota_util
+target_include_directories(gp_test PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_link_libraries(gp_test PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
 
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/rol_params.xml"
