@@ -30,6 +30,8 @@
 using namespace dakota::util;
 using namespace Eigen;
 
+namespace{
+
 ///////////////
 // Utilities //
 ///////////////
@@ -260,4 +262,5 @@ TEUCHOS_UNIT_TEST(surrogates, NoScaler_getScaledFeatures_TestDefault)
   //std::cout << matrix_actual << std::endl;
 
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
+}
 }

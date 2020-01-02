@@ -16,12 +16,9 @@ set(surrogates_unit_test_copied_files)
 dakota_add_unit_test(NAME gp_test
   SOURCES teuchos_unit_test_driver.cpp gp_approximation_ts.cpp
   )
-target_include_directories(gp_test PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}/.." "${Teuchos_INCLUDE_DIRS}")
-target_compile_definitions(gp_test PRIVATE
-  "HAVE_EIGEN" "EIGEN_MPL2_ONLY")
+
 # BMA NOTE: I think we only need state the immediate deps? So no dakota_util
-target_link_libraries(gp_test dakota_surrogates ${Teuchos_LIBRARIES})
+target_link_libraries(gp_test PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
 
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/rol_params.xml"
   "${CMAKE_CURRENT_BINARY_DIR}/rol_params.xml"
