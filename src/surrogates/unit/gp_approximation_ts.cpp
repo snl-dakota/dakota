@@ -64,9 +64,9 @@ void populateSamplesFromFile(std::string fileName, std::vector<MatrixXd> &S, int
   }
 
   for (int k = 0; k < num_datasets; k++) {
-    S[k].resize(num_vars,num_samples);
-    for (int i = 0; i < num_vars; i++) {
-      for (int j = 0; j < num_samples; j++) {
+    S[k].resize(num_samples,num_vars);
+    for (int i = 0; i < num_samples; i++) {
+      for (int j = 0; j < num_vars; j++) {
         in >> S[k](i,j);
       }
     }
@@ -88,13 +88,13 @@ int test_gp(Real atol){
   int gp_seed = 42;
   double nugget = 1.0e-12;
 
-  // dim x num_samples
-  MatrixXd xs_u(1,7);
+  // num_samples x num_features
+  MatrixXd xs_u(7,1);
   // num_samples x num_qoi
   MatrixXd response(7,1);
-  // dim x num_samples
-  MatrixXd eval_pts(1,6);
-  // num_samples x num_qoi
+  // num_eval_pts x num_features
+  MatrixXd eval_pts(6,1);
+  // num_eval_pts x num_qoi
   MatrixXd pred(6,1);
 
   xs_u << 0.05536604, 0.28730518, 0.30391231, 0.40768703,
@@ -219,11 +219,13 @@ int test_gp(Real atol){
   populateResponsesFromFile(responses_fname,responses_list,num_datasets,num_samples);
 
   /*four evaluation points for the test */
-  MatrixXd eval_pts_2D(2,4);
+  MatrixXd eval_pts_2D(4,2);
   MatrixXd pred_2D(4,1);
 
-  eval_pts_2D << 0.2, -0.3, 0.4, -0.25,
-                 0.45, -0.7, -0.1, 0.33;
+  eval_pts_2D << 0.2, 0.45,
+                -0.3, -0.7,
+                 0.4, -0.1,
+                -0.25, 0.33;
 
   MatrixXd gold_value_2D(4,1);
   VectorXd gold_std_2D(4);

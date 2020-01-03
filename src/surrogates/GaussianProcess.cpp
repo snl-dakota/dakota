@@ -54,12 +54,12 @@ void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int nu
 
 
 void GaussianProcess::compute_prediction_matrix(const MatrixXd &pred_pts, MatrixXd &pred_mat) {
-  const int numPredictionPts = pred_pts.cols();
-  pred_mat.resize(numPredictionPts, numSamples);
+  const int numPredictionPts = pred_pts.rows();
+  pred_mat.resize(numPredictionPts,numSamples);
   MatrixXd scaled_samples = dataScaler->getScaledFeatures();
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
-      pred_mat(i,j) = sq_exp_cov_pred(pred_pts.col(i),scaled_samples.col(j));
+      pred_mat(i,j) = sq_exp_cov_pred(pred_pts.row(i),scaled_samples.row(j));
     }
   }
 }
@@ -128,11 +128,11 @@ void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, Vector
 
 
 void GaussianProcess::compute_Gram_pred(const MatrixXd &samples, MatrixXd &Gram_pred) {
-  const int numPredictionPts = samples.cols();
+  const int numPredictionPts = samples.rows();
   Gram_pred.resize(numPredictionPts,numPredictionPts);
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = i; j < numPredictionPts; j++) {
-      Gram_pred(i,j) = sq_exp_cov_pred(samples.col(i),samples.col(j));
+      Gram_pred(i,j) = sq_exp_cov_pred(samples.row(i),samples.row(j));
       if (i != j)
         Gram_pred(j,i) = Gram_pred(i,j);
     }
@@ -149,8 +149,8 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
                                  const double nugget_val,
                                  const int seed) {
 
-  numVariables = samples.rows();
-  numSamples = samples.cols();
+  numSamples = samples.rows();
+  numVariables = samples.cols();
   targetValues = response;
   
   /* Scale the data */
@@ -186,7 +186,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
     componentwiseDistances[k].resize(numSamples,numSamples);
     for (int i = 0; i < numSamples; i++) {
       for (int j = i; j < numSamples; j++) {
-        componentwiseDistances[k](i,j) = std::pow(scaled_samples(k,i) - scaled_samples(k,j), 2.0);
+        componentwiseDistances[k](i,j) = std::pow(scaled_samples(i,k) - scaled_samples(j,k), 2.0);
         if (i != j)
           componentwiseDistances[k](j,i) = componentwiseDistances[k](i,j);
       }
@@ -270,7 +270,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 }
 
 void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
-  const int numPredictionPts = samples.cols();
+  const int numPredictionPts = samples.rows();
   if (numPredictionPts != approx_values.rows()) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
           " Number of samples and approximation sizes do not match"));
