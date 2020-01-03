@@ -21,7 +21,7 @@ void error(const std::string msg)
   throw(std::runtime_error(msg));
 }
 
-bool allclose(const MatrixXd &A, const MatrixXd &B, Real tol){
+bool allclose(const MatrixXd &A, const MatrixXd &B, double tol){
   if ( (A.rows()!=B.rows()) || (A.cols()!=B.cols())){
     std::cout << A.rows() << "," << A.cols() << std::endl;
     std::cout << B.rows() << "," << B.cols() << std::endl;
@@ -36,7 +36,7 @@ bool allclose(const MatrixXd &A, const MatrixXd &B, Real tol){
   return true;
 }
 
-void populateResponsesFromFile(std::string fileName, std::vector<VectorXd> &R, int num_datasets, int num_samples) {
+void populateVectorsFromFile(std::string fileName, std::vector<VectorXd> &R, int num_datasets, int num_samples) {
 
   R.resize(num_datasets);
   std::ifstream in(fileName,std::ios::in);
@@ -54,7 +54,7 @@ void populateResponsesFromFile(std::string fileName, std::vector<VectorXd> &R, i
   in.close();
 
 }
-void populateSamplesFromFile(std::string fileName, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples) {
+void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples) {
 
   S.resize(num_datasets);
   std::ifstream in(fileName,std::ios::in);
@@ -75,10 +75,10 @@ void populateSamplesFromFile(std::string fileName, std::vector<MatrixXd> &S, int
   in.close();
 }
 
-int test_gp(Real atol){
+int test_gp(double atol){
 
   // print output
-  bool print_output = false;
+  bool print_output = true;
 
   // gp parameters
   int num_qoi = 1; // only using 1 for now
@@ -212,11 +212,11 @@ int test_gp(Real atol){
   //std::string responses_fname = "gp_test_data/rosenbrock_64.txt";
   //std::string responses_fname = "gp_test_data/shubert_64.txt";
 
-  std::vector<VectorXd> responses_list;
+  std::vector<MatrixXd> responses_list;
   std::vector<MatrixXd> samples_list;
 
-  populateSamplesFromFile(samples_fname,samples_list,num_datasets,num_vars,num_samples);
-  populateResponsesFromFile(responses_fname,responses_list,num_datasets,num_samples);
+  populateMatricesFromFile(samples_fname,samples_list,num_datasets,num_vars,num_samples);
+  populateMatricesFromFile(responses_fname,responses_list,num_datasets,num_qoi,num_samples);
 
   /*four evaluation points for the test */
   MatrixXd eval_pts_2D(4,2);
@@ -284,7 +284,7 @@ int test_gp(Real atol){
 \brief Create a 1D GP and 2D from sample data and compare their means, 
        standard deviations, and covariance matrices
 */
-TEUCHOS_UNIT_TEST(dry_run, test_gp)
+TEUCHOS_UNIT_TEST(surrogates, gaussian_process)
 {
   TEST_ASSERT(!test_gp(5e-7));
 }

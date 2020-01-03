@@ -98,7 +98,7 @@ double variance(VectorXd vec)
 // Unit tests //
 ////////////////
 
-TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNormalizationTrue)
+TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizationTrue)
 {
   const double norm_factor = 1.0;
   NormalizationScaler ns(create_single_feature_matrix(), true, norm_factor);
@@ -115,7 +115,7 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNorm
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalse)
+TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalse)
 {
   const double norm_factor = 1.0;
   NormalizationScaler ns(create_single_feature_matrix(), false, norm_factor);
@@ -132,7 +132,7 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNorm
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalseWithMultipleSamples)
+TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalseWithMultipleSamples)
 {
   const double norm_factor = 1.0;
   NormalizationScaler ns(create_multiple_features_matrix(), false, norm_factor);
@@ -158,7 +158,7 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestMeanNorm
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestNormFactor)
+TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestNormFactor)
 {
   const double norm_factor = 2.0;
   NormalizationScaler ns(create_single_feature_matrix(), true, norm_factor);
@@ -175,7 +175,7 @@ TEUCHOS_UNIT_TEST(surrogates, NormalizationScaler_getScaledFeatures_TestNormFact
   TEST_ASSERT(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestDefault)
+TEUCHOS_UNIT_TEST(util, StandardizationScaler_getScaledFeatures_TestDefault)
 {
   StandardizationScaler ss(create_single_feature_matrix());
 
@@ -196,7 +196,7 @@ TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestDefaul
   TEST_ASSERT(std::abs(variance(matrix_actual.col(0)) - UNIT_VARIANCE) < 1.0e-14);
 }
 
-TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestMultipleSamples)
+TEUCHOS_UNIT_TEST(util, StandardizationScaler_getScaledFeatures_TestMultipleSamples)
 {
   StandardizationScaler ss(create_multiple_features_matrix());
 
@@ -228,7 +228,7 @@ TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_getScaledFeatures_TestMultip
   TEST_ASSERT(std::abs(variance(matrix_actual.col(2)) - UNIT_VARIANCE) < 1.0e-14);
 }
 
-TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_scaleSamples)
+TEUCHOS_UNIT_TEST(util, StandardizationScaler_scaleSamples)
 {
   StandardizationScaler ss(create_multiple_features_matrix());
 
@@ -261,7 +261,7 @@ TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_scaleSamples)
   TEST_ASSERT(std::abs(variance(matrix_actual_scaled.col(2)) - UNIT_VARIANCE) < 1.0e-14);
 }
 
-TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_scaleSamples_wrongSize)
+TEUCHOS_UNIT_TEST(util, StandardizationScaler_scaleSamples_wrongSize)
 {
   StandardizationScaler ss(create_multiple_features_matrix());
 
@@ -274,7 +274,7 @@ TEUCHOS_UNIT_TEST(surrogates, StandardizationScaler_scaleSamples_wrongSize)
   TEST_THROW(ss.scaleSamples(wrong_size_matrix), std::runtime_error);
 }
 
-TEUCHOS_UNIT_TEST(surrogates, NoScaler_getScaledFeatures_TestDefault)
+TEUCHOS_UNIT_TEST(util, NoScaler_getScaledFeatures_TestDefault)
 {
   NoScaler ns(create_single_feature_matrix());
 

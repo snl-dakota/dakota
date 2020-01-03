@@ -10,15 +10,8 @@
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
 #include <memory>
-
-#include "util_data_types.hpp"
 #include "DataScaler.hpp"
-
-#include "Eigen/Dense"
 #include "Eigen/StdVector"
-
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
 
 namespace dakota {
 namespace surrogates {

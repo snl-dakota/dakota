@@ -13,13 +13,13 @@ include(DakotaUnitTest)
 # List of test files to copy into this directory
 set(surrogates_unit_test_copied_files)
 
-dakota_add_unit_test(NAME gp_test
+dakota_add_unit_test(NAME GaussianProcessTest
   SOURCES teuchos_unit_test_driver.cpp gp_approximation_ts.cpp
   )
 
 # BMA NOTE: I think we only need state the immediate deps? So no dakota_util
-target_include_directories(gp_test PRIVATE "${Teuchos_INCLUDE_DIRS}")
-target_link_libraries(gp_test PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
+target_include_directories(GaussianProcessTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
+target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
 
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/rol_params.xml"
   "${CMAKE_CURRENT_BINARY_DIR}/rol_params.xml"
