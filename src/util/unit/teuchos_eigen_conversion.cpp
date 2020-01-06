@@ -101,7 +101,7 @@ TEUCHOS_UNIT_TEST(util, matrix_eigen_to_teuchos)
   int num_rows = eigen_mat.rows();
   int num_cols = eigen_mat.cols();
 
-  RealMatrix teuchos_mat(Teuchos::View,eigen_mat.data(),
+  RealMatrix teuchos_mat(Teuchos::Copy,eigen_mat.data(),
              num_rows,num_rows,num_cols);
 
   /*
@@ -140,7 +140,7 @@ TEUCHOS_UNIT_TEST(util, vector_eigen_to_teuchos)
 
   int num_rows = eigen_vec.rows();
 
-  RealVector teuchos_vec(Teuchos::View,eigen_vec.data(),num_rows);
+  RealVector teuchos_vec(Teuchos::Copy,eigen_vec.data(),num_rows);
 
   /*
   std::cout << "\n";

@@ -23,7 +23,7 @@ add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
 #  "${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3")
 
 # BMA TODO: CMake best practice for PUBLIC?
-target_include_directories(dakota_surrogates PUBLIC
+target_include_directories(dakota_surrogates INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}"
   PRIVATE
   "${ROL_INCLUDE_DIRS}"

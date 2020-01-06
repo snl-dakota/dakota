@@ -16,7 +16,6 @@ set(util_sources
 
 set(util_headers
   DataScaler.hpp
-  util_data_types.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})
@@ -36,7 +35,7 @@ endif()
 #target_include_directories(dakota_util PUBLIC
 #  ${Teuchos_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_include_directories(dakota_util PUBLIC
+target_include_directories(dakota_util INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_compile_definitions(dakota_util PUBLIC
