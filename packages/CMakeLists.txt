@@ -316,8 +316,14 @@ if(HAVE_MUQ)
     CMAKE_CACHE_ARGS
     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/external/muq2
     # MUQ TPLs
+    ##-DMUQ_BOOST_DIR:STRING=${Boost_INCLUDE_DIR}/..
+    # NOTE: By not setting MUQ_BOOST_DIR, MUQ should use the standard
+    # CMake probe to find Boost. That probe should respect
+    # Boost_INCLUDEDIR and Boost_LIBRARYDIR, so we forward it the
+    # settings found by Dakota's Boost probe.
     # BMA TODO: Generalize this (not currently robust)
-    -DMUQ_BOOST_DIR:STRING=${Boost_INCLUDE_DIR}/..
+    -DBOOST_INCLUDEDIR:PATH=${Boost_INCLUDE_DIRS}
+    -DBOOST_LIBRARYDIR:PATH=${Boost_LIBRARY_DIRS}
     # BMA TODO: Flex this to allow external Eigen
     -DMUQ_EIGEN3_DIR:STRING=${CMAKE_CURRENT_SOURCE_DIR}/external/eigen3/include/eigen3
     # BMA TODO: Generalize this (not currently robust)
