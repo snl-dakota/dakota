@@ -220,6 +220,7 @@ if(DAKOTA_MODULE_UTIL)
 endif()
 if(DAKOTA_MODULE_SURROGATES)
   add_subdirectory(src/surrogates)
+  add_definitions("-DHAVE_DAKOTA_SURROGATES")
 endif()
 
 if(DAKOTA_MODULE_DAKOTA)

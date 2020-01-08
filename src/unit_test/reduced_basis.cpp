@@ -365,3 +365,63 @@ TEUCHOS_UNIT_TEST(reduced_basis, truncations)
 
 }
 
+//----------------------------------------------------------------
+
+#ifdef HAVE_DAKOTA_SURROGATES
+
+#include "GaussianProcess.hpp"
+
+// test construction and evaluation of a GP surrogate from data
+// matrices; one approximation per response
+TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module0)
+{
+  // Set things up to correspond to the unit test in
+  // src/surrogates/unit/gp_approximation_ts.cpp
+
+  size_t num_vars = 1, num_samples = 7;
+  
+  // training data
+  RealMatrix vars(num_vars, num_samples);
+  RealVector resp(num_samples);
+  
+  vars(0,0) = 0.05536604;
+  vars(0,1) = 0.28730518;
+  vars(0,2) = 0.30391231;
+  vars(0,3) = 0.40768703;
+  vars(0,4) = 0.45035059;
+  vars(0,5) = 0.52639952;
+  vars(0,6) = 0.78853488;
+
+  resp(0) = -0.15149429;
+  resp(1) = -0.19689361;
+  resp(2) = -0.17323105;
+  resp(3) = -0.02379026;
+  resp(4) =  0.02013445;
+  resp(5) =  0.05011702;
+  resp(6) = -0.11678312;
+  
+
+  // configure the surrogate
+  String approx_type("new_surr_module");  // Tom's new GP from surrogate module
+  UShortArray approx_order;
+  short data_order = 1;  // assume only function values
+  short output_level = Dakota::QUIET_OUTPUT;
+  SharedApproxData shared_approx_data(approx_type, approx_order, num_vars, 
+				      data_order, output_level);
+
+  // construct the GP
+  Approximation gp_approx(shared_approx_data);
+  gp_approx.add_array(vars, resp);
+  gp_approx.build();
+
+  // check the value of the surrogate
+  RealVector eval_vars(2);
+  eval_vars(0) = 0.4;
+  eval_vars(1) = 1.0; // not used yet but tests if allowed
+  // Note the tolerance here had to be relaxed from 1.e-8 used in the original
+  // unit test mentioned above.
+  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), -0.0333528, 1.e-6);
+}
+
+#endif
+

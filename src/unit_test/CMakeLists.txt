@@ -156,6 +156,10 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     SOURCES teuchos_unit_test_driver.cpp ${dakota_surrogate_unit_tests}
     LINK_DAKOTA_LIBS
     )
+  if (DAKOTA_MODULE_SURROGATES)
+    target_link_libraries(surrogate_unit_tests
+      dakota_surrogates)
+  endif()
   dakota_add_unit_test(NAME sampling_unit_tests
     SOURCES teuchos_unit_test_driver.cpp ${dakota_sampling_unit_tests}
     LINK_DAKOTA_LIBS

@@ -495,6 +495,15 @@ if(HAVE_SURFPACK)
   list(APPEND DAKOTA_PKG_LIBS surfpack surfpack_fortran)
 endif(HAVE_SURFPACK)
 
+if(DAKOTA_MODULE_SURROGATES)
+  list(APPEND interface_src DakotaSurrogates.cpp) # SharedGPApproxData.cpp)
+  list(APPEND DAKOTA_INCDIRS 
+    ${Dakota_SOURCE_DIR}/src/util
+    ${Dakota_SOURCE_DIR}/src/surrogates
+    ${EIGEN3_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS}
+    ${Dakota_SOURCE_DIR}/packages/external/eigen3/include/eigen3)
+endif(DAKOTA_MODULE_SURROGATES)
+
 if(DAKOTA_MATLAB)
   list(APPEND interface_src MatlabInterface.cpp)
 endif()
@@ -861,6 +870,13 @@ list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
 target_link_libraries(dakota_src dakota_src_fortran)
+if(DAKOTA_MODULE_SURROGATES)
+  target_link_libraries(dakota_src dakota_surrogates)
+  #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
+  list(APPEND EXPORT_TARGETS dakota_util)
+  list(APPEND EXPORT_TARGETS dakota_surrogates)
+endif(DAKOTA_MODULE_SURROGATES)
+
 DakotaApplyMPISettings(dakota_src)
 if(HAVE_AMPL)
   # Enforce AMPL config header creation prior to compiling dakota sources
@@ -953,6 +969,9 @@ install(TARGETS dakota_src_fortran EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
+if(DAKOTA_MODULE_SURROGATES)
+  install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
+endif(DAKOTA_MODULE_SURROGATES)
 file(GLOB Dakota_hdr *.hpp *.h)
 # We don't install NIDR_keywds0.hpp as is not needed by clients
 install(FILES ${Dakota_hdr} ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
@@ -1073,7 +1092,7 @@ export(TARGETS ${EXPORT_TARGETS} FILE
 if(ExportTarget STREQUAL DakotaTargets)
   message(STATUS 
     "Installing Dakota exported targets to ${Dakota_INSTALL_CMAKE_DIR}")
-  install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
+  #install(EXPORT ${ExportTarget} DESTINATION ${Dakota_INSTALL_CMAKE_DIR})
 endif()
 
 

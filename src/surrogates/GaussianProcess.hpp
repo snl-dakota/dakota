@@ -109,6 +109,13 @@ public:
 */
   void value(const MatrixXd &samples, MatrixXd &approx_values);
 
+/**
+ *  \brief Get the dimension of the feature space
+*/
+  int get_num_variables() const
+    { return numVariables; }
+
+
 private:
 
   /// Dimension of the feature space.
