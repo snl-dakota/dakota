@@ -10,6 +10,7 @@
 #include "Eigen/Dense"
 #include <Teuchos_UnitTestHarness.hpp>
 #include "Teuchos_SerialDenseHelpers.hpp"
+#include "CommonTestUtils.hpp"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -24,44 +25,6 @@ namespace dakota {
 namespace util {
 
 namespace {
-
-// DTS: Copied from the DataScaler. Should make a separate file
-// that contains test support functions.
-void error(const std::string msg)
-{
-  throw(std::runtime_error(msg));
-}
-bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol)
-{
-  if ( (A.numRows()!=B.numRows()) || (A.numCols()!=B.numCols())){
-    std::cout << A.numRows() << "," << A.numCols() << std::endl;
-    std::cout << B.numRows() << "," << B.numCols() << std::endl;
-    error("matrix_equals() matrices sizes are inconsistent");
-  }
-  for (int j=0; j<A.numCols(); j++){
-    for (int i=0; i<A.numRows(); i++){
-      if (std::abs(A(i,j)-B(i,j))>tol)
-	    return false;
-    }
-  }
-  return true;
-}
-
-bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
-{
-  if ( (A.rows()!=B.rows()) || (A.cols()!=B.cols())){
-    std::cout << A.rows() << "," << A.cols() << std::endl;
-    std::cout << B.rows() << "," << B.cols() << std::endl;
-    error("matrix_equals() matrices sizes are inconsistent");
-  }
-  for (int j=0; j<A.cols(); j++){
-    for (int i=0; i<A.rows(); i++){
-      if (std::abs(A(i,j)-B(i,j))>tol)
-	    return false;
-    }
-  }
-  return true;
-}
 
 // Test data
 MatrixXd create_test_matrix_eigen() {

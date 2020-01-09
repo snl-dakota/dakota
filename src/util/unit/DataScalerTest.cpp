@@ -15,10 +15,9 @@
 // Imports //
 /////////////
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics.hpp>
 #include <math.h>
 #include <Teuchos_UnitTestHarness.hpp>
+#include "CommonTestUtils.hpp"
 #include "DataScaler.hpp"
 
 ///////////////
@@ -33,27 +32,6 @@ namespace{
 ///////////////
 // Utilities //
 ///////////////
-
-void error(const std::string msg)
-{
-  throw(std::runtime_error(msg));
-}
-
-bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
-{
-  if ( (A.rows()!=B.rows()) || (A.cols()!=B.cols())){
-    std::cout << A.rows() << "," << A.cols() << std::endl;
-    std::cout << B.rows() << "," << B.cols() << std::endl;
-    error("matrix_equals() matrices sizes are inconsistent");
-  }
-  for (int j=0; j<A.cols(); j++){
-    for (int i=0; i<A.rows(); i++){
-      if (std::abs(A(i,j)-B(i,j))>tol)
-	    return false;
-    }
-  }
-  return true;
-}
 
 MatrixXd create_single_feature_matrix()
 {
@@ -79,19 +57,6 @@ MatrixXd create_multiple_features_matrix()
                               10000, 30000, 40000,
                               100000, 500000, 700000;
   return multiple_features_matrix;
-}
-
-/**
- * Calculates the variance of a vector of doubles.
- */
-double variance(VectorXd vec)
-{
-  boost::accumulators::accumulator_set<double, boost::accumulators::features<boost::accumulators::tag::variance>> acc;
-  for(int i = 0; i < vec.size(); i++)
-  {
-    acc(vec(i));
-  }
-  return boost::accumulators::variance(acc);
 }
 
 ////////////////
