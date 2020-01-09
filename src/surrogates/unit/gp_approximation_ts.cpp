@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <Teuchos_UnitTestHarness.hpp>
+#include "CommonUtils.hpp"
 #include "GaussianProcess.hpp"
 
 // BMA TODO: Review with team for best practice
@@ -15,65 +16,6 @@ using namespace dakota::surrogates;
 using namespace dakota::util;
 
 namespace {
-
-void error(const std::string msg)
-{
-  throw(std::runtime_error(msg));
-}
-
-bool allclose(const MatrixXd &A, const MatrixXd &B, double tol){
-  if ( (A.rows()!=B.rows()) || (A.cols()!=B.cols())){
-    std::cout << A.rows() << "," << A.cols() << std::endl;
-    std::cout << B.rows() << "," << B.cols() << std::endl;
-    error("allclose() matrices sizes are inconsistent");
-  }
-  for (int j=0; j<A.cols(); j++){
-    for (int i=0; i<A.rows(); i++){
-      if (std::abs(A(i,j)-B(i,j))>tol)
-       return false;
-    }
-  }
-  return true;
-}
-
-void populateVectorsFromFile(std::string fileName, std::vector<VectorXd> &R, int num_datasets, int num_samples) {
-
-  R.resize(num_datasets);
-  std::ifstream in(fileName,std::ios::in);
-
-  if (!in.is_open()) {
-    throw(std::runtime_error("File does not exist!"));
-  }
-
-  for (int k = 0; k < num_datasets; k++) {
-    R[k].resize(num_samples);
-    for (int i = 0; i < num_samples; i++) {
-        in >> R[k](i);
-    }
-  }
-  in.close();
-
-}
-void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples) {
-
-  S.resize(num_datasets);
-  std::ifstream in(fileName,std::ios::in);
-
-  if (!in.is_open()) {
-    throw(std::runtime_error("File does not exist!"));
-  }
-
-  for (int k = 0; k < num_datasets; k++) {
-    S[k].resize(num_samples,num_vars);
-    for (int i = 0; i < num_samples; i++) {
-      for (int j = 0; j < num_vars; j++) {
-        in >> S[k](i,j);
-      }
-    }
-  }
-
-  in.close();
-}
 
 int test_gp(double atol){
 
@@ -148,17 +90,17 @@ int test_gp(double atol){
     std::cout << cov << std::endl;
   }
 
-  if (!allclose(pred,gold_value,atol)){
+  if (!matrix_equals(pred,gold_value,atol)){
     std::cout << "1\n";
     return 1;
   }
 
-  if (!allclose(std_dev,gold_std,atol)){
+  if (!matrix_equals(std_dev,gold_std,atol)){
     std::cout << "2\n";
     return 2;
   }
 
-  if (!allclose(cov,gold_cov,atol)){
+  if (!matrix_equals(cov,gold_cov,atol)){
     std::cout << "3\n";
     return 3;
   }
@@ -250,17 +192,17 @@ int test_gp(double atol){
   VectorXd std_dev_2D = gp_2D.get_posterior_std_dev();
   MatrixXd cov_2D = gp_2D.get_posterior_covariance();
 
-  if (!allclose(pred_2D,gold_value_2D,atol)){
+  if (!matrix_equals(pred_2D,gold_value_2D,atol)){
     std::cout << "4\n";
     return 4;
   }
 
-  if (!allclose(std_dev_2D,gold_std_2D,atol)){
+  if (!matrix_equals(std_dev_2D,gold_std_2D,atol)){
     std::cout << "5\n";
     return 5;
   }
 
-  if (!allclose(cov_2D,gold_cov_2D,atol)){
+  if (!matrix_equals(cov_2D,gold_cov_2D,atol)){
     std::cout << "6\n";
     return 6;
   }

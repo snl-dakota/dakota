@@ -10,7 +10,7 @@
 #include "Eigen/Dense"
 #include <Teuchos_UnitTestHarness.hpp>
 #include "Teuchos_SerialDenseHelpers.hpp"
-#include "CommonTestUtils.hpp"
+#include "../CommonUtils.hpp"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;

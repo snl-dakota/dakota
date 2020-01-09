@@ -11,10 +11,12 @@
 #project(DakotaUtil LANGUAGES CXX)
 
 set(util_sources
+  CommonUtils.cpp
   DataScaler.cpp
   )
 
 set(util_headers
+  CommonUtils.hpp
   DataScaler.hpp
   )
 
@@ -32,8 +34,8 @@ if(TARGET Eigen3::Eigen)
 endif()
 
 # BMA TODO: CMake best practice for PUBLIC?
-#target_include_directories(dakota_util PUBLIC
-#  ${Teuchos_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(dakota_util PUBLIC
+  ${Teuchos_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_include_directories(dakota_util INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR})

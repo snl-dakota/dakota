@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 /*
- * CommonTestUtils.cpp
+ * CommonUtils.cpp
  * author Elliott Ridgway
  */
 
@@ -15,10 +15,11 @@
 // Imports //
 /////////////
 
+#include <fstream>
 #include <math.h>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
-#include "CommonTestUtils.hpp"
+#include "CommonUtils.hpp"
 
 ///////////////////////
 // Using / Namespace //
@@ -75,4 +76,43 @@ double variance(VectorXd vec)
     acc(vec(i));
   }
   return boost::accumulators::variance(acc);
+}
+
+void populateVectorsFromFile(std::string fileName, std::vector<VectorXd> &R, int num_datasets, int num_samples) {
+
+  R.resize(num_datasets);
+  std::ifstream in(fileName,std::ios::in);
+
+  if (!in.is_open()) {
+    throw(std::runtime_error("File does not exist!"));
+  }
+
+  for (int k = 0; k < num_datasets; k++) {
+    R[k].resize(num_samples);
+    for (int i = 0; i < num_samples; i++) {
+        in >> R[k](i);
+    }
+  }
+  in.close();
+
+}
+void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples) {
+
+  S.resize(num_datasets);
+  std::ifstream in(fileName,std::ios::in);
+
+  if (!in.is_open()) {
+    throw(std::runtime_error("File does not exist!"));
+  }
+
+  for (int k = 0; k < num_datasets; k++) {
+    S[k].resize(num_samples,num_vars);
+    for (int i = 0; i < num_samples; i++) {
+      for (int j = 0; j < num_vars; j++) {
+        in >> S[k](i,j);
+      }
+    }
+  }
+
+  in.close();
 }

@@ -17,7 +17,7 @@
 
 #include <math.h>
 #include <Teuchos_UnitTestHarness.hpp>
-#include "CommonTestUtils.hpp"
+#include "../CommonUtils.hpp"
 #include "DataScaler.hpp"
 
 ///////////////

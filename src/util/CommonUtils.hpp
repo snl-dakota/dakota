@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 /*
- * CommonTestUtils.hpp
+ * CommonUtils.hpp
  * author Elliott Ridgway
  */
 
@@ -50,16 +50,22 @@ void error(const std::string msg);
  *  \param[A] The first matrix to test.
  *  \param[B] The second matrix to test.
  *  \param[tol] The tolerance to use when comparing double values.
+ *  \returns Whether the matrices are equal.
 */
 bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol);
 
 /**
- *  \brief Tests whether two Eigen RealMatrix objects are equal, within a given tolerance.
+ *  \brief Tests whether two Teuchos RealMatrix objects are equal, within a given tolerance.
  *  \param[A] The first matrix to test.
  *  \param[B] The second matrix to test.
  *  \param[tol] The tolerance to use when comparing double values.
+ *  \returns Whether the matrices are equal.
 */
 bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol);
+
+void populateVectorsFromFile(std::string fileName, std::vector<VectorXd> &R, int num_datasets, int num_samples);
+
+void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples);
 
 /**
  *  \brief Calculates the variance based on an Eigen VectorXd of double values.
