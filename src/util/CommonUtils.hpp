@@ -63,8 +63,25 @@ bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol);
 */
 bool matrix_equals(const RealMatrix &A, const RealMatrix &B, double tol);
 
+/**
+ *  \brief Populate a collection of vectors read in a from a text file. Assumed data layout is one dataset 
+ *  per row.
+ *  \param[fileName] The file that contains the data.
+ *  \param[R] The collection of vectors to be populated.
+ *  \param[num_datasets] The number of datasets to read in.
+ *  \param[num_samples] The number of data points (e.g. function values, build points) per dataset.
+*/
 void populateVectorsFromFile(std::string fileName, std::vector<VectorXd> &R, int num_datasets, int num_samples);
 
+/**
+ *  \brief Populate a collection of matrices read in a from a text file. Assumed data layout is a "column-major"
+ *  stack of num_samples by num_vars matrices.
+ *  \param[fileName] The file that contains the data.
+ *  \param[S] The collection of vectors to be populated.
+ *  \param[num_datasets] The number of datasets to read in.
+ *  \param[num_samples] The number of data points (e.g. function values, build points) per dataset (row dim).
+ *  \param[num_vars] The number of variables per dataset (column dim).
+*/
 void populateMatricesFromFile(std::string fileName, std::vector<MatrixXd> &S, int num_datasets, int num_vars, int num_samples);
 
 /**
