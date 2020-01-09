@@ -1055,7 +1055,7 @@ void DataFitSurrModel::build_global()
   size_t i, j, reuse_points = 0;
   int fn_index = *surrogateFnIndices.begin();
   const Pecos::SurrogateData& approx_data
-    = approxInterface.approximation_data(fn_index); // default SurrData
+    = approxInterface.approximation_data(fn_index);
   bool anchor = approx_data.anchor();
   if (pointReuse == "all" || pointReuse == "region") {
 

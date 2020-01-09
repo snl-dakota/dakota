@@ -36,10 +36,9 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
 
-  // Make a shallow copy of initial approxData instance (shared rep).
-  // Note: there is only one empty SurrogateData instance at construct time
-  pecosBasisApprox.surrogate_data(approxData.front());
-  // modified SurrogateData is linked downstream, if needed (ML-MF)
+  // Make a shallow copy of approxData instance (shared rep).
+  // Note: this SurrogateData instance is empty at construct time.
+  pecosBasisApprox.surrogate_data(approxData);
 
   // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
@@ -65,10 +64,9 @@ PecosApproximation(ProblemDescDB& problem_db,
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
 
-  // Make a shallow copy of initial approxData instance (shared rep):
-  // Note: there is only one empty SurrogateData instance at construct time
-  pecosBasisApprox.surrogate_data(approxData.front());
-  // modified SurrogateData is linked downstream, if needed (ML-MF)
+  // Make a shallow copy of approxData instance (shared rep).
+  // Note: this SurrogateData instance is empty at construct time.
+  pecosBasisApprox.surrogate_data(approxData);
 
   // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
@@ -76,6 +74,7 @@ PecosApproximation(ProblemDescDB& problem_db,
 }
 
 
+/*
 void PecosApproximation::link_multilevel_surrogate_data()
 {
   // Manage {surr,modSurr}Data instances (approxDataKeys and original/modified
@@ -100,5 +99,6 @@ void PecosApproximation::link_multilevel_surrogate_data()
     break;
   }
 }
+*/
 
 } // namespace Dakota

@@ -408,19 +408,19 @@ response_center_pair(IntResponsePair& pair, short corr_response_type)
 
 
 inline unsigned short SurrBasedLevelData::approx_model_form()
-{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[0]; }
+{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[1]; }
 
 
 inline unsigned short SurrBasedLevelData::truth_model_form()
-{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[0]; }
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1]; }
 
 
 inline unsigned short SurrBasedLevelData::approx_model_level()
-{ return (approxModelKey.size() > 1) ? approxModelKey.back() : USHRT_MAX; }
+{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[2]; }
 
 
 inline unsigned short SurrBasedLevelData::truth_model_level()
-{ return (truthModelKey.size() > 1) ? truthModelKey.back() : USHRT_MAX; }
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
 
 
 inline UShortArrayPair SurrBasedLevelData::model_keys()

@@ -76,13 +76,13 @@ protected:
   /// return truth_model()
   Model& subordinate_model();
 
-  void surrogate_model_key(unsigned short model_index,
-			   unsigned short soln_lev_index = USHRT_MAX);
+  //void surrogate_model_key(unsigned short model_index,
+  //			     unsigned short soln_lev_index = USHRT_MAX);
   void surrogate_model_key(const UShortArray& key);
   const UShortArray& surrogate_model_key() const;
 
-  void truth_model_key(unsigned short model_index,
-		       unsigned short soln_lev_index = USHRT_MAX);
+  //void truth_model_key(unsigned short model_index,
+  //		         unsigned short soln_lev_index = USHRT_MAX);
   void truth_model_key(const UShortArray& key);
   const UShortArray& truth_model_key() const;
 
@@ -287,6 +287,45 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
+inline void SurrogateModel::surrogate_model_key(const UShortArray& key)
+{
+  if (key.size() != 3) {
+    Cerr << "Error: bad key size in SurrogateModel::surrogate_model_key()."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  surrModelKey = key;
+}
+
+
+inline const UShortArray& SurrogateModel::surrogate_model_key() const
+{ return surrModelKey; }
+
+
+inline unsigned short SurrogateModel::surrogate_level_index() const
+{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
+
+
+inline void SurrogateModel::truth_model_key(const UShortArray& key)
+{
+  if (key.size() != 3) {
+    Cerr << "Error: bad key size in SurrogateModel::truth_model_key()."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  truthModelKey = key;
+}
+
+
+inline const UShortArray& SurrogateModel::truth_model_key() const
+{ return truthModelKey; }
+
+
+inline unsigned short SurrogateModel::truth_level_index() const
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
+
+
+/*
 inline void SurrogateModel::
 surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
 {
@@ -303,18 +342,6 @@ surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
 }
 
 
-inline void SurrogateModel::surrogate_model_key(const UShortArray& key)
-{ surrModelKey = key; }
-
-
-inline const UShortArray& SurrogateModel::surrogate_model_key() const
-{ return surrModelKey; }
-
-
-inline unsigned short SurrogateModel::surrogate_level_index() const
-{ return (surrModelKey.size() >= 2) ? surrModelKey.back() : USHRT_MAX; }
-
-
 inline void SurrogateModel::
 truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
 {
@@ -329,18 +356,7 @@ truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
     truthModelKey[0] = model_index;
   }
 }
-
-
-inline void SurrogateModel::truth_model_key(const UShortArray& key)
-{ truthModelKey = key; }
-
-
-inline const UShortArray& SurrogateModel::truth_model_key() const
-{ return truthModelKey; }
-
-
-inline unsigned short SurrogateModel::truth_level_index() const
-{ return (truthModelKey.size() >= 2) ? truthModelKey.back() : USHRT_MAX; }
+*/
 
 
 inline short SurrogateModel::surrogate_response_mode() const

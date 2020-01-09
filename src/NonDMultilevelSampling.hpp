@@ -97,10 +97,12 @@ private:
   void uncorrected_surrogate_mode();
 
   /// manage response mode, model indices, and aggregate level cost
-  void configure_indices(unsigned short lev, unsigned short model_form,
-			 const RealVector& cost, Real& lev_cost);
+  void configure_indices(unsigned short group, unsigned short form,
+			 unsigned short lev, const RealVector& cost,
+			 Real& lev_cost);
   /// manage response mode and model indices
-  void configure_indices(unsigned short lev, unsigned short model_form);
+  void configure_indices(unsigned short group, unsigned short form,
+			 unsigned short lev);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -499,24 +501,41 @@ inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 
 
 inline void NonDMultilevelSampling::
-configure_indices(unsigned short lev, unsigned short model_form)
+configure_indices(unsigned short group, unsigned short form, unsigned short lev)
 {
-  iteratedModel.truth_model_key(model_form, lev);
-  if (lev) {
-    //if (lev == 1) // update responseMode for levels to follow (1:num_lev-1)
-    aggregated_models_mode();
-    iteratedModel.surrogate_model_key(model_form, lev-1);
-  }
-  else
-    bypass_surrogate_mode();
+  // Note: could consolidate with NonDExpansion::configure_indices() with a
+  // passed model instance and virtual *_mode() assignments.  Leaving separate
+  // for now...
 
-  // Not currently necessary, since no surrogate data:
-  //iteratedModel.active_model_key(iteratedModel.truth_model_key());
+  UShortArray hf_key, lf_key;
+  // group index assigned based on step in model form/resolution sequence
+  Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
+  iteratedModel.truth_model_key(hf_key);
+
+  // assume bottom-up sweep through levels (avoid redundant mode updates)
+  if (lev == 0) {
+    bypass_surrogate_mode();
+    iteratedModel.surrogate_model_key(lf_key); // empty key: deactivates pairing
+
+    // Not currently necessary, since no SurrogateData:
+    //iteratedModel.active_model_key(hf_key);    // one active fidelity
+  }
+  else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
+    aggregated_models_mode();
+
+    lf_key = hf_key;  Pecos::DiscrepancyCalculator::decrement_key(lf_key);    
+    iteratedModel.surrogate_model_key(lf_key);
+
+    // Not currently necessary, since no SurrogateData:
+    //UShortArray delta_key;
+    //Pecos::DiscrepancyCalculator::discrepancy_key(hf_key, lf_key, delta_key);
+    //iteratedModel.active_model_key(delta_key); // two active fidelities
+  }
 }
 
 
 inline void NonDMultilevelSampling::
-configure_indices(unsigned short lev, unsigned short model_form,
+configure_indices(unsigned short group, unsigned short form, unsigned short lev,
 		  const RealVector& cost, Real& lev_cost)
 {
   // discrepancies incur 2 level costs
@@ -524,7 +543,7 @@ configure_indices(unsigned short lev, unsigned short model_form,
     cost[lev] + cost[lev-1] : // aggregated {LF,HF} mode
     cost[lev];                //     uncorrected LF mode
 
-  configure_indices(lev, model_form);
+  configure_indices(group, form, lev);
 }
 
 

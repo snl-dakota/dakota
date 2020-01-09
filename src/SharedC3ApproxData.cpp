@@ -161,6 +161,7 @@ void SharedC3ApproxData::link_multilevel_surrogate_data()
 
   switch (discrepancyType) {
   case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
+    /*
     // expand approxDataKeys from default for discrepancy management:
     approxDataKeys.resize(2); // for surrData and modSurrData
     UShort2DArray&     surr_keys = approxDataKeys[0];
@@ -175,6 +176,8 @@ void SharedC3ApproxData::link_multilevel_surrogate_data()
     // onto end of approxData)
     //origSurrDataIndex = 0;  // same as initialized value
     modSurrDataIndex = 1; // update from initialized value
+    */
+    approxDataKeys.resize(3); // HF, LF, discrep
     break;
   }
   default: // default ctor linkages are sufficient

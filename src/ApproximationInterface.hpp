@@ -294,7 +294,6 @@ inline void ApproximationInterface::clear_model_keys()
 
 inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
 {
-  //sharedData.surrogate_data_index(d_index); // if also passed
   sharedData.surrogate_model_key(key);
   // Note: Model's surrModelKey updates approxDataKeys, but may not be 1:1
   //       (approxDataKeys ensures unique data groupings among key pairings)
@@ -303,7 +302,6 @@ inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
 
 inline void ApproximationInterface::truth_model_key(const UShortArray& key)
 {
-  //sharedData.surrogate_data_index(d_index); // if also passed
   sharedData.truth_model_key(key);
 }
 

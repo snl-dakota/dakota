@@ -150,10 +150,6 @@ public:
 
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
-  /// set the indices that define the active approximation sub-model
-  /// within surrogate models
-  virtual void surrogate_model_key(unsigned short lf_model_index,
-				 unsigned short lf_soln_lev_index = USHRT_MAX);
   /// set the index pair that defines the active approximation sub-model
   /// within surrogate models
   virtual void surrogate_model_key(const UShortArray& lf_key);
@@ -163,10 +159,6 @@ public:
 
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
-  /// set the indices that define the active truth sub-model within
-  /// surrogate models
-  virtual void truth_model_key(unsigned short hf_model_index,
-			       unsigned short hf_soln_lev_index = USHRT_MAX);
   /// set the index pair that defines the active truth sub-model within
   /// surrogate models
   virtual void truth_model_key(const UShortArray& hf_key);

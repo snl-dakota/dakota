@@ -1144,8 +1144,9 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
   case FULL_MODEL_FORM_CORRECTION: {
     // assume a consistent level index from surrModelKey
     size_t i, num_models = orderedModels.size();
+    unsigned short lf_model_form = surrModelKey[1];
     UShortArrayPair corr_index(surrModelKey, surrModelKey);
-    for (i = surrModelKey.front(); i < num_models - 1; ++i) {
+    for (i = lf_model_form; i < num_models - 1; ++i) {
       corr_index.first[0] = i; corr_index.second[0] = i+1;
       single_apply(vars, resp, corr_index);
     }
@@ -1240,7 +1241,10 @@ void HierarchSurrModel::component_parallel_mode(short mode)
   // in model may be overkill (send of state vars in vars buffer sufficient?)
   bool restart = false;
   if (componentParallelMode != mode || componentParallelKey != new_key) {
-    if (componentParallelMode) stop_model(componentParallelKey.front());
+    if (componentParallelMode) {
+      unsigned short model_form = componentParallelKey[1];
+      stop_model(model_form);
+    }
     restart = true;
   }
 

@@ -250,18 +250,12 @@ protected:
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
   /// set surrogate model key within subModel
-  void surrogate_model_key(unsigned short lf_model_index,
-			   unsigned short lf_soln_lev_index = USHRT_MAX);
-  /// set surrogate model key within subModel
   void surrogate_model_key(const UShortArray& lf_key);
   /// return surrogate model key from subModel
   const UShortArray& surrogate_model_key() const;
 
   /// return truth model, if present, within subModel
   Model& truth_model();
-  /// set truth model key within subModel
-  void truth_model_key(unsigned short hf_model_index,
-		       unsigned short hf_soln_lev_index = USHRT_MAX);
   /// set truth model key within subModel
   void truth_model_key(const UShortArray& hf_key);
   /// return truth model key from subModel
@@ -733,12 +727,6 @@ inline Model& RecastModel::surrogate_model()
 { return subModel.surrogate_model(); }
 
 
-inline void RecastModel::
-surrogate_model_key(unsigned short lf_model_index,
-		    unsigned short lf_soln_lev_index)
-{ subModel.surrogate_model_key(lf_model_index, lf_soln_lev_index); }
-
-
 inline void RecastModel::surrogate_model_key(const UShortArray& lf_key)
 { subModel.surrogate_model_key(lf_key); }
 
@@ -749,11 +737,6 @@ inline const UShortArray& RecastModel::surrogate_model_key() const
 
 inline Model& RecastModel::truth_model()
 { return subModel.truth_model(); }
-
-
-inline void RecastModel::
-truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
-{ subModel.truth_model_key(hf_model_index, hf_soln_lev_index); }
 
 
 inline void RecastModel::truth_model_key(const UShortArray& hf_key)

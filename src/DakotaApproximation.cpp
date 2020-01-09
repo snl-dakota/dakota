@@ -337,12 +337,7 @@ void Approximation::rebuild()
 void Approximation::pop_data(bool save_data)
 {
   if (approxRep) approxRep->pop_data(save_data);
-  else {
-    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d)
-      approxData[d].pop(keys[d], save_data);
-  }
+  else approxData.pop(sharedDataRep->approxDataKeys, save_data);
 }
 
 
@@ -350,20 +345,15 @@ void Approximation::push_data()
 {
   if (approxRep) approxRep->push_data();
   else {
-    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d) {
-      Pecos::SurrogateData& approx_data = approxData[d];
-      const UShort2DArray& keys_d = keys[d];
-      if (!keys_d.empty()) {
-	// Only want truth model key for retrieval index as this is what is
-	// activated through the Model.  Surrogate model key is only used for
-	// enumerating SurrogateData updates using approxDataKeys.
-	const UShortArray& truth_key = keys_d[0];
-	size_t r_index = sharedDataRep->push_index(truth_key);
-	// preserves active state
-	approx_data.push(keys_d, r_index); // preserves active state
-      }
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (!keys.empty()) {
+      // Only want truth model key for retrieval index as this is what is
+      // activated through the Model.  Surrogate model key is only used for
+      // enumerating SurrogateData updates using approxDataKeys.
+      const UShortArray& truth_key = keys[0];
+      size_t r_index = sharedDataRep->push_index(truth_key);
+      // preserves active state
+      approxData.push(keys, r_index); // preserves active state
     }
   }
 }
@@ -375,20 +365,15 @@ void Approximation::finalize_data()
 
   if (approxRep) approxRep->finalize_data();
   else {
-    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-    // assume number of popped trials is consistent across approxData
-    size_t d, num_d = approxData.size(), f_index, p;
-    for (d=0; d<num_d; ++d) {
-      Pecos::SurrogateData& approx_data = approxData[d];
-      const UShort2DArray& keys_d = keys[d];
-      if (!keys_d.empty()) {
-	// Only need truth model key for finalization indices (see above)
-	const UShortArray& truth_key = keys_d[0];
-	size_t num_popped = approx_data.popped_sets(truth_key);
-	for (p=0; p<num_popped; ++p) {
-	  f_index = sharedDataRep->finalize_index(p, truth_key);
-	  approx_data.push(keys_d, f_index, false);
-	}
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (!keys.empty()) {
+      // Only need truth model key for finalization indices (see above)
+      const UShortArray& truth_key = keys_d[0];
+      // assume number of popped trials is consistent across approxData
+      size_t f_index, p, num_popped = approxData.popped_sets(truth_key);
+      for (p=0; p<num_popped; ++p) {
+	f_index = sharedDataRep->finalize_index(p, truth_key);
+	approxData.push(keys_d, f_index, false);
       }
     }
 
@@ -921,13 +906,8 @@ approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 
 void Approximation::link_multilevel_surrogate_data()
 {
-  if (approxRep)
-    approxRep->link_multilevel_surrogate_data();
-  else {
-    Cerr << "Error: link_multilevel_surrogate_data() not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  if (approxRep) approxRep->link_multilevel_surrogate_data();
+  //else no-op (no linkage required for derived Approximation)
 }
 
 

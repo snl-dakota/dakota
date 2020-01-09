@@ -3449,16 +3449,6 @@ Model& Model::surrogate_model()
 }
 
 
-void Model::
-surrogate_model_key(unsigned short lf_model_index,
-		    unsigned short lf_soln_lev_index)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_key(lf_model_index, lf_soln_lev_index);
-  //else no-op
-}
-
-
 void Model::surrogate_model_key(const UShortArray& lf_key)
 {
   if (modelRep) // envelope fwd to letter
@@ -3489,15 +3479,6 @@ Model& Model::truth_model()
     return modelRep->truth_model();
   else // letter lacking redefinition of virtual fn.
     return *this; // default is no surrogate -> return this model instance
-}
-
-
-void Model::
-truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_key(hf_model_index, hf_soln_lev_index);
-  //else no-op
 }
 
 

@@ -116,23 +116,16 @@ inline TANA3Approximation::~TANA3Approximation()
 /** Redefine default implementation to support history mechanism. */
 inline void TANA3Approximation::clear_current_active_data()
 {
-  size_t d, num_d = approxData.size();
-  const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-  for (d=0; d<num_d; ++d) {
-    Pecos::SurrogateData& approx_data = approxData[d];
-    approx_data.clear_anchor_index();
-    approx_data.history_target(1, keys[d]);
-  }
+  approxData.clear_anchor_index();
+  approxData.history_target(1, sharedDataRep->approxDataKeys);
 
   /*
-  Pecos::SurrogateData& approx_data
-    = approxData[sharedDataRep->origSurrDataIndex];
   // demote from anchor to regular/previous data
   // (for completeness; TANA no longer uses anchor designation)
-  approx_data.clear_anchor_index();
+  approxData.clear_anchor_index();
   //  previous is deleted and anchor moved to previous
-  if (approx_data.points() > 1)
-    approx_data.pop_front();
+  if (approxData.points() > 1)
+    approxData.pop_front();
   */
 }
 

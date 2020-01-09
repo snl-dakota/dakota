@@ -240,16 +240,18 @@ protected:
   void multilevel_regression();
 
   /// configure fidelity/level counts from model hierarchy
-  void configure_levels(size_t& num_lev, unsigned short& model_form,
-			bool& multilevel, bool mf_precedence);
+  void configure_sequence(unsigned short& num_steps,
+			  unsigned short& fixed_index,
+			  bool& multilevel, bool mf_precedence);
   /// configure fidelity/level counts from model hierarchy
-  void configure_cost(size_t num_lev, bool multilevel, RealVector& cost);
+  void configure_cost(unsigned short num_steps, bool multilevel,
+		      RealVector& cost);
   /// configure response mode and truth/surrogate model indices within
   /// hierarchical iteratedModel
-  void configure_indices(unsigned short lev, unsigned short form,
-			 bool multilevel);
+  void configure_indices(unsigned short group, unsigned short form,
+			 unsigned short lev);
   /// return aggregate cost (one or more models) for a level sample
-  Real level_cost(unsigned short lev, const RealVector& cost);
+  Real sequence_cost(unsigned short step, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation
   void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
 
@@ -259,14 +261,6 @@ protected:
 				const RealVector& cost, Real sum_root_var_cost,
 				Real eps_sq_div_2, const SizetArray& N_l,
 				SizetArray& delta_N_l);
-
-  /// creat a model key from level index, form index, and multilevel flag
-  void form_key(unsigned short lev, unsigned short form, bool multilevel,
-		UShortArray& model_key);
-  /// activate model key within uSpaceModel
-  void activate_key(const UShortArray& model_key);
-  /// activate model key within uSpaceModel
-  void activate_key(unsigned short lev, unsigned short form, bool multilevel);
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
@@ -465,9 +459,7 @@ protected:
   /// vector of response variances (diagonal response covariance option)
   RealVector respVariance;
 
-  /// stats of the best candidate for the current level
-  RealVector levelStatsStar;
-  /// stats of the best candidate across all levels
+  /// stats of the best refinement candidate for the current model indices
   RealVector statsStar;
 
   /// number of invocations of core_run()
@@ -630,41 +622,16 @@ inline void NonDExpansion::bypass_surrogate_mode()
 }
 
 
-inline void NonDExpansion::
-form_key(unsigned short lev, unsigned short form, bool multilevel,
-	 UShortArray& model_key)
-{
-  if (multilevel) // model form is fixed @ HF; lev enumerates the levels
-    { model_key.resize(2); model_key[0] = form; model_key[1] = lev; }
-  else            // lev enumerates the model forms; levels are ignored
-    { model_key.resize(1); model_key[0] = lev; } // mi_key[1] = _NPOS;
-}
-
-
-inline void NonDExpansion::
-activate_key(const UShortArray& model_key)
-{ uSpaceModel.active_model_key(model_key); }
-
-
-inline void NonDExpansion::
-activate_key(unsigned short lev, unsigned short form, bool multilevel)
-{
-  UShortArray model_key;
-  form_key(lev, form, multilevel, model_key);
-  activate_key(model_key); // assign key to uSpaceModel
-}
-
-
 inline Real NonDExpansion::
-level_cost(unsigned short lev, const RealVector& cost)
+sequence_cost(unsigned short step, const RealVector& cost)
 {
   if (cost.empty())
     return 0.;
   else {
-    Real lev_cost = cost[lev];
-    if (lev && multilevDiscrepEmulation == DISTINCT_EMULATION)
-      lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-    return lev_cost;
+    Real cost_l = cost[step];
+    if (step && multilevDiscrepEmulation == DISTINCT_EMULATION)
+      cost_l += cost[step-1]; // discrepancies incur 2 level costs
+    return cost_l;
   }
 }
 

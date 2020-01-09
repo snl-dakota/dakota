@@ -896,8 +896,8 @@ void NonDExpansion::refine_expansion()
   // DataMethod default for maxRefineIterations is -1, indicating no user spec.
   // Assign a context-specific default in this case.
   size_t  iter = 1,
-    max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  bool converged = (iter > max_refine);  Real metric;
+    max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
+  bool converged = (iter > max_refine_iter);  Real metric;
 
   // post-process nominal expansion, updating reference stats for refinement
   if (!converged) {
@@ -913,7 +913,7 @@ void NonDExpansion::refine_expansion()
     core_refinement(metric, false, true); // don't revert, print metrics
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
 
-    converged = (metric <= convergenceTol || ++iter > max_refine);
+    converged = (metric <= convergenceTol || ++iter > max_refine_iter);
   }
 
   post_refinement(metric);
@@ -982,7 +982,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     }
     compute_statistics(REFINEMENT_RESULTS); // augment compute_*_metric()
     if (print_metric) print_results(Cout, REFINEMENT_RESULTS); // augment output
-    pull_candidate(levelStatsStar); // pull compute_*_metric() + augmented stats
+    pull_candidate(statsStar); // pull compute_*_metric() + augmented stats
 
     if (revert)
       { pop_increment();  push_reference(stats_ref); }
@@ -1142,8 +1142,8 @@ void NonDExpansion::merge_grid()
 
 
 void NonDExpansion::
-configure_levels(size_t& num_lev, unsigned short& model_form, bool& multilevel,
-		 bool mf_precedence)
+configure_sequence(unsigned short& num_steps, unsigned short& fixed_index,
+		   bool& multilevel,          bool mf_precedence)
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ...)
@@ -1151,46 +1151,46 @@ configure_levels(size_t& num_lev, unsigned short& model_form, bool& multilevel,
   ModelLIter m_iter = --ordered_models.end(); // HF model
   size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
 
-  multilevel = (num_hf_lev > 1 && ( num_mf <= 1 || !mf_precedence ) );
+  multilevel = ( num_hf_lev > 1 && ( num_mf <= 1 || !mf_precedence ) );
   if (multilevel) {
-    num_lev = num_hf_lev; model_form = num_mf - 1;
+    num_steps = num_hf_lev;  fixed_index = num_mf - 1;
     if (num_mf > 1)
       Cerr << "Warning: multiple model forms will be ignored in "
-	   << "NonDExpansion::configure_levels().\n";
+	   << "NonDExpansion::configure_sequence().\n";
   }
   else if ( num_mf > 1 && ( num_hf_lev <= 1 || mf_precedence ) ) {
-    num_lev = num_mf;
+    num_steps = num_mf;  fixed_index = USHRT_MAX; // sync w/ active soln index
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
-	   << "NonDExpansion::configure_levels().\n";
+	   << "NonDExpansion::configure_sequence().\n";
   }
   else {
     Cerr << "Error: no model hierarchy evident in NonDExpansion::"
-	 << "configure_levels()." << std::endl;
+	 << "configure_sequence()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 }
 
   
 void NonDExpansion::
-configure_cost(size_t num_lev, bool multilevel, RealVector& cost)
+configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter;
   if (multilevel) {
     ModelLIter m_iter = --ordered_models.end(); // HF model
     cost = m_iter->solution_level_costs(); // can be empty
-    if (cost.length() != num_lev) {
+    if (cost.length() != num_steps) {
       Cerr << "Error: missing required simulation costs in NonDExpansion::"
 	   << "configure_cost()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
   }
   else  {
-    cost.sizeUninitialized(num_lev);
+    cost.sizeUninitialized(num_steps);
     m_iter = ordered_models.begin();
     bool missing_cost = false;
-    for (size_t i=0; i<num_lev; ++i, ++m_iter) {
+    for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost(); // cost for active soln index
       if (cost[i] <= 0.) missing_cost = true;
     }
@@ -1204,68 +1204,39 @@ configure_cost(size_t num_lev, bool multilevel, RealVector& cost)
 
 
 void NonDExpansion::
-configure_indices(unsigned short lev, unsigned short form, bool multilevel)
+configure_indices(unsigned short group, unsigned short form, unsigned short lev)
 {
   // Set active surrogate/truth models within the hierarchical surrogate
   // (iteratedModel)
 
-  /*
-  UShortArray truth_key;
-  form_key(lev, form, multilevel, truth_key);
-  uSpaceModel.truth_model_key(truth_key);
-
-  if (lev == 0) {
-    bypass_surrogate_mode();
-    uSpaceModel.surrogate_model_key(UShortArray());
-  }
-  else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
-    aggregated_models_mode();
-    UShortArray surr_key(truth_key); --surr_key.back();
-    uSpaceModel.surrogate_model_key(surr_key);
-  }
-  activate_key(truth_key);
-  */
-
+  UShortArray hf_key, lf_key;
+  // group index assigned based on step in model form/resolution sequence
+  Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
+  uSpaceModel.truth_model_key(hf_key);
 
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0) {
     bypass_surrogate_mode();
-    // deactivate surrogate model key (resize SharedApproxData::approxDataKeys)
-    uSpaceModel.surrogate_model_key(UShortArray());
+    uSpaceModel.surrogate_model_key(lf_key); // empty key: deactivates pairing
+    uSpaceModel.active_model_key(hf_key);    // one active fidelity
   }
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
-    if (multilevel) uSpaceModel.surrogate_model_key(form, lev-1);
-    else            uSpaceModel.surrogate_model_key(lev-1);
-  }
-  if (multilevel) uSpaceModel.truth_model_key(form, lev);
-  else            uSpaceModel.truth_model_key(lev);
 
-  // Notes:
+    lf_key = hf_key;  Pecos::DiscrepancyCalculator::decrement_key(lf_key);    
+    uSpaceModel.surrogate_model_key(lf_key);
+
+    UShortArray discrep_key;
+    Pecos::DiscrepancyCalculator::aggregate_keys(hf_key, lf_key, discrep_key);
+    uSpaceModel.active_model_key(discrep_key); // two active fidelities
+  }
+
+  // Old design:
   // > truth and (modified) surrogate model keys get stored in approxDataKeys
   //   for use in distinguishing data set relationships within SurrogateData
   // > only the truth key (which remains unmodified) gets activated for
   //   Model/Interface/Approximation/...
-  activate_key(uSpaceModel.truth_model_key());
-
-
-  /* Standardize on DiscrepancyCalculator::modified_lf_key()
-
-  if (multilevel) uSpaceModel.truth_model_key(form, lev);
-  else            uSpaceModel.truth_model_key(lev);
-
-  const UShortArray& hf_key = uSpaceModel.truth_model_key();
-  UShortArray lf_key; DiscrepancyCalculator::modified_lf_key(hf_key, lf_key);
-  uSpaceModel.surrogate_model_key(lf_key); // includes empty key
-
-  // assume bottom-up sweep through levels (avoid redundant mode updates)
-  if (lev == 0)
-    bypass_surrogate_mode();
-  else if (multilevDiscrepEmulation == DISTINCT_EMULATION)
-    aggregated_models_mode();
-
-  activate_key(hf_key);
-  */
+  //uSpaceModel.active_model_key(uSpaceModel.truth_model_key());
 }
 
 
@@ -1324,19 +1295,19 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
     { equivHFEvals = 0.; return; }
 
   // compute the equivalent number of HF evaluations
-  size_t lev, num_lev = N_l.size();
+  size_t l, num_l = N_l.size();
   switch (multilevDiscrepEmulation) {
   case RECURSIVE_EMULATION:
-    for (lev=0; lev<num_lev; ++lev)
-      equivHFEvals += N_l[lev] * cost[lev]; // single model cost per level
+    for (l=0; l<num_l; ++l)
+      equivHFEvals += N_l[l] * cost[l]; // single model cost per level
     break;
   case DISTINCT_EMULATION:
     equivHFEvals = N_l[0] * cost[0]; // first level is single model cost
-    for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
-      equivHFEvals += N_l[lev] * (cost[lev] + cost[lev-1]);
+    for (l=1; l<num_l; ++l)  // subsequent levels incur 2 model costs
+      equivHFEvals += N_l[l] * (cost[l] + cost[l-1]);
     break;
   }
-  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+  equivHFEvals /= cost[num_l-1]; // normalize into equivalent HF evals
 }
 
 
@@ -1350,12 +1321,15 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
-  size_t num_lev; unsigned short form; bool multilev;
-  configure_levels(num_lev, form, multilev, true); // MF given precedence
+  unsigned short num_steps, fixed_index, form, lev;  bool multilev;
+  configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
+  // either form varies with lev fixed or vice versa:
+  if (multilev) form = fixed_index;
+  else           lev = fixed_index;
+  unsigned short& step = (multilev) ? lev : form;  step = 0;
 
   // initial low fidelity/lowest discretization expansion
-  unsigned short lev = 0;
-  configure_indices(lev, form, multilev);
+  configure_indices(step, form, lev);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
@@ -1367,9 +1341,9 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // loop over each of the discrepancy levels
-  for (lev=1; lev<num_lev; ++lev) {
+  for (step=1; step<num_steps; ++step) {
     // configure hierarchical model indices and activate key in data fit model
-    configure_indices(lev, form, multilev);
+    configure_indices(step, form, lev);
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
@@ -1413,69 +1387,77 @@ void NonDExpansion::greedy_multifidelity_expansion()
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // Initialize again (or must propagate settings from mf_expansion())
-  size_t num_lev, best_lev, lev_candidate, best_candidate;
-  unsigned short lev, form; RealVector cost;
-  bool multilev, full_covar = (covarianceControl == FULL_COVARIANCE);
-  configure_levels(num_lev, form, multilev, true); // MF given precedence
-  configure_cost(num_lev, multilev, cost);
+  unsigned short num_steps, fixed_index, form, lev;  bool multilev;
+  configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
+  RealVector cost;  configure_cost(num_steps, multilev, cost);
+  // either form varies with lev fixed or vice versa:
+  if (multilev) form = fixed_index;
+  else           lev = fixed_index;
+  unsigned short& step = (multilev) ? lev : form; // step is an alias
 
   // Initialize all levels.  Note: configure_indices() is used for completeness
-  // (activate_key() is sufficient for current grid initialization operations).
-  for (lev=0; lev<num_lev; ++lev) {
-    configure_indices(lev, form, multilev);//activate_key(lev, form, multilev);
+  // (uSpaceModel.active_model_key(...) is sufficient for current grid
+  // initialization operations).
+  for (step=0; step<num_steps; ++step) {
+    configure_indices(step, form, lev);
     pre_refinement();
   }
 
-  size_t iter = 0,
-    max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  Real lev_metric, best_lev_metric = DBL_MAX;
-  while ( best_lev_metric > convergenceTol && iter < max_refine ) {
+  // Integrated MF refinement mirrors individual adaptive refinement in
+  // refine_expansion() in using the max_refinement_iterations specification.
+  // This differs from multilevel_regression(), which uses max_iterations and
+  // potentially max_solver_iterations.
+  size_t iter = 0, best_step, step_candidate, best_step_candidate,
+    max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
+  Real step_metric, best_step_metric = DBL_MAX;
+  RealVector best_stats_star;
+  while ( best_step_metric > convergenceTol && iter < max_refine_iter ) {
 
     // Generate candidates at each level
     // > TO DO: need to be able to push / pop for all refine types (beyond GSG)
-    best_lev_metric = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
+    best_step_metric = 0.;
+    for (step=0; step<num_steps; ++step) {
       // configure hierarchical model indices and activate key in data fit model
-      configure_indices(lev, form, multilev);
+      configure_indices(step, form, lev);
 
       // This returns the best/only candidate for the current level
-      // Note: it must roll up contributions from all levels --> lev_metric
-      lev_candidate = core_refinement(lev_metric, true, true);
+      // Note: it must roll up contributions from all levels --> step_metric
+      step_candidate = core_refinement(step_metric, true, true);
       // core_refinement() normalizes level candidates based on the number of
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
       // secondary normalization for relative level cost is required.
-      lev_metric /= level_cost(lev, cost);
-      Cout << "\n<<<<< Level " << lev+1 << " refinement metric = "
-	   << lev_metric << '\n';
+      step_metric /= sequence_cost(step, cost);
+      Cout << "\n<<<<< Sequence step " << step+1 << " refinement metric = "
+	   << step_metric << '\n';
 
       // Assess candidate for best across all levels
-      if (lev_metric > best_lev_metric) {
-	best_lev_metric = lev_metric;
-	best_lev = lev;	best_candidate = lev_candidate;
-	statsStar = levelStatsStar;
+      if (step_metric > best_step_metric) {
+	best_step        = step;         best_step_candidate = step_candidate;
+	best_step_metric = step_metric;  best_stats_star     = statsStar;
       }
     }
 
     // permanently apply best increment and update references for next increment
-    configure_indices(best_lev, form, multilev);
-    select_candidate(best_candidate);
-    push_candidate(statsStar);// update stats from best candidate (no recompute)
+    step = best_step; // also updates form | lev
+    configure_indices(step, form, lev);
+    select_candidate(best_step_candidate);
+    push_candidate(best_stats_star); // update stats from best (no recompute)
 
     ++iter;
     Cout << "\n<<<<< Iteration " << iter
-	 << " completed: selected refinement indices = level " << best_lev+1
-	 << " candidate " << best_candidate+1 << '\n';
+	 << " completed: selected refinement indices = sequence step "
+	 << best_step+1 << " candidate " << best_candidate+1 << '\n';
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
   // Perform final roll-up for each level and then combine levels
-  NLev.resize(num_lev);  bool reverted;
-  for (lev=0; lev<num_lev; ++lev) {
-    configure_indices(lev, form, multilev);
-    reverted = (lev != best_lev); // only candidate from best_lev was applied
-    post_refinement(best_lev_metric, reverted);
-    NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
+  NLev.resize(num_steps);  bool reverted;
+  for (step=0; step<num_steps; ++step) {
+    configure_indices(step, form, multilev);
+    reverted = (step != best_step); // only candidate from best_step was applied
+    post_refinement(best_step_metric, reverted);
+    NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
@@ -1487,29 +1469,34 @@ void NonDExpansion::greedy_multifidelity_expansion()
 void NonDExpansion::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
-  // (discretization levels take precedence)
-  unsigned short lev, form;  bool multilev, import_pilot;
-  size_t num_lev, iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
+  // (discretization levels take precedence for this algorithm)
+  unsigned short num_steps, fixed_index, form, lev;
+  bool multilev, import_pilot;  RealVector cost;
+  size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
-  configure_levels(num_lev, form, multilev, false);
-  RealVector cost, level_metrics(num_lev);
-  configure_cost(num_lev, multilev, cost);
+  configure_sequence(num_steps, fixed_index, multilev, false);
+  RealVector cost, level_metrics(num_steps);
+  configure_cost(num_steps, multilev, cost);
+  // either form varies with lev fixed or vice versa:
+  if (multilev) form = fixed_index;
+  else           lev = fixed_index;
+  unsigned short& step = (multilev) ? lev : form; // step is an alias
 
-  initialize_ml_regression(num_lev, import_pilot);
+  initialize_ml_regression(num_steps, import_pilot);
 
   // Load the pilot sample from user specification
-  SizetArray delta_N_l(num_lev);
+  SizetArray delta_N_l(num_steps);
   load_pilot_sample(pilotSamples, delta_N_l);
 
   // now converge on sample counts per level (NLev)
-  NLev.assign(num_lev, 0);
+  NLev.assign(num_steps, 0);
   while ( iter <= max_iter &&
 	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
 
     sum_root_var_cost = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
+    for (step=0; step<num_steps; ++step) {
 
-      configure_indices(lev, form, multilev);
+      configure_indices(step, form, lev);
 
       if (iter == 0) { // initial expansion build
 	// Update solution control variable in uSpaceModel to support
@@ -1517,46 +1504,46 @@ void NonDExpansion::multilevel_regression()
 	if (import_pilot)
 	  uSpaceModel.update_from_subordinate_model(); // max depth
 
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	if (lev == 0 || import_pilot)
+	NLev[step] += delta_N_l[step]; // update total samples for this step
+	increment_sample_sequence(delta_N_l[step], NLev[step], step);
+	if (step == 0 || import_pilot)
 	  compute_expansion(); // init + import + build; not recursive
 	else
 	  update_expansion();  // just build; not recursive
 
 	if (import_pilot) { // update counts to include imported data
-	  NLev[lev] = delta_N_l[lev]
+	  NLev[step] = delta_N_l[step]
 	    = uSpaceModel.approximation_data(0).points();
-	  Cout << "Pilot count including import = " << delta_N_l[lev] << "\n\n";
+	  Cout << "Pilot count including import = " << delta_N_l[step]<< "\n\n";
 	  // Trap zero samples as it will cause FPE downstream
-	  if (NLev[lev] == 0) { // no pilot spec, no import match
-	    Cerr << "Error: insufficient sample recovery for level " << lev
-		 << " in multilevel_regression()." << std::endl;
+	  if (NLev[step] == 0) { // no pilot spec, no import match
+	    Cerr << "Error: insufficient sample recovery for sequence step "
+		 << step << " in multilevel_regression()." << std::endl;
 	    abort_handler(METHOD_ERROR);
 	  }
 	}
       }
-      else if (delta_N_l[lev]) {
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
+      else if (delta_N_l[step]) {
+	NLev[step] += delta_N_l[step]; // update total samples for this step
+	increment_sample_sequence(delta_N_l[step], NLev[step], step);
 	// Note: import build data is not re-processed by append_expansion()
 	append_expansion();
       }
 
       switch (mlmfAllocControl) {
       case ESTIMATOR_VARIANCE: {
-	Real& agg_var_l = level_metrics[lev];
-	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
+	Real& agg_var_l = level_metrics[step];
+	if (delta_N_l[step] > 0) aggregate_variance(agg_var_l);
 	sum_root_var_cost += std::pow(agg_var_l *
-	  std::pow(level_cost(lev, cost), kappaEstimatorRate),
+	  std::pow(sequence_cost(step, cost), kappaEstimatorRate),
 	  1./(kappaEstimatorRate+1.));
         // MSE reference is ML MC aggregation for pilot(+import) sample:
-	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
+	if (iter == 0) estimator_var0 += agg_var_l / NLev[step];
 	break;
       }
       default:
-	if (delta_N_l[lev] > 0)
-	  level_metric(level_metrics[lev], 2.);
+	if (delta_N_l[step] > 0)
+	  level_metric(level_metrics[step], 2.);
 	//else sparsity,rank metric for this level same as previous iteration
 	break;
       }
@@ -1587,13 +1574,14 @@ void NonDExpansion::multilevel_regression()
 }
 
 
-void NonDExpansion::initialize_ml_regression(size_t num_lev, bool& import_pilot)
+void NonDExpansion::
+initialize_ml_regression(size_t num_steps, bool& import_pilot)
 {
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
   uSpaceModel.clear_model_keys();
 
-  // all stats are level stats
+  // all stats are stats for the active sequence step (not combined)
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Multilevel variance aggregation requires independent sample sets
@@ -1640,7 +1628,7 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   // increments.  For recursive discrepancy, however, all levels above the
   // selected candidate are invalidated.
   //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-  //  for (lev=best_lev+1; lev<num_lev; ++lev)
+  //  for (lev=best_lev+1; lev<num_steps; ++lev)
   //    uSpaceModel.clear_popped();
 }
 
@@ -1876,7 +1864,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     // track best increment evaluated thus far
     if (delta > delta_star) {
       cit_star = cit;  delta_star = delta;  index_star = index;
-      pull_candidate(levelStatsStar); // pull comp_*_metric() + augmented stats
+      pull_candidate(statsStar); // pull comp_*_metric() + augmented stats
     }
 
     // restore previous state (destruct order is reversed from construct order)
@@ -1890,7 +1878,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
 
   if (!revert) { // permanently apply best increment and update references
     select_index_set_candidate(cit_star); // invalidates cit_star
-    push_candidate(levelStatsStar);
+    push_candidate(statsStar);
   }
   return index_star;
 }
@@ -2149,7 +2137,7 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
   Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
 		       1. / kappaEstimatorRate);
   for (lev=0; lev<num_lev; ++lev) {
-    new_N_l = std::pow(agg_var[lev] / level_cost(lev, cost),
+    new_N_l = std::pow(agg_var[lev] / sequence_cost(lev, cost),
 		       1. / (kappaEstimatorRate+1.)) * fact;
     delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
   }

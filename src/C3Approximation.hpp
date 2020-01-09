@@ -410,7 +410,7 @@ protected:
   void active_model_key(const UShortArray& key);
   void clear_model_keys();
 
-  void link_multilevel_surrogate_data();
+  //void link_multilevel_surrogate_data();
 
   Real                 value(const Variables& vars);
   const RealVector&    gradient(const Variables& vars);

@@ -51,7 +51,7 @@ int TANA3Approximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
   // the number of constraints within current approxData anchor point.
-  return (modified_surrogate_data().anchor()) ? sharedDataRep->numVars+1 : 0;
+  return (approxData.anchor()) ? sharedDataRep->numVars+1 : 0;
 }
 */
 
@@ -66,8 +66,7 @@ void TANA3Approximation::build()
 
   // Sanity checking verifies 1 or 2 points with gradients (Hessians ignored)
 
-  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
-  size_t num_pts = approx_data.points(), num_v = sharedDataRep->numVars;
+  size_t num_pts = approxData.points(), num_v = sharedDataRep->numVars;
   if (num_pts < 1 || num_pts > 2) {
     Cerr << "Error: wrong number of data points (" << num_pts
 	 << ") in TANA3Approximation::build." << std::endl;
@@ -75,7 +74,7 @@ void TANA3Approximation::build()
   }
 
   if (num_pts == 2) { // two-point approximation
-    const Pecos::SDRArray& sdr_array = approx_data.response_data();
+    const Pecos::SDRArray& sdr_array = approxData.response_data();
     // Check gradients
     if (sdr_array[0].response_gradient().length() != num_v ||
 	sdr_array[1].response_gradient().length() != num_v) {
@@ -89,7 +88,7 @@ void TANA3Approximation::build()
     if (minX.empty()) minX.sizeUninitialized(num_v);
 
     // Calculate TANA3 terms
-    const Pecos::SDVArray& sdv_array = approx_data.variables_data();
+    const Pecos::SDVArray& sdv_array = approxData.variables_data();
     const RealVector& x1 = sdv_array[0].continuous_variables();
     const RealVector& x2 = sdv_array[1].continuous_variables();
     for (size_t i=0; i<num_v; i++)
@@ -101,7 +100,7 @@ void TANA3Approximation::build()
     // Fall back to 1st-order Taylor series as interim approach,
     // for which no additional computations are needed.
 
-    if (approx_data.num_gradient_variables() != num_v) {
+    if (approxData.num_gradient_variables() != num_v) {
       Cerr << "Error: response gradients required in TANA3Approximation::build."
 	   << std::endl;
       abort_handler(APPROX_ERROR);
@@ -127,9 +126,8 @@ void TANA3Approximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
-  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
-  const Pecos::SDVArray& sdv_array = approx_data.variables_data();
-  const Pecos::SDRArray& sdr_array = approx_data.response_data();
+  const Pecos::SDVArray& sdv_array = approxData.variables_data();
+  const Pecos::SDRArray& sdr_array = approxData.response_data();
 
   const RealVector& x1    = sdv_array[0].continuous_variables();
   const Real&       f1    = sdr_array[0].response_function();
@@ -272,13 +270,11 @@ Real TANA3Approximation::value(const Variables& vars)
 {
   Real approx_val;
   const RealVector& x = vars.continuous_variables();
-  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
-  size_t i, num_v = sharedDataRep->numVars, num_pts = approx_data.points();
+  size_t i, num_v = sharedDataRep->numVars, num_pts = approxData.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
-    const Pecos::SurrogateDataVars& center_sdv
-      = approx_data.variables_data()[0];
-    const Pecos::SurrogateDataResp& center_sdr = approx_data.response_data()[0];
+    const Pecos::SurrogateDataVars& center_sdv = approxData.variables_data()[0];
+    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
     const RealVector&    center_x = center_sdv.continuous_variables();
     approx_val                    = center_sdr.response_function();
     const RealVector& center_grad = center_sdr.response_gradient();
@@ -304,7 +300,7 @@ Real TANA3Approximation::value(const Variables& vars)
     }
 
     // Calculate approx_val
-    const Pecos::SurrogateDataResp& curr_sdr = approx_data.response_data()[1];
+    const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[1];
     Real f2 = curr_sdr.response_function(), sum1 = 0.,
       sum_diff1_sq = 0., sum_diff2_sq = 0.;
     const RealVector&  grad2 = curr_sdr.response_gradient();
@@ -329,11 +325,10 @@ Real TANA3Approximation::value(const Variables& vars)
 
 const RealVector& TANA3Approximation::gradient(const Variables& vars)
 {
-  const Pecos::SurrogateData& approx_data = modified_surrogate_data();
-  size_t num_pts = approx_data.points();
+  size_t num_pts = approxData.points();
 
   if (num_pts == 1) { // First-order Taylor series (interim approx)
-    const Pecos::SurrogateDataResp& center_sdr = approx_data.response_data()[0];
+    const Pecos::SurrogateDataResp& center_sdr = approxData.response_data()[0];
     return center_sdr.response_gradient(); // can be view of DB response
 
     //copy_data(center_sdr.response_gradient(), approxGradient);// deep copy
@@ -357,7 +352,7 @@ const RealVector& TANA3Approximation::gradient(const Variables& vars)
     }
 
     // Calculate approxGradient
-    const Pecos::SurrogateDataResp& curr_sdr = approx_data.response_data()[1];
+    const Pecos::SurrogateDataResp& curr_sdr = approxData.response_data()[1];
     const RealVector& grad2 = curr_sdr.response_gradient();
     Real sum_diff1_sq = 0., sum_diff2_sq = 0.;
     for (i=0; i<num_v; i++) {

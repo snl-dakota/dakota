@@ -39,7 +39,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), origSurrDataIndex(0), modSurrDataIndex(0),
+  buildDataOrder(1), //origSurrDataIndex(0), modSurrDataIndex(0),
   modelExportPrefix(
     problem_db.get_string("model.surrogate.model_export_prefix")),
   modelExportFormat(
@@ -88,8 +88,8 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
     problem_db.set_db_model_nodes(model_index);
   }
 
-  // initialize sequence of one empty key for first Approximation::approxData
-  approxDataKeys.resize(1);  approxDataKeys[0].resize(1);
+  // initialize sequence of one empty key for Approximation::approxData
+  approxDataKeys.resize(1);
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(BaseConstructor) called to build "
@@ -109,8 +109,9 @@ SharedApproxData::
 SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		 size_t num_vars, short data_order, short output_level):
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
-  origSurrDataIndex(0), modSurrDataIndex(0), modelExportFormat(NO_MODEL_FORMAT),
-  modelExportPrefix(""), dataRep(NULL), referenceCount(1)
+  //origSurrDataIndex(0), modSurrDataIndex(0),
+  modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
+  dataRep(NULL), referenceCount(1)
 {
   bool global_approx = strbegins(approxType, "global_");
   buildDataOrder = 1;
@@ -138,7 +139,7 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
   }
 
   // initialize sequence of one empty key for first Approximation::approxData
-  approxDataKeys.resize(1);  approxDataKeys[0].resize(1);
+  approxDataKeys.resize(1);
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedApproxData::SharedApproxData(NoDBBaseConstructor) called to "
@@ -363,8 +364,7 @@ SharedApproxData::~SharedApproxData()
 
 void SharedApproxData::active_model_key(const UShortArray& mi_key)
 {
-  if (dataRep)
-    dataRep->active_model_key(mi_key);
+  if (dataRep) dataRep->active_model_key(mi_key);
   //else no-op (implementation not required for shared data)
 }
 
@@ -383,21 +383,15 @@ const UShortArray& SharedApproxData::active_model_key() const
 
 void SharedApproxData::clear_model_keys()
 {
-  if (dataRep)
-    dataRep->clear_model_keys();
+  if (dataRep) dataRep->clear_model_keys();
   //else no-op (implementation not required for shared data)
 }
 
 
 void SharedApproxData::link_multilevel_surrogate_data()
 {
-  if (dataRep)
-    dataRep->link_multilevel_surrogate_data();
-  else {
-    Cerr << "Error: link_multilevel_surrogate_data() not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  if (dataRep) dataRep->link_multilevel_surrogate_data();
+  //else no-op (no linkage required for derived SharedApproxData)
 }
 
 
@@ -406,14 +400,13 @@ void SharedApproxData::surrogate_model_key(const UShortArray& key)
   if (dataRep)
     dataRep->surrogate_model_key(key);
   else { // default implementation: no key augmentation
-    UShort2DArray& data_keys = approxDataKeys[origSurrDataIndex];
     // AGGREGATED_MODELS mode uses {HF,LF} order, as does
     // ApproximationInterface::*_add()
     if (key.empty()) // prune second entry, if present, from approxDataKeys
-      data_keys.resize(1);
+      approxDataKeys.resize(1);
     else {
-      data_keys.resize(2);
-      data_keys[1] = key; // assign incoming LF key
+      approxDataKeys.resize(2);
+      approxDataKeys[1] = key; // assign incoming LF key
     }
   }
 }
@@ -424,11 +417,10 @@ void SharedApproxData::truth_model_key(const UShortArray& key)
   if (dataRep)
     dataRep->truth_model_key(key);
   else { // default implementation: no key augmentation
-    UShort2DArray& data_keys = approxDataKeys[origSurrDataIndex];
     // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
-    switch  (data_keys.size()) {
-    case 0:  data_keys.push_back(key); break;
-    default: data_keys[0] = key;       break;
+    switch  (approxDataKeys.size()) {
+    case 0:  approxDataKeys.push_back(key); break;
+    default: approxDataKeys[0] = key;       break;
     }
   }
 }
@@ -442,14 +434,13 @@ const UShortArray& SharedApproxData::surrogate_model_key() const
   if (dataRep)
     return dataRep->surrogate_model_key();
   else { // default implementation
-    const UShort2DArray& data_keys = approxDataKeys[origSurrDataIndex];
-    if (data_keys.size() < 2) {
+    if (approxDataKeys.size() < 2) {
       Cerr << "Error: no key defined in SharedApproxData::surrogate_model_key()"
 	   << std::endl;
       abort_handler(APPROX_ERROR);
       // or could return empty key by value
     }
-    return data_keys.back();
+    return approxDataKeys.back();
   }
 }
 */
@@ -462,7 +453,7 @@ const UShortArray& SharedApproxData::truth_model_key() const
   if (dataRep)
     return dataRep->truth_model_key();
   else // default implementation
-    return approxDataKeys[origSurrDataIndex].front();
+    return approxDataKeys.front();
 }
 
 

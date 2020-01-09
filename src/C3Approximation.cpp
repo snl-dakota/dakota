@@ -223,10 +223,9 @@ void C3Approximation::build()
       Cerr << "Warning: CV is not yet implemented in C3Approximation.  "
 	   << "Ignoring CV request.\n";
 
-    const Pecos::SurrogateData& approx_data = modified_surrogate_data();
-    const Pecos::SDVArray& sdv_array = approx_data.variables_data();
-    const Pecos::SDRArray& sdr_array = approx_data.response_data();
-    size_t ndata = approx_data.points();
+    const Pecos::SDVArray& sdv_array = approxData.variables_data();
+    const Pecos::SDRArray& sdr_array = approxData.response_data();
+    size_t ndata = approxData.points();
 
     // JUST 1 QOI
     // Transfer the training data to the Teuchos arrays used by the GP
@@ -405,6 +404,7 @@ void C3Approximation::clear_inactive_coefficients()
 }
 
 
+/*
 void C3Approximation::link_multilevel_surrogate_data()
 {
   // Manage {surr,modSurr}Data instances:
@@ -428,6 +428,7 @@ void C3Approximation::link_multilevel_surrogate_data()
     break;
   }
 }
+*/
 
 
 void C3Approximation::synchronize_surrogate_data()
@@ -435,10 +436,12 @@ void C3Approximation::synchronize_surrogate_data()
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   switch (data_rep->discrepancyType) {
   //case Pecos::RECURSIVE_DISCREP:
-  //  response_data_to_surplus_data();     break;
+    //response_data_to_surplus_data();   break;
   case Pecos::DISTINCT_DISCREP:
     response_data_to_discrepancy_data(); break;
-  default: // allow use of surrData or modSurrData, even if no modifications
+  /* no additional discrepancy key
+  default:
+    // allow use of surrData or modSurrData, even if no modifications
     // depending on ctor for modSurrData, may be NULL or just empty
     if (data_rep->modSurrDataIndex != data_rep->origSurrDataIndex) {
       Pecos::SurrogateData&  mod_surr_data = modified_surrogate_data();
@@ -450,6 +453,7 @@ void C3Approximation::synchronize_surrogate_data()
 				  Pecos::SHALLOW_COPY);
     }
     break;
+  */
   }
 }
 
@@ -457,14 +461,14 @@ void C3Approximation::synchronize_surrogate_data()
 void C3Approximation::response_data_to_discrepancy_data()
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  
+  /*
   const UShortArray& hf_key = data_rep->activeKey;
-  Pecos::SurrogateData& orig_surr_data = surrogate_data();
-  if (hf_key  != orig_surr_data.active_key()) {
+  if (hf_key != approxData.active_key()) {
     PCerr << "Error: active key mismatch in C3Approximation::"
 	  << "response_data_to_discrepancy_data()." << std::endl;
     abort_handler(-1);
   }
-  Pecos::SurrogateData& mod_surr_data = modified_surrogate_data();
 
   // Keep surrData and modSurrData distinct (don't share reps since copy() will
   // not restore independence when it is needed).  Rather use distinct arrays
@@ -473,11 +477,11 @@ void C3Approximation::response_data_to_discrepancy_data()
   // > shallow copies of popped arrays support replicated pops on modSurrData
   //   (applied to distinct arrays of shared instances)
   std::map<UShortArray, Pecos::SDRArray>::const_iterator r_cit
-    = orig_surr_data.response_data_map().begin();
+    = approxData.response_data_map().begin();
   if (hf_key == r_cit->first) { // first entry -> no discrepancy/surplus
     if (mod_surr_data.is_null()) mod_surr_data = Pecos::SurrogateData(hf_key);
     else                         mod_surr_data.active_key(hf_key);
-    mod_surr_data.copy_active(orig_surr_data, Pecos::SHALLOW_COPY,
+    mod_surr_data.copy_active(approxData, Pecos::SHALLOW_COPY,
 			      Pecos::SHALLOW_COPY);
   }
   else {
@@ -486,11 +490,20 @@ void C3Approximation::response_data_to_discrepancy_data()
     UShortArray lf_key;
     Pecos::DiscrepancyCalculator::modified_lf_key(hf_key, lf_key);
     // compute response discrepancies and store in mod_surr_data
-    Pecos::DiscrepancyCalculator::compute(orig_surr_data, hf_key, lf_key,
+    Pecos::DiscrepancyCalculator::compute(approxData, hf_key, lf_key,
 					  mod_surr_data, data_rep->combineType);
     // compute faults from scratch (aggregates LF,HF failures)
     mod_surr_data.data_checks();
   }
+  */
+
+  // create a discrepancy key from approxDataKeys ...
+  UShortArray discrep_key;
+  Pecos::DiscrepancyCalculator::discrepancy_key(hf_key, lf_key, discrep_key);
+  // compute and store the discrepancy data
+  if (!discrep_key.empty()) // bypass first level -> no discrepancy/surplus
+    Pecos::DiscrepancyCalculator::compute(approxData, hf_key, lf_key,
+					  discrep_key, data_rep->combineType);
 }
 
 
