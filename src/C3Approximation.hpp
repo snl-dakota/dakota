@@ -399,7 +399,7 @@ public:
   const RealVector& numerical_integration_moments() const;
 
   void synchronize_surrogate_data();
-  void response_data_to_discrepancy_data();
+  //void response_data_to_surplus_data();
 
 protected:
 

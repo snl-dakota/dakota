@@ -434,77 +434,42 @@ void C3Approximation::link_multilevel_surrogate_data()
 void C3Approximation::synchronize_surrogate_data()
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  switch (data_rep->discrepancyType) {
-  //case Pecos::RECURSIVE_DISCREP:
-    //response_data_to_surplus_data();   break;
-  case Pecos::DISTINCT_DISCREP:
-    response_data_to_discrepancy_data(); break;
-  /* no additional discrepancy key
-  default:
-    // allow use of surrData or modSurrData, even if no modifications
-    // depending on ctor for modSurrData, may be NULL or just empty
-    if (data_rep->modSurrDataIndex != data_rep->origSurrDataIndex) {
-      Pecos::SurrogateData&  mod_surr_data = modified_surrogate_data();
-      Pecos::SurrogateData& orig_surr_data = surrogate_data();
-      if (mod_surr_data.is_null())
-	mod_surr_data = orig_surr_data;     // shared rep
-      else if (mod_surr_data.points() == 0) // retain independence: shallow copy
-	mod_surr_data.copy_active(orig_surr_data, Pecos::SHALLOW_COPY,
-				  Pecos::SHALLOW_COPY);
-    }
-    break;
-  */
-  }
-}
-
-
-void C3Approximation::response_data_to_discrepancy_data()
-{
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  
-  /*
-  const UShortArray& hf_key = data_rep->activeKey;
-  if (hf_key != approxData.active_key()) {
+  const UShortArray& active_key = data_rep->activeKey;
+  if (active_key != surrData.active_key()) {
     PCerr << "Error: active key mismatch in C3Approximation::"
-	  << "response_data_to_discrepancy_data()." << std::endl;
+	  << "synchronize_surrogate_data()." << std::endl;
     abort_handler(-1);
   }
 
-  // Keep surrData and modSurrData distinct (don't share reps since copy() will
-  // not restore independence when it is needed).  Rather use distinct arrays
-  // with shallow copies of SDV,SDR instances when they will not be modified.
-  // > level 0 mode is BYPASS_SURROGATE: both SDVs & SDRs can be shallow copies
-  // > shallow copies of popped arrays support replicated pops on modSurrData
-  //   (applied to distinct arrays of shared instances)
-  std::map<UShortArray, Pecos::SDRArray>::const_iterator r_cit
-    = approxData.response_data_map().begin();
-  if (hf_key == r_cit->first) { // first entry -> no discrepancy/surplus
-    if (mod_surr_data.is_null()) mod_surr_data = Pecos::SurrogateData(hf_key);
-    else                         mod_surr_data.active_key(hf_key);
-    mod_surr_data.copy_active(approxData, Pecos::SHALLOW_COPY,
-			      Pecos::SHALLOW_COPY);
-  }
-  else {
-    // TO DO: improve encapsulation by passing surrogate key (currently
-    //        replicates logic in NonDExpansion::configure_indices())
-    UShortArray lf_key;
-    Pecos::DiscrepancyCalculator::modified_lf_key(hf_key, lf_key);
-    // compute response discrepancies and store in mod_surr_data
-    Pecos::DiscrepancyCalculator::compute(approxData, hf_key, lf_key,
-					  mod_surr_data, data_rep->combineType);
-    // compute faults from scratch (aggregates LF,HF failures)
-    mod_surr_data.data_checks();
-  }
-  */
+  // level 0: surrData non-aggregated key stores raw data
+  short discrep_type = data_rep->discrepancyType;
+  if (!discrep_type || !DiscrepancyCalculator::aggregated_key(active_key))
+    return;
 
-  // create a discrepancy key from approxDataKeys ...
-  UShortArray discrep_key;
-  Pecos::DiscrepancyCalculator::discrepancy_key(hf_key, lf_key, discrep_key);
-  // compute and store the discrepancy data
-  if (!discrep_key.empty()) // bypass first level -> no discrepancy/surplus
-    Pecos::DiscrepancyCalculator::compute(approxData, hf_key, lf_key,
-					  discrep_key, data_rep->combineType);
+  switch (discrep_type) {
+  case Pecos::RECURSIVE_DISCREP:
+    //response_data_to_surplus_data();
+    break;
+  case Pecos::DISTINCT_DISCREP:
+    // If an aggregated (discrepancy) key is active, compute the necessary
+    // aggregation from the latest model datasets
+    DiscrepancyCalculator::compute(surrData, active_key,
+				   data_rep->expConfigOptions.combineType);
+    break;
+  }
 }
+
+
+/*
+void C3Approximation::response_data_to_surplus_data()
+{
+  // ...
+
+  // compute discrepancy faults from scratch (mostly mirrors HF failures but
+  // might possibly add new ones for multiplicative FPE)
+  surrData.data_checks();
+}
+*/
 
 
 void C3Approximation::compute_all_sobol_indices(size_t interaction_order)

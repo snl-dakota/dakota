@@ -245,16 +245,10 @@ public:
   /// finalize SurrogateData by applying all remaining trial sets
   void finalize_data();
 
-  /// return approxData[sharedDataRep->origSurrDataIndex]
+  /// return approxData
   const Pecos::SurrogateData& surrogate_data() const;
-  /// return approxData[sharedDataRep->origSurrDataIndex]
+  /// return approxData
   Pecos::SurrogateData& surrogate_data();
-  // return approxData[d_index], resorting to default if _NPOS
-  //const Pecos::SurrogateData& surrogate_data(size_t d_index) const;
-  // return approxData[sharedDataRep->modSurrDataIndex]
-  //const Pecos::SurrogateData& modified_surrogate_data() const;
-  // return approxData[sharedDataRep->modSurrDataIndex]
-  //Pecos::SurrogateData& modified_surrogate_data();
 
   /// append to SurrogateData::varsData
   void add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag,
@@ -392,59 +386,16 @@ private:
 
 inline const Pecos::SurrogateData& Approximation::surrogate_data() const
 {
-  if (approxRep)
-    return approxRep->surrogate_data();
-  else
-    return approxData;//[sharedDataRep->origSurrDataIndex];
+  if (approxRep) return approxRep->surrogate_data();
+  else           return approxData;
 }
 
 
 inline Pecos::SurrogateData& Approximation::surrogate_data()
 {
-  if (approxRep)
-    return approxRep->surrogate_data();
-  else
-    return approxData;//[sharedDataRep->origSurrDataIndex];
+  if (approxRep) return approxRep->surrogate_data();
+  else           return approxData;
 }
-
-
-/*
-inline const Pecos::SurrogateData& Approximation::
-surrogate_data(size_t d_index) const
-{
-  if (approxRep)
-    return approxRep->surrogate_data(d_index);
-  else if (d_index == _NPOS)
-    return approxData[sharedDataRep->origSurrDataIndex]; // defaults to front()
-  else {
-    if (d_index >= approxData.size()) {
-      Cerr << "Error: index out of range in Approximation::surrogate_data()."
-	   << std::endl;
-      abort_handler(APPROX_ERROR);
-    }
-    return approxData[d_index];
-  }
-}
-
-
-inline const Pecos::SurrogateData& Approximation::
-modified_surrogate_data() const
-{
-  if (approxRep)
-    return approxRep->modified_surrogate_data();
-  else
-    return approxData[sharedDataRep->modSurrDataIndex];
-}
-
-
-inline Pecos::SurrogateData& Approximation::modified_surrogate_data()
-{
-  if (approxRep)
-    return approxRep->modified_surrogate_data();
-  else
-    return approxData[sharedDataRep->modSurrDataIndex];
-}
-*/
 
 
 inline void Approximation::

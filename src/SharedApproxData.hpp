@@ -169,11 +169,6 @@ public:
   // return the number of variables used in the approximation
   //int num_variables() const;
 
-  // set origSurrDataIndex
-  //void surrogate_data_index(size_t d_index);
-  // set modSurrDataIndex
-  //void modified_surrogate_data_index(size_t d_index);
-
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		  const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
@@ -223,12 +218,6 @@ protected:
 
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
-
-  // index of approxData instance corresponding to original SurrogateData
-  //size_t origSurrDataIndex;
-  // index of approxData instance corresponding to modified SurrogateData
-  // (e.g., discrepancy data from differencing two keys from original data)
-  //size_t modSurrDataIndex;
 
   /// set of multi-index model keys to enumerate when updating the
   /// SurrogateData for each Approximation
@@ -284,38 +273,6 @@ private:
 
 //inline int SharedApproxData::num_variables() const
 //{ return (dataRep) ? dataRep->numVars : numVars; }
-
-
-/*
-inline void SharedApproxData::surrogate_data_index(size_t d_index)
-{
-  if (dataRep)
-    dataRep->surrogate_data_index(d_index);
-  else { // not virtual: all derived classes use following definition
-    //if (d_index >= approxDataKeys.size()) {
-    //  Cerr << "Error: index out of range in SharedApproxData::"
-    //       << "surrogate_data_index()." << std::endl;
-    //  abort_handler(APPROX_ERROR);
-    //}
-    origSurrDataIndex = d_index;
-  }
-}
-
-
-inline void SharedApproxData::modified_surrogate_data_index(size_t d_index)
-{
-  if (dataRep)
-    dataRep->modified_surrogate_data_index(d_index);
-  else { // not virtual: all derived classes use following definition
-    //if (d_index >= approxDataKeys.size()) {
-    //  Cerr << "Error: index out of range in SharedApproxData::"
-    //       << "modified_surrogate_data_index()." << std::endl;
-    //  abort_handler(APPROX_ERROR);
-    //}
-    modSurrDataIndex = d_index;
-  }
-}
-*/
 
 
 inline void SharedApproxData::
