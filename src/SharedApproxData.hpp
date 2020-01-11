@@ -91,18 +91,12 @@ public:
   /// reset initial state by clearing all model keys for an approximation
   virtual void clear_model_keys();
 
-  /// define data keys and active data index for aggregated response data
-  /// (SharedPecosApproxData)
-  virtual void link_multilevel_surrogate_data();
+  // define data keys and active data index for aggregated response data
+  // (SharedPecosApproxData)
+  //virtual void link_multilevel_surrogate_data();
 
-  /// update approxDataKeys[origSurrDataIndex] with incoming surrogate key
-  virtual void surrogate_model_key(const UShortArray& key);
-  /// update approxDataKeys[origSurrDataIndex] with incoming truth key
-  virtual void truth_model_key(const UShortArray& key);
-  // return surrogate key, extracted from approxDataKeys[origSurrDataIndex]
-  //virtual const UShortArray& surrogate_model_key() const;
-  /// return truth key, extracted from approxDataKeys[origSurrDataIndex]
-  virtual const UShortArray& truth_model_key() const;
+  /// return the discrepancy type for approximations that support MLMF
+  virtual short discrepancy_type() const;
 
   /// builds the shared approximation data from scratch
   virtual void build();
@@ -168,6 +162,15 @@ public:
 
   // return the number of variables used in the approximation
   //int num_variables() const;
+
+  /// update approxDataKeys with incoming surrogate key
+  void surrogate_model_key(const UShortArray& key);
+  /// update approxDataKeys with incoming truth key
+  void truth_model_key(const UShortArray& key);
+  /// return surrogate key, extracted from approxDataKeys
+  const UShortArray& surrogate_model_key() const;
+  /// return truth key, extracted from approxDataKeys
+  const UShortArray& truth_model_key() const;
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,

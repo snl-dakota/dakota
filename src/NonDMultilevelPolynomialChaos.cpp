@@ -344,6 +344,7 @@ NonDMultilevelPolynomialChaos::~NonDMultilevelPolynomialChaos()
 { }
 
 
+/*
 void NonDMultilevelPolynomialChaos::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
@@ -356,11 +357,10 @@ void NonDMultilevelPolynomialChaos::initialize_u_space_model()
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
-  uSpaceModel.link_multilevel_approximation_data();
+  //uSpaceModel.link_multilevel_approximation_data();
 }
 
 
-/*
 bool NonDMultilevelPolynomialChaos::resize()
 {
   //resizedFlag = true;

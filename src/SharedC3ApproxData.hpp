@@ -86,9 +86,7 @@ protected:
   const UShortArray& active_model_key() const;
   void clear_model_keys();
 
-  void link_multilevel_surrogate_data();
-  void surrogate_model_key(const UShortArray& key);
-  void truth_model_key(const UShortArray& key);
+  short discrepancy_type() const;
 
   // Activate as additional features (and basis types) come online
   
@@ -195,6 +193,10 @@ inline const UShortArray& SharedC3ApproxData::active_model_key() const
 
 inline void SharedC3ApproxData::clear_model_keys()
 { activeKey.clear(); } // no shared data is currently keyed
+
+
+inline short SharedC3ApproxData::discrepancy_type() const
+{ return discrepancyType; }
 
 
 inline size_t SharedC3ApproxData::polynomial_order() const

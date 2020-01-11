@@ -191,9 +191,9 @@ public:
   virtual void approximation_coefficients(const RealVector& approx_coeffs,
 					  bool normalized);
 
-  /// link more than once approxData instance for aggregated response data
-  /// (PecosApproximation)
-  virtual void link_multilevel_surrogate_data();
+  // link more than once approxData instance for aggregated response data
+  // (PecosApproximation)
+  //virtual void link_multilevel_surrogate_data();
 
   /// print the coefficient array computed in build()/rebuild()
   virtual void coefficient_labels(std::vector<std::string>& coeff_labels) const;
@@ -339,6 +339,13 @@ protected:
   // approximation type identifier
   //String approxType;
 
+  /// contains the variables/response data for constructing a single
+  /// approximation model (one response function).  There is only one
+  /// SurrogateData instance per Approximation, although it may contain
+  /// keys for different model forms/resolutions and aggregations (e.g.,
+  /// discrepancies) among forms/resolutions.
+  Pecos::SurrogateData approxData;
+
   /// gradient of the approximation returned by gradient()
   RealVector approxGradient;
   /// Hessian of the approximation returned by hessian()
@@ -346,13 +353,6 @@ protected:
 
   /// label for approximation, if applicable
   String approxLabel;
-
-  /// contains the variables/response data for constructing a single
-  /// approximation model (one response function).  There is only one
-  /// SurrogateData instance per Approximation, although it may contain
-  /// keys for different model forms/resolutions and aggregations (e.g.,
-  /// discrepancies) among forms/resolutions.
-  Pecos::SurrogateData approxData;
 
   /// contains the approximation data that is shared among the response set
   SharedApproxData* sharedDataRep;

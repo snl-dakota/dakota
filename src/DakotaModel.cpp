@@ -3449,6 +3449,15 @@ Model& Model::surrogate_model()
 }
 
 
+const Model& Model::surrogate_model() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->surrogate_model();
+  else // letter lacking redefinition of virtual fn.
+    return dummy_model; // default is no surrogate -> return empty envelope
+}
+
+
 void Model::surrogate_model_key(const UShortArray& lf_key)
 {
   if (modelRep) // envelope fwd to letter
@@ -3474,6 +3483,15 @@ const UShortArray& Model::surrogate_model_key() const
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
 Model& Model::truth_model()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->truth_model();
+  else // letter lacking redefinition of virtual fn.
+    return *this; // default is no surrogate -> return this model instance
+}
+
+
+const Model& Model::truth_model() const
 {
   if (modelRep) // envelope fwd to letter
     return modelRep->truth_model();
@@ -4123,8 +4141,7 @@ const RealVector& Model::error_estimates()
 }
 
 
-const Pecos::SurrogateData& Model::
-approximation_data(size_t fn_index, size_t d_index)
+const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"
@@ -4134,7 +4151,7 @@ approximation_data(size_t fn_index, size_t d_index)
   }
 
   // envelope fwd to letter
-  return modelRep->approximation_data(fn_index, d_index);
+  return modelRep->approximation_data(fn_index);
 }
 
 
@@ -4155,6 +4172,7 @@ short Model::surrogate_response_mode() const
 }
 
 
+/*
 void Model::link_multilevel_approximation_data()
 {
   if (modelRep) // envelope fwd to letter
@@ -4166,6 +4184,7 @@ void Model::link_multilevel_approximation_data()
     abort_handler(MODEL_ERROR);
   }
 }
+*/
 
 
 DiscrepancyCorrection& Model::discrepancy_correction()

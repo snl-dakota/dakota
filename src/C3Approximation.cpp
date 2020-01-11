@@ -229,9 +229,9 @@ void C3Approximation::build()
 
     // JUST 1 QOI
     // Transfer the training data to the Teuchos arrays used by the GP
-    // input variables (reformats surrData for C3)
+    // input variables (reformats approxData for C3)
     double* xtrain = (double*)calloc(num_v*ndata,sizeof(double));
-    // QoI observations (reformats surrData for C3)
+    // QoI observations (reformats approxData for C3)
     double* ytrain = (double*)calloc(ndata,sizeof(double));
 
     // process currentPoints
@@ -435,15 +435,16 @@ void C3Approximation::synchronize_surrogate_data()
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   const UShortArray& active_key = data_rep->activeKey;
-  if (active_key != surrData.active_key()) {
+  if (active_key != approxData.active_key()) {
     PCerr << "Error: active key mismatch in C3Approximation::"
 	  << "synchronize_surrogate_data()." << std::endl;
     abort_handler(-1);
   }
 
-  // level 0: surrData non-aggregated key stores raw data
+  // level 0: approxData non-aggregated key stores raw data
   short discrep_type = data_rep->discrepancyType;
-  if (!discrep_type || !DiscrepancyCalculator::aggregated_key(active_key))
+  if (!discrep_type ||
+      !Pecos::DiscrepancyCalculator::aggregated_key(active_key))
     return;
 
   switch (discrep_type) {
@@ -453,8 +454,8 @@ void C3Approximation::synchronize_surrogate_data()
   case Pecos::DISTINCT_DISCREP:
     // If an aggregated (discrepancy) key is active, compute the necessary
     // aggregation from the latest model datasets
-    DiscrepancyCalculator::compute(surrData, active_key,
-				   data_rep->expConfigOptions.combineType);
+    Pecos::DiscrepancyCalculator::compute(approxData, active_key,
+					  data_rep->combineType);
     break;
   }
 }
@@ -467,7 +468,7 @@ void C3Approximation::response_data_to_surplus_data()
 
   // compute discrepancy faults from scratch (mostly mirrors HF failures but
   // might possibly add new ones for multiplicative FPE)
-  surrData.data_checks();
+  approxData.data_checks();
 }
 */
 

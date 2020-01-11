@@ -20,6 +20,7 @@
 #ifdef HAVE_SURFPACK
 #include "SharedSurfpackApproxData.hpp"
 #endif // HAVE_SURFPACK
+#include "DiscrepancyCalculator.hpp"
 
 //#define DEBUG
 
@@ -37,9 +38,8 @@ SharedApproxData::
 SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
-  outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), //origSurrDataIndex(0), modSurrDataIndex(0),
+  buildDataOrder(1), outputLevel(problem_db.get_short("method.output")),
   modelExportPrefix(
     problem_db.get_string("model.surrogate.model_export_prefix")),
   modelExportFormat(
@@ -109,7 +109,6 @@ SharedApproxData::
 SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		 size_t num_vars, short data_order, short output_level):
   numVars(num_vars), approxType(approx_type), outputLevel(output_level),
-  //origSurrDataIndex(0), modSurrDataIndex(0),
   modelExportFormat(NO_MODEL_FORMAT), modelExportPrefix(""),
   dataRep(NULL), referenceCount(1)
 {
@@ -388,72 +387,120 @@ void SharedApproxData::clear_model_keys()
 }
 
 
+/*
 void SharedApproxData::link_multilevel_surrogate_data()
 {
   if (dataRep) dataRep->link_multilevel_surrogate_data();
   //else no-op (no linkage required for derived SharedApproxData)
-}
 
-
-void SharedApproxData::surrogate_model_key(const UShortArray& key)
-{
-  if (dataRep)
-    dataRep->surrogate_model_key(key);
-  else { // default implementation: no key augmentation
-    // AGGREGATED_MODELS mode uses {HF,LF} order, as does
-    // ApproximationInterface::*_add()
-    if (key.empty()) // prune second entry, if present, from approxDataKeys
-      approxDataKeys.resize(1);
-    else {
-      approxDataKeys.resize(2);
-      approxDataKeys[1] = key; // assign incoming LF key
-    }
-  }
-}
-
-
-void SharedApproxData::truth_model_key(const UShortArray& key)
-{
-  if (dataRep)
-    dataRep->truth_model_key(key);
-  else { // default implementation: no key augmentation
-    // approxDataKeys size can remain 1 if no {truth,surrogate} aggregation
-    switch  (approxDataKeys.size()) {
-    case 0:  approxDataKeys.push_back(key); break;
-    default: approxDataKeys[0] = key;       break;
-    }
-  }
-}
-
-
-/* These would need to be virtual as well, to prevent publishing keys that
-   have been modified / appended for disambiguating discrepancy data sets.
-   Can their purpose be replaced instead?
-const UShortArray& SharedApproxData::surrogate_model_key() const
-{
-  if (dataRep)
-    return dataRep->surrogate_model_key();
-  else { // default implementation
-    if (approxDataKeys.size() < 2) {
-      Cerr << "Error: no key defined in SharedApproxData::surrogate_model_key()"
-	   << std::endl;
-      abort_handler(APPROX_ERROR);
-      // or could return empty key by value
-    }
-    return approxDataKeys.back();
-  }
+  //else
+  //  switch (discrepancy_type()) {
+  //  case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP:
+  //    approxDataKeys.resize(3); // HF, LF, discrep
+  //    break;
+  //  default: // default ctor linkages are sufficient
+  //    break;
+  //  }
 }
 */
 
 
-// THIS SHOULD NOT PROLIFERATE.  OK FOR RIGHT NOW, BUT COULD PUBLISH
-// POTENTIALLY MODIFIED FORMATS TO PARTS OF THE CODE THAT DON'T MODIFY KEYS.
+short SharedApproxData::discrepancy_type() const
+{
+  if (dataRep) return dataRep->discrepancy_type();
+  else         return Pecos::NO_DISCREP; // this enum is 0
+}
+
+
+// approxDataKeys are organized in a 2D array: {truth,surrogate,combined}
+// by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
+// as does ApproximationInterface::*_add()
+
+// NOTE: When managing distinct sets of paired truth,surrogate data (e.g.,
+// one set of data for Q_l - Q_lm1 and another for Q_lm1 - Q_lm2, it is
+// important to identify the lm1 data with a specific pairing --> data
+// group index pre-pend in {truth,surrogate,combined} keys.
+
+void SharedApproxData::surrogate_model_key(const UShortArray& lf_key)
+{
+  if (dataRep) dataRep->surrogate_model_key(lf_key);
+  // empty key indicates there is no surrogate pairing (e.g., level 0)
+  // > deactivate surrogate key by pruning trailing entries
+  else if (lf_key.empty())
+    approxDataKeys.resize(1);
+  // activate surrogate key: replace LF key, update combined key
+  else if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
+    UShortArray& hf_key = approxDataKeys[0]; // approxDataKeys size >= 1
+    if (hf_key.empty() || hf_key.front() != lf_key.front()) // enforce group
+      approxDataKeys.resize(2); // don't aggregate (yet)
+    else {
+      approxDataKeys.resize(3);
+      Pecos::DiscrepancyCalculator::
+	aggregate_keys(hf_key, lf_key, approxDataKeys[2]);
+    }
+    approxDataKeys[1] = lf_key; // assign incoming
+  }
+  else // assign incoming LF key using {HF,LF} order
+    { approxDataKeys.resize(2); approxDataKeys[1] = lf_key; }
+}
+
+
+void SharedApproxData::truth_model_key(const UShortArray& hf_key)
+{
+  if (dataRep) dataRep->truth_model_key(hf_key);
+  else if (discrepancy_type()) // Pecos::{DISTINCT,RECURSIVE}_DISCREP
+    switch (approxDataKeys.size()) {
+    case 0: // should not happen
+      approxDataKeys.push_back(hf_key); break;
+    case 1: // surrogate key deactivated
+      approxDataKeys[0] = hf_key;       break;
+    default: // surrogate key activated (lf_key is available)
+      approxDataKeys[0] = hf_key; // assign incoming
+      UShortArray& lf_key = approxDataKeys[1];
+      if (hf_key.empty() || hf_key.front() != lf_key.front()) // enforce group
+	approxDataKeys.resize(2); // don't aggregate (yet)
+      else {
+	approxDataKeys.resize(3);	
+	Pecos::DiscrepancyCalculator::
+	  aggregate_keys(hf_key, lf_key, approxDataKeys[2]);
+      }
+      break;
+    }
+  else // assign incoming LF key using {HF,LF} order
+    switch  (approxDataKeys.size()) {
+    case 0:  approxDataKeys.push_back(hf_key); break; // should not happen
+    default: approxDataKeys[0] = hf_key;       break;
+    }
+}
+
+
+const UShortArray& SharedApproxData::surrogate_model_key() const
+{
+  if (dataRep) return dataRep->surrogate_model_key();
+  else {
+    if (approxDataKeys.size() < 2) {
+      Cerr << "Error: key not available in SharedApproxData::"
+	   << "surrogate_model_key()" << std::endl;
+      abort_handler(APPROX_ERROR);
+      // Note: returning an empty key by value does not convey its absence
+    }
+    return approxDataKeys[1];
+  }
+}
+
+
 const UShortArray& SharedApproxData::truth_model_key() const
 {
-  if (dataRep)
-    return dataRep->truth_model_key();
-  else // default implementation
+  if (dataRep) return dataRep->truth_model_key();
+  else {
+    if (approxDataKeys.empty()) {
+      Cerr << "Error: key not available in SharedApproxData::truth_model_key()"
+	   << std::endl;
+      abort_handler(APPROX_ERROR);
+      // Note: returning an empty key by value does not convey its absence
+    }
     return approxDataKeys.front();
+  }
 }
 
 

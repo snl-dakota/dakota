@@ -704,8 +704,7 @@ inline void PecosApproximation::build()
 {
   // base class implementation checks data set against min required
   //Approximation::build();
-  // For simplicity, ignore approxData[1] since it may or may not be active
-  check_points(approxData[0].points());
+  check_points(approxData.points());
 
   // map to Pecos::BasisApproximation
   pecosBasisApprox.compute_coefficients();

@@ -81,7 +81,7 @@ protected:
   
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
-  void link_multilevel_approximation_data();
+  //void link_multilevel_approximation_data();
 
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr);
@@ -121,8 +121,7 @@ protected:
 
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
-  const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   const RealVectorArray& approximation_coefficients(bool normalized = false);
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
@@ -293,23 +292,16 @@ inline void ApproximationInterface::clear_model_keys()
 
 
 inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
-{
-  sharedData.surrogate_model_key(key);
-  // Note: Model's surrModelKey updates approxDataKeys, but may not be 1:1
-  //       (approxDataKeys ensures unique data groupings among key pairings)
-}
+{ sharedData.surrogate_model_key(key); }
 
 
 inline void ApproximationInterface::truth_model_key(const UShortArray& key)
-{
-  sharedData.truth_model_key(key);
-}
+{ sharedData.truth_model_key(key); }
 
 
-/** Restore active key to leading key for first approxData
-    (only updates model key if needed). */
+/** Restore active key to leading (HF) key for approxData. */
 inline void ApproximationInterface::restore_data_key()
-{ active_model_key(sharedData.truth_model_key()); } // *** breaks encapsulation between basic and paired/tuple keys, although not yet a bug (truth keys are not currently modified)
+{ active_model_key(sharedData.truth_model_key()); }
 
 
 inline void ApproximationInterface::
@@ -317,6 +309,7 @@ approximation_function_indices(const IntSet& approx_fn_indices)
 { approxFnIndices = approx_fn_indices; }
 
 
+/*
 inline void ApproximationInterface::link_multilevel_approximation_data()
 {
   // define approx data keys and active index
@@ -326,6 +319,7 @@ inline void ApproximationInterface::link_multilevel_approximation_data()
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].link_multilevel_surrogate_data();
 }
+*/
 
 
 /** This function removes data provided by a previous append_approximation()
@@ -441,14 +435,14 @@ inline std::vector<Approximation>& ApproximationInterface::approximations()
 
 
 inline const Pecos::SurrogateData& ApproximationInterface::
-approximation_data(size_t fn_index, size_t d_index)
+approximation_data(size_t fn_index)
 {
   if (approxFnIndices.find(fn_index) == approxFnIndices.end()) {
     Cerr << "Error: index passed to ApproximationInterface::approximation_data"
 	 << "() does not correspond to an approximated function." << std::endl;
     abort_handler(APPROX_ERROR);
   }
-  return functionSurfaces[fn_index].surrogate_data(d_index);
+  return functionSurfaces[fn_index].surrogate_data();
 }
 
 

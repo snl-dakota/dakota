@@ -203,30 +203,7 @@ NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 { }
 
 
-void NonDMultilevelFunctionTrain::assign_hierarchical_response_mode()
-{
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-
-  if (iteratedModel.surrogate_type() != "hierarchical") {
-    Cerr << "Error: multilevel/multifidelity expansions require a "
-	 << "hierarchical model." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  // ML-MF FT is based on model discrepancies, but multi-index FT may evolve
-  // towards BYPASS_SURROGATE as sparse grids in model space will manage QoI
-  // differences.  (See also hierarchical multilevel SC.)
-  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  else
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
-  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
-  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
-}
-
-
+/*
 void NonDMultilevelFunctionTrain::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
@@ -239,8 +216,9 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
-  uSpaceModel.link_multilevel_approximation_data();
+  //uSpaceModel.link_multilevel_approximation_data();
 }
+*/
 
 
 void NonDMultilevelFunctionTrain::core_run()

@@ -97,6 +97,8 @@ protected:
 
   /// return the active low fidelity model
   Model& surrogate_model();
+  /// return the active low fidelity model
+  const Model& surrogate_model() const;
   // set the key identifying the active low fidelity model
   //void surrogate_model_key(unsigned short lf_model_index,
   //			   unsigned short lf_soln_lev_index = USHRT_MAX);
@@ -105,6 +107,8 @@ protected:
 
   /// return the active high fidelity model
   Model& truth_model();
+  /// return the active high fidelity model
+  const Model& truth_model() const;
   // set the key identifying the active high fidelity model
   //void truth_model_key(unsigned short hf_model_index,
   //		       unsigned short hf_soln_lev_index = USHRT_MAX);
@@ -387,7 +391,27 @@ inline Model& HierarchSurrModel::surrogate_model()
 }
 
 
+inline const Model& HierarchSurrModel::surrogate_model() const
+{
+  if (surrModelKey.empty()) return orderedModels.front();
+  else {
+    unsigned short lf_form = surrModelKey[1];
+    return orderedModels[lf_form];
+  }
+}
+
+
 inline Model& HierarchSurrModel::truth_model()
+{
+  if (truthModelKey.empty()) return orderedModels.back();
+  else {
+    unsigned short hf_form = truthModelKey[1];
+    return orderedModels[hf_form];
+  }
+}
+
+
+inline const Model& HierarchSurrModel::truth_model() const
 {
   if (truthModelKey.empty()) return orderedModels.back();
   else {

@@ -19,6 +19,7 @@
 #include "DakotaResponse.hpp"
 #include "NonDMultilevelSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "DiscrepancyCalculator.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -171,8 +172,8 @@ void NonDMultilevelSampling::core_run()
   // could pair models for CVMC based on estimation of rho2_LH.
 
   // For two-model control variate methods, select lowest,highest fidelities
-  unsigned short lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
   size_t num_mf = NLev.size();
+  unsigned short lf_form = 0, hf_form = num_mf - 1; // ordered_models = low:high
   if (num_mf > 1) {
     size_t num_hf_lev = NLev.back().size();
     if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
@@ -1104,6 +1105,40 @@ multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
   for (lev=1; lev<num_cv_lev; ++lev) // subsequent levels incur 2 model costs
     equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
   equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
+}
+
+
+void NonDMultilevelSampling::
+configure_indices(unsigned short group, unsigned short form, unsigned short lev)
+{
+  // Note: could consolidate with NonDExpansion::configure_indices() with a
+  // passed model instance and virtual *_mode() assignments.  Leaving separate
+  // for now...
+
+  UShortArray hf_key, lf_key;
+  // group index assigned based on step in model form/resolution sequence
+  Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
+  iteratedModel.truth_model_key(hf_key);
+
+  // assume bottom-up sweep through levels (avoid redundant mode updates)
+  if (lev == 0) {
+    bypass_surrogate_mode();
+    iteratedModel.surrogate_model_key(lf_key); // empty key: deactivates pairing
+
+    // Not currently necessary, since no SurrogateData:
+    //iteratedModel.active_model_key(hf_key);    // one active fidelity
+  }
+  else { //if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
+    aggregated_models_mode();
+
+    lf_key = hf_key;  Pecos::DiscrepancyCalculator::decrement_key(lf_key);    
+    iteratedModel.surrogate_model_key(lf_key);
+
+    // Not currently necessary, since no SurrogateData:
+    //UShortArray delta_key;
+    //Pecos::DiscrepancyCalculator::discrepancy_key(hf_key, lf_key, delta_key);
+    //iteratedModel.active_model_key(delta_key); // two active fidelities
+  }
 }
 
 

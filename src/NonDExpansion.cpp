@@ -1277,14 +1277,15 @@ void NonDExpansion::assign_hierarchical_response_mode()
     abort_handler(METHOD_ERROR);
   }
 
-  // Hierarchical SC is already based on surpluses, so default behavior could
-  // differ from PCE (see assign_discrepancy_mode())
   if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  // ML-MF {PCE,SC,FT} are based on model discrepancies, but multi-index cases
+  // may evolve towards BYPASS_SURROGATE as sparse grids in model space will
+  // manage QoI differences.
+  // > AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  //   but requires additional discrepancy keys for high-low QoI combinations
   else
     iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
-  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
-  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
 }
 
 
@@ -1447,7 +1448,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     ++iter;
     Cout << "\n<<<<< Iteration " << iter
 	 << " completed: selected refinement indices = sequence step "
-	 << best_step+1 << " candidate " << best_candidate+1 << '\n';
+	 << best_step+1 << " candidate " << best_step_candidate+1 << '\n';
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
@@ -1471,7 +1472,7 @@ void NonDExpansion::multilevel_regression()
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence for this algorithm)
   unsigned short num_steps, fixed_index, form, lev;
-  bool multilev, import_pilot;  RealVector cost;
+  bool multilev, import_pilot;
   size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
   configure_sequence(num_steps, fixed_index, multilev, false);

@@ -249,6 +249,8 @@ protected:
 
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
+  /// return surrogate model, if present, within subModel
+  const Model& surrogate_model() const;
   /// set surrogate model key within subModel
   void surrogate_model_key(const UShortArray& lf_key);
   /// return surrogate model key from subModel
@@ -256,6 +258,8 @@ protected:
 
   /// return truth model, if present, within subModel
   Model& truth_model();
+  /// return truth model, if present, within subModel
+  const Model& truth_model() const;
   /// set truth model key within subModel
   void truth_model_key(const UShortArray& hf_key);
   /// return truth model key from subModel
@@ -296,8 +300,8 @@ protected:
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
 
-  /// link SurrogateData instances within the subModel
-  void link_multilevel_approximation_data();
+  // link SurrogateData instances within the subModel
+  //void link_multilevel_approximation_data();
 
   /// retrieve subModel's correction type
   short correction_type();
@@ -359,8 +363,7 @@ protected:
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
-  const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
@@ -727,6 +730,10 @@ inline Model& RecastModel::surrogate_model()
 { return subModel.surrogate_model(); }
 
 
+inline const Model& RecastModel::surrogate_model() const
+{ return subModel.surrogate_model(); }
+
+
 inline void RecastModel::surrogate_model_key(const UShortArray& lf_key)
 { subModel.surrogate_model_key(lf_key); }
 
@@ -736,6 +743,10 @@ inline const UShortArray& RecastModel::surrogate_model_key() const
 
 
 inline Model& RecastModel::truth_model()
+{ return subModel.truth_model(); }
+
+
+inline const Model& RecastModel::truth_model() const
 { return subModel.truth_model(); }
 
 
@@ -840,8 +851,8 @@ inline void RecastModel::surrogate_response_mode(short mode)
 { /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
 
 
-inline void RecastModel::link_multilevel_approximation_data()
-{ subModel.link_multilevel_approximation_data(); }
+//inline void RecastModel::link_multilevel_approximation_data()
+//{ subModel.link_multilevel_approximation_data(); }
 
 
 inline short RecastModel::correction_type()
@@ -961,8 +972,8 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& RecastModel::
-approximation_data(size_t fn_index, size_t d_index)
-{ return subModel.approximation_data(fn_index, d_index); }
+approximation_data(size_t fn_index)
+{ return subModel.approximation_data(fn_index); }
 
 
 inline void RecastModel::component_parallel_mode(short mode)

@@ -129,9 +129,7 @@ protected:
   const UShortArray& active_model_key() const;
   void clear_model_keys();
 
-  void link_multilevel_surrogate_data();
-  void surrogate_model_key(const UShortArray& key);
-  void truth_model_key(const UShortArray& key);
+  short discrepancy_type() const;
 
   void build();
   void rebuild();
@@ -197,6 +195,10 @@ inline const UShortArray& SharedPecosApproxData::active_model_key() const
 
 inline void SharedPecosApproxData::clear_model_keys()
 { pecosSharedDataRep->clear_keys(); }
+
+
+inline short SharedPecosApproxData::discrepancy_type() const
+{ return pecosSharedDataRep->discrepancy_type(); }
 
 
 inline void SharedPecosApproxData::build()

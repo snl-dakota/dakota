@@ -135,12 +135,16 @@ protected:
 
   /// return this model instance
   Model& surrogate_model();
+  /// return this model instance
+  const Model& surrogate_model() const;
   //void surrogate_model_key(unsigned short lf_model_index,
   //			   unsigned short lf_soln_lev_index = USHRT_MAX);
   void surrogate_model_key(const UShortArray& lf_key);
 
   /// return actualModel
   Model& truth_model();
+  /// return actualModel
+  const Model& truth_model() const;
   //void truth_model_key(unsigned short hf_model_index,
   //		       unsigned short hf_soln_lev_index = USHRT_MAX);
   void truth_model_key(const UShortArray& hf_key);
@@ -165,9 +169,9 @@ protected:
   /// any lower-level surrogates.
   void surrogate_response_mode(short mode);
 
-  /// link together more than one SurrogateData instance within
-  /// approxInterface.functionSurfaces[i].approxData[j]
-  void link_multilevel_approximation_data();
+  // link together more than one SurrogateData instance within
+  // approxInterface.functionSurfaces[i].approxData[j]
+  //void link_multilevel_approximation_data();
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
@@ -257,8 +261,7 @@ protected:
   const RealVector& approximation_variances(const Variables& vars);
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
-  const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// update component parallel mode for supporting parallelism in actualModel
   void component_parallel_mode(short mode);
@@ -585,6 +588,10 @@ inline Model& DataFitSurrModel::surrogate_model()
 }
 
 
+inline const Model& DataFitSurrModel::surrogate_model() const
+{ return *this; } // return of letter (see above)
+
+
 inline void DataFitSurrModel::surrogate_model_key(const UShortArray& key)
 {
   // update surrModelKey
@@ -597,6 +604,10 @@ inline void DataFitSurrModel::surrogate_model_key(const UShortArray& key)
 
 
 inline Model& DataFitSurrModel::truth_model()
+{ return actualModel; }
+
+
+inline const Model& DataFitSurrModel::truth_model() const
 { return actualModel; }
 
 
@@ -738,8 +749,8 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 }
 
 
-inline void DataFitSurrModel::link_multilevel_approximation_data()
-{ approxInterface.link_multilevel_approximation_data(); }
+//inline void DataFitSurrModel::link_multilevel_approximation_data()
+//{ approxInterface.link_multilevel_approximation_data(); }
 
 
 inline void DataFitSurrModel::
@@ -791,8 +802,8 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& DataFitSurrModel::
-approximation_data(size_t fn_index, size_t d_index)
-{ return approxInterface.approximation_data(fn_index, d_index); }
+approximation_data(size_t fn_index)
+{ return approxInterface.approximation_data(fn_index); }
 
 
 inline IntIntPair DataFitSurrModel::

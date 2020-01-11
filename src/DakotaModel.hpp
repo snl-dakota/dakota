@@ -150,6 +150,8 @@ public:
 
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
+  /// return the active approximation sub-model in surrogate models
+  virtual const Model& surrogate_model() const;
   /// set the index pair that defines the active approximation sub-model
   /// within surrogate models
   virtual void surrogate_model_key(const UShortArray& lf_key);
@@ -159,6 +161,8 @@ public:
 
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
+  /// return the active truth sub-model in surrogate models
+  virtual const Model& truth_model() const;
   /// set the index pair that defines the active truth sub-model within
   /// surrogate models
   virtual void truth_model_key(const UShortArray& hf_key);
@@ -337,8 +341,7 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve a SurrogateData instance from a particular Approximation
   /// instance within the ApproximationInterface of a DataFitSurrModel
-  virtual const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within a DataFitSurrModel
@@ -360,8 +363,8 @@ public:
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
 
-  /// link together more than one SurrogateData instance (DataFitSurrModel)
-  virtual void link_multilevel_approximation_data();
+  // link together more than one SurrogateData instance (DataFitSurrModel)
+  //virtual void link_multilevel_approximation_data();
 
   /// retrieve error estimates corresponding to the Model's response
   /// (could be surrogate error for SurrogateModels, statistical MSE for

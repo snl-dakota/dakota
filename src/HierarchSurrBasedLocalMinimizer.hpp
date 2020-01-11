@@ -184,6 +184,7 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 {
+  /* *** TO DO: form key and assign ...
   if (multiLev) {
     iteratedModel.surrogate_model_key(
       trustRegions[tr_index].approx_model_form(),
@@ -198,6 +199,7 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
     iteratedModel.truth_model_key(
       trustRegions[tr_index].truth_model_form());
   }
+  */
 }
 
 

@@ -68,10 +68,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_u_space_model();
+  //void initialize_u_space_model();
   void core_run();
 
-  void assign_hierarchical_response_mode();
   void assign_specification_sequence();
   void increment_specification_sequence();
 

@@ -45,13 +45,9 @@ namespace Dakota {
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
-  sharedDataRep(shared_data.data_rep()), approxLabel(approx_label),
-  approxRep(NULL), referenceCount(1)
+  approxData(true), approxLabel(approx_label),
+  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
 {
-  // We always have at least one SurrogateData instance in approxData.
-  // Aggregated data modes append to this vector downstream from ctor.
-  approxData.push_back(Pecos::SurrogateData(true));
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
        << "class for letter." << std::endl;
@@ -68,12 +64,9 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
+  approxData(true), sharedDataRep(shared_data.data_rep()),
+  approxRep(NULL), referenceCount(1)
 {
-  // We always have at least one SurrogateData instance in approxData.
-  // Aggregated data modes append to this vector downstream from ctor.
-  approxData.push_back(Pecos::SurrogateData(true));
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
        << "base class for letter." << std::endl;
@@ -303,15 +296,8 @@ void Approximation::build()
 {
   if (approxRep)
     approxRep->build();
-  else { // default is only a data check --> augmented/replaced by derived class
-    size_t d, num_d = approxData.size(), num_pts,
-      build_pts = approxData[0].points();
-    for (d=1; d<num_d; ++d) {
-      num_pts = approxData[d].points();
-      if (num_pts < build_pts) build_pts = num_pts;
-    }
-    check_points(build_pts);
-  }
+  else // default is only a data check --> augmented/replaced by derived class
+    check_points(approxData.points());
 }
 
 
@@ -368,12 +354,12 @@ void Approximation::finalize_data()
     const UShort2DArray& keys = sharedDataRep->approxDataKeys;
     if (!keys.empty()) {
       // Only need truth model key for finalization indices (see above)
-      const UShortArray& truth_key = keys_d[0];
+      const UShortArray& truth_key = keys[0];
       // assume number of popped trials is consistent across approxData
       size_t f_index, p, num_popped = approxData.popped_sets(truth_key);
       for (p=0; p<num_popped; ++p) {
 	f_index = sharedDataRep->finalize_index(p, truth_key);
-	approxData.push(keys_d, f_index, false);
+	approxData.push(keys, f_index, false);
       }
     }
 
@@ -421,11 +407,7 @@ void Approximation::clear_inactive_coefficients()
 void Approximation::combined_to_active_data()
 {
   if (approxRep) approxRep->combined_to_active();
-  else {
-    const UShortArray& key = sharedDataRep->active_model_key();
-    for (d=0; d<num_d; ++d)
-      approxData[d].active_key(key);
-  }
+  else approxData.active_key(sharedDataRep->active_model_key());
 }
 */
 
@@ -904,11 +886,13 @@ approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 }
 
 
+/*
 void Approximation::link_multilevel_surrogate_data()
 {
   if (approxRep) approxRep->link_multilevel_surrogate_data();
   //else no-op (no linkage required for derived Approximation)
 }
+*/
 
 
 void Approximation::
@@ -961,18 +945,16 @@ int Approximation::recommended_coefficients() const
 int Approximation::num_constraints() const
 {
   if (approxRep) // fwd to letter
-    return approxRep->num_constraints(); 
-  else { // default implementation
-    const Pecos::SurrogateData& data_0 = approxData[0];
-    if (data_0.anchor()) { // anchor data may differ from buildDataOrder
-      const SurrogateDataResp& anchor_sdr = data_0.anchor_response();
-      int ng = anchor_sdr.response_gradient().length(),
-          nh = anchor_sdr.response_hessian().numRows();
-      return 1 + ng + nh*(nh + 1)/2;
-    }
-    else
-      return 0;
+    return approxRep->num_constraints();
+  // default implementation:
+  else if (approxData.anchor()) { // anchor data may differ from buildDataOrder
+    const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    int ng = anchor_sdr.response_gradient().length(),
+        nh = anchor_sdr.response_hessian().numRows();
+    return 1 + ng + nh*(nh + 1)/2;
   }
+  else
+    return 0;
 }
 
 
