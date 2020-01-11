@@ -76,6 +76,10 @@ protected:
   std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>     mcmcSamplerPtr;
   std::shared_ptr<muq::SamplingAlgorithms::MarkovChain>    mcmcSampleSetPtr;
 
+    /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
+    /// or "metropolis_hastings" or "multilevel",  within QUESO) 
+  String mcmcType;
+
 private:
 
   //
@@ -121,6 +125,7 @@ protected:
   Model dakotaModel;
 
   bool useDerivs;
+  
 };
 
 

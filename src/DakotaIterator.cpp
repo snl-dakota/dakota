@@ -490,6 +490,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     case SUBMETHOD_DREAM:
       return new NonDDREAMBayesCalibration(problem_db, model); break;
 #endif
+#ifdef HAVE_MUQ
+    case SUBMETHOD_MUQ:
+      return new NonDMUQBayesCalibration(problem_db, model);  break;
+#endif
     case SUBMETHOD_WASABI:
       return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
@@ -997,6 +1001,7 @@ static UShortStrBimap submethod_map =
   (SUBMETHOD_DREAM,             "dream")
   (SUBMETHOD_WASABI,            "wasabi")
   (SUBMETHOD_GPMSA,             "gpmsa")
+  (SUBMETHOD_MUQ,               "muq")
   (SUBMETHOD_QUESO,             "queso")
   (SUBMETHOD_NIP,               "nip")
   (SUBMETHOD_SQP,               "sqp")

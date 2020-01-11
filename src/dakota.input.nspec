@@ -5094,6 +5094,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
        ]
      )
+    |
+    ( muq {N_mdm(utype,subMethod_SUBMETHOD_MUQ)}
+      chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
+      [ 
+        dram {N_mdm(lit,mcmcType_dram)}
+        |
+        metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+       ]
+     )
     [ experimental_design {N_mdm(true,adaptExpDesign)}
       initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
       num_candidates INTEGER > 0 {N_mdm(sizet,numCandidates)}

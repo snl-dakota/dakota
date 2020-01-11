@@ -7290,6 +7290,7 @@ static Method_mp_utype
 	MP2s(subMethod,SUBMETHOD_COLLABORATIVE),
 	MP2s(subMethod,SUBMETHOD_EMBEDDED),
 	MP2s(subMethod,SUBMETHOD_SEQUENTIAL),
+	MP2s(subMethod,SUBMETHOD_MUQ),
 	MP2s(subMethod,SUBMETHOD_DREAM),
 	MP2s(subMethod,SUBMETHOD_WASABI),
 	MP2s(subMethod,SUBMETHOD_GPMSA),

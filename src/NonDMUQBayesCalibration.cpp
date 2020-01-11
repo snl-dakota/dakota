@@ -28,7 +28,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMUQBayesCalibration::
 NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
-  NonDBayesCalibration(problem_db, model)
+  NonDBayesCalibration(problem_db, model),
+  mcmcType(probDescDB.get_string("method.nond.mcmc_type"))
 {
   // prior,likelihood could be objects of same class w/ different fns passed in
   thetaPtr      = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
