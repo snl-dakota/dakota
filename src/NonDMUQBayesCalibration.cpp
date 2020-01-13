@@ -77,9 +77,9 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // for a particular study.
   //auto post_distrib = workGraph.CreateModPiece("Posterior");
 
-  double hard_coded_mu  = 0.0;
-  double hard_coded_cov = 0.0;
-  auto post_distrib = std::make_shared<muq::Modeling::Gaussian>(hard_coded_mu, hard_coded_cov)->AsDensity(); // standard normal Gaussian
+  //double hard_coded_mu  = 0.0;
+  //double hard_coded_cov = 1.0;
+  //post_distrib = prior_distribstd::make_shared<muq::Modeling::Gaussian>(hard_coded_mu, hard_coded_cov)->AsDensity(); // standard normal Gaussian
 
   // Dump out a visualization of the work graph
   if (outputLevel >= DEBUG_OUTPUT)
@@ -88,7 +88,7 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   /////////////////////////////////
   // DEFINE THE PROBLEM TO SOLVE //
   /////////////////////////////////
-  samplingProbPtr = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(post_distrib);
+  samplingProbPtr = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(posteriorPtr);
   
   /////////////////////////////
   // DEFINE THE MCMC SAMPLER //
@@ -116,7 +116,12 @@ NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDMUQBayesCalibration::calibrate()
 {
+  Eigen::VectorXd init_pt;
+  init_pt.resize(1);
+  init_pt[0]=0.1;
   //mcmcSampleSetPtr = mcmcSamplerPtr->Run(init_pt);
+  sampleCollPtr = mcmcSamplerPtr->Run(init_pt);
+  //mcmcSampleSetPtr = mcmcSamplerPtr->Run();
 }
 
 

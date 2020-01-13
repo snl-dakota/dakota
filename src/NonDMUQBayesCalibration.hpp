@@ -19,6 +19,7 @@
 
 #include "MUQ/Modeling/WorkGraph.h"
 #include "MUQ/SamplingAlgorithms/MarkovChain.h"
+#include "MUQ/SamplingAlgorithms/SampleCollection.h"
 #include "MUQ/SamplingAlgorithms/MCMCFactory.h"
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
 #include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"
@@ -75,6 +76,7 @@ protected:
   std::shared_ptr<muq::SamplingAlgorithms::SamplingProblem> samplingProbPtr;
   std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>     mcmcSamplerPtr;
   std::shared_ptr<muq::SamplingAlgorithms::MarkovChain>    mcmcSampleSetPtr;
+  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection>    sampleCollPtr;
 
     /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
     /// or "metropolis_hastings" or "multilevel",  within QUESO) 
@@ -143,6 +145,12 @@ public:
   //- Heading: Constructors and destructor
   //
 
+  //const Eigen::VectorXd mu(1);
+  //mu << 1.0;
+
+  //const Eigen::MatrixXd cov(1,1);
+  //cov << 1.0;
+
   /// standard constructor
   MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()) { }
   /// destructor
@@ -155,8 +163,8 @@ protected:
   //
 
   // evaluate log prior(x)
-  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs) 
-  { return 0.0; }
+  //double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs) 
+  //{ return 0.0; }
 
   //
   //- Heading: Data
