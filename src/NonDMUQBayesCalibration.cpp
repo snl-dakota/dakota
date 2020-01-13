@@ -140,25 +140,31 @@ print_results(std::ostream& s, short results_state)
 void MUQModelInterface::
 EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs)
 {
-//  //RealVector c_vars = dakotaModel.continuous_variables_view();
-//  //copy_data(inputs.at(0), c_vars);
-//
-//  Eigen::VectorXd const& c_vars = inputs.at(0);
-//  size_t i, num_cv = c_vars.size();
-//  for (i=0; i<num_cv; ++i)
-//    dakotaModel.continuous_variable(c_vars[i], i);
-//
-//  ActiveSet set(dakotaModel.response_size(), dakotaModel.cv());
-//  if (useDerivs) set.request_values(3); // grads  processed in GradientImpl
-//  else           set.request_values(1); // values processed below
-//  dakotaModel.evaluate(set); // gradients for MALA et al.
-//
-//  const RealVector& fn_vals = dakotaModel.current_response().function_values();
-//  outputs.resize(1);
-//  Eigen::VectorXd& qoi = outputs.at(0);
-//  qoi.resize(num_fns);
-//  for (i=0; i<num_fns; ++i)
-//    qoi[i] = fn_vals[i]; // both operator(),operator[], one is bounds-checked
+  // Extract parameter vector from MUQ's inputs vector
+  // (which lives in the ModPiece base class)
+  Eigen::VectorXd const& c_vars = inputs.at(0);
+  size_t i, num_cv = c_vars.size();
+  // Set parameter values in Dakota model object
+  for (i=0; i<num_cv; ++i)
+   dakotaModel.continuous_variable(c_vars[i], i);
+
+  ActiveSet set(dakotaModel.response_size(), dakotaModel.cv());
+  if (useDerivs)
+    set.request_values(3); // gradient information processed in GradientImpl
+  else           
+    set.request_values(1); // function values processed next
+  dakotaModel.evaluate(set);
+
+  const RealVector& fn_vals = dakotaModel.current_response().function_values();
+  size_t num_fns = fn_vals.length();
+
+  // Populate MUQ's outputs vector
+  // (which lives in the ModPiece base class)
+  outputs.resize(1);
+  Eigen::VectorXd& qoi = outputs.at(0);
+  qoi.resize(num_fns);
+  for (i=0; i<num_fns; ++i)
+   qoi[i] = fn_vals[i]; // both operator(),operator[], one is bounds-checked
 }
 
 
