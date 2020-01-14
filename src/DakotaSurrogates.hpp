@@ -17,6 +17,13 @@
 
 #include "DakotaApproximation.hpp"
 #include "GaussianProcess.hpp"
+#include <memory>
+
+namespace dakota {
+   namespace surrogates {
+     class GaussianProcess;
+   }
+}
 
 namespace Dakota {
 
@@ -68,9 +75,8 @@ private:
   //- Heading: Convenience functions
   //
 
-
   /// The native surrogate model
-  dakota::surrogates::GaussianProcess * model;
+  std::shared_ptr<dakota::surrogates::GaussianProcess> model;
 };
 
 } // namespace Dakota

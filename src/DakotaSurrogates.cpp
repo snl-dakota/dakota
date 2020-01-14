@@ -84,12 +84,11 @@ GPApproximation::build()
   }
 
   // construct the surrogate
-  model = new dakota::surrogates::GaussianProcess(
+  model.reset(new dakota::surrogates::GaussianProcess(
                                     xs_u, response,
                                     sigma_bounds, length_scale_bounds,
-                                    scaler_type, num_restarts, nugget, gp_seed);
+                                    scaler_type, num_restarts, nugget, gp_seed));
 }
-
 
 Real
 GPApproximation::value(const RealVector& c_vars)
@@ -101,7 +100,9 @@ GPApproximation::value(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  size_t num_vars = c_vars.length();
+  const size_t num_samples = 1;
+  const size_t num_vars = c_vars.length();
+  const size_t num_responses = 1;
 
   //if (num_vars != 1 )
   //{
@@ -111,14 +112,14 @@ GPApproximation::value(const RealVector& c_vars)
   //}
 
   // Need to use Teuchos-to-Eigen converters - RWH
-  MatrixXd eval_pts(num_vars,1);
-  MatrixXd pred    (num_vars,1);
+  MatrixXd eval_pts(num_vars,num_samples);
+  MatrixXd pred    (num_vars,num_samples);
   for (size_t i = 0; i < num_vars; i++)
     eval_pts(i,0) = c_vars[i];
 
   model->value(eval_pts, pred);
 
-  return pred(0,00); // should only be one prediuction using this particular call? - RWH
+  return pred(0,0); // should only be one prediuction using this particular call? - RWH 
 }
     
 
