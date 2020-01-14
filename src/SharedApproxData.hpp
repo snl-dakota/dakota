@@ -163,15 +163,6 @@ public:
   // return the number of variables used in the approximation
   //int num_variables() const;
 
-  /// update approxDataKeys with incoming surrogate key
-  void surrogate_model_key(const UShortArray& key);
-  /// update approxDataKeys with incoming truth key
-  void truth_model_key(const UShortArray& key);
-  /// return surrogate key, extracted from approxDataKeys
-  const UShortArray& surrogate_model_key() const;
-  /// return truth key, extracted from approxDataKeys
-  const UShortArray& truth_model_key() const;
-
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		  const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,

@@ -1047,22 +1047,6 @@ void Interface::clear_model_keys()
 }
 
 
-void Interface::surrogate_model_key(const UShortArray& key)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->surrogate_model_key(key);
-  // else: default implementation is no-op
-}
-
-
-void Interface::truth_model_key(const UShortArray& key)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->truth_model_key(key);
-  // else: default implementation is no-op
-}
-
-
 void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter

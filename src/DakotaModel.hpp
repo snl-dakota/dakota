@@ -152,22 +152,10 @@ public:
   virtual Model& surrogate_model();
   /// return the active approximation sub-model in surrogate models
   virtual const Model& surrogate_model() const;
-  /// set the index pair that defines the active approximation sub-model
-  /// within surrogate models
-  virtual void surrogate_model_key(const UShortArray& lf_key);
-  /// return the indices of the active approximation sub-model within
-  /// surrogate models
-  virtual const UShortArray& surrogate_model_key() const;
-
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
   /// return the active truth sub-model in surrogate models
   virtual const Model& truth_model() const;
-  /// set the index pair that defines the active truth sub-model within
-  /// surrogate models
-  virtual void truth_model_key(const UShortArray& hf_key);
-  /// return the indices of the active truth sub-model within surrogate models
-  virtual const UShortArray& truth_model_key() const;
 
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);

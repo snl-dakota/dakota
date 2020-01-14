@@ -3458,27 +3458,6 @@ const Model& Model::surrogate_model() const
 }
 
 
-void Model::surrogate_model_key(const UShortArray& lf_key)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_key(lf_key);
-  //else no-op
-}
-
-
-const UShortArray& Model::surrogate_model_key() const
-{
-  if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_key"
-	 << "() function.\n       active surrogate model indices are not "
-	 << "supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->surrogate_model_key();
-}
-
-
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -3497,27 +3476,6 @@ const Model& Model::truth_model() const
     return modelRep->truth_model();
   else // letter lacking redefinition of virtual fn.
     return *this; // default is no surrogate -> return this model instance
-}
-
-
-void Model::truth_model_key(const UShortArray& hf_key)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_key(hf_key);
-  //else no-op
-}
-
-
-const UShortArray& Model::truth_model_key() const
-{
-  if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_key() "
-	 << "function.\n       active truth_model indices are not supported "
-	 << "by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->truth_model_key();
 }
 
 

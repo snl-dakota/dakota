@@ -54,24 +54,23 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   problem_db.set_db_model_nodes(model_index); // restore
 
   // default index values, to be overridden at run time
-  if (num_models == 1) { // first and last solution level (1 model)
-    surrModelKey.resize(2); truthModelKey.resize(2);
-    surrModelKey[0] = surrModelKey[1] = truthModelKey[0] = 0;
-    truthModelKey[1] = orderedModels[0].solution_levels() - 1;
-  }
+  surrModelKey.assign(3, 0); truthModelKey.assign(3, 0);
+  if (num_models == 1) // first and last solution level (1 model)
+    truthModelKey[2] = orderedModels[0].solution_levels() - 1;
   else { // first and last model form (solution levels ignored)
-    surrModelKey.resize(1); truthModelKey.resize(1);
-    surrModelKey[0] = 0; truthModelKey[0] = num_models - 1;
-    //surrModelKey[1] = truthModelKey[1] = _NPOS;
+    truthModelKey[1] = num_models - 1;
+    surrModelKey[2]  = truthModelKey[2] = USHRT_MAX;
   }
+  Pecos::DiscrepancyCalculator::
+    aggregate_keys(truthModelKey, surrModelKey, activeKey);
   check_model_interface_instance();
 
   // Correction is required in HierarchSurrModel for some responseModes.
   // Enforcement of a correction type for these modes occurs in
   // surrogate_response_mode(short).
-  if (corrType) // initialize DiscrepancyCorrection using initial LF indices
-    deltaCorr[fidelity_keys()].initialize(surrogate_model(), surrogateFnIndices,
-					  corrType, corrOrder);
+  if (corrType) // initialize DiscrepancyCorrection using initial keys
+    deltaCorr[activeKey].initialize(surrogate_model(), surrogateFnIndices,
+				    corrType, corrOrder);
 
   //truthResponseRef[truthModelKey] = currentResponse.copy();
 }
@@ -425,7 +424,7 @@ void HierarchSurrModel::build_approximation()
 
   // compute the response for the high fidelity model
   ShortArray total_asv, hf_asv, lf_asv;
-  DiscrepCorrMap::iterator dc_it = deltaCorr.find(fidelity_keys());
+  DiscrepCorrMap::iterator dc_it = deltaCorr.find(activeKey);
   if (dc_it!=deltaCorr.end() && dc_it->second.initialized())
     total_asv.assign(numFns, dc_it->second.data_order());
   else
@@ -638,9 +637,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     // just update currentResponse (managed as surrogate data at a higher level)
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     currentResponse.active_set(set);
-    deltaCorr[fidelity_keys()].compute(hi_fi_response,
-				       lf_model.current_response(),
-				       currentResponse, quiet_flag);
+    deltaCorr[activeKey].compute(hi_fi_response, lf_model.current_response(),
+				 currentResponse, quiet_flag);
     break;
   }
   case AGGREGATED_MODELS:
@@ -904,7 +902,7 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   switch (responseMode) {
   case MODEL_DISCREPANCY: {
-    DiscrepancyCorrection& delta_corr = deltaCorr[fidelity_keys()];
+    DiscrepancyCorrection& delta_corr = deltaCorr[activeKey];
     for (; hf_cit != hf_resp_map.end() && lf_cit != lf_resp_map.end();
 	 ++hf_cit, ++lf_cit) {
       check_key(hf_cit->first, lf_cit->first);
@@ -1002,7 +1000,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   DiscrepCorrMap::iterator dc_it;
   if (responseMode == MODEL_DISCREPANCY)
-    dc_it = deltaCorr.find(fidelity_keys());
+    dc_it = deltaCorr.find(activeKey);
   while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
     // these have been rekeyed already to top-level surrModelEvalCntr:
     int hf_eval_id = (hf_cit == hf_resp_map.end()) ? INT_MAX : hf_cit->first;
@@ -1072,7 +1070,7 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
   // correction and may be the target of application of a correction.
 
   // First, test if a correction is previously available or can now be computed
-  DiscrepancyCorrection& delta_corr = deltaCorr[fidelity_keys()];
+  DiscrepancyCorrection& delta_corr = deltaCorr[activeKey];
   bool corr_comp = delta_corr.computed(), cache_for_pending_corr = false,
       quiet_flag = (outputLevel < NORMAL_OUTPUT);
   if (!corr_comp) {
@@ -1291,7 +1289,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       // use a quick size estimation for recv buffer i/o size bcast
       MPIPackBuffer send_buff;
        // Note: LF approxDataKeys get appended but not model keys
-      UShortArray model_key(2,0);
+      UShortArray model_key(3, 0); // for size estimation *** TO DO: ensure non-aggregate key on send/receive...
       send_buff << model_key << responseMode;
       int buffer_len = send_buff.size();
       // receive model state from HierarchSurrModel::component_parallel_mode()

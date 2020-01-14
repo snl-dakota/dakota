@@ -137,17 +137,10 @@ protected:
   Model& surrogate_model();
   /// return this model instance
   const Model& surrogate_model() const;
-  //void surrogate_model_key(unsigned short lf_model_index,
-  //			   unsigned short lf_soln_lev_index = USHRT_MAX);
-  void surrogate_model_key(const UShortArray& lf_key);
-
   /// return actualModel
   Model& truth_model();
   /// return actualModel
   const Model& truth_model() const;
-  //void truth_model_key(unsigned short hf_model_index,
-  //		       unsigned short hf_soln_lev_index = USHRT_MAX);
-  void truth_model_key(const UShortArray& hf_key);
 
   /// return actualModel (and optionally its sub-models)
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -547,12 +540,19 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
-inline void DataFitSurrModel::active_model_key(const UShortArray& mi_key)
+inline void DataFitSurrModel::active_model_key(const UShortArray& key)
 {
+  // assign activeKey and extract {surr,truth}ModelKey
+  SurrogateModel::active_model_key(key);
+
+  // recur both components: (actualModel could be hierarchical)
+  approxInterface.active_model_key(key);
+  actualModel.active_model_key(key);
+
+  /*
   switch (responseMode) {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  /*
   case AGGREGATED_MODELS: {
     // passed mi_key is HF key (see NonDExpansion::configure_{indices,keys}),
     // so create a LF key for the LF,HF aggregated response
@@ -564,10 +564,10 @@ inline void DataFitSurrModel::active_model_key(const UShortArray& mi_key)
       approxInterface.active_model_key(mi_key);
     break;
   }
-  */
   default:
     approxInterface.active_model_key(mi_key); break;
   }
+  */
 }
 
 
@@ -592,60 +592,12 @@ inline const Model& DataFitSurrModel::surrogate_model() const
 { return *this; } // return of letter (see above)
 
 
-inline void DataFitSurrModel::surrogate_model_key(const UShortArray& key)
-{
-  // update surrModelKey
-  SurrogateModel::surrogate_model_key(key);
-
-  // recur both components: (actualModel could be hierarchical)
-  approxInterface.surrogate_model_key(surrModelKey);
-  actualModel.surrogate_model_key(surrModelKey);
-}
-
-
 inline Model& DataFitSurrModel::truth_model()
 { return actualModel; }
 
 
 inline const Model& DataFitSurrModel::truth_model() const
 { return actualModel; }
-
-
-inline void DataFitSurrModel::truth_model_key(const UShortArray& key)
-{
-  // update truthModelKey
-  SurrogateModel::truth_model_key(key);
-
-  // recur both components: (approxInterface could manage AGGREGATED data)
-  approxInterface.truth_model_key(truthModelKey);
-  actualModel.truth_model_key(truthModelKey);
-}
-
-
-/*
-inline void DataFitSurrModel::
-surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  // update surrModelKey
-  SurrogateModel::surrogate_model_key(model_index, soln_lev_index);
-
-  // recur both components: (actualModel could be hierarchical)
-  approxInterface.surrogate_model_key(surrModelKey);
-  actualModel.surrogate_model_key(surrModelKey);
-}
-
-
-inline void DataFitSurrModel::
-truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  // update truthModelKey
-  SurrogateModel::truth_model_key(model_index, soln_lev_index);
-
-  // recur both components: (approxInterface could manage AGGREGATED data)
-  approxInterface.truth_model_key(truthModelKey);
-  actualModel.truth_model_key(truthModelKey);
-}
-*/
 
 
 inline void DataFitSurrModel::

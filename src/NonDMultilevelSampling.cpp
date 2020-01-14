@@ -1118,26 +1118,23 @@ configure_indices(unsigned short group, unsigned short form, unsigned short lev)
   UShortArray hf_key, lf_key;
   // group index assigned based on step in model form/resolution sequence
   Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
-  iteratedModel.truth_model_key(hf_key);
+  //iteratedModel.truth_model_key(hf_key);
 
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0) {
     bypass_surrogate_mode();
-    iteratedModel.surrogate_model_key(lf_key); // empty key: deactivates pairing
 
-    // Not currently necessary, since no SurrogateData:
-    //iteratedModel.active_model_key(hf_key);    // one active fidelity
+    //iteratedModel.surrogate_model_key(lf_key); // empty: deactivates pairing
+    iteratedModel.active_model_key(hf_key);      // one active fidelity
   }
   else { //if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
 
     lf_key = hf_key;  Pecos::DiscrepancyCalculator::decrement_key(lf_key);    
-    iteratedModel.surrogate_model_key(lf_key);
-
-    // Not currently necessary, since no SurrogateData:
-    //UShortArray delta_key;
-    //Pecos::DiscrepancyCalculator::discrepancy_key(hf_key, lf_key, delta_key);
-    //iteratedModel.active_model_key(delta_key); // two active fidelities
+    //iteratedModel.surrogate_model_key(lf_key);
+    UShortArray discrep_key;
+    Pecos::DiscrepancyCalculator::discrepancy_key(hf_key, lf_key, discrep_key);
+    iteratedModel.active_model_key(discrep_key); // two active fidelities
   }
 }
 

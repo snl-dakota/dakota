@@ -76,15 +76,7 @@ protected:
   /// return truth_model()
   Model& subordinate_model();
 
-  //void surrogate_model_key(unsigned short model_index,
-  //			     unsigned short soln_lev_index = USHRT_MAX);
-  void surrogate_model_key(const UShortArray& key);
-  const UShortArray& surrogate_model_key() const;
-
-  //void truth_model_key(unsigned short model_index,
-  //		         unsigned short soln_lev_index = USHRT_MAX);
-  void truth_model_key(const UShortArray& key);
-  const UShortArray& truth_model_key() const;
+  void active_model_key(const UShortArray& key);
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -149,11 +141,13 @@ protected:
       does not back out old corrections. */
   short responseMode;
 
+  /// array of indices that identify the currently active model key
+  UShortArray activeKey;
   /// array of indices that identify the surrogate (e.g., low fidelity) model
-  /// that is currently active within orderedModels
+  /// (trailing portion of activeKey, if aggregated models)
   UShortArray surrModelKey;
-  /// array of indices that identify the truth (e.g., high fidelity) model that
-  /// is currently active within orderedModels
+  /// array of indices that identify the truth (e.g., high fidelity) model
+  /// (leading portion of activeKey, if aggregated models)
   UShortArray truthModelKey;
 
   /// type of correction: additive, multiplicative, or combined
@@ -287,76 +281,20 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
-inline void SurrogateModel::surrogate_model_key(const UShortArray& key)
-{
-  if (key.size() != 3) {
-    Cerr << "Error: bad key size in SurrogateModel::surrogate_model_key()."
-	 << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  surrModelKey = key;
-}
-
-
-inline const UShortArray& SurrogateModel::surrogate_model_key() const
-{ return surrModelKey; }
-
-
 inline unsigned short SurrogateModel::surrogate_level_index() const
 { return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
-
-
-inline void SurrogateModel::truth_model_key(const UShortArray& key)
-{
-  if (key.size() != 3) {
-    Cerr << "Error: bad key size in SurrogateModel::truth_model_key()."
-	 << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  truthModelKey = key;
-}
-
-
-inline const UShortArray& SurrogateModel::truth_model_key() const
-{ return truthModelKey; }
 
 
 inline unsigned short SurrogateModel::truth_level_index() const
 { return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
 
 
-/*
-inline void SurrogateModel::
-surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
+inline void SurrogateModel::active_model_key(const UShortArray& key)
 {
-  if (model_index == USHRT_MAX) surrModelKey.resize(0);
-  else {
-    if (soln_lev_index == USHRT_MAX)
-      surrModelKey.resize(1);
-    else {
-      surrModelKey.resize(2);
-      surrModelKey[1] = soln_lev_index;
-    }
-    surrModelKey[0] = model_index;
-  }
+  // base implementation (augmented in derived SurrogateModels)
+  activeKey = key;
+  Pecos::DiscrepancyCalculator::extract_keys(key, truthModelKey, surrModelKey);
 }
-
-
-inline void SurrogateModel::
-truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  if (model_index == USHRT_MAX) truthModelKey.resize(0);
-  else {
-    if (soln_lev_index == USHRT_MAX)
-      truthModelKey.resize(1);
-    else {
-      truthModelKey.resize(2);
-      truthModelKey[1] = soln_lev_index;
-    }
-    truthModelKey[0] = model_index;
-  }
-}
-*/
 
 
 inline short SurrogateModel::surrogate_response_mode() const

@@ -361,22 +361,54 @@ SharedApproxData::~SharedApproxData()
 }
 
 
-void SharedApproxData::active_model_key(const UShortArray& mi_key)
+void SharedApproxData::active_model_key(const UShortArray& key)
 {
-  if (dataRep) dataRep->active_model_key(mi_key);
-  //else no-op (implementation not required for shared data)
+  if (dataRep) dataRep->active_model_key(key);
+  else {
+    UShortArray hf_key, lf_key;
+    Pecos::DiscrepancyCalculator::extract_keys(key, hf_key, lf_key);
+
+    // empty LF key indicates HF only with no surrogate pairing (e.g., level 0)
+    if (lf_key.empty())
+      approxDataKeys.resize(1); // prune trailing entries
+    // discrepancy cases use 3 keys: HF, LF, aggregate
+    else if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
+      approxDataKeys.resize(3);
+      approxDataKeys[1] = lf_key;
+      approxDataKeys[2] = key;
+    }
+    // no discrepancy case with both HF,LF uses these 2 keys.  This case is not
+    // currently used, but we don't want to enumerate a third key if there is
+    // no corresponding discrepancy defined.
+    else {
+      approxDataKeys.resize(2);
+      approxDataKeys[1] = lf_key;
+    }
+    approxDataKeys[0] = hf_key;
+  }
 }
 
 
 const UShortArray& SharedApproxData::active_model_key() const
 {
-  if (!dataRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: active_model_key() not available for this approximation "
-	 << "type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-
-  return dataRep->active_model_key();
+  if (dataRep)
+    return dataRep->active_model_key();
+  else
+    switch (approxDataKeys.size()) {
+    case 2: { // not currently possible: see note above
+      /*
+      UShortArray agg_key;
+      Pecos::DiscrepancyCalculator::
+	aggregate_keys(approxDataKeys[0], approxDataKeys[1], agg_key);
+      return agg_key; // by value...
+      */
+      Cerr << "Error: unexpected approxDataKeys length in SharedApproxData::"
+	   << "active_model_key()" << std::endl;
+      abort_handler(APPROX_ERROR);   break;
+    }
+    default:
+      return approxDataKeys.back();  break;
+    }
 }
 
 
@@ -421,6 +453,7 @@ short SharedApproxData::discrepancy_type() const
 // important to identify the lm1 data with a specific pairing --> data
 // group index pre-pend in {truth,surrogate,combined} keys.
 
+/*
 void SharedApproxData::surrogate_model_key(const UShortArray& lf_key)
 {
   if (dataRep) dataRep->surrogate_model_key(lf_key);
@@ -502,6 +535,7 @@ const UShortArray& SharedApproxData::truth_model_key() const
     return approxDataKeys.front();
   }
 }
+*/
 
 
 void SharedApproxData::build()

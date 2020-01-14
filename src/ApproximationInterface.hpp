@@ -76,9 +76,6 @@ protected:
   void active_model_key(const UShortArray& key);
   void clear_model_keys();
 
-  void surrogate_model_key(const UShortArray& key);
-  void truth_model_key(const UShortArray& key);
-  
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
   //void link_multilevel_approximation_data();
@@ -291,12 +288,13 @@ inline void ApproximationInterface::clear_model_keys()
 }
 
 
-inline void ApproximationInterface::surrogate_model_key(const UShortArray& key)
-{ sharedData.surrogate_model_key(key); }
+//inline void ApproximationInterface::
+//surrogate_model_key(const UShortArray& key)
+//{ sharedData.surrogate_model_key(key); }
 
 
-inline void ApproximationInterface::truth_model_key(const UShortArray& key)
-{ sharedData.truth_model_key(key); }
+//inline void ApproximationInterface::truth_model_key(const UShortArray& key)
+//{ sharedData.truth_model_key(key); }
 
 
 /** Restore active key to leading (HF) key for approxData. */

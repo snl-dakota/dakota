@@ -1212,19 +1212,19 @@ configure_indices(unsigned short group, unsigned short form, unsigned short lev)
   UShortArray hf_key, lf_key;
   // group index assigned based on step in model form/resolution sequence
   Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
-  uSpaceModel.truth_model_key(hf_key);
+  //uSpaceModel.truth_model_key(hf_key);
 
   // assume bottom-up sweep through levels (avoid redundant mode updates)
   if (lev == 0) {
     bypass_surrogate_mode();
-    uSpaceModel.surrogate_model_key(lf_key); // empty key: deactivates pairing
+    //uSpaceModel.surrogate_model_key(lf_key); // empty key: deactivates pairing
     uSpaceModel.active_model_key(hf_key);    // one active fidelity
   }
   else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
     aggregated_models_mode();
 
     lf_key = hf_key;  Pecos::DiscrepancyCalculator::decrement_key(lf_key);    
-    uSpaceModel.surrogate_model_key(lf_key);
+    //uSpaceModel.surrogate_model_key(lf_key);
 
     UShortArray discrep_key;
     Pecos::DiscrepancyCalculator::aggregate_keys(hf_key, lf_key, discrep_key);
@@ -1321,13 +1321,12 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
-  // (model form takes precedence)
   unsigned short num_steps, fixed_index, form, lev;  bool multilev;
   configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
-  // either form varies with lev fixed or vice versa:
+  // either lev varies and form is fixed, or vice versa:
+  unsigned short& step = (multilev) ? lev : form;  step = 0;
   if (multilev) form = fixed_index;
   else           lev = fixed_index;
-  unsigned short& step = (multilev) ? lev : form;  step = 0;
 
   // initial low fidelity/lowest discretization expansion
   configure_indices(step, form, lev);
@@ -1390,11 +1389,11 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Initialize again (or must propagate settings from mf_expansion())
   unsigned short num_steps, fixed_index, form, lev;  bool multilev;
   configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
-  RealVector cost;  configure_cost(num_steps, multilev, cost);
-  // either form varies with lev fixed or vice versa:
+  // either lev varies and form is fixed, or vice versa:
+  unsigned short& step = (multilev) ? lev : form; // step is an alias
   if (multilev) form = fixed_index;
   else           lev = fixed_index;
-  unsigned short& step = (multilev) ? lev : form; // step is an alias
+  RealVector cost;  configure_cost(num_steps, multilev, cost);
 
   // Initialize all levels.  Note: configure_indices() is used for completeness
   // (uSpaceModel.active_model_key(...) is sufficient for current grid
@@ -1455,7 +1454,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Perform final roll-up for each level and then combine levels
   NLev.resize(num_steps);  bool reverted;
   for (step=0; step<num_steps; ++step) {
-    configure_indices(step, form, multilev);
+    configure_indices(step, form, lev);
     reverted = (step != best_step); // only candidate from best_step was applied
     post_refinement(best_step_metric, reverted);
     NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
@@ -1469,28 +1468,31 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
 void NonDExpansion::multilevel_regression()
 {
-  // Allow either model forms or discretization levels, but not both
-  // (discretization levels take precedence for this algorithm)
   unsigned short num_steps, fixed_index, form, lev;
   bool multilev, import_pilot;
   size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
-  configure_sequence(num_steps, fixed_index, multilev, false);
-  RealVector cost, level_metrics(num_steps);
-  configure_cost(num_steps, multilev, cost);
-  // either form varies with lev fixed or vice versa:
+
+  // Allow either model forms or discretization levels, but not both
+  configure_sequence(num_steps, fixed_index, multilev, false); // ML precedence
+  // either lev varies and form is fixed, or vice versa:
+  unsigned short& step = (multilev) ? lev : form; // step is an alias
   if (multilev) form = fixed_index;
   else           lev = fixed_index;
-  unsigned short& step = (multilev) ? lev : form; // step is an alias
 
+  // configure metrics and cost for each step in the sequence
+  RealVector cost, level_metrics(num_steps);
+  configure_cost(num_steps, multilev, cost);
+
+  // virtual: base implementation clears keys, assigns stats type, et al.
   initialize_ml_regression(num_steps, import_pilot);
 
-  // Load the pilot sample from user specification
+  // Initialize NLev and load the pilot sample from user specification
+  NLev.assign(num_steps, 0);
   SizetArray delta_N_l(num_steps);
   load_pilot_sample(pilotSamples, delta_N_l);
 
   // now converge on sample counts per level (NLev)
-  NLev.assign(num_steps, 0);
   while ( iter <= max_iter &&
 	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
 

@@ -251,19 +251,11 @@ protected:
   Model& surrogate_model();
   /// return surrogate model, if present, within subModel
   const Model& surrogate_model() const;
-  /// set surrogate model key within subModel
-  void surrogate_model_key(const UShortArray& lf_key);
-  /// return surrogate model key from subModel
-  const UShortArray& surrogate_model_key() const;
 
   /// return truth model, if present, within subModel
   Model& truth_model();
   /// return truth model, if present, within subModel
   const Model& truth_model() const;
-  /// set truth model key within subModel
-  void truth_model_key(const UShortArray& hf_key);
-  /// return truth model key from subModel
-  const UShortArray& truth_model_key() const;
 
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -734,28 +726,12 @@ inline const Model& RecastModel::surrogate_model() const
 { return subModel.surrogate_model(); }
 
 
-inline void RecastModel::surrogate_model_key(const UShortArray& lf_key)
-{ subModel.surrogate_model_key(lf_key); }
-
-
-inline const UShortArray& RecastModel::surrogate_model_key() const
-{ return subModel.surrogate_model_key(); }
-
-
 inline Model& RecastModel::truth_model()
 { return subModel.truth_model(); }
 
 
 inline const Model& RecastModel::truth_model() const
 { return subModel.truth_model(); }
-
-
-inline void RecastModel::truth_model_key(const UShortArray& hf_key)
-{ subModel.truth_model_key(hf_key); }
-
-
-inline const UShortArray& RecastModel::truth_model_key() const
-{ return subModel.truth_model_key(); }
 
 
 inline void RecastModel::
