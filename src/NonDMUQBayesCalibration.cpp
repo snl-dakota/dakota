@@ -13,6 +13,8 @@
 //- Version:
 
 #include "NonDMUQBayesCalibration.hpp"
+#include "MUQ/Modeling/WorkGraphPiece.h"
+#include "MUQ/Modeling/ModGraphPiece.h"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
@@ -33,37 +35,49 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
 {
   // prior,likelihood could be objects of same class w/ different fns passed in
   thetaPtr      = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
-  priorPtr      = std::make_shared<MUQPriorInterface>();
+
+  Eigen::VectorXd mu(1);
+  mu(0) = 2.0;
+  Eigen::MatrixXd cov(1,1);
+  cov(0,0) = 1.0;
+  priorPtr      = std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity();
+
+
+
   modelPtr      = std::make_shared<MUQModelInterface>(iteratedModel /* or model ? */);
   // Gaussian class inherited from Distribution could be helpful for likelihood
-  likelihoodPtr = std::make_shared<MUQLikelihoodInterface>();
+  likelihoodPtr = std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity();
   posteriorPtr  = std::make_shared<muq::Modeling::DensityProduct>(2);
+
+  workGraph = std::make_shared<muq::Modeling::WorkGraph>();
 
   //////////////////////
   // DEFINE THE GRAPH //
   //////////////////////
-  workGraph.AddNode(thetaPtr,      "Parameters");
-  workGraph.AddNode(likelihoodPtr, "Likelihood");
-  workGraph.AddNode(priorPtr,      "Prior");
-  workGraph.AddNode(posteriorPtr,       "Posterior");
-  workGraph.AddNode(modelPtr,      "Forward Model"); // ***
+  workGraph->AddNode(thetaPtr,      "Parameters");
+  workGraph->AddNode(likelihoodPtr, "Likelihood");
+  workGraph->AddNode(priorPtr,      "Prior");
+  workGraph->AddNode(posteriorPtr,       "Posterior");
+  workGraph->AddNode(modelPtr,      "Forward Model"); // ***
 
   // Define graph: prior(theta) dependent on theta
-  workGraph.AddEdge("Parameters", 0, "Prior", 0); // 0 = index of input,output
+  workGraph->AddEdge("Parameters", 0, "Prior", 0); // 0 = index of input,output
+  workGraph->AddEdge("Parameters", 0, "Likelihood", 0); // 0 = index of input,output
 
-  // Define graph: simulation model G(theta) dependent on theta
-  workGraph.AddEdge("Parameters", 0, "Forward Model", 0);
+  // // Define graph: simulation model G(theta) dependent on theta
+  // workGraph.AddEdge("Parameters", 0, "Forward Model", 0);
 
-  // Define graph: likelihood dependent on simulation model G(theta);
-  //               misfit = (G - G-bar)^T Gamma^{-1} (G - G-bar)
-  //               (G-bar data dependence is currently hidden)
-  workGraph.AddEdge("Forward Model", 0, "Likelihood", 0);
+  // // Define graph: likelihood dependent on simulation model G(theta);
+  // //               misfit = (G - G-bar)^T Gamma^{-1} (G - G-bar)
+  // //               (G-bar data dependence is currently hidden)
+  // workGraph.AddEdge("Forward Model", 0, "Likelihood", 0);
   // If "Approach 1", then likelihood has two inputs: G(theta) and data
   //workGraph.AddEdge("Data", 0, "Likelihood", 1); // if Approach 1
 
   // Define graph: posterior dependent on prior and likelihood;
-  workGraph.AddEdge("Prior",      0, "Posterior", 0);
-  workGraph.AddEdge("Likelihood", 0, "Posterior", 1);
+  workGraph->AddEdge("Prior",      0, "Posterior", 0);
+  workGraph->AddEdge("Likelihood", 0, "Posterior", 1);
+
 
   // More advanced graphs could be considered for, e.g.., Model selection.....
 
@@ -81,15 +95,16 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   //double hard_coded_cov = 1.0;
   //post_distrib = prior_distribstd::make_shared<muq::Modeling::Gaussian>(hard_coded_mu, hard_coded_cov)->AsDensity(); // standard normal Gaussian
 
+
   // Dump out a visualization of the work graph
   if (outputLevel >= DEBUG_OUTPUT)
-    workGraph.Visualize("muq_graph.pdf");
+    workGraph->Visualize("muq_graph.pdf");
 
   /////////////////////////////////
   // DEFINE THE PROBLEM TO SOLVE //
   /////////////////////////////////
   samplingProbPtr = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(posteriorPtr);
-  
+
   /////////////////////////////
   // DEFINE THE MCMC SAMPLER //
   /////////////////////////////
@@ -105,7 +120,13 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   pt.put("Kernel1.MyProposal.Method", "MHProposal");
   pt.put("Kernel1.MyProposal.ProposalVariance", 0.5); // the variance of the isotropic MH proposal
 
-  mcmcSamplerPtr = muq::SamplingAlgorithms::MCMCFactory::CreateSingleChain(pt, samplingProbPtr);
+  auto dens = workGraph->CreateModPiece("Posterior");
+
+  auto problem = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(dens);
+
+  mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,problem);
+
+  // mcmcSamplerPtr = muq::SamplingAlgorithms::MCMCFactory::CreateSingleChain(pt, samplingProbPtr);
 }
 
 
@@ -118,9 +139,22 @@ void NonDMUQBayesCalibration::calibrate()
 {
   Eigen::VectorXd init_pt;
   init_pt.resize(1);
-  init_pt[0]=0.1;
+  init_pt[0]=1.9;
+
+  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> samps = mcmc->Run(init_pt);
+
+  Eigen::VectorXd mean = samps->Mean();
+
+  std::cout << mean(0) << std::endl;
+
+  const std::string filename = "output.txt";
+
+  // write the collection to file
+  samps->WriteToFile(filename);
+
   //mcmcSampleSetPtr = mcmcSamplerPtr->Run(init_pt);
-  sampleCollPtr = mcmcSamplerPtr->Run(init_pt);
+  // sampleCollPtr = mcmcSamplerPtr->Run(init_pt);
+
   //mcmcSampleSetPtr = mcmcSamplerPtr->Run();
 }
 

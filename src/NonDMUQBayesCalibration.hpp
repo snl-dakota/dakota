@@ -65,16 +65,16 @@ protected:
   //- Heading: Data
   //
 
-  muq::Modeling::WorkGraph workGraph;
+  std::shared_ptr<muq::Modeling::WorkGraph> workGraph;
 
   std::shared_ptr<muq::Modeling::IdentityOperator>       thetaPtr;
-  std::shared_ptr<MUQPriorInterface>           priorPtr;
+  std::shared_ptr<muq::Modeling::Density>           priorPtr;
   std::shared_ptr<MUQModelInterface>           modelPtr;
-  std::shared_ptr<MUQLikelihoodInterface> likelihoodPtr;
+  std::shared_ptr<muq::Modeling::Density> likelihoodPtr;
   std::shared_ptr<muq::Modeling::DensityProduct>     posteriorPtr;
 
   std::shared_ptr<muq::SamplingAlgorithms::SamplingProblem> samplingProbPtr;
-  std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>     mcmcSamplerPtr;
+  std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>     mcmc;
   std::shared_ptr<muq::SamplingAlgorithms::MarkovChain>    mcmcSampleSetPtr;
   std::shared_ptr<muq::SamplingAlgorithms::SampleCollection>    sampleCollPtr;
 
@@ -132,8 +132,9 @@ protected:
 
 
 inline MUQModelInterface::MUQModelInterface(Model & model):
-  muq::Modeling::ModPiece(2*Eigen::VectorXi::Ones(1), // inputSizes  = [1]
-			  2*Eigen::VectorXi::Ones(1)) // outputSizes = [1]
+// TODO: input and output dimensionality from Dakota model
+  muq::Modeling::ModPiece(1*Eigen::VectorXi::Ones(1), // inputSizes  = [1]
+			  1*Eigen::VectorXi::Ones(1)) // outputSizes = [1]
 { }
 
 
@@ -145,14 +146,20 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  //const Eigen::VectorXd mu(1);
-  //mu << 1.0;
+  // Eigen::VectorXd mu = Eigen::VectorXd(1);
+  // mu(0) = 0.1;
+  // // mu << 1.0;
 
-  //const Eigen::MatrixXd cov(1,1);
-  //cov << 1.0;
+  // Eigen::MatrixXd cov = Eigen::MatrixXd(1,1);
+  // cov(0,0) = 1.0;
+  // cov << 1.0;
+
+  // auto prior = std::make_shared<muq::Modeling::Gaussian>(mu, cov);
+
 
   /// standard constructor
   MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()) { }
+  // MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity()) { }
   /// destructor
   ~MUQPriorInterface() { }
 
