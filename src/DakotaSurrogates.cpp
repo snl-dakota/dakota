@@ -69,7 +69,7 @@ GPApproximation::build()
   int num_pts = approx_data.points();
 
   // num_samples x num_features
-  MatrixXd xs_u(num_pts, num_qoi);
+  MatrixXd xs_u(num_pts, num_v);
   // num_samples x num_qoi
   MatrixXd response(num_pts, num_qoi);
 
@@ -80,7 +80,7 @@ GPApproximation::build()
     for (j=0; j<num_v; j++){
       xs_u(i,j) = c_vars[j];
     }
-    response(i) = sdr_array[i].response_function();
+    response(i,0) = sdr_array[i].response_function();
   }
 
   // construct the surrogate
@@ -100,9 +100,9 @@ GPApproximation::value(const RealVector& c_vars)
     abort_handler(-1);
   }
 
-  const size_t num_samples = 1;
+  const size_t num_evals = 1;
   const size_t num_vars = c_vars.length();
-  const size_t num_responses = 1;
+  const size_t num_qoi = 1;
 
   //if (num_vars != 1 )
   //{
@@ -112,10 +112,10 @@ GPApproximation::value(const RealVector& c_vars)
   //}
 
   // Need to use Teuchos-to-Eigen converters - RWH
-  MatrixXd eval_pts(num_vars,num_samples);
-  MatrixXd pred    (num_vars,num_samples);
-  for (size_t i = 0; i < num_vars; i++)
-    eval_pts(i,0) = c_vars[i];
+  MatrixXd eval_pts(num_evals, num_vars);
+  MatrixXd pred    (num_evals, num_qoi);
+  for (size_t j = 0; j < num_vars; j++)
+    eval_pts(0,j) = c_vars[j];
 
   model->value(eval_pts, pred);
 

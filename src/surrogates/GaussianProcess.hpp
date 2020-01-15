@@ -53,7 +53,7 @@ public:
  * \brief Main constructor for the GaussianProcess.
  *
  * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
- * \param[in] response Vector of targets for surrogate construction.
+ * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
  * \param[in] sigma_bounds Bounds for the scaling hyperparameter
  * \param[in] length_scale_bounds Bounds for each length scale hyperparameter.
  * \param[in] scaler_type String for which type of scaling will be applied to the surrogate data.

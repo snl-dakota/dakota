@@ -415,12 +415,13 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr_module0)
   gp_approx.build();
 
   // check the value of the surrogate
-  RealVector eval_vars(2);
-  eval_vars(0) = 0.4;
-  eval_vars(1) = 1.0; // not used yet but tests if allowed
   // Note the tolerance here had to be relaxed from 1.e-8 used in the original
   // unit test mentioned above.
+  RealVector eval_vars(num_vars);  // Dakota::Approximation only supports single eval pt
+  eval_vars(0) = 0.4;
   TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), -0.0333528, 1.e-6);
+  eval_vars(0) = 1.0;
+  TEST_FLOATING_EQUALITY(gp_approx.value(eval_vars), -0.0506785, 1.e-6);
 }
 
 #endif
