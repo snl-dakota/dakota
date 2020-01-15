@@ -8,7 +8,7 @@
 
 #include "GaussianProcess.hpp"
 
-#include "Teuchos_ParameterList.hpp"
+//#include "Teuchos_ParameterList.hpp"
 #include "Teuchos_XMLParameterListHelpers.hpp"
 #include "Teuchos_oblackholestream.hpp"
 
@@ -203,13 +203,27 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
   ROL::Ptr<std::ostream> outStream;
   Teuchos::oblackholestream bhs;
   outStream = ROL::makePtrFromRef(bhs);
+  /* Uncomment if you'd like to print ROL's output to screen.
+   * Useful for debugging */
   //outStream = ROL::makePtrFromRef(std::cout);
+
+  /* No more reading in rol_params from an xml file
+   * Set defaults in here instead.
+   * TODO: Make some of ROL's parameters controllable by
+   * a surrogates/Dakota user */
+
+  /*
   std::string paramfile = "rol_params.xml";
   auto rol_params = Teuchos::rcp(new Teuchos::ParameterList);
   Teuchos::updateParametersFromXmlFile(paramfile, rol_params.ptr());
+  */
+
+  auto gp_mle_rol_params = Teuchos::rcp(new Teuchos::ParameterList("GP_MLE_Optimization"));
+  set_default_optimization_params(gp_mle_rol_params);
+
   auto gp_objective = std::make_shared<GP_Objective>(this);
   int dim = numVariables + 1;
-  ROL::Algorithm<double> algo("Line Search",*rol_params);
+  ROL::Algorithm<double> algo("Line Search",*gp_mle_rol_params);
 
   /* set up parameter vectors and bounds */
   ROL::Ptr<std::vector<double> > x_ptr = ROL::makePtr<std::vector<double>>(dim, 0.0);
@@ -304,6 +318,66 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   }
 
 }
+
+void GaussianProcess::set_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params) {
+  /* Secant */
+  rol_params->sublist("General").sublist("Secant").
+             set("Type","Limited-Memory BFGS");
+  rol_params->sublist("General").sublist("Secant").
+             set("Maximum Storage",25);
+  /* Step */ 
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").set("Function Evaluation Limit",20);
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").set("Sufficient Decrease Tolerance",1.0e-4);
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").set("Initial Step Size",1.0);
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Descent Method").
+             set("Type","Quasi-Newton");
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Descent Method").
+             set("Nonlinear CG Type","Hestenes-Stiefel");
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Curvature Condition").
+             set("Type","Strong Wolfe Conditions");
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Curvature Condition").
+             set("General Parameter",0.9);
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Curvature Condition").
+             set("Generalized Wolfe Parameter",0.6);
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Line-Search Method").
+             set("Type","Cubic Interpolation");
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Line-Search Method").
+             set("Backtracking Rate",0.5);
+
+  rol_params->sublist("General").sublist("Step").
+             sublist("Line Search").sublist("Line-Search Method").
+             set("Bracketing Tolerance",1.0e-8);
+
+  /* Status Test */
+  rol_params->sublist("General").sublist("Status Test").
+             set("Gradient Tolerance",1.0e-10);
+
+  rol_params->sublist("General").sublist("Status Test").
+             set("Step Tolerance",1.0e-8);
+
+  rol_params->sublist("General").sublist("Status Test").
+             set("Iteration Limit",100);
+}
+
 
 }  // namespace surrogates
 }  // namespace dakota

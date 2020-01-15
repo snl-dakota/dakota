@@ -12,6 +12,7 @@
 #include <memory>
 #include "DataScaler.hpp"
 #include "Eigen/StdVector"
+#include "Teuchos_ParameterList.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -218,7 +219,12 @@ private:
                                 const VectorXd &sigma_bounds,
                                 const MatrixXd &length_scale_bounds);
 
-
+/**
+ *  \brief Set the default optimization parameters for ROL for GP hyperparameter
+ *  estimation.
+ *  \param[in] rol_params RCP to a Teuchos::ParameterList of ROL's options.
+*/
+  void set_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params);
 
 }; // class GaussianProcess
 
