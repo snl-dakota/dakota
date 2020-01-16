@@ -82,9 +82,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void active_model_key(const UShortArray& mi_key);
-  const UShortArray& active_model_key() const;
-  void clear_model_keys();
+  //void clear_model_keys();
 
   short discrepancy_type() const;
 
@@ -173,26 +171,11 @@ private:
   //- Heading: Data
   //
 
-  /// key identifying the currently active model index and associated
-  /// approximation level
-  UShortArray activeKey;
 };
 
 
 inline SharedC3ApproxData::SharedC3ApproxData()
 { }
-
-
-inline void SharedC3ApproxData::active_model_key(const UShortArray& mi_key)
-{ activeKey = mi_key; }
-
-
-inline const UShortArray& SharedC3ApproxData::active_model_key() const
-{ return activeKey; }
-
-
-inline void SharedC3ApproxData::clear_model_keys()
-{ activeKey.clear(); } // no shared data is currently keyed
 
 
 inline short SharedC3ApproxData::discrepancy_type() const

@@ -368,11 +368,12 @@ public:
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
-  /// apply the DiscrepancyCorrection object to correct an approximation
-  /// within a SurrogateModel
+
+  /// apply a DiscrepancyCorrection to correct an approximation within
+  /// a HierarchSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
-			    const UShortArrayPair& keys);
-  /// apply the DiscrepancyCorrection object to recursively correct an 
+			    const UShortArray& paired_key);
+  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
@@ -1403,9 +1404,8 @@ protected:
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
 
-  /// the component parallelism mode: 0 (none),
-  /// 1 (INTERFACE/OPTIONAL_INTERFACE/SURROGATE_MODEL), or
-  /// 2 (SUB_MODEL/TRUTH_MODEL)
+  /// the component parallelism mode: NO_PARALLEL_MODE, SURROGATE_MODEL_MODE,
+  // TRUTH_MODEL_MODE, SUB_MODEL_MODE, INTERFACE_MODE, OPTIONAL_INTERFACE_MODE
   short componentParallelMode;
 
   /// flags asynch evaluations (local or distributed)

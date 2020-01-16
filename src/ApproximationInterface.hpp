@@ -164,8 +164,9 @@ private:
   /// based on the active set definitions within a map of incoming responses
   void update_pop_counts(const IntResponseMap& resp_map);
 
-  /// following add() and pop_count() operations which may enumerate
-  /// multiple keys, restore the active approxData to the nominal key
+  /// following Approximation::add() and Approximation::pop_count() operations,
+  /// which may enumerate multiple approxDataKeys, restore the active
+  /// approxData to the nominal key
   void restore_data_key();
 
   /// Load approximation test points from user challenge points file
@@ -288,18 +289,13 @@ inline void ApproximationInterface::clear_model_keys()
 }
 
 
-//inline void ApproximationInterface::
-//surrogate_model_key(const UShortArray& key)
-//{ sharedData.surrogate_model_key(key); }
-
-
-//inline void ApproximationInterface::truth_model_key(const UShortArray& key)
-//{ sharedData.truth_model_key(key); }
-
-
-/** Restore active key to leading (HF) key for approxData. */
+/** Restore active key in approxData using shared key. */
 inline void ApproximationInterface::restore_data_key()
-{ active_model_key(sharedData.truth_model_key()); }
+{
+  const UShortArray& active_key = sharedData.active_model_key();
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].active_model_key(active_key);
+}
 
 
 inline void ApproximationInterface::

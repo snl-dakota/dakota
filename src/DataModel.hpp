@@ -45,7 +45,8 @@ enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
 
 /// define special values for componentParallelMode
 /// (active model for parallel scheduling)
-enum { SURROGATE_MODEL=1, TRUTH_MODEL };
+enum { NO_PARALLEL_MODE=0, SURROGATE_MODEL_MODE, TRUTH_MODEL_MODE,
+       SUB_MODEL_MODE, INTERFACE_MODE };
 
 /// define special values for distParamDerivs
 enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS }; 

@@ -363,59 +363,45 @@ SharedApproxData::~SharedApproxData()
 
 void SharedApproxData::active_model_key(const UShortArray& key)
 {
+  // approxDataKeys are organized in a 2D array: {truth,surrogate,combined} keys
+  // > AGGREGATED_MODELS uses {HF,LF} order, as does ApproxInterface::*_add()
+  // > When managing distinct sets of paired truth,surrogate data (e.g., one set
+  //   of data for Q_l - Q_lm1 and another for Q_lm1 - Q_lm2, it is important to
+  //   identify the lm1 data with a specific pairing --> data group index
+  //   pre-pend in {truth,surrogate,combined} keys.
+
   if (dataRep) dataRep->active_model_key(key);
   else {
-    UShortArray hf_key, lf_key;
-    Pecos::DiscrepancyCalculator::extract_keys(key, hf_key, lf_key);
-
-    // empty LF key indicates HF only with no surrogate pairing (e.g., level 0)
-    if (lf_key.empty())
+    // update activeKey
+    activeKey = key;
+    // update approxDataKeys
+    if (Pecos::DiscrepancyCalculator::aggregated_key(key)) {
+      UShortArray hf_key, lf_key;
+      Pecos::DiscrepancyCalculator::extract_keys(key, hf_key, lf_key);
+      if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
+	approxDataKeys.resize(3); // 3 keys: HF, LF, aggregate
+	approxDataKeys[2] = key;
+      }
+      // data from HF,LF with no discrepancy combination: this case is not
+      // currently used, but approxDataKeys logic would be to enumerate these
+      // two keys without a third key (no corresponding discrepancy to process)
+      else
+	approxDataKeys.resize(2); // 2 keys: HF, LF (no aggregation defined)
+      approxDataKeys[0] = hf_key;
+      approxDataKeys[1] = lf_key;
+    }
+    else { // no HF vs. LF distinction; just a single key w/o pairing
       approxDataKeys.resize(1); // prune trailing entries
-    // discrepancy cases use 3 keys: HF, LF, aggregate
-    else if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
-      approxDataKeys.resize(3);
-      approxDataKeys[1] = lf_key;
-      approxDataKeys[2] = key;
+      approxDataKeys[0] = key;
     }
-    // no discrepancy case with both HF,LF uses these 2 keys.  This case is not
-    // currently used, but we don't want to enumerate a third key if there is
-    // no corresponding discrepancy defined.
-    else {
-      approxDataKeys.resize(2);
-      approxDataKeys[1] = lf_key;
-    }
-    approxDataKeys[0] = hf_key;
   }
-}
-
-
-const UShortArray& SharedApproxData::active_model_key() const
-{
-  if (dataRep)
-    return dataRep->active_model_key();
-  else
-    switch (approxDataKeys.size()) {
-    case 2: { // not currently possible: see note above
-      /*
-      UShortArray agg_key;
-      Pecos::DiscrepancyCalculator::
-	aggregate_keys(approxDataKeys[0], approxDataKeys[1], agg_key);
-      return agg_key; // by value...
-      */
-      Cerr << "Error: unexpected approxDataKeys length in SharedApproxData::"
-	   << "active_model_key()" << std::endl;
-      abort_handler(APPROX_ERROR);   break;
-    }
-    default:
-      return approxDataKeys.back();  break;
-    }
 }
 
 
 void SharedApproxData::clear_model_keys()
 {
   if (dataRep) dataRep->clear_model_keys();
-  //else no-op (implementation not required for shared data)
+  else { activeKey.clear(); approxDataKeys.clear(); }
 }
 
 
@@ -442,100 +428,6 @@ short SharedApproxData::discrepancy_type() const
   if (dataRep) return dataRep->discrepancy_type();
   else         return Pecos::NO_DISCREP; // this enum is 0
 }
-
-
-// approxDataKeys are organized in a 2D array: {truth,surrogate,combined}
-// by multi-index key.  Note that AGGREGATED_MODELS mode uses {HF,LF} order,
-// as does ApproximationInterface::*_add()
-
-// NOTE: When managing distinct sets of paired truth,surrogate data (e.g.,
-// one set of data for Q_l - Q_lm1 and another for Q_lm1 - Q_lm2, it is
-// important to identify the lm1 data with a specific pairing --> data
-// group index pre-pend in {truth,surrogate,combined} keys.
-
-/*
-void SharedApproxData::surrogate_model_key(const UShortArray& lf_key)
-{
-  if (dataRep) dataRep->surrogate_model_key(lf_key);
-  // empty key indicates there is no surrogate pairing (e.g., level 0)
-  // > deactivate surrogate key by pruning trailing entries
-  else if (lf_key.empty())
-    approxDataKeys.resize(1);
-  // activate surrogate key: replace LF key, update combined key
-  else if (discrepancy_type()) { // Pecos::{DISTINCT,RECURSIVE}_DISCREP
-    UShortArray& hf_key = approxDataKeys[0]; // approxDataKeys size >= 1
-    if (hf_key.empty() || hf_key.front() != lf_key.front()) // enforce group
-      approxDataKeys.resize(2); // don't aggregate (yet)
-    else {
-      approxDataKeys.resize(3);
-      Pecos::DiscrepancyCalculator::
-	aggregate_keys(hf_key, lf_key, approxDataKeys[2]);
-    }
-    approxDataKeys[1] = lf_key; // assign incoming
-  }
-  else // assign incoming LF key using {HF,LF} order
-    { approxDataKeys.resize(2); approxDataKeys[1] = lf_key; }
-}
-
-
-void SharedApproxData::truth_model_key(const UShortArray& hf_key)
-{
-  if (dataRep) dataRep->truth_model_key(hf_key);
-  else if (discrepancy_type()) // Pecos::{DISTINCT,RECURSIVE}_DISCREP
-    switch (approxDataKeys.size()) {
-    case 0: // should not happen
-      approxDataKeys.push_back(hf_key); break;
-    case 1: // surrogate key deactivated
-      approxDataKeys[0] = hf_key;       break;
-    default: // surrogate key activated (lf_key is available)
-      approxDataKeys[0] = hf_key; // assign incoming
-      UShortArray& lf_key = approxDataKeys[1];
-      if (hf_key.empty() || hf_key.front() != lf_key.front()) // enforce group
-	approxDataKeys.resize(2); // don't aggregate (yet)
-      else {
-	approxDataKeys.resize(3);	
-	Pecos::DiscrepancyCalculator::
-	  aggregate_keys(hf_key, lf_key, approxDataKeys[2]);
-      }
-      break;
-    }
-  else // assign incoming LF key using {HF,LF} order
-    switch  (approxDataKeys.size()) {
-    case 0:  approxDataKeys.push_back(hf_key); break; // should not happen
-    default: approxDataKeys[0] = hf_key;       break;
-    }
-}
-
-
-const UShortArray& SharedApproxData::surrogate_model_key() const
-{
-  if (dataRep) return dataRep->surrogate_model_key();
-  else {
-    if (approxDataKeys.size() < 2) {
-      Cerr << "Error: key not available in SharedApproxData::"
-	   << "surrogate_model_key()" << std::endl;
-      abort_handler(APPROX_ERROR);
-      // Note: returning an empty key by value does not convey its absence
-    }
-    return approxDataKeys[1];
-  }
-}
-
-
-const UShortArray& SharedApproxData::truth_model_key() const
-{
-  if (dataRep) return dataRep->truth_model_key();
-  else {
-    if (approxDataKeys.empty()) {
-      Cerr << "Error: key not available in SharedApproxData::truth_model_key()"
-	   << std::endl;
-      abort_handler(APPROX_ERROR);
-      // Note: returning an empty key by value does not convey its absence
-    }
-    return approxDataKeys.front();
-  }
-}
-*/
 
 
 void SharedApproxData::build()

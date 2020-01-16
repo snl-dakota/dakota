@@ -95,7 +95,8 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1), 
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), 
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
@@ -240,8 +241,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
   parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(output_level), hierarchicalTagging(false),
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), outputLevel(output_level), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -282,8 +283,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   probDescDB(problem_db), parallelLib(parallel_lib),
   evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(no_spec_id()), // to be replaced by derived ctors
@@ -4177,10 +4178,10 @@ void Model::correction_type(short corr_type)
 
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const UShortArrayPair& keys)
+			 const UShortArray& paired_key)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->single_apply(vars, resp, keys);
+    modelRep->single_apply(vars, resp, paired_key);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual single_apply() "
 	 << "function.\n." << std::endl;

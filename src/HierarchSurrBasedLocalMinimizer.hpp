@@ -184,22 +184,12 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 {
-  /* *** TO DO: form key and assign ...
-  if (multiLev) {
-    iteratedModel.surrogate_model_key(
-      trustRegions[tr_index].approx_model_form(),
-      trustRegions[tr_index].approx_model_level());
-    iteratedModel.truth_model_key(
-      trustRegions[tr_index].truth_model_form(),
-      trustRegions[tr_index].truth_model_level());
-  }
-  else {
-    iteratedModel.surrogate_model_key(
-      trustRegions[tr_index].approx_model_form());
-    iteratedModel.truth_model_key(
-      trustRegions[tr_index].truth_model_form());
-  }
-  */
+  SurrBasedLevelData& tr = trustRegions[tr_index];
+  UShortArray hf_lf_key;
+  Pecos::DiscrepancyCalculator::
+    form_key(tr.data_group(), tr.truth_model_form(), tr.truth_model_level(),
+	     tr.approx_model_form(), tr.approx_model_level(), hf_lf_key);
+  iteratedModel.active_model_key(hf_lf_key);
 }
 
 

@@ -954,8 +954,8 @@ approximation_data(size_t fn_index)
 
 inline void RecastModel::component_parallel_mode(short mode)
 {
-  //if (mode != SUB_MODEL) {
-  //  Cerr << "Error: RecastModel only supports the SUB_MODEL component "
+  //if (mode != SUB_MODEL_MODE) {
+  //  Cerr << "Error: RecastModel only supports the SUB_MODEL_MODE component "
   //       << "parallel mode." << std::endl;
   //  abort_handler(-1);
   //}

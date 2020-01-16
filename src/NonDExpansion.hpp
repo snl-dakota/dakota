@@ -246,10 +246,11 @@ protected:
   /// configure fidelity/level counts from model hierarchy
   void configure_cost(unsigned short num_steps, bool multilevel,
 		      RealVector& cost);
-  /// configure response mode and truth/surrogate model indices within
-  /// hierarchical iteratedModel
+  /// configure response mode and active/truth/surrogate model keys within a
+  /// hierarchical model.  s_index is the sequence index that defines the
+  /// active dimension for a model sequence.
   void configure_indices(unsigned short group, unsigned short form,
-			 unsigned short lev);
+			 unsigned short lev,   unsigned short s_index);
   /// return aggregate cost (one or more models) for a level sample
   Real sequence_cost(unsigned short step, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation

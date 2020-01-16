@@ -241,10 +241,10 @@ private:
   /// for computing a correction and applying it to lf_resp_map
   void compute_apply_delta(IntResponseMap& lf_resp_map);
 
-  /// helper function for applying a single deltaCorr correction
-  /// corresponding to key
+  /// helper function for applying a single response correction corresponding
+  /// to deltaCorr[paired_key]
   void single_apply(const Variables& vars, Response& resp,
-		    const UShortArrayPair& keys);
+		    const UShortArray& paired_key);
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);
@@ -260,15 +260,14 @@ private:
   /// manages construction and application of correction functions that
   /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
   /// order to reproduce high fidelity data.
-  DiscrepCorrMap deltaCorr;
+  std::map<UShortArray, DiscrepancyCorrection> deltaCorr;
   /// order of correction: 0, 1, or 2
   short corrOrder;
 
   unsigned short correctionMode;
 
-  /// vector to specify a sequence of discrepancy corrections to apply in
-  /// AUTO_CORRECTED_SURROGATE mode
-  std::vector<UShortArrayPair> corrSequence;
+  // sequence of discrepancy corrections to apply in SEQUENCE_CORRECTION mode
+  //std::vector<UShortArray> corrSequence;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
@@ -366,7 +365,8 @@ inline short HierarchSurrModel::correction_type()
 
 inline void HierarchSurrModel::correction_type(short corr_type)
 {
-  for (DiscrepCorrMap::iterator it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
+  std::map<UShortArray, DiscrepancyCorrection>::iterator it;
+  for (it=deltaCorr.begin(); it!=deltaCorr.end(); ++it)
     it->second.correction_type(corr_type);
 }
 
@@ -417,11 +417,12 @@ inline const Model& HierarchSurrModel::truth_model() const
 
 inline void HierarchSurrModel::active_model_key(const UShortArray& key)
 {
-  // extract {surr,truth}ModelKey
+  // assign activeKey and extract {surr,truth}ModelKey
   SurrogateModel::active_model_key(key);
-  unsigned short
-    hf_form = (truthModelKey.empty())) ? USHRT_MAX : truthModelKey[1],
-    lf_form = ( surrModelKey.empty())) ? USHRT_MAX :  surrModelKey[1];
+
+  bool truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
+  unsigned short hf_form = (truth_key) ? truthModelKey[1] : USHRT_MAX,
+                 lf_form =  (surr_key) ?  surrModelKey[1] : USHRT_MAX;
 
   if (hf_form != lf_form) { // distinct model forms
 
@@ -443,7 +444,7 @@ inline void HierarchSurrModel::active_model_key(const UShortArray& key)
   // assign same{Model,Interface}Instance
   check_model_interface_instance();
 
-  if (!surrModelKey.empty()) { // active key is aggregate
+  if (surr_key) { // active key is aggregate
     DiscrepancyCorrection& delta_corr = deltaCorr[key]; // separate data groups
     if (!delta_corr.initialized())
       delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,

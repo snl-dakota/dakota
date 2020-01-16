@@ -1204,39 +1204,29 @@ configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 
 
 void NonDExpansion::
-configure_indices(unsigned short group, unsigned short form, unsigned short lev)
+configure_indices(unsigned short group, unsigned short form,
+		  unsigned short lev,   unsigned short s_index)
 {
-  // Set active surrogate/truth models within the hierarchical surrogate
-  // (iteratedModel)
+  // Set active surrogate/truth models within the Hierarch,DataFit surrogates
+  // (recursion from uSpaceModel to iteratedModel)
+  // > group index is assigned based on step in model form/resolution sequence
 
-  UShortArray hf_key, lf_key;
-  // group index assigned based on step in model form/resolution sequence
+  UShortArray hf_key;
   Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
-  //uSpaceModel.truth_model_key(hf_key);
 
-  // assume bottom-up sweep through levels (avoid redundant mode updates)
-  if (lev == 0) {
+  if (hf_key[s_index] == 0 || multilevDiscrepEmulation != DISTINCT_EMULATION) {
+    // either RECURSIVE_EMULATION or first level of DISTINCT_EMULATION
     bypass_surrogate_mode();
-    //uSpaceModel.surrogate_model_key(lf_key); // empty key: deactivates pairing
-    uSpaceModel.active_model_key(hf_key);    // one active fidelity
+    uSpaceModel.active_model_key(hf_key);      // one active fidelity
   }
-  else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
+  else { // DISTINCT_EMULATION for sequence index > 0
     aggregated_models_mode();
-
-    lf_key = hf_key;  Pecos::DiscrepancyCalculator::decrement_key(lf_key);    
-    //uSpaceModel.surrogate_model_key(lf_key);
-
-    UShortArray discrep_key;
+ 
+    UShortArray lf_key(hf_key), discrep_key;
+    Pecos::DiscrepancyCalculator::decrement_key(lf_key, s_index);
     Pecos::DiscrepancyCalculator::aggregate_keys(hf_key, lf_key, discrep_key);
     uSpaceModel.active_model_key(discrep_key); // two active fidelities
   }
-
-  // Old design:
-  // > truth and (modified) surrogate model keys get stored in approxDataKeys
-  //   for use in distinguishing data set relationships within SurrogateData
-  // > only the truth key (which remains unmodified) gets activated for
-  //   Model/Interface/Approximation/...
-  //uSpaceModel.active_model_key(uSpaceModel.truth_model_key());
 }
 
 
@@ -1321,15 +1311,15 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
-  unsigned short num_steps, fixed_index, form, lev;  bool multilev;
+  unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
   configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
   // either lev varies and form is fixed, or vice versa:
   unsigned short& step = (multilev) ? lev : form;  step = 0;
-  if (multilev) form = fixed_index;
-  else           lev = fixed_index;
+  if (multilev) { form = fixed_index;  seq_index = 2; }
+  else          {  lev = fixed_index;  seq_index = 1; }
 
   // initial low fidelity/lowest discretization expansion
-  configure_indices(step, form, lev);
+  configure_indices(step, form, lev, seq_index);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
@@ -1343,7 +1333,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   // loop over each of the discrepancy levels
   for (step=1; step<num_steps; ++step) {
     // configure hierarchical model indices and activate key in data fit model
-    configure_indices(step, form, lev);
+    configure_indices(step, form, lev, seq_index);
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
@@ -1387,19 +1377,19 @@ void NonDExpansion::greedy_multifidelity_expansion()
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // Initialize again (or must propagate settings from mf_expansion())
-  unsigned short num_steps, fixed_index, form, lev;  bool multilev;
+  unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
   configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
   // either lev varies and form is fixed, or vice versa:
   unsigned short& step = (multilev) ? lev : form; // step is an alias
-  if (multilev) form = fixed_index;
-  else           lev = fixed_index;
+  if (multilev) { form = fixed_index;  seq_index = 2; }
+  else          {  lev = fixed_index;  seq_index = 1; }
   RealVector cost;  configure_cost(num_steps, multilev, cost);
 
   // Initialize all levels.  Note: configure_indices() is used for completeness
   // (uSpaceModel.active_model_key(...) is sufficient for current grid
   // initialization operations).
   for (step=0; step<num_steps; ++step) {
-    configure_indices(step, form, lev);
+    configure_indices(step, form, lev, seq_index);
     pre_refinement();
   }
 
@@ -1418,7 +1408,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     best_step_metric = 0.;
     for (step=0; step<num_steps; ++step) {
       // configure hierarchical model indices and activate key in data fit model
-      configure_indices(step, form, lev);
+      configure_indices(step, form, lev, seq_index);
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> step_metric
@@ -1440,7 +1430,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
     // permanently apply best increment and update references for next increment
     step = best_step; // also updates form | lev
-    configure_indices(step, form, lev);
+    configure_indices(step, form, lev, seq_index);
     select_candidate(best_step_candidate);
     push_candidate(best_stats_star); // update stats from best (no recompute)
 
@@ -1454,7 +1444,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Perform final roll-up for each level and then combine levels
   NLev.resize(num_steps);  bool reverted;
   for (step=0; step<num_steps; ++step) {
-    configure_indices(step, form, lev);
+    configure_indices(step, form, lev, seq_index);
     reverted = (step != best_step); // only candidate from best_step was applied
     post_refinement(best_step_metric, reverted);
     NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
@@ -1468,7 +1458,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
 void NonDExpansion::multilevel_regression()
 {
-  unsigned short num_steps, fixed_index, form, lev;
+  unsigned short num_steps, fixed_index, form, lev, seq_index;
   bool multilev, import_pilot;
   size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
@@ -1477,8 +1467,8 @@ void NonDExpansion::multilevel_regression()
   configure_sequence(num_steps, fixed_index, multilev, false); // ML precedence
   // either lev varies and form is fixed, or vice versa:
   unsigned short& step = (multilev) ? lev : form; // step is an alias
-  if (multilev) form = fixed_index;
-  else           lev = fixed_index;
+  if (multilev) { form = fixed_index;  seq_index = 2; }
+  else          {  lev = fixed_index;  seq_index = 1; }
 
   // configure metrics and cost for each step in the sequence
   RealVector cost, level_metrics(num_steps);
@@ -1499,7 +1489,7 @@ void NonDExpansion::multilevel_regression()
     sum_root_var_cost = 0.;
     for (step=0; step<num_steps; ++step) {
 
-      configure_indices(step, form, lev);
+      configure_indices(step, form, lev, seq_index);
 
       if (iter == 0) { // initial expansion build
 	// Update solution control variable in uSpaceModel to support

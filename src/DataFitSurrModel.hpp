@@ -548,26 +548,6 @@ inline void DataFitSurrModel::active_model_key(const UShortArray& key)
   // recur both components: (actualModel could be hierarchical)
   approxInterface.active_model_key(key);
   actualModel.active_model_key(key);
-
-  /*
-  switch (responseMode) {
-  // Response inflation from aggregation does not proliferate above
-  // this Model recursion level
-  case AGGREGATED_MODELS: {
-    // passed mi_key is HF key (see NonDExpansion::configure_{indices,keys}),
-    // so create a LF key for the LF,HF aggregated response
-    // *** TO DO: loss of encapsulation of ML logic ***
-    UShortArray lf_key(mi_key); // copy
-    if (Pecos::DiscrepancyCalculator::decrement_key(lf_key))
-      approxInterface.active_model_keys(lf_key, mi_key);
-    else
-      approxInterface.active_model_key(mi_key);
-    break;
-  }
-  default:
-    approxInterface.active_model_key(mi_key); break;
-  }
-  */
 }
 
 

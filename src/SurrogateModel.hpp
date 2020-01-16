@@ -104,6 +104,10 @@ protected:
   //- Heading: Member functions
   //
 
+  /// define truth and surrogate keys from incoming active key
+  void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+			  UShortArray& surr_key);
+
   /// return the level index from active low fidelity model key
   unsigned short surrogate_level_index() const;
   /// return the level index from active high fidelity model key
@@ -289,11 +293,30 @@ inline unsigned short SurrogateModel::truth_level_index() const
 { return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
 
 
+inline void SurrogateModel::
+extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+		   UShortArray& surr_key)
+{
+  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
+  else // single key: assign to truth or surr key based on responseMode
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+      surr_key  = active_key;  truth_key.clear();  break;
+    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
+      truth_key = active_key;   surr_key.clear();  break;
+    }
+}
+
+
 inline void SurrogateModel::active_model_key(const UShortArray& key)
 {
   // base implementation (augmented in derived SurrogateModels)
+
+  // update activeKey
   activeKey = key;
-  Pecos::DiscrepancyCalculator::extract_keys(key, truthModelKey, surrModelKey);
+  // update {truth,surr}ModelKey
+  extract_model_keys(key, truthModelKey, surrModelKey);
 }
 
 
