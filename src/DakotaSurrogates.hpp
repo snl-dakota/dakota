@@ -16,7 +16,6 @@
 #define DAKOTA_SURROGATES_H 
 
 #include "DakotaApproximation.hpp"
-#include "GaussianProcess.hpp"
 #include <memory>
 
 namespace dakota {

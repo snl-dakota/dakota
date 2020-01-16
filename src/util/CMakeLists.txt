@@ -40,9 +40,10 @@ target_include_directories(dakota_util INTERFACE
 
 target_compile_definitions(dakota_util PUBLIC
   "EIGEN_MPL2_ONLY")
-target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
-
+target_link_libraries(dakota_util PUBLIC
+  Eigen3::Eigen)
 
 install(FILES ${util_headers} DESTINATION "include")
+install(TARGETS dakota_util EXPORT ${ExportTarget} DESTINATION lib)
 
 add_subdirectory(unit)
