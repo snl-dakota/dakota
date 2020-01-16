@@ -467,7 +467,7 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag, bool deep_copy,
   if (approxRep)
     approxRep->add(sdr, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
-    const UShort2DArray&  keys = sharedDataRep->approxDataKeys;
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
     if (key_index == _NPOS) key_index = 0; // make front() the default
     if (key_index >= keys.size()) {
       Cerr << "Error: index out of range in Approximation::add()" << std::endl;

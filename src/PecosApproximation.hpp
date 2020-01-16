@@ -703,8 +703,7 @@ inline int PecosApproximation::min_coefficients() const
 inline void PecosApproximation::build()
 {
   // base class implementation checks data set against min required
-  //Approximation::build();
-  check_points(approxData.points());
+  Approximation::build();
 
   // map to Pecos::BasisApproximation
   pecosBasisApprox.compute_coefficients();
