@@ -3347,6 +3347,7 @@
           <oneOf label="Surrogate Category">
             <keyword  id="global" name="global" code="{0}" label="Global Approximation"  minOccurs="1" >
               <oneOf label="Global Surrogate Type">
+		<keyword  id="gauss_proc" name="gauss_proc" code="{N_mom(lit,surrogateType_global_gauss_proc)}" label="Gaussian Process (new module)" minOccurs="1" />
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process"  minOccurs="1" >
                   <alias name="kriging"/>
                   <oneOf label="GP Implementation">

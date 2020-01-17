@@ -161,12 +161,8 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
       return new SurfpackApproximation(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-    else if (approx_type == "new_surr_module")
-    {
-      Cerr << "Error: Approximation type " << approx_type << " not available."
-	   << "with this constructor." << std::endl;
-      return NULL;
-    }
+    else if (approx_type == "global_gauss_proc")
+      return new GPApproximation(problem_db, shared_data, approx_label);
 #endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -218,10 +214,6 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
   else if (approx_type == "global_function_train")
     approx = new C3Approximation(shared_data);
 #endif
-#ifdef HAVE_DAKOTA_SURROGATES
-    else if (approx_type == "new_surr_module")
-      return new GPApproximation(shared_data);
-#endif // HAVE_DAKOTA_SURROGATES
   else if (approx_type == "global_gaussian")
     approx = new GaussProcApproximation(shared_data);
   else if (approx_type == "global_voronoi_surrogate")
@@ -235,6 +227,10 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 	   approx_type == "global_moving_least_squares")
     approx = new SurfpackApproximation(shared_data);
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+    else if (approx_type == "global_gauss_proc")
+      return new GPApproximation(shared_data);
+#endif // HAVE_DAKOTA_SURROGATES
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;

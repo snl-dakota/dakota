@@ -45,9 +45,9 @@ public:
   /// default constructor
   GPApproximation() { }
   /// standard constructor: 
-  //GPApproximation(const ProblemDescDB& problem_db,
-  //      		const SharedApproxData& shared_data,
-  //                      const String& approx_label);
+  GPApproximation(const ProblemDescDB& problem_db,
+		  const SharedApproxData& shared_data,
+		  const String& approx_label);
   /// alternate constructor
   GPApproximation(const SharedApproxData& shared_data);
   /// destructor
@@ -63,6 +63,9 @@ protected:
 
   ///  Do the build
   void build() override;
+
+  /// Return the value of the surrogate for a given Variables object vars
+  Real value(const Variables& vars) override;
 
   /// Return the value of the surrogate for a given parameter vector x
   Real value(const RealVector& c_vars) override;

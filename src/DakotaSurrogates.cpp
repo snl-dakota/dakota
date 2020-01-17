@@ -15,6 +15,7 @@
 #include <typeinfo>
 
 #include "DakotaSurrogates.hpp"
+#include "DakotaVariables.hpp"
 
 // Headers from Surrogates module
 #include "GaussianProcess.hpp"
@@ -24,6 +25,16 @@
 
 
 namespace Dakota {
+
+
+GPApproximation::
+GPApproximation(const ProblemDescDB& problem_db,
+		const SharedApproxData& shared_data,
+		const String& approx_label):
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
+{
+}
+
 
 /// On-the-fly constructor
 GPApproximation::
@@ -36,7 +47,10 @@ GPApproximation(const SharedApproxData& shared_data):
 int
 GPApproximation::min_coefficients() const
 {
-  return model->get_num_variables();
+  // TODO (with @dtseidl): This should be based on minimum points
+  // needed to build the trend, when present, or some other reasonable
+  // default
+  return sharedDataRep->numVars + 1;
 }
 
 void
@@ -45,6 +59,7 @@ GPApproximation::build()
   // Hard-coded values to quickly get things working ...
   // See src/surrogates/unit/gp_approximation_ts.cpp for correspondence
 
+  size_t num_v = sharedDataRep->numVars;
   int num_qoi             = 1; // only using 1 for now
   std::string scaler_type = "standardization";
   int num_restarts        = 10;
@@ -57,12 +72,13 @@ GPApproximation::build()
   sigma_bounds(0) = 1.0e-2;
   sigma_bounds(1) = 1.0e2;
   // length scale bounds - num_vars x 2
-  MatrixXd length_scale_bounds(1,2);
-  length_scale_bounds(0,0) = 1.0e-2;
-  length_scale_bounds(0,1) = 1.0e2;
+  MatrixXd length_scale_bounds(num_v, 2);
+  for(size_t i=0; i<num_v; ++i) {
+    length_scale_bounds(i,0) = 1.0e-2;
+    length_scale_bounds(i,1) = 1.0e2;
+  }
 
   const Pecos::SurrogateData& approx_data = surrogate_data();
-  size_t i, j, num_v = sharedDataRep->numVars;
   const Pecos::SDVArray& sdv_array = approx_data.variables_data();
   const Pecos::SDRArray& sdr_array = approx_data.response_data();
 
@@ -74,10 +90,10 @@ GPApproximation::build()
   MatrixXd response(num_pts, num_qoi);
 
   // Need to use Teuchos-to-Eigen converters - RWH
-  for (i=0; i<num_pts; ++i)
+  for (size_t i=0; i<num_pts; ++i)
   {
     const RealVector& c_vars = sdv_array[i].continuous_variables();
-    for (j=0; j<num_v; j++){
+    for (size_t j=0; j<num_v; j++){
       xs_u(i,j) = c_vars[j];
     }
     response(i,0) = sdr_array[i].response_function();
@@ -89,6 +105,13 @@ GPApproximation::build()
                                     sigma_bounds, length_scale_bounds,
                                     scaler_type, num_restarts, nugget, gp_seed));
 }
+
+
+Real GPApproximation::value(const Variables& vars)
+{
+  return value(vars.continuous_variables());
+}
+
 
 Real
 GPApproximation::value(const RealVector& c_vars)

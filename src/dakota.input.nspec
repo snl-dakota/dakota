@@ -5552,6 +5552,8 @@ KEYWORD model {N_mom3(start,0,stop)}
   ( surrogate {N_mom(lit,modelType_surrogate)}
     [ id_surrogates INTEGERLIST {N_mom(intsetm1,surrogateFnIndices)} ]
     ( global {0}
+      gauss_proc {N_mom(lit,surrogateType_global_gauss_proc)}
+      |
       ( gaussian_process ALIAS kriging {0}
         ( dakota {N_mom(lit,surrogateType_global_gaussian)}
           [ point_selection {N_mom(true,pointSelection)} ]
