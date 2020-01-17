@@ -6,134 +6,149 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "ProblemDescDB.hpp"
+
 #include "C3Approximation.hpp"
+#include "C3FnTrainPtrsRep.hpp"
+#include "ProblemDescDB.hpp"
 #include "SharedC3ApproxData.hpp"
 #include "DiscrepancyCalculator.hpp"
+
+// NOTE: only include this header in isolated compilation units
+#include "dakota_c3_include.hpp"
 
 //#define DEBUG
 
 namespace Dakota {
 
+// Definitions for C3FnTrainPtrs handle functions (in .cpp to isolate
+// the implementation details of the Rep, which require C3 APIs)
 
-void C3FnTrainPtrsRep::ft_derived_functions_init_null()
+C3FnTrainPtrs::C3FnTrainPtrs(): ftpRep(new C3FnTrainPtrsRep())
+{ } // body allocated with null FT pointers
+
+
+C3FnTrainPtrs C3FnTrainPtrs::copy() const
 {
-  ft_derived_fns.set = 0;
-        
-  ft_derived_fns.ft_squared = NULL;
-  ft_derived_fns.ft_cubed   = NULL;
-  ft_derived_fns.ft_constant_at_mean = NULL;
-  ft_derived_fns.ft_diff_from_mean   = NULL;
-  ft_derived_fns.ft_diff_from_mean_squared = NULL;
-  ft_derived_fns.ft_diff_from_mean_cubed   = NULL;        
+  C3FnTrainPtrs ftp; // new envelope with ftpRep default allocated
 
-  ft_derived_fns.ft_diff_from_mean_tesseracted = NULL;
-  ft_derived_fns.ft_diff_from_mean_normalized  = NULL;
+  ftp.ftpRep->ft          = function_train_copy(ftpRep->ft);
+  ftp.ftpRep->ft_gradient = ft1d_array_copy(ftpRep->ft_gradient);
+  ftp.ftpRep->ft_hessian  = ft1d_array_copy(ftpRep->ft_hessian);
 
-  ft_derived_fns.ft_diff_from_mean_normalized_squared = NULL;
-  ft_derived_fns.ft_diff_from_mean_normalized_cubed   = NULL;
+  // ft_derived_fns,ft_sobol have been assigned NULL and can be allocated
+  // downsteam when needed for stats,indices
+
+  return ftp;
 }
 
 
-void C3FnTrainPtrsRep::
-ft_derived_functions_create(struct MultiApproxOpts * opts)
+void C3FnTrainPtrs::swap(C3FnTrainPtrs& ftp)
 {
-  ft_derived_fns.ft_squared = function_train_product(ft,ft);
-
-  ft_derived_fns.ft_cubed
-    = function_train_product(ft_derived_fns.ft_squared,ft);
-  //ft_derived_fns.ft_tesseracted
-  //  = function_train_product(ft_derived_fns.ft_squared,
-  //                           ft_derived_fns.ft_squared);
-
-  ft_derived_fns.first_moment   = function_train_integrate_weighted(ft);
-  ft_derived_fns.ft_constant_at_mean
-    = function_train_constant(-ft_derived_fns.first_moment,opts);
-  ft_derived_fns.ft_diff_from_mean
-    = function_train_sum(ft,ft_derived_fns.ft_constant_at_mean);
-  ft_derived_fns.ft_diff_from_mean_squared =
-    function_train_product(ft_derived_fns.ft_diff_from_mean,
-			   ft_derived_fns.ft_diff_from_mean);
-  ft_derived_fns.ft_diff_from_mean_cubed =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
-			   ft_derived_fns.ft_diff_from_mean);        
-  ft_derived_fns.ft_diff_from_mean_tesseracted =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
-			   ft_derived_fns.ft_diff_from_mean_squared);
-
-  ft_derived_fns.second_central_moment
-    = function_train_integrate_weighted(
-      ft_derived_fns.ft_diff_from_mean_squared); // var
-        
-  ft_derived_fns.third_central_moment
-    = function_train_integrate_weighted(ft_derived_fns.ft_diff_from_mean_cubed);
-        
-  ft_derived_fns.fourth_central_moment
-    = function_train_integrate_weighted(
-      ft_derived_fns.ft_diff_from_mean_tesseracted);
-
-  ft_derived_fns.second_moment
-    = function_train_integrate_weighted(ft_derived_fns.ft_squared);
-  ft_derived_fns.third_moment
-    = function_train_integrate_weighted(ft_derived_fns.ft_cubed);
-
-  ft_derived_fns.std_dev
-    = sqrt(ft_derived_fns.second_central_moment);
-
-  ft_derived_fns.ft_diff_from_mean_normalized
-    = function_train_copy(ft_derived_fns.ft_diff_from_mean);
-  function_train_scale(ft_derived_fns.ft_diff_from_mean_normalized,
-		       1.0/ft_derived_fns.std_dev);
-
-  ft_derived_fns.ft_diff_from_mean_normalized_squared =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_normalized,
-			   ft_derived_fns.ft_diff_from_mean_normalized);
-
-  ft_derived_fns.ft_diff_from_mean_normalized_cubed =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_normalized_squared,
-			   ft_derived_fns.ft_diff_from_mean_normalized);
-
-  ft_derived_fns.skewness
-    = function_train_integrate_weighted(
-      ft_derived_fns.ft_diff_from_mean_normalized_cubed);
-  ft_derived_fns.kurtosis = ft_derived_fns.fourth_central_moment
-    / ft_derived_fns.second_central_moment
-    / ft_derived_fns.second_central_moment;
-
-  ft_derived_fns.set = 1;
+  // reference counts for each ftpRep are unmodified by swap()
+  C3FnTrainPtrsRep* save_rep = ftpRep;
+  ftpRep                     = ftp.ftpRep;
+  ftp.ftpRep                 = save_rep;
 }
 
 
-void C3FnTrainPtrsRep::ft_derived_functions_free()
+// TO DO: shallow copy would be better for this case, but requires ref counting
+C3FnTrainPtrs::C3FnTrainPtrs(const C3FnTrainPtrs& ftp)
 {
-  function_train_free(ft_derived_fns.ft_squared);
-  ft_derived_fns.ft_squared          = NULL;
-  function_train_free(ft_derived_fns.ft_cubed);
-  ft_derived_fns.ft_cubed            = NULL;
-  function_train_free(ft_derived_fns.ft_constant_at_mean);
-  ft_derived_fns.ft_constant_at_mean = NULL;
-  function_train_free(ft_derived_fns.ft_diff_from_mean);
-  ft_derived_fns.ft_diff_from_mean   = NULL;
-  function_train_free(ft_derived_fns.ft_diff_from_mean_squared);
-  ft_derived_fns.ft_diff_from_mean_squared = NULL;
-
-  function_train_free(ft_derived_fns.ft_diff_from_mean_cubed);
-  ft_derived_fns.ft_diff_from_mean_cubed = NULL;        
-
-  function_train_free(ft_derived_fns.ft_diff_from_mean_tesseracted);
-  ft_derived_fns.ft_diff_from_mean_tesseracted = NULL;
-  function_train_free(ft_derived_fns.ft_diff_from_mean_normalized);
-  ft_derived_fns.ft_diff_from_mean_normalized  = NULL;
-
-  function_train_free(ft_derived_fns.
-		      ft_diff_from_mean_normalized_squared);
-  ft_derived_fns.ft_diff_from_mean_normalized_squared = NULL;
-
-  function_train_free(ft_derived_fns.ft_diff_from_mean_normalized_cubed);
-  ft_derived_fns.ft_diff_from_mean_normalized_cubed = NULL;
-
-  ft_derived_fns.set = 0;
+  // Increment new (no old to decrement)
+  ftpRep = ftp.ftpRep;
+  if (ftpRep) // Check for an assignment of NULL
+    ++ftpRep->referenceCount;
 }
+
+
+C3FnTrainPtrs::~C3FnTrainPtrs()
+{
+  if (ftpRep) { // Check for NULL
+    --ftpRep->referenceCount; // decrement
+    if (ftpRep->referenceCount == 0)
+      delete ftpRep;
+  }
+}
+
+
+C3FnTrainPtrs& C3FnTrainPtrs::operator=(const C3FnTrainPtrs& ftp)
+{
+  if (ftpRep != ftp.ftpRep) { // prevent re-assignment of same rep
+    // Decrement old
+    if (ftpRep) // Check for NULL
+      if ( --ftpRep->referenceCount == 0 ) 
+	delete ftpRep;
+    // Increment new
+    ftpRep = ftp.ftpRep;
+    if (ftpRep) // Check for an assignment of NULL
+      ++ftpRep->referenceCount;
+  }
+  // else if assigning same rep, then leave referenceCount as is
+
+  return *this;
+}
+
+// Note: the following functions init/create/free ft memory within an ftpRep
+//       but do not alter ftpRep accounting
+
+void C3FnTrainPtrs::free_ft()
+{ ftpRep->free_ft(); }
+
+
+void C3FnTrainPtrs::free_all()
+{ ftpRep->free_all(); }
+
+
+void C3FnTrainPtrs::derived_functions_init_null()
+{ ftpRep->ft_derived_functions_init_null(); }
+
+
+void C3FnTrainPtrs::
+derived_functions_create(struct MultiApproxOpts * opts)
+{ ftpRep->ft_derived_functions_create(opts); }
+
+
+void C3FnTrainPtrs::derived_functions_free()
+{ ftpRep->ft_derived_functions_free(); }
+
+
+struct FunctionTrain * C3FnTrainPtrs::function_train()
+{ return ftpRep->ft; }
+
+
+void C3FnTrainPtrs::function_train(struct FunctionTrain * ft)
+{ ftpRep->ft = ft; }
+
+
+struct FT1DArray * C3FnTrainPtrs::ft_gradient()
+{ return ftpRep->ft_gradient; }
+
+
+void C3FnTrainPtrs::ft_gradient(struct FT1DArray * ftg)
+{ ftpRep->ft_gradient = ftg; }
+
+
+struct FT1DArray * C3FnTrainPtrs::ft_hessian()
+{ return ftpRep->ft_hessian; }
+
+
+void C3FnTrainPtrs::ft_hessian(struct FT1DArray * fth)
+{ ftpRep->ft_hessian = fth; }
+
+
+const struct FTDerivedFunctions& C3FnTrainPtrs::derived_functions()
+{ return ftpRep->ft_derived_fns; }
+
+
+struct C3SobolSensitivity * C3FnTrainPtrs::sobol()
+{ return ftpRep->ft_sobol; }
+
+
+void C3FnTrainPtrs::sobol(struct C3SobolSensitivity * ss)
+{ ftpRep->ft_sobol = ss; }
+
+
+
 
 
 C3Approximation::
@@ -720,5 +735,62 @@ const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
       approxHessian(i,j) = function_train_eval(fth->ft[i+j*num_v], c_vars);
   return approxHessian;
 }
+
+
+/** this replaces the need to model data requirements as O(p r^2 d) */
+size_t C3Approximation::regression_size()
+{ return function_train_get_nparams(levApproxIter->second.function_train()); }
+
+
+size_t C3Approximation::average_rank()
+{ return function_train_get_avgrank(levApproxIter->second.function_train()); }
+
+
+size_t C3Approximation::maximum_rank()
+{ return function_train_get_maxrank(levApproxIter->second.function_train()); }
+
+
+Real C3Approximation::third_central()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->second.derived_functions().third_central_moment;
+}
+
+
+Real C3Approximation::fourth_central()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->second.derived_functions().fourth_central_moment;
+}
+
+
+Real C3Approximation::skewness()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->second.derived_functions().skewness;
+}
+
+
+Real C3Approximation::kurtosis()
+{
+  compute_derived_statistics(false);
+  return levApproxIter->second.derived_functions().kurtosis;
+}
+
+
+Real C3Approximation::main_sobol_index(size_t dim)
+{ return c3_sobol_sensitivity_get_main(levApproxIter->second.sobol(),dim); }
+
+
+Real C3Approximation::total_sobol_index(size_t dim)
+{ return c3_sobol_sensitivity_get_total(levApproxIter->second.sobol(),dim); }
+
+
+void C3Approximation::
+sobol_iterate_apply(void (*f)(double val, size_t ninteract,
+			      size_t*interactions,void* arg), void* args)
+{ c3_sobol_sensitivity_apply_external(levApproxIter->second.sobol(),f,args); }
+
+
 
 } // namespace Dakota

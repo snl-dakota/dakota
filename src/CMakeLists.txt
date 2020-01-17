@@ -615,7 +615,7 @@ endif()
 CheckPackage(C3)
 if(HAVE_C3)
   set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp NonDMultilevelFunctionTrain.cpp)
-  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp)
+  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp C3FnTrainPtrsRep.cpp)
   # BMA: disabled these includes as we aren't including c3.h
   ##list(APPEND DAKOTA_INCDIRS
   ##  ${C3_SOURCE_DIR}/include
