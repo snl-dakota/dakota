@@ -30,6 +30,10 @@ struct FTDerivedFunctions;
 // now in separate implementation file
 class C3FnTrainPtrsRep;
 
+// BMA: Perhaps make this a typedef, avoiding class with all the forwards:
+//typedef std::shared_ptr<C3FnTrainPtrsRep> C3FnTrainPtrs;
+// BMA: (Would change calling code from . to ->)
+
 /// Handle for reference-counted pointer to C3FnTrainPtrsRep body
 class C3FnTrainPtrs
 {
@@ -82,7 +86,7 @@ public:
   //- Heading: Data
   //
 
-  C3FnTrainPtrsRep* ftpRep; ///< number of handle objects sharing pointers
+  std::shared_ptr<C3FnTrainPtrsRep> ftpRep; ///< pointer to body
 };
 
 

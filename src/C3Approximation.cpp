@@ -27,6 +27,10 @@ C3FnTrainPtrs::C3FnTrainPtrs(): ftpRep(new C3FnTrainPtrsRep())
 { } // body allocated with null FT pointers
 
 
+// BMA: If we don't anticipate needing a full deep copy (with stats as
+// opposed to the partial deep copy implemented here, could make this
+// the copy ctor of the body and just use the default copy for the
+// handle
 C3FnTrainPtrs C3FnTrainPtrs::copy() const
 {
   C3FnTrainPtrs ftp; // new envelope with ftpRep default allocated
@@ -44,47 +48,25 @@ C3FnTrainPtrs C3FnTrainPtrs::copy() const
 
 void C3FnTrainPtrs::swap(C3FnTrainPtrs& ftp)
 {
-  // reference counts for each ftpRep are unmodified by swap()
-  C3FnTrainPtrsRep* save_rep = ftpRep;
-  ftpRep                     = ftp.ftpRep;
-  ftp.ftpRep                 = save_rep;
+  ftpRep.swap(ftp.ftpRep);
 }
 
 
 // TO DO: shallow copy would be better for this case, but requires ref counting
 C3FnTrainPtrs::C3FnTrainPtrs(const C3FnTrainPtrs& ftp)
 {
-  // Increment new (no old to decrement)
   ftpRep = ftp.ftpRep;
-  if (ftpRep) // Check for an assignment of NULL
-    ++ftpRep->referenceCount;
 }
 
 
 C3FnTrainPtrs::~C3FnTrainPtrs()
 {
-  if (ftpRep) { // Check for NULL
-    --ftpRep->referenceCount; // decrement
-    if (ftpRep->referenceCount == 0)
-      delete ftpRep;
-  }
 }
 
 
 C3FnTrainPtrs& C3FnTrainPtrs::operator=(const C3FnTrainPtrs& ftp)
 {
-  if (ftpRep != ftp.ftpRep) { // prevent re-assignment of same rep
-    // Decrement old
-    if (ftpRep) // Check for NULL
-      if ( --ftpRep->referenceCount == 0 ) 
-	delete ftpRep;
-    // Increment new
-    ftpRep = ftp.ftpRep;
-    if (ftpRep) // Check for an assignment of NULL
-      ++ftpRep->referenceCount;
-  }
-  // else if assigning same rep, then leave referenceCount as is
-
+  ftpRep = ftp.ftpRep;
   return *this;
 }
 

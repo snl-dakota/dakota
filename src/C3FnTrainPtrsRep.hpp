@@ -56,14 +56,11 @@ public:
   struct FTDerivedFunctions ft_derived_fns;
   // allocated downstream in compute_all_sobol_indices() for storing indices
   struct C3SobolSensitivity * ft_sobol;
-
-  int referenceCount; ///< number of handle objects sharing pointers
 };
 
 
 inline C3FnTrainPtrsRep::C3FnTrainPtrsRep():
-  ft(NULL), ft_gradient(NULL), ft_hessian(NULL), ft_sobol(NULL),
-  referenceCount(1)
+  ft(NULL), ft_gradient(NULL), ft_hessian(NULL), ft_sobol(NULL)
 { ft_derived_functions_init_null(); }
 
 
