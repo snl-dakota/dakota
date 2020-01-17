@@ -298,12 +298,14 @@ void Approximation::build()
     approxRep->build();
   else { // default is only a data check --> augmented/replaced by derived class
     const UShort2DArray& keys = sharedDataRep->approxDataKeys;
-    size_t num_keys = keys.size(), num_checks = std::min(num_keys, (size_t)2);
-    if (num_keys = 1)
+    size_t num_keys = keys.size();
+    if (num_keys == 1)
       check_points(approxData.points());
-    else // check only the raw data; combined data is created downstream
-      for (size_t i=0; i<num_checks; ++i)
+    else { // check only the raw data; combined data is created downstream
+      size_t i, num_checks = (num_keys <= 2) ? num_keys : 2;
+      for (i=0; i<num_checks; ++i)
 	check_points(approxData.points(keys[i]));
+    }
   }
 }
 
