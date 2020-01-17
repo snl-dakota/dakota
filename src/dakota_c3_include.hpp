@@ -9,6 +9,8 @@
 #ifndef DAKOTA_C3_INCLUDE
 #define DAKOTA_C3_INCLUDE
 
+#include <cstddef>
+
 // Declarations of C functions provided by TPL C3
 // NOTE: Direct inclusion of c3.h from the TPL even with extern C is problematic
 
@@ -181,6 +183,40 @@ extern "C"
     struct FunctionTrain *
     ft_regress_run(struct FTRegress *,struct c3Opt *,size_t,const double* xdata, const double * ydata);
 
+}
+
+
+namespace Dakota {
+struct FTDerivedFunctions
+{
+  int set;
+    
+  struct FunctionTrain * ft_squared;
+  struct FunctionTrain * ft_cubed;
+  struct FunctionTrain * ft_constant_at_mean;
+  struct FunctionTrain * ft_diff_from_mean;
+  struct FunctionTrain * ft_diff_from_mean_squared;
+  struct FunctionTrain * ft_diff_from_mean_cubed;    
+  struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan 
+  struct FunctionTrain * ft_diff_from_mean_normalized;
+  struct FunctionTrain * ft_diff_from_mean_normalized_squared;
+  struct FunctionTrain * ft_diff_from_mean_normalized_cubed;
+
+  // raw moments
+  double first_moment;
+  double second_moment;
+  double third_moment;
+
+  // central moments
+  double second_central_moment;
+  double third_central_moment;
+  double fourth_central_moment;
+
+  // standardized moments
+  double std_dev;
+  double skewness;
+  double kurtosis;
+};
 }
 
 #endif
