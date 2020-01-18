@@ -1214,18 +1214,27 @@ configure_indices(unsigned short group, unsigned short form,
   UShortArray hf_key;
   Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
 
-  if (hf_key[s_index] == 0 || multilevDiscrepEmulation != DISTINCT_EMULATION) {
-    // either RECURSIVE_EMULATION or first level of DISTINCT_EMULATION
-    bypass_surrogate_mode();
-    uSpaceModel.active_model_key(hf_key);      // one active fidelity
+  if (hf_key[s_index] == 0 || !multilevDiscrepEmulation) {
+    bypass_surrogate_mode();              // one model evaluation
+    uSpaceModel.active_model_key(hf_key); // one data set
   }
-  else { // DISTINCT_EMULATION for sequence index > 0
-    aggregated_models_mode();
- 
-    UShortArray lf_key(hf_key), discrep_key;
-    Pecos::DiscrepancyCalculator::decrement_key(lf_key, s_index);
-    Pecos::DiscrepancyCalculator::aggregate_keys(hf_key, lf_key, discrep_key);
-    uSpaceModel.active_model_key(discrep_key); // two active fidelities
+  else { // 3 data sets: HF, either LF or LF-hat, and discrep
+    UShortArray child_key(hf_key), discrep_key;
+    switch (multilevDiscrepEmulation) {
+    case DISTINCT_EMULATION:
+      aggregated_models_mode(); // two model evaluations
+      // child key is the LF model from a {HF,LF} aggregation
+      Pecos::DiscrepancyCalculator::decrement_key(child_key, s_index);
+      break;
+    case RECURSIVE_EMULATION:
+      bypass_surrogate_mode(); // still only one model evaluation
+      // child key is emulator of the LF model (LF-hat) --> dummy model indices
+      child_key[1] = child_key[2] = USHRT_MAX;// same group but no form,lev
+      break;
+    }
+    Pecos::DiscrepancyCalculator::
+      aggregate_keys(hf_key, child_key, discrep_key);
+    uSpaceModel.active_model_key(discrep_key);
   }
 }
 

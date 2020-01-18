@@ -299,12 +299,23 @@ void Approximation::build()
   else { // default is only a data check --> augmented/replaced by derived class
     const UShort2DArray& keys = sharedDataRep->approxDataKeys;
     size_t num_keys = keys.size();
-    if (num_keys == 1)
+    if (num_keys <= 1)
       check_points(approxData.points());
-    else { // check only the raw data; combined data is created downstream
-      size_t i, num_checks = (num_keys <= 2) ? num_keys : 2;
-      for (i=0; i<num_checks; ++i)
-	check_points(approxData.points(keys[i]));
+    else { // active key may be aggregate key, which is populated downstream
+
+      // This approach should be sufficient
+      check_points(approxData.points(keys.front())); // raw HF
+
+      // DISTINCT_DISCREPANCY has up to 2 raw data:
+      //size_t i, num_checks = (num_keys <= 2) ? num_keys : 2;
+      //for (i=0; i<num_checks; ++i)
+      //  check_points(approxData.points(keys[i]));
+
+      // This approach is more general (RECURSIVE_DISCREPANCY has 1 raw data),
+      // but overkill for now
+      //size_t i, num_checks = sharedDataRep->num_data_keys(); // virtual
+      //for (i=0; i<num_checks; ++i)
+      //  check_points(approxData.points(keys[i]));
     }
   }
 }

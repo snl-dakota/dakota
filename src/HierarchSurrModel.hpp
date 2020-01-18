@@ -376,8 +376,12 @@ inline Model& HierarchSurrModel::surrogate_model()
   if (surrModelKey.empty()) return orderedModels.front();
   else {
     unsigned short lf_form = surrModelKey[1];
-    return (lf_form = USHRT_MAX) ?
-      orderedModels.front() : orderedModels[lf_form];
+    if (lf_form >= orderedModels.size()) { // including USHRT_MAX
+      Cerr << "Error: model form (" << lf_form << ") out of range in "
+	   << "HierarchSurrModel::surrogate_model()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    return orderedModels[lf_form];
   }
 }
 
@@ -387,8 +391,12 @@ inline const Model& HierarchSurrModel::surrogate_model() const
   if (surrModelKey.empty()) return orderedModels.front();
   else {
     unsigned short lf_form = surrModelKey[1];
-    return (lf_form = USHRT_MAX) ?
-      orderedModels.front() : orderedModels[lf_form];
+    if (lf_form >= orderedModels.size()) { // including USHRT_MAX
+      Cerr << "Error: model form (" << lf_form << ") out of range in "
+	   << "HierarchSurrModel::surrogate_model()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    return orderedModels[lf_form];
   }
 }
 
@@ -398,8 +406,12 @@ inline Model& HierarchSurrModel::truth_model()
   if (truthModelKey.empty()) return orderedModels.back();
   else {
     unsigned short hf_form = truthModelKey[1];
-    return (hf_form = USHRT_MAX) ?
-      orderedModels.back() : orderedModels[hf_form];
+    if (hf_form >= orderedModels.size()) { // including USHRT_MAX
+      Cerr << "Error: model form (" << hf_form << ") out of range in "
+	   << "HierarchSurrModel::truth_model()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    return orderedModels[hf_form];
   }
 }
 
@@ -409,8 +421,12 @@ inline const Model& HierarchSurrModel::truth_model() const
   if (truthModelKey.empty()) return orderedModels.back();
   else {
     unsigned short hf_form = truthModelKey[1];
-    return (hf_form = USHRT_MAX) ?
-      orderedModels.back() : orderedModels[hf_form];
+    if (hf_form >= orderedModels.size()) { // including USHRT_MAX
+      Cerr << "Error: model form (" << hf_form << ") out of range in "
+	   << "HierarchSurrModel::truth_model()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    return orderedModels[hf_form];
   }
 }
 
