@@ -409,9 +409,7 @@ private:
   //
 
   /// pointer to the letter (initialized only for the envelope)
-  Constraints* constraintsRep;
-  /// number of objects sharing constraintsRep
-  int referenceCount;
+  std::shared_ptr<Constraints> constraintsRep;
 };
 
 
