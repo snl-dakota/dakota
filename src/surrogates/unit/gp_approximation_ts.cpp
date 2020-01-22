@@ -218,6 +218,12 @@ int test_gp(double atol){
   populateMatricesFromFile(samples_fname,samples_list,num_datasets,num_vars,num_samples);
   populateMatricesFromFile(responses_fname,responses_list,num_datasets,num_qoi,num_samples);
 
+  if( 0 ) // used to dump data for use in the corresponding unit test in src/unit_test/reduced_basis.cpp
+  {
+    std::cout << "Samples :\n" << samples_list[0] << std::endl;
+    std::cout << "\n\nResponses :\n" << responses_list[0] << std::endl;
+  }
+
   /*four evaluation points for the test */
   MatrixXd eval_pts_2D(4,2);
   MatrixXd pred_2D(4,1);
