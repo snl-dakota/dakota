@@ -19,6 +19,8 @@ static const char rcsId[]=
 
 namespace Dakota {
 
+extern Model dummy_model; // defined in DakotaModel.cpp
+
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
@@ -68,10 +70,13 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   // Correction is required in HierarchSurrModel for some responseModes.
   // Enforcement of a correction type for these modes occurs in
   // surrogate_response_mode(short).
-  if (corrType) // initialize DiscrepancyCorrection using initial keys
-    deltaCorr[activeKey].initialize(surrogate_model(), surrogateFnIndices,
-				    corrType, corrOrder);
-
+  switch (responseMode) {
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
+    if (corrType) // initialize DiscrepancyCorrection using initial keys
+      deltaCorr[activeKey].initialize(surrogate_model(), surrogateFnIndices,
+				      corrType, corrOrder);
+    break;
+  }
   //truthResponseRef[truthModelKey] = currentResponse.copy();
 }
 
@@ -515,19 +520,21 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     hi_fi_eval = lo_fi_eval = mixed_eval = true;        break;
   }
 
-  Model& lf_model = surrogate_model();
-  Model& hf_model = truth_model();
+  Model&   hf_model = (hi_fi_eval) ?     truth_model() : dummy_model;
+  Model&   lf_model = (lo_fi_eval) ? surrogate_model() : dummy_model;
+  Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' +
                       boost::lexical_cast<String>(surrModelEvalCntr+1);
-    if (sameModelInstance) lf_model.eval_tag_prefix(eval_tag);
+    if (sameModelInstance)
+      same_model.eval_tag_prefix(eval_tag);
     else {
       if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
       if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
     }
   }
 
-  if (sameModelInstance) update_model(lf_model);
+  if (sameModelInstance) update_model(same_model);
 
   // Notes on repetitive setting of model.solution_level_index():
   // > when LF & HF are the same model, then setting the index for low or high
@@ -664,34 +671,36 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  Model& lf_model = surrogate_model();
-  Model& hf_model = truth_model();
-
-  ShortArray hi_fi_asv, lo_fi_asv;
-  bool hi_fi_eval, lo_fi_eval, asynch_lo_fi = lf_model.asynch_flag(),
-                               asynch_hi_fi = hf_model.asynch_flag();
+  ShortArray hi_fi_asv, lo_fi_asv;  bool hi_fi_eval, lo_fi_eval;
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
   case AGGREGATED_MODELS:
     asv_split(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
     hi_fi_eval = !hi_fi_asv.empty();  lo_fi_eval = !lo_fi_asv.empty();  break;
   case BYPASS_SURROGATE:
-    hi_fi_eval = true; lo_fi_eval = false;                              break;
+    hi_fi_eval = true;  lo_fi_eval = false;                             break;
   case MODEL_DISCREPANCY:
     hi_fi_eval = lo_fi_eval = true;                                     break;
   }
 
+  Model&   hf_model = (hi_fi_eval) ?     truth_model() : dummy_model;
+  Model&   lf_model = (lo_fi_eval) ? surrogate_model() : dummy_model;
+  Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
+  bool asynch_hi_fi = (hi_fi_eval) ? hf_model.asynch_flag() : false,
+       asynch_lo_fi = (lo_fi_eval) ? lf_model.asynch_flag() : false;
+
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' +
                       boost::lexical_cast<String>(surrModelEvalCntr+1);
-    if (sameModelInstance) lf_model.eval_tag_prefix(eval_tag);
+    if (sameModelInstance)
+      same_model.eval_tag_prefix(eval_tag);
     else {
       if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
       if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
     }
   }
 
-  if (sameModelInstance) update_model(lf_model);
+  if (sameModelInstance) update_model(same_model);
 
   // perform Model updates and define active sets for LF and HF evaluations
   ActiveSet hi_fi_set, lo_fi_set;

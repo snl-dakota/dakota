@@ -342,11 +342,14 @@ inline size_t HierarchSurrModel::qoi() const
 
 inline void HierarchSurrModel::check_model_interface_instance()
 {
-  if (surrModelKey.empty() || truthModelKey.empty())
-    sameModelInstance = sameInterfaceInstance = false; // even if both empty
-  else {
-    sameModelInstance = (surrModelKey[1] == truthModelKey[1]);
+  unsigned short
+    lf_form = ( surrModelKey.empty()) ? USHRT_MAX :  surrModelKey[1],
+    hf_form = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
 
+  if (hf_form == USHRT_MAX || lf_form == USHRT_MAX)
+    sameModelInstance = sameInterfaceInstance = false; // including both undef
+  else {
+    sameModelInstance = (lf_form == hf_form);
     if (sameModelInstance) sameInterfaceInstance = true;
     else
       sameInterfaceInstance
@@ -373,10 +376,11 @@ inline void HierarchSurrModel::correction_type(short corr_type)
 
 inline Model& HierarchSurrModel::surrogate_model()
 {
-  if (surrModelKey.empty()) return orderedModels.front();
+  unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
+  if (lf_form == USHRT_MAX) // either empty key or undefined model form
+    return orderedModels.front();
   else {
-    unsigned short lf_form = surrModelKey[1];
-    if (lf_form >= orderedModels.size()) { // including USHRT_MAX
+    if (lf_form >= orderedModels.size()) {
       Cerr << "Error: model form (" << lf_form << ") out of range in "
 	   << "HierarchSurrModel::surrogate_model()" << std::endl;
       abort_handler(MODEL_ERROR);
@@ -388,10 +392,11 @@ inline Model& HierarchSurrModel::surrogate_model()
 
 inline const Model& HierarchSurrModel::surrogate_model() const
 {
-  if (surrModelKey.empty()) return orderedModels.front();
+  unsigned short lf_form = (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[1];
+  if (lf_form == USHRT_MAX) // either empty key or undefined model form
+    return orderedModels.front();
   else {
-    unsigned short lf_form = surrModelKey[1];
-    if (lf_form >= orderedModels.size()) { // including USHRT_MAX
+    if (lf_form >= orderedModels.size()) {
       Cerr << "Error: model form (" << lf_form << ") out of range in "
 	   << "HierarchSurrModel::surrogate_model()" << std::endl;
       abort_handler(MODEL_ERROR);
@@ -403,10 +408,12 @@ inline const Model& HierarchSurrModel::surrogate_model() const
 
 inline Model& HierarchSurrModel::truth_model()
 {
-  if (truthModelKey.empty()) return orderedModels.back();
+  unsigned short hf_form
+    = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
+  if (hf_form == USHRT_MAX) // either empty key or undefined model form
+    return orderedModels.back();
   else {
-    unsigned short hf_form = truthModelKey[1];
-    if (hf_form >= orderedModels.size()) { // including USHRT_MAX
+    if (hf_form >= orderedModels.size()) {
       Cerr << "Error: model form (" << hf_form << ") out of range in "
 	   << "HierarchSurrModel::truth_model()" << std::endl;
       abort_handler(MODEL_ERROR);
@@ -418,10 +425,12 @@ inline Model& HierarchSurrModel::truth_model()
 
 inline const Model& HierarchSurrModel::truth_model() const
 {
-  if (truthModelKey.empty()) return orderedModels.back();
+  unsigned short hf_form
+    = (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1];
+  if (hf_form == USHRT_MAX) // either empty key or undefined model form
+    return orderedModels.back();
   else {
-    unsigned short hf_form = truthModelKey[1];
-    if (hf_form >= orderedModels.size()) { // including USHRT_MAX
+    if (hf_form >= orderedModels.size()) {
       Cerr << "Error: model form (" << hf_form << ") out of range in "
 	   << "HierarchSurrModel::truth_model()" << std::endl;
       abort_handler(MODEL_ERROR);
@@ -460,11 +469,15 @@ inline void HierarchSurrModel::active_model_key(const UShortArray& key)
   // assign same{Model,Interface}Instance
   check_model_interface_instance();
 
-  if (surr_key) { // active key is aggregate
-    DiscrepancyCorrection& delta_corr = deltaCorr[key]; // separate data groups
-    if (!delta_corr.initialized())
-      delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,
-			    corrOrder);
+  switch (responseMode) {
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
+    if (lf_form != USHRT_MAX) { // a LF model form is defined
+      DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
+      if (!delta_corr.initialized())
+	delta_corr.initialize(surrogate_model(), surrogateFnIndices, corrType,
+			      corrOrder);
+    }
+    break;
   }
 }
 
