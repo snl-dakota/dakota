@@ -353,11 +353,11 @@ void Approximation::push_data()
   else {
     const UShort2DArray& keys = sharedDataRep->approxDataKeys;
     if (!keys.empty()) {
-      // Only want truth model key for retrieval index as this is what is
-      // activated through the Model.  Surrogate model key is only used for
+      // Only want active key for retrieval index as this is what is
+      // activated through the Model.  Other keys are only used for
       // enumerating SurrogateData updates using approxDataKeys.
-      const UShortArray& truth_key = keys[0];
-      size_t r_index = sharedDataRep->push_index(truth_key);
+      const UShortArray& active_key = keys.back();//= sharedDataRep->activeKey;
+      size_t r_index = sharedDataRep->push_index(active_key);
       // preserves active state
       approxData.push(keys, r_index); // preserves active state
     }
@@ -374,11 +374,11 @@ void Approximation::finalize_data()
     const UShort2DArray& keys = sharedDataRep->approxDataKeys;
     if (!keys.empty()) {
       // Only need truth model key for finalization indices (see above)
-      const UShortArray& truth_key = keys[0];
+      const UShortArray& active_key = keys.back();//= sharedDataRep->activeKey;
       // assume number of popped trials is consistent across approxData
-      size_t f_index, p, num_popped = approxData.popped_sets(truth_key);
+      size_t f_index, p, num_popped = approxData.popped_sets(active_key);
       for (p=0; p<num_popped; ++p) {
-	f_index = sharedDataRep->finalize_index(p, truth_key);
+	f_index = sharedDataRep->finalize_index(p, active_key);
 	approxData.push(keys, f_index, false);
       }
     }

@@ -3533,20 +3533,16 @@ void Model::update_from_subordinate_model(size_t depth)
     be performed on the original envelope object. */
 Interface& Model::derived_interface()
 {
-  if (modelRep)
-    return modelRep->derived_interface(); // envelope fwd to letter
-  else // letter lacking redefinition of virtual fn.
-    return dummy_interface; // return null/empty envelope
+  if (modelRep) return modelRep->derived_interface(); // fwd to letter
+  else          return dummy_interface; // return null/empty envelope
 }
 
 
 /** return the number of levels within a solution / discretization hierarchy. */
 size_t Model::solution_levels(bool lwr_bnd) const
 {
-  if (modelRep)
-    return modelRep->solution_levels(lwr_bnd); // envelope fwd to letter
-  else // letter lacking redefinition of virtual fn.
-    return (lwr_bnd) ? 1 : 0;
+  if (modelRep) return modelRep->solution_levels(lwr_bnd); // fwd to letter
+  else          return (lwr_bnd) ? 1 : 0; // default
 }
 
 
@@ -3555,7 +3551,8 @@ void Model::solution_level_index(unsigned short index)
 {
   if (modelRep)
     modelRep->solution_level_index(index); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.
+  else if (index != USHRT_MAX) {
+    // letter lacking redefinition of virtual fn (for case that requires fwd)
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
          << "() function.\n       solution_level_index is not supported by this"
 	 << " Model class." << std::endl;
@@ -3566,14 +3563,8 @@ void Model::solution_level_index(unsigned short index)
 
 unsigned short Model::solution_level_index() const
 {
-  if (!modelRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
-         << "() function.\n       solution_level_index is not supported by this"
-	 << " Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->solution_level_index(); // envelope fwd to letter
+  if (modelRep) return modelRep->solution_level_index(); // fwd to letter
+  else          return USHRT_MAX; // not defined (default)
 }
 
 

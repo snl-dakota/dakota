@@ -445,10 +445,8 @@ inline void HierarchSurrModel::active_model_key(const UShortArray& key)
   // assign activeKey and extract {surr,truth}ModelKey
   SurrogateModel::active_model_key(key);
 
-  bool truth_key = !truthModelKey.empty(), surr_key = !surrModelKey.empty();
-  unsigned short hf_form = (truth_key) ? truthModelKey[1] : USHRT_MAX,
-                 lf_form =  (surr_key) ?  surrModelKey[1] : USHRT_MAX;
-
+  unsigned short hf_form = (truthModelKey.empty()) ? USHRT_MAX:truthModelKey[1],
+                 lf_form =  (surrModelKey.empty()) ? USHRT_MAX: surrModelKey[1];
   if (hf_form != lf_form) { // distinct model forms
 
     // If model forms are distinct (multifidelity), can activate soln level
