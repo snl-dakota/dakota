@@ -5936,34 +5936,12 @@ response_fn_1 Sobol' indices:
                       7.2568545527e-02 x1 x2 
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
-         weight: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-Surrogate quality metrics for function 1:
-   root_mean_squared    5.1417182378e-13
-            mean_abs    4.4453329906e-13
-            rsquared    1.0000000000e+00
-Surrogate quality metrics for function 2:
-   root_mean_squared    2.7618308678e-15
-            mean_abs    2.4239869371e-15
-            rsquared    1.0000000000e+00
-Surrogate quality metrics for function 3:
-   root_mean_squared    7.1677486548e-15
-            mean_abs    6.1987452208e-15
-            rsquared    1.0000000000e+00
 <<<<< Function evaluation summary: 93 total (93 new, 0 duplicate)
-         weight: 13 val (13 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 34 val (34 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 58 val (58 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
 stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
 displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 160 total (145 new, 15 duplicate)
-         weight: 20 val (15 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 65 val (60 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 75 val (70 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
 stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
 displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01

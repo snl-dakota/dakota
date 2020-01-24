@@ -118,7 +118,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   if (methodName == MULTILEVEL_POLYNOMIAL_CHAOS) {
     if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
       Cerr << "Error: unsupported solver configuration within "
-	   << "NonDMultilevelPolynomialChaos::core_run()." << std::endl;
+	   << "NonDMultilevelPolynomialChaos constructor." << std::endl;
       abort_handler(METHOD_ERROR);
     }
 
@@ -134,8 +134,14 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       crossValidation = crossValidNoiseOnly = true;
       // Main accuracy control is shared expansion order / dictionary size
       break;
-    default: //case ESTIMATOR_VARIANCE: case GREEDY_REFINEMENT:
+    case DEFAULT_MLMF_CONTROL: // define MLPCE-specific default
+      mlmfAllocControl = ESTIMATOR_VARIANCE; break;
+    case ESTIMATOR_VARIANCE:
       break;
+    default:
+      Cerr << "Error: unsupported mlmfAllocControl in "
+	   << "NonDMultilevelPolynomialChaos constructor." << std::endl;
+      abort_handler(METHOD_ERROR);           break;
     }
   }
 

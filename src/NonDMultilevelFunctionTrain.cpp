@@ -67,8 +67,17 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   }
 
   // mlmfAllocControl config and specification checks:
-  //if (mlmfAllocControl == RANK_SAMPLING)
-  //  crossValidation = crossValidNoiseOnly = true;
+  switch (mlmfAllocControl) {
+  case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
+    mlmfAllocControl = RANK_SAMPLING; break;
+  case RANK_SAMPLING:
+    //crossValidation = crossValidNoiseOnly = true;
+    break;
+  default:
+    Cerr << "Error: unsupported mlmfAllocControl in "
+	 << "NonDMultilevelFunctionTrain constructor." << std::endl;
+    abort_handler(METHOD_ERROR);           break;
+  }
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
