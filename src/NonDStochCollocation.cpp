@@ -156,13 +156,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called for a standard letter-envelope iterator
-    instantiation using the ProblemDescDB. */
+/** This constructor is called derived class constructors that
+    customize the object construction. */
 NonDStochCollocation::
-NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
+		     Model& model):
   NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
+  size_t dummy_break_pt = 0;
 }
 
 

@@ -31,9 +31,9 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
-  NonDStochCollocation(BaseConstructor(), problem_db, model),
-  quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
+  NonDStochCollocation(DEFAULT_METHOD, problem_db, model), // bypass SC ctor
+  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
+  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)
 {
   assign_discrepancy_mode();
@@ -188,7 +188,7 @@ void NonDMultilevelStochCollocation::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
-  //if (mlmfAllocControl == GREEDY_REFINEMENT)
+  //if (multilevAllocControl == GREEDY_REFINEMENT)
   //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
@@ -222,7 +222,7 @@ void NonDMultilevelStochCollocation::core_run()
   switch (methodName) {
   case MULTIFIDELITY_STOCH_COLLOCATION:
     // algorithms inherited from NonDExpansion:
-    switch (mlmfAllocControl) {
+    switch (multilevAllocControl) {
     case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
     default:                   multifidelity_expansion(refineType); break;
     }

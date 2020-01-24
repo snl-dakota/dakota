@@ -379,8 +379,9 @@ protected:
 
   /// type of sample allocation scheme for discretization levels / model forms
   /// within multilevel / multifidelity methods
-  short mlmfAllocControl;
-  /// emulation approach for multilevel discrepancy: distinct or recursive
+  short multilevAllocControl;
+  /// emulation approach for multilevel / multifidelity discrepancy:
+  /// distinct or recursive
   short multilevDiscrepEmulation;
   /// number of initial samples per level, when an optimal sample profile is
   /// the target of iteration (e.g. multilevel_regression())

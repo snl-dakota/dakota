@@ -28,8 +28,8 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
-  NonDC3FunctionTrain(BaseConstructor(), problem_db, model),
-  collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
+  NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
+  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
@@ -66,18 +66,21 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // mlmfAllocControl config and specification checks:
-  switch (mlmfAllocControl) {
-  case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
-    mlmfAllocControl = RANK_SAMPLING; break;
-  case RANK_SAMPLING:
-    //crossValidation = crossValidNoiseOnly = true;
-    break;
-  default:
-    Cerr << "Error: unsupported mlmfAllocControl in "
-	 << "NonDMultilevelFunctionTrain constructor." << std::endl;
-    abort_handler(METHOD_ERROR);           break;
+  if (methodName == MULTILEVEL_FUNCTION_TRAIN) {
+    // multilevAllocControl config and specification checks:
+    switch (multilevAllocControl) {
+    case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
+      multilevAllocControl = RANK_SAMPLING; break;
+    case RANK_SAMPLING:
+      //crossValidation = crossValidNoiseOnly = true;
+      break;
+    default:
+      Cerr << "Error: unsupported multilevAllocControl in "
+	   << "NonDMultilevelFunctionTrain constructor." << std::endl;
+      abort_handler(METHOD_ERROR);           break;
+    }
   }
+  //else if MULTIFIDELITY_FUNCTION_TRAIN, GREEDY remains off by default
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -217,7 +220,7 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
-  //if (mlmfAllocControl == GREEDY_REFINEMENT)
+  //if (multilevAllocControl == GREEDY_REFINEMENT)
   //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
@@ -240,7 +243,7 @@ void NonDMultilevelFunctionTrain::core_run()
   case MULTIFIDELITY_FUNCTION_TRAIN:
     multifid_uq = true;
     // general-purpose algorithms inherited from NonDExpansion:
-    switch (mlmfAllocControl) {
+    switch (multilevAllocControl) {
     case GREEDY_REFINEMENT:  greedy_multifidelity_expansion();     break;
     default:                 multifidelity_expansion(refineType);  break;
     }

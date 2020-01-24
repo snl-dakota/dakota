@@ -43,7 +43,10 @@ protected:
   //
 
   /// base constructor for DB construction of multilevel/multifidelity PCE
-  NonDC3FunctionTrain(BaseConstructor, ProblemDescDB& problem_db, Model& model);
+  /// (method_name is not necessary, rather it is just a convenient overload
+  /// allowing the derived ML FT class to bypass the standard FT ctor)
+  NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
+		      Model& model);
 
   //
   //- Heading: Virtual function redefinitions

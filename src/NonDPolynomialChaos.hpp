@@ -74,7 +74,10 @@ protected:
   //
  
   /// base constructor for DB construction of multilevel/multifidelity PCE
-  NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model);
+  /// (method_name is not necessary, rather it is just a convenient overload
+  /// allowing the derived ML PCE class to bypass the standard PCE ctor)
+  NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
+		      Model& model);
   /// base constructor for lightweight construction of multifidelity PCE
   /// using numerical integration
   NonDPolynomialChaos(unsigned short method_name, Model& model,

@@ -29,12 +29,12 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
-  NonDPolynomialChaos(BaseConstructor(), problem_db, model),
-  expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
-  collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
-  expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
-  quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
+  NonDPolynomialChaos(DEFAULT_METHOD, problem_db, model), // bypass PCE ctor
+  expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
+  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
+  expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
+  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
+  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
@@ -114,7 +114,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // mlmfAllocControl config and specification checks:
+  // multilevAllocControl config and specification checks:
   if (methodName == MULTILEVEL_POLYNOMIAL_CHAOS) {
     if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
       Cerr << "Error: unsupported solver configuration within "
@@ -122,7 +122,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       abort_handler(METHOD_ERROR);
     }
 
-    switch (mlmfAllocControl) {
+    switch (multilevAllocControl) {
     case RIP_SAMPLING:
       // use OMP for robustness (over or under-determined)
       if (expansionCoeffsApproach == Pecos::DEFAULT_REGRESSION)
@@ -135,15 +135,16 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       // Main accuracy control is shared expansion order / dictionary size
       break;
     case DEFAULT_MLMF_CONTROL: // define MLPCE-specific default
-      mlmfAllocControl = ESTIMATOR_VARIANCE; break;
+      multilevAllocControl = ESTIMATOR_VARIANCE; break;
     case ESTIMATOR_VARIANCE:
       break;
     default:
-      Cerr << "Error: unsupported mlmfAllocControl in "
+      Cerr << "Error: unsupported multilevAllocControl in "
 	   << "NonDMultilevelPolynomialChaos constructor." << std::endl;
       abort_handler(METHOD_ERROR);           break;
     }
   }
+  //else if MULTIFIDELITY_POLYNOMIAL_CHAOS, GREEDY remains off by default
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -355,7 +356,7 @@ void NonDMultilevelPolynomialChaos::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
-  //if (mlmfAllocControl == GREEDY_REFINEMENT)
+  //if (multilevAllocControl == GREEDY_REFINEMENT)
   //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
@@ -546,7 +547,7 @@ void NonDMultilevelPolynomialChaos::core_run()
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
     // general-purpose algorithms inherited from NonDExpansion:
-    switch (mlmfAllocControl) {
+    switch (multilevAllocControl) {
     case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
     default:                   multifidelity_expansion(refineType); break;
     }
@@ -779,7 +780,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   default: // regression
     update_exp = update_sampler = true;
     // fix the basis cardinality in the case of RIP_SAMPLING
-    if (mlmfAllocControl != RIP_SAMPLING) {
+    if (multilevAllocControl != RIP_SAMPLING) {
       if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
 	update_from_ratio = true;
       else // config via collocation pts sequence not supported

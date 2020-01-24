@@ -62,7 +62,9 @@ protected:
   //
 
   /// short-cut ctor allowing derived class to replace logic in base class ctor
-  NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db,
+  /// (method_name is not necessary, rather it is just a convenient overload
+  /// allowing the derived ML SC class to bypass the standard SC ctor)
+  NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 		       Model& model);
   /// short-cut ctor allowing derived class to replace logic in base class ctor
   NonDStochCollocation(unsigned short method_name, Model& model,

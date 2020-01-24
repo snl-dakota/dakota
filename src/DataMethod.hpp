@@ -140,17 +140,17 @@ enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 enum { CUMULATIVE, COMPLEMENTARY };
 // define special values for finalMomentsType
 enum { NO_MOMENTS=0, STANDARD_MOMENTS, CENTRAL_MOMENTS };
-// define special values for multilevDiscrepEmulation
-enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
 // -------------
 // define special values for lsRegressionType
 enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
-// define special values for mlmfAllocControl
+// define special values for multilevAllocControl
 enum { DEFAULT_MLMF_CONTROL=0, ESTIMATOR_VARIANCE, RIP_SAMPLING, RANK_SAMPLING,
        GREEDY_REFINEMENT };
+// define special values for multilevDiscrepEmulation
+enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 
 // --------------------
 // NonDBayesCalibration
@@ -932,8 +932,6 @@ public:
   /// orthogonal least interpolation PCE; based on the \c tensor_grid
   /// specification in \ref MethodNonDPCE
   UShortArray tensorGridOrder;
-  /// type of discrepancy emulation in multilevel methods: distinct or recursive
-  short multilevDiscrepEmulation;
   /// the \c import_expansion_file specification in \ref MethodNonDPCE
   String importExpansionFile;
   /// the \c export_expansion_file specification in \ref MethodNonDPCE
@@ -964,9 +962,11 @@ public:
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
-  short mlmfAllocControl;
+  short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
   Real multilevEstimatorRate;
+  /// type of discrepancy emulation in multilevel methods: distinct or recursive
+  short multilevDiscrepEmulation;  
   /// the \c final_moments specification in \ref MethodNonD
   short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification

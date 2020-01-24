@@ -35,31 +35,31 @@ namespace Dakota {
 NonDPolynomialChaos::
 NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
-  crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
+  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
+  randomSeed(problem_db.get_int("method.random_seed")),
+  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
-    probDescDB.get_bool("method.nond.cross_validation.noise_only")),
-  noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
-//initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
-  numAdvance(probDescDB.get_ushort("method.nond.adapted_basis.advancements")),
-  expOrderSpec(probDescDB.get_ushort("method.nond.expansion_order")),
-  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
-  collocPtsSpec(probDescDB.get_sizet("method.nond.collocation_points")),
-  expSamplesSpec(probDescDB.get_sizet("method.nond.expansion_samples")),
-  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized")),
-  uSpaceType(probDescDB.get_short("method.nond.expansion_type")),
-  quadOrderSpec(probDescDB.get_ushort("method.nond.quadrature_order")),
-  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level")),
-  cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
+    problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
+  l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
+//initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
+  numAdvance(problem_db.get_ushort("method.nond.adapted_basis.advancements")),
+  expOrderSpec(problem_db.get_ushort("method.nond.expansion_order")),
+  dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
+  collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points")),
+  expSamplesSpec(problem_db.get_sizet("method.nond.expansion_samples")),
+  normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
+  uSpaceType(problem_db.get_short("method.nond.expansion_type")),
+  quadOrderSpec(problem_db.get_ushort("method.nond.quadrature_order")),
+  ssgLevelSpec(problem_db.get_ushort("method.nond.sparse_grid_level")),
+  cubIntSpec(problem_db.get_ushort("method.nond.cubature_integrand")),
   importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file")),
+    problem_db.get_string("method.import_build_points_file")),
   expansionImportFile(
-    probDescDB.get_string("method.nond.import_expansion_file")),
+    problem_db.get_string("method.nond.import_expansion_file")),
   expansionExportFile(
-    probDescDB.get_string("method.nond.export_expansion_file"))
+    problem_db.get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // -------------------
@@ -313,30 +313,32 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called by derived class constructors. */
+/** This constructor is called by derived class constructors that
+    customize the object construction. */
 NonDPolynomialChaos::
-NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
+		    Model& model):
   NonDExpansion(problem_db, model),
-  collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
-  crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
+  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
+  randomSeed(problem_db.get_int("method.random_seed")),
+  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
-    probDescDB.get_bool("method.nond.cross_validation.noise_only")),
-  noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
-//initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
-  numAdvance(probDescDB.get_ushort("method.nond.adapted_basis.advancements")),
-  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
-  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized")),
-  uSpaceType(probDescDB.get_short("method.nond.expansion_type")),
-  cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
+    problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
+  l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
+//initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
+  numAdvance(problem_db.get_ushort("method.nond.adapted_basis.advancements")),
+  dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
+  normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
+  uSpaceType(problem_db.get_short("method.nond.expansion_type")),
+  cubIntSpec(problem_db.get_ushort("method.nond.cubature_integrand")),
   importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file")),
+    problem_db.get_string("method.import_build_points_file")),
   expansionImportFile(
-    probDescDB.get_string("method.nond.import_expansion_file")),
+    problem_db.get_string("method.nond.import_expansion_file")),
   expansionExportFile(
-    probDescDB.get_string("method.nond.export_expansion_file"))
+    problem_db.get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // -------------------

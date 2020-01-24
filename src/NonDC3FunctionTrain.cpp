@@ -41,12 +41,12 @@ struct SPrintArgs
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
-  //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
-  //numSamplesOnModel(probDescDB.get_sizet(
+  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  //numSamplesOnEmulator(problem_db.get_int("method.nond.samples_on_emulator")),
+  //numSamplesOnModel(problem_db.get_sizet(
   //  "method.c3function_train.num_samples_for_construction")),
   importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file"))
+    problem_db.get_string("method.import_build_points_file"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {
@@ -122,14 +122,15 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
 
 /** This constructor is called by derived class constructors. */
 NonDC3FunctionTrain::
-NonDC3FunctionTrain(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
+		    Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
-  //numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
-  //numSamplesOnModel(probDescDB.get_sizet(
+  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  //numSamplesOnEmulator(problem_db.get_int("method.nond.samples_on_emulator")),
+  //numSamplesOnModel(problem_db.get_sizet(
   //  "method.c3function_train.num_samples_for_construction")),
   importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file"))
+    problem_db.get_string("method.import_build_points_file"))
 {
   if (iteratedModel.model_type()     == "surrogate" &&
       iteratedModel.surrogate_type() == "global_function_train") {

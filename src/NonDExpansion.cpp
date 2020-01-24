@@ -39,44 +39,44 @@ namespace Dakota {
 
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
-  expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
+  expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
-  mlmfAllocControl(
-    probDescDB.get_short("method.nond.multilevel_allocation_control")),
+  multilevAllocControl(
+    problem_db.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
-    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
-  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
+    problem_db.get_short("method.nond.multilevel_discrepancy_emulation")),
+  pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   kappaEstimatorRate(
-    probDescDB.get_real("method.nond.multilevel_estimator_rate")),
+    problem_db.get_real("method.nond.multilevel_estimator_rate")),
   gammaEstimatorScale(1.), numSamplesOnModel(0),
-  numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
+  numSamplesOnExpansion(problem_db.get_int("method.nond.samples_on_emulator")),
   relativeMetric(true), nestedRules(false),
-  piecewiseBasis(probDescDB.get_bool("method.nond.piecewise_basis")),
-  useDerivs(probDescDB.get_bool("method.derivative_usage")),
-  refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
+  piecewiseBasis(problem_db.get_bool("method.nond.piecewise_basis")),
+  useDerivs(problem_db.get_bool("method.derivative_usage")),
+  refineType(problem_db.get_short("method.nond.expansion_refinement_type")),
   refineControl(
-    probDescDB.get_short("method.nond.expansion_refinement_control")),
+    problem_db.get_short("method.nond.expansion_refinement_control")),
   refineMetric(Pecos::NO_METRIC),
-  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
+  softConvLimit(problem_db.get_ushort("method.soft_convergence_limit")),
   numUncertainQuant(0),
   maxRefineIterations(
-    probDescDB.get_int("method.nond.max_refinement_iterations")),
-  maxSolverIterations(probDescDB.get_int("method.nond.max_solver_iterations")),
-  ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
-  ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
-  vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
+    problem_db.get_int("method.nond.max_refinement_iterations")),
+  maxSolverIterations(problem_db.get_int("method.nond.max_solver_iterations")),
+  ruleNestingOverride(problem_db.get_short("method.nond.nesting_override")),
+  ruleGrowthOverride(problem_db.get_short("method.nond.growth_override")),
+  vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   // Note: minimum VBD order for variance-controlled refinement is enforced
   //       in NonDExpansion::construct_{quadrature,sparse_grid}
-  vbdOrderLimit(probDescDB.get_ushort("method.nond.vbd_interaction_order")),
-  vbdDropTol(probDescDB.get_real("method.vbd_drop_tolerance")),
-  covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
+  vbdOrderLimit(problem_db.get_ushort("method.nond.vbd_interaction_order")),
+  vbdDropTol(problem_db.get_real("method.vbd_drop_tolerance")),
+  covarianceControl(problem_db.get_short("method.nond.covariance_control")),
   // data for construct_expansion_sampler():
-  expansionSampleType(probDescDB.get_ushort("method.sample_type")),
-  origSeed(probDescDB.get_int("method.random_seed")),
-  expansionRng(probDescDB.get_string("method.random_number_generator")),
+  expansionSampleType(problem_db.get_ushort("method.sample_type")),
+  origSeed(problem_db.get_int("method.random_seed")),
+  expansionRng(problem_db.get_string("method.random_number_generator")),
   integrationRefine(
-    probDescDB.get_ushort("method.nond.integration_refinement")),
-  refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
+    problem_db.get_ushort("method.nond.integration_refinement")),
+  refinementSamples(problem_db.get_iv("method.nond.refinement_samples"))
 {
   initialize_counts();
   initialize_response_covariance();
@@ -92,11 +92,11 @@ NonDExpansion(unsigned short method_name, Model& model,
 	      short rule_growth, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
-  statsType(Pecos::ACTIVE_EXPANSION_STATS), mlmfAllocControl(ml_alloc_control),
-  multilevDiscrepEmulation(ml_discrep), pilotSamples(pilot),
-  kappaEstimatorRate(2.), gammaEstimatorScale(1.), numSamplesOnModel(0),
-  numSamplesOnExpansion(0), relativeMetric(true), nestedRules(false),
-  piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
+  statsType(Pecos::ACTIVE_EXPANSION_STATS),
+  multilevAllocControl(ml_alloc_control), multilevDiscrepEmulation(ml_discrep),
+  pilotSamples(pilot), kappaEstimatorRate(2.), gammaEstimatorScale(1.),
+  numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
+  nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(refine_type), refineControl(refine_control),
   refineMetric(Pecos::NO_METRIC), softConvLimit(3), numUncertainQuant(0),
   maxRefineIterations(100), maxSolverIterations(-1),
@@ -1532,7 +1532,7 @@ void NonDExpansion::multilevel_regression()
 	append_expansion();
       }
 
-      switch (mlmfAllocControl) {
+      switch (multilevAllocControl) {
       case ESTIMATOR_VARIANCE: {
 	Real& agg_var_l = level_metrics[step];
 	if (delta_N_l[step] > 0) aggregate_variance(agg_var_l);
@@ -1551,7 +1551,7 @@ void NonDExpansion::multilevel_regression()
       }
     }
 
-    switch (mlmfAllocControl) {
+    switch (multilevAllocControl) {
     case ESTIMATOR_VARIANCE:
       if (iter == 0) { // eps^2 / 2 = var * relative factor
 	eps_sq_div_2 = estimator_var0 * convergenceTol;
