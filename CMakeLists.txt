@@ -207,6 +207,9 @@ if(DAKOTA_F90)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
 
+# Initialize GCov before adding targets to cover
+include(DakotaGcov)
+dakota_gcov_init()
 
 # -----
 # Configuration of Dakota components

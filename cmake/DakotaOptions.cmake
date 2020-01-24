@@ -69,6 +69,7 @@ endif()
 option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
 mark_as_advanced(DAKOTA_API_JAVA)
 
+option(DAKOTA_GCOV "GNU gcov for Dakota core" OFF)
 
 # -----
 # System TPLs

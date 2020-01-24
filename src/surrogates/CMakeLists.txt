@@ -29,6 +29,9 @@ target_include_directories(dakota_surrogates INTERFACE
   "${ROL_INCLUDE_DIRS}"
   )
 
+# BMA TODO: Consider using a utility to add Dakota targets and do this
+dakota_gcov_target(dakota_surrogates)
+
 target_link_libraries(dakota_surrogates PUBLIC dakota_util)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
