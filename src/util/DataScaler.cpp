@@ -100,7 +100,6 @@ NoScaler::~NoScaler(){}
 
 NoScaler::NoScaler(const MatrixXd &features) {
 
-  const int num_samples = features.rows();
   const int num_features = features.cols();
   scaledFeatures = features;
 
