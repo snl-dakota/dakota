@@ -42,6 +42,7 @@ target_include_directories(dakota_util INTERFACE
 target_compile_definitions(dakota_util PUBLIC
   "EIGEN_MPL2_ONLY")
 
+dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 
 target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)

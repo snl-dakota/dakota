@@ -25,11 +25,15 @@ add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
 # BMA TODO: CMake best practice for PUBLIC?
 target_include_directories(dakota_surrogates INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}"
-  PRIVATE
+  )
+# BMA: Unless there's a better way, specify that ROL is a system
+# library to suppress warnings
+target_include_directories(dakota_surrogates SYSTEM PRIVATE
   "${ROL_INCLUDE_DIRS}"
   )
 
 # BMA TODO: Consider using a utility to add Dakota targets and do this
+dakota_strict_warnings(dakota_surrogates)
 dakota_gcov_target(dakota_surrogates)
 
 target_link_libraries(dakota_surrogates PUBLIC dakota_util)
