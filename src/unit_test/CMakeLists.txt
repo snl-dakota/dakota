@@ -128,6 +128,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
 
   set(dakota_surrogate_unit_tests
     reduced_basis.cpp
+    gauss_proc_test.cpp
     )
 
   set(dakota_sampling_unit_tests
@@ -159,6 +160,10 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   if (DAKOTA_MODULE_SURROGATES)
     target_link_libraries(surrogate_unit_tests
       dakota_surrogates)
+    dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gauss_proc_test_files"
+      "${CMAKE_CURRENT_BINARY_DIR}/gauss_proc_test_files"
+      dakota_unit_test_copied_files
+    )
   endif()
   dakota_add_unit_test(NAME sampling_unit_tests
     SOURCES teuchos_unit_test_driver.cpp ${dakota_sampling_unit_tests}
