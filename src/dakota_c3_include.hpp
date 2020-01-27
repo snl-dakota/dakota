@@ -9,6 +9,8 @@
 #ifndef DAKOTA_C3_INCLUDE
 #define DAKOTA_C3_INCLUDE
 
+#include <cstddef>
+
 // Declarations of C functions provided by TPL C3
 // NOTE: Direct inclusion of c3.h from the TPL even with extern C is problematic
 
@@ -58,6 +60,10 @@ extern "C"
     // Function Train and analysis
     struct FunctionTrain;
     size_t function_train_get_dim(const struct FunctionTrain *);
+    size_t function_train_get_nparams(const struct FunctionTrain *);
+    size_t function_train_get_avgrank(const struct FunctionTrain *);
+    size_t function_train_get_maxrank(const struct FunctionTrain *);
+
     void function_train_free(struct FunctionTrain *);
     struct FunctionTrain * function_train_constant(double, struct MultiApproxOpts *);
     void function_train_scale(struct FunctionTrain *, double);
@@ -90,6 +96,7 @@ extern "C"
     };
     struct FT1DArray * function_train_gradient(const struct FunctionTrain *);
     struct FT1DArray * ft1d_array_jacobian(const struct FT1DArray *);
+    struct FT1DArray * ft1d_array_copy(const struct FT1DArray *);
     void ft1d_array_free(struct FT1DArray *);
     
     // General approximation options
@@ -117,7 +124,7 @@ extern "C"
     void multi_approx_opts_free(struct MultiApproxOpts *);
     void multi_approx_opts_set_dim(struct MultiApproxOpts *,size_t,struct OneApproxOpts *);
                                
-
+    void c3axpy (double a, struct FunctionTrain *x, struct FunctionTrain **y, double epsilon);
     
     // sobol sensitivities;
     struct C3SobolSensitivity;
@@ -176,6 +183,40 @@ extern "C"
     struct FunctionTrain *
     ft_regress_run(struct FTRegress *,struct c3Opt *,size_t,const double* xdata, const double * ydata);
 
+}
+
+
+namespace Dakota {
+struct FTDerivedFunctions
+{
+  int set;
+    
+  struct FunctionTrain * ft_squared;
+  struct FunctionTrain * ft_cubed;
+  struct FunctionTrain * ft_constant_at_mean;
+  struct FunctionTrain * ft_diff_from_mean;
+  struct FunctionTrain * ft_diff_from_mean_squared;
+  struct FunctionTrain * ft_diff_from_mean_cubed;    
+  struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan 
+  struct FunctionTrain * ft_diff_from_mean_normalized;
+  struct FunctionTrain * ft_diff_from_mean_normalized_squared;
+  struct FunctionTrain * ft_diff_from_mean_normalized_cubed;
+
+  // raw moments
+  double first_moment;
+  double second_moment;
+  double third_moment;
+
+  // central moments
+  double second_central_moment;
+  double third_central_moment;
+  double fourth_central_moment;
+
+  // standardized moments
+  double std_dev;
+  double skewness;
+  double kurtosis;
+};
 }
 
 #endif

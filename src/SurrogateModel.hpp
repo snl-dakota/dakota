@@ -76,15 +76,7 @@ protected:
   /// return truth_model()
   Model& subordinate_model();
 
-  void surrogate_model_key(unsigned short model_index,
-			   unsigned short soln_lev_index);
-  void surrogate_model_key(const UShortArray& key);
-  const UShortArray& surrogate_model_key() const;
-
-  void truth_model_key(unsigned short model_index,
-		       unsigned short soln_lev_index);
-  void truth_model_key(const UShortArray& key);
-  const UShortArray& truth_model_key() const;
+  void active_model_key(const UShortArray& key);
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -111,6 +103,10 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// define truth and surrogate keys from incoming active key
+  void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+			  UShortArray& surr_key);
 
   /// return the level index from active low fidelity model key
   unsigned short surrogate_level_index() const;
@@ -149,11 +145,13 @@ protected:
       does not back out old corrections. */
   short responseMode;
 
+  /// array of indices that identify the currently active model key
+  UShortArray activeKey;
   /// array of indices that identify the surrogate (e.g., low fidelity) model
-  /// that is currently active within orderedModels
+  /// (trailing portion of activeKey, if aggregated models)
   UShortArray surrModelKey;
-  /// array of indices that identify the truth (e.g., high fidelity) model that
-  /// is currently active within orderedModels
+  /// array of indices that identify the truth (e.g., high fidelity) model
+  /// (leading portion of activeKey, if aggregated models)
   UShortArray truthModelKey;
 
   /// type of correction: additive, multiplicative, or combined
@@ -287,60 +285,39 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
-inline void SurrogateModel::
-surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  if (model_index == USHRT_MAX) surrModelKey.resize(0);
-  else {
-    if (soln_lev_index == USHRT_MAX)
-      surrModelKey.resize(1);
-    else {
-      surrModelKey.resize(2);
-      surrModelKey[1] = soln_lev_index;
-    }
-    surrModelKey[0] = model_index;
-  }
-}
-
-
-inline void SurrogateModel::surrogate_model_key(const UShortArray& key)
-{ surrModelKey = key; }
-
-
-inline const UShortArray& SurrogateModel::surrogate_model_key() const
-{ return surrModelKey; }
-
-
 inline unsigned short SurrogateModel::surrogate_level_index() const
-{ return (surrModelKey.size() >= 2) ? surrModelKey.back() : USHRT_MAX; }
-
-
-inline void SurrogateModel::
-truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  if (model_index == USHRT_MAX) truthModelKey.resize(0);
-  else {
-    if (soln_lev_index == USHRT_MAX)
-      truthModelKey.resize(1);
-    else {
-      truthModelKey.resize(2);
-      truthModelKey[1] = soln_lev_index;
-    }
-    truthModelKey[0] = model_index;
-  }
-}
-
-
-inline void SurrogateModel::truth_model_key(const UShortArray& key)
-{ truthModelKey = key; }
-
-
-inline const UShortArray& SurrogateModel::truth_model_key() const
-{ return truthModelKey; }
+{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
 
 
 inline unsigned short SurrogateModel::truth_level_index() const
-{ return (truthModelKey.size() >= 2) ? truthModelKey.back() : USHRT_MAX; }
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
+
+
+inline void SurrogateModel::
+extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+		   UShortArray& surr_key)
+{
+  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
+  else // single key: assign to truth or surr key based on responseMode
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+      surr_key  = active_key;  truth_key.clear();  break;
+    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
+      truth_key = active_key;   surr_key.clear();  break;
+    }
+}
+
+
+inline void SurrogateModel::active_model_key(const UShortArray& key)
+{
+  // base implementation (augmented in derived SurrogateModels)
+
+  // update activeKey
+  activeKey = key;
+  // update {truth,surr}ModelKey
+  extract_model_keys(key, truthModelKey, surrModelKey);
+}
 
 
 inline short SurrogateModel::surrogate_response_mode() const

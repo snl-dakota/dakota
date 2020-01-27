@@ -755,10 +755,9 @@ void NonDBayesCalibration::initialize_model()
     stochExpIterator.run(pl_iter); break;
   }
   default: // GPs and NO_EMULATOR
-    //initialize_random_variable_parameters(); // standardizedSpace or not
     //resize_final_statistics_gradients(); // not required
-    //if (standardizedSpace) transform_correlations();
-    if (emulatorType)      mcmcModel.build_approximation();
+    if (emulatorType)
+      mcmcModel.build_approximation();
     break;
   }
   if(posteriorStatsMutual)

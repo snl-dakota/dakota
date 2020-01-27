@@ -301,7 +301,7 @@ protected:
   void approximation_coefficients(const RealVector& approx_coeffs,
 				  bool normalized);
 
-  void link_multilevel_surrogate_data();
+  //void link_multilevel_surrogate_data();
 
   void coefficient_labels(std::vector<std::string>& coeff_labels) const;
 
@@ -703,9 +703,7 @@ inline int PecosApproximation::min_coefficients() const
 inline void PecosApproximation::build()
 {
   // base class implementation checks data set against min required
-  //Approximation::build();
-  // For simplicity, ignore approxData[1] since it may or may not be active
-  check_points(approxData[0].points());
+  Approximation::build();
 
   // map to Pecos::BasisApproximation
   pecosBasisApprox.compute_coefficients();
@@ -719,7 +717,7 @@ inline void PecosApproximation::rebuild()
   // support of both update and append, need a mechanism to detect
   // the +/- direction of discrepancy between data and coefficients.
 
-  //size_t curr_pts  = approxData[activeDataIndex].points(),
+  //size_t curr_pts  = data_rep->surrogate_data().points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
     pecosBasisApprox.increment_coefficients();
