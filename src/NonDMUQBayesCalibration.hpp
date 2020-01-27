@@ -34,6 +34,7 @@ namespace Dakota {
 // class MUQModelInterface;
 class MUQLikelihoodInterface;
 class DakotaLogLikelihood;
+class DakotaLogPrior;
 
 /// Dakota interface to MUQ (MIT Uncertainty Quantification) library
 
@@ -70,9 +71,10 @@ protected:
   std::shared_ptr<muq::Modeling::WorkGraph> workGraph;
 
   std::shared_ptr<muq::Modeling::IdentityOperator>       thetaPtr;
-  std::shared_ptr<muq::Modeling::Density>           priorPtr;
+  // std::shared_ptr<muq::Modeling::Density>           priorPtr;
   std::shared_ptr<muq::Modeling::DensityProduct>     posteriorPtr;
   std::shared_ptr<DakotaLogLikelihood>    dakotaLogLikelihoodPtr;
+  std::shared_ptr<DakotaLogPrior>    dakotaLogPriorPtr;
 
   std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>     mcmc;
   std::shared_ptr<muq::SamplingAlgorithms::SampleCollection>    samps;
@@ -96,6 +98,22 @@ class DakotaLogLikelihood : public NonDBayesCalibration, public muq::Modeling::D
 public:
 
   inline DakotaLogLikelihood(ProblemDescDB& problem_db, Model& model) : 
+  NonDBayesCalibration(problem_db, model),
+  muq::Modeling::Distribution(model.cv()) { };
+
+  double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
+
+protected:
+
+void calibrate();
+
+private:
+};
+
+class DakotaLogPrior : public NonDBayesCalibration, public muq::Modeling::Distribution {
+public:
+
+  inline DakotaLogPrior(ProblemDescDB& problem_db, Model& model) : 
   NonDBayesCalibration(problem_db, model),
   muq::Modeling::Distribution(model.cv()) { };
 

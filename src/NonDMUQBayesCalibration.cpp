@@ -45,21 +45,23 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   posteriorPtr  = std::make_shared<muq::Modeling::DensityProduct>(2);
   workGraph = std::make_shared<muq::Modeling::WorkGraph>();
 
-  // hjard-coded Gaussian prior, to be changed
-  Eigen::VectorXd mu(1);
-  mu(0) = 0.0;
-  Eigen::MatrixXd cov(1,1);
-  cov(0,0) = 1.0;
-  priorPtr      = std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity();
+  // // hard-coded Gaussian prior, to be changed
+  // Eigen::VectorXd mu(1);
+  // mu(0) = 0.0;
+  // Eigen::MatrixXd cov(1,1);
+  // cov(0,0) = 1.0;
+  // priorPtr      = std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity();
 
   dakotaLogLikelihoodPtr = std::make_shared<DakotaLogLikelihood>(problem_db, model);
+  dakotaLogPriorPtr = std::make_shared<DakotaLogPrior>(problem_db, model);
 
   //////////////////////
   // DEFINE THE GRAPH //
   //////////////////////
   workGraph->AddNode(thetaPtr,      "Parameters");
   workGraph->AddNode(dakotaLogLikelihoodPtr->AsDensity(), "Likelihood");
-  workGraph->AddNode(priorPtr,      "Prior");
+  workGraph->AddNode(dakotaLogPriorPtr->AsDensity(),      "Prior");
+  // workGraph->AddNode(priorPtr,      "Prior");
   workGraph->AddNode(posteriorPtr,  "Posterior");
 
   workGraph->AddEdge("Parameters", 0, "Prior", 0); // 0 = index of input,output
@@ -91,6 +93,10 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,problem);
 }
+
+
+NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
+{ }
 
 
 double DakotaLogLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
@@ -134,11 +140,36 @@ double DakotaLogLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::Vect
 }
 
 
-NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
-{ }
-
 /** Perform the uncertainty quantification */
 void DakotaLogLikelihood::calibrate() { }
+
+
+double DakotaLogPrior::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
+  
+  // Extract parameter vector from MUQ's inputs vector
+  // (which lives in the ModPiece base class)
+  Eigen::VectorXd const& c_vars = inputs.at(0);
+  size_t i, num_cv = c_vars.size();
+
+  // Set the calibration variables and hyperparams in the outer
+  // residualModel: note that this won't update the Variables object
+  // in any inner models.
+  RealVector& all_params = residualModel.current_variables().continuous_variables_view();
+  // Set parameter values in Dakota model object
+  for (i=0; i<num_cv; ++i)
+   all_params[i] = c_vars[i];
+
+  double log_prior = log_prior_density(all_params);
+
+  std::cout << log_prior << std::endl;
+
+  return log_prior;
+}
+
+
+/** Perform the uncertainty quantification */
+void DakotaLogPrior::calibrate() { }
+
 
 /** Perform the uncertainty quantification */
 void NonDMUQBayesCalibration::calibrate()
@@ -146,7 +177,7 @@ void NonDMUQBayesCalibration::calibrate()
 
   Eigen::VectorXd init_pt;
   init_pt.resize(1);
-  init_pt[0]=0.4;
+  init_pt[0]=0.45;
 
   samps = mcmc->Run(init_pt);
 
