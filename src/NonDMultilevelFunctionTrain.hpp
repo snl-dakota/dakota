@@ -87,6 +87,10 @@ protected:
   //- Heading: Member functions
   //
 
+  /// assign defaults related to allocation control (currently for ML
+  /// regression approaches)
+  void assign_allocation_control();
+
 private:
 
   //

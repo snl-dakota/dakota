@@ -114,37 +114,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // multilevAllocControl config and specification checks:
-  if (methodName == MULTILEVEL_POLYNOMIAL_CHAOS) {
-    if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
-      Cerr << "Error: unsupported solver configuration within "
-	   << "NonDMultilevelPolynomialChaos constructor." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-
-    switch (multilevAllocControl) {
-    case RIP_SAMPLING:
-      // use OMP for robustness (over or under-determined)
-      if (expansionCoeffsApproach == Pecos::DEFAULT_REGRESSION)
-	expansionCoeffsApproach    = Pecos::ORTHOG_MATCH_PURSUIT;
-      // Require CV, else OMP will compute #terms = #samples.
-      // Use noise only to avoid interaction with any order progression.
-      //if (!crossValidation)     Cerr << "Warning: \n";
-      //if (!crossValidNoiseOnly) Cerr << "Warning: \n";
-      crossValidation = crossValidNoiseOnly = true;
-      // Main accuracy control is shared expansion order / dictionary size
-      break;
-    case DEFAULT_MLMF_CONTROL: // define MLPCE-specific default
-      multilevAllocControl = ESTIMATOR_VARIANCE; break;
-    case ESTIMATOR_VARIANCE:
-      break;
-    default:
-      Cerr << "Error: unsupported multilevAllocControl in "
-	   << "NonDMultilevelPolynomialChaos constructor." << std::endl;
-      abort_handler(METHOD_ERROR);           break;
-    }
-  }
-  //else if MULTIFIDELITY_POLYNOMIAL_CHAOS, GREEDY remains off by default
+  // Configure settings for ML allocation (follows solver type config)
+  assign_allocation_control();
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -237,6 +208,9 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   config_integration(quad_order, ssg_level, cubIntSpec,
 		     u_space_sampler, g_u_model, approx_type);
 
+  // Configure settings for ML allocation (follows solver type config)
+  assign_allocation_control();
+
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
   // --------------------------------
@@ -323,6 +297,9 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 		    Pecos::DEFAULT_LEAST_SQ_REGRESSION, tensor_grid_order,
 		    SUBMETHOD_LHS, rng, pt_reuse, u_space_sampler,
 		    g_u_model, approx_type);
+
+  // Configure settings for ML allocation (follows solver type config)
+  assign_allocation_control();
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -580,6 +557,45 @@ void NonDMultilevelPolynomialChaos::core_run()
   uSpaceModel.clear_inactive();
 
   finalize_expansion();
+}
+
+
+void NonDMultilevelPolynomialChaos::assign_allocation_control()
+{
+  // multilevAllocControl config and specification checks:
+  switch (methodName) {
+  case MULTILEVEL_POLYNOMIAL_CHAOS:
+    if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
+      Cerr << "Error: unsupported solver configuration within "
+	   << "NonDMultilevelPolynomialChaos constructor." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+
+    switch (multilevAllocControl) {
+    case RIP_SAMPLING:
+      // use OMP for robustness (over or under-determined)
+      if (expansionCoeffsApproach == Pecos::DEFAULT_REGRESSION)
+	expansionCoeffsApproach    = Pecos::ORTHOG_MATCH_PURSUIT;
+      // Require CV, else OMP will compute #terms = #samples.
+      // Use noise only to avoid interaction with any order progression.
+      //if (!crossValidation)     Cerr << "Warning: \n";
+      //if (!crossValidNoiseOnly) Cerr << "Warning: \n";
+      crossValidation = crossValidNoiseOnly = true;
+      // Main accuracy control is shared expansion order / dictionary size
+      break;
+    case DEFAULT_MLMF_CONTROL: // define MLPCE-specific default
+      multilevAllocControl = ESTIMATOR_VARIANCE; break;
+    case ESTIMATOR_VARIANCE:
+      break;
+    default:
+      Cerr << "Error: unsupported multilevAllocControl in "
+	   << "NonDMultilevelPolynomialChaos constructor." << std::endl;
+      abort_handler(METHOD_ERROR);           break;
+    }
+    break;
+  case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    break; // GREEDY remains off by default
+  }
 }
 
 

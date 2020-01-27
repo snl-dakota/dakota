@@ -66,21 +66,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  if (methodName == MULTILEVEL_FUNCTION_TRAIN) {
-    // multilevAllocControl config and specification checks:
-    switch (multilevAllocControl) {
-    case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
-      multilevAllocControl = RANK_SAMPLING; break;
-    case RANK_SAMPLING:
-      //crossValidation = crossValidNoiseOnly = true;
-      break;
-    default:
-      Cerr << "Error: unsupported multilevAllocControl in "
-	   << "NonDMultilevelFunctionTrain constructor." << std::endl;
-      abort_handler(METHOD_ERROR);           break;
-    }
-  }
-  //else if MULTIFIDELITY_FUNCTION_TRAIN, GREEDY remains off by default
+  // Configure settings for ML allocation (following solver config)
+  assign_allocation_control();
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -149,6 +136,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   sequenceIndex(0)
 {
   assign_discrepancy_mode();
+  assign_allocation_control();
   assign_hierarchical_response_mode();
 
   // ----------------
@@ -275,6 +263,30 @@ void NonDMultilevelFunctionTrain::core_run()
   uSpaceModel.clear_inactive();
 
   finalize_expansion();
+}
+
+
+void NonDMultilevelFunctionTrain::assign_allocation_control()
+{
+  // multilevAllocControl config and specification checks:
+  switch (methodName) {
+  case MULTILEVEL_FUNCTION_TRAIN:
+    // multilevAllocControl config and specification checks:
+    switch (multilevAllocControl) {
+    case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
+      multilevAllocControl = RANK_SAMPLING; break;
+    case RANK_SAMPLING:
+      //crossValidation = crossValidNoiseOnly = true;
+      break;
+    default:
+      Cerr << "Error: unsupported multilevAllocControl in "
+	   << "NonDMultilevelFunctionTrain constructor." << std::endl;
+      abort_handler(METHOD_ERROR);           break;
+    }
+    break;
+  case MULTIFIDELITY_FUNCTION_TRAIN:
+    break; // GREEDY remains off by default
+  }
 }
 
 
