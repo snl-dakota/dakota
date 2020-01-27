@@ -25,6 +25,9 @@
 namespace Dakota {
 
 
+// initialization of statics, not being used yet
+NonDMUQBayesCalibration* NonDMUQBayesCalibration::nonDMUQInstance(NULL);
+
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
@@ -33,129 +36,129 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type"))
 {
+
+  // instantiate QUESO objects and execute
+  nonDMUQInstance = this;
+
   // prior,likelihood could be objects of same class w/ different fns passed in
   thetaPtr      = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
+  posteriorPtr  = std::make_shared<muq::Modeling::DensityProduct>(2);
+  workGraph = std::make_shared<muq::Modeling::WorkGraph>();
 
+  // hjard-coded Gaussian prior, to be changed
   Eigen::VectorXd mu(1);
-  mu(0) = 2.0;
+  mu(0) = 0.0;
   Eigen::MatrixXd cov(1,1);
   cov(0,0) = 1.0;
   priorPtr      = std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity();
 
-
-
-  modelPtr      = std::make_shared<MUQModelInterface>(iteratedModel /* or model ? */);
-  // Gaussian class inherited from Distribution could be helpful for likelihood
-  likelihoodPtr = std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity();
-  posteriorPtr  = std::make_shared<muq::Modeling::DensityProduct>(2);
-
-  workGraph = std::make_shared<muq::Modeling::WorkGraph>();
+  dakotaLogLikelihoodPtr = std::make_shared<DakotaLogLikelihood>(problem_db, model);
 
   //////////////////////
   // DEFINE THE GRAPH //
   //////////////////////
   workGraph->AddNode(thetaPtr,      "Parameters");
-  workGraph->AddNode(likelihoodPtr, "Likelihood");
+  workGraph->AddNode(dakotaLogLikelihoodPtr->AsDensity(), "Likelihood");
   workGraph->AddNode(priorPtr,      "Prior");
-  workGraph->AddNode(posteriorPtr,       "Posterior");
-  workGraph->AddNode(modelPtr,      "Forward Model"); // ***
+  workGraph->AddNode(posteriorPtr,  "Posterior");
 
-  // Define graph: prior(theta) dependent on theta
   workGraph->AddEdge("Parameters", 0, "Prior", 0); // 0 = index of input,output
   workGraph->AddEdge("Parameters", 0, "Likelihood", 0); // 0 = index of input,output
-
-  // // Define graph: simulation model G(theta) dependent on theta
-  // workGraph.AddEdge("Parameters", 0, "Forward Model", 0);
-
-  // // Define graph: likelihood dependent on simulation model G(theta);
-  // //               misfit = (G - G-bar)^T Gamma^{-1} (G - G-bar)
-  // //               (G-bar data dependence is currently hidden)
-  // workGraph.AddEdge("Forward Model", 0, "Likelihood", 0);
-  // If "Approach 1", then likelihood has two inputs: G(theta) and data
-  //workGraph.AddEdge("Data", 0, "Likelihood", 1); // if Approach 1
-
-  // Define graph: posterior dependent on prior and likelihood;
   workGraph->AddEdge("Prior",      0, "Posterior", 0);
   workGraph->AddEdge("Likelihood", 0, "Posterior", 1);
-
-
-  // More advanced graphs could be considered for, e.g.., Model selection.....
-
-  ///////////////////////////////
-  // DEFINE THE DESIRED OUTPUT //
-  ///////////////////////////////
-  // Register the desired end point / output from the graph: this registration
-  // is distinct from creating a potentially larger graph.  It defines the
-  // exact context that we care about at this time --> could define a
-  // large graph-based ecosystem and then activate the relevant portion
-  // for a particular study.
-  //auto post_distrib = workGraph.CreateModPiece("Posterior");
-
-  //double hard_coded_mu  = 0.0;
-  //double hard_coded_cov = 1.0;
-  //post_distrib = prior_distribstd::make_shared<muq::Modeling::Gaussian>(hard_coded_mu, hard_coded_cov)->AsDensity(); // standard normal Gaussian
-
 
   // Dump out a visualization of the work graph
   if (outputLevel >= DEBUG_OUTPUT)
     workGraph->Visualize("muq_graph.pdf");
-
-  /////////////////////////////////
-  // DEFINE THE PROBLEM TO SOLVE //
-  /////////////////////////////////
-  samplingProbPtr = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(posteriorPtr);
 
   /////////////////////////////
   // DEFINE THE MCMC SAMPLER //
   /////////////////////////////
   // input specification is communicated using Boost property trees
   boost::property_tree::ptree pt; // TO DO: look at options...
-  // *** Copied from MCMCTests.cpp example
-  int N = 100;
+  int N = 1000;
   pt.put("NumSamples", N); // number of Monte Carlo samples
   pt.put("PrintLevel",0);
   pt.put("KernelList", "Kernel1"); // the transition kernel
   pt.put("Kernel1.Method","MHKernel"); // Metropolis-Hastings (have AM) (DR is in muq1, but maybe not yet available in MUQ2)
   pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
   pt.put("Kernel1.MyProposal.Method", "MHProposal");
-  pt.put("Kernel1.MyProposal.ProposalVariance", 0.5); // the variance of the isotropic MH proposal
+  pt.put("Kernel1.MyProposal.ProposalVariance", 0.00001); // the variance of the isotropic MH proposal
 
   auto dens = workGraph->CreateModPiece("Posterior");
 
   auto problem = std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(dens);
 
   mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,problem);
+}
 
-  // mcmcSamplerPtr = muq::SamplingAlgorithms::MCMCFactory::CreateSingleChain(pt, samplingProbPtr);
+
+double DakotaLogLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
+  
+  // Extract parameter vector from MUQ's inputs vector
+  // (which lives in the ModPiece base class)
+  Eigen::VectorXd const& c_vars = inputs.at(0);
+  size_t i, num_cv = c_vars.size();
+
+  // Set the calibration variables and hyperparams in the outer
+  // residualModel: note that this won't update the Variables object
+  // in any inner models.
+  RealVector& all_params = residualModel.current_variables().continuous_variables_view();
+  // Set parameter values in Dakota model object
+  for (i=0; i<num_cv; ++i)
+   all_params[i] = c_vars[i];
+
+  residualModel.evaluate();
+  
+  const RealVector& residuals = residualModel.current_response().function_values();
+  double log_like = log_likelihood(residuals, all_params);
+  
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Log likelihood is " << log_like << " Likelihood is "
+         << std::exp(log_like) << '\n';
+
+    std::ofstream LogLikeOutput;
+    LogLikeOutput.open("NonDMUQLogLike.txt", std::ios::out | std::ios::app);
+    // Note: parameter values are in scaled space, if scaling is
+    // active; residuals may be scaled by covariance
+    size_t num_total_params = numContinuousVars + numHyperparams; 
+    for (size_t i=0; i<num_total_params; ++i) 
+      LogLikeOutput << c_vars[i] << ' ' ;
+    for (size_t i=0; i<residuals.length(); ++i)
+      LogLikeOutput << residuals[i] << ' ' ;
+    LogLikeOutput << log_like << '\n';
+    LogLikeOutput.close();
+  }
+
+  return log_like;
 }
 
 
 NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
 { }
 
+/** Perform the uncertainty quantification */
+void DakotaLogLikelihood::calibrate() { }
 
 /** Perform the uncertainty quantification */
 void NonDMUQBayesCalibration::calibrate()
 {
+
   Eigen::VectorXd init_pt;
   init_pt.resize(1);
-  init_pt[0]=1.9;
+  init_pt[0]=0.4;
 
-  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> samps = mcmc->Run(init_pt);
+  samps = mcmc->Run(init_pt);
 
   Eigen::VectorXd mean = samps->Mean();
 
   std::cout << mean(0) << std::endl;
 
-  const std::string filename = "output.txt";
+  const std::string filename = "output.h5";
 
   // write the collection to file
   samps->WriteToFile(filename);
 
-  //mcmcSampleSetPtr = mcmcSamplerPtr->Run(init_pt);
-  // sampleCollPtr = mcmcSamplerPtr->Run(init_pt);
-
-  //mcmcSampleSetPtr = mcmcSamplerPtr->Run();
 }
 
 
@@ -176,35 +179,35 @@ print_results(std::ostream& s, short results_state)
 }
 
 
-void MUQModelInterface::
-EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs)
-{
-  // Extract parameter vector from MUQ's inputs vector
-  // (which lives in the ModPiece base class)
-  Eigen::VectorXd const& c_vars = inputs.at(0);
-  size_t i, num_cv = c_vars.size();
-  // Set parameter values in Dakota model object
-  for (i=0; i<num_cv; ++i)
-   dakotaModel.continuous_variable(c_vars[i], i);
+// void MUQModelInterface::
+// EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs)
+// {
+//   // Extract parameter vector from MUQ's inputs vector
+//   // (which lives in the ModPiece base class)
+//   Eigen::VectorXd const& c_vars = inputs.at(0);
+//   size_t i, num_cv = c_vars.size();
+//   // Set parameter values in Dakota model object
+//   for (i=0; i<num_cv; ++i)
+//    dakotaModel.continuous_variable(c_vars[i], i);
 
-  ActiveSet set(dakotaModel.response_size(), dakotaModel.cv());
-  if (useDerivs)
-    set.request_values(3); // gradient information processed in GradientImpl
-  else           
-    set.request_values(1); // function values processed next
-  dakotaModel.evaluate(set);
+//   ActiveSet set(dakotaModel.response_size(), dakotaModel.cv());
+//   if (useDerivs)
+//     set.request_values(3); // gradient information processed in GradientImpl
+//   else           
+//     set.request_values(1); // function values processed next
+//   dakotaModel.evaluate(set);
 
-  const RealVector& fn_vals = dakotaModel.current_response().function_values();
-  size_t num_fns = fn_vals.length();
+//   const RealVector& fn_vals = dakotaModel.current_response().function_values();
+//   size_t num_fns = fn_vals.length();
 
-  // Populate MUQ's outputs vector
-  // (which lives in the ModPiece base class)
-  outputs.resize(1);
-  Eigen::VectorXd& qoi = outputs.at(0);
-  qoi.resize(num_fns);
-  for (i=0; i<num_fns; ++i)
-   qoi[i] = fn_vals[i]; // both operator(),operator[], one is bounds-checked
-}
+//   // Populate MUQ's outputs vector
+//   // (which lives in the ModPiece base class)
+//   outputs.resize(1);
+//   Eigen::VectorXd& qoi = outputs.at(0);
+//   qoi.resize(num_fns);
+//   for (i=0; i<num_fns; ++i)
+//    qoi[i] = fn_vals[i]; // both operator(),operator[], one is bounds-checked
+// }
 
 
 //void MUQModelInterface::

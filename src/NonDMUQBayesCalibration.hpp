@@ -30,9 +30,10 @@
 
 namespace Dakota {
 
-class MUQPriorInterface;
-class MUQModelInterface;
+// class MUQPriorInterface;
+// class MUQModelInterface;
 class MUQLikelihoodInterface;
+class DakotaLogLikelihood;
 
 /// Dakota interface to MUQ (MIT Uncertainty Quantification) library
 
@@ -61,6 +62,7 @@ protected:
   void calibrate();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+
   //
   //- Heading: Data
   //
@@ -69,18 +71,18 @@ protected:
 
   std::shared_ptr<muq::Modeling::IdentityOperator>       thetaPtr;
   std::shared_ptr<muq::Modeling::Density>           priorPtr;
-  std::shared_ptr<MUQModelInterface>           modelPtr;
-  std::shared_ptr<muq::Modeling::Density> likelihoodPtr;
   std::shared_ptr<muq::Modeling::DensityProduct>     posteriorPtr;
+  std::shared_ptr<DakotaLogLikelihood>    dakotaLogLikelihoodPtr;
 
-  std::shared_ptr<muq::SamplingAlgorithms::SamplingProblem> samplingProbPtr;
   std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>     mcmc;
-  std::shared_ptr<muq::SamplingAlgorithms::MarkovChain>    mcmcSampleSetPtr;
-  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection>    sampleCollPtr;
+  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection>    samps;
 
     /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
     /// or "metropolis_hastings" or "multilevel",  within QUESO) 
   String mcmcType;
+
+  /// Pointer to current class instance for use in static callback functions
+  static NonDMUQBayesCalibration* nonDMUQInstance;
 
 private:
 
@@ -90,134 +92,150 @@ private:
 
 };
 
-
-class MUQModelInterface: public muq::Modeling::ModPiece
-{
+class DakotaLogLikelihood : public NonDBayesCalibration, public muq::Modeling::Distribution {
 public:
 
-  //
-  //- Heading: Constructors and destructor
-  //
+  inline DakotaLogLikelihood(ProblemDescDB& problem_db, Model& model) : 
+  NonDBayesCalibration(problem_db, model),
+  muq::Modeling::Distribution(model.cv()) { };
 
-  /// standard constructor
-  MUQModelInterface(Model& model);
-  /// destructor
-  ~MUQModelInterface() { }
-
-  //
-  //- Heading: Static callback functions required by MUQ
-  //
-
+  double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
 
 protected:
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
+void calibrate();
 
-  void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
-//  void GradientImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
-//		    ...index_of_input_like_DVV...);
+private:
+};
 
-  //
-  //- Heading: Data
-  //
 
-  /// shallow copy of Dakota::Model being evaluated (Simulation, Surrogate, ...)
-  Model dakotaModel;
+// class MUQModelInterface: public muq::Modeling::ModPiece
+// {
+// public:
 
-  bool useDerivs;
+//   //
+//   //- Heading: Constructors and destructor
+//   //
+
+//   /// standard constructor
+//   MUQModelInterface(Model& model);
+//   /// destructor
+//   ~MUQModelInterface() { }
+
+//   //
+//   //- Heading: Static callback functions required by MUQ
+//   //
+
+
+// protected:
+
+//   //
+//   //- Heading: Virtual function redefinitions
+//   //
+
+//   void EvaluateImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
+// //  void GradientImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs,
+// //		    ...index_of_input_like_DVV...);
+
+//   //
+//   //- Heading: Data
+//   //
+
+//   /// shallow copy of Dakota::Model being evaluated (Simulation, Surrogate, ...)
+//   Model dakotaModel;
+
+//   bool useDerivs;
   
-};
+// };
 
 
-inline MUQModelInterface::MUQModelInterface(Model & model):
-// TODO: input and output dimensionality from Dakota model
-  muq::Modeling::ModPiece(1*Eigen::VectorXi::Ones(1), // inputSizes  = [1]
-			  1*Eigen::VectorXi::Ones(1)) // outputSizes = [1]
-{ }
+// // inline MUQModelInterface::MUQModelInterface(Model & model):
+// // // TODO: input and output dimensionality from Dakota model
+// //   muq::Modeling::ModPiece(1*Eigen::VectorXi::Ones(1), // inputSizes  = [1]
+// // 			  1*Eigen::VectorXi::Ones(1)) // outputSizes = [1]
+// // { }
 
 
-class MUQPriorInterface: public muq::Modeling::Density
-{
-public:
+// class MUQPriorInterface: public muq::Modeling::Density
+// {
+// public:
 
-  //
-  //- Heading: Constructors and destructor
-  //
+//   //
+//   //- Heading: Constructors and destructor
+//   //
 
-  // Eigen::VectorXd mu = Eigen::VectorXd(1);
-  // mu(0) = 0.1;
-  // // mu << 1.0;
+//   // Eigen::VectorXd mu = Eigen::VectorXd(1);
+//   // mu(0) = 0.1;
+//   // // mu << 1.0;
 
-  // Eigen::MatrixXd cov = Eigen::MatrixXd(1,1);
-  // cov(0,0) = 1.0;
-  // cov << 1.0;
+//   // Eigen::MatrixXd cov = Eigen::MatrixXd(1,1);
+//   // cov(0,0) = 1.0;
+//   // cov << 1.0;
 
-  // auto prior = std::make_shared<muq::Modeling::Gaussian>(mu, cov);
-
-
-  /// standard constructor
-  MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()) { }
-  // MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity()) { }
-  /// destructor
-  ~MUQPriorInterface() { }
-
-protected:
-
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  // evaluate log prior(x)
-  //double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs) 
-  //{ return 0.0; }
-
-  //
-  //- Heading: Data
-  //
-
-  /// shallow copy of Dakota MultivarDistribution instance
-  //MultivarDistribution randomDist;
-};
+//   // auto prior = std::make_shared<muq::Modeling::Gaussian>(mu, cov);
 
 
-class MUQLikelihoodInterface: public muq::Modeling::Density
-{
-public:
+//   /// standard constructor
+//   MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()) { }
+//   // MUQPriorInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity()) { }
+//   /// destructor
+//   ~MUQPriorInterface() { }
 
-  //
-  //- Heading: Constructors and destructor
-  //
+// protected:
 
-  /// standard constructor
-  MUQLikelihoodInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()){ }
-  /// destructor
-  ~MUQLikelihoodInterface() { }
+//   //
+//   //- Heading: Virtual function redefinitions
+//   //
 
-protected:
+//   // evaluate log prior(x)
+//   //double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs) 
+//   //{ return 0.0; }
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
+//   //
+//   //- Heading: Data
+//   //
 
-  // This function implements the Misfit(theta, d)
-  //
-  // incoming is G(theta) as inputs.at(0) from MUQModelInterface ModPiece
-  // Approach 1:
-  //   observational data as inputs.at(1) from another ModPiece
-  //   (another inherited class or as a "ConstantPiece")
-  // Approach 2: pass obs data is through the ctor and store as member data
-  double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs)
-  { return 0.0; }
+//   /// shallow copy of Dakota MultivarDistribution instance
+//   //MultivarDistribution randomDist;
+// };
 
-  //
-  //- Heading: Data
-  //
 
-  // observation data or ResidualModel ?
-  //RealVector obsData;
-};
+// class MUQLikelihoodInterface: public muq::Modeling::Density
+// {
+// public:
+
+//   //
+//   //- Heading: Constructors and destructor
+//   //
+
+//   /// standard constructor
+//   MUQLikelihoodInterface() : Density(std::make_shared<muq::Modeling::Gaussian>(0.0, 1.0)->AsDensity()){ }
+//   /// destructor
+//   ~MUQLikelihoodInterface() { }
+
+// protected:
+
+//   //
+//   //- Heading: Virtual function redefinitions
+//   //
+
+//   // This function implements the Misfit(theta, d)
+//   //
+//   // incoming is G(theta) as inputs.at(0) from MUQModelInterface ModPiece
+//   // Approach 1:
+//   //   observational data as inputs.at(1) from another ModPiece
+//   //   (another inherited class or as a "ConstantPiece")
+//   // Approach 2: pass obs data is through the ctor and store as member data
+//   double LogDensityImpl(muq::Modeling::ref_vector< Eigen::VectorXd > const& inputs)
+//   { return 0.0; }
+
+//   //
+//   //- Heading: Data
+//   //
+
+//   // observation data or ResidualModel ?
+//   //RealVector obsData;
+// };
 
 } // namespace Dakota
 
