@@ -239,6 +239,12 @@ void C3Approximation::build()
       ytrain[i] = sdr_array[i].response_function();
     }
 
+#ifdef DEBUG
+    RealMatrix  in(Teuchos::View, xtrain, num_v, num_v, ndata);
+    RealVector out(Teuchos::View, ytrain, ndata);
+    Cout << "C3 training data:\n" << in << out << std::endl;
+#endif // DEBUG
+
     // Build FT model
     struct FunctionTrain * ft
       = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);

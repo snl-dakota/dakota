@@ -268,24 +268,13 @@ void NonDC3FunctionTrain::push_c3_options()
   shared_data_rep->set_parameter("max_solver_iterations",
     probDescDB.get_int("method.nond.max_solver_iterations"));
 
-  shared_data_rep->set_parameter("combine_type",     Pecos::ADD_COMBINE);
-  shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
+  short comb_type = Pecos::ADD_COMBINE;
   int verbosity = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
-  shared_data_rep->set_parameter("verbosity", verbosity);
-}
+  shared_data_rep->set_parameter("combine_type",     comb_type);
+  shared_data_rep->set_parameter("verbosity",        verbosity);
 
-
-void NonDC3FunctionTrain::print_results(std::ostream& s)
-{
-  if (//iteratedModel.subordinate_models(false).size() == 1 &&
-      iteratedModel.truth_model().solution_levels() > 1) {
-    s << "<<<<< Samples per solution level:\n";
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << std::endl;
-  }
-
-  NonDExpansion::print_results(s);
+  shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
+  shared_data_rep->set_parameter("alloc_control",    multilevAllocControl);
 }
 
 
