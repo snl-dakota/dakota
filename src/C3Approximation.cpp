@@ -29,8 +29,7 @@ C3FnTrainPtrs::C3FnTrainPtrs(): ftpRep(new C3FnTrainPtrsRep())
 
 // BMA: If we don't anticipate needing a full deep copy (with stats as
 // opposed to the partial deep copy implemented here, could make this
-// the copy ctor of the body and just use the default copy for the
-// handle
+// the copy ctor of the body and just use the default copy for the handle
 C3FnTrainPtrs C3FnTrainPtrs::copy() const
 {
   C3FnTrainPtrs ftp; // new envelope with ftpRep default allocated
@@ -47,28 +46,20 @@ C3FnTrainPtrs C3FnTrainPtrs::copy() const
 
 
 void C3FnTrainPtrs::swap(C3FnTrainPtrs& ftp)
-{
-  ftpRep.swap(ftp.ftpRep);
-}
+{ ftpRep.swap(ftp.ftpRep); }
 
 
 // TO DO: shallow copy would be better for this case, but requires ref counting
 C3FnTrainPtrs::C3FnTrainPtrs(const C3FnTrainPtrs& ftp)
-{
-  ftpRep = ftp.ftpRep;
-}
+{ ftpRep = ftp.ftpRep; }
 
 
 C3FnTrainPtrs::~C3FnTrainPtrs()
-{
-}
+{ }
 
 
 C3FnTrainPtrs& C3FnTrainPtrs::operator=(const C3FnTrainPtrs& ftp)
-{
-  ftpRep = ftp.ftpRep;
-  return *this;
-}
+{ ftpRep = ftp.ftpRep; return *this; }
 
 // Note: the following functions init/create/free ft memory within an ftpRep
 //       but do not alter ftpRep accounting
@@ -445,27 +436,36 @@ void C3Approximation::synchronize_surrogate_data()
   }
 
   // level 0: approxData non-aggregated key stores raw data
-  short discrep_type = data_rep->discrepancyType;
+  short discrep_type = data_rep->discrepancyType,
+        combine_type = data_rep->combineType;
   if (!discrep_type ||
       !Pecos::DiscrepancyCalculator::aggregated_key(active_key))
     return;
 
   switch (discrep_type) {
   case Pecos::RECURSIVE_DISCREP:
-    //response_data_to_surplus_data();
+    // When using a recursive discrepancy with additive/multiplicative corr,
+    // we will subtract/divide the current polynomial approx prediction from
+    // the new surrData so that we form an expansion on the surplus.  Prior
+    // to using compute() to form the surplus, LF-hat must be generated and
+    // will be stored within surrData in a format that compute() can utilize.
+    //generate_synthetic_data(surrData, active_key, combine_type);
     break;
-  case Pecos::DISTINCT_DISCREP:
-    // If an aggregated (discrepancy) key is active, compute the necessary
-    // aggregation from the latest model datasets
-    Pecos::DiscrepancyCalculator::compute(approxData, active_key,
-					  data_rep->combineType);
-    break;
+  //case Pecos::DISTINCT_DISCREP:
+    // When using a distinct discrepancy with additive/multiplicative corr,
+    // we will subtract/divide the HF,LF pairs.  In this case, the data is
+    // already provided within surrData and specific pairings are identified
+    // by data groups.
   }
+  // now compute the discrepancy between {HF,LF} or {HF,LF-hat} datasets
+  Pecos::DiscrepancyCalculator::compute(approxData, active_key, combine_type);
 }
 
 
 /*
-void C3Approximation::response_data_to_surplus_data()
+void C3Approximation::
+generate_synthetic_data(SurrogateData& surr_data, const UShortArray& active_key,
+			short combine_type
 {
   // ...
 
@@ -489,9 +489,9 @@ void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
 void C3Approximation::compute_derived_statistics(bool overwrite)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  if (levApproxIter->second.derived_functions().set == 0)
+  if (!levApproxIter->second.derived_functions().allocated)
     levApproxIter->second.derived_functions_create(data_rep->approxOpts);
-  else if (overwrite == true) {
+  else if (overwrite) {
     levApproxIter->second.derived_functions_free();
     levApproxIter->second.derived_functions_create(data_rep->approxOpts);
   }
@@ -512,14 +512,14 @@ compute_moments(const RealVector& x, bool full_stats, bool combined_stats)
 
 Real C3Approximation::mean()
 {
-  compute_derived_statistics(false);
+  compute_derived_statistics();
   return levApproxIter->second.derived_functions().first_moment;
 }
 
 
 Real C3Approximation::mean(const RealVector &x)
 {
-  // compute_derived_statistics(false);
+  //compute_derived_statistics();
 
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   const SizetVector& rand_indices = data_rep->randomIndices;
@@ -544,7 +544,7 @@ const RealVector& C3Approximation::mean_gradient()
 
 
 const RealVector& C3Approximation::
-mean_gradient(const RealVector &x,const SizetArray & dvv)
+mean_gradient(const RealVector &x, const SizetArray & dvv)
 {
   Cerr << "Error: mean_gradient(x,dvv) in C3Approximation is not implemented "
        << "because\n       Alex is not sure how what it means" << std::endl;
@@ -554,14 +554,14 @@ mean_gradient(const RealVector &x,const SizetArray & dvv)
 
 Real C3Approximation::variance()
 {
-  compute_derived_statistics(false);
+  compute_derived_statistics();
   return levApproxIter->second.derived_functions().second_central_moment;
 }
 
 
 Real C3Approximation::variance(const RealVector &x)
 {
-  compute_derived_statistics(false);
+  compute_derived_statistics();
 
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   const SizetVector& rand_indices = data_rep->randomIndices;
@@ -740,28 +740,28 @@ size_t C3Approximation::maximum_rank()
 
 Real C3Approximation::third_central()
 {
-  compute_derived_statistics(false);
+  compute_derived_statistics();
   return levApproxIter->second.derived_functions().third_central_moment;
 }
 
 
 Real C3Approximation::fourth_central()
 {
-  compute_derived_statistics(false);
+  compute_derived_statistics();
   return levApproxIter->second.derived_functions().fourth_central_moment;
 }
 
 
 Real C3Approximation::skewness()
 {
-  compute_derived_statistics(false);
+  compute_derived_statistics();
   return levApproxIter->second.derived_functions().skewness;
 }
 
 
 Real C3Approximation::kurtosis()
 {
-  compute_derived_statistics(false);
+  compute_derived_statistics();
   return levApproxIter->second.derived_functions().kurtosis;
 }
 

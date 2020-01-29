@@ -75,7 +75,7 @@ inline void C3FnTrainPtrsRep::free_ft()
 inline void C3FnTrainPtrsRep::free_all()
 {
   free_ft();
-  ft_derived_functions_free();
+  if (ft_derived_fns.allocated)  ft_derived_functions_free();
   if (ft_sobol)
     { c3_sobol_sensitivity_free(ft_sobol); ft_sobol = NULL; }
 }
