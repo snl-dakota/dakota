@@ -52,7 +52,7 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // cov(0,0) = 1.0;
   // priorPtr      = std::make_shared<muq::Modeling::Gaussian>(mu, cov)->AsDensity();
 
-  dakotaLogLikelihoodPtr = std::make_shared<DakotaLogLikelihood>(problem_db, model);
+  dakotaLogLikelihoodPtr = std::make_shared<DakotaLogLikelihood>(model, nonDMUQInstance);
   dakotaLogPriorPtr = std::make_shared<DakotaLogPrior>(problem_db, model);
 
   //////////////////////
@@ -100,7 +100,7 @@ NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
 
 
 double DakotaLogLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
-  
+
   // Extract parameter vector from MUQ's inputs vector
   // (which lives in the ModPiece base class)
   Eigen::VectorXd const& c_vars = inputs.at(0);
@@ -109,17 +109,17 @@ double DakotaLogLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::Vect
   // Set the calibration variables and hyperparams in the outer
   // residualModel: note that this won't update the Variables object
   // in any inner models.
-  RealVector& all_params = residualModel.current_variables().continuous_variables_view();
+  RealVector& all_params = nonDMUQInstancePtr->residualModel.current_variables().continuous_variables_view();
   // Set parameter values in Dakota model object
   for (i=0; i<num_cv; ++i)
    all_params[i] = c_vars[i];
 
-  residualModel.evaluate();
+  nonDMUQInstancePtr->residualModel.evaluate();
   
-  const RealVector& residuals = residualModel.current_response().function_values();
-  double log_like = log_likelihood(residuals, all_params);
+  const RealVector& residuals = nonDMUQInstancePtr->residualModel.current_response().function_values();
+  double log_like = nonDMUQInstancePtr->log_likelihood(residuals, all_params);
   
-  if (outputLevel >= DEBUG_OUTPUT) {
+  if (nonDMUQInstancePtr->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << log_like << " Likelihood is "
          << std::exp(log_like) << '\n';
 
@@ -127,7 +127,7 @@ double DakotaLogLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::Vect
     LogLikeOutput.open("NonDMUQLogLike.txt", std::ios::out | std::ios::app);
     // Note: parameter values are in scaled space, if scaling is
     // active; residuals may be scaled by covariance
-    size_t num_total_params = numContinuousVars + numHyperparams; 
+    size_t num_total_params = nonDMUQInstancePtr->numContinuousVars + nonDMUQInstancePtr->numHyperparams; 
     for (size_t i=0; i<num_total_params; ++i) 
       LogLikeOutput << c_vars[i] << ' ' ;
     for (size_t i=0; i<residuals.length(); ++i)
@@ -138,10 +138,6 @@ double DakotaLogLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::Vect
 
   return log_like;
 }
-
-
-/** Perform the uncertainty quantification */
-void DakotaLogLikelihood::calibrate() { }
 
 
 double DakotaLogPrior::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
@@ -161,7 +157,7 @@ double DakotaLogPrior::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd>
 
   double log_prior = log_prior_density(all_params);
 
-  std::cout << log_prior << std::endl;
+  std::cout << "Sample: " << all_params[0] << ", log_prior: " << log_prior << std::endl;
 
   return log_prior;
 }

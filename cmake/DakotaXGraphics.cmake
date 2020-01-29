@@ -1,7 +1,7 @@
 # Try to find X Windows headers and libraries needed for Dakota X
 # graphics capability (X11, Motif, pthread).  If found, set
 # DAKOTA_X_DEPS_FOUND
-macro(dakota_x_graphics)
+macro(dakota_x_graphics_impl)
 
   # Survey of headers called out in src/ and packages/motif/
   
@@ -72,4 +72,30 @@ macro(dakota_x_graphics)
 
   endif()
 
+endmacro()
+
+macro(dakota_find_x_graphics)
+  if(HAVE_X_GRAPHICS)
+    if(WIN32)
+      message(STATUS "HAVE_X_GRAPHICS requested, but not supported on Windows; "
+	"disabling.")
+      set(HAVE_X_GRAPHICS OFF CACHE BOOL
+	"X graphics not supported on Windows; disabling" FORCE)
+    else()
+      dakota_x_graphics_impl()
+      # TODO: option to force even when deps not found?
+      if(DAKOTA_X_DEPS_FOUND)
+	message(STATUS "All Dakota X_GRAPHICS dependencies found; 2D graphics "
+	  "will be enabled as requested.")
+      else()
+	message(WARNING "HAVE_X_GRAPHICS requested, but X11 dependencies not "
+	  "found; disabling. (Dakota graphics require X11, Xmu, Xpm, and "
+	  "Motif/Lesstif, including development headers and libraries, as well as "
+	  "pthreads.)"
+	  )
+	set(HAVE_X_GRAPHICS OFF CACHE BOOL
+	  "X graphics dependencies not found; disabling" FORCE)
+      endif()
+    endif()  # WIN32
+  endif()  # HAVE_X_GRAPHICS
 endmacro()

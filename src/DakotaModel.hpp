@@ -150,28 +150,12 @@ public:
 
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
-  /// set the indices that define the active approximation sub-model
-  /// within surrogate models
-  virtual void surrogate_model_key(unsigned short lf_model_index,
-				 unsigned short lf_soln_lev_index = USHRT_MAX);
-  /// set the index pair that defines the active approximation sub-model
-  /// within surrogate models
-  virtual void surrogate_model_key(const UShortArray& lf_key);
-  /// return the indices of the active approximation sub-model within
-  /// surrogate models
-  virtual const UShortArray& surrogate_model_key() const;
-
+  /// return the active approximation sub-model in surrogate models
+  virtual const Model& surrogate_model() const;
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
-  /// set the indices that define the active truth sub-model within
-  /// surrogate models
-  virtual void truth_model_key(unsigned short hf_model_index,
-			       unsigned short hf_soln_lev_index = USHRT_MAX);
-  /// set the index pair that defines the active truth sub-model within
-  /// surrogate models
-  virtual void truth_model_key(const UShortArray& hf_key);
-  /// return the indices of the active truth sub-model within surrogate models
-  virtual const UShortArray& truth_model_key() const;
+  /// return the active truth sub-model in surrogate models
+  virtual const Model& truth_model() const;
 
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -345,8 +329,7 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve a SurrogateData instance from a particular Approximation
   /// instance within the ApproximationInterface of a DataFitSurrModel
-  virtual const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within a DataFitSurrModel
@@ -368,8 +351,8 @@ public:
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
 
-  /// link together more than one SurrogateData instance (DataFitSurrModel)
-  virtual void link_multilevel_approximation_data();
+  // link together more than one SurrogateData instance (DataFitSurrModel)
+  //virtual void link_multilevel_approximation_data();
 
   /// retrieve error estimates corresponding to the Model's response
   /// (could be surrogate error for SurrogateModels, statistical MSE for
@@ -385,11 +368,12 @@ public:
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
-  /// apply the DiscrepancyCorrection object to correct an approximation
-  /// within a SurrogateModel
+
+  /// apply a DiscrepancyCorrection to correct an approximation within
+  /// a HierarchSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
-			    const UShortArrayPair& keys);
-  /// apply the DiscrepancyCorrection object to recursively correct an 
+			    const UShortArray& paired_key);
+  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
@@ -1420,9 +1404,8 @@ protected:
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
 
-  /// the component parallelism mode: 0 (none),
-  /// 1 (INTERFACE/OPTIONAL_INTERFACE/SURROGATE_MODEL), or
-  /// 2 (SUB_MODEL/TRUTH_MODEL)
+  /// the component parallelism mode: NO_PARALLEL_MODE, SURROGATE_MODEL_MODE,
+  // TRUTH_MODEL_MODE, SUB_MODEL_MODE, INTERFACE_MODE, OPTIONAL_INTERFACE_MODE
   short componentParallelMode;
 
   /// flags asynch evaluations (local or distributed)

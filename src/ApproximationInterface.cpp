@@ -381,12 +381,11 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
       if(actualModelInterfaceId.empty()) {
-        ParamResponsePair search_pr(vars, "NO_ID",
-  				  response_pr.second);
+        ParamResponsePair search_pr(vars, "NO_ID", response_pr.second);
         p_it = lookup_by_ids(data_pairs, ids, search_pr);
       } else {
         ParamResponsePair search_pr(vars, actualModelInterfaceId,
-  				  response_pr.second);
+				    response_pr.second);
         p_it = lookup_by_ids(data_pairs, ids, search_pr);
       }
     }
@@ -435,13 +434,12 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
-        if(actualModelInterfaceId.empty()) {
-	  ParamResponsePair search_pr(actualModelVars, "NO_ID",
-	  			    r_it->second);
+        if (actualModelInterfaceId.empty()) {
+	  ParamResponsePair search_pr(actualModelVars, "NO_ID", r_it->second);
 	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
         } else {
 	  ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-	  			    r_it->second);
+				      r_it->second);
 	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
         }
       }
@@ -493,12 +491,11 @@ update_approximation(const VariablesArray& vars_array,
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
         if(actualModelInterfaceId.empty()) {
-          ParamResponsePair search_pr(vars_array[i], "NO_ID",
-				    r_it->second);
+          ParamResponsePair search_pr(vars_array[i], "NO_ID", r_it->second);
           p_it = lookup_by_ids(data_pairs, ids, search_pr);
         } else {
           ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
-				    r_it->second);
+				      r_it->second);
           p_it = lookup_by_ids(data_pairs, ids, search_pr);
         }
       }
@@ -538,12 +535,11 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
       if(actualModelInterfaceId.empty()) {
-        ParamResponsePair search_pr(vars, "NO_ID",
-				  response_pr.second);
+        ParamResponsePair search_pr(vars, "NO_ID", response_pr.second);
         p_it = lookup_by_ids(data_pairs, ids, search_pr);
       } else {
         ParamResponsePair search_pr(vars, actualModelInterfaceId,
-				  response_pr.second);
+				    response_pr.second);
         p_it = lookup_by_ids(data_pairs, ids, search_pr);
       }
     }
@@ -592,12 +588,11 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
         if(actualModelInterfaceId.empty()) {
-          ParamResponsePair search_pr(actualModelVars, "NO_ID",
-				    r_it->second);
+          ParamResponsePair search_pr(actualModelVars, "NO_ID", r_it->second);
           p_it = lookup_by_ids(data_pairs, ids, search_pr);
         } else {
           ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-				    r_it->second);
+				      r_it->second);
           p_it = lookup_by_ids(data_pairs, ids, search_pr);
         }
       }
@@ -648,12 +643,11 @@ append_approximation(const VariablesArray& vars_array,
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
         if(actualModelInterfaceId.empty()) {
-          ParamResponsePair search_pr(vars_array[i], "NO_ID",
-				    r_it->second);
+          ParamResponsePair search_pr(vars_array[i], "NO_ID", r_it->second);
           p_it = lookup_by_ids(data_pairs, ids, search_pr);
         } else {
           ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
-				    r_it->second);
+				      r_it->second);
           p_it = lookup_by_ids(data_pairs, ids, search_pr);
         }
       }
@@ -906,8 +900,7 @@ challenge_diagnostics(const StringArray& metric_types,
   for ( ; a_it != a_end; ++a_it) {
     size_t index = *a_it;
     chall_diags.push_back(functionSurfaces[index].
-			  challenge_diagnostic(metric_types, 
-                                               challenge_pts,
+			  challenge_diagnostic(metric_types, challenge_pts,
                                                challenge_resps));
   }
   return chall_diags;

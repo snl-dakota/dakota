@@ -9,30 +9,34 @@
 
 method,
 	model_pointer = 'HIERARCH'
-    model_param_spec = 'FT'
-	function_train_uq
+	multifidelity_function_train			#s0,#s1
+#	  allocation_control greedy			#s1
+#	multilevel_function_train			#s2,#s3
+#	  pilot_samples = 100 40 20 10			#s2,#s3
+#	  allocation_control rank_sampling		#s2
+#	  allocation_control estimator_variance		#s3
+          adapt_rank
+          start_rank_sequence = 2 2 2 2
+	  kick_rank = 2  max_rank = 10
+          solver_tolerance = 1e-8  rounding_tolerance = 1e-8
 	  convergence_tol = 0.0001
-      seed = 1237
-	output silent
+	  seed = 1237
+	  output silent
 
 model,
-     id_model = 'FT'
-     surrogate global
-        function_train
-        kick_rank = 2
-        rank_adapt = 0
-        max_num = 3
-        start_rank = 2
-        solver_tolerance = 1e-8
-        rounding_tolerance = 1e-8
-        verbosity = 1
-        max_rank = 10
+	id_model = 'FT'
+	surrogate global function_train
+          adapt_rank
+#         max_num = 3
+          start_rank = 2  kick_rank = 2  max_rank = 10
+          solver_tolerance = 1e-8  rounding_tolerance = 1e-8
+#         verbosity = 1
 
 model,
 	id_model = 'HIERARCH'
 	surrogate hierarchical
 	  ordered_model_fidelities = 'SIM1'
-      correction = zeroth_order additive
+	  correction = zeroth_order additive
 
 model,
 	id_model = 'SIM1'

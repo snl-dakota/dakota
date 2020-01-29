@@ -26,6 +26,7 @@
 #include "NonDStochCollocation.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 //#include "NonDMultilevelStochCollocation.hpp"
+#include "NonDSurrogateExpansion.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
@@ -107,6 +108,7 @@
 #endif
 #ifdef HAVE_C3
 #include "NonDC3FunctionTrain.hpp"
+#include "NonDMultilevelFunctionTrain.hpp"
 #endif
 #ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
@@ -162,13 +164,12 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
 		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
-  myModelLayers(0),
-  methodName(probDescDB.get_ushort("method.algorithm")),
-  convergenceTol(probDescDB.get_real("method.convergence_tolerance")),
-  maxIterations(probDescDB.get_int("method.max_iterations")),
-  maxFunctionEvals(probDescDB.get_int("method.max_function_evaluations")),
+  myModelLayers(0), methodName(problem_db.get_ushort("method.algorithm")),
+  convergenceTol(problem_db.get_real("method.convergence_tolerance")),
+  maxIterations(problem_db.get_int("method.max_iterations")),
+  maxFunctionEvals(problem_db.get_int("method.max_function_evaluations")),
   subIteratorFlag(false),
-  numFinalSolutions(probDescDB.get_sizet("method.final_solutions")),
+  numFinalSolutions(problem_db.get_sizet("method.final_solutions")),
   // Output verbosity is observed within Iterator (algorithm verbosity),
   // Model (synchronize/estimate_derivatives verbosity), Interface
   // (map/synch verbosity, file operations verbosity), and Approximation
@@ -182,11 +183,12 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   // where "silent," "quiet", "verbose" and "debug" must be user specified and
   // "normal" is the default for no user specification.  Note that iterators
   // and interfaces have the most granularity in verbosity.
-  outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
-  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  outputLevel(problem_db.get_short("method.output")), summaryOutputFlag(true),
+  topLevel(false), resultsDB(iterator_results_db),
+  evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-   methodId(probDescDB.get_string("method.id")),
-  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  methodId(problem_db.get_string("method.id")), execNum(0),
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   if (methodId.empty())
     methodId = user_auto_id();
@@ -210,14 +212,13 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
 	 std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
-  myModelLayers(0),
-  iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
-  maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
-  subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(model.output_level()), summaryOutputFlag(false),
-  topLevel(false), resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
-  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()), execNum(0),
-  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
+  myModelLayers(0), iteratedModel(model), methodName(method_name),
+  convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
+  maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
 #ifdef REFCOUNT_DEBUG
@@ -257,7 +258,8 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
-Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
+Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
+  probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
@@ -273,7 +275,8 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), pa
 /** This constructor assigns a representation pointer and optionally
     increments its reference count.  It behaves the same as a default
     construction followed by assign_rep(). */
-Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<TraitsBase> traits):
+Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr,
+		   std::shared_ptr<TraitsBase> traits):
   // same as default ctor above
   probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
@@ -297,12 +300,13 @@ Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<
     data.  This version is used for top-level ProblemDescDB-driven
     construction of all Iterators and MetaIterators, which construct
     their own Model instances. */
-Iterator::Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
+Iterator::Iterator(ProblemDescDB& problem_db,
+		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
-
   iteratorRep = get_iterator(problem_db);
   
   if ( !iteratorRep ) // bad name or insufficient memory
@@ -317,11 +321,11 @@ bool Iterator::resize()
   else {
     // Update activeSet:
     activeSet = iteratedModel.current_response().active_set();
-
     return false; // No need to re-initialize communicators base on what
                   // was done here.
   }
 }
+
 
 void Iterator::declare_sources() {
   evaluationsDB.declare_source(method_id(), 
@@ -329,6 +333,7 @@ void Iterator::declare_sources() {
                                iterated_model().model_id(),
                                iterated_model().model_type());
 }
+
 
 /** Used only by the envelope constructor to initialize iteratorRep to
     the appropriate derived type, as given by the DB's method_name.
@@ -462,9 +467,11 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_C3
   case C3_FUNCTION_TRAIN:
     return new NonDC3FunctionTrain(problem_db, model); break;
-  //case MULTIFIDELITY_FUNCTION_TRAIN:
-  //  return new NonDMultilevelFunctionTrain(problem_db, model); break;
+  case MULTILEVEL_FUNCTION_TRAIN: case MULTIFIDELITY_FUNCTION_TRAIN:
+    return new NonDMultilevelFunctionTrain(problem_db, model); break;
 #endif
+  case SURROGATE_BASED_UQ:
+    return new NonDSurrogateExpansion(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {

@@ -1001,7 +1001,7 @@ void DataFitSurrModel::build_approx_interface()
 void DataFitSurrModel::build_local_multipoint()
 {
   // set DataFitSurrModel parallelism mode to actualModel
-  component_parallel_mode(TRUTH_MODEL);
+  component_parallel_mode(TRUTH_MODEL_MODE);
 
   // Define the data requests
   short asv_value = 3;
@@ -1055,7 +1055,7 @@ void DataFitSurrModel::build_global()
   size_t i, j, reuse_points = 0;
   int fn_index = *surrogateFnIndices.begin();
   const Pecos::SurrogateData& approx_data
-    = approxInterface.approximation_data(fn_index); // default SurrData
+    = approxInterface.approximation_data(fn_index);
   bool anchor = approx_data.anchor();
   if (pointReuse == "all" || pointReuse == "region") {
 
@@ -1143,7 +1143,7 @@ void DataFitSurrModel::build_global()
   else { // new data
 
     // set DataFitSurrModel parallelism mode to actualModel
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // daceIterator must generate at least diff_points samples, should
     // populate allData lists (allDataFlag = true), and should bypass
@@ -1215,7 +1215,7 @@ void DataFitSurrModel::rebuild_global()
   else { // new data
 
     // set DataFitSurrModel parallelism mode to actualModel
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // daceIterator must generate at least diff_points samples, should
     // populate allData lists (allDataFlag = true), and should bypass
@@ -1510,7 +1510,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   // Compute actual model response
   // -----------------------------
   if (actual_eval) {
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
     update_model(actualModel); // update variables/bounds/labels in actualModel
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
@@ -1552,7 +1552,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     }
 
     // compute the approximate response
-    //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
+    //component_parallel_mode(SURROGATE_MODEL_MODE); // does not use parallelism
     //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     //parallelLib.parallel_configuration_iterator(modelPCIter);
     if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
@@ -1750,7 +1750,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
@@ -1847,7 +1847,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
@@ -1952,7 +1952,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 {
   bool actual_evals = !truthIdMap.empty();
 
-  //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
+  //component_parallel_mode(SURROGATE_MODEL_MODE); // does not use parallelism
   //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
   //parallelLib.parallel_configuration_iterator(modelPCIter);
 
@@ -2184,11 +2184,11 @@ void DataFitSurrModel::component_parallel_mode(short mode)
   //  return; // already in correct parallel mode
 
   /* Moved up a level so that config can be restored after optInterface usage
-  //if (mode == TRUTH_MODEL) {
+  //if (mode == TRUTH_MODEL_MODE) {
     // ParallelLibrary::currPCIter activation delegated to subModel
   //}
   //else 
-  if (mode == SURROGATE_MODEL)
+  if (mode == SURROGATE_MODEL_MODE)
     parallelLib.parallel_configuration_iterator(modelPCIter);
   //else if (mode == 0)
   */

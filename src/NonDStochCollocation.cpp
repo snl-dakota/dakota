@@ -39,7 +39,6 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -106,15 +105,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_EMULATION, rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+		refine_control, covar_control, DEFAULT_MLMF_CONTROL,
+		DEFAULT_EMULATION, SizetArray(), rule_nest, rule_growth,
+		piecewise_basis, use_derivs)
 {
   // ----------------
   // Resolve settings
   // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  //initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -157,13 +156,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called for a standard letter-envelope iterator
-    instantiation using the ProblemDescDB. */
+/** This constructor is called derived class constructors that
+    customize the object construction. */
 NonDStochCollocation::
-NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
+		     Model& model):
   NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
+  size_t dummy_break_pt = 0;
 }
 
 
@@ -172,11 +173,12 @@ NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
 		     short exp_coeffs_approach, short refine_type,
 		     short refine_control, short covar_control,
-		     short ml_discrep, short rule_nest, short rule_growth,
-		     bool piecewise_basis, bool use_derivs):
+		     short ml_alloc_control, short ml_discrep, short rule_nest,
+		     short rule_growth, bool piecewise_basis, bool use_derivs):
   NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_discrep, rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+		refine_control, covar_control, ml_alloc_control, ml_discrep,
+		SizetArray(), rule_nest, rule_growth, piecewise_basis,
+		use_derivs)
 {
   // Logic delegated to derived class constructor...
 }
@@ -380,6 +382,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 void NonDStochCollocation::initialize_u_space_model()
 {
   NonDExpansion::initialize_u_space_model();
+  configure_pecos_options(); // pulled out of base because C3 does not use it
 
   // initialize product accumulators with PolynomialApproximation pointers
   // used in covariance calculations

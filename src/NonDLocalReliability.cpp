@@ -1064,7 +1064,7 @@ void NonDLocalReliability::initial_taylor_series()
     // vars for the (initial) Taylor series expansion in MV/AMV/AMV+.
     Cout << "\n>>>>> Evaluating response at mean values\n";
     if (mppSearchType && mppSearchType < NO_APPROX)
-      uSpaceModel.component_parallel_mode(TRUTH_MODEL);
+      uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
     iteratedModel.continuous_variables(ranVarMeansX);
     activeSet.request_vector(asrv);
     iteratedModel.evaluate(activeSet);
@@ -1176,7 +1176,7 @@ void NonDLocalReliability::initialize_class_data()
   // response fns at u = 0 (used for determining signs of reliability indices).
   Cout << "\n>>>>> Evaluating response at median values\n";
   if (mppSearchType && mppSearchType < NO_APPROX)
-    uSpaceModel.component_parallel_mode(TRUTH_MODEL);
+    uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
   RealVector ep_median_u(numContinuousVars), // inits vals to 0
              ep_median_x(numContinuousVars, false);
   nataf.trans_U_to_X(ep_median_u, ep_median_x);
@@ -1828,7 +1828,7 @@ void NonDLocalReliability::assign_mean_data()
 void NonDLocalReliability::truth_evaluation(short mode)
 {
   // the following are no-ops for ReastModel -> SimulationModel (NO_APPROX):
-  uSpaceModel.component_parallel_mode(TRUTH_MODEL);      // Recast forwards
+  uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);      // Recast forwards
   uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
 
   uSpaceModel.continuous_variables(mostProbPointU);
@@ -1857,7 +1857,7 @@ void NonDLocalReliability::truth_evaluation(short mode)
   // the following are no-ops for ReastModel -> SimulationModel (NO_APPROX):
   uSpaceModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // restore
   // Not currently necessary as surrogate mode does not employ parallelism:
-  //uSpaceModel.component_parallel_mode(SURROGATE_MODEL); // restore
+  //uSpaceModel.component_parallel_mode(SURROGATE_MODEL_MODE); // restore
 }
 
 
@@ -2172,7 +2172,7 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     Cout << "\n>>>>> Evaluating sensitivity with respect to augmented inactive "
 	 << "variables\n";
     if (mppSearchType && mppSearchType < NO_APPROX)
-      uSpaceModel.component_parallel_mode(TRUTH_MODEL);
+      uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
     iteratedModel.continuous_variables(x_vars);
     ActiveSet inactive_grad_set = activeSet;
     inactive_grad_set.request_values(0);

@@ -70,7 +70,7 @@ private:
   /// particular model form using QoI accumulators (sum_Q)
   void multilevel_mc_Qsum(unsigned short model_form);
   /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc(const UShortArray& lf_key, const UShortArray& hf_key);
+  void control_variate_mc(const UShortArray& active_key);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Y (LH correlations for level discrepancies)
@@ -96,11 +96,14 @@ private:
   /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
   void uncorrected_surrogate_mode();
 
-  /// manage response mode, model indices, and aggregate level cost
-  void configure_indices(unsigned short lev, unsigned short model_form,
-			 const RealVector& cost, Real& lev_cost);
-  /// manage response mode and model indices
-  void configure_indices(unsigned short lev, unsigned short model_form);
+  /// return (aggregate) level cost
+  Real level_cost(const RealVector& cost, unsigned short step);
+
+  /// manage response mode and active model key from {group,form,lev} triplet.
+  /// s_index is the sequence index that defines the active dimension for a
+  /// model sequence.
+  void configure_indices(unsigned short group, unsigned short form,
+			 unsigned short lev,   unsigned short s_index);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -472,7 +475,7 @@ private:
 inline void NonDMultilevelSampling::aggregated_models_mode()
 {
   if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set HF,LF
     // synch activeSet with iteratedModel.response_size()
     activeSet.reshape(2*numFunctions);
     activeSet.request_values(1);
@@ -483,7 +486,7 @@ inline void NonDMultilevelSampling::aggregated_models_mode()
 inline void NonDMultilevelSampling::bypass_surrogate_mode()
 {
   if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // LF
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // HF
     activeSet.reshape(numFunctions);// synch with model.response_size()
   }
 }
@@ -498,33 +501,13 @@ inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
 }
 
 
-inline void NonDMultilevelSampling::
-configure_indices(unsigned short lev, unsigned short model_form)
+inline Real NonDMultilevelSampling::
+level_cost(const RealVector& cost, unsigned short step)
 {
-  iteratedModel.truth_model_key(model_form, lev);
-  if (lev) {
-    //if (lev == 1) // update responseMode for levels to follow (1:num_lev-1)
-    aggregated_models_mode();
-    iteratedModel.surrogate_model_key(model_form, lev-1);
-  }
-  else
-    bypass_surrogate_mode();
-
-  // Not currently necessary, since no surrogate data:
-  //iteratedModel.active_model_key(iteratedModel.truth_model_key());
-}
-
-
-inline void NonDMultilevelSampling::
-configure_indices(unsigned short lev, unsigned short model_form,
-		  const RealVector& cost, Real& lev_cost)
-{
-  // discrepancies incur 2 level costs
-  lev_cost = (lev) ?
-    cost[lev] + cost[lev-1] : // aggregated {LF,HF} mode
-    cost[lev];                //     uncorrected LF mode
-
-  configure_indices(lev, model_form);
+  // discrepancies incur two level costs
+  return (step) ?
+    cost[step] + cost[step-1] : // aggregated {HF,LF} mode
+    cost[step];                 //     uncorrected LF mode
 }
 
 

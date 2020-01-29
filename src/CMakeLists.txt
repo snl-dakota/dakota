@@ -523,8 +523,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
-    NonDCalibration.cpp NonDBayesCalibration.cpp NonDWASABIBayesCalibration.cpp
-    NonDSampling.cpp NonDLHSSampling.cpp
+    NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
+    NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
     NonDMultilevelSampling.cpp NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp 
     NonDPOFDarts.cpp NonDRKDDarts.cpp
     NonDMUQBayesCalibration.cpp
@@ -615,8 +615,8 @@ endif()
 
 CheckPackage(C3)
 if(HAVE_C3)
-  set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp)
-  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp)
+  set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp NonDMultilevelFunctionTrain.cpp)
+  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp C3FnTrainPtrsRep.cpp)
   # BMA: disabled these includes as we aren't including c3.h
   ##list(APPEND DAKOTA_INCDIRS
   ##  ${C3_SOURCE_DIR}/include

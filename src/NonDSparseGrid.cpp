@@ -54,7 +54,6 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   numIntDriver = Pecos::IntegrationDriver(ssgDriverType);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
-  // initialize_random_variables() called in NonDIntegration ctor
   //check_variables(x_dist.random_variables());
   // TO DO: create a ProbabilityTransformModel, if needed
   const Pecos::MultivariateDistribution& u_dist

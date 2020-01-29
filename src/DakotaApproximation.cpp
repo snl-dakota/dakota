@@ -45,13 +45,9 @@ namespace Dakota {
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
-  sharedDataRep(shared_data.data_rep()), approxLabel(approx_label),
-  approxRep(NULL), referenceCount(1)
+  approxData(true), approxLabel(approx_label),
+  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
 {
-  // We always have at least one SurrogateData instance in approxData.
-  // Aggregated data modes append to this vector downstream from ctor.
-  approxData.push_back(Pecos::SurrogateData(true));
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
        << "class for letter." << std::endl;
@@ -68,12 +64,9 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
+  approxData(true), sharedDataRep(shared_data.data_rep()),
+  approxRep(NULL), referenceCount(1)
 {
-  // We always have at least one SurrogateData instance in approxData.
-  // Aggregated data modes append to this vector downstream from ctor.
-  approxData.push_back(Pecos::SurrogateData(true));
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
        << "base class for letter." << std::endl;
@@ -304,13 +297,26 @@ void Approximation::build()
   if (approxRep)
     approxRep->build();
   else { // default is only a data check --> augmented/replaced by derived class
-    size_t d, num_d = approxData.size(), num_pts,
-      build_pts = approxData[0].points();
-    for (d=1; d<num_d; ++d) {
-      num_pts = approxData[d].points();
-      if (num_pts < build_pts) build_pts = num_pts;
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    size_t num_keys = keys.size();
+    if (num_keys <= 1)
+      check_points(approxData.points());
+    else { // active key may be aggregate key, which is populated downstream
+
+      // This approach should be sufficient
+      check_points(approxData.points(keys.front())); // raw HF
+
+      // DISTINCT_DISCREPANCY has up to 2 raw data:
+      //size_t i, num_checks = (num_keys <= 2) ? num_keys : 2;
+      //for (i=0; i<num_checks; ++i)
+      //  check_points(approxData.points(keys[i]));
+
+      // This approach is more general (RECURSIVE_DISCREPANCY has 1 raw data),
+      // but overkill for now
+      //size_t i, num_checks = sharedDataRep->num_data_keys(); // virtual
+      //for (i=0; i<num_checks; ++i)
+      //  check_points(approxData.points(keys[i]));
     }
-    check_points(build_pts);
   }
 }
 
@@ -337,12 +343,7 @@ void Approximation::rebuild()
 void Approximation::pop_data(bool save_data)
 {
   if (approxRep) approxRep->pop_data(save_data);
-  else {
-    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d)
-      approxData[d].pop(keys[d], save_data);
-  }
+  else approxData.pop(sharedDataRep->approxDataKeys, save_data);
 }
 
 
@@ -350,20 +351,15 @@ void Approximation::push_data()
 {
   if (approxRep) approxRep->push_data();
   else {
-    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-    size_t d, num_d = approxData.size();
-    for (d=0; d<num_d; ++d) {
-      Pecos::SurrogateData& approx_data = approxData[d];
-      const UShort2DArray& keys_d = keys[d];
-      if (!keys_d.empty()) {
-	// Only want truth model key for retrieval index as this is what is
-	// activated through the Model.  Surrogate model key is only used for
-	// enumerating SurrogateData updates using approxDataKeys.
-	const UShortArray& truth_key = keys_d[0];
-	size_t r_index = sharedDataRep->push_index(truth_key);
-	// preserves active state
-	approx_data.push(keys_d, r_index); // preserves active state
-      }
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (!keys.empty()) {
+      // Only want active key for retrieval index as this is what is
+      // activated through the Model.  Other keys are only used for
+      // enumerating SurrogateData updates using approxDataKeys.
+      const UShortArray& active_key = keys.back();//= sharedDataRep->activeKey;
+      size_t r_index = sharedDataRep->push_index(active_key);
+      // preserves active state
+      approxData.push(keys, r_index); // preserves active state
     }
   }
 }
@@ -375,20 +371,15 @@ void Approximation::finalize_data()
 
   if (approxRep) approxRep->finalize_data();
   else {
-    const UShort3DArray& keys = sharedDataRep->approxDataKeys;
-    // assume number of popped trials is consistent across approxData
-    size_t d, num_d = approxData.size(), f_index, p;
-    for (d=0; d<num_d; ++d) {
-      Pecos::SurrogateData& approx_data = approxData[d];
-      const UShort2DArray& keys_d = keys[d];
-      if (!keys_d.empty()) {
-	// Only need truth model key for finalization indices (see above)
-	const UShortArray& truth_key = keys_d[0];
-	size_t num_popped = approx_data.popped_sets(truth_key);
-	for (p=0; p<num_popped; ++p) {
-	  f_index = sharedDataRep->finalize_index(p, truth_key);
-	  approx_data.push(keys_d, f_index, false);
-	}
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (!keys.empty()) {
+      // Only need truth model key for finalization indices (see above)
+      const UShortArray& active_key = keys.back();//= sharedDataRep->activeKey;
+      // assume number of popped trials is consistent across approxData
+      size_t f_index, p, num_popped = approxData.popped_sets(active_key);
+      for (p=0; p<num_popped; ++p) {
+	f_index = sharedDataRep->finalize_index(p, active_key);
+	approxData.push(keys, f_index, false);
       }
     }
 
@@ -436,11 +427,7 @@ void Approximation::clear_inactive_coefficients()
 void Approximation::combined_to_active_data()
 {
   if (approxRep) approxRep->combined_to_active();
-  else {
-    const UShortArray& key = sharedDataRep->active_model_key();
-    for (d=0; d<num_d; ++d)
-      approxData[d].active_key(key);
-  }
+  else approxData.active_key(sharedDataRep->active_model_key());
 }
 */
 
@@ -919,16 +906,13 @@ approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 }
 
 
+/*
 void Approximation::link_multilevel_surrogate_data()
 {
-  if (approxRep)
-    approxRep->link_multilevel_surrogate_data();
-  else {
-    Cerr << "Error: link_multilevel_surrogate_data() not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
+  if (approxRep) approxRep->link_multilevel_surrogate_data();
+  //else no-op (no linkage required for derived Approximation)
 }
+*/
 
 
 void Approximation::
@@ -981,18 +965,16 @@ int Approximation::recommended_coefficients() const
 int Approximation::num_constraints() const
 {
   if (approxRep) // fwd to letter
-    return approxRep->num_constraints(); 
-  else { // default implementation
-    const Pecos::SurrogateData& data_0 = approxData[0];
-    if (data_0.anchor()) { // anchor data may differ from buildDataOrder
-      const SurrogateDataResp& anchor_sdr = data_0.anchor_response();
-      int ng = anchor_sdr.response_gradient().length(),
-          nh = anchor_sdr.response_hessian().numRows();
-      return 1 + ng + nh*(nh + 1)/2;
-    }
-    else
-      return 0;
+    return approxRep->num_constraints();
+  // default implementation:
+  else if (approxData.anchor()) { // anchor data may differ from buildDataOrder
+    const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    int ng = anchor_sdr.response_gradient().length(),
+        nh = anchor_sdr.response_hessian().numRows();
+    return 1 + ng + nh*(nh + 1)/2;
   }
+  else
+    return 0;
 }
 
 

@@ -94,20 +94,20 @@ private:
 
 };
 
-class DakotaLogLikelihood : public NonDBayesCalibration, public muq::Modeling::Distribution {
+class DakotaLogLikelihood : public muq::Modeling::Distribution {
 public:
 
-  inline DakotaLogLikelihood(ProblemDescDB& problem_db, Model& model) : 
-  NonDBayesCalibration(problem_db, model),
-  muq::Modeling::Distribution(model.cv()) { };
+  inline DakotaLogLikelihood(Model& model, NonDMUQBayesCalibration* nond_muq_ptr) :
+  muq::Modeling::Distribution(model.cv()), nonDMUQInstancePtr(nond_muq_ptr) { };
 
   double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
 
 protected:
 
-void calibrate();
-
 private:
+
+  NonDMUQBayesCalibration* nonDMUQInstancePtr;
+
 };
 
 class DakotaLogPrior : public NonDBayesCalibration, public muq::Modeling::Distribution {
