@@ -15,10 +15,8 @@ function(dakota_install_dll dakota_dll)
   if (EXISTS "${dakota_dll}")
     get_filename_component(dll_filename "${dakota_dll}" NAME)
     message("-- Installing: ${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}")
-    execute_process(
-      COMMAND 
-        ${CMAKE_COMMAND} -E copy "${dakota_dll}" "${CMAKE_INSTALL_PREFIX}/bin" 
-      )
+    file(COPY "${dakota_dll}" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" FILE_PERMISSIONS
+      OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE) 
   else()
     message(WARNING "Install couldn't find dynamic dependency ${dakota_dll}")
   endif()
@@ -40,10 +38,20 @@ message( "CMAKE_SHARED_LIBRARY_SUFFIX: ${CMAKE_SHARED_LIBRARY_SUFFIX}" )
 get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
 
 # Get all dylib dependencies excluding system libraries and Dakota project 
-# libraries as a semicolon-separated list
+# libraries as a semicolon-separated list. This a terrible solution that requires
+# this file command to be updated every time a new installation location that contains
+# bianries is added.
 set(dakota_darwin_dylibs "")
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
-                       "${CMAKE_INSTALL_PREFIX}/lib/*")
+                       "${CMAKE_INSTALL_PREFIX}/lib/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/test/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/1-var-bnds-only/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/2-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/3-degen-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/4-nonlinear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/5-multi-start/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/script_interfaces/generic/*")
+
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
   if(NOT IS_DIRECTORY "${loader}" AND NOT loader MATCHES "\\.a$")
@@ -63,22 +71,23 @@ foreach(loader ${bin_lib_list})
   endif()
 endforeach()
 
-# Probe the CMakeCache.txt for location of the known Boost dynlib dependency
-# The FindBoost.cmake probe was updated in 2.8.11 (or thereabouts) to cache
-# the variable Boost_LIBRARY_DIR:PATH instead of Boost_LIBRARY_DIRS:FILEPATH.
-# Check both.
-
+# Probe the CMakeCache.txt for location of the known Boost dynlib dependency.
+# This method is very fragile because the the FindBoost.cmake probe is frequently 
+# updated, and the relevant cache variable changes from version to version. That
+# is the most likely cause of the FATAL_ERROR below. Consult the docs in the header
+# of the FindBoost.cmake probe for this verion of CMake to determine which variable
+# to use, and update Dakota's top-level CMakeLists.txt accordingly.
+ 
 file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
-      Boost_LIBRARY_DIRS_PAIR REGEX "^Boost_LIBRARY_DIRS:FILEPATH=(.*)$" )
+      Boost_LIBRARY_DIRS_PAIR REGEX "^DAKOTA_Boost_LIB_DIR:PATH=(.*)$" )
 if( "${Boost_LIBRARY_DIRS_PAIR}" STREQUAL "")
-  file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
-        Boost_LIBRARY_DIRS_PAIR REGEX "^Boost_LIBRARY_DIR:PATH=(.*)$" )
+    message(FATAL_ERROR "Unable to determine Boost library directory!")
 endif()
 
-string( REGEX REPLACE "^Boost_LIBRARY_DIR.+=(.*)$" "\\1"
+string( REGEX REPLACE "^DAKOTA_Boost_LIB_DIR:PATH=(.*)$" "\\1"
         Cached_Boost_LIBRARY_DIRS "${Boost_LIBRARY_DIRS_PAIR}" )
 
-#message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
+# message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
 
 # Modify dakota_darwin_dylibs for "special case" of Boost
 #   otool DOES NOT return absolute path to Boost libs, so workaround the issue
@@ -153,7 +162,7 @@ foreach(bin_dll ${dakota_darwin_dylibs})
   if (EXISTS "${dll_full}")
     execute_process(
       COMMAND 
-        install_name_tool -id @rpath/${dll_filename} ${dll_full} 
+        install_name_tool -id @rpath/${dll_filename} ${dll_full}  
       )
   endif()
 endforeach()
@@ -161,7 +170,15 @@ endforeach()
 # Update the libraries and executables in ${CMAKE_INSTALL_PREFIX}/bin and 
 # ${CMAKE_INSTALL_PREFIX}/lib to refer to libs by their new install names.
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
-                       "${CMAKE_INSTALL_PREFIX}/lib/*")
+                       "${CMAKE_INSTALL_PREFIX}/lib/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/test/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/1-var-bnds-only/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/2-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/3-degen-linear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/4-nonlinear-constraints/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/hopspack/5-multi-start/*"
+                       "${CMAKE_INSTALL_PREFIX}/share/dakota/examples/script_interfaces/generic/*")
+
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
   if(NOT IS_DIRECTORY "${loader}" AND NOT loader MATCHES "\\.a$")

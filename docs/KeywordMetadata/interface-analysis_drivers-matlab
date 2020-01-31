@@ -13,7 +13,7 @@ implements the parameter to response mapping.
 
 Topics::
 Examples::
-See \c dakota/examples/linked_interfaces/Matlab
+See \c dakota/share/dakota/examples/linked_interfaces/Matlab
 
 Theory::
 Faq::

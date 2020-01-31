@@ -12,7 +12,7 @@ gradients:
 \c dakota denotes %Dakota's internal finite differencing
 algorithm and \c vendor denotes the finite differencing algorithm
 supplied by the iterator package in use (DOT, CONMIN, NPSOL, NL2SOL, NLSSOL,
-and OPT++ each have their own internal finite differencing
+ROL, and OPT++ each have their own internal finite differencing
 routines). The \c dakota routine is the default since it can execute
 in parallel and exploit the concurrency in finite difference
 evaluations (see Exploiting Parallelism in the Users Manual 

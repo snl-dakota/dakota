@@ -1,5 +1,5 @@
-#@ Diff in tests 7, 9, carried until we can aggregate final data recovery (fns in 1 eval, constraints in another)
-#@ *: Label=CarryDiff
+#@ NOTE: Tests s7, s9, previously CarryDiff; should not have failed eval lookups,
+#@ but will until we can aggregate final data recovery (fns in 1 eval, constraints in another)
 #@ s0: DakotaConfig=HAVE_NPSOL
 #@ s1: DakotaConfig=HAVE_NPSOL
 #@ s2: DakotaConfig=HAVE_NPSOL
@@ -17,7 +17,6 @@
 # dakota/vendor numerical gradients vs. forward/central differences.
 
 environment,
-#	  graphics
 	  tabular_data
 
 method,

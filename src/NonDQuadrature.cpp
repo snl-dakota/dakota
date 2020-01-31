@@ -16,9 +16,11 @@
 #include "dakota_system_defs.hpp"
 #include "NonDQuadrature.hpp"
 #include "DakotaModel.hpp"
+#include "DiscrepancyCorrection.hpp"
 #include "ProblemDescDB.hpp"
 #include "PolynomialApproximation.hpp"
 #include "LHSDriver.hpp"
+#include "dakota_stat_util.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDQuadrature.cpp,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
@@ -34,28 +36,34 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   NonDIntegration(problem_db, model),
   nestedRules(
     probDescDB.get_short("method.nond.nesting_override") == Pecos::NESTED),
-  quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
+  quadOrderSpec(probDescDB.get_ushort("method.nond.quadrature_order")),
   numSamples(0), quadMode(FULL_TENSOR)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
   tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
 
-  // natafTransform available: initialize_random_variables() called in
-  // NonDIntegration ctor
-  check_variables(natafTransform.x_random_variables());
+  //check_variables(x_dist.random_variables());
+  // TO DO: create a ProbabilityTransformModel, if needed
+  const Pecos::MultivariateDistribution& u_dist
+    = model.multivariate_distribution();
 
-  Pecos::ExpansionConfigOptions
-    ec_options(Pecos::QUADRATURE,
-	       probDescDB.get_short("method.nond.expansion_basis_type"),
-	       outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
-	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
-	       probDescDB.get_short("method.nond.expansion_refinement_control"),
-	       //maxIterations,
-	       probDescDB.get_int("method.nond.max_refinement_iterations"),
-	       probDescDB.get_int("method.nond.max_solver_iterations"),
-	       convergenceTol,
-	       probDescDB.get_ushort("method.soft_convergence_limit"));
+  short refine_control
+    = probDescDB.get_short("method.nond.expansion_refinement_control");
+  short refine_metric = (refine_control) ? Pecos::COVARIANCE_METRIC :
+    Pecos::NO_METRIC;
+  short refine_stats  = (refine_control) ? Pecos::ACTIVE_EXPANSION_STATS :
+    Pecos::NO_EXPANSION_STATS;
+  Pecos::ExpansionConfigOptions ec_options(Pecos::QUADRATURE,
+    probDescDB.get_short("method.nond.expansion_basis_type"),
+    iteratedModel.correction_type(),
+    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
+    outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
+    probDescDB.get_ushort("method.nond.vbd_interaction_order"),
+    refine_control, refine_metric, refine_stats,
+    probDescDB.get_int("method.nond.max_refinement_iterations"),
+    probDescDB.get_int("method.nond.max_solver_iterations"), convergenceTol,
+    probDescDB.get_ushort("method.soft_convergence_limit"));
 
   bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
     probDescDB.get_short("method.nond.expansion_refinement_type") ==
@@ -65,11 +73,10 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
 				       equidist_rules, use_derivs);
 
-  tpqDriver->initialize_grid(natafTransform.u_types(), ec_options, bc_options);
+  tpqDriver->initialize_grid(u_dist, ec_options, bc_options);
+  tpqDriver->initialize_grid_parameters(u_dist);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
-
-  tpqDriver->precompute_rules(); // efficiency optimization
 
   maxEvalConcurrency *= tpqDriver->grid_size();
 }
@@ -78,10 +85,10 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
+NonDQuadrature(Model& model, unsigned short quad_order,
 	       const RealVector& dim_pref, short driver_mode):
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref), nestedRules(false),
-  quadOrderSeqSpec(quad_order_seq), numSamples(0), quadMode(FULL_TENSOR)
+  quadOrderSpec(quad_order), numSamples(0), quadMode(FULL_TENSOR)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -99,11 +106,13 @@ NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of filtered tensor quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref,
-	       short driver_mode): 
+NonDQuadrature(Model& model, unsigned short quad_order,
+	       const RealVector& dim_pref, short driver_mode,
+	       int num_filt_samples):
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref),
   nestedRules(false), // minimize zeros introduced into Vandermonde matrix
-  quadMode(FILTERED_TENSOR), numSamples(num_filt_samples)
+  quadOrderSpec(quad_order), quadMode(FILTERED_TENSOR),
+  numSamples(num_filt_samples)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -121,13 +130,13 @@ NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref,
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of random sampling from a tensor quadrature multi-index. */
 NonDQuadrature::
-NonDQuadrature(Model& model, int num_rand_samples, int seed,
-	       const UShortArray& quad_order_seq, const RealVector& dim_pref,
-	       short driver_mode): 
+NonDQuadrature(Model& model, unsigned short quad_order,
+	       const RealVector& dim_pref, short driver_mode,
+	       int num_sub_samples, int seed): 
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref),
   nestedRules(false), // minimize zeros introduced into Vandermonde matrix
-  quadOrderSeqSpec(quad_order_seq), quadMode(RANDOM_TENSOR),
-  numSamples(num_rand_samples), randomSeed(seed)
+  quadOrderSpec(quad_order), quadMode(RANDOM_TENSOR),
+  numSamples(num_sub_samples), randomSeed(seed)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -151,6 +160,8 @@ void NonDQuadrature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   tpqDriver->initialize_grid(poly_basis);
+  tpqDriver->
+    initialize_grid_parameters(iteratedModel.multivariate_distribution());
 
   switch (quadMode) {
   case FULL_TENSOR:
@@ -176,7 +187,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     update(); // compute min quad order reqd for numSamples
     maxEvalConcurrency *= numSamples;
     break;
-   case RANDOM_TENSOR:
+  case RANDOM_TENSOR:
     // nested overrides not currently part of tensor regression spec
     //for () if () { nestedRules = true; break; }
     reset();  // propagate updated settings to tpqDriver
@@ -184,10 +195,6 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     maxEvalConcurrency *= numSamples;
     break;
   }
-
-  // Precompute quadrature rules (e.g., by defining maximal order for
-  // NumGenOrthogPolynomial::solve_eigenproblem()):
-  tpqDriver->precompute_rules(); // efficiency optimization
 }
 
 
@@ -196,7 +203,7 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
 				      const RealVector& dim_pref_spec,
 				      UShortArray& dim_quad_order)
 {
-  // Update dimQuadOrderRef from quad_order_spec and dimPrefSpec
+  // Update dim_quad_order from quad_order_spec and dim_pref_spec
   dimension_preference_to_anisotropic_order(quad_order_spec,   dim_pref_spec,
 					    numContinuousVars, dim_quad_order);
   //dimPrefRef = dimPrefSpec; // not currently necessary
@@ -225,9 +232,12 @@ compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref,
 void NonDQuadrature::get_parameter_sets(Model& model)
 {
   // capture any distribution parameter insertions
-  if (!numIntegrations || subIteratorFlag)
-    tpqDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.aleatory_distribution_parameters());
+  if (subIteratorFlag)
+    tpqDriver->initialize_grid_parameters(model.multivariate_distribution());
+
+  // Precompute quadrature rules (e.g., by defining maximal order for
+  // NumGenOrthogPolynomial::solve_eigenproblem()):
+  tpqDriver->precompute_rules(); // efficiency optimization
 
   size_t i, j, num_quad_points = tpqDriver->grid_size();
   const Pecos::UShortArray& quad_order = tpqDriver->quadrature_order();
@@ -261,13 +271,14 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // ----------------------------------------------------------------------
   // Probabilistic collocation from random sampling of a tensor multi-index
   // ----------------------------------------------------------------------
-  case RANDOM_TENSOR:
+  case RANDOM_TENSOR: {
     Cout << numSamples << " samples drawn randomly from tensor grid.\n";
+    allSamples.shapeUninitialized(numContinuousVars, numSamples);
+
     const Pecos::UShortArray& lev_index = tpqDriver->level_index();
-    tpqDriver->update_1d_collocation_points_weights(quad_order, lev_index);
+    tpqDriver->assign_1d_collocation_points_weights(quad_order, lev_index);
     const Pecos::Real3DArray& colloc_pts_1d
       = tpqDriver->collocation_points_1d();
-    allSamples.shapeUninitialized(numContinuousVars, numSamples);
 
     // prevent case of all lhs_const variables, which is an lhs_prep error
     bool lhs_error_trap = true;
@@ -291,8 +302,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
       Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
       if (!randomSeed) randomSeed = generate_system_seed();
       lhs.seed(randomSeed);
-      lhs.generate_unique_index_samples(index_l_bnds, index_u_bnds, numSamples,
-					sorted_samples);
+      lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds, numSamples,
+					 sorted_samples, true); // backfill
 
       // convert multi-index samples into allSamples
       for (i=0; i<numSamples; ++i){
@@ -303,6 +314,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
       }
     }
     break;
+  }
   }
 }
 
@@ -338,12 +350,23 @@ void NonDQuadrature::filter_parameter_sets()
 void NonDQuadrature::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // dimQuadOrderRef (possibly incremented from quadOrderSeqSpec[numIntSeqIndex]
-  // due to uniform/adaptive refinements) provides the current lower bound
-  // reference point.  Pecos::TensorProductDriver::quadOrder may be increased
-  // ***or decreased*** to provide at least min_samples subject to this lower
-  // bound.  dimQuadOrderRef is ***not*** updated by min_samples.
-  if (min_samples > tpqDriver->grid_size()) {
+  // dimQuadOrderRef (possibly incremented from quadOrderSpec due to uniform/
+  // adaptive refinements) provides the current lower bound reference point.
+  // Pecos::TensorProductDriver::quadOrder may be increased ***or decreased***
+  // to provide at least min_samples subject to this lower bound.
+  // dimQuadOrderRef is ***not*** updated by min_samples.
+
+  // Use tpqDriver->quadrature_order() to track active keys.
+  // *** TO DO: update all dimQuadOrderRef logic ***
+  UShortArray dqo = tpqDriver->quadrature_order();//dimQuadOrderRef;
+  while (tpqDriver->grid_size() < min_samples) {
+    if (dimPrefSpec.empty()) increment_grid(dqo);
+    else                     increment_grid_preference(dimPrefSpec, dqo);
+  }
+  // do not alter dimQuadOrderRef
+
+  /* Old:
+  if (tpqDriver->grid_size() < min_samples) {
     UShortArray dqo_l_bnd; // isotropic or anisotropic based on dimPrefSpec
     compute_minimum_quadrature_order(min_samples, dimPrefSpec, dqo_l_bnd);
     // enforce lower bound
@@ -354,6 +377,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
     if (nestedRules) tpqDriver->nested_quadrature_order(new_dqo);
     else             tpqDriver->quadrature_order(new_dqo);
   }
+  */
 
   // not currently used by this class:
   //allDataFlag = all_data_flag;
@@ -363,7 +387,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 
 void NonDQuadrature::increment_grid(UShortArray& dim_quad_order)
 {
-  // Used for uniform refinement: all quad orders are incremented by 1.
+  // Used for uniform refinement: all quad orders are incremented by 1
   if (nestedRules) {
     // define reference point
     size_t orig_size = tpqDriver->grid_size();
@@ -381,12 +405,17 @@ void NonDQuadrature::increment_grid(UShortArray& dim_quad_order)
 void NonDQuadrature::
 increment_dimension_quadrature_order(UShortArray& dim_quad_order)
 {
-  // increment uniformly by 1
+  // increment uniformly by 1 (no growth rule is currently enforced,
+  // but could be desirable for weak nesting of symmetric rules)
   for (size_t i=0; i<numContinuousVars; ++i)
     dim_quad_order[i] += 1;
 
-  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
-  else             tpqDriver->quadrature_order(dim_quad_order);
+  if (nestedRules) {
+    tpqDriver->nested_quadrature_order(dim_quad_order);
+    dim_quad_order = tpqDriver->quadrature_order(); // update reference ?
+  }
+  else
+    tpqDriver->quadrature_order(dim_quad_order);
 }
 
 
@@ -395,9 +424,9 @@ increment_grid_preference(const RealVector& dim_pref,
 			  UShortArray& dim_quad_order)
 {
   // Used for dimension-adaptive refinement: order lower bounds are enforced
-  // using dimQuadOrderRef such that anisotropy may not reduce dimension
-  // resolution once grids have been resolved (as with
-  // SparseGridDriver::axisLowerBounds in NonDSparseGrid).
+  // using dim_quad_order such that anisotropy may not reduce dimension
+  // resolution once grids have been resolved (as with SparseGridDriver::
+  // axisLowerBounds in NonDSparseGrid).
   if (nestedRules) {
     // define reference point
     size_t orig_size = tpqDriver->grid_size();

@@ -3,13 +3,18 @@
 # Dakota Input File: herbie_shubert_opt_ego.in                          #s0
 # Example of using EGO to find the minumum of the 5 dimensional version	#s0
 # of the abitrary-dimensional/separable 'herbie' OR 'smooth_herbie' OR	#s0
-# 'shubert' test functions			    		    	                          #s0
+# 'shubert' test functions			    		    	#s0
+# NOTES:
+#   Best known solution: objective f = -1.22112 at x = [1, 1, 1, 1, 1]
+#   There are slightly poorer solutions in each orthant with x_i = +/-1
+#   The regression test is currently protecting one such nearby solution
 environment
   tabular_data
     tabular_data_file = 'herbie_shubert_opt_ego.dat'
 
 method
   efficient_global			# EGO Efficient Global Optimization
+    initial_samples 50
     seed = 123456
 
 variables

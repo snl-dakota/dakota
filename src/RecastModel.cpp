@@ -13,6 +13,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "RecastModel.hpp"
+#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -21,9 +22,10 @@ using namespace std;
 
 namespace Dakota {
 
-// define special values for componentParallelMode
-#define SUB_MODEL 2
 //#define DEBUG
+
+// init static var
+StringStringPairIntMap RecastModel::recastModelIdCounters;
 
 
 /** Default recast model constructor.  Requires full definition of the
@@ -63,9 +65,8 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   nonlinearRespMapping(nonlinear_resp_mapping), recastModelEvalCntr(0),
   variablesMapping(variables_map), setMapping(set_map),
   primaryRespMapping(primary_resp_map),
-  secondaryRespMapping(secondary_resp_map),// inverseMapFlag(false),
-  invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
-  invSecRespMapping(NULL)
+  secondaryRespMapping(secondary_resp_map), invVarsMapping(NULL),
+  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
   modelType = "recast"; 
   supportsEstimDerivs = false; // subModel estimates derivatives by default
@@ -87,15 +88,13 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     numDerivVars = currentVariables.cv();
   }
 
-  respMapping = (primaryRespMapping || secondaryRespMapping);
-
   if (nonlinearRespMapping.size() != 
       primaryRespMapIndices.size() + secondaryRespMapIndices.size()) {
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
 
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     init_response(primaryRespMapIndices.size(), secondaryRespMapIndices.size(), 
 		  recast_resp_order, reshape_vars);
   }
@@ -107,6 +106,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   init_constraints(secondaryRespMapIndices.size(), 
 		   recast_secondary_offset, reshape_vars);
 
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
@@ -127,11 +127,10 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	    short recast_resp_order):
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
-  subModel(sub_model), nonlinearVarsMapping(false), respMapping(false),
-  recastModelEvalCntr(0), variablesMapping(NULL), setMapping(NULL),
-  primaryRespMapping(NULL), secondaryRespMapping(NULL),// inverseMapFlag(false),
-  invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
-  invSecRespMapping(NULL)
+  subModel(sub_model), nonlinearVarsMapping(false), recastModelEvalCntr(0),
+  variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
+  secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
+  invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
@@ -143,6 +142,7 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   init_sizes(vars_comps_totals, all_relax_di, all_relax_dr,
 	     num_recast_primary_fns, num_recast_secondary_fns,
 	     recast_secondary_offset, recast_resp_order);
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
@@ -154,9 +154,10 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
 {
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
-  
+
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
@@ -170,9 +171,11 @@ RecastModel::RecastModel(const Model& sub_model):
 { 
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
-  
+
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
+  numFns = sub_model.response_size();
+  modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
 
@@ -227,8 +230,6 @@ init_maps(const Sizet2DArray& vars_map_indices,
   primaryRespMapping      = primary_resp_map;
   secondaryRespMapping    = secondary_resp_map;
 
-  respMapping = (primaryRespMapping || secondaryRespMapping);
-
   if (nonlinearRespMapping.size() != primaryRespMapIndices.size() +
       secondaryRespMapIndices.size()) {
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
@@ -237,18 +238,41 @@ init_maps(const Sizet2DArray& vars_map_indices,
 }
 
 
+short RecastModel::response_order(const Model& sub_model)
+{
+  const Response& curr_resp = sub_model.current_response();
+
+  short recast_resp_order = 1; // recast resp order to be same as original resp
+  if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
+  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
+
+  return recast_resp_order;
+}
+
+
+String RecastModel::recast_model_id(const String &root_id, const String &type) {
+  auto key = std::make_pair(root_id, type);
+  int id;
+  if(recastModelIdCounters.find(key) == recastModelIdCounters.end())
+    recastModelIdCounters[key] = id = 1;
+  else
+    id = ++recastModelIdCounters[key];
+  return String("RECAST_") + root_id + "_" + type + "_" + std::to_string(id);
+}
+
+
 bool RecastModel::
-init_variables(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-	       const BitArray& all_relax_dr)
+init_variables(const SizetArray& vars_comps_totals,
+	       const BitArray& all_relax_di, const BitArray& all_relax_dr)
 {
   const Variables& sub_model_vars = subModel.current_variables();
-  const SharedVariablesData& svd = sub_model_vars.shared_data();
+  const SharedVariablesData&  svd = sub_model_vars.shared_data();
 
   // BMA: We actually don't allow the case of a change in
   // vars_comp_totals, but no mapping, but have to allow it here in
   // case mapping not yet provided.
 
-  // if any change in variable types, will neeed a new SharedVariablesData
+  // if any change in variable types, will need a new SharedVariablesData
   bool vars_char_same = 
     ( vars_comps_totals.empty() || 
       svd.components_totals()         == vars_comps_totals ) &&
@@ -282,12 +306,11 @@ void RecastModel::
 init_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 	      short recast_resp_order, bool reshape_vars)
 {
-  size_t num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
+  numFns = num_recast_primary_fns + num_recast_secondary_fns;
 
   // recasting of response
   const Response& sub_model_resp = subModel.current_response();
   currentResponse = sub_model_resp.copy();
-  numFns = num_recast_fns;
 
   bool grad_flag = (recast_resp_order & 2),
     hess_flag = (recast_resp_order & 4),
@@ -298,7 +321,6 @@ init_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
        sub_model_resp.num_functions() != numFns       ||
        grad_flag != sm_grad_flag || hess_flag != sm_hess_flag )
     currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
-
 }
 
 
@@ -335,6 +357,7 @@ init_constraints(size_t num_recast_secondary_fns,
       sub_model_cons.num_linear_eq_constraints());
 }
 
+
 void RecastModel::inverse_mappings(
     void (*inv_vars_map)     (const Variables& recast_vars,
 			      Variables& sub_model_vars),
@@ -350,7 +373,6 @@ void RecastModel::inverse_mappings(
 			      const Response& sub_model_resp,
 			      Response& recast_resp))
 {
-  //inverseMapFlag  = true;
   invVarsMapping    = inv_vars_map;     invSetMapping     = inv_set_map;
   invPriRespMapping = inv_pri_resp_map; invSecRespMapping = inv_sec_resp_map;
 }
@@ -378,7 +400,7 @@ void RecastModel::derived_evaluate(const ActiveSet& set)
   // recast the subModel response ("user space") into the currentResponse
   // ("iterator space")
   currentResponse.active_set(set);
-  if (respMapping)
+  if (primaryRespMapping || secondaryRespMapping)
     transform_response(currentVariables, subModel.current_variables(),
 		       subModel.current_response(), currentResponse);
   else
@@ -415,7 +437,7 @@ void RecastModel::derived_evaluate_nowait(const ActiveSet& set)
   recastIdMap[subModel.evaluation_id()] = recastModelEvalCntr;
 
   // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     recastSetMap[recastModelEvalCntr]  = set;
     recastVarsMap[recastModelEvalCntr] = currentVariables.copy();
     if (variablesMapping)
@@ -429,7 +451,7 @@ const IntResponseMap& RecastModel::derived_synchronize()
 {
   recastResponseMap.clear();
 
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     IntResponseMap resp_map_rekey;
     rekey_synch(subModel, true, recastIdMap, resp_map_rekey);
     transform_response_map(resp_map_rekey, recastResponseMap);
@@ -445,7 +467,7 @@ const IntResponseMap& RecastModel::derived_synchronize_nowait()
 {
   recastResponseMap.clear();
 
-  if (respMapping) {
+  if (primaryRespMapping || secondaryRespMapping) {
     IntResponseMap resp_map_rekey;
     rekey_synch(subModel, false, recastIdMap, resp_map_rekey);
     transform_response_map(resp_map_rekey, recastResponseMap);
@@ -486,8 +508,12 @@ transform_variables(const Variables& recast_vars, Variables& sub_model_vars)
 {
   // typical flow: mapping from recast variables ("iterator space")
   // into the sub-model variables ("user space")
-  if (variablesMapping) variablesMapping(recast_vars, sub_model_vars);
-  else                  sub_model_vars.active_variables(recast_vars);
+  if (variablesMapping) {
+    assign_instance();
+    variablesMapping(recast_vars, sub_model_vars);
+  }
+  else
+    sub_model_vars.active_variables(recast_vars);
 }
 
 
@@ -497,8 +523,12 @@ inverse_transform_variables(const Variables& sub_model_vars,
 {
   // atypical flow: mapping from sub-model variables ("user space")
   // into the recast variables ("iterator space")
-  if (invVarsMapping) invVarsMapping(sub_model_vars, recast_vars);
-  else                recast_vars.active_variables(sub_model_vars);
+  if (invVarsMapping) {
+    assign_instance();
+    invVarsMapping(sub_model_vars, recast_vars);
+  }
+  else
+    recast_vars.active_variables(sub_model_vars);
 }
 
 
@@ -526,7 +556,7 @@ transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
   // input/output mappings, the recast_asv request is augmented with
   // additional data requirements derived from chain rule differentiation.
   // The default sub-model DVV is just a copy of the recast DVV.
-  ShortArray sub_model_asv(subModel.num_functions(), 0);
+  ShortArray sub_model_asv(subModel.response_size(), 0);
   for (i=0; i<num_recast_fns; i++) {
     short asv_val = recast_asv[i];
     // For nonlinear variable mappings, gradient required to transform Hessian.
@@ -569,8 +599,10 @@ transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
   // additions have case-specific context whereas the logic above is generic.
   // It would be preferable if provided mappings focused on updating the
   // sub_model_set rather than generating it from recast_set.
-  if (setMapping)
+  if (setMapping) {
+    assign_instance();
     setMapping(recast_vars, recast_set, sub_model_set);
+  }
 }
 
 
@@ -599,7 +631,7 @@ inverse_transform_set(const Variables& sub_model_vars,
   // input/output mappings, the recast_asv request is augmented with
   // additional data requirements derived from chain rule differentiation.
   // The default sub-model DVV is just a copy of the recast DVV.
-  ShortArray sub_model_asv(subModel.num_functions(), 0);
+  ShortArray sub_model_asv(subModel.response_size(), 0);
   for (i=0; i<num_recast_fns; i++) {
     short asv_val = recast_asv[i];
     // For nonlinear variable mappings, gradient required to transform Hessian.
@@ -636,8 +668,10 @@ inverse_transform_set(const Variables& sub_model_vars,
   // an invSetMapping (provided in inverse_mappings()) augments the standard
   // mappings above, such that the provided mappings don't get overwritten by
   // the standard logic.
-  if (invSetMapping)
+  if (invSetMapping) {
+    assign_instance();
     invSetMapping(sub_model_vars, sub_model_set, recast_set);
+  }
 }
 
 
@@ -650,6 +684,9 @@ transform_response(const Variables& recast_vars,
   // the recast response ("iterator space")
 
   size_t num_recast_1_fns = primaryRespMapIndices.size();
+
+  if (primaryRespMapping || secondaryRespMapping)
+    assign_instance();
 
   if (primaryRespMapping)
     primaryRespMapping(sub_model_vars, recast_vars,
@@ -682,6 +719,9 @@ inverse_transform_response(const Variables& sub_model_vars,
 
   size_t num_recast_1_fns = primaryRespMapIndices.size();
 
+  if (invPriRespMapping || invSecRespMapping)
+    assign_instance();
+
   if (invPriRespMapping)
     invPriRespMapping(recast_vars, sub_model_vars, recast_resp, sub_model_resp);
   else // number of recast primary = number of sub-model primary
@@ -702,13 +742,13 @@ inverse_transform_response(const Variables& sub_model_vars,
 
 void RecastModel::initialize_data_from_submodel()
 {
-  componentParallelMode = SUB_MODEL;
+  componentParallelMode = SUB_MODEL_MODE;
   outputLevel           = subModel.output_level();
 
   gradientType          = subModel.gradient_type();
   methodSource          = subModel.method_source();
   ignoreBounds          = subModel.ignore_bounds();
-  centralHess	          = subModel.central_hess();
+  centralHess	        = subModel.central_hess();
   intervalType          = subModel.interval_type();
   fdGradStepSize        = subModel.fd_gradient_step_size();
   fdGradStepType        = subModel.fd_gradient_step_type();
@@ -731,123 +771,210 @@ void RecastModel::initialize_data_from_submodel()
 /** Update inactive values and labels in currentVariables and inactive
     bound constraints in userDefinedConstraints from variables and
     constraints data within subModel. */
-void RecastModel::update_from_sub_model()
+void RecastModel::update_from_model(Model& model)
 {
-  currentVariables.inactive_continuous_variables(
-    subModel.inactive_continuous_variables());
-  currentVariables.inactive_discrete_int_variables(
-    subModel.inactive_discrete_int_variables());
-  currentVariables.inactive_discrete_real_variables(
-    subModel.inactive_discrete_real_variables());
+  // break up into pieces so that derived Recasts can override with subsets
 
-  userDefinedConstraints.inactive_continuous_lower_bounds(
-    subModel.inactive_continuous_lower_bounds());
-  userDefinedConstraints.inactive_continuous_upper_bounds(
-    subModel.inactive_continuous_upper_bounds());
-  userDefinedConstraints.inactive_discrete_int_lower_bounds(
-    subModel.inactive_discrete_int_lower_bounds());
-  userDefinedConstraints.inactive_discrete_int_upper_bounds(
-    subModel.inactive_discrete_int_upper_bounds());
-  userDefinedConstraints.inactive_discrete_real_lower_bounds(
-    subModel.inactive_discrete_real_lower_bounds());
-  userDefinedConstraints.inactive_discrete_real_upper_bounds(
-    subModel.inactive_discrete_real_upper_bounds());
+  bool update_active_complement = update_variables_from_model(model);
 
-  currentVariables.inactive_continuous_variable_labels(
-    subModel.inactive_continuous_variable_labels());
-  currentVariables.inactive_discrete_int_variable_labels(
-    subModel.inactive_discrete_int_variable_labels());
-  currentVariables.inactive_discrete_real_variable_labels(
-    subModel.inactive_discrete_real_variable_labels());
+  if (update_active_complement)
+    update_variables_active_complement_from_model(model);
 
-  if (invVarsMapping) {
-    invVarsMapping(subModel.current_variables(), currentVariables);
+  update_response_from_model(model);
+}
+
+
+bool RecastModel::update_variables_from_model(Model& model)
+{
+  bool update_active_complement = true;
+  if (invVarsMapping) { // inv mapping provided: sub-model -> recast
+    assign_instance();
+
+    // generally restricted to active variables
+    invVarsMapping(model.current_variables(), currentVariables);
+
     // BMA TODO: there may be cases where we also want to update the
     // constraints and values, but there's currently no mechanism to
     // do so.  The client of a RecastModel must manage this.
-  } else if (variablesMapping) {
-    // no reasonable default
+  }
+  else if (variablesMapping) { // only fwd mapping for recast -> sub-model
+    // no reasonable default for active vars
 
     // can't just apply variables mapping to values/bounds, since need inverse
-    // of variablesMapping to go from subModel vars to currentVariables
+    // of variablesMapping to go from model vars to currentVariables
 
     // any label, uncertain variable distributions, and linear
     // constraint mappings must be performed explicitly
 
-    // for partial mapping of distribution parameters that are unmodified by a
-    // variable transformation, see NonDExpansion::initialize_expansion()
+    // for partial mapping of variables that are unmodified by a variable
+    // transformation, see NonDExpansion::initialize_expansion()
+
+    // for mapping of distribution parameters that are part of a variable
+    // transformation, see ProbabilityTransformModel::update_transformation()
   }
   else {
-    // variable values
-    currentVariables.continuous_variables(subModel.continuous_variables());
-    currentVariables.discrete_int_variables(subModel.discrete_int_variables());
-    currentVariables.discrete_real_variables(
-      subModel.discrete_real_variables());
-    // variable bounds
-    userDefinedConstraints.continuous_lower_bounds(
-      subModel.continuous_lower_bounds());
-    userDefinedConstraints.continuous_upper_bounds(
-      subModel.continuous_upper_bounds());
-    userDefinedConstraints.discrete_int_lower_bounds(
-      subModel.discrete_int_lower_bounds());
-    userDefinedConstraints.discrete_int_upper_bounds(
-      subModel.discrete_int_upper_bounds());
-    userDefinedConstraints.discrete_real_lower_bounds(
-      subModel.discrete_real_lower_bounds());
-    userDefinedConstraints.discrete_real_upper_bounds(
-      subModel.discrete_real_upper_bounds());
-    // variable labels
-    currentVariables.continuous_variable_labels(
-      subModel.continuous_variable_labels());
-    currentVariables.discrete_int_variable_labels(
-      subModel.discrete_int_variable_labels());
-    currentVariables.discrete_real_variable_labels(
-      subModel.discrete_real_variable_labels());
+    update_active_complement = false; // can use all view updates below
 
-    if (!subModel.discrete_design_set_int_values().empty())
-      discreteDesignSetIntValues = subModel.discrete_design_set_int_values();
-    if (!subModel.discrete_design_set_real_values().empty())
-      discreteDesignSetRealValues = subModel.discrete_design_set_real_values();
+    // variable values
+    currentVariables.all_continuous_variables(
+      model.all_continuous_variables());
+    currentVariables.all_discrete_int_variables(
+      model.all_discrete_int_variables());
+    currentVariables.all_discrete_string_variables(
+      model.all_discrete_string_variables());
+    currentVariables.all_discrete_real_variables(
+      model.all_discrete_real_variables());
+    // variable bounds
+    userDefinedConstraints.all_continuous_lower_bounds(
+      model.all_continuous_lower_bounds());
+    userDefinedConstraints.all_continuous_upper_bounds(
+      model.all_continuous_upper_bounds());
+    userDefinedConstraints.all_discrete_int_lower_bounds(
+      model.all_discrete_int_lower_bounds());
+    userDefinedConstraints.all_discrete_int_upper_bounds(
+      model.all_discrete_int_upper_bounds());
+    userDefinedConstraints.all_discrete_real_lower_bounds(
+      model.all_discrete_real_lower_bounds());
+    userDefinedConstraints.all_discrete_real_upper_bounds(
+      model.all_discrete_real_upper_bounds());
+    // variable labels
+    currentVariables.all_continuous_variable_labels(
+      model.all_continuous_variable_labels());
+    currentVariables.all_discrete_int_variable_labels(
+      model.all_discrete_int_variable_labels());
+    currentVariables.all_discrete_string_variable_labels(
+      model.all_discrete_string_variable_labels());
+    currentVariables.all_discrete_real_variable_labels(
+      model.all_discrete_real_variable_labels());
 
     // uncertain variable distribution data
-    aleatDistParams.update(subModel.aleatory_distribution_parameters());
-    epistDistParams.update(subModel.epistemic_distribution_parameters());
-
-    if (!subModel.discrete_state_set_int_values().empty())
-      discreteStateSetIntValues = subModel.discrete_state_set_int_values();
-    if (!subModel.discrete_state_set_real_values().empty())
-      discreteStateSetRealValues = subModel.discrete_state_set_real_values();
+    // > deep copies were used previously for Pecos::DistributionParams
+    //mvDist.update(model.multivariate_distribution());
+    // Current approach: rep is shared
+    // > tramples an mvDist construction from Model(BaseConstructor) ....
+    // > populates mvDist for Model(LightWtBaseConstructor)
+    // > reassignments protected by smart ptr management
+    // Note: becomes less important w/ broader use of ProbabilityTransformModel
+    mvDist = subModel.multivariate_distribution(); // shared rep
 
     // linear constraints
-    if (subModel.num_linear_ineq_constraints()) {
+    if (model.num_linear_ineq_constraints()) {
       userDefinedConstraints.linear_ineq_constraint_coeffs(
-        subModel.linear_ineq_constraint_coeffs());
+        model.linear_ineq_constraint_coeffs());
       userDefinedConstraints.linear_ineq_constraint_lower_bounds(
-        subModel.linear_ineq_constraint_lower_bounds());
+        model.linear_ineq_constraint_lower_bounds());
       userDefinedConstraints.linear_ineq_constraint_upper_bounds(
-        subModel.linear_ineq_constraint_upper_bounds());
+        model.linear_ineq_constraint_upper_bounds());
     }
-    if (subModel.num_linear_eq_constraints()) {
+    if (model.num_linear_eq_constraints()) {
       userDefinedConstraints.linear_eq_constraint_coeffs(
-        subModel.linear_eq_constraint_coeffs());
+        model.linear_eq_constraint_coeffs());
       userDefinedConstraints.linear_eq_constraint_targets(
-        subModel.linear_eq_constraint_targets());
+        model.linear_eq_constraint_targets());
     }
   }
 
+  return update_active_complement;
+}
+
+
+void RecastModel::update_variables_active_complement_from_model(Model& model)
+{
+  size_t i, cv_begin = currentVariables.cv_start(),
+    num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
+    num_acv = currentVariables.acv();
+  const RealVector& acv = model.all_continuous_variables();
+  const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
+  const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
+  StringMultiArrayConstView acv_labels
+    = model.all_continuous_variable_labels();
+  for (i=0; i<cv_begin; ++i) {
+    currentVariables.all_continuous_variable(acv[i], i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+    currentVariables.all_continuous_variable_label(acv_labels[i], i);
+  }
+  for (i=cv_end; i<num_acv; ++i) {
+    currentVariables.all_continuous_variable(acv[i], i);
+    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+    currentVariables.all_continuous_variable_label(acv_labels[i], i);
+  }
+
+  size_t div_begin = currentVariables.div_start(),
+    num_div  = currentVariables.div(), div_end = div_begin + num_div,
+    num_adiv = currentVariables.adiv();
+  const IntVector& adiv = model.all_discrete_int_variables();
+  const IntVector& adiv_l_bnds = model.all_discrete_int_lower_bounds();
+  const IntVector& adiv_u_bnds = model.all_discrete_int_upper_bounds();
+  StringMultiArrayConstView adiv_labels
+    = model.all_discrete_int_variable_labels();
+  for (i=0; i<div_begin; ++i) {
+    currentVariables.all_discrete_int_variable(adiv[i], i);
+    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
+    currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
+  }
+  for (i=div_end; i<num_adiv; ++i) {
+    currentVariables.all_discrete_int_variable(adiv[i], i);
+    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
+    currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
+  }
+
+  size_t dsv_begin = currentVariables.dsv_start(),
+    num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
+    num_adsv = currentVariables.adsv();
+  StringMultiArrayConstView adsv = model.all_discrete_string_variables();
+  StringMultiArrayConstView adsv_labels
+    = model.all_discrete_string_variable_labels();
+  for (i=0; i<dsv_begin; ++i) {
+    currentVariables.all_discrete_string_variable(adsv[i], i);
+    currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
+  }
+  for (i=dsv_end; i<num_adsv; ++i) {
+    currentVariables.all_discrete_string_variable(adsv[i], i);
+    currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
+  }
+
+  size_t drv_begin = currentVariables.drv_start(),
+    num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
+    num_adrv = currentVariables.adrv();
+  const RealVector& adrv = model.all_discrete_real_variables();
+  const RealVector& adrv_l_bnds = model.all_discrete_real_lower_bounds();
+  const RealVector& adrv_u_bnds = model.all_discrete_real_upper_bounds();
+  StringMultiArrayConstView adrv_labels
+    = model.all_discrete_real_variable_labels();
+  for (i=0; i<drv_begin; ++i) {
+    currentVariables.all_discrete_real_variable(adrv[i], i);
+    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
+    currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
+  }
+  for (i=drv_end; i<num_adrv; ++i) {
+    currentVariables.all_discrete_real_variable(adrv[i], i);
+    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
+    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
+    currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
+  }
+}
+
+
+void RecastModel::update_response_from_model(Model& model)
+{
   if (primaryRespMapping) {
     // response mappings are in opposite direction from variables
     // mappings, so primaryRespMapping could potentially be used to
-    // update currentResponse from subModel primary fns
+    // update currentResponse from model primary fns
   }
   else {
     // primary response function weights
-    primaryRespFnWts = subModel.primary_response_fn_weights();
+    primaryRespFnWts = model.primary_response_fn_weights();
     // primary response function sense (min or max)
-    primaryRespFnSense = subModel.primary_response_fn_sense();
+    primaryRespFnSense = model.primary_response_fn_sense();
 
     // primary response function labels
-    const StringArray& sm_resp_labels = subModel.response_labels();
+    const StringArray& sm_resp_labels = model.response_labels();
     size_t i, num_primary = numFns 
       - userDefinedConstraints.num_nonlinear_eq_constraints()
       - userDefinedConstraints.num_nonlinear_ineq_constraints();
@@ -858,30 +985,151 @@ void RecastModel::update_from_sub_model()
   if (secondaryRespMapping) {
     // response mappings are in opposite direction from variables
     // mappings, so secondaryRespMapping could potentially be used to
-    // update currentResponse from subModel secondary fns
+    // update currentResponse from model secondary fns
   }
   else {
     // secondary response function labels
-    const StringArray& sm_resp_labels = subModel.response_labels();
+    const StringArray& sm_resp_labels = model.response_labels();
     size_t i,
       num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
         userDefinedConstraints.num_nonlinear_ineq_constraints(),
       num_primary    = numFns - num_nln_con,
-      num_sm_primary = subModel.num_functions() - num_nln_con;
+      num_sm_primary = model.response_size() - num_nln_con;
     for (i=0; i<num_nln_con; i++)
       currentResponse.shared_data().function_label(
 	sm_resp_labels[num_sm_primary+i], num_primary+i);
 
     // nonlinear constraint bounds/targets
-    if (subModel.num_nonlinear_ineq_constraints()) {
+    if (model.num_nonlinear_ineq_constraints()) {
       userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
-        subModel.nonlinear_ineq_constraint_lower_bounds());
+        model.nonlinear_ineq_constraint_lower_bounds());
       userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
-        subModel.nonlinear_ineq_constraint_upper_bounds());
+        model.nonlinear_ineq_constraint_upper_bounds());
     }
-    if (subModel.num_nonlinear_eq_constraints())
+    if (model.num_nonlinear_eq_constraints())
       userDefinedConstraints.nonlinear_eq_constraint_targets(
-        subModel.nonlinear_eq_constraint_targets());
+        model.nonlinear_eq_constraint_targets());
+  }
+}
+
+
+const RealVector& RecastModel::error_estimates()
+{
+  // linear mappings are fine (see NestedModel), but general nonlinear mappings
+  // are problematic.
+  if (primaryRespMapping || secondaryRespMapping) {
+
+    // preclude nonlinear mappings and multi-component mappings for now.
+    // Note: a linear multi-component mapping can be supported by NestedModel::
+    //       iterator_error_estimation(), because the mapping coeffs are known.
+
+    size_t i, num_recast_fns = nonlinearRespMapping.size();
+    for (i=0; i<num_recast_fns; ++i) {
+      const BoolDeque& nln_resp_map_i = nonlinearRespMapping[i];
+      if (nln_resp_map_i.size() > 1 ||
+	  std::find(nln_resp_map_i.begin(), nln_resp_map_i.end(), true) !=
+	            nln_resp_map_i.end()) {
+	Cerr << "Error: error estimation not currently supported for Recast"
+	     << "Model with nonlinear or multi-component response mapping."
+	     << std::endl;
+	abort_handler(MODEL_ERROR);
+      }
+    }
+
+    // push errors through linear single-component mapping (individual scaling)
+
+    // make dummy responses for use with transform_response()
+    const Response& sm_resp = subModel.current_response();
+    ActiveSet sm_set = sm_resp.active_set(),
+          recast_set = currentResponse.active_set();
+    sm_set.request_values(1); recast_set.request_values(1);
+    Response sm_error_est(sm_resp.shared_data(), sm_set),
+         recast_error_est(currentResponse.shared_data(), recast_set);
+    // transform the error estimates as Response::functionValues
+    sm_error_est.function_values(subModel.error_estimates());
+    if (outputLevel >= DEBUG_OUTPUT) // distinguish ScalingModel debug blocks
+      Cout << "Transforming Error Estimates:\n";
+    transform_response(currentVariables, subModel.current_variables(),
+		       sm_error_est, recast_error_est);
+    mappedErrorEstimates = recast_error_est.function_values();
+    return mappedErrorEstimates;
+  }
+  else
+    return subModel.error_estimates();
+}
+
+
+void RecastModel::resize_response_mapping()
+{
+  // reshaping primaryRespMapIndices, secondaryRespMapIndices
+  size_t num_curr_fns       = response_size(),
+         num_curr_secondary = num_secondary_fns(),
+         num_curr_primary   = num_curr_fns - num_curr_secondary,
+         num_sm_fns         = subModel.response_size(),
+         num_sm_secondary   = subModel.num_secondary_fns(),
+         num_sm_primary     = num_sm_fns - num_sm_secondary,
+         num_replicates, num_ind, offset, i, j, k;
+
+  primaryRespMapIndices.resize(num_sm_primary);
+  secondaryRespMapIndices.resize(num_sm_secondary);
+  nonlinearRespMapping.resize(num_sm_fns);
+
+  // the number of mappings to replicate corresponds to the number
+  // of data sets being aggregated in, e.g., AGGREGATED_MODELS mode
+
+  if (num_sm_primary > num_curr_primary) { // inflate existing mappings
+    num_replicates = num_sm_primary / num_curr_primary;
+    if (num_sm_primary % num_curr_primary) {
+      Cerr << "Error: non-integer multiplier for response aggregation in "
+	   << "RecastModel::resize_response_mapping()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    for (i=0; i<num_curr_primary; ++i) {
+      // mirror pattern within new response indices, but offset index mapping
+      SizetArray& primary_ind_i = primaryRespMapIndices[i];
+      num_ind = primary_ind_i.size();
+      for (j=1; j<num_replicates; ++j) {
+	offset = j * num_curr_primary;
+	SizetArray& primary_ind_j = primaryRespMapIndices[i + offset];
+	primary_ind_j.resize(num_ind);
+	for (k=0; k<num_ind; ++k)
+	  primary_ind_j[k] = primary_ind_i[k] + offset;
+      }
+    }
+  }
+  if (num_sm_secondary > num_curr_secondary) { // inflate existing mappings
+    num_replicates = num_sm_secondary / num_curr_secondary;
+    if (num_sm_secondary % num_curr_secondary) {
+      Cerr << "Error: non-integer multiplier for response aggregation in "
+	   << "RecastModel::resize_response_mapping()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    for (i=0; i<num_curr_secondary; ++i) {
+      // mirror pattern within new response indices, but offset index mapping
+      SizetArray& secondary_ind_i = secondaryRespMapIndices[i];
+      num_ind = secondary_ind_i.size();
+      for (j=1; j<num_replicates; ++j) {
+	offset = j * num_curr_secondary;
+	SizetArray& secondary_ind_j = secondaryRespMapIndices[i + offset];
+	secondary_ind_j.resize(num_ind);
+	for (k=0; k<num_ind; ++k)
+	  secondary_ind_j[k]   = secondary_ind_i[k] + offset;
+      }
+    }
+  }
+  if (num_sm_fns > num_curr_fns) { // inflate existing mappings
+    num_replicates = num_sm_fns / num_curr_fns;
+    if (num_sm_fns % num_curr_fns) {
+      Cerr << "Error: non-integer multiplier for response aggregation in "
+	   << "RecastModel::resize_response_mapping()" << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    for (i=0; i<num_curr_fns; ++i) {
+      // mirror pattern within new response indices, but offset index mapping
+      BoolDeque& nonlin_resp_map_i = nonlinearRespMapping[i];
+      for (j=1; j<num_replicates; ++j)
+	nonlinearRespMapping[i + j * num_curr_fns] = nonlin_resp_map_i;
+    }
   }
 }
 
@@ -900,16 +1148,19 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
   ActiveSet sub_model_set;
   transform_set(search_vars, search_set, sub_model_set);
 
-  // invoke default implementation for the lookup; making copy to
-  // avoid modifying submodel state during the lookup
+  // invoke submodel lookup; making copy to avoid modifying submodel state 
+  // during the lookup
   Response sub_model_resp(subModel.current_response().copy());
-  bool eval_found = Model::db_lookup(sub_model_vars, search_set, sub_model_resp);
+  // sub_model_resp must have right ASV so lookup's update will pull right data
+  sub_model_resp.active_set(sub_model_set);
+  bool eval_found
+    = subModel.db_lookup(sub_model_vars, sub_model_set, sub_model_resp);
   if (!eval_found)
     return false;
 
   // recast the subModel response ("user space") into the "iterator space"
   found_resp.active_set(search_set);
-  if (respMapping)
+  if (primaryRespMapping || secondaryRespMapping)
     transform_response(search_vars, sub_model_vars, sub_model_resp, found_resp);
   else
     found_resp.update(sub_model_resp);
@@ -917,5 +1168,40 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
   return eval_found;
 }
 
+
+void RecastModel::assign_instance()
+{ } // no static instance pointer to assign at base (default is no-op)
+
+
+String RecastModel::root_model_id() {
+  return subModel.root_model_id();
+}
+
+
+ActiveSet RecastModel::default_active_set() {
+  // The "base class" implementation assumes that supportsEstimDerivs is false
+  // and that gradients/hessians, if available, are computed by a submodel and
+  // hence can be provided by this model.
+  ActiveSet set;
+  set.derivative_vector(currentVariables.all_continuous_variable_ids());
+  bool has_deriv_vars = set.derivative_vector().size() != 0;
+  ShortArray asv(numFns, 1);
+  if(has_deriv_vars) {
+    if(gradientType != "none")// && (gradientType == "analytic" || supportsEstimDerivs))
+        for(auto &a : asv)
+          a |=  2;
+
+    if(hessianType != "none") // && (hessianType == "analytic" || supportsEstimDerivs))
+        for(auto &a : asv)
+          a |=  4;
+  }
+  set.request_vector(asv);
+  return set;
+}
+
+
+void RecastModel::declare_sources() {
+  evaluationsDB.declare_source(modelId, modelType, subModel.model_id(), subModel.model_type());
+}
 
 } // namespace Dakota

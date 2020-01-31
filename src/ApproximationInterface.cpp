@@ -25,6 +25,8 @@ namespace Dakota {
 
 extern PRPCache data_pairs;
 
+size_t ApproximationInterface::approxIdNum = 0;
+
 ApproximationInterface::
 ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
@@ -35,6 +37,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
   challengeFormat(
     problem_db.get_ushort("model.surrogate.challenge_points_file_format")),
+  challengeUseVarLabels(
+    problem_db.get_bool("model.surrogate.challenge_use_variable_labels")),
   challengeActiveOnly(
     problem_db.get_bool("model.surrogate.challenge_points_file_active")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
@@ -44,7 +48,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   // be incorrect since there is no longer an approximation interface
   // specification (assign_rep() is used from DataFitSurrModel).
   // Override these inherited settings.
-  interfaceId = "APPROX_INTERFACE"; interfaceType = APPROX_INTERFACE;
+  interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);
+  interfaceType = APPROX_INTERFACE;
   algebraicMappings = false; // for now; *** TO DO ***
 
   // process approxFnIndices.  IntSets are sorted and unique.  Error checking
@@ -133,7 +138,8 @@ ApproximationInterface(const String& approx_type,
   actualModelVars(am_vars.copy()),
   actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
 {
-  interfaceId = "APPROX_INTERFACE"; interfaceType = APPROX_INTERFACE;
+  interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);
+  interfaceType = APPROX_INTERFACE;
 
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
@@ -374,9 +380,14 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
     else { // non-unique eval ids from restart/file import
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
-      ParamResponsePair search_pr(vars, actualModelInterfaceId,
-				  response_pr.second);
-      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      if(actualModelInterfaceId.empty()) {
+        ParamResponsePair search_pr(vars, "NO_ID", response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      } else {
+        ParamResponsePair search_pr(vars, actualModelInterfaceId,
+				    response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      }
     }
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, true);
@@ -385,6 +396,9 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   }
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, true);
+
+  // reset active approxData key using SharedApproxData::approxDataKeys
+  restore_data_key();
 }
 
 
@@ -399,10 +413,11 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	 << "ApproximationInterface::update_approximation()." << std::endl;
     abort_handler(-1);
   }
-  // replace SurrogateData::{vars,resp}Data
+  // clear active SurrogateData::{vars,resp}Data
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
-    functionSurfaces[*a_it].clear_data();
+    functionSurfaces[*a_it].clear_active_data();
+  // replace active SurrogateData::{vars,resp}Data
   if (actualModelCache) {
     PRPCacheCIter p_it; size_t num_cv = samples.numRows();
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
@@ -419,9 +434,14 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
-	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        if (actualModelInterfaceId.empty()) {
+	  ParamResponsePair search_pr(actualModelVars, "NO_ID", r_it->second);
+	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+	  ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+				      r_it->second);
+	  p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
@@ -432,6 +452,9 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
   else                              // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(samples[i], r_it->second, false);
+
+  // reset active approxData key using SharedApproxData::approxDataKeys
+  restore_data_key();
 }
 
 
@@ -447,9 +470,11 @@ update_approximation(const VariablesArray& vars_array,
 	 << "ApproximationInterface::update_approximation()." << std::endl;
     abort_handler(-1);
   }
+  // clear active SurrogateData::{vars,resp}Data
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
-    functionSurfaces[*a_it].clear_data();
+    functionSurfaces[*a_it].clear_active_data();
+  // replace active SurrogateData::{vars,resp}Data
   if (actualModelCache) {
     PRPCacheCIter p_it;
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
@@ -465,9 +490,14 @@ update_approximation(const VariablesArray& vars_array,
       else { // nonunique eval ids from restart/file import
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
-	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
-				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(vars_array[i], "NO_ID", r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+				      r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
@@ -478,6 +508,9 @@ update_approximation(const VariablesArray& vars_array,
   else                            // deep response copies with vars sharing
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
       mixed_add(vars_array[i], r_it->second, false);
+
+  // reset active approxData key using SharedApproxData::approxDataKeys
+  restore_data_key();
 }
 
 
@@ -501,9 +534,14 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
     else { // nonunique eval ids from restart/file import
       // rather than resorting to lookup_by_val(), use a two-pass approach
       // to process multiple returns from equal_range(search_ids)
-      ParamResponsePair search_pr(vars, actualModelInterfaceId,
-				  response_pr.second);
-      p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      if(actualModelInterfaceId.empty()) {
+        ParamResponsePair search_pr(vars, "NO_ID", response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      } else {
+        ParamResponsePair search_pr(vars, actualModelInterfaceId,
+				    response_pr.second);
+        p_it = lookup_by_ids(data_pairs, ids, search_pr);
+      }
     }
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
       mixed_add(vars, response_pr.second, false);
@@ -513,12 +551,10 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
   else                            // deep response copies with vars sharing
     mixed_add(vars, response_pr.second, false);
 
-  const ShortArray& asv = response_pr.second.active_set_request_vector();
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    if (asv[*it])
-      functionSurfaces[*it].pop_count(1); // one pt appended to SurrogateData
-    else
-      functionSurfaces[*it].pop_count(0); // nothing appended to SurrogateData
+  update_pop_counts(response_pr);
+
+  // reset active approxData key using SharedApproxData::approxDataKeys
+  restore_data_key();
 }
 
 
@@ -551,9 +587,14 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
 	sample_to_variables(samples[i], num_cv, actualModelVars);
-	ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
-				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(actualModelVars, "NO_ID", r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(actualModelVars, actualModelInterfaceId,
+				      r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(samples[i], r_it->second, false);
@@ -566,6 +607,9 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       mixed_add(samples[i], r_it->second, false);
 
   update_pop_counts(resp_map);
+
+  // reset active approxData key using SharedApproxData::approxDataKeys
+  restore_data_key();
 }
 
 
@@ -598,9 +642,14 @@ append_approximation(const VariablesArray& vars_array,
       else { // nonunique eval ids from restart/file import
 	// rather than resorting to lookup_by_val(), use a two-pass approach
 	// to process multiple returns from equal_range(search_ids)
-	ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
-				    r_it->second);
-	p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        if(actualModelInterfaceId.empty()) {
+          ParamResponsePair search_pr(vars_array[i], "NO_ID", r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        } else {
+          ParamResponsePair search_pr(vars_array[i], actualModelInterfaceId,
+				      r_it->second);
+          p_it = lookup_by_ids(data_pairs, ids, search_pr);
+        }
       }
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
 	mixed_add(vars_array[i], r_it->second, false);
@@ -613,6 +662,9 @@ append_approximation(const VariablesArray& vars_array,
       mixed_add(vars_array[i], r_it->second, false);
 
   update_pop_counts(resp_map);
+
+  // reset active approxData key using SharedApproxData::approxDataKeys
+  restore_data_key();
 }
 
 
@@ -630,41 +682,41 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   sharedData.build();
   // build the approximation surface instances
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
+    int fn_index = *it;
     // construct the approximation
-    functionSurfaces[index].build();
+    functionSurfaces[fn_index].build();
 
     // manage diagnostics
-    if (functionSurfaces[index].diagnostics_available()) {
+    if (functionSurfaces[fn_index].diagnostics_available()) {
       // print default or user-requested metrics and cross-validation
-      functionSurfaces[index].primary_diagnostics(index);
+      functionSurfaces[fn_index].primary_diagnostics(fn_index);
       // for user-provided challenge data, we assume there are
       // function values for all functions in the analysis, not just
       // the indices for which surrogates are being built
       
       // BMA TODO: can this move to ctor?
-      bool active_only = false;
       if (!challengeFile.empty()) {
         if (challengePoints.empty())
-          read_challenge_points(active_only);
-        functionSurfaces[index].challenge_diagnostics(index, challengePoints,
-          Teuchos::getCol(Teuchos::View,challengeResponses,index));
+          read_challenge_points();
+        functionSurfaces[fn_index].challenge_diagnostics(fn_index,
+	  challengePoints, Teuchos::getCol(Teuchos::View, challengeResponses,
+					   fn_index));
       }
     }
   }
 
   /* Old 3D graphics capability:
-  int index = *approxFnIndices.begin();
+  int fn_index = *approxFnIndices.begin();
   // if graphics is on for 2 variables, plot first functionSurface in 3D
   if (graph3DFlag && sharedData.num_variables() == 2) {
-    functionSurfaces[index].draw_surface();
+    functionSurfaces[fn_index].draw_surface();
   }
   */
 }
 
+
 /** This function calls export on each approximation */
-void ApproximationInterface::
-export_approximation()
+void ApproximationInterface::export_approximation()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].export_model();
@@ -679,46 +731,52 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
   // rebuild data shared among approximation instances
   sharedData.rebuild();
   // rebuild the approximation surfaces
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    int fn_index = *it;
     // check for rebuild request (defaults to true if no deque defined)
-    if (rebuild_deque.empty() || rebuild_deque[*it]) {
+    if (rebuild_deque.empty() || rebuild_deque[fn_index]) {
       // approx bounds not updated as in build_approximation()
-      functionSurfaces[*it].rebuild(); // invokes increment_coefficients()
+
+      // invokes increment_coefficients()
+      functionSurfaces[fn_index].rebuild();
+
       // diagnostics not currently active on rebuild
     }
+  }
 }
 
 
 void ApproximationInterface::
 mixed_add(const Variables& vars, const Response& response, bool anchor)
 {
-  Pecos::SurrogateDataVars sdv; bool first_vars = true; size_t index;
+  Pecos::SurrogateDataVars sdv; bool first_vars = true;
   const ShortArray& asv = response.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
+    key_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    index = *it; 
-    if (asv[index]) {
-      Approximation& fn_surf = functionSurfaces[index];
-      // rather than unrolling the response (containing all response functions)
-      // into per-response function arrays for input to fn_surf, pass the
-      // complete response along with a response function index.
-      if (first_vars) {
-	fn_surf.add(vars, anchor, true);            // deep
-	fn_surf.add(response, index, anchor, true); // deep
-	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
-	                 fn_surf.approximation_data().variables_data().back();
-	first_vars = false;
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): first vars\n";
-#endif // DEBUG
+    fn_index = *it;
+    // asv may be larger than num_fns due to response aggregation modes
+    // (e.g., multifidelity) --> use num_fns as stride and support add()
+    // to vector of SurrogateData
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
+      if (asv[i]) {
+	Approximation& fn_surf = functionSurfaces[fn_index];
+	// rather than unrolling the response (containing all response fns)
+	// into per-response function arrays for input to fn_surf, pass the
+	// complete response along with a response function index.
+	if (first_vars) {
+	  fn_surf.add(vars,        anchor,  true, key_index); // deep
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	  // carry newly added sdv over to other approx fn indices:
+	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
+	                   fn_surf.surrogate_data().variables_data().back();
+	  first_vars = false;
+	}
+	else {
+	  fn_surf.add(sdv,         anchor, false, key_index); // shallow
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	}
       }
-      else {
-	fn_surf.add(sdv, anchor);                // shallow
-	fn_surf.add(response, index, anchor, true); // deep
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): subsequent vars\n";
-#endif // DEBUG
-      }
-    }
   }
 }
 
@@ -726,33 +784,34 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
 void ApproximationInterface::
 mixed_add(const Real* c_vars, const Response& response, bool anchor)
 {
-  Pecos::SurrogateDataVars sdv; bool first_vars = true; size_t index;
+  Pecos::SurrogateDataVars sdv; bool first_vars = true;
   const ShortArray& asv = response.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
+    key_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    index = *it; 
-    if (asv[index]) {
-      Approximation& fn_surf = functionSurfaces[index];
-      // rather than unrolling the response (containing all response functions)
-      // into per-response function arrays for input to fn_surf, pass the
-      // complete response along with a response function index.
-      if (first_vars) {
-	fn_surf.add(c_vars, anchor, true);          // deep
-	fn_surf.add(response, index, anchor, true); // deep
-	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
-	                 fn_surf.approximation_data().variables_data().back();
-	first_vars = false;
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): first c_vars\n";
-#endif // DEBUG
+    fn_index = *it;
+    // asv may be larger than num_fns due to response aggregation modes
+    // (e.g., multifidelity) --> use num_fns as stride and support add()
+    // to vector of SurrogateData
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
+      if (asv[i]) {
+	Approximation& fn_surf = functionSurfaces[fn_index];
+	// rather than unrolling the response (containing all response fns)
+	// into per-response function arrays for input to fn_surf, pass the
+	// complete response along with a response function index.
+	if (first_vars) {
+	  fn_surf.add(c_vars,      anchor,  true, key_index); // deep
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	  // carry newly added sdv over to other approx fn indices:
+	  sdv = (anchor) ? fn_surf.surrogate_data().anchor_variables() :
+	                   fn_surf.surrogate_data().variables_data().back();
+	  first_vars = false;
+	}
+	else {
+	  fn_surf.add(sdv,         anchor, false, key_index); // shallow
+	  fn_surf.add(response, i, anchor,  true, key_index); // deep
+	}
       }
-      else {
-	fn_surf.add(sdv, anchor);                // shallow
-	fn_surf.add(response, index, anchor, true); // deep
-#ifdef DEBUG
-	Cout << "ApproximationInterface::mixed_add(): subsequent c_vars\n";
-#endif // DEBUG
-      }
-    }
   }
 }
 
@@ -760,20 +819,38 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
 void ApproximationInterface::
 shallow_add(const Variables& vars, const Response& response, bool anchor)
 {
-  size_t index;
   const ShortArray& asv = response.active_set_request_vector();
+  size_t i, fn_index, num_fns = functionSurfaces.size(), num_asv = asv.size(),
+    key_index;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    index = *it; 
-    if (asv[index]) {
-      Approximation& fn_surf = functionSurfaces[index];
-      fn_surf.add(vars, anchor, false);            // shallow
-      // rather than unrolling the response (containing all response functions)
-      // into per-response function arrays for input to fn_surf, pass the
-      // complete response along with a response function index.
-      fn_surf.add(response, index, anchor, false); // shallow
-#ifdef DEBUG
-      Cout << "ApproximationInterface::shallow_add()\n";
-#endif // DEBUG
+    fn_index = *it;
+    // asv may be larger than num_fns due to response aggregation modes
+    // (e.g., multifidelity) --> use num_fns as stride and support add()
+    // to vector of SurrogateData
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index)
+      if (asv[i]) {
+	Approximation& fn_surf = functionSurfaces[fn_index];
+	fn_surf.add(vars,        anchor, false, key_index); // shallow
+	fn_surf.add(response, i, anchor, false, key_index); // shallow
+      }
+  }
+}
+
+
+void ApproximationInterface::
+update_pop_counts(const IntResponsePair& response_pr)
+{
+  // update pop counts for data in response_pr
+  const ShortArray& asv = response_pr.second.active_set_request_vector();
+  size_t i, key_index, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = asv.size(), count;
+  ISIter fn_it;
+  for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
+    fn_index = *fn_it;
+    // asv may be larger than num_fns due to response aggregation modes
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index) {
+      count = (asv[i]) ? 1 : 0; // either one or no pts appended
+      functionSurfaces[fn_index].pop_count(count, key_index);
     }
   }
 }
@@ -781,13 +858,18 @@ shallow_add(const Variables& vars, const Response& response, bool anchor)
 
 void ApproximationInterface::update_pop_counts(const IntResponseMap& resp_map)
 {
-  ISIter a_it; IntRespMCIter r_it; size_t index, pop_count;
-  for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it) {
-    index = *a_it; pop_count = 0;
-    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
-      if (r_it->second.active_set_request_vector()[index])
-	++pop_count;
-    functionSurfaces[index].pop_count(pop_count);
+  ISIter fn_it; IntRespMCIter r_it = resp_map.begin();
+  size_t i, count, key_index, fn_index, num_fns = functionSurfaces.size(),
+    num_asv = r_it->second.active_set_request_vector().size();
+  for (fn_it=approxFnIndices.begin(); fn_it!=approxFnIndices.end(); ++fn_it) {
+    fn_index = *fn_it;
+    // asv may be larger than num_fns due to response aggregation modes
+    for (i=fn_index, key_index=0; i<num_asv; i+=num_fns, ++key_index) {
+      for (r_it=resp_map.begin(), count=0; r_it!=resp_map.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
+	  ++count;
+      functionSurfaces[fn_index].pop_count(count, key_index);
+    }
   }
 }
 
@@ -818,8 +900,7 @@ challenge_diagnostics(const StringArray& metric_types,
   for ( ; a_it != a_end; ++a_it) {
     size_t index = *a_it;
     chall_diags.push_back(functionSurfaces[index].
-			  challenge_diagnostic(metric_types, 
-                                               challenge_pts,
+			  challenge_diagnostic(metric_types, challenge_pts,
                                                challenge_resps));
   }
   return chall_diags;
@@ -876,15 +957,17 @@ approximation_variances(const Variables& vars)
 // data?!?  Is a Response object available too?
 /** Challenge data defaults to active/inactive, but user can override
     to active only.  */
-void ApproximationInterface::read_challenge_points(bool active_only)
+void ApproximationInterface::read_challenge_points()
 {
   size_t num_fns = functionSurfaces.size();
+  String context_msg = "Surrogate model, interface id '" + interface_id() +
+    "' import_challenge_points_file";
+  bool verbose = (outputLevel > NORMAL_OUTPUT);
   // use a Variables object to easily read active vs. all
-  RealArray pts_array;
-  RealMatrix pts_matrix;
-  TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
+  TabularIO::read_data_tabular(challengeFile, context_msg,
 			       actualModelVars.copy(), num_fns, challengePoints,
                                challengeResponses, challengeFormat,
+			       verbose, challengeUseVarLabels,
 			       challengeActiveOnly);
 }
 

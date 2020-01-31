@@ -25,8 +25,9 @@ method,
 #	coliny_direct		#s6,#s15
 #	soga			#s7,#s16
 #	  seed = 34785		#s7,#s16
+#	  replacement_type favor_feasible  #s7,#s16
 #	ncsu_direct		#s8,#s17
-	max_function_evaluations = 5000
+	max_function_evaluations = 1000
 
 variables,
 #	active all			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17

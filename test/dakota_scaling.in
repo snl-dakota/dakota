@@ -8,6 +8,9 @@
 #@ s16: DakotaConfig=HAVE_NPSOL
 #@ s17: DakotaConfig=HAVE_NPSOL
 #@ s20: DakotaConfig=HAVE_NPSOL
+#@ s25: DakotaConfig=HAVE_ROL
+#@ s26: DakotaConfig=HAVE_ROL
+#@ s27: DakotaConfig=HAVE_ROL
 #@ s12: TimeoutDelay=360
 #@ s13: TimeoutDelay=400
 
@@ -33,6 +36,10 @@ method,
 	  convergence_tolerance = 1e-8	#s0,#s1,#s2,#s3,#s4,#s5,#s6
 #	  convergence_tolerance = 1e-8	#s7,#s8,#s9,#s20,#s21
 #	mesh_adaptive_search	  	#s22,#s23,#s24
+#  	rol                          #s25,#s26,#s27
+#    	  gradient_tolerance 1.0e-8     #s25,#s26,#s27
+#    	  constraint_tolerance 1.0e-8   #s25,#s26,#s27
+#    	  variable_tolerance 1.0e-8        #s25,#s26,#s27
 #-----------------------------------------------------------------------
 # OPT tests with hessian formulations and log scaled functions
 #	optpp_newton			#s10,#s11
@@ -69,37 +76,37 @@ variables,
 	continuous_design = 2
 #-----------------------------------------------------------------------------
 # OPT and MULTIOBJ	 cyl_head
-	  initial_point    1.8          1.0		#s0,#s1,#s2,#s3,#s4,#s5,#s6
-#	  initial_point    1.8          1.0		#s7,#s8,#s9,#s20,#s21
+	  initial_point    1.8          1.0		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s25
+#	  initial_point    1.8          1.0		#s7,#s8,#s9,#s20,#s21,#s26
 #	  initial_point    1.8          1.0		#s22,#s23,#s24
-	  upper_bounds     2.164        4.0	        #s0,#s1,#s2,#s3,#s4,#s5,#s6
-#	  upper_bounds     2.164        4.0	        #s7,#s8,#s9,#s20,#s21
+	  upper_bounds     2.164        4.0	        #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s25
+#	  upper_bounds     2.164        4.0	        #s7,#s8,#s9,#s20,#s21,#s26
 #	  upper_bounds     2.164        4.0	        #s22,#s23,#s24
-	  lower_bounds     1.5          0.0	        #s0,#s1,#s2,#s3,#s4,#s5,#s6
-#	  lower_bounds     1.5          0.0	        #s7,#s8,#s9,#s20,#s21
+	  lower_bounds     1.5          0.0	        #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s25
+#	  lower_bounds     1.5          0.0	        #s7,#s8,#s9,#s20,#s21,#s26
 #	  lower_bounds     1.5          0.0	        #s22,#s23,#s24
 	  scale_types      'value'      'none'	#s0,#s20
-#	  scale_types      'value'	    'auto'	#s1,#s7,#s8,#s22
+#	  scale_types      'value'	    'auto'	#s1,#s7,#s8,#s22,#s26
 #	  scale_types      'none'	    'auto'	#s2
 #	  scale_types      'log'        'none'	#s3,#s9,#s23
 #	  scale_types      'value'	    		#s4
 #         scale_types      'auto'       		#s5
-#         scale_types      'none'       		#s6
+#         scale_types      'none'       		#s6,#s25
 #	  scale_types      'log'        'auto'	#s21,#s24
-	  scales           2.0	    1.5		#s0,#s1,#s4,#s7,#s8,#s20,#s22
-	  descriptors      'intake_dia' 'flatness'	#s0,#s1,#s2,#s3,#s4,#s5,#s6
-#	  descriptors      'intake_dia' 'flatness'	#s7,#s8,#s9,#s20,#s21
+	  scales           2.0	    1.5		#s0,#s1,#s4,#s7,#s8,#s20,#s22,#s26
+	  descriptors      'intake_dia' 'flatness'	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s25
+#	  descriptors      'intake_dia' 'flatness'	#s7,#s8,#s9,#s20,#s21,#s26
 #	  descriptors      'intake_dia' 'flatness'	#s22,#s23,#s24
 #-----------------------------------------------------------------------------
 # OPT and MULTIOBJ	 rosenbrock
-#         initial_point   2.     2.		#s10,#s11
-#         lower_bounds    0.1    0.1	#s10,#s11
-#         upper_bounds    100    100  	#s10,#s11
-#	  scale_types     'value'  'log' 	#s10
-#	  scales	      0.1     1.0	#s10
+#         initial_point   2.     2.		#s10,#s11,#s27
+#         lower_bounds    0.1    0.1	#s10,#s11,#s27
+#         upper_bounds    100    100  	#s10,#s11,#s27
+#	  scale_types     'value'  'log' 	#s10,#s27
+#	  scales	      0.1     1.0	#s10,#s27
 #	  scale_types     'auto' 'value' 	#s11
 #	  scales	      1.0    5.0	#s11
-#         descriptors     'x1'   'x2'	#s10,#s11
+#         descriptors     'x1'   'x2'	#s10,#s11,#s27
 #-----------------------------------------------------------------------
 # JEGA
 #	  initial_point      0	  0   	#s12,#s13
@@ -121,18 +128,18 @@ variables,
 #	  descriptors      'x1'    'x2'	#s14,#s15,#s16,#s17,#s18,#s19
 #-----------------------------------------------------------------------
 # Linear constraints
-	linear_inequality_constraint_matrix = 1. 1.	#s0,#s4,#s6
-	linear_inequality_upper_bounds = 3.7         	#s0,#s4,#s6
+	linear_inequality_constraint_matrix = 1. 1.	#s0,#s4,#s6,#s25
+	linear_inequality_upper_bounds = 3.7         	#s0,#s4,#s6,#s25
 	linear_inequality_scale_types = 'auto'		#s0
 #	linear_inequality_scale_types = 'none'		#s4
-#	linear_inequality_scale_types = 'value'		#s6
-#	  linear_inequality_scales    = 1.9		#s6
-#	linear_equality_constraint_matrix = 1. 1.    	#s2,#s5,#s7
-#	linear_equality_targets = 3.7                 	#s2,#s5,#s7
+#	linear_inequality_scale_types = 'value'		#s6,#s25
+#	  linear_inequality_scales    = 1.9		#s6,#s25
+#	linear_equality_constraint_matrix = 1. 1.    	#s2,#s5,#s7,#s26
+#	linear_equality_targets = 3.7                 	#s2,#s5,#s7,#s26
 #	linear_equality_scale_types = 'value'		#s2
 #	  linear_equality_scales = 2.1			#s2
 #	linear_equality_scale_types = 'none'		#s5
-#	linear_equality_scale_types = 'auto'		#s7
+#	linear_equality_scale_types = 'auto'		#s7,#s26
 #	linear_inequality_constraint_matrix = 1. 1.	#s16,#s17,#s18,#s19
 #	linear_inequality_upper_bounds = 1.05	      	#s16,#s17,#s18,#s19
 # 	linear_inequality_scale_types = 'none'		#s17
@@ -143,11 +150,11 @@ variables,
 #=======================================================================
 interface,
 	direct					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#	direct					#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24
+#	direct					#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27
 # OPT and MULTIOBJ
 	  analysis_driver=  'cyl_head'		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	  analysis_driver=  'cyl_head'		#s8,#s9,#s20,#s21,#s22,#s23,#s24
-#	  analysis_driver=  'rosenbrock'	#s10,#s11
+#	  analysis_driver=  'cyl_head'		#s8,#s9,#s20,#s21,#s22,#s23,#s24,#s25,#s26
+#	  analysis_driver=  'rosenbrock'	#s10,#s11,#s27
 # JEGA
 #	  analysis_driver = 'mogatest3'		#s12,#s13
 # LSQ
@@ -156,19 +163,19 @@ interface,
 #=======================================================================
 responses,
 # OPT
-	objective_functions = 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s22,#s23
-#	objective_functions = 1	#s10,#s11
-	  objective_function_scale_types = 'value'	#s0,#s3,#s4,#s7,#s8,#s22
-	  objective_function_scales = 10.0 		#s0,#s3,#s4,#s7,#s8,#s22
-#	  objective_function_scale_types = 'none'	#s1,#s2,#s5,#s6,#s9,#s23
+	objective_functions = 1	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s22,#s23,#s25,#s26
+#	objective_functions = 1	#s10,#s11,#s27
+	  objective_function_scale_types = 'value'	#s0,#s3,#s4,#s7,#s8,#s22,#s26
+	  objective_function_scales = 10.0 		#s0,#s3,#s4,#s7,#s8,#s22,#s26
+#	  objective_function_scale_types = 'none'	#s1,#s2,#s5,#s6,#s9,#s23,#s25
 #	  objective_function_scale_types = 'log'	#s11
-	nonlinear_inequality_constraints = 3     	#s0,#s2,#s4,#s5,#s6,#s7
+	nonlinear_inequality_constraints = 3     	#s0,#s2,#s4,#s5,#s6,#s7,#s25,#s26
 	  nonlinear_inequality_scale_types = 'value'	#s0,#s4
 	  nonlinear_inequality_scales = 0.5  2.0  5.0	#s0,#s4
-#	  nonlinear_inequality_scale_types = 'none'	#s2,#s7
+#	  nonlinear_inequality_scale_types = 'none'	#s2,#s7,#s26
 #	  nonlinear_inequality_scale_types = 'value' 'none' 'none'  #s5
-#	  nonlinear_inequality_scale_types = 'value' 'value' 'none' #s6
-#	  nonlinear_inequality_scales = 0.5  1.0  1.0	#s5,#s6
+#	  nonlinear_inequality_scale_types = 'value' 'value' 'none' #s6,#s25
+#	  nonlinear_inequality_scales = 0.5  1.0  1.0	#s5,#s6,#s25
 #	nonlinear_inequality_constraints = 2     	#s1,#s3,#s8,#s9,#s22,#s23
 #	  nonlinear_inequality_lower_bounds = -.2 -.2  	#s1,#s3,#s8,#s9,#s22,#s23
 #	  nonlinear_inequality_upper_bounds =  .2  .2  	#s1,#s3,#s8,#s9,#s22,#s23
@@ -182,11 +189,11 @@ responses,
 #	  nonlinear_equality_scales  = 0.5		#s1,#s9,#s23
 #	  nonlinear_equality_scale_types  = 'auto'  	#s3
 #	  nonlinear_equality_scale_types  = 'none'  	#s8,#s22
-	analytic_gradients		#s0,#s2,#s4,#s5,#s10,#s11
-#	numerical_gradients		#s1,#s3,#s6,#s7
+	analytic_gradients		#s0,#s2,#s4,#s5,#s10,#s11,#s27
+#	numerical_gradients		#s1,#s3,#s6,#s7,#s25,#s26
 #	no_gradients			#s8,#s9,#s22,#s23
-	no_hessians			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s22,#s23
-#	quasi_hessians sr1		#s10
+	no_hessians			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s22,#s23,#s25,#s26
+#	quasi_hessians sr1		#s10,#s27
 #	numerical_hessians		#s11
 #--------------------------------------------------------------------------
 # JEGA

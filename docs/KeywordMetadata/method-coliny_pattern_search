@@ -90,7 +90,7 @@ length is not contracted), a parallel search will be performed. After
 unsuccessful iterations (where the step length is contracted), only a
 single evaluation is performed.
 
-The \c initial_delta and \c threshold_delta specifications provide the
+The \c initial_delta and \c variable_tolerance specifications provide the
 initial offset size and the threshold size at which to terminate the
 algorithm. For any dimension that has both upper and lower bounds,
 this step length will be internally rescaled to provide search steps
@@ -117,6 +117,17 @@ penalty is adapted to the value \c constraint_penalty/L, where L is
 the the smallest step length used so far.
 
  
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
+
 Topics::	package_scolib, package_coliny, global_optimization_methods
 Examples::
 Theory::

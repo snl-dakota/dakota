@@ -6,14 +6,18 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_TYPES_H
-#define DATA_TYPES_H
+#ifndef DAKOTA_DATA_TYPES_H
+#define DAKOTA_DATA_TYPES_H
 
 #include "dakota_system_defs.hpp"
+#include "Teuchos_config.h"
 #include "Teuchos_SerialDenseVector.hpp"
 #include <boost/multi_array.hpp>
-#include "boost/dynamic_bitset.hpp"
+#include <boost/dynamic_bitset.hpp>
+#include <deque>
 #include <list>
+#include <map>
+#include <set>
 
 namespace Dakota {
 
@@ -45,6 +49,7 @@ typedef Teuchos::SerialDenseMatrix<int, Real>    RealMatrix;
 typedef Teuchos::SerialSymDenseMatrix<int, Real> RealSymMatrix;
 typedef Teuchos::SerialDenseVector<int, int>     IntVector;
 typedef Teuchos::SerialDenseMatrix<int, int>     IntMatrix;
+typedef Teuchos::SerialDenseVector<int, size_t>  SizetVector;
 
 //typedef Tpetra::CrsMatrix<int, Real>             RealSparseMatrix
 //typedef Tpetra::Vector<int, Real>                RealParallelVector
@@ -62,6 +67,7 @@ typedef std::vector<RealArray>      Real2DArray;
 typedef std::vector<int>            IntArray;
 typedef std::vector<IntArray>       Int2DArray;
 typedef std::vector<short>          ShortArray;
+typedef std::vector<unsigned int>   UIntArray;
 typedef std::vector<unsigned short> UShortArray;
 typedef std::vector<UShortArray>    UShort2DArray;
 typedef std::vector<UShort2DArray>  UShort3DArray;
@@ -117,24 +123,25 @@ typedef std::list<Iterator>            IteratorList;
 //typedef std::list<ParallelConfiguration> ParConfigList;
 
 typedef std::pair<int, int>            IntIntPair;
-typedef std::pair<size_t, size_t>      SizetSizetPair;
-typedef std::pair<SizetSizetPair, SizetSizetPair> SizetSizet2DPair;
 typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, size_t>         IntSizetPair;
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
+typedef std::pair<String, String>      StringStringPair;
 typedef std::pair<int, Response>       IntResponsePair;
 typedef std::set<Real>                 RealSet;
 typedef std::set<int>                  IntSet;
 typedef std::set<String>               StringSet;
 typedef std::set<unsigned short>       UShortSet;
 typedef std::set<size_t>               SizetSet;
+typedef std::set<RealRealPair>         RealRealPairSet;
 typedef std::vector<RealSet>           RealSetArray;
 typedef std::vector<IntSet>            IntSetArray;
 typedef std::vector<StringSet>         StringSetArray;
 typedef std::vector<UShortSet>         UShortSetArray;
 typedef std::map<int, int>             IntIntMap;
 typedef std::map<int, short>           IntShortMap;
+typedef std::map<unsigned long, unsigned long> ULongULongMap;
 typedef std::map<int, Real>            IntRealMap;
 typedef std::map<Real, Real>           RealRealMap;
 typedef std::map<String, Real>         StringRealMap;
@@ -150,12 +157,13 @@ typedef std::map<int, Variables>       IntVariablesMap;
 typedef std::map<int, Response>        IntResponseMap;
 typedef std::map<IntArray, size_t>     IntArraySizetMap;
 typedef std::map<IntIntPair, Real>     IntIntPairRealMap;
-typedef std::map<RealRealPair, Real>   RealRealPairRealMap;
-typedef std::vector<IntIntPairRealMap> IntIntPairRealMapArray;
+typedef std::map<IntIntPair, RealMatrix> IntIntPairRealMatrixMap;
+typedef std::map<RealRealPair, Real>     RealRealPairRealMap;
+typedef std::map<StringStringPair, int>  StringStringPairIntMap;
+typedef std::vector<IntIntPairRealMap>   IntIntPairRealMapArray;
 typedef std::vector<RealRealPairRealMap> RealRealPairRealMapArray;
 typedef std::multimap<RealRealPair, ParamResponsePair> RealPairPRPMultiMap;
 //typedef std::multimap<Real, ParamResponsePair> RealPRPMultiMap;
-typedef std::map<SizetSizet2DPair, DiscrepancyCorrection> DiscrepCorrMap;
 
 // ---------
 // Iterators
@@ -198,6 +206,8 @@ typedef RealRealMap::iterator                  RRMIter;
 typedef RealRealMap::const_iterator            RRMCIter;
 typedef IntIntPairRealMap::iterator            IIPRMIter;
 typedef IntIntPairRealMap::const_iterator      IIPRMCIter;
+typedef RealRealPairSet::iterator              RRPSIter;
+typedef RealRealPairSet::const_iterator        RRPSCIter;
 typedef RealRealPairRealMap::iterator          RRPRMIter;
 typedef RealRealPairRealMap::const_iterator    RRPRMCIter;
 typedef IntRealVectorMap::iterator             IntRVMIter;
@@ -212,4 +222,4 @@ typedef IntResponseMap::const_iterator         IntRespMCIter;
 
 } // namespace Dakota
 
-#endif // DATA_TYPES_H
+#endif // DAKOTA_DATA_TYPES_H

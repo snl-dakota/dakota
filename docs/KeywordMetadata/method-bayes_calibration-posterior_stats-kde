@@ -1,0 +1,62 @@
+Blurb::
+Calculate the Kernel Density Estimate of the posterior distribution
+
+Description::
+A kernel density estimate (KDE) is a non-parametric, smooth approximation of 
+the probability density function of a random variable. It is calculated using
+a set of samples of the random variable. If \f$X\f$ is a univariate random 
+variable with unknown density \f$f\f$ and independent and identically 
+distributed samples \f$x_{1}, x_{2}, \ldots, x_{n}\f$, the KDE is given by
+\f[
+\hat{f} = \frac{1}{nh} \sum_{i = 1}^{n} K \left( \frac{x - x_{i}}{h} \right).
+\f]
+The kernel \f$K\f$ is a non-negative function which integrates to one. Although
+the kernel can take many forms, such as uniform or triangular, Dakota uses a
+normal kernel. The bandwidth \f$h\f$ is a smoothing parameter that should be
+optimized. Choosing a large value of \f$h\f$ yields a wide KDE with large 
+variance, while choosing a small value of \f$h\f$ yields a choppy KDE with 
+large bias. Dakota approximates the bandwidth using Silverman's rule of thumb,
+\f[
+h = \hat{\sigma} \left( \frac{4}{3n} \right)^{1/5},
+\f]
+where \f$\hat{\sigma}\f$ is the standard deviation of the sample set 
+\f$\left\{ x_{i} \right\}\f$.
+
+For multivariate cases, the random variables are treated as independent, and a
+separate KDE is calculated for each.
+
+<b> Expected Output </b>
+
+If \c kde is specified, calculated values of \f$\hat{f}\f$ will be output to 
+the file \c kde_posterior.dat. Example output is given below.
+
+Examples::
+Below is a \c method block of a Dakota input file that indicates the 
+calculation of the KDE
+
+\verbatim
+method,
+    bayes_calibration queso
+      dram
+      seed = 34785
+      chain_samples = 1000
+      posterior_stats kde
+\endverbatim
+
+The calculated KDE values are output to the file \c kde_posterior.dat, as
+shown below
+
+\verbatim
+uuv_1  KDE PDF estimate  
+0.406479    61.2326
+0.406338    64.0245
+0.402613    114.468
+0.402613    114.468
+0.40249    114.409
+0.40282    114.162
+0.398899    65.2361
+0.400093    84.9285
+0.401264    104.105
+0.400917    98.7803
+\endverbatim
+

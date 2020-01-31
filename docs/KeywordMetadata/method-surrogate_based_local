@@ -32,6 +32,17 @@ construction of a new surrogate model, a minimization, and another
 test for sufficient decrease in the truth model. This cycle continues
 until convergence is attained.
 
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
+
 Topics::	surrogate_based_optimization_methods
 Examples::
 Theory::

@@ -169,7 +169,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  ( asynch_pattern_search ALIAS coliny_apps {N_mdm(lit,methodName_asynch_pattern_search)}
 	    [ initial_delta REAL {N_mdm(Real,initStepLength)} ]
 	    [ contraction_factor REAL {N_mdm(Real,contractStepLength)} ]
-	    [ threshold_delta REAL {N_mdm(Real,threshStepLength)} ]
+	    [ variable_tolerance REAL {N_mdm(Real,threshStepLength)} ]
 	    [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
 	    [ synchronization {0}
 	      blocking {N_mdm(lit,evalSynchronize_blocking)}
@@ -312,7 +312,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		)
 	      | coliny_cobyla {N_mdm(lit,methodName_coliny_cobyla)}
 	      initial_delta REAL {N_mdm(Real,initDelta)}
-	      threshold_delta REAL {N_mdm(Real,threshDelta)}
+	      variable_tolerance REAL {N_mdm(Real,threshDelta)}
 	      )
 	    |
 	    ( coliny_direct {N_mdm(lit,methodName_coliny_direct)}

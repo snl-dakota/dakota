@@ -12,13 +12,21 @@ direction).
 
 <b> Default Behavior </b>
 
-By default, the multidimensional parameter study operates over all
+By default, the vector parameter study operates over all
 types of variables.
 
 <b> Expected Outputs </b>
 
-A multidimensional parameter study produces a set of responses for
+A vector parameter study produces a set of responses for
 each parameter set that is generated.
+
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-pstudies
 
 <b> Usage Tips </b>
 

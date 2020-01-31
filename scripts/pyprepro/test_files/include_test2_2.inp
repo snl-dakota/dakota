@@ -1,0 +1,15 @@
+{'-='*30} Deep 2
+Test both parents
+{d0_1}
+{d0_2}
+{d0_3}
+{d1_1}
+{d1_2}
+{d1_3}
+
+Define a new one
+{d2_1 = 2.1}
+
+Try again to set d0_3 
+{d0_3 = 2.01} # should be immutable
+

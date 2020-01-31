@@ -21,6 +21,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "ResultsManager.hpp"
+#include "EvaluationStore.hpp"
 
 // Toggle for MPI debug hold
 //#define MPI_DEBUG
@@ -58,6 +59,8 @@ PRPCache data_pairs;          ///< contains all parameter/response pairs.
 
 /// Global results database for iterator results
 ResultsManager iterator_results_db;
+/// Global database for evaluation storage
+EvaluationStore evaluation_store_db;
 
 
 int write_precision = 10;     ///< used in ostream data output functions
@@ -87,13 +90,15 @@ void abort_handler(int code)
   //       difficult to debug within GDB.
   //abort();
 
-  // BMA TODO: do we want to maintain this?
+  // BMA TODO: Do we want to maintain this?
+  // BMA NOTE: If so, on Unix, could use strsignal() to get a friendly name.
   if (code > 1) // code = 2 (Cntl-C signal), 0 (normal), & -1/1 (abnormal)
-    Cout << "Signal Caught!" << std::endl;
+    Cout << "\nDakota caught signal " << code << std::endl;
 
   // Clean up
   Cout << std::flush; // flush cout or ofstream redirection
   Cerr << std::flush; // flush cerr or ofstream redirection
+  iterator_results_db.close(); // flush output files/databases 
 
   if (Dak_pddb) {
     // cleanup parameters/results files
@@ -130,9 +135,8 @@ void abort_throw_or_exit(int dakota_code)
     boost::system::error_code ecode(os_code, boost::system::generic_category());
     throw(boost::system::system_error(ecode, "Dakota aborted"));
   }
-  else {
-    std::exit(os_code);  // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
-  }
+  else
+    std::exit(os_code); // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
 }
 
 
@@ -142,16 +146,17 @@ void register_signal_handlers()
 #if defined(__MINGW32__) || defined(_MSC_VER)
   std::signal(SIGBREAK, Dakota::abort_handler);
 #else
-  std::signal(SIGKILL, Dakota::abort_handler);
+  // BMA: SIGKILL can't be caught; consider removing:
+  std::signal(SIGKILL,  Dakota::abort_handler);
 #endif
-  std::signal(SIGTERM, Dakota::abort_handler);
-  std::signal(SIGINT,  Dakota::abort_handler);
+  std::signal(SIGTERM,  Dakota::abort_handler);
+  std::signal(SIGINT,   Dakota::abort_handler);
 }
 
 
 /** See details in code for details, depending on MPI implementation in use. */
-void mpi_debug_hold() {
-
+void mpi_debug_hold()
+{
 #ifdef MPI_DEBUG
   // hold parallel job prior to MPI_Init() in order to attach debugger to
   // master process.  Then step past ParallelLibrary instantiation and attach
@@ -177,8 +182,6 @@ void mpi_debug_hold() {
   std::cin >> test;
 #endif // MPICH2
 #endif // MPI_DEBUG
-
 }
-
 
 } // namespace Dakota

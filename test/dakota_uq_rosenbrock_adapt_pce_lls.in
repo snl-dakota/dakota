@@ -2,7 +2,6 @@
 #@ s4: TimeoutDelay=300
 
 environment,
-	#graphics
 #	output_precision = 16
 
 method,

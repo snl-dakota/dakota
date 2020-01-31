@@ -27,7 +27,6 @@
 
 namespace Dakota {
 
-
 /// Derived model class which performs a complete sub-iterator
 /// execution within every evaluation of the model.
 
@@ -58,11 +57,16 @@ public:
   NestedModel(ProblemDescDB& problem_db); ///< constructor
   ~NestedModel();                         ///< destructor
 
+  void declare_sources();
+
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
 
   // Perform the response computation portions specific to this derived class.
   // In this case, this involves running the subIterator on the subModel.
@@ -84,6 +88,10 @@ protected:
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// return optionalInterface
   Interface& derived_interface();
+
+  /// retrieve error estimates corresponding to the subIterator's response
+  /// results (e.g., statistical MSE for subordinate UQ).
+  const RealVector& error_estimates();
 
   /// pass a bypass request on to the subModel for any lower-level surrogates
   void surrogate_response_mode(short mode);
@@ -142,6 +150,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// set the warm start flag, including actualModel
+  void warm_start_flag(const bool flag);
+
   //
   //- Heading: Member functions
   //
@@ -155,14 +166,16 @@ protected:
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
 
+  ActiveSet default_interface_active_set();
+
 private:
 
   //
   //- Heading: Convenience member functions
   //
 
-  /// update subIterator with mapping data and set subIterator-based counts
-  void update_sub_iterator();
+  /// init subIterator-based counts and init subModel with mapping data
+  void init_sub_iterator();
 
   /// convert job_index to an eval_id through subIteratorIdMap and
   /// eval_id to a subIteratorPRPQueue queue iterator
@@ -175,6 +188,12 @@ private:
   /// unpack_parameters_initialize()
   void unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
 	      ActiveSet& set, int& eval_id);
+
+  /// compute variable mapping indices corresponding to map1 and update
+  /// inactive view if necessary
+  void resolve_map1(const String& map1, size_t& ac_index1, size_t& adi_index1,
+		    size_t& ads_index1, size_t& adr_index1, size_t curr_index,
+		    short& inactive_sm_view);
 
   /// for a named real mapping, resolve primary index and secondary target
   void resolve_real_variable_mapping(const String& map1, const String& map2,
@@ -189,46 +208,12 @@ private:
 				       size_t curr_index,
 				       short& inactive_sm_view);
 
-  /// offset pacvm_index based on sacvm_target to create mapped_index
-  size_t sm_acv_index_map(size_t  pacvm_index,  short sacvm_target);
-  /// offset padivm_index based on sadivm_target to create mapped_index
-  size_t sm_adiv_index_map(size_t padivm_index, short sadivm_target);
-  /// offset padsvm_index based on sadsvm_target to create mapped_index
-  size_t sm_adsv_index_map(size_t padsvm_index, short sadsvm_target);
-  /// offset padrvm_index based on sadrvm_target to create mapped_index
-  size_t sm_adrv_index_map(size_t padrvm_index, short sadrvm_target);
-
-  /// offset cv_index to create index into aggregated primary/secondary arrays
-  size_t cv_index_map(size_t cv_index, const Variables& vars);
-  /// offset div_index to create index into aggregated primary/secondary arrays
-  size_t div_index_map(size_t div_index, const Variables& vars);
-  /// offset dsv_index to create index into aggregated primary/secondary arrays
-  size_t dsv_index_map(size_t dsv_index,
-		       const Variables& vars);
-  /// offset drv_index to create index into aggregated primary/secondary arrays
-  size_t drv_index_map(size_t drv_index, const Variables& vars);
-
-  /// offset active complement ccv_index to create index into all
-  /// continuous arrays
-  size_t ccv_index_map(size_t ccv_index, const Variables& vars);
-  /// offset active complement cdiv_index to create index into all
-  /// discrete int arrays
-  size_t cdiv_index_map(size_t cdiv_index, const Variables& vars);
-  /// offset active complement cdsv_index to create index into all
-  /// discrete string arrays
-  size_t cdsv_index_map(size_t cdsv_index, const Variables& vars);
-  /// offset active complement cdrv_index to create index into all
-  /// discrete real arrays
-  size_t cdrv_index_map(size_t cdrv_index, const Variables& vars);
-
   /// insert r_var into appropriate recipient
-  void real_variable_mapping(const Real& r_var, size_t mapped_index,
-			     short svm_target);
+  void real_variable_mapping(Real r_var, size_t av_index, short svm_target);
   /// insert i_var into appropriate recipient
-  void integer_variable_mapping(const int& i_var, size_t mapped_index,
-				short svm_target);
+  void integer_variable_mapping(int i_var, size_t av_index, short svm_target);
   /// insert s_var into appropriate recipient
-  void string_variable_mapping(const String& s_var, size_t mapped_index,
+  void string_variable_mapping(const String& s_var, size_t av_index,
 			       short svm_target);
 
   /// define the evaluation requirements for the optionalInterface
@@ -252,6 +237,11 @@ private:
   /// the model using the primaryCoeffs/secondaryCoeffs mappings
   void iterator_response_overlay(const Response& sub_iterator_response,
 				 Response& mapped_response);
+  /// combine error estimates from the sub-iteration to define
+  /// mappedErrorEstimates
+  void iterator_error_estimation(const RealVector& sub_iterator_errors,
+				 RealVector& mapped_errors);
+
   /// locate existing or allocate new entry in nestedResponseMap
   Response& nested_response(int nested_cntr);
   /// check function counts for the mapped_asv
@@ -279,6 +269,10 @@ private:
   /// at the base class level
   IntResponseMap nestedResponseMap;
 
+  /// mapping of subIterator.response_error_estimates() through
+  /// primary and secondary mappings
+  RealVector mappedErrorEstimates;
+
   /// the miPLIndex for the outer parallelism context, prior to any
   /// subIterator partitioning
   size_t outerMIPLIndex;
@@ -287,8 +281,6 @@ private:
   //
   /// the sub-iterator that is executed on every evaluation of this model
   Iterator subIterator;
-  /// the sub-method pointer from the nested model specification
-  String subMethodPointer;
   /// the sub-model used in sub-iterator evaluations
   /** There are no restrictions on subModel, so arbitrary nestings are
       possible.  This is commonly used to support surrogate-based
@@ -299,6 +291,8 @@ private:
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
   IteratorScheduler subIteratorSched;
+  /// the sub-method pointer from the nested model specification
+  String subMethodPointer;
   /// subIterator job counter since last synchronize()
   int subIteratorJobCntr;
   /// mapping from subIterator evaluation counter to nested model counter
@@ -306,13 +300,13 @@ private:
   /// model evaluation due to variable ASV content)
   IntIntMap subIteratorIdMap;
   /// number of sub-iterator response functions prior to mapping
-  size_t numSubIterFns;
+  size_t numSubIterFns = 0;
   /// number of top-level inequality constraints mapped from the
   /// sub-iteration results
-  size_t numSubIterMappedIneqCon;
+  size_t numSubIterMappedIneqCon = 0;
   /// number of top-level equality constraints mapped from the
   /// sub-iteration results
-  size_t numSubIterMappedEqCon;
+  size_t numSubIterMappedEqCon = 0;
 
   // Attributes pertaining to optionalInterface:
   //
@@ -329,13 +323,22 @@ private:
   IntIntMap optInterfaceIdMap;
   /// number of primary response functions (objective/least squares/generic
   /// functions) resulting from optional interface evaluations
-  size_t numOptInterfPrimary;
+  size_t numOptInterfPrimary = 0;
   /// number of inequality constraints resulting from optional
   /// interface evaluations
-  size_t numOptInterfIneqCon;
+  size_t numOptInterfIneqCon = 0;
   /// number of equality constraints resulting from the optional
   /// interface evaluations
-  size_t numOptInterfEqCon;
+  size_t numOptInterfEqCon = 0;
+
+  /// analytic IDs for mixed gradients on the optional interface
+  IntSet optInterfGradIdAnalytic;
+  /// analytic IDs for mixed Hessians on the optional interface
+  IntSet optInterfHessIdAnalytic;
+  /// Gradient type for the optional interface
+  String optInterfGradientType;
+  /// Hessian type for the optional interface
+  String optInterfHessianType;
 
   // Attributes pertaining to variables mapping
   //
@@ -408,6 +411,14 @@ private:
   // Attributes pertaining to response_mapping (NOTE: these are opt.
   // specific for now -> generalize for UOO and others):
   //
+  /// whether identity response mapping is active
+  bool identityRespMap = false;
+  /// number of sub-iterator results functions mapped to nested model
+  /// primary functions (cached for use with identity case)
+  size_t subIterMappedPri = 0;
+  /// number of sub-iterator results functions mapped to nested model
+  /// secondary functions (cached for use with identity case)
+  size_t subIterMappedSec = 0;
   /// "primary" response_mapping matrix applied to the sub-iterator response
   /// functions.  For OUU, the matrix is applied to UQ statistics to create
   /// contributions to the top-level objective functions/least squares/
@@ -422,6 +433,37 @@ private:
 
 inline NestedModel::~NestedModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+/*
+inline bool NestedModel::initialize_mapping(ParLevLIter pl_iter)
+{
+  Model::initialize_mapping(pl_iter);
+
+  // DON'T RECUR: allow subIterator to invoke subModel::initialize_mapping()
+  //              at its run time
+  //bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+  //update_sub_model(currentVariables, userDefinedConstraints);
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  //if (sub_model_resize)
+  //  estimate_message_lengths();
+
+  return false;//sub_model_resize;
+}
+
+
+inline bool NestedModel::finalize_mapping()
+{
+  // DON'T RECUR: allow subIterator to invoke subModel::initialize_mapping()
+  //              at its run time
+  //bool sub_model_resize = subModel.finalize_mapping();
+
+  Model::finalize_mapping();
+  return false;//sub_model_resize;
+}
+*/
 
 
 inline Iterator& NestedModel::subordinate_iterator()
@@ -443,6 +485,19 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 
 inline Interface& NestedModel::derived_interface()
 { return optionalInterface; }
+
+
+inline const RealVector& NestedModel::error_estimates()
+{
+  // For now, assume no error contributions from optional interface, e.g.,
+  // these are deterministic mappings and have no estimator variance.
+
+  // *** TO DO: integrate with evaluate and evaluate_nowait()
+
+  iterator_error_estimation(subIterator.response_error_estimates(),
+			    mappedErrorEstimates);
+  return mappedErrorEstimates; 
+}
 
 
 inline void NestedModel::surrogate_response_mode(short mode)
@@ -523,7 +578,7 @@ inline void NestedModel::derived_init_serial()
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 
-  update_sub_iterator();
+  init_sub_iterator();
 
   // initialize optionalInterface and subModel for serial operations
   // (e.g., num servers = 1 instead of the 0 default used by
@@ -651,6 +706,13 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts
   subModel.print_evaluation_summary(s, minimal_header, false);
+}
+
+
+inline void NestedModel::warm_start_flag(const bool flag)
+{
+  warmStartFlag = flag;
+  subModel.warm_start_flag(flag);
 }
 
 

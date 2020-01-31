@@ -49,7 +49,8 @@ const int LARGE_SCALE = 100;
 /** This constructor is used for normal instantiations using data from
     the ProblemDescDB. */
 SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model), SNLLBase(problem_db), nlfObjective(NULL),
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
+  SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL),
   setUpType("model")
 {
@@ -250,7 +251,7 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
 			iteratedModel.interval_type(),
 			iteratedModel.fd_gradient_step_size(),
 			maxIterations,maxFunctionEvals, convergenceTol, 
-			probDescDB.get_real("method.optpp.gradient_tolerance"), 
+			probDescDB.get_real("method.gradient_tolerance"),
 			maxStep, boundConstraintFlag, numConstraints,
 			outputLevel, theOptimizer, nlfObjective, fdnlf1,
 			fdnlf1Con);
@@ -260,7 +261,7 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model),
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
   // use default SNLLBase ctor
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL), setUpType("model")
@@ -307,7 +308,8 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
 			 int& result_mode) ): // use default SNLLBase ctor
   Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
-	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length()),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+            std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL), setUpType("user_functions"), initialPoint(initial_pt),
   lowerBounds(var_l_bnds), upperBounds(var_u_bnds)
@@ -461,7 +463,7 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf0_evaluator vars = \n" << x;
   if (!snllOptInstance->numNonlinearConstraints ||
-       lastFnEvalLocn != CONEvaluator || x != lastEvalVars) {
+       lastFnEvalLocn != CON_EVALUATOR || x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
     snllOptInstance->iteratedModel.continuous_variables(x);
@@ -475,7 +477,7 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
     //if (snllOptInstance->numNonlinearConstraints) // turn off asv for constr's
     //  for (i=0; i<snllOptInstance->numNonlinearConstraints; i++)
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const BoolDeque& max_sense
@@ -532,7 +534,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
     Cout << "\nSNLLOptimizer::nlf1_evaluator vars = \n" << x;
 
   if (!snllOptInstance->numNonlinearConstraints ||
-      lastFnEvalLocn != CONEvaluator || mode != lastEvalMode ||
+      lastFnEvalLocn != CON_EVALUATOR || mode != lastEvalMode ||
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
@@ -549,7 +551,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
     snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const Response& local_response
@@ -621,7 +623,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf2_evaluator vars = \n" << x;
   if (!snllOptInstance->numNonlinearConstraints ||
-      lastFnEvalLocn != CONEvaluator || mode != lastEvalMode ||
+      lastFnEvalLocn != CON_EVALUATOR || mode != lastEvalMode ||
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
@@ -637,7 +639,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
     snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const Response& local_response
@@ -681,7 +683,7 @@ constraint0_evaluator(int n, const RealVector& x, RealVector& g,
   snllOptInstance->iteratedModel.continuous_variables(x);
 
   snllOptInstance->iteratedModel.evaluate(); // default active set
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalVars   = x;
 
   snllOptInstance->copy_con_vals_dak_to_optpp(
@@ -708,7 +710,7 @@ constraint1_evaluator(int mode, int n, const RealVector& x, RealVector& g,
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = mode;
   lastEvalVars   = x;
 
@@ -746,7 +748,7 @@ constraint2_evaluator(int mode, int n, const RealVector& x, RealVector& g,
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = mode;
   lastEvalVars   = x;
 
@@ -863,6 +865,18 @@ void SNLLOptimizer::post_run(std::ostream& s)
 
 void SNLLOptimizer::finalize_run()
 {
+  reset(); // MSE: PDH supports trying to move this up into pre_run() ...
+
+  // restore in case of recursion
+  optLSqInstance  = prevMinInstance;
+  snllOptInstance = prevSnllOptInstance;
+
+  Optimizer::finalize_run();
+}
+
+
+void SNLLOptimizer::reset()
+{
   // reset in case of recursion
   theOptimizer->reset();
 
@@ -875,12 +889,19 @@ void SNLLOptimizer::finalize_run()
     nlfObjective->setConstraints(NULL);
   }
 
-  // restore in case of recursion
-  optLSqInstance  = prevMinInstance;
-  snllOptInstance = prevSnllOptInstance;
-
-  Optimizer::finalize_run();
+  // reset last{FnEvalLocn,EvalMode,EvalVars}
+  reset_base();
 }
 
+
+// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+// when it's being used to evaluate a user-defined function (e.g. finding the correlation
+// lengths of Dakota's GP). 
+void SNLLOptimizer::declare_sources() {
+  if(setUpType == "user_functions") 
+    return;
+  else
+    Iterator::declare_sources();
+}
 
 } // namespace Dakota

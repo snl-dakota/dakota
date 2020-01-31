@@ -29,7 +29,7 @@ Topics::
 Examples::
 
 The figure below shows an observation vector with 5 responses; 2
-scalar + 3 field (each field of length \textgreater 1).  The
+scalar + 3 field (each field of length > 1).  The
 corresponding covariance matrix has scalar variances \f$\sigma_1^2,
 \sigma_2^2\f$ for each of the scalars \f$s1, s2\f$, diagonal
 covariance \f$D_3\f$ for field \f$f3\f$, scalar covariance

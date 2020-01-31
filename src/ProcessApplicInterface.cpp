@@ -90,6 +90,19 @@
 
 namespace Dakota {
 
+// Regular expressions used to substitute the names of parameters and resutls
+// files into driver strings
+boost::regex PARAMS_TOKEN("\\{PARAMETERS\\}");
+boost::regex RESULTS_TOKEN("\\{RESULTS\\}");
+
+/// Substitute parameters and results file names into driver strings
+String substitute_params_and_results(const String &driver, const String &params, const String &results) {
+  String params_subbed  = boost::regex_replace(driver, PARAMS_TOKEN,  params);
+  String results_subbed = boost::regex_replace(params_subbed, RESULTS_TOKEN,  results);
+  return results_subbed;  
+}
+
+
 ProcessApplicInterface::
 ProcessApplicInterface(const ProblemDescDB& problem_db):
   ApplicationInterface(problem_db), 
@@ -113,9 +126,7 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   dirSave(problem_db.get_bool("interface.dirSave")),
   linkFiles(problem_db.get_sa("interface.linkFiles")),
   copyFiles(problem_db.get_sa("interface.copyFiles")),
-  templateReplace(problem_db.get_bool("interface.templateReplace")),
-  analysisComponents(
-    problem_db.get_s2a("interface.application.analysis_components"))
+  templateReplace(problem_db.get_bool("interface.templateReplace"))
 {
   // When using work directory, relative analysis drivers starting
   // with . or .. may need to be converted to absolute so they work
@@ -155,7 +166,8 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
 
   bool require_unique =
     (interface_synchronization() == ASYNCHRONOUS_INTERFACE) &&
-    (asynchLocalEvalConcSpec != 1);
+    (asynchLocalEvalConcSpec != 1) && 
+    !batchEval;
 
   if (require_unique) {
     if (useWorkdir) {
@@ -251,18 +263,116 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
 {
   // This function may not be executed by a multiprocessor evalComm.
-
-  int fn_eval_id = pair.eval_id();
-  define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
-  write_parameters_files(pair.variables(), pair.active_set(),
+  if(!batchEval) {
+    int fn_eval_id = pair.eval_id();
+    define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
+    write_parameters_files(pair.variables(), pair.active_set(),
 			 pair.response(),  fn_eval_id);
- 
-  // execute the simulator application -- nonblocking call
-  pid_t pid = create_evaluation_process(FALL_THROUGH);
-
-  // store process & eval ids for use in synchronization
-  map_bookkeeping(pid, fn_eval_id);
+    // execute the simulator application -- nonblocking call
+    pid_t pid = create_evaluation_process(FALL_THROUGH);
+    // bind process id with eval id for use in synchronization
+    map_bookkeeping(pid, fn_eval_id);
+  }
 }
+
+
+void ProcessApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
+{
+  if (batchEval) wait_local_evaluation_batch(prp_queue);
+  else           wait_local_evaluation_sequence(prp_queue);
+}
+
+
+void ProcessApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
+{
+  if (batchEval) test_local_evaluation_batch(prp_queue);
+  else           test_local_evaluation_sequence(prp_queue);
+}
+
+
+void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
+{
+
+  batchIdCntr++;
+  // define_filenames sets paramsFileWritten and resultsFileWritten, taking
+  // into consideration all the myriad settings the user could have provided,
+  // hierarchical tagging, etc.
+  String batch_id_tag = final_batch_id_tag();
+  define_filenames(batch_id_tag);
+  if(!allowExistingResults)
+    std::remove(resultsFileWritten.c_str());
+  std::vector<String> an_comps;
+  if(!analysisComponents.empty())
+    copy_data(analysisComponents, an_comps);
+  std::remove(paramsFileWritten.c_str()); // 
+  for(const auto & pair : prp_queue) {
+    int fn_eval_id = pair.eval_id();
+    fullEvalId = final_eval_id_tag(fn_eval_id); // must be set for eval ID to 
+                                                // appear in params file
+    write_parameters_file(pair.variables(), pair.active_set(), 
+        pair.response(), programNames[0], an_comps, 
+        paramsFileWritten, false /*append to file*/);
+  }
+
+  // In this case, individual jobs have not been launched and we launch the
+  // user's analysis driver once for the complete batch:
+  create_evaluation_process(BLOCK);
+
+  // Response.read() expects results for a single evaluation to be present in a
+  // stream, but the results file for a batch evaluation will contain multiple.
+  // The strategy here is to consume the results file one evaluation at a time,
+  // placing the content for one evaluation into a stringstream, which will be
+  // passed to Response.read(). The # character at the beginning of a line is
+  // presumed to separate evaluations (content that follows on that line will 
+  // be dropped), and the evaluations are presumed to be in the same order as 
+  // prp_queue. Probably not a very robust way of doing things, but for purposes
+  // of prototyping, it'll do.
+  
+  bfs::ifstream results_file(resultsFileWritten);
+  if (!results_file) {
+    Cerr << "\nError: cannot open results file " << resultsFileWritten
+	 << " for batch " << std::to_string(batchIdCntr) << std::endl;
+    abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
+  }
+  Response response;
+  for(auto & pair : prp_queue) {
+    std::stringstream eval_ss;
+    while(true) {
+      String eval_buffer;
+      std::getline(results_file, eval_buffer);
+      if(results_file.eof())
+        break;
+      if(eval_buffer[0] == '#') {
+        if(eval_ss.str().empty())
+          continue;
+        else
+          break;
+      } else {
+        eval_ss << eval_buffer << std::endl;
+      }
+    }
+    response = pair.response();
+    // the read operation errors out for improperly formatted data
+    try {
+      response.read(eval_ss, resultsFileFormat);
+    }
+    catch(const FunctionEvalFailure & fneval_except) {
+      manage_failure(pair.variables(), response.active_set(), response, pair.eval_id());
+    }
+    catch(const FileReadException& fr_except) {
+      throw FileReadException("Error(s) encountered reading batch results file " +
+          resultsFileWritten + " for Evaluation " + std::to_string(pair.eval_id())
+          + ":\n" + fr_except.what()); 
+    }
+    completionSet.insert(pair.eval_id());
+  }
+  results_file.close();
+  file_and_workdir_cleanup(paramsFileWritten, resultsFileWritten, createdDir, batch_id_tag);
+
+}
+
+void ProcessApplicInterface::test_local_evaluation_batch(PRPQueue& prp_queue)
+{ wait_local_evaluation_batch(prp_queue); }
 
 
 // ------------------------
@@ -502,10 +612,16 @@ void ProcessApplicInterface::
 write_parameters_file(const Variables& vars, const ActiveSet& set,
 		      const Response& response, const std::string& prog,
 		      const std::vector<String>& an_comps,
-                      const std::string& params_fname)
+                      const std::string& params_fname,
+                      const bool file_mode_out)
 {
   // Write the parameters file
-  std::ofstream parameter_stream(params_fname.c_str());
+  std::ofstream parameter_stream;
+  if(file_mode_out) // params for one evaluation per file
+    parameter_stream.open(params_fname.c_str());
+  else // params for multiple evaluations per file (batch mode)
+    parameter_stream.open(params_fname.c_str(), std::ios_base::app);
+
   using std::setw;
   if (!parameter_stream) {
     Cerr << "\nError: cannot create parameters file " << params_fname
@@ -624,58 +740,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
   else 
     read_results_file(response,results_path,id);
 
-  // remove the workdir if in the map and we're not saving
-  bool removing_workdir = (!workdir_path.empty() && !dirSave);
-
-  if (fileSaveFlag) {
-
-    // Prevent overwriting of files with reused names for which a file_save 
-    // request has been given.  Assume tmp files always unique.
-
-    // Cases (work in progress):
-    //  * no workdir --> tag if needed (old behavior)
-    //  * workdir, shared, saved --> tag if needed
-    //  * a workdir can be unique via dir_tag or tmp files
-    //    - workdir, unique, saved --> done no tag
-    //    - workdir, not saved --> tag and move to rundir
-    //  * when workdir and absolute path to files tag in abs path
-
-    if ( useWorkdir ) {
-      if ( dirSave ) {
-	// if saving the directory, just need to make sure filenames are unique
-	// use legacy tagging mechanism within the workdir
-	// TODO: don't need to tag if workdir is unique per eval...
-	if (!fileTagFlag && !dirTag && !workDirName.empty())
-	  autotag_files(params_path, results_path, eval_id_tag);
-      }
-      else {
-	// work_directory getting removed; unique tag the files into the rundir
-	// take the filename off the path and use with rundir
-	// TODO: do we even need to support this?
-	// TODO: distinguish between params in vs. not in (absolute
-	// path) the workdir
-	// autotag_files(params_path, results_path, eval_id_tag,
-	// 	      bfs::current_path());
-	;
-      }
-    }
-    else {
-      // simple case; no workdir --> old behavior, tagging if needed
-      // in place (whether relative or absolute)
-      if (!fileTagFlag) {
-	autotag_files(params_path, results_path, eval_id_tag);
-      }
-    }
-  }
-  else
-    remove_params_results_files(params_path, results_path);
- 
-  // Now that files are handled, conditionally remove the work directory
-  if (removing_workdir) {
-    if (outputLevel > NORMAL_OUTPUT)
-      Cout << "Removing work_directory " << workdir_path << std::endl;
-    WorkdirHelper::recursive_remove(workdir_path, FILEOP_ERROR);
-  }
+  file_and_workdir_cleanup(params_path, results_path, workdir_path, eval_id_tag);
   // Remove the evaluation which has been processed from the bookkeeping
   fileNameMap.erase(map_iter);
 }
@@ -689,7 +754,8 @@ void ProcessApplicInterface::read_results_file(Response &response,
   bfs::ifstream recovery_stream(results_path);
   if (!recovery_stream) {
     Cerr << "\nError: cannot open results file " << results_path
-        << " for evaluation " << boost::lexical_cast<std::string>(id) << std::endl;
+	 << " for evaluation " << boost::lexical_cast<std::string>(id)
+	 << std::endl;
     abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
   }
   try {
@@ -896,6 +962,7 @@ void ProcessApplicInterface::prepare_process_environment()
   WorkdirHelper::set_environment("DAKOTA_RESULTS_FILE", resultsFileName);
 }
 
+
 /** Undo anything done prior to spawn */
 void ProcessApplicInterface::reset_process_environment()
 {
@@ -911,6 +978,65 @@ void ProcessApplicInterface::reset_process_environment()
       Cout << "Resetting environment PATH." << std::endl;
     WorkdirHelper::reset();
   }
+}
+
+void ProcessApplicInterface::
+file_and_workdir_cleanup(const bfs::path &params_path,
+    const bfs::path &results_path,
+    const bfs::path &workdir_path, 
+    const String &tag) const
+{
+  
+  // remove the workdir if in the map and we're not saving
+  bool removing_workdir = (!workdir_path.empty() && !dirSave);
+  if (fileSaveFlag) {
+
+    // Prevent overwriting of files with reused names for which a file_save 
+    // request has been given.  Assume tmp files always unique.
+
+    // Cases (work in progress):
+    //  * no workdir --> tag if needed (old behavior)
+    //  * workdir, shared, saved --> tag if needed
+    //  * a workdir can be unique via dir_tag or tmp files
+    //    - workdir, unique, saved --> done no tag
+    //    - workdir, not saved --> tag and move to rundir
+    //  * when workdir and absolute path to files tag in abs path
+
+    if ( useWorkdir ) {
+      if ( dirSave ) {
+	// if saving the directory, just need to make sure filenames are unique
+	// use legacy tagging mechanism within the workdir
+	// TODO: don't need to tag if workdir is unique per eval...
+	if (!fileTagFlag && !dirTag && !workDirName.empty())
+	  autotag_files(params_path, results_path, tag);
+      }
+      else {
+	// work_directory getting removed; unique tag the files into the rundir
+	// take the filename off the path and use with rundir
+	// TODO: do we even need to support this?
+	// TODO: distinguish between params in vs. not in (absolute
+	// path) the workdir
+	// autotag_files(params_path, results_path, eval_id_tag,
+	// 	      bfs::current_path());
+      }
+    }
+    else {
+      // simple case; no workdir --> old behavior, tagging if needed
+      // in place (whether relative or absolute)
+      if (!fileTagFlag)
+	autotag_files(params_path, results_path, tag);
+    }
+  }
+  else
+    remove_params_results_files(params_path, results_path);
+
+  // Now that files are handled, conditionally remove the work directory
+  if (removing_workdir) {
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << "Removing work_directory " << workdir_path << std::endl;
+    WorkdirHelper::recursive_remove(workdir_path, FILEOP_ERROR);
+  }
+
 }
 
 } // namespace Dakota

@@ -21,8 +21,10 @@ experiment number.
      files named \c DESC.NUM.dat (one per response descriptor, per
      experiment), e.g, \c volts.1.dat, \c volts.2.dat.  Scalar files
      will contain a single value, while field files will each contain
-     a column of field reponse values with length indicated in \ref
-     responses-calibration_terms-field_calibration_terms-lengths. 
+     a column of field reponse values. Without 
+     \ref responses-calibration_terms-calibration_data-interpolate enabled,
+     the lengths of these files must match those specified using the 
+     responses-calibration_terms-field_calibration_terms-lengths keyword. 
 </li>
 <li> <b>Coordinates:</b> Field coordinates specify independent variables
      (e.g., spatial or temporal coordinates) upon which the field
@@ -30,27 +32,28 @@ experiment number.
      so time is the field coordinate.  These are read from files named
      \c DESC.NUM.coords, each containing \ref
      responses-calibration_terms-field_calibration_terms-num_coordinates_per_field
-     columns and 1 (scalar) or field length (\ref
-     responses-calibration_terms-field_calibration_terms-lengths).
+     columns. The number of rows must be the same as in the values files
+     described in the previous bullet.
 </li>
 <li> <b>Variances:</b> If \ref
-     responses-calibration_terms-calibration_data-variance_type is
+     responses-calibration_terms-calibration_data-experiment_variance_type is
      specified, variance values are read from files \c DESC.NUM.sigma.
-     Note that a single \c variance_type may be specified, or a unique
-     \c variance_type per response descriptor (per scalar or field).
-     If the \c variance_type is:
+     Note that a single \c experiment_variance_type may be specified, or a 
+     unique \c experiment_variance_type per response descriptor (per scalar 
+     or field). If the \c experiment_variance_type is:
      <ul>
      <li> 'scalar': a single variance value will be read from the file.
      </li>
      <li> 'diagonal' (field responses only): a column vector of
-          variance values (length equal to length of the field) will
-          be read from the file. The values are the variances of each
+          variance values (length equal to the number of experimental data points) 
+          will be read from the file. The values are the variances of each
           field value for this descriptor.
      </li>
      <li> 'matrix' (field responses only): a matrix of covariance
-          values (square with size the length of the field) will be
+          values (square with size the number of experimental values) will be
           read from the file. The matrix is a full covariance matrix
-          for the components of this field response.  While covariance among entries in a field response may be specified, covariance among experiments is not permitted.
+          for the components of this field response.  While covariance among 
+          entries in a field response may be specified, covariance among experiments is not permitted.
      </li>
      </ul>
 </li>
@@ -101,15 +104,40 @@ the difference between these field terms to create the set of
 residuals for the sum-of-squares calculation.  When \c interpolate is
 specified, the simulation coordinates are assumed fixed and the same
 for each simulation.  These simulation coordinates are provided in
-DESC.NUM.coords.  However, the experiment coordinates for each
+DESC.coords.  However, the experiment coordinates for each
 experiment can be different, and are provided in the files numbered by
 experiment with the file names given by DESC.NUM.coords, as indicated
 above.
 
 Examples::
 
+Consider this field example with three field-valued responses (volts as a function
+of 7 time points, amps as a function of 3 time points, and power as a
+function of 5 time points).  The experiments each have one coordinate (time) 
+per field. The experiments were conducted given values of two configuration variables. 
+There are four experiments (note that there often is only one experiment).
+
+\verbatim
+responses
+  descriptors = 'volts' 'amps' 'power'
+  calibration_terms = 3
+
+    #define field terms
+    field_calibration_terms = 3
+      lengths = 7 3 5
+      num_coordinates_per_field = 1 1 1
+      read_field_coordinates
+    
+    # specify the data
+    calibration_data
+      num_experiments = 4
+      num_config_variables = 2
+      experiment_variance_type 'diagonal' 'scalar' 'matrix' 
+\endverbatim
+
+<!-----
 Consider this mixed scalar/field example with 2 scalar responses
-(max_temp, size) and two field-valued responses (volts as a function
+(max_temp, size) and three field-valued responses (volts as a function
 of 7 time points, amps as a function of 3 time points, and power as a
 function of 5 time points).  The experiments were conducted given
 values of two configuration variables.
@@ -130,7 +158,7 @@ responses
     calibration_data
       num_experiments = 4
       num_config_variables = 2
-      variance_type 'scalar' 'scalar' 'diagonal' 'scalar' 'matrix' 
+      experiment_variance_type 'scalar' 'scalar' 'diagonal' 'scalar' 'matrix' 
       scalar_data_file 'circuit.dat'
         annotated
 \endverbatim
@@ -147,7 +175,7 @@ rows, and a total of 5 columns, with scalar variance information:
 3         8.4  8                38.2758  4.4559    0.25  0.04
 4         4.2  1                39.7600  6.4631    0.25  0.04
 \endverbatim
-   
+---->   
 The field data will be read from separate files:   
 <ol>
 
@@ -165,7 +193,7 @@ The field data will be read from separate files:
 <li> <b>Variances:</b> Will be read per-experiment (no covariance
      among experiments is permitted).  The variance information is depicted 
      graphically in \ref 
-     responses-calibration_terms-calibration_data-variance_type
+     responses-calibration_terms-calibration_data-experiment_variance_type
      <ul>
      <li> Volts specifies 'diagonal' covariance, so a column vector of
           length 7 with the diagonal variances will be read from each

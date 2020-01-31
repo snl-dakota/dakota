@@ -72,8 +72,10 @@ public:
 
   /// set pointsTotal and pointsManagement mode
   void total_points(int points);
+  /// return points required for build according to pointsManagement mode
+  int required_points();
 
-  DiscrepancyCorrection& discrepancy_correction();
+  void declare_sources();
 
 protected:
 
@@ -81,28 +83,70 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  size_t qoi() const;
+
+  DiscrepancyCorrection& discrepancy_correction();
+  short correction_type();
+  void  correction_type(short corr_type);
+
+  bool initialize_mapping(ParLevLIter pl_iter);
+  bool finalize_mapping();
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short query_distribution_parameter_derivatives() const;
+
+  void check_submodel_compatibility(const Model& sub_model);
+
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs approxInterface.map()/synch()/
   // synch_nowait() where approxInterface is a local, multipoint, or global
   // approximation.
-  //
-  /// portion of evaluate() specific to DataFitSurrModel
+
   void derived_evaluate(const ActiveSet& set);
-  /// portion of evaluate_nowait() specific to DataFitSurrModel
   void derived_evaluate_nowait(const ActiveSet& set);
-  /// portion of synchronize() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize();
-  /// portion of synchronize_nowait() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize_nowait();
+
+  /// map incoming ASV into actual request for surrogate construction, managing
+  /// any mismatch in sizes due to response aggregation modes in actualModel
+  void asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv);
+  /// split incoming ASV into actual and approximate evaluation requests,
+  /// managing any mismatch in sizes due to response aggregation modes in
+  /// actualModel
+  void asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
+		      ShortArray& approx_asv);
 
   /// return daceIterator
   Iterator& subordinate_iterator();
+
+  /// set active model key within approxInterface
+  void active_model_key(const UShortArray& mi_key);
+  /// remove all model keys within approxInterface
+  void clear_model_keys();
+
   /// return this model instance
   Model& surrogate_model();
+  /// return this model instance
+  const Model& surrogate_model() const;
   /// return actualModel
   Model& truth_model();
+  /// return actualModel
+  const Model& truth_model() const;
+
   /// return actualModel (and optionally its sub-models)
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  /// pass request to actualModel if recursing
+  void resize_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
   /// pass request to actualModel if recursing and then update from it
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
@@ -118,6 +162,10 @@ protected:
   /// any lower-level surrogates.
   void surrogate_response_mode(short mode);
 
+  // link together more than one SurrogateData instance within
+  // approxInterface.functionSurfaces[i].approxData[j]
+  //void link_multilevel_approximation_data();
+
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
   void surrogate_function_indices(const IntSet& surr_fn_indices);
@@ -130,6 +178,10 @@ protected:
   /// augment the passed vars/response anchor point
   bool build_approximation(const Variables& vars,
 			   const IntResponsePair& response_pr);
+
+  /// Rebuilds the local/multipoint/global approximation using
+  /// daceIterator/actualModel to generate an increment of appended data
+  void rebuild_approximation();
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
@@ -175,18 +227,16 @@ protected:
   /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
-  /// store the current data fit approximation for later combination
-  void store_approximation(size_t index = _NPOS);
-  /// restore a previous data fit approximation
-  void restore_approximation(size_t index = _NPOS);
-  /// store the current data fit approximation for later combination
-  void remove_stored_approximation(size_t index = _NPOS);
-  /// combine the current data fit approximation with one previously stored
-  void combine_approximation(short corr_type);
+  /// combine all level approximations into a separate composite approximation
+  void combine_approximation();
+  /// promote the combined approximation into the active one
+  void combined_to_active(bool clear_combined = true);
 
-  /// execute the DACE iterator, append the approximation data, and
-  /// rebuild the approximation if indicated
-  void run_dace_iterator(bool rebuild_flag);
+  /// clear inactive data stored in the approxInterface
+  void clear_inactive();
+
+  /// execute the DACE iterator to generate build data
+  void run_dace();
 
   /// retrieve the SharedApproxData from approxInterface
   SharedApproxData& shared_approximation();
@@ -204,7 +254,7 @@ protected:
   const RealVector& approximation_variances(const Variables& vars);
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
-  const Pecos::SurrogateData& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// update component parallel mode for supporting parallelism in actualModel
   void component_parallel_mode(short mode);
@@ -253,6 +303,11 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// set the warm start flag, including actualModel
+  void warm_start_flag(const bool flag);
+
+  ActiveSet default_interface_active_set();
+
   //
   //- Heading: Data members
   //
@@ -282,7 +337,7 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(unsigned short tabular_format, bool active_only);
+  void import_points(unsigned short tabular_format, bool use_var_labels, bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// finalize file stream for exporting surrogate evaluations
@@ -295,32 +350,47 @@ private:
   void derived_synchronize_approx(bool block,
 				  IntResponseMap& approx_resp_map_rekey);
 
-  /// Updates fit arrays for global approximations
-  void update_global();
   /// Updates fit arrays for local or multipoint approximations
-  void update_local_multipoint();
-  /// Builds a global approximation using daceIterator
-  void build_global();
+  void update_local_reference();
   /// Builds a local or multipoint approximation using actualModel
   void build_local_multipoint();
+  /// Builds a local or multipoint approximation using actualModel
+  void build_local_multipoint(const Variables& vars,
+			      const IntResponsePair& response_pr);
+
+  /// Updates fit arrays for global approximations
+  void update_global_reference();
+  /// Builds a global approximation using daceIterator
+  void build_global();
+  /// Rebuilds a global approximation by generating new data using
+  /// daceIterator and appending to approxInterface
+  void rebuild_global();
 
   /// Refine the built surrogate until convergence criteria are met
   void refine_surrogate();
-  /// Call build_approximation on the interface, passing appropriate constraints
-  void interface_build_approx();
 
-  /// update actualModel with data from current variables/labels/bounds/targets
-  void update_actual_model();
+  /// clear current data from approxInterface
+  void clear_approx_interface();
+  /// update anchor data in approxInterface
+  void update_approx_interface(const Variables& vars,
+			       const IntResponsePair& response_pr);
+  /// build the approxInterface surrogate, passing variable bounds
+  void build_approx_interface();
+
+  /// update actualModel with data from constraints/labels/sets
+  void init_model(Model& model);
+  /// update actualModel with data from current variables/bounds
+  void update_model(Model& model);
   /// update current variables/labels/bounds/targets with data from actualModel
-  void update_from_actual_model();
+  void update_from_model(const Model& model);
 
-  /// test for exact equality in values between vars and sdv
-  bool vars_exact_compare(const Variables& vars,
-			  const Pecos::SurrogateDataVars& sdv) const;
-  /// test if c_vars and d_vars are within [c_l_bnds,c_u_bnds] and
-  /// [d_l_bnds,d_u_bnds]
-  bool inside(const RealVector& c_vars, const IntVector& di_vars,
-	      const RealVector& dr_vars) const;
+  /// test if inactive state is consistent
+  bool consistent(const Variables& vars) const;
+  /// test if active vars are within [l_bnds, u_bnds]
+  bool inside(const Variables& vars) const;
+  /// test for exact equality in values between active vars and sdv
+  bool active_vars_compare(const Variables& vars,
+			   const Pecos::SurrogateDataVars& sdv) const;
 
   //
   //- Heading: Data members
@@ -366,20 +436,91 @@ private:
 
 /** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
-{ finalize_export(); }
+{ if (!exportPointsFile.empty()) finalize_export(); }
+
+
+inline void DataFitSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to actualModel:
+  if (!actualModel.is_null())
+    actualModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+					 dr_index1, c_target2, di_target2,
+					 ds_target2, dr_target2);
+}
+
+
+inline const SizetArray& DataFitSurrModel::nested_acv1_indices() const
+{ return actualModel.nested_acv1_indices(); }
+
+
+inline const ShortArray& DataFitSurrModel::nested_acv2_targets() const
+{ return actualModel.nested_acv2_targets(); }
+
+
+inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
+{
+  return (actualModel.is_null()) ? NO_DERIVS :
+    actualModel.query_distribution_parameter_derivatives(); // forward along
+}
+
+
+inline size_t DataFitSurrModel::qoi() const
+{
+  switch (responseMode) {
+  // Response inflation from aggregation does not proliferate above
+  // this Model recursion level
+  case AGGREGATED_MODELS:  return actualModel.qoi();  break;
+  default:                 return response_size();    break;
+  }
+}
 
 
 inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()
 { return deltaCorr; }
 
 
+inline short DataFitSurrModel::correction_type()
+{ return deltaCorr.correction_type(); }
+
+
+inline void DataFitSurrModel::correction_type(short corr_type)
+{ deltaCorr.correction_type(corr_type); }
+
+
 inline void DataFitSurrModel::total_points(int points)
 { pointsTotal = points; if (points > 0) pointsManagement = TOTAL_POINTS; }
 
 
+inline int DataFitSurrModel::required_points()
+{
+  switch (pointsManagement) {
+  case TOTAL_POINTS: {
+    int min_points = approxInterface.minimum_points(true);
+    if (pointsTotal < min_points && outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nDataFitSurrModel: Total points specified (" << pointsTotal
+	   << ") is less than minimum required;\n                  "
+	   << "increasing to " << min_points << std::endl;
+    return std::max(min_points, pointsTotal);        break;
+  }
+  case RECOMMENDED_POINTS:
+    return approxInterface.recommended_points(true); break;
+  default: //case DEFAULT_POINTS: case MINIMUM_POINTS:
+    return approxInterface.minimum_points(true);     break;
+  }
+}
+
+
 inline bool DataFitSurrModel::
-vars_exact_compare(const Variables& vars,
-		   const Pecos::SurrogateDataVars& sdv) const
+active_vars_compare(const Variables& vars,
+		    const Pecos::SurrogateDataVars& sdv) const
 {
   // Similar to id_vars_exact_compare() in PRPMultiIndex.hpp
 
@@ -399,6 +540,21 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
+inline void DataFitSurrModel::active_model_key(const UShortArray& key)
+{
+  // assign activeKey and extract {surr,truth}ModelKey
+  SurrogateModel::active_model_key(key);
+
+  // recur both components: (actualModel could be hierarchical)
+  approxInterface.active_model_key(key);
+  actualModel.active_model_key(key);
+}
+
+
+inline void DataFitSurrModel::clear_model_keys()
+{ approxInterface.clear_model_keys(); }
+
+
 inline Model& DataFitSurrModel::surrogate_model()
 {
   // return by reference: OK to return letter instance
@@ -412,7 +568,15 @@ inline Model& DataFitSurrModel::surrogate_model()
 }
 
 
+inline const Model& DataFitSurrModel::surrogate_model() const
+{ return *this; } // return of letter (see above)
+
+
 inline Model& DataFitSurrModel::truth_model()
+{ return actualModel; }
+
+
+inline const Model& DataFitSurrModel::truth_model() const
 { return actualModel; }
 
 
@@ -427,14 +591,46 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
+inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
+{
+  if (!actualModel.is_null() && depth) {
+    // data flows from the bottom-up, so recurse first
+    if (depth == std::numeric_limits<size_t>::max())
+      actualModel.resize_from_subordinate_model(depth); // retain special value
+    else
+      actualModel.resize_from_subordinate_model(depth - 1);
+
+    // DataFitSurrModel consumes (newly) aggregated data sets through multiple
+    // SurrogateData instances --> don't resize locally.
+    //resize_response();
+    // It must therefore manage inflation of incoming ActiveSet instances
+
+    // daceIterator::activeSet muse be resized for consistency with actualModel
+    if (!daceIterator.is_null()) {
+      const ActiveSet&  dace_set = daceIterator.active_set();
+      const ShortArray& dace_asv = dace_set.request_vector();
+      size_t num_am_resp = actualModel.response_size(),
+	   num_dace_resp = dace_asv.size();
+      if (num_am_resp != num_dace_resp) {
+	ActiveSet new_set(dace_set); // deep copy
+	new_set.reshape(num_am_resp);
+	daceIterator.active_set(new_set);
+      }
+    }
+  }
+}
+
+
 inline void DataFitSurrModel::update_from_subordinate_model(size_t depth)
 {
   if (!actualModel.is_null()) {
     // data flows from the bottom-up, so recurse first
-    if (depth > 0)
+    if (depth == std::numeric_limits<size_t>::max())
+      actualModel.update_from_subordinate_model(depth); // retain special value
+    else if (depth)
       actualModel.update_from_subordinate_model(depth - 1);
     // now pull the latest updates from actualModel
-    update_from_actual_model();
+    update_from_model(actualModel);
   }
 }
 
@@ -456,19 +652,37 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
 
-  // Compared to HierarchSurrModel, we don't need to be as strict in validating
-  // AUTO_CORRECTED_SURROGATE mode against corrType, since NO_CORRECTION is an
-  // admissible option in the case of global data fits.  However,
-  // MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
-  if ( !corrType && mode == MODEL_DISCREPANCY ) {
-    Cerr << "Error: activation of mode MODEL_DISCREPANCY requires "
-	 << "specification of a correction type." << std::endl;
-    abort_handler(MODEL_ERROR);
+  // Mode-specific logic:
+  // > Compared to HierarchSurrModel, don't need to be as strict in validating
+  //   AUTO_CORRECTED_SURROGATE mode against corrType, since NO_CORRECTION is
+  //   an admissible option in the case of global data fits.  However,
+  //   MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
+  // > Management of multiple SurrogateData instances is complicated in the
+  //   heterogeneous setting where level 0 uses a single instance and levels
+  //   1-L use two instances.  In the future, could manage activation explicitly
+  //   using functions shown below.  For now, SurrogateData::{push,pop}() are
+  //   hardened for inactive instances.
+  switch (mode) {
+  case MODEL_DISCREPANCY:
+    if (!corrType) {
+      Cerr << "Error: activation of mode MODEL_DISCREPANCY requires "
+	   << "specification of a correction type." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    break;
+  case BYPASS_SURROGATE:
+    actualModel.surrogate_response_mode(mode); // recurse in this case
+    //approxInterface.deactivate_multilevel_approximation_data();
+    break;
+  case AGGREGATED_MODELS:
+    //approxInterface.activate_multilevel_approximation_data();
+    break;
   }
-
-  if (mode == BYPASS_SURROGATE) // recurse in this case
-    actualModel.surrogate_response_mode(mode);
 }
+
+
+//inline void DataFitSurrModel::link_multilevel_approximation_data()
+//{ approxInterface.link_multilevel_approximation_data(); }
 
 
 inline void DataFitSurrModel::
@@ -481,6 +695,10 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 
 inline bool DataFitSurrModel::push_available()
 { return approxInterface.push_available(); }
+
+
+inline void DataFitSurrModel::clear_inactive()
+{ approxInterface.clear_inactive(); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()
@@ -504,11 +722,9 @@ approximation_coefficients(const RealVectorArray& approx_coeffs,
 
   // Surrogate data is being imported.  Update state to suppress automatic
   // surrogate construction.
-  approxBuilds++;
-  if (strbegins(surrogateType, "global_"))
-    update_global();
-  else
-    update_local_multipoint();
+  ++approxBuilds;
+  if (strbegins(surrogateType, "global_")) update_global_reference();
+  else                                      update_local_reference();
 }
 
 
@@ -518,8 +734,8 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& DataFitSurrModel::
-approximation_data(size_t index)
-{ return approxInterface.approximation_data(index); }
+approximation_data(size_t fn_index)
+{ return approxInterface.approximation_data(fn_index); }
 
 
 inline IntIntPair DataFitSurrModel::
@@ -669,6 +885,13 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
     else // daceIterator resets the eval reference -> don't use a relative count
       actualModel.print_evaluation_summary(s, minimal_header, false);
   }
+}
+
+
+inline void DataFitSurrModel::warm_start_flag(const bool flag)
+{
+  warmStartFlag = flag;
+  actualModel.warm_start_flag(flag);
 }
 
 } // namespace Dakota

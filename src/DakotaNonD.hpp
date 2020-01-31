@@ -16,8 +16,6 @@
 #define DAKOTA_NOND_H
 
 #include "DakotaAnalyzer.hpp"
-#include "ProbabilityTransformation.hpp"
-#include "DataMethod.hpp"
 
 //#define DERIV_DEBUG
 
@@ -39,29 +37,6 @@ public:
   //- Heading: Member functions
   //
 
-  /// initialize natafTransform based on distribution data from iteratedModel
-  void initialize_random_variables(short u_space_type);
-  /// alternate form: initialize natafTransform based on incoming data
-  void initialize_random_variables(
-    const Pecos::ProbabilityTransformation& transform, bool deep_copy = false);
-
-  /// instantiate natafTransform
-  void initialize_random_variable_transformation();
-  /// initializes ranVarTypesX within natafTransform (u-space not needed)
-  void initialize_random_variable_types();
-  /// initializes ranVarTypesX and ranVarTypesU within natafTransform
-  void initialize_random_variable_types(short u_space_type);
-  /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
-  /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
-  void initialize_random_variable_parameters();
-  /// propagate iteratedModel correlations to natafTransform
-  void initialize_random_variable_correlations();
-  /// verify that correlation warping is supported by Nataf for given
-  /// variable types
-  void verify_correlation_support(short u_space_type);
-  /// perform correlation warping for variable types supported by Nataf
-  void transform_correlations();
-
   /// set requestedRespLevels, requestedProbLevels, requestedRelLevels,
   /// requestedGenRelLevels, respLevelTarget, cdfFlag, and pdfOutput
   /// (used in combination with alternate ctors)
@@ -72,9 +47,6 @@ public:
 			short resp_lev_tgt, short resp_lev_tgt_reduce,
 			bool cdf_flag, bool pdf_output);
 
-  /// set distParamDerivs
-  void distribution_parameter_derivatives(bool dist_param_derivs);
-
   /// prints the z/p/beta/beta* mappings reflected in
   /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels for default
   /// qoi_type and qoi_labels
@@ -83,7 +55,9 @@ public:
   /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
   void print_level_mappings(std::ostream& s, String qoi_type,
 			    const StringArray& qoi_labels) const;
-
+  /// print level mapping statistics using optional pre-pend
+  void print_level_mappings(std::ostream& s, const RealVector& level_maps,
+			    bool moment_offset, const String& prepend = "");
 
   //
   //- Heading: Virtual member function redefinitions
@@ -100,8 +74,10 @@ public:
   /// set pdfOutput
   void pdf_output(bool output);
 
-  /// return natafTransform
-  Pecos::ProbabilityTransformation& variable_transformation();
+  /// get finalMomentsType
+  short final_moments_type() const;
+  /// set finalMomentsType
+  void final_moments_type(short type);
 
 protected:
 
@@ -150,14 +126,22 @@ protected:
   //- Heading: Utility routines
   //
 
-  /// Size local variables
-  void size();
+  /// concatenate computed{Resp,Prob,Rel,GenRel}Levels into level_maps
+  void pull_level_mappings(RealVector& level_maps);
+  /// update computed{Resp,Prob,Rel,GenRel}Levels from level_maps
+  void push_level_mappings(const RealVector& level_maps);
 
-  /// create a system-generated unique seed (when a seed is unspecified)
-  int generate_system_seed();
+  /// distribute pilot sample specification across model levels
+  void load_pilot_sample(const SizetArray& pilot_spec, SizetArray& delta_N_l);
+  /// distribute pilot sample specification across model forms or levels
+  void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
+			 SizetArray& delta_N_l);
+  /// distribute pilot sample specification across model forms and levels
+  void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
+			 Sizet2DArray& delta_N_l);
 
-  /// initializes finalStatistics::functionGradients
-  void initialize_final_statistics_gradients();
+  /// resizes finalStatistics::functionGradients based on finalStatistics ASV
+  void resize_final_statistics_gradients();
   /// update finalStatistics::functionValues from momentStats and
   /// computed{Prob,Rel,GenRel,Resp}Levels
   void update_aleatory_final_statistics();
@@ -192,44 +176,27 @@ protected:
   void print_multilevel_evaluation_summary(std::ostream& s,
 					   const Sizet3DArray& N_samp);
 
-  /// recast x_model from x-space to u-space to create u_model
-  void transform_model(Model& x_model, Model& u_model,
-		       bool truncated_bounds = false, Real bound = 10.);
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
 		     unsigned short sample_type, int num_samples, int seed,
 		     const String& rng, bool vary_pattern,
 		     short sampling_vars_mode = ACTIVE);
 
-  /// static function for RecastModels used for forward mapping of u-space
-  /// variables from NonD Iterators to x-space variables for Model evaluations
-  static void vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars);
-  /// static function for RecastModels used for inverse mapping of x-space
-  /// variables from data import to u-space variables for NonD Iterators
-  static void vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars);
-
-  /// static function for RecastModels used to map u-space ActiveSets
-  /// from NonD Iterators to x-space ActiveSets for Model evaluations
-  static void set_u_to_x_mapping(const Variables& u_vars,
-				 const ActiveSet& u_set, ActiveSet& x_set);
-
-  /// static function for RecastModels used to map x-space responses from
-  /// Model evaluations to u-space responses for return to NonD Iterator.
-  static void resp_x_to_u_mapping(const Variables& x_vars,
-				  const Variables& u_vars,
-				  const Response& x_response,
-				  Response& u_response);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(Real current, Real target);
 
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
   /// archive the mappings from specified response levels for specified fn
-  void archive_from_resp(size_t fn_index);
-  /// archive the mappings to computed response levels for specified fn
-  void archive_to_resp(size_t fn_index);
+  void archive_from_resp(size_t fn_index, size_t inc_id = 0);
+  /// archive the mappings to computed response levels for specified fn and
+  /// (optional) increment id.
+  void archive_to_resp(size_t fn_index, size_t inc_id = 0);
   /// allocate results array storage for pdf histograms
   void archive_allocate_pdf();
   /// archive a single pdf histogram for specified function
-  void archive_pdf(size_t fn_index);
+  void archive_pdf(size_t fn_index, size_t inc_id = 0);
 
   //
   //- Heading: Data members
@@ -241,128 +208,18 @@ protected:
   /// pointer containing previous value of nondInstance
   NonD* prevNondInstance;
 
-  /// Nonlinear variable transformation that encapsulates the required
-  /// data for performing transformations from X -> Z -> U and back.
-  Pecos::ProbabilityTransformation natafTransform;
+  /// starting index of continuous aleatory uncertain variables within
+  /// active continuous variables (convenience for managing offsets)
+  size_t startCAUV;
+  /// number of active continuous aleatory uncertain variables
+  size_t numCAUV;
 
-  // The following variable counts reflect the native Model space, which could
-  // correspond to either X or U space.  If a specific X or U variables count
-  // is needed, then natafTransform.ranVarTypesX/U.count() should be used.
-
-  /// number of continuous design variables (modeled using uniform
-  /// distribution for All view modes)
-  size_t numContDesVars;
-  /// number of discrete integer design variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscIntDesVars;
-  /// number of discrete string design variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscStringDesVars;
-  /// number of discrete real design variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscRealDesVars;
-  /// total number of design variables
-  size_t numDesignVars;
-  /// number of continuous state variables (modeled using uniform
-  /// distribution for All view modes)
-  size_t numContStateVars;
-  /// number of discrete integer state variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscIntStateVars;
-  /// number of discrete string state variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscStringStateVars;
-  /// number of discrete real state variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscRealStateVars;
-  /// total number of state variables
-  size_t numStateVars;
-
-  /// number of normal uncertain variables (native space)
-  size_t numNormalVars;
-  /// number of lognormal uncertain variables (native space)
-  size_t numLognormalVars;
-  /// number of uniform uncertain variables (native space)
-  size_t numUniformVars;
-  /// number of loguniform uncertain variables (native space)
-  size_t numLoguniformVars;
-  /// number of triangular uncertain variables (native space)
-  size_t numTriangularVars;
-  /// number of exponential uncertain variables (native space)
-  size_t numExponentialVars;
-  /// number of beta uncertain variables (native space)
-  size_t numBetaVars;
-  /// number of gamma uncertain variables (native space)
-  size_t numGammaVars;
-  /// number of gumbel uncertain variables (native space)
-  size_t numGumbelVars;
-  /// number of frechet uncertain variables (native space)
-  size_t numFrechetVars;
-  /// number of weibull uncertain variables (native space)
-  size_t numWeibullVars;
-  /// number of histogram bin uncertain variables (native space)
-  size_t numHistogramBinVars;
-  /// number of Poisson uncertain variables (native space)
-  size_t numPoissonVars;
-  /// number of binomial uncertain variables (native space)
-  size_t numBinomialVars;
-  /// number of negative binomial uncertain variables (native space)
-  size_t numNegBinomialVars;
-  /// number of geometric uncertain variables (native space)
-  size_t numGeometricVars;
-  /// number of hypergeometric uncertain variables (native space)
-  size_t numHyperGeomVars;
-  /// number of histogram point integer uncertain variables (native space)
-  size_t numHistogramPtIntVars;
-  /// number of histogram point string uncertain variables (native space)
-  size_t numHistogramPtStringVars;
-  /// number of histogram point real uncertain variables (native space)
-  size_t numHistogramPtRealVars;
-  /// number of continuous interval uncertain variables (native space)
-  size_t numContIntervalVars;
-  /// number of discrete interval uncertain variables (native space)
-  size_t numDiscIntervalVars;
-  /// number of discrete integer set uncertain variables (native space)
-  size_t numDiscSetIntUncVars;
-  /// number of discrete integer set uncertain variables (native space)
-  size_t numDiscSetStringUncVars;
-  /// number of discrete real set uncertain variables (native space)
-  size_t numDiscSetRealUncVars;
-
-  /// total number of continuous aleatory uncertain variables (native space)
-  size_t numContAleatUncVars;
-  /// total number of discrete integer aleatory uncertain variables
-  /// (native space)
-  size_t numDiscIntAleatUncVars;
-  /// total number of discrete string aleatory uncertain variables
-  /// (native space)
-  size_t numDiscStringAleatUncVars;
-  /// total number of discrete real aleatory uncertain variables (native space)
-  size_t numDiscRealAleatUncVars;
-  /// total number of aleatory uncertain variables (native space)
-  size_t numAleatoryUncVars;
-  /// total number of continuous epistemic uncertain variables (native space)
-  size_t numContEpistUncVars;
-  /// total number of discrete integer epistemic uncertain variables
-  /// (native space)
-  size_t numDiscIntEpistUncVars;
-  /// total number of discrete string epistemic uncertain variables
-  /// (native space)
-  size_t numDiscStringEpistUncVars;
-  /// total number of discrete real epistemic uncertain variables (native space)
-  size_t numDiscRealEpistUncVars;
-  /// total number of epistemic uncertain variables (native space)
-  size_t numEpistemicUncVars;
-  /// total number of uncertain variables (native space)
-  size_t numUncertainVars;
-
-  /// flag for computing interval-type metrics instead of integrated
-  /// metrics If any epistemic variables are active in a metric
-  /// evaluation, then this flag is set.
+  /// flag for computing interval-type metrics instead of integrated metrics
+  /// If any epistemic vars are active in a metric evaluation, then flag is set.
   bool epistemicStats;
 
-  /// moments of response functions (mean, std deviation, skewness, and
-  /// kurtosis calculated in compute_moments()), indexed as (moment,fn)
+  /// standardized or central resp moments, as determined by finalMomentsType.
+  /// Calculated in compute_moments()) and indexed as (moment,fn).
   RealMatrix momentStats;
 
   // map response level z -> probability level p, reliability level beta,
@@ -418,11 +275,20 @@ protected:
   /// final statistics from the uncertainty propagation used in strategies:
   /// response means, standard deviations, and probabilities of failure
   Response finalStatistics;
+  /// type of moments logged within finalStatistics: none, central, standard
+  short finalMomentsType;
 
   /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
   size_t miPLIndex;
 
+  /// Whether PDF was computed for function i; used to determine whether
+  /// a pdf should be archived
+  BitArray pdfComputed;
+
 private:
+
+  /// initialize data based on variable counts
+  void initialize_counts();
 
   /// convenience function for distributing a vector of levels among multiple
   /// response functions if a short-hand specification is employed.
@@ -435,10 +301,6 @@ private:
   void print_level_map(std::ostream& s, size_t fn_index,
 		       const String& qoi_label) const;
 
-  /// convert from Pecos To Dakota variable enumeration type for continuous
-  /// aleatory uncertain variables used in variable transformations
-  unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
-
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
 
@@ -446,24 +308,11 @@ private:
   //- Heading: Data members
   //
 
-  /// flags calculation of derivatives with respect to distribution
-  /// parameters s within resp_x_to_u_mapping() using the chain rule
-  /// df/dx dx/ds.  The default is to calculate derivatives with respect
-  /// to standard random variables u using the chain rule df/dx dx/du.
-  bool distParamDerivs;
 };
 
 
 inline NonD::~NonD()
 { }
-
-
-inline void NonD::transform_correlations()
-{ natafTransform.transform_correlations(); }
-
-
-inline void NonD::distribution_parameter_derivatives(bool dist_param_derivs)
-{ distParamDerivs = dist_param_derivs; }
 
 
 inline bool NonD::pdf_output() const
@@ -474,8 +323,12 @@ inline void NonD::pdf_output(bool output)
 { pdfOutput = output; }
 
 
-inline Pecos::ProbabilityTransformation& NonD::variable_transformation()
-{ return natafTransform; }
+inline short NonD::final_moments_type() const
+{ return finalMomentsType; }
+
+
+inline void NonD::final_moments_type(short type)
+{ finalMomentsType = type; }
 
 
 inline void NonD::initialize_run()
@@ -489,7 +342,7 @@ inline void NonD::initialize_run()
 inline void NonD::finalize_run()
 { 
   nondInstance = prevNondInstance;
-  Iterator::finalize_run(); // included for completeness
+  Analyzer::finalize_run();
 }
 
 
@@ -511,24 +364,6 @@ inline void NonD::print_densities(std::ostream& s) const
 { print_densities(s, "response function", iteratedModel.response_labels()); }
 
 
-/** Map the variables from iterator space (u) to simulation space (x). */
-inline void NonD::
-vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
-{
-  nondInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
-					    x_vars.continuous_variables_view());
-}
-
-
-/** Map the variables from simulation space (x) to iterator space (u). */
-inline void NonD::
-vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
-{
-  nondInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
-					    u_vars.continuous_variables_view());
-}
-
-
 inline bool NonD::homogeneous(const SizetArray& N_l) const
 {
   size_t N0 = N_l[0], i, len = N_l.size();
@@ -537,6 +372,10 @@ inline bool NonD::homogeneous(const SizetArray& N_l) const
       return false;
   return true;
 }
+
+
+inline size_t NonD::one_sided_delta(Real current, Real target)
+{ return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
 
 } // namespace Dakota
 

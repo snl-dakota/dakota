@@ -45,7 +45,8 @@ protected:
   SurrogateModel(ProblemDescDB& problem_db);
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-		 const SharedVariablesData& svd, const SharedResponseData& srd,
+		 const SharedVariablesData& svd, bool share_svd,
+		 const SharedResponseData&  srd, bool share_srd,
 		 const ActiveSet& set, short corr_type, short output_level);
   /// destructor
   ~SurrogateModel();
@@ -54,8 +55,28 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  Pecos::ProbabilityTransformation& probability_transformation();
+
+  void activate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives();
+
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
+
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
+
   /// return truth_model()
   Model& subordinate_model();
+
+  void active_model_key(const UShortArray& key);
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -67,13 +88,31 @@ protected:
   size_t mi_parallel_level_index() const;
 
   //
-  //- Heading: Member functions
+  //- Heading: New virtual functions
   //
+
+  /// distributes the incoming orig_asv among actual_asv and approx_asv
+  virtual void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
+			 ShortArray& approx_asv, bool build_flag);
 
   /// verify compatibility between SurrogateModel attributes and
   /// attributes of the submodel (DataFitSurrModel::actualModel or
   /// HierarchSurrModel::highFidelityModel)
-  void check_submodel_compatibility(const Model& sub_model);
+  virtual void check_submodel_compatibility(const Model& sub_model);
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// define truth and surrogate keys from incoming active key
+  void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+			  UShortArray& surr_key);
+
+  /// return the level index from active low fidelity model key
+  unsigned short surrogate_level_index() const;
+  /// return the level index from active high fidelity model key
+  unsigned short truth_level_index() const;
+
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
 
@@ -81,17 +120,14 @@ protected:
   /// forced based on changes in the inactive data
   bool force_rebuild();
 
-  /// distributes the incoming orig_asv among actual_asv and approx_asv
-  void asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
-		   ShortArray& approx_asv, bool build_flag);
   /// reconstitutes a combined_asv from actual_asv and approx_asv
-  void asv_mapping(const ShortArray& actual_asv, const ShortArray& approx_asv,
+  void asv_combine(const ShortArray& actual_asv, const ShortArray& approx_asv,
 		   ShortArray& combined_asv);
   /// overlays actual_response and approx_response to update combined_response
-  void response_mapping(const Response& actual_response,
+  void response_combine(const Response& actual_response,
                         const Response& approx_response,
                         Response& combined_response);
-  /// aggregate LF and HF response to create a new response with 2x size
+  /// aggregate {HF,LF} response data to create a new response with 2x size
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
 
@@ -108,6 +144,15 @@ protected:
   /** SurrBasedLocalMinimizer toggles this mode since compute_correction()
       does not back out old corrections. */
   short responseMode;
+
+  /// array of indices that identify the currently active model key
+  UShortArray activeKey;
+  /// array of indices that identify the surrogate (e.g., low fidelity) model
+  /// (trailing portion of activeKey, if aggregated models)
+  UShortArray surrModelKey;
+  /// array of indices that identify the truth (e.g., high fidelity) model
+  /// (leading portion of activeKey, if aggregated models)
+  UShortArray truthModelKey;
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
@@ -198,8 +243,81 @@ inline SurrogateModel::~SurrogateModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+inline Pecos::ProbabilityTransformation& SurrogateModel::
+probability_transformation()
+{ return truth_model().probability_transformation(); } // forward along
+
+
+inline void SurrogateModel::activate_distribution_parameter_derivatives()
+{ truth_model().activate_distribution_parameter_derivatives(); }
+
+
+inline void SurrogateModel::deactivate_distribution_parameter_derivatives()
+{ truth_model().deactivate_distribution_parameter_derivatives(); }
+
+
+inline void SurrogateModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+
+
+inline void SurrogateModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+
+
+inline void SurrogateModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+
+
+inline void SurrogateModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+		  const RealVector& fn_grad_x)
+{ truth_model().trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
+
+
 inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
+
+
+inline unsigned short SurrogateModel::surrogate_level_index() const
+{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
+
+
+inline unsigned short SurrogateModel::truth_level_index() const
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
+
+
+inline void SurrogateModel::
+extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+		   UShortArray& surr_key)
+{
+  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
+  else // single key: assign to truth or surr key based on responseMode
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+      surr_key  = active_key;  truth_key.clear();  break;
+    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
+      truth_key = active_key;   surr_key.clear();  break;
+    }
+}
+
+
+inline void SurrogateModel::active_model_key(const UShortArray& key)
+{
+  // base implementation (augmented in derived SurrogateModels)
+
+  // update activeKey
+  activeKey = key;
+  // update {truth,surr}ModelKey
+  extract_model_keys(key, truthModelKey, surrModelKey);
+}
 
 
 inline short SurrogateModel::surrogate_response_mode() const

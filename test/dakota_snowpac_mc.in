@@ -1,0 +1,96 @@
+#@ *: DakotaConfig=HAVE_NOWPAC
+
+environment,
+	  method_pointer = 'OPTIM'
+
+###########################
+# begin opt specification #
+###########################
+method,
+	id_method = 'OPTIM'
+	model_pointer = 'OPTIM_M'
+	snowpac
+	  seed = 25041981
+#	  max_iterations = 500
+#	  convergence_tolerance = 1e-4
+	  max_function_evaluations = 250
+	  trust_region
+	    initial_size = 0.10
+	    minimum_size = 1.0e-6
+	    contract_threshold = 0.25
+	    expand_threshold   = 0.75
+	    contraction_factor = 0.50
+	    expansion_factor   = 1.50
+#	  output debug
+
+model,
+	id_model = 'OPTIM_M'
+	nested
+	  variables_pointer  = 'OPTIM_V'
+	  sub_method_pointer = 'UQ'
+	  responses_pointer  = 'OPTIM_R'
+	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
+	  secondary_response_mapping = 0. 0. 1. 0. 0. 0. 0. 0.
+                                       0. 0. 0. 0. 1. 0. 0. 0.
+				       0. 0. 0. 0. 0. 0. 1. 0.
+
+variables,
+	id_variables = 'OPTIM_V'
+	continuous_design = 2
+# Feasible starting point (Barnes)
+	  initial_point    30.   40.			#s0
+# Infeasible starting point (Barnes)
+#	  initial_point    10.   20.			#s1
+	  lower_bounds      0.    0.
+	  upper_bounds     80.   80.
+	  descriptors      'x1' 'x2'
+
+responses,
+	id_responses = 'OPTIM_R'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
+	nonlinear_inequality_lower_bounds = 0.     0.     0.
+	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 1.e+50
+	no_gradients
+	no_hessians
+
+##########################
+# begin UQ specification #
+##########################
+method,
+	id_method = 'UQ'
+	model_pointer = 'SIM1'
+        sampling
+# Random samples required for error estimation:
+	  sample_type random #lhs
+	  samples = 50 seed = 1237
+	output silent
+	final_moments central
+
+model,
+	id_model = 'SIM1'
+	variables_pointer  = 'UQ_V'
+	interface_pointer  = 'UQ_I'
+	responses_pointer  = 'UQ_R'
+	simulation
+
+variables,
+	id_variables = 'UQ_V'
+	continuous_design = 2
+# Overwrite trailing a[] coefficients in TestDriverInterface::barnes()
+# Nominal values for trailing 3 are -1.6638e-6, -2.8673, 0.0005
+	uniform_uncertain = 3
+	  lower_bounds      = -1.7038e-6 -2.9073  0.0004
+	  upper_bounds      = -1.6238e-6 -2.8273  0.0006
+
+interface
+	id_interface = 'UQ_I'
+	direct
+	  analysis_driver = 'barnes'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'UQ_R'
+	response_functions = 4
+	no_gradients
+	no_hessians

@@ -24,6 +24,8 @@
 #include "DataTransformModel.hpp"
 #include "ScalingModel.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
+#include "ExperimentData.hpp"
+
 #ifdef __SUNPRO_CC
 #include <math.h>  // for std::log
 #endif // __SUNPRO_CC
@@ -41,15 +43,15 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
-Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model): 
-  Iterator(BaseConstructor(), problem_db),
+Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits): 
+  Iterator(BaseConstructor(), problem_db, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
   optimizationFlag(true),
   calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
-		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
+    !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(probDescDB.get_bool("method.scaling"))
@@ -67,8 +69,8 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Minimizer::Minimizer(unsigned short method_name, Model& model):
-  Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
+Minimizer::Minimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, model, traits), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
@@ -79,8 +81,8 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
 
 
 Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
-		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq):
-  Iterator(NoDBBaseConstructor(), method_name),
+		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, traits),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   numNonlinearIneqConstraints(num_nln_ineq),
   numNonlinearEqConstraints(num_nln_eq), numLinearIneqConstraints(num_lin_ineq),
@@ -113,7 +115,7 @@ void Minimizer::update_from_model(const Model& model)
 
   numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
   numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
-  numFunctions          = model.num_functions();
+  numFunctions          = model.response_size();
 
   bool err_flag = false;
   // Check for correct bit associated within methodName
@@ -122,11 +124,14 @@ void Minimizer::update_from_model(const Model& model)
 	 << "within Minimizer branch." << std::endl;
     err_flag = true;
   }
-  // Check for active design variables and discrete variable support
-  if (methodName == MOGA        || methodName == SOGA ||
-      methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
-      methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
-      methodName == ASYNCH_PATTERN_SEARCH || methodName == BRANCH_AND_BOUND) {
+  
+  // Check for active design variables and discrete variable support.
+  // Include explicit checking for COLINOptimizer methods that are not
+  // representative of the majority (i.e. other COLINOptimizer methods)
+  if(( traits()->supports_continuous_variables() && 
+      traits()->supports_discrete_variables()) ||
+    (methodName == COLINY_EA  ||  methodName == COLINY_BETA ))
+  {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
 	!numDiscreteRealVars) {
       Cerr << "\nError: " << method_enum_to_string(methodName)
@@ -144,6 +149,7 @@ void Minimizer::update_from_model(const Model& model)
       Cerr << "\nWarning: discrete design variables ignored by "
 	   << method_enum_to_string(methodName) << std::endl;
   }
+
   // Check for response functions
   if ( numFunctions <= 0 ) {
     Cerr << "\nError: number of response functions must be greater than zero."
@@ -192,29 +198,43 @@ void Minimizer::update_from_model(const Model& model)
   // TO DO: hard error if not supported; warning if promoted;
   //        quiet if natively supported
 
+
   // Check for linear constraint support in method selection
-  if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
-       ( methodName == NL2SOL       ||
-	 methodName == NONLINEAR_CG || methodName == OPTPP_CG             || 
-	 ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS )  ||
-	 methodName == NCSU_DIRECT  || methodName == MESH_ADAPTIVE_SEARCH ||
-	 methodName == GENIE_DIRECT || methodName == GENIE_OPT_DARTS      ||
-         methodName == DL_SOLVER    || methodName == EFFICIENT_GLOBAL ) ) {
-    Cerr << "\nError: linear constraints not currently supported by "
-	 << method_enum_to_string(methodName) << ".\n       Please select a "
-	 << "different method for generally constrained problems." << std::endl;
+  // Include explicit checking for COLINOptimizer and SNLLOptimizer methods
+  // that are not representative of the respective majority
+  // (i.e. other COLINOptimizer or SNLLOptimizer methods)
+  if ( numLinearEqConstraints && (!traits()->supports_linear_equality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
+        methodName == COLINY_SOLIS_WETS ))) {
+    Cerr << "\nError: linear equality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
     err_flag = true;
   }
-  // Check for nonlinear constraint support in method selection.  Note that
-  // CONMIN and DOT swap method selections as needed for constraint support.
-  if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints ) &&
-       ( methodName == NL2SOL        || methodName == OPTPP_CG    ||
-	 methodName == NONLINEAR_CG  || methodName == OPTPP_PDS   ||
-	 methodName == NCSU_DIRECT   || methodName == GENIE_DIRECT ||
-         methodName == GENIE_OPT_DARTS )) {
-    Cerr << "\nError: nonlinear constraints not currently supported by "
-	 << method_enum_to_string(methodName) << ".\n       Please select a "
-	 << "different method for generally constrained problems." << std::endl;
+  if ( numLinearIneqConstraints && (!traits()->supports_linear_inequality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
+        methodName == COLINY_SOLIS_WETS ))) {
+    Cerr << "\nError: linear inequality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
+    err_flag = true;
+  }
+
+  // Check for nonlinear constraint support in method selection
+  // Include explicit checking for SNLLOptimizer methods that are not
+  // representative of the majority (i.e. other SNLLOptimizer methods)
+  if ( numNonlinearEqConstraints && (!traits()->supports_nonlinear_equality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
+    Cerr << "\nError: nonlinear equality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
+    err_flag = true;
+  }
+  if ( numNonlinearIneqConstraints && (!traits()->supports_nonlinear_inequality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
+    Cerr << "\nError: nonlinear inequality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
     err_flag = true;
   }
 
@@ -225,8 +245,8 @@ void Minimizer::update_from_model(const Model& model)
   size_t i;
   const RealVector& c_l_bnds = model.continuous_lower_bounds();
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
-  //Cout << "Continuous lower bounds:\n"; write_data(Cout, c_l_bnds);
-  //Cout << "Continuous upper bounds:\n"; write_data(Cout, c_u_bnds);
+  //Cout << "Continuous lower bounds:\n" << c_l_bnds
+  //     << "Continuous upper bounds:\n" << c_u_bnds;
   for (i=0; i<numContinuousVars; ++i)
     if (c_l_bnds[i] > -bigRealBoundSize || c_u_bnds[i] < bigRealBoundSize)
       { boundConstraintFlag = true; break; }
@@ -244,6 +264,10 @@ void Minimizer::update_from_model(const Model& model)
       if (dr_l_bnds[i] > -bigRealBoundSize || dr_u_bnds[i] < bigRealBoundSize)
 	{ boundConstraintFlag = true; break; }
   }
+
+  // Configure the TPL data Transfer helper
+  dataTransferHandler.reset(new TPLDataTransfer()); 
+  dataTransferHandler->configure_data_adapters( methodTraits, model );
 }
 
 
@@ -257,14 +281,17 @@ void Minimizer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator()
+    // are not called through IteratorScheduler::run_iterator().  Within a
+    // recursion, it will correspond to the first initialize_run() with an
+    // uninitialized mapping, such as the outer-iterator on the first pass
+    // of a recursion.  On subsequent passes, it may correspond to the inner
+    // iterator.  The Iterator scope should not matter for the iteratedModel
+    // mapping initialize/finalize.
     if (!iteratedModel.mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
       bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
-      if (var_size_changed) {
-        // Ignore return value
-        bool reinit_comms = resize();
-      }
+      if (var_size_changed)
+        /*bool reinit_comms =*/ resize(); // ignore return value
     }
 
     // Do not reset the evaluation reference for sub-iterators
@@ -309,6 +336,7 @@ void Minimizer::initialize_run()
 
 void Minimizer::post_run(std::ostream& s)
 {
+  archive_best_results();
   if (summaryOutputFlag) {
     // Print the function evaluation summary for all Iterators
     if (!iteratedModel.is_null())
@@ -317,12 +345,30 @@ void Minimizer::post_run(std::ostream& s)
     // The remaining final results output varies by iterator branch
     print_results(s);
   }
-
-  resultsDB.write_databases();
 }
 
 
-Model Minimizer::original_model(unsigned short recasts_left)
+void Minimizer::finalize_run()
+{
+  // Restore previous object instance in case of recursion.
+  minimizerInstance = prevMinInstance;
+
+  // Finalize an initialized mapping.  This will correspond to the first
+  // finalize_run() with an uninitialized mapping, such as the inner-iterator
+  // in a recursion.
+  if (iteratedModel.mapping_initialized()) {
+    // paired to matching call to Model.initialize_mapping() in
+    // initialize_run() above
+    bool var_size_changed = iteratedModel.finalize_mapping();
+    if (var_size_changed)
+      /*bool reinit_comms =*/ resize(); // ignore return value
+  }
+
+  Iterator::finalize_run(); // included for completeness
+}
+
+
+Model Minimizer::original_model(unsigned short recasts_left) const
 {
   // Dive into the originally passed model (could keep a shallow copy of it)
   // Don't use a reference here as want a shallow copy, not the instance
@@ -359,7 +405,7 @@ void Minimizer::data_transform_model()
 
   // update sizes in Iterator view from the RecastModel
   numIterPrimaryFns = numTotalCalibTerms = iteratedModel.num_primary_fns();
-  numFunctions = iteratedModel.num_functions();
+  numFunctions = iteratedModel.response_size();
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
 	 << std::endl;
@@ -623,64 +669,165 @@ objective_hessian(const RealVector& fn_vals, size_t num_fns,
 }
 
 
-void Minimizer::archive_allocate_best(size_t num_points)
-{
-  // allocate arrays for best data (stored as a set even if only one best set)
-  if (numContinuousVars) {
+void Minimizer::archive_best_variables(const bool active_only) const {
+  if(!resultsDB.active()) return;
+  // archive the best point in the iterator database
+  const StrStrSizet &iterator_id = run_identifier();
+  const size_t num_points = bestVariablesArray.size();
+
+  
+  const auto & cv_labels = (active_only) ? 
+                           variables_results().continuous_variable_labels() :
+                           variables_results().all_continuous_variable_labels();
+  const auto & div_labels = (active_only) ?
+                           variables_results().discrete_int_variable_labels() :
+                           variables_results().all_discrete_int_variable_labels();
+  const auto & dsv_labels = (active_only) ?
+                           variables_results().discrete_string_variable_labels() :
+                           variables_results().all_discrete_string_variable_labels();
+  const auto & drv_labels = (active_only) ? 
+                           variables_results().discrete_real_variable_labels() :
+                           variables_results().all_discrete_real_variable_labels();
+  // ##  legacy text output ##
+  if(numContinuousVars) {
     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.cv_labels, 
-       variables_results().continuous_variable_labels());
+      (iterator_id, resultsNames.cv_labels, cv_labels);
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().continuous_variable_labels()); 
+      make_metadatavalue(cv_labels); 
     resultsDB.array_allocate<RealVector>
-      (run_identifier(), resultsNames.best_cv, num_points, md);
-  }
+      (iterator_id, resultsNames.best_cv, num_points, md);
+  } 
   if (numDiscreteIntVars) {
-    // labels
+     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.div_labels, 
-       variables_results().discrete_int_variable_labels());
+      (iterator_id, resultsNames.div_labels, div_labels);
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().discrete_int_variable_labels()); 
+      make_metadatavalue(div_labels); 
     resultsDB.array_allocate<IntVector>
-      (run_identifier(), resultsNames.best_div, num_points, md);
+      (iterator_id, resultsNames.best_div, num_points, md);
   }
   if (numDiscreteStringVars) {
     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.dsv_labels, 
-       variables_results().discrete_string_variable_labels());
+      (iterator_id, resultsNames.dsv_labels, dsv_labels);
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().discrete_string_variable_labels()); 
+      make_metadatavalue(dsv_labels); 
     resultsDB.array_allocate<StringArray>
-      (run_identifier(), resultsNames.best_dsv, num_points, md);
+      (iterator_id, resultsNames.best_dsv, num_points, md);
   }
   if (numDiscreteRealVars) {
     // labels
     resultsDB.insert
-      (run_identifier(), resultsNames.drv_labels, 
-       variables_results().discrete_real_variable_labels());
+      (iterator_id, resultsNames.drv_labels, drv_labels); 
     // best variables, with labels in metadata
     MetaDataType md;
     md["Array Spans"] = make_metadatavalue("Best Sets");
     md["Row Labels"] = 
-      make_metadatavalue(variables_results().discrete_real_variable_labels()); 
+      make_metadatavalue(drv_labels);
     resultsDB.array_allocate<RealVector>
-      (run_identifier(), resultsNames.best_drv, num_points, md);
+      (iterator_id, resultsNames.best_drv, num_points, md);
   }
+
+  DimScaleMap cv_scale;
+  cv_scale.emplace(0, StringScale("variables", cv_labels)); 
+  DimScaleMap div_scale;
+  div_scale.emplace(0, StringScale("variables", div_labels));
+  DimScaleMap dsv_scale;
+  dsv_scale.emplace(0, StringScale("variables", dsv_labels)); 
+  DimScaleMap drv_scale;
+  drv_scale.emplace(0, StringScale("variables", drv_labels));
+
+  StringArray location;
+  size_t r_index = 1; // index in location of variable type (e.g. "continuous")
+  if(num_points > 1) {
+    location.push_back("");
+    r_index = 2;
+  }
+  location.push_back("best_parameters");
+  location.push_back("");
+  size_t point_index = 0;
+  for(const auto & best_vars : bestVariablesArray) {
+    if(num_points > 1)
+      location[0] = String("set:") + std::to_string(point_index+1);
+    if (numContinuousVars) {
+      // coreDB backend which will likely be removed in the future - RWH
+      resultsDB.array_insert<RealVector>
+        (run_identifier(), resultsNames.best_cv, point_index,
+         best_vars.continuous_variables());
+
+      // hdf5DB backend
+      location[r_index] = "continuous";
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.continuous_variables(), cv_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_continuous_variables(), cv_scale);
+    }
+
+    if (numDiscreteIntVars) {
+      // coreDB backend which will likely be removed in the future - RWH
+      resultsDB.array_insert<IntVector>
+        (run_identifier(), resultsNames.best_div, point_index,
+         best_vars.discrete_int_variables());
+
+      // hdf5DB backend
+      location[r_index] = "discrete_integer";
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.discrete_int_variables(), div_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_discrete_int_variables(), div_scale);
+    }
+
+    if (numDiscreteStringVars) {
+      // coreDB backend which will likely be removed in the future - RWH
+      resultsDB.array_insert<StringArray>
+        (run_identifier(), resultsNames.best_dsv, point_index,
+         best_vars.discrete_string_variables());
+
+      // hdf5DB backend
+      location[r_index] = "discrete_string";
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.discrete_string_variables(), dsv_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_discrete_string_variables(), dsv_scale);
+    }
+
+    if (numDiscreteRealVars) {
+      // coreDB backend which will likely be removed in the future - RWH
+      resultsDB.array_insert<RealVector>
+        (run_identifier(), resultsNames.best_drv, point_index,
+         best_vars.discrete_real_variables());
+
+      // hdf5DB backend
+      location[r_index] = "discrete_real";
+      if(active_only)
+        resultsDB.insert(iterator_id, location, best_vars.discrete_real_variables(), drv_scale);
+      else
+        resultsDB.insert(iterator_id, location, best_vars.all_discrete_real_variables(), drv_scale);
+    }
+    point_index++;
+  }
+}
+
+
+void Minimizer::
+archive_best_objective_functions() const
+{
+
+  const size_t num_points = bestResponseArray.size();
+  StrStrSizet iterator_id = run_identifier();
+  // ##  legacy text output ##
   // labels
-  resultsDB.insert
-    (run_identifier(), resultsNames.fn_labels,
+  resultsDB.insert(iterator_id, resultsNames.fn_labels,
      response_results().function_labels());
   // best functions, with labels in metadata
   MetaDataType md;
@@ -688,37 +835,106 @@ void Minimizer::archive_allocate_best(size_t num_points)
   md["Row Labels"] = 
     make_metadatavalue(response_results().function_labels());
   resultsDB.array_allocate<RealVector>
-    (run_identifier(), resultsNames.best_fns, num_points, md);
+    (iterator_id, resultsNames.best_fns, num_points, md);
+
+  size_t point_index = 0;
+  StringArray location;
+  if(num_points > 1)
+    location.push_back("");
+  location.push_back("best_objective_functions");
+  DimScaleMap scale;
+  scale.emplace(0, StringScale("responses", response_results().function_labels())); 
+  for(const auto & best_resp : bestResponseArray) {
+    if(num_points > 1)
+      location[0] = String("set:") + std::to_string(point_index + 1);
+    // coreDB-based API Results output
+    resultsDB.array_insert<RealVector>
+      (iterator_id, resultsNames.best_fns, point_index, best_resp.function_values());
+
+    // hdf5DB-based API Results output
+    const RealVector &fvals = best_resp.function_values();
+      Teuchos::SerialDenseVector<int, Real> primary(Teuchos::View, const_cast<Real*>(&fvals[0]), numUserPrimaryFns);
+      resultsDB.insert(iterator_id,location, primary, scale);
+    point_index++;
+  }
+} 
+
+/// Archive residuals when calibration terms are used
+void Minimizer::
+archive_best_residuals() const {
+  if(!resultsDB.active()) return;
+  
+  const RealVector& lsq_weights 
+      = original_model().primary_response_fn_weights();
+  const StrStrSizet &iterator_id = run_identifier();
+  size_t num_points = bestResponseArray.size();
+
+  // ##  legacy text output ##
+  // labels
+  resultsDB.insert(iterator_id, resultsNames.fn_labels,
+     response_results().function_labels());
+  // best functions, with labels in metadata
+  MetaDataType md;
+  md["Array Spans"] = make_metadatavalue("Best Sets");
+  md["Row Labels"] = 
+    make_metadatavalue(response_results().function_labels());
+  resultsDB.array_allocate<RealVector>
+    (iterator_id, resultsNames.best_fns, num_points, md);
+
+  // HDF5 setup
+  StringArray residuals_location;
+  StringArray norm_location;
+  if(num_points > 1) {
+    residuals_location.push_back("");
+    norm_location.push_back("");
+  }
+  residuals_location.push_back("best_residuals");
+  norm_location.push_back("best_norm");
+  size_t point_index = 0;
+  for(const auto &resp : bestResponseArray) {
+    if(num_points > 1) {
+      String set_string = String("set:") + std::to_string(point_index + 1);
+      residuals_location[0] = set_string;
+      norm_location[0] = set_string;
+    }
+    const RealVector &best_terms = resp.function_values();
+    Real wssr =  std::sqrt(sum_squared_residuals(numUserPrimaryFns, best_terms, lsq_weights));
+    Teuchos::SerialDenseVector<int, Real> residuals(Teuchos::View, 
+                                const_cast<Real*>(&best_terms[0]), 
+                                numUserPrimaryFns);
+    resultsDB.insert(iterator_id, residuals_location, residuals);
+    resultsDB.insert(iterator_id, norm_location, wssr);
+    // coreDB
+    resultsDB.array_insert<RealVector>
+            (iterator_id, resultsNames.best_fns, point_index, resp.function_values());
+    point_index++;
+  }
 }
 
 void Minimizer::
-archive_best(size_t point_index, 
-	     const Variables& best_vars, const Response& best_resp)
-{
-  // archive the best point in the iterator database
-  if (numContinuousVars)
-    resultsDB.array_insert<RealVector>
-      (run_identifier(), resultsNames.best_cv, point_index,
-       best_vars.continuous_variables());
-  if (numDiscreteIntVars)
-    resultsDB.array_insert<IntVector>
-      (run_identifier(), resultsNames.best_div, point_index,
-       best_vars.discrete_int_variables());
-  if (numDiscreteStringVars) {
-    resultsDB.array_insert<StringArray>
-      (run_identifier(), resultsNames.best_dsv, point_index,
-       best_vars.discrete_string_variables());
+archive_best_constraints() const {
+  if(!resultsDB.active() || !numNonlinearConstraints) return;
+  const size_t num_points = bestResponseArray.size();
+  StrStrSizet iterator_id = run_identifier();
+  StringArray location;
+  if(num_points > 1) 
+    location.push_back("");
+  location.push_back("best_constraints");
+  DimScaleMap scales;
+  scales.emplace(0, StringScale(String("nonlinear_constraints"),
+          response_results().function_labels(), numUserPrimaryFns, numNonlinearConstraints));
+  size_t point_index = 0;
+  for(const auto & best_resp : bestResponseArray) {
+    if(num_points > 1)
+      location[0] = String("set:") + std::to_string(point_index+1);
+    const RealVector &fvals = best_resp.function_values();
+    Teuchos::SerialDenseVector<int, Real> secondary(Teuchos::View, 
+                                const_cast<Real*>(&fvals[numUserPrimaryFns]), 
+                                numNonlinearConstraints);
+    resultsDB.insert(iterator_id, location, secondary, scales);
+    point_index++;
   }
-  if (numDiscreteRealVars)
-    resultsDB.array_insert<RealVector>
-      (run_identifier(), resultsNames.best_drv, point_index,
-       best_vars.discrete_real_variables());
-  resultsDB.array_insert<RealVector>
-    (run_identifier(), resultsNames.best_fns, point_index,
-     best_resp.function_values());
-} 
-
-
+}
 
 /** Uses data from the innermost model, should any Minimizer recasts be active.
     Called by multipoint return solvers. Do not directly call resize on the 
@@ -801,7 +1017,6 @@ sum_squared_residuals(size_t num_pri_fns, const RealVector& residuals,
 void Minimizer::print_model_resp(size_t num_pri_fns, const RealVector& best_fns,
 				 size_t num_best, size_t best_index,
 				 std::ostream& s)
-
 {
   if (num_pri_fns > 1) s << "<<<<< Best model responses "; 
   else                 s << "<<<<< Best model response "; 
@@ -833,6 +1048,75 @@ void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms,
     << std::setw(write_precision+7) << 0.5*wssr << '\n';
 }
 
+void Minimizer::archive_best_results() {
+
+  if(!resultsDB.active()) return;
+  size_t i, num_best = bestVariablesArray.size();
+  if (num_best != bestResponseArray.size()) {
+    Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  StrStrSizet iterator_id = run_identifier();
+  // must search in the inbound Model's space (and even that may not
+  // suffice if there are additional recastings underlying this
+  // Optimizer's Model) to find the function evaluation ID number
+  Model orig_model = original_model();
+  const String& interface_id = orig_model.interface_id();
+  // use asv = 1's
+  ActiveSet search_set(orig_model.response_size(), numContinuousVars);
+  int eval_id;
+
+  if(numNonlinearConstraints)
+    archive_best_constraints();
+  if(optimizationFlag) {
+    archive_best_objective_functions();
+    archive_best_variables();
+  } else if(!calibrationDataFlag) {
+    // the original model had least squares terms
+    archive_best_residuals();
+    archive_best_variables();
+  } else { //calibration with data
+    DataTransformModel* dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+    if(dt_model_rep->num_config_vars())
+      archive_best_variables(true);
+    else
+      archive_best_variables();
+    for (i=0; i<num_best; ++i) {
+      const Variables& best_vars = bestVariablesArray[i];
+      // output best response
+      const RealVector& best_fns = bestResponseArray[i].function_values(); 
+      if (!optimizationFlag && calibrationDataFlag) {
+          dt_model_rep->archive_best_responses(resultsDB, iterator_id, 
+                                             best_vars, bestResponseArray[i],
+                                             num_best, i);
+      }
+    }
+  }
+  // Associate evaluation ids as metadata
+  String set_string = "set:";
+  StringArray location(1);
+  for(i=0; i < num_best; ++i) {
+    // lookup evaluation id where best occurred.  This cannot be catalogued
+    // directly because the optimizers track the best iterate internally and
+    // return the best results after iteration completion.  Therfore, perform a
+    // search in data_pairs to extract the evalId for the best fn eval.
+    const Variables& best_vars = bestVariablesArray[i];
+    PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
+                                           best_vars, search_set);
+    if (cache_it == data_pairs.get<hashed>().end()) 
+      eval_id = 0;
+    else 
+      eval_id = cache_it->eval_id();
+    AttributeArray attrs = {ResultAttribute<int>("evaluation_id", eval_id)};
+    if(num_best > 1) {
+      location[0] = set_string+std::to_string(i+1);
+      resultsDB.add_metadata_to_object(iterator_id,location, attrs);
+    } else
+      resultsDB.add_metadata_to_execution(iterator_id, attrs);
+  }
+}
 
 /** Retrieve a MOO/NLS response based on the data returned by a single
     objective optimizer by performing a data_pairs search. This may

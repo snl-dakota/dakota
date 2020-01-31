@@ -1,0 +1,34 @@
+Blurb:: Identity mapping of sub-method results to top-level responses
+
+Description::
+Specifies that the list of sub-method results (statistics, best
+parameters, etc.) should map one-to-one to the list of top-level
+nested model responses.
+
+<b> Usage Tips </b>
+
+To use an identity mapping, the number of top-level nested model
+responses (primary + secondary responses) must equal the number of
+sub-method results. If receiving an error about this, set \c output \c
+verbose and re-run the Dakota study to see a list of sub-method
+results responses.
+
+The identity map may not be used in conjunction with \ref
+model-nested-optional_interface_pointer, nor with an explicit \c
+primary_response_mapping or \c secondary_response_mapping.
+
+Topics::
+
+Examples::
+
+\verbatim
+model
+  id_model 'nested'
+    nested
+    sub_method_pointer 'aleat'
+    identity_response_mapping
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

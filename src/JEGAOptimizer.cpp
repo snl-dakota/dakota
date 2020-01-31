@@ -1,3 +1,11 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 /*
 ===============================================================================
     PROJECT:
@@ -98,6 +106,7 @@ Includes
 // Dakota includes.
 #include <JEGAOptimizer.hpp>
 #include <ProblemDescDB.hpp>
+#include <MarginalsCorrDistribution.hpp>
 
 // Eddy utility includes.
 #include <utilities/include/EDDY_DebugScope.hpp>
@@ -931,6 +940,10 @@ JEGAOptimizer::LoadDakotaResponses(
     IntVector  di_vars(this->numDiscreteIntVars);
     RealVector dr_vars(this->numDiscreteRealVars);
 
+//PDH: JEGA variables to Dakota variables.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped one entry at a time.
+
     // The first numContinuousVars of a design will be all the continuous
     // variables of the problem (see LoadTheDesignVariables).
     for(size_t i=0; i<this->numContinuousVars; ++i)
@@ -950,18 +963,36 @@ JEGAOptimizer::LoadDakotaResponses(
     // integers in JEGA, so they must be unmapped. Here, they also are set in
     // vars using the single value setter to avoid creating a 
     // StringMultiArrayConstView
-    const StringSetArray& dssv_values = 
-      iteratedModel.discrete_design_set_string_values();
+
+//PDH: JEGA variables to Dakota variables.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped one entry at a time.
+//     String variables also need to be remapped.
+
+    const Pecos::MultivariateDistribution& mv_dist
+      = iteratedModel.multivariate_distribution();
+    const Pecos::MarginalsCorrDistribution* mvd_dist_rep
+      = (const Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    StringSetArray ddss_values;
+    mvd_dist_rep->
+      pull_parameters(this->numContinuousVars+this->numDiscreteIntVars,
+		      this->numDiscreteStringVars, Pecos::DSS_VALUES,
+		      ddss_values);
     for(size_t i=0; i<this->numDiscreteStringVars; ++i) {
       const int &element_index = static_cast<int>(des.GetVariableValue(i +
 	    this->numContinuousVars + this->numDiscreteIntVars +
 	    this->numDiscreteRealVars));
-      const String &ds_var = set_index_to_value(element_index, dssv_values[i]);
+      const String &ds_var = set_index_to_value(element_index, ddss_values[i]);
       vars.discrete_string_variable(ds_var, i);
     }
     vars.continuous_variables(c_vars);
     vars.discrete_int_variables(di_vars);
     vars.discrete_real_variables(dr_vars);
+
+//PDH: JEGA responses to Dakota responses.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped one entry at a time.
+//     Need to respect constraint ordering.
 
     // BMA TODO: Could always populate constraints and just get
     // primary responses from the DB, as in SNLL
@@ -1040,13 +1071,15 @@ JEGAOptimizer::LoadTheParameterDatabase(
         "method.mutation_scale",
         probDescDB.get_real("method.mutation_scale")
         );
+    double perc_change = probDescDB.get_real("method.jega.percent_change");
     this->_theParamDB->AddDoubleParam(
         "method.jega.percent_change",
-        probDescDB.get_real("method.jega.percent_change")
+	(perc_change < 0) ? 1.0e-4 : perc_change
         );
+    double conv_tol = probDescDB.get_real("method.convergence_tolerance");
     this->_theParamDB->AddDoubleParam(
         "method.convergence_tolerance",
-        probDescDB.get_real("method.convergence_tolerance")
+	(conv_tol < 0) ? 1.0e-4 : conv_tol 
         );
     this->_theParamDB->AddDoubleParam(
         "method.jega.shrinkage_percentage",
@@ -1127,7 +1160,7 @@ JEGAOptimizer::LoadTheParameterDatabase(
     // only fitness assessor b/c it is only for use with the favor
     // feasible selector.  Likewise, the favor feasible selector can
     // only be used with the weighted sum fitness asessor.  Because of
-    // this, we will detect use of the the favor feasible and enforce
+    // this, we will detect use of the favor feasible and enforce
     // the use of the weighted sum only.  We will write a log message
     // about it.
     const string& selector =
@@ -1384,6 +1417,11 @@ JEGAOptimizer::LoadTheDesignVariables(
     // the RandomBitMutator.  Other than that, it is largely ignored by this
     // implementation.  It can have a fairly profound effect on the preformance
     // of those operators that use it to encode to binary.
+
+//PDH: Should be able to simplify all of this code quite a bit.  As
+//far as I can tell, the JEGA vectors are all just std vectors of the
+//corresponding type.  Not sure what exactly pConfig is, though.
+
     const RealVector& clbs = m.continuous_lower_bounds();
     const RealVector& cubs = m.continuous_upper_bounds();
     StringMultiArrayConstView clabels = m.continuous_variable_labels();
@@ -1419,6 +1457,8 @@ JEGAOptimizer::LoadTheDesignVariables(
       pConfig.AddDiscreteRealVariable(drlabels[i],
 	JEGA::DoubleVector(dak_set.begin(), dak_set.end()) );
     }
+
+//PDH: Have to map the string variables to indices.
 
     // Finally, load in the "discrete set of string" variables. These must
     // be mapped to discrete integer variables.
@@ -1502,6 +1542,12 @@ JEGAOptimizer::LoadTheConstraints(
     const RealVector& nln_ineq_upr_bnds
         = m.nonlinear_ineq_constraint_upper_bounds();
 
+//PDH: Dakota nonlinear constraints to JEGA nonlinear constraints.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped one entry at a time.
+//     Looks like we don't have to worry about (JEGA) order.  Need to
+//     determine if they have to be two-sided for JEGA.
+
     // Loop over all two sided non linear inequality constraitns and add an
     // info object for each.
     for(size_t i=0; i<this->numNonlinearIneqConstraints; ++i)
@@ -1518,6 +1564,12 @@ JEGAOptimizer::LoadTheConstraints(
             "Non-Linear Equality " + asstring(i), nln_eq_targets[i]
             );
 
+//PDH: Dakota linear constraints to JEGA linear constraints.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped one entry at a time.
+//     Looks like we don't have to worry about (JEGA) order.  Need to
+//     determine if they have to be two-sided for JEGA.
+
     // now do linear (2-sided) inequality constraints  The information we need
     // for these is in linear_ineq_constraint_lower_bounds and
     // linear_ineq_constraint_upper_bounds.
@@ -1531,6 +1583,10 @@ JEGAOptimizer::LoadTheConstraints(
         = m.linear_ineq_constraint_coeffs();
 
     JEGA::DoubleVector lin_ineq_coeffs_row(lin_ineq_coeffs.numCols());
+
+//PDH: RealMatrix -> set of std::vector
+//     Just need the individual rows.  Check copy_row_vector to see if
+//     transpose is also needed.
 
     for(size_t i=0; i<numLinearIneqConstraints; ++i) {
         copy_row_vector(lin_ineq_coeffs, i, lin_ineq_coeffs_row);
@@ -1550,6 +1606,10 @@ JEGAOptimizer::LoadTheConstraints(
     const RealMatrix& lin_eq_coeffs = m.linear_eq_constraint_coeffs();
 
     JEGA::DoubleVector lin_eq_coeffs_row(lin_eq_coeffs.numCols());
+
+//PDH: RealMatrix -> set of std::vector
+//     Just need the individual rows.  Check copy_row_vector to see if
+//     transpose is also needed.
 
     for(size_t i=0; i<numLinearEqConstraints; ++i) {
         copy_row_vector(lin_eq_coeffs, i, lin_eq_coeffs_row);
@@ -1812,7 +1872,8 @@ Structors
 JEGAOptimizer::JEGAOptimizer(
     ProblemDescDB& problem_db, Model& model
     ) :
-        Optimizer(problem_db, model),
+        //Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
+        Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
         _theParamDB(0x0),
         _theEvalCreator(0x0)
 {
@@ -1856,8 +1917,12 @@ JEGAOptimizer::JEGAOptimizer(
             default: jegaLev = ldefault();
         }
 
+	// We use JEGA as a library, so want signals to raise up to
+	// us, lest they get ignored:
+	const bool jega_register_signals = false;
         JEGA::FrontEnd::Driver::InitializeJEGA(
-            "JEGAGlobal.log", jegaLev, rSeed
+	    "JEGAGlobal.log", jegaLev, rSeed, JEGA::Logging::Logger::ABORT,
+	    jega_register_signals
             );
     }
 
@@ -1935,6 +2000,10 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     const DesignTarget& target = from.GetDesignTarget();
     const DesignVariableInfoVector& dvis = target.GetDesignVariableInfos();
 
+//PDH: I think there's something that can be done here with regard to
+//     mapping discrete variables, but I don't know what the JEGA data
+//     structures are at the moment.
+
     // We will be marching through the dvis and need to keep track of were we
     // are from loop to loop.
     size_t i, dvi_cntr = 0;
@@ -1950,10 +2019,12 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     const BitArray& di_set_bits = this->_model.discrete_int_sets();
     for(i=0; i<num_div; ++i, ++dvi_cntr)
     {
-      if (di_set_bits[i]) // set variables are discrete nature in JEGA
+      if (di_set_bits[i]) { // set variables are discrete nature in JEGA
         EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
-      else // range variables are continuum nature in JEGA
+      }
+      else { // range variables are continuum nature in JEGA
         EDDY_ASSERT(dvis[dvi_cntr]->IsContinuum());
+      }
       intoDiscInt[i] = static_cast<int>(dvis[dvi_cntr]->WhichValue(from));
     }
 
@@ -1992,6 +2063,9 @@ JEGAOptimizer::Evaluator::RecordResponses(
 
     // prepare to store the location in the responses vector.
     RealVector::ordinalType loc = 0;
+
+//PDH: I think this is going from Dakota responses to JEGA responses,
+//     e.g., after a function evaluation.
 
     // find out how many objective and constraint functions there are.
     const size_t nof = target.GetNOF();
@@ -2174,7 +2248,7 @@ JEGAOptimizer::Evaluator::Evaluate(
         IntRespMCIter r_cit = response_map.begin();
 
         // Record the set of responses in the DesignGroup
-        for(it=group.BeginDV(); it!=e; ++it, ++r_cit)
+        for(it=group.BeginDV(); it!=e; ++it)
         {
             // we didn't send already-evaluated Designs out for evaluation
             // so skip them here as well.
@@ -2188,6 +2262,9 @@ JEGAOptimizer::Evaluator::Evaluate(
 
             // now check the feasibility of this design
             target.CheckFeasibility(**it);
+
+	    // only increment for newly evaluated points contained in response_map
+	    ++r_cit;
         }
     }
 

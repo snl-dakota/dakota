@@ -197,6 +197,7 @@ public:
   //
 
   size_t tv()         const; ///< total number of vars
+  size_t total_active() const; ///< total number of active vars
   size_t cv()         const; ///< number of active continuous vars
   size_t cv_start()   const; ///< start index of active continuous vars
   size_t div()        const; ///< number of active discrete int vars
@@ -498,6 +499,15 @@ public:
 
   /// return all continuous variable position identifiers
   SizetMultiArrayConstView all_continuous_variable_ids() const;
+  /// return all discrete integer variable position identifiers
+  SizetMultiArrayConstView all_discrete_int_variable_ids() const;
+  /// return all discrete string variable position identifiers
+  SizetMultiArrayConstView all_discrete_string_variable_ids() const;
+  /// return all discrete real variable position identifiers
+  SizetMultiArrayConstView all_discrete_real_variable_ids() const;
+
+  /// get all or active labels in input spec order
+  StringArray ordered_labels(unsigned short vars_part = ALL_VARS) const;
 
   /// a deep variables copy for use in history mechanisms
   /// (SharedVariablesData uses a shallow copy by default)
@@ -651,6 +661,13 @@ inline size_t Variables::tv() const
 }
 
 
+inline size_t Variables::total_active() const
+{
+  return (variablesRep) ? variablesRep->total_active() :
+    cv() + div() + dsv() + drv();
+}
+
+
 inline size_t Variables::cv() const
 { return shared_data().cv(); }
 
@@ -764,7 +781,7 @@ inline const RealVector& Variables::continuous_variables() const
 inline void Variables::
 continuous_variables(const RealVector& c_vars)
 {
-  // continuousVars is a view; carefully assign to update the data it points to
+  // continuousVars is a view; use assign() to update the data it points to
   if (variablesRep) variablesRep->continuousVars.assign(c_vars);
   else              continuousVars.assign(c_vars);
 }
@@ -790,7 +807,7 @@ inline const IntVector& Variables::discrete_int_variables() const
 
 inline void Variables::discrete_int_variables(const IntVector& di_vars)
 {
-  // discreteIntVars is a view; carefully assign to update the data it points to
+  // discreteIntVars is a view; use assign() to update the data it points to
   if (variablesRep) variablesRep->discreteIntVars.assign(di_vars);
   else              discreteIntVars.assign(di_vars);
 }
@@ -856,7 +873,7 @@ inline const RealVector& Variables::discrete_real_variables() const
 
 inline void Variables::discrete_real_variables(const RealVector& dr_vars)
 {
-  // discreteRealVars is a view; carefully assign to update the data it points to
+  // discreteRealVars is a view; use assign() to update the data it points to
   if (variablesRep) variablesRep->discreteRealVars.assign(dr_vars);
   else              discreteRealVars.assign(dr_vars);
 }
@@ -1138,7 +1155,7 @@ inline const RealVector& Variables::inactive_continuous_variables() const
 
 inline void Variables::inactive_continuous_variables(const RealVector& ic_vars)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveContinuousVars.assign(ic_vars);
   else              inactiveContinuousVars.assign(ic_vars);
 }
@@ -1146,7 +1163,7 @@ inline void Variables::inactive_continuous_variables(const RealVector& ic_vars)
 
 inline void Variables::inactive_continuous_variable(Real ic_var, size_t index)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveContinuousVars[index] = ic_var;
   else              inactiveContinuousVars[index] = ic_var;
 }
@@ -1162,7 +1179,7 @@ inline const IntVector& Variables::inactive_discrete_int_variables() const
 inline void Variables::
 inactive_discrete_int_variables(const IntVector& idi_vars)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteIntVars.assign(idi_vars);
   else              inactiveDiscreteIntVars.assign(idi_vars);
 }
@@ -1170,7 +1187,7 @@ inactive_discrete_int_variables(const IntVector& idi_vars)
 
 inline void Variables::inactive_discrete_int_variable(int idi_var, size_t index)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteIntVars[index] = idi_var;
   else              inactiveDiscreteIntVars[index] = idi_var;
 }
@@ -1216,7 +1233,7 @@ inline const RealVector& Variables::inactive_discrete_real_variables() const
 inline void Variables::
 inactive_discrete_real_variables(const RealVector& idr_vars)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteRealVars.assign(idr_vars);
   else              inactiveDiscreteRealVars.assign(idr_vars);
 }
@@ -1225,7 +1242,7 @@ inactive_discrete_real_variables(const RealVector& idr_vars)
 inline void Variables::
 inactive_discrete_real_variable(Real idr_var, size_t index)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteRealVars[index] = idr_var;
   else              inactiveDiscreteRealVars[index] = idr_var;
 }
@@ -1501,6 +1518,15 @@ all_discrete_real_variable_types() const
 
 inline SizetMultiArrayConstView Variables::all_continuous_variable_ids() const
 { return shared_data().all_continuous_ids(0, acv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_int_variable_ids() const
+{ return shared_data().all_discrete_int_ids(0, adiv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_string_variable_ids() const
+{ return shared_data().all_discrete_string_ids(0, adsv()); }
+
+inline SizetMultiArrayConstView Variables::all_discrete_real_variable_ids() const
+{ return shared_data().all_discrete_real_ids(0, adrv()); }
 
 
 inline const std::pair<short,short>& Variables::view() const

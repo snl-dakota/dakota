@@ -16,6 +16,8 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "NonDSampling.hpp"
+#include "dakota_stat_util.hpp"
 
 // BMA TODO: remove this header
 // for uniform PDF and samples
@@ -24,6 +26,8 @@
 // included to set seed in RNGLIB:
 #include "rnglib.hpp"
 //#include <random>
+
+#define DEBUG
 
 using std::string;
 
@@ -36,6 +40,7 @@ namespace Dakota {
 NonDWASABIBayesCalibration::
 NonDWASABIBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
+  numPushforwardSamples(probDescDB.get_int("method.nond.pushforward_samples")),
   dataDistMeans(probDescDB.get_rv("method.nond.data_dist_means")),
   dataDistCovariance(probDescDB.get_rv("method.nond.data_dist_covariance")),
   dataDistFilename(probDescDB.get_string("method.nond.data_dist_filename")),
@@ -71,8 +76,6 @@ void NonDWASABIBayesCalibration::calibrate()
     Cerr << "\nError: WASABI requires an emulator!"<<std::endl;
     abort_handler(METHOD_ERROR);
   }
-  
-
 
   // set the seed for the rng 
   if (randomSeed) {
@@ -85,7 +88,7 @@ void NonDWASABIBayesCalibration::calibrate()
     rnumGenerator.seed(clock_seed);
     Cout << " WASABI Seed (system-generated) = " << clock_seed << std::endl;
   }
-  
+ 
   // The experimental data is loaded in a base class.  We assume that
   // the distribution on the data will either be given as a Gaussian
   // or estimated using a KDE.
@@ -93,15 +96,19 @@ void NonDWASABIBayesCalibration::calibrate()
   // initialize the prior PDF and sampler
   // the prior is currently assumed uniform, but this will be generalized
 
-  // set the bounds on the parameters (TMW: can this be moved?  
+  // set the bounds on the parameters (TMW: can this be moved?)
   // Does it require initialize_model() to be called first? 
   // resize, initializing to zero
   paramMins.size(numContinuousVars);
   paramMaxs.size(numContinuousVars);
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
-  for (size_t i=0; i<numContinuousVars; ++i)
-    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  RealRealPairArray bnds
+    = mcmcModel.multivariate_distribution().distribution_bounds();
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (size_t i=0; i<numContinuousVars; ++i) {
+    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
+    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+  }
 
   // TMW: evaluation of prior should be elevated to NonDBayes 
   // (even for MCMC-based methods)
@@ -118,24 +125,27 @@ void NonDWASABIBayesCalibration::calibrate()
 
   // diagnostic information
   // BMA: changed this from chainSamples to avoid confusion
-  int prior_samples = 10000;
-  Cout << "INFO (WASABI): Num Samples " << prior_samples << '\n';
+  Cout << "INFO (WASABI): Num Samples " << numPushforwardSamples << '\n';
  
-  RealMatrix samples_from_prior((int)numContinuousVars, prior_samples, false);
-  
-  for (int j=0; j<prior_samples; j++) {
+  RealMatrix samples_from_prior((int)numContinuousVars, numPushforwardSamples, false);
+ 
+  for (int j=0; j<numPushforwardSamples; j++) {
     RealVector samp_j(Teuchos::View, samples_from_prior[j], numContinuousVars);
     prior_sample(rnumGenerator, samp_j);
   }
-    
+# ifdef DEBUG
+  Cout << "samples_from_prior " << samples_from_prior;
+# endif 
+
   ////////////////////////////////////////////////////////
   // Step 3 of 10: Evaluate the response surface at these samples
   ////////////////////////////////////////////////////////
 
-  RealMatrix responses_for_samples_from_prior;
-  
-  compute_responses(samples_from_prior, responses_for_samples_from_prior);
-
+  RealMatrix pushforward_responses_from_prior;
+  compute_responses(samples_from_prior, pushforward_responses_from_prior);
+# ifdef DEBUG
+  Cout << "pushforward_responses_from_prior " << pushforward_responses_from_prior;  
+#endif 
 
   ////////////////////////////////////////////////////////
   // Step 4 of 10: Build a density estimate using the samples of the RSA
@@ -144,7 +154,7 @@ void NonDWASABIBayesCalibration::calibrate()
   // compute_responses returns a matrix (num_qoi x num_samples)
   // but kde.inititalize expects the transpose of this matrix
   Pecos::DensityEstimator response_kde("gaussian_kde");
-  response_kde.initialize(responses_for_samples_from_prior, Teuchos::TRANS );
+  response_kde.initialize(pushforward_responses_from_prior, Teuchos::TRANS );
 
   ////////////////////////////////////////////////////////
   // Step 5 of 10: Pick a set of points (s_eval) to evaluate 
@@ -187,8 +197,16 @@ void NonDWASABIBayesCalibration::calibrate()
   // Step 7 of 10: Evaluate the RSA at s_eval -> q_eval = RSA(s_eval)
   ////////////////////////////////////////////////////////
 
+  // if prior samples are used, no need to re-evaluate on the surrogate 
   RealMatrix responses_for_posterior_eval;
-  compute_responses(samples_for_posterior_eval, responses_for_posterior_eval);
+  if ( !posteriorSamplesImportFile.empty() )
+    compute_responses(samples_for_posterior_eval, responses_for_posterior_eval);
+  else 
+    responses_for_posterior_eval = pushforward_responses_from_prior;
+
+#ifdef DEBUG
+  Cout << "responses_for_posterior_eval " << responses_for_posterior_eval;  
+#endif
 
   ////////////////////////////////////////////////////////
   // Step 8 of 10: Evaluate the density at q_eval
@@ -202,18 +220,49 @@ void NonDWASABIBayesCalibration::calibrate()
   ////////////////////////////////////////////////////////
   // Step 9 of 10: Evaluate the given data distribution at q_eval
   ////////////////////////////////////////////////////////
-
-  double mean_data = 0.3;
-  double stdev_data = 0.05;
-  boost::math::normal datadist(mean_data, stdev_data);
+  int num_obs_data;
+  if (dataDistMeans.length() > 0){
+    num_obs_data = dataDistMeans.length();
+    Cout << "INFO(WASABI): num_obs_data " << num_obs_data << '\n';
+  }  
+  else if (!dataDistFilename.empty()) {
+    std::ifstream file_stream;
+    TabularIO::open_file(file_stream, dataDistFilename,
+                         "obs_data");
+    RealVectorArray va;
+    read_unsized_data(file_stream, va);
+    dataDistMeans = va[0];
+    dataDistCovariance = va[1];
+    num_obs_data = dataDistMeans.length();
+    Cout << "INFO(WASABI): num_obs_data " << num_obs_data << '\n';
+  }
+  else { 
+    Cerr << "INFO(WASABI):  You need to provide observational data" 
+         << " for the Wasabi method. " << '\n';
+    abort_handler(IO_ERROR);
+  }
+#ifdef DEBUG 
+  Cout << "Data Distribution Means " << dataDistMeans << '\n';
+  Cout << "Data Distribution Covariance " << dataDistCovariance << '\n';
+#endif
+  //boost::math::normal datadist(mean_data, stdev_data);
+  std::vector<boost::math::normal> datadists;
+  for (int k=0; k <num_obs_data; k++) 
+    datadists.push_back(boost::math::normal(dataDistMeans[k],dataDistCovariance[k]));
  
   RealVector data_density_vals(samples_for_posterior_eval.numCols(), false);
 
   for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
     double currval = responses_for_posterior_eval(0,j);
-    double dataval = boost::math::pdf(datadist, currval);
-    data_density_vals[j] = dataval;
+    data_density_vals[j] = 1.0;
+    for (int k=0; k<num_obs_data; k++) {
+      double dataval = boost::math::pdf(datadists[k], currval);
+      data_density_vals[j] *= dataval;
+    }
   }
+#ifdef DEBUG 
+  Cout << "Data density values " << data_density_vals << '\n';
+#endif
 
   ////////////////////////////////////////////////////////
   // Step 10 of 10: Compute the posterior distribution at s_eval
@@ -221,10 +270,30 @@ void NonDWASABIBayesCalibration::calibrate()
 
   RealVector posterior_density(samples_for_posterior_eval.numCols(), false);
   for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
-    posterior_density[j] = prior_density_vals[j] * (data_density_vals[j] / 
+    //note:  originally this was: 
+    //posterior_density[j] = prior_density_vals[j] * (data_density_vals[j] / 
+    //			  response_density_vals_for_posterior_eval[j]);
+    //Tim suggested eliminating the multiplication and then division by the 
+    //prior to get the accept/reject ratio below.  So, at this stage, it 
+    //is not truly a posterior density.  That happens in step 11.	
+    posterior_density[j] = (data_density_vals[j] / 
 			  response_density_vals_for_posterior_eval[j]);
   }
 
+  // calculate information and K-L 
+  Real sum1=0; Real sum2=0;
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    sum1 += posterior_density[j];
+    sum2 += posterior_density[j]*log(posterior_density[j]);
+  }
+  Cout << "Information ratio of observed/push forward prior " 
+       <<  sum1/samples_for_posterior_eval.numCols() << '\n';
+  Cout << "K-L divergence of observed/push forward prior " 
+       <<  sum2/samples_for_posterior_eval.numCols() << '\n';
+    
+#ifdef DEBUG 
+  Cout << "Posterior density values " << posterior_density << '\n';
+#endif 
   ////////////////////////////////////////////////////////
   // Step 11 (optional): Use an acceptance-rejection algorithm 
   // to select a subset of the samples consistent with the posteror 
@@ -234,20 +303,40 @@ void NonDWASABIBayesCalibration::calibrate()
   boost::random::mt19937 rng;
   boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
 
-  if ( !generateRandomPosteriorSamples && !evaluatePosteriorDensity ){
-    std::string msg = "must specify at least one of evaluatePosteriorDensity ";
-    msg += "generateRandomPosteriorSamples";
-    throw(std::runtime_error("msg") );
+  if ( !generateRandomPosteriorSamples || !evaluatePosteriorDensity ){
+    Cout << "Must specify at least one of generate_posterior_samples "
+         << " and evaluate_posterior_density";
+    abort_handler(IO_ERROR);
   }
 
   if ( generateRandomPosteriorSamples )
     for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
-      double ratio = posterior_density[j] / prior_density_vals[j];
+      //double ratio = posterior_density[j] / prior_density_vals[j];
+      double ratio = posterior_density[j];
       double rnum = distribution(rng);
       if (ratio > rnum)
 	points_to_keep.push_back(j);
     }
-  if ( !exportPosteriorDensityFile.empty() ){
+  // Thus far, we have not calculated the true posterior to eliminate 
+  // unnecessary division.  But we need to correct that now and 
+  // multiply by prior.  Also calculate the mean of the posterior now. 
+
+  momentStatistics.shapeUninitialized(1,numFunctions);
+  for (int k=0; k<numFunctions; k++) 
+    momentStatistics(0,k)=0.0; 
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    posterior_density[j] = posterior_density[j]*prior_density_vals[j];
+    for (int k=0; k<numFunctions; k++) 
+      momentStatistics(0,k) += responses_for_posterior_eval(k,j)*posterior_density[j];
+  }
+  for (int k=0; k<numFunctions; k++){ 
+    momentStatistics(0,k) = momentStatistics(0,k)/samples_for_posterior_eval.numCols();
+  }
+#ifdef DEBUG 
+  Cout << "Posterior density values " << posterior_density << '\n';
+#endif 
+
+  if ( !exportPosteriorSamplesFile.empty() ){
     RealMatrix posterior_data;
     extract_selected_posterior_samples(points_to_keep,
 				       samples_for_posterior_eval,
@@ -307,12 +396,18 @@ export_posterior_samples_to_file( const std::string filename,
   export_file_stream.close();
 }
 
-void NonDWASABIBayesCalibration::print_results(std::ostream& s)
-{
-  NonDBayesCalibration::print_results(s);
 
-  //  additional WASABI output
+void NonDWASABIBayesCalibration::
+print_results(std::ostream& s, short results_state)
+{
+  //NonDBayesCalibration::print_results(s, results_state);
+
+  // WASABI-specific output
+  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  NonDSampling::print_moments(s, momentStatistics, RealMatrix(),
+      "response function", STANDARD_MOMENTS, resp_labels, false);
 }
+
 
 void NonDWASABIBayesCalibration::
 compute_responses(RealMatrix & samples, RealMatrix & responses)

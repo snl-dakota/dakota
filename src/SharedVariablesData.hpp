@@ -17,10 +17,10 @@
 
 #include "dakota_data_types.hpp"
 #include "DataVariables.hpp"
-#include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/tracking.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Dakota {
 
@@ -120,12 +120,50 @@ private:
 			 size_t& num_cv, size_t& num_div, size_t& num_dsv,
 			 size_t& num_drv) const;
 
+  /// define active variable subsets based on active view
+  void view_subsets(short view, bool& cdv,  bool& ddv, bool& cauv, bool& dauv,
+		    bool& ceuv, bool& deuv, bool& csv, bool& dsv) const;
+
   /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels,
   /// with or without discrete relaxation
   void size_all_labels();
   /// size all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Types,
   /// with or without discrete relaxation
   void size_all_types();
+
+  /// convert index within active continuous variables (as identified
+  /// by bools) to index within aggregated variables (all continous,
+  /// discrete {int,string,real})
+  size_t cv_index_to_all_index(size_t cv_index,
+			       bool cdv, bool cauv, bool ceuv, bool csv) const;
+  /// convert index within active discrete integer variables (as
+  /// identified by bools) to index within aggregated variables (all
+  /// continous, discrete {int,string,real})
+  size_t div_index_to_all_index(size_t div_index,
+				bool ddv, bool dauv, bool deuv, bool dsv) const;
+  /// convert index within active discrete string variables (as
+  /// identified by bools) to index within aggregated variables (all
+  /// continous, discrete {int,string,real})
+  size_t dsv_index_to_all_index(size_t dsv_index,
+				bool ddv, bool dauv, bool deuv, bool dsv) const;
+  /// convert index within active discrete real variables (as
+  /// identified by bools) to index within aggregated variables (all
+  /// continous, discrete {int,string,real})
+  size_t drv_index_to_all_index(size_t drv_index,
+				bool ddv, bool dauv, bool deuv, bool dsv) const;
+
+  /// create a BitArray indicating the active continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray cv_to_all_mask(bool cdv, bool cauv, bool ceuv, bool csv) const;
+  /// create a BitArray indicating the active discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray div_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const;
+  /// create a BitArray indicating the active discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray dsv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const;
+  /// create a BitArray indicating the active discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray drv_to_all_mask(bool ddv, bool dauv, bool deuv, bool dsv) const;
 
   /// aggregate all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels
   /// from user specification or defaults
@@ -195,7 +233,7 @@ private:
 
   /// the variables view pair containing active (first) and inactive (second)
   /// view enumerations
-  std::pair<short,short> variablesView;
+  std::pair<short, short> variablesView;
   /// start index of active continuous variables within allContinuousVars
   size_t cvStart;
   /// start index of active discrete integer variables within allDiscreteIntVars
@@ -246,6 +284,13 @@ private:
       for defining derivative ids (DVV) based on an active subset. */
   SizetMultiArray allContinuousIds;
 
+  /// array of 1-based ids (into total variable set) for discrete int
+  SizetMultiArray allDiscreteIntIds;
+  /// array of 1-based ids (into total variable set) for discrete string
+  SizetMultiArray allDiscreteStringIds;
+  /// array of 1-based ids (into total variable set) for discrete real
+  SizetMultiArray allDiscreteRealIds;
+
   /// array of booleans to indicate relaxation (promotion from
   /// DiscreteInt to Continuous) for all specified discrete int variables
   /// Note: container will be empty when not relaxing variables
@@ -254,7 +299,6 @@ private:
   /// DiscreteReal to Continuous) for all specified discrete real variables
   /// Note: container will be empty when not relaxing variables
   BitArray allRelaxedDiscreteReal;
-
 };
 
 
@@ -414,6 +458,32 @@ state_counts(size_t& num_csv,  size_t& num_dsiv,
 }
 
 
+inline void SharedVariablesDataRep::
+view_subsets(short view, bool&  cdv, bool& ddv, bool& cauv, bool& dauv,
+	     bool& ceuv, bool& deuv, bool& csv, bool& dsv) const
+{
+  // Continuous/discrete distinction is finer granularity than is currently
+  // necessary, but is more readily extensible...
+
+  switch (view) {
+  case RELAXED_ALL:                 case MIXED_ALL:
+    cdv = ddv = cauv = dauv = ceuv = deuv = csv = dsv = true;        break;
+  case RELAXED_UNCERTAIN:           case MIXED_UNCERTAIN:
+    cdv = ddv = csv = dsv = false; cauv = dauv = ceuv = deuv = true; break;
+  case RELAXED_ALEATORY_UNCERTAIN:  case MIXED_ALEATORY_UNCERTAIN: 
+    cdv = ddv = ceuv = deuv = csv = dsv = false; cauv = dauv = true; break;
+  case RELAXED_EPISTEMIC_UNCERTAIN: case MIXED_EPISTEMIC_UNCERTAIN:
+    cdv = ddv = cauv = dauv = csv = dsv = false; ceuv = deuv = true; break;
+  case RELAXED_DESIGN:              case MIXED_DESIGN:
+    cauv = dauv = ceuv = deuv = csv = dsv = false; cdv = ddv = true; break;
+  case RELAXED_STATE:               case MIXED_STATE:
+    cdv = ddv = cauv = dauv = ceuv = deuv = false; csv = dsv = true; break;
+  default: // EMPTY_VIEW (e.g., inactive view not yet defined)
+    cdv = ddv = cauv = dauv = ceuv = deuv = csv = dsv = false;       break;
+  }
+}
+
+
 inline void SharedVariablesDataRep::size_all_labels()
 {
   size_t num_acv, num_adiv, num_adsv, num_adrv;
@@ -538,6 +608,149 @@ public:
   void state_counts(size_t& num_csv,  size_t& num_dsiv,
 		    size_t& num_dssv, size_t& num_dsrv) const;
 
+  /// define active variable subsets based on active view
+  void active_subsets(bool& cdv,  bool& ddv,  bool& cauv, bool& dauv,
+		      bool& ceuv, bool& deuv, bool& csv,  bool& dsv) const;
+  /// define active variable subsets based on active view
+  void inactive_subsets(bool& cdv,  bool& ddv,  bool& cauv, bool& dauv,
+			bool& ceuv, bool& deuv, bool& csv,  bool& dsv) const;
+  /// define active variable subsets based on active view
+  void complement_subsets(bool& cdv,  bool& ddv,  bool& cauv, bool& dauv,
+			  bool& ceuv, bool& deuv, bool& csv,  bool& dsv) const;
+
+  /// convert index within active continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t cv_index_to_all_index(size_t cv_index) const;
+  /// convert index within inactive continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t icv_index_to_all_index(size_t ccv_index) const;
+  /// convert index within complement of active continuous variables to index
+  /// within aggregated variables (all continous, discrete {int,string,real})
+  size_t ccv_index_to_all_index(size_t ccv_index) const;
+  /// convert index within all continuous variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t acv_index_to_all_index(size_t acv_index) const;
+
+  /// convert index within active discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t div_index_to_all_index(size_t div_index) const;
+  /// convert index within inactive discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t idiv_index_to_all_index(size_t div_index) const;
+  /// convert index within complement of active discrete integer variables
+  /// to index within aggregated variables (all continous, discrete
+  /// {int,string,real})
+  size_t cdiv_index_to_all_index(size_t div_index) const;
+  /// convert index within all discrete integer variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adiv_index_to_all_index(size_t adiv_index) const;
+
+  /// convert index within active discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t dsv_index_to_all_index(size_t dsv_index) const;
+  /// convert index within inactive discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t idsv_index_to_all_index(size_t dsv_index) const;
+  /// convert index within complement of active discrete string variables
+  /// to index within aggregated variables (all continous, discrete
+  /// {int,string,real})
+  size_t cdsv_index_to_all_index(size_t dsv_index) const;
+  /// convert index within all discrete string variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adsv_index_to_all_index(size_t adsv_index) const;
+
+  /// convert index within active discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t drv_index_to_all_index(size_t drv_index) const;
+  /// convert index within inactive discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t idrv_index_to_all_index(size_t drv_index) const;
+  /// convert index within complement of active discrete real variables
+  /// to index within aggregated variables (all continous, discrete
+  /// {int,string,real})
+  size_t cdrv_index_to_all_index(size_t drv_index) const;
+  /// convert index within all discrete real variables to index within
+  /// aggregated variables (all continous, discrete {int,string,real})
+  size_t adrv_index_to_all_index(size_t adrv_index) const;
+
+  /// convert index within active continuous variables to index within
+  /// aggregated active variables (active continous, discrete {int,string,real})
+  size_t cv_index_to_active_index(size_t cv_index) const;
+  /// convert index within active discrete integer variables to index within
+  /// aggregated active variables (active continous, discrete {int,string,real})
+  size_t div_index_to_active_index(size_t div_index) const;
+  /// convert index within active discrete string variables to index within
+  /// aggregated active variables (active continous, discrete {int,string,real})
+  size_t dsv_index_to_active_index(size_t dsv_index) const;
+  /// convert index within active discrete real variables to index within
+  /// aggregated active variables (active continous, discrete {int,string,real})
+  size_t drv_index_to_active_index(size_t drv_index) const;
+
+  /// convert index within complement of active continuous variables
+  /// to index within all continuous variables
+  size_t ccv_index_to_acv_index(size_t ccv_index) const;
+  /// convert index within complement of active discrete integer variables
+  /// to index within all discrete integer variables
+  size_t cdiv_index_to_adiv_index(size_t div_index) const;
+  /// convert index within complement of active discrete string variables
+  /// to index within all discrete string variables
+  size_t cdsv_index_to_adsv_index(size_t dsv_index) const;
+  /// convert index within complement of active discrete real
+  /// variables to index within all discrete real variables
+  size_t cdrv_index_to_adrv_index(size_t drv_index) const;
+
+  /// create a BitArray indicating the active continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray cv_to_all_mask() const;
+  /// create a BitArray indicating the inactive continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray icv_to_all_mask() const;
+  /// create a BitArray indicating the complement continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray ccv_to_all_mask() const;
+  /// create a BitArray indicating the all continuous subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray acv_to_all_mask() const;
+
+  /// create a BitArray indicating the active discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray div_to_all_mask() const;
+  /// create a BitArray indicating the inactive discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray idiv_to_all_mask() const;
+  /// create a BitArray indicating the complement discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray cdiv_to_all_mask() const;
+  /// create a BitArray indicating the all discrete int subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray adiv_to_all_mask() const;
+
+  /// create a BitArray indicating the active discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray dsv_to_all_mask() const;
+  /// create a BitArray indicating the inactive discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray idsv_to_all_mask() const;
+  /// create a BitArray indicating the complement discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray cdsv_to_all_mask() const;
+  /// create a BitArray indicating the all discrete string subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray adsv_to_all_mask() const;
+
+  /// create a BitArray indicating the active discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray drv_to_all_mask() const;
+  /// create a BitArray indicating the inactive discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray idrv_to_all_mask() const;
+  /// create a BitArray indicating the complement discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray cdrv_to_all_mask() const;
+  /// create a BitArray indicating the all discrete real subset of all
+  /// {continuous,discrete {int,string,real}} variables
+  BitArray adrv_to_all_mask() const;
+
   /// initialize start index and counts for active variables
   void initialize_active_start_counts();
   /// initialize start index and counts for inactive variables
@@ -589,6 +802,10 @@ public:
   /// set discrete real label at index start 
   void all_discrete_real_label(const String& drv_label, size_t index);
 
+  /// assemble all variable labels (continuous and discrete {int,string,real})
+  /// in standard (input specification-based) order
+  void assemble_all_labels(StringArray& all_labels) const;
+
   /// get num_items continuous types beginning at index start
   UShortMultiArrayConstView
     all_continuous_types(size_t start, size_t num_items) const;
@@ -633,6 +850,16 @@ public:
 			  size_t start, size_t num_items);
   /// set num_items continuous ids beginning at index start
   void all_continuous_id(size_t id, size_t index);
+
+  /// get num_items discrete int ids beginning at index start
+  SizetMultiArrayConstView
+    all_discrete_int_ids(size_t start, size_t num_items) const;
+  /// get num_items discrete string ids beginning at index start
+  SizetMultiArrayConstView
+    all_discrete_string_ids(size_t start, size_t num_items) const;
+  /// get num_items discrete real ids beginning at index start
+  SizetMultiArrayConstView
+    all_discrete_real_ids(size_t start, size_t num_items) const;
 
   // get ids of discrete variables that have been relaxed into
   // continuous variable arrays
@@ -841,6 +1068,279 @@ inline void SharedVariablesData::
 state_counts(size_t& num_csv, size_t& num_dsiv, size_t& num_dssv,
 	     size_t& num_dsrv) const
 { svdRep->state_counts(num_csv, num_dsiv, num_dssv, num_dsrv); }
+
+
+inline void SharedVariablesData::
+active_subsets(bool& cdv, bool& ddv, bool& cauv, bool& dauv, bool& ceuv,
+	       bool& deuv, bool& csv, bool& dsv) const
+{
+  svdRep->view_subsets(svdRep->variablesView.first,
+		       cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+}
+
+
+inline void SharedVariablesData::
+inactive_subsets(bool& cdv, bool& ddv, bool& cauv, bool& dauv, bool& ceuv,
+		 bool& deuv, bool& csv, bool& dsv) const
+{
+  svdRep->view_subsets(svdRep->variablesView.second,
+		       cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+}
+
+
+inline void SharedVariablesData::
+complement_subsets(bool& cdv, bool& ddv, bool& cauv, bool& dauv, bool& ceuv,
+		   bool& deuv, bool& csv, bool& dsv) const
+{
+  bool active_cdv,  active_ddv,  active_cauv, active_dauv,
+       active_ceuv, active_deuv, active_csv,  active_dsv;
+  svdRep->view_subsets(svdRep->variablesView.first, active_cdv, active_ddv,
+		       active_cauv, active_dauv, active_ceuv, active_deuv,
+		       active_csv, active_dsv);
+  cdv  = !active_cdv;  ddv  = !active_ddv;
+  cauv = !active_cauv; dauv = !active_dauv;
+  ceuv = !active_ceuv, deuv = !active_deuv;
+  csv  = !active_csv,  dsv  = !active_dsv;
+}
+
+
+inline size_t SharedVariablesData::cv_index_to_all_index(size_t cv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->cv_index_to_all_index(cv_index, cdv, cauv, ceuv, csv);
+}
+
+
+inline size_t SharedVariablesData::
+icv_index_to_all_index(size_t icv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->cv_index_to_all_index(icv_index, cdv, cauv, ceuv, csv);
+}
+
+
+inline size_t SharedVariablesData::
+ccv_index_to_all_index(size_t ccv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->cv_index_to_all_index(ccv_index, cdv, cauv, ceuv, csv);
+}
+
+
+inline size_t SharedVariablesData::
+acv_index_to_all_index(size_t acv_index) const
+{ return svdRep->cv_index_to_all_index(acv_index, true, true, true, true); }
+
+
+inline size_t SharedVariablesData::
+div_index_to_all_index(size_t div_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->div_index_to_all_index(div_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+idiv_index_to_all_index(size_t idiv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->div_index_to_all_index(idiv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+cdiv_index_to_all_index(size_t cdiv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->div_index_to_all_index(cdiv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+adiv_index_to_all_index(size_t adiv_index) const
+{ return svdRep->div_index_to_all_index(adiv_index, true, true, true, true); }
+
+
+inline size_t SharedVariablesData::
+dsv_index_to_all_index(size_t dsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->dsv_index_to_all_index(dsv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+idsv_index_to_all_index(size_t idsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->dsv_index_to_all_index(idsv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+cdsv_index_to_all_index(size_t cdsv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->dsv_index_to_all_index(cdsv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+adsv_index_to_all_index(size_t adsv_index) const
+{ return svdRep->dsv_index_to_all_index(adsv_index, true, true, true, true); }
+
+
+inline size_t SharedVariablesData::
+drv_index_to_all_index(size_t drv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->drv_index_to_all_index(drv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+idrv_index_to_all_index(size_t idrv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->drv_index_to_all_index(idrv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+cdrv_index_to_all_index(size_t cdrv_index) const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->drv_index_to_all_index(cdrv_index, ddv, dauv, deuv, dsv);
+}
+
+
+inline size_t SharedVariablesData::
+adrv_index_to_all_index(size_t adrv_index) const
+{ return svdRep->drv_index_to_all_index(adrv_index, true, true, true, true); }
+
+
+inline BitArray SharedVariablesData::cv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->cv_to_all_mask(cdv, cauv, ceuv, csv);
+}
+
+
+inline BitArray SharedVariablesData::icv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->cv_to_all_mask(cdv, cauv, ceuv, csv);
+}
+
+
+inline BitArray SharedVariablesData::ccv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->cv_to_all_mask(cdv, cauv, ceuv, csv);
+}
+
+
+inline BitArray SharedVariablesData::acv_to_all_mask() const
+{ return svdRep->cv_to_all_mask(true, true, true, true); }
+
+
+inline BitArray SharedVariablesData::div_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->div_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::idiv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->div_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::cdiv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->div_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::adiv_to_all_mask() const
+{ return svdRep->div_to_all_mask(true, true, true, true); }
+
+
+inline BitArray SharedVariablesData::dsv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->dsv_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::idsv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->dsv_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::cdsv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->dsv_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::adsv_to_all_mask() const
+{ return svdRep->dsv_to_all_mask(true, true, true, true); }
+
+
+inline BitArray SharedVariablesData::drv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->drv_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::idrv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  inactive_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->drv_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::cdrv_to_all_mask() const
+{
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  complement_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  return svdRep->drv_to_all_mask(ddv, dauv, deuv, dsv);
+}
+
+
+inline BitArray SharedVariablesData::adrv_to_all_mask() const
+{ return svdRep->drv_to_all_mask(true, true, true, true); }
 
 
 inline void SharedVariablesData::initialize_active_start_counts()
@@ -1053,6 +1553,27 @@ all_continuous_ids(size_t start, size_t num_items) const
 {
   return svdRep->
     allContinuousIds[boost::indices[idx_range(start, start+num_items)]];
+}
+
+inline SizetMultiArrayConstView SharedVariablesData::
+all_discrete_int_ids(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteIntIds[boost::indices[idx_range(start, start+num_items)]];
+}
+
+inline SizetMultiArrayConstView SharedVariablesData::
+all_discrete_string_ids(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteStringIds[boost::indices[idx_range(start, start+num_items)]];
+}
+
+inline SizetMultiArrayConstView SharedVariablesData::
+all_discrete_real_ids(size_t start, size_t num_items) const
+{
+  return svdRep->
+    allDiscreteRealIds[boost::indices[idx_range(start, start+num_items)]];
 }
 
 

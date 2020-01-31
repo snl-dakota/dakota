@@ -1,0 +1,76 @@
+Blurb:: Select the models that write evaluation data to HDF5
+
+Description::
+
+By default, when HDF5 output is enabled, Dakota writes evaluation
+data for all simulation interfaces (interfaces of type fork, system, direct, etc, but
+not approximation interfaces, which are constructed by models of type surrogate). This
+keyword group is used to override the default.
+
+HDF5 output is an experimental feature, and the contents and organization of 
+the output file is subject to change. The current organization and a
+brief explanation of HDF5 is provided in the \ref hdf5_output section
+of this manual.
+
+The example below will be used to explain the effect of each keyword.
+
+Topics:: dakota_output
+
+Examples::
+
+\verbatim
+environment
+  results_output
+      hdf5
+       # interface_selection
+       #  simulation
+       #  all
+       #  none
+      results_output_file 'my_results'  # The .h5 extension will be added
+
+   method_pointer 'opt'
+
+method
+  id_method 'opt'
+    optpp_q_newton
+  model_pointer 'surr'
+
+model
+  id_model 'surr'
+  surrogate global gaussian_process surfpack
+  dace_method_pointer 'training'
+
+method
+  id_method 'training'
+  sampling 
+    seed 1234 
+    samples 20
+  model_pointer 'truth_m'
+
+model
+  id_model 'truth_m'
+  simulation
+
+interface
+  id_interface 'truth'
+  direct
+    analysis_drivers 'text_book'
+
+variables
+  continuous_design 2
+    descriptors 'x1' 'x2'
+    lower_bounds -2.0 -2.0
+    upper_bounds  2.0  2.0
+
+responses
+  objective_functions 2
+    descriptors 'f1' 'f2'
+  analytic_gradients
+  no_hessians
+
+\endverbatim
+
+
+Theory::
+Faq::
+See_Also::

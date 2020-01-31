@@ -59,6 +59,42 @@ namespace Dakota {
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
 
+
+/**
+ * \brief A version of TraitsBase specialized for SNLLLeastSq
+ *
+ */
+
+  
+class SNLLLeastSqTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  SNLLLeastSqTraits() { }
+
+  /// destructor
+  virtual ~SNLLLeastSqTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
 class SNLLLeastSq: public LeastSq, public SNLLBase
 {
 public:
@@ -81,6 +117,8 @@ public:
   /// compute the least squares solution
   void core_run();
 
+  void reset();
+
 protected:
 
   //
@@ -90,9 +128,6 @@ protected:
   /// invokes LeastSq::initialize_run(),
   /// SNLLBase::snll_initialize_run(), and performs other set-up
   void initialize_run();
-  /// invokes snll_post_run and re-implements post_run (does not call parent)
-  /// and performs other solution processing
-  void post_run(std::ostream& s);
   /// restores instances 
   void finalize_run();
 

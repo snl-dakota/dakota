@@ -1,0 +1,60 @@
+#@ *: Label=FastTest
+#@ *: DakotaConfig=HAVE_QUESO
+#@ *: ReqFiles=dakota_bayes_transforms.withsigma.dat
+# Test scaling/weighting transformations of residuals in Bayesian calibration
+# with mod_cantilever (2D) driver
+# s0-s5: using QUESO 
+# s6: using DREAM
+# s0: baseline, no scaling nor weighting transformations
+# s1: scaled
+# s2: weighted
+# s3: scaled and weighted (transformations should cancel each other out)
+# s4: scaled and weighted (transformations compund each other)
+# s5: scaled and weighted (transformations compund each other), using metropolis_hastings
+# s6: scaled and weighted (transformations compund each other), using DREAM
+
+method
+  bayes_calibration queso 									#s0,#s1,#s2,#s3,#s4,#s5
+# bayes_calibration dream									#s6
+    chain_samples = 2000 seed = 1
+    dram  													#s0,#s1,#s2,#s3,#s4
+#   metropolis_hastings 									#s5
+    proposal_covariance										#s0,#s1,#s2,#s3,#s4,#s5
+      	values 5.0e8 5.0e-8				                    #s0,#s3
+#     	values 5.0e10 5.0e-6				                #s1
+#     	values 5.0e6 5.0e-10				                #s2
+#     	values 5.0e12 5.0e-4				                #s4,#s5
+        diagonal                                    		#s0,#s1,#s2,#s3,#s4,#s5
+    probability_levels 0.05 0.1  				
+                       0.05 0.1				
+    posterior_stats kl_divergence
+#   scaling               									#s1,#s3,#s4,#s5,#s6
+
+variables
+  uniform_uncertain 2
+# 	MAP estimate is close to 2.9e7 2.5
+    upper_bounds  2.95e7 2.55
+    lower_bounds 2.85e7 2.45
+    initial_point 2.9e7 2.5
+    descriptors 'E' 'w'
+  continuous_state 4
+    initial_state 3 40000 500 1000
+    descriptors 't' 'R' 'X' 'Y'
+
+interface
+  analysis_drivers = 'mod_cantilever'
+    direct
+
+responses
+  calibration_terms = 2
+  calibration_data_file = 'dakota_bayes_transforms.withsigma.dat'
+    freeform
+    num_experiments = 10
+    variance_type = 'scalar' # read 2 scalar sigmas in each row
+  descriptors = 'stress' 'displacement'
+#          primary_scale_types  'value'    	#s1,#s3,#s4,#s5,#s6
+#          primary_scales   10.0 10.0  		#s1,#s3,#s4,#s5,#s6
+#          weights          100.0  100.0    #s2,#s3
+#          weights          0.01  0.01    	#s4,#s5,#s6
+  no_gradients
+  no_hessians

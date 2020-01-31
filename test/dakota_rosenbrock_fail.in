@@ -1,6 +1,5 @@
 #@ s1: DakotaConfig=HAVE_NPSOL
 environment,
-	#graphics
 #	method_pointer = 'SBLO'			#s1
 
 ##########################################

@@ -54,6 +54,7 @@ public:
   /// or intervals (epsitemic or mixed uncertainties)
   void compute_statistics(const RealMatrix&     vars_samples,
 			  const IntResponseMap& resp_samples);
+
   /// called by compute_statistics() to calculate min/max intervals
   /// using allResponses
   void compute_intervals(RealRealPairArray& extreme_fns);
@@ -63,21 +64,62 @@ public:
   /// using samples
   void compute_intervals(RealRealPairArray& extreme_fns,
 			 const IntResponseMap& samples);
-  /// called by compute_statistics() to calculate sample moments and
-  /// confidence intervals
+
+  /// calculates sample moments from a matrix of observations for a set of QoI
+  void compute_moments(const RealVectorArray& fn_samples);
+  /// calculate sample moments and confidence intervals from a map of
+  /// response observations
   void compute_moments(const IntResponseMap& samples);
+  /// convert IntResponseMap to RealVectorArray and invoke helpers
+  void compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
+		       RealMatrix& moment_grads, RealMatrix& moment_conf_ints,
+		       short moments_type, const StringArray& labels);
+  /// core compute_moments() implementation with all data as inputs
+  static void compute_moments(const RealVectorArray& fn_samples,
+			      SizetArray& sample_counts,
+			      RealMatrix& moment_stats, short moments_type,
+			      const StringArray& labels);
+  /// core compute_moments() implementation with all data as inputs
+  static void compute_moments(const RealVectorArray& fn_samples,
+			      RealMatrix& moment_stats, short moments_type);
+  /// alternate RealMatrix samples API for use by external clients
+  static void compute_moments(const RealMatrix& fn_samples,
+			      RealMatrix& moment_stats, short moments_type);
+
+  /// compute moment_grads from function and gradient samples
+  void compute_moment_gradients(const RealVectorArray& fn_samples,
+				const RealMatrixArray& grad_samples,
+				const RealMatrix& moment_stats,
+				RealMatrix& moment_grads, short moments_type);
+
+  /// compute moment confidence intervals from moment values
+  void compute_moment_confidence_intervals(const RealMatrix& moment_stats,
+					   RealMatrix& moment_conf_ints,
+					   const SizetArray& sample_counts,
+					   short moments_type);
+
+  /// archive moment statistics in results DB
+  void archive_moments(size_t inc_id = 0);
+  /// archive moment confidence intervals in results DB
+  void archive_moment_confidence_intervals(size_t inc_id = 0);
+
+  /// archive extreme values (epistemic result) in results DB
+  void archive_extreme_responses(size_t inc_id = 0);
+
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z as well as PDFs
   void compute_level_mappings(const IntResponseMap& samples);
 
   /// prints the statistics computed in compute_statistics()
   void print_statistics(std::ostream& s) const;
+
   /// prints the intervals computed in compute_intervals() with default
   /// qoi_type and moment_labels
   void print_intervals(std::ostream& s) const;
   /// prints the intervals computed in compute_intervals()
   void print_intervals(std::ostream& s, String qoi_type,
 		       const StringArray& interval_labels) const;
+
   /// prints the moments computed in compute_moments() with default
   /// qoi_type and moment_labels
   void print_moments(std::ostream& s) const;
@@ -87,20 +129,15 @@ public:
   /// core print moments that can be called without object
   static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
 			    const RealMatrix moment_cis, String qoi_type,
+			    short moments_type,
 			    const StringArray& moment_labels, bool print_cis);
+
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
-
-  /// calculates sample moments for an array of observations for a set of QoI
-  void compute_moments(const RealMatrix& samples);
-
-  /// core compute moments that can be called without object
-  static void compute_moments(const RealMatrix& samples, 
-			      RealMatrix& moment_stats);
 
   /// calculates the number of samples using the Wilks formula
   /// Static so I can test without instantiating a NonDSampling object - RWH
@@ -126,11 +163,13 @@ public:
   /// transform allSamples imported by alternate constructor.  This is needed
   /// since random variable distribution parameters are not updated until
   /// run time and an imported sample_matrix is typically in x-space.
-  void transform_samples(bool x_to_u = true);
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+  			 bool x_to_u = true);
 
   /// transform the specified samples matrix from x to u or u to x
-  void transform_samples(RealMatrix& sample_matrix, bool x_to_u, 
-			 int num_samples = 0);
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+			 RealMatrix& sample_matrix, int num_samples = 0,
+			 bool x_to_u = true);
 
 protected:
 
@@ -162,6 +201,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void pre_run();
   void core_run();
 
   int num_samples() const;
@@ -206,13 +246,13 @@ protected:
 
   /// Override default update of continuous vars only
   void update_model_from_sample(Model& model, const Real* sample_vars);
-
   /// override default mapping of continuous variables only
   void sample_to_variables(const Real* sample_vars, Variables& vars);
-
-
+  /// override default mapping of continuous variables only
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
+  /// return error estimates associated with each of the finalStatistics
+  const RealVector& response_error_estimates() const;
 
   //
   //- Heading: Convenience member functions for derived classes
@@ -221,36 +261,31 @@ protected:
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
   void initialize_lhs(bool write_message, int num_samples);
 
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_design_counts(const Model& model, size_t& num_cdv, size_t& num_ddiv,
-			  size_t& num_ddsv, size_t& num_ddrv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
-				      size_t& num_dauiv, size_t& num_dausv,
-				      size_t& num_daurv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
-				       size_t& num_deuiv, size_t& num_deusv,
-				       size_t& num_deurv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_uncertain_counts(const Model& model, size_t& num_cuv,
-			     size_t& num_duiv, size_t& num_dusv,
-			     size_t& num_durv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_state_counts(const Model& model, size_t& num_csv, size_t& num_dsiv,
-			 size_t& num_dssv, size_t& num_dsrv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
-		   size_t& div_start,  size_t& num_div,
-		   size_t& dsv_start,  size_t& num_dsv,
-		   size_t& drv_start,  size_t& num_drv) const;
+  /// in the case of sub-iteration, map from finalStatistics.active_set()
+  /// requests to activeSet used in evaluate_parameter_sets()
+  void active_set_mapping();
 
+  /// compute sampled subsets (all, active, uncertain) within all
+  /// variables (acv/adiv/adrv) from samplingVarsMode and model
+  void mode_counts(const Variables& vars, size_t& cv_start, size_t& num_cv,
+		   size_t& div_start, size_t& num_div, size_t& dsv_start,
+		   size_t& num_dsv, size_t& drv_start, size_t& num_drv) const;
+  /// define subset views for sampling modes
+  void mode_bits(const Variables& vars, BitArray& active_vars,
+		 BitArray& active_corr) const;
+
+  /// helper to accumulate sum of finite samples
+  static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,
+			      size_t& num_samp, Real& mean);
+  /// helper to accumulate higher order sums of finite samples
+  static void accumulate_moments(const RealVectorArray& fn_samples, size_t q,
+				 short moments_type, Real* moments);
+  /// helper to accumulate gradient sums
+  static void accumulate_moment_gradients(const RealVectorArray& fn_samples,
+					  const RealMatrixArray& grad_samples,
+					  size_t q, short moments_type,
+					  Real mean, Real mom2, Real* mean_grad,
+					  Real* mom2_grad);
 
   //
   //- Heading: Data members
@@ -262,13 +297,21 @@ protected:
   int       samplesRef;  ///< reference number of samples updated for refinement
   int       numSamples;  ///< the current number of samples to evaluate
   String    rngName;	 ///< name of the random number generator
-  unsigned short sampleType;  ///< the sample type: default, random, lhs,
-                              ///< incremental random, or incremental lhs
-  bool      wilksFlag;   /// flags use of Wilks formula to calculate num samples
+  unsigned short sampleType; ///< the sample type: default, random, lhs,
+                             ///< incremental random, or incremental lhs
+  bool      wilksFlag; ///< flags use of Wilks formula to calculate num samples
   unsigned short wilksOrder;
   Real      wilksAlpha;    
   Real      wilksBeta;    
   short     wilksSidedness;
+
+  /// gradients of standardized or central moments of response functions, as
+  /// determined by finalMomentsType.  Calculated in compute_moments() and
+  /// indexed as (var,moment) when moment id runs from 1:2*numFunctions.
+  RealMatrix momentGrads;
+
+  /// standard errors (estimator std deviation) for each of the finalStatistics
+  RealVector finalStatErrors;
 
   /// current increment in a sequence of samples
   int samplesIncrement;
@@ -306,21 +349,84 @@ protected:
   /// Minimum and maximum values of response functions for epistemic
   /// calculations (calculated in compute_intervals()),
   RealRealPairArray extremeValues;
+  
+  /// Function moments have been computed; used to determine whether
+  /// to archive the moments
+  bool functionMomentsComputed;
 
 private:
 
   //
+  //- Heading: Convenience functions
+  //
+  
+  /// helper function to consolidate update code
+  void sample_to_variables(const Real* sample_vars, Variables& vars,
+			   Model& model);
+  /// helper function to copy a range from sample_vars to a variables type
+  void sample_to_type(const Real* sample_vars, Variables& vars,
+		      size_t& cv_index, size_t num_cv, size_t& div_index,
+		      size_t num_div, size_t& dsv_index, size_t num_dsv,
+		      size_t& drv_index, size_t num_drv, size_t& samp_index,
+		      Model& model);
+  /// helper function to copy a range from sample_vars to a variables type
+  void sample_to_cv_type(const Real* sample_vars, Variables& vars,
+			 size_t& cv_index, size_t num_cv, size_t& div_index,
+			 size_t num_div, size_t& dsv_index, size_t num_dsv,
+			 size_t& drv_index, size_t num_drv, size_t& samp_index);
+                         //, Model& model);
+  /// helper function to copy a range from sample_vars to continuous variables
+  void sample_to_cv(const Real* sample_vars, Variables& vars, size_t& acv_index,
+		    size_t num_acv, size_t& samp_index);
+  /// helper function to copy a range from sample_vars to discrete int variables
+  void sample_to_div(const Real* sample_vars, Variables& vars,
+		     size_t& adiv_index, size_t num_adiv, size_t& samp_index);
+  /// helper function to copy a range from sample_vars to discrete string vars
+  void sample_to_dsv(const Real* sample_vars, Variables& vars,
+		     size_t& adsv_index, size_t num_adsv, size_t& samp_index,
+		     const StringSetArray& dss_values);
+  /// helper function to copy a range from sample_vars to discrete real vars
+  void sample_to_drv(const Real* sample_vars, Variables& vars,
+		     size_t& adrv_index, size_t num_adrv, size_t& samp_index);
+
+  //
   //- Heading: Data
   //
-
+  
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;
 
-  /// Matrix of confidence internals on moments, with rows for
-  /// mean_lower, mean_upper, sd_lower, sd_upper (calculated in
-  /// compute_moments())
+  /// Matrix of confidence internals on moments, with rows for mean_lower,
+  /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
   RealMatrix momentCIs;
 };
+
+
+inline void NonDSampling::pre_run()
+{ 
+  Analyzer::pre_run();
+
+  // synchronize the derivative components flowing down from a NestedModel's
+  // call to subIterator.response_results_active_set(), so that the correct 
+  // derivs are computed in Analyzer::evaluate_parameter_sets()
+  if (subIteratorFlag)
+    active_set_mapping();
+}
+
+
+inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
+{
+  SizetArray sample_counts;
+  compute_moments(fn_samples, sample_counts, momentStats,
+		  finalMomentsType, iteratedModel.response_labels());
+}
+
+
+inline void NonDSampling::compute_moments(const IntResponseMap& samples)
+{
+  compute_moments(samples, momentStats, momentGrads, momentCIs,
+		  finalMomentsType, iteratedModel.response_labels());
+}
 
 
 inline void NonDSampling::compute_intervals(RealRealPairArray& extreme_fns)
@@ -333,6 +439,16 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
 { print_intervals(s, "response function", iteratedModel.response_labels()); }
+
+
+inline void NonDSampling::
+print_moments(std::ostream& s, String qoi_type,
+	      const StringArray& moment_labels) const
+{
+  bool print_cis = (numSamples > 1);
+  print_moments(s, momentStats, momentCIs, qoi_type, finalMomentsType,
+		moment_labels, print_cis);
+}
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
@@ -380,6 +496,128 @@ inline unsigned short NonDSampling::sampling_scheme() const
 
 inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
+
+
+/** transform x_samples to u_samples for use by expansionSampler */
+inline void NonDSampling::
+transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
+{ transform_samples(nataf, allSamples, numSamples, x_to_u); }
+
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes and populates
+    the specified design matrix. */
+inline void NonDSampling::
+get_parameter_sets(Model& model, const int num_samples,
+		   RealMatrix& design_matrix)
+{ get_parameter_sets(model, num_samples, design_matrix, true); }
+
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes and populates
+    class member allSamples. */
+inline void NonDSampling::get_parameter_sets(Model& model)
+{ get_parameter_sets(model, numSamples, allSamples); }
+
+
+inline void NonDSampling::
+sample_to_cv(const Real* sample_vars, Variables& vars, size_t& acv_index,
+	     size_t num_acv, size_t& samp_index)
+{
+  // sampled continuous vars (by value)
+  for (size_t i=0; i<num_acv; ++i, ++samp_index, ++acv_index)
+    vars.all_continuous_variable(sample_vars[samp_index], acv_index);
+}
+
+
+inline void NonDSampling::
+sample_to_div(const Real* sample_vars, Variables& vars, size_t& adiv_index,
+	      size_t num_adiv, size_t& samp_index)
+{
+  // sampled discrete int vars (by value cast from Real)
+  for (size_t i=0; i<num_adiv; ++i, ++samp_index, ++adiv_index)
+    vars.all_discrete_int_variable((int)sample_vars[samp_index], adiv_index);
+}
+
+
+inline void NonDSampling::
+sample_to_dsv(const Real* sample_vars, Variables& vars, size_t& adsv_index,
+	      size_t num_adsv, size_t& samp_index,
+	      const StringSetArray& dss_values)
+{
+  // sampled discrete string vars (by index cast from Real)
+  size_t i, set_index;
+  for (i=0; i<num_adsv; ++i, ++samp_index, ++adsv_index) {
+    set_index = (size_t)sample_vars[samp_index];
+    const String& dss = set_index_to_value(set_index, dss_values[adsv_index]);
+    vars.all_discrete_string_variable(dss, adsv_index);
+  }
+}
+
+
+inline void NonDSampling::
+sample_to_drv(const Real* sample_vars, Variables& vars, size_t& adrv_index,
+	      size_t num_adrv, size_t& samp_index)
+{
+  // sampled discrete real vars (by value)
+  for (size_t i=0; i<num_adrv; ++i, ++samp_index, ++adrv_index)
+    vars.all_discrete_real_variable(sample_vars[samp_index], adrv_index);
+}
+
+
+inline void NonDSampling::
+sample_to_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
+	       size_t num_cv, size_t& div_index, size_t num_div,
+	       size_t& dsv_index, size_t num_dsv, size_t& drv_index,
+	       size_t num_drv, size_t& samp_index, Model& model)
+{
+  sample_to_cv(sample_vars,  vars,  cv_index, num_cv,  samp_index);
+  sample_to_div(sample_vars, vars, div_index, num_div, samp_index);
+  if (num_dsv) {
+    short active_view = vars.view().first, all_view =
+      ( active_view == RELAXED_ALL || ( active_view >= RELAXED_DESIGN &&
+        active_view <= RELAXED_STATE )) ? RELAXED_ALL : MIXED_ALL;
+    // Note: Model::activeDiscSetStringValues is cached, so no penalty for
+    //       repeated query with same view
+    sample_to_dsv(sample_vars, vars, dsv_index, num_dsv, samp_index,
+		  model.discrete_set_string_values(all_view));
+  }
+  sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
+}
+
+
+inline void NonDSampling::
+sample_to_cv_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
+		  size_t num_cv, size_t& div_index, size_t num_div,
+		  size_t& dsv_index, size_t num_dsv, size_t& drv_index,
+		  size_t num_drv, size_t& samp_index)//, Model& model)
+{
+  // UNIFORM views do not currently support non-relaxed discrete
+
+  sample_to_cv(sample_vars, vars, cv_index, num_cv, samp_index);
+  //sample_to_div(sample_vars, vars, div_index, num_div, samp_index);
+  //if (num_dsv) {
+    //short active_view = vars.view().first, all_view = () ? : ;
+    //sample_to_dsv(sample_vars, vars, dsv_index,num_dsv,samp_index,
+    //              model.discrete_set_string_values(all_view));
+  //}
+  //sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
+}
+
+
+inline void NonDSampling::
+update_model_from_sample(Model& model, const Real* sample_vars)
+{ sample_to_variables(sample_vars, model.current_variables(), model); }
+
+
+inline void NonDSampling::
+sample_to_variables(const Real* sample_vars, Variables& vars)
+{ sample_to_variables(sample_vars, vars, iteratedModel); }
+// default to iteratedModel for dss values
+
+
+inline const RealVector& NonDSampling::response_error_estimates() const
+{ return finalStatErrors; }
 
 } // namespace Dakota
 

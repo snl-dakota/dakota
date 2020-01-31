@@ -22,7 +22,7 @@
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
 #include "pecos_data_types.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include "DakotaApproximation.hpp"
 #include <boost/lexical_cast.hpp>
 
@@ -192,6 +192,8 @@ void NonDGPImpSampling::core_run()
   for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
     size_t num_levels = requestedRespLevels[resp_fn_count].length();
     const Pecos::SurrogateData& gp_data = gpModel.approximation_data(resp_fn_count);
+    const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+    const Pecos::SDRArray& sdr_array = gp_data.response_data();
     for (level_count=0; level_count<num_levels; level_count++) {
       Cout << "Starting calculations for response function " << resp_fn_count+1 << '\n';
       Cout << "Starting calculations for level  " << level_count+1 << '\n';
@@ -200,7 +202,8 @@ void NonDGPImpSampling::core_run()
        // Calculate indicator over the true function evaluations
       double cdfMult = (cdfFlag?1.0:-1.0);
       for (j = 0; j < numSamples; j++) {
-        indicator(j) = static_cast<double>((z-gp_data.response_function(j))*cdfMult>0.0); 
+        indicator(j)
+	  = static_cast<double>((z - sdr_array[j].response_function()) * cdfMult > 0.0); 
         if (outputLevel > NORMAL_OUTPUT)
           Cout << "indicator(" << j << ")=" << indicator(j) << '\n';
       }
@@ -342,7 +345,8 @@ void NonDGPImpSampling::core_run()
         IntResponsePair resp_truth(iteratedModel.evaluation_id(),
                                    iteratedModel.current_response());
         gpModel.append_approximation(iteratedModel.current_variables(), resp_truth, true);
-	indicator(numSamples+k) = static_cast<double>((z-gp_data.response_function(numSamples+k))*cdfMult>0.0); 
+	indicator(numSamples+k)
+	  = static_cast<double>((z - sdr_array[numSamples+k].response_function())*cdfMult>0.0); 
         //if (gp_data.response_function(numSamples+k-1)<z) 
 	//indicator(numSamples+k-1)=1;
         //else indicator(numSamples+k-1)=0;
@@ -350,7 +354,7 @@ void NonDGPImpSampling::core_run()
       }
       RealVectorArray gp_final_data(numPtsTotal);
       for (j = 0; j < numPtsTotal; j++) 
-        gp_final_data[j]=gp_data.continuous_variables(j);
+        gp_final_data[j]=sdv_array[j].continuous_variables();
       Cout << "GP final data size " <<  gp_final_data.size() << '\n'; 
 //
 //This is where we need some re-architecting.  I want to evaluate the GPmodel at a 
@@ -577,7 +581,7 @@ Real NonDGPImpSampling::calcExpIndPoint(const int resp_fn_count, const Real resp
   return ei;
 }
 
-void NonDGPImpSampling::print_results(std::ostream& s)
+void NonDGPImpSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     s << "\nStatistics based on the importance sampling calculations:\n";

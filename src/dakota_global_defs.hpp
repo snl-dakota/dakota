@@ -12,8 +12,8 @@
 //- Owner:        Mike Eldred
 //- Version: $Id: global_defs.h 6492 2009-12-19 00:04:28Z briadam $
 
-#ifndef GLOBAL_DEFS_H
-#define GLOBAL_DEFS_H
+#ifndef DAKOTA_GLOBAL_DEFS_H
+#define DAKOTA_GLOBAL_DEFS_H
 
 #include "dakota_system_defs.hpp"
 #include <stdexcept>
@@ -51,15 +51,32 @@ extern double HALF_LOG_2PI;
 /// These need to be in range [-63, -1], so exit code (256+enum) is in
 /// [193, 255].  See RATIONALE in dakota_global_defs.cpp.
 enum {
-  METHOD_ERROR    = -7, // error with Iterator/MetaIterator
-  MODEL_ERROR     = -6, // error within Model recursion
-  IO_ERROR        = -5, // error with core file I/O
-  INTERFACE_ERROR = -4, // error with map invocation (user workflow/driver): 
-                        // analysis driver, if/of
+  VARS_ERROR      = -10, // error with Variables
+  RESP_ERROR      = -9,  // error with Response
+  APPROX_ERROR    = -8,  // error with Approximation
+  METHOD_ERROR    = -7,  // error with Iterator/MetaIterator
+  MODEL_ERROR     = -6,  // error within Model
+  IO_ERROR        = -5,  // error with core file I/O
+  INTERFACE_ERROR = -4,  // error with map invocation (user workflow/driver): 
+                         // analysis driver, if/of
   CONSTRUCT_ERROR = -3,
   PARSE_ERROR     = -2,
-  OTHER_ERROR     = -1  // the historical Dakota default error
+  OTHER_ERROR     = -1   // the historical Dakota default error
 };
+
+/// enum for selecting the models that store evaluations
+enum { 
+      MODEL_EVAL_STORE_TOP_METHOD = 0,
+      MODEL_EVAL_STORE_NONE,
+      MODEL_EVAL_STORE_ALL,
+      MODEL_EVAL_STORE_ALL_METHODS};
+
+/// enum for selecting the interfaces that store evaluations
+enum {
+      INTERF_EVAL_STORE_SIMULATION = 0,
+      INTERF_EVAL_STORE_NONE,
+      INTERF_EVAL_STORE_ALL};
+
 
 /// enum for dakota abort behaviors
 enum {ABORT_EXITS, ABORT_THROWS};
@@ -121,6 +138,9 @@ enum { TABULAR_NONE = 0, TABULAR_HEADER = 1,
        TABULAR_EXPER_ANNOT = TABULAR_HEADER | TABULAR_EVAL_ID,
        // default for tabular files is fully annotated as of Dakota 6.1
        TABULAR_ANNOTATED = TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID };
+
+/// Results output format
+enum { RESULTS_OUTPUT_TEXT = 1, RESULTS_OUTPUT_HDF5 = 2};
 
 /// options for results file format
 enum {FLEXIBLE_RESULTS, LABELED_RESULTS};
@@ -187,4 +207,11 @@ void mpi_debug_hold();
 
 } // namespace Dakota
 
-#endif // GLOBAL_DEFS_H
+/// Return type for EvaluationStore::model_allocate and interface_allocate
+/// UNITIALIZED: Model constructor has this as its default
+/// ACTIVE: The database is open and this model or interface should write to it
+/// INACTIVE: The database is either closed, or this model or interface should not
+///           write to it.
+enum class EvaluationsDBState {UNINITIALIZED, ACTIVE, INACTIVE};
+
+#endif // DAKOTA_GLOBAL_DEFS_H

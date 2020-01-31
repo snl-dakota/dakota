@@ -7,7 +7,6 @@
 # fully-analytic bi-level RBDO approach.
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################
@@ -20,6 +19,7 @@ method,
 	dot_sqp					#s0,#s1,#s2
 	  convergence_tolerance = 1.e-8
 	  output verbose
+	scaling					#s0,#s1,#s2
 
 model,
 	id_model = 'OPTIM_M'
@@ -45,6 +45,8 @@ variables,
 	  lower_bounds    200.     10.      100.
 	  upper_bounds    400.     30.      500.
 	  descriptors     'b'      'd'      'h'
+	scale_type = 'value'								#s0,#s1,#s2
+	scales = 			300.		20.		300.	#s0,#s1,#s2
 
 responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,

@@ -94,11 +94,14 @@ protected:
 
   void post_input();
 
+  /// update finalStatistics and (if MC sampling) finalStatErrors
+  void update_final_statistics();
+
   /// compute a principal components analysis on the sample set
   void compute_pca(std::ostream& s);
 
   /// print the final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions
@@ -134,6 +137,12 @@ protected:
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
 
+  /// Print a header and summary statistics
+  void print_header_and_statistics(std::ostream& s, const int& num_samples);
+
+  /// Archive all results
+  void archive_results(int num_samples, size_t ind_inc = 0);
+  
 private:
 
   //

@@ -1,0 +1,2437 @@
+Teuchos::GlobalMPISession::GlobalMPISession(): started serial run
+
+***
+*** Unit test suite ...
+***
+
+
+Sorting tests by group name then by the order they were added ... (time = 9.8e-05)
+
+Running unit tests ...
+
+0. covariance_reader_read_constant_covariance_UnitTest ... [Passed] (0.000382 sec)
+1. covariance_reader_read_vector_covariance_UnitTest ... [Passed] (0.000124 sec)
+2. covariance_reader_read_matrix_covariance_UnitTest ... [Passed] (0.000526 sec)
+3. data_conversion_rva2rm_UnitTest ... [Passed] (0.000117 sec)
+4. demo_teuchos_hello_world_UnitTest ... [Passed] (1.4e-05 sec)
+5. expt_data_basic_UnitTest ... Reading diagonal cov from expt_data_test_files/new_voltage
+[Passed] (0.00966 sec)
+6. expt_data_twofield_UnitTest ... Reading diagonal cov from expt_data_test_files/new_voltage
+[Passed] (0.00922 sec)
+7. expt_data_allowNoConfigFile_UnitTest ... [Passed] (0.000403 sec)
+8. expt_data_reader_read_config_vars_UnitTest ... [Passed] (0.000179 sec)
+9. expt_data_reader_read_bad_config_vars_size_UnitTest ... [Passed] (0.00012 sec)
+10. expt_data_reader_read_field_values_scalar_UnitTest ... [Passed] (0.000211 sec)
+11. expt_data_reader_read_field_values_vector_UnitTest ... [Passed] (0.000331 sec)
+12. expt_data_reader_read_coord_values_UnitTest ... [Passed] (0.000274 sec)
+13. file_reader_basic_write_UnitTest ... [Passed] (0.000123 sec)
+14. file_reader_read_sized_data_UnitTest ... [Passed] (0.000296 sec)
+15. file_reader_read_fixed_rowsize_data_UnitTest ... [Passed] (0.000218 sec)
+16. file_reader_read_unsized_data_UnitTest ... [Passed] (0.000359 sec)
+17. file_reader_read_sigma_scalar_UnitTest ... [Passed] (7.3e-05 sec)
+18. file_reader_read_sigma_vector_row_UnitTest ... [Passed] (0.000129 sec)
+19. file_reader_read_sigma_vector_col_UnitTest ... [Passed] (0.000124 sec)
+20. file_reader_read_sigma_matrix_UnitTest ... [Passed] (0.000314 sec)
+21. file_reader_read_bad_data1_UnitTest ... [Passed] (0.000121 sec)
+22. opt_api_hopspack_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - no more citizen points to evaluate
+
+
+Mediator best point found:
+  Tag=32, x=[-1.500e+00  7.500e-01 ], State=EVL-F, ' success: 16', F= 0.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.009 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -1.5000000000e+00 cdv_1
+                      7.5000000000e-01 cdv_2
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 16
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.017 sec)
+23. opt_api_optpp_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running optpp_pds iterator.
+********************************************************
+             OPT++ TERMINATION CRITERION                
+	  FAILURE - optpp_pds terminated
+pdsdone: Function tolerance test passed
+********************************************************
+<<<<< Function evaluation summary: 227 total (214 new, 13 duplicate)
+<<<<< Best parameters          =
+                     -1.5056401572e+00 cdv_1
+                      7.5931125124e-01 cdv_2
+<<<<< Best objective function  =
+                      1.1851077345e-04
+<<<<< Best data captured at function evaluation 208
+
+
+<<<<< Iterator optpp_pds completed.
+<<<<< Environment execution completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.03 [parent =   0.031994, child =  -0.001994]
+  Total wall clock =  0.0320611
+[Passed] (0.0322 sec)
+24. opt_api_data_xfers_basic_vec1_UnitTest ... [Passed] (5.4e-05 sec)
+25. opt_apps_cyl_head_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - used the max number of evaluations (max = 500)
+
+
+Mediator best point found:
+  Tag=724, x=[ 2.122e+00  1.769e+00 ], State=EVL-F, ' success: 470', F=-2.461e+00 
+         , c_e=[(empty)], c_i=[ 7.616e-03  3.346e-01  1.454e-04 ]
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+  Nonlinear constr infeas:       |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.125 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 500 total (500 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.1215468750e+00 intake_dia
+                      1.7694218750e+00 flatness
+<<<<< Best objective function  =
+                     -2.4605209795e+00
+<<<<< Best constraint values   =
+                     -7.6161746441e-03
+                     -3.3458671875e-01
+                     -1.4535852498e-04
+<<<<< Best data captured at function evaluation 470
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.13 sec)
+26. opt_apps_cyl_head_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - used the max number of evaluations (max = 150)
+
+
+Mediator best point found: (infeasible)
+  Tag=954, x=[ 2.122e+00  1.785e+00 ], State=EVL-F, ' success: 62', F=-2.459e+00 
+         , c_e=[(empty)], c_i=[-7.173e-04  3.322e-01  2.758e-03 ]
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+  Nonlinear constr infeas:       |c(x)|_2 = 7.173e-04  |c(x)|_inf = 7.173e-04
+Total wall clock time since start:    0.021 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 152 total (0 new, 152 duplicate)
+<<<<< Best parameters          =
+                      2.1225000000e+00 intake_dia
+                      1.7850000000e+00 flatness
+<<<<< Best objective function  =
+                     -2.4586002455e+00
+<<<<< Best constraint values   =
+                      7.1733889176e-04
+                     -3.3225000000e-01
+                     -2.7582213513e-03
+<<<<< Best data captured at function evaluation 62
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0238 sec)
+27. opt_apps_cyl_head_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - used the max number of evaluations (max = 50)
+
+
+Mediator best point found: (infeasible)
+  Tag=1147, x=[ 1.500e+00  1.110e+00 ], State=EVL-F, ' success: 26', F=-2.288e+00 
+          , c_e=[(empty)], c_i=[ 4.926e-01  4.335e-01 -1.185e-01 ]
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+  Nonlinear constr infeas:       |c(x)|_2 = 1.185e-01  |c(x)|_inf = 1.185e-01
+Total wall clock time since start:    0.007 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 53 total (0 new, 53 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+00 intake_dia
+                      1.1100000000e+00 flatness
+<<<<< Best objective function  =
+                     -2.2881644845e+00
+<<<<< Best constraint values   =
+                     -4.9260819786e-01
+                     -4.3350000000e-01
+                      1.1847500000e-01
+<<<<< Best data captured at function evaluation 26
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00978 sec)
+28. opt_apps_text_book_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - used the max number of evaluations (max = 1000)
+
+
+Mediator best point found:
+  Tag=2636, x=[ 9.950e-01  1.005e+00  9.950e-01 ], State=EVL-F, ' success: 1000', F= 1.824e-09 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.218 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 1001 total (1001 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9504394531e-01 x1
+                      1.0049560547e+00 x2
+                      9.9501464844e-01 x3
+<<<<< Best objective function  =
+                      1.8243385624e-09
+<<<<< Best data captured at function evaluation 1000
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.222 sec)
+29. opt_apps_text_book_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - used the max number of evaluations (max = 300)
+
+
+Mediator best point found:
+  Tag=3052, x=[ 9.898e-01  1.010e+00  9.898e-01 ], State=EVL-F, ' success: 302', F= 3.266e-08 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.030 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 303 total (0 new, 303 duplicate)
+<<<<< Best parameters          =
+                      9.8979492188e-01 x1
+                      1.0102050781e+00 x2
+                      9.8976562500e-01 x3
+<<<<< Best objective function  =
+                      3.2662763967e-08
+<<<<< Best data captured at function evaluation 302
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0327 sec)
+30. opt_apps_text_book_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - used the max number of evaluations (max = 50)
+
+
+Mediator best point found:
+  Tag=3122, x=[ 1.200e+00  8.000e-01  9.800e-01 ], State=EVL-F, ' success: 50', F= 3.200e-03 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.005 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 50 total (0 new, 50 duplicate)
+<<<<< Best parameters          =
+                      1.2000000000e+00 x1
+                      8.0000000000e-01 x2
+                      9.8000000000e-01 x3
+<<<<< Best objective function  =
+                      3.2001600000e-03
+<<<<< Best data captured at function evaluation 50
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.007 sec)
+31. opt_apps_text_book_lin_constr_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:33 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:33
+
+
+Mediator stopping - used the max number of evaluations (max = 1000)
+
+
+Mediator best point found:
+  Tag=5051, x=[ 9.972e-01  1.003e+00  1.003e+00 ], State=EVL-F, ' success: 999', F= 1.898e-10 
+  Linear constr infeasibility:   |c(x)|_2 = 1.332e-14  |c(x)|_inf = 1.332e-14
+Total wall clock time since start:    0.245 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9717983913e-01 x1
+                      1.0028201609e+00 x2
+                      1.0028201609e+00 x3
+<<<<< Best objective function  =
+                      1.8976529236e-10
+<<<<< Best data captured at function evaluation 999
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.25 sec)
+32. opt_apps_text_book_lin_constr_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 100)
+
+
+Mediator best point found:
+  Tag=5205, x=[ 9.875e-01  1.012e+00  1.012e+00 ], State=EVL-F, ' success: 99', F= 7.296e-08 
+  Linear constr infeasibility:   |c(x)|_2 = 5.329e-15  |c(x)|_inf = 5.329e-15
+Total wall clock time since start:    0.011 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 100 total (0 new, 100 duplicate)
+<<<<< Best parameters          =
+                      9.8751184983e-01 x1
+                      1.0124881502e+00 x2
+                      1.0124881502e+00 x3
+<<<<< Best objective function  =
+                      7.2964851780e-08
+<<<<< Best data captured at function evaluation 99
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0142 sec)
+33. opt_apps_text_book_lin_constr_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 20)
+
+
+Mediator best point found:
+  Tag=5240, x=[ 9.560e-01  9.190e-01  1.169e+00 ], State=EVL-F, ' success: 20', F= 8.622e-04 
+  Linear constr infeasibility:   |c(x)|_2 = 5.329e-15  |c(x)|_inf = 5.329e-15
+Total wall clock time since start:    0.002 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 22 total (0 new, 22 duplicate)
+<<<<< Best parameters          =
+                      9.5601613211e-01 x1
+                      9.1898386789e-01 x2
+                      1.1689838679e+00 x3
+<<<<< Best objective function  =
+                      8.6224292569e-04
+<<<<< Best data captured at function evaluation 20
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00479 sec)
+34. opt_apps_herbie_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 200)
+
+
+Mediator best point found:
+  Tag=5496, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 180', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.044 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 202 total (202 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -1.0408259124e+00 x1
+                     -1.0408259124e+00 x2
+<<<<< Best objective function  =
+                     -1.1268717458e+00
+<<<<< Best data captured at function evaluation 180
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0469 sec)
+35. opt_apps_herbie_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 70)
+
+
+Mediator best point found:
+  Tag=5589, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 47', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.007 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 70 total (0 new, 70 duplicate)
+<<<<< Best parameters          =
+                     -1.0406250000e+00 x1
+                     -1.0406250000e+00 x2
+<<<<< Best objective function  =
+                     -1.1268715574e+00
+<<<<< Best data captured at function evaluation 47
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00918 sec)
+36. opt_apps_herbie_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 25)
+
+
+Mediator best point found:
+  Tag=5649, x=[-1.025e+00 -1.150e+00 ], State=EVL-F, ' success: 23', F=-1.098e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.003 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 26 total (0 new, 26 duplicate)
+<<<<< Best parameters          =
+                     -1.0250000000e+00 x1
+                     -1.1500000000e+00 x2
+<<<<< Best objective function  =
+                     -1.0978348180e+00
+<<<<< Best data captured at function evaluation 23
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00475 sec)
+37. opt_apps_smooth_herbie_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 200)
+
+
+Mediator best point found:
+  Tag=5906, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 180', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.020 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 202 total (0 new, 202 duplicate)
+<<<<< Best parameters          =
+                     -1.0408259124e+00 x1
+                     -1.0408259124e+00 x2
+<<<<< Best objective function  =
+                     -1.1268717458e+00
+<<<<< Best data captured at function evaluation 180
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0226 sec)
+38. opt_apps_smooth_herbie_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 70)
+
+
+Mediator best point found:
+  Tag=5999, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 47', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.007 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 70 total (0 new, 70 duplicate)
+<<<<< Best parameters          =
+                     -1.0406250000e+00 x1
+                     -1.0406250000e+00 x2
+<<<<< Best objective function  =
+                     -1.1268715574e+00
+<<<<< Best data captured at function evaluation 47
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00903 sec)
+39. opt_apps_smooth_herbie_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 30)
+
+
+Mediator best point found:
+  Tag=6065, x=[-1.025e+00 -1.025e+00 ], State=EVL-F, ' success: 27', F=-1.126e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.003 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 30 total (0 new, 30 duplicate)
+<<<<< Best parameters          =
+                     -1.0250000000e+00 x1
+                     -1.0250000000e+00 x2
+<<<<< Best objective function  =
+                     -1.1257164387e+00
+<<<<< Best data captured at function evaluation 27
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00521 sec)
+40. opt_apps_text_book_disc_range_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - no more citizen points to evaluate
+
+
+Mediator best point found:
+  Tag=6171, x=[ 1.000e+00  1.000e+00  1.000e+00 ], State=EVL-F, ' success: 67', F= 0.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.032 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 270 total (72 new, 198 duplicate)
+<<<<< Best parameters          =
+                                     1 y1
+                                     1 y2
+                                     1 y3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 67
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0347 sec)
+41. opt_apps_text_book_disc_range_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 60)
+
+
+Mediator best point found:
+  Tag=6457, x=[ 1.000e+00  2.000e+00  0.000e+00 ], State=EVL-F, ' success: 57', F= 2.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.006 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 60 total (0 new, 60 duplicate)
+<<<<< Best parameters          =
+                                     1 y1
+                                     2 y2
+                                     0 y3
+<<<<< Best objective function  =
+                      2.0000000000e+00
+<<<<< Best data captured at function evaluation 57
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00843 sec)
+42. opt_apps_text_book_disc_range_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 30)
+
+
+Mediator best point found:
+  Tag=6511, x=[-2.000e+00  4.000e+00 -2.000e+00 ], State=EVL-F, ' success: 31', F= 2.430e+02 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.003 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 32 total (0 new, 32 duplicate)
+<<<<< Best parameters          =
+                                    -2 y1
+                                     4 y2
+                                    -2 y3
+<<<<< Best objective function  =
+                      2.4300000000e+02
+<<<<< Best data captured at function evaluation 31
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00534 sec)
+43. opt_apps_text_book_disc_set_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - no more citizen points to evaluate
+
+
+Mediator best point found:
+  Tag=6543, x=[ 2.000e+00  2.000e+00  2.000e+00 ], State=EVL-F, ' success: 19', F= 2.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.021 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 221 total (22 new, 199 duplicate)
+<<<<< Best parameters          =
+                                     0 y1
+                                     0 y2
+                                     1 y3
+<<<<< Best objective function  =
+                      2.0000000000e+00
+<<<<< Best data captured at function evaluation 19
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0244 sec)
+44. opt_apps_text_book_disc_set_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 15)
+
+
+Mediator best point found:
+  Tag=6763, x=[ 2.000e+00  2.000e+00  3.000e+00 ], State=EVL-F, ' success: 13', F= 3.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.001 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 15 total (0 new, 15 duplicate)
+<<<<< Best parameters          =
+                                     0 y1
+                                     0 y2
+                                     2 y3
+<<<<< Best objective function  =
+                      3.0000000000e+00
+<<<<< Best data captured at function evaluation 13
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00371 sec)
+45. opt_apps_text_book_disc_set_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 6185347 (2017-05-26) built May 26 2017 10:21:45.
+Running serial Dakota executable in serial mode.
+Start time: Fri May 26 11:04:34 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  5/26/2017 11:04:34
+
+
+Mediator stopping - used the max number of evaluations (max = 10)
+
+
+Mediator best point found:
+  Tag=6780, x=[ 2.000e+00  1.000e+00  3.000e+00 ], State=EVL-F, ' success: 7', F= 8.300e+01 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.001 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 11 total (0 new, 11 duplicate)
+<<<<< Best parameters          =
+                                     0 y1
+                                    -2 y2
+                                     2 y3
+<<<<< Best objective function  =
+                      8.3000000000e+01
+<<<<< Best data captured at function evaluation 7
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00336 sec)
+46. reduced_basis_compute_col_means_UnitTest ... [Passed] (0.00396 sec)
+47. reduced_basis_compute_svd_UnitTest ... [Passed] (0.000165 sec)
+48. reduced_basis_simple_api_UnitTest ... [Passed] (0.000158 sec)
+49. reduced_basis_simple_api2_UnitTest ... [Passed] (0.000225 sec)
+50. reduced_basis_gp_surr0_UnitTest ... [Passed] (0.0489 sec)
+51. reduced_basis_spectral_sums_UnitTest ... [Passed] (0.00444 sec)
+52. reduced_basis_truncations_UnitTest ... [Passed] (0.00431 sec)
+53. stat_utils_kl_divergence_UnitTest ... [Passed] (0.01 sec)
+54. stat_utils_mutual_info_UnitTest ... [Passed] (0.0439 sec)
+55. wilks_firstorder_UnitTest ... [Passed] (0.000758 sec)
+56. wilks_onesided_firstorder_UnitTest ... [Passed] (0.000233 sec)
+57. wilks_onesided_secondorder_UnitTest ... [Passed] (0.0246 sec)
+58. wilks_onesided_thirdorder_UnitTest ... [Passed] (0.0389 sec)
+59. wilks_twosided_secondorder_UnitTest ... [Passed] (0.541 sec)
+60. wilks_compute_residual_UnitTest ... [Passed] (0.00116 sec)
+61. wilks_compute_alpha_UnitTest ... [Passed] (0.00213 sec)
+62. wilks_compute_beta_UnitTest ... [Passed] (0.00217 sec)
+
+Total Time: 1.67 sec
+
+Summary: total = 63, run = 63, passed = 63, failed = 0
+
+End Result: TEST PASSED
+Teuchos::GlobalMPISession::GlobalMPISession(): started serial run
+
+***
+*** Unit test suite ...
+***
+
+
+Sorting tests by group name then by the order they were added ... (time = 0.0001)
+
+Running unit tests ...
+
+0. covariance_reader_read_constant_covariance_UnitTest ... [Passed] (0.000429 sec)
+1. covariance_reader_read_vector_covariance_UnitTest ... [Passed] (0.000117 sec)
+2. covariance_reader_read_matrix_covariance_UnitTest ... [Passed] (0.000569 sec)
+3. data_conversion_rva2rm_UnitTest ... [Passed] (0.000122 sec)
+4. demo_teuchos_hello_world_UnitTest ... [Passed] (1.4e-05 sec)
+5. expt_data_basic_UnitTest ... Reading diagonal cov from expt_data_test_files/new_voltage
+[Passed] (0.00988 sec)
+6. expt_data_twofield_UnitTest ... Reading diagonal cov from expt_data_test_files/new_voltage
+[Passed] (0.00939 sec)
+7. expt_data_allowNoConfigFile_UnitTest ... [Passed] (0.000411 sec)
+8. expt_data_reader_read_config_vars_UnitTest ... [Passed] (0.00018 sec)
+9. expt_data_reader_read_bad_config_vars_size_UnitTest ... [Passed] (0.000125 sec)
+10. expt_data_reader_read_field_values_scalar_UnitTest ... [Passed] (0.000216 sec)
+11. expt_data_reader_read_field_values_vector_UnitTest ... [Passed] (0.000296 sec)
+12. expt_data_reader_read_coord_values_UnitTest ... [Passed] (0.000313 sec)
+13. file_reader_basic_write_UnitTest ... [Passed] (0.000184 sec)
+14. file_reader_read_sized_data_UnitTest ... [Passed] (0.000307 sec)
+15. file_reader_read_fixed_rowsize_data_UnitTest ... [Passed] (0.000215 sec)
+16. file_reader_read_unsized_data_UnitTest ... [Passed] (0.000362 sec)
+17. file_reader_read_sigma_scalar_UnitTest ... [Passed] (7.4e-05 sec)
+18. file_reader_read_sigma_vector_row_UnitTest ... [Passed] (0.000131 sec)
+19. file_reader_read_sigma_vector_col_UnitTest ... [Passed] (0.000127 sec)
+20. file_reader_read_sigma_matrix_UnitTest ... [Passed] (0.000304 sec)
+21. file_reader_read_bad_data1_UnitTest ... [Passed] (0.000129 sec)
+22. opt_api_hopspack_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:27 2017
+
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:27
+
+
+Mediator stopping - no more citizen points to evaluate
+
+
+Mediator best point found:
+  Tag=32, x=[-1.500e+00  7.500e-01 ], State=EVL-F, ' success: 16', F= 0.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.009 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -1.5000000000e+00 cdv_1
+                      7.5000000000e-01 cdv_2
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 16
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0171 sec)
+23. opt_api_optpp_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:27 2017
+
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running optpp_pds iterator.
+********************************************************
+             OPT++ TERMINATION CRITERION                
+	  FAILURE - optpp_pds terminated
+pdsdone: Function tolerance test passed
+********************************************************
+<<<<< Function evaluation summary: 227 total (214 new, 13 duplicate)
+<<<<< Best parameters          =
+                     -1.5056401572e+00 cdv_1
+                      7.5931125124e-01 cdv_2
+<<<<< Best objective function  =
+                      1.1851077345e-04
+<<<<< Best data captured at function evaluation 208
+
+
+<<<<< Iterator optpp_pds completed.
+<<<<< Environment execution completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.03 [parent =   0.031995, child =  -0.001995]
+  Total wall clock =  0.0322199
+[Passed] (0.0323 sec)
+24. opt_api_data_xfers_basic_vec1_UnitTest ... [Passed] (4.8e-05 sec)
+25. opt_api_data_xfers_basic_mat1_UnitTest ... [Passed] (3.1e-05 sec)
+26. opt_apps_cyl_head_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:27 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:27
+
+
+Mediator stopping - used the max number of evaluations (max = 500)
+
+
+Mediator best point found:
+  Tag=724, x=[ 2.122e+00  1.769e+00 ], State=EVL-F, ' success: 470', F=-2.461e+00 
+         , c_e=[(empty)], c_i=[ 7.616e-03  3.346e-01  1.454e-04 ]
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+  Nonlinear constr infeas:       |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.123 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 500 total (500 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.1215468750e+00 intake_dia
+                      1.7694218750e+00 flatness
+<<<<< Best objective function  =
+                     -2.4605209795e+00
+<<<<< Best constraint values   =
+                     -7.6161746441e-03
+                     -3.3458671875e-01
+                     -1.4535852498e-04
+<<<<< Best data captured at function evaluation 470
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.129 sec)
+27. opt_apps_cyl_head_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:27 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:27
+
+
+Mediator stopping - used the max number of evaluations (max = 150)
+
+
+Mediator best point found: (infeasible)
+  Tag=954, x=[ 2.122e+00  1.785e+00 ], State=EVL-F, ' success: 62', F=-2.459e+00 
+         , c_e=[(empty)], c_i=[-7.173e-04  3.322e-01  2.758e-03 ]
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+  Nonlinear constr infeas:       |c(x)|_2 = 7.173e-04  |c(x)|_inf = 7.173e-04
+Total wall clock time since start:    0.020 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 152 total (0 new, 152 duplicate)
+<<<<< Best parameters          =
+                      2.1225000000e+00 intake_dia
+                      1.7850000000e+00 flatness
+<<<<< Best objective function  =
+                     -2.4586002455e+00
+<<<<< Best constraint values   =
+                      7.1733889176e-04
+                     -3.3225000000e-01
+                     -2.7582213513e-03
+<<<<< Best data captured at function evaluation 62
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.023 sec)
+28. opt_apps_cyl_head_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:27 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:27
+
+
+Mediator stopping - used the max number of evaluations (max = 50)
+
+
+Mediator best point found: (infeasible)
+  Tag=1147, x=[ 1.500e+00  1.110e+00 ], State=EVL-F, ' success: 26', F=-2.288e+00 
+          , c_e=[(empty)], c_i=[ 4.926e-01  4.335e-01 -1.185e-01 ]
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+  Nonlinear constr infeas:       |c(x)|_2 = 1.185e-01  |c(x)|_inf = 1.185e-01
+Total wall clock time since start:    0.007 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 53 total (0 new, 53 duplicate)
+<<<<< Best parameters          =
+                      1.5000000000e+00 intake_dia
+                      1.1100000000e+00 flatness
+<<<<< Best objective function  =
+                     -2.2881644845e+00
+<<<<< Best constraint values   =
+                     -4.9260819786e-01
+                     -4.3350000000e-01
+                      1.1847500000e-01
+<<<<< Best data captured at function evaluation 26
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00968 sec)
+29. opt_apps_text_book_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:27 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:27
+
+
+Mediator stopping - used the max number of evaluations (max = 1000)
+
+
+Mediator best point found:
+  Tag=2636, x=[ 9.950e-01  1.005e+00  9.950e-01 ], State=EVL-F, ' success: 1000', F= 1.824e-09 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.215 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 1001 total (1001 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9504394531e-01 x1
+                      1.0049560547e+00 x2
+                      9.9501464844e-01 x3
+<<<<< Best objective function  =
+                      1.8243385624e-09
+<<<<< Best data captured at function evaluation 1000
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.22 sec)
+30. opt_apps_text_book_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:27 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:27
+
+
+Mediator stopping - used the max number of evaluations (max = 300)
+
+
+Mediator best point found:
+  Tag=3052, x=[ 9.898e-01  1.010e+00  9.898e-01 ], State=EVL-F, ' success: 302', F= 3.266e-08 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.029 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 303 total (0 new, 303 duplicate)
+<<<<< Best parameters          =
+                      9.8979492188e-01 x1
+                      1.0102050781e+00 x2
+                      9.8976562500e-01 x3
+<<<<< Best objective function  =
+                      3.2662763967e-08
+<<<<< Best data captured at function evaluation 302
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0323 sec)
+31. opt_apps_text_book_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 50)
+
+
+Mediator best point found:
+  Tag=3122, x=[ 1.200e+00  8.000e-01  9.800e-01 ], State=EVL-F, ' success: 50', F= 3.200e-03 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.005 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 50 total (0 new, 50 duplicate)
+<<<<< Best parameters          =
+                      1.2000000000e+00 x1
+                      8.0000000000e-01 x2
+                      9.8000000000e-01 x3
+<<<<< Best objective function  =
+                      3.2001600000e-03
+<<<<< Best data captured at function evaluation 50
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00697 sec)
+32. opt_apps_text_book_lin_constr_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 1000)
+
+
+Mediator best point found:
+  Tag=5051, x=[ 9.972e-01  1.003e+00  1.003e+00 ], State=EVL-F, ' success: 999', F= 1.898e-10 
+  Linear constr infeasibility:   |c(x)|_2 = 1.332e-14  |c(x)|_inf = 1.332e-14
+Total wall clock time since start:    0.242 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9717983913e-01 x1
+                      1.0028201609e+00 x2
+                      1.0028201609e+00 x3
+<<<<< Best objective function  =
+                      1.8976529236e-10
+<<<<< Best data captured at function evaluation 999
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.246 sec)
+33. opt_apps_text_book_lin_constr_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 100)
+
+
+Mediator best point found:
+  Tag=5205, x=[ 9.875e-01  1.012e+00  1.012e+00 ], State=EVL-F, ' success: 99', F= 7.296e-08 
+  Linear constr infeasibility:   |c(x)|_2 = 5.329e-15  |c(x)|_inf = 5.329e-15
+Total wall clock time since start:    0.011 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 100 total (0 new, 100 duplicate)
+<<<<< Best parameters          =
+                      9.8751184983e-01 x1
+                      1.0124881502e+00 x2
+                      1.0124881502e+00 x3
+<<<<< Best objective function  =
+                      7.2964851780e-08
+<<<<< Best data captured at function evaluation 99
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.014 sec)
+34. opt_apps_text_book_lin_constr_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 20)
+
+
+Mediator best point found:
+  Tag=5240, x=[ 9.560e-01  9.190e-01  1.169e+00 ], State=EVL-F, ' success: 20', F= 8.622e-04 
+  Linear constr infeasibility:   |c(x)|_2 = 5.329e-15  |c(x)|_inf = 5.329e-15
+Total wall clock time since start:    0.002 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 22 total (0 new, 22 duplicate)
+<<<<< Best parameters          =
+                      9.5601613211e-01 x1
+                      9.1898386789e-01 x2
+                      1.1689838679e+00 x3
+<<<<< Best objective function  =
+                      8.6224292569e-04
+<<<<< Best data captured at function evaluation 20
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00477 sec)
+35. opt_apps_herbie_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 200)
+
+
+Mediator best point found:
+  Tag=5496, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 180', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.044 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 202 total (202 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -1.0408259124e+00 x1
+                     -1.0408259124e+00 x2
+<<<<< Best objective function  =
+                     -1.1268717458e+00
+<<<<< Best data captured at function evaluation 180
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0464 sec)
+36. opt_apps_herbie_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 70)
+
+
+Mediator best point found:
+  Tag=5589, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 47', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.007 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 70 total (0 new, 70 duplicate)
+<<<<< Best parameters          =
+                     -1.0406250000e+00 x1
+                     -1.0406250000e+00 x2
+<<<<< Best objective function  =
+                     -1.1268715574e+00
+<<<<< Best data captured at function evaluation 47
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0092 sec)
+37. opt_apps_herbie_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 25)
+
+
+Mediator best point found:
+  Tag=5649, x=[-1.025e+00 -1.150e+00 ], State=EVL-F, ' success: 23', F=-1.098e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.003 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 26 total (0 new, 26 duplicate)
+<<<<< Best parameters          =
+                     -1.0250000000e+00 x1
+                     -1.1500000000e+00 x2
+<<<<< Best objective function  =
+                     -1.0978348180e+00
+<<<<< Best data captured at function evaluation 23
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00484 sec)
+38. opt_apps_smooth_herbie_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 200)
+
+
+Mediator best point found:
+  Tag=5906, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 180', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.021 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 202 total (0 new, 202 duplicate)
+<<<<< Best parameters          =
+                     -1.0408259124e+00 x1
+                     -1.0408259124e+00 x2
+<<<<< Best objective function  =
+                     -1.1268717458e+00
+<<<<< Best data captured at function evaluation 180
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.023 sec)
+39. opt_apps_smooth_herbie_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 70)
+
+
+Mediator best point found:
+  Tag=5999, x=[-1.041e+00 -1.041e+00 ], State=EVL-F, ' success: 47', F=-1.127e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.007 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 70 total (0 new, 70 duplicate)
+<<<<< Best parameters          =
+                     -1.0406250000e+00 x1
+                     -1.0406250000e+00 x2
+<<<<< Best objective function  =
+                     -1.1268715574e+00
+<<<<< Best data captured at function evaluation 47
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00911 sec)
+40. opt_apps_smooth_herbie_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 30)
+
+
+Mediator best point found:
+  Tag=6065, x=[-1.025e+00 -1.025e+00 ], State=EVL-F, ' success: 27', F=-1.126e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.003 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 30 total (0 new, 30 duplicate)
+<<<<< Best parameters          =
+                     -1.0250000000e+00 x1
+                     -1.0250000000e+00 x2
+<<<<< Best objective function  =
+                     -1.1257164387e+00
+<<<<< Best data captured at function evaluation 27
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00528 sec)
+41. opt_apps_text_book_disc_range_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - no more citizen points to evaluate
+
+
+Mediator best point found:
+  Tag=6171, x=[ 1.000e+00  1.000e+00  1.000e+00 ], State=EVL-F, ' success: 67', F= 0.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.032 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 270 total (72 new, 198 duplicate)
+<<<<< Best parameters          =
+                                     1 y1
+                                     1 y2
+                                     1 y3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 67
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0345 sec)
+42. opt_apps_text_book_disc_range_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 60)
+
+
+Mediator best point found:
+  Tag=6457, x=[ 1.000e+00  2.000e+00  0.000e+00 ], State=EVL-F, ' success: 57', F= 2.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.006 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 60 total (0 new, 60 duplicate)
+<<<<< Best parameters          =
+                                     1 y1
+                                     2 y2
+                                     0 y3
+<<<<< Best objective function  =
+                      2.0000000000e+00
+<<<<< Best data captured at function evaluation 57
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00833 sec)
+43. opt_apps_text_book_disc_range_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 30)
+
+
+Mediator best point found:
+  Tag=6511, x=[-2.000e+00  4.000e+00 -2.000e+00 ], State=EVL-F, ' success: 31', F= 2.430e+02 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.003 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 32 total (0 new, 32 duplicate)
+<<<<< Best parameters          =
+                                    -2 y1
+                                     4 y2
+                                    -2 y3
+<<<<< Best objective function  =
+                      2.4300000000e+02
+<<<<< Best data captured at function evaluation 31
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00539 sec)
+44. opt_apps_text_book_disc_set_1_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - no more citizen points to evaluate
+
+
+Mediator best point found:
+  Tag=6543, x=[ 2.000e+00  2.000e+00  2.000e+00 ], State=EVL-F, ' success: 19', F= 2.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.021 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 221 total (22 new, 199 duplicate)
+<<<<< Best parameters          =
+                                     0 y1
+                                     0 y2
+                                     1 y3
+<<<<< Best objective function  =
+                      2.0000000000e+00
+<<<<< Best data captured at function evaluation 19
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.0243 sec)
+45. opt_apps_text_book_disc_set_2_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 15)
+
+
+Mediator best point found:
+  Tag=6763, x=[ 2.000e+00  2.000e+00  3.000e+00 ], State=EVL-F, ' success: 13', F= 3.000e+00 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.001 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 15 total (0 new, 15 duplicate)
+<<<<< Best parameters          =
+                                     0 y1
+                                     0 y2
+                                     2 y3
+<<<<< Best objective function  =
+                      3.0000000000e+00
+<<<<< Best data captured at function evaluation 13
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00383 sec)
+46. opt_apps_text_book_disc_set_3_UnitTest ... Dakota version 6.6+ (stable) released May 26 2017.
+Repository revision 43e7a04 (2017-05-26) built May 26 2017 11:28:31.
+Running serial Dakota executable in serial mode.
+Start time: Mon Jun  5 01:27:28 2017
+
+Using provided Dakota input string
+Writing new restart file dakota.rst
+
+>>>>> Executing environment.
+
+>>>>> Running asynch_pattern_search iterator.
+
+------------------------------------------------------
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+Copyright 2009-2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
+------------------------------------------------------
+HOPSPACK 2.0.2, started  6/05/2017 01:27:28
+
+
+Mediator stopping - used the max number of evaluations (max = 10)
+
+
+Mediator best point found:
+  Tag=6780, x=[ 2.000e+00  1.000e+00  3.000e+00 ], State=EVL-F, ' success: 7', F= 8.300e+01 
+  Linear constr infeasibility:   |c(x)|_2 = 0.000e+00  |c(x)|_inf = 0.000e+00
+Total wall clock time since start:    0.001 secs
+
+------------------------------------------------------
+Thank you!
+HOPSPACK: Hybrid Optimization Parallel Pattern Search
+  TG Kolda, TD Plantenga, et al., Sandia National Labs
+For more information visit
+  https://software.sandia.gov/trac/hopspack
+------------------------------------------------------
+
+<<<<< Function evaluation summary: 11 total (0 new, 11 duplicate)
+<<<<< Best parameters          =
+                                     0 y1
+                                    -2 y2
+                                     2 y3
+<<<<< Best objective function  =
+                      8.3000000000e+01
+<<<<< Best data captured at function evaluation 7
+
+
+<<<<< Iterator asynch_pattern_search completed.
+<<<<< Environment execution completed.
+[Passed] (0.00338 sec)
+47. reduced_basis_compute_col_means_UnitTest ... [Passed] (0.00395 sec)
+48. reduced_basis_compute_svd_UnitTest ... [Passed] (0.000167 sec)
+49. reduced_basis_simple_api_UnitTest ... [Passed] (0.000151 sec)
+50. reduced_basis_simple_api2_UnitTest ... [Passed] (0.000222 sec)
+51. reduced_basis_gp_surr0_UnitTest ... [Passed] (0.0444 sec)
+52. reduced_basis_spectral_sums_UnitTest ... [Passed] (0.00439 sec)
+53. reduced_basis_truncations_UnitTest ... [Passed] (0.00424 sec)
+54. stat_utils_kl_divergence_UnitTest ... [Passed] (0.0107 sec)
+55. stat_utils_mutual_info_UnitTest ... [Passed] (0.0431 sec)
+56. wilks_firstorder_UnitTest ... [Passed] (0.000765 sec)
+57. wilks_onesided_firstorder_UnitTest ... [Passed] (0.000236 sec)
+58. wilks_onesided_secondorder_UnitTest ... [Passed] (0.0257 sec)
+59. wilks_onesided_thirdorder_UnitTest ... [Passed] (0.0403 sec)
+60. wilks_twosided_secondorder_UnitTest ... [Passed] (0.547 sec)
+61. wilks_compute_residual_UnitTest ... [Passed] (0.00119 sec)
+62. wilks_compute_alpha_UnitTest ... [Passed] (0.00216 sec)
+63. wilks_compute_beta_UnitTest ... [Passed] (0.00211 sec)
+
+Total Time: 1.67 sec
+
+Summary: total = 64, run = 64, passed = 64, failed = 0
+
+End Result: TEST PASSED

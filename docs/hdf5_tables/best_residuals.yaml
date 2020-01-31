@@ -1,0 +1,7 @@
+name: Best Residuals
+dataset:
+  description: "Best residuals discovered"
+  location: "best_residuals"
+  shape: "1-dimensional: number of residuals"
+  type: Real
+

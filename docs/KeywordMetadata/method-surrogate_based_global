@@ -19,6 +19,15 @@ surrogate is constructed.
 
 In this way, the optimization acts on a more accurate surrogate during
 each iteration, presumably driving to optimality quickly.
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
 
 
 <b> Method Independent Controls </b>
@@ -44,6 +53,17 @@ much less expensive than other functions.
 as 3-5, to get a sense of how the optimization is evolving as the
 surrogate gets updated. If it appears to be changing significantly,
 then a larger number (used in combination with restart) may be needed.
+
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
 Topics::	surrogate_based_optimization_methods
 Examples::

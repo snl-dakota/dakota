@@ -20,14 +20,17 @@ namespace Dakota {
 
 extern PRPCache data_pairs;
 
-
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db):
   Interface(BaseConstructor(), problem_db),
-  parallelLib(problem_db.parallel_library()), suppressOutput(false),
-  evalCommSize(1), evalCommRank(0), evalServerId(1), eaDedMasterFlag(false),
-  analysisCommSize(1), analysisCommRank(0), analysisServerId(1),
-  multiProcAnalysisFlag(false), asynchLocalAnalysisFlag(false),
+  parallelLib(problem_db.parallel_library()), 
+  batchEval(problem_db.get_bool("interface.batch")),
+  asynchFlag(problem_db.get_bool("interface.asynch")),
+  batchIdCntr(0),
+  suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
+  eaDedMasterFlag(false), analysisCommSize(1), analysisCommRank(0),
+  analysisServerId(1), multiProcAnalysisFlag(false),
+  asynchLocalAnalysisFlag(false),
   asynchLocalEvalConcSpec(
     problem_db.get_int("interface.asynch_local_evaluation_concurrency")),
   asynchLocalAnalysisConcSpec(
@@ -50,7 +53,10 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   asynchLocalEvalStatic(
     problem_db.get_short("interface.local_evaluation_scheduling") ==
     STATIC_SCHEDULING),
-  interfaceSynchronization(problem_db.get_short("interface.synchronization")),
+  interfaceSynchronization( 
+      (batchEval | asynchFlag) ? 
+        ASYNCHRONOUS_INTERFACE : SYNCHRONOUS_INTERFACE
+      ),
   headerFlag(true),
   asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
   evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
@@ -59,6 +65,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   nearbyTolerance(
     problem_db.get_real("interface.nearby_evaluation_cache_tolerance")),
   restartFileFlag(problem_db.get_bool("interface.restart_file")),
+  sharedRespData(SharedResponseData(problem_db)),
   gradientType(problem_db.get_string("responses.gradient_type")),
   hessianType(problem_db.get_string("responses.hessian_type")),
   gradMixedAnalyticIds(
@@ -356,6 +363,26 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
   return issue_flag;
 }
 
+/// form and return the final batch ID tag
+
+String ApplicationInterface::
+final_batch_id_tag() {
+  return evalTagPrefix + "." + std::to_string(batchIdCntr);
+}
+
+String ApplicationInterface::
+final_eval_id_tag(int iface_eval_id)
+{
+  if (appendIfaceId) {
+    if(batchEval)
+      return evalTagPrefix + "." + std::to_string(batchIdCntr) + "." + std::to_string(iface_eval_id);
+     else
+      return evalTagPrefix + "." + std::to_string(iface_eval_id);
+  } else
+    return evalTagPrefix;
+}
+
+
 
 //void ApplicationInterface::free_communicators()
 //{ }
@@ -386,7 +413,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       fnLabels = response.function_labels();
   }
   if (outputLevel > SILENT_OUTPUT) {
-    if (interfaceId.empty())
+    if (interfaceId.empty() || interfaceId == "NO_ID")
       Cout << "\n---------------------\nBegin ";
     else
       Cout << "\n------------------------------\nBegin "
@@ -395,7 +422,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // This may be more confusing than helpful:
     //if (evalIdRefPt)
     //  Cout << " (local evaluation " << evalIdCntr - evalIdRefPt << ")";
-    if (interfaceId.empty()) Cout << "\n---------------------\n";
+    if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "\n---------------------\n";
     else Cout << "\n------------------------------\n";
   }
   if (outputLevel > QUIET_OUTPUT)
@@ -417,7 +444,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // requested set and response.
     ActiveSet algebraic_set;
     asv_mapping(set, algebraic_set, core_set);
-    algebraic_resp = Response(SIMULATION_RESPONSE, algebraic_set);
+    algebraic_resp = Response(sharedRespData, algebraic_set);
     if (asynch_flag) {
       ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
       beforeSynchAlgPRPQueue.insert(prp);
@@ -518,8 +545,10 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
   if (asynch_flag) {
     // Output appears here to support core | algebraic | both
     if (!duplicate && outputLevel > SILENT_OUTPUT) {
-      Cout << "(Asynchronous job " << evalIdCntr;
-      if (interfaceId.empty()) Cout << " added to queue)\n";
+      if(batchEval) Cout << "(Batch job ";
+      else Cout << "(Asynchronous job "; 
+      Cout << evalIdCntr;
+      if (interfaceId.empty() || interfaceId == "NO_ID") Cout << " added to queue)\n";
       else Cout << " added to " << interfaceId << " queue)\n";
     }
   }
@@ -534,7 +563,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	Cout << "\nActive response data retrieved from database";
       else {
 	Cout << "\nActive response data for ";
-	if (!interfaceId.empty()) Cout << interfaceId << ' ';
+	if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
 	Cout << "evaluation " << evalIdCntr;
       }
       Cout << ":\n" << response << std::endl;
@@ -690,7 +719,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
   if (coreMappings) {
     size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
     Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
-    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
     Cout << "evaluations";
     if (cached_eval || hist_duplicates || queue_duplicates)
       Cout << ", " << cached_eval << " cached evaluations, and "
@@ -721,7 +750,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nBlocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!interfaceId.empty()) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -761,7 +790,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
 	// doesn't have a valid Response to update
 	ActiveSet total_set(alg_prp_it->active_set());
 	asv_mapping(alg_prp_it->active_set(), total_set);
-	Response total_response = Response(SIMULATION_RESPONSE, total_set);
+	Response total_response = Response(sharedRespData, total_set);
 	response_mapping(alg_response, total_response, total_response);
 	rawResponseMap[alg_prp_it->eval_id()] = total_response;
       }
@@ -773,7 +802,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
     for (IntRespMCIter rr_iter = rawResponseMap.begin();
 	 rr_iter != rawResponseMap.end(); ++rr_iter) {
       Cout << "\nActive response data for ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << rr_iter->first
 	   << ":\n" << rr_iter->second;
     }
@@ -800,7 +829,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     if ( headerFlag && (core_prp_jobs || hist_duplicates) ) {
       Cout << "\nNonblocking synchronize of " << core_prp_jobs
 	   << " asynchronous ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluations";
       if (cached_eval || hist_duplicates || queue_duplicates)
 	Cout << ", " << cached_eval << " cached evaluations, and "
@@ -833,7 +862,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nNonblocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!interfaceId.empty()) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -899,7 +928,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
       // valid Response to update
       ActiveSet total_set(alg_prp_it->active_set());
       asv_mapping(alg_prp_it->active_set(), total_set);
-      Response total_response = Response(SIMULATION_RESPONSE, total_set);
+      Response total_response = Response(sharedRespData, total_set);
       response_mapping(algebraic_resp, total_response, total_response);
       rawResponseMap[alg_prp_it->eval_id()] = total_response;
     }
@@ -912,7 +941,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     // output completed responses
     if (outputLevel > QUIET_OUTPUT) {
       Cout << "\nActive response data for ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << ":\n" << rr_iter->second;
     }
     // clean up bookkeeping
@@ -1244,8 +1273,12 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
     */
 
     // Step 2: process completed jobs with wait_local_evaluations()
-    if (outputLevel > SILENT_OUTPUT)
-      Cout << "Waiting on completed jobs" << std::endl;
+    if (outputLevel > SILENT_OUTPUT) {
+      if(batchEval)
+        Cout << "Waiting on completed batch" << std::endl;
+      else
+        Cout << "Waiting on completed jobs" << std::endl;
+    }
     completionSet.clear();
     wait_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
     recv_cntr += completed = completionSet.size();
@@ -1274,7 +1307,7 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
       }
 
       if (launch) {
-	launch_asynch_local(local_prp_iter); ++num_active; /*++num_launch;*/
+	launch_asynch_local(local_prp_iter); ++num_active; //++num_launch;
 	if (static_limited && num_active == asynchLocalEvalConcurrency)
 	  break;
       }
@@ -2179,7 +2212,7 @@ void ApplicationInterface::serve_evaluations_synch()
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(SIMULATION_RESPONSE, set); // special constructor
+      Response local_response(sharedRespData, set); // special constructor
 
       // slaves invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } // synch local
@@ -2242,7 +2275,7 @@ void ApplicationInterface::serve_evaluations_synch_peer()
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(SIMULATION_RESPONSE, set); // special constructor
+      Response local_response(sharedRespData, set); // special constructor
 
       // slaves invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } //synch local
@@ -2317,19 +2350,7 @@ void ApplicationInterface::serve_evaluations_asynch()
 	  parallelLib.bcast_e(fn_eval_id);
 
         if (fn_eval_id) {
-	  if (multiProcEvalFlag)
-	    parallelLib.bcast_e(recv_buffer);
-	  // unpack
-          Variables vars; ActiveSet set;
-          recv_buffer >> vars >> set;
-	  recv_buffer.reset();
-	  Response local_response(SIMULATION_RESPONSE, set); // special ctor
-          ParamResponsePair prp(vars, interfaceId, local_response,
-				fn_eval_id, false); // shallow copy
-          asynchLocalActivePRPQueue.insert(prp);
-	  // execute
-          derived_map_asynch(prp);
-          ++num_active;
+	  launch_asynch_local(recv_buffer, fn_eval_id); ++num_active;
 	  // repost
 	  if (evalCommRank == 0)
 	    parallelLib.irecv_ie(recv_buffer, 0, MPI_ANY_TAG, recv_request);
@@ -2408,17 +2429,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
     while (num_active < asynchLocalEvalConcurrency && num_launch < num_jobs) {
       parallelLib.bcast_e(fn_eval_id);
       if (fn_eval_id) {
-	parallelLib.bcast_e(recv_buffer);
-	// unpack
-	Variables vars;	ActiveSet set;
-	recv_buffer >> vars >> set;
-	recv_buffer.reset();
-	Response local_response(SIMULATION_RESPONSE, set); // special ctor
-	ParamResponsePair prp(vars, interfaceId, local_response,
-			      fn_eval_id, false); // shallow copy
-	asynchLocalActivePRPQueue.insert(prp);
-	// execute
-	derived_map_asynch(prp);
+	launch_asynch_local(recv_buffer, fn_eval_id);
 	++num_active; ++num_launch;
       }
     }
@@ -2897,7 +2908,7 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 {
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
-    if (interfaceId.empty()) Cout << "Evaluation ";
+    if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "Evaluation ";
     else Cout << interfaceId << " evaluation ";
     Cout << fn_eval_id << " has returned from ";
     if (peer_flag) Cout << "peer server " << server_id+1 << '\n';
@@ -2936,9 +2947,11 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
   }
 
   if (outputLevel > SILENT_OUTPUT) {
-    if (interfaceId.empty()) Cout << "Evaluation ";
+    if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "Evaluation ";
     else Cout << interfaceId << " evaluation ";
-    Cout << fn_eval_id << " has completed\n";
+    Cout << fn_eval_id;
+    if(batchEval) Cout << " (batch " << batchIdCntr << ")";
+    Cout << " has completed\n";
   }
 
   rawResponseMap[fn_eval_id] = prp_it->response();
@@ -2959,7 +2972,7 @@ void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
     Cout << "Performing ";
-    if (!interfaceId.empty()) Cout << interfaceId << ' ';
+    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
     Cout << "evaluation " << fn_eval_id << std::endl;
   }
   rawResponseMap[fn_eval_id] = prp_it->response();

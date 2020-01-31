@@ -11,6 +11,7 @@
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataFitSurrModel.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include "NonDPolynomialChaos.hpp"
 
 namespace Dakota {
@@ -22,11 +23,10 @@ AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
 AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   pcePilotExpansion(pcePilotExpRepPtr, false), numFullspaceVars(subModel.cv()),
-  numFunctions(subModel.num_functions()), adaptedBasisInitialized(false),
   reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
-  abmInstance = this;
   modelType = "adapted_basis";
+  modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
   componentParallelMode = CONFIG_PHASE;
     
@@ -36,6 +36,10 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
 
   validate_inputs();
 }
+
+
+AdaptedBasisModel::~AdaptedBasisModel()
+{ /* empty dtor */ }
 
 
 Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
@@ -48,6 +52,15 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
     = problem_db.get_ushort("model.adapted_basis.expansion_order");
   Real colloc_ratio
     = problem_db.get_real("model.adapted_basis.collocation_ratio");
+  short refine_type
+      = probDescDB.get_short("method.nond.expansion_refinement_type"),
+    refine_cntl
+      = probDescDB.get_short("method.nond.expansion_refinement_control"),
+    cov_cntl = probDescDB.get_short("method.nond.covariance_control"),
+    rule_nest = probDescDB.get_short("method.nond.nesting_override"),
+    rule_growth = probDescDB.get_short("method.nond.growth_override");
+  bool pw_basis = probDescDB.get_bool("method.nond.piecewise_basis"),
+     use_derivs = probDescDB.get_bool("method.derivative_usage");
 
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
@@ -59,22 +72,18 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   if (ssg_level) {
     // L1 isotropic sparse grid --> Linear exp (quadratic main effects ignored)
     // L2 isotropic sparse grid --> Quadratic expansion
-    UShortArray level_seq(1, ssg_level);
-    pcePilotExpRepPtr
-      = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
-				level_seq, dim_pref, EXTENDED_U, false, false);
+    pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
+      Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, EXTENDED_U, refine_type,
+      refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
   }
   else if (exp_order) { // regression PCE: LeastSq/CS (exp_order,colloc_ratio)
-    UShortArray exp_order_seq(1, exp_order); SizetArray colloc_pts_seq;
     short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
-    String import_file; unsigned short import_fmt = TABULAR_ANNOTATED;
-    int seed = 12347;
-    pcePilotExpRepPtr
-      = new NonDPolynomialChaos(actual_model, exp_coeffs_approach,
-				exp_order_seq, dim_pref, colloc_pts_seq,
-				colloc_ratio, seed, EXTENDED_U,
-				false, false, false,// piecewise,derivs,crossval
-				import_file, import_fmt, false); // active_only
+    String import_file;  size_t colloc_pts;  int seed = 12347;
+    pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
+      exp_coeffs_approach, exp_order, dim_pref, colloc_pts, colloc_ratio, seed,
+      EXTENDED_U, refine_type, refine_cntl, cov_cntl, //rule_nest, rule_growth,
+      pw_basis, use_derivs, probDescDB.get_bool("method.nond.cross_validation"),
+      import_file, TABULAR_ANNOTATED, false);
   }
   else {
     Cerr << "Error: insufficient PCE build specification in AdaptedBasisModel."
@@ -106,10 +115,6 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 }
 
 
-AdaptedBasisModel::~AdaptedBasisModel()
-{ /* empty dtor */ }
-
-
 void AdaptedBasisModel::validate_inputs()
 {
   bool error_flag = false;
@@ -129,17 +134,16 @@ void AdaptedBasisModel::validate_inputs()
 
 bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  bool sub_model_resize = RecastModel::initialize_mapping(pl_iter);
+
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nAdapted Basis Model: Initializing adapted basis model."
 	 << std::endl;
 
   // init-time setting of miPLIndex for use in component_parallel_mode()
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
-
   // Set mode OFFLINE_PHASE
   component_parallel_mode(OFFLINE_PHASE);
-
-  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
   // runtime operation to identify the adapted basis model
   identify_subspace();
@@ -148,8 +152,6 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
   // convert the normal distributions to the reduced space and set in the
   // reduced model
   uncertain_vars_to_subspace();
-  // adapted basis calculation now complete
-  adaptedBasisInitialized = true;
 
   // Kill servers and return ranks [1,n-1] to serve_init_mapping()
   component_parallel_mode(CONFIG_PHASE);
@@ -164,13 +166,6 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
   // return whether size of variables has changed
   return (reducedRank != numFullspaceVars || // Active SS is reduced rank
 	  sub_model_resize); // Active SS is full rank but subModel resized
-}
-
-
-bool AdaptedBasisModel::finalize_mapping()
-{
-  // TODO: return to full space
-  return false; // This will become true when TODO is implemented.
 }
 
 
@@ -280,7 +275,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    //if (!adaptedBasisInitialized) // see ActiveSubspaceModel
+    //if (!mappingInitialized) // see ActiveSubspaceModel
       pcePilotExpansion.set_communicators(pl_iter);
 
     subModel.set_communicators(pl_iter, max_eval_concurrency);
@@ -333,7 +328,7 @@ void AdaptedBasisModel::identify_subspace()
   Teuchos::LAPACK<int, Real> la;
 
   // composite set of A_i
-  RealMatrix A_q(numFunctions*numFullspaceVars, numFullspaceVars, false);
+  RealMatrix A_q(numFns*numFullspaceVars, numFullspaceVars, false);
   // Individual rotation matrix for each QoI
   RealMatrix A_i(numFullspaceVars, numFullspaceVars, false);
 
@@ -342,7 +337,7 @@ void AdaptedBasisModel::identify_subspace()
   //          Gramm-Schmidt (BLAS/LAPACK?).
   //          [Can neglect constant term/expansion mean]
   size_t i, j, k, row_cntr = 0;
-  for (i=0; i<numFunctions; ++i) {
+  for (i=0; i<numFns; ++i) {
     A_i.putScalar(0.);
     for (j=0; j<numFullspaceVars; ++j)
       A_i(0,j) = pce_coeffs[i][j+1]; // offset by 1 to neglect constant/mean
@@ -374,7 +369,7 @@ void AdaptedBasisModel::identify_subspace()
 
   Cout << "\nAdapted Basis Model: Composing composite reduction"  << std::endl;
 
-  // Given A_i for i=1,..,numFunctions, we need to compute a composite eta:
+  // Given A_i for i=1,..,numFns, we need to compute a composite eta:
   // Refer to board notes / emerging article:
 
   //   Stack A_i into a tall matrix A, we target KLE of \eta using eigenspectrum
@@ -425,12 +420,12 @@ void AdaptedBasisModel::identify_subspace()
     for (j=0; j<reducedRank; ++j) {
       const Real* U_col = /*truncated_*/left_singular_vectors[j];
       Real sum_prod = 0.;
-      for (k=0; k<numFullspaceVars*numFunctions; ++k)
+      for (k=0; k<numFullspaceVars*numFns; ++k)
 	sum_prod += A_col[k] * U_col[k];
       rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
     }
   }
-  rotationMatrix.scale(1./numFunctions);
+  rotationMatrix.scale(1./numFns);
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -441,10 +436,8 @@ void AdaptedBasisModel::identify_subspace()
   A = RealMatrix(reducedRank, numFullspaceVars);
   */
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: rotation matrix is:\n";
-    write_data(Cout, rotationMatrix, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: rotation matrix is:\n" << rotationMatrix;
   Cout << "\n****************************************************************"
        << "**********\nAdapted Basis Model: Build Statistics"
        << "\nsubspace size: " << reducedRank << "\n**************************"
@@ -494,8 +487,8 @@ void AdaptedBasisModel::initialize_recast()
   // TODO: can we get RecastModel to tolerate empty indices when no
   // map is present?
   size_t num_primary = subModel.num_primary_fns(),
-    num_secondary = subModel.num_functions() - subModel.num_primary_fns(),
-    num_recast_fns = num_primary + num_secondary,
+    num_secondary    = subModel.num_secondary_fns(),
+    num_recast_fns   = num_primary + num_secondary,
     recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
 
   Sizet2DArray primary_resp_map_indices(num_primary);
@@ -510,8 +503,7 @@ void AdaptedBasisModel::initialize_recast()
     secondary_resp_map_indices[i][0] = num_primary + i;
   }
 
-  BoolDequeArray nonlinear_resp_mapping(numFunctions,
-                                        BoolDeque(numFunctions, false));
+  BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
 
   // Initial response order for the newly built adapted basis model same as
   // the subModel (does not augment with gradient request)
@@ -590,27 +582,23 @@ SizetArray AdaptedBasisModel::variables_resize()
 /// transform and set the distribution parameters in the reduced model
 void AdaptedBasisModel::uncertain_vars_to_subspace()
 {
-  const Pecos::AleatoryDistParams& native_params =
-    subModel.aleatory_distribution_parameters();
+  const Pecos::MultivariateDistribution& native_dist =
+    subModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* native_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
 
-  // update the reduced space model
-  Pecos::AleatoryDistParams& reduced_dist_params =
-    aleatory_distribution_parameters();
-
-  // initialize AleatoryDistParams for reduced model
+  // initialize distribution params for reduced model
   // This is necessary if subModel has been transformed
   // to standard normals from a different distribution
-  reduced_dist_params.copy(native_params); // deep copy
+  //mvDist.pull_distribution_parameters(native_dist); // deep copy
 
   // native space characterization
-  const RealVector& mu_x = native_params.normal_means();
-  const RealVector& sd_x = native_params.normal_std_deviations();
-  const RealSymMatrix& correl_x = native_params.uncertain_correlations();
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: correl_x = \n";
-    write_data(Cout, correl_x, true, true, true);
-  }
+  RealVector mu_x, sd_x;
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_x);
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_x);
+  const RealSymMatrix& correl_x = native_dist.correlation_matrix();
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: correl_x = \n" << correl_x;
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
@@ -646,16 +634,12 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: A = \n";
-    write_data(Cout, rotationMatrix, true, true, true);
-    Cout << "\nAdapted Basis Model: V_x =\n";
-    write_data(Cout, V_x, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: A = \n" << rotationMatrix
+	 << "\nAdapted Basis Model: V_x =\n" << V_x;
 
   // compute V_y = U^T * V_x * U
-  alpha = 1.0;
-  beta = 0.0;
+  alpha = 1.0;  beta = 0.0;
   RealMatrix UTVx(n, m, false);
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
                 alpha, rotationMatrix, V_x, beta);
@@ -663,18 +647,17 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
                alpha, UTVx, rotationMatrix, beta);
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: V_y = \n";
-    write_data(Cout, V_y, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: V_y = \n" << V_y;
 
   // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
     sd_y(i) = std::sqrt(V_y(i,i));
 
-  reduced_dist_params.normal_means(mu_y);
-  reduced_dist_params.normal_std_deviations(sd_y);
-
+  Pecos::MarginalsCorrDistribution* reduced_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
 
   // compute the correlations in reduced space
   // TODO: fix symmetric access to not loop over whole matrix
@@ -686,21 +669,16 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   for (int row=0; row<reducedRank; ++row)
     for (int col=0; col<reducedRank; ++col)
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: correl_y = \n";
-    write_data(Cout, correl_y, true, true, true);
-  }
-
-  reduced_dist_params.uncertain_correlations(correl_y);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nAdapted Basis Model: correl_y = \n" << correl_y;
+  mvDist.correlation_matrix(correl_y);
 
   // Set continuous variable types:
-  UShortMultiArray cont_variable_types(boost::extents[reducedRank]);
-  for (int i = 0; i < reducedRank; i++) {
-    cont_variable_types[i] = NORMAL_UNCERTAIN;
-  }
+  UShortMultiArray cv_types(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++)
+    cv_types[i] = NORMAL_UNCERTAIN;
   currentVariables.continuous_variable_types(
-    cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
+    cv_types[boost::indices[idx_range(0, reducedRank)]]);
 
   // Set currentVariables to means of active variables:
   continuous_variables(mu_y);

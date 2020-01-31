@@ -37,10 +37,8 @@ public:
 
   /// Problem database constructor
   RandomFieldModel(ProblemDescDB& problem_db);
-
   /// destructor
   ~RandomFieldModel();
-
 
   //
   //- Heading: Virtual function redefinitions
@@ -48,8 +46,8 @@ public:
 
   /// for KL models, the model is augmented with the random coeffs of the KL
   bool initialize_mapping(ParLevLIter pl_iter);
-  /// currently no-op
-  bool finalize_mapping();
+  //bool finalize_mapping();
+  bool resize_pending() const;
 
 protected:
 
@@ -70,6 +68,8 @@ protected:
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag);
   */
+
+  void assign_instance();
 
   // ---
   // Construct time convenience functions
@@ -111,8 +111,7 @@ protected:
   SizetArray variables_resize();
 
   /// For KL models, augment the subModel's uncertain variables with
-  /// additional N(0,1) variables; set up AleatoryDistParams for the
-  /// N(0,1)'s
+  /// additional N(0,1) variables; set up mvDist for the N(0,1)'s
   void initialize_rf_coeffs();
 
   
@@ -144,14 +143,6 @@ protected:
 
   /// write a field realization to console and file
   void write_field(const RealVector& field_prediction);
-
-  // ---
-  // Member data
-  // ---
-
-  // Total number of response functions
-  size_t numFunctions;
-
 
   // ---
   // Data source
@@ -230,11 +221,18 @@ protected:
   /// static pointer to this class for use in static callbacks
   static RandomFieldModel* rfmInstance;
 
-  /// the index of the active metaiterator-iterator parallelism level
-  /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
-  //  size_t miPLIndex;
-
+  // the index of the active metaiterator-iterator parallelism level
+  // (corresponding to ParallelConfiguration::miPLIters) used at runtime
+  //size_t miPLIndex;
 };
+
+
+inline bool RandomFieldModel::resize_pending() const
+{ return (expansionForm == RF_KARHUNEN_LOEVE && !mappingInitialized); }
+
+
+inline void RandomFieldModel::assign_instance()
+{ rfmInstance = this; }
 
 } // namespace Dakota
 

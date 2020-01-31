@@ -1,0 +1,64 @@
+Blurb::
+Variance applied to simulation responses  
+
+Description::
+The variance that is applied to simulations run by Dakota, i.e. using the
+\c analysis_drivers command. The user may supply a single variance
+or a vector of variances of length equal to the number of responses. In both 
+cases, the values provided are treated as scalar variance types. If a single 
+variance is provided, it is applied to all responses produced by the 
+simulation code. If a vector is provided, each variance is applied to the
+corresponding response output produced by the simulation code. 
+
+It is important to note that the the variance defined by this keyword differs
+from that defined using \c experiment_variance_type. These two commands apply 
+to user-provided calibration data, specified, for example, by 
+\c calibration_data or \c calibration_data_file. However, \c simulation_variance
+applies to those responses produced by simulation code that is run by Dakota, 
+as described above. 
+
+<b> Usage Tips </b>
+
+Currently, this keyword is only in use as part of the algorithm implemented by 
+\ref method-bayes_calibration-experimental_design. In this algorithm, two
+models (usually, one high-fidelity and one low-fidelity) are provided to 
+Dakota, each with their own \c responses section of the input script, and each
+of which is allowed its own \c simulation_variance. 
+The variance specified in the \c responses 
+block belonging to the high-fidelity model is applied to any <i> new </i> 
+high-fidelity data that is produced by Dakota running the high-fidelity model.
+In the \c experimental_design algorithm, 
+low-fidelity model responses are used during the calibration of the model
+parameters, the calculation of the mutual information, and the 
+calculation of any posterior statistics after the algorithm is complete. The
+\c simulation_variance is applied to the low-fidelity model responses that are
+used in the calculation of the mutual information. See the User's and Theory 
+Manuals for more information. 
+
+Topics::	
+Examples::
+The example below shows two \c responses blocks, one for the low-fidelity 
+model and one for the high-fidelity model. Both contain \c simulation_variance
+commands that will apply to the low- and high-fidelity model responses,
+respectively.
+
+\verbatim
+responses,
+ 	id_responses = 'low-fidelity'
+	calibration_terms = 1
+	simulation_variance = 0.5
+
+responses,
+ 	id_responses = 'high-fidelity'
+ 	calibration_terms = 1
+	calibration_data_file = 'dakota_bayes_expdesign.dat'	
+	  freeform						
+	  num_config_variables = 1				
+	  num_experiments = 1				
+	  experiment_variance_type = 'none'		
+	simulation_variance = 1.2	
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

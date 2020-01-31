@@ -33,11 +33,14 @@ extern PRPCache data_pairs; // global container
 Optimizer* Optimizer::optimizerInstance(NULL);
 
 
-Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
-  Minimizer(problem_db, model),
+Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   optimizationFlag = true; // default; may be overridden below
 
   bool err_flag = false;
@@ -132,8 +135,8 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Optimizer::Optimizer(unsigned short method_name, Model& model):
-  Minimizer(method_name, model), numObjectiveFns(numUserPrimaryFns),
+Optimizer::Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(method_name, model, traits), numObjectiveFns(numUserPrimaryFns),
   localObjectiveRecast(false)
 {
   if (numObjectiveFns > 1) {
@@ -152,8 +155,8 @@ Optimizer::Optimizer(unsigned short method_name, Model& model):
 Optimizer::
 Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	  size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
-	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq):
-  Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq),
+	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+  Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq, traits),
   numObjectiveFns(1), localObjectiveRecast(false)
 {
   numContinuousVars     = num_cv;
@@ -181,8 +184,17 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void Optimizer::print_results(std::ostream& s)
+void Optimizer::print_results(std::ostream& s, short results_state)
 {
+
+  // Something not immediately apparent from the following code is that
+  // Minimizer::print_results(...) is a static function. It is called
+  // here when calibration_terms are present, but the user provided no
+  // calibration data. If calibration data was provided, the call to
+  // Minimizer::print_residuals is delegated to the dataTransformModel,
+  // which outputs (and archives) other items such as the undifferenced
+  // model responses for all experiments.
+
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
     Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
@@ -190,27 +202,36 @@ void Optimizer::print_results(std::ostream& s)
     abort_handler(-1); 
   } 
 
-  // initialize the results archive for this dataset
-  archive_allocate_best(num_best);
-
+  DataTransformModel* dt_model_rep;
+    
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this
   // Optimizer's Model) to find the function evaluation ID number
   Model orig_model = original_model();
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
-  ActiveSet search_set(orig_model.num_functions(), numContinuousVars);
- 
+  ActiveSet search_set(orig_model.response_size(), numContinuousVars);
+  int eval_id;
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
-  for (i=0; i<num_best; ++i) { 
+  for (i=0; i<num_best; ++i) {
     // output best variables
     const Variables& best_vars = bestVariablesArray[i];
-    s << "<<<<< Best parameters          "; 
-    if (num_best > 1) s << "(set " << i+1 << ") "; 
-    s << "=\n" << best_vars;
-    
+    if (expData.config_vars().size() == 0) {
+      s << "<<<<< Best parameters          ";
+      if (num_best > 1) s << "(set " << i+1 << ") ";
+      s << "=\n" << best_vars;
+    }
+    else {
+      if (num_best > 1)
+	s << "<<<<< Best parameters (set " << i+1
+	  << ", experiment config variables omitted) =\n";
+      else
+	s << "<<<<< Best parameters (experiment config variables omitted) =\n";
+      best_vars.write(s, ACTIVE_VARS);
+    }
+
     // output best response
     // TODO: based on local_nls_recast due to SurrBasedMinimizer?
     const RealVector& best_fns = bestResponseArray[i].function_values(); 
@@ -225,8 +246,7 @@ void Optimizer::print_results(std::ostream& s)
       if (calibrationDataFlag) {
         // TODO: approximate models with interpolation of field data may
         // not have recovered the correct best residuals
-        DataTransformModel* dt_model_rep = 
-          static_cast<DataTransformModel*>(dataTransformModel.model_rep());
+        dt_model_rep = static_cast<DataTransformModel*>(dataTransformModel.model_rep());
         dt_model_rep->print_best_responses(s, best_vars, bestResponseArray[i],
                                            num_best, i);
       }
@@ -234,8 +254,9 @@ void Optimizer::print_results(std::ostream& s)
         // the original model had least squares terms
         const RealVector& lsq_weights 
           = orig_model.primary_response_fn_weights();
-        print_residuals(numUserPrimaryFns, best_fns, lsq_weights, 
-                        num_best, i, s);
+        StrStrSizet iterator_id = run_identifier();
+        print_residuals(numUserPrimaryFns, best_fns, lsq_weights,  
+                        num_best, i, s); // the weights are only used to compute the norm
       }
     }
 
@@ -251,21 +272,20 @@ void Optimizer::print_results(std::ostream& s)
     // search in data_pairs to extract the evalId for the best fn eval.
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
                                            best_vars, search_set);
-    if (cache_it == data_pairs.get<hashed>().end())
+    if (cache_it == data_pairs.get<hashed>().end()) {
       s << "<<<<< Best data not found in evaluation cache\n\n";
-    else {
-      int eval_id = cache_it->eval_id();
-      if (eval_id > 0)
+      eval_id = 0;
+    } else {
+      eval_id = cache_it->eval_id();
+      if (eval_id > 0) {
 	s << "<<<<< Best data captured at function evaluation " << eval_id
 	  << "\n\n";
-      else // should not occur
+      } else {// should not occur
 	s << "<<<<< Best data not found in evaluations from current execution,"
 	  << "\n      but retrieved from restart archive with evaluation id "
 	  << -eval_id << "\n\n";
+      }
     }
-
-    // pass data to the results archive
-    archive_best(i, best_vars, bestResponseArray[i]);
   }
 }
 
@@ -382,7 +402,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
   // and wipe out in sub-models.  Be explicit in case later
-  // update_from_sub_model is used instead.
+  // update_from_model() is used instead.
   bool recurse_flag = false;
   iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
 
@@ -432,6 +452,15 @@ void Optimizer::objective_reduction(const Response& full_response,
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Local single objective transformation:\n";
   // BMA TODO: review whether the model should provide all this information
+  
+  Cout << "Responses:\n";
+  for(int i = 0; i < full_response.function_values().length(); ++i)
+    Cout <<  full_response.function_values()[i] << std::endl;
+ 
+  Cout << "Weights:\n";
+  for(int i = 0; i < full_wts.length(); ++i)
+    Cout << full_wts[i] << std::endl;
+ 
   size_t num_fns = full_response.num_functions() - numConstraints;
   short reduced_asv0 = reduced_response.active_set_request_vector()[0];
   if (reduced_asv0 & 1) { // build objective fn from full_response functions
@@ -470,6 +499,33 @@ void Optimizer::objective_reduction(const Response& full_response,
     Cout << std::endl;
 }
 
+/** Implements configuration of constraint maps, etc...  */
+void Optimizer::configure_constraint_maps()
+{
+
+  if( traits()->supports_nonlinear_inequality() ) {
+    // Sanity check consistent specs
+    if( traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::NONE ) {
+      Cerr << "\nError: inconsistent format for NONLINEAR_INEQUALITY_FORMAT in traits." << std::endl;
+      abort_handler(-1);
+    }
+
+    Real scaling = 
+      (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
+        ? 1.0 : -1.0;
+
+    numNonlinearIneqConstraintsFound = 
+      configure_inequality_constraint_maps(
+                                  iteratedModel,
+                                  bigRealBoundSize,
+                                  CONSTRAINT_TYPE::NONLINEAR,
+                                  constraintMapIndices,
+                                  constraintMapMultipliers,
+                                  constraintMapOffsets,
+                                  scaling);
+  }
+}
+
 
 /** Implements portions of initialize_run specific to Optimizers. This
     function should be invoked (or reimplemented) by any derived
@@ -497,6 +553,9 @@ void Optimizer::initialize_run()
   // minimizer is NL2SOL and the previous optimizer is NULL).
   prevOptInstance   = optimizerInstance;
   optimizerInstance = this;
+
+  if (!iteratedModel.is_null())
+    configure_constraint_maps();
 }
 
 
@@ -568,8 +627,8 @@ void Optimizer::post_run(std::ostream& s)
       scale_model_rep->resp_scaled2native(best_vars, best_resp);
     }
   }
-  
   Minimizer::post_run(s);
 }
+
 
 } // namespace Dakota

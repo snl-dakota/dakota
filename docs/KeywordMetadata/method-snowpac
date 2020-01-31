@@ -1,0 +1,29 @@
+Blurb::
+Stochastic version of NOWPAC that incorporates error estimates and noise mitigation.
+
+Description:: 
+NOWPAC is a provably-convergent gradient-free optimization method from MIT that solves a series of trust region surrogate-based subproblems to generate improving steps.  The stochastic version is SNOWPAC, which incorporates noise estimates in its objective and inequality constraints.  SNOWPAC modifies its trust region controls and adds smoothing from a Gaussian process surrogate in order to mitigate noise.  SNOWPAC also supports a feasibility restoration mode, so it is not necessary to start from a feasible design.
+
+Note: (S)NOWPAC is not configured with Dakota by default and requires a separate installation of the NOWPAC distribution from MIT, combined with its TPLs of Eigen and NLOPT.
+
+Topics::
+Examples::
+Relative to the NOWPAC specification, SNOWPAC supports a seed control for repeatability of runs and also requires the return of error estimates from the underlying evaluator (e.g., UQ method such as Monte Carlo sampling).
+\verbatim
+method,
+	snowpac
+	  seed = 2504
+	  max_function_evaluations = 1000
+	  convergence_tolerance = 1e-4
+	  trust_region
+	    initial_size = 0.10
+	    minimum_size = 1.0e-6
+	    contract_threshold = 0.25
+	    expand_threshold   = 0.75
+	    contraction_factor = 0.50
+	    expansion_factor   = 1.50
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

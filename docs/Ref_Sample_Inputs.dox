@@ -10,14 +10,13 @@ dakota.input.summary file that describe the problem to be solved by
 The following sample input file shows single-method optimization of
 the Textbook Example (see \ref textbook) using DOT's modified method of feasible
 directions. A similar file is available as \c
-Dakota/examples/users/textbook_opt_conmin.in.
+dakota/share/dakota/examples/users/textbook_opt_conmin.in.
 
 <!-- \include dakota_textbook.in -->
 
 \verbatim
 # Dakota Input File: textbook_opt_conmin.in
 environment
- graphics
  tabular_data
   tabular_data_file = 'textbook_opt_conmin.dat'
 
@@ -54,14 +53,13 @@ responses
 The following sample input file shows a nonlinear least squares
 (calibration) solution of the Rosenbrock Example (see \ref rosenbrock) using the NL2SOL
 method. A similar file is available as \c
-Dakota/examples/users/rosen_opt_nls.in
+dakota/share/dakota/examples/users/rosen_opt_nls.in
 
 <!-- \include dakota_rosenbrock_ls.in -->
 
 \verbatim
 # Dakota Input File: rosen_opt_nls.in
 environment
- graphics
  tabular_data
   tabular_data_file = 'rosen_opt_nls.dat'
 
@@ -96,7 +94,7 @@ responses
 
 The following sample input file shows Latin Hypercube Monte Carlo
 sampling using the Textbook Example (see \ref textbook). A similar file is available as \c
-Dakota/test/dakota_uq_textbook_lhs.in.
+dakota/share/dakota/test/dakota_uq_textbook_lhs.in.
 
 <!-- \include dakota_textbook_lhs.in -->
 
@@ -152,14 +150,13 @@ The following sample input file shows a 1-D vector parameter study
 using the Textbook Example (see \ref textbook). It makes use of the default environment and
 model specifications,
 so they can be omitted. A similar file is available in the test
-directory as \c Dakota/examples/users/rosen_ps_vector.in.
+directory as \c dakota/share/dakota/examples/users/rosen_ps_vector.in.
 
 <!-- \include dakota_pstudy.in -->
 
 \verbatim
 # Dakota Input File: rosen_ps_vector.in
 environment
- graphics
  tabular_data
   tabular_data_file = 'rosen_ps_vector.dat'
 
@@ -191,13 +188,12 @@ The following sample input file shows a hybrid environment using three
 methods. It employs a genetic algorithm, pattern search, and full
 Newton gradient-based optimization in succession to solve the Textbook
 Example (see \ref textbook). A similar file is available as \c
-Dakota/examples/users/textbook_hybrid_strat.in.
+dakota/share/dakota/examples/users/textbook_hybrid_strat.in.
 
 <!-- \include dakota_hybrid.in -->
 
 \verbatim
 environment
- graphics
  hybrid sequential
   method_list = 'PS' 'PS2' 'NLP'
 
@@ -207,7 +203,7 @@ method
  coliny_pattern_search stochastic
   seed = 1234
   initial_delta = 0.1
-  threshold_delta = 1.e-4
+  variable_tolerance = 1.e-4
   solution_accuracy = 1.e-10
   exploratory_moves basic_pattern
   #verbose output
@@ -219,7 +215,7 @@ method
  coliny_pattern_search stochastic
   seed = 1234
   initial_delta = 0.1
-  threshold_delta = 1.e-4
+  variable_tolerance = 1.e-4
   solution_accuracy = 1.e-10
   exploratory_moves basic_pattern
   #verbose output
@@ -272,8 +268,8 @@ responses
  analytic_hessians
 \endverbatim
 
-Additional example input files, as well as the corresponding output
-and graphics, are provided in the Tutorial chapter of the Users Manual
+Additional example input files, as well as the corresponding output,
+are provided in the Tutorial chapter of the Users Manual
 \cite UsersMan.
 
 

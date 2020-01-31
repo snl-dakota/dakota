@@ -12,7 +12,7 @@ costly delays. However, Dakota automatically records the variable and
 response data from all function evaluations so that new executions of
 Dakota can pick up where previous executions left off.
 
-The Dakota restart file (e.g., \texttt{dakota.rst}) is written in a
+The Dakota restart file (e.g., \path{dakota.rst}) is written in a
 binary format, leveraging the Boost.Serialization library. While the
 cross-platform portability may NOT be as general as, say, the XDR standard,
 experience has shown it to be a sufficiently portable format to meet
@@ -35,7 +35,7 @@ To write a restart file using a particular name, the
 \end{small}
 If no \texttt{-write\_restart} specification is used, then Dakota will
 still write a restart file, but using the default name
-\texttt{dakota.rst} instead of a user-specified name.  To turn restart
+\path{dakota.rst} instead of a user-specified name.  To turn restart
 recording off, the user may select \texttt{deactivate restart\_file}
 in the \texttt{interface} specification (refer to the Interface
 Commands chapter in the Dakota Reference Manual~\cite{RefMan} for
@@ -45,7 +45,7 @@ to recover and continue a run that terminates prematurely.  Obviously,
 this option is not recommended when function evaluations are costly or
 prone to failure. Please note that using the \texttt{deactivate restart\_file}
 specification will result in a zero length restart file
-with the default name \texttt{dakota.rst}.
+with the default name \path{dakota.rst}.
 
 To restart Dakota from a restart file, the \texttt{-read\_restart}
 command line input (may be abbreviated as \texttt{-r}) is used:
@@ -82,7 +82,7 @@ analysis driver).
 If the \texttt{-write\_restart} and \texttt{-read\_restart}
 specifications identify the same file (including the case where
 \texttt{-write\_restart} is not specified and \texttt{-read\_restart}
-identifies \texttt{dakota.rst}), then new evaluations will be appended
+identifies \path{dakota.rst}), then new evaluations will be appended
 to the existing restart file. If the \texttt{-write\_restart} and
 \texttt{-read\_restart} specifications identify different files, then
 the evaluations read from the file identified by
@@ -105,16 +105,16 @@ are not recorded in the restart file).  In the case of a
 specify a new restart file using \texttt{-write\_restart} so as to
 remove the records of erroneous or corrupted function evaluations. For
 example, to read in the first 50 evaluations from
-\texttt{dakota.rst}:
+\path{dakota.rst}:
 \begin{small}
 \begin{verbatim}
     dakota -i dakota.in -r dakota.rst -s 50 -w dakota_new.rst
 \end{verbatim}
 \end{small}
 
-The \texttt{dakota\_new.rst} file will contain the 50 processed
-evaluations from \texttt{dakota.rst} as well as any new evaluations.
-All evaluations following the 50$^{\mathrm{th}}$ in \texttt{dakota.rst}
+The \path{dakota_new.rst} file will contain the 50 processed
+evaluations from \path{dakota.rst} as well as any new evaluations.
+All evaluations following the 50$^{\mathrm{th}}$ in \path{dakota.rst}
 have been removed from the latest restart record.
 
 Dakota's restart algorithm relies on its duplicate detection
@@ -135,7 +135,7 @@ been extremely rare to date.
 
 The Dakota restart utility program provides a variety of facilities
 for managing restart files from Dakota executions. The executable
-program name is \texttt{dakota\_restart\_util} and it has the
+program name is \path{dakota_restart_util} and it has the
 following options, as shown by the usage message returned when
 executing the utility without any options:
 \begin{footnotesize}
@@ -164,9 +164,9 @@ Several of these functions involve format conversions. In particular,
 the binary format used for restart files can be converted to ASCII
 text and printed to the screen, converted to and from a neutral file
 format, or converted to a tabular format for importing into 3rd-party
-graphics programs. In addition, a restart file with corrupted data can
-be repaired by value or id, and multiple restart files can be combined
-to create a master database.
+plotting/graphics programs. In addition, a restart file with corrupted
+data can be repaired by value or id, and multiple restart files can be
+combined to create a master database.
 
 \subsection{Print}\label{restart:utility:print}
 
@@ -392,9 +392,9 @@ which results in a report similar to the following:
     dakota.rst.3 processing completed: 65 evaluations retrieved.
 \end{verbatim}
 
-The \texttt{dakota.rst.all} database now contains 185 evaluations and
+The \path{dakota.rst.all} database now contains 185 evaluations and
 can be read in for use in a subsequent Dakota study using the
-\texttt{-read\_restart} option to the \texttt{dakota} executable (see
+\texttt{-read\_restart} option to the \path{dakota} executable (see
 Section~\ref{restart:management}).
 
 \subsection{Removal of Corrupted Data}\label{restart:utility:removal}
@@ -407,12 +407,12 @@ If 0's (or other erroneous data) are returned from the user's
 restart file. If there is a clear demarcation of where corruption
 initiated (typical in a process with feedback, such as gradient-based
 optimization), then use of the \texttt{-stop\_restart} option for the
-\texttt{dakota} executable can be effective in continuing the study
+\path{dakota} executable can be effective in continuing the study
 from the point immediately prior to the introduction of bad data. If,
 however, there are interspersed corruptions throughout the restart
 database (typical in a process without feedback, such as sampling),
 then the \texttt{remove} and \texttt{remove\_ids} options of
-\texttt{dakota\_restart\_util} can be useful.
+\path{dakota_restart_util} can be useful.
 
 An example of the command syntax for the \texttt{remove} option is:
 \begin{small}
@@ -427,9 +427,9 @@ which results in a report similar to the following:
     Restart repair completed: 65 evaluations retrieved, 2 removed, 63 saved.
 \end{verbatim}
 \end{small}
-where any evaluations in \texttt{dakota.rst} having an active response
+where any evaluations in \path{dakota.rst} having an active response
 function value that matches \texttt{2.e-04} within machine precision
-are discarded when creating \texttt{dakota.rst.repaired}.
+are discarded when creating \path{dakota.rst.repaired}.
 
 An example of the command syntax for the \texttt{remove\_ids} option is:
 \begin{small}
@@ -446,7 +446,7 @@ which results in a report similar to the following:
 \end{small}
 where evaluation ids \texttt{12}, \texttt{15}, \texttt{23},
 \texttt{44}, and \texttt{57} have been discarded when creating
-\texttt{dakota.rst.repaired}. An important detail is that, unlike the 
+\path{dakota.rst.repaired}. An important detail is that, unlike the
 \texttt{-stop\_restart} option which operates on restart record numbers 
 (see Section~\ref{restart:management})), the \texttt{remove\_ids}
 option operates on evaluation ids.  Thus, removal is not necessarily

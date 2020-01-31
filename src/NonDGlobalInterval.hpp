@@ -179,8 +179,8 @@ private:
   RealVector prevDRVStar;
   /// stores previous solution value for assessing convergence
   Real prevFnStar;
-  /// surrogate-based minimization/maximization iteration count
-  size_t sbIterNum;
+  /// global iteration counter for number of surrogate-based min/max solves
+  size_t globalIterCntr;
   /// flag indicating convergence of a minimization or maximization cycle
   bool boundConverged;
   /// flag for maximal response extraction (all response values

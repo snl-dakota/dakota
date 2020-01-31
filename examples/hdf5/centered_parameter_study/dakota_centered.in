@@ -1,0 +1,31 @@
+environment
+  results_output
+    hdf5
+
+method
+  centered_parameter_study
+  step_vector         250.0  0.25e6   25.0  10.0  0.15  0.15
+  steps_per_variable    4       4      4      4    4     4
+  
+variables
+   normal_uncertain = 4
+     means             =  40000. 29.E+6 500. 1000.
+     std_deviations    =  2000. 1.45E+6 100. 100.
+     descriptors       =  'R' 'E' 'X' 'Y'
+
+  uniform_uncertain = 2
+   initial_point    2.5    2.5
+   upper_bounds     4.0    4.0
+   lower_bounds     1.0    1.0
+   descriptors 'w' 't'
+   
+
+responses
+  response_functions 3
+  descriptors 'area' 'stress' 'displacement'
+  no_gradients
+  no_hessians
+  
+interface
+  direct
+    analysis_driver 'cantilever'

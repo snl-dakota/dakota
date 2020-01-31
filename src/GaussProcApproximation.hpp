@@ -69,7 +69,7 @@ protected:
 
   int min_coefficients() const;
 
-  int num_constraints()  const;
+  //int num_constraints() const;
 
   /// find the covariance parameters governing the Gaussian process response
   void build();

@@ -1,3 +1,11 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 
 #include "ExperimentDataUtils.hpp"
 #include "ReducedBasis.hpp"
@@ -63,6 +71,64 @@ TEUCHOS_UNIT_TEST(reduced_basis, compute_col_means)
   TEST_EQUALITY( column_means.length(), 2 );
   TEST_FLOATING_EQUALITY( column_means[0], 0.299958060862, 1.e-12 )
   TEST_FLOATING_EQUALITY( column_means[1], 0.299814773583, 1.e-12 )
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(reduced_basis, sort_vectors)
+{
+  RealMatrix matrix = get_parameter_and_response_submatrices().first;
+
+  RealVector sorted_vector;
+  IntVector  sorted_indices;
+
+  for( int i=0; i<matrix.numCols(); ++i )
+  {
+    const RealVector & unsrt_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+
+    // starting vector should be unsorted
+    TEST_ASSERT( !std::is_sorted(unsrt_vec.values(), unsrt_vec.values()+unsrt_vec.length()) );
+
+    // --------------- What we are testing
+    sort_vector(Teuchos::getCol(Teuchos::View, matrix, i), sorted_vector, sorted_indices);
+    //sorted_indices.print(std::cout);
+    //sorted_vector.print(std::cout);
+    // --------------- What we are testing
+
+    // sorted vector should be ... well, sorted
+    TEST_ASSERT( std::is_sorted(sorted_vector.values(), sorted_vector.values()+sorted_vector.length()) );
+    // but indices reflecting the sorting order should not be sorted
+    TEST_ASSERT( !std::is_sorted(sorted_indices.values(), sorted_indices.values()+sorted_indices.length()) );
+  }
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(reduced_basis, sort_matrix_cols)
+{
+  RealMatrix matrix = get_parameter_and_response_submatrices().first;
+
+  RealMatrix sorted_matrix;
+  IntMatrix  sorted_indices;
+
+  // --------------- What we are testing
+  sort_matrix_columns(matrix, sorted_matrix, sorted_indices);
+  // --------------- What we are testing
+
+  // Correctness checks
+  for( int i=0; i<matrix.numCols(); ++i )
+  {
+    const RealVector & unsrt_vec    = Teuchos::getCol(Teuchos::View,        matrix,  i);
+    const RealVector & sorted_vec   = Teuchos::getCol(Teuchos::View, sorted_matrix,  i);
+    const IntVector  & sort_indices = Teuchos::getCol(Teuchos::View, sorted_indices, i);
+
+    // starting column vector should be unsorted
+    TEST_ASSERT( !std::is_sorted(unsrt_vec.values(), unsrt_vec.values()+unsrt_vec.length()) );
+    // sorted matrix column should be ... well, sorted
+    TEST_ASSERT( std::is_sorted(sorted_vec.values(), sorted_vec.values()+sorted_vec.length()) );
+    // but indices reflecting the sorting order should not be sorted
+    TEST_ASSERT( !std::is_sorted(sort_indices.values(), sort_indices.values()+sort_indices.length()) );
+  }
 }
 
 //----------------------------------------------------------------
@@ -207,7 +273,7 @@ TEUCHOS_UNIT_TEST(reduced_basis, gp_surr0)
 
   // construct the GP
   Approximation gp_approx(shared_approx_data);
-  gp_approx.add(doe_vars, doe_resp);
+  gp_approx.add_array(doe_vars, doe_resp);
   gp_approx.build();
 
   // check the value of the surrogate

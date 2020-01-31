@@ -44,29 +44,30 @@ void TaylorApproximation::build()
   // base class implementation checks data set against min required
   Approximation::build();
 
-  // No computations needed.  Just do sanity checking on approxData.
+  // No computations needed.  Only sanity checking on active approxData.
 
   // Check number of data points
-  if (!approxData.anchor() || approxData.points()) {
+  if (!approxData.anchor() || approxData.points() != 1) {
     Cerr << "Error: wrong number of data points in TaylorApproximation::"
 	 << "build()." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   // Check gradient
   short  bdo   = sharedDataRep->buildDataOrder;
   size_t num_v = sharedDataRep->numVars;
-  if ( (bdo & 2) && approxData.anchor_gradient().length() != num_v) {
+  const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+  if ( (bdo & 2) && anchor_sdr.response_gradient().length() != num_v) {
     Cerr << "Error: gradient vector required in TaylorApproximation::build()."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   // Check Hessian
-  if ( (bdo & 4) && approxData.anchor_hessian().numRows() != num_v) {
+  if ( (bdo & 4) && anchor_sdr.response_hessian().numRows() != num_v) {
     Cerr << "Error: Hessian matrix required in TaylorApproximation::build()."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -75,16 +76,18 @@ Real TaylorApproximation::value(const Variables& vars)
 {
   short bdo = sharedDataRep->buildDataOrder;
   if (bdo == 1)
-    return approxData.anchor_function();
+    return approxData.anchor_response().response_function();
   else { // build up approx value from constant and derivative terms
-    Real approx_val = (bdo & 1) ? approxData.anchor_function() : 0.;
+    const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    Real approx_val = (bdo & 1) ? anchor_sdr.response_function() : 0.;
     if (bdo & 6) {
-      const RealVector&       x = vars.continuous_variables();
-      const RealVector&      x0 = approxData.anchor_continuous_variables();
-      const RealVector&    grad = approxData.anchor_gradient();
-      const RealSymMatrix& hess = approxData.anchor_hessian();
-      size_t num_v = sharedDataRep->numVars;
-      for (size_t i=0; i<num_v; i++) {
+      const RealVector& x = vars.continuous_variables();
+      const RealVector& x0
+	= approxData.anchor_variables().continuous_variables();
+      const RealVector&    grad = anchor_sdr.response_gradient();
+      const RealSymMatrix& hess = anchor_sdr.response_hessian();
+      size_t i, num_v = sharedDataRep->numVars;
+      for (i=0; i<num_v; i++) {
 	Real dist_i = x[i] - x0[i];
 	if (bdo & 2) // include gradient terms
 	  approx_val += grad[i] * dist_i;
@@ -102,10 +105,11 @@ const RealVector& TaylorApproximation::gradient(const Variables& vars)
 {
   short bdo = sharedDataRep->buildDataOrder;
   if (bdo == 2)
-    return approxData.anchor_gradient();
+    return approxData.anchor_response().response_gradient();
   else { // build up approxGradient from derivative terms
+    const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
     if (bdo & 2) // include gradient terms
-      approxGradient = approxData.anchor_gradient();
+      copy_data(anchor_sdr.response_gradient(), approxGradient); // can be view
     else {       // initialize approxGradient to zero
       size_t num_v = sharedDataRep->numVars;
       if (approxGradient.length() != num_v)
@@ -114,12 +118,13 @@ const RealVector& TaylorApproximation::gradient(const Variables& vars)
 	approxGradient = 0.;
     }
     if (bdo & 4) { // include Hessian terms
-      const RealVector&       x = vars.continuous_variables();
-      const RealVector&      x0 = approxData.anchor_continuous_variables();
-      const RealSymMatrix& hess = approxData.anchor_hessian();
-      size_t num_v = sharedDataRep->numVars;
-      for (size_t i=0; i<num_v; i++)
-	for (size_t j=0; j<num_v; j++)
+      const RealVector& x = vars.continuous_variables();
+      const RealVector& x0
+	= approxData.anchor_variables().continuous_variables();
+      const RealSymMatrix& hess = anchor_sdr.response_hessian();
+      size_t i, j, num_v = sharedDataRep->numVars;
+      for (i=0; i<num_v; i++)
+	for (j=0; j<num_v; j++)
 	  approxGradient[i] += hess(i,j) * (x[j] - x0[j]);
     }
     return approxGradient;
@@ -131,7 +136,7 @@ const RealSymMatrix& TaylorApproximation::hessian(const Variables& vars)
 {
   short bdo = sharedDataRep->buildDataOrder;
   if (bdo & 4)
-    return approxData.anchor_hessian();
+    return approxData.anchor_response().response_hessian();
   else { // initialize approxHessian to zero
     size_t num_v = sharedDataRep->numVars;
     if (approxHessian.numRows() != num_v) approxHessian.shape(num_v);

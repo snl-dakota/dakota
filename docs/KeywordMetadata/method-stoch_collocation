@@ -222,6 +222,18 @@ the Users Manual \cite UsersMan and the Stochastic Expansion Methods
 chapter of the Theory Manual \cite TheoMan for additional information
 on the SC algorithm.
 
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-se_moments
+- \ref hdf5_results-pdf
+- \ref hdf5_results-level_mappings
+- \ref hdf5_results-vbd
+
+
 Topics::
 
 Examples::

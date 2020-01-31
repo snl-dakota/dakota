@@ -16,6 +16,7 @@
 //- Version: $Id$
 
 #include "APPSEvalMgr.hpp"
+#include "DakotaOptimizer.hpp"
 
 namespace Dakota {
 
@@ -27,9 +28,9 @@ namespace Dakota {
     Iterate and response values are passed between Dakota and APPSPACK
     via this interface. */
 
-APPSEvalMgr::APPSEvalMgr(Model& model) :
-  iteratedModel(model), modelAsynchFlag(1), blockingSynch(0), numWorkersUsed(0),
-  numWorkersTotal(1), xTrial(model.continuous_variables())
+APPSEvalMgr::APPSEvalMgr(Optimizer& opt, Model& model) :
+  dakOpt(opt), iteratedModel(model), modelAsynchFlag(1), blockingSynch(0),
+  numWorkersUsed(0), numWorkersTotal(1), xTrial(model.continuous_variables())
 {
   // don't use the probDescDB so that this ctor may be used with both
   // the standard and on-the-fly APPSOptimizer ctors
@@ -54,47 +55,15 @@ bool APPSEvalMgr::isReadyForWork() const
 bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
 			 const HOPSPACK::EvalRequestType apps_request)
 {
-  int num_cont_vars = iteratedModel.cv();
-  int num_disc_int_vars = iteratedModel.div();
-  int num_disc_real_vars = iteratedModel.drv();
-  int num_disc_string_vars = iteratedModel.dsv();
-
-  const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray& set_int_vars = iteratedModel.discrete_set_int_values();
-  const RealSetArray& set_real_vars = iteratedModel.discrete_set_real_values();
-  const StringSetArray& set_string_vars = iteratedModel.discrete_set_string_values();
-
-  size_t i, dsi_cntr;
+//PDH: Set current iterate values for evaluation.
+//     Think this code can be greatly simplified with data adapters
+//     built on top of data transfers.  Would like to just do
+//     something like
+//     setEvalVariables(...)
 
   if (numWorkersUsed < numWorkersTotal) {
 
-    for(i=0; i<num_cont_vars; i++)
-      iteratedModel.continuous_variable(apps_xtrial[i], i);
-
-    for(i=0, dsi_cntr=0; i<num_disc_int_vars; i++)
-      { 
-	// This active discrete int var is a set type
-	// Map from index back to value.
-	if (int_set_bits[i]) {
-	  int int_set_value = 
-	    set_index_to_value(apps_xtrial[i+num_cont_vars], set_int_vars[dsi_cntr]);
-	  iteratedModel.discrete_int_variable(int_set_value, i);
-	  ++dsi_cntr;
-	}
-	// This active discrete int var is a range type
-	else
-	  iteratedModel.discrete_int_variable(apps_xtrial[i+num_cont_vars], i);
-      }
-
-    for (i=0; i<num_disc_real_vars; i++)
-    {
-      Real real_set_value = 
-	set_index_to_value(apps_xtrial[i+num_cont_vars+num_disc_int_vars], set_real_vars[i]);
-      iteratedModel.discrete_real_variable(real_set_value, i);
-    }
-
-    for (i=0; i<num_disc_string_vars; i++)
-      iteratedModel.discrete_string_variable(set_index_to_value(apps_xtrial[i+num_cont_vars+num_disc_int_vars+num_disc_real_vars], set_string_vars[i]), i);
+    set_variables<>(apps_xtrial, iteratedModel, iteratedModel.current_variables());
 
     numWorkersUsed++;
   }
@@ -137,13 +106,6 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
   // synchronize_nowait returns a fresh set of jobs (i.e., returned
   // completions are removed from DAKOTA's lists).
 
-  size_t numNonlinearEqConstraints
-    = iteratedModel.num_nonlinear_eq_constraints();
-  // Any MOO/NLS recasting is responsible for setting the scalar min/max
-  // sense within the recast.
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  bool max_flag = (!sense.empty() && sense[0]);
-
   if (modelAsynchFlag) {
 
     if (dakotaResponseMap.empty())
@@ -160,26 +122,22 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
       int dakota_id = response_iter->first;
       std::map<int,int>::iterator find_tag = tagList.find(dakota_id);
 
+//PDH: RealVector -> std::vector<double>
+//     Has to respect ordering of inequality and equality constraints.
+//     Has to map format of constraints.
+
       if (find_tag != tagList.end()) {
-	const RealVector& local_fn_vals
-	  = response_iter->second.function_values();
-	apps_f.resize(1);
-	apps_cEqs.resize(numNonlinearEqConstraints);
-	apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
-	apps_f[0] = (max_flag) ? -local_fn_vals[0] : local_fn_vals[0];
-	for (int i=0; i<apps_cEqs.size(); i++)
-	  apps_cEqs[i] = constrMapOffsets[i] +
-	    constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];
-	for (int i=0; i<apps_cIneqs.size(); i++)
-	  apps_cIneqs[i] = constrMapOffsets[i+numNonlinearEqConstraints] +
-	    constrMapMultipliers[i+numNonlinearEqConstraints] * 
-	    local_fn_vals[constrMapIndices[i+numNonlinearEqConstraints]+1];
-	apps_tag = (*find_tag).second;
-	apps_msg = "success";
-	dakotaResponseMap.erase(dakota_id);
-	tagList.erase(find_tag);
-	numWorkersUsed--;
-	return dakota_id;
+        const RealVector& local_fn_vals
+          = response_iter->second.function_values();
+
+        dakOpt.get_responses_from_dakota(local_fn_vals, apps_f, apps_cEqs, apps_cIneqs);
+
+        apps_tag = (*find_tag).second;
+        apps_msg = "success";
+        dakotaResponseMap.erase(dakota_id);
+        tagList.erase(find_tag);
+        numWorkersUsed--;
+        return dakota_id;
       }
       else {
 	dakotaResponseMap.clear();
@@ -194,20 +152,17 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
     // APPS.  Note that this includes mapping the constraints using
     // the transformation defined in APPSOptimizer.
 
+//PDH: RealVector -> std::vector<double>
+//     Has to respect ordering of inequality and equality constraints.
+//     Has to map format of constraints.
+
     if (!functionList.empty()) {
+
       std::map<int, RealVector>::iterator f_iter = functionList.begin();
       const RealVector& local_fn_vals = f_iter->second;
-      apps_f.resize(1);
-      apps_cEqs.resize(numNonlinearEqConstraints);
-      apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
-      apps_f[0] = (max_flag) ? -local_fn_vals[0] : local_fn_vals[0];
-      for (int i=0; i<apps_cEqs.size(); i++)
-	apps_cEqs[i] = constrMapOffsets[i] +
-	  constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];
-      for (int i=0; i<apps_cIneqs.size(); i++)
-	apps_cIneqs[i] = constrMapOffsets[i+numNonlinearEqConstraints] +
-	  constrMapMultipliers[i+numNonlinearEqConstraints] * 
-	  local_fn_vals[constrMapIndices[i+numNonlinearEqConstraints]+1];
+
+      dakOpt.get_responses_from_dakota(local_fn_vals, apps_f, apps_cEqs, apps_cIneqs);
+
       apps_tag = (*f_iter).first;
       apps_msg = "success";
       functionList.erase(f_iter);

@@ -5,7 +5,8 @@
 # engineering stress-strain curve.
 
 environment,
-	  graphics tabular_data
+	  graphics
+	  tabular_data
 
 method,
 	centered_parameter_study

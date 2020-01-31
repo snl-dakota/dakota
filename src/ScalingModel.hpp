@@ -58,11 +58,23 @@ public:
   void secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                                     const ShortArray& asv,
                                     RealVector& native_fns) const;
+
+  /// map responses from scaled to native space
+  void response_modify_s2n(const Variables& native_vars,
+			   const Response& scaled_response,
+			   Response& native_response,
+			   int start_offset, int num_responses,
+			   bool response_unscale = true) const;
   
+  ActiveSet default_active_set();
+
 protected:
 
-  /// helper to compute the recast response order during member initialization
-  static short response_order(const Model& sub_model);
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void assign_instance();
 
   // ---
   // Scaling initialization helper functions
@@ -158,12 +170,6 @@ protected:
 			   Response& scaled_response,
 			   int start_offset, int num_responses) const;
 
-  /// map responses from scaled to native space
-  void response_modify_s2n(const Variables& native_vars,
-			   const Response& scaled_response,
-			   Response& native_response,
-			   int start_offset, int num_responses) const;
-
  /// static pointer to this class for use in static callbacks
   static ScalingModel* scaleModelInstance;
 
@@ -189,6 +195,10 @@ protected:
   RealVector linearEqScaleOffsets;       ///< offsets for linear constraints
 
 };
+
+
+inline void ScalingModel::assign_instance()
+{ scaleModelInstance = this; }
 
 } // namespace Dakota
 

@@ -1,4 +1,4 @@
-Blurb:: Stopping criterion based on convergence of the objective function or statistics
+Blurb:: Stopping criterion based on objective function or statistics convergence
 
 Description::
 The \c convergence_tolerance specification provides a real value for
@@ -16,9 +16,9 @@ Therefore, permissible values are between 0 and 1, non-inclusive.
 <b> Behavior Varies by Package/Library </b>
 
 This control is used with most optimization and least squares
-iterators (DOT, CONMIN, NPSOL, NLSSOL, OPT++, and SCOLIB).  Most other
-Dakota methods (such as DACE or parameter studies) do not use this
-control, but some adaptive methods, such as adaptive UQ, do.
+iterators (DOT, CONMIN, NLPQLP, NPSOL, NLSSOL, OPT++, and SCOLIB).  
+Most other Dakota methods (such as DACE or parameter studies) do not use 
+this control, but some adaptive methods, such as adaptive UQ, do.
 
 Since no progress may be made on one iteration followed by significant
 progress on a subsequent iteration, some libraries require that the
@@ -26,16 +26,10 @@ convergence tolerance be satisfied on two or more consecutive
 iterations prior to termination of iteration.
 
 Notes on each library:
-\li DOT: must be satisfied for two consecutive iterations 
-\li NPSOL: defines
-    an internal optimality tolerance which is used in evaluating if
-    an iterate satisfies the first-order Kuhn-Tucker conditions for a
-    minimum. The magnitude of \c convergence_tolerance approximately
-    specifies the number of significant digits of accuracy desired in the
-    final objective function (e.g., \c convergence_tolerance = \c 1.e-6
-    will result in approximately six digits of accuracy in the final
-    objective function).
+\li DOT: relative tolerance that must be satisfied for two consecutive iterations 
 \li NL2SOL: See \ref method-nl2sol
+\li NLPQLP: used as Lagrangian gradient norm tolerance (ACC), not as a relative convergence tolerance
+\li NPSOL: used as a line search tolerance, not as a relative convergence tolerance
 
 Topics::	method_independent_controls
 Examples::

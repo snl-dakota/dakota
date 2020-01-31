@@ -1,0 +1,55 @@
+#@ s1: DakotaConfig=HAVE_DOT
+#@ s2: DakotaConfig=HAVE_DOT
+#@ s3: DakotaConfig=HAVE_NLPQL
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s6: DakotaConfig=HAVE_ROL
+## DAKOTA INPUT FILE - dakota_svanberg.in
+#  The Svanberg five-segment beam has a linear objective and a nonlinear constraint:
+#  Svanberg, Krister, "The Method of Moving Asymptotes--A New Method for
+#  Structural Optimization," Intl. J. Num. Meth. Vol. 24, 1987, pp. 359-373.
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_svanberg_conmin.dat'	#s0
+#	tabular_data_file = 'dakota_svanberg_dotmfd.dat' 	#s1
+#	tabular_data_file = 'dakota_svanberg_dotslp.dat' 	#s2
+#	tabular_data_file = 'dakota_svanberg_nlpql.dat' 	#s3
+#	tabular_data_file = 'dakota_svanberg_npsol.dat' 	#s4
+#	tabular_data_file = 'dakota_svanberg_optpp.dat' 	#s5
+#	tabular_data_file = 'dakota_svanberg_rol.dat' 		#s6
+
+method,
+	conmin_mfd									#s0
+#	dot_mmfd										#s1
+#	dot_slp										#s2
+#	nlpql											#s3
+#	npsol											#s4
+#	optpp_q_newton								#s5
+#	rol										#s6
+#	  variable_tolerance = 1.e-4				#s6
+	  max_iterations = 200
+	  convergence_tolerance = 1e-4				#s0,#s1,#s2,#s3,#s4
+#	  convergence_tolerance = 1e-5				#s5
+	  constraint_tolerance  = 1e-4				#s0,#s1,#s2,#s4
+
+variables,
+	continuous_design = 5
+	  initial_point  5.0  5.0  5.0  5.0  5.0
+	  lower_bounds   0.0  0.0  0.0  0.0  0.0
+	  upper_bounds  10.0 10.0 10.0 10.0 10.0
+	  descriptors   'x1' 'x2' 'x3' 'x4' 'x5'
+
+interface,
+	fork
+	  analysis_driver = 'svanberg'
+	  parameters_file = 'svanberg_params.in'
+	  results_file = 'svanberg_results.out'
+	  deactivate active_set_vector
+#	  file_tag file_save
+	  
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints  = 1
+	nonlinear_inequality_upper_bounds = 0.0
+	analytic_gradients
+	no_hessians

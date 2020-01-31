@@ -16,6 +16,7 @@
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "NonDLHSSampling.hpp"
+#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: ConcurrentMetaIterator.cpp 7018 2010-10-12 02:25:22Z mseldre $";
 
@@ -139,6 +140,13 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
   problem_db.set_db_model_nodes(model_index);
 }
 
+
+void ConcurrentMetaIterator::declare_sources() {
+  evaluationsDB.declare_source(method_id(), 
+                               "iterator",
+                               selectedIterator.method_id(),
+                               "iterator");
+}
 
 ConcurrentMetaIterator::~ConcurrentMetaIterator()
 { } // Virtual destructor handles referenceCount at Iterator level
@@ -375,7 +383,7 @@ void ConcurrentMetaIterator::core_run()
 }
 
 
-void ConcurrentMetaIterator::print_results(std::ostream& s)
+void ConcurrentMetaIterator::print_results(std::ostream& s, short results_state)
 {
   using std::setw;
   s << "\n<<<<< Results summary:\n";
@@ -385,18 +393,23 @@ void ConcurrentMetaIterator::print_results(std::ostream& s)
     = prpResults[0].variables().continuous_variable_labels();
   StringMultiArrayConstView div_labels
     = prpResults[0].variables().discrete_int_variable_labels();
+  StringMultiArrayConstView dsv_labels
+    = prpResults[0].variables().discrete_string_variable_labels();  
   StringMultiArrayConstView drv_labels
     = prpResults[0].variables().discrete_real_variable_labels();
-  const StringArray& fn_labels = prpResults[0].response().function_labels();
+  const StringArray& fn_labels = prpResults[0].response().function_labels();  
   size_t i, num_cv  = cv_labels.size(),  num_div = div_labels.size(),
-    num_drv = drv_labels.size(), num_fns = fn_labels.size();
+    num_dsv = dsv_labels.size(), num_drv = drv_labels.size(), 
+    num_fns = fn_labels.size();
   s << "   set_id "; // matlab comment syntax
+  StringArray weight_strings; // used to store pareto_set results
   for (i=0; i<paramSetLen; ++i) {
     if (methodName == MULTI_START)
       s << setw(14) << cv_labels[i].data() << ' ';
     else {
       char string[10];
       std::sprintf(string, "w%i", (int)i + 1);
+      weight_strings.push_back(string);
       s << setw(14) << string << ' ';
     }
   }
@@ -408,6 +421,11 @@ void ConcurrentMetaIterator::print_results(std::ostream& s)
   for (i=0; i<num_div; i++) {
     String label = (methodName == MULTI_START) ?
       div_labels[i] + String("*") : div_labels[i];
+    s << setw(14) << label.data() << ' ';
+  }
+  for (i=0; i<num_dsv; i++) {
+    String label = (methodName == MULTI_START) ?
+      dsv_labels[i] + String("*") : dsv_labels[i];
     s << setw(14) << label.data() << ' ';
   }
   for (i=0; i<num_drv; i++) {
@@ -431,10 +449,94 @@ void ConcurrentMetaIterator::print_results(std::ostream& s)
     //prp_vars.write_tabular(s) not used since active vars, not all vars
     write_data_tabular(s, prp_vars.continuous_variables());
     write_data_tabular(s, prp_vars.discrete_int_variables());
+    write_data_tabular(s, prp_vars.discrete_string_variables());
     write_data_tabular(s, prp_vars.discrete_real_variables());
     prp_result.response().write_tabular(s);
   }
   s << '\n';
+  // Write results to DB
+  if(resultsDB.active()) {
+    const auto iterator_id = run_identifier();
+    // set_ids for dimnension scales
+    IntArray set_ids(num_results);
+    std::iota(set_ids.begin(), set_ids.end(), 1);
+    // Store parameterSets, which are initial points for multi_start and weights
+    // for pareto_set.
+    DimScaleMap pset_scales;
+    StringArray pset_location;
+    pset_scales.emplace(0, IntegerScale("set_ids", set_ids));
+    if(methodName == MULTI_START) {
+      pset_scales.emplace(1, StringScale("variables", cv_labels));
+      pset_location = {String("starting_points"), String("continuous")};
+    } else {
+      pset_scales.emplace(1, StringScale("weights", weight_strings));
+      pset_location.push_back("weights");
+    }
+    resultsDB.allocate_matrix(iterator_id, pset_location, 
+        Dakota::ResultsOutputType::REAL, num_results, paramSetLen, pset_scales);
+    for(int i = 0; i < num_results; ++i)
+      resultsDB.insert_into(iterator_id, pset_location, parameterSets[i],i);
+    // Store best continuous variables 
+    if(num_cv) {  // should always be true
+      DimScaleMap best_parameters_scales;
+      best_parameters_scales.emplace(0, IntegerScale("set_id", set_ids));
+      best_parameters_scales.emplace(1, StringScale("variables", cv_labels));
+      StringArray location = {String("best_parameters"), String("continuous")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::REAL, 
+          num_results, num_cv, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
+            prpResults[i].variables().continuous_variables(), i);
+    }
+    // Store best discrete ints
+    if(num_div) {
+      DimScaleMap best_parameters_scales;
+      best_parameters_scales.emplace(0, IntegerScale("set_ids", set_ids));
+      best_parameters_scales.emplace(1, StringScale("variables", div_labels));
+      StringArray location = {String("best_parameters"), String("discrete_integer")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::INTEGER, 
+          num_results, num_div, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
+            prpResults[i].variables().discrete_int_variables(), i);
+    }
+    // Store best discrete strings
+    if(num_dsv) {
+      DimScaleMap best_parameters_scales;
+      best_parameters_scales.emplace(0, IntegerScale("set_ids", set_ids));
+      best_parameters_scales.emplace(1, StringScale("variables", dsv_labels));
+      StringArray location = {String("best_parameters"), String("discrete_string")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::STRING, 
+          num_results, num_dsv, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
+            prpResults[i].variables().discrete_string_variables(), i);
+    }
+    // Store best discrete reals
+    if(num_drv) {
+      DimScaleMap best_parameters_scales;
+      best_parameters_scales.emplace(0, IntegerScale("set_ids", set_ids));
+      best_parameters_scales.emplace(1, StringScale("variables", drv_labels));
+      StringArray location = {String("best_parameters"), String("discrete_real")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::REAL, 
+          num_results, num_drv, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
+            prpResults[i].variables().discrete_real_variables(), i);
+    }
+    // Store best responses
+    if(num_fns) {
+      DimScaleMap best_responses_scales;
+      best_responses_scales.emplace(0, IntegerScale("set_ids", set_ids));
+      best_responses_scales.emplace(1, StringScale("responses", fn_labels));
+      StringArray location = {String("best_responses")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::REAL, 
+          num_results, num_fns, best_responses_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
+            prpResults[i].response().function_values(), i);
+    }
+  }
 }
 
 } // namespace Dakota

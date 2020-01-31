@@ -262,7 +262,7 @@ as in the second example in Section~\ref{ps:vector} would be:
 For convenience, the points for evaluation in a list parameter study
 may instead be specified via the {\tt import\_points\_file}
 specification, e.g., {\tt 'import\_points\_file listpstudy.dat'},
-where the file {\tt listpstudy.dat} may be in freeform or annotated
+where the file \path{listpstudy.dat} may be in freeform or annotated
 format~\ref{input:tabularformat}.  The ordering of the points is in
 input specification order, with both active and inactive variables by
 default.
@@ -459,19 +459,20 @@ taken between the initial and final points in the parameter study.
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock vector parameter study example: the Dakota input
-  file --
-see \texttt{Dakota/examples/users/rosen\_ps\_vector.in} }
+    file -- see
+    \protect\path{dakota/share/dakota/examples/users/rosen_ps_vector.in}
+  }
   \label{additional:rosenbrock_vector}
 \end{figure}
 
-Figure~\ref{additional:rosenbrock_vector_graphics}(a) shows the
-graphics output created by Dakota. For this study, the simple Dakota
-graphics are more useful for visualizing the
-results. Figure~\ref{additional:rosenbrock_vector_graphics}(b)
-shows the locations of the 11 sample points generated in this study.
-It is evident from these figures that the parameter study starts
-within the banana-shaped valley, marches up the side of the hill, and
-then returns to the valley.
+Figure~\ref{additional:rosenbrock_vector_graphics}(a) shows the legacy
+X Windows-based graphics output created by Dakota, which can be useful
+for visualizing the
+results. Figure~\ref{additional:rosenbrock_vector_graphics}(b) shows
+the locations of the 11 sample points generated in this study.  It is
+evident from these figures that the parameter study starts within the
+banana-shaped valley, marches up the side of the hill, and then
+returns to the valley.
 
 \begin{figure}[htp!]
   \centering

@@ -23,19 +23,25 @@ variables,
 	  descriptors      'x1'   'x2'
 
 interface,
-	fork					#s0,#s1,#s4
-#	system 					#s2,#s3,#s5
-#	  asynchronous				#s1,#s3
+	fork					#s0,#s1,#s4,#s6,#s8,#s10
+#	system 					#s2,#s3,#s5,#s7,#s9,#s11
+#	  asynchronous				#s1,#s3,#s8,#s9
 	  input_filter    = 'dakota_3pc.if.sh'	#s0,#s1,#s2,#s3
 	  output_filter   = 'dakota_3pc.of.sh'	#s0,#s1,#s2,#s3
 	  analysis_driver = 'dakota_3pc.ac.sh'	#s0,#s1,#s2,#s3
 #	  input_filter    = 'dakota_3pc.if_verb.sh'	#s4,#s5
 #	  output_filter   = 'dakota_3pc.of_verb.sh'	#s4,#s5
 #	  analysis_driver = 'dakota_3pc.ac_verb.sh'	#s4,#s5
+#         input_filter    = 'dakota_3pc.if.sub.sh {PARAMETERS}'             #s6,#s7,#s8,#s9,#s10,#s11
+#         output_filter   = 'dakota_3pc.of.sub.sh {RESULTS}'                #s6,#s7,#s8,#s9,#s10,#s11
+#         analysis_driver = 'dakota_3pc.ac.sub.sh {PARAMETERS} {RESULTS}'   #s6,#s7,#s8,#s9
+#         analysis_driver = 'dakota_3pc.ac.1.sub.sh {PARAMETERS} {RESULTS}' #s10,#s11
+#                           'dakota_3pc.ac.2.sub.sh {PARAMETERS} {RESULTS}' #s10,#s11
 	  parameters_file = 'tb.in'
 	  results_file    = 'tb.out'
-	  file_tag				#s0,#s1,#s2,#s3
-#	  verbatim				#s4,#s5
+	  file_tag				#s0,#s1,#s2,#s3,#s6,#s7,#s8,#s9,#s10,#s11
+#         work_directory named 'workdirs/workdir' directory_tag #s6,#s7,#s8,#s9,#s10,#s11
+#	  verbatim				#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11
 
 responses,
 	objective_functions = 1

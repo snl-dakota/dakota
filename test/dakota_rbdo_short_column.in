@@ -27,7 +27,6 @@
 # The published soln for all cases is (b,h) = (8.668, 25.0) with f = 216.7
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################
@@ -39,6 +38,7 @@ method,
 #	optpp_q_newton
 	dot_sqp
 	  convergence_tolerance = 1.e-8
+	scaling
 
 model,
 	id_model = 'OPTIM_M'
@@ -56,6 +56,7 @@ variables,
 	  lower_bounds      5.    15.
 	  upper_bounds     15.    25.
 	  descriptors      'b'    'h'
+	scale_type 'auto'
 
 responses,
 # minimize b*h

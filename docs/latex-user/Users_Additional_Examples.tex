@@ -128,20 +128,21 @@ that Dakota will use its internal version of the textbook problem.
     \end{small}
   \end{bigbox}
   \caption{Textbook gradient-based constrained optimization example:
-    the Dakota input file --
-see \texttt{Dakota/examples/users/textbook\_opt\_conmin.in} }
+    the Dakota input file -- see
+    \protect\path{dakota/share/dakota/examples/users/textbook_opt_conmin.in}
+  }
   \label{additional:textbook_grad_constr}
 \end{figure}
 
 The \texttt{conmin\_mfd} keyword in
 Figure~\ref{additional:textbook_grad_constr} tells Dakota to use the
 CONMIN package's implementation of the Method of Feasible Directions
-(see Section~\ref{opt:methods:gradient:descriptions} for more
+(see Section~\ref{opt:methods:gradient:constrained} for more
 details).
 
 A significantly faster alternative is the DOT package's Modified
 Method of Feasible Directions, i.e. \texttt{dot\_mmfd} (see
-Section~\ref{opt:methods:gradient:descriptions} for more
+Section~\ref{opt:methods:gradient:constrained} for more
 details). However, DOT is licensed software that may not be available
 on a particular system. If it is installed on your system and Dakota
 has been compiled without the \texttt{--without-dot} flag, you may use
@@ -160,8 +161,8 @@ starting point is $(x_1,x_2) = (0.9,1.1)$, where both constraints
 are violated. The optimizer takes a
 sequence of steps to minimize the objective function while reducing
 the infeasibility of the constraints.
-The optimization graphics are also shown in
-Figure~\ref{additional:textbook_grad_constr_graphics}(a).
+Dakota's legacy X Windows-based graphics for the optimization are also
+shown in Figure~\ref{additional:textbook_grad_constr_graphics}(a).
 
 \begin{figure}[ht!]
   \centering
@@ -173,9 +174,10 @@ Figure~\ref{additional:textbook_grad_constr_graphics}(a).
   (b)
   \end{tabular}
   \caption{Textbook gradient-based constrained optimization example:
-    (a) screen capture of the Dakota graphics shows how the objective
-    function was reduced during the search for a feasible design point
-    and (b) iteration history (iterations marked by solid dots).}
+    (a) screen capture of the legacy Dakota X Windows-based graphics
+    shows how the objective function was reduced during the search for
+    a feasible design point and (b) iteration history (iterations
+    marked by solid dots).}
   \label{additional:textbook_grad_constr_graphics}
 \end{figure}
 
@@ -200,7 +202,7 @@ Figure~\ref{additional:textbook_grad_constr_graphics}(a).
 % % Another way to exercise the least squares methods which would be
 % % equivalent to the optimization formulation would be to select the
 % % residual functions to be $(x_{i}-1)^2$. However, this formulation
-% % requires modification to \texttt{Dakota\_Source/test/text\_book.cpp} and will
+% % requires modification to \path{dakota_source/test/text_book.cpp} and will
 % % not be presented here. Equation~\ref{additional:tbls}, on the other
 % % hand, can use the existing \texttt{text\_book} without modification.
 % Refer to Section~\ref{additional:rosenbrock} for an example of
@@ -302,8 +304,8 @@ f_2 = 1 - x_1 \label{additional:rosenr2}
 are residual terms.
 
 The included analysis driver can handle both formulations.
-In the \texttt{Dakota/test} directory, the \texttt{rosenbrock}
-executable (compiled from \texttt{Dakota\_Source/test/rosenbrock.cpp}) checks the number of
+In the \path{dakota/share/dakota/test} directory, the \texttt{rosenbrock}
+executable (compiled from \path{dakota_source/test/rosenbrock.cpp}) checks the number of
 response functions passed in the parameters file and returns either an
 objective function (as computed from
 Equation~\ref{additional:rosenstd}) for use with optimization methods
@@ -462,7 +464,7 @@ engineering design problems (e.g., parameter estimation) that can make
 use of the least-squares approach.
 
 Figure~\ref{additional:rosenbrock_nls} is a listing of the Dakota input
-file \texttt{rosen\_opt\_nls.in}. This differs from the input
+file \path{rosen_opt_nls.in}. This differs from the input
 file shown in Figure~\ref{tutorial:rosenbrock_grad} in several key
 areas. The responses block of the input file uses the keyword
 \texttt{calibration\_terms = 2} instead of
@@ -483,7 +485,7 @@ squares minimization problems).
     \end{small}
   \end{bigbox}
   \caption{Rosenbrock nonlinear least squares example: the Dakota input file --
-see \texttt{Dakota/examples/users/rosen\_opt\_nls.in} }
+see \protect\path{dakota/share/dakota/examples/users/rosen_opt_nls.in} }
   \label{additional:rosenbrock_nls}
 \end{figure}
 
@@ -560,7 +562,7 @@ Figure~\ref{fig:2D_shubert}.
 
 \subsection{Efficient Global Optimization}
 
-The Dakota input file \texttt{herbie\_shubert\_opt\_ego.in} shows how
+The Dakota input file \path{herbie_shubert_opt_ego.in} shows how
 to use efficient global optimization (ego) to minimize the 5D version
 of any of these 3 separable functions. The input file is shown in
 Figure~\ref{additional:herbie_shubert_ego}. Note that in the variables
@@ -577,7 +579,7 @@ of these functions is $-2\le x_k \le 2$ for all dimensions.
     \end{bigbox}
   \end{small}
   \caption{Herbie/Shubert examples: the Dakota input file --
-see \texttt{Dakota/examples/users/herbie\_shubert\_opt\_ego.in} }
+see \protect\path{dakota/share/dakota/examples/users/herbie_shubert_opt_ego.in} }
   \label{additional:herbie_shubert_ego}
 \end{figure}
 
@@ -588,6 +590,61 @@ see \texttt{Dakota/examples/users/herbie\_shubert\_opt\_ego.in} }
            It can accept an arbitrary number of inputs.}
   \label{fig:2D_shubert}
 \end{figure}
+
+\section{Sobol and Ishigami Functions}
+These functions are often used to test sensitivity analysis methods. 
+These are documented in ~\cite{storlie_09}.  The first is 
+the Sobol rational function, given by the equation: 
+\begin{equation}
+f({\bf x})=\frac{(x_2+0.5)^4}{(x_1+0.5)^4}
+\end{equation}
+This function is monotonic across each of the inputs.  However, there is 
+substantial interaction between $x_1$ and $x_2$ which makes sensitivity analysis 
+difficult.
+This function in shown in Figure~\ref{fig:sobol_rational}.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.7]{images/sobol_rational}
+  \caption{Plot of the \texttt{sobol\_rational} test function in 2 dimensions.}
+  \label{fig:sobol_rational}
+\end{figure}
+
+The Ishigami test problem~\cite{storlie_09} is a
+smooth $C^{\infty}$ function:
+\begin{equation}
+f({\bf x}) = \sin(2 \pi x_1 - \pi) + 7 \sin^2(2 \pi x_2 - \pi) 
++ 0.1(2 \pi x_3 - \pi)^4 \sin(2 \pi x_1 - \pi)
+\end{equation}
+where the distributions for $x_1$, $x_2$, and $x_3$ are {\it iid}
+uniform on [0,1].  This function was created as a test for global
+sensitivity analysis methods, but is challenging for any method based
+on low-order structured grids (e.g., due to term cancellation at
+midpoints and bounds). 
+This function in shown in Figure~\ref{fig:sobol_ishigami}.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.7]{images/sobol_ishigami}
+  \caption{Plot of the \texttt{sobol\_ishigami} test function as a function of x1 and x3.}
+  \label{fig:sobol_ishigami}
+\end{figure}
+
+At the opposite end of the smoothness spectrum, Sobol's
+g-function~\cite{storlie_09} is $C^0$ with the absolute value
+contributing a slope discontinuity at the center of the domain:
+\begin{equation}
+f({\bf x}) = 2 \prod_{j=1}^5 \frac{|4x_j - 2| + a_j}{1+a_j};
+~~~a = [0, 1, 2, 4, 8]
+\end{equation}
+The distributions for $x_j$ for $j=1,2,3,4,5$ are {\it iid}
+uniform on [0,1]. 
+This function in shown in Figure~\ref{fig:sobol_g_function}.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.7]{images/sobol_g_function}
+  \caption{Plot of the \texttt{sobol\_g\_function} test function.}
+  \label{fig:sobol_g_function}
+\end{figure}
+
 
 %\clearpage
 \section{Cylinder Head}\label{additional:cylinder}
@@ -633,7 +690,7 @@ design variables according to the following simple expressions:
   \label{additional:cylheadexp}\\
 \sigma_{\mathtt{max}} &=& 750+\frac{1}{(\mathtt{t_{wall}})^{2.5}}\nonumber\\
 \mathtt{t_{wall}}     &=& \mathtt{offset_{intake}-offset_{exhaust}}-
-  \frac{(\mathtt{d_{intake}-d_{exhaust}})}{2}\nonumber
+  \frac{(\mathtt{d_{intake}+d_{exhaust}})}{2}\nonumber
 \end{eqnarray}
 
 where the constants in Equation~\ref{additional:cylheadaltg} and
@@ -652,12 +709,12 @@ An example using the cylinder head test problem is shown below:
     \end{bigbox}
   \end{small}
   \caption{Cylinder Head Example: the Dakota input file --
-see \texttt{Dakota/examples/users/cylhead\_opt\_npsol.in} }
+see \protect\path{dakota/share/dakota/examples/users/cylhead_opt_npsol.in} }
   \label{additional:cylinder_head}
 \end{figure}
 
 The interface keyword specifies use of the \texttt{cyl\_head}
-executable (compiled from \texttt{Dakota\_Source/test/cyl\_head.cpp}) as the
+executable (compiled from \path{dakota_source/test/cyl_head.cpp}) as the
 simulator. The variables and responses keywords specify the data sets
 to be used in the iteration by providing the initial point,
 descriptors, and upper and lower bounds for two continuous design
@@ -839,7 +896,7 @@ optimal values for diameter and height of the final product.
 \subsection{Constrained Gradient Based Optimization}
 
 The input file for this example is named
-\texttt{container\_opt\_npsol.in}. The solution to this example
+\path{container_opt_npsol.in}. The solution to this example
 problem is $(H,D)=(4.99,4.03)$, with a minimum area of 98.43
 $\mathtt{in}^2$ .
 
@@ -927,7 +984,7 @@ responses are normally-distributed) is being sought on the scaled
 constraints.
 
 \subsection{Constrained Gradient Based Optimization}
-The test problem is solved using {\tt cantilever\_opt\_npsol.in}:
+The test problem is solved using \path{cantilever_opt_npsol.in}:
 \begin{figure}[ht!]
   \centering
   \begin{small}
@@ -936,7 +993,7 @@ The test problem is solved using {\tt cantilever\_opt\_npsol.in}:
     \end{bigbox}
   \end{small}
   \caption{Cantilever Example: the Dakota input file --
-see \texttt{Dakota/examples/users/cantilever\_opt\_npsol.in} }
+see \protect\path{dakota/share/dakota/examples/users/cantilever_opt_npsol.in} }
   \label{additional:cant_opt_npsol}
 \end{figure}
 
@@ -1033,7 +1090,7 @@ f_2(x) &=& (1+10x_2) \times \left[1-\bigg(\frac{x_1}{1+10x_2}\bigg)^2-
 The input file for this example is shown in
 Figure~\ref{additional:moga2inp}, which references the
 \texttt{mogatest2} executable (compiled from
-\texttt{Dakota\_Source/test/mogatest2.cpp}) as the simulator. The Pareto
+\path{dakota_source/test/mogatest2.cpp}) as the simulator. The Pareto
 front is shown in Figure~\ref{additional:moga2front}. Note the
 discontinuous nature of the front in this example.
 
@@ -1045,7 +1102,7 @@ discontinuous nature of the front in this example.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file specifying the use of MOGA on mogatest2 --
-see \texttt{Dakota/examples/users/mogatest2.in} }
+see \protect\path{dakota/share/dakota/examples/users/mogatest2.in} }
   \label{additional:moga2inp}
 \end{figure}
 
@@ -1081,7 +1138,7 @@ The input file for this example is shown in
 Figure~\ref{additional:moga3inp}. It differs from
 Figure~\ref{additional:moga2inp} in the variables and responses
 specifications, in the use of the \texttt{mogatest3} executable
-(compiled from \texttt{Dakota\_Source/test/mogatest3.cpp}) as the simulator, and
+(compiled from \path{dakota_source/test/mogatest3.cpp}) as the simulator, and
 in the \texttt{max\_function\_evaluations} and \texttt{mutation\_type}
 MOGA controls. The Pareto set is shown in
 Figure~\ref{additional:moga3set}. Note the discontinuous nature of the
@@ -1099,7 +1156,7 @@ shown in Figure~\ref{additional:moga3front}.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file specifying the use of MOGA on mogatest3 --
-see \texttt{Dakota/examples/users/mogatest3.in} }
+see \protect\path{dakota/share/dakota/examples/users/mogatest3.in} }
   \label{additional:moga3inp}
 \end{figure}
 
@@ -1156,7 +1213,7 @@ in~\cite{Sal04}) for this test problem:
 
 \subsection{Morris One-at-a-Time Sensitivity Study}
 
-The dakota input {\tt morris\_ps\_moat.in} exercises
+The dakota input \path{morris_ps_moat.in} exercises
 the MOAT algorithm described in Section~\ref{dace:psuade} on the
 Morris problem. The Dakota output obtained is shown in
 Figures~\ref{FIG:moat:out_preamble} and~\ref{FIG:moat:out_results}.
@@ -1250,8 +1307,9 @@ linear effects, and black Xs denote insignificant inputs.}
 \clearpage
 \section{Test Problems for Reliability Analyses}\label{additional:reliabilityproblems}
 This section includes several test problems and examples related to
-reliability analyses. {\bf These are NOT included in the {\tt Dakota/examples/users}
-directory, but are in the {\tt Dakota/test} directory.}
+reliability analyses. {\bf These are NOT included in the
+  \path{dakota/share/dakota/examples/users} directory, but are in the
+  \path{dakota/share/dakota/test} directory.}
 
 
 \subsection{Log Ratio}\label{additional:logratio}
@@ -1268,9 +1326,9 @@ a correlation coefficient between the two variables of 0.3.
 {\bf Reliability Analyses} \\
 
 First-order and second-order reliability analysis (FORM and SORM) are performed in the
-\texttt{logratio\_uq\_reliability.in} in the {\tt Dakota/examples/users}
- directory and \texttt{dakota\_logratio\_taylor2.in} in directory
-{\tt Dakota/test}.
+\path{logratio_uq_reliability.in} in the \path{dakota/share/dakota/examples/users}
+ directory and \path{dakota_logratio_taylor2.in} in directory
+\path{dakota/share/dakota/test}.
 
 For the reliability index approach (RIA),
 24 response levels (.4, .5, .55,
@@ -1304,7 +1362,7 @@ g({\bf x}) = F_y Z - 1140
 where $F_y$ is Lognormal(38., 3.8), $Z$ is Normal(54., 2.7), and the
 variables are uncorrelated.
 
-The \texttt{Dakota/test/dakota\_steel\_section.in} input file computes
+The \path{dakota/share/dakota/test/dakota_steel_section.in} input file computes
 a first-order CDF probability of $p(g \leq 0.)$ = 1.297e-07 and a
 second-order CDF probability of $p(g \leq 0.)$ = 1.375e-07. This
 second-order result differs from that reported in~\cite{Hal00}, since
@@ -1328,7 +1386,7 @@ where $x_1 - x_4$ are Lognormal(120., 12.), $x_5$ is Lognormal(50.,
 
 While the limit state is linear in x-space, the nonlinear
 transformation of lognormals to u-space induces curvature. The
-\texttt{Dakota/test/dakota\_portal\_frame.in} input file computes a
+\path{dakota/share/dakota/test/dakota_portal_frame.in} input file computes a
 first-order CDF probability of $p(g \leq 0.)$ = 9.433e-03 and a
 second-order CDF probability of $p(g \leq 0.)$ = 1.201e-02. These
 results agree with the published results from the literature.
@@ -1353,9 +1411,9 @@ respectively.
 {\bf Reliability Analyses} \\
 
 First-order and second-order reliability analysis are performed in the
-\texttt{dakota\_short\_column.in} and \\
-\texttt{dakota\_short\_column\_taylor2.in} input files in
-{\tt Dakota/test}. For RIA, 43 response levels (-9.0, -8.75,
+\path{dakota_short_column.in} and
+\path{dakota_short_column_taylor2.in} input files in
+\path{dakota/share/dakota/test}. For RIA, 43 response levels (-9.0, -8.75,
 -8.5, -8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0, -4.5,
 -4.0, -3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4,
 -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3,
@@ -1393,11 +1451,11 @@ Figure~\ref{fig:short_col_cdf}, the initial design of $(b, h) = (5,
 15)$ is infeasible and the optimization must add material to obtain
 the target reliability at the optimal design $(b, h) = (8.68, 25.0)$.
 Simple bi-level, fully analytic bi-level, and sequential RBDO methods
-are explored in inputs files \\
-\texttt{dakota\_rbdo\_short\_column.in},
-\texttt{dakota\_rbdo\_short\_column\_analytic.in}, and\\
-\texttt{dakota\_rbdo\_short\_column\_trsb.in}, with results as
-described in~\cite{Eld05,Eld06a}. These files are located in {\tt Dakota/test}.
+are explored in inputs files \path{dakota_rbdo_short_column.in},
+\path{dakota_rbdo_short_column_analytic.in}, and
+\path{dakota_rbdo_short_column_trsb.in}, with results as described
+in~\cite{Eld05,Eld06a}. These files are located in
+\path{dakota/share/dakota/test}.
 
 \subsection{Steel Column}\label{additional:steel_column}
 
@@ -1430,8 +1488,8 @@ E_b & = & \frac{\pi^2 E B D H^2}{2 L^2}
 \end{eqnarray}
 and the column length $L$ is 7500 mm.
 
-This design problem (\texttt{dakota\_rbdo\_steel\_column.in} in
-\texttt{Dakota/test}) demonstrates design variable insertion into
+This design problem (\path{dakota_rbdo_steel_column.in} in
+\path{dakota/share/dakota/test}) demonstrates design variable insertion into
 random variable distribution parameters through the design of the mean
 flange breadth, flange thickness, and profile height. The RBDO
 formulation maximizes the reliability subject to a cost constraint:
@@ -1445,11 +1503,11 @@ formulation maximizes the reliability subject to a cost constraint:
 which has the solution ($b$, $d$, $h$) = (200.0, 17.50, 100.0) with a
 maximal reliability of 3.132.
 
-\section{Test Problems for Forward Uncertainty Quantification}\label{additional:reliabilityproblems}
+\section{Test Problems for Forward Uncertainty Quantification}\label{additional:fwd_uq}
 This section includes several test problems and examples related to
 forward uncertainty quantification. {\bf These are NOT included in the
-  {\tt Dakota/examples/users} directory, but are in the {\tt
-    Dakota/test} directory.}
+  \path{dakota/share/dakota/examples/users} directory, but are in the
+  \path{dakota/share/dakota/test} directory.}
 
 \subsection{Genz functions}
 The Genz functions have traditionally been used to test quadrature
@@ -1529,7 +1587,7 @@ satisfies the auxiliary properties
 \begin{equation}
 \mathbb{E}[a(x,\boldsymbol{\xi})]=1\quad\text{and}\quad 1-\frac{\sigma}{6}<a(x,\boldsymbol{\xi})<1+\frac{\sigma}{6}.
 \end{equation}
-This is the same test case used in \cite{xiu05}.
+This is the same test case used in \cite{Xiu_Hesthaven_05}.
 
 
 \subsection{Damped Oscillator}

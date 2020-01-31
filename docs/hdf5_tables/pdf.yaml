@@ -1,0 +1,19 @@
+name: Probability Density
+dataset:
+  description: "Probability density of a response"
+  location: "[increment:<N>]/probability_density/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
+  shape: "1-dimensional: number of bins in probability density"
+  type: Real
+scales:
+  - dimension: 0
+    type: Real
+    label: lower_bounds
+    contents: Lower bin edges
+    literal_contents: False
+  - dimension: 0
+    type: Real
+    label: upper_bounds
+    contents: Upper bin edges
+    literal_contents: False
+

@@ -1,10 +1,25 @@
-Blurb::
-A conjugate gradient optimization method
+Blurb:: CONMIN conjugate gradient optimization method
+
 Description::
-This is a duplicated keyword. Please use \ref method-conmin instead.
+The interpretations of the method independent controls for CONMIN are
+essentially identical to those for DOT.  
+
+See \ref topic-package_dot for information related to \c CONMIN
+methods, specifically \ref method-dot_frcg.
+
+<b>Expected HDF5 Output</b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-best_params
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified)
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified)
+
 
 Topics::	
 Examples::
 Theory::
 Faq::
-See_Also::	method-conmin-frcg
+See_Also::	method-dot_frcg

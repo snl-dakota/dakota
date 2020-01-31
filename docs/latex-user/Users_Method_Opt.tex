@@ -4,7 +4,7 @@
 Optimization algorithms work to minimize (or maximize) an objective
 function, typically calculated by the user simulation code, subject to
 constraints on design variables and responses. Available approaches in
-Dakota include well-tested, proven gradient-based, derivative-free
+Dakota include well-tested and proven gradient-based, derivative-free
 local, and global methods for use in science and engineering design
 applications. Dakota also offers more advanced algorithms, e.g., to
 manage multi-objective optimization or perform surrogate-based
@@ -194,14 +194,19 @@ inequalities $g_{i}(\mathbf{x}) \geq 0$, but does not natively support
 linear constraints. Constraint mappings are used with NLPQL for both
 linear and nonlinear cases. Most \texttt{coliny\_} methods now support
 two-sided nonlinear inequality constraints and nonlinear constraints
-with targets, but do not natively support linear constraints.
+with targets, but do not natively support linear constraints. ROL's 
+(\texttt{rol}) augmented Lagrangian method converts inequality 
+constraints into equality constraints with bounded slack variables. 
+This conversion is performed internally within ROL, but might explain 
+potentially weak convergence rates for problems with large number of 
+inequality constraints.
 
 When gradient and Hessian information is used in the optimization,
 derivative components are most commonly computed with respect to the
 active continuous variables, which in this case are the
 \emph{continuous design variables}. This differs from parameter study
 methods (for which all continuous variables are active) and from
-nondeterministic analysis methods (for which the uncertain variables
+non-deterministic analysis methods (for which the uncertain variables
 are active). Refer to Section~\ref{responses:active} for additional
 information on derivative components and active continuous variables.
 
@@ -236,7 +241,7 @@ are ideal but often unavailable.  If analytic gradient and Hessian
 information can be provided by an application code, a full Newton
 method will achieve quadratic convergence rates near the solution. If
 only gradient information is available and the Hessian information is
-approximated from an accumulation of gradient data, the superlinear
+approximated from an accumulation of gradient data, superlinear
 convergence rates can be obtained.  It is most often the case for
 engineering applications, however, that a finite difference method
 will be used by the optimization algorithm to estimate gradient
@@ -258,46 +263,84 @@ problem.  The optimization methods available in Dakota fall into
 several categories, each of which is characterized by the nature of
 the subproblems solved at each iteration.
 
-\subsubsection{Method Descriptions}
-\label{opt:methods:gradient:descriptions}
+\subsubsection{Methods for Unconstrained Problems}
+\label{opt:methods:gradient:unconstrained}
 
-{\bf Conjugate Gradient} methods require first derivative information
-and can only be applied to \emph{unconstrained} problems.  The
-subproblems entail minimizing a quadratic function over a space
-defined by the gradient and directions that are mutually conjugate
-with respect to the Hessian, though the Hessian is never computed.
-There are several variants of how those directions are defined.  Those
-available in Dakota are the Fletcher-Reeves conjugate gradient method
-(\texttt{conmin\_frcg} and \texttt{dot\_frcg}~\cite{Van95}) and the
-Polak-Ribiere conjugate gradient method (\texttt{optpp\_cg}).
-\emph{We here provide a caution regarding \texttt{dot\_frcg}.  In DOT
-  Version 4.20, we have noticed inconsistent behavior of this
-  algorithm across different versions of Linux.  Our best assessment
-  is that it is due to different treatments of uninitialized
-  variables.  As we do not know the intention of the code authors and
-  maintaining DOT source code is outside of the Dakota project scope,
-  we have not made nor are we recommending any code changes to address
-  this.  However, all users who use \texttt{dot\_frcg} in DOT Version
-  4.20 should be aware that results may not be reliable.}
+For unconstrained problems, conjugate gradient methods can be applied 
+which require first derivative information. The subproblems entail 
+minimizing a quadratic function over a space defined by the gradient 
+and directions that are mutually conjugate with respect to the 
+Hessian. There are a couple of options in terms of methods to be used 
+strictly for unconstrained problems, namely the Polak-Ribiere 
+conjugate gradient method (\texttt{optpp\_cg}) and ROL's (Rapid 
+Optimization Library for large-scale optimization, part of the 
+Trilinos software suite~\cite{Kou2014}) trust-region method with 
+truncated conjugate gradient subproblem solver (\texttt{rol}). ROL 
+relies on secant updates for the Hessian, with the an approximation to 
+the Hessian matrix at each iteration provided using only values of the 
+gradient at current and previous iterates.
 
-{\bf Sequential Quadratic Programming (SQP)} methods are appropriate
+Note that ROL has been developed for, and mostly applied to, problems 
+with analytic gradients/Hessians. Nonetheless, ROL can be used with 
+Dakota-, or vendor-, provided finite-differencing approximations to the 
+gradient of the objective function. However, a user relying on such 
+approximations is advised to resort to alternative optimizers that 
+exhibit better performance in those scenarios.
+
+\subsubsection{Methods for Bound-Constrained Problems}
+\label{opt:methods:gradient:bound_constrained}
+
+For bound-constrained problems, both conjugate gradient methods and 
+quasi-Newton methods (described in the next sub-section) are available 
+in Dakota. For conjugate gradient methods, the Fletcher-Reeves 
+conjugate gradient method (\texttt{conmin\_frcg} and 
+\texttt{dot\_frcg}~\cite{Van95}) and ROL's trust-region method with 
+truncated conjugate gradient subproblem solver (\texttt{rol}) are 
+available. Note that ROL exhibits slow/erratic convergence 
+when finite-differencing approximations to the gradient of objective 
+function are used. DOT (\texttt{dot\_bfgs}) provides a quasi-Newton 
+method for such problems. \emph{We here provide a caution regarding 
+\texttt{dot\_frcg}.  In DOT Version 4.20, we have noticed inconsistent 
+behavior of this algorithm across different versions of Linux. Our 
+best assessment is that it is due to different treatments of 
+uninitialized variables. As we do not know the intention of the code 
+authors and maintaining DOT source code is outside of the Dakota 
+project scope, we have not made nor are we recommending any code 
+changes to address this.  However, all users who use 
+\texttt{dot\_frcg} in DOT Version 4.20 should be aware that results 
+may not be reliable.}
+
+
+\subsubsection{Methods for Constrained Problems}
+\label{opt:methods:gradient:constrained}
+
+For constrained problems, the available methods fall under one of four 
+categories, namely Sequential Quadratic Programming (SQP) methods, 
+Newton methods, Method of Feasible Directions (MFD) methods, and the 
+augmented Lagrangian method.
+
+Sequential Quadratic Programming (SQP) methods are appropriate
 for nonlinear optimization problems with nonlinear constraints.  Each
 subproblem involves minimizing a quadratic approximation the
-Lagrangian subject to linearized constraints.  Only gradient
+Lagrangian subject to linearized constraints. Only gradient
 information is required; Hessians are approximated by low-rank updates
 defined by the step taken at each iterations. \emph{It is important to note
 that while the solution found by an SQP method will respect the
-constraints, the intermediate iterates may not.}  SQP methods available
-in Dakota are \texttt{dot\_sqp}, \texttt{nlpql\_sqp}, and
+constraints, the intermediate iterates may not.} SQP methods available
+in Dakota include \texttt{dot\_sqp}, \texttt{nlpql\_sqp}, and
 \texttt{npsol\_sqp}~\cite{Gil86}. The particular implementation in
 \texttt{nlpql\_sqp}~\cite{Sch04} uses a variant with distributed and
-non-monotone line search.  Thus, this variant is designed to be more
+non-monotone line search. Thus, this variant is designed to be more
 robust in the presence of inaccurate or noisy gradients common in many
-engineering applications.  Also available is a method related to SQP:
+engineering applications. ROL's composite-step method (\texttt{rol}), 
+utilizing SQP with trust regions, for equality-constrained problems is 
+another option (Note that ROL exhibits slow/erratic convergence 
+when finite-differencing approximations to the gradient of objective and 
+constraints are used). Also available is a method related to SQP: 
 sequential linear programming (\texttt{dot\_slp}).
 
-{\bf Newton Methods} can be applied to nonlinear optimization problems
-with nonlinear constraints.  The subproblems associated with these
+Newton Methods can be applied to nonlinear optimization problems
+with nonlinear constraints. The subproblems associated with these
 methods entail finding the solution to a linear system of equations
 derived by setting the derivative of a second-order Taylor series
 expansion to zero.  Unlike SQP methods, Newton methods maintain
@@ -305,21 +348,31 @@ feasibility over the course of the optimization iterations.  The
 variants of this approach correspond to the amount of derivative
 information provided by the user.  The full Newton method
 (\texttt{optpp\_newton}) expects both gradients and Hessians to be
-provided.  Quasi-Newton methods (\texttt{optpp\_q\_newton},
-\texttt{dot\_bfgs}) expect only gradients.  The Hessian is
-approximated by the Broyden-Fletcher-Goldfarb-Shanno (BFGS) low-rank
-updates.  Finally, the finite difference Newton method
-(\texttt{optpp\_fd\_newton}) expects only gradients and approximates
-the Hessian with second-order finite differences.
+provided.  Quasi-Newton methods (\texttt{optpp\_q\_newton}) expect 
+only gradients. The Hessian is approximated by the 
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) low-rank updates.  Finally, 
+the finite difference Newton method (\texttt{optpp\_fd\_newton}) 
+expects only gradients and approximates the Hessian with second-order 
+finite differences.
 
-{\bf Method of Feasible Directions (MFD)} methods are appropriate for
+Method of Feasible Directions (MFD) methods are appropriate for
 nonlinear optimization problems with nonlinear constraints.  These
 methods ensure that all iterates remain feasible.  Dakota includes
 \texttt{conmin\_mfd}~\cite{Van78} and \texttt{dot\_mmfd} \emph{One
-  observed drawback to \texttt{conmin\_mfd} is that it does a poor job
-  handling equality constraints}. \texttt{dot\_mmfd} does not
+observed drawback to \texttt{conmin\_mfd} is that it does a poor job
+handling equality constraints}. \texttt{dot\_mmfd} does not
 suffer from this problem, nor do other methods for constrained
 problems.
+
+The augmented Lagrangian method provides a strategy to handle equality 
+and inequality constraints by introducing the augmented Lagrangian 
+function, combining the use of Lagrange multipliers and a quadratic 
+penalty term. It is implemented in ROL (\texttt{rol}) exhibiting 
+scalable performance for large-scale problems. As previously stated, 
+ROL exhibits slow/erratic convergence when finite-differencing 
+approximations to the gradient of objective function and/or constraints 
+are used. Users are advised to resort to alternative optimizers until 
+performance of ROL improves in future releases.
 
 \subsubsection{Example}
 \label{opt:methods:gradient:example}
@@ -372,7 +425,7 @@ parallel constraints~\cite{GrKo07}.  A second variant of pattern
 search, \texttt{coliny\_pattern\_search}, has the option of using
 either a coordinate or a simplex basis as well as allowing more
 options for the stencil to evolve over the course of the optimization.
-It handles nonlinear constriants through the use of penalty functions.
+It handles nonlinear constraints through the use of penalty functions.
 The
 \texttt{mesh\_adaptive\_search}~\cite{AuLeTr09a},~\cite{Nomad},~\cite{Le2011a}
 is similar in spirit to and falls in the same class of methods as the
@@ -414,6 +467,25 @@ search directions.  \emph{Note that one observed drawback to
   implemented in such a way as to take advantage of parallel computing
   resources via Dakota's infrastructure.}
 
+{\bf Nonlinear Optimization with Path Augmented Constraints (NOWPAC)} 
+is a provably-convergent gradient-free inequality-constrained 
+optimization method that solves a series of trust region 
+surrogate-based subproblems to generate improving steps. Due to its 
+use of an interior penalty scheme and enforcement of strict 
+feasibility, \texttt{nowpac}~\cite{Augustin-preprint-nowpac} does not 
+support linear or nonlinear equality constraints. The stochastic 
+version is \texttt{snowpac}, which incorporates noise estimates in its 
+objective and inequality constraints. \texttt{snowpac} modifies its 
+trust region controls and adds smoothing from a Gaussian process 
+surrogate in order to mitigate noise. \emph{Note that as opposed to 
+the stochastic version (\texttt{snowpac}), \texttt{nowpac} does not 
+currently support a feasibility restoration mode, so it is necessary 
+to start from a feasible design. Also note that \texttt{(s)nowpac} is 
+not configured with Dakota by default and requires a separate 
+installation of the NOWPAC distribution, along with third-party 
+libraries Eigen and NLOPT.}
+
+
 \subsubsection{Example}
 \label{opt:methods:gradientfree:local:example}
 
@@ -444,8 +516,10 @@ used with SCOLIB algorithms.
       \verbatimtabinput[8]{rosen_opt_patternsearch.in}
     \end{small}
   \end{bigbox}
-  \caption{Rosenbrock pattern search optimization example: the Dakota input file --
-see \texttt{Dakota/examples/users/rosen\_opt\_patternsearch.in} }
+  \caption{Rosenbrock pattern search optimization example: the Dakota
+    input file -- see
+    \protect\path{dakota/share/dakota/examples/users/rosen_opt_patternsearch.in}
+  }
   \label{opt:methods:gradientfree:local:example:ps}
 \end{figure}
 
@@ -479,9 +553,9 @@ $(x_1,x_2) = (1.0,1.0)$.
   (b) & (c)
   \end{tabular}
   \caption{Rosenbrock pattern search optimization example: (a) screen
-    capture of the Dakota graphics, (b) sequence of design points
-    (dots) evaluated and (c) close-up view illustrating the shape of
-    the coordinate pattern used. }
+    capture of the legacy Dakota X windows-based graphics, (b)
+    sequence of design points (dots) evaluated and (c) close-up view
+    illustrating the shape of the coordinate pattern used. }
   \label{opt:methods:gradientfree:local:example:ps_graphics}
 \end{figure}
 
@@ -607,7 +681,7 @@ expensive to compute or are not readily available.
   \end{bigbox}
   \caption{Rosenbrock evolutionary algorithm optimization example: the
   Dakota input file --
-see \texttt{Dakota/examples/users/rosen\_opt\_ea.in} }
+see \protect\path{dakota/share/dakota/examples/users/rosen_opt_ea.in} }
   \label{opt:methods:gradientfree:global:example:rosenbrock_ea}
 \end{figure}
 
@@ -632,7 +706,7 @@ details on these settings.
 
 The EA optimization results printed at the end of this file show that
 the best design point found was $(x_1,x_2) = (0.98,0.95)$. The file
-\texttt{ea\_tabular.dat.sav} provides a listing of the design
+\path{ea_tabular.dat.sav} provides a listing of the design
 parameter values and objective function values for all 2,000 design
 points evaluated during the running of the EA. Figure~
 \ref{opt:methods:gradientfree:global:example:rosenbrock_ea_graphics}(a)
@@ -692,7 +766,7 @@ the EGO algorithm is shown in Figure~\ref{opt:methods:gradientfree:global:exampl
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for the efficient global optimization example --
-see \texttt{Dakota/examples/users/rosen\_opt\_ego.in} }
+see \protect\path{dakota/share/dakota/examples/users/rosen_opt_ego.in} }
   \label{opt:methods:gradientfree:global:example:egm_rosen}
 \end{figure}
 
@@ -715,9 +789,7 @@ section include:
   multiobjective reduction, in which a composite objective function is
   constructed from a set of individual objective functions using a
   user-specified set of weighting factors. These latter two approaches
-  work with any of the above single objective algorithms. Future
-  multiobjective response data transformations for goal programming,
-  normal boundary intersection, etc. are planned.
+  work with any of the above single objective algorithms.
 \item {\bf Scaling,} where any optimizer (or least squares solver
   described in Section~\ref{nls:solution}), can accept user-specified
   (and in some cases automatic or logarithmic) scaling of continuous
@@ -725,12 +797,13 @@ section include:
   constraints. Some optimization algorithms are sensitive to the
   relative scaling of problem inputs and outputs, and this feature can
   help.
-\item {\bf Solvers in shared libraries}: On computer systems that
-  permit use of shared libraries (most modern systems), Dakota can
-  avail itself of optimization solvers contained in shared libraries.
-  This is a first step toward allowing optional parts of Dakota, such
-  as proprietary solvers, to be accessed from shared
-  libraries.\end{itemize}
+% \item {\bf Solvers in shared libraries}: On computer systems that
+%   permit use of shared libraries (most modern systems), Dakota can
+%   avail itself of optimization solvers contained in shared libraries.
+%   This is a first step toward allowing optional parts of Dakota, such
+%   as proprietary solvers, to be accessed from shared
+%   libraries.
+\end{itemize}
 The Advanced Methods Chapter~\ref{adv_meth} offers details on the 
 following component-based meta-algorithm approaches:
 \begin{itemize}
@@ -767,15 +840,15 @@ following component-based meta-algorithm approaches:
 \subsection{Multiobjective Optimization}
 \label{opt:additional:multiobjective}
 
-Multiobjective optimization means that there are two or more objective
-functions that you wish to optimize simultaneously. Often these are
-conflicting objectives, such as cost and performance. The answer to a
-multi-objective problem is usually not a single point. Rather, it is a
-set of points called the Pareto front. Each point on the Pareto front
-satisfies the Pareto optimality criterion, which is stated as follows:
-a feasible vector $X^{*}$ is Pareto optimal if there exists no other
-feasible vector $X$ which would improve some objective without causing
-a simultaneous worsening in at least one other objective. Thus, if a
+Multiobjective optimization refers to the simultaneous optimization of
+two or more objective functions. Often these are competing objectives,
+such as cost and performance. The optimal design in a multi-objective
+problem is usually not a single point. Rather, it is a set of points
+called the Pareto front. Each point on the Pareto front satisfies the
+Pareto optimality criterion, which is stated as follows: a feasible
+vector $X^{*}$ is Pareto optimal if there exists no other feasible
+vector $X$ which would improve some objective without causing a
+simultaneous worsening in at least one other objective. Thus, if a
 feasible point $X'$ exists that CAN be improved on one or more
 objectives simultaneously, it is not Pareto optimal: it is said to be
 ``dominated'' and the points along the Pareto front are said to be
@@ -812,26 +885,26 @@ optimizations need to be performed to get a good parametric
 understanding of the influence of the weights.  Thus, this approach
 can become computationally expensive.
 
-The selection of a multiobjective optimization problem is made through
-the specification of multiple objective functions in the responses
+A multiobjective optimization problem is indicated by the
+specification of multiple ($R$) objective functions in the responses
 keyword block (i.e., the \texttt{objective\_functions} specification
 is greater than \texttt{1}). The weighting factors on these objective
 functions can be optionally specified using the \texttt{weights}
-keyword (the default is equal weightings). The composite objective
-function for this optimization problem, $F$, is formed using these
-weights as follows: $F=\sum_{k=1}^{R}w_{k}f_{k}$, where the $f_{k}$
-terms are the individual objective function values, the $w_{k}$ terms
-are the weights, and $R$ is the number of objective functions. The
-weighting factors stipulate the relative importance of the design
-concerns represented by the individual objective functions; the higher
-the weighting factor, the more dominant a particular objective
-function will be in the optimization process. Constraints are not
-affected by the weighting factor mapping; therefore, both constrained
-and unconstrained multiobjective optimization problems can be
-formulated and solved with Dakota, assuming selection of an
+keyword (the default is equal weightings $\frac{1}{R}$). The composite
+objective function for this optimization problem, $F$, is formed using
+these weights as follows: $F=\sum_{k=1}^{R}w_{k}f_{k}$, where the
+$f_{k}$ terms are the individual objective function values, the
+$w_{k}$ terms are the weights, and $R$ is the number of objective
+functions. The weighting factors stipulate the relative importance of
+the design concerns represented by the individual objective functions;
+the higher the weighting factor, the more dominant a particular
+objective function will be in the optimization process. Constraints
+are not affected by the weighting factor mapping; therefore, both
+constrained and unconstrained multiobjective optimization problems can
+be formulated and solved with Dakota, assuming selection of an
 appropriate constrained or unconstrained single-objective optimization
-algorithm.  Future multiobjective response data transformations for
-goal programming, normal boundary intersection, etc. are planned.
+algorithm. When both multiobjective weighting and scaling are active,
+response scaling is applied prior to weighting.
 
 \subsubsection{Multiobjective Example 1}
 \label{opt:additional:multiobjective:example1}
@@ -855,7 +928,7 @@ constraints, although none are included in this example.
 \end{small}
 \end{bigbox}
 \caption{Example Dakota input file for multiobjective optimization --
-see \texttt{Dakota/examples/users/textbook\_opt\_multiobj1.in} }
+see \protect\path{dakota/share/dakota/examples/users/textbook_opt_multiobj1.in} }
 \label{opt:additional:multiobjective:example1:figure01}
 \end{figure}
 
@@ -1007,20 +1080,20 @@ available with the moga method.
   \end{bigbox}
   \caption{Multiple objective genetic algorithm (MOGA) example: the
     Dakota input file --
-see \texttt{Dakota/examples/users/mogatest1.in} }
+see \protect\path{dakota/share/dakota/examples/users/mogatest1.in} }
   \label{opt:additional:multiobjective:example2:moga1inp}
 \end{figure}
  
 In this example, the three best solutions (as specified by
 \texttt{final\_solutions} =3) are written to the output. Additionally,
 final results from moga are output to a file called
-\texttt{finaldata1.dat} in the directory in which you are
-running. This \texttt{finaldata1.dat} file is simply a list of inputs
+\path{finaldata1.dat} in the directory in which you are
+running. This \path{finaldata1.dat} file is simply a list of inputs
 and outputs. Plotting the output columns against each other allows one
 to see the Pareto front generated by \texttt{moga}.
 Figure~\ref{opt:additional:multiobjective:example2:moga_pareto} shows
 an example of the Pareto front for this problem. Note that a Pareto
-front easily shows the tradeoffs between Pareto optimal solutions. For
+front easily shows the trade-offs between Pareto optimal solutions. For
 instance, look at the point with f1 and f2 values equal to (0.9,
 0.23). One cannot improve (minimize) the value of objective function
 f1 without increasing the value of f2: another point on the Pareto
@@ -1030,7 +1103,7 @@ worse value of objective f2.
   \centering
   \includegraphics[scale=0.75]{images/dakota_mogatest1_pareto_front}
   \caption{Multiple objective genetic algorithm (MOGA) example: Pareto
-  front showing tradeoffs between functions f1 and f2.}
+  front showing trade-offs between functions f1 and f2.}
   \label{opt:additional:multiobjective:example2:moga_pareto}
 \end{figure}
 
@@ -1179,35 +1252,35 @@ factor of 15.0, and the second nonlinear constraint is not scaled.
 \end{small}
 \end{bigbox}
 \caption{Sample usage of scaling keywords in Dakota input specification --
-see \texttt{Dakota/examples/users/rosen\_opt\_scaled.in} }
+see \protect\path{dakota/share/dakota/examples/users/rosen_opt_scaled.in} }
 \label{opt:additional:scaling:example:figure01}
 \end{figure}
 
-\subsection{dl\_solver --- Solvers via Shared Libraries}
-\label{opt:additional:dlsolver}
-
-On computer systems that permit use of shared libraries (most modern
-systems), Dakota can avail itself of optimization solvers contained in
-shared libraries.  This is a first step toward allowing optional parts
-of Dakota, such as proprietary solvers, to be accessed from shared
-libraries. For example, the Dakota source distributions illustrate
-making a sample shared-library interface to SNOPT~\cite{GilMS05},
-whose use would be specified by
-\begin{small}
-\begin{verbatim}
-    method,
-          dl_solver = 'dl_snopt.dll'
-\end{verbatim}
-\end{small}
-The quoted string contains the name of the shared library, optionally
-followed by keyword assignments known to the library, such as
-\begin{small}
-\begin{verbatim}
-    method,
-          dl_solver = 'dl_snopt.dll outlev = 1'
-\end{verbatim}
-\end{small}
-which would turn on some diagnostic printing in the SNOPT example.
+%\subsection{dl\_solver --- Solvers via Shared Libraries}
+%\label{opt:additional:dlsolver}
+%
+%On computer systems that permit use of shared libraries (most modern
+%systems), Dakota can avail itself of optimization solvers contained in
+%shared libraries.  This is a first step toward allowing optional parts
+%of Dakota, such as proprietary solvers, to be accessed from shared
+%libraries. For example, the Dakota source distributions illustrate
+%making a sample shared-library interface to SNOPT~\cite{GilMS05},
+%whose use would be specified by
+%\begin{small}
+%\begin{verbatim}
+%    method,
+%          dl_solver = 'dl_snopt.dll'
+%\end{verbatim}
+%\end{small}
+%The quoted string contains the name of the shared library, optionally
+%followed by keyword assignments known to the library, such as
+%\begin{small}
+%\begin{verbatim}
+%    method,
+%          dl_solver = 'dl_snopt.dll outlev = 1'
+%\end{verbatim}
+%\end{small}
+%which would turn on some diagnostic printing in the SNOPT example.
 
 \section{Optimization Usage Guidelines}
 \label{opt:usage}
@@ -1239,17 +1312,17 @@ listed only at their highest level of constraint support for brevity.
 \textbf{Classification} & \textbf{Characteristics} & \\
 \hline
 Gradient-Based Local & smooth; continuous variables; no constraints
-& optpp\_cg \\
+& optpp\_cg, rol \\
 \hline
-         & smooth; continuous variables; & dot\_bfgs, dot\_frcg, conmin\_frcg \\
-         & bound constraints &  \\
+         & smooth; continuous variables; & dot\_bfgs, dot\_frcg \\
+         & bound constraints & conmin\_frcg, rol \\
 \hline
          & smooth; continuous variables; & npsol\_sqp, nlpql\_sqp, dot\_mmfd, \\
          & bound constraints, & dot\_slp, dot\_sqp,
          conmin\_mfd, \\
          & linear and nonlinear constraints & optpp\_newton,
          optpp\_q\_newton, \\
-         &          &optpp\_fd\_newton, \\
+         &          &optpp\_fd\_newton, rol \\
          &          & weighted sums (multiobjective), \\
          &          & pareto\_set strategy (multiobjective) \\
 \hline
@@ -1260,10 +1333,13 @@ Gradient-Based Global & smooth; continuous variables; & hybrid\_strategy, \\
 Derivative-Free Local & nonsmooth; continuous variables; bound constraints
 & optpp\_pds \\
 \hline
+         & nonsmooth; continuous variables; & coliny\_cobyla,  \\
+         & bound constraints, & coliny\_pattern\_search, \\
+         & nonlinear constraints & coliny\_solis\_wets, \\
+\hline
          & nonsmooth; continuous variables; & asynch\_pattern\_search, \\
-         & bound constraints, & coliny\_cobyla, coliny\_pattern\_search, \\
-         & linear and nonlinear constraints & coliny\_solis\_wets, \\
-         &          & surrogate\_based\_local \\
+         & bound constraints, & surrogate\_based\_local \\
+         & linear and nonlinear constraints & \\
 \hline
          & nonsmooth; continuous variables; &  \\
          & discrete variables; bound constraints, & mesh\_adaptive\_search \\
@@ -1272,11 +1348,19 @@ Derivative-Free Local & nonsmooth; continuous variables; bound constraints
 Derivative-Free Global & nonsmooth; continuous variables; bound constraints
 & ncsu\_direct \\
 \hline
-         & nonsmooth; continuous variables; & coliny\_direct, efficient\_global, \\
-         & bound constraints, & surrogate\_based\_global \\
+         & nonsmooth; continuous variables; & coliny\_direct,  \\
+         & bound constraints, & efficient\_global \\
+         & nonlinear constraints & \\
+\hline
+         & nonsmooth; continuous variables; & surrogate\_based\_global \\
+         & bound constraints, &  \\
          & linear and nonlinear constraints & \\
 \hline
-         & nonsmooth; continuous variables, & coliny\_ea, soga, \\
+         & nonsmooth; continuous variables, & coliny\_ea \\
+         & discrete variables; bound constraints, &  \\
+         & nonlinear constraints & \\
+\hline
+         & nonsmooth; continuous variables, & soga, \\
          & discrete variables; bound constraints, & moga (multiobjective) \\
          & linear and nonlinear constraints & \\
 \hline
@@ -1291,9 +1375,12 @@ code, a full Newton method will provide quadratic convergence rates
 near the solution. More commonly, only gradient information is
 available and a quasi-Newton method is chosen in which the Hessian
 information is approximated from an accumulation of gradient data. In
-this case, superlinear convergence rates can be obtained. These
-characteristics make gradient-based optimization methods the methods
-of choice when the problem is smooth, unimodal, and
+this case, superlinear convergence rates can be obtained. First-order
+methods, such as the Method of Feasible Directions, may achieve only
+a linear rate of convergence, which may entail more iterations, 
+but potentially at a lower cost per iteration associated with 
+Hessian calculations. These characteristics make gradient-based optimization
+the methods of choice when the problem is smooth, unimodal, and
 well-behaved. However, when the problem exhibits nonsmooth,
 discontinuous, or multimodal behavior, these methods can also be the
 least robust since inaccurate gradients will lead to bad search
@@ -1313,6 +1400,39 @@ This requires an assessment of the local smoothness of the response
 functions using, for example, a parameter study method. Central
 differencing, in general, will produce more reliable gradients than
 forward differencing, but at roughly twice the expense.
+
+ROL has traditionally been developed and applied to problems with 
+analytic gradients (and Hessians). Nonetheless, ROL can be used with 
+Dakota-provided finite-differencing approximations to the gradient of both 
+objective and constraints. However, a user relying on such approximations 
+is advised to resort to alternative optimizers such as DOT until performance 
+of ROL improves in future releases.
+
+We offer the following recommendations in deciding upon a 
+suitable gradient-based method for a given problem
+\begin{itemize}
+\item For {\bf unconstrained and bound-constrained problems}, conjugate 
+gradient-based methods exhibit the best scalability for large-scale 
+problems (1,000+ variables). These include the Polak-Ribiere conjugate 
+gradient method (\texttt{optpp\_cg}), ROL's trust-region method with 
+truncated conjugate gradient subproblem solver (\texttt{rol}), and the 
+Fletcher-Reeves conjugate gradient method (\texttt{conmin\_frcg} and 
+\texttt{dot\_frcg}). These methods also provide good performance for 
+small- to intermediate-sized problems. Note that due to performance 
+issues, users relying on finite-differencing approximations to the gradient 
+of the objective function are advised to resort to alternative optimizers 
+such as DOT until performance of ROL improves in future releases.
+\item For {\bf constrained problems}, with large number of constraints 
+with respect to number of variables, Method of Feasible Directions 
+methods (\texttt{conmin\_mfd} and \texttt{dot\_mmfd}) and Sequential 
+Quadratic Programming methods (\texttt{nlpql\_sqp} and 
+\texttt{npsol\_sqp}) exhibit good performance (relatively fast 
+convergence rates). \emph{Note that we have observed weak convergence 
+rates while using {\rm \texttt{npsol\_sqp}} for certain problems with 
+equality constraints}. Quasi-Newton method \texttt{optpp\_q\_newton} 
+show moderate performance for constrained problems across all scales.
+
+\end{itemize}
 
 {\bf Non-gradient-based Methods} \\
 Nongradient-based methods exhibit much slower convergence rates for
@@ -1418,8 +1538,11 @@ here along with the license status and web page where available.
 \item OPT++ (\texttt{optpp\_} methods) License: LGPL; website:
   \url{http://csmr.ca.sandia.gov/opt++}.
 
+\item ROL (\texttt{rol}) License: BSD; website:
+  \url{https://trilinos.org/packages/rol}.
+
 \item SCOLIB (\texttt{coliny\_} methods) License: BSD; website:
-  \url{https://software.sandia.gov/trac/acro/wiki/Packages}
+  \url{https://software.sandia.gov/trac/acro/wiki/Packages}.
 
 \end{itemize}
 

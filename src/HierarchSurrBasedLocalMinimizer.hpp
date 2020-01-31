@@ -30,6 +30,42 @@ namespace Dakota {
 /** This minimizer uses SurrogateModel(s) to perform minimization leveraging
     multiple model forms and discretization levels. */
 
+
+/**
+ * \brief A version of TraitsBase specialized for multilevel-multifidelity minimizer
+ *
+ */
+
+class HierarchSurrBasedLocalTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  HierarchSurrBasedLocalTraits() { }
+
+  /// destructor
+  virtual ~HierarchSurrBasedLocalTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
+
 class HierarchSurrBasedLocalMinimizer: public SurrBasedLocalMinimizer
 {
 public:
@@ -68,12 +104,16 @@ private:
   //- Heading: Convenience member functions
   //
 
+  /// build the hierarchical approximation for a particular level by
+  /// computing center truth within the HierarchSurrModel
+  void build_center_truth(size_t tr_index);
+
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterTruthUncorrected
-  void find_center_truth(size_t tr_index);
+  void find_center_truth(size_t tr_index, bool search_db = false);
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterApproxUncorrected
   void find_center_approx(size_t tr_index);
   /// Retrieve or evaluate SurrBasedLevelData::responseStarTruthUncorrected
-  void find_star_truth(size_t tr_index);
+  void find_star_truth(size_t tr_index, bool search_db = false);
   /// Retrieve or evaluate SurrBasedLevelData::responseStarApproxUncorrected
   void find_star_approx(size_t tr_index);
 
@@ -144,20 +184,12 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 {
-  if (multiLev) {
-    iteratedModel.surrogate_model_indices(
-      trustRegions[tr_index].approx_model_form(),
-      trustRegions[tr_index].approx_model_level());
-    iteratedModel.truth_model_indices(
-      trustRegions[tr_index].truth_model_form(),
-      trustRegions[tr_index].truth_model_level());
-  }
-  else {
-    iteratedModel.surrogate_model_indices(
-      trustRegions[tr_index].approx_model_form());
-    iteratedModel.truth_model_indices(
-      trustRegions[tr_index].truth_model_form());
-  }
+  SurrBasedLevelData& tr = trustRegions[tr_index];
+  UShortArray hf_lf_key;
+  Pecos::DiscrepancyCalculator::
+    form_key(tr.data_group(), tr.truth_model_form(), tr.truth_model_level(),
+	     tr.approx_model_form(), tr.approx_model_level(), hf_lf_key);
+  iteratedModel.active_model_key(hf_lf_key);
 }
 
 

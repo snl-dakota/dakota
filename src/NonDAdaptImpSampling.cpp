@@ -17,13 +17,13 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-#include "RecastModel.hpp"
-#include "DakotaModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDLHSSampling.hpp"
-#include "pecos_stat_util.hpp"
+#include "BoundedNormalRandomVariable.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProbabilityTransformation.hpp"
 
 static const char rcsId[] = "@(#) $Id: NonDAdaptImpSampling.cpp 4058 2006-10-26 01:39:40Z lpswile $";
 
@@ -47,6 +47,8 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!sampleType)
     sampleType = SUBMETHOD_LHS;
 
+  finalMomentsType = NO_MOMENTS;
+
   // size of refinement batches is separate from initial LHS size (numSamples)
   const IntVector& db_refine_samples = 
     probDescDB.get_iv("method.nond.refinement_samples");
@@ -61,9 +63,8 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   statsFlag = true;
-  initialize_random_variables(STD_NORMAL_U);//ASKEY_U,EXTENDED_U
-
-  transform_model(iteratedModel, uSpaceModel, useModelBounds);
+  uSpaceModel.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    STD_NORMAL_U, useModelBounds), false);
 
   // maxEvalConcurrency defined from initial LHS size (numSamples)
 }
@@ -84,12 +85,14 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
   useModelBounds(use_model_bounds), invertProb(false),
   trackExtremeValues(track_extreme), refineSamples(refine_samples)
 {
-  if (x_space_model) {
+  finalMomentsType = NO_MOMENTS;
+
+  if (x_space_model)
     // This option is currently unused.  If used in the future, care must be
     // taken to ensure that natafTransform.{x,u}_types() inherited from above
     // are synchronized with those from the calling context.
-    transform_model(model, uSpaceModel, useModelBounds, 5.);
-  }
+    uSpaceModel.assign_rep(new ProbabilityTransformModel(model,
+      STD_NORMAL_U, useModelBounds, 5.), false);
   else
     uSpaceModel = model;
 
@@ -154,25 +157,26 @@ initialize(const RealVectorArray& acv_points, bool x_space_data,
   size_t i, j, cntr, num_points = acv_points.size();
   initPointsU.resize(num_points);
 
-  if (numContDesVars) { // store inactive variable values, if present
-    designPoint.sizeUninitialized(numContDesVars);
+  if (startCAUV) { // store inactive variable values, if present
+    designPoint.sizeUninitialized(startCAUV);
     const RealVector& acv_pt_0 = acv_points[0];
-    for (i=0; i<numContDesVars; i++)
+    for (i=0; i<startCAUV; i++)
       designPoint[i] = acv_pt_0[i];
   }
 
   RealVector acv_u_point;
   for (i=0; i<num_points; i++) {
     RealVector& init_pt_i = initPointsU[i];
-    init_pt_i.sizeUninitialized(numUncertainVars);
+    init_pt_i.sizeUninitialized(numCAUV);
     if (x_space_data) {
-      natafTransform.trans_X_to_U(acv_points[i], acv_u_point);
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      uSpaceModel.probability_transformation().trans_X_to_U(acv_points[i],
+							    acv_u_point);
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
     else {
       const RealVector& acv_init_pt_i = acv_points[i];
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_init_pt_i[j];
     }
   }
@@ -196,10 +200,10 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
   size_t i, j, cntr, num_points = acv_points.numCols();
   initPointsU.resize(num_points);
 
-  if (numContDesVars) { // store inactive variable values, if present
-    designPoint.sizeUninitialized(numContDesVars);
+  if (startCAUV) { // store inactive variable values, if present
+    designPoint.sizeUninitialized(startCAUV);
     const Real* acv_pt_0 = acv_points[0];
-    for (i=0; i<numContDesVars; i++)
+    for (i=0; i<startCAUV; i++)
       designPoint[i] = acv_pt_0[i];
   }
 
@@ -207,16 +211,17 @@ initialize(const RealMatrix& acv_points, bool x_space_data, size_t resp_index,
   for (i=0; i<num_points; i++) {
     const Real* acv_pt_i = acv_points[i];
     RealVector& init_pt_i = initPointsU[i];
-    init_pt_i.sizeUninitialized(numUncertainVars);
+    init_pt_i.sizeUninitialized(numCAUV);
     if (x_space_data) {
       RealVector acv_pt_view(Teuchos::View, const_cast<Real*>(acv_pt_i),
 			     numContinuousVars);
-      natafTransform.trans_X_to_U(acv_pt_view, acv_u_point);
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      uSpaceModel.probability_transformation().trans_X_to_U(acv_pt_view,
+							    acv_u_point);
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_u_point[j];
     }
     else
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
 	init_pt_i[cntr] = acv_pt_i[j];
   }
 #ifdef DEBUG  
@@ -238,23 +243,24 @@ initialize(const RealVector& acv_point, bool x_space_data, size_t resp_index,
 {
   size_t j, cntr;
 
-  if (numContDesVars) { // store inactive variable values, if present
-    designPoint.sizeUninitialized(numContDesVars);
-    for (j=0; j<numContDesVars; ++j)
+  if (startCAUV) { // store inactive variable values, if present
+    designPoint.sizeUninitialized(startCAUV);
+    for (j=0; j<startCAUV; ++j)
       designPoint[j] = acv_point[j];
   }
 
   initPointsU.resize(1);
   RealVector& init_pt = initPointsU[0];
-  init_pt.sizeUninitialized(numUncertainVars);
+  init_pt.sizeUninitialized(numCAUV);
   if (x_space_data) {
     RealVector acv_u_point;
-    natafTransform.trans_X_to_U(acv_point, acv_u_point);
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+    uSpaceModel.probability_transformation().trans_X_to_U(acv_point,
+							  acv_u_point);
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       init_pt[cntr] = acv_u_point[j];
   }
   else
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       init_pt[cntr] = acv_point[j];
 
   respFnIndex  = resp_index;
@@ -453,6 +459,11 @@ select_rep_points(const RealVectorArray& var_samples_u,
   // store samples in min_indx in repPointsU
   //RealVectorArray prev_rep_pts = repPointsU;
 
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = uSpaceModel.current_variables().shared_data();
+
   // define repPointsU and calculate repWeights
   repPointsU.resize(new_rep_pts);
   repWeights.sizeUninitialized(new_rep_pts);
@@ -475,8 +486,8 @@ select_rep_points(const RealVectorArray& var_samples_u,
     //sum_density  += phi_beta;
 
     rep_pdf = 1.;
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-      rep_pdf *= natafTransform.u_pdf(repPointsU[i][cntr], j);
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
+      rep_pdf *= u_dist.pdf(repPointsU[i][cntr], svd.cv_index_to_all_index(j));
 
     repWeights[i] = rep_pdf;
     sum_density  += rep_pdf;
@@ -582,8 +593,8 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
   // generate std normal samples
 
   size_t i, j, cntr, num_rep_pts = repPointsU.size(), num_rep_samples;
-  RealVector n_std_devs(numUncertainVars, false),
-    n_l_bnds(numUncertainVars, false), n_u_bnds(numUncertainVars, false);
+  RealVector n_std_devs(numCAUV, false), n_l_bnds(numCAUV, false),
+               n_u_bnds(numCAUV, false);
   n_std_devs = 1.;
 
   if (useModelBounds) {
@@ -594,9 +605,9 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // off and extrapolating on the GP trend function).
     const RealVector& c_l_bnds = uSpaceModel.continuous_lower_bounds();
     const RealVector& c_u_bnds = uSpaceModel.continuous_upper_bounds();
-    for (i=0; i<numUncertainVars; ++i) {
-      n_l_bnds[i] = c_l_bnds[i+numContDesVars];
-      n_u_bnds[i] = c_u_bnds[i+numContDesVars];
+    for (i=0; i<numCAUV; ++i) {
+      n_l_bnds[i] = c_l_bnds[i+startCAUV];
+      n_u_bnds[i] = c_u_bnds[i+startCAUV];
     }
   }
   else {
@@ -605,9 +616,16 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // artificial bound constraints (PCE, SC, local reliability, stand-alone).
     // Note: local reliability employs artificial bounds for the MPP search,
     // but these are not relevant for the AIS process on the truth model.
-    RealRealPairArray u_bnds = natafTransform.u_bounds(); // all active cv
-    for (i=0, j=numContDesVars; i<numUncertainVars; ++i, ++j)
-      { n_l_bnds[i] = u_bnds[j].first; n_u_bnds[i] = u_bnds[j].second; }
+    RealRealPairArray u_bnds // all active RV
+      = uSpaceModel.multivariate_distribution().distribution_bounds();
+    const SharedVariablesData& svd
+      = uSpaceModel.current_variables().shared_data();
+    size_t bnd_index;
+    for (i=0, j=startCAUV; i<numCAUV; ++i, ++j) {
+      bnd_index = svd.cv_index_to_active_index(j);
+      n_l_bnds[i] = u_bnds[bnd_index].first;
+      n_u_bnds[i] = u_bnds[bnd_index].second;
+    }
   }
 
   // generate u-space samples by centering std normals around rep points
@@ -636,12 +654,11 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
       initialize_lhs(false, num_rep_samples);
       RealSymMatrix correl;
       lhsDriver.generate_normal_samples(repPointsU[i], n_std_devs,
-	n_l_bnds, n_u_bnds, num_rep_samples, correl, lhs_samples_array);
+	n_l_bnds, n_u_bnds, correl, num_rep_samples, lhs_samples_array);
 
       // copy sample set from lhs_samples_array into var_samples_u
       for (j=0; j<num_rep_samples && cntr<refineSamples; ++j, ++cntr)
-	copy_data(lhs_samples_array[j], (int)numUncertainVars,
-		  var_samples_u[cntr]);
+	copy_data(lhs_samples_array[j], (int)numCAUV, var_samples_u[cntr]);
     }
   }
 }
@@ -655,7 +672,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
     fn_samples.sizeUninitialized(num_samples);
 
   // update designPoint once; update uncertain vars for each sample
-  for (j=0; j<numContDesVars; ++j)
+  for (j=0; j<startCAUV; ++j)
     uSpaceModel.continuous_variable(designPoint[j], j);
 
   // calculate the probability of failure
@@ -664,7 +681,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
   bool asynch_flag = uSpaceModel.asynch_flag();
   for (i=0; i<num_samples; i++) {
     const RealVector& sample_i = var_samples_u[i];
-    for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
+    for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
       uSpaceModel.continuous_variable(sample_i[cntr], j);
 
     // get response value at the sample point
@@ -713,6 +730,11 @@ calculate_statistics(const RealVectorArray& var_samples_u,
   if (compute_cov)
     failure_ratios.reserve(batch_size);
 
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.multivariate_distribution();
+  const SharedVariablesData& svd
+    = uSpaceModel.current_variables().shared_data();
+
   // calculate the probability of failure using all samples relative
   // to each of the representative points
   for (i=0; i<batch_size; i++) {
@@ -731,8 +753,8 @@ calculate_statistics(const RealVectorArray& var_samples_u,
       //  / recentered_pdf;
 
       pdf_ratio = 1.;
-      for (j=numContDesVars, cntr=0; cntr<numUncertainVars; ++j, ++cntr)
-	pdf_ratio *= natafTransform.u_pdf(sample_i[cntr], j);
+      for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
+	pdf_ratio *= u_dist.pdf(sample_i[cntr], svd.cv_index_to_all_index(j));
       pdf_ratio /= recentered_density(sample_i);
 
       // add sample's contribution to sum_prob
@@ -816,21 +838,26 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
   //  recentered_pdf += repWeights[j] * Pecos::NormalRandomVariable::
   //    std_pdf(distance(repPointsU[j], sample_i) / n_std_devs);
 
-  RealRealPairArray u_bnds = natafTransform.u_bounds(); // all active cv
+  RealRealPairArray u_bnds // all active RV
+    = uSpaceModel.multivariate_distribution().distribution_bounds();
+  const SharedVariablesData& svd
+    = uSpaceModel.current_variables().shared_data();
   Real local_pdf = 0., rep_pdf, stdev = 1.;
   for (i=0; i<num_rep_pts; ++i) {
     rep_pdf = 1.;
     const RealVector& rep_pt_i = repPointsU[i];
-    for (j=0, k=numContDesVars; j<numUncertainVars; ++j, ++k)
+    for (j=0, k=startCAUV; j<numCAUV; ++j, ++k) {
+      RealRealPair& u_bnds_j = u_bnds[svd.cv_index_to_active_index(k)];
       rep_pdf *= Pecos::BoundedNormalRandomVariable::pdf(sample_point[j],
-	rep_pt_i[j], stdev, u_bnds[k].first, u_bnds[k].second);
+	rep_pt_i[j], stdev, u_bnds_j.first, u_bnds_j.second);
+    }
     local_pdf += repWeights[i] * rep_pdf;
   } 
   return local_pdf;
 }
 
 
-void NonDAdaptImpSampling::print_results(std::ostream& s)
+void NonDAdaptImpSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     s << "\nStatistics based on the importance sampling calculations:\n";

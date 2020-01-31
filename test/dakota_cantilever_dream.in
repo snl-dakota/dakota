@@ -6,6 +6,8 @@ method,
         bayes_calibration dream,						
           chain_samples = 1000 seed = 348					
           chains = 5
+#         emulator                      #s1
+#           pce sparse_grid 2           #s1
          # output verbose
          output debug
 	probability_level 0.05 0.1

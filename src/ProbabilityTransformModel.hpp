@@ -18,7 +18,6 @@
 
 #include "RecastModel.hpp"
 #include "ProbabilityTransformation.hpp"
-#include "pecos_stat_util.hpp"
 
 namespace Dakota
 {
@@ -36,68 +35,108 @@ public:
   //
 
   /// standard constructor
-  ProbabilityTransformModel(const Model& sub_model,
-                            bool truncated_bounds = false, Real bound = 10.);
+  ProbabilityTransformModel(const Model& sub_model, short u_space_type,
+                            bool truncate_bnds = false, Real bnd = 10.);
 
   /// destructor
   ~ProbabilityTransformModel();
-
-
-  /// perform correlation warping for variable types supported by Nataf
-  void transform_correlations();
-
-
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  bool initialize_mapping(ParLevLIter pl_iter);
-
-
-
-protected:
-
 
   //
   //- Heading: Member functions
   //
 
-  /// set distParamDerivs
-  void distribution_parameter_derivatives(bool dist_param_derivs);
+  /// initialize transformed distribution types and instantiate mvDist
+  static void initialize_distribution_types(short u_space_type,
+    const Pecos::MultivariateDistribution& x_dist,
+    Pecos::MultivariateDistribution& u_dist);
 
-  /// alternate form: initialize natafTransform based on incoming data
-  void initialize_random_variables(
-    const Pecos::ProbabilityTransformation& transform, bool deep_copy = false);
+protected:
 
-  /// instantiate natafTransform
-  void initialize_random_variable_transformation();
+  //
+  //- Heading: Virtual function redefinitions
+  //
 
-  /// initializes ranVarTypesX within natafTransform (u-space not needed)
-  void initialize_random_variable_types();
+  Pecos::ProbabilityTransformation& probability_transformation();
 
-  /// initializes ranVarTypesX and ranVarTypesU within natafTransform
-  void initialize_random_variable_types(short u_space_type);
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
+  bool resize_pending() const;
+  void update_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
 
-  /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
-  /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
-  void initialize_random_variable_parameters();
+  /// set primaryACVarMapIndices and secondaryACVarMapTargets (only, for now)
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  /// return primaryACVarMapIndices
+  const SizetArray& nested_acv1_indices() const;
+  /// return secondaryACVarMapTargets
+  const ShortArray& nested_acv2_targets() const;
+  
+  /// calculate and return potential state of distribution parameter
+  /// derivatives, but do not cache value in distParamDerivs
+  short query_distribution_parameter_derivatives() const;
+  /// activate distParamDerivs to {NO,MIXED,ALL}_DERIVS
+  void activate_distribution_parameter_derivatives();
+  /// reset distParamDerivs to NO_DERIVS
+  void deactivate_distribution_parameter_derivatives();
 
-  /// propagate iteratedModel correlations to natafTransform
-  void initialize_random_variable_correlations();
+  void assign_instance();
 
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// initialize transformed distribution types and natafTransform
+  /// (construct time)
+  void initialize_transformation(short u_space_type);
+  /// update with latest distribution data (run time)
+  void update_transformation();
+
+  /// instantiate and initialize natafTransform
+  void initialize_nataf();
+
+  // x-space correlations assigned in Model and u-space is uncorrelated
+  //void update_distribution_correlations();
   /// verify that correlation warping is supported by Nataf for given
   /// variable types
   void verify_correlation_support(short u_space_type);
 
-  /// recast x_model from x-space to u-space to create u_model
-  void transform_model(bool truncated_bounds, Real bound);
+  /// initialize the continuous/discrete variable types using u-space types
+  /// (converted from Pecos to Dakota)
+  void initialize_dakota_variable_types();
+  /// update model bounds using u-space (truncated) distribution bounds
+  void update_model_bounds(bool truncate_bnds, Real bnd);
+
+  /// detect when the variables transformation is nonlinear
+  bool nonlinear_variables_mapping(
+    const Pecos::MultivariateDistribution& x_dist,
+    const Pecos::MultivariateDistribution& u_dist) const;
+
+  /// convert vector<RandomVariable> index to active correlation index
+  size_t rv_index_to_corr_index(size_t rv_index);
+  /// convert allContinuousVars index to active correlation index
+  size_t acv_index_to_corr_index(size_t acv_index);
 
   /// convert from Pecos To Dakota variable enumeration type for continuous
   /// aleatory uncertain variables used in variable transformations
-  unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
-
-
-  void initialize_sizes();
+  unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type,
+					       size_t rv_index);
 
   /// static function for RecastModels used for forward mapping of u-space
   /// variables from NonD Iterators to x-space variables for Model evaluations
@@ -119,166 +158,223 @@ protected:
                                   Response& u_response);
 
 private:
+
   /// Nonlinear variable transformation that encapsulates the required
   /// data for performing transformations from X -> Z -> U and back.
   Pecos::ProbabilityTransformation natafTransform;
 
-  // The following variable counts reflect the native Model space, which could
-  // correspond to either X or U space.  If a specific X or U variables count
-  // is needed, then natafTransform.ranVarTypesX/U.count() should be used.
-
-  size_t numFunctions;          ///< number of response functions
-  size_t numContinuousVars;     ///< number of active continuous vars
-  size_t numDiscreteIntVars;    ///< number of active discrete integer vars
-  size_t numDiscreteStringVars; ///< number of active discrete string vars
-  size_t numDiscreteRealVars;   ///< number of active discrete real vars
-
-  /// number of continuous design variables (modeled using uniform
-  /// distribution for All view modes)
-  size_t numContDesVars;
-  /// number of discrete integer design variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscIntDesVars;
-  /// number of discrete string design variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscStringDesVars;
-  /// number of discrete real design variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscRealDesVars;
-  /// total number of design variables
-  size_t numDesignVars;
-  /// number of continuous state variables (modeled using uniform
-  /// distribution for All view modes)
-  size_t numContStateVars;
-  /// number of discrete integer state variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscIntStateVars;
-  /// number of discrete string state variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscStringStateVars;
-  /// number of discrete real state variables (modeled using discrete
-  /// histogram distributions for All view modes)
-  size_t numDiscRealStateVars;
-  /// total number of state variables
-  size_t numStateVars;
-
-  /// number of normal uncertain variables (native space)
-  size_t numNormalVars;
-  /// number of lognormal uncertain variables (native space)
-  size_t numLognormalVars;
-  /// number of uniform uncertain variables (native space)
-  size_t numUniformVars;
-  /// number of loguniform uncertain variables (native space)
-  size_t numLoguniformVars;
-  /// number of triangular uncertain variables (native space)
-  size_t numTriangularVars;
-  /// number of exponential uncertain variables (native space)
-  size_t numExponentialVars;
-  /// number of beta uncertain variables (native space)
-  size_t numBetaVars;
-  /// number of gamma uncertain variables (native space)
-  size_t numGammaVars;
-  /// number of gumbel uncertain variables (native space)
-  size_t numGumbelVars;
-  /// number of frechet uncertain variables (native space)
-  size_t numFrechetVars;
-  /// number of weibull uncertain variables (native space)
-  size_t numWeibullVars;
-  /// number of histogram bin uncertain variables (native space)
-  size_t numHistogramBinVars;
-  /// number of Poisson uncertain variables (native space)
-  size_t numPoissonVars;
-  /// number of binomial uncertain variables (native space)
-  size_t numBinomialVars;
-  /// number of negative binomial uncertain variables (native space)
-  size_t numNegBinomialVars;
-  /// number of geometric uncertain variables (native space)
-  size_t numGeometricVars;
-  /// number of hypergeometric uncertain variables (native space)
-  size_t numHyperGeomVars;
-  /// number of histogram point integer uncertain variables (native space)
-  size_t numHistogramPtIntVars;
-  /// number of histogram point string uncertain variables (native space)
-  size_t numHistogramPtStringVars;
-  /// number of histogram point real uncertain variables (native space)
-  size_t numHistogramPtRealVars;
-  /// number of continuous interval uncertain variables (native space)
-  size_t numContIntervalVars;
-  /// number of discrete interval uncertain variables (native space)
-  size_t numDiscIntervalVars;
-  /// number of discrete integer set uncertain variables (native space)
-  size_t numDiscSetIntUncVars;
-  /// number of discrete integer set uncertain variables (native space)
-  size_t numDiscSetStringUncVars;
-  /// number of discrete real set uncertain variables (native space)
-  size_t numDiscSetRealUncVars;
-
-  /// total number of continuous aleatory uncertain variables (native space)
-  size_t numContAleatUncVars;
-  /// total number of discrete integer aleatory uncertain variables
-  /// (native space)
-  size_t numDiscIntAleatUncVars;
-  /// total number of discrete string aleatory uncertain variables
-  /// (native space)
-  size_t numDiscStringAleatUncVars;
-  /// total number of discrete real aleatory uncertain variables (native space)
-  size_t numDiscRealAleatUncVars;
-  /// total number of aleatory uncertain variables (native space)
-  size_t numAleatoryUncVars;
-  /// total number of continuous epistemic uncertain variables (native space)
-  size_t numContEpistUncVars;
-  /// total number of discrete integer epistemic uncertain variables
-  /// (native space)
-  size_t numDiscIntEpistUncVars;
-  /// total number of discrete string epistemic uncertain variables
-  /// (native space)
-  size_t numDiscStringEpistUncVars;
-  /// total number of discrete real epistemic uncertain variables (native space)
-  size_t numDiscRealEpistUncVars;
-  /// total number of epistemic uncertain variables (native space)
-  size_t numEpistemicUncVars;
-  /// total number of uncertain variables (native space)
-  size_t numUncertainVars;
-
-  /// flags calculation of derivatives with respect to distribution
-  /// parameters s within resp_x_to_u_mapping() using the chain rule
-  /// df/dx dx/ds.  The default is to calculate derivatives with respect
+  /// indicates state of derivatives of final results with respect to
+  /// distribution parameters s within resp_x_to_u_mapping() using the chain
+  /// rule df/dx dx/ds.  The default is to calculate derivatives with respect
   /// to standard random variables u using the chain rule df/dx dx/du.
-  bool distParamDerivs;
+  short distParamDerivs;
 
-  /// boolean flag to indicate truncated bounds
+  /// boolean flag indicating use of distribution truncation for
+  /// defining global model bounds
   bool truncatedBounds;
-
-  /// bound value
+  /// number of +/- standard deviations used for defining bounds truncation
   Real boundVal;
-
-  /// flag for computing interval-type metrics instead of integrated
-  /// metrics If any epistemic variables are active in a metric
-  /// evaluation, then this flag is set.
-  bool epistemicStats;
 
   /// "primary" all continuous variable mapping indices flowed down
   /// from higher level iteration
   SizetArray primaryACVarMapIndices;
+  // "primary" all discrete int variable mapping indices flowed down from
+  // higher level iteration
+  //SizetArray primaryADIVarMapIndices;
+  // "primary" all discrete string variable mapping indices flowed down from
+  // higher level iteration
+  //SizetArray primaryADSVarMapIndices;
+  // "primary" all discrete real variable mapping indices flowed down from
+  // higher level iteration
+  //SizetArray primaryADRVarMapIndices;
   /// "secondary" all continuous variable mapping targets flowed down
   /// from higher level iteration
   ShortArray secondaryACVarMapTargets;
+  // "secondary" all discrete int variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADIVarMapTargets;
+  // "secondary" all discrete string variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADSVarMapTargets;
+  // "secondary" all discrete real variable mapping targets flowed down
+  // from higher level iteration
+  //ShortArray secondaryADRVarMapTargets;
 
   /// static pointer to this class for use in static callbacks
   static ProbabilityTransformModel* ptmInstance;
-
 };
 
 
-inline void ProbabilityTransformModel::transform_correlations()
-{ natafTransform.transform_correlations(); }
-
-
-inline void ProbabilityTransformModel::distribution_parameter_derivatives(
-  bool dist_param_derivs)
+inline void ProbabilityTransformModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
 {
-  distParamDerivs = dist_param_derivs;
+  primaryACVarMapIndices      = c_index1;
+  //primaryADIVarMapIndices   = di_index1;
+  //primaryADSVarMapIndices   = ds_index1;
+  //primaryADRVarMapIndices   = dr_index1;
+  secondaryACVarMapTargets    = c_target2;
+  //secondaryADIVarMapTargets = di_target2;
+  //secondaryADSVarMapTargets = ds_target2;
+  //secondaryADRVarMapTargets = dr_target2;
 }
+
+
+inline short ProbabilityTransformModel::
+query_distribution_parameter_derivatives() const
+{
+  short dist_param_derivs = NO_DERIVS;
+  size_t i, num_outer_cv = secondaryACVarMapTargets.size();
+  if (num_outer_cv) {
+    bool tgt = false, no_tgt = false;
+    for (i=0; i<num_outer_cv; ++i)
+      if (secondaryACVarMapTargets[i] == Pecos::NO_TARGET) no_tgt = true;
+      else                                                    tgt = true;
+    if (tgt && no_tgt) dist_param_derivs = MIXED_DERIVS;
+    else if (tgt)      dist_param_derivs =   ALL_DERIVS;
+  }
+  return dist_param_derivs;
+}
+
+
+inline void ProbabilityTransformModel::
+activate_distribution_parameter_derivatives()
+{ distParamDerivs = query_distribution_parameter_derivatives(); }
+
+
+inline void ProbabilityTransformModel::
+deactivate_distribution_parameter_derivatives()
+{ distParamDerivs = NO_DERIVS; }
+
+
+inline const SizetArray& ProbabilityTransformModel::nested_acv1_indices() const
+{ return primaryACVarMapIndices; }
+
+
+inline const ShortArray& ProbabilityTransformModel::nested_acv2_targets() const
+{ return secondaryACVarMapTargets; }
+
+
+inline bool ProbabilityTransformModel::resize_pending() const
+{ return subModel.resize_pending(); }
+
+
+inline void ProbabilityTransformModel::initialize_nataf()
+{
+  if (natafTransform.is_null()) {
+    natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
+    // shallow copies
+    natafTransform.x_distribution(subModel.multivariate_distribution());
+    natafTransform.u_distribution(mvDist);
+  }
+}
+
+
+inline void ProbabilityTransformModel::update_transformation()
+{
+  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
+  // x-space correlations assigned in Model and u-space is uncorrelated
+  //update_distribution_correlations();
+
+  // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
+  // Since the uncertain variable distributions (means, std devs, correlations)
+  // may change, update of correlation warpings is performed regularly.
+  natafTransform.transform_correlations();
+
+  update_model_bounds(truncatedBounds, boundVal);
+}
+
+
+inline void ProbabilityTransformModel::
+initialize_transformation(short u_space_type)
+{
+  if (mvDist.is_null()) // already initialized: no current reason to update
+    mvDist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
+
+  const Pecos::MultivariateDistribution& x_dist
+    = subModel.multivariate_distribution();
+  initialize_distribution_types(u_space_type, x_dist, mvDist);
+  initialize_nataf();
+  initialize_dakota_variable_types();
+  verify_correlation_support(u_space_type);
+
+  // also perform run-time update as some construct-time operations require it
+  // (e.g. grid_size() for maxConcurrency, inverse vars transform in ctor).
+  update_transformation();
+}
+
+
+inline void ProbabilityTransformModel::
+update_from_subordinate_model(size_t depth)
+{
+  // standard updates for RecastModels, including subModel recursion
+  //RecastModel::update_from_subordinate_model(depth);
+  // ordering problem with invMapping dependence on dist params
+
+  // data flows from the bottom-up, so recurse first
+  if (depth == std::numeric_limits<size_t>::max())
+    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.update_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> update this level only
+
+  // propagate any subModel parameter updates to mvDist
+  update_transformation();
+
+  // now pull additional updates from subModel (requires latest dist params)
+  RecastModel::update_from_model(subModel);
+}
+
+
+inline bool ProbabilityTransformModel::
+nonlinear_variables_mapping(const Pecos::MultivariateDistribution& x_dist,
+			    const Pecos::MultivariateDistribution& u_dist) const
+{
+  bool nln_vars_map = false;
+  const ShortArray& x_types = x_dist.random_variable_types();
+  const ShortArray& u_types = u_dist.random_variable_types();
+  size_t i, num_types = std::min(x_types.size(), u_types.size());
+  const BitArray& active_v = x_dist.active_variables();
+  for (i=0; i<num_types; ++i)
+    if (active_v[i]) {
+      switch (u_types[i]) {
+      case Pecos::STD_NORMAL:
+	nln_vars_map = (x_types[i] != Pecos::NORMAL); break;
+      case Pecos::STD_UNIFORM:
+	switch (x_types[i]) {
+	case Pecos::CONTINUOUS_RANGE: case Pecos::UNIFORM:
+	case Pecos::HISTOGRAM_BIN:    case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
+	  break;
+	default:  nln_vars_map = true;  break;
+	}
+	break;
+      case Pecos::STD_EXPONENTIAL:
+	nln_vars_map = (x_types[i] != Pecos::EXPONENTIAL); break;
+      case Pecos::STD_BETA:  nln_vars_map = (x_types[i] != Pecos::BETA);  break;
+      case Pecos::STD_GAMMA: nln_vars_map = (x_types[i] != Pecos::GAMMA); break;
+      default:               nln_vars_map = (x_types[i] != u_types[i]);   break;
+      }
+
+      if (nln_vars_map) break;
+    }
+
+  return nln_vars_map;
+}
+
+
+inline Pecos::ProbabilityTransformation& ProbabilityTransformModel::
+probability_transformation()
+{ return natafTransform; }
+
+
+inline void ProbabilityTransformModel::assign_instance()
+{ ptmInstance = this; }
 
 
 /** Map the variables from iterator space (u) to simulation space (x). */
@@ -286,7 +382,8 @@ inline void ProbabilityTransformModel::
 vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 {
   ptmInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(),
-      x_vars.continuous_variables_view());
+					   x_vars.continuous_variables_view());
+  // *** TO DO: active discrete {int,string,real}
 }
 
 
@@ -295,7 +392,78 @@ inline void ProbabilityTransformModel::
 vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 {
   ptmInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
-      u_vars.continuous_variables_view());
+					   u_vars.continuous_variables_view());
+  // *** TO DO: active discrete {int,string,real}
+}
+
+
+inline void ProbabilityTransformModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars, x_dvv, cv_ids);
+}
+
+
+inline void ProbabilityTransformModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars, x_dvv, cv_ids);
+}
+
+
+inline void ProbabilityTransformModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv, cv_ids,
+    currentVariables.all_continuous_variable_ids(), primaryACVarMapIndices,
+    secondaryACVarMapTargets);
+}
+
+
+inline void ProbabilityTransformModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
+		  const RealVector& x_vars, const RealVector& fn_grad_x)
+{
+  SizetMultiArrayConstView cv_ids = currentVariables.continuous_variable_ids();
+  SizetArray x_dvv; copy_data(cv_ids, x_dvv);
+  natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x,
+				   x_dvv, cv_ids);
+}
+
+
+inline size_t ProbabilityTransformModel::
+rv_index_to_corr_index(size_t rv_index)
+{
+  const Pecos::BitArray& active_corr
+    = subModel.multivariate_distribution().active_correlations();
+  if (active_corr.empty())
+    return rv_index; // no mask
+  else if (active_corr[rv_index]) { // offset RV index to account for mask
+    size_t i, corr_index = 0;
+    for (i=0; i<rv_index; ++i)
+      if (active_corr[i])
+	++corr_index;
+    return corr_index;
+  }
+  else // RV not active in correlated variable subset
+    return _NPOS;
+}
+
+
+inline size_t ProbabilityTransformModel::
+acv_index_to_corr_index(size_t acv_index)
+{
+  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  return rv_index_to_corr_index(svd.acv_index_to_all_index(acv_index));
 }
 
 } // namespace Dakota

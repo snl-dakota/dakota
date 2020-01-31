@@ -217,7 +217,7 @@ enum { COBYLA, DIRECT, EA, MS, PS, SW, BETA };
   /// Standard constructor.
 
 COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new COLINTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
@@ -232,7 +232,8 @@ COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, Model& model):
 COLINOptimizer::
 COLINOptimizer(const String& method_string, Model& model, int seed,
 	       int max_iter, int max_eval):
-  Optimizer(method_string_to_enum(method_string), model), blockingSynch(true)
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new COLINTraits())),
+  blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
@@ -248,7 +249,8 @@ COLINOptimizer(const String& method_string, Model& model, int seed,
 
 COLINOptimizer::
 COLINOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model), rng(NULL),
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new COLINTraits())),
+  rng(NULL),
   blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))
@@ -598,7 +600,7 @@ void COLINOptimizer::set_solver_parameters()
       colinSolver->property("initial_step") = init_delta;
 
     const Real& thresh_delta
-      = probDescDB.get_real("method.coliny.threshold_delta");
+      = probDescDB.get_real("method.coliny.variable_tolerance");
     if (thresh_delta >= 0.0 && colinSolver->has_property("step_tolerance"))
       colinSolver->property("step_tolerance") = thresh_delta;
 
@@ -1038,9 +1040,8 @@ void COLINOptimizer::post_run(std::ostream& s)
 	Cerr << "\nWarning: Couldn't get objectives from Colin cache.";
       if (!cache_status.second)
 	Cerr << "\nWarning: Couldn't get constraints from Colin cache.";
-      Cerr << "\nAll function values from COLIN:";
-      write_data(Cout, tmpResponseHolder.function_values());
-      Cerr << std::endl;
+      Cerr << "\nAll function values from COLIN:"
+	   << tmpResponseHolder.function_values() << std::endl;
     }
 
     // BMA TODO: incorporate constraint tolerance, possibly via

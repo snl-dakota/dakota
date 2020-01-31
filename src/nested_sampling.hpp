@@ -1,7 +1,14 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 #ifndef SAMPLER_HPP
 #define SAMPLER_HPP
 
-#include "LinearAlgebra.hpp"
 #include "dakota_data_types.hpp"
 #include "BasisPolynomial.hpp"
 

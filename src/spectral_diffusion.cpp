@@ -1,6 +1,14 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 #include "spectral_diffusion.hpp"
 #include "sandia_rules.hpp"
-#include "LinearAlgebra.hpp"
+#include "linear_algebra.hpp"
 #include "dakota_linear_algebra.hpp"
 
 namespace Dakota {
@@ -238,7 +246,7 @@ solve( const RealVector &diffusivity, const RealVector &forcing_in,
   apply_boundary_conditions( collocation_matrix, forcing );
 
   // Solve linear system
-  Pecos::qr_solve( collocation_matrix, forcing, solution );
+  Pecos::util::qr_solve( collocation_matrix, forcing, solution );
 }
 
 void SpectralDiffusionModel::run( const RealVector &sample, 

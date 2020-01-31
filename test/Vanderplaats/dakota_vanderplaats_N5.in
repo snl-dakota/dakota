@@ -1,0 +1,63 @@
+#@ 1: DakotaConfig=HAVE_DOT
+#@ 2: DakotaConfig=HAVE_DOT
+#@ 3: DakotaConfig=HAVE_NLPQL
+#@ 4: DakotaConfig=HAVE_NPSOL
+## DAKOTA INPUT FILE - dakota_vanderplaats_N5.in
+#  The Vanderplaats 5-segment cantilever beam has 10 design variables, a nonlinear objective, 
+#  5 nonlinear stress constraints, a nonlinear tip displacement constraint, and
+#  5 linear aspect ratio constraints. 
+#
+#  Vanderplaats, Garret N. (1984) Example 5-1
+#  Numerical Optimization Techniques for Engineering Design: With Applications
+#  New York: McGraw-Hill, pp. 147-150.
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_vanderplaats_N5_conmin.dat'		#s0
+#	tabular_data_file = 'dakota_vanderplaats_N5_dotmfd.dat'		#s1
+#	tabular_data_file = 'dakota_vanderplaats_N5_dotslp.dat'		#s2
+#	tabular_data_file = 'dakota_vanderplaats_N5_nlpql.dat' 		#s3
+#	tabular_data_file = 'dakota_vanderplaats_N5_npsol.dat' 		#s4
+#	tabular_data_file = 'dakota_vanderplaats_N5_optpp.dat' 		#s5
+
+method,
+	conmin_mfd									#s0
+#	dot_mmfd										#s1
+#  dot_slp										#s2
+#	nlpql											#s3
+#	npsol											#s4
+#	optpp_q_newton								#s5
+	  max_iterations = 500
+	  convergence_tolerance = 1e-4		#s0,#s1,#s2,#s3,#s4
+#	  convergence_tolerance = 1e-5		#s5
+	  constraint_tolerance  = 1e-4		s#s0,#s1,#s2,#s4
+#	scaling										#s2
+
+variables,					
+	continuous_design = 10
+	cdv_initial_point   5.0    5.0    5.0    5.0    5.0   40.0   40.0   40.0   40.0   40.0
+	cdv_lower_bounds    1.0    1.0    1.0    1.0    1.0    5.0    5.0    5.0    5.0    5.0
+	cdv_upper_bounds  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0
+	cdv_descriptor      'b1'  'b2'   'b3'   'b4'   'b5'   'h1'   'h2'   'h3'   'h4'   'h5'
+#	scale_types = 'value' 'value' 'value' 'value' 'value' 'value' 'value' 'value' 'value' 'value'
+#	scales      = 3.0    3.0    2.5    2.0    2.0   60.0   60.0   50.0   40.0   30.0			#s2
+#	scales      = 2.5    2.5    2.5    2.5    2.5   40.0   40.0   40.0   40.0   40.0
+
+interface,
+	fork
+	  analysis_driver = './vanderplaats'
+	  parameters_file = 'vanderplaats_params.in'
+	  results_file = 'vanderplaats_results_N5_conmin.out'	#s0
+#	  results_file = 'vanderplaats_results_N5_dotmfd.out'	#s1
+#	  results_file = 'vanderplaats_results_N5_dotslp.out'	#s2
+#	  results_file = 'vanderplaats_results_N5_nlpql.out'	#s3
+#	  results_file = 'vanderplaats_results_N5_npsol.out'	#s4
+#	  results_file = 'vanderplaats_results_N5_optpp.out'	#s5
+	  deactivate active_set_vector
+#	  file_tag file_save
+	  
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints  = 11
+	analytic_gradients
+	no_hessians

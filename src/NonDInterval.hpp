@@ -55,7 +55,7 @@ public:
   //void core_run();
 
   /// print the cumulative distribution functions for belief and plausibility
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Virtual member function redefinitions
@@ -91,6 +91,15 @@ protected:
   //
   //- Heading: Data
   //
+
+  /// number of variables of type CONTINUOUS_INTERVAL_UNCERTAIN
+  size_t numContIntervalVars;
+  /// number of variables of type DISCRETE_INTERVAL_UNCERTAIN
+  size_t numDiscIntervalVars;
+  /// number of variables of type DISCRETE_UNCERTAIN_SET_INT
+  size_t numDiscSetIntUncVars;
+  /// number of variables of type DISCRETE_UNCERTAIN_SET_REAL
+  size_t numDiscSetRealUncVars;
 
   /// flag for SingleInterval derived class
   bool singleIntervalFlag;

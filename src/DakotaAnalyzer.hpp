@@ -108,7 +108,7 @@ protected:
 
   void pre_output();
 
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   const Model& algorithm_space_model() const;
 
@@ -137,6 +137,17 @@ protected:
   /// compute VBD-based Sobol indices
   void compute_vbd_stats(const int num_samples, 
 			 const IntResponseMap& resp_samples);
+
+  /// archive VBD-based Sobol indices
+  void archive_sobol_indices() const;
+
+  /// archive model evaluation points
+  virtual void archive_model_variables(const Model&, size_t idx) const
+    { /* no-op */ }
+
+  /// archive model evaluation responses
+  virtual void archive_model_response(const Response&, size_t idx) const
+    { /* no-op */ }
 
   /// convenience function for reading variables/responses (used in
   /// derived classes post_input)
@@ -295,12 +306,6 @@ inline void Analyzer::response_results_active_set(const ActiveSet& set)
 
 inline bool Analyzer::compact_mode() const
 { return compactMode; }
-
-
-inline void Analyzer::finalize_run()
-{
-  Iterator::finalize_run(); // included for completeness
-}
 
 } // namespace Dakota
 

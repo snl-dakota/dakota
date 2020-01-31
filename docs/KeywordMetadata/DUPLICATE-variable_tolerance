@@ -1,0 +1,66 @@
+Blurb::
+Step length-based stopping criteria for derivative-free optimizers
+
+Description::
+The \c variable_tolerance keyword defines the minimum step length allowed
+by the optimizer and is used to determine convergence.  It is
+applicable to \c asynch_pattern_search, \c coliny_cobyla, \c
+coliny_pattern_search, \c coliny_solis_wets, and \c
+mesh_adaptive_search.
+
+<b> Default Behavior </b>
+
+The default value varies according to method as follows:
+
+\li \c asynch_pattern_search:  1.0e-2
+\li \c coliny_cobyla:  1.0e-4
+\li \c coliny_pattern_search:  1.0e-5
+\li \c coliny_solis_wets:  1.0e-6
+\li \c mesh_adaptive_search:  1.0e-6
+
+<b> Usage Tips </b>
+
+It is recommended that \c variable_tolerance be set to a value for which
+changes of that scale in parameter values cause negligible changes in
+the objective function.
+
+Topics::
+
+Examples::
+
+Three example method input blocks appear below.
+
+For \c asynch_pattern_search:
+\verbatim
+method
+  asynch_pattern_search
+    contraction_factor = 0.25
+    variable_tolerance = 1.e-4
+    solution_target = 1.e-6
+    max_function_evaluations 500
+    constraint_tolerance    1.e-6
+\endverbatim
+
+For \c coliny_pattern_search:
+\verbatim
+method
+  coliny_pattern_search
+    initial_delta = .2
+    variable_tolerance = 1.e-4
+    max_iterations 100
+    solution_accuracy = 1.e-6
+    seed = 1234
+    max_function_evaluations = 1000
+\endverbatim
+
+For \c mesh_adaptive_search
+\verbatim
+method
+  mesh_adaptive_search
+    variable_tolerance = 0.01
+    seed = 1234
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

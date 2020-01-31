@@ -80,6 +80,9 @@ protected:
   /// return evalCacheFlag
   bool restart_file() const;
 
+  /// form and return the final evaluation ID tag, appending iface ID if needed
+  String final_eval_id_tag(int fn_eval_id);
+
   // Placeholders for external layer of filtering (common I/O operations
   // such as d.v. linking and response time history smoothing)
   //void filter(const Variables& vars);
@@ -118,6 +121,9 @@ protected:
   bool check_asynchronous(bool warn, int max_eval_concurrency);
   /// checks on asynchronous settings for multiprocessor partitions
   bool check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency);
+
+  /// form and return the final batch ID tag
+  String final_batch_id_tag();
 
   //
   //- Heading: Virtual functions (evaluations)
@@ -201,6 +207,16 @@ protected:
   /// reference to the ParallelLibrary object used to manage MPI partitions for
   /// the concurrent evaluations and concurrent analyses parallelism levels
   ParallelLibrary& parallelLib;
+
+  /// flag indicating usage of batch evaluation facilities, where a set of
+  /// jobs is launched and scheduled as a unit rather than individually
+  bool batchEval;
+
+  /// flag indicating usage of asynchronous evaluation
+  bool asynchFlag;
+
+  /// maintain a count of the batches
+  int batchIdCntr; 
 
   /// flag for suppressing output on slave processors
   bool suppressOutput;
@@ -306,8 +322,11 @@ private:
   void receive_evaluation(PRPQueueIter& prp_it, size_t buff_index,
 			  int server_id, bool peer_flag);
 
-  /// launch an asynchronous local evaluation
+  /// launch an asynchronous local evaluation from a queue iterator 
   void launch_asynch_local(PRPQueueIter& prp_it);
+  /// launch an asynchronous local evaluation from a receive buffer
+  void launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id);
+
   /// process a completed asynchronous local evaluation
   void process_asynch_local(int fn_eval_id);
   /// process a completed synchronous local evaluation
@@ -468,6 +487,9 @@ private:
   /// used to manage a user request to deactivate the restart file (i.e., 
   /// insertions into write_restart).
   bool restartFileFlag;
+
+  /// SharedResponseData of associated Response
+  SharedResponseData sharedRespData;
 
   /// type of gradients present in associated Response
   String gradientType;
@@ -644,13 +666,13 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   if (outputLevel > SILENT_OUTPUT) {
     if (peer_flag) {
       Cout << "Peer 1 assigning ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << " to peer "
 	   << server_id+1 << '\n'; // 2 to numEvalServers
     }
     else {
       Cout << "Master assigning ";
-      if (!interfaceId.empty()) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << " to server "
 	   << server_id << '\n';
     }
@@ -674,19 +696,51 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 
 inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 {
-  int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
-    Cout << "Initiating ";
-    if (!interfaceId.empty()) Cout << interfaceId << ' ';
-    Cout << "evaluation " << fn_eval_id << '\n';
+    if(batchEval) {
+      Cout << "Adding ";
+      if (!interfaceId.empty() && interfaceId != "NO_ID") Cout << interfaceId << ' ';
+      Cout << "evaluation " << prp_it->eval_id() << " to batch " << batchIdCntr + 1 << std::endl;
+    } else {
+      Cout << "Initiating ";
+      if (!interfaceId.empty() && interfaceId != "NO_ID") Cout << interfaceId << ' ';
+      Cout << "evaluation " << prp_it->eval_id() << '\n';
+    }
   }
 
   // bcast job to other processors within peer 1 (added for direct plugins)
   if (multiProcEvalFlag)
     broadcast_evaluation(*prp_it);
-
+  // launch non-blocking job
   derived_map_asynch(*prp_it);
+
+  // Note: for (plug-in) direct interfaces supporting a batch capability,
+  // derived_map_asynch() should be overridden to no-op --> scheduler and
+  // server processors bcast and update asynchLocalActivePRPQueue, but launch
+  // of the batch is deferred until synchronization time (batch is then
+  // launched as one unit within {wait,test}_local_evaluations).
+  // > TO DO: insufficient for Fork/System -> add batchEval conditionals to
+  //   derived_map_asynch(), etc., to support batch executions
+
   asynchLocalActivePRPQueue.insert(*prp_it);
+}
+
+
+inline void ApplicationInterface::
+launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id)
+{
+  if (multiProcEvalFlag)
+    parallelLib.bcast_e(recv_buffer);
+  // unpack
+  Variables vars; ActiveSet set;
+  recv_buffer >> vars >> set;
+  recv_buffer.reset();
+  Response local_response(sharedRespData, set); // special ctor
+  ParamResponsePair
+    prp(vars, interfaceId, local_response, fn_eval_id, false); // shallow copy
+  asynchLocalActivePRPQueue.insert(prp);
+  // execute
+  derived_map_asynch(prp);
 }
 
 

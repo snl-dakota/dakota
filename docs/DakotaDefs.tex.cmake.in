@@ -20,77 +20,69 @@
 
 % Need to manually break line or Eldred gets incorrectly split
 \newcommand{\DakotaAuthorSAND}{
-Brian~M.~Adams, Lara~E.~Bauman, William~J.~Bohnhoff, Keith~R.~Dalbey,\\ 
-John~P.~Eddy, Mohamed~S.~Ebeida, Michael~S.~Eldred, Gianluca~Geraci, \\
-Russell~W.~Hooper, Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, \\
-Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~Rushdi, Laura~P.~Swiler, \\
-J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey
+Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey, Mohamed~S.~Ebeida,\\
+John~P.~Eddy, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,\\
+Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, Mohammad~Khalil,\\
+Kathryn~A.~Maupin, Jason~A.~Monschke, Elliott~M.~Ridgway, Ahmad~A.~Rushdi,\\
+J.~Adam~Stephens, Laura~P.~Swiler, Dena~M.~Vigil,Timothy~M.~Wildey,\\
+Justin~G.~Winokur
 }
 
-
-\newcommand{\authvskip}{0.25cm}
+\newcommand{\authvskip}{0.3cm}
 
 \newcommand{\DakotaAuthorLong}{
-{Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, Gianluca~Geraci,}\\
-{John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Laura~P.~Swiler,}\\
-{J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
+{Brian~M.~Adams, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,}\\
+{John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~A.~Rushdi,}\\
+{J.~Adam~Stephens, Laura~P.~Swiler, Timothy~M.~Wildey,}\\
 {\sl Optimization and Uncertainty Quantification Department} \vspace*{\authvskip} \\ 
-{William~J.~Bohnhoff,} {\sl Radiation Transport Department} \vspace*{\authvskip} \\
-{John~P.~Eddy,} {\sl System Readiness and Sustainment Technologies Department} \vspace*{\authvskip} \\
-{Russell~W.~Hooper,} {\sl Multiphysics Applications Department} \vspace*{\authvskip} \\
-{Kenneth~T.~Hu,} {\sl Validation and Uncertainty Quantification Department} \vspace*{\authvskip} \\
-{Keith~R.~Dalbey,} {\sl Mission Analysis and Simulation Department} \vspace*{\authvskip} \\
-{Patricia~D.~Hough} \\
+{William~J.~Bohnhoff,} {\sl Radiation Effects Theory Department} \vspace*{\authvskip} \\
+{Keith~R.~Dalbey,} {\sl Software Simulation and Analysis Department} \vspace*{\authvskip} \\
+{Mohamed~S.~Ebeida,} {\sl Discrete Math and Optimization Department} \vspace*{\authvskip} \\
+{John~P.~Eddy,} {\sl Mathematical Analysis and Decision Sciences Department} \vspace*{\authvskip} \\
+{Patricia~D.~Hough, Mohammad~Khalil,} \\
 {\sl Quantitative Modeling and Analysis Department} \vspace*{\authvskip} \\
-{Elliott~M.~Ridgway,} {\sl Data-driven and Neural Computing} \vspace*{\authvskip} \\
+{Kenneth~T.~Hu,} {\sl W76-1 System Life Extension Department} \vspace*{\authvskip} \\
+{Elliott~M.~Ridgway, Dena~M.~Vigil,} {\sl Software Engineering and Research Department} \vspace*{\authvskip} \\
+{Justin~G.~Winokur,} {\sl V\&V, UQ, Credibility Processes Department} \vspace*{\authvskip} \\
 Sandia National Laboratories\\
 P.O. Box 5800\\
-Albuquerque, NM 87185 \vspace*{\authvskip} \\
-{Ahmad~Rushdi,} {\sl Electrical and Computer Engineering} \vspace*{\authvskip} \\
-University of California\\
-One Shields Avenue\\
-Davis, CA 95616-5294\\
+Albuquerque, NM 87185
 }
 
 \newcommand{\DakotaAuthorFormatted}{
-{\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred, Gianluca~Geraci,\\ 
-John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Laura~P.~Swiler,\\
-J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
+{\large \bf Brian~M.~Adams, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,
+John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~A.~Rushdi,
+J.~Adam~Stephens, Laura~P.~Swiler, Timothy~M.~Wildey}\\
 {\large Optimization and Uncertainty Quantification Department}\\
 \vspace*{\authvskip}
 {\large \bf William J. Bohnhoff}\\
-{\large Radiation Transport Department}\\
+{\large Radiation Effects Theory Department}\\
 \vspace*{\authvskip}
 {\large \bf Keith R. Dalbey}\\
-{\large Mission Analysis and Simulation Department}\\
+{\large Software Simulation and Analysis Department}\\
+\vspace*{\authvskip}
+{\large \bf Mohamed S. Ebeida}\\
+{\large Discrete Math and Optimization Department}\\
 \vspace*{\authvskip}
 {\large \bf John P. Eddy}\\
-{\large System Readiness and Sustainment Technologies Department}\\
+{\large Mathematical Analysis and Decision Sciences Department}\\
 \vspace*{\authvskip}
-{\large \bf Russell W. Hooper}\\
-{\large Multiphysics Applications Department}\\
-\vspace*{\authvskip}
-{\large \bf Kenneth T. Hu}\\
-{\large Validation and Uncertainty Quantification Department}\\
-\vspace*{\authvskip}
-{\large \bf Patricia D. Hough}\\
+{\large \bf Patricia D. Hough, Mohammad Khalil}\\
 {\large Quantitative Modeling and Analysis Department}\\
 \vspace*{\authvskip}
-{\large \bf Elliott M. Ridgway}\\
-{\large Data-driven and Neural Computing}\\
+{\large \bf Kenneth T. Hu}\\
+{\large W76-1 System Life Extension Department}\\
 \vspace*{\authvskip}
-{\large Sandia National Laboratories}\\
-{\large P.O. Box 5800}\\
-{\large Albuquerque, New Mexico 87185}\\
+{\large \bf Elliott M. Ridgway, Dena M. Vigil}\\
+{\large Software Engineering and Research Department}\\
 \vspace*{\authvskip}
-{\large \bf Ahmad Rushdi}\\
-{\large Electrical and Computer Engineering}\\
+{\large \bf Justin G. Winokur}\\
+{\large V\&V, UQ, Credibility Processes Department}\\
 \vspace*{\authvskip}
-{\large University of California}\\
-{\large One Shields Avenue}\\
-{\large Davis, CA 95616-5294}\\
+{\normalsize Sandia National Laboratories}\\
+{\normalsize P.O. Box 5800}\\
+{\normalsize Albuquerque, New Mexico 87185}\\
 }
-
 
 % Fragments which together comprise abstracts
 

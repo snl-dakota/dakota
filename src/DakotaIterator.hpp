@@ -18,6 +18,8 @@
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
 #include "ResultsManager.hpp"
+#include "DakotaTraitsBase.hpp"
+#include <memory>
 
 
 namespace Dakota {
@@ -25,7 +27,7 @@ namespace Dakota {
 class ProblemDescDB;
 class Variables;
 class Response;
-
+class EvaluationStore;
 
 /// Base class for the iterator class hierarchy.
 
@@ -47,18 +49,18 @@ public:
   //
 
   /// default constructor
-  Iterator();
+  Iterator( std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()) );
   /// alternate envelope constructor that assigns a representation pointer
-  Iterator(Iterator* iterator_rep, bool ref_count_incr = true);
+  Iterator(Iterator* iterator_rep, bool ref_count_incr = true, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard envelope constructor, which constructs its own model(s)
-  Iterator(ProblemDescDB& problem_db);
+  Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor which uses the ProblemDescDB but
   /// accepts a model from a higher level (meta-iterator) context,
   /// instead of constructing its own
-  Iterator(ProblemDescDB& problem_db, Model& model);
+  Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor for instantiations by name
   /// without the ProblemDescDB
-  Iterator(const String& method_string, Model& model);
+  Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// copy constructor
   Iterator(const Iterator& iterator);
 
@@ -107,6 +109,19 @@ public:
   /// restore initial state for repeated sub-iterator executions
   virtual void reset();
 
+  /// set primaryA{CV,DIV,DRV}MapIndices, secondaryA{CV,DIV,DRV}MapTargets
+  /// within derived Iterators; supports computation of higher-level
+  /// sensitivities in nested contexts (e.g., derivatives of statistics
+  /// w.r.t. inserted design variables)
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
+
   /// used by IteratorScheduler to set the starting data for a run
   virtual void initialize_iterator(int job_index);
   /// used by IteratorScheduler to pack starting data for an iterator run
@@ -139,6 +154,12 @@ public:
   /// only be used if returns_multiple_points() returns true.
   virtual const ResponseArray&  response_array_results();
 
+  /// set the requested data for the final iterator response results
+  virtual void response_results_active_set(const ActiveSet& set);
+
+  /// return error estimates associated with the final iterator solution
+  virtual const RealVector& response_error_estimates() const;
+
   /// indicates if this iterator accepts multiple initial points.  Default
   /// return is false.  Override to return true if appropriate.
   virtual bool accepts_multiple_points() const;
@@ -150,14 +171,12 @@ public:
   /// only be used if accepts_multiple_points() returns true.
   virtual void initial_points(const VariablesArray& pts);
 
-  /// set the requested data for the final iterator response results
-  virtual void response_results_active_set(const ActiveSet& set);
-
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);
 
   /// print the final iterator results
-  virtual void print_results(std::ostream& s);
+  virtual void print_results(std::ostream& s,
+			     short results_state = FINAL_RESULTS);
 
   /// return the result of any recasting or surrogate model recursion
   /// layered on top of iteratedModel by the derived Iterator ctor chain
@@ -198,6 +217,9 @@ public:
 
   /// reinitializes iterator based on new variable size
   virtual bool resize();
+
+  /// Declare sources to the evaluations database
+  virtual void declare_sources();
 
   //
   //- Heading: Member functions
@@ -248,11 +270,11 @@ public:
   String method_string() const;
 
   /// convert a method name enumeration value to a string
-  String method_enum_to_string(unsigned short method_name) const;
+  String method_enum_to_string(unsigned short method_enum) const;
   /// convert a method name string to an enumeration value
-  unsigned short method_string_to_enum(const String& method_name) const;
-  /// convert a method name enumeration value to a string
-  String submethod_enum_to_string(unsigned short submethod_name) const;
+  unsigned short method_string_to_enum(const String& method_str) const;
+  /// convert a sub-method name enumeration value to a string
+  String submethod_enum_to_string(unsigned short submethod_enum) const;
 
   /// return the method identifier (methodId)
   const String& method_id() const;
@@ -284,24 +306,24 @@ public:
   /// set the number of solutions to retain in best variables/response arrays
   void num_final_solutions(size_t num_final);
 
-  /// set the default active set vector (for use with iterators that
-  /// employ evaluate_parameter_sets())
+  /// set the default active set (for use with iterators that employ
+  /// evaluate_parameter_sets())
   void active_set(const ActiveSet& set);
-  /// return the default active set vector (used by iterators that
-  /// employ evaluate_parameter_sets())
+  /// return the default active set (used by iterators that employ
+  /// evaluate_parameter_sets())
   const ActiveSet& active_set() const;
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  void active_set_request_vector(const ShortArray& asv);
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  const ShortArray& active_set_request_vector() const;
+  /// return the default active set request vector (used by iterators
+  /// that employ evaluate_parameter_sets())
+  void active_set_request_values(short asv_val);
 
   /// set subIteratorFlag (and update summaryOutputFlag if needed)
   void sub_iterator_flag(bool si_flag);
-  /// set primaryA{CV,DIV,DRV}MapIndices, secondaryA{CV,DIV,DRV}MapTargets
-  void active_variable_mappings(const SizetArray& c_index1,
-				const SizetArray& di_index1,
-				const SizetArray& ds_index1,
-				const SizetArray& dr_index1,
-				const ShortArray& c_target2,
-				const ShortArray& di_target2,
-				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
 
   /// function to check iteratorRep (does this envelope contain a letter?)
   bool is_null() const;
@@ -313,6 +335,11 @@ public:
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
 
+
+  /// returns methodTraits for access to derived class member functions
+  /// that are not mapped to the top TraitsBase level
+  std::shared_ptr<TraitsBase> traits() const;
+
   //
   //- Heading: Operator overloaded functions
   //
@@ -323,6 +350,12 @@ public:
   //virtual void operator++();  // increment operator
   //virtual void operator--();  // decrement operator
 
+  /// Return whether the iterator is the top level iterator
+  bool top_level();
+
+  /// Set the iterator's top level flag
+  void top_level(const bool &tflag);
+
 protected:
 
   //
@@ -332,13 +365,13 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Iterator(BaseConstructor, ProblemDescDB& problem_db);
+  Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model);
+  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name);
+  Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   //
   //- Heading: Virtual functions
@@ -424,30 +457,6 @@ protected:
   /// flag indicating if this Iterator is a sub-iterator
   /// (NestedModel::subIterator or DataFitSurrModel::daceIterator)
   bool subIteratorFlag;
-  /// "primary" all continuous variable mapping indices flowed down
-  /// from higher level iteration
-  SizetArray primaryACVarMapIndices;
-  /// "primary" all discrete int variable mapping indices flowed down from
-  /// higher level iteration
-  SizetArray primaryADIVarMapIndices;
-  /// "primary" all discrete string variable mapping indices flowed down from
-  /// higher level iteration
-  SizetArray primaryADSVarMapIndices;
-  /// "primary" all discrete real variable mapping indices flowed down from
-  /// higher level iteration
-  SizetArray primaryADRVarMapIndices;
-  /// "secondary" all continuous variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryACVarMapTargets;
-  /// "secondary" all discrete int variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryADIVarMapTargets;
-  /// "secondary" all discrete string variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryADSVarMapTargets;
-  /// "secondary" all discrete real variable mapping targets flowed down
-  /// from higher level iteration
-  ShortArray secondaryADRVarMapTargets;
 
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
@@ -457,9 +466,23 @@ protected:
 
   /// reference to the global iterator results database
   ResultsManager& resultsDB;
+  /// reference to the global evaluation database
+  EvaluationStore& evaluationsDB;
+
+  /// State of evaluations DB for this iterator
+  EvaluationsDBState evaluationsDBState;
+
   /// valid names for iterator results
   ResultsNames resultsNames;
 
+  /// pointer that retains shared ownership of a TraitsBase object,
+  /// or child thereof
+  std::shared_ptr<TraitsBase> methodTraits;
+
+  /// Whether this is the top level iterator
+  bool topLevel;
+
+  
 private:
 
   //
@@ -473,15 +496,30 @@ private:
   /// Used by the envelope to instantiate the correct letter class
   Iterator* get_iterator(const String& method_string, Model& model);
 
+  /// return the next available method ID for no-ID user methods
+  static String user_auto_id();
+
+  /// return the next available method ID for on-the-fly methods
+  static String no_spec_id();
+
   //
   //- Heading: Data
   //
 
-  /// method identifier string from the input file
+  /// method identifier string from the input file, or an
+  /// auto-generated ID, such that each instance of an Iterator has a
+  /// unique ID
   String methodId;
 
-  /// an execution number for this instance of the class, unique
-  /// across all instances of same methodName/methodId
+  // Data for numbering methods and their executions
+
+  /// the last used method ID number for on-the-fly instantiations
+  /// (increment before each use)
+  static size_t noSpecIdNum;
+
+  /// An execution number for this instance of the class. Now that
+  /// each instance has a unique methodId, this is just a simple
+  /// counter.
   size_t execNum;
 
   /// track the available configurations that have been created
@@ -495,6 +533,10 @@ private:
   int referenceCount;
 };
 
+inline std::shared_ptr<TraitsBase> Iterator::traits() const
+{
+    return (iteratorRep) ? iteratorRep->traits() : methodTraits;
+}
 
 inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
@@ -625,36 +667,24 @@ inline const ActiveSet& Iterator::active_set() const
 { return (iteratorRep) ? iteratorRep->activeSet : activeSet; }
 
 
-inline void Iterator::
-active_variable_mappings(const SizetArray& c_index1,
-			 const SizetArray& di_index1,
-			 const SizetArray& ds_index1,
-			 const SizetArray& dr_index1,
-			 const ShortArray& c_target2,
-			 const ShortArray& di_target2,
-			 const ShortArray& ds_target2,
-			 const ShortArray& dr_target2)
+inline void Iterator::active_set_request_vector(const ShortArray& asv)
 {
-  if (iteratorRep) {
-    iteratorRep->primaryACVarMapIndices    = c_index1;
-    iteratorRep->primaryADIVarMapIndices   = di_index1;
-    iteratorRep->primaryADSVarMapIndices   = ds_index1;
-    iteratorRep->primaryADRVarMapIndices   = dr_index1;
-    iteratorRep->secondaryACVarMapTargets  = c_target2;
-    iteratorRep->secondaryADIVarMapTargets = di_target2;
-    iteratorRep->secondaryADSVarMapTargets = ds_target2;
-    iteratorRep->secondaryADRVarMapTargets = dr_target2;
-  }
-  else {
-    primaryACVarMapIndices    = c_index1;
-    primaryADIVarMapIndices   = di_index1;
-    primaryADSVarMapIndices   = ds_index1;
-    primaryADRVarMapIndices   = dr_index1;
-    secondaryACVarMapTargets  = c_target2;
-    secondaryADIVarMapTargets = di_target2;
-    secondaryADSVarMapTargets = ds_target2;
-    secondaryADRVarMapTargets = dr_target2;
-  }
+  if (iteratorRep) iteratorRep->activeSet.request_vector(asv);
+  else             activeSet.request_vector(asv);
+}
+
+
+inline const ShortArray& Iterator::active_set_request_vector() const
+{
+  return (iteratorRep) ? iteratorRep->activeSet.request_vector()
+                       : activeSet.request_vector();
+}
+
+
+inline void Iterator::active_set_request_values(short asv_val)
+{
+  if (iteratorRep) iteratorRep->activeSet.request_values(asv_val);
+  else             activeSet.request_values(asv_val);
 }
 
 

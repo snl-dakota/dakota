@@ -561,11 +561,11 @@ between Dakota and the simulation, as well as any other files used by
 this simulation, must be protected from other files of the same name
 used by the other concurrent simulations. With respect to the
 parameters and results files, these files may be made unique through
-the use of the \texttt{file\_tag} option (e.g., \texttt{params.in.1},
-\texttt{results.out.1}, etc.) or the default temporary file
-option (e.g., \texttt{/var/tmp/aaa0b2Mfv}, etc.). However, if
-additional simulation files must be protected (e.g., \texttt{model.i},
-\texttt{model.o}, \texttt{model.g}, \texttt{model.e}, etc.), then an
+the use of the \texttt{file\_tag} option (e.g., \path{params.in.1},
+\path{results.out.1}, etc.) or the default temporary file
+option (e.g., \path{/var/tmp/aaa0b2Mfv}, etc.). However, if
+additional simulation files must be protected (e.g., \path{model.i},
+\path{model.o}, \path{model.g}, \path{model.e}, etc.), then an
 effective approach is to create a tagged working subdirectory for each
 simulation instance. Section~\ref{interfaces:building} provides an example
 system call interface that demonstrates both the use of tagged working
@@ -608,7 +608,7 @@ concurrent analyses.
 
 \subsubsection{Asynchronous Local Example}\label{parallel:SLP:local:ex}
 
-The test file \texttt{Dakota/test/dakota\_dace.in} computes 49
+The test file \path{dakota/share/dakota/test/dakota_dace.in} computes 49
 orthogonal array samples, which may be evaluated concurrently using
 parallel computing.  When executing Dakota with this input file on a
 single processor, the following execution syntax may be used:
@@ -619,7 +619,7 @@ single processor, the following execution syntax may be used:
 \end{small}
 
 For serial execution (the default), the interface specification within
-\texttt{dakota\_dace.in} would appear similar to
+\path{dakota_dace.in} would appear similar to
 \begin{small}
 \begin{verbatim}
     interface,
@@ -757,7 +757,7 @@ scheduling.  The keywords
 so a completed evaluation will be replaced with one congruent modulo
 the evaluation concurrency.  For example, with 6 concurrent jobs, eval
 number 2 will be replaced with eval number 8.  Examples of this usage
-can be seen in \texttt{Dakota/examples/parallelism}.
+can be seen in \path{dakota/share/dakota/examples/parallelism}.
 
 
 %\subsection{Message Passing Components}\label{parallel:SLP:message}
@@ -881,7 +881,7 @@ these capabilities.
 
 \subsubsection{Message Passing Example}\label{parallel:SLP:message:ex}
 
-Revisiting the test file \texttt{dakota\_dace.in}, Dakota will now
+Revisiting the test file \path{dakota_dace.in}, Dakota will now
 compute the 49 orthogonal array samples using a message passing
 approach.  In this case, a parallel launch utility is used to execute
 Dakota across multiple processors using syntax similar to the following:
@@ -1048,7 +1048,7 @@ capabilities.
 
 \subsubsection{Hybrid Example}\label{parallel:SLP:hybrid:ex}
 
-Revisiting the test file \texttt{dakota\_dace.in}, Dakota will now
+Revisiting the test file \path{dakota_dace.in}, Dakota will now
 compute the 49 orthogonal array samples using a hybrid approach.  As
 for the message passing case, a parallel launch utility is used to
 execute Dakota across multiple processors:
@@ -1478,7 +1478,7 @@ line arguments are used by Dakota (extracted second by Dakota's
 command line handler). %An issue that can arise with these command line
 %arguments is that the mpirun script distributed with MPICH has been
 %observed to have problems with certain file path specifications (e.g.,
-%a relative path such as ``\texttt{../some\_file}''). These path
+%a relative path such as ``\path{../some_file}''). These path
 %problems are most easily resolved by using local linkage (all
 %referenced files or soft links to these files appear in the same
 %directory).
@@ -1503,12 +1503,12 @@ similar:
 \end{small}
 
 These commands allocate 512 compute nodes for the study, and execute
-the \texttt{run\_dakota} script on a service node. If this script
+the \path{run_dakota} script on a service node. If this script
 contains a single-processor \texttt{dakota} command, then Dakota will
 execute on a single service node from which it can launch parallel
 simulations into the compute nodes using analysis drivers that contain
 \texttt{yod} commands (any \texttt{yod} executions occurring at any
-level underneath the \texttt{run\_dakota} script are mapped to the 512
+level underneath the \path{run_dakota} script are mapped to the 512
 compute node allocation). If the script submitted to \texttt{qsub}
 contains a multiprocessor \texttt{mpirun} command, then Dakota will
 execute across multiple service nodes so that it can spread the
@@ -1526,8 +1526,8 @@ Not all supercomputers employ the same model for service/compute
 partitions or provide the same support for tiling of concurrent
 multiprocessor simulations within a single NQS/PBS allocation.  For
 this reason, templates for parallel job configuration are being
-catalogued within {\tt Dakota/examples/script\_interfaces} and 
-\texttt{Dakota/examples/parallelism} (in the software
+catalogued within \path{dakota/share/dakota/examples/script_interfaces} and
+\path{dakota/share/dakota/examples/parallelism} (in the software
 distributions) that are intended to provide guidance for individual
 machine idiosyncrasies.
 
@@ -1952,7 +1952,7 @@ the six available processors into one evaluation server with three
 processors and another with two.
 
 Next, consider the following 3-level parallel case, in which
-\texttt{text\_book1}, \texttt{text\_book2}, and \texttt{text\_book3}
+\path{text_book1}, \path{text_book2}, and \path{text_book3}
 from the previous examples now execute on two processors each. In this
 case, the \texttt{processors\_per\_analysis} keyword is added and the
 \texttt{fork} interface is changed to a \texttt{direct} interface
@@ -2053,7 +2053,7 @@ for a 24 processor Dakota run \\
 \end{small}
 
 Note that for this example, the parallel configuration is written to the
-file \texttt{dakota.out.1} because of the use of concurrent iterators.
+file \path{dakota.out.1} because of the use of concurrent iterators.
 
 \subsubsection{Example 5}\label{parallel:spec:multi:example5}
 
@@ -2066,7 +2066,7 @@ the batch queue, using syntax similar to:
 \end{verbatim}
 \end{small}
 
-where the \texttt{run\_dakota} script appears as
+where the \path{run_dakota} script appears as
 \begin{small}
 \begin{verbatim}
     #!/bin/sh
@@ -2076,7 +2076,7 @@ where the \texttt{run\_dakota} script appears as
 \end{small}
 
 the interface specifications from the
-\texttt{dakota.in} input file appears as
+\path{dakota.in} input file appears as
 \begin{small}
 \begin{verbatim}
     interface,
@@ -2131,31 +2131,24 @@ This section describes several common use cases for running Dakota on
 parallel computing clusters with various combinations of Dakota and
 application parallelism.  In three of the four cases addressed, the
 application launched by Dakota is assumed MPI-enabled and run as an
-independent parallel process.  For demonstration purposes, the
-following characteristics are shared among the usage examples:
-\begin{itemize}
-\item Dakota performs a vector parameter study requiring 20 model
-evaluations (application runs).
+independent parallel process. 
 
-\item For each evaluation, Dakota uses a fork simulation interface to
-call a shell script {\tt text\_book\_par\_driver} or {\tt
-text\_book\_driver} to launch the application.  This script is a
-stand-in for a typical Dakota-application black box interface (as
-described in Chapter~\ref{interfaces:building}), and includes mock
-application input preparation, execution, and postprocessing to return
-necessary metrics to Dakota.
-
-\item The application executed is a modified version of the text book
-example driver, {\tt text\_book\_simple\_par}, capable of parallel
-execution, or the standard {\tt text\_book} driver for serial
-demonstration.
-\end{itemize}
+The \path{examples/parallelism/} folder in the Dakota installation includes
+examples of the use cases. In all four, Dakota performs a vector parameter
+on the "textbook" test function described in Section~\ref{additional:textbook}.
+The application executed for serial demonstration is the \path{text_book}
+example driver, and for parallel execution, a modified version named 
+\path{text_book_simple_par}. Both are located in Dakota's \path{test/} folder.
+Dakota uses its fork interface to launch interface scripts written either in
+Bash or Python, which include mock pre-processing to prepare application input,
+application execution in serial or parallel, and post-processing of application
+results to return to Dakota.
 
 The combinations of Dakota and application parallelism are summarized
 in Table~\ref{parallel:application:table01}.  In each case, $M$
-denotes the total number of processors allocated and $N$ denotes the
-number of processors used by a single application analysis.  For most
-scenarios, Cases 1--3, where Dakota and the application jobs run
+denotes the total number of processors (or MPI tasks) allocated and $N$ 
+denotes the number of processors used by a single application analysis.  
+For most scenarios, Cases 1--3, where Dakota and the application jobs run
 within a single cluster processor allocation (queued job), are
 preferred.  However for particularly long-running or large jobs, or
 platforms that not supporting the first scheduling modes, Case 4 may
@@ -2172,11 +2165,11 @@ be most appropriate.
   \label{parallel:application:table01}\vspace{2mm}
   \begin{tabular}{c|L{2cm}|c|c|L{7.5cm}}
     {\bf Case} & {\bf Name } & {\bf Dakota} & {\bf Application} & {\bf Notes} \\
-    \hline 1 & Massively Serial & parallel & serial & $M-1$ (or $M$) simultaneous
+    \hline 1 & Massively Serial & parallel & serial & $M$ simultaneous
     application instances, each $N=1$ processor \\ 
     \hline 2 & Sequential Parallel & serial &
     parallel & 1 simultaneous application instance on $N$ processors \\
-    \hline 3 & Evaluation Tiling &serial & parallel & $\approx (M-1)/N$ or $\approx M/N$
+    \hline 3 & Evaluation Tiling &serial & parallel & $M/N$
     simultaneous $N$ processor jobs \\ 
     \hline 4 & Evaluation Submission & serial & parallel & submit
     {\em expensive} $N$ processor application jobs to a scheduler
@@ -2184,8 +2177,8 @@ be most appropriate.
   \end{tabular}
 \end{table}
 
-Relevant example files for each case are included in directories {\tt
-Dakota/examples/parallelism/} with the Dakota distribution.
+Relevant example files for each case are included in directories \path{
+dakota/share/dakota/examples/parallelism/} with the Dakota distribution.
 These typically include a PBS or SLURM job submission script to launch
 the Dakota study, a Dakota input file, and a driver script.
 
@@ -2193,11 +2186,10 @@ the Dakota study, a Dakota input file, and a driver script.
 
 In this case, Dakota will launch multiple simultaneous single
 processor application runs (an embarrassingly parallel model).  
-Dakota is run in parallel, making
-this example an elaboration of the message-passing single-level
-parallel mode described in Section~\ref{parallel:SLP}.  Specifically
-in this example, Dakota is run in parallel with $M=6$ processors
-({\tt pbs\_submission}):
+Dakota is run in parallel, making this example an elaboration of the 
+message-passing single-level parallel mode described in 
+Section~\ref{parallel:SLP}.  Specifically in this example, Dakota 
+is run in parallel with $M=6$ processors ({\tt pbs\_submission}):
 \begin{verbatim}
     mpiexec -n 6 dakota dakota_pstudy.in
 \end{verbatim}
@@ -2220,12 +2212,28 @@ MPI process, specifying
 \begin{verbatim}
   asynchronous evaluation_concurrency = [2 or more]
 \end{verbatim}
+As discussed in Section~\ref{parallel:SLP:hybrid}, combining MPI and 
+local (asynchronous) parallelism in this way is an example of hybrid
+parallelism.
 
 \item Conversely, if the analysis has large memory requirements, 
 Dakota may be launched on fewer than the total number of available cores, 
 which has the effect of increasing the memory available to each MPI task. 
 This is known as undersubscription. In this case, the simulation may still 
 be able to take advantage of thread-based parallelism technologies such as OpenMP.
+Users are advised to consult their HPC's documentation or user support to
+determine how to control the number of MPI tasks launched per compute node.
+
+\item Hybrid parallelism is another way to reduce Dakota's memory footprint.
+Dakota may be launched in parallel using one MPI task per node and configured
+to run multiple evaluations concurrently on each node using local parallelism.
+Suppose it is desired to run 160 concurrent evaluations, and the compute nodes
+each have 16 processors. The job script should reserve 10 nodes,
+assign one MPI task per node, and to run Dakota using 10 tasks. The interface 
+section of the Dakota input file should contain:
+\begin{verbatim}
+  asynchronous evaluation_concurrency = 16
+\end{verbatim}
 
 \end{itemize}
 
@@ -2255,12 +2263,51 @@ mpiexec -n 6 text_book_par application.in application.out
 \end{verbatim}
 \subsection{Case 3: Evaluation Tiling --- Multiple simultaneous parallel analysis jobs}
 
-In this case, a single scheduled processor allocation
-is partitioned to run $\approx (M-1)/N$ or $\approx M/N$ parallel
-application jobs each requiring $N$ processors.  We describe two 
-current ways to accomplish this (though other solutions exist): use 
-option (a) if the application will work correctly in an MPICH/MVAPICH 
-environment and option (b) otherwise.
+In this case, the nodes or processors (or MPI tasks) of a single job are 
+partitioned into equally-sized \textit{tiles}. The number of MPI tasks in each 
+tile is $N$, the number needed to run the parallel application, and so there 
+are a total of $M/N$ tiles, where $M$ is the total number of MPI tasks in the 
+allocation. Dakota, which is run serially by the job script, asynchronously 
+launches evaluations, each of which runs a parallel application on an available 
+tile.
+
+It is up to the user to ensure consistency among the number of nodes 
+in the allocation, the number of processors (or MPI tasks) per node, 
+Dakota's {\tt evaluation\_concurrency}, and the number of processors 
+(or MPI tasks) per parallel application run. For instance, suppose it 
+is desired to perform 10 concurrent runs of a parallel application,
+each requiring 32 processors. The compute nodes each have 16 processors.
+The job script must reserve 2 nodes per application run ($32/16$) for a
+total of $2 \cdot 10 = 20$ nodes. Dakota's {\tt evaluation\_concurrency} must be
+set to 10.
+
+Under ideal circumstances, as Dakota concurrently launches evaluations of the user's 
+parallel application, the cluster workload manager (e.g. SLURM, PBS) performs load 
+balancing and ensures that the runs "land" on idle resources. In this situation, the 
+Dakota-application interface script is relatively simple; in the execution phase, 
+the application is run using the appropriate parallel launcher (e.g. 
+{\tt srun}), specifying the number of MPI tasks to use.
+
+However, if load balancing is not automatically handled by the workload manager,
+and the user does nothing to manage tiling, then all the evaluations may land on 
+the first few nodes, leaving the rest idle and severly degrading performance. 
+Clearly, care must be taken to ensure that evaluations are tiled correctly.
+
+Whether correct evaluation tiling occurs automatically can depend intimately on 
+how the HPC adminstrators configured the workload manager and MPI.
+Users are advised to perform small-scale experiments to determine whether 
+performance is as expected, and/or to contact their system administrator for guidance.
+
+Dakota provides a few examples and tools to help users orchestrate placement of
+parallel applications on available resources when the resource manager does not.
+They are explained in the following sections.
+
+A related consideration is the memory usage of Dakota itself. If the user's 
+application is memory intensive, it may be desirable to reserve a node or 
+a portion of a node for Dakota to prevent it from degrading the performance 
+of evaluations. It is necessary in this case to determine where the job script, 
+and hence Dakota, is run. Consulting the workload manager's documenation
+or the HPC's system administrator is advised.
 
 \subsubsection{Mpiexec server mode}
 
@@ -2271,7 +2318,7 @@ can be used to tile multiple MPI jobs within a single parallel
 resource allocation.  (Note that with MPICH, there is a difference
 between {\tt mpirun} and {\tt mpiexec}, unlike with OpenMPI, where
 both are typically aliases for {\tt orterun}.)  See the example in
-\texttt{Case3-EvaluationTiling/MPICH}.
+\path{Case3-EvaluationTiling/MPICH}.
 
 In this case, an {\tt mpiexec} server process is started and
 backgrounded to service application requests for processors; Dakota
@@ -2281,10 +2328,12 @@ mpiexec -server &
 
 dakota dakota_pstudy.in
 \end{verbatim}
-and asynchronously launches $M/N=3$ evaluations ({\tt dakota\_pstudy.in}):
+and asynchronously launches $M/N=3$ evaluations (\path{dakota_pstudy.in}):
 \begin{verbatim}
-interface, application fork, asynchronous evaluation_concurrency = 3
-  analysis_driver = 'text_book_par_driver'
+interface
+  fork
+    asynchronous evaluation_concurrency = 3
+    analysis_driver = 'text_book_par_driver'
 \end{verbatim}
 The simulator script calls {\tt mpiexec -n 2} to run the analysis in
 parallel and the mpiexec server assigns a subset of the available
@@ -2300,37 +2349,55 @@ proposed.
 
 \subsubsection{Relative node scheduling}
 
-This Evaluation Tiling variant uses OpenMPI 1.3.3 or newer or SLURM srun 
-relative node scheduling capability.  It leverages Dakota's
-\texttt{local\_evaluation\_scheduling static} option together with
-integer arithmetic to schedule each evaluation on the right subset of
-the processor allocation.  For examples, see 
-\texttt{Case3-EvaluationTiling/MPICH}
-(srun variant) and \texttt{Case3-EvaluationTiling/OpenMPI}.  Similar approaches 
+This Evaluation Tiling variant uses OpenMPI 1.3.3 or newer.  It
+leverages Dakota's \texttt{local\_evaluation\_scheduling static}
+option together with integer arithmetic to schedule each evaluation on
+the right subset of the processor allocation.  A Bash-based example is
+provided in \path{Case3-EvaluationTiling/OpenMPI}.  Similar approaches
 work with some AIX/POE installations as well.
+
+The {\tt mpitile} utility, released with Dakota 6.6, transparently
+manages construction of relative node lists when using the OpenMPI
+command {\tt mpirun} and the SLURM workload manager. {\tt mpitile}
+resides in the Dakota \path{bin/} folder and is a wrapper for {\tt
+  mpirun}. It uses a file locking mechanism to support dynamic
+scheduling of evaluations but also has a {\tt --static} option. Using
+the {\tt --dedicated-master} option, either an entire {\tt NODE} or a
+{\tt TILE} can be reserved for Dakota. Running {\tt mpitile} with the
+{\tt --help} option provides a basic description of its options. The
+script {\tt text\_book\_mpitile\_dynamic.sh} in the {\tt OpenMPI}
+example folder demonstrates usage of {\tt mpitile}.
+	
+{\tt mpitile} is based on the Python module {\tt dakota.interfacing.parallel}, also
+released with Dakota 6.6. Interface scripts written in Python may benefit from using its 
+API directly. An example is located at 
+\path{Case3-EvaluationTiling/OpenMPI/text_book_di_dynamic.py}. The {\tt dakota}
+Python package is located in \path{dakota/share/dakota/Python/}, which users should add
+to the environment variable {\tt PYTHONPATH}.
 
 \subsubsection{Machinefile management}
 
-This Evaluation Tiling variant applies when the application must be compiled with
-OpenMPI or another MPI implementation that does not support a server
+This Evaluation Tiling variant applies when the application must be compiled 
+with OpenMPI or another MPI implementation that does not support a server
 mode for job tiling, but does support the use of machine files
 specifying the resources on which to run the application job.  A set
 of scripts are used to manage the partitioning of the $M$ processor
-allocation among $N$ analysis jobs, each with a machines file
-consisting of a unique subset of the assigned resources.  Note that
-this will not work with early OpenMPI versions with some resource
+allocation into tiles contain $N$ processors. Each tile has an associated
+machines file consisting of a unique subset of the assigned resources.  
+Note that this will not work with early OpenMPI versions with some resource
 managers (e.g., OpenMPI 1.2 with Torque), where machinefiles, even if
 a proper subset of {\tt \$PBS\_NODEFILE}, are ignored.  This will
 however work with OpenMPI 1.3 and newer.  See the example in
-\texttt{Case3-EvaluationTilining/MachinefileMgmt}.
+\path{Case3-EvaluationTiling/MachinefileMgmt}.
 
 In this case the {\tt pbs\_submission} script defines variables
 specifying how to create a separate node file for each job and sets up
-a set of nodefiles for use by each evaluation. Similarly to Case 3a,
-Dakota runs in serial and uses asynchronous evaluation concurrency to
-launch the jobs.  The {\tt text\_book\_par\_driver} now contains logic
-to lock a node file for the application run and return it when
-complete.  As each job completes, the next is scheduled.
+a set of nodefiles for use by each evaluation. As when using relative
+node lists, Dakota runs in serial and uses asynchronous evaluation
+concurrency to launch the jobs.  The interface script
+\path{text_book_par_driver} contains logic to lock a node file for the
+application run and return it when complete.  As each job completes,
+the next is scheduled.
 
 \subsection{Case 4: Evaluation Submission --- Parallel analysis jobs submitted to a queue}
 
@@ -2347,10 +2414,10 @@ login node or other node capable of job submission:
 \begin{verbatim}
 dakota dakota_pstudy.in
 \end{verbatim}
-For each evaluation, the simulator script ({\tt
-text\_book\_par\_driver}) will generate a {\tt pbs\_submission} script
-and submit it to the scheduler.  Dummy results are returned to Dakota
-which will exit when all jobs have been scheduled.
+For each evaluation, the simulator script
+(\path{text_book_par_driver}) will generate a \path{pbs_submission}
+script and submit it to the scheduler.  Dummy results are returned to
+Dakota which will exit when all jobs have been scheduled.
 
 In the second pass, when analysis is complete, the analysis driver is
 changed to {\tt post\_process} and Dakota is executed on a login node

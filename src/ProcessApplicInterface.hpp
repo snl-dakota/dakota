@@ -26,6 +26,11 @@ namespace bfs = boost::filesystem;
 
 namespace Dakota {
 
+
+/// Substitute parameters and results file names into driver strings
+String substitute_params_and_results(const String &driver, const String &params, const String &results);
+
+
 /// Triplet of filesystem paths: e.g., params, results, workdir 
 typedef boost::tuple<bfs::path, bfs::path, bfs::path> PathTriple;
 
@@ -57,13 +62,19 @@ protected:
 
   void derived_map(const Variables& vars, const ActiveSet& set,
 		   Response& response, int fn_eval_id);
-
   void derived_map_asynch(const ParamResponsePair& pair);
+
+  void wait_local_evaluations(PRPQueue& prp_queue);
+  void test_local_evaluations(PRPQueue& prp_queue);
 
   const StringArray& analysis_drivers() const;
 
   void file_cleanup() const;
 
+  void file_and_workdir_cleanup(const bfs::path &params_path,
+      const bfs::path &results_path,
+      const bfs::path &workdir_path,
+      const String &tag) const;
 
   /// Remove (potentially autotagged for multiple programs) parameters
   /// and results files with passed root names
@@ -85,6 +96,13 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// version of wait_local_evaluations() managing of set of individual
+  /// asynchronous evaluations
+  virtual void wait_local_evaluation_sequence(PRPQueue& prp_queue) = 0;
+  /// version of test_local_evaluations() managing of set of individual
+  /// asynchronous evaluations
+  virtual void test_local_evaluation_sequence(PRPQueue& prp_queue) = 0;
+
   /// bookkeeping of process and evaluation ids for asynchronous maps
   virtual void map_bookkeeping(pid_t pid, int fn_eval_id) = 0;
 
@@ -96,7 +114,12 @@ protected:
   //- Heading: Methods
   //
 
-  /// execute analyses synchronously on the local processor
+  /// batch version of wait_local_evaluations()
+  void wait_local_evaluation_batch(PRPQueue& prp_queue);
+  /// batch version of test_local_evaluations()
+  void test_local_evaluation_batch(PRPQueue& prp_queue);
+
+/// execute analyses synchronously on the local processor
   void synchronous_local_analyses(int start, int end, int step);
 
   //void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
@@ -225,7 +248,8 @@ private:
   void write_parameters_file(const Variables& vars, const ActiveSet& set,
 			     const Response& response, const std::string& prog,
 			     const std::vector<String>& an_comps,
-			     const std::string& params_fname);
+			     const std::string& params_fname,
+                             const bool file_mode_out = true);
 
   /// Open and read the results file at path, properly handling errors
   void read_results_file(Response &response, const bfs::path &path, 
@@ -234,9 +258,6 @@ private:
   //- Heading: Data
   //
 
-  /// the set of optional analysis components used by the analysis drivers
-  /// (from the analysis_components interface specification)
-  String2DArray analysisComponents;
 };
 
 

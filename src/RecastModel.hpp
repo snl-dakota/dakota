@@ -76,9 +76,9 @@ public:
 					  const Response& sub_model_response,
 					  Response& recast_response));
 
-  /// alternate constructor; uses provided sizes to construct
-  /// Variables, Response and Constraints so Model can be passed to an
-  /// Iterator; requires subsequent init_maps() call.
+  /// alternate constructor; uses provided sizes to construct Variables,
+  /// Response and Constraints so Model can be passed to an Iterator;
+  /// requires subsequent init_maps() call.
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
@@ -86,8 +86,7 @@ public:
 	      short recast_resp_order);
 
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
-  /// mappings to be initialized later; only initializes based on
-  /// sub-model
+  /// mappings to be initialized later; only initializes based on sub-model
   RecastModel(ProblemDescDB& problem_db, const Model& sub_model);
 
   /// lightest constructor used when transform sizes aren't known at
@@ -105,11 +104,11 @@ public:
 
   /// update recast sizes and size Variables and Response members
   /// after alternate construction
-  void 
-  init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-	     const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
-	     size_t num_recast_secondary_fns, size_t recast_secondary_offset,
-	     short recast_resp_order);
+  void init_sizes(const SizetArray& vars_comps_totals,
+		  const BitArray& all_relax_di, const BitArray& all_relax_dr,
+		  size_t num_recast_primary_fns,
+		  size_t num_recast_secondary_fns,
+		  size_t recast_secondary_offset, short recast_resp_order);
 
   /// initialize recast indices and map callbacks after alternate
   /// construction
@@ -179,12 +178,51 @@ public:
 
   /// override the submodel's derivative estimation behavior
   void submodel_supports_derivative_estimation(bool sed_flag);
+  
+  String root_model_id();
+
+  ActiveSet default_active_set();
+  void declare_sources();
+
+  /// return nonlinearVarsMapping
+  bool nonlinear_variables_mapping() const;
 
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  Pecos::ProbabilityTransformation& probability_transformation();
+
+  bool initialize_mapping(ParLevLIter pl_iter);
+  bool finalize_mapping();
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short query_distribution_parameter_derivatives() const;
+  void activate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives();
+
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
+
+  size_t qoi() const;
 
   /// portion of evaluate() specific to RecastModel
   /// (forward to subModel.evaluate())
@@ -203,13 +241,28 @@ protected:
   Iterator& subordinate_iterator();
   /// return subModel
   Model& subordinate_model();
+
+  /// set key in subModel
+  void active_model_key(const UShortArray& mi_key);
+  /// remove keys in subModel
+  void clear_model_keys();
+
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
+  /// return surrogate model, if present, within subModel
+  const Model& surrogate_model() const;
+
   /// return truth model, if present, within subModel
   Model& truth_model();
+  /// return truth model, if present, within subModel
+  const Model& truth_model() const;
+
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
-  /// pass request to subModel if recursing and then update from it
+  /// pass request to subModel if recursing and then resize from its results
+  void resize_from_subordinate_model(size_t depth =
+				     std::numeric_limits<size_t>::max());
+  /// pass request to subModel if recursing and then update from its results
   void update_from_subordinate_model(size_t depth =
 				     std::numeric_limits<size_t>::max());
   /// return subModel interface
@@ -218,9 +271,13 @@ protected:
   /// return size of subModel::solnControlCostMap
   size_t solution_levels() const;
   /// activate entry in subModel::solnControlCostMap
-  void solution_level_index(size_t lev_index);
+  void solution_level_index(unsigned short lev_index);
+  /// return active entry in subModel::solnControlCostMap
+  unsigned short solution_level_index() const;
   /// return cost estimates from subModel::solnControlCostMap
-  RealVector solution_level_cost() const;
+  RealVector solution_level_costs() const;
+  /// return active cost estimate from subModel::solnControlCostMap
+  Real solution_level_cost() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into subModel
@@ -235,11 +292,24 @@ protected:
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
 
+  // link SurrogateData instances within the subModel
+  //void link_multilevel_approximation_data();
+
+  /// retrieve subModel's correction type
+  short correction_type();
+  /// update subModel's correction type
+  void correction_type(short corr_type);
+
+  /// retrieve error estimates corresponding to the subModel
+  const RealVector& error_estimates();
+
   /// builds the subModel approximation
   void build_approximation();
   /// builds the subModel approximation
   bool build_approximation(const Variables& vars,
 			   const IntResponsePair& response_pr);
+  /// updates a subModel approximation
+  void rebuild_approximation();
 
   /// replaces data in the subModel approximation
   void update_approximation(bool rebuild_flag);
@@ -265,11 +335,15 @@ protected:
   void push_approximation();
   bool push_available();
   void finalize_approximation();
+  void combine_approximation();
+  void combined_to_active(bool clear_combined = true);
 
+  /*
   void store_approximation(size_t index = _NPOS);
   void restore_approximation(size_t index = _NPOS);
   void remove_stored_approximation(size_t index = _NPOS);
-  void combine_approximation(short corr_type);
+  */
+  void clear_inactive();
 
   /// retrieve the set of Approximations from the subModel
   std::vector<Approximation>& approximations();
@@ -281,7 +355,7 @@ protected:
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
-  const Pecos::SurrogateData& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
@@ -343,6 +417,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// set the warm start flag, including the orderedModels
+  void warm_start_flag(const bool flag);
+
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
 
@@ -352,8 +429,23 @@ protected:
 		 const ActiveSet& search_set, Response& found_resp);
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// assign static pointer instance to this for use in static
+  /// transformation functions
+  virtual void assign_instance();
+
+  //
   //- Heading: Member functions
   //
+
+  /// helper to compute the recast response order during member initialization
+  // TODO: Move to Response?
+  static short response_order(const Model& sub_model);
+
+  /// Generate a model id for recast models
+  static String recast_model_id(const String &root_id, const String &type);
 
   /// initialize currentVariables and related info from the passed
   /// size/type info
@@ -373,6 +465,15 @@ protected:
   /// initialize userDefinedConstraints from the passed size info
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
+
+  /// update current variables/bounds/labels/constraints from subModel
+  void update_from_model(Model& model);
+  /// update active variables/bounds/labels from subModel
+  bool update_variables_from_model(Model& model);
+  /// update complement of active variables/bounds/labels from subModel
+  void update_variables_active_complement_from_model(Model& model);
+  /// update nonlinear constraint bounds/targets from subModel
+  void update_response_from_model(Model& model);
 
   //
   //- Heading: Data members
@@ -400,6 +501,15 @@ protected:
   IntResponseMap recastResponseMap;
   /// mapping from subModel evaluation ids to RecastModel evaluation ids
   IntIntMap recastIdMap;
+  /// Counters for naming RecastModels
+  static StringStringPairIntMap recastModelIdCounters;
+
+  /// boolean set to true if the variables mapping involves a nonlinear
+  /// transformation.  Used in transform_set() to manage the requirement for
+  /// gradients within the Hessian transformations.  This does not require
+  /// a BoolDeque for each individual variable, since response gradients and
+  /// Hessians are managed per function, not per variable.
+  bool nonlinearVarsMapping;
 
 private:
 
@@ -410,8 +520,9 @@ private:
   /// code shared among constructors to initialize base class data from submodel
   void initialize_data_from_submodel();
 
-  /// update current variables/labels/bounds/targets from subModel
-  void update_from_sub_model();
+  /// resize {primary,secondary}MapIndices and nonlinearRespMapping to
+  /// synchronize with subModel sizes
+  void resize_response_mapping();
 
   //
   //- Heading: Data members
@@ -422,16 +533,7 @@ private:
   /// subModel variables; data is packed with only the variable indices
   /// employed rather than a sparsely filled N_sm x N_r matrix).
   Sizet2DArray varsMapIndices;
-  /// boolean set to true if the variables mapping involves a nonlinear
-  /// transformation.  Used in transform_set() to manage the requirement for
-  /// gradients within the Hessian transformations.  This does not require
-  /// a BoolDeque for each individual variable, since response gradients and
-  /// Hessians are managed per function, not per variable.
-  bool nonlinearVarsMapping;
 
-  /// set to true if non-NULL primaryRespMapping or secondaryRespMapping
-  /// are supplied
-  bool respMapping;
   /// For each recast primary function, identifies the indices of the
   /// subModel functions used to define it (maps subModel response
   /// to RecastModel Response).
@@ -445,6 +547,9 @@ private:
   /// recast function using a nonlinear mapping.  Used in transform_set() to
   /// augment the subModel function value/gradient requirements.
   BoolDequeArray nonlinearRespMapping;
+
+  /// mapping of subModel.error_estimates() through response mappings
+  RealVector mappedErrorEstimates;
 
   /// holds pointer for variables mapping function passed in ctor/initialize
   void (*variablesMapping)     (const Variables& recast_vars,
@@ -466,8 +571,6 @@ private:
 				const Response& sub_model_response,
 				Response& recast_response);
 
-  // flag indicating that inverse mappings have been published
-  //bool inverseMapFlag;
   /// holds pointer for optional inverse variables mapping function
   /// passed in inverse_mappings()
   void (*invVarsMapping)    (const Variables& sub_model_vars,
@@ -489,6 +592,7 @@ private:
 			     const Variables& sub_model_vars,
 			     const Response& recast_resp,
 			     Response& sub_model_resp);
+
 };
 
 
@@ -496,8 +600,106 @@ inline RecastModel::~RecastModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+inline bool RecastModel::nonlinear_variables_mapping() const
+{ return nonlinearVarsMapping; }
+
+
 inline void RecastModel::submodel_supports_derivative_estimation(bool sed_flag)
 { subModel.supports_derivative_estimation(sed_flag); }
+
+
+inline Pecos::ProbabilityTransformation& RecastModel::
+probability_transformation()
+{ return subModel.probability_transformation(); } // forward along
+
+
+inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
+{
+  Model::initialize_mapping(pl_iter);
+
+  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  if (sub_model_resize)
+    estimate_message_lengths();
+
+  return sub_model_resize;
+}
+
+
+inline bool RecastModel::finalize_mapping()
+{
+  bool sub_model_resize = subModel.finalize_mapping();
+  Model::finalize_mapping();
+  return sub_model_resize;
+}
+
+
+inline void RecastModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to subModel:
+  subModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				    dr_index1, c_target2, di_target2,
+				    ds_target2, dr_target2);
+}
+
+
+inline const SizetArray& RecastModel::nested_acv1_indices() const
+{ return subModel.nested_acv1_indices(); }
+
+
+inline const ShortArray& RecastModel::nested_acv2_targets() const
+{ return subModel.nested_acv2_targets(); }
+
+
+inline short RecastModel::query_distribution_parameter_derivatives() const
+{ return subModel.query_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::activate_distribution_parameter_derivatives()
+{ subModel.activate_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::deactivate_distribution_parameter_derivatives()
+{ subModel.deactivate_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+
+
+inline void RecastModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+
+
+inline void RecastModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+
+
+inline void RecastModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+		  const RealVector& fn_grad_x)
+{ subModel.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
+
+
+inline size_t RecastModel::qoi() const
+{ return subModel.qoi(); } // TO DO: check for response mapping
 
 
 inline Iterator& RecastModel::subordinate_iterator()
@@ -508,11 +710,27 @@ inline Model& RecastModel::subordinate_model()
 { return subModel; }
 
 
+inline void RecastModel::active_model_key(const UShortArray& mi_key)
+{ subModel.active_model_key(mi_key); }
+
+
+inline void RecastModel::clear_model_keys()
+{ subModel.clear_model_keys(); }
+
+
 inline Model& RecastModel::surrogate_model()
 { return subModel.surrogate_model(); }
 
 
+inline const Model& RecastModel::surrogate_model() const
+{ return subModel.surrogate_model(); }
+
+
 inline Model& RecastModel::truth_model()
+{ return subModel.truth_model(); }
+
+
+inline const Model& RecastModel::truth_model() const
 { return subModel.truth_model(); }
 
 
@@ -525,13 +743,42 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
+inline void RecastModel::resize_from_subordinate_model(size_t depth)
+{
+  // data flows from the bottom-up, so recurse first
+  if (depth == std::numeric_limits<size_t>::max())
+    subModel.resize_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.resize_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> resize this level only
+
+  // pull sizing updates from subModel: reflect aggregated counts, if present,
+  // by accessing count from response rather than virtual count from Model
+  numFns = subModel.response_size();
+  if (currentResponse.num_functions() != numFns) {
+    resize_response_mapping(); // requires current sizes before reshape below
+    currentResponse.reshape(numFns, currentVariables.cv(),
+                            !currentResponse.function_gradients().empty(),
+                            !currentResponse.function_hessians().empty());
+  }
+
+  //size_t num_sm_acv = subModel.acv(), ...;
+  //if (currentVariables.acv() != num_sm_acv || ...)
+  //  currentVariables.reshape(num_sm_acv,num_sm_adiv,num_sm_adsv,num_sm_adrv);
+}
+
+
 inline void RecastModel::update_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
-  if (depth > 0)
-    subModel.update_from_subordinate_model(depth - 1);
+  if (depth == std::numeric_limits<size_t>::max())
+    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+  else if (depth)
+    subModel.update_from_subordinate_model(depth - 1); // decrement
+  //else depth exhausted --> update this level only
+
   // now pull the latest updates from subModel
-  update_from_sub_model();
+  update_from_model(subModel);
 }
 
 
@@ -543,11 +790,19 @@ inline size_t RecastModel::solution_levels() const
 { return subModel.solution_levels(); }
 
 
-inline void RecastModel::solution_level_index(size_t lev_index)
+inline void RecastModel::solution_level_index(unsigned short lev_index)
 { subModel.solution_level_index(lev_index); }
 
 
-inline RealVector RecastModel::solution_level_cost() const
+inline unsigned short RecastModel::solution_level_index() const
+{ return subModel.solution_level_index(); }
+
+
+inline RealVector RecastModel::solution_level_costs() const
+{ return subModel.solution_level_costs(); }
+
+
+inline Real RecastModel::solution_level_cost() const
 { return subModel.solution_level_cost(); }
 
 
@@ -560,13 +815,28 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-inline void RecastModel::surrogate_response_mode(short mode)
-{ if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
-
-
 inline void RecastModel::
 surrogate_function_indices(const IntSet& surr_fn_indices)
 { subModel.surrogate_function_indices(surr_fn_indices); }
+
+
+// For case of RecastModel, forward to subModel for all cases.  SurrogateModels
+// and NestedModels only fwd if BYPASS_SURROGATE (to support recursive bypass),
+// but Recast should allow mode set followed by reset for underlying surrogate.
+inline void RecastModel::surrogate_response_mode(short mode)
+{ /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
+
+
+//inline void RecastModel::link_multilevel_approximation_data()
+//{ subModel.link_multilevel_approximation_data(); }
+
+
+inline short RecastModel::correction_type()
+{ return subModel.correction_type(); }
+
+
+inline void RecastModel::correction_type(short corr_type)
+{ subModel.correction_type(corr_type); }
 
 
 inline void RecastModel::build_approximation()
@@ -576,6 +846,10 @@ inline void RecastModel::build_approximation()
 inline bool RecastModel::
 build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 { return subModel.build_approximation(vars, response_pr); }
+
+
+inline void RecastModel::rebuild_approximation()
+{ subModel.rebuild_approximation(); }
 
 
 inline void RecastModel::update_approximation(bool rebuild_flag)
@@ -627,6 +901,15 @@ inline void RecastModel::finalize_approximation()
 { subModel.finalize_approximation(); }
 
 
+inline void RecastModel::combine_approximation()
+{ subModel.combine_approximation(); }
+
+
+inline void RecastModel::combined_to_active(bool clear_combined)
+{ subModel.combined_to_active(clear_combined); }
+
+
+/*
 inline void RecastModel::store_approximation(size_t index)
 { subModel.store_approximation(index); }
 
@@ -637,10 +920,11 @@ inline void RecastModel::restore_approximation(size_t index)
 
 inline void RecastModel::remove_stored_approximation(size_t index)
 { subModel.remove_stored_approximation(index); }
+*/
 
 
-inline void RecastModel::combine_approximation(short corr_type)
-{ subModel.combine_approximation(corr_type); }
+inline void RecastModel::clear_inactive()
+{ subModel.clear_inactive(); }
 
 
 inline std::vector<Approximation>& RecastModel::approximations()
@@ -663,14 +947,15 @@ approximation_variances(const Variables& vars)
 { return subModel.approximation_variances(vars); }
 
 
-inline const Pecos::SurrogateData& RecastModel::approximation_data(size_t index)
-{ return subModel.approximation_data(index); }
+inline const Pecos::SurrogateData& RecastModel::
+approximation_data(size_t fn_index)
+{ return subModel.approximation_data(fn_index); }
 
 
 inline void RecastModel::component_parallel_mode(short mode)
 {
-  //if (mode != SUB_MODEL) {
-  //  Cerr << "Error: RecastModel only supports the SUB_MODEL component "
+  //if (mode != SUB_MODEL_MODE) {
+  //  Cerr << "Error: RecastModel only supports the SUB_MODEL_MODE component "
   //       << "parallel mode." << std::endl;
   //  abort_handler(-1);
   //}
@@ -792,6 +1077,15 @@ inline void RecastModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 { subModel.print_evaluation_summary(s, minimal_header, relative_count); }
+
+
+inline void RecastModel::warm_start_flag(const bool flag)
+{
+  // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
+  warmStartFlag = flag;
+  subModel.warm_start_flag(flag);
+}
+
 
 /** RecastModel just forwards any tags to its subModel */
 inline void RecastModel::eval_tag_prefix(const String& eval_id_str)

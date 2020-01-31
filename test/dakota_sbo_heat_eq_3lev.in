@@ -1,6 +1,8 @@
+#@ s0: DakotaConfig=HAVE_NPSOL
 
 environment,
-	graphics tabular_data
+	graphics
+	tabular_data
 	method_pointer = 'SBLO'
 
 method,
@@ -18,7 +20,10 @@ method,
 
 method,
 	id_method = 'NLP'
-	npsol_sqp
+	npsol_sqp				#s0
+# OPT++ full Newton solver combined with warm-started quasi-Hessians from Dakota
+#	optpp_q_newton	   	    	 	#s1
+#	optpp_newton	   	    	 	#s2
 	  max_iterations = 50
 	  convergence_tolerance = 1e-10
 
@@ -94,4 +99,5 @@ responses,
 #	  interval_type central
 	  method_source dakota
 	  fd_step_size = 1.e-6
-	no_hessians
+	no_hessians				#s0,#s1
+#	quasi_hessians bfgs			#s2

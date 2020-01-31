@@ -62,7 +62,8 @@ NPSOLOptimizer* NPSOLOptimizer::npsolInstance(NULL);
 
 /** This is the primary constructor.  It accepts a Model reference. */
 NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model), SOLBase(model), setUpType("model")
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  SOLBase(model), setUpType("model")
 {
   // invoke SOLBase set function (shared with NLSSOLLeastSq)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
@@ -78,7 +79,8 @@ NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor which accepts a Model but does
     not have a supporting method specification from the ProblemDescDB. */
 NPSOLOptimizer::NPSOLOptimizer(Model& model):
-  Optimizer(NPSOL_SQP, model), SOLBase(model), setUpType("model")
+  Optimizer(NPSOL_SQP, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  SOLBase(model), setUpType("model")
 {
   // invoke SOLBase set function (shared with NLSSOLLeastSq)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel, -1,
@@ -92,7 +94,8 @@ NPSOLOptimizer::NPSOLOptimizer(Model& model):
     using a Model but no ProblemDescDB. */
 NPSOLOptimizer::
 NPSOLOptimizer(Model& model, const int& derivative_level, const Real& conv_tol):
-  Optimizer(NPSOL_SQP, model), SOLBase(model), setUpType("model")
+  Optimizer(NPSOL_SQP, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  SOLBase(model), setUpType("model")
 {
   // Set NPSOL options (mostly use defaults)
   std::string vlevel_s("Verify Level                = -1");
@@ -139,7 +142,8 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   const int& derivative_level, const Real& conv_tol): // SOLBase default ctor
   Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
-	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length()),
+	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
+            std::shared_ptr<TraitsBase>(new NPSOLTraits())),
   setUpType("user_functions"), initialPoint(initial_point), 
   lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
   userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)
@@ -259,7 +263,7 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 {
   // NPSOL computes constraints first, then the objective function.  However, 
   // Dakota assumes that the objective and constraint function values are all 
-  // computed in a single fn. evaluation. A numNonlinearConstraints check is
+  // computed in a single fn. evaluation.  A numNonlinearConstraints check is
   // therefore needed to ensure that 1 and only 1 mapping occurs.
 
   // Handle special cases with asv_request (see SOLBase::constraint_eval)
@@ -378,13 +382,7 @@ void NPSOLOptimizer::find_optimum_on_model()
   RealVector augmented_l_bnds, augmented_u_bnds;
   copy_data(iteratedModel.continuous_lower_bounds(), augmented_l_bnds);
   copy_data(iteratedModel.continuous_upper_bounds(), augmented_u_bnds);
-  augment_bounds(augmented_l_bnds, augmented_u_bnds,
-		 iteratedModel.linear_ineq_constraint_lower_bounds(),
-		 iteratedModel.linear_ineq_constraint_upper_bounds(),
-		 iteratedModel.linear_eq_constraint_targets(),
-		 iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		 iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		 iteratedModel.nonlinear_eq_constraint_targets());
+  augment_bounds(augmented_l_bnds, augmented_u_bnds, iteratedModel);
 
   NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
 	     linConstraintArraySize, nlnConstraintArraySize, num_cv, 
@@ -484,4 +482,14 @@ void NPSOLOptimizer::find_optimum_on_user_functions()
   bestResponseArray.front().function_values(best_fns);
 }
 
+// This override exists purely to prevent an optimizer/minimizer from declaring sources 
+// when it's being used to evaluate a user-defined function (e.g. finding the correlation
+// lengths of Dakota's GP). 
+void NPSOLOptimizer::declare_sources() {
+  if(setUpType == "user_functions") 
+    return;
+  else
+    Iterator::declare_sources();
+}
+ 
 } // namespace Dakota

@@ -51,7 +51,6 @@
 # 39 activate cross validation warning about only being able to construct under-determined systems even though system is determined
 
 environment,
-	#graphics
 	output_precision = 16
 
 method,

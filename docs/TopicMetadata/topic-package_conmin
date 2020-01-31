@@ -1,7 +1,7 @@
-The CONMIN library \cite Van78 is a public
-domain library of nonlinear programming optimizers, specifically the
-Fletcher-Reeves conjugate gradient (%Dakota's \c conmin_frcg method)
-method for unconstrained optimization, and the method of feasible
-directions (%Dakota's \c conmin_mfd method) for constrained
-optimization. As CONMIN was a predecessor to the DOT commercial
-library, the algorithm controls are very similar.
+The CONMIN library \cite Van78 is a public domain library of nonlinear
+programming optimizers, specifically the Fletcher-Reeves conjugate
+gradient (\ref method-conmin_frcg) method for unconstrained
+optimization, and the method of feasible directions (\ref
+method-conmin_mfd) for constrained optimization. As CONMIN was a
+predecessor to the DOT commercial library, the algorithm controls are
+very similar.

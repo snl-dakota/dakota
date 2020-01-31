@@ -1,0 +1,19 @@
+Blurb:: Multi-point surrogate approximation based on QMEA algorithm
+
+Description::
+
+The Quadratic Multipoint Exponential Approximation (QMEA) builds a
+multi-point approximation from values and gradients at multiple
+expansion points.  It is a generalization of the two-point exponential
+approximation (TPEA).
+
+This capability is \b experimental.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+See_Also::

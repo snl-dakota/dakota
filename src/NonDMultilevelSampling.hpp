@@ -55,7 +55,7 @@ protected:
   void pre_run();
   void core_run();
   void post_run(std::ostream& s);
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
 private:
 
@@ -64,21 +64,23 @@ private:
   //
 
   /// Perform multilevel Monte Carlo across the discretization levels for a
-  /// particular model form
-  void multilevel_mc(size_t model_form);
+  /// particular model form using discrepancy accumulators (sum_Y)
+  void multilevel_mc_Ysum(unsigned short model_form);
+  /// Perform multilevel Monte Carlo across the discretization levels for a
+  /// particular model form using QoI accumulators (sum_Q)
+  void multilevel_mc_Qsum(unsigned short model_form);
   /// Perform control variate Monte Carlo across two model forms
-  void control_variate_mc(const SizetSizetPair& lf_form_level,
-			  const SizetSizetPair& hf_form_level);
+  void control_variate_mc(const UShortArray& active_key);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Y (LH correlations for level discrepancies)
-  void multilevel_control_variate_mc_Ycorr(size_t lf_model_form,
-					   size_t hf_model_form);
+  void multilevel_control_variate_mc_Ycorr(unsigned short lf_model_form,
+					   unsigned short hf_model_form);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
-  void multilevel_control_variate_mc_Qcorr(size_t lf_model_form,
-					   size_t hf_model_form);
+  void multilevel_control_variate_mc_Qcorr(unsigned short lf_model_form,
+					   unsigned short hf_model_form);
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
@@ -87,14 +89,29 @@ private:
   bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 		    const SizetArray& N_hf, size_t iter, size_t lev);
 
-  /// distribute pilotSamples input across model forms or levels
-  void load_pilot_sample(SizetArray& delta_N_l);
-  /// distribute pilotSamples input across model forms and levels
-  void load_pilot_sample(Sizet2DArray& delta_N_l);
+  /// synchronize iteratedModel and activeSet on AGGREGATED_MODELS mode
+  void aggregated_models_mode();
+  /// synchronize iteratedModel and activeSet on BYPASS_SURROGATE mode
+  void bypass_surrogate_mode();
+  /// synchronize iteratedModel and activeSet on UNCORRECTED_SURROGATE mode
+  void uncorrected_surrogate_mode();
+
+  /// return (aggregate) level cost
+  Real level_cost(const RealVector& cost, unsigned short step);
+
+  /// manage response mode and active model key from {group,form,lev} triplet.
+  /// s_index is the sequence index that defines the active dimension for a
+  /// model sequence.
+  void configure_indices(unsigned short group, unsigned short form,
+			 unsigned short lev,   unsigned short s_index);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
-  void initialize_ml_sums(IntRealMatrixMap& sum_Y, size_t num_lev);
+  void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
+  /// initialize the ML accumulators for computing means, variances, and
+  /// covariances across fidelity levels
+  void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
 
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -131,35 +148,47 @@ private:
 			    IntRealMatrixMap& sum_Hlm1_Hlm1,
 			    size_t num_ml_lev, size_t num_cv_lev);
 
+  /// accumulate initial approximation to mean vector, for use as offsets in
+  /// subsequent accumulations
+  void accumulate_offsets(RealVector& mu);
+
+  /// update running QoI sums for one model (sum_Q) using set of model
+  /// evaluations within allResponses; used for level 0 from other accumulators
+  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
+			   const RealVector& offset, SizetArray& num_Q);
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_sums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			  size_t lev, SizetArray& num_Y);
+  void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
+			   size_t lev, const RealVector& offset,
+			   SizetArray& num_Y);
+  /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
+  /// model evaluations within allResponses
+  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
+			   const RealVector& offset, SizetArray& num_Q);
 
   /// update running sums for one model (sum_L) using set of model
   /// evaluations within allResponses
-  void accumulate_cv_sums(IntRealVectorMap& sum_L, SizetArray& num_L);
+  void accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
+			  SizetArray& num_L);
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within allResponses
   void accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 			  IntRealVectorMap& sum_L_refined,
 			  IntRealVectorMap& sum_H,  IntRealVectorMap& sum_LL,
 			  IntRealVectorMap& sum_LH, RealVector& sum_HH,
-			  SizetArray& num_L,        SizetArray& num_H);
+			  const RealVector& offset, SizetArray& num_L,
+			  SizetArray& num_H);
 
-  /// update running QoI sums for one model (sum_Q) using set of model
-  /// evaluations within allResponses; used for level 0 from other accumulators
-  void accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
-			     SizetArray& num_Q);
   /// update running QoI sums for one model at two levels (sum_Ql, sum_Qlm1)
   /// using set of model evaluations within allResponses
   void accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql,
 			     IntRealMatrixMap& sum_Qlm1, size_t lev,
-			     SizetArray& num_Q);
+			     const RealVector& offset, SizetArray& num_Q);
   /// update running discrepancy sums for one model (sum_Y) using
   /// set of model evaluations within allResponses
   void accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
-			     SizetArray& num_Y);
+			     const RealVector& offset, SizetArray& num_Y);
   /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
   /// and sum_HH) from set of low/high fidelity model evaluations within
   /// {lf,hf}_resp_map; used for level 0 from other accumulators
@@ -169,7 +198,9 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, SizetArray& num_L, SizetArray& num_H);
+			     size_t lev, const RealVector& lf_offset,
+			     const RealVector& hf_offset, SizetArray& num_L,
+			     SizetArray& num_H);
   /// update running two-level discrepancy sums for two models (sum_L,
   /// sum_H, sum_LL, sum_LH, and sum_HH) from set of low/high fidelity
   /// model evaluations within {lf,hf}resp_map
@@ -179,7 +210,9 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, SizetArray& num_L, SizetArray& num_H);
+			     size_t lev, const RealVector& lf_offset,
+			     const RealVector& hf_offset,
+			     SizetArray& num_L, SizetArray& num_H);
   /// update running QoI sums for two models and two levels from set
   /// of low/high fidelity model evaluations within {lf,hf}_resp_map
   void accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
@@ -200,6 +233,8 @@ private:
 			     IntRealMatrixMap& sum_Hl_Hl,
 			     IntRealMatrixMap& sum_Hl_Hlm1,
 			     IntRealMatrixMap& sum_Hlm1_Hlm1, size_t lev,
+			     const RealVector& lf_offset,
+			     const RealVector& hf_offset,
 			     SizetArray& num_L, SizetArray& num_H);
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
@@ -346,19 +381,55 @@ private:
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
-  void convert_moments(const RealMatrix& raw_moments,
-		       RealMatrix& standard_moments);
+  void convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom);
+
+  /// populate finalStatErrors for MLMC based on Q sums
+  void compute_error_estimates(IntRealMatrixMap& sum_Ql,
+			       IntRealMatrixMap& sum_Qlm1,
+			       IntIntPairRealMatrixMap& sum_QlQlm1,
+			       Sizet2DArray& num_Q);
+
+  /// compute variance from sum accumulators
+  Real variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq);
+  /// compute variance from sum accumulators
+  Real variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
+		     Real sum_Qlm1Qlm1, size_t Nlq);
 
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
-  Real aggregate_variance(const Real* sum_Y, const Real* sum_YY,
+  Real aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
+			       const SizetArray& N_l);
+  /// sum up variances across QoI (using sum_YY with means from sum_Y)
+  Real aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+			       const Real* sum_QlQl,     const Real* sum_QlQlm1,
+			       const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+			       size_t lev);
+
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy variances
+  Real aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l);
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy sums
+  Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy sums
-  Real aggregate_mse(const Real* sum_Y, const Real* sum_YY,
-			   const SizetArray& N_l);
-  /// sum up Monte Carlo estimates for mean squared error (MSE) across
-  /// QoI using discrepancy variances
-  Real aggregate_mse(const Real* var_Y, const SizetArray& N_l);
+  Real aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+			  const Real* sum_QlQl,     const Real* sum_QlQlm1,
+			  const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+			  size_t lev);
+
+  /// convert uncentered (raw) moments to centered moments; biased estimators
+  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
+			      size_t Nlq) const;
+  /// convert uncentered (raw) moments to centered moments; unbiased estimators
+  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
+  /// convert centered moments to standardized moments
+  void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
+  /// detect, warn, and repair a negative central moment (for even orders)
+  void check_negative(Real& cm) const;
 
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
@@ -368,10 +439,6 @@ private:
   Real average(const RealVector& vec) const;
   /// compute average of a set of observations
   Real average(const SizetArray& sa) const;
-
-  /// compute a one-sided sample increment to move current sampling level
-  /// to a new target
-  size_t one_sided_delta(Real current, Real target);
 
   //
   //- Heading: Data
@@ -403,6 +470,45 @@ private:
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
 };
+
+
+inline void NonDMultilevelSampling::aggregated_models_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != AGGREGATED_MODELS) {
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set HF,LF
+    // synch activeSet with iteratedModel.response_size()
+    activeSet.reshape(2*numFunctions);
+    activeSet.request_values(1);
+  }
+}
+
+
+inline void NonDMultilevelSampling::bypass_surrogate_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != BYPASS_SURROGATE) {
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // HF
+    activeSet.reshape(numFunctions);// synch with model.response_size()
+  }
+}
+
+
+inline void NonDMultilevelSampling::uncorrected_surrogate_mode()
+{
+  if (iteratedModel.surrogate_response_mode() != UNCORRECTED_SURROGATE) {
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    activeSet.reshape(numFunctions);// synch with model.response_size()
+  }
+}
+
+
+inline Real NonDMultilevelSampling::
+level_cost(const RealVector& cost, unsigned short step)
+{
+  // discrepancies incur two level costs
+  return (step) ?
+    cost[step] + cost[step-1] : // aggregated {HF,LF} mode
+    cost[step];                 //     uncorrected LF mode
+}
 
 
 inline void NonDMultilevelSampling::
@@ -518,50 +624,217 @@ apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 
 
 inline Real NonDMultilevelSampling::
-aggregate_variance(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
+variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
 {
-  Real agg_var_l = 0., mu_Y, var_Y; size_t Nlq;
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "[ ";
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Nlq  = N_l[qoi];
-    mu_Y = sum_Y[qoi] / Nlq;
-    // Note: precision loss in variance is difficult to avoid without
-    // storing full sample history; must accumulate Y^2 across iterations
-    // instead of (Y-mean)^2 since mean is updated on each iteration.
-    var_Y = (sum_YY[qoi] - Nlq * mu_Y * mu_Y) / (Nlq - 1);
-    agg_var_l += var_Y;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << var_Y << ' ';
-  }
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "]\n";
+  Real mu_Y = sum_Y / Nlq;
+  // Note: precision loss in variance is difficult to avoid without
+  // storing full sample history; must accumulate Y^2 across iterations
+  // instead of (Y-mean)^2 since mean is updated on each iteration.
+  Real var_Y = (sum_YY / Nlq - mu_Y * mu_Y)
+             * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
+  return var_Y;
 
+  /*
+  Real new_mu_Y = mu_Y + offset;
+  return var_Y
+    //  + offset   * offset    // uncenter from old mu_hat
+    //  - new_mu_Y * new_mu_Y; // recenter with new_mu_Y
+    - mu_Y * mu_Y - 2. * mu_Y * offset; // cancel offset^2
+  */
+}
+
+
+inline Real NonDMultilevelSampling::
+variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
+	      Real sum_Qlm1Qlm1, size_t Nlq)
+{
+  Real mu_Ql = sum_Ql / Nlq, mu_Qlm1 = sum_Qlm1 / Nlq;
+  //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
+  return (       sum_QlQl / Nlq - mu_Ql   * mu_Ql     // var_Ql
+    - 2. * (   sum_QlQlm1 / Nlq - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
+    +        sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
+    * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
+}
+
+
+inline Real NonDMultilevelSampling::
+aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
+			const SizetArray& N_l)
+{
+  Real agg_var_l = 0.;//, var_Y;
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+    agg_var_l += variance_Ysum(sum_Y[qoi], sum_YY[qoi], N_l[qoi]);
+    //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
+  //}
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
   return agg_var_l;
 }
 
 
 inline Real NonDMultilevelSampling::
-aggregate_mse(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
+aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+			const Real* sum_QlQl,     const Real* sum_QlQlm1,
+			const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
+			size_t lev)
 {
-  Real agg_mse = 0., mu_Y, var_Y; size_t Nlq;
+  Real agg_var_l = 0., var_Y;
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+    agg_var_l += (lev) ?
+      variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+		    sum_Qlm1Qlm1[qoi], N_l[qoi]) :
+      variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], N_l[qoi]);
+    //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
+  //}
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
+  return agg_var_l;
+}
+
+
+inline Real NonDMultilevelSampling::
+aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l)
+{
+  Real agg_mse = 0.;
+  // aggregate MC estimator variance for each QoI
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    agg_mse += var_Y[qoi] / N_l[qoi];
+  return agg_mse;
+}
+
+
+inline Real NonDMultilevelSampling::
+aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
+{
+  Real agg_mse = 0.;//, var_Y;
+  // aggregate MC estimator variance for each QoI
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    agg_mse += variance_Ysum(sum_Y[qoi], sum_YY[qoi], N_l[qoi]) / N_l[qoi];
+  return agg_mse;
+}
+
+
+inline Real NonDMultilevelSampling::
+aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
+		   const Real* sum_QlQl,     const Real* sum_QlQlm1,
+		   const Real* sum_Qlm1Qlm1, const SizetArray& N_l, size_t lev)
+{
+  Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Nlq   = N_l[qoi];
-    mu_Y  = sum_Y[qoi] / Nlq;
-    var_Y = (sum_YY[qoi] - Nlq * mu_Y * mu_Y) / (Nlq - 1);
+    Nlq = N_l[qoi];
+    var_Y = (lev) ?
+      variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+		    sum_Qlm1Qlm1[qoi], Nlq) :
+      variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], Nlq);
     agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
   }
   return agg_mse;
 }
 
 
-inline Real NonDMultilevelSampling::
-aggregate_mse(const Real* var_Y, const SizetArray& N_l)
+inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 {
-  Real agg_mse = 0.;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    agg_mse += var_Y[qoi] / N_l[qoi]; // aggregate MC estimator var for each QoI
-  return agg_mse;
+  using boost::math::isfinite;
+  IntRespMCIter r_it = allResponses.begin();
+  size_t qoi, num_samp, num_fns = r_it->second.num_functions();
+  mu.sizeUninitialized(num_fns);
+  Real q_l, sum;
+  for (qoi=0; qoi<num_fns; ++qoi) {
+    num_samp = 0; sum = 0.;
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      q_l = r_it->second.function_value(qoi);
+      if (isfinite(q_l)) // neither NaN nor +/-Inf
+	{ sum += q_l; ++num_samp; }
+    }
+    mu[qoi] = sum / num_samp;
+  }
+}
+
+
+/** For single-level moment calculations with a scalar Nlq. */
+inline void NonDMultilevelSampling::
+uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
+{
+  // convert from uncentered ("raw") to centered moments for a single level
+
+  // For moments from sampling:
+  // > Raw moments are unbiased. Central moments are unbiased for an exact mean
+  //   (i.e., the samples represent the full population).
+  // > For sampling a portion of the population, central moments {2,3,4} are 
+  //   biased estimators since the mean is approximated.  The conversion to
+  //   unbiased requires a correction based on the number of samples, as
+  //   implemented in the subsequent function.
+
+  cm1 = rm1;             // mean
+  cm2 = rm2 - cm1 * cm1; // variance
+
+  cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1);                         // using cm
+  //  = rm3 - cm1 * (3. * rm2 - 2. * cm1 * cm1);                    // using rm
+
+  // the 4th moment is the central moment (non-excess, not cumulant)
+  cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));      // using cm
+  //  = rm4 - cm1 * (4. * rm3 - cm1 * (6. * rm2 - 3. * cm1 * cm1)); // using rm
+}
+
+
+/** For single-level moment calculations with a scalar Nlq. */
+inline void NonDMultilevelSampling::
+uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
+		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq) const
+{
+  // convert from uncentered ("raw") to centered moments for a single level
+
+  // Biased central moment estimators:
+  uncentered_to_centered(rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4);
+
+  // Bias corrections for population-based estimators w/ estimated means:
+  if (Nlq > 3) {
+    Real cm1_sq = cm1 * cm1;
+    Real nm1 = Nlq - 1., nm2 = Nlq - 2., n_sq = Nlq * Nlq;
+    cm2 *= Nlq / nm1; // unbiased population variance from Bessel's correction
+    cm3 *= n_sq / (nm1 * nm2);
+    // From "Modeling with Data," Klemens 2009 (Appendix M).
+    // Notes:
+    // (1) this is 4th central moment (non-excess, unnormalized),
+    //     which differs from the fourth cumulant (excess, unnormalized)
+    // (2) cm2 is now unbiased within following conversion:
+    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
+        / (n_sq - 3. * Nlq + 3.);
+  }
+  else
+    Cerr << "Warning: due to small sample size, resorting to biased estimator "
+	 << "conversion in NonDMultilevelSampling::uncentered_to_centered().\n";
+}
+
+
+inline void NonDMultilevelSampling::
+centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+		     Real& sm1, Real& sm2, Real& sm3, Real& sm4) const
+{
+  // convert from centered to standardized moments
+  sm1 = cm1;                    // mean
+  if (cm2 > 0.) {
+    sm2 = std::sqrt(cm2);         // std deviation
+    sm3 = cm3 / (cm2 * sm2);      // skewness
+    sm4 = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
+  }
+  else {
+    Cerr << "\nWarning: central to standard conversion failed due to "
+	 << "non-positive\n         variance.  Retaining central moments.\n";
+    sm2 = 0.; sm3 = cm3; sm4 = cm4; // or assign NaN to sm{3,4}
+  }
+}
+
+
+inline void NonDMultilevelSampling::check_negative(Real& cm) const
+{
+  if (cm < 0.) {
+    Cerr << "\nWarning: central moment less than zero (" << cm << ").  "
+	 << "Repairing to zero.\n";
+    cm = 0.;
+    // TO DO:  consider hard error if COV < -tol (pass in mean and cm order)
+  }
 }
 
 
@@ -590,10 +863,6 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
     sum += sa[i];
   return (Real)sum / (Real)len;
 }
-
-
-inline size_t NonDMultilevelSampling::one_sided_delta(Real current, Real target)
-{ return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
 
 } // namespace Dakota
 

@@ -387,6 +387,8 @@ void Environment::construct()
   // Instantiate topLevelIterator in parallel
   // (invoke ProblemDescDB ctor chain on all processors)
   IteratorScheduler::init_iterator(probDescDB, topLevelIterator, w_pl_iter);
+  // Notfiy the iterator that it is the top level
+  topLevelIterator.top_level(true);
 }
 
 
@@ -405,6 +407,10 @@ void Environment::execute()
       Cout << "\n>>>>> Executing environment.\n";
 
     probDescDB.lock(); // prevent run-time DB queries
+
+    outputManager.init_results_db();
+    if(output_rank)
+      outputManager.archive_input(programOptions);
 
     // set up plotting and data tabulation
     // > MetaIterators delegate graphics initialization

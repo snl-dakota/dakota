@@ -52,7 +52,7 @@ convergence algorithm will be used and the algorithm will rely on
 stopping criteria only.
 
 
-<b> Outputs </b>
+<b> Expected Outputs </b>
 
 The \c moga method respects the \c output method independent control
 to vary the amount of information presented to the user during
@@ -73,6 +73,17 @@ files to visually see the Pareto front and ensure that finaldata.dat
 solutions dominate discards.dat solutions. The solutions are written
 to these output files in the format
 "Input1...InputN..Output1...OutputM".
+
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
 <b> Important Notes </b>
 

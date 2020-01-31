@@ -53,6 +53,46 @@ namespace Dakota {
        \c max_iterations.
   */
 
+/**
+ * \brief A version of TraitsBase specialized for Nomad
+ *
+ */
+
+class NomadTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NomadTraits() { }
+
+  /// destructor
+  virtual ~NomadTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports discrete variables
+  bool supports_discrete_variables() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the format used for nonlinear equality constraints
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+    { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+};
+
+
 class NomadOptimizer : public Optimizer
 {
 public:
@@ -122,15 +162,6 @@ private:
   /// Pointer to Nomad lower bounds
   NOMAD::Point lowerBound;
 
-  /// map from Dakota constraint number to Nomad constraint number
-  std::vector<int> constraintMapIndices;
-
-  /// multipliers for constraint transformations
-  std::vector<double> constraintMapMultipliers;
-
-  /// offsets for constraint transformations
-  std::vector<double> constraintMapOffsets;
-
   /// defines use of surrogate in NOMAD
   std::string useSurrogate;
 };
@@ -156,6 +187,13 @@ private:
 class NomadOptimizer::Evaluator : public NOMAD::Evaluator
 {
 private:
+
+  /// map NOMAD evaluation point to Dakota model
+  void set_variables(const NOMAD::Eval_Point &x) const;
+  /// evaluate the Dakota model (block or not, but don't collect response)
+  void eval_model(bool allow_asynch, const NOMAD::Eval_Point& x) const;
+  /// map Dakota model responses to NOMAD evaluation point
+  void get_responses(const RealVector& ftn_vals, NOMAD::Eval_Point &x) const;
 
   Model& _model;
   int n_cont,n_disc_int, n_disc_real;
@@ -213,7 +251,12 @@ public:
   bool eval_x (NOMAD::Eval_Point &x,
 	       const NOMAD::Double &h_max,
 	       bool &count_eval) const;
-	       
+
+  /// multi-point variant of evaluator
+  bool eval_x ( std::list<NOMAD::Eval_Point *>& x,
+		const NOMAD::Double& h_max,
+		std::list<bool>& count_eval ) const;
+
   /// publishes constraint transformation
   void set_constraint_map (int numNomadNonlinearIneqConstraints,
 			   int numNomadNonlinearEqConstraints,

@@ -43,7 +43,7 @@ For \c coliny_pattern_search:
 method
   coliny_pattern_search
     initial_delta = .2
-    threshold_delta = 1.e-4
+    variable_tolerance = 1.e-4
     max_iterations 100
     solution_accuracy = 1.e-6
     seed = 1234

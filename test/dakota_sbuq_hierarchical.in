@@ -9,7 +9,8 @@
 #   hybrid:          p2 (peer), p3 (ded master)
 
 environment,
-	graphics tabular_data
+	graphics
+	tabular_data
 	method_pointer = 'SBUQ'
 
 method,
@@ -26,50 +27,52 @@ method,
 #	    variance_based_decomp
 # Multifidelity test suite
 	model_pointer = 'SURROGATE'
-	polynomial_chaos				#s0,#s1,#s2,#s6,#s7,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#p0,#p1,#p2,#p3
-#	  expansion_order_sequence = 4 2		#s11,#s13,#s15,#s16,#s18
-#	  expansion_order_sequence = 5 3		#s12,#s17,#s19
-#	  dimension_preference = 2 1			#s16,#s17
-#	  uniform p_refinement				#s18,#s19
-#	  orthogonal_least_interpolation		#s14
-#	  collocation_ratio =  2			#s11,#s16,#s18
-#	  collocation_ratio = .9			#s12,#s17,#s19
-#	  collocation_points_sequence =   40  10	#s13,#s14
-#	  expansion_samples_sequence  = 2000 200	#s15
-#	  seed = 12347	      	  			#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19
-#	stoch_collocation				#s3,#s4,#s5,#s8,#s9,#s10
-	  sparse_grid_level_sequence = 3 1		#s0,#s3
-#	  sparse_grid_level_sequence = 4 2		#s20,#p0,#p1,#p2,#p3
-#	  sparse_grid_level_sequence = 1 3		#s21
+	multifidelity_polynomial_chaos			#s0,#s1,#s2,#s6,#s7,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#p0,#p1,#p2,#p3
+#	  expansion_order_sequence = 4 2		#s12,#s14,#s16,#s17,#s19
+#	  expansion_order_sequence = 5 3		#s13,#s18,#s20
+#	  dimension_preference = 2 1			#s17,#s18
+#	  uniform p_refinement				#s19,#s20
+#	  orthogonal_least_interpolation		#s15
+#	  collocation_ratio =  2			#s12,#s17,#s19
+#	  collocation_ratio = .9			#s13,#s18,#s20
+#	  collocation_points_sequence =   40  10	#s14,#s15
+#	  expansion_samples_sequence  = 2000 200	#s16
+#	  seed = 12347	      	  			#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
+#	multifidelity_stoch_collocation			#s3,#s4,#s5,#s8,#s9,#s10,#s11,#s23,#s24,#s25,#s26
+#	  hierarchical					#s23,#s24,#s25,#s26
+	  sparse_grid_level_sequence = 3 1		#s0,#s3,#s23
+#	  sparse_grid_level_sequence = 4 2		#s21,#p0,#p1,#p2,#p3
+#	  sparse_grid_level_sequence = 1 3		#s22
 #	  quadrature_order_sequence  = 5 3		#s6,#s8
 #	  uniform p_refinement				#s1,#s4,#s7,#s9
-#	  dimension_adaptive p_refinement generalized	#s2,#s5
-#	  sparse_grid_level = 0		  		#s1,#s2,#s4,#s5
-#	  quadrature_order  = 1				#s7,#s9
-#	  sparse_grid_level_sequence = 10 5		#s10
-#	  piecewise use_derivatives			#s10
+#	  dimension_adaptive p_refinement generalized	#s2,#s5,#s24
+#	  sparse_grid_level_sequence = 0  		#s1,#s2,#s4,#s5,#s24
+#	  quadrature_order_sequence  = 1		#s7,#s9
+#	  sparse_grid_level_sequence = 10 5		#s10,#s11,#s25,#s26
+#	  piecewise			  		#s10,#s25
+#	  piecewise use_derivatives			#s11,#s26
 	  variance_based_decomp
 
 model,
 	id_model = 'SURROGATE'
 	surrogate hierarchical
 	  model_fidelity_sequence = 'LOFI' 'HIFI'
-	  correction additive zeroth_order	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#p0,#p1,#p2,#p3
-#	  correction additive first_order	#s10	
+	  correction additive zeroth_order	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#p0,#p1,#p2,#p3
+#	  correction additive first_order	#s11,#s26
 
 variables,
-	normal_uncertain = 2			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#p0,#p1,#p2,#p3
-      	  means             =  0.   0.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#p0,#p1,#p2,#p3
-	  std_deviations    =  1.   1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#p0,#p1,#p2,#p3
-#	uniform_uncertain = 2			#s10
-#	  lower_bounds      = -5.  -5.		#s10
-#	  upper_bounds	    =  5.   5.		#s10
+	normal_uncertain = 2			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#p0,#p1,#p2,#p3
+      	  means             =  0.   0.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#p0,#p1,#p2,#p3
+	  std_deviations    =  1.   1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#p0,#p1,#p2,#p3
+#	uniform_uncertain = 2			#s10,#s11,#s25,#s26
+#	  lower_bounds      = -5.  -5.		#s10,#s11,#s25,#s26
+#	  upper_bounds	    =  5.   5.		#s10,#s11,#s25,#s26
 	  descriptors       = 'x1' 'x2'
 
 responses,
 	response_functions = 1
-	no_gradients	       			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#p0,#p1,#p2,#p3
-# 	analytic_gradients			#s10
+	no_gradients	       			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#p0,#p1,#p2,#p3
+# 	analytic_gradients			#s11,#s26
 	no_hessians				
 
 model,
@@ -79,9 +82,9 @@ model,
 
 interface,
 	id_interface = 'LOFI_FN'
-	direct					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s21
-#	fork					#s20,#p0,#p1,#p2,#p3
-#	  asynch evaluation_concurrency = 3	#s20,#p2,#p3
+	direct					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s22,#s23,#s24,#s25,#s26
+#	fork					#s21,#p0,#p1,#p2,#p3
+#	  asynch evaluation_concurrency = 3	#s21,#p2,#p3
  	  analysis_driver = 'lf_rosenbrock'
 	  deactivate restart_file
 
@@ -92,9 +95,9 @@ model,
 
 interface,
 	id_interface = 'HIFI_FN'
-	direct					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s21
-#	fork					#s20,#p0,#p1,#p2,#p3
-#	  asynch evaluation_concurrency = 2	#s20,#p2,#p3
+	direct					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s22,#s23,#s24,#s25,#s26
+#	fork					#s21,#p0,#p1,#p2,#p3
+#	  asynch evaluation_concurrency = 2	#s21,#p2,#p3
  	  analysis_driver = 'rosenbrock'
 	  deactivate restart_file
 

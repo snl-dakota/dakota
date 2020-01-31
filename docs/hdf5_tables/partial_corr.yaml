@@ -1,0 +1,14 @@
+name: Partial Correlations
+dataset:
+  description: Partial correlations
+  location: "[increment:<N>]/partial_correlations/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
+  shape: "1-dimensional: number of variables"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: variables
+    contents: Variable descriptors
+    literal_contents: False
+

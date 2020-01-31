@@ -33,7 +33,9 @@ my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
-my $using_aprun = 0;
+my $using_srun = 0;          # use srun to launch parallel dakota (and serial on Cray)
+my $using_aprun = 0;         # use aprun to launch both serial and parallel dakota
+my $on_cray = 0;             # Testing is being done on cray
 my $run_valgrind = 0;        # boolean for whether to run valgrind
 my $vg_extra_args = "";      # append args from DAKOTA_TEST_VALGRIND_EXTRA_ARGS
 
@@ -45,6 +47,7 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 # exit code summarizing worst test condition found (higher is nominally "worse")
 # might need to change if we go back to baselines that permit failures
 #   0 PASS
+#   0 SKIP (considered code 50, but it's not really a failure)
 #  70 PASS, but baseline lookup failure (unused)
 #  80 DIFF
 #  90 FAIL, consistent with baseline
@@ -54,7 +57,7 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 # 101 killed due to stale output
 # 102 killed due to no output
 # 103 aborted by SIG_INT
-# 104 error or abort appeared in output
+# 104 (disabled) error or abort appeared in output
 # 105 unknown or other FAIL
 my $summary_exitcode = 0;
 
@@ -260,7 +263,8 @@ foreach my $file (@test_inputs) {
       else {
 
 	# turn off graphics for all test files
-	if ( s/\sgraphics(\s|,)/# graphics\n/) {
+	# requires 'graphics' on a line by itself, so it can appear in comments
+        if ( s/^[\s]*graphics[,\s#sp0-9]*$/# graphics\n/) {
 	  print INPUT_TMP;
 	}
 	# if line contains $cnt tag, then comment/uncomment
@@ -335,17 +339,21 @@ foreach my $file (@test_inputs) {
     #print "[exit = $exit_value, signal = $signal_num, core = $dumped_core ";
     #print "protected test code = $pt_code] ";
 
+    # BMA: This historical check was useful for catching otherwise
+    # unreported MPI errors, but also causes false failed tests when a
+    # TPL emits the text abort or error to stderr. Disabled it.
+    #
     # If there's anything from stderr, check it first, since MPI
     # might return $exit_code = 0 though there was an error on a child
-    if ($exit_value == 0 && open (ERROR_FILE, $error)) {
-      while (<ERROR_FILE>) {
-	if (/error/i || /abort/i) {
-	  $exit_value = 104;
-	  last;
-	}
-      }
-      close (ERROR_FILE);
-    }
+    ##if ($exit_value == 0 && open (ERROR_FILE, $error)) {
+    ##  while (<ERROR_FILE>) {
+    ##	if (/error/i || /abort/i) {
+    ##	  $exit_value = 104;
+    ##	  last;
+    ##	}
+    ##  }
+    ##  close (ERROR_FILE);
+    ##}
 
     # iff the test succeeded, parse out the results subset of interest
     if ($exit_value == 0) {
@@ -522,8 +530,8 @@ sub process_command_line {
 
   if (${opt_valgrind} || $ENV{'DAKOTA_TEST_VALGRIND'}) {
     $run_valgrind = 1;
-    if (${opt_parallel} || ${using_aprun}) {
-      die "Error: cannot use valgrind in parallel or aprun mode";
+    if (${opt_parallel} || ${using_srun}) {
+      die "Error: cannot use valgrind in parallel or srun mode";
     }
     if ($ENV{'DAKOTA_TEST_VALGRIND'}) {
       $vg_extra_args = $ENV{'DAKOTA_TEST_VALGRIND_EXTRA_ARGS'};
@@ -569,7 +577,7 @@ sub process_command_line {
 
 # Set options specific to parallel runs or platforms and create machinefile. 
 # Uses global parallelism variable
-# May set environment variables and global option variable using_aprun. 
+# May set environment variables and global option variable using_srun. 
 sub manage_parallelism {
 
   # Create a machines file for platforms where this is needed.
@@ -597,14 +605,15 @@ sub manage_parallelism {
   if ( $parallelism eq "parallel" ) {
     $ENV{'OMPI_MCA_mpi_warn_on_fork'} = '0';
   }
-
   # Detect launch within a job on a Cray XC system. These systems
   # can run MOAB, PBS (only with MOAB?), or SLURM
-  if (exists $ENV{CRAYPE_VERSION} && 
-	( exists $ENV{MOAB_JOBNAME} || 
-	  exists $ENV{PBS_VERSION} ||   
-	  exists $ENV{SLURM_JOB_ID} )) {
-    $using_aprun = 1;
+  if (exists $ENV{CRAYPE_VERSION}) {
+    $on_cray = 1;
+    if ( exists $ENV{MOAB_JOBNAME} || exists $ENV{PBS_VERSION} ) {  
+      $using_aprun = 1;
+    } elsif ( exists $ENV{SLURM_JOB_ID} ) {
+      $using_srun = 1;
+    }
   }
 }
 
@@ -956,7 +965,12 @@ sub check_dakota_config {
   if (-f "../src/Makefile.export.Dakota") {
     $makefile_export = "../src/Makefile.export.Dakota";
   }
+  # legacy install layout assuming dakota/test/
   elsif (-f "../include/Makefile.export.Dakota") {
+    $makefile_export = "../include/Makefile.export.Dakota";
+  }
+  # current install layout assuming dakota/share/dakota/test/
+  elsif (-f "../../../include/Makefile.export.Dakota") {
     $makefile_export = "../include/Makefile.export.Dakota";
   }
   return if (! ${makefile_export});
@@ -1042,12 +1056,15 @@ sub form_test_command {
     $test_command = "${vg_cmd} ${test_command}";
   }
 
-  # If testing within a Cray XC job, aprun the test and force Dakota into serial mode
-  if( $using_aprun && $parallelism eq "serial") {
-    $test_command = "aprun -e DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
+  # If testing within a Cray XC job, launch using aprun or srun 
+  if( $on_cray && $parallelism eq "serial" ) {
+    if($using_aprun) {
+      $test_command = "aprun --export=DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
+    }
+    elsif($using_srun) {
+      $test_command = "srun -n 1 $test_command";
+    }
   }
- 
-
   if ($parallelism eq "parallel") {
     my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
     # parallel test
@@ -1058,9 +1075,12 @@ sub form_test_command {
     elsif ($sysname =~ /SunOS/) {
       $test_command = "mprun -np $num_proc $fulldakota $redir";
     }
+    elsif($using_srun == 1) {
+      $test_command = "srun -n $num_proc $fulldakota $redir";
+    } 
     elsif($using_aprun == 1) {
       $test_command = "aprun -n $num_proc $fulldakota $redir";
-    } 
+    }
     else
     { 
       # default for Linux
@@ -1231,7 +1251,8 @@ sub parse_test_output {
     }
     # Capture final results: best parameters, samples,
     # objective functions, constraints, residual terms, etc.
-    while (/^<<<<< Best [ \w\(\)]+=$/) {
+    # Also grab Bayesian optimal design points
+    while (/^(<<<<< Best [ \w\(\)]+=|Optimal design:)$/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
@@ -1291,7 +1312,7 @@ sub parse_test_output {
       print TEST_OUT;
     }
     
-    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =)/) {
+    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Information gained from prior to posterior|Mutual information =|Model evidence \()/) {
       print;
       print TEST_OUT;
     }
@@ -1422,6 +1443,17 @@ sub parse_test_output {
       print TEST_OUT;
       while (/\s+$e/) {
 #      while (/\s*${s}\s*($e|$naninf)/) {  # may contain nan/inf
+        print;
+        print TEST_OUT;
+        $_ = <OUTPUT>; # grab next line
+      }
+    }
+
+    while (/^Confidence Intervals/) {
+      print;
+      print TEST_OUT;
+      $_ = <OUTPUT>; # grab next line
+      while (/^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/) {  # may contain nan/inf
         print;
         print TEST_OUT;
         $_ = <OUTPUT>; # grab next line

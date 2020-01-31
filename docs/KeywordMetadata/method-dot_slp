@@ -1,10 +1,28 @@
-Blurb::
-Sequential Linear Programming
+Blurb:: DOT Sequential Linear Program
+
 Description::
-This is a duplicated keyword. Please use \ref method-dot instead.
+DOT library \cite Van95 implementation of sequential linear
+programming for constrained optimizaiton.
+
+See \ref topic-package_dot for information common to all \c DOT methods.
+
+<em>DOT requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
+
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
 Topics::	
 Examples::
 Theory::
 Faq::
-See_Also::	method-dot-slp
+See_Also::

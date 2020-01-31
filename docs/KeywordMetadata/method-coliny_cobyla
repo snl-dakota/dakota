@@ -10,7 +10,7 @@ approximations being formed by linear interpolation at N+1 points in
 the space of the variables. We regard these interpolation points as
 vertices of a simplex. The step length parameter controls the size of
 the simplex and it is reduced automatically from \c initial_delta to
-\c threshold_delta. One advantage that COBYLA has over many of its
+\c variable_tolerance. One advantage that COBYLA has over many of its
 competitors is that it treats each constraint individually when
 calculating a change to the variables, instead of lumping the
 constraints together into a single penalty function.
@@ -43,6 +43,17 @@ constraints when scaling is turned on.
 Neither bug will be fixed, as maintaining third-party source code
 (such as COBYLA) is outside of the Dakota project scope.
 
+
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
 Topics::	package_scolib, package_coliny, local_optimization_methods, constrained
 Examples::

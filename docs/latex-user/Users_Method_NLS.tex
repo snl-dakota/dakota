@@ -104,10 +104,13 @@ reconciliation, etc.
 In order to specify a least-squares problem, the responses section of
 the Dakota input should be configured using
 \texttt{calibration\_terms} (as opposed to
-\texttt{num\_objective\_functions} in the case of optimization). The
-calibration terms refer to the residuals (e.g. typically the
-differences between the simulation model and the data). Note that
-Dakota expects the residuals and not the square of the residuals. Any
+\texttt{objective\_functions} as for optimization). The
+calibration terms refer to the residuals (differences between the
+simulation model and the data). Note that Dakota expects the
+residuals, not the squared residuals, and offers options for instead
+returning the simulation output to Dakota together with a separate
+\texttt{calibration\_data} file, from which residuals will be
+calculated. Any
 linear or nonlinear constraints are handled in an identical way to
 that of optimization (see Section~\ref{opt:formulations}; note that
 neither Gauss-Newton nor NLSSOL require any constraint augmentation
@@ -136,7 +139,7 @@ Dakota's Gauss-Newton algorithm consists of combining an
 implementation of the Gauss-Newton Hessian approximation (see
 Section~\ref{nls:formulations}) with full Newton optimization
 algorithms from the OPT++ package~\cite{MeOlHoWi07} (see
-Section~\ref{opt:methods:gradient:descriptions}). The exact objective
+Section~\ref{opt:methods:gradient:constrained}). The exact objective
 function value, exact objective function gradient, and the approximate
 objective function Hessian are defined from the least squares term
 values and gradients and are passed to the full-Newton optimizer from
@@ -184,7 +187,7 @@ approximation to accelerate the search. Like the Gauss-Newton
 algorithm of Section~\ref{nls:solution:gauss}, its derivative order is
 balanced in that it requires only first-order information for the
 least-squares terms and nonlinear constraints. License: commercial;
-see NPSOL~\ref{opt:methods:gradient:descriptions}.
+see NPSOL~\ref{opt:methods:gradient:constrained}.
 
 This approach can be selected using the \texttt{nlssol\_sqp} method
 specification. An example specification follows:
@@ -210,45 +213,38 @@ nonlinear functions and ``large residual'' problems, i.e.,
 least-squares problems for which the residuals do not tend towards
 zero at the solution. License: publicly available.
 
-\subsection{Additional Features and Future plans}\label{nls:solution:future}
+\subsection{Additional Features}\label{nls:solution:future}
 
 Dakota can calculate confidence intervals on estimated parameters.
-These are determined for individual parameters; they are not joint
-confidence intervals. The intervals reported are 95\% intervals
-around the estimated parameters, and are calculated as the optimal
-value of the estimated parameters $+/-$ a t-test statistic times the
-standard error (SE) of the estimated parameter vector. The SE is
-based on a linearization approximation involving the matrix of the
-derivatives of the model with respect to the derivatives of the
-estimated parameters. In the case where these gradients are extremely
-inaccurate or the model is very nonlinear, the confidence intervals
-reported are likely to be inaccurate as well. Future work on
-generating confidence intervals on the estimated parameters for
-nonlinear least-squares methods will involve adding Bonferroni
-confidence intervals and one or two methods for calculating joint
-confidence intervals (such as a linear approximation and the F-test
-method). See~\cite{Seb03} and~\cite{Vug07} for more details about
-confidence intervals. Note that confidence intervals are not
-calculated when scaling is used, when the number of least-squares
-terms is less than the number of parameters to be estimated, or when
-using numerical gradients.
+These are computed on a per-parameter basis; they are not joint
+confidence intervals. The intervals reported are 95\% intervals around
+the estimated parameters, and are calculated as the optimal value of
+the estimated parameters $+/-$ a t-test statistic times the standard
+error (SE) of the estimated parameter vector. The SE is based on a
+linearization approximation involving the matrix of the derivatives of
+the model with respect to the derivatives of the estimated
+parameters. In the case where these gradients are extremely inaccurate
+or the model is very nonlinear, the confidence intervals reported are
+likely to be inaccurate as well.  (Confidence intervals cannot be
+calculated when the number of least-squares terms is less than the
+number of parameters to be estimated, or when using vendor numerical
+gradients.)  See~\cite{Seb03} and~\cite{Vug07} for more details about
+confidence intervals, and note that there are alternative approaches
+such as Bonferroni confidence intervals and joint confidence intervals
+based on linear approximations or F-tests.
 
-Dakota also allows a form of weighted least squares. The user can
-specify a set of weights that are used to weight each residual term
-using the keyword \texttt{calibration\_weights}. Note that these
-weights must be pre-determined by the user and entered in the Dakota
-input file: they are not calculated on-the-fly. The user can also
-specify scaling for the least-squares terms. Scaling is applied
-before weighting; usually one or the other would be applied but not
-both. The Responses section in the Dakota Reference
-Manual~\cite{RefMan} has more detail about weighting and scaling of
-the residual terms.
-
-The least-squares branch in Dakota is an area of continuing
-enhancements, particularly through the addition of new least-squares
-algorithms. One potential future addition is the orthogonal distance
-regression (ODR) algorithms which estimate values for both independent
-and dependent parameters.
+Least squares calibration terms (responses) can be weighted.  When
+observation error variance is provided alongside calibration data, its
+inverse is applied to yield the typical variance-weighted least
+squares formulation.  Alternately, the \texttt{calibration\_terms
+  weights} specification can be used to weight the squared
+residuals. (Neither set of weights are adjusted during calibration as
+they would be in iteratively re-weighted least squares.)  When
+response scaling is active, it is applied after error variance
+weighting and before \texttt{weights} application.  The
+\texttt{calibration\_terms} keyword documentation in the Dakota
+Reference Manual~\cite{RefMan} has more detail about weighting and
+scaling of the residual terms.
 
 \section{Examples}\label{nls:examples}
 
@@ -338,10 +334,10 @@ simulation model results minus the experimental results), and the
 user-provided script can omit this step: the script can just return
 the simulation outputs of interest. An example of this can be found in
 the file named
-\texttt{Dakota/examples/users/textbook\_nls\_datafile.in}.  In this
+\path{dakota/share/dakota/examples/users/textbook_nls_datafile.in}.  In this
 example, there are 3 residual terms. The data file of experimental
 results associated with this example is
-\texttt{textbook\_nls\_datafile.lsq.dat}.  These three values are
+\path{textbook_nls_datafile.lsq.dat}.  These three values are
 subtracted from the least-squares terms to produce residuals for the
 nonlinear least-squares problem.  Note that the file may be annotated
 (specified by \texttt{annotated}) or freeform (specified by

@@ -21,8 +21,6 @@
 
 namespace Dakota {
 
-class SurrBasedLevelData;
-
 
 /// Class for provably-convergent local surrogate-based optimization
 /// and nonlinear least squares.
@@ -41,7 +39,7 @@ public:
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedLocalMinimizer();
 
@@ -94,6 +92,12 @@ protected:
   /// initialize lagrangeMult and augLagrangeMult
   void initialize_multipliers();
 
+  /// reset all penalty parameters to their initial values
+  void reset_penalties();
+  /// reset Lagrange multipliers to initial values for cases where
+  /// they are accumulated instead of computed directly
+  void reset_multipliers();
+
   /// update the trust region bounds, strictly contained within global bounds
   void update_trust_region_data(SurrBasedLevelData& tr_data,
 				const RealVector& parent_l_bnds,
@@ -113,6 +117,9 @@ protected:
 			      const RealVector& lower_bnds,
 			      const RealVector& upper_bnds);
 
+  /// print out the state corresponding to the code returned by converged()
+  void print_convergence_code(std::ostream& s, unsigned short code);
+
   /// initialize and update the penaltyParameter
   void update_penalty(const RealVector& fns_center_truth,
 		      const RealVector& fns_star_truth);
@@ -130,6 +137,11 @@ protected:
 
   /// locate an approximate response with the data_pairs cache
   bool find_approx_response(const Variables& search_vars,Response& search_resp);
+  /// locate a truth response with the data_pairs cache
+  bool find_truth_response(const Variables& search_vars, Response& search_resp);
+  /// locate a response with the data_pairs cache
+  bool find_response(const Variables& search_vars, Response& search_resp,
+		     const String& search_id, short set_request);
 
   /// relax constraints by updating bounds when current iterate is infeasible
   void relax_constraints(SurrBasedLevelData& tr_data);
@@ -170,6 +182,9 @@ protected:
   /// points: NO_RELAX or HOMOTOPY
   short trConstraintRelax;
 
+  /// counter for number of minimization cycles that have accumulated prior
+  /// to convergence at the minimizeIndex level (used for ramping penalties)
+  int minimizeCycles;
   /// iteration offset used to update the scaling of the penalty parameter
   /// for adaptive_penalty merit functions
   int penaltyIterOffset;
@@ -226,20 +241,44 @@ protected:
 };
 
 
+inline bool SurrBasedLocalMinimizer::
+find_approx_response(const Variables& search_vars, Response& search_resp)
+{
+  return find_response(search_vars, search_resp,
+		       iteratedModel.surrogate_model().interface_id(),
+		       approxSetRequest);
+}
+
+
+inline bool SurrBasedLocalMinimizer::
+find_truth_response(const Variables& search_vars, Response& search_resp)
+{
+  return find_response(search_vars, search_resp,
+		       iteratedModel.truth_model().interface_id(),
+		       truthSetRequest);
+}
+
+
+inline void SurrBasedLocalMinimizer::reset_penalties()
+{
+  penaltyIterOffset = -200; penaltyParameter = 5.;
+
+  eta = 1.; alphaEta = 0.1; betaEta = 0.9;
+  etaSequence = eta * std::pow(2.*penaltyParameter, -alphaEta);
+}
+
+
+inline void SurrBasedLocalMinimizer::reset_multipliers()
+{
+  //lagrangeMult  = 0.; // not necessary since redefined each time
+  augLagrangeMult = 0.; // necessary since += used
+}
+
+
 inline void SurrBasedLocalMinimizer::reset()
 {
-  sbIterNum         = 0;
-
-  penaltyIterOffset = -200;
-  penaltyParameter  = 5.;
-
-  eta               = 1.;
-  alphaEta          = 0.1;
-  betaEta           = 0.9;
-  etaSequence       = eta*std::pow(2.*penaltyParameter, -alphaEta);
-
-  //lagrangeMult    = 0.; // not necessary since redefined each time
-  augLagrangeMult   = 0.; // necessary since += used
+  globalIterCount = minimizeCycles = 0;
+  reset_penalties(); reset_multipliers();
 }
 
 } // namespace Dakota

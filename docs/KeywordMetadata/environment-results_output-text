@@ -1,0 +1,27 @@
+Blurb:: Write results to file in text format
+
+Description::
+
+When this keyword is present, Dakota will right (some) final
+method results to disk in a custom structured text format instead 
+of just to the console. Support for text format results output 
+will be deprecated in a future release, and the contents and 
+organization of the output file is subject to change.
+
+The default name of the file is \c dakota_results.txt. This can
+be changed using the \c results_output_file keyword.
+
+Topics:: dakota_output
+
+Examples::
+
+\verbatim    
+environment
+  results_output
+      text
+      results_output_file 'my_results'  # The .txt extension will be added
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

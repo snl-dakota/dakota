@@ -27,9 +27,15 @@ int main(int argc, char** argv)
 
   // Get the parameter std::vector and ignore the labels
   fin >> num_vars >> vars_text;
-  std::vector<double> x(num_vars-1);
+  // TODO: relax to arbitrary reals followed by 1 string
+  if (num_vars != 3) {
+    std::cerr << "gerstner_string expects 3 variables (2 real, 1 string); found "
+	      << num_vars << "\n";
+    exit(-1);
+  }
+  std::vector<double> xC(num_vars-1);
   for (i=0; i<num_vars-1; i++) {
-    fin >> x[i];
+    fin >> xC[i];
     fin.ignore(256, '\n');
   }
 
@@ -40,20 +46,16 @@ int main(int argc, char** argv)
 
   // Get the ASV std::vector and ignore the labels
   fin >> num_fns >> fns_text;
+  if (num_fns != 1) {
+    std::cerr << "gerstner_string expects 1 function; Dakota sent " << num_fns << "\n";
+    exit(-1);
+  }
   std::vector<int> ASV(num_fns);
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
   }
 
-  if (num_vars != 3) {
-    std::cerr << "Wrong number of variables for the gerstner problem\n";
-    exit(-1);
-  }
-  if (num_fns != 1) {
-    std::cerr << "Wrong number of functions for the gerstner problem\n";
-    exit(-1);
-  }
  
   std::ofstream fout(argv[2]);
   if (!fout) {
@@ -84,10 +86,6 @@ int main(int argc, char** argv)
   }
   //cout << even_coeff << "even_coeff" << "\n";
   //cout << odd_coeff << "odd_coeff" << "\n";
-  std::vector<double> xC;
-  xC.resize(2);
-  xC[0]=x[0];
-  xC[1]=x[1];
 
   double fnVal = 0.; 
   // ***** f
@@ -95,12 +93,12 @@ int main(int argc, char** argv)
     switch (test_fn) {
     case 1:
       fnVal = 0.;
-      for (size_t i=0; i<num_vars; ++i)
+      for (size_t i=0; i<num_vars-1; ++i)
         fnVal += (i%2) ? odd_coeff*exp(-xC[i]*xC[i]) :
                          even_coeff*exp(-xC[i]*xC[i]); break;
     case 2:
       fnVal = 0.;
-      for (size_t i=0; i<num_vars; ++i)
+      for (size_t i=0; i<num_vars-1; ++i)
         if (i%2)
           fnVal +=  odd_coeff*exp(xC[i])
                       + inter_coeff*exp(xC[i]*xC[i-1]);
@@ -109,7 +107,7 @@ int main(int argc, char** argv)
       break;
     case 3: {
       double sum = 0;
-      for (size_t i=0; i<num_vars; ++i)
+      for (size_t i=0; i<num_vars-1; ++i)
         sum -= (i%2) ? odd_coeff*xC[i]*xC[i] : even_coeff*xC[i]*xC[i];
       fnVal = exp(sum); break;
     }

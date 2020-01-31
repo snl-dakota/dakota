@@ -5,52 +5,51 @@
 
 % --- Dakota Manuals ---
 
-% TODO: Add RWH as author in the citations next time the manuals are published
-%Hooper, R.~W. and 
 @string{DakotaAuthorCitation =  
+
 "Adams, B.~M. and Bohnhoff, W.~J. and Dalbey, K.~R. and 
-Eddy, J.~P. and Ebeida, M.~S. and Eldred, M.~S. and Gerarci, G and
-Hough, P.~D. and Hu, K.~T. and Jakeman, J.~D. and Maupin, K.~A. and 
-Monschke, J.~A. and Ridgway, E.~M. and Rushdi, Ahmad and Swiler, L.~P. and 
-Stephens, J.~A. and Vigil, D.~M. and Wildey, T.~M."
+Ebeida, M.~S. and Eddy, J.~P. and Eldred, M.~S. and Gerarci, G 
+and Hooper, R.~W. and Hough, P.~D. and Hu, K.~T. and Jakeman, J.~D. and Khalil, M. 
+and Maupin, K.~A. and Monschke, J.~A. and Ridgway, E.~M. and Rushdi, A.~A. and 
+Stephens, J.~A. and Swiler, L.~P. and Vigil, D.~M. and Wildey, T.~M. and Winokur, J.~G. "
 }
 
 @TechReport{DevMan,
   author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.5 Developers Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.7 Developers Manual},
   institution =  {Sandia National Laboratories},
   number =       {SAND2014-5014},
-  year = 	 {Updated November 2016},
+  year = 	 {Updated November 2018},
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @TechReport{RefMan,
   author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.5 Reference Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.7 Reference Manual},
   institution =  {Sandia National Laboratories},
   number =       {SAND2014-5015},
-  year = 	 {Updated November 2016},
+  year = 	 {Updated November 2018},
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @TechReport{TheoMan,
   author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.5 Theory Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.7 Theory Manual},
   institution =  {Sandia National Laboratories},
   number =       {SAND2014-4253},
-  year = 	 {Updated November 2016},
+  year = 	 {Updated November 2018},
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
 
 @TechReport{UsersMan,
   author = 	 DakotaAuthorCitation,
-  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.5 Users Manual},
+  title = 	 {Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.7 Users Manual},
   institution =  {Sandia National Laboratories},
   number =       {SAND2014-4633},
-  year = 	 {Updated November 2016},
+  year = 	 {Updated November 2018},
   address =	 {Albuquerque, NM},
   note =         {Available online from \url{http://dakota.sandia.gov/documentation.html}}
 }
@@ -638,11 +637,14 @@ keywords = {Sparse approximation}
   address={Reston, VA, USA}
 }
 
-@Article{Ebeida14,
-  author =       {Ebeida, M.~S. and Mitchell, S.~A. and Swiler, L.~P. and Romero, V.~J.},
-  title =        {POF-Darts:  Geometric Adaptive Sampling for Probability of Failure},
-  journal =      {submitted to SIAM Jounral of Uncertainty Quantification},
-  year =         2014,
+@article{ebeida2016pof,
+	title={Pof-darts: Geometric adaptive sampling for probability of failure},
+	author={Ebeida, Mohamed S and Mitchell, Scott A and Swiler, Laura P and Romero, Vicente J and Rushdi, Ahmad A},
+	journal={Reliability Engineering \& System Safety},
+	volume={155},
+	pages={64--77},
+	year={2016},
+	publisher={Elsevier}
 }
 
 @InProceedings{Eck97,
@@ -917,6 +919,16 @@ author={Eldred, M.S. and Adams, B.M. and Gay, D.M. and Swiler, L.P. and Haskell,
   note = {In preparation}
 }
 
+@Article{Fle10,
+  author = {Flegal, J.~M. and Jones, G.~L.},
+  title = {Batch means and spectral variance estimators in {M}arkov chain {M}onte {C}arlo},
+  journal = {The Annals of Statistics},
+  year = {2010},
+  volume = {38},
+  number = {2},
+  pages = {1034--1070}
+}
+
 @Article{Fle02,
   author = 	{Fletcher, R. and Leyffer, S. and Toint, P.~L.},
   title = 	{On the Global Convergence of a Filter-{SQP} Algorithm},
@@ -985,6 +997,20 @@ author={Eldred, M.S. and Adams, B.M. and Gay, D.M. and Swiler, L.P. and Haskell,
   publisher = {Addison-Wesley},
   address = {Reading, MA},
   year = 1995
+}
+
+@Article{Gao14,
+  author = {Gao, S. and Ver~Steeg, G. and Galstyan, A},
+  title = {Efficient Estimation of Mutual Information for Strongly Dependent Variables},
+  journal = {CoRR},
+  volume = {abs/1411.2003},
+  year = {2014},
+  url       = {http://arxiv.org/abs/1411.2003},
+  archivePrefix = {arXiv},
+  eprint    = {1411.2003},
+  timestamp = {Wed, 07 Jun 2017 14:42:35 +0200},
+  biburl    = {http://dblp.org/rec/bib/journals/corr/GaoSG14},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
 }
 
 @Book{gautschi_book,
@@ -1582,6 +1608,15 @@ Issue on Alternative Representations of Epistemic Uncertainty},
   year = 1996
 }
 
+@TechReport{Kou2014,
+  author = {Kouri, D.~P. and Ridzal, D. and van Bloeman Waanders, B.~G. and von Winckel, G.},
+  year = 2014,
+  title = {Rapid Optimization Library},
+  institution = {Sandia National Laboratories},
+  number = {SAND2014-19572},
+  address = {Albuquerque, NM}
+}
+
 @Article{Kus97,
   author = {Kuschel, N. and Rackwitz, R.},
   title = {Two Basic Problems in Reliability-Based Structural Optimization},
@@ -1837,6 +1872,15 @@ Issue on Alternative Representations of Epistemic Uncertainty},
   year = 	{2004}
 }
 
+@Book{Net85,
+  author = {Neter, J. and Wasserman, W. and Kutner, M.~H.},
+  title = {Applied Linear Statistical Models},
+  edition = {2nd},
+  publisher = {Irwin Professional Publishing},
+  address = {Burr Ridge, IL},
+  year = 1985
+}
+
 @InProceedings{NgEldred2012,
   author = 	{Ng, L.~W.~T. and Eldred, M.~S.},
   title = 	{Multifidelity Uncertainty Quantification Using Nonintrusive Polynomial Chaos and Stochastic Collocation},
@@ -1873,6 +1917,15 @@ Issue on Alternative Representations of Epistemic Uncertainty},
   publisher = {Springer},
   address = {New York},
   year = 1999
+}
+
+@Article{Nutt04,
+  author = {Nutt, W.T. and Wallis, G.B.},
+  title = {Evaluation of nuclear safety from the outputs of computer codes in the presence of uncertainties},
+  journal = {Reliability Engineering and System Safety},
+  volume = 83,
+  year = 2004,
+  pages = {57--77}
 }
 
 @TechReport{Obe03,
@@ -2088,6 +2141,17 @@ Sttural Dynamics, and Materials Conference},
   address = 	{Newport, RI},
   month = 	{May 1--4,},
   note = 	{AIAA Paper 2006-1819},
+}
+
+@InProceedings{Rob18,
+  author = {Robertson, N.~L. and Khalil, M. and Adams, B.~M.},
+  title = {Comparing {MCMC} Diagnostics and Stopping Rules},
+  booktitle = {Center for Computing Research Summer Proceedings 2018},
+  editor = {Cangi, A. and Parks, M.~L.},
+  note = {Technical Report SAND2019-5093R},
+  organization = {Sandia National Laboratories},
+  pages = {132--144},
+  year = {2018}
 }
 
 @InProceedings{Rob06b,
@@ -2742,3 +2806,57 @@ year = {2005},
   number =       {CASL-U-2014-0038-000},
   year = 	 2014,
 }
+
+@article{Augustin-preprint-nowpac,
+  title = {{NOWPAC}: A provably convergent derivative-free nonlinear optimizer with path-augmented constraints},
+  author = {Augustin, F. and Marzouk, Y. M.},
+  journal = {arXiv},
+  pages = {1403.1931},
+  volume = {math.OC},
+  year = {2014},
+  timestamp = {2014.03.08},
+  url = {http://arxiv.org/abs/1403.1931}
+}
+
+@Article{storlie_09,
+  author =       {Storlie, C. B. and Swiler, L. P. and Helton, J. C. and Sallaberry, C. J.},
+  title =        {Implementation and evaluation of nonparametric regression procedures for s
+ensitivity analysis of computationally demanding models},
+  journal =      {Reliability Engineering and System Safety},
+  volume =       {94},
+  year =         2009,
+  pages =        {1735--1763}
+}
+ 
+@article{Butler2017,
+  title = {A Consistent Bayesian Formulation for Stochastic Inverse Problems based on Push-forward Measures},
+  author = {Butler, T. and Jakeman, J. D. and Wildey, T. M.},
+  journal = {arXiv},
+  pages = {1704.00680},
+  volume = {math.NA},
+  year = {2017},
+  url = {http://arxiv.org/abs/1704.00680}
+}
+
+@article{Walsh2017,
+  title = {Optimal Experimental Design using a Consistent Bayesian Approach},
+  author = {Walsh, S. N. and Wildey, T. M. and Jakeman, J. D.},
+  journal = {arXiv},
+  pages = {1705.09395},
+  volume = {stat.CO},
+  year = {2017},
+  url = {http://arxiv.org/abs/1705.09395}
+}
+
+@article{Wasserman,
+  title={Bayesian model selection and model averaging},
+  author={Wasserman, Larry},
+  journal={Journal of mathematical psychology},
+  volume={44},
+  number={1},
+  pages={92--107},
+  year={2000},
+  publisher={Elsevier}
+}
+
+

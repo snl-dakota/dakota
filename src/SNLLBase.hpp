@@ -32,7 +32,7 @@ namespace Dakota {
 class Minimizer;
 class ProblemDescDB;
 /// enumeration for the type of evaluator function
-enum EvalType { NLFEvaluator, CONEvaluator }; // could add 0/1/2/2GN granularity
+enum EvalType { NO_EVALUATOR, NLF_EVALUATOR, CON_EVALUATOR }; // could add 0/1/2/2GN granularity
 
 
 /// Base class for OPT++ optimization and least squares methods.
@@ -63,7 +63,9 @@ protected:
   /// An initialization mechanism provided by OPT++ (not currently used).
   static void init_fn(int n, RealVector& x);
 
+  //
   //- Convenience routines
+  //
 
   /// convenience function for copying local_fn_vals to g; used by
   /// constraint evaluator functions
@@ -123,6 +125,9 @@ protected:
   /// method instantiations
   void snll_post_run(OPTPP::NLP0* nlf_objective);
 
+  /// reset last{FnEvalLocn,EvalMode,EvalVars}
+  void reset_base();
+
   //
   //- Heading: Data
   //
@@ -178,6 +183,14 @@ inline SNLLBase::SNLLBase():
 
 inline SNLLBase::~SNLLBase()
 { }
+
+
+inline void SNLLBase::reset_base()
+{
+  lastFnEvalLocn = NO_EVALUATOR;
+  lastEvalMode   = 0;
+  lastEvalVars.sizeUninitialized(0);
+}
 
 } // namespace Dakota
 

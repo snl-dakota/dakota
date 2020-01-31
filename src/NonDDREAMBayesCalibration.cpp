@@ -201,10 +201,14 @@ void NonDDREAMBayesCalibration::calibrate()
   // resize, initializing to zero
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
-  for (size_t i=0; i<numContinuousVars; ++i)
-    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  RealRealPairArray bnds
+    = mcmcModel.multivariate_distribution().distribution_bounds();
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (size_t i=0; i<numContinuousVars; ++i) {
+    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
+    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+  }
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
   // BMA TODO: change from uniform to inverse gamma prior and allow control for 
@@ -280,14 +284,17 @@ void NonDDREAMBayesCalibration::calibrate()
 }
 
 
-  // BMA: Remove?
-void NonDDREAMBayesCalibration::print_results(std::ostream& s)
+/*
+void NonDDREAMBayesCalibration::
+print_results(std::ostream& s, short results_state)
 {
   // Print variables and response function final stats
-  NonDBayesCalibration::print_results(s);
+  NonDBayesCalibration::print_results(s, results_state);
   
   //additional DREAM output
 }
+*/
+
 
 // BMA TODO: share most of this code with QUESO, general hyperpriors, other distros
 /** Static callback function to evaluate the likelihood */
@@ -464,7 +471,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
- 
+
   int lookup_failures = 0, num_samples = acceptanceChain.numCols();
   acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
   for (int sample_index=0; sample_index < num_samples; ++sample_index) {
@@ -475,7 +482,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 		      numContinuousVars);
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
-      natafTransform.trans_U_to_X(u_rv, x_rv);
+      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
       // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval
@@ -491,7 +498,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
     }
 
     // now retreive function values
-    if (mcmcModel.model_type() == "surrogate") {
+    if (mcmcModelHasSurrogate) {
       mcmcModel.active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
@@ -500,8 +507,13 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
     else {
       lookup_pr.variables(lookup_vars);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
-      if (cache_it == data_pairs.get<hashed>().end())
+      if (cache_it == data_pairs.get<hashed>().end()) {
 	++lookup_failures;
+	// Set NaN in the chain points to avoid misleading the user
+	RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+	nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+	Teuchos::setCol(nan_fn_vals, sample_index, acceptedFnVals);
+      }
       else {
 	const RealVector& fn_vals = cache_it->response().function_values();
 	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);

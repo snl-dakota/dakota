@@ -42,6 +42,49 @@ namespace Dakota {
     FDCHM parameters.  Refer to [Vanderplaats, 1978] for additional
     information on CONMIN parameters. */
 
+/**
+ * \brief A version of TraitsBase specialized for CONMIN optimizers
+ *
+ */
+
+class CONMINTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  CONMINTraits() { }
+
+  /// destructor
+  virtual ~CONMINTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the format used for linear inequality constraints
+  LINEAR_INEQUALITY_FORMAT linear_inequality_format()
+    { return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+};
+
+
 class CONMINOptimizer: public Optimizer
 {
 public:
@@ -122,28 +165,6 @@ private:
   int numConminLinConstr;
   /// total number of linear and nonlinear constraints seen by CONMIN
   int numConminConstr;
-  /// a container of indices for referencing the corresponding
-  /// Response constraints used in computing the CONMIN constraints.
-  /** The length of the container corresponds to the number of CONMIN
-      constraints, and each entry in the container points to the
-      corresponding DAKOTA constraint. */
-  SizetArray constraintMappingIndices;
-  /// a container of multipliers for mapping the Response constraints to
-  /// the CONMIN constraints.
-  /** The length of the container corresponds to the number of CONMIN
-      constraints, and each entry in the container stores a multiplier
-      for the DAKOTA constraint identified with constraintMappingIndices.
-      These multipliers are currently +1 or -1. */
-  RealArray constraintMappingMultipliers;
-  /// a container of offsets for mapping the Response constraints to the
-  /// CONMIN constraints.
-  /** The length of the container corresponds to the number of CONMIN
-      constraints, and each entry in the container stores an offset
-      for the DAKOTA constraint identified with
-      constraintMappingIndices.  These offsets involve inequality
-      bounds or equality targets, since CONMIN assumes constraint
-      allowables = 0. */
-  RealArray constraintMappingOffsets;
 
   // These are variables and arrays that must be declared here prior
   // to calling the F77 CONMIN code.

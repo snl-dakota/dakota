@@ -291,7 +291,12 @@ inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, bool& data)
 
 
 /// Read a generic container (vector<T>, list<T>) from MPIUnpackBuffer, s
-//  WJB - ToDo: consider std::set<T> too (currently in data_io.hpp)
+// WJB ToDo: consider std::set<T> too (currently in data_io.hpp)
+// MSE 10/26/2018: fine for non-contiguous deque<T> and list<T>, but inefficient
+//   for vector<T> (reallocation + copying).  Should especially avoid for
+//   nested vectors (e.g., UShort{2,3,4,5}DArray) --> MPI pack/unpack for
+//   std::vector<T> readded to dakota_data_io.hpp.
+#ifdef DAKOTA_HAVE_MPI
 template <class ContainerT>
 inline void container_read(ContainerT& c, MPIUnpackBuffer& s)
 {
@@ -317,6 +322,7 @@ inline void container_write(const ContainerT& c, MPIPackBuffer& s)
     s << entry;
   }
 }
+#endif
 
 
 /// stream insertion for BitArray
@@ -360,12 +366,20 @@ operator>>(MPIUnpackBuffer& s, boost::dynamic_bitset<Block, Allocator>& bs)
 /// global MPIUnpackBuffer extraction operator for generic container
 template <class ContainerT>
 inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ContainerT& data)
+#ifdef DAKOTA_HAVE_MPI
 { container_read(data, s); return s; }
+#else
+{  return s; }
+#endif
 
 /// global MPIPackBuffer insertion operator for generic container
 template <class ContainerT>
 inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ContainerT& data)
+#ifdef DAKOTA_HAVE_MPI
 { container_write(data, s); return s; }
+#else
+{  return s; }
+#endif
 
 //---------------------------------------------------------------------
 //

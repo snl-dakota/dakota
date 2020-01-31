@@ -1,0 +1,21 @@
+Test IMMEDIATELY setting a var
+param = 10 # 10 from include
+
+Test that these vars got includes
+include_var1: 1.1
+include_var2: 2.1
+include_var3: include var 3 in code line
+include_var4: include 4 code block
+
+Make sure they are, in fact immutable: (if they are, it would read 1,2,3,4)
+include_var1 = 1 : 1.1
+include_var2 = 2 : 2.1
+include_var3 = 3 : include var 3 in code line
+include_var4 = 4 : include 4 code block
+
+Override immutability of include_var1
+include_var1 = Mutable(include_var1) : 1.1
+include_var1 = 10: 10 # Should read 10
+
+from cli
+cparam: 10; cparam = 4: 10

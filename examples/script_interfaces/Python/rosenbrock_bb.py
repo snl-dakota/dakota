@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import print_function
 # Read DAKOTA parameters file (aprepro or standard format) and call a
 # Python module rosenbrock for analysis.  Uses same rosenbrock.py as
 # linked case for consistency.
@@ -60,8 +60,8 @@ elif ('DAKOTA_FNS' in paramsdict):
     num_fns = int(paramsdict['DAKOTA_FNS'])
 
 if (num_vars != 2 or num_fns != 1):
-    print "Rosenbrock requires 2 variables and 1 function;\nfound " + \
-   str( num_vars) + " variables and " + str(num_fns) + " functions." 
+    print("Rosenbrock requires 2 variables and 1 function;\nfound " + \
+   str( num_vars) + " variables and " + str(num_fns) + " functions.")
     sys.exit(1)
 
 
@@ -81,10 +81,10 @@ rosen_params['asv'] = active_set_vector
 rosen_params['functions'] = 1
 
 # execute the rosenbrock analysis as a separate Python module
-print "Running rosenbrock..."
+print("Running rosenbrock...")
 from rosenbrock import rosenbrock_list
 rosen_results = rosenbrock_list(**rosen_params)
-print "Rosenbrock complete."
+print("Rosenbrock complete.")
 
 
 # ----------------------------

@@ -4,7 +4,6 @@
 # Reliability analysis using the cantilever test function.
 
 environment
-	#graphics
 	output_precision = 16
 
 method,
@@ -15,9 +14,11 @@ method,
 	    sparse_grid_level = 2
 	  proposal_covariance
 #	    prior
- 	    derivatives #proposal_updates = 200
+            derivatives
+	      update_period = 100
 #	  posterior_adaptive max_iterations = 100 # 20
 #	  logit_transform    		    # Note: errors with uniform!
+	  posterior_stats kl_divergence
 #	  output verbose
 
 variables,

@@ -1,5 +1,8 @@
 #@ s*: Label=FastTest
-#@ *: DakotaConfig=HAVE_NPSOL
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_ROL
+#@ s3: DakotaConfig=HAVE_ROL
 # DAKOTA INPUT FILE - dakota_multiobj2.in
 
 # Constrained multiobjective optimization using the Cylinder Head problem.
@@ -15,8 +18,12 @@
 #       g1 = original cyl_head constraint 3
 
 method,
-        npsol_sqp
-	  convergence_tolerance = 1.e-8
+        npsol_sqp			#s0,#s1
+	  convergence_tolerance = 1.e-8	#s0,#s1
+#  	rol                          #s2,#s3
+#    	  gradient_tolerance 1.0e-8     #s2,#s3
+#    	  constraint_tolerance 1.0e-8   #s2,#s3
+#    	  variable_tolerance 1.0e-8        #s2,#s3
 
 variables,
 	continuous_design = 2
@@ -24,8 +31,8 @@ variables,
 	  upper_bounds     2.164  4.0
 	  lower_bounds     1.5    0.0
 	  descriptors'intake_dia' 'flatness'
-#	linear_inequality_constraint_matrix = 1. 1.  #s1
-#	linear_inequality_upper_bounds = 3.7	     #s1
+#	linear_inequality_constraint_matrix = 1. 1.  #s1,#s3
+#	linear_inequality_upper_bounds = 3.7	     #s1,#s3
 
 interface,
 	system asynchronous

@@ -12,13 +12,12 @@
 #@ [taxonomy:end]
 
 # DAKOTA Input File: dakota_ouu1_tb.in
-# Dakota Input File: textbook_opt_ouu1.in             #s0
+# Dakota Input File: textbook_opt_ouu1.in		#s0
 # Optimization under uncertainty
 # using a version of the Textbook test problem that
 # has been modified to have six uncertain variables.
 
 environment
-#  graphics
   top_method_pointer = 'OPTIM'
 
 ###########################
@@ -26,16 +25,35 @@ environment
 ###########################
 method
   id_method = 'OPTIM'
+## (NPSOL requires a software license; if not available, try	      #s0
+## conmin_mfd or optpp_q_newton instead)     			      #s0
   npsol_sqp
-    convergence_tolerance = 1.e-8
+    convergence_tolerance = 1.e-10
     model_pointer = 'OPTIM_M'
 
 model
   id_model = 'OPTIM_M'
   nested
     sub_method_pointer = 'UQ'
-    primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.
-    secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.
+    primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.	#s0
+    secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.	#s0
+#   primary_response_mapping   = 1. 1. 0.	      	 	#s1
+#   secondary_response_mapping = 0. 0. 1.			#s1
+#   primary_response_mapping   = 0. 1. 0. 0. 0. 0.		#s2,#s3
+#   secondary_response_mapping = 0. 0. 1. 0. 0. 0.		#s2,#s3
+#   			         0. 0. 0. 0. 1. 0.		#s2,#s3
+#   primary_response_mapping   = 0. 0. -1. 0. 0. 0. 0. 0. 0.	#s4,#s6
+#   secondary_response_mapping = 0. 0.  0. 0. 0. 1. 0. 0. 0.	#s4,#s6
+#   			         0. 0.  0. 0. 0. 0. 0. 0. 1.	#s4,#s6
+#   primary_response_mapping =  -1. 0. 0.	      	 	#s5
+#   secondary_response_mapping = 0. 1. 0.			#s5
+#   			         0. 0. 1.			#s5
+#   primary_response_mapping   = 0. 0. 1. 0. 0. 0. 0. 0. 0.	#s7,#s9
+#   secondary_response_mapping = 0. 0. 0. 0. 0. 1. 0. 0. 0.	#s7,#s9
+#   			         0. 0. 0. 0. 0. 0. 0. 0. 1.	#s7,#s9
+#   primary_response_mapping   = 1. 0. 0.	      	 	#s8
+#   secondary_response_mapping = 0. 1. 0.			#s8
+#   			         0. 0. 1.			#s8
   variables_pointer  = 'OPTIM_V'
   responses_pointer  = 'OPTIM_R'
 
@@ -50,16 +68,37 @@ variables
 responses
 # minimize p_fail_r1 + p_fail_r2
 # s.t.     p_fail_r3 <= 0.1
+#
+# minimize var_r1
+# s.t.     l <= mean_r2 <= u
+#          l <= mean_r3 <= u
+#
+# maximize beta_r1
+# s.t.     beta_r2 >= 2.
+#          beta_r3 >= 2.
+#
+# minimize z_r1
+# s.t.     z_r2 <= 1.2e+05
+#          z_r3 <= 3.5e+05
+#
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
 #       which is a combination of nested & interface responses.
   id_responses = 'OPTIM_R'
   objective_functions = 1
-  nonlinear_inequality_constraints = 1
-    upper_bounds = .1
-  numerical_gradients
-    method_source dakota
-    interval_type central
-    fd_step_size = 1.e-1
+  nonlinear_inequality_constraints = 1		#s0,#s1
+    upper_bounds = .1				#s0,#s1
+# nonlinear_inequality_constraints = 2		#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+#   lower_bounds = 1.e+5 1.e+5			#s2,#s3
+#   upper_bounds = 1.e+6 1.e+6			#s2,#s3
+#   lower_bounds = 2.     2.			#s4,#s5,#s6
+#   upper_bounds = 1.e+50 1.e+50		#s4,#s5,#s6
+#   upper_bounds = 1.2e+05 3.5e+05		#s7,#s8,#s9
+  numerical_gradients				#s0,#s1,#s3,#s6,#s9
+    method_source dakota			#s0,#s1,#s3,#s6,#s9
+    interval_type central			#s0,#s1,#s3,#s6,#s9
+    fd_step_size = 1.e-1			#s0,#s1
+#   fd_step_size = 1.e-2			#s3,#s6,#s9
+# analytic_gradients				#s2,#s4,#s5,#s7,#s8
   no_hessians
 
 ##########################
@@ -68,10 +107,16 @@ responses
 method
   id_method = 'UQ'
   sampling
-    samples = 50 seed = 1 sample_type lhs
-    response_levels = 3.6e+11 1.2e+05 3.5e+05
-    distribution complementary
-  model_pointer = 'UQ_M'
+    model_pointer = 'UQ_M'
+    samples = 50  sample_type lhs
+    seed = 1					#s0,#s1
+#   seed = 12347 fixed_seed			#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    response_levels = 3.6e+11 1.2e+05 3.5e+05	#s0,#s1,#s4,#s5,#s6
+#   compute reliabilities			#s4,#s5,#s6
+#   reliability_levels = 2. 2. 2.		#s7,#s8,#s9
+    distribution complementary			#s0,#s1,#s4,#s5,#s6,#s7,#s8,#s9
+# final_moments none				#s1,#s5,#s8
+# final_moments central				#s2,#s3
 
 model
   id_model = 'UQ_M'
@@ -100,10 +145,12 @@ interface
   id_interface = 'UQ_I'
   analysis_drivers = 'text_book_ouu'
     direct
-##    fork asynch evaluation_concurrency = 5	#s0
+# Proliferate as comment to user manual:
+#    fork asynch evaluation_concurrency = 5		#s0
 
 responses
   id_responses = 'UQ_R'
   response_functions = 3
-  no_gradients
+  no_gradients						#s0,#s1,#s3,#s6,#s9
+# analytic_gradients					#s2,#s4,#s5,#s7,#s8
   no_hessians

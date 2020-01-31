@@ -1,0 +1,67 @@
+#@ s1: DakotaConfig=HAVE_DOT
+#@ s2: DakotaConfig=HAVE_DOT
+#@ s3: DakotaConfig=HAVE_OPTPP
+#@ s4: DakotaConfig=HAVE_NLPQL
+#@ s5: DakotaConfig=HAVE_NPSOL
+#@ s7: DakotaConfig=HAVE_DOT
+#@ s8: DakotaConfig=HAVE_DOT
+#@ s9: DakotaConfig=HAVE_OPTPP
+#@ s10: DakotaConfig=HAVE_NLPQL
+#@ s11: DakotaConfig=HAVE_NPSOL
+#
+# RWH: Will need to add HAVE_ROL along with new s-number once rol_integ
+# has been merged into devel
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_barnes_f_conmin.dat'	#s0
+#	tabular_data_file = 'dakota_barnes_f_dotmfd.dat'	#s1
+#	tabular_data_file = 'dakota_barnes_f_dotslp.dat'	#s2
+#	tabular_data_file = 'dakota_barnes_f_optpp.dat'		#s3
+#	tabular_data_file = 'dakota_barnes_f_nlqpl.dat'		#s4
+#	tabular_data_file = 'dakota_barnes_f_npsol.dat'		#s5
+#	tabular_data_file = 'dakota_barnes_i_conmin.dat'	#s6
+#	tabular_data_file = 'dakota_barnes_i_dotmfd.dat'	#s7
+#	tabular_data_file = 'dakota_barnes_i_dotslp.dat'	#s8
+#	tabular_data_file = 'dakota_barnes_i_optpp.dat'		#s9
+#	tabular_data_file = 'dakota_barnes_i_nlqpl.dat'		#s10
+#	tabular_data_file = 'dakota_barnes_i_npsol.dat'		#s11
+
+method,
+	conmin_mfd								#s0,#s6
+#	dot_mmfd									#s1,#s7
+#	dot_slp									#s2,#s8
+#	optpp_q_newton							#s3,#s9
+#	nlpql										#s4,#s10
+#	npsol										#s5,#s11
+#	rol									
+	  max_iterations = 50
+	  convergence_tolerance = 1e-6	#s0,#s1,#s2,#s4,#s5, #s6,#11,#12,#s10,#s11
+#	  convergence_tolerance = 1e-7	#s3, #s9
+	  constraint_tolerance  = 1e-4	#s0,#s1,#s2,#s5, #s6,#s7,#s8,#s11
+#	  scaling								#s2,#s8
+
+variables,
+	continuous_design = 2
+	  initial_point    30.   40.		#s0,#s1,#s2,#s3,#s4,#s5       #   feasible
+#	  initial_point    10.   20.		#s6,#s7,#s8,#s9,#s10,#s11 # infeasible
+	  lower_bounds      0.    0.
+	  upper_bounds     80.   80.
+	  descriptors      'x1'  'x2'
+#	  scale_type = 'auto'				#s2,#s8
+
+model,
+	single
+
+interface,
+	direct #system #asynchronous
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver = 'barnes'
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
+	nonlinear_inequality_lower_bounds = 0.     0.     0.
+	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 1.e+50
+	analytic_gradients
+	no_hessians

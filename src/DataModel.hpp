@@ -45,7 +45,16 @@ enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
 
 /// define special values for componentParallelMode
 /// (active model for parallel scheduling)
-enum { SURROGATE_MODEL=1, TRUTH_MODEL };
+enum { NO_PARALLEL_MODE=0, SURROGATE_MODEL_MODE, TRUTH_MODEL_MODE,
+       SUB_MODEL_MODE, INTERFACE_MODE };
+
+/// define special values for distParamDerivs
+enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS }; 
+
+// define special values for regressionType in C3 FT (outside of Pecos).
+// Note that C3 and Pecos are mutually exclusive: use of values from multiple
+// enums should not conflict
+enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
 
 
 /// Body class for model specification data.
@@ -146,6 +155,8 @@ public:
   String importBuildPtsFile;
   /// tabular format for the build point import file
   unsigned short importBuildFormat;
+  /// whether to parse/validate variable labels from header
+  bool importUseVariableLabels;
   /// whether to import active variables only
   bool importBuildActive;
 
@@ -262,6 +273,8 @@ public:
   String importChallengePtsFile;
   /// tabular format of the challenge data file
   unsigned short importChallengeFormat;
+  /// whether to parse/validate variable labels from header
+  bool importChalUseVariableLabels;
   /// whether to import active variables only
   bool importChallengeActive;
 
@@ -291,6 +304,8 @@ public:
   /// level (constraint) functions (from the \c secondary_response_mapping
   /// specification in \ref ModelNested)
   RealVector secondaryRespCoeffs;
+  /// whether an identity response map is requested in lieu of explicit maps
+  bool identityRespMap;
   /// number of servers for concurrent sub-iterator parallelism
   int subMethodServers;
   /// number of processors for each concurrent sub-iterator partition
@@ -354,6 +369,36 @@ public:
   /// Contains which cutoff method to use in the cross validation metric
   unsigned short subspaceIdCVMethod;
 
+
+  // Function-Train Options
+
+  /// type of (regularized) regression: FT_LS or FT_RLS2
+  short regressionType;
+  /// penalty parameter for regularized regression (FT_RLS2)
+  Real regressionL2Penalty;
+  /// max iterations for optimization solver used in FT regression
+  int maxSolverIterations;
+  /// maximum number of cross iterations
+  int maxCrossIterations;
+  /// optimization tolerance for FT regression
+  double solverTolerance;
+  /// Rounding tolerance for adaptive algorithms
+  double roundingTolerance;
+  /// starting polynomial order
+  size_t startOrder;
+  /// maximum order of basis polynomials
+  size_t maxOrder;
+  /// starting rank
+  size_t startRank;
+  /// rank increase increment
+  size_t kickRank;
+  /// maximum rank
+  size_t maxRank;
+  /// whether or not to adapt rank
+  bool adaptRank;
+  // Verbosity level
+  //size_t verbosity;
+    
 
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;

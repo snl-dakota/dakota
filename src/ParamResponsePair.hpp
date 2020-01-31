@@ -114,20 +114,29 @@ public:
   int eval_id() const;
   /// set the evaluation identifier
   void eval_id(int id);
+
   /// return the interface identifier from evalInterfaceIds
   const String& interface_id() const;
   /// set the interface identifier within evalInterfaceIds
   void interface_id(const String& id);
+
   /// return the aggregate eval/interface identifier from the response object
   const IntStringPair& eval_interface_ids() const;
+
   /// return the parameters object
   const Variables& variables() const;
+  /// return the parameters object
+  Variables& variables();
   /// set the parameters object
   void variables(const Variables& vars);
+
   /// return the response object
   const Response& response() const;
+  /// return the response object
+  Response& response();
   /// set the response object
   void response(const Response& resp);
+
   /// return the active set object from the response object
   const ActiveSet& active_set() const;
   /// set the active set object within the response object
@@ -237,11 +246,19 @@ inline const Variables& ParamResponsePair::variables() const
 { return prpVariables; }
 
 
+inline Variables& ParamResponsePair::variables()
+{ return prpVariables; }
+
+
 inline void ParamResponsePair::variables(const Variables& vars)
 { prpVariables = vars; }
 
 
 inline const Response& ParamResponsePair::response() const
+{ return prpResponse; }
+
+
+inline Response& ParamResponsePair::response()
 { return prpResponse; }
 
 
@@ -269,8 +286,8 @@ inline void ParamResponsePair::read(std::istream& s)
 inline void ParamResponsePair::write(std::ostream& s) const
 {
   s << "Parameters:\n" << prpVariables;
-  if (!evalInterfaceIds.second.empty())
-    Cout << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
+  if (!(evalInterfaceIds.second.empty() || evalInterfaceIds.second == "NO_ID"))
+    s << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
   s << "\nActive response data:\n"<< prpResponse << std::endl;
 }
 

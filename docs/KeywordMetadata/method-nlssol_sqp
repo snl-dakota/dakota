@@ -1,11 +1,14 @@
-Blurb::
-Sequential Quadratic Program for nonlinear least squares
+Blurb:: Sequential Quadratic Program for nonlinear least squares
+
 Description::
-NLSSOL is available as \c nlssol_sqp and supports unconstrained,
-bound-constrained, and generally-constrained problems. It exploits
+NLSSOL supports unconstrained, bound-constrained, and
+generally-constrained least-squares calibration problems. It exploits
 the structure of a least squares objective function through the
 periodic use of Gauss-Newton Hessian approximations to accelerate the
-SQP algorithm. 
+SQP algorithm.
+
+<em>NLSSOL requires a separate software license and therefore may not
+be available in all versions of Dakota.  \ref method-nl2sol or \ref method-optpp_g_newton may be suitable alternatives.</em>
 
 
 <b> Stopping Criteria </b>
@@ -26,6 +29,18 @@ default value is dependent upon the machine precision of the platform
 in use, but is typically on the order of \c 1.e-8 for double precision
 computations. Extremely small values for \c constraint_tolerance may
 not be attainable. 
+
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
+- \ref hdf5_results-lsq_confidence_intervals (when 
+\ref responses-calibration_terms-calibration_data-num_experiments equals 1) 
 
 Topics::	sequential_quadratic_programming, nonlinear_least_squares 
 Examples::

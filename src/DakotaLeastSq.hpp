@@ -36,11 +36,11 @@ protected:
   //
 
   /// default constructor
-  LeastSq();                                        
+  LeastSq(std::shared_ptr<TraitsBase> traits);
   /// standard constructor
-  LeastSq(ProblemDescDB& problem_db, Model& model);
+  LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
   /// alternate "on the fly" constructor
-  LeastSq(unsigned short method_name, Model& model);
+  LeastSq(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~LeastSq();
 
@@ -51,14 +51,15 @@ protected:
   void initialize_run();
   void post_run(std::ostream& s);
   void finalize_run();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: New virtual member functions
   //
 
   /// Calculate confidence intervals on estimated parameters
-  void get_confidence_intervals();
+  void get_confidence_intervals(const Variables& native_vars,
+				const Response& iter_resp);
 
   //
   //- Heading: Data
@@ -78,6 +79,13 @@ protected:
   /// upper bounds for confidence intervals on calibration parameters
   RealVector confBoundsUpper;
 
+  /// storage for iterator best primary functions (which shouldn't be
+  /// stored in bestResponseArray when there are transformations)
+  RealVector bestIterPriFns;
+  /// whether final primary iterator space functions have been
+  /// retrieved (possibly by a derived class)
+  bool retrievedIterPriFns;
+
 private:
 
   //
@@ -87,12 +95,9 @@ private:
   /// Wrap iteratedModel in a RecastModel that weights the residuals
   void weight_model();
 
-  /// Recast callback function to weight least squares residuals,
-  /// gradients, and Hessians
-  static void primary_resp_weighter(const Variables& unweighted_vars,
-				    const Variables& weighted_vars,
-				    const Response& unweighted_response,
-				    Response& weighted_response);
+  void archive_best_results();
+  /// Write the confidence intervals to the results output
+//  void archive_confidence_intervals();
 
   //
   //- Heading: Data
@@ -100,7 +105,9 @@ private:
 };
 
 
-inline LeastSq::LeastSq(): weightFlag(false)
+inline LeastSq::LeastSq(std::shared_ptr<Dakota::TraitsBase> traits) :
+  Minimizer(traits),
+  weightFlag(false)
 { }
 
 

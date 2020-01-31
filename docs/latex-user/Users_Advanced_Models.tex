@@ -147,7 +147,7 @@ in the problem.
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for the interval-valued probability example --
-see \texttt{Dakota/examples/users/cantilever\_uq\_sop\_rel.in} }
+see \protect\path{dakota/share/dakota/examples/users/cantilever_uq_sop_rel.in} }
   \label{adv_models:2ndprob}
 \end{figure}
 
@@ -177,9 +177,9 @@ may employ directed optimization techniques to compute these extrema
 and potentially avoid the cost of sampling the full epistemic space.
 %resulting in more precise output bounds at lower cost.
 
-In \texttt{dakota/test}, test input files such as
-\texttt{dakota\_uq\_cantilever\_ivp\_exp.in} and\\
-\texttt{dakota\_uq\_short\_column\_ivp\_exp.in} replace the outer loop
+In \path{dakota/share/dakota/test}, test input files such as
+\path{dakota_uq_cantilever_ivp_exp.in} and
+\path{dakota_uq_short_column_ivp_exp.in} replace the outer loop
 sampling with the local and global interval optimization methods
 described in Section~\ref{uq:interval}. In these cases, we no longer
 generate horse tails and infer intervals, but rather compute the
@@ -217,7 +217,7 @@ ones as used for the aleatory propagation on the inner loop.
 The previous example in Figure~\ref{adv_models:2ndprob} can be
 modified to define the epistemic outer loop using uniform variables
 instead of interval variables (annotated test \texttt{\#1} in
-\texttt{dakota/test/dakota\_uq\_cantilever\_sop\_rel.in}). The process of
+\path{dakota/share/dakota/test/dakota_uq_cantilever_sop_rel.in}). The process of
 generating the epistemic values is essentially the same in both cases;
 however, the interpretation of results is quite different. In IVP,
 each ``hair'' or individual CDF in the horsetail plot in
@@ -234,9 +234,9 @@ level input probability specifications are meaningful (i.e., to the
 extent that uniform distributions are believed to be representative 
 of the epistemic variables).
 
-In \texttt{dakota/test}, additional test input files such as
-\texttt{dakota\_uq\_cantilever\_sop\_exp.in} and\\
-\texttt{dakota\_uq\_short\_column\_sop\_exp.in} explore other outer/inner
+In \path{dakota/share/dakota/test}, additional test input files such as
+\path{dakota_uq_cantilever_sop_exp.in} and
+\path{dakota_uq_short_column_sop_exp.in} explore other outer/inner
 loop probabilistic analysis combinations, particulary using stochastic
 expansion methods.
 
@@ -256,8 +256,8 @@ than a basic output interval.
 The single-level DSTE approach for propagating epistemic uncertainties
 is described in Section~\ref{uq:dempshaf} and in the Dakota Theory
 Manual~\cite{TheoMan}. An example of nested DSTE for propagating mixed
-uncertainties can be seen in \texttt{dakota/test} in the input file
-\texttt{dakota\_uq\_ishigami\_dste\_exp.in}.
+uncertainties can be seen in \path{dakota/share/dakota/test} in the input file
+\path{dakota_uq_ishigami_dste_exp.in}.
 
 
 \section{Optimization Under Uncertainty (OUU)} \label{adv_models:ouu}
@@ -362,7 +362,7 @@ follow the relationships among the different keyword blocks.
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for the nested OUU example --
-see \texttt{Dakota/examples/users/textbook\_opt\_ouu1.in} }
+see \protect\path{dakota/share/dakota/examples/users/textbook_opt_ouu1.in} }
   \label{adv_models:figure09}
 \end{figure}
 
@@ -374,10 +374,10 @@ gradient-based optimizers may not perform well due to noisy or
 insensitive statistics resulting from under-resolved sampling. These
 observations motivate the use of surrogate-based approaches to OUU.
 
-Other nested OUU examples in the \texttt{dakota/test} directory
-include \texttt{dakota\_ouu1\_tbch.in}, which adds an additional
+Other nested OUU examples in the \path{dakota/share/dakota/test} directory
+include \path{dakota_ouu1_tbch.in}, which adds an additional
 interface for including deterministic data in the textbook OUU
-problem, and\\ \texttt{dakota\_ouu1\_cantilever.in}, which solves the
+problem, and \path{dakota_ouu1_cantilever.in}, which solves the
 cantilever OUU problem (see Section~\ref{additional:cantilever}) with
 a nested approach. For each of these files, the ``\texttt{1}''
 identifies formulation 1, which is short-hand for the nested approach.
@@ -404,12 +404,12 @@ surrogate models.
   \label{adv_models:figure10}
 \end{figure}
 
-SBOUU examples in the \texttt{dakota/test} directory include
-\texttt{dakota\_sbouu2\_tbch.in},\\ \texttt{dakota\_sbouu3\_tbch.in},
-and \texttt{dakota\_sbouu4\_tbch.in}, which solve the textbook OUU
-problem, and \texttt{dakota\_sbouu2\_cantilever.in},
-\texttt{dakota\_sbouu3\_cantilever.in}, and\\
-\texttt{dakota\_sbouu4\_cantilever.in}, which solve the cantilever OUU
+SBOUU examples in the \path{dakota/share/dakota/test} directory include
+\path{dakota_sbouu2_tbch.in}, \path{dakota_sbouu3_tbch.in},
+and \path{dakota_sbouu4_tbch.in}, which solve the textbook OUU
+problem, and \path{dakota_sbouu2_cantilever.in},
+\path{dakota_sbouu3_cantilever.in}, and
+\path{dakota_sbouu4_cantilever.in}, which solve the cantilever OUU
 problem (see Section~\ref{additional:cantilever}). For each of these
 files, the ``\texttt{2},'' ``\texttt{3},'' and ``\texttt{4}'' identify
 formulations 2, 3, and 4, which are short-hand for the ``layered
@@ -433,11 +433,11 @@ however they are more reliable in that they maintain the accuracy of
 results. Relative to nested OUU (formulation 1), TR-SBOUU tends to be
 less expensive and less sensitive to initial seed and starting point.
 
-TR-SBOUU examples in the \texttt{dakota/test} directory include
-\texttt{dakota\_trsbouu2\_tbch.in} and\\
-\texttt{dakota\_trsbouu4\_tbch.in}, which solve the textbook OUU
-problem, and\\ \texttt{dakota\_trsbouu2\_cantilever.in} and
-\texttt{dakota\_trsbouu4\_cantilever.in}, which solve the cantilever
+TR-SBOUU examples in the \path{dakota/share/dakota/test} directory include
+\path{dakota_trsbouu2_tbch.in} and
+\path{dakota_trsbouu4_tbch.in}, which solve the textbook OUU
+problem, and \path{dakota_trsbouu2_cantilever.in} and
+\path{dakota_trsbouu4_cantilever.in}, which solve the cantilever
 OUU problem (see Section~\ref{additional:cantilever}).
 
 Computational results for several example problems are available
@@ -450,38 +450,39 @@ optimization (RBDO) and their associated sensitivity analysis
 requirements are described in the Optimization Under Uncertainty
 chapter of the Dakota Theory Manual~\cite{TheoMan}.
 
-A number of bi-level RBDO examples are provided in \texttt{dakota/test}.
-The \texttt{dakota\_rbdo\_cantilever.in},
-\texttt{dakota\_rbdo\_short\_column.in}, and
-\texttt{dakota\_rbdo\_steel\_column.in} input files solve the
+A number of bi-level RBDO examples are provided in \path{dakota/share/dakota/test}.
+The \path{dakota_rbdo_cantilever.in},
+\path{dakota_rbdo_short_column.in}, and
+\path{dakota_rbdo_steel_column.in} input files solve the
 cantilever (see Section~\ref{additional:cantilever}), short column
 (see Section~\ref{additional:short_column}), and steel column (see
 Section~\ref{additional:steel_column}) OUU problems using a bi-level
 RBDO approach employing numerical design gradients. The 
-\texttt{dakota\_rbdo\_cantilever\_analytic.in} and
-\texttt{dakota\_rbdo\_short\_column\_analytic.in} input files solve
+\path{dakota_rbdo_cantilever_analytic.in} and
+\path{dakota_rbdo_short_column_analytic.in} input files solve
 the cantilever and short column OUU problems using a bi-level RBDO
 approach with analytic design gradients and first-order limit state
-approximations. The \texttt{dakota\_rbdo\_cantilever\_analytic2.in},
-\texttt{dakota\_rbdo\_short\_column\_analytic2.in}, and
-\texttt{dakota\_rbdo\_steel\_column\_analytic2.in} input files also
+approximations. The \path{dakota_rbdo_cantilever_analytic2.in},
+\path{dakota_rbdo_short_column_analytic2.in}, and
+\path{dakota_rbdo_steel_column_analytic2.in} input files also
 employ analytic design gradients, but are extended to employ
 second-order limit state approximations and integrations.
 
-Sequential RBDO examples are also provided in \texttt{dakota/test}. 
-The \texttt{dakota\_rbdo\_cantilever\_trsb.in} and
-\texttt{dakota\_rbdo\_short\_column\_trsb.in} input files solve 
-the cantilever and short column OUU problems using a first-order
+Sequential RBDO examples are also provided in
+\path{dakota/share/dakota/test}.  The
+\path{dakota_rbdo_cantilever_trsb.in} and
+\path{dakota_rbdo_short_column_trsb.in} input files solve the
+cantilever and short column OUU problems using a first-order
 sequential RBDO approach with analytic design gradients and
 first-order limit state approximations. The
-\texttt{dakota\_rbdo\_cantilever\_trsb2.in},
-\texttt{dakota\_rbdo\_short\_column\_trsb2.in}, and 
-\texttt{dakota\_rbdo\_steel\_column\_trsb2.in} input files 
-utilize second-order sequential RBDO approaches that employ
-second-order limit state approximations and integrations (from
-analytic limit state Hessians with respect to the uncertain variables)
-and quasi-Newton approximations to the reliability metric Hessians
-with respect to design variables.
+\path{dakota_rbdo_cantilever_trsb2.in},
+\path{dakota_rbdo_short_column_trsb2.in}, and
+\path{dakota_rbdo_steel_column_trsb2.in} input files utilize
+second-order sequential RBDO approaches that employ second-order limit
+state approximations and integrations (from analytic limit state
+Hessians with respect to the uncertain variables) and quasi-Newton
+approximations to the reliability metric Hessians with respect to
+design variables.
 
 \subsection{Stochastic Expansion-Based Design Optimization} \label{adv_models:ouu:sebdo}
 
@@ -491,10 +492,10 @@ their associated sensitivity analysis requirements are described in
 the Optimization Under Uncertainty chapter of the Dakota Theory
 Manual~\cite{TheoMan}.
 
-In \texttt{dakota/test}, the \texttt{dakota\_pcbdo\_cantilever.in},
-\texttt{dakota\_pcbdo\_rosenbrock.in},\\
-\texttt{dakota\_pcbdo\_short\_column.in}, and
-\texttt{dakota\_pcbdo\_steel\_column.in} input files solve cantilever
+In \path{dakota/share/dakota/test}, the \path{dakota_pcbdo_cantilever.in},
+\path{dakota_pcbdo_rosenbrock.in},
+\path{dakota_pcbdo_short_column.in}, and
+\path{dakota_pcbdo_steel_column.in} input files solve cantilever
 (see Section~\ref{additional:cantilever}), Rosenbrock, short column
 (see Section~\ref{additional:short_column}), and steel column (see
 Section~\ref{additional:steel_column}) OUU problems using a bi-level
@@ -523,34 +524,33 @@ Sensitivity Analysis section in Optimization Under Uncertainty chapter
 of Dakota Theory Manual~\cite{TheoMan}). Additional test input files
 include:
 \begin{itemize}
-\item \texttt{dakota\_scbdo\_cantilever.in}, 
-\texttt{dakota\_scbdo\_rosenbrock.in}, \\
-\texttt{dakota\_scbdo\_short\_column.in}, and
-\texttt{dakota\_scbdo\_steel\_column.in} input files solve 
-cantilever, Rosenbrock, short column, and steel column OUU problems
-using a bi-level stochastic collocation-based approach.
+\item \path{dakota_scbdo_cantilever.in},
+  \path{dakota_scbdo_rosenbrock.in},
+  \path{dakota_scbdo_short_column.in}, and
+  \path{dakota_scbdo_steel_column.in} input files solve cantilever,
+  Rosenbrock, short column, and steel column OUU problems using a
+  bi-level stochastic collocation-based approach.
 
-\item \texttt{dakota\_pcbdo\_cantilever\_trsb.in},
-\texttt{dakota\_pcbdo\_rosenbrock\_trsb.in}, \\
-\texttt{dakota\_pcbdo\_short\_column\_trsb.in}, 
-\texttt{dakota\_pcbdo\_steel\_column\_trsb.in},\\
-\texttt{dakota\_scbdo\_cantilever\_trsb.in}, 
-\texttt{dakota\_scbdo\_rosenbrock\_trsb.in}, \\
-\texttt{dakota\_scbdo\_short\_column\_trsb.in}, and
-\texttt{dakota\_scbdo\_steel\_column\_trsb.in} input files solve 
-cantilever, Rosenbrock, short column, and steel column OUU problems
-using sequential polynomial chaos-based and stochastic
-collocation-based approaches.
+\item \path{dakota_pcbdo_cantilever_trsb.in},
+  \path{dakota_pcbdo_rosenbrock_trsb.in},
+  \path{dakota_pcbdo_short_column_trsb.in},
+  \path{dakota_pcbdo_steel_column_trsb.in},
+  \path{dakota_scbdo_cantilever_trsb.in},
+  \path{dakota_scbdo_rosenbrock_trsb.in},
+  \path{dakota_scbdo_short_column_trsb.in}, and
+  \path{dakota_scbdo_steel_column_trsb.in} input files solve
+  cantilever, Rosenbrock, short column, and steel column OUU problems
+  using sequential polynomial chaos-based and stochastic
+  collocation-based approaches.
 
-\item \texttt{dakota\_pcbdo\_cantilever\_mf.in},
-\texttt{dakota\_pcbdo\_rosenbrock\_mf.in}, \\
-\texttt{dakota\_pcbdo\_short\_column\_mf.in}, 
-\texttt{dakota\_scbdo\_cantilever\_mf.in}, \\
-\texttt{dakota\_scbdo\_rosenbrock\_mf.in}, and
-\texttt{dakota\_scbdo\_short\_column\_mf.in} input files solve 
-cantilever, Rosenbrock, and short column OUU problems
-using multifidelity polynomial chaos-based and stochastic
-collocation-based approaches.
+\item \path{dakota_pcbdo_cantilever_mf.in},
+  \path{dakota_pcbdo_rosenbrock_mf.in},
+  \path{dakota_pcbdo_short_column_mf.in},
+  \path{dakota_scbdo_cantilever_mf.in},
+  \path{dakota_scbdo_rosenbrock_mf.in}, and
+  \path{dakota_scbdo_short_column_mf.in} input files solve cantilever,
+  Rosenbrock, and short column OUU problems using multifidelity
+  polynomial chaos-based and stochastic collocation-based approaches.
 \end{itemize}
 
 
@@ -580,9 +580,9 @@ collocation on the inner loop). The interval optimization is described in
 Section~\ref{uq:interval}. Example input files demonstrating 
 the use of interval estimation for epistemic analysis, 
 specifically in epistemic-aleatory nesting, are: 
-\texttt{dakota\_uq\_cantilever\_sop\_exp.in}, and
-\texttt{dakota\_short\_column\_sop\_exp.in}. Both files are in
-{\tt Dakota/test}.
+\path{dakota_uq_cantilever_sop_exp.in}, and
+\path{dakota_short_column_sop_exp.in}. Both files are in
+\path{dakota/share/dakota/test}.
 
 \section{Surrogate-Based Uncertainty Quantification} \label{adv_models:sbuq}
 
@@ -603,9 +603,9 @@ results using no approximation (e.g. determine the mean, variance, and
 percentiles of the output directly based on the initial sample values) 
 with the results obtained by sampling a variety of surrogate approximations. 
 Example input files of a standard UQ analysis based on sampling alone vs. 
-sampling a surrogate are shown in the \texttt{textbook\_uq\_sampling.in} and 
-\texttt{textbook\_uq\_surrogate.in} in the \texttt{Dakota/examples/users}
-directory. 
+sampling a surrogate are shown in the \path{textbook_uq_sampling.in} and
+\path{textbook_uq_surrogate.in} in the \path{dakota/share/dakota/examples/users}
+directory.
 
 Note that one must exercise some caution when using surrogate-based methods 
 for uncertainty quantification. In general, there is not a single, 
@@ -629,3 +629,12 @@ absolute deviation of the error). Much of this work is empirical and
 application dependent. If you choose to use surrogates in uncertainty 
 quantification, we strongly recommend trying a variety of surrogates 
 and examining diagnostic goodness-of-fit metrics. 
+  
+\emph{Known Issue: When using discrete variables, there have been
+  sometimes significant differences in data fit surrogate behavior
+  observed across computing platforms in some cases.  The cause has
+  not yet been fully diagnosed and is currently under investigation.
+  In addition, guidance on appropriate construction and use of
+  surrogates with discrete variables is under development.  In the
+  meantime, users should therefore be aware that there is a risk of
+  inaccurate results when using surrogates with discrete variables.}

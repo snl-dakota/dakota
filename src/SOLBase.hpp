@@ -17,6 +17,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
+#include "DakotaModel.hpp"
 
 namespace Dakota {
 
@@ -67,6 +68,11 @@ protected:
 		   Real linesrch_tol, int max_iter, Real constr_tol,
 		   Real conv_tol, const std::string& grad_type,
 		   const RealVector& fdss);
+
+  /// augments variable bounds with linear and nonlinear constraint bounds.
+  void augment_bounds(RealVector& augmented_l_bnds, 
+		      RealVector& augmented_u_bnds,
+		      const Model& model);
 
   /// augments variable bounds with linear and nonlinear constraint bounds.
   void augment_bounds(RealVector& augmented_l_bnds, 
@@ -142,7 +148,22 @@ protected:
 
 inline SOLBase::SOLBase()  { }
 
+
 inline SOLBase::~SOLBase() { }
+
+
+inline void SOLBase::
+augment_bounds(RealVector& augmented_l_bnds, RealVector& augmented_u_bnds,
+	       const Model& model)
+{
+  augment_bounds(augmented_l_bnds, augmented_u_bnds,
+		 model.linear_ineq_constraint_lower_bounds(),
+		 model.linear_ineq_constraint_upper_bounds(),
+		 model.linear_eq_constraint_targets(),
+		 model.nonlinear_ineq_constraint_lower_bounds(),
+		 model.nonlinear_ineq_constraint_upper_bounds(),
+		 model.nonlinear_eq_constraint_targets());
+}
 
 } // namespace Dakota
 

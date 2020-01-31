@@ -1,11 +1,11 @@
 Blurb::
 Apply different weights to each response
-Description::
-The \c
-weights specification provides a means to specify a
-relative emphasis among the vector of squared residuals through
-multiplication of these squared residuals by a vector of weights: \f[f
-= \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^M_i - y^O_i)^2\f]
+
+Description:: 
+Specifies relative emphasis on residual elements: \f[ f =
+\sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^{Model}_i -
+y^{Data}_i)^2 \f] When scaling is also active, it is applied prior to
+weighting.
 
 Topics::	
 Examples::

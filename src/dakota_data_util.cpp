@@ -14,6 +14,7 @@
 
 #include "dakota_data_util.hpp"
 #include <boost/math/special_functions/round.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace Dakota {
 
@@ -30,12 +31,14 @@ bool nearby(const RealVector& rv1, const RealVector& rv2, Real rel_tol)
     return false;
 	
   // Check each value (labels are ignored!)
+  Real abs_tol = DBL_MIN; // ~ 2.2e-308
   for (size_t i=0; i<len; i++)
-    if (rv1[i] == 0.) { // prevent division by 0
-      if (rv2[i] != 0.) //(std::abs(rv2[i]) > abs_tol)
+    // prevent division by 0
+    if (std::abs(rv1[i]) < abs_tol) { //(rv1[i] == 0.)
+      if (std::abs(rv2[i]) > abs_tol) //(rv2[i] != 0.)
 	return false;
     }
-    else if ( fabs(1. - rv2[i]/rv1[i]) > rel_tol ) // DBL_EPSILON
+    else if ( std::abs(1. - rv2[i]/rv1[i]) > rel_tol ) // DBL_EPSILON
       return false;
 
   return true;
@@ -50,8 +53,7 @@ bool operator==(const ShortArray& dsa1, const ShortArray& dsa2)
     return false;
 
   // Check each value
-  size_t i;
-  for (i=0; i<len; ++i)
+  for (size_t i=0; i<len; ++i)
     if ( dsa2[i] != dsa1[i] )
       return false;
 
@@ -67,8 +69,7 @@ bool operator==(const StringArray& dsa1, const StringArray& dsa2)
     return false;
 
   // Check each string
-  size_t i;
-  for (i=0; i<len; ++i)
+  for (size_t i=0; i<len; ++i)
     if ( dsa2[i] != dsa1[i] )
       return false;
 
@@ -193,6 +194,40 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
   }
 }
 
+void compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  avg_vals.resize(num_cols);
+  
+  RealVector ones_vec(num_rows);
+  ones_vec.putScalar(1.0);
+ 
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
+  }
+}
+
+void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
+                        RealVector& std_devs)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  std_devs.resize(num_cols);
+  RealVector res_vec(num_rows);
+
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    for(int j = 0; j<num_rows; ++j){
+      res_vec(j) = col_vec(j) - avg_vals(i);
+    }
+    std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
+  }
+}
+
 void remove_column(RealMatrix& matrix, int index)
 {
   int num_cols = matrix.numCols();
@@ -208,6 +243,25 @@ void remove_column(RealMatrix& matrix, int index)
   }
   matrix.reshape(matrix.numRows(), num_cols-1);
   matrix = matrix_new;
+}
+
+
+std::vector<std::string> strsplit(const std::string& input)
+{
+  std::vector<std::string> fields;
+  std::string trimmed_input(boost::trim_copy(input));
+  boost::split(fields, trimmed_input, boost::is_any_of(" \t"),
+	       boost::token_compress_on);
+  return fields;
+}
+
+
+std::string::size_type longest_strlen(const std::vector<std::string>& vecstr)
+{
+  auto size_less = [](const std::string& a, const std::string& b)
+    { return a.size() < b.size(); };
+
+  return std::max_element(vecstr.begin(), vecstr.end(), size_less)->size();
 }
 
 

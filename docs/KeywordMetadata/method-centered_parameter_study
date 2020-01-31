@@ -25,6 +25,15 @@ in the parameter study is \f$1+ 2\sum{n} \f$.
 A centered parameter study produces a set of responses for each
 parameter set that is generated.
 
+<b> Expected HDF5 Output </b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-pstudies
+- \ref hdf5_results-var_slices
+
 Topics::	parameter_studies
 Examples::
 The following example is a good comparison to the examples on

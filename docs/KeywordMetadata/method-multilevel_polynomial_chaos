@@ -1,0 +1,78 @@
+Blurb:: Multilevel uncertainty quantification using polynomial chaos expansions
+
+Description:: 
+As described in \ref method-polynomial_chaos, the polynomial chaos 
+expansion (PCE) is a general framework for the approximate representation 
+of random response functions in terms of series expansions in standardized 
+random variables:
+
+\f[R = \sum_{i=0}^P \alpha_i \Psi_i(\xi) \f]
+
+where \f$\alpha_i\f$ is a deterministic coefficient, \f$\Psi_i\f$ is a
+multidimensional orthogonal polynomial and \f$\xi\f$ is a vector of
+standardized random variables. 
+
+In the multilevel and multifidelity cases, we decompose this expansion
+into several constituent expansions, one per model form or solution
+control level.  In a bi-fidelity case with low-fidelity (LF) and
+high-fidelity (HF) models, we have:
+
+\f[R = \sum_{i=0}^{P^{LF}} \alpha^{LF}_i \Psi_i(\xi)
+     + \sum_{i=0}^{P^{HF}}      \delta_i \Psi_i(\xi) \f]
+
+where \f$\delta_i\f$ is a coefficient for the discrepancy expansion.
+
+
+
+For the case of regression-based PCE (least squares, compressed sensing, 
+or orthogonal least interpolation), an optimal sample allocation procedure 
+can be applied for the resolution of each level within a multilevel sampling
+procedure as in \ref method-multilevel_sampling.  The core difference
+is that a Monte Carlo estimator of the statistics is replaced with a
+PCE-based estimator of the statistics, requiring approximation of the 
+variance of these estimators.
+
+Initial prototypes for multilevel PCE can be explored using \c
+dakota/share/dakota/test/dakota_uq_diffusion_mlpce.in, and will be stabilized in
+future releases.
+
+
+<b> Additional Resources </b>
+
+%Dakota provides access to multilevel PCE methods through the
+NonDMultilevelPolynomialChaos class. Refer to the Stochastic Expansion
+Methods chapter of the Theory Manual \cite TheoMan for additional
+information on the Multilevel PCE algorithm.
+
+Topics::
+
+Examples::
+\verbatim
+method,
+	multilevel_polynomial_chaos
+	  model_pointer = 'HIERARCH'
+	  pilot_samples = 10
+	  expansion_order_sequence = 2
+	  collocation_ratio = .9
+	  seed = 1237
+	  orthogonal_matching_pursuit
+	  convergence_tolerance = .01
+	output silent
+
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'SIM1'
+	  correction additive zeroth_order
+
+model,
+	id_model = 'SIM1'
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 1. 8. 64. 512. 4096.
+\endverbatim
+
+Theory::
+
+Faq::
+See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-stoch_collocation

@@ -6,7 +6,7 @@
 #
 #
   if(PYTHON_EXECUTABLE)
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/det_npp.py "try: import numpy; print numpy.get_include()\nexcept: pass\n")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/det_npp.py "try: import numpy; print(numpy.get_include())\nexcept: pass\n")
     exec_program("${PYTHON_EXECUTABLE}"
       ARGS "\"${CMAKE_CURRENT_BINARY_DIR}/det_npp.py\""
       OUTPUT_VARIABLE NUMPY_PATH

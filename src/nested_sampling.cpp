@@ -1,5 +1,13 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 #include "nested_sampling.hpp"
-#include "MathTools.hpp"
+#include "math_tools.hpp"
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
@@ -43,14 +51,14 @@ void Sampler::enrich_samples( int num_dims, const RealMatrix &initial_samples,
   // Copy initial samples into selected samples
   RealMatrix initial_samples_view( Teuchos::View, selected_samples,
 				   num_dims, num_initial_samples );
-  Pecos::copy_matrix( initial_samples, initial_samples_view, num_dims, 
+  Pecos::util::copy_matrix( initial_samples, initial_samples_view, num_dims, 
 		      num_initial_samples );
 
   // Copy selected candidates into selected samples below the initial samples;
   RealMatrix candidate_samples_view( Teuchos::View, selected_samples,
 				     num_dims, num_new_samples, 
 				     0, num_initial_samples );
-  Pecos::extract_submatrix_from_column_indices( unique_candidate_samples,
+  Pecos::util::extract_submatrix_from_column_indices( unique_candidate_samples,
 						selected_candidate_indices,
 						candidate_samples_view );
     
@@ -63,7 +71,7 @@ void Sampler::get_unique_samples( const RealMatrix &initial_samples,
 				  RealMatrix &unique_candidate_samples ){
     
   IntVector unique_candidate_indices;
-  Pecos::set_difference_matrix_columns( candidate_samples, initial_samples, 
+  Pecos::util::set_difference_matrix_columns( candidate_samples, initial_samples, 
 					unique_candidate_indices );
   if ( unique_candidate_indices.length() < num_new_samples ){
     std::string msg = "get_unique_candidates. Not enough unique candidate";
@@ -71,7 +79,7 @@ void Sampler::get_unique_samples( const RealMatrix &initial_samples,
     throw( std::runtime_error( msg ) );
   }
 
-  Pecos::extract_submatrix_from_column_indices( candidate_samples,
+  Pecos::util::extract_submatrix_from_column_indices( candidate_samples,
 						unique_candidate_indices,
 						unique_candidate_samples );
 }
@@ -86,7 +94,7 @@ get_enriched_sample_indices( int num_dims,
   
   // Combine initial samples and candidate samples 
   RealMatrix samples;
-  Pecos::hstack( initial_samples, candidate_samples, samples );
+  Pecos::util::hstack( initial_samples, candidate_samples, samples );
   
   // Build the basis matrix, i.e. evaluate each basis function at each point
   RealMatrix basis_matrix;
@@ -99,7 +107,7 @@ get_enriched_sample_indices( int num_dims,
   int num_total_samples = num_new_samples + num_initial_samples;
   RealMatrix A, L_factor, U_factor;
   IntVector selected_sample_indices;
-  Pecos::truncated_pivoted_lu_factorization( basis_matrix, L_factor, U_factor, 
+  Pecos::util::truncated_pivoted_lu_factorization( basis_matrix, L_factor, U_factor, 
 					     selected_sample_indices,
 					     num_total_samples, 
 					     num_initial_samples );
@@ -114,7 +122,7 @@ get_enriched_sample_indices( int num_dims,
   // Get indices of columns to keep in candidate sample matrix
   // selected_samples_indices contains indexes into the larger
   // samples matrix which consists of both initial samples and candidate samples
-  Pecos::resize( selected_candidate_indices, num_new_samples );
+  Pecos::util::resize( selected_candidate_indices, num_new_samples );
   for ( int i=0; i<num_new_samples; i++ )
     selected_candidate_indices[i] = 
       selected_sample_indices[i+num_initial_samples] - num_initial_samples;
@@ -126,7 +134,7 @@ void LejaSampler::get_candidate_samples( int num_dims, int num_samples, int seed
   if (seed)
     rng.seed(seed);
   boost::uniform_real<double> uniform_sampler(0.,PI);
-  Pecos::reshape( candidate_samples, num_dims, num_samples );
+  Pecos::util::reshape( candidate_samples, num_dims, num_samples );
   for (int j=0; j<num_samples; j++)
     for (int i=0; i<num_dims; i++)
       candidate_samples(i,j) = -std::cos( uniform_sampler(rng) );
@@ -180,7 +188,7 @@ void LejaSampler::build_basis_matrix( const RealMatrix &samples,
 }
 
 void LejaSampler::set_total_degree_basis_from_num_samples( int num_vars, int num_samples ){
-  int degree = Pecos::get_total_degree_from_num_samples( num_vars, num_samples );
+  int degree = Pecos::util::get_total_degree_from_num_samples( num_vars, num_samples );
   UShortArray exp_order(num_vars, degree);
   Pecos::SharedPolyApproxData::total_order_multi_index(exp_order, multiIndex);
 }

@@ -22,3 +22,6 @@ evaluations that need to be run to produce the data set for the initial
 Bayesian calibration. This number only includes those evaluations performed
 on the sequentially chosen optimal design points
 
+If \c max_hifi_evaluations is set to zero, the a single optimal experimental 
+design point will be selected, and Dakota will exit without running the high-
+fidelity model. 

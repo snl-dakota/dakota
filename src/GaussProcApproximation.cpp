@@ -174,8 +174,8 @@ int GaussProcApproximation::min_coefficients() const
 }
 
 
-int GaussProcApproximation::num_constraints() const
-{ return (approxData.anchor()) ? 1 : 0; }
+//int GaussProcApproximation::num_constraints() const
+//{ return (approxData.anchor()) ? 1 : 0; }
 
 
 void GaussProcApproximation::build()
@@ -183,31 +183,21 @@ void GaussProcApproximation::build()
   // base class implementation checks data set against min required
   Approximation::build();
 
-  size_t i, j, offset = 0, num_v = sharedDataRep->numVars;
+  size_t i, j, num_v = sharedDataRep->numVars;
   numObs = approxData.points();
-  // GaussProcApproximation does not directly handle anchorPoint
-  // -> treat it as another currentPoint
-  if (approxData.anchor()) {
-    offset  = 1;
-    numObs += 1;
-  }
 
   // Transfer the training data to the Teuchos arrays used by the GP
   trainPoints.shapeUninitialized(numObs, num_v);
   trainValues.shapeUninitialized(numObs, 1);
-  // process anchorPoint, if present
-  if (approxData.anchor()) {
-    const RealVector& c_vars = approxData.anchor_continuous_variables();
-    for (j=0; j<num_v; ++j)
-      trainPoints(0,j) = c_vars[j];
-    trainValues(0,0) = approxData.anchor_function();
-  }
+
   // process currentPoints
-  for (i=offset; i<numObs; ++i) {
-    const RealVector& c_vars = approxData.continuous_variables(i);
+  const Pecos::SDVArray& sdv_array = approxData.variables_data();
+  const Pecos::SDRArray& sdr_array = approxData.response_data();
+  for (i=0; i<numObs; ++i) {
+    const RealVector& c_vars = sdv_array[i].continuous_variables();
     for (j=0; j<num_v; j++)
       trainPoints(i,j) = c_vars[j];
-    trainValues(i,0) = approxData.response_function(i);
+    trainValues(i,0) = sdr_array[i].response_function();
   }
 
   // Build a GP covariance model using the sampled data

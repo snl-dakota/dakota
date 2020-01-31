@@ -1,0 +1,30 @@
+name: Variables
+dataset:
+  description: "Values of variables in evaluations"
+  location: "variables/{continuous, discrete_integer, discrete_string, discrete_real}"
+  shape: "2-dimensional: number of evaluations by number of variables"
+  type: Real, String, or Integer, as applicable
+scales:
+  - dimension: 0
+    type: Integer
+    label: evaluation_ids
+    contents: Evaluation Ids
+    literal_contents: False
+  - dimension: 1
+    type: String
+    label: variables
+    contents: Variable descriptors
+    literal_contents: False
+  - dimension: 1
+    type: Integer
+    label: variables
+    contents: Variable Ids
+    notes: "1-to-N rank of the variable in Dakota input spec order"
+    literal_contents: False
+  - dimension: 1
+    type: String
+    label: types
+    contents: Variable types
+    notes: "Type of each variable, e.g. CONTINUOUS_DESIGN, DISCRETE_DESIGN_SET_INT"
+    literal_contents: False
+

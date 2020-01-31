@@ -42,7 +42,7 @@ void NonDLHSEvidence::post_process_samples()
   // Use the sample set generated above to determine the maximum and minimum 
   // of each function within each input interval combination
 
-  const RealMatrix&     all_samples = lhsSampler.all_samples();
+  const RealMatrix&     all_samples   = lhsSampler.all_samples();
   const IntResponseMap& all_responses = lhsSampler.all_responses();
 
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
@@ -61,12 +61,12 @@ void NonDLHSEvidence::post_process_samples()
     for (i=0, it=all_responses.begin(); i<numSamples; i++, ++it) {
 
       const Real& fn_val = it->second.function_value(respFnCntr);
-      Variables all_vars = iteratedModel.current_variables().copy();
-      sample_to_variables(all_samples[i],all_vars);
+      Variables vars = iteratedModel.current_variables().copy();
+      sample_to_variables(all_samples[i], vars);
 
-      const RealVector&  c_vars = all_vars.continuous_variables();
-      const IntVector&  di_vars = all_vars.discrete_int_variables();
-      const RealVector& dr_vars = all_vars.discrete_real_variables();
+      const RealVector&  c_vars = vars.continuous_variables();
+      const IntVector&  di_vars = vars.discrete_int_variables();
+      const RealVector& dr_vars = vars.discrete_real_variables();
 
       for (cellCntr=0; cellCntr<numCells; ++cellCntr) {
         bool in_bounds = true;

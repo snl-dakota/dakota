@@ -17,7 +17,7 @@
 
 #include "NonDReliability.hpp"
 #include "DakotaApproximation.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 
 #ifdef HAVE_OPTPP
 #include "globals.h"
@@ -65,15 +65,9 @@ public:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  /// performs an uncertainty propagation using analytical reliability 
-  /// methods which solve constrained optimization problems to obtain
-  /// approximations of the cumulative distribution function of response 
+  void pre_run();
   void core_run();
-
-  /// print the approximate mean, standard deviation, and importance factors
-  /// when using the mean value method or the CDF/CCDF information when using
-  /// MPP-search-based reliability methods
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// return name of active MPP optimizer
   unsigned short uses_method() const;
@@ -197,6 +191,10 @@ private:
   /// compute factor for derivative of second-order probability with respect to
   /// reliability index (from differentiating BREITUNG or HOHENRACK expressions)
   Real dp2_dbeta_factor(Real beta, bool cdf_flag);
+
+  /// perform an evaluation of the actual model and store value,grad,Hessian
+  /// data in X,U spaces
+  void truth_evaluation(short mode);
 
   //
   //- Heading: Utility routines
@@ -393,21 +391,24 @@ probability(bool cdf_flag, const RealVector& mpp_u, const RealVector& fn_grad_u,
 // or probability --> FORM reliability
 inline Real NonDLocalReliability::reliability(Real p)
 {
-  if (p <= 0. || p >= 1.) { // warning or error
-    if (p == 0.) {      // handle numerical exception
-      Cerr << "\nWarning: zero probability passed in NonDLocalReliability::"
-	   << "reliability().\n"; return  Pecos::LARGE_NUMBER;// DBL_MAX;
-    }
-    else if (p == 1.) { // handle numerical exception
-      Cerr << "\nWarning: unit probability passed in NonDLocalReliability::"
-	   << "reliability().\n"; return -Pecos::LARGE_NUMBER;//-DBL_MAX;
-    }
-    else {              // trap error for p < 0 or p > 1
-      Cerr << "\nError: invalid probability value in NonDLocalReliability::"
-	   << "reliability()." << std::endl; abort_handler(-1); return  0.;
-    }
+  if (p < 0.0 || 1.0 < p) {
+    Cerr << "\nError: invalid probability value in NonDLocalReliability::"
+	 << "reliability()." << std::endl; 
+    abort_handler(-1);
+    return  0.;
   }
-  else return -Pecos::NormalRandomVariable::inverse_std_cdf(p);
+  else if (p < std::numeric_limits<double>::min()) {
+    Cerr << "\nWarning: zero probability passed in NonDLocalReliability::"
+	 << "reliability().\n"; 
+    return  Pecos::LARGE_NUMBER;// DBL_MAX;
+  }
+  else if ( 1.0 - std::numeric_limits<double>::epsilon() < p ) {
+    Cerr << "\nWarning: unit probability passed in NonDLocalReliability::"
+	 << "reliability().\n"; 
+    return -Pecos::LARGE_NUMBER;//-DBL_MAX;
+  }
+
+  return -Pecos::NormalRandomVariable::inverse_std_cdf(p);
 }
 
 

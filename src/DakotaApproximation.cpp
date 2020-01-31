@@ -17,8 +17,12 @@
 #include "DakotaResponse.hpp"
 #include "TaylorApproximation.hpp"
 #include "TANA3Approximation.hpp"
+#include "QMEApproximation.hpp"
 #include "PecosApproximation.hpp"
 #include "GaussProcApproximation.hpp"
+#ifdef HAVE_C3
+#include "C3Approximation.hpp"
+#endif
 #include "VPSApproximation.hpp"
 #ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.hpp"
@@ -41,8 +45,8 @@ namespace Dakota {
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL),
-  approxLabel(approx_label), referenceCount(1)
+  approxData(true), approxLabel(approx_label),
+  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -60,7 +64,8 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
+  approxData(true), sharedDataRep(shared_data.data_rep()),
+  approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
@@ -100,7 +105,7 @@ Approximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
   // Set the rep pointer to the appropriate derived type
   approxRep = get_approx(problem_db, shared_data, approx_label);
   if ( !approxRep ) // bad type or insufficient memory
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
 }
 
 
@@ -118,17 +123,24 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
   bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
   if (pw_decomp) {
     return new VPSApproximation(problem_db, shared_data, approx_label);
-  } else {
+  }
+  else {
     const String& approx_type = shared_data.data_rep()->approxType;
     if (approx_type == "local_taylor")
       return new TaylorApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "multipoint_tana")
       return new TANA3Approximation(problem_db, shared_data, approx_label);
+    else if (approx_type == "multipoint_qmea")
+      return new QMEApproximation(problem_db, shared_data, approx_label);
     else if (strends(approx_type, "_orthogonal_polynomial") ||
 	     strends(approx_type, "_interpolation_polynomial"))
       return new PecosApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "global_gaussian")
       return new GaussProcApproximation(problem_db, shared_data, approx_label);
+#ifdef HAVE_C3
+    else if (approx_type == "global_function_train")
+      return new C3Approximation(problem_db, shared_data, approx_label);
+#endif
 #ifdef HAVE_SURFPACK
     else if (approx_type == "global_polynomial"     ||
 	     approx_type == "global_kriging"        ||
@@ -161,7 +173,7 @@ Approximation::Approximation(const SharedApproxData& shared_data):
   // Set the rep pointer to the appropriate derived type
   approxRep = get_approx(shared_data);
   if ( !approxRep ) // bad type or insufficient memory
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
 }
 
 
@@ -179,9 +191,15 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
     approx = new TaylorApproximation(shared_data);
   else if (approx_type == "multipoint_tana")
     approx = new TANA3Approximation(shared_data);
+  else if (approx_type == "multipoint_qmea")
+    approx = new QMEApproximation(shared_data);
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(shared_data);
+#ifdef HAVE_C3
+  else if (approx_type == "global_function_train")
+    approx = new C3Approximation(shared_data);
+#endif
   else if (approx_type == "global_gaussian")
     approx = new GaussProcApproximation(shared_data);
   else if (approx_type == "global_voronoi_surrogate")
@@ -278,26 +296,34 @@ void Approximation::build()
 {
   if (approxRep)
     approxRep->build();
-  else {
-    size_t num_curr_pts = approxData.points();
-    int ms = min_points(true); // account for anchor point & buildDataOrder
-    if (num_curr_pts < ms) {
-      Cerr << "\nError: not enough samples to build approximation.  "
-	   << "Construction of this approximation\n       requires at least "
-	   << ms << " samples for " << sharedDataRep->numVars << " variables.  "
-	   << "Only " << num_curr_pts << " samples were provided." << std::endl;
-      abort_handler(-1);
+  else { // default is only a data check --> augmented/replaced by derived class
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    size_t num_keys = keys.size();
+    if (num_keys <= 1)
+      check_points(approxData.points());
+    else { // active key may be aggregate key, which is populated downstream
+
+      // This approach should be sufficient
+      check_points(approxData.points(keys.front())); // raw HF
+
+      // DISTINCT_DISCREPANCY has up to 2 raw data:
+      //size_t i, num_checks = (num_keys <= 2) ? num_keys : 2;
+      //for (i=0; i<num_checks; ++i)
+      //  check_points(approxData.points(keys[i]));
+
+      // This approach is more general (RECURSIVE_DISCREPANCY has 1 raw data),
+      // but overkill for now
+      //size_t i, num_checks = sharedDataRep->num_data_keys(); // virtual
+      //for (i=0; i<num_checks; ++i)
+      //  check_points(approxData.points(keys[i]));
     }
   }
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
-void Approximation::export_model(const String& fn_label, 
-                                 const String& export_prefix, 
-                                 const unsigned short export_format)
+void Approximation::
+export_model(const String& fn_label, const String& export_prefix, 
+	     const unsigned short export_format)
 {
   if (approxRep)
     approxRep->export_model(fn_label, export_prefix, export_format);
@@ -305,91 +331,111 @@ void Approximation::export_model(const String& fn_label,
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
 void Approximation::rebuild()
 {
   if (approxRep)
     approxRep->rebuild();
-  else // virtual fn: default definition
-    build(); // if no special rebuild optimization, fall back on full build()
-}
-
-
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
-void Approximation::pop(bool save_data)
-{
-  if (approxRep)
-    approxRep->pop(save_data);
-  else {
-    if (popCountStack.empty()) {
-      Cerr << "\nError: empty count stack in Approximation::pop()."
-	   << std::endl;
-      abort_handler(-1);
-    }
-    approxData.pop(popCountStack.back(), save_data);
-    popCountStack.pop_back();
-  }
-}
-
-
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
-void Approximation::push()
-{
-  if (approxRep)
-    approxRep->push();
   else
-    popCountStack.push_back(approxData.push(sharedDataRep->retrieval_index()));
+    build(); // if no incremental rebuild(), fall back on full build()
 }
 
 
-/** This is the common base class portion of the virtual fn and is
-    insufficient on its own; derived implementations should explicitly
-    invoke (or reimplement) this base class contribution. */
-void Approximation::finalize()
+void Approximation::pop_data(bool save_data)
 {
-  if (approxRep)
-    approxRep->finalize();
+  if (approxRep) approxRep->pop_data(save_data);
+  else approxData.pop(sharedDataRep->approxDataKeys, save_data);
+}
+
+
+void Approximation::push_data()
+{
+  if (approxRep) approxRep->push_data();
   else {
-    // finalization has to apply restorations in the correct order
-    size_t i, num_popped = approxData.popped_trials(); // # of popped trials
-    for (i=0; i<num_popped; ++i)
-      approxData.push(sharedDataRep->finalization_index(i), false);
-    clear_popped(); // clear only after process completed
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (!keys.empty()) {
+      // Only want active key for retrieval index as this is what is
+      // activated through the Model.  Other keys are only used for
+      // enumerating SurrogateData updates using approxDataKeys.
+      const UShortArray& active_key = keys.back();//= sharedDataRep->activeKey;
+      size_t r_index = sharedDataRep->push_index(active_key);
+      // preserves active state
+      approxData.push(keys, r_index); // preserves active state
+    }
   }
 }
 
 
-void Approximation::store(size_t index)
+void Approximation::finalize_data()
 {
-  if (approxRep) approxRep->store(index);
-  else           approxData.store(index); // derived classes augment
+  // finalization has to apply restorations in the correct order
+
+  if (approxRep) approxRep->finalize_data();
+  else {
+    const UShort2DArray& keys = sharedDataRep->approxDataKeys;
+    if (!keys.empty()) {
+      // Only need truth model key for finalization indices (see above)
+      const UShortArray& active_key = keys.back();//= sharedDataRep->activeKey;
+      // assume number of popped trials is consistent across approxData
+      size_t f_index, p, num_popped = approxData.popped_sets(active_key);
+      for (p=0; p<num_popped; ++p) {
+	f_index = sharedDataRep->finalize_index(p, active_key);
+	approxData.push(keys, f_index, false);
+      }
+    }
+
+    clear_active_popped(); // after all finalization indices processes
+  }
 }
 
 
-void Approximation::restore(size_t index)
+void Approximation::pop_coefficients(bool save_data)
 {
-  if (approxRep) approxRep->restore(index);
-  else           approxData.restore(index); // derived classes augment
+  if (approxRep) approxRep->pop_coefficients(save_data);
+  //else no op
 }
 
 
-void Approximation::remove_stored(size_t index)
+void Approximation::push_coefficients()
 {
-  if (approxRep) approxRep->remove_stored(index);
-  else           approxData.remove_stored(index); // derived classes augment
+  if (approxRep) approxRep->push_coefficients();
+  //else no op
 }
 
 
-void Approximation::combine(short corr_type, size_t swap_index)
+void Approximation::finalize_coefficients()
 {
-  if (approxRep) approxRep->combine(corr_type, swap_index);
-//else           approxData.combine(); // base contribution; derived augments
+  if (approxRep) approxRep->finalize_coefficients();
+  //else no op
+}
+
+
+void Approximation::combine_coefficients()
+{
+  if (approxRep) approxRep->combine_coefficients();
+  //else no op
+}
+
+
+void Approximation::clear_inactive_coefficients()
+{
+  if (approxRep) approxRep->clear_inactive_coefficients();
+  //else no op
+}
+
+
+/*
+void Approximation::combined_to_active_data()
+{
+  if (approxRep) approxRep->combined_to_active();
+  else approxData.active_key(sharedDataRep->active_model_key());
+}
+*/
+
+
+void Approximation::combined_to_active_coefficients(bool clear_combined)
+{
+  if (approxRep) approxRep->combined_to_active_coefficients(clear_combined);
+  //else no-op
 }
 
 
@@ -398,7 +444,7 @@ Real Approximation::value(const Variables& vars)
   if (!approxRep) {
     Cerr << "Error: value() not available for this approximation type."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->value(vars);
@@ -410,7 +456,7 @@ const RealVector& Approximation::gradient(const Variables& vars)
   if (!approxRep) {
     Cerr << "Error: gradient() not available for this approximation type."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->gradient(vars);
@@ -422,7 +468,7 @@ const RealSymMatrix& Approximation::hessian(const Variables& vars)
   if (!approxRep) {
     Cerr << "Error: hessian() not available for this approximation type."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
     
   return approxRep->hessian(vars);
@@ -434,58 +480,335 @@ Real Approximation::prediction_variance(const Variables& vars)
   if (!approxRep) {
     Cerr << "Error: prediction_variance() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->prediction_variance(vars);
 }
 
-    
+Real Approximation::mean()
+{
+  if (!approxRep) {
+    Cerr << "Error:mean() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->mean();
+}
+
+Real Approximation::mean(const RealVector& x)
+{
+  if (!approxRep) {
+    Cerr << "Error:mean(x) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->mean(x);
+}
+
+const RealVector& Approximation::mean_gradient()
+{
+  if (!approxRep) {
+    Cerr << "Error: mean_gradient() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->mean_gradient();
+}
+
+const RealVector& Approximation::
+mean_gradient(const RealVector& x, const SizetArray& ind)
+{
+  if (!approxRep) {
+    Cerr << "Error: mean_gradient(x, ind) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->mean_gradient(x,ind);
+} 
+
+Real Approximation::variance()
+{
+  if (!approxRep) {
+    Cerr << "Error:variance() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->variance();
+}
+
+Real Approximation::variance(const RealVector& x)
+{
+  if (!approxRep) {
+    Cerr << "Error:variance(x) not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->variance(x);
+}    
+
+const RealVector& Approximation::variance_gradient()
+{
+  if (!approxRep) {
+    Cerr << "Error: variance_gradient() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->variance_gradient();
+}
+
+const RealVector& Approximation::
+variance_gradient(const RealVector& x, const SizetArray& ind)
+{
+  if (!approxRep) {
+    Cerr << "Error: variance_gradient(x, ind) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->variance_gradient(x,ind);
+}
+
+Real Approximation::covariance(Approximation& approx_2)
+{
+  if (!approxRep) {
+    Cerr << "Error: covariance(other) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->covariance(approx_2);
+}
+   
+Real Approximation::covariance(const RealVector& x, Approximation& approx_2)
+{
+  if (!approxRep) {
+    Cerr << "Error: covariance(x, other) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->covariance(x, approx_2);
+}
+
+Real Approximation::combined_covariance(Approximation& approx_2)
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_covariance(other) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_covariance(approx_2);
+}
+   
+Real Approximation::
+combined_covariance(const RealVector& x, Approximation& approx_2)
+{
+  if (!approxRep) {
+    Cerr << "Error:combined_covariance(x, other) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_covariance(x, approx_2);
+}
+
+void Approximation::compute_moments(bool full_stats, bool combined_stats)
+{
+  if (approxRep)
+    approxRep->compute_moments(full_stats, combined_stats);
+  else {
+    Cerr << "Error: compute_moments() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+void Approximation::
+compute_moments(const RealVector& x, bool full_stats, bool combined_stats)
+{
+  if (approxRep)
+    approxRep->compute_moments(x, full_stats, combined_stats);
+  else {
+    Cerr << "Error: compute_moments(RealVector) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+const RealVector& Approximation::moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: moments() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->moments();
+}
+
+Real Approximation::moment(size_t i) const
+{
+  if (!approxRep) {
+    Cerr << "Error: moment(size_t) not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->moment(i);
+}
+
+void Approximation::moment(Real mom, size_t i)
+{
+  if (approxRep)
+    approxRep->moment(mom, i);
+  else {
+    Cerr << "Error: moment(Real, size_t) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+void Approximation::clear_component_effects()
+{
+  if (approxRep)
+    approxRep->clear_component_effects();
+  else {
+    Cerr << "Error: clear_component_effects() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+void Approximation::compute_component_effects()
+{
+  if (approxRep)
+    approxRep->compute_component_effects();
+  else {
+    Cerr << "Error: compute_component_effects() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+void Approximation::compute_total_effects()
+{
+  if (approxRep)
+    approxRep->compute_total_effects();
+  else {
+    Cerr << "Error: compute_total_effects() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+const RealVector& Approximation::sobol_indices() const
+{
+  if (!approxRep) {
+    Cerr << "Error: sobol_indices() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->sobol_indices();
+}
+
+const RealVector& Approximation::total_sobol_indices() const
+{
+  if (!approxRep) {
+    Cerr << "Error: total_sobol_indices() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->total_sobol_indices();
+}
+
+ULongULongMap Approximation::sparse_sobol_index_map() const
+{
+  if (!approxRep) {
+    Cerr << "Error: sparse_sobol_index_map() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->sparse_sobol_index_map();
+}
+
+const RealVector& Approximation::expansion_moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: expansion_moments() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->expansion_moments();
+}
+
+const RealVector& Approximation::numerical_integration_moments() const
+{
+  if (!approxRep) {
+    Cerr << "Error: numerical_integration_moments() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->numerical_integration_moments();
+}
+
 Real Approximation::value(const RealVector& c_vars)
 {
-    if (!approxRep) {
-        Cerr << "Error: value() not available for this approximation type."
-        << std::endl;
-        abort_handler(-1);
-    }
-        
-    return approxRep->value(c_vars);
+  if (!approxRep) {
+    Cerr << "Error: value() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->value(c_vars);
 }
-    
-    
+
 const RealVector& Approximation::gradient(const RealVector& c_vars)
 {
-    if (!approxRep) {
-        Cerr << "Error: gradient() not available for this approximation type."
-        << std::endl;
-        abort_handler(-1);
-    }
-        
-    return approxRep->gradient(c_vars);
+  if (!approxRep) {
+    Cerr << "Error: gradient() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->gradient(c_vars);
 }
     
     
 const RealSymMatrix& Approximation::hessian(const RealVector& c_vars)
 {
-    if (!approxRep) {
-        Cerr << "Error: hessian() not available for this approximation type."
-        << std::endl;
-        abort_handler(-1);
-    }
+  if (!approxRep) {
+    Cerr << "Error: hessian() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
         
-    return approxRep->hessian(c_vars);
+  return approxRep->hessian(c_vars);
 }
     
     
 Real Approximation::prediction_variance(const RealVector& c_vars)
 {
-    if (!approxRep) {
-        Cerr << "Error: prediction_variance() not available for this approximation "
-        << "type." << std::endl;
-        abort_handler(-1);
-    }
+  if (!approxRep) {
+    Cerr << "Error: prediction_variance() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
         
-    return approxRep->prediction_variance(c_vars);
+  return approxRep->prediction_variance(c_vars);
 }
 
 
@@ -503,19 +826,20 @@ Real Approximation::diagnostic(const String& metric_type)
   if (!approxRep) {
     Cerr << "Error: diagnostic() not available for this approximation type." 
   	   << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->diagnostic(metric_type);
 }
 
 
-RealArray Approximation::cv_diagnostic(const StringArray& metric_types, unsigned num_folds)
+RealArray Approximation::
+cv_diagnostic(const StringArray& metric_types, unsigned num_folds)
 {
   if (!approxRep) {
     Cerr << "Error: cv_diagnostic() not available for this approximation type." 
-  	   << std::endl;
-    abort_handler(-1);
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->cv_diagnostic(metric_types, num_folds);
@@ -536,12 +860,13 @@ challenge_diagnostic(const StringArray& metric_types,
                      const RealVector& challenge_resps)
 {
   if (!approxRep) {
-    Cerr << "Error: challenge_diagnostic() not available for this approximation " 
+    Cerr << "Error: challenge_diagnostic() not available for this approximation"
 	 << " type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
-  return approxRep->challenge_diagnostic(metric_types, challenge_points, challenge_resps);
+  return approxRep->
+    challenge_diagnostic(metric_types, challenge_points, challenge_resps);
 }
 
 
@@ -561,7 +886,7 @@ RealVector Approximation::approximation_coefficients(bool normalized) const
   if (!approxRep) {
     Cerr << "Error: approximation_coefficients() not available for this "
 	 << "approximation type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
    
   return approxRep->approximation_coefficients(normalized);
@@ -576,9 +901,18 @@ approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
   else {
     Cerr << "Error: approximation_coefficients() not available for this "
 	 << "approximation type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
+
+
+/*
+void Approximation::link_multilevel_surrogate_data()
+{
+  if (approxRep) approxRep->link_multilevel_surrogate_data();
+  //else no-op (no linkage required for derived Approximation)
+}
+*/
 
 
 void Approximation::
@@ -589,7 +923,7 @@ coefficient_labels(std::vector<std::string>& coeff_labels) const
   else {
     Cerr << "Error: coefficient_labels() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -601,7 +935,7 @@ void Approximation::print_coefficients(std::ostream& s, bool normalized)
   else {
     Cerr << "Error: print_coefficients() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -611,7 +945,7 @@ int Approximation::min_coefficients() const
   if (!approxRep) { // no default implementation
     Cerr << "Error: min_coefficients() not defined for this approximation type."
          << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return approxRep->min_coefficients(); // fwd to letter
@@ -631,16 +965,16 @@ int Approximation::recommended_coefficients() const
 int Approximation::num_constraints() const
 {
   if (approxRep) // fwd to letter
-    return approxRep->num_constraints(); 
-  else { // default implementation
-    if (approxData.anchor()) { // anchor data may differ from buildDataOrder
-      int ng = approxData.anchor_gradient().length(),
-          nh = approxData.anchor_hessian().numRows();
-      return 1 + ng + nh*(nh + 1)/2;
-    }
-    else
-      return 0;
+    return approxRep->num_constraints();
+  // default implementation:
+  else if (approxData.anchor()) { // anchor data may differ from buildDataOrder
+    const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+    int ng = anchor_sdr.response_gradient().length(),
+        nh = anchor_sdr.response_hessian().numRows();
+    return 1 + ng + nh*(nh + 1)/2;
   }
+  else
+    return 0;
 }
 
 
@@ -682,98 +1016,148 @@ int Approximation::recommended_points(bool constraint_flag) const
 }
 
 
-void Approximation::
-add(const Variables& vars, bool anchor_flag, bool deep_copy)
+void Approximation::expansion_coefficient_flag(bool flag)
 {
   if (approxRep)
-    approxRep->add(vars, anchor_flag, deep_copy);
+    approxRep->expansion_coefficient_flag(flag);
+  else {
+    Cerr << "Error: expansion_coefficient_flag() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+bool Approximation::expansion_coefficient_flag() const
+{
+  if (approxRep)
+    return approxRep->expansion_coefficient_flag();
+  else
+    return false;
+}
+
+
+void Approximation::expansion_gradient_flag(bool flag)
+{
+  if (approxRep)
+    approxRep->expansion_gradient_flag(flag);
+  else {
+    Cerr << "Error: expansion_gradient_flag() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+bool Approximation::expansion_gradient_flag() const
+{
+  if (approxRep)
+    return approxRep->expansion_gradient_flag();
+  else
+    return false;
+}    
+
+
+void Approximation::clear_computed_bits()
+{
+  if (approxRep) approxRep->clear_computed_bits();
+  //else no-op
+}
+
+
+void Approximation::
+add(const Variables& vars, bool anchor_flag, bool deep_copy,
+    size_t key_index)
+{
+  if (approxRep)
+    approxRep->add(vars, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
     // Approximation does not know about view mappings; therefore, take the
     // simple approach of matching up active or all counts with numVars.
     size_t num_v = sharedDataRep->numVars;
     if (vars.cv() + vars.div() + vars.drv() == num_v)
       add(vars.continuous_variables(), vars.discrete_int_variables(),
-	  vars.discrete_real_variables(), anchor_flag, deep_copy);
+	  vars.discrete_real_variables(), anchor_flag, deep_copy, key_index);
     else if (vars.acv() + vars.adiv() + vars.adrv() == num_v)
       add(vars.all_continuous_variables(), vars.all_discrete_int_variables(),
-	  vars.all_discrete_real_variables(), anchor_flag, deep_copy);
+	  vars.all_discrete_real_variables(), anchor_flag, deep_copy,key_index);
     /*
     else if (vars.cv() == num_v) {  // compactMode does not affect vars
       IntVector empty_iv; RealVector empty_rv;
-      add(vars.continuous_variables(), empty_iv, empty_rv,
-	  anchor_flag, deep_copy);
+      add(vars.continuous_variables(), empty_iv, empty_rv, anchor_flag,
+          deep_copy, key_index);
     }
     else if (vars.acv() == num_v) { // potential conflict with cv/div/drv
       IntVector empty_iv; RealVector empty_rv;
-      add(vars.all_continuous_variables(), empty_iv, empty_rv,
-	  anchor_flag, deep_copy);
+      add(vars.all_continuous_variables(), empty_iv, empty_rv, anchor_flag,
+          deep_copy, key_index);
     }
     */
     else {
       Cerr << "Error: variable size mismatch in Approximation::add()."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(APPROX_ERROR);
     }
   }
 }
 
 
 void Approximation::
-add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy)
+add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy,
+    size_t key_index)
 {
   if (approxRep)
-    approxRep->add(response, fn_index, anchor_flag, deep_copy);
+    approxRep->add(response, fn_index, anchor_flag, deep_copy, key_index);
   else { // not virtual: all derived classes use following definition
     short asv_val = response.active_set_request_vector()[fn_index];
-    //if (asv_val) { // ASV dropouts are now managed at a higher level
-
-    // use empty vectors/matrices if data is not active.
-    Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
-    RealVector fn_grad;
-    if (asv_val & 2)
-      fn_grad = response.function_gradient_view(fn_index); // view of column
-    RealSymMatrix empty_hess;
-    const RealSymMatrix& fn_hess = (asv_val & 4) ?
-      response.function_hessian(fn_index) : empty_hess;
-
-    // Map DAKOTA's deep_copy bool into Pecos' copy mode
-    // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
-    short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
-    Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, asv_val, mode);
-    if (anchor_flag) approxData.anchor_response(sdr);
-    else             approxData.push_back(sdr);
-
-    //}
+    switch (asv_val) {
+    case 0:
+      return; break; // should not happen: ASV dropouts managed at higher level
+    case 1: { // special case with lightweight ctor
+      Pecos::SurrogateDataResp sdr(response.function_value(fn_index));
+      add(sdr, anchor_flag, deep_copy, key_index);
+      break;
+    }
+    default: {
+      // general ASV: use empty vectors/matrices if data is not active.
+      Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
+      RealVector fn_grad;  RealSymMatrix fn_hess;
+      if (asv_val & 2) fn_grad = response.function_gradient_view(fn_index);
+      if (asv_val & 4) fn_hess = response.function_hessian_view(fn_index);
+      // deep_copy requests are applied downstream in add(SurrogateDataResp)
+      Pecos::SurrogateDataResp
+	sdr(fn_val, fn_grad, fn_hess, asv_val, Pecos::SHALLOW_COPY);
+      add(sdr, anchor_flag, deep_copy, key_index); // deep copy applied here
+      break;
+    }
+  }
   }
 }
 
 
+/** Short cut function (not used by ApproximationInterface). */
 void Approximation::
-add(const RealMatrix& sample_vars, const RealVector& sample_resp)
+add_array(const RealMatrix& sample_vars, const RealVector& sample_resp,
+	  bool deep_copy, size_t key_index)
 {
   if (approxRep)
-    approxRep->add(sample_vars, sample_resp);
+    approxRep->add_array(sample_vars, sample_resp);
   else { // not virtual: all derived classes use following definition
-    size_t num_samples = sample_vars.numCols();
+    size_t i, num_samples = sample_vars.numCols();
     if (sample_resp.length() != num_samples) {
-      Cerr << "\nError: incompatible approx build data sizes.\n";
-      abort_handler(-1);
+      Cerr << "\nError: incompatible data sizes in Approximation::add_array"
+	   << "(RealMatrix&, RealVector&)." << std::endl;
+      abort_handler(APPROX_ERROR);
     }
-    size_t num_vars = sample_vars.numRows();
-    bool anchor_flag = false, deep_copy = true;
-    for (size_t i=0; i<num_samples; ++i) {
+    bool anchor_flag = false;
+    for (i=0; i<num_samples; ++i) {
 
       // add variable values (column of samples matrix)
-      add(sample_vars[i], anchor_flag, deep_copy);
+      add(sample_vars[i], anchor_flag, deep_copy, key_index);
 
-      // add response value
-      short asv_val = 1;
-      Real fn_val = sample_resp[i];
-      RealVector empty_grad;
-      RealSymMatrix empty_hess;
-      short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
-      Pecos::SurrogateDataResp sdr(fn_val, empty_grad, empty_hess, asv_val, mode);
-      approxData.push_back(sdr);
+      // add response value (scalar)
+      Pecos::SurrogateDataResp sdr(sample_resp[i]);
+      add(sdr, anchor_flag, deep_copy, key_index); // deep copy applied here
     }
   }
 }
@@ -809,7 +1193,7 @@ void Approximation::draw_surface()
     // populate F matrix
     RealVector xtemp(2);
     for (i=0; i<num_axis_pts; i++) {
-      for (j=0; j<num_axis_pts; j++) {  
+      for (j=0; j<num_axis_pts; j++) {
         xtemp[0] = X[i];
         xtemp[1] = Y[j];
         F(j,i)   = value(xtemp);

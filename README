@@ -1,34 +1,45 @@
 ------------------------------------------------------------------------------
 
-DAKOTA:
+Dakota:
 A Multilevel Parallel Object-Oriented Framework for Design Optimization,
 Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis 
 
 ------------------------------------------------------------------------------
+            _/_/_/   
+             _/_/    
+        _/_/_/_/_/_/ 
+       _/  _/_/  _/  
+      _/  _/_/  _/  
+        _/_/_/       
+   
+Sandia National Laboratories
+      Albuquerque, NM
+       Livermore, CA
 
-					Sandia National Laboratories
-
-Brian M. Adams      (Project Lead)                      _/_/_/       
-Michael S. Eldred   (Research Lead)           	         _/_/    
-James R. Stewart    (Business Manager)	 	    _/_/_/_/_/_/ 
-J. Adam Stephens    (Support Analyst)        	   _/  _/_/  _/  
-William Bohnhoff                                   _/  _/_/  _/   
-John P. Eddy	                               	    _/_/_/       
+Brian M. Adams                                       
+William J. Bohnhoff                                  
+Robert A. Canfield
 Keith R. Dalbey
-Mohamed S.Ebeida
+John P. Eddy	                               	 
+Mohamed S. Ebeida
+Michael S. Eldred                             	 
 Gianluca Geraci
+Alex A. Gorodetsky
 Russell W. Hooper
+Patricia D. Hough		       
 Kenneth T. Hu
 John D. Jakeman
-Kathryn Maupin
+Mohammad Khalil
+Kathryn A. Maupin
 Jason A. Monschke
+Elliott M. Ridgway
 Ahmad Rushdi
+D. Thomas Seidl
+J. Adam Stephens                             	 
 Laura P. Swiler
-Timothy M. Wildey		        P.O. Box 5800, Mail Stop 1318
-Dena M. Vigil				Albuquerque, NM 87185-1318   
-
-Patricia D. Hough			P.O. Box 969, MS 9217
-Lara E. Bauman				Livermore, CA 94551-0969
+Dena M. Vigil			       
+Timothy M. Wildey		       
+Justin G. Winokur		       
 
 ------------------------------------------------------------------------------
 License
@@ -64,30 +75,41 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
       tinyxml	    ZLib license
       vpykit/pyutilib.virtualenv  BSD License  
   ampl		    MIT License (old style with disclaimer)
+  approxnn          GNU Lesser General Public License(LGPL)
+  C3                BSD 3-clause
   CONMIN	    Public Domain
   DDACE		    GNU Lesser General Public License (LGPL) [SNL]
+  demo_tpl	    Dakota's LGPL
   dfftpack	    Public Domain
   DOT		    Commercial license (optional add-on)
   dream		    GNU Lesser General Public License (LGPL)
+  eigen3            MPL2 (cf http://www.mozilla.org/MPL/2.0)
+                    *** Dakota enables the -DEIGEN_MPL2_ONLY compiler flag to
+                        avoid bringing in additional eigen TPLs having potentially 
+                        different license restrictions.
   fftw	    	    GNU General Public License (GPL; disabled by default)
   FSUDace	    GNU Lesser General Public License (LGPL)
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
   LHS		    GNU Lesser General Public License (LGPL) [SNL]
-  motif/SciPlot	    GNU Library General Public License (old LGPL)
   NCSUOpt	    MIT License
   nidr		    BSD License [SNL]
   NL2SOL	    Publicly Available
   NLPQL		    Commercial license (optional add-on)
   NOMAD		    GNU Lesser General Public License (LGPL)
+  nowpac	    MIT License
   NPSOL		    Commercial license (optional add-on)
   OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
   PSUADE	    GNU Lesser General Public License (LGPL)
+  pyprepro          MIT License [SNL]
+    bottlepy/bottle MIT License (modern style with sublicense)
+    pypi/six        MIT License (modern style with sublicense)
   queso		    GNU Lesser General Public License (LGPL)
+  sciplot	    GNU Library General Public License (old LGPL)
   surfpack	    GNU Lesser General Public License (LGPL) [SNL]
-  teuchos	    BSD License [SNL]
+  trilinos	    (rol, teuchos) BSD License [SNL]
   VPISparseGrid     GNU Lesser General Public License (LGPL)
 
 The commerically licensed packages are not distributed with public
@@ -96,22 +118,25 @@ code under an appropriate license and include it under the appropriate
 packages directory when compiling Dakota.
 
 Third-party system libraries: In addition to standard compiler and
-system runtime libraries, Dakota requires the following external
-third-party libraries for compilation and operation:
+system runtime libraries, Dakota uses the following external
+third-party libraries for compilation and operation. These are
+included in Dakota binary distributions (though not in source
+distributions):
 
   BLAS/LAPACK	    BSD License, or that of compiler or system-provided libs
   Boost		    Boost Software License
+  HDF5 (optional)   BSD-style Open Source License (variant)
+    zlib            ZLib License
 
 GPL/Other: Dakota may optionally depend on GNU GPL-licensed
 components, which are disabled by default, resulting in an
 LGPL-compatible Dakota.  Optional GPL capabilities include:
 
- * dakota/trunk/packages/hopspack/src/src-citizens/citizen-gss/cddlib/;
+ * packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/:
    enable with CMake setting HAVE_CDDLIB.
 
- * dakota/packages/fftw or dakota/packages/pecos/packages/fftw:
-   optionally included with Dakota; enable with CMake setting
-   HAVE_FFTW
+ * packages/external/fftw: optionally included with Dakota; enable 
+   with CMake setting HAVE_FFTW
 
  * GNU Scientific Library: external third-party library; enable with
    CMake setting Dakota_HAVE_GSL and pointer to gsl-config
@@ -158,15 +183,21 @@ emulation layer).  Dakota is developed and most extensively tested on
 Redhat Enterprise Linux with GNU compilers, but additional operating
 systems / compiler combinations are tested nightly as well.  See the
 Dakota website for more information on supported platforms for
-particular Dakota versions.  Dakota was historically tested on
-SGI/IRIX, DEC/OSF, and HP-UX, but these are not actively supported.
+particular Dakota versions.
 
 ------------------------------------------------------------------------------
 Versions
 
 Versions of the Dakota software have been tagged as follows:
 
-6.4		   05/16/15 (refer to svn externals for TPL tags)
+6.11               11/15/19 (refer to git submodules for TPL SHA1s)
+6.10               05/15/19 (refer to git submodules for TPL SHA1s)
+6.9                11/15/18 (refer to git submodules for TPL SHA1s)
+6.8		   05/15/18 (refer to git submodules for TPL SHA1s)
+6.7		   11/15/17 (refer to git submodules for TPL SHA1s)
+6.6		   05/15/17 (refer to git submodules for TPL SHA1s)
+6.5		   11/16/16 (refer to git submodules for TPL SHA1s)
+6.4		   05/16/16 (refer to svn externals for TPL tags)
 6.3		   11/16/15 (refer to svn externals for TPL tags)
 6.2		   05/15/15 (refer to svn externals for TPL tags)
 6.1		   11/15/14 (refer to svn externals for TPL tags)
@@ -204,7 +235,6 @@ Contributing enhancements.
 Dakota is both a research and a production code and is under active
 development.  Bug reports, suggestions for improvement, and changes to
 support other platforms/compilers are welcome.  See the Dakota
-Developer Portal at http://dakota.sandia.gov/developer/ for more
-information.
+website at https://dakota.sandia.gov/ for more information.
 
 ------------------------------------------------------------------------------

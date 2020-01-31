@@ -1,0 +1,9 @@
+<ParameterList name="Inputs">
+  <!-- ===========  STATUS TEST SUBLIST  =========== -->
+  <ParameterList name="Status Test">
+    <Parameter name="Gradient Tolerance"   type="double" value="1.e-7"  />
+    <Parameter name="Constraint Tolerance" type="double" value="1.e-6"  />
+    <Parameter name="Step Tolerance"       type="double" value="1.e-8" />
+    <Parameter name="Iteration Limit"      type="int"    value="100"    />
+  </ParameterList>
+</ParameterList>

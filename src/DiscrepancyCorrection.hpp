@@ -7,7 +7,8 @@
     _______________________________________________________________________ */
 
 //- Class:       DiscrepancyCorrection
-//- Description: A model which provides a discrepancy for a truth model.
+//- Description: Utility for computing and applying corrections between
+//-              a truth model and an approximation.
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version: $Id: DiscrepancyCorrection.hpp 7024 2010-10-16 01:24:42Z mseldre $
@@ -19,6 +20,7 @@
 #include "DakotaApproximation.hpp"
 #include "DakotaModel.hpp"
 #include "DataModel.hpp"
+#include "DiscrepancyCalculator.hpp"
 
 
 namespace Dakota {
@@ -58,6 +60,10 @@ public:
   /// initialize the DiscrepancyCorrection data
   void initialize(const IntSet& surr_fn_indices, size_t num_fns,
 		  size_t num_vars, short corr_type, short corr_order);
+  /// initialize the DiscrepancyCorrection data
+  void initialize(const IntSet& surr_fn_indices, size_t num_fns,
+		  size_t num_vars, short corr_type, short corr_order,
+		  const String& approx_type);
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in {add,mult}Corrections
@@ -68,17 +74,34 @@ public:
   void compute(//const Variables& vars,
 	       const Response& truth_response, const Response& approx_response,
 	       Response& discrepancy_response, bool quiet_flag = false);
+  /// compute the correction required to bring approx_response into
+  /// agreement with truth_response as a function of the variables
+  /// and store in {add,mult}Corrections
+  void compute(const VariablesArray& vars_array, const ResponseArray& 
+               truth_response_array, const ResponseArray& approx_response, 
+	       bool quiet_flag = false);
 
   /// apply the correction computed in compute() to approx_response
   void apply(const Variables& vars, Response& approx_response,
 	     bool quiet_flag = false);
 
+  /// compute the variance of approx_response
+  void compute_variance(const VariablesArray& vars_array, RealMatrix& 
+      			approx_variance, bool quiet_flag = false); 
+
+  /// update correctionType
+  void correction_type(short corr_type);
   /// return correctionType
   short correction_type() const;
+  /// update correctionOrder
+  void correction_order(short order);
   /// return correctionOrder
   short correction_order() const;
+  /// update dataOrder
+  void data_order(short order);
   /// return dataOrder
   short data_order() const;
+
   /// return correctionComputed
   bool computed() const;
   /// return initializedFlag
@@ -125,9 +148,10 @@ private:
 
   /// internal convenience function shared by overloaded initialize() variants
   void initialize_corrections();
-
+  
   /// define badScalingFlag
-  bool check_scaling(const RealVector& truth_fns, const RealVector& approx_fns);
+  bool check_multiplicative(const RealVector& truth_fns,
+			    const RealVector& approx_fns);
 
   /// internal convenience function for computing additive corrections
   /// between truth and approximate responses
@@ -165,6 +189,9 @@ private:
   //- Heading: Data
   //
 
+  /// helper utility for calculating discrepancies
+  Pecos::DiscrepancyCalculator discrepCalc;
+
   /// flag used to indicate function values near zero for multiplicative
   /// corrections; triggers an automatic switch to additive corrections
   bool badScalingFlag;
@@ -172,6 +199,9 @@ private:
   bool computeAdditive;
   /// flag indicating the need for multiplicative correction calculations
   bool computeMultiplicative;
+
+  /// string indicating the discrepancy approximation type
+  String approxType;
 
   /// data that is shared among all correction Approximations
   SharedApproxData sharedData;
@@ -231,12 +261,24 @@ inline DiscrepancyCorrection::~DiscrepancyCorrection()
 { }
 
 
+inline void DiscrepancyCorrection::correction_type(short corr_type)
+{ correctionType = corr_type; }
+
+
 inline short DiscrepancyCorrection::correction_type() const
 { return correctionType; }
 
 
+inline void DiscrepancyCorrection::correction_order(short order)
+{ correctionOrder = order; }
+
+
 inline short DiscrepancyCorrection::correction_order() const
 { return correctionOrder; }
+
+
+inline void DiscrepancyCorrection::data_order(short order)
+{ dataOrder = order; }
 
 
 inline short DiscrepancyCorrection::data_order() const

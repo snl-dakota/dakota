@@ -7,7 +7,6 @@
 # Kuschel and Rackwitz, 1997.
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################
@@ -69,7 +68,7 @@ method,
 #	    dimension_adaptive generalized	#s8,#s9
 	    max_refinement_iterations  = 2	#s0,#s2
 #	    max_refinement_iterations  = 5	#s1,#s3,#s4,#s5,#s6,#s7
-	    convergence_tol = 1.e-6
+	    convergence_tol = 1.e-4
 	  num_response_levels = 0 1
 	  response_levels = 0.0
 	  compute reliabilities

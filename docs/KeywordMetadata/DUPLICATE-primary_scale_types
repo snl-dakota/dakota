@@ -14,8 +14,9 @@ Note that primary response functions (objective, calibration, or
 response functions) cannot be automaticaly scaled due to lack of
 bounds, so valid scale types are \c 'none' \c 'value' and \c 'log'.
 
-If scaling is specified, it is applied before multi-objective weighted
-sums are formed.
+If scaling is specified, it is applied after any data and/or
+observation error covariance transformations and before
+multi-objective or residual weights.  sums are formed.
 
 Topics::	
 Examples::

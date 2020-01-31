@@ -1,0 +1,8 @@
+Blurb::
+The increment in rank employed during each iteration of the rank adaptation.
+
+Description::
+The \c adapt_rank procedure increments the rank on each iteration, using an
+increment defined by \c kick_rank
+
+See_Also::	model-surrogate-global-function_train-adapt_rank

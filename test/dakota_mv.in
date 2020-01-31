@@ -12,7 +12,6 @@
 # Dakota Input File: textbook_uq_meanvalue.in     #s0
 
 environment
-  #graphics
 
 method
   local_reliability

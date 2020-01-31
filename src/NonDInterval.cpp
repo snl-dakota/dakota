@@ -18,7 +18,8 @@
 //#include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDLHSSampling.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
+#include "MarginalsCorrDistribution.hpp"
 
 //#define DEBUG
 
@@ -32,6 +33,13 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, Model& model):
 		     methodName == GLOBAL_INTERVAL_EST)
 {
   bool err_flag = false;
+
+  const SharedVariablesData& svd = model.current_variables().shared_data();
+  const SizetArray&    ac_totals = svd.active_components_totals();
+  numContIntervalVars   = ac_totals[TOTAL_CEUV];
+  numDiscIntervalVars   = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
+  numDiscSetIntUncVars  = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+  numDiscSetRealUncVars = ac_totals[TOTAL_DEURV];
 
   // initialize finalStatistics using non-default definition (there is no mean
   // or standard deviation and each level mapping involves lower/upper bounds).
@@ -77,6 +85,7 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, Model& model):
 NonDInterval::~NonDInterval()
 {}
 
+
 bool NonDInterval::resize()
 {
   bool parent_reinit_comms = NonD::resize();
@@ -112,14 +121,14 @@ void NonDInterval::initialize_final_statistics()
   else {
     char tag_string[10], lev_string[15];
     for (i=0; i<numFunctions; ++i) {
-      std::sprintf(tag_string, "_r%i", i+1);
+      std::sprintf(tag_string, "_r%zu", i+1);
       num_levels = requestedRespLevels[i].length();
       for (j=0; j<num_levels; ++j) {
 	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
 	if (respLevelTarget == PROBABILITIES)
-	  std::sprintf(lev_string, "_plev%i", j+1);
+	  std::sprintf(lev_string, "_plev%zu", j+1);
 	else
-	  std::sprintf(lev_string, "_b*lev%i", j+1);
+	  std::sprintf(lev_string, "_b*lev%zu", j+1);
 	stats_labels[cntr] +=
 	  String("_bel") + String(lev_string) + String(tag_string);
 	cntr++;
@@ -131,7 +140,7 @@ void NonDInterval::initialize_final_statistics()
 	requestedGenRelLevels[i].length();
       for (j=0; j<num_levels; ++j) {
 	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
-	std::sprintf(lev_string, "_zlev%i", j+1);
+	std::sprintf(lev_string, "_zlev%zu", j+1);
 	stats_labels[cntr] +=
 	  String("_bel") + String(lev_string) + String(tag_string);
 	cntr++;
@@ -147,50 +156,52 @@ void NonDInterval::initialize_final_statistics()
 
 void NonDInterval::calculate_cells_and_bpas()
 {
-  Pecos::EpistemicDistParams& edp
-    = iteratedModel.epistemic_distribution_parameters();
-  // Information we want: for each hyper cube i, give the bpa, and bounds on i.
-  // ci_bpa[i][j] gives jth bpa of jth interval of ith variable
-  // ci_{l,u}_bnds[i][j] gives jth {lower,upper} bound for the ith variable
-  const RealRealPairRealMapArray& ci_bpa
-    = edp.continuous_interval_basic_probabilities();
-  const IntIntPairRealMapArray& di_bpa
-    = edp.discrete_interval_basic_probabilities();
-  const IntRealMapArray& dsi_vals_probs
-    = edp.discrete_set_int_values_probabilities();
-  const RealRealMapArray& dsr_vals_probs
-    = edp.discrete_set_real_values_probabilities();
+  Pecos::MultivariateDistribution& mv_dist
+    = iteratedModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* mvd_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  RealRealPairRealMapArray ci_bpa;  IntIntPairRealMapArray di_bpa;
+  IntRealMapArray dsi_vals_probs;   RealRealMapArray dsr_vals_probs;
+  // TO DO: DISCRETE_UNCERTAIN_SET_STRING ...
+  mvd_dist_rep->pull_parameters(Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
+				Pecos::CIU_BPA, ci_bpa);
+  mvd_dist_rep->pull_parameters(Pecos::DISCRETE_INTERVAL_UNCERTAIN,
+				Pecos::DIU_BPA, di_bpa);
+  mvd_dist_rep->pull_parameters(Pecos::DISCRETE_UNCERTAIN_SET_INT,
+				Pecos::DUSI_VALUES_PROBS, dsi_vals_probs);
+  mvd_dist_rep->pull_parameters(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+				Pecos::DUSR_VALUES_PROBS, dsr_vals_probs);
 
   size_t i, j, k, var_cntr, cell_cntr, prev_bpa_len;
-  int num_total_vars = numContIntervalVars  + numDiscIntervalVars
-                     + numDiscSetIntUncVars + numDiscSetRealUncVars;
+  int num_ciu  = ci_bpa.size(),         num_diu  = di_bpa.size(),
+      num_dusi = dsi_vals_probs.size(), num_dusr = dsr_vals_probs.size();
 
-  UShortArray scale_factor(num_total_vars, 1);
+  UShortArray scale_factor(num_ciu + num_diu + num_dusi + num_dusr, 1);
   numCells = 1;
 
   // continuous interval variables
-  for (i=0, var_cntr=0; i<numContIntervalVars; ++i, ++var_cntr) {
+  for (i=0, var_cntr=0; i<num_ciu; ++i, ++var_cntr) {
     if (var_cntr)
       scale_factor[i] = scale_factor[i-1] * prev_bpa_len;
     numCells *= prev_bpa_len = ci_bpa[i].size();
   }
 
   // discrete interval variables
-  for (i=0; i<numDiscIntervalVars; ++i, ++var_cntr) {
+  for (i=0; i<num_diu; ++i, ++var_cntr) {
     if (var_cntr)
       scale_factor[var_cntr] = scale_factor[var_cntr-1] * prev_bpa_len;
     numCells *= prev_bpa_len = di_bpa[i].size();
   }
 
   // discrete interval sets
-  for (i=0; i<numDiscSetIntUncVars; ++i, ++var_cntr) {
+  for (i=0; i<num_dusi; ++i, ++var_cntr) {
     if (var_cntr)
       scale_factor[var_cntr] = scale_factor[var_cntr-1] * prev_bpa_len;
     numCells *= prev_bpa_len = dsi_vals_probs[i].size();
   }
   
   // discrete real sets
-  for (i=0; i<numDiscSetRealUncVars; ++i, ++var_cntr){
+  for (i=0; i<num_dusr; ++i, ++var_cntr){
     if (var_cntr)
       scale_factor[var_cntr] = scale_factor[var_cntr-1] * prev_bpa_len;
     numCells *= prev_bpa_len = dsr_vals_probs[i].size();
@@ -202,40 +213,40 @@ void NonDInterval::calculate_cells_and_bpas()
 	 << ", numCells = "   << numCells << '\n';
 
   // shape cell length
-  if (numContIntervalVars) {
+  if (num_ciu) {
     cellContLowerBounds.resize(numCells);
     cellContUpperBounds.resize(numCells);
   }
-  if (numDiscIntervalVars) {
+  if (num_diu) {
     cellIntRangeLowerBounds.resize(numCells);
     cellIntRangeUpperBounds.resize(numCells);
   }
-  if (numDiscSetIntUncVars)
+  if (num_dusi)
     cellIntSetBounds.resize(numCells);
-  if (numDiscSetRealUncVars)
+  if (num_dusr)
     cellRealSetBounds.resize(numCells);
   
   cellBPA.sizeUninitialized(numCells); cellBPA = 1.;
   for (i=0; i<numCells; ++i) {
-    if (numContIntervalVars) {
-      cellContLowerBounds[i].resize(numContIntervalVars);
-      cellContUpperBounds[i].resize(numContIntervalVars);
+    if (num_ciu) {
+      cellContLowerBounds[i].resize(num_ciu);
+      cellContUpperBounds[i].resize(num_ciu);
     }
-    if (numDiscIntervalVars) {
-      cellIntRangeLowerBounds[i].resize(numDiscIntervalVars);
-      cellIntRangeUpperBounds[i].resize(numDiscIntervalVars);
+    if (num_diu) {
+      cellIntRangeLowerBounds[i].resize(num_diu);
+      cellIntRangeUpperBounds[i].resize(num_diu);
     }
-    if (numDiscSetIntUncVars)
-      cellIntSetBounds[i].resize(numDiscSetIntUncVars);
-    if (numDiscSetRealUncVars)
-      cellRealSetBounds[i].resize(numDiscSetRealUncVars);
+    if (num_dusi)
+      cellIntSetBounds[i].resize(num_dusi);
+    if (num_dusr)
+      cellRealSetBounds[i].resize(num_dusr);
   }
 
   // This loops num_variables*num_cells
   Real lower_bound_i_of_j, upper_bound_i_of_j;
   int intervals_in_var_j;
 
-  for (j=0, var_cntr=0; j<numContIntervalVars; ++j, ++var_cntr) {
+  for (j=0, var_cntr=0; j<num_ciu; ++j, ++var_cntr) {
     const RealRealPairRealMap& ci_bpa_j = ci_bpa[j];
     RRPRMCIter cit = ci_bpa_j.begin();
     intervals_in_var_j = ci_bpa_j.size();
@@ -254,7 +265,7 @@ void NonDInterval::calculate_cells_and_bpas()
     }
   }
 
-  for (j=0; j<numDiscIntervalVars; ++j, ++var_cntr) {
+  for (j=0; j<num_diu; ++j, ++var_cntr) {
     const IntIntPairRealMap& di_bpa_j = di_bpa[j];
     IIPRMCIter cit = di_bpa_j.begin();
     intervals_in_var_j = di_bpa_j.size();
@@ -273,7 +284,7 @@ void NonDInterval::calculate_cells_and_bpas()
     }
   }
 
-  for (j=0; j<numDiscSetIntUncVars; ++j, ++var_cntr) {
+  for (j=0; j<num_dusi; ++j, ++var_cntr) {
     intervals_in_var_j = dsi_vals_probs[j].size();
     IRMCIter cit = dsi_vals_probs[j].begin();
     for (i=0; i<intervals_in_var_j; ++i, ++cit) {
@@ -289,7 +300,7 @@ void NonDInterval::calculate_cells_and_bpas()
     }
   }
 
-  for (j=0; j<numDiscSetRealUncVars; ++j, ++var_cntr) {
+  for (j=0; j<num_dusr; ++j, ++var_cntr) {
     intervals_in_var_j = dsr_vals_probs[j].size();
     RRMCIter cit = dsr_vals_probs[j].begin();
     for (i=0; i<intervals_in_var_j; ++i, ++cit) {
@@ -315,16 +326,16 @@ void NonDInterval::calculate_cells_and_bpas()
     = iteratedModel.discrete_real_variable_labels();
   for (i=0; i<numCells; ++i) {
     Cout << "Cell " << i+1 << ":\n";
-    for (j=0; j<numContIntervalVars; ++j)
+    for (j=0; j<num_ciu; ++j)
       Cout << cv_labels[j] << ": [ " << cellContLowerBounds[i][j] << ", "
 	   << cellContUpperBounds[i][j] << " ]\n";
-    for (j=0; j<numDiscIntervalVars; ++j)
+    for (j=0; j<num_diu; ++j)
       Cout << div_labels[j] << ": [ " << cellIntRangeLowerBounds[i][j] << ", "
 	   << cellIntRangeUpperBounds[i][j] << " ]\n";
-    for (j=0; j<numDiscSetIntUncVars; ++j)
-      Cout  << div_labels[j+numDiscIntervalVars] << ": [ "
+    for (j=0; j<num_dusi; ++j)
+      Cout  << div_labels[j+num_diu] << ": [ "
 	    << cellIntSetBounds[i][j] << " ]\n";
-    for (j=0; j<numDiscSetRealUncVars; ++j)
+    for (j=0; j<num_dusr; ++j)
       Cout  << drv_labels[j] << ": [ " << cellRealSetBounds[i][j] << " ]\n";
   }
 
@@ -555,7 +566,7 @@ void NonDInterval::compute_evidence_statistics()
 }
 
 
-void NonDInterval::print_results(std::ostream& s)
+void NonDInterval::print_results(std::ostream& s, short results_state)
 {
   const StringArray& fn_labels = iteratedModel.response_labels();
   s << "------------------------------------------------------------------\n"

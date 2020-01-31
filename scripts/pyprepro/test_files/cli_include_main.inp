@@ -1,0 +1,21 @@
+Test IMMEDIATELY setting a var
+param = {param = 20} # 10 from include
+
+Test that these vars got includes
+include_var1: { include_var1 }
+include_var2: { include_var2 }
+include_var3: { include_var3 }
+include_var4: { include_var4 }
+
+Make sure they are, in fact immutable: (if they are, it would read 1,2,3,4)
+include_var1 = 1 : { include_var1 = 1 }
+include_var2 = 2 : { include_var2 = 2 }
+include_var3 = 3 : { include_var3 = 3 }
+include_var4 = 4 : { include_var4 = 4 }
+
+Override immutability of include_var1
+include_var1 = Mutable(include_var1) : {include_var1 = Mutable(include_var1)}
+include_var1 = 10: {include_var1 = 10} # Should read 10
+
+from cli
+cparam: {cparam}; cparam = 4: {cparam = 4}

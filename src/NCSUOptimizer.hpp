@@ -29,6 +29,29 @@ namespace Dakota {
 
     The user input mappings are as follows: */
 
+/**
+ * \brief A version of TraitsBase specialized for NCSU optimizers
+ *
+ */
+
+class NCSUTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NCSUTraits() { }
+
+  /// destructor
+  virtual ~NCSUTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+};
+
+
 class NCSUOptimizer: public Optimizer
 {
 public:
@@ -64,6 +87,7 @@ public:
 
   void core_run();
 
+  void declare_sources();
 private:
 
   //

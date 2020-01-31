@@ -3,9 +3,6 @@
 # DAKOTA INPUT FILE - dakota_win_ext.in
 # test windows extensions, specifically .BAT script:  dakota_textbook.bat
 
-environment,
-	graphics
-
 method,
         conmin_mfd,
         max_iterations = 50,

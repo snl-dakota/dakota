@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Simple tool to convert a dakota input (of either kind) to a json file.
+"""
+from __future__ import division, print_function, unicode_literals, absolute_import
+from io import open
+
+import sys
+import argparse
+import json
+from collections import OrderedDict
+import json
+
+if sys.version_info >= (3,):
+    unicode = str
+    
+epi = """\
+Notes: 
+
+  - Parses just the main variables unless `--all` is set. Converts any ':' 
+    into '_'. And if a parameter stats with a number, 'i'
+  - Numeric output is converted to floats
+  - The resulting JSON file is in the same order of the parameters.
+""" 
+
+    
+parser = argparse.ArgumentParser(\
+            epilog=epi,
+            description=__doc__,
+            formatter_class=argparse.RawDescriptionHelpFormatter)
+
+parser.add_argument('dakota_file',help="Dakota input file. Specify as '-' for stdin")
+parser.add_argument('output',nargs='?',help='Output file. If not set will output to stdout',)
+
+parser.add_argument('-a','--all',action='store_true',
+    help=("Parse *all* variables. Note that all ':' in variable names "
+          "are converted to '_'"))
+parser.add_argument('--compact',action='store_true',
+    help='return a single-line JSON')
+
+args = parser.parse_args(sys.argv[1:])
+
+if args.dakota_file == '-':
+    intxt = sys.stdin.read()
+    if isinstance(intxt,bytes):
+        intxt = intxt.decode('utf8')
+else:
+    with open(args.dakota_file,'rt',encoding='utf8') as F:
+        intxt = F.read()
+
+params = OrderedDict()
+N = None
+
+for n,line in enumerate(intxt.split('\n')):
+    line = line.strip()
+    if len(line) == 0:
+        continue
+    if line.startswith('{'): # aprepro "{key = value}"
+        line = line[1:-1]
+        key,val = line.split('=',1)
+        val = val.strip()
+        if val[0] in ['"',"'"]:
+            # it's a string with quotes
+            val = val[1:-1] 
+    else:                   # dakota " value key "
+         # Need to split but also have to worry about string (and spaces in strings)
+         # so do an rsplit
+         val,key = line.rsplit(None,1) 
+    try:
+        val = float(val)
+    except ValueError:
+        val = val.strip()
+    
+    key = key.strip().replace(':','_').replace(' ','_')
+    if key[0] in '0123456789':
+        key = 'i' + key
+    
+    # First line:
+    if n == 0:
+        try:
+            N = int(val)
+        except ValueError: # Could not be read
+            N = float('inf')
+        
+    # Only do the parameters themselves. Not the other ASV... stuff
+    if not args.all and n > N: # n starts at 0
+        break
+    
+    if n == 0 and not args.all:
+        continue # Do not store the first arg
+    params[key] = val
+    
+if args.compact:
+    txt = json.dumps(params,ensure_ascii=False)
+else:
+    txt = json.dumps(params,indent=4, separators=(',', ': '),ensure_ascii=False)
+
+txt += '\n'
+
+if args.output:
+    with open(args.output,'wt',encoding='utf8') as F:
+        F.write(txt)
+else:
+    sys.stdout.write(txt)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

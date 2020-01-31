@@ -1,0 +1,13 @@
+name: Extreme Responses
+dataset:
+  description: The sample minimum and maximum  of each response
+  location: "[increment:<N>]/extreme_responses/<response descriptor>"
+  notes: "The [increment:<N>] group is present only for sampling with refinement"
+  shape: '2'
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: extremes
+    contents: minimum, maximum
+

@@ -1,0 +1,21 @@
+% A = 10
+{ A+=1 }  # 11
+{ A<=12 } # True
+{ A<<=1 } # 22 (Bitwise left shift)
+
+Also test for colons in quotes.
+Note: these only need to be done for inline. Non-inline may NOT have colon names
+{ X = "hi:there" }
+{%
+    def test_fun(txt):
+        return '{0}tested'.format(txt)
+    end # need `end` on python code
+%}
+{test_fun('a')} #atested
+{test_fun('=}')} # =}tested
+
+{ Y:x = 10} # 10
+% Y_x += 1 
+{Y_x} # 11
+{Y:x += 1} # 12
+{Y_x} # 12

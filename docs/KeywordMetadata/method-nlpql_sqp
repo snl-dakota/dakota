@@ -1,18 +1,31 @@
-Blurb::
-Sequential Quadratic Program
+Blurb:: NLPQL Sequential Quadratic Program
+
 Description::
-NLPQL provides an implementation of sequential quadratic programming through 
-\c nlpqp_sqp.  The particular SQP implementation in \c nlpql_sqp uses a variant with
-distributed and non-monotone line search.
-Thus, this variant is designed to be more robust in the presence of
-inaccurate or noisy gradients common in many engineering applications.
+NLPQL implementation of sequential quadratic programming.  The
+particular SQP implementation in \c nlpql_sqp uses a variant with
+distributed and non-monotone line search.  Thus, this variant is
+designed to be more robust in the presence of inaccurate or noisy
+gradients common in many engineering applications.
+
+<em>NLPQL requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
 
 The method independent controls for maximum iterations and output
 verbosity are mapped to NLPQL controls MAXIT and IPRINT, respectively.
 The maximum number of function evaluations is enforced within the
 NLPQLPOptimizer class.
 
+<b>Expected HDF5 Output</b> 
 
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
 Topics::	package_nlpql, sequential_quadratic_programming, local_optimization_methods
 Examples::

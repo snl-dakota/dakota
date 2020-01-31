@@ -157,12 +157,12 @@ void write_data_tabular(const std::string& output_filename,
 bool exists_extra_data(std::istream& tabular_file);
 
 /// read and discard header line from the stream
-void read_header_tabular(std::istream& input_stream, 
-			 unsigned short tabular_format);
+StringArray read_header_tabular(std::istream& input_stream,
+				unsigned short tabular_format);
 
 /// read leading columns [ int eval_id [ String iface_id ] ]
-int read_leading_columns(std::istream& input_stream,
-			 unsigned short tabular_format);
+void read_leading_columns(std::istream& input_stream,
+			  unsigned short tabular_format);
 /// read leading columns [ int eval_id [ String iface_id ] ]
 void read_leading_columns(std::istream& input_stream,
 			  unsigned short tabular_format,
@@ -189,7 +189,9 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       Variables vars, size_t num_fns,
 		       RealMatrix& vars_matrix, RealMatrix& resp_matrix, 
-                       unsigned short tabular_format, bool active_only);
+                       unsigned short tabular_format,
+		       bool verbose=false, bool use_var_labels=false,
+		       bool active_only=false);
 
 /// Tabular read for PCE import: read possibly header-annotated
 /// whitespace-separated data of unknown length where each row has
@@ -209,7 +211,8 @@ void read_data_tabular(const std::string& input_filename,
 		       const std::string& context_message,
 		       Variables vars, Response resp, PRPList& input_prp,
 		       unsigned short tabular_format,
-		       bool verbose=false, bool active_only=false);
+		       bool verbose=false, bool use_var_labels=false,
+		       bool active_only=false);
 
 /// Tabular read for import_approx_points_file: read
 /// whitespace-separated data with optional row and column headers

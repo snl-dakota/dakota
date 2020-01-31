@@ -8,15 +8,16 @@
 
 environment    
   tabular_data    
+# Proliferate as comment to user manual:
 #    tabular_data_file = 'cantilever_uq_global_interval.dat'  #s0
 
 method									 
-  global_interval_est ego     #s0,#p0
-#	global_interval_est lhs		  #s1
-    seed = 1234567 	#s0,#s1,#p0
-#	local_interval_est sqp		  #s2,#p1
-#	local_interval_est nip		  #s3
-    output verbose	   		  
+  global_interval_est ego     		#s0,#p0
+#	global_interval_est lhs		#s1
+    seed = 1234567 	    		#s0,#s1,#p0
+#	local_interval_est sqp		#s2,#p1
+#	local_interval_est nip		#s3
+#    output verbose
 
 variables
   continuous_interval_uncertain = 2
@@ -41,8 +42,8 @@ interface
 responses
   response_functions = 3
   descriptors = 'weight' 'stress' 'displ'
-  no_gradients						  #s0,#s1,#p0
-#  analytic_gradients				#s2,#s3
+  no_gradients		 	  	#s0,#s1,#p0
+#  analytic_gradients			#s2,#s3
 #  numerical_gradients			#p1
-#    interval_type central	#p1
+#    interval_type central		#p1
   no_hessians

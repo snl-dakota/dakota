@@ -380,9 +380,8 @@ void ExperimentData::load_data(const std::string& context_message)
       if (numConfigVars > 0)
 	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
 	     << allConfigVars[i];
-      Cout << "  Experiment " << i+1 << " data values:"<< "\n";
-      write_data(Cout, allExperiments[i].function_values());
-      Cout << '\n';
+      Cout << "  Experiment " << i+1 << " data values:"<< "\n"
+	   << allExperiments[i].function_values() << '\n';
     }
   }
 
@@ -687,6 +686,12 @@ num_fields() const
 }
 
 
+size_t ExperimentData::num_config_vars() const
+{
+  return numConfigVars; 
+}
+
+
 const std::vector<RealVector>& ExperimentData::config_vars() const
 {
   return allConfigVars;
@@ -716,6 +721,15 @@ const RealVector& ExperimentData::all_data(size_t experiment)
     abort_handler(-1);
   }
   return allExperiments[experiment].function_values();
+}
+
+const Response& ExperimentData::response(size_t experiment) 
+{
+  if (experiment >= allExperiments.size()) {
+    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
+    abort_handler(-1);
+  }
+  return allExperiments[experiment];
 }
 
 size_t ExperimentData::num_total_exppoints() const
@@ -878,6 +892,15 @@ apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
   
 }
 
+void ExperimentData::apply_simulation_error(const RealVector& simulation_error,
+                                            size_t experiment)
+{
+  Response exp_response = allExperiments[experiment];
+  const RealVector& exp_vals = exp_response.function_values();
+  for (size_t i = 0; i < allExperiments[experiment].num_functions(); i++)
+    exp_response.function_value(exp_vals[i] + simulation_error[i], i);
+}
+
 
 void ExperimentData::
 get_main_diagonal(RealVector &diagonal, size_t experiment ) const
@@ -906,6 +929,13 @@ void ExperimentData::cov_as_correlation(RealSymMatrixArray& corr_matrices) const
       allExperiments[exp_ind].experiment_covariance();
     exp_cov.as_correlation(corr_matrices[exp_ind]);
   }
+}
+
+void ExperimentData::covariance(int exp_ind, RealSymMatrix& cov_mat) const
+{
+  const ExperimentCovariance& exp_cov = 
+    allExperiments[exp_ind].experiment_covariance();
+  exp_cov.dense_covariance(cov_mat);
 }
 
 
@@ -964,7 +994,6 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
   RealMatrix sim_grads = sim_resp.function_gradients_view();
   RealSymMatrixArray sim_hessians = sim_resp.function_hessians_view();
 
-  size_t i, j;
   const IntVector& sim_field_lens = sim_resp.field_lengths();
 
   short asv = total_asv[exp_ind];
@@ -974,38 +1003,37 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
 
   if (!interpolateFlag) {
 
-    for (i=0; i<exp_resid_size; i++){
+    for (size_t i=0; i<exp_resid_size; i++){
       exp_residuals[i] =
 	sim_fns[i] - allExperiments[exp_ind].function_value(i);
+     }
+    // populate only the part of the gradients/Hessians for this
+    // experiment, for the active submodel derivative variables
+    if ( asv & 2 ){
+      size_t num_sm_cv = sim_grads.numRows();
+      RealMatrix resid_grads
+	(gradients_view(residual_resp.function_gradients(), exp_ind));
+      resid_grads = 0.0;
+      for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind)
+	for (size_t i=0; i<num_sm_cv; ++i)
+	  resid_grads(i, r_ind) = sim_grads(i, r_ind);
+    }
 
-      // populate only the part of the gradients/Hessians for this
-      // experiment, for the active submodel derivative variables
-      if ( asv & 2 ){
-	size_t num_sm_cv = sim_grads.numRows();
-	RealMatrix resid_grads
-	  (gradients_view(residual_resp.function_gradients(), exp_ind));
-	resid_grads = 0.0;
-	for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind)
-	  for (size_t i=0; i<num_sm_cv; ++i)
-	    resid_grads(i, r_ind) = sim_grads(i, r_ind);
-      }
-
-      if ( asv & 4 ) {
-	size_t num_sm_cv = sim_grads.numRows();
-	RealSymMatrixArray resid_hess
-	  (hessians_view(residual_resp.function_hessians(), exp_ind));
-	for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind) {
-	  resid_hess[r_ind] = 0.0;
-	  for (size_t i=0; i<num_sm_cv; ++i)
-	    for (size_t j=0; j<num_sm_cv; ++j)
-	      resid_hess[r_ind](i,j) = sim_hessians[r_ind](i,j);
-	}
+    if ( asv & 4 ) {
+      size_t num_sm_cv = sim_grads.numRows();
+      RealSymMatrixArray resid_hess
+	(hessians_view(residual_resp.function_hessians(), exp_ind));
+      for (size_t r_ind = 0; r_ind<exp_resid_size; ++r_ind) {
+	resid_hess[r_ind] = 0.0;
+	for (size_t i=0; i<num_sm_cv; ++i)
+	  for (size_t j=0; j<num_sm_cv; ++j)
+	    resid_hess[r_ind](i,j) = sim_hessians[r_ind](i,j);
       }
     }
 
   } else {   
 
-    for (i=0; i<num_scalars(); i++) {
+    for (size_t i=0; i<num_scalars(); i++) {
       exp_residuals[i] = sim_fns[i] - allExperiments[exp_ind].function_value(i);
       // BMA: Looked like gradients and Hessians of the scalars weren't
       // populated, so added:
@@ -1047,9 +1075,9 @@ form_residuals(const Response& sim_resp, size_t exp_ind,
       // compute the residuals, i.e. subtract the experiment data values
       // from the (interpolated) simulation values.
       size_t cntr = num_scalars();
-      for (i=0; i<num_fields(); i++){
+      for (size_t i=0; i<num_fields(); i++){
 	size_t num_field_fns = field_data_view(i,exp_ind).length();
-	for (j=0; j<num_field_fns; j++, cntr++)
+	for (size_t j=0; j<num_field_fns; j++, cntr++)
 	  exp_residuals[cntr] -= field_data_view(i,exp_ind)[j];
       }
       if (outputLevel >= DEBUG_OUTPUT) 

@@ -42,8 +42,11 @@ NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
 
 /** This is the primary constructor.  It accepts a Model reference. */
 NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
-  LeastSq(problem_db, model), SOLBase(model)
+  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
               probDescDB.get_int("method.npsol.verify_level"),
@@ -58,7 +61,7 @@ NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor which accepts a Model but does
     not have a supporting method specification from the ProblemDescDB. */
 NLSSOLLeastSq::NLSSOLLeastSq(Model& model):
-  LeastSq(NLSSOL_SQP, model), SOLBase(model)
+  LeastSq(NLSSOL_SQP, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel, -1,
@@ -189,13 +192,7 @@ void NLSSOLLeastSq::core_run()
   RealVector augmented_l_bnds, augmented_u_bnds;
   copy_data(iteratedModel.continuous_lower_bounds(), augmented_l_bnds);
   copy_data(iteratedModel.continuous_upper_bounds(), augmented_u_bnds);
-  augment_bounds(augmented_l_bnds, augmented_u_bnds,
-		 iteratedModel.linear_ineq_constraint_lower_bounds(),
-		 iteratedModel.linear_ineq_constraint_upper_bounds(),
-		 iteratedModel.linear_eq_constraint_targets(),
-		 iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		 iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		 iteratedModel.nonlinear_eq_constraint_targets());
+  augment_bounds(augmented_l_bnds, augmented_u_bnds, iteratedModel);
 
   NLSSOL_F77( num_least_sq_terms, num_cv, num_linear_constraints,
 	      num_nonlinear_constraints, linConstraintArraySize,
@@ -220,19 +217,22 @@ void NLSSOLLeastSq::core_run()
   // local_des_vars, local_lsq_vals, & local_c_vals contain the optimal design 
   // (not the final fn. eval) since NLSSOL performs this assignment internally 
   // prior to exiting (see "Subroutine npsol" section of NPSOL manual).
+
+  // Always populate bestVariables; DakotaLeastSq will unscale if needed
   bestVariablesArray.front().continuous_variables(local_des_vars);
 
-  // If no interpolation, numUserPrimaryFns <= numLsqTerms.  Copy the
-  // first block of inbound model fns to best.  If data transform,
-  // will be further transformed back to user space (weights, scale,
-  // data) if needed in LeastSq::post_run
   RealVector best_fns = bestResponseArray.front().function_values_view();
-  // take care with each copy to not resize the best_fns
-  if ( !(calibrationDataFlag && expData.interpolate_flag()) )
-    copy_data_partial(local_lsq_vals, 0, (int)numUserPrimaryFns, best_fns, 0);
+
+  // Always cache best iterator functions
+  bestIterPriFns = local_lsq_vals;
+  retrievedIterPriFns = true;
+
+  // Always populate bestResponse with constraints; DakotaLeastSq will
+  // unscale if needed.
+  // This must use an offset of the # user/native functions since the
+  // bestResponseArray is in original space
   if (numNonlinearConstraints)
-    copy_data_partial(local_c_vals, 0, (int)nlnConstraintArraySize, best_fns,
-		      (int)numUserPrimaryFns);
+    copy_data_partial(local_c_vals, best_fns, (int)numUserPrimaryFns);
 
   /*
   // For better post-processing, could append fort.9 to dakota.out line

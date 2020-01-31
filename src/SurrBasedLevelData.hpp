@@ -27,12 +27,22 @@ enum { APPROX_RESPONSE=1, TRUTH_RESPONSE };
 enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
        CORR_TRUTH_RESPONSE,    UNCORR_TRUTH_RESPONSE };
 // bits for trust region status
-enum { NEW_CANDIDATE=1,  NEW_CENTER=2,      NEW_TR_FACTOR=4,
-       HARD_CONVERGED=8, SOFT_CONVERGED=16, MIN_TR_CONVERGED=32,
-       MAX_ITER_CONVERGED=64,
-       NEW_TRUST_REGION=(NEW_CENTER | NEW_TR_FACTOR),
-       CONVERGED=(HARD_CONVERGED    | SOFT_CONVERGED |
-		  MIN_TR_CONVERGED  | MAX_ITER_CONVERGED) };
+enum { NEW_CANDIDATE      =    1,
+       CANDIDATE_ACCEPTED =    2,
+     //CANDIDATE_REJECTED =    4,
+       CANDIDATE_STATE    = (NEW_CANDIDATE | CANDIDATE_ACCEPTED),// | _REJECTED
+       NEW_CENTER         =    8,
+       CENTER_BUILT       =   16,
+     //CENTER_PENDING     =   32,
+       CENTER_STATE       = (NEW_CENTER | CENTER_BUILT),// | CENTER_PENDING
+       NEW_TR_FACTOR      =   64,
+       NEW_TRUST_REGION   = (NEW_CENTER | NEW_TR_FACTOR),
+       HARD_CONVERGED     =  128,
+       SOFT_CONVERGED     =  256,
+       MIN_TR_CONVERGED   =  512,
+       MAX_ITER_CONVERGED = 1024,
+       CONVERGED          = (HARD_CONVERGED   | SOFT_CONVERGED |
+			     MIN_TR_CONVERGED | MAX_ITER_CONVERGED) };
 
 
 class SurrBasedLevelData
@@ -49,10 +59,16 @@ public:
   /// initialize response objects via copy
   void initialize_data(const Variables& vars, const Response& approx_resp,
 		       const Response& truth_resp, bool uncorr = true);
-  /// initialize model forms and discretization levels
-  void initialize_indices(size_t approx_form, size_t truth_form,
-			  size_t approx_level = _NPOS,
-			  size_t truth_level  = _NPOS);
+  /// initialize {truth,approx}ModelKey from model forms,discretization levels
+  void initialize_keys(unsigned short group,
+		       unsigned short truth_form, unsigned short approx_form,
+		       unsigned short truth_level  = USHRT_MAX,
+		       unsigned short approx_level = USHRT_MAX);
+  /// initialize {truth,approx}ModelKey from aggregate_key
+  void initialize_keys(const UShortArray& aggregate_key);
+
+  /// perform several reset operations to restore initialized state
+  void reset();
 
   /// return full status (all bits)
   unsigned short status();
@@ -106,6 +122,13 @@ public:
   void response_center_pair(int eval_id, const Response& resp,
 			    short corr_response_type);
 
+  void reset_filter();
+  void initialize_filter(Real new_f, Real new_g);
+  void initialize_filter(Real new_f);
+  bool update_filter(Real new_f, Real new_g);
+  bool update_filter(Real new_f);
+  size_t filter_size() const;
+
   Real trust_region_factor();
   void trust_region_factor(Real val);
   void scale_trust_region_factor(Real val);
@@ -125,13 +148,15 @@ public:
 		       bool uncorr = true);
   void active_set_star(short request, short response_type, bool uncorr = true);
 
-  size_t approx_model_form();
-  size_t approx_model_level();
+  const UShortArray& paired_key() const;
 
-  size_t truth_model_form();
-  size_t truth_model_level();
+  unsigned short data_group();
 
-  SizetSizet2DPair indices();
+  unsigned short truth_model_form();
+  unsigned short truth_model_level();
+
+  unsigned short approx_model_form();
+  unsigned short approx_model_level();
 
   const RealVector& tr_lower_bounds() const;
   Real tr_lower_bound(size_t i) const;
@@ -188,14 +213,20 @@ private:
   ///                     has reached the maximum allowable
   unsigned short trustRegionStatus; // or use BitArray
 
+  /// Pareto set of (objective, constraint violation) pairs defining a
+  /// (slanting) filter for iterate selection/rejection
+  RealRealPairSet paretoFilter;
+
   /// number of consecutive candidate point rejections.  If the
   /// count reaches softConvLimit, stop SBLM.
   unsigned short softConvCount;
 
-  /// model form and discretization level indices for the approximate model
-  SizetSizetPair approxModelIndices;
-  /// model form and discretization level indices for the truth model
-  SizetSizetPair truthModelIndices;
+  /// group, model form, discretization level indices for the approximate model
+  UShortArray approxModelKey;
+  /// group, model form, discretization level indices for the truth model
+  UShortArray truthModelKey;
+  /// aggregation of {truth,approx} model keys
+  UShortArray pairedModelKey;
 
   /// Trust region lower bounds
   RealVector trLowerBounds;
@@ -206,7 +237,7 @@ private:
 
 inline SurrBasedLevelData::SurrBasedLevelData():
   trustRegionFactor(1.), trustRegionStatus(NEW_CENTER | NEW_TR_FACTOR),
-  softConvCount(0), approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
+  softConvCount(0)
 { responseStarTruthCorrected.first = responseCenterTruthCorrected.first = 0; }
 
 
@@ -216,8 +247,8 @@ inline SurrBasedLevelData::~SurrBasedLevelData()
 
 inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
 {
-  trLowerBounds.sizeUninitialized(num_c_vars); // assign -DBL_MAX?
-  trUpperBounds.sizeUninitialized(num_c_vars); // assign +DBL_MAX?
+  trLowerBounds.sizeUninitialized(num_c_vars); // assign -dbl_inf?
+  trUpperBounds.sizeUninitialized(num_c_vars); // assign  dbl_inf?
 }
 
 
@@ -253,7 +284,8 @@ inline void SurrBasedLevelData::vars_center(const Variables& vars)
 {
   varsCenter.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
-  set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CENTER);
 }
 
 
@@ -268,14 +300,16 @@ inline Real SurrBasedLevelData::c_var_center(size_t i) const
 inline void SurrBasedLevelData::c_vars_center(const RealVector& c_vars)
 {
   varsCenter.continuous_variables(c_vars);
-  set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CENTER);
 }
 
 
 inline void SurrBasedLevelData::c_var_center(Real c_var, size_t i)
 {
   varsCenter.continuous_variable(c_var, i);
-  set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CENTER);
 }
 
 
@@ -291,7 +325,8 @@ inline void SurrBasedLevelData::vars_star(const Variables& vars)
 {
   varsStar.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
-  set_status_bits(NEW_CANDIDATE);  reset_status_bits(NEW_CENTER);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CANDIDATE);
 }
 
 
@@ -306,14 +341,16 @@ inline Real SurrBasedLevelData::c_var_star(size_t i) const
 inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars)
 {
   varsStar.continuous_variables(c_vars);
-  set_status_bits(NEW_CANDIDATE);  reset_status_bits(NEW_CENTER);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CANDIDATE);
 }
 
 
 inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
 {
   varsStar.continuous_variable(c_var, i);
-  set_status_bits(NEW_CANDIDATE);  reset_status_bits(NEW_CENTER);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CANDIDATE);
 }
 
 
@@ -369,24 +406,48 @@ response_center_pair(IntResponsePair& pair, short corr_response_type)
 { response_center_pair(pair.first, pair.second, corr_response_type); }
 
 
-inline size_t SurrBasedLevelData::approx_model_form()
-{ return approxModelIndices.first; }
+inline const UShortArray& SurrBasedLevelData::paired_key() const
+{ return pairedModelKey; }
 
 
-inline size_t SurrBasedLevelData::truth_model_form()
-{ return truthModelIndices.first; }
+inline unsigned short SurrBasedLevelData::data_group()
+{
+  if       (!truthModelKey.empty()) return  truthModelKey.front();
+  else if (!approxModelKey.empty()) return approxModelKey.front();
+  else                              return                      0;
+}
 
 
-inline size_t SurrBasedLevelData::approx_model_level()
-{ return approxModelIndices.second; }
+inline unsigned short SurrBasedLevelData::truth_model_form()
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[1]; }
 
 
-inline size_t SurrBasedLevelData::truth_model_level()
-{ return truthModelIndices.second; }
+inline unsigned short SurrBasedLevelData::truth_model_level()
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
 
 
-inline SizetSizet2DPair SurrBasedLevelData::indices()
-{ return std::make_pair(approxModelIndices, truthModelIndices); }
+inline unsigned short SurrBasedLevelData::approx_model_form()
+{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[1]; }
+
+
+inline unsigned short SurrBasedLevelData::approx_model_level()
+{ return (approxModelKey.empty()) ? USHRT_MAX : approxModelKey[2]; }
+
+
+inline void SurrBasedLevelData::reset_filter()
+{ paretoFilter.clear(); }
+
+
+inline void SurrBasedLevelData::initialize_filter(Real new_f, Real new_g)
+{ reset_filter(); paretoFilter.insert(RealRealPair(new_f, new_g)); }
+
+
+inline void SurrBasedLevelData::initialize_filter(Real new_f)
+{ reset_filter(); paretoFilter.insert(RealRealPair(new_f, 0.)); }
+
+
+inline size_t SurrBasedLevelData::filter_size() const
+{ return paretoFilter.size(); }
 
 
 inline Real SurrBasedLevelData::trust_region_factor()
@@ -411,6 +472,14 @@ inline void SurrBasedLevelData::reset_soft_convergence_count()
 
 inline void SurrBasedLevelData::increment_soft_convergence_count()
 { ++softConvCount; }
+
+
+inline void SurrBasedLevelData::reset()
+{
+  reset_soft_convergence_count();
+  reset_status_bits(CONVERGED);
+  reset_filter();
+}
 
 
 inline const RealVector& SurrBasedLevelData::tr_lower_bounds() const

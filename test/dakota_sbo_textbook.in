@@ -14,7 +14,6 @@
 # setting which is invoked if the "correction" keyword is omitted.
 
 environment,
-#	graphics
 	method_pointer = 'SBLO'
 
 method,
@@ -27,6 +26,7 @@ method,
 	  initial_size = 0.10
 	  contraction_factor = 0.5
 	  expansion_factor   = 1.50
+	  soft_convergence   = 1    # slowed convergence
 
 method,
 	id_method = 'NLP'

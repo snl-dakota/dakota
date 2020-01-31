@@ -15,6 +15,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "dakota_preproc_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
@@ -184,7 +185,7 @@ ProblemDescDB::~ProblemDescDB()
     DB setup phase 2: optionally insert additional data via late sets.
     Rank 0 only. */
 void ProblemDescDB::
-parse_inputs(const ProgramOptions& prog_opts, 
+parse_inputs(ProgramOptions& prog_opts, 
 	     DbCallbackFunctionPtr callback, void *callback_data)
 {
   if (dbRep) {
@@ -207,11 +208,53 @@ parse_inputs(const ProgramOptions& prog_opts,
 	abort_handler(PARSE_ERROR);
       }
 
-      if (prog_opts.echo_input())
-	echo_input_file(prog_opts);
+      // Read the input from stdin if the user provided "-" as the filename
+      if(prog_opts.input_file() == "-") {
+        Cout << "Reading Dakota input from standard input" << std::endl;
+        String stdin_string;
+        char in = std::cin.get();
+        while(std::cin.good()) {
+          stdin_string.push_back(in);
+          in = std::cin.get();
+        }
+        prog_opts.input_string(stdin_string);
+      }
 
-      // Parse the input file using one of the derived parser-specific classes
-      derived_parse_inputs(prog_opts);
+      if (prog_opts.preproc_input()) {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
+			  " template");
+
+	std::string tmpl_file = prog_opts.input_file();
+	if (!prog_opts.input_string().empty())
+	  // must generate to file on disk for pyprepro
+	  tmpl_file = string_to_tmpfile(prog_opts.input_string());
+
+	// run the pre-processor on the file
+	std::string preproc_file = pyprepro_input(tmpl_file,
+						  prog_opts.preproc_cmd());
+
+	if (prog_opts.echo_input())
+	  echo_input_file(preproc_file, "");
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(preproc_file, "", prog_opts.parser_options());
+
+	boost::filesystem::remove(preproc_file);
+	if (!prog_opts.input_string().empty())
+	  boost::filesystem::remove(tmpl_file);
+      }
+      else {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string());
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(prog_opts.input_file(), prog_opts.input_string(),
+			     prog_opts.parser_options());
+
+      }
 
       // Allow user input by callback function.
       
@@ -272,6 +315,7 @@ void ProblemDescDB::broadcast()
     // to all other ranks.
     if (parallelLib.world_size() > 1) {
       if (parallelLib.world_rank() == 0) {
+	enforce_unique_ids();
 	derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
@@ -296,6 +340,7 @@ void ProblemDescDB::broadcast()
 	   << dataVariablesList << dataInterfaceList << dataResponsesList
 	   << std::endl;
 #endif // DEBUG
+      enforce_unique_ids();
       derived_broadcast();
     }
   }
@@ -316,10 +361,13 @@ void ProblemDescDB::post_process()
 
 
 void ProblemDescDB::
-derived_parse_inputs(const ProgramOptions& prog_opts)
+derived_parse_inputs(const std::string& dakota_input_file,
+		     const std::string& dakota_input_string,
+		     const std::string& parser_options)
 {
   if (dbRep)
-    dbRep->derived_parse_inputs(prog_opts);
+    dbRep->derived_parse_inputs(dakota_input_file, dakota_input_string,
+				parser_options);
   else { // this fn must be redefined
     Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
 	 << " function.\n       No default defined at base class." << std::endl;
@@ -480,7 +528,7 @@ void ProblemDescDB::set_db_list_nodes(const String& method_tag)
   // through: do not update iterators or locks, such that previous
   // specification settings remain active (NO_SPECIFICATION instances
   // within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_METHOD_ID_")) {
     set_db_method_node(method_tag);
     if (methodDBLocked) {
       modelDBLocked = variablesDBLocked = interfaceDBLocked
@@ -581,7 +629,7 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
   // through: do not update dataMethodIter or methodDBLocked, such that
   // previous specification settings remain active (NO_SPECIFICATION
   // instances within a recursion do not alter list node sequencing).
-  else if (method_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(method_tag, "NOSPEC_METHOD_ID_")) {
     // set the correct Index values for all Data class lists.
     if (method_tag.empty()) { // no pointer specification
       if (dataMethodList.size() == 1) // no ambiguity if only one spec
@@ -693,9 +741,11 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
   // through: do not update model iterators or locks, such that previous
   // specification settings remain active (NO_SPECIFICATION instances
   // within a recursion do not alter list node sequencing).
-  else if (model_tag != "NO_SPECIFICATION") {
+  else if (! (model_tag == "NO_SPECIFICATION" || 
+        strbegins(model_tag, "NOSPEC_MODEL_ID_") ||
+        strbegins(model_tag, "RECAST_"))) {
     // set dataModelIter from model_tag
-    if (model_tag.empty()) { // no pointer specification
+    if (model_tag.empty() || model_tag == "NO_MODEL_ID") { // no pointer specification
       if (dataModelList.empty()) { // Note: check_input() prevents this
 	DataModel data_model; // for library mode
 	dataModelList.push_back(data_model);
@@ -825,10 +875,10 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
   // through: do not update dataInterfaceIter or interfaceDBLocked, such
   // that previous specification remains active (NO_SPECIFICATION
   // instances within a recursion do not alter list node sequencing).
-  else if (interface_tag != "NO_SPECIFICATION") {
+  else if (!strbegins(interface_tag, "NOSPEC_INTERFACE_ID_")) {
     DataModelRep *MoRep = dataModelIter->dataModelRep;
     // set dataInterfaceIter from interface_tag
-    if (interface_tag.empty()) { // no pointer specification
+    if (interface_tag.empty() || interface_tag == "NO_ID") { // no pointer specification
       if (dataInterfaceList.size() == 1) // no ambiguity if only one spec
 	dataInterfaceIter = dataInterfaceList.begin();
       else { // try to match to a interface without an id
@@ -996,7 +1046,9 @@ const Iterator& ProblemDescDB::get_iterator()
   // Reuse logic works in both cases -> only a single unreferenced iterator
   // may exist, which corresponds to the last method spec and is reused for
   // all untagged instantiations.
-  const String& id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  String id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
                    boost::bind(&Iterator::method_id, _1) == id_method);
@@ -1004,7 +1056,7 @@ const Iterator& ProblemDescDB::get_iterator()
     Iterator new_iterator(*this);
     dbRep->iteratorList.push_back(new_iterator);
     i_it = --dbRep->iteratorList.end();
-  }
+  } 
   return *i_it;
 }
 
@@ -1019,7 +1071,9 @@ const Iterator& ProblemDescDB::get_iterator(Model& model)
     abort_handler(PARSE_ERROR);
   }
 
-  const String& id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  String id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
                    boost::bind(&Iterator::method_id, _1) == id_method);
@@ -1092,7 +1146,9 @@ const Model& ProblemDescDB::get_model()
   // The DB list nodes are set prior to calling get_model():
   // >    model_ptr spec -> id_model must be defined
   // > no model_ptr spec -> id_model is ignored, model spec is last parsed
-  const String& id_model = dbRep->dataModelIter->dataModelRep->idModel;
+  String id_model = dbRep->dataModelIter->dataModelRep->idModel;
+  if(id_model.empty())
+    id_model = "NO_MODEL_ID";
   ModelLIter m_it
     = std::find_if(dbRep->modelList.begin(), dbRep->modelList.end(),
                    boost::bind(&Model::model_id, _1) == id_model);
@@ -1180,8 +1236,11 @@ const Interface& ProblemDescDB::get_interface()
   // The DB list nodes are set prior to calling get_interface():
   // >    interface_ptr spec -> id_interface must be defined
   // > no interface_ptr spec -> id_interf ignored, interf spec = last parsed
-  const String& id_interface
+  String id_interface
     = dbRep->dataInterfaceIter->dataIfaceRep->idInterface;
+  if(id_interface.empty())
+    id_interface = "NO_ID";
+  
   InterfLIter i_it
     = std::find_if(dbRep->interfaceList.begin(), dbRep->interfaceList.end(),
                    boost::bind(&Interface::interface_id, _1) == id_interface);
@@ -1421,6 +1480,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nond.dimension_preference", P anisoDimPref},
 	{"nond.hyperprior_alphas", P hyperPriorAlphas},
 	{"nond.hyperprior_betas", P hyperPriorBetas},
+	{"nond.prediction_configs", P predictionConfigList},
 	{"nond.proposal_covariance_data", P proposalCovData},
 	{"nond.regression_noise_tolerance", P regressionNoiseTol},
 	{"parameter_study.final_point", P finalPoint},
@@ -1571,7 +1631,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nonlinear_inequality_scales", P nonlinearIneqScales},
 	{"nonlinear_inequality_upper_bounds", P nonlinearIneqUpperBnds},
 	{"primary_response_fn_scales", P primaryRespFnScales},
-	{"primary_response_fn_weights", P primaryRespFnWeights}};
+	{"primary_response_fn_weights", P primaryRespFnWeights}, 
+        {"simulation_variance", P simVariance}};
     #undef P
 
     KW<RealVector, DataResponsesRep> *kw;
@@ -1733,8 +1794,10 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<SizetArray, DataMethodRep> SZAdme[] = {	
       // must be sorted by string (key)
-      {"nond.collocation_points", P collocationPoints},
-      {"nond.expansion_samples", P expansionSamples},
+      {"nond.c3function_train.start_order_sequence", P startOrderSeq},
+      {"nond.c3function_train.start_rank_sequence", P startRankSeq},
+      {"nond.collocation_points", P collocationPointsSeq},
+      {"nond.expansion_samples", P expansionSamplesSeq},
       {"nond.pilot_samples", P pilotSamples}};
     #undef P
 
@@ -1760,9 +1823,9 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<UShortArray, DataMethodRep> USAdme[] = {	
       // must be sorted by string (key)
-	{"nond.expansion_order", P expansionOrder},
-	{"nond.quadrature_order", P quadratureOrder},
-	{"nond.sparse_grid_level", P sparseGridLevel},
+	{"nond.expansion_order", P expansionOrderSeq},
+	{"nond.quadrature_order", P quadratureOrderSeq},
+	{"nond.sparse_grid_level", P sparseGridLevelSeq},
 	{"nond.tensor_grid_order", P tensorGridOrder},
 	{"partitions", P varPartitions}};
     #undef P
@@ -2271,6 +2334,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<String, DataMethodRep> Sdme[] = {	
       // must be sorted by string (key)
+	{"advanced_options_file", P advancedOptionsFilename},
 	{"asynch_pattern_search.merit_function", P meritFunction},
 	{"batch_selection", P batchSelectionType},
 	{"coliny.beta_solver_name", P betaSolverName},
@@ -2281,7 +2345,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"dl_solver.dlDetails", P dlDetails},
 	{"export_approx_points_file", P exportApproxPtsFile},
 	{"fitness_metric", P fitnessMetricType},
-  {"fitness_type", P fitnessType},
+	{"fitness_type", P fitnessType},
 	{"flat_file", P flatFile},
 	{"hybrid.global_method_name", P hybridGlobalMethodName},
 	{"hybrid.global_method_pointer", P hybridGlobalMethodPointer},
@@ -2293,6 +2357,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"import_approx_points_file", P importApproxPtsFile},
 	{"import_build_points_file", P importBuildPtsFile},
 	{"import_candidate_points_file", P importCandPtsFile},
+	{"import_prediction_configs", P importPredConfigs},
 	{"initialization_type", P initializationType},
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
@@ -2302,13 +2367,17 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"low_fidelity_model_pointer", P lowFidModelPointer},
 	{"mesh_adaptive_search.display_format", P displayFormat},
 	{"mesh_adaptive_search.history_file", P historyFile},
-  {"mesh_adaptive_search.use_surrogate", P useSurrogate},
+	{"mesh_adaptive_search.use_surrogate", P useSurrogate},
 	{"model_pointer", P modelPointer},
 	{"mutation_type", P mutationType},
 	{"nond.data_dist_cov_type", P dataDistCovInputType},
         {"nond.data_dist_filename", P dataDistFile},
 	{"nond.data_dist_type", P dataDistType},
+	{"nond.discrepancy_type", P modelDiscrepancyType},
 	{"nond.expansion_sample_type", P expansionSampleType},
+	{"nond.export_corrected_model_file", P exportCorrModelFile},
+	{"nond.export_corrected_variance_file", P exportCorrVarFile},
+	{"nond.export_discrepancy_file", P exportDiscrepFile},
 	{"nond.export_expansion_file", P exportExpansionFile},
 	{"nond.export_mcmc_points_file", P exportMCMCPtsFile},
 	{"nond.import_expansion_file", P importExpansionFile},
@@ -2439,13 +2508,12 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"asynch_pattern_search.initial_delta", P initStepLength},
 	{"asynch_pattern_search.smoothing_factor", P smoothFactor},
 	{"asynch_pattern_search.solution_target", P solnTarget},
-	{"asynch_pattern_search.threshold_delta", P threshStepLength},
 	{"coliny.contraction_factor", P contractFactor},
 	{"coliny.global_balance_parameter", P globalBalanceParam},
 	{"coliny.initial_delta", P initDelta},
 	{"coliny.local_balance_parameter", P localBalanceParam},
 	{"coliny.max_boxsize_limit", P maxBoxSize},
-	{"coliny.threshold_delta", P threshDelta},
+	{"coliny.variable_tolerance", P threshDelta},
 	{"confidence_level", P wilksConfidenceLevel},
 	{"constraint_penalty", P constraintPenalty},
 	{"constraint_tolerance", P constraintTolerance},
@@ -2453,13 +2521,14 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"crossover_rate", P crossoverRate},
 	{"dream.gr_threshold", P grThreshold},
 	{"function_precision", P functionPrecision},
+	{"gradient_tolerance", P gradientTolerance},
 	{"hybrid.local_search_probability", P hybridLSProb},
 	{"jega.fitness_limit", P fitnessLimit},
 	{"jega.percent_change", P convergenceTolerance},
 	{"jega.shrinkage_percentage", P shrinkagePercent},
 	{"mesh_adaptive_search.initial_delta", P initMeshSize},
-	{"mesh_adaptive_search.threshold_delta", P minMeshSize},
 	{"mesh_adaptive_search.variable_neighborhood_search", P vns},
+	{"mesh_adaptive_search.variable_tolerance", P minMeshSize},
 	{"min_boxsize_limit", P minBoxSize},
 	{"mutation_rate", P mutationRate},
 	{"mutation_scale", P mutationScale},
@@ -2468,25 +2537,29 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"nl2sol.initial_trust_radius", P initTRRadius},
 	{"nl2sol.singular_conv_tol", P singConvTol},
 	{"nl2sol.singular_radius", P singRadius},
-	{"nl2sol.x_conv_tol", P xConvTol},
+	{"nond.c3function_train.rounding_tolerance", P roundingTolerance},
+	{"nond.c3function_train.solver_tolerance", P solverTolerance},
 	{"nond.collocation_ratio", P collocationRatio},
 	{"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
+	{"nond.multilevel_estimator_rate", P multilevEstimatorRate},
 	{"nond.regression_penalty", P regressionL2Penalty},
 	{"npsol.linesearch_tolerance", P lineSearchTolerance},
 	{"optpp.centering_parameter", P centeringParam},
-	{"optpp.gradient_tolerance", P gradientTolerance},
 	{"optpp.max_step", P maxStep},
 	{"optpp.steplength_to_boundary", P stepLenToBoundary},
 	{"percent_variance_explained", P percentVarianceExplained},
+	{"prior_prop_cov_mult", P priorPropCovMult},
 	{"solution_target", P solnTarget},
 	{"trust_region.contract_threshold", P trustRegionContractTrigger},
 	{"trust_region.contraction_factor", P trustRegionContract},
 	{"trust_region.expand_threshold", P trustRegionExpandTrigger},
 	{"trust_region.expansion_factor", P trustRegionExpand},
 	{"trust_region.minimum_size", P trustRegionMinSize},
+	{"variable_tolerance", P threshStepLength},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
-	{"volume_boxsize_limit", P volBoxSize}};
+	{"volume_boxsize_limit", P volBoxSize},
+	{"x_conv_tol", P xConvTol}};
     #undef P
 
     KW<Real, DataMethodRep> *kw;
@@ -2503,12 +2576,15 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"active_subspace.cv.relative_tolerance", P relTolerance},
       {"active_subspace.truncation_method.energy.truncation_tolerance", P truncationTolerance},
       {"adapted_basis.collocation_ratio", P adaptedBasisCollocRatio},
+      {"c3function_train.rounding_tolerance", P roundingTolerance},
+      {"c3function_train.solver_tolerance", P solverTolerance},
       {"convergence_tolerance", P convergenceTolerance},
       {"surrogate.discont_grad_thresh", P discontGradThresh},
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
       {"surrogate.neural_network_range", P annRange},
       {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold},
+      {"surrogate.regression_penalty", P regressionL2Penalty},
       {"truncation_tolerance", P truncationTolerance}};
     #undef P
 
@@ -2549,6 +2625,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<int, DataMethodRep> Idme[] = {	
       // must be sorted by string (key)
+        {"batch_size", P batchSize},
 	{"build_samples", P buildSamples},
 	{"burn_in_samples", P burnInSamples},
 	{"coliny.contract_after_failure", P contractAfterFail},
@@ -2562,16 +2639,20 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"dream.jump_step", P jumpStep},
 	{"dream.num_chains", P numChains},
 	{"dream.num_cr", P numCR},
+        {"evidence_samples", P evidenceSamples},
 	{"fsu_cvt.num_trials", P numTrials},
 	{"iterator_servers", P iteratorServers},
 	{"max_function_evaluations", P maxFunctionEvaluations},
+	{"max_hifi_evaluations", P maxHifiEvals},
 	{"max_iterations", P maxIterations},
 	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
 	{"nl2sol.covariance", P covarianceType},
+        {"nond.c3function_train.max_cross_iterations", P maxCrossIterations},
 	{"nond.chain_samples", P chainSamples},
 	{"nond.max_refinement_iterations", P maxRefineIterations},
 	{"nond.max_solver_iterations", P maxSolverIterations},
-	{"nond.proposal_covariance_updates", P proposalCovUpdates},
+	{"nond.prop_cov_update_period", P proposalCovUpdatePeriod},
+	{"nond.pushforward_samples", P numPushforwardSamples},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
 	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
@@ -2598,11 +2679,13 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"active_subspace.dimension", P subspaceDimension},
-	{"initial_samples", P initialSamples},
-	{"max_function_evals", P maxFunctionEvals},
-	{"max_iterations", P maxIterations},
-	{"nested.iterator_servers", P subMethodServers},
-	{"nested.processors_per_iterator", P subMethodProcs},
+        {"c3function_train.max_cross_iterations", P maxCrossIterations},
+        {"initial_samples", P initialSamples},
+        {"max_function_evals", P maxFunctionEvals},
+        {"max_iterations", P maxIterations},
+	{"max_solver_iterations", P maxSolverIterations},
+        {"nested.iterator_servers", P subMethodServers},
+        {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
         {"soft_convergence_limit", P softConvergenceLimit},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
@@ -2652,6 +2735,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
     static KW<short, DataMethodRep> Shdme[] = {	
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
+	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
 	{"nond.emulator", P emulatorType},
@@ -2659,8 +2743,11 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.expansion_refinement_control", P refinementControl},
 	{"nond.expansion_refinement_type", P refinementType},
 	{"nond.expansion_type", P expansionType},
+	{"nond.final_moments", P finalMomentsType},
 	{"nond.growth_override", P growthOverride},
 	{"nond.least_squares_regression_type", P lsRegressionType},
+	{"nond.multilevel_allocation_control", P multilevAllocControl},
+	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
@@ -2699,7 +2786,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"surrogate.rbf_bases", P rbfBases},
 	{"surrogate.rbf_max_pts", P rbfMaxPts},
 	{"surrogate.rbf_max_subsets", P rbfMaxSubsets},
-	{"surrogate.rbf_min_partition", P rbfMinPartition}};
+	{"surrogate.rbf_min_partition", P rbfMinPartition},
+	{"surrogate.regression_type", P regressionType}
+    };
     #undef P
 
     KW<short, DataModelRep> *kw;
@@ -2728,8 +2817,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       // must be sorted by string (key)
 	{"analysis_scheduling", P analysisScheduling},
 	{"evaluation_scheduling", P evalScheduling},
-	{"local_evaluation_scheduling", P asynchLocalEvalScheduling},
-	{"synchronization", P interfaceSynchronization}};
+	{"local_evaluation_scheduling", P asynchLocalEvalScheduling}};
     #undef P
 
     KW<short, DataInterfaceRep> *kw;
@@ -2751,8 +2839,11 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataEnvironmentRep::
     static KW<unsigned short, DataEnvironmentRep> UShde[] = { 
       // must be sorted by string (key)
+        {"interface_evals_selection", P interfEvalsSelection},
+        {"model_evals_selection", P modelEvalsSelection},
         {"post_run_input_format", P postRunInputFormat},
         {"pre_run_output_format", P preRunOutputFormat},
+        {"results_output_format", P resultsOutputFormat},
         {"tabular_format", P tabularFormat}};
     #undef P
 
@@ -2771,14 +2862,21 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"import_approx_format", P importApproxFormat},
 	{"import_build_format", P importBuildFormat},
 	{"import_candidate_format", P importCandFormat},
+	{"import_prediction_configs_format", P importPredConfigFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.calibrate_error_mode", P calibrateErrorMode},
 	{"nond.cubature_integrand", P cubIntOrder},
+	{"nond.expansion_order", P expansionOrder},
+	{"nond.export_corrected_model_format", P exportCorrModelFormat},
+	{"nond.export_corrected_variance_format", P exportCorrVarFormat},
+	{"nond.export_discrep_format", P exportDiscrepFormat},
 	{"nond.export_samples_format", P exportSamplesFormat},
 	{"nond.integration_refinement", P integrationRefine},
 	{"nond.pre_solve_method", P preSolveMethod},
+	{"nond.quadrature_order", P quadratureOrder},
 	{"nond.reliability_search_type", P reliabilitySearchType},
+	{"nond.sparse_grid_level", P sparseGridLevel},
 	{"nond.vbd_interaction_order", P vbdOrder},
 	{"order", P wilksOrder},
 	{"pstudy.import_format", P pstudyFileFormat},
@@ -2864,15 +2962,42 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
 	{"jega.num_parents", P numParents},
-	{"max_hifi_evaluations", P maxHifiEvals},
+        {"nond.c3function_train.kick_rank", P kickRank},
+        {"nond.c3function_train.max_order", P maxOrder},
+      	{"nond.c3function_train.max_rank", P maxRank},
+        {"nond.c3function_train.start_order", P startOrder},
+        {"nond.c3function_train.start_rank", P startRank},
+	{"nond.collocation_points", P collocationPoints},
+	{"nond.expansion_samples", P expansionSamples},
 	{"num_candidate_designs", P numCandidateDesigns},
-	{"num_candidates", P numCandidates}
+	{"num_candidates", P numCandidates},
+	{"num_prediction_configs", P numPredConfigs}
     };
     #undef P
 
     KW<size_t, DataMethodRep> *kw;
     if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
 	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
+  }
+  else if ((L = Begins(entry_name, "model."))) {
+    if (dbRep->modelDBLocked)
+	Locked_db();
+    #define P &DataModelRep::
+    static KW<size_t, DataModelRep> Szmo[] = {	
+      // must be sorted by string (key)
+      // must be sorted by string (key)
+        {"c3function_train.kick_rank", P kickRank},
+        {"c3function_train.max_order", P maxOrder},
+      	{"c3function_train.max_rank", P maxRank},
+        {"c3function_train.start_order", P startOrder},
+        {"c3function_train.start_rank", P startRank}//,
+      //{"c3function_train.verbosity", P verbosity}
+    };
+    #undef P
+
+    KW<size_t, DataModelRep> *kw;
+    if ((kw = (KW<size_t, DataModelRep>*)Binsearch(Szmo, L)))
+	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
   else if ((L = Begins(entry_name, "variables."))) {
     if (dbRep->variablesDBLocked)
@@ -3017,6 +3142,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataMethodRep> Bdme[] = {	
       // must be sorted by string (key)
 	{"backfill", P backfillFlag},
+        {"chain_diagnostics", P chainDiagnostics},
+        {"chain_diagnostics.confidence_intervals", P chainDiagnosticsCI},
 	{"coliny.constant_penalty", P constantPenalty},
 	{"coliny.expansion", P expansionFlag},
 	{"coliny.randomize", P randomizeOrderFlag},
@@ -3026,24 +3153,32 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"import_approx_active_only", P importApproxActive},
 	{"import_build_active_only", P importBuildActive},
+        {"laplace_approx", P modelEvidLaplace},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
+        {"mc_approx", P modelEvidMC},
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
+        {"model_evidence", P modelEvidence},
 	{"mutation_adaptive", P mutationAdaptive},
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adapt_exp_design", P adaptExpDesign},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
+        {"nond.c3function_train.adapt_rank", P adaptRank},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
 	{"nond.d_optimal", P dOptimal},
 	{"nond.evaluate_posterior_density", P evaluatePosteriorDensity},
 	{"nond.export_sample_sequence", P exportSampleSeqFlag},
 	{"nond.generate_posterior_samples", P generatePosteriorSamples},
+	{"nond.gpmsa_normalize", P gpmsaNormalize},
 	{"nond.logit_transform", P logitTransform},
+	{"nond.model_discrepancy", P calModelDiscrepancy},
+	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},
 	{"nond.tensor_grid", P tensorGridFlag},
+	{"posterior_stats.kde", P posteriorStatsKDE},
 	{"posterior_stats.kl_divergence", P posteriorStatsKL},
 	{"posterior_stats.mutual_info", P posteriorStatsMutual},
 	{"principal_components", P pcaFlag},
@@ -3074,15 +3209,19 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"active_subspace.truncation_method.constantine", P subspaceIdConstantine},
 	{"active_subspace.truncation_method.cv", P subspaceIdCV},
 	{"active_subspace.truncation_method.energy", P subspaceIdEnergy},
+        {"c3function_train.adapt_rank", P adaptRank},
 	{"hierarchical_tags", P hierarchicalTags},
+	{"nested.identity_resp_map", P identityRespMap},
 	{"surrogate.auto_refine", P autoRefine},
 	{"surrogate.challenge_points_file_active", P importChallengeActive},
+	{"surrogate.challenge_use_variable_labels", P importChalUseVariableLabels},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
 	{"surrogate.domain_decomp", P domainDecomp},
 	{"surrogate.export_surrogate", P exportSurrogate},
 	{"surrogate.import_build_active_only", P importBuildActive},
+	{"surrogate.import_use_variable_labels", P importUseVariableLabels},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
     #undef P
@@ -3116,6 +3255,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"application.file_save", P fileSaveFlag},
 	{"application.file_tag", P fileTagFlag},
 	{"application.verbatim", P verbatimFlag},
+        {"asynch", P asynchFlag},
+        {"batch", P batchEvalFlag},
 	{"dirSave", P dirSave},
 	{"dirTag", P dirTag},
 	{"evaluation_cache", P evalCacheFlag},
@@ -3701,13 +3842,25 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 }
 
 
-void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
+void ProblemDescDB::echo_input_file(const std::string& dakota_input_file,
+				    const std::string& dakota_input_string,
+				    const std::string& tmpl_qualifier)
 {
-  const String& dakota_input_file = prog_opts.input_file();
-  if (!dakota_input_file.empty()) {
-    bool input_is_stdin = 
-      ( dakota_input_file.size() == 1 && dakota_input_file[0] == '-');
-    if (!input_is_stdin) {
+  if (!dakota_input_string.empty()) {
+    size_t header_len = 23;
+    std::string header(header_len, '-');
+    Cout << header << '\n';
+    Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
+    if(dakota_input_file == "-")
+      Cout << "(from standard input)\n";
+    else
+      Cout << "(from string)\n";
+    Cout << header << std::endl;
+    Cout << dakota_input_string << std::endl;
+    Cout << "---------------------\n";
+    Cout << "End DAKOTA input file\n";
+    Cout << "---------------------\n" << std::endl;
+  } else if(!dakota_input_file.empty()) {
       std::ifstream inputstream(dakota_input_file.c_str());
       if (!inputstream.good()) {
 	Cerr << "\nError: Could not open input file '" << dakota_input_file 
@@ -3725,7 +3878,7 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 				   dakota_input_file.size());
       std::string header(header_len, '-');
       Cout << header << '\n';
-      Cout << "Begin DAKOTA input file\n";
+      Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
       Cout << dakota_input_file << "\n"; 
       Cout << header << std::endl;
       int inputchar = inputstream.get();
@@ -3736,20 +3889,62 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
       Cout << "---------------------\n";
       Cout << "End DAKOTA input file\n";
       Cout << "---------------------\n" << std::endl;
+  }
+}
+
+/** Require string idenfitiers id_* to be unique across all blocks of
+    each type (method, model, variables, interface, responses
+
+    For now, this allows duplicate empty ID strings. Would be better
+    to require unique IDs when more than one block of a given type
+    appears in the input file (instead of use-the-last-parsed)
+*/
+void ProblemDescDB::enforce_unique_ids()
+{
+  bool found_error = false;
+  std::multiset<String> block_ids;
+
+  // Lambda to detect duplicate for the passed id, issuing error
+  // message for the specified block_type. Modifies set of block_ids
+  // and found_error status.
+  auto check_unique = [&block_ids, &found_error] (String block_type, String id) {
+    if (!id.empty()) {
+      block_ids.insert(id);
+      // (Only warn once per unique ID name)
+      if (block_ids.count(id) == 2) {
+	Cerr << "Error: id_" << block_type << " '" << id
+	     << "' appears more than once.\n";
+	found_error = true;
+      }
     }
-  }
-  else if (!prog_opts.input_string().empty()) {
-    size_t header_len = 23;
-    std::string header(header_len, '-');
-    Cout << header << '\n';
-    Cout << "Begin DAKOTA input file\n";
-    Cout << "(from string)\n"; 
-    Cout << header << std::endl;
-    Cout << prog_opts.input_string() << std::endl;
-    Cout << "---------------------\n";
-    Cout << "End DAKOTA input file\n";
-    Cout << "---------------------\n" << std::endl;
-  }
+  };
+
+  // This could be written more generically if the member was always
+  // called idString instead of a different name (idMethod, idModel,
+  // etc.) for each Data* class...; then the same code could apply to
+  // all data*List
+  for (auto data_cont : dataMethodList)
+    check_unique("method", data_cont.data_rep()->idMethod);
+  block_ids.clear();
+
+  for (auto data_cont : dataModelList)
+    check_unique("model", data_cont.data_rep()->idModel);
+  block_ids.clear();
+
+  for (auto data_cont : dataVariablesList)
+    check_unique("variables", data_cont.data_rep()->idVariables);
+  block_ids.clear();
+
+  for (auto data_cont : dataInterfaceList)
+    check_unique("interface", data_cont.data_rep()->idInterface);
+  block_ids.clear();
+
+  for (auto data_cont : dataResponsesList)
+    check_unique("responses", data_cont.data_rep()->idResponses);
+  block_ids.clear();
+
+  if (found_error)
+    abort_handler(PARSE_ERROR);
 }
 
 } // namespace Dakota

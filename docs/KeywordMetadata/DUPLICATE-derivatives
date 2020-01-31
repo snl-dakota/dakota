@@ -30,22 +30,24 @@ cannot be inverted to form the proposal covariance, fallback to the
 positive semi-definite Gauss-Newton Hessian is employed.
 
 Since this proposal covariance is locally accurate, it should be
-updated periodically using the proposal_updates option.  While the
+updated periodically using the \c update_period option.  While the
 adaptive metropolis option can be used in combination with
 derivative-based preconditioning, it is generally preferable to
-instead increase the proposal update frequency due to the improved
-local accuracy of this approach.
+instead decrease the proposal update period due to the improved local
+accuracy of this approach.
 
 Topics::	bayesian_calibration
 
 Examples::
+Generate a 2000 sample posterior chain, using derivatives to
+initialize the proposal covariance at the start of the chain.
 \verbatim
 method,
         bayes_calibration queso
           samples = 2000 seed = 348
           delayed_rejection
           emulator pce sparse_grid_level = 2
-          proposal_covariance derivatives # default proposal_updates
+          proposal_covariance derivatives
 \endverbatim
 Theory::
 Faq::

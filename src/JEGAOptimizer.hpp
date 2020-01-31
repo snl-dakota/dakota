@@ -1,3 +1,11 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 /*
 ===============================================================================
     PROJECT:
@@ -153,6 +161,7 @@ Forward Declares
 ===============================================================================
 */
 class JEGAOptimizer;
+class JEGATraits;
 
 
 
@@ -587,6 +596,54 @@ Include Inlined Methods File
 // Not using an Inlined Functions File.
 
 
+/*
+===============================================================================
+Class Definition
+===============================================================================
+*/
+
+/**
+ * \brief A version of TraitsBase specialized for John Eddy's
+ *        Genetic Algorithms (JEGA).
+ *
+ */
+
+class JEGATraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  JEGATraits() { }
+
+  /// destructor
+  virtual ~JEGATraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_discrete_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
+
+};
 
 
 /*
@@ -595,10 +652,6 @@ End Namespace
 ===============================================================================
 */
 } // namespace Dakota
-
-
-
-
 
 
 /*

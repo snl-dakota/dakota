@@ -4,7 +4,6 @@
 # Trust-region surrogate-based RBDO using the cantilever test function.
 
 environment,
-#	graphics
 	method_pointer = 'SBLO'
 
 method,
@@ -28,6 +27,7 @@ method,
 	dot_sqp
 #	npsol_sqp
 	  convergence_tolerance = 1.e-6
+	scaling
 
 model,
 	id_model = 'OPTIM_M'
@@ -43,6 +43,8 @@ variables,
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
 	  descriptors 'w' 't'
+	scale_type = 'value'
+	scales     =       2.5	  2.5 	## Fails for cases 0,1 with dot_sqp ISCAL=-1 -- needs debugging
 
 responses,
 # minimize mean Weight
@@ -55,9 +57,9 @@ responses,
 	id_responses = 'OPTIM_R_SURR'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 2
-	nonlinear_inequality_upper_bounds = .00135 .00135	#s0,#s1
-#	nonlinear_inequality_lower_bounds = 3. 3.		#s2,#s3
-#	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50	#s2,#s3
+#	nonlinear_inequality_upper_bounds = .00135 .00135	## Omit for cases 0,1 until debugged
+	nonlinear_inequality_lower_bounds = 3. 3.		      #s2,#s3,#s0,#s1 ## let case 0=2, 1=3
+	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50	#s2,#s3,#s0,#s1 ## let case 0=2, 1=3
 	analytic_gradients
 	no_hessians
 
@@ -94,7 +96,7 @@ method,
 #	  mpp_search no_approx			#s1,#s3,#s5,#s7
 	  num_response_levels = 0 1 1		#s0,#s1,#s2,#s3
 	  response_levels = 0.0 0.0		#s0,#s1,#s2,#s3
-#	  compute gen_reliabilities		#s2,#s3
+	  compute gen_reliabilities		#s0,#s1,#s2,#s3  ## Add to cases 0,1 until debugged
 	  integration second_order
 #	  num_probability_levels = 0 1 1	#s4,#s5
 #	  probability_levels = .00135 .00135	#s4,#s5

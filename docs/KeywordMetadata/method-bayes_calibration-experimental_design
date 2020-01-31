@@ -14,7 +14,7 @@ be calibrated.
 
 The algorithm starts with a preliminary Bayesian calibration using the 
 number of data points specified in \c initial_samples. These data points can
-be read in through the \c calibration_data_file command in the \c response 
+be read in through the \c calibration_data_file command in the \c responses 
 block. If \c num_experiments is less than \c initial_samples or if no such data
 file is provided, Latin Hypercube Samples of the design space (specified in the
 \c variables block) will be run through the user-specified high-fidelity code 
@@ -47,7 +47,8 @@ through the high-fidelity model to yield a new observation \f$y(\xi^{*})\f$.
 This new observation is added to the calibration data, and a subsequent
 Bayesian calibration is performed. A new MI for each remaining candidate design
 is computed, and the process repeats until one of three stopping criteria are 
-met.
+met. Multiple optimal designs may be selected concurrently by specifying
+\c batch_size.
 
 Of the three stopping criteria, two are automatically checked by Dakota. If
 the relative change in the MI from one iteration to the next is sufficiently
@@ -58,6 +59,11 @@ evaluations that will be performed during this algorithm. It therefore limits
 the number of iterations through the algorithm that will be performed. Any 
 high-fidelity model runs needed to produce the data set for the initial 
 calibration are not included in this allocation.
+
+In the case that the high-fidelity model must be run indepently of Dakota,
+the user may set \c max_hifi_evaluations to zero. The optimal experimental
+design point will be calculated and reported, but the high-fidelity model 
+will not be run. For more details, see the User's Manual. 
 
 <b> Expected Output </b>
 
@@ -74,10 +80,6 @@ specifications. For example, if \c num_experiments is less than the number of
 experiments in the \c calibration_data_file, only the first lines of the file
 will be used and the rest will be discarded. The same holds true for the 
 \c import_candidate_points_file and \c num_candidates. 
-
-The incorporation of variance information in \c calibration_data_file is not
-yet supported. Only configuration variables and the corresponding 
-high-fidelity model information should be included in the file.
 
 Examples::
 The input file below illustrates the use of \c experimental_design and its

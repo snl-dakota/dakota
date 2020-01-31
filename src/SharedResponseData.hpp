@@ -18,9 +18,9 @@
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DataResponses.hpp"
-#include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/tracking.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Dakota {
 
@@ -101,7 +101,10 @@ private:
   
   /// labels for each field group
   StringArray fieldLabels;
-
+  
+  /// simulation variance
+  RealVector simulationVariance;
+  
   /// number of scalar responses
   size_t numScalarResponses;
   /// index of field lengths for field data 
@@ -226,10 +229,15 @@ public:
   /// set the primary function type (generic, objective, calibration)
   void primary_fn_type(short type);
 
+  /// retrieve simulation variance
+  const RealVector& simulation_error() const;
+
   /// create a deep copy of the current object and return by value
   SharedResponseData copy() const;
   /// reshape the data, disconnecting a shared rep if necessary
   void reshape(size_t num_fns);
+  /// reshape the response labels using inflation/deflation if possible
+  void reshape_labels(StringArray& resp_labels, size_t num_fns);
 
   /// return true if empty handle with null representation
   bool is_null() const;
@@ -262,6 +270,7 @@ inline SharedResponseData::SharedResponseData()
 #endif
 }
 
+
 inline SharedResponseData::SharedResponseData(const ProblemDescDB& problem_db):
   srdRep(new SharedResponseDataRep(problem_db))
 {
@@ -270,6 +279,7 @@ inline SharedResponseData::SharedResponseData(const ProblemDescDB& problem_db):
   Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
 #endif
 }
+
 
 inline SharedResponseData::SharedResponseData(const ActiveSet& set):
   srdRep(new SharedResponseDataRep(set))
@@ -364,6 +374,11 @@ inline void SharedResponseData::response_type(short type)
 
 inline short SharedResponseData::primary_fn_type() const
 { return srdRep->primaryFnType; }
+
+inline const RealVector& SharedResponseData::simulation_error() const
+{
+  return srdRep->simulationVariance;
+}
 
 
 inline const String& SharedResponseData::function_label(size_t i) const

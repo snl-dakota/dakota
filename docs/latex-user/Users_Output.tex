@@ -7,10 +7,11 @@ on massively parallel supercomputers, Dakota's output focuses on
 succinct, text-based reporting of the iterations and function
 evaluations performed by an algorithm. In a number of contexts, Dakota
 generates tabular output useful for data analysis and visualization
-with external tools.  Unix versions of Dakota have a basic graphical
-output capability that is useful as a monitoring tool.  The Dakota
-GUI is an emerging capability that will provide more advanced
-visualization facilities in time.
+with external tools.  Unix versions of Dakota have an optional basic
+graphical output capability that can be useful as a monitoring tool.
+The Dakota GUI increasingly provides replacement visualization
+facilities, and a nascent capability to write results to HDF5 has
+been added.
 
 \section{Standard Output}\label{output:standard}
 
@@ -35,7 +36,7 @@ optimizer.
     \end{bigbox}
   \end{small}
   \caption{Dakota input file for the ``container'' test problem --
-see \texttt{Dakota/examples/users/container\_opt\_npsol.in} }
+see \protect\path{dakota/share/dakota/examples/users/container_opt_npsol.in} }
   \label{output:incont}
 \end{figure}
 
@@ -52,11 +53,10 @@ Start time: Fri May  2 15:38:11 2014
 
 ----------------------------------------------------------------
 Begin DAKOTA input file
-/home/briadam/dakota/build/examples/users/container_opt_npsol.in
+/home/user/dakota/build/examples/users/container_opt_npsol.in
 ----------------------------------------------------------------
 # Dakota Input File: container_opt_npsol.in
 environment
-  graphics
 
 <SNIP>
 
@@ -64,7 +64,7 @@ environment
 End DAKOTA input file
 ---------------------
 
-Using Dakota input file '/home/briadam/dakota/build/examples/users/container_opt_npsol.in'
+Using Dakota input file '/home/user/dakota/build/examples/users/container_opt_npsol.in'
 Writing new restart file dakota.rst
 
 >>>>> Executing environment.
@@ -219,7 +219,6 @@ NOTE: see Fortran device 9 file (fort.9 or ftn09)
 DAKOTA execution time in seconds:
   Total CPU        =       0.03 [parent =   0.023997, child =   0.006003]
   Total wall clock =   0.090703
-Exit graphics window to terminate DAKOTA.
 \end{verbatim}
 \end{small}
 
@@ -245,8 +244,8 @@ optimizer finds a design that is both feasible and optimal for this
 example. Between the design variables and response values, the content
 of the system call to the simulator is displayed as
 ``\texttt{(container container.in.1 container.out.1)}'', with
-\texttt{container} being the name of the simulator and
-\texttt{container.in.1} and \texttt{container.out.1} being the names
+\path{container} being the name of the simulator and
+\path{container.in.1} and \path{container.out.1} being the names
 of the parameters and results files, respectively.
 
 Just preceding the output of the objective and constraint function
@@ -307,7 +306,7 @@ analysis and/or graphics plotting packages (e.g., MATLAB, TECplot,
 Excel, S-plus, Minitab).
 
 The default file name for the top-level tabular output data is
-``\texttt{dakota\_tabular.dat},'' though \texttt{tabular\_data\_file}
+``\path{dakota_tabular.dat},'' though \texttt{tabular\_data\_file}
 allows specification of an alternate name.  Example tabular output
 from the ``container'' optimization problem is shown in
 Figure~\ref{output:tabcont}. This annotated tabular format (see
@@ -374,20 +373,48 @@ approach where every function evaluation, even the ones from finite
 differencing, can be saved to a file in tabular format by using the
 Dakota restart utility.
 
+\section{HDF5 Output}\label{output:hdf5}
+
+Beginning with release 6.9, Dakota can write many method results such as the 
+correlation matrices computed by sampling studies and the best parameters 
+discovered by optimization methods to disk in HDF5 format. HDF5 is widely used 
+in scientific software for efficiently storing and organizing data. The HDF5 
+standard and libraries are maintained by the HDF Group (https://hdfgroup.org).
+Many users may find this newly supported format more convenient than scraping 
+or copying and pasting from Dakota's console output.
+
+Currently, a large subset of Dakota's method results are
+written to HDF5. Additional method results will continue to be added in future
+releases, and Dakota will also store other potentially useful information in 
+HDF5, such as evaluations on interfaces and model transformations.
+
+To enable HDF5 output, Dakota must have been built with HDF5 support. HDF5 
+support is considered a somewhat experimental feature in this release, and therefore 
+HDF5 is not enabled in binaries provided on the Download page of the Dakota
+website; building from source is necessary. See the instructions on
+the Dakota website.
+
+For a more complete description of Dakota's HDF5 capapbility, see the "Dakota
+HDF5 Output" section of the Dakota Reference Manual~\cite{RefMan}.
 
 \section{Graphics Output}\label{output:graphics}
 
-Graphics capabilities are available for monitoring the progress of an
-iterative study. The graphics option is invoked by adding the
-\texttt{graphics} flag in the environment specification of the Dakota
-input file (see Figure~\ref{output:incont}). The graphics display
-the values of each response function (e.g., objective and constraint
-functions) and each parameter for the function evaluations in the
-study. As for the tabular output described in
-Section~\ref{output:tabular}, internal finite difference evaluations
-are suppressed in order to omit this clutter from the graphics.
-Figure~\ref{output:2dcont} shows the optimization iteration history
-for the container example.
+This section describes Dakota's legacy Unix / X Windows-based graphics
+capabilities.  Historically, this capability could help Dakota users
+view results in graphical plots.  However, this legacy capability has
+been completely replaced by functionality provided in the Dakota
+graphical user interface (GUI); see the Dakota GUI User Manual in the
+documentation section of the Dakota website for additional details.
+
+The X Windows graphics option is invoked by including the
+\texttt{graphics} flag in the environment specification of the input
+file (see Figure~\ref{output:incont}). The graphics display the values
+of each response function (e.g., objective and constraint functions)
+and each parameter for the function evaluations in the study. As with
+the tabular output described in Section~\ref{output:tabular}, internal
+finite difference evaluations are suppressed in order to omit this
+clutter from the graphics.  Figure~\ref{output:2dcont} shows the
+optimization iteration history for the container example.
 
 If Dakota is executed on a remote machine, the DISPLAY variable in the
 user's UNIX environment~\cite{Gil92} may need to be set to the local
@@ -505,9 +532,9 @@ When using numerical integration schemes with structured rules, Dakota
 can also output the integration points and corresponding weights to a
 tabular file.  This output is generated when \texttt{method output} is
 \texttt{verbose} or higher.  Weights and points are printed to a file
-\texttt{dakota\_quadrature\_tabular.dat} (tensor product quadrature),
-\texttt{dakota\_sparse\_tabular.dat} (sparse grids), or
-\texttt{dakota\_cubature\_tabular.dat} (cubature methods), with one
+\path{dakota_quadrature_tabular.dat} (tensor product quadrature),
+\path{dakota_sparse_tabular.dat} (sparse grids), or
+\path{dakota_cubature_tabular.dat} (cubature methods), with one
 line per integration point.
 
 \section{Surrogate Model Exports}

@@ -1,7 +1,6 @@
 # DAKOTA INPUT FILE - dakota_textbook_lhs_approx.in
 
 environment,
-	#graphics
 	  method_pointer = 'UQ'
 
 method,
@@ -29,11 +28,11 @@ model,
 #	  freeform     						 #s7
 
 variables,
-	lognormal_uncertain =  2			#s0,#s1,#s2,#s3,#s4,#s6,#s7
-	  means             =  1.0  1.0			#s0,#s1,#s2,#s3,#s4,#s6,#s7
-#	  std_deviations    =  0.5	 0.5		#s0,#s1,#s2,#s3,#s4,#s6,#s7
-	  error_factors     =  1.1  1.1			#s0,#s1,#s2,#s3,#s4,#s6,#s7
-	  descriptors       =  'TF1ln' 'TF1ln'		#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	lognormal_uncertain =  2		#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	  means             =  1.0  1.0		#s0,#s1,#s2,#s3,#s4,#s6,#s7
+#	  std_deviations    =  0.5  0.5		# Alternative to err factors
+	  error_factors     =  1.1  1.1		#s0,#s1,#s2,#s3,#s4,#s6,#s7
+	  descriptors       =  'TF1ln' 'TF2ln'	#s0,#s1,#s2,#s3,#s4,#s6,#s7
 #	discrete_uncertain_set integer = 1				#s4
 #	  set_probs  = .1 .2 .4 .2 .1					#s4
 #	  set_values =  1  2  3  4  5					#s4

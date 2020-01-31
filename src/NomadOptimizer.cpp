@@ -29,13 +29,13 @@ namespace Dakota {
 // Main Class: NomadOptimizer
 
 NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {     
   // Set initial mesh size
   initMesh = probDescDB.get_real("method.mesh_adaptive_search.initial_delta");
 
   // Set minimum mesh size
-  minMesh = probDescDB.get_real("method.mesh_adaptive_search.threshold_delta");
+  minMesh = probDescDB.get_real("method.mesh_adaptive_search.variable_tolerance");
 
   // Set Rnd Seed
   randomSeed = probDescDB.get_int("method.random_seed");
@@ -97,7 +97,7 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 NomadOptimizer::NomadOptimizer(Model& model):
-  Optimizer(MESH_ADAPTIVE_SEARCH, model)
+  Optimizer(MESH_ADAPTIVE_SEARCH, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {
 }
 
@@ -222,12 +222,19 @@ void NomadOptimizer::core_run()
   // Set the History File, which will contain all the evaluations history
   p.set_HISTORY_FILE( historyFile );
 
+  // Allow as many simultaneous evaluations as NOMAD wishes and let Dakota schedule
+  if (iteratedModel.asynch_flag())
+    p.set_BB_MAX_BLOCK_SIZE(INT_MAX);
+
   // Check the parameters -- Required by NOMAD for execution
   p.check();
      
   // Create Evaluator object and communicate constraint mapping and surrogate usage.
-  Model& m = this->iteratedModel;
-  NomadOptimizer::Evaluator ev (p,m);
+  NomadOptimizer::Evaluator ev (p, iteratedModel);
+
+//PDH: May be able to get rid of setting the constraint map once we
+//have something in place that everyone can access.
+
   ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
   ev.set_surrogate_usage(useSurrogate);
 
@@ -253,6 +260,16 @@ void NomadOptimizer::core_run()
 	 << "Best point shown is best infeasible point.\n" << std::endl;
     bestX = mads.get_best_infeasible();
   }
+
+//PDH: Set final solution.
+//     Includes mappings of discrete variables.
+//     Similar to APPSPACK but need to look into NOMAD's Point more.
+//     Think the code from here to the end of the method
+//     can be greatly simplified with data adapters built
+//     on top of data tranfers.
+//     Would like to just do something like
+//     setBestVariables(...)
+//     setBestResponses(...)
 
   RealVector contVars(numContinuousVars);
   IntVector  discIntVars(numDiscreteIntVars);
@@ -293,6 +310,10 @@ void NomadOptimizer::core_run()
   for (j=0; j<numDiscreteStringVars; j++)
     bestVariablesArray.front().discrete_string_variable(set_index_to_value((*bestX)[j+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars].value(), set_string_vars[j]), j);
 
+//PDH: Similar to APPSPACK but need to look into NOMAD's Point more.
+//     Has to respect Dakota's ordering of inequality and equality constraints.
+//     Has to map format of constraints.
+//     Then populate bestResponseArray.
 
   // Retrieve the best responses and convert from NOMAD to
   // DAKOTA vector.h
@@ -369,11 +390,65 @@ NomadOptimizer::Evaluator::Evaluator(const NOMAD::Parameters &p, Model& model)
 }
 	  
 NomadOptimizer::Evaluator::~Evaluator(void){};
+
+bool NomadOptimizer::Evaluator::eval_x ( std::list<NOMAD::Eval_Point *>& x,
+					 const NOMAD::Double& h_max,
+					 std::list<bool>& count_eval ) const
+{
+  for (auto xi : x) {
+    set_variables(*xi);
+    bool allow_asynch = true;
+    eval_model(allow_asynch, *xi); // calls evaluate() or evaluate_nowait()
+    // collect and store if blocking
+    if (!_model.asynch_flag())
+      get_responses(_model.current_response().function_values(), *xi);
+  }
+
+  // block, collect, and store asynch responses
+  if (_model.asynch_flag()) {
+    const IntResponseMap& resp_map = _model.synchronize();
+    if (x.size() != resp_map.size() || x.size() != count_eval.size()) {
+      Cerr << "\nError: Incompatible container sizes in NOMAD batch eval_x()\n";
+      abort_handler(METHOD_ERROR);
+    }
+    IntRespMCIter evalid_resp = resp_map.begin();
+    auto xi = x.begin();
+    auto cnt_eval = count_eval.begin();
+    for ( ; xi != x.end(); ++evalid_resp, ++xi, ++cnt_eval) {
+      get_responses(evalid_resp->second.function_values(), **xi);
+      *cnt_eval = true;
+    }
+  }
+
+  return true;
+}
+
 	  
 bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
 					 const NOMAD::Double &h_max,
 					 bool &count_eval) const
 {
+  set_variables(x);
+  // Compute the Response using Dakota Interface
+  // if single point eval is called, always want to block
+  bool allow_asynch = false;
+  eval_model(allow_asynch, x);
+  get_responses(_model.current_response().function_values(), x);
+  count_eval = true;
+
+  return true;
+}
+
+
+void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
+{
+  //PDH: Set current iterate values for evaluation.
+  //     Similar to APPSPACK but need to look into NOMAD Point more.
+  //     Think this code can be greatly simplified with data adapters
+  //     built on top of data transfers.  Would like to just do
+  //     something like
+  //     setEvalVariables(...)
+
   int n_cont_vars = _model.cv();
   int n_disc_int_vars = _model.div();
   int n_disc_real_vars = _model.drv();
@@ -388,9 +463,6 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
   const IntSetArray&  set_int_vars = _model.discrete_set_int_values();
   const RealSetArray& set_real_vars = _model.discrete_set_real_values();
   const StringSetArray& set_string_vars = _model.discrete_set_string_values();
-
-  const BoolDeque& sense = _model.primary_response_fn_sense();
-  bool max_flag = (!sense.empty() && sense[0]);
 
   size_t i, dsi_cntr;
 
@@ -437,21 +509,42 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
     _model.discrete_string_variable(set_index_to_value(x[i+n_cont_vars+n_disc_int_vars+n_disc_real_vars].value(), set_string_vars[i]), i);
   }
 
+}
+
+
+void NomadOptimizer::Evaluator::eval_model(bool allow_asynch, const NOMAD::Eval_Point& x) const
+{
   // Compute the Response using Dakota Interface
-  if ((_model.model_type() == "surrogate") && (x.get_eval_type() != NOMAD::SGTE) && (useSgte.compare("inform_search") == 0)) {
+  if ((_model.model_type() == "surrogate") && (x.get_eval_type() != NOMAD::SGTE) &&
+      (useSgte.compare("inform_search") == 0)) {
     short orig_resp_mode = _model.surrogate_response_mode();
     _model.surrogate_response_mode(BYPASS_SURROGATE);
-    _model.evaluate();
+    // hierarchical surrogates can be asynchronous
+    if (allow_asynch && _model.asynch_flag())
+      _model.evaluate_nowait();
+    else
+      _model.evaluate();
     _model.surrogate_response_mode(orig_resp_mode);
   }
-  else
-    _model.evaluate();
-    
+  else {
+    if (allow_asynch && _model.asynch_flag())
+      _model.evaluate_nowait();
+    else
+      _model.evaluate();
+  }
+}
 
-  // Obtain Model response
-  const RealVector& ftn_vals = _model.current_response().function_values();
+
+void NomadOptimizer::Evaluator::get_responses(const RealVector& ftn_vals,
+					      NOMAD::Eval_Point &x) const
+{
+  //PDH: NOMAD response values set one at a time.
+  //     Has to respect ordering of inequality and equality constraints.
+  //     Has to map format of constraints.
 
   // Map objective according to minimizing or maximizing.
+  const BoolDeque& sense = _model.primary_response_fn_sense();
+  bool max_flag = (!sense.empty() && sense[0]);
   Real obj_fcn = (max_flag) ? -ftn_vals[0] : ftn_vals[0];
   x.set_bb_output  ( 0 , NOMAD::Double(obj_fcn) );
 
@@ -464,11 +557,8 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
     x.set_bb_output  ( i , NOMAD::Double(constr_value)  );
   }
 	    
-  count_eval = true;
-	  
-  return true;
-	  
 }
+
 
 // Called by NOMAD to provide a list of categorical neighbors.
 void NomadOptimizer::Extended_Poll::
@@ -520,6 +610,13 @@ rma_iter, size_t last_cat_index, int num_hops)
 
 void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
 {
+//PDH: This initializes everything for NOMAD.
+//     Similar to APPSPACK but need to look into NOMAD Point more.
+//     Don't want any references to iteratedModel.
+//     Need to handle discrete variable mapping.
+//     Need to respect equality, inequality constraint ordering.
+//     Need to handle constraint mapping.
+
   //     numTotalVars = numContinuousVars +
   //                    numDiscreteIntVars + numDiscreteRealVars;
     
@@ -732,35 +829,12 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   //		nonlinear_inequality_constraints
   //		nonlinear_equality_constraints
 
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
   const RealVector& nln_eq_targets
     = iteratedModel.nonlinear_eq_constraint_targets();
 
-  numNomadNonlinearIneqConstraints = 0;
+  numNomadNonlinearIneqConstraints = numNonlinearIneqConstraintsFound;
 
-  for (i=0; i<numNonlinearIneqConstraints; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numNomadNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(-1.0);
-      constraintMapOffsets.push_back(nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numNomadNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(1.0);
-      constraintMapOffsets.push_back(-nln_ineq_upr_bnds[i]);
-    }
-  }
-
-  for (i=0; i<numNonlinearEqConstraints; i++) {
-    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    constraintMapMultipliers.push_back(1.0);
-    constraintMapOffsets.push_back(-nln_eq_targets[i]);
-  }
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
 }
 
 NomadOptimizer::~NomadOptimizer() {};

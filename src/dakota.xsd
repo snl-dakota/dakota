@@ -20,6 +20,7 @@
 			
 	<!--  Root element -->
 	<element name="document" type="dak:documentType">
+		<!-- We don't currently require unique id per keyword
 		<keyref name="keywordIdRef" refer="dak:keywordIds">
 			<selector xpath=".//dak:ref" />
 			<field xpath="@id" />
@@ -28,6 +29,7 @@
 			<selector xpath=".//dak:keyword" />
 			<field xpath="@id" />
 		</key>
+		 -->
 	</element>
     
 	<complexType name="aliasType">
@@ -97,7 +99,6 @@
 		<attribute name="minOccurs" type="dak:minMaxType" use="optional" default="1"></attribute>      
 		<attribute name="code" type="string" use="required"></attribute>		
 		<attribute name="label" type="string" use="optional" ></attribute>
-		<attribute name="help" type="string" use="optional" ></attribute>           
 		<attribute name="group" type="string" use="optional" ></attribute>                                                  
 		<attribute name="default" type="string" use="optional" ></attribute>
         <attribute name="complexity" type="dak:minMaxType" use="optional" default="0"></attribute>

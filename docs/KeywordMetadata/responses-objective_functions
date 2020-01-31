@@ -3,32 +3,56 @@ Response type suitable for optimization
 
 Description::
 
-Specifies the number (1 or more) of objective functions returned to Dakota.
+Specifies the number (1 or more) of objective functions \f$ f_j \f$
+returned to Dakota for use in the general optimization problem
+formulation:
 
-<b> Constraints </b>
+\f{eqnarray*}
+  \hbox{minimize:} & & f(\mathbf{x}) = \sum_j{w_j f_j} \\
+  & & \mathbf{x} \in \Re^{n} \\
+  \hbox{subject to:} & &
+  \mathbf{g}_{L} \leq \mathbf{g(x)} \leq \mathbf{g}_U \\
+  & & \mathbf{h(x)}=\mathbf{h}_{t} \\
+  & & \mathbf{a}_{L} \leq \mathbf{A}_i\mathbf{x} \leq \mathbf{a}_U \\
+  & & \mathbf{A}_{e}\mathbf{x}=\mathbf{a}_{t} \\
+  & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U
+\f}
 
-The keywords \c nonlinear_inequality_constraints, and \c
-nonlinear_equality_constraints specify the number of nonlinear
-inequality constraints, and nonlinear equality constraints,
-respectively.  When interfacing to external applications, the
-responses must be returned to %Dakota in this order: objective
-functions, nonlinear_inequality_constraints, then
-nonlinear_equality_constraints.
+Unless \ref responses-objective_functions-sense is specified, Dakota
+will minimize the objective functions.
 
-Any linear constraints present in an application need only be input to
-an optimizer at start up and do not need to be part of the data
-returned on every function evaluation. These are therefore specified
-in the \ref method block.
+The keywords \ref
+responses-objective_functions-nonlinear_inequality_constraints and
+\ref responses-objective_functions-nonlinear_equality_constraints
+specify the number of nonlinear inequality constraints \em g, and nonlinear
+equality constraints \em h, respectively.  When interfacing to external
+applications, the responses must be returned to %Dakota in this order
+in the \ref interface-analysis_drivers-fork-results_file :
+<ol>
+  <li>objective functions</li> 
+  <li>nonlinear_inequality_constraints</li>
+  <li>nonlinear_equality_constraints</li>
+</ol>
 
-Bounds on the design variables are specified in the \ref variables block.
+An optimization problem's linear constraints are provided to the
+solver at startup only and do not need to be included in the data
+returned on every function evaluation. Linear constraints are
+therefore specified in the \ref variables block through the \ref
+variables-linear_inequality_constraint_matrix \f$A_i\f$ and \ref
+variables-linear_equality_constraint_matrix \f$A_e\f$.
 
-<b> Optional Keywords </b>
+Lower and upper bounds on the design variables \em x are also
+specified in the \ref variables block.
 
 The optional keywords relate to scaling the objective functions (for
 better numerical results), formulating the problem as minimization or
-maximization, and dealing with multiple objective functions.  If
-scaling is used, it is applied before multi-objective weighted sums
-are formed.
+maximization, and dealing with multiple objective functions through
+\ref responses-objective_functions-weights \em w.  If scaling is used,
+it is applied before multi-objective weighted sums are formed, so,
+e.g, when both weighting and characteristic value scaling are present
+the ultimate objective function would be:
+
+\f[ f = \sum_{j=1}^{n} w_{j} \frac{ f_{j} }{ s_j } \f]
 
 Topics::	
 Examples::

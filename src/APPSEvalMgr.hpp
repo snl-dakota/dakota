@@ -22,7 +22,7 @@
 #include "HOPSPACK_Executor.hpp"
 #include "HOPSPACK_Vector.hpp"
 
-#include "DakotaModel.hpp"
+#include "DakotaOptimizer.hpp"
 #include "dakota_data_types.hpp"
 
 namespace Dakota {
@@ -45,7 +45,7 @@ public:
   //
 
   /// constructor
-  APPSEvalMgr(Model& model);
+  APPSEvalMgr(Optimizer&, Model& model);
 
   /// destructor
   ~APPSEvalMgr() {};
@@ -90,19 +90,15 @@ public:
   void set_total_workers(const int numDakotaWorkers)
   {numWorkersTotal = numDakotaWorkers;}
 
-  /// publishes constraint transformation
-  void set_constraint_map(std::vector<int> constraintMapIndices,
-			  std::vector<double> constraintMapMultipliers,
-			  std::vector<double> constraintMapOffsets)
-  {constrMapIndices = constraintMapIndices;
-   constrMapMultipliers = constraintMapMultipliers;
-   constrMapOffsets = constraintMapOffsets;}
 
 private:
 
   //
   //- Heading: Private data
   //
+
+  /// reference to the DakotaOptimizer
+  Optimizer& dakOpt;
 
   /// reference to the APPSOptimizer's model passed in the constructor
   Model& iteratedModel;
@@ -118,15 +114,6 @@ private:
 
   /// total number of processors available for performing function evaluations
   int numWorkersTotal;
-
-  /// map from Dakota constraint number to APPS constraint number
-  std::vector<int> constrMapIndices;
-
-  /// multipliers for constraint transformations
-  std::vector<double> constrMapMultipliers;
-
-  /// offsets for constraint transformations
-  std::vector<double> constrMapOffsets;
 
   /// trial iterate
   RealVector xTrial;

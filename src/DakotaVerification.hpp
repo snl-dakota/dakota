@@ -51,7 +51,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions

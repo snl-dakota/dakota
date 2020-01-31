@@ -1,8 +1,12 @@
-Blurb::
-Sequential Quadratic Program
+Blurb:: NPSOL Sequential Quadratic Program
+
 Description::
-NPSOL provides an implementation of sequential quadratic programming 
-that can be accessed with \c npsol_sqp.
+Sequential quadratic programming optimizer.
+
+<em>NPSOL requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
+
 
 <b> Stopping Criteria </b>
 
@@ -71,6 +75,18 @@ linear equality constraints, this information can be provided to NPSOL
 at initialization and tracked internally, removing the need for the
 user to provide the values of the linear constraints on every function
 evaluation. 
+
+<b>Expected HDF5 Output</b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-best_params
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified)
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified)
+
 
 
 Topics::	package_npsol, sequential_quadratic_programming, local_optimization_methods

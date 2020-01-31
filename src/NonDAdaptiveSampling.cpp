@@ -249,8 +249,9 @@ namespace Dakota
 		//  size_t dim = numContinuousVars + numDiscreteIntVars + numDiscreteStringVars + numDiscreteRealVars;
 		int dim = 0;
 		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(0);
+		const Pecos::SDVArray& sdv_array = gp_data.variables_data();
 
-		if(gp_data.points() > 1) dim = gp_data.continuous_variables(0).length();
+		if(!sdv_array.empty()) dim = sdv_array[0].continuous_variables().length();
 
 		int i,j;
  
@@ -464,15 +465,17 @@ namespace Dakota
 			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
 			{			
 				const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+				const Pecos::SDVArray& sdv_array = gp_data.variables_data();
 				double min_sq_dist;
 				int min_index;
 				bool first = true;
-				for (int j = 0; j < gp_data.points(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+				for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retrieve closest data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
 				{
 					double sq_dist = 0;
-					for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
+					const RealVector& c_vars = sdv_array[j].continuous_variables();
+					for(int d = 0; d < c_vars.length(); d++)
 					{
-						sq_dist += pow(gpCvars[i][d] - gp_data.continuous_variables(j)[d],2);
+						sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
 					}
 					if(first || sq_dist < min_sq_dist) 
 					{
@@ -499,16 +502,19 @@ namespace Dakota
 			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
 			{	
 				const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+				const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+				const Pecos::SDRArray& sdr_array = gp_data.response_data();
 				double min_sq_dist;
 				int min_index;
 				bool first = true;
 
-				for (int j = 0; j < gp_data.points(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+				for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
 				{
 					double sq_dist = 0;
-					for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
+					const RealVector& c_vars = sdv_array[j].continuous_variables();
+					for(int d = 0; d < c_vars.length(); d++)
 					{
-						sq_dist += pow(gpCvars[i][d] - gp_data.continuous_variables(j)[d],2);
+						sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
 					}
 					if(first || sq_dist < min_sq_dist) 
 					{
@@ -517,7 +523,7 @@ namespace Dakota
 						first = false;
 					}
 				}					
-				Real score = fabs(gpMeans[i][respFnCount] - gp_data.response_function(min_index));
+				Real score = fabs(gpMeans[i][respFnCount] - sdr_array[min_index].response_function());
 				if (respFnCount == 0 || score > max_score) max_score = score;
 			}
 			emulEvalScores(i) = max_score;
@@ -580,19 +586,22 @@ namespace Dakota
 		AMSC = NULL;
  
 		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
-		if(gp_data.points() < 1) return;
+		const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+		const Pecos::SDRArray& sdr_array = gp_data.response_data();
+		if(sdv_array.empty()) return;
 
-		int n = gp_data.points();
-		int d = gp_data.continuous_variables(0).length();
+		int n = sdv_array.size();
+		int d = sdv_array[0].continuous_variables().length();
 		double *data_resp_vector = new double[n*(d+1)];
 
 		for (int i = 0; i < n; i++) 
 		{
+		        const RealVector& c_vars = sdv_array[i].continuous_variables();
 			for(int j = 0; j < d; j++)
 			{
-				data_resp_vector[i*(d+1)+j] = gp_data.continuous_variables(i)[j];
+				data_resp_vector[i*(d+1)+j] = c_vars[j];
 			}
-			data_resp_vector[i*(d+1)+d] = gp_data.response_function(i);
+			data_resp_vector[i*(d+1)+d] = sdr_array[i].response_function();
 		} 
 		AMSC = new MS_Complex(data_resp_vector, d + 1, n, numKneighbors);
 		delete [] data_resp_vector;
@@ -853,11 +862,12 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
 
     //Find the mean response value
     const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+    const Pecos::SDRArray& sdr_array = gp_data.response_data();
     Real mean_value = 0;
-    for (i = 0; i < gp_data.points(); i++) {
-      mean_value += gp_data.response_function(i);
+    for (i = 0; i < sdr_array.size(); i++) {
+      mean_value += sdr_array[i].response_function();
     } 
-    mean_value /= (Real)gp_data.points();
+    mean_value /= (Real)sdr_array.size();
 
     for(i = 0; i < batchSize; i++) {
       //Rescore the candidates after refitting the gp each time
@@ -1132,23 +1142,26 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount)
   emulEvalScores = 0.0;
 
   const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
-  if(gp_data.points() < 1)
-    return;
+  const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+  const Pecos::SDRArray& sdr_array = gp_data.response_data();
 
   int n_train = gp_data.points();
+  if(n_train == 0)
+    return;
   int n_cand = numEmulEval;
 ////***ATTENTION***
 //// I do this all over the place, but there has to be a better way to obtain
 //// the dimensionality of the domain under test
 ////***END ATTENTION***
-  int dim = gp_data.continuous_variables(0).length();
+  int dim = sdv_array[0].continuous_variables().length();
 
   double *train_x = new double[n_train*dim];
   double *train_y = new double[n_train];
   for (int i = 0; i < n_train; i++) {
+    const RealVector& c_vars = sdv_array[i].continuous_variables();
     for(int j = 0; j < dim; j++)
-      train_x[i*dim+j] = gp_data.continuous_variables(i)[j];
-    train_y[i] = gp_data.response_function(i);
+      train_x[i*dim+j] = c_vars[j];
+    train_y[i] = sdr_array[i].response_function();
   } 
 
   double *cand_x = new double[n_cand*dim];
@@ -1198,13 +1211,15 @@ Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
 { 
 
   const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+  const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   double min_sq_dist;
   int min_index;
   bool first = true;
-  for (int j = 0; j < gp_data.points(); j++) {
+  for (int j = 0; j < sdv_array.size(); j++) {
     double sq_dist = 0;
-    for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
-      sq_dist += pow(test_point[d]-gp_data.continuous_variables(j)[d],2);
+    const RealVector& c_vars = sdv_array[j].continuous_variables();
+    for(int d = 0; d < c_vars.length(); d++)
+      sq_dist += pow(test_point[d] - c_vars[d],2);
     if(first || sq_dist < min_sq_dist) {
       min_sq_dist = sq_dist;
       min_index = j;
@@ -1212,7 +1227,8 @@ Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
     }
   }
 
-  Real true_value = gp_data.response_function(min_index);
+  const Pecos::SDRArray& sdr_array = gp_data.response_data();
+  Real true_value = sdr_array[min_index].response_function();
 
   Model& surrogate_model = gpModel.surrogate_model();
   surrogate_model.continuous_variables(test_point);
@@ -1227,13 +1243,15 @@ Real NonDAdaptiveSampling::calc_score_delta_x(int respFnCount,
   RealVector &test_point) 
 { 
   const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+  const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   double min_sq_dist;
   int min_index;
   bool first = true;
   for (int j = 0; j < gp_data.points(); j++) {
     double sq_dist = 0;
-    for(int d = 0; d < gp_data.continuous_variables(j).length(); d++)
-      sq_dist += pow(test_point[d]-gp_data.continuous_variables(j)[d],2);
+    const RealVector& c_vars = sdv_array[j].continuous_variables();
+    for(int d = 0; d < c_vars.length(); d++)
+      sq_dist += pow(test_point[d] - c_vars[d],2);
     if(first || sq_dist < min_sq_dist) {
       min_sq_dist = sq_dist;
       min_index = j;
@@ -1769,7 +1787,7 @@ construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model,
 }
 
 // Mohamed and Laura
-void NonDAdaptiveSampling::print_results(std::ostream& s)
+void NonDAdaptiveSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     s << "\nStatistics based on the adaptive sampling calculations:\n";

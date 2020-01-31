@@ -1,0 +1,13 @@
+name: Total Effects
+dataset:
+  description: Total-effect Sobol' indices
+  location: "total_effects/<response descriptor>"
+  shape: "1-dimensional: number of variables"
+  type: Real
+scales:
+  - dimension: 0
+    type: String
+    label: variables
+    contents: Variable descriptors
+    literal_contents: False
+

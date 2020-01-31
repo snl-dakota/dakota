@@ -23,8 +23,10 @@
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include "DakotaGraphics.hpp"
 #include "pecos_stat_util.hpp"
+#include "EvaluationStore.hpp"
 
 //#define REFCOUNT_DEBUG
 
@@ -36,6 +38,7 @@ namespace Dakota
 extern PRPCache        data_pairs;
 extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
 extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
+extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
 // minimize dakota_restart_util object file dependencies
@@ -52,6 +55,10 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
                            ///< function return by reference when a real
                            ///< Iterator instance is unavailable
 
+// Initialization of static model ID counters
+size_t Model::noSpecIdNum = 0;
+
+
 
 /** This constructor builds the base class data for all inherited
     models.  get_model() instantiates a derived class and the derived
@@ -67,6 +74,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     problem_db.get_response(SIMULATION_RESPONSE, currentVariables)),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(problem_db, currentVariables.shared_data()),
+  evaluationsDB(evaluation_store_db),
   modelType(problem_db.get_string("model.type")),
   surrogateType(problem_db.get_string("model.surrogate.type")),
   gradientType(problem_db.get_string("responses.gradient_type")),
@@ -84,78 +92,15 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
   hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
   hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
-  supportsEstimDerivs(true),
+  warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1), 
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), 
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
   outputLevel(problem_db.get_short("method.output")),
-  discreteDesignSetIntValues(
-    problem_db.get_isa("variables.discrete_design_set_int.values")),
-  discreteDesignSetStringValues(
-    problem_db.get_ssa("variables.discrete_design_set_string.values")),
-  discreteDesignSetRealValues(
-    problem_db.get_rsa("variables.discrete_design_set_real.values")),
-  discreteStateSetIntValues(
-    problem_db.get_isa("variables.discrete_state_set_int.values")),
-  discreteStateSetStringValues(
-    problem_db.get_ssa("variables.discrete_state_set_string.values")),
-  discreteStateSetRealValues(
-    problem_db.get_rsa("variables.discrete_state_set_real.values")),
-  aleatDistParams(problem_db.get_rv("variables.normal_uncertain.means"),
-    problem_db.get_rv("variables.normal_uncertain.std_deviations"),
-    problem_db.get_rv("variables.normal_uncertain.lower_bounds"),
-    problem_db.get_rv("variables.normal_uncertain.upper_bounds"),
-    problem_db.get_rv("variables.lognormal_uncertain.means"),
-    problem_db.get_rv("variables.lognormal_uncertain.std_deviations"),
-    problem_db.get_rv("variables.lognormal_uncertain.lambdas"),
-    problem_db.get_rv("variables.lognormal_uncertain.zetas"),
-    problem_db.get_rv("variables.lognormal_uncertain.error_factors"),
-    problem_db.get_rv("variables.lognormal_uncertain.lower_bounds"),
-    problem_db.get_rv("variables.lognormal_uncertain.upper_bounds"),
-    problem_db.get_rv("variables.uniform_uncertain.lower_bounds"),
-    problem_db.get_rv("variables.uniform_uncertain.upper_bounds"),
-    problem_db.get_rv("variables.loguniform_uncertain.lower_bounds"),
-    problem_db.get_rv("variables.loguniform_uncertain.upper_bounds"),
-    problem_db.get_rv("variables.triangular_uncertain.modes"),
-    problem_db.get_rv("variables.triangular_uncertain.lower_bounds"),
-    problem_db.get_rv("variables.triangular_uncertain.upper_bounds"),
-    problem_db.get_rv("variables.exponential_uncertain.betas"),
-    problem_db.get_rv("variables.beta_uncertain.alphas"),
-    problem_db.get_rv("variables.beta_uncertain.betas"),
-    problem_db.get_rv("variables.beta_uncertain.lower_bounds"),
-    problem_db.get_rv("variables.beta_uncertain.upper_bounds"),
-    problem_db.get_rv("variables.gamma_uncertain.alphas"),
-    problem_db.get_rv("variables.gamma_uncertain.betas"),
-    problem_db.get_rv("variables.gumbel_uncertain.alphas"),
-    problem_db.get_rv("variables.gumbel_uncertain.betas"),
-    problem_db.get_rv("variables.frechet_uncertain.alphas"),
-    problem_db.get_rv("variables.frechet_uncertain.betas"),
-    problem_db.get_rv("variables.weibull_uncertain.alphas"),
-    problem_db.get_rv("variables.weibull_uncertain.betas"),
-    problem_db.get_rrma("variables.histogram_uncertain.bin_pairs"),
-    problem_db.get_rv("variables.poisson_uncertain.lambdas"),
-    problem_db.get_rv("variables.binomial_uncertain.prob_per_trial"),
-    problem_db.get_iv("variables.binomial_uncertain.num_trials"),
-    problem_db.get_rv("variables.negative_binomial_uncertain.prob_per_trial"),
-    problem_db.get_iv("variables.negative_binomial_uncertain.num_trials"),
-    problem_db.get_rv("variables.geometric_uncertain.prob_per_trial"),
-    problem_db.get_iv("variables.hypergeometric_uncertain.total_population"),
-    problem_db.get_iv(
-      "variables.hypergeometric_uncertain.selected_population"),
-    problem_db.get_iv("variables.hypergeometric_uncertain.num_drawn"),
-    problem_db.get_irma("variables.histogram_uncertain.point_int_pairs"),
-    problem_db.get_srma("variables.histogram_uncertain.point_string_pairs"),
-    problem_db.get_rrma("variables.histogram_uncertain.point_real_pairs"),
-    problem_db.get_rsm("variables.uncertain.correlation_matrix")),
-  epistDistParams(
-    problem_db.get_rrrma("variables.continuous_interval_uncertain.basic_probs"),
-    problem_db.get_iirma("variables.discrete_interval_uncertain.basic_probs"),
-    problem_db.get_irma("variables.discrete_uncertain_set_int.values_probs"),
-    problem_db.get_srma("variables.discrete_uncertain_set_string.values_probs"),
-    problem_db.get_rrma("variables.discrete_uncertain_set_real.values_probs")),
   primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
   hierarchicalTagging(probDescDB.get_bool("model.hierarchical_tags")),
   scalingOpts(probDescDB.get_sa("variables.continuous_design.scale_types"),
@@ -170,18 +115,24 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
               probDescDB.get_rv("variables.linear_inequality_scales"),
               probDescDB.get_sa("variables.linear_equality_scale_types"),
               probDescDB.get_rv("variables.linear_equality_scales")),
+  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
-  estDerivsFlag(false), initCommsBcastFlag(false),
-  modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
+  estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
+  modelRep(NULL), referenceCount(1)
 {
+  initialize_distribution(mvDist);
+  initialize_distribution_parameters(mvDist);
+
+  if (modelId.empty())
+    modelId = user_auto_id();
+
   // Define primaryRespFnSense BoolDeque from DB StringArray
   StringArray db_sense
     = problem_db.get_sa("responses.primary_response_fn_sense");
   if (!db_sense.empty()) {
-    size_t i, num_sense = db_sense.size(),
-      num_primary = currentResponse.num_functions()
-                  - userDefinedConstraints.num_nonlinear_ineq_constraints()
-                  - userDefinedConstraints.num_nonlinear_eq_constraints();
+    size_t i, num_sense = db_sense.size(), num_primary = num_primary_fns();
     primaryRespFnSense.resize(num_primary);
     if (num_sense == num_primary)
       for (i=0; i<num_primary; ++i)
@@ -280,20 +231,40 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-      const SharedResponseData& srd, const ActiveSet& set, short output_level):
-  currentVariables(svd), numDerivVars(set.derivative_vector().size()),
-  currentResponse(srd, set), numFns(set.request_vector().size()),
-  userDefinedConstraints(svd), fdGradStepType("relative"),
-  fdHessStepType("relative"), supportsEstimDerivs(true),
-  probDescDB(problem_db), parallelLib(parallel_lib),
+      ParallelLibrary& parallel_lib,
+      const SharedVariablesData& svd, bool share_svd,
+      const SharedResponseData&  srd, bool share_srd,
+      const ActiveSet& set, short output_level):
+  numDerivVars(set.derivative_vector().size()),
+  numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
+  fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
+  supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
+  parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(output_level), hierarchicalTagging(false),
-  modelId("NO_SPECIFICATION"), modelEvalCntr(0), estDerivsFlag(false),
-  initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
-  modelRep(NULL), referenceCount(1)
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), outputLevel(output_level), hierarchicalTagging(false),
+  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  modelId(no_spec_id()), // to be replaced by derived ctors
+  modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
+  modelAutoGraphicsFlag(false), prevDSIView(EMPTY_VIEW),
+  prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW), modelRep(NULL),
+  referenceCount(1)
 {
+  if (share_svd) {
+    currentVariables       =   Variables(svd);
+    userDefinedConstraints = Constraints(svd);
+  }
+  else {
+    SharedVariablesData new_svd(svd.copy());
+    //SharedVariablesData new_svd(svd.view(), svd.components_totals()); // alt
+    currentVariables       =   Variables(new_svd);
+    userDefinedConstraints = Constraints(new_svd);
+  }
+
+  currentResponse = (share_srd) ?
+    Response(srd, set) : Response(srd.response_type(), set);
+
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(NoDBBaseConstructor, ParallelLibrary&, "
        << "SharedVariablesData&, ActiveSet&, short) called to build letter "
@@ -302,19 +273,24 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 }
 
 
-/** This constructor also builds the base class data for inherited
-    models.  However, it is used for recast models which are
-    instantiated on the fly.  Therefore it only initializes a small
-    subset of attributes. */
+/** This constructor also builds the base class data for inherited models.
+    However, it is used for recast models which are instantiated on the fly.
+    Therefore it only initializes a small subset of attributes. */
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
-  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
+  warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
+  probDescDB(problem_db), parallelLib(parallel_lib),
+  evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
-  outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
-  modelId("NO_SPECIFICATION"), modelEvalCntr(0), estDerivsFlag(false),
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
+  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  modelId(no_spec_id()), // to be replaced by derived ctors
+  modelEvalCntr(0), estDerivsFlag(false),
   initCommsBcastFlag(false), modelAutoGraphicsFlag(false),
+  prevDSIView(EMPTY_VIEW), prevDSSView(EMPTY_VIEW), prevDSRView(EMPTY_VIEW),
   modelRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -332,7 +308,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
     constructor, assignment operator, and destructor. */
 Model::Model():
   modelRep(NULL), referenceCount(1), probDescDB(dummy_db),
-  parallelLib(dummy_lib)
+  parallelLib(dummy_lib), evaluationsDB(evaluation_store_db)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(), modelRep = NULL" << std::endl;
@@ -345,7 +321,8 @@ Model::Model():
     execute get_model, since Model(BaseConstructor, problem_db)
     builds the actual base class data for the derived models. */
 Model::Model(ProblemDescDB& problem_db): probDescDB(problem_db),
-  parallelLib(problem_db.parallel_library()), referenceCount(1)
+  parallelLib(problem_db.parallel_library()),
+  evaluationsDB(evaluation_store_db), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Model::Model(ProblemDescDB&) called to instantiate envelope."
@@ -397,7 +374,7 @@ Model* Model::get_model(ProblemDescDB& problem_db)
 /** Copy constructor manages sharing of modelRep and incrementing
     of referenceCount. */
 Model::Model(const Model& model): probDescDB(model.problem_description_db()),
-  parallelLib(probDescDB.parallel_library())
+  parallelLib(probDescDB.parallel_library()), evaluationsDB(evaluation_store_db)
 {
   // Increment new (no old to decrement)
   modelRep = model.modelRep;
@@ -512,6 +489,710 @@ void Model::assign_rep(Model* model_rep, bool ref_count_incr)
 }
 
 
+/** Build random variable distribution types and active subset.  This
+    function is used when the Model variables are in x-space. */
+void Model::
+initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
+			bool active_only)
+{
+  // Notes:
+  // > Model base instantiates the x-space MultivariateDistribution, while
+  //   derived ProbabilityTransformModel manages a ProbabilityTransform
+  //   (which makes a shallow copy of x-dist and creates a u-dist).
+  // > This fn houses data for discrete design/state and must now be invoked
+  //   in non-UQ contexts.
+
+  // Previous (transformation-based) logic was restricted to active continuous:
+  //ShortArray x_types(currentVariables.cv()); // active cont
+  //ShortArray rv_types(probDescDB.get_sizet("variables.uncertain")); c/d uv
+  size_t num_rv = (active_only) ?
+    currentVariables.cv()  + currentVariables.div() +
+    currentVariables.dsv() + currentVariables.drv() :
+    currentVariables.tv(); // all vars (active subset defined using BitArray)
+  ShortArray rv_types(num_rv);  BitArray active_vars(num_rv);// init bits to 0
+
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  currentVariables.shared_data().active_subsets(cdv,  ddv,  cauv, dauv,
+						ceuv, deuv, csv,  dsv);
+  size_t i, start_rv = 0;
+
+  // Implied by call to this function ... ?
+  //switch (mv_dist.type()) {
+  //case Pecos::MARGINALS_CORRELATIONS: {
+
+  // Continuous design
+
+  if (!active_only || cdv) {
+    num_rv = probDescDB.get_sizet("variables.continuous_design");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
+      if (cdv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+  }
+
+  // Discrete design
+
+  if (!active_only || ddv) {
+    num_rv = probDescDB.get_sizet("variables.discrete_design_range");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_design_set_int");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_design_set_string");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_design_set_real");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
+      if (ddv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+  }
+
+  // Continuous aleatory
+
+  if (!active_only || cauv) {
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
+    num_rv = probDescDB.get_sizet("variables.normal_uncertain");
+    if (num_rv) {
+      const RealVector& n_l_bnds
+	= probDescDB.get_rv("variables.normal_uncertain.lower_bounds");
+      const RealVector& n_u_bnds
+	= probDescDB.get_rv("variables.normal_uncertain.upper_bounds");
+      bool l_bnds = !n_l_bnds.empty(), u_bnds = !n_u_bnds.empty();
+      if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
+	assign_value(rv_types, Pecos::NORMAL, start_rv, num_rv);
+      else
+	for (i=0; i<num_rv; ++i)
+	  rv_types[start_rv+i] = ( ( l_bnds && n_l_bnds[i] > -dbl_inf ) ||
+				   ( u_bnds && n_u_bnds[i] <  dbl_inf ) ) ?
+	    Pecos::BOUNDED_NORMAL : Pecos::NORMAL;
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
+    if (num_rv) {
+      const RealVector& ln_l_bnds
+	= probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds");
+      const RealVector& ln_u_bnds
+	= probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
+      bool l_bnds = !ln_l_bnds.empty(), u_bnds = !ln_u_bnds.empty();
+      if (!l_bnds && !u_bnds) // won't happen: parser -> 0/inf
+	assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
+      else
+	for (i=0; i<num_rv; ++i)
+	  rv_types[start_rv+i] = ( ( l_bnds && ln_l_bnds[i] > 0. ) ||
+				   ( u_bnds && ln_u_bnds[i] < dbl_inf ) ) ?
+	    Pecos::BOUNDED_LOGNORMAL : Pecos::LOGNORMAL;
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::UNIFORM, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::LOGUNIFORM, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::TRIANGULAR, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::EXPONENTIAL, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.beta_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::BETA, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::GAMMA, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+
+    // Note: Inv gamma is not part of variable spec (calibration hyperparameter)
+
+    num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::GUMBEL, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::FRECHET, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::WEIBULL, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_BIN, start_rv, num_rv);
+      if (cauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+  }
+
+  // Discrete aleatory
+
+  if (!active_only || dauv) {
+    num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::POISSON, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::BINOMIAL, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::NEGATIVE_BINOMIAL, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::GEOMETRIC, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HYPERGEOMETRIC, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_PT_INT, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_string");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_PT_STRING, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::HISTOGRAM_PT_REAL, start_rv, num_rv);
+      if (dauv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+  }
+
+  // Continuous epistemic
+
+  if (!active_only || ceuv) {
+    num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
+		   start_rv, num_rv);
+      if (ceuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+  }
+
+  // Discrete epistemic
+
+  if (!active_only || deuv) {
+    num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
+    if (num_rv) {
+      assign_value(rv_types,Pecos::DISCRETE_INTERVAL_UNCERTAIN,start_rv,num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_INT,start_rv,num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_STRING,
+		   start_rv, num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
+    if (num_rv) {
+      assign_value(rv_types,Pecos::DISCRETE_UNCERTAIN_SET_REAL,start_rv,num_rv);
+      if (deuv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+  }
+
+  // Continuous state
+
+  if (!active_only || csv) {
+    num_rv = probDescDB.get_sizet("variables.continuous_state");
+    if (num_rv) {
+      assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
+      if (csv) assign_value(active_vars, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+
+    // Discrete state
+
+    if (!active_only || dsv) {
+      num_rv = probDescDB.get_sizet("variables.discrete_state_range");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
+      if (num_rv) {
+	assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
+	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+	//start_rv += num_rv;
+      }
+    }
+  }
+
+  mv_dist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  mvd_rep->initialize_types(rv_types, active_vars);
+}
+
+
+void Model::
+initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
+				   bool active_only)
+{
+  // Implied by call to this function ... ?
+  //switch (mv_dist.type()) {
+  //case Pecos::MARGINALS_CORRELATIONS: {
+
+    Pecos::MarginalsCorrDistribution* mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+    size_t start_rv = 0, num_rv = (active_only) ?
+      currentVariables.cv()  + currentVariables.div() +
+      currentVariables.dsv() + currentVariables.drv() :
+      currentVariables.tv(); // all vars (active subset defined using BitArray)
+    BitArray active_corr(num_rv); // init bits to 0; activate c/d auv below
+
+    bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+    currentVariables.shared_data().active_subsets(cdv,  ddv,  cauv, dauv,
+						  ceuv, deuv, csv,  dsv);
+
+    // Continuous design
+    // RANGE type could be design or state, so use count-based API
+
+    if (!active_only || cdv) {
+      num_rv = probDescDB.get_sizet("variables.continuous_design");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_LWR_BND,
+	  probDescDB.get_rv("variables.continuous_design.lower_bounds"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_UPR_BND,
+	  probDescDB.get_rv("variables.continuous_design.upper_bounds"));
+	start_rv += num_rv;
+      }
+    }
+
+    // Discrete design
+    // RANGE and SET types could be design or state, so use count-based API
+
+    if (!active_only || ddv) {
+      num_rv = probDescDB.get_sizet("variables.discrete_design_range");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_LWR_BND,
+          probDescDB.get_iv("variables.discrete_design_range.lower_bounds"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_UPR_BND,
+          probDescDB.get_iv("variables.discrete_design_range.upper_bounds"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_design_set_int");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSI_VALUES,
+          probDescDB.get_isa("variables.discrete_design_set_int.values"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_design_set_string");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSS_VALUES,
+          probDescDB.get_ssa("variables.discrete_design_set_string.values"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_design_set_real");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSR_VALUES,
+          probDescDB.get_rsa("variables.discrete_design_set_real.values"));
+	start_rv += num_rv;
+      }
+    }
+
+    // Continuous aleatory
+
+    if (!active_only || cauv) {
+      // RV type could be {,BOUNDED_}NORMAL, so use count-based API
+      num_rv = probDescDB.get_sizet("variables.normal_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_MEAN,
+          probDescDB.get_rv("variables.normal_uncertain.means"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_STD_DEV,
+          probDescDB.get_rv("variables.normal_uncertain.std_deviations"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_LWR_BND,
+          probDescDB.get_rv("variables.normal_uncertain.lower_bounds"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_UPR_BND,
+          probDescDB.get_rv("variables.normal_uncertain.upper_bounds"));
+	//N_LOCATION,N_SCALE not mapped from ProblemDescDB
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      // RV type could be {,BOUNDED_}LOGNORMAL, so use count-based API
+      num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_MEAN,
+          probDescDB.get_rv("variables.lognormal_uncertain.means"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_STD_DEV,
+          probDescDB.get_rv("variables.lognormal_uncertain.std_deviations"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_LAMBDA,
+          probDescDB.get_rv("variables.lognormal_uncertain.lambdas"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_ZETA,
+          probDescDB.get_rv("variables.lognormal_uncertain.zetas"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_ERR_FACT,
+          probDescDB.get_rv("variables.lognormal_uncertain.error_factors"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_LWR_BND,
+          probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_UPR_BND,
+          probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_LWR_BND,
+          probDescDB.get_rv("variables.uniform_uncertain.lower_bounds"));
+	mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_UPR_BND,
+          probDescDB.get_rv("variables.uniform_uncertain.upper_bounds"));
+	//U_LOCATION,U_SCALE not mapped from ProblemDescDB
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::LOGUNIFORM, Pecos::LU_LWR_BND,
+          probDescDB.get_rv("variables.loguniform_uncertain.lower_bounds"));
+	mvd_rep->push_parameters(Pecos::LOGUNIFORM, Pecos::LU_UPR_BND,
+          probDescDB.get_rv("variables.loguniform_uncertain.upper_bounds"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_MODE,
+          probDescDB.get_rv("variables.triangular_uncertain.modes"));
+	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_LWR_BND,
+          probDescDB.get_rv("variables.triangular_uncertain.lower_bounds"));
+	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_UPR_BND,
+          probDescDB.get_rv("variables.triangular_uncertain.upper_bounds"));
+	//T_LOCATION,T_SCALE not mapped from ProblemDescDB
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::EXPONENTIAL, Pecos::E_BETA,
+          probDescDB.get_rv("variables.exponential_uncertain.betas"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.beta_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_ALPHA,
+          probDescDB.get_rv("variables.beta_uncertain.alphas"));
+	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_BETA,
+          probDescDB.get_rv("variables.beta_uncertain.betas"));
+	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_LWR_BND,
+          probDescDB.get_rv("variables.beta_uncertain.lower_bounds"));
+	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_UPR_BND,
+          probDescDB.get_rv("variables.beta_uncertain.upper_bounds"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::GAMMA, Pecos::GA_ALPHA,
+          probDescDB.get_rv("variables.gamma_uncertain.alphas"));
+	mvd_rep->push_parameters(Pecos::GAMMA, Pecos::GA_BETA,
+          probDescDB.get_rv("variables.gamma_uncertain.betas"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+
+      // Inverse gamma is not part of variable spec (calibration hyperparameter)
+
+      num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::GUMBEL, Pecos::GU_ALPHA,
+          probDescDB.get_rv("variables.gumbel_uncertain.alphas"));
+	mvd_rep->push_parameters(Pecos::GUMBEL, Pecos::GU_BETA,
+          probDescDB.get_rv("variables.gumbel_uncertain.betas"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::FRECHET, Pecos::F_ALPHA,
+          probDescDB.get_rv("variables.frechet_uncertain.alphas"));
+	mvd_rep->push_parameters(Pecos::FRECHET, Pecos::F_BETA,
+          probDescDB.get_rv("variables.frechet_uncertain.betas"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::WEIBULL, Pecos::W_ALPHA,
+          probDescDB.get_rv("variables.weibull_uncertain.alphas"));
+	mvd_rep->push_parameters(Pecos::WEIBULL, Pecos::W_BETA,
+          probDescDB.get_rv("variables.weibull_uncertain.betas"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::HISTOGRAM_BIN, Pecos::H_BIN_PAIRS,
+          probDescDB.get_rrma("variables.histogram_uncertain.bin_pairs"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+    }
+
+    // Discrete aleatory
+
+    if (!active_only || dauv) {
+      num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::POISSON, Pecos::P_LAMBDA,
+          probDescDB.get_rv("variables.poisson_uncertain.lambdas"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_P_PER_TRIAL,
+          probDescDB.get_rv("variables.binomial_uncertain.prob_per_trial"));
+	UIntArray num_tr;
+	copy_data(probDescDB.get_iv(
+	  "variables.binomial_uncertain.num_trials"), num_tr);
+	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS, num_tr);
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::NEGATIVE_BINOMIAL,
+	  Pecos::NBI_P_PER_TRIAL, probDescDB.get_rv(
+          "variables.negative_binomial_uncertain.prob_per_trial"));
+	UIntArray num_tr;
+	copy_data(probDescDB.get_iv(
+	  "variables.negative_binomial_uncertain.num_trials"), num_tr);
+	mvd_rep->
+	  push_parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS, num_tr);
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::GEOMETRIC, Pecos::GE_P_PER_TRIAL,
+          probDescDB.get_rv("variables.geometric_uncertain.prob_per_trial"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
+      if (num_rv) {
+	UIntArray tot_pop, sel_pop, num_drawn;
+	copy_data(probDescDB.get_iv(
+	  "variables.hypergeometric_uncertain.total_population"), tot_pop);
+	copy_data(probDescDB.get_iv(
+          "variables.hypergeometric_uncertain.selected_population"), sel_pop);
+	copy_data(probDescDB.get_iv(
+	  "variables.hypergeometric_uncertain.num_drawn"), num_drawn);
+	mvd_rep->
+	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_TOT_POP, tot_pop);
+	mvd_rep->
+	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_SEL_POP, sel_pop);
+	mvd_rep->
+	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_DRAWN, num_drawn);
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_INT, Pecos::H_PT_INT_PAIRS,
+          probDescDB.get_irma("variables.histogram_uncertain.point_int_pairs"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet(
+	"variables.histogram_uncertain.point_string");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_STRING,
+	  Pecos::H_PT_STR_PAIRS, probDescDB.get_srma(
+	  "variables.histogram_uncertain.point_string_pairs"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_REAL,
+	  Pecos::H_PT_REAL_PAIRS, probDescDB.get_rrma(
+	  "variables.histogram_uncertain.point_real_pairs"));
+	assign_value(active_corr, true, start_rv, num_rv);
+	start_rv += num_rv;
+      }
+    }
+
+    // Continuous epistemic
+
+    if (!active_only || ceuv) {
+      num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
+          Pecos::CIU_BPA, probDescDB.get_rrrma(
+          "variables.continuous_interval_uncertain.basic_probs"));
+	start_rv += num_rv;
+      }
+    }
+
+    // Discrete epistemic
+
+    if (!active_only || deuv) {
+      num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::DISCRETE_INTERVAL_UNCERTAIN,
+          Pecos::DIU_BPA, probDescDB.get_iirma(
+          "variables.discrete_interval_uncertain.basic_probs"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_INT,
+          Pecos::DUSI_VALUES_PROBS, probDescDB.get_irma(
+          "variables.discrete_uncertain_set_int.values_probs"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_STRING,
+          Pecos::DUSS_VALUES_PROBS, probDescDB.get_srma(
+          "variables.discrete_uncertain_set_string.values_probs"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
+      if (num_rv) {
+	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+          Pecos::DUSR_VALUES_PROBS, probDescDB.get_rrma(
+          "variables.discrete_uncertain_set_real.values_probs"));
+	start_rv += num_rv;
+      }
+    }
+
+    // Continuous state
+    // RANGE type could be design or state, so use count-based API
+
+    if (!active_only || csv) {
+      num_rv = probDescDB.get_sizet("variables.continuous_state");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_LWR_BND,
+          probDescDB.get_rv("variables.continuous_state.lower_bounds"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_UPR_BND,
+          probDescDB.get_rv("variables.continuous_state.upper_bounds"));
+	start_rv += num_rv;
+      }
+    }
+
+    // Discrete state
+    // RANGE and SET types could be design or state, so use count-based API
+
+    if (!active_only || dsv) {
+      num_rv = probDescDB.get_sizet("variables.discrete_state_range");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_LWR_BND,
+          probDescDB.get_iv("variables.discrete_state_range.lower_bounds"));
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_UPR_BND,
+          probDescDB.get_iv("variables.discrete_state_range.upper_bounds"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSI_VALUES,
+          probDescDB.get_isa("variables.discrete_state_set_int.values"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSS_VALUES,
+          probDescDB.get_ssa("variables.discrete_state_set_string.values"));
+	start_rv += num_rv;
+      }
+      num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
+      if (num_rv) {
+	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSR_VALUES,
+          probDescDB.get_rsa("variables.discrete_state_set_real.values"));
+	//start_rv += num_rv;
+      }
+    }
+
+    mvd_rep->initialize_correlations(
+      probDescDB.get_rsm("variables.uncertain.correlation_matrix"),
+      active_corr);
+
+  //  break;
+  //}
+}
+
+
 SizetMultiArrayConstView
 Model::initialize_x0_bounds(const SizetArray& original_dvv, 
 			    bool& active_derivs, bool& inactive_derivs, 
@@ -519,17 +1200,18 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
 			    RealVector& fd_lb, RealVector& fd_ub) const
 {
   // Are derivatives w.r.t. active or inactive variables?
+  active_derivs = inactive_derivs = false;
   if (original_dvv == currentVariables.continuous_variable_ids()) {
     active_derivs = true;
-    copy_data(currentVariables.continuous_variables(), x0); // view->copy
+    copy_data(currentVariables.continuous_variables(), x0);        // view->copy
   }
   else if (original_dvv ==
 	   currentVariables.inactive_continuous_variable_ids()) {
     inactive_derivs = true;
-    copy_data(currentVariables.inactive_continuous_variables(), x0);// vw->cpy
+    copy_data(currentVariables.inactive_continuous_variables(), x0);//view->copy
   }
   else // general derivatives
-    copy_data(currentVariables.all_continuous_variables(), x0); // view->copy
+    copy_data(currentVariables.all_continuous_variables(), x0);    // view->copy
 
   // define c_l_bnds, c_u_bnds, cv_ids, cv_types
   const RealVector& c_l_bnds = (active_derivs) ? continuous_lower_bounds() :
@@ -548,18 +1230,40 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
       all_continuous_variable_types() );
 
   // if not respecting bounds, leave at +/- infinity
+  size_t num_deriv_vars = original_dvv.size();
+  fd_lb.resize(num_deriv_vars);  fd_ub.resize(num_deriv_vars);
   Real dbl_inf = std::numeric_limits<Real>::infinity();
-  fd_lb = -dbl_inf;
-  fd_ub =  dbl_inf;
-  if (!ignoreBounds) { // manage global/inferred vs. distribution bounds
-    size_t num_deriv_vars = original_dvv.size();
+  if (ignoreBounds)
+    { fd_lb = -dbl_inf;  fd_ub = dbl_inf; }
+  else { // manage global/inferred vs. distribution bounds
+    Pecos::MarginalsCorrDistribution* mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
     for (size_t j=0; j<num_deriv_vars; j++) {
-      size_t xj_index = find_index(cv_ids, original_dvv[j]);
-      fd_lb[j] = finite_difference_lower_bound(cv_types, c_l_bnds, xj_index);
-      fd_ub[j] = finite_difference_upper_bound(cv_types, c_u_bnds, xj_index);
+      size_t cv_index = find_index(cv_ids, original_dvv[j]);
+      switch (cv_types[cv_index]) {
+      case NORMAL_UNCERTAIN: {    // +/-infinity or user-specified
+	size_t rv_index = original_dvv[j] - 1;// id to index (full variable set)
+	fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_LWR_BND);
+	fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_UPR_BND);
+	break;
+      }
+      case LOGNORMAL_UNCERTAIN: { // 0/inf or user-specified
+	size_t rv_index = original_dvv[j] - 1;// id to index (full variable set)
+	fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_LWR_BND);
+	fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_UPR_BND);
+	break;
+      }
+      case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN:
+      case FRECHET_UNCERTAIN:     case WEIBULL_UNCERTAIN:
+	fd_lb[j] = c_l_bnds[cv_index]; fd_ub[j] = dbl_inf;            break;
+      case GUMBEL_UNCERTAIN:
+	fd_lb[j] = -dbl_inf;           fd_ub[j] = dbl_inf;            break;
+      default:
+	fd_lb[j] = c_l_bnds[cv_index]; fd_ub[j] = c_u_bnds[cv_index]; break;
+      }
     }
   }
-  
+
   return cv_ids;
 }
 
@@ -586,10 +1290,20 @@ void Model::evaluate()
     modelRep->evaluate();
   else { // letter
     ++modelEvalCntr;
-
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+     modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, mvDist, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+    
     // Define default ActiveSet for iterators which don't pass one
     ActiveSet temp_set = currentResponse.active_set(); // copy
     temp_set.request_values(1); // function values only
+
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          temp_set, currentVariables);
 
     if (derived_master_overload()) {
       // prevents error of trying to run a multiproc. direct job on the master
@@ -604,6 +1318,8 @@ void Model::evaluate()
       output_mgr.add_datapoint(currentVariables, interface_id(), 
 			       currentResponse);
     }
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
   }
 }
 
@@ -614,6 +1330,17 @@ void Model::evaluate(const ActiveSet& set)
     modelRep->evaluate(set);
   else { // letter
     ++modelEvalCntr;
+
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, mvDist, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          set, currentVariables);
 
     // Derivative estimation support goes here and is not replicated in the
     // default asv version of evaluate -> a good reason for using an
@@ -651,6 +1378,9 @@ void Model::evaluate(const ActiveSet& set)
       output_mgr.add_datapoint(currentVariables, interface_id(), 
 			       currentResponse);
     }
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr, currentResponse);
+
   }
 }
 
@@ -661,11 +1391,20 @@ void Model::evaluate_nowait()
     modelRep->evaluate_nowait();
   else { // letter
     ++modelEvalCntr;
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, mvDist, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
 
     // Define default ActiveSet for iterators which don't pass one
     ActiveSet temp_set = currentResponse.active_set(); // copy
     temp_set.request_values(1); // function values only
 
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          temp_set, currentVariables);
     // perform an asynchronous parameter-to-response mapping
     derived_evaluate_nowait(temp_set);
 
@@ -685,6 +1424,18 @@ void Model::evaluate_nowait(const ActiveSet& set)
     modelRep->evaluate_nowait(set);
   else { // letter
     ++modelEvalCntr;
+
+    if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType, 
+          currentVariables, mvDist, currentResponse, default_active_set());
+      if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+      evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
+          set, currentVariables);
+
     // derived evaluation_id() not yet incremented (for first of several if est
     // derivs); want the key for id map to be the first raw eval of the set
     rawEvalIdMap[derived_evaluation_id() + 1] = modelEvalCntr;
@@ -816,6 +1567,10 @@ const IntResponseMap& Model::synchronize()
     responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
     cachedResponseMap.clear();
 
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+      for(const auto  &id_r : responseMap)
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second); 
+    }
     // return final map
     return responseMap;
   }
@@ -893,7 +1648,10 @@ const IntResponseMap& Model::synchronize_nowait()
     // using Model::cache_unmatched_response().
     responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
     cachedResponseMap.clear();
-
+    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+      for(const auto  &id_r : responseMap)
+        evaluationsDB.store_model_response(modelId, modelType, id_r.first, id_r.second);
+    }
     return responseMap;
   }
 }
@@ -1042,17 +1800,17 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   bool initial_map = false, augmented_data_flag = false, db_capture = false,
     fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
     fd_hess_by_grad_flag = false;
-  const ShortArray& original_asv = original_set.request_vector();
-  const SizetArray& original_dvv = original_set.derivative_vector();
-  size_t i, j, k, map_counter = 0, num_deriv_vars = original_dvv.size();
+  const ShortArray& orig_asv = original_set.request_vector();
+  const SizetArray& orig_dvv = original_set.derivative_vector();
+  size_t i, j, k, map_counter = 0, num_deriv_vars = orig_dvv.size();
   size_t ifg, nfg = 0;
 
   for (i=0; i<numFns; i++) {
     if (map_asv[i]) {
       initial_map = true;
-      if ( ( (map_asv[i] & 1) && !(original_asv[i] & 1) ) ||
-           ( (map_asv[i] & 2) && !(original_asv[i] & 2) ) )
-        augmented_data_flag = true; // original_asv val/grad requests augmented
+      if ( ( (map_asv[i] & 1) && !(orig_asv[i] & 1) ) ||
+           ( (map_asv[i] & 2) && !(orig_asv[i] & 2) ) )
+        augmented_data_flag = true; // orig_asv val/grad requests augmented
     }
     if (fd_grad_asv[i])
       fd_grad_flag = true;           // gradient finite differencing needed
@@ -1067,13 +1825,13 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   if (nfg)
     fd_hess_by_grad_flag = true;
 
-  ActiveSet new_set(map_asv, original_set.derivative_vector());
+  ActiveSet new_set(map_asv, orig_dvv);
   Response initial_map_response(currentResponse.shared_data(), new_set);
 
   // The logic for incurring an additional data_pairs search (beyond the
   // existing duplicate detection) is that a data request contained in
-  // original_asv is most likely not a duplicate, but there is a good chance
-  // that an augmented data reqmt (appears in map_asv but not in original_asv)
+  // orig_asv is most likely not a duplicate, but there is a good chance
+  // that an augmented data reqmt (appears in map_asv but not in orig_asv)
   // has been evaluated previously.  The additional search allows us to trap
   // this common case more gracefully (special header, no evaluation echo).
   if (augmented_data_flag) {
@@ -1142,16 +1900,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   }
   if (fd_grad_flag || fd_hess_flag) {
 
-    // define x0 and mode flags
-    bool active_derivs = false;    // derivatives w.r.t. active vars
-    bool inactive_derivs = false;  // derivs w.r.t. inactive vars
-    RealVector x0;
-
     // define lower/upper bounds for finite differencing and cv_ids
-    RealVector fd_lb(num_deriv_vars), fd_ub(num_deriv_vars);
+    RealVector x0, fd_lb, fd_ub;
+    bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
     SizetMultiArrayConstView cv_ids = 
-      initialize_x0_bounds(original_dvv, active_derivs, inactive_derivs, 
-                           x0, fd_lb, fd_ub);
+      initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
+			   fd_lb, fd_ub);
 
     const RealVector& fn_vals_x0  = initial_map_response.function_values();
     const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
@@ -1162,7 +1916,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     RealVector x = x0; 
     for (j=0; j<num_deriv_vars; j++) { // difference the 1st num_deriv_vars vars
 
-      size_t xj_index = find_index(cv_ids, original_dvv[j]);
+      size_t xj_index = find_index(cv_ids, orig_dvv[j]);
       Real x0_j = x0[xj_index], lb_j = fd_lb[j], ub_j = fd_ub[j];
 
       if (fd_grad_flag) {
@@ -1350,7 +2104,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             // evaluate off-diagonal terms
 
             for (k=j+1; k<num_deriv_vars; k++) {
-              size_t xk_index = find_index(cv_ids, original_dvv[k]);
+              size_t xk_index = find_index(cv_ids, orig_dvv[k]);
               RealVector fn_vals_x_plus_h_plus_h,  fn_vals_x_plus_h_minus_h,
                 fn_vals_x_minus_h_plus_h, fn_vals_x_minus_h_minus_h;
 
@@ -1555,7 +2309,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             // evaluate off-diagonal terms
 
             for (k = 0; k < j; k++) {
-              size_t xk_index = find_index(cv_ids, original_dvv[k]);
+              size_t xk_index = find_index(cv_ids, orig_dvv[k]);
 
               // --------------------------------
               // Evaluate fn_vals_x12
@@ -1694,8 +2448,8 @@ synchronize_derivatives(const Variables& vars,
 			const ShortArray& quasi_hess_asv,
 			const ActiveSet& original_set)
 {
-  const SizetArray& original_dvv = original_set.derivative_vector();
-  size_t i, j, k, num_deriv_vars = original_dvv.size();
+  const SizetArray& orig_dvv = original_set.derivative_vector();
+  size_t i, j, k, num_deriv_vars = orig_dvv.size();
   bool fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
     fd_hess_by_grad_flag = false;
   RealVector dx;
@@ -1752,7 +2506,7 @@ synchronize_derivatives(const Variables& vars,
   }
   else { // construct an empty initial_map_response
     ShortArray asv(numFns, 0);
-    ActiveSet initial_map_set(asv, original_dvv);
+    ActiveSet initial_map_set(asv, orig_dvv);
     initial_map_response
       = Response(currentResponse.shared_data(), initial_map_set);
   }
@@ -1765,12 +2519,11 @@ synchronize_derivatives(const Variables& vars,
   // Postprocess the finite difference responses
   if (fd_grad_flag || fd_hess_flag) {
     SizetMultiArray cv_ids;
-    if (original_dvv == currentVariables.continuous_variable_ids()) {
+    if (orig_dvv == currentVariables.continuous_variable_ids()) {
       cv_ids.resize(boost::extents[cv()]);
       cv_ids = currentVariables.continuous_variable_ids();
     }
-    else if (original_dvv ==
-             currentVariables.inactive_continuous_variable_ids()) {
+    else if (orig_dvv == currentVariables.inactive_continuous_variable_ids()) {
       cv_ids.resize(boost::extents[icv()]);
       cv_ids = currentVariables.inactive_continuous_variable_ids();
     }
@@ -1781,7 +2534,7 @@ synchronize_derivatives(const Variables& vars,
     const RealVector& fn_vals_x0  = initial_map_response.function_values();
     const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
     for (j=0; j<num_deriv_vars; j++) {
-      size_t xj_index = find_index(cv_ids, original_dvv[j]);
+      size_t xj_index = find_index(cv_ids, orig_dvv[j]);
 
       if (fd_grad_flag) { // numerical gradients
         Real h = deltaList.front(); deltaList.pop_front();// first in, first out
@@ -1851,7 +2604,7 @@ synchronize_derivatives(const Variables& vars,
             // off-diagonal terms
 
             for (k=j+1; k<num_deriv_vars; k++) {
-              size_t xk_index = find_index(cv_ids, original_dvv[k]);
+              size_t xk_index = find_index(cv_ids, orig_dvv[k]);
               const RealVector& fn_vals_x_plus_h_plus_h
                 = fd_resp_cit->second.function_values();
               ++fd_resp_cit;
@@ -1903,7 +2656,7 @@ synchronize_derivatives(const Variables& vars,
             // off-diagonal terms
 
             for(k = 0; k < j; ++k) {
-              size_t xk_index = find_index(cv_ids, original_dvv[k]);
+              size_t xk_index = find_index(cv_ids, orig_dvv[k]);
               h2 = dx[k];
               denom = h1*h2;
               fx2 = fx[k];
@@ -2111,9 +2864,9 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 		      const ActiveSet& original_set)
 {
   size_t i, j, k;
-  const RealVector& x       = vars.continuous_variables(); // view
-  const ShortArray& original_asv = original_set.request_vector();
-  const RealMatrix& fn_grads     = new_response.function_gradients();
+  const RealVector& x        = vars.continuous_variables(); // view
+  const ShortArray& orig_asv = original_set.request_vector();
+  const RealMatrix& fn_grads = new_response.function_gradients();
 
   // if necessary, initialize quasi-Hessians before populating
   if ( numQuasiUpdates.empty() ) {
@@ -2142,7 +2895,7 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 
     // perform i-th quasi-Hessian update if a new grad vector is present,
     // regardless of whether the quasi-Hessian is active on this eval.
-    if ( !quasiHessians[i].empty() && (original_asv[i] & 2) ) {
+    if ( !quasiHessians[i].empty() && (orig_asv[i] & 2) ) {
 
       // quasi-Hessian updates require a history of at least 2 gradient evals
       Real norm_s = 0.;
@@ -2312,57 +3065,6 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 }
 
 
-Real Model::
-finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
-			      const RealVector& global_c_l_bnds,
-			      size_t cv_index) const
-{
-  // replace inferred lower bounds for unbounded distributions
-  switch (cv_types[cv_index]) {
-  case NORMAL_UNCERTAIN: {    // -infinity or user-specified
-    size_t n_index = cv_index -
-      find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
-    return aleatDistParams.normal_lower_bound(n_index);    break;
-  }
-  case LOGNORMAL_UNCERTAIN: { // 0 or user-specified
-    size_t ln_index = cv_index -
-      find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
-    return aleatDistParams.lognormal_lower_bound(ln_index); break;
-  }
-  case GUMBEL_UNCERTAIN:      // -infinity
-    return -std::numeric_limits<Real>::infinity();  break;
-  default:
-    return global_c_l_bnds[cv_index];               break;
-  }
-}
-
-
-Real Model::
-finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
-			      const RealVector& global_c_u_bnds,
-			      size_t cv_index) const
-{
-  // replace inferred upper bounds for unbounded/semi-bounded distributions
-  switch (cv_types[cv_index]) {
-  case NORMAL_UNCERTAIN: {    // infinity or user-specified
-    size_t n_index = cv_index -
-      find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
-    return aleatDistParams.normal_upper_bound(n_index);    break;
-  }
-  case LOGNORMAL_UNCERTAIN: { // infinity or user-specified
-    size_t ln_index = cv_index -
-      find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
-    return aleatDistParams.lognormal_upper_bound(ln_index); break;
-  }
-  case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN: // infinity
-  case GUMBEL_UNCERTAIN:      case FRECHET_UNCERTAIN: case WEIBULL_UNCERTAIN:
-    return std::numeric_limits<Real>::infinity();   break;
-  default:
-    return global_c_u_bnds[cv_index];               break;
-  }
-}
-
-
 /** Splits asv_in total request into map_asv_out, fd_grad_asv_out,
     fd_hess_asv_out, and quasi_hess_asv_out as governed by the
     responses specification.  If the returned use_est_deriv is true,
@@ -2374,8 +3076,8 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 		       ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
 		       ShortArray& quasi_hess_asv_out)
 {
-  const ShortArray& asv_in = original_set.request_vector();
-  const SizetArray& original_dvv = original_set.derivative_vector();
+  const ShortArray& asv_in   = original_set.request_vector();
+  const SizetArray& orig_dvv = original_set.derivative_vector();
   
   // *_asv_out[i] have all been initialized to zero
 
@@ -2410,8 +3112,9 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
       else { // could happen if an iterator requiring gradients is selected
         // with no_gradients or unsupported vendor numerical gradients
         // and lacks a separate error check.
-        Cerr << "Error: unsupported asv gradient request in Model::manage_asv."
-             << std::endl;
+        Cerr << "Error: Model '" << model_id()
+             << "' received unsupported gradient request from ASV in "
+             << "Model::manage_asv." << std::endl;
         abort_handler(MODEL_ERROR);
       }
       if ( surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
@@ -2446,8 +3149,9 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
       }
       else { // could happen if an iterator requiring Hessians is selected
         // with no_hessians and it lacks a separate error check.
-        Cerr << "Error: unsupported asv Hessian request in Model::manage_asv."
-             << std::endl;
+        Cerr << "Error: Model '" << model_id()
+             << "' received unsupported Hessian request from ASV in "
+             << "Model::manage_asv." << std::endl;
         abort_handler(MODEL_ERROR);
       }
     }
@@ -2456,23 +3160,19 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
   // Depending on bounds-respecting differencing, finite difference gradients
   // may require f(x0).  The following computes the step and updates shortStep.
   if (fd_grad_flag && !ignoreBounds) { // protect call to forward_grad_step
-    size_t num_deriv_vars = original_dvv.size();
-
-    // define x0 and mode flags
-    bool active_derivs = false;    // derivatives w.r.t. active vars
-    bool inactive_derivs = false;  // derivs w.r.t. inactive vars
-    RealVector x0;
+    size_t num_deriv_vars = orig_dvv.size();
 
     // define lower/upper bounds for finite differencing and cv_ids
-    RealVector fd_lb(num_deriv_vars), fd_ub(num_deriv_vars);
+    RealVector x0, fd_lb, fd_ub;
+    bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
     SizetMultiArrayConstView cv_ids = 
-      initialize_x0_bounds(original_dvv, active_derivs, inactive_derivs,
-                           x0, fd_lb, fd_ub);
+      initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
+			   fd_lb, fd_ub);
 
     // Accumulate short step over all derivative variables
     bool short_step = false;
     for (size_t j=0; j<num_deriv_vars; j++) {
-      size_t xj_index = find_index(cv_ids, original_dvv[j]);
+      size_t xj_index = find_index(cv_ids, orig_dvv[j]);
       Real x0_j = x0[xj_index], lb_j = fd_lb[j], ub_j = fd_ub[j];
       
       // NOTE: resets shortStep to false for each variable
@@ -2513,11 +3213,14 @@ bool Model::manage_data_recastings()
     bool manage_recasting = false;
     recastFlags.assign(num_models, false);
     // detect recasting needs top down
-    for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i)
-      if (ml_it->model_type()      == "recast")
+    for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i) {
+      const String& m_type = ml_it->model_type();
+      if (m_type == "recast" ||
+	  m_type == "probability_transform") // + other Recast types...
 	manage_recasting = recastFlags[i] = true;
-      else if (ml_it->model_type() == "nested")
+      else if (m_type == "nested")
 	break;
+    }
 
     if (!manage_recasting) recastFlags.clear();
     return manage_recasting;
@@ -2535,7 +3238,8 @@ user_space_to_iterator_space(const Variables& user_vars,
 						  iter_vars, iter_resp);
   else { // letter lacking redefinition of virtual fn.
 
-    iter_vars = user_vars; iter_resp = user_resp; // shallow copies
+    iter_vars = user_vars.copy(); // deep copy to preserve inactive in source
+    iter_resp = user_resp;//.copy(); // shallow copy currently sufficient
 
     // apply recastings bottom up (e.g., for data import)
     // modelList assigned in manage_data_recastings() -> subordinate_models()
@@ -2547,16 +3251,22 @@ user_space_to_iterator_space(const Variables& user_vars,
 	// utilize RecastModel::current{Variables,Response} to xform data
 	Variables recast_vars = ml_rit->current_variables(); // shallow copy
 	Response  recast_resp = ml_rit->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();    // copy
 	// to propagate vars bottom up, inverse of std transform is reqd
 	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
 	recast_model_rep->inverse_transform_variables(iter_vars, recast_vars);
-	//recast_model_rep->
-	//  inverse_transform_set(iter_vars, iter_set, recast_set);
+	recast_model_rep->
+	  inverse_transform_set(iter_vars, iter_resp.active_set(), recast_set);
 	// to propagate response bottom up, std transform is used
+	recast_resp.active_set(recast_set);
 	recast_model_rep->
 	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
-	// reassign rep pointers (no actual data copying)
-	iter_vars = recast_vars; iter_resp = recast_resp;// iter_set=recast_set;
+	// update active in iter_vars
+	iter_vars.active_variables(recast_vars);
+	// reassign resp rep pointer (no actual data copying)
+	iter_resp = recast_resp; // sufficient for now...
+	//iter_resp.active_set(recast_set);
+	//iter_resp.update(recast_resp);
       }
   }
 }
@@ -2572,7 +3282,8 @@ iterator_space_to_user_space(const Variables& iter_vars,
 						  user_vars, user_resp);
   else { // letter lacking redefinition of virtual fn.
 
-    user_vars = iter_vars; user_resp = iter_resp; // shallow copies
+    user_vars = iter_vars.copy(); // deep copy to preserve inactive in source
+    user_resp = iter_resp;//.copy(); // shallow copy currently sufficient
 
     // apply recastings top down (e.g., for data export)
     // modelList assigned in manage_data_recastings() -> subordinate_models()
@@ -2583,16 +3294,23 @@ iterator_space_to_user_space(const Variables& iter_vars,
 	// utilize RecastModel::current{Variables,Response} to xform data
 	Variables recast_vars = ml_it->current_variables(); // shallow copy
 	Response  recast_resp = ml_it->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();   // copy
 	// to propagate vars top down, forward transform is reqd
 	RecastModel* recast_model_rep = (RecastModel*)ml_it->model_rep();
 	recast_model_rep->transform_variables(user_vars, recast_vars);
-	//recast_model_rep->transform_set(user_vars, user_set, recast_set);
+	recast_model_rep->
+	  transform_set(user_vars, user_resp.active_set(), recast_set);
 	// to propagate response top down, inverse transform is used.  Note:
 	// derivatives are not currently exported --> a no-op for Nataf.
+	recast_resp.active_set(recast_set);
 	recast_model_rep->inverse_transform_response(recast_vars, user_vars,
 						     user_resp, recast_resp);
-	// reassign rep pointers (no actual data copying)
-	user_vars = recast_vars; user_resp = recast_resp;// user_set=recast_set;
+	// update active in iter_vars
+	user_vars.active_variables(recast_vars);
+	// reassign resp rep pointer (no actual data copying)
+	user_resp = recast_resp; // sufficient for now...
+	//user_resp.active_set(recast_set);
+	//user_resp.update(recast_resp);
       }
   }
 }
@@ -2685,6 +3403,41 @@ Model& Model::subordinate_model()
 }
 
 
+void Model::active_model_key(const UShortArray& mi_key)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->active_model_key(mi_key);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
+	 << "function.\n       model key activation is not supported by this "
+	 << "Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::clear_model_keys()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->clear_model_keys();
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual clear_model_keys() "
+	 << "function.\n       model keys are not supported by this Model "
+	 << "class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+size_t Model::qoi() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->qoi();
+  else // default for models without aggregation
+    return response_size();
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -2693,47 +3446,16 @@ Model& Model::surrogate_model()
   if (modelRep) // envelope fwd to letter
     return modelRep->surrogate_model();
   else // letter lacking redefinition of virtual fn.
-    return dummy_model; // return null/empty envelope
+    return dummy_model; // default is no surrogate -> return empty envelope
 }
 
 
-void Model::
-surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
+const Model& Model::surrogate_model() const
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_indices(lf_model_index, lf_soln_lev_index);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_"
-	 << "indices(size_t, size_t) function.\n       surrogate model "
-	 << "activation is not supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-void Model::surrogate_model_indices(const SizetSizetPair& lf_form_level)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->surrogate_model_indices(lf_form_level);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_"
-	 << "indices(SizetSizetPair) function.\n       surrogate model "
-	 << "activation is not supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-const SizetSizetPair& Model::surrogate_model_indices() const
-{
-  if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual surrogate_model_"
-	 << "indices() function.\n       active surrogate model indices are "
-	 << "not supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->surrogate_model_indices();
+    return modelRep->surrogate_model();
+  else // letter lacking redefinition of virtual fn.
+    return dummy_model; // default is no surrogate -> return empty envelope
 }
 
 
@@ -2745,46 +3467,16 @@ Model& Model::truth_model()
   if (modelRep) // envelope fwd to letter
     return modelRep->truth_model();
   else // letter lacking redefinition of virtual fn.
-    return dummy_model; // return null/empty envelope
+    return *this; // default is no surrogate -> return this model instance
 }
 
 
-void Model::truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
+const Model& Model::truth_model() const
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_indices(hf_model_index, hf_soln_lev_index);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_indices"
-	 << "(size_t, size_t) function.\n       truth_model activation is not "
-	 << "supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-void Model::truth_model_indices(const SizetSizetPair& hf_form_level)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->truth_model_indices(hf_form_level);
-  else {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_indices"
-	 << "(SizetSizetPair) function.\n       truth_model activation is not "
-	 << "supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-const SizetSizetPair& Model::truth_model_indices() const
-{
-  if (!modelRep) {
-    Cerr << "Error: Letter lacking redefinition of virtual truth_model_indices"
-	 << "() function.\n       active truth_model indices are not supported "
-	 << "by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-
-  return modelRep->truth_model_indices();
+    return modelRep->truth_model();
+  else // letter lacking redefinition of virtual fn.
+    return *this; // default is no surrogate -> return this model instance
 }
 
 
@@ -2813,6 +3505,14 @@ void Model::derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
+void Model::resize_from_subordinate_model(size_t depth)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->resize_from_subordinate_model(depth);
+  // else default if no redefinition is no-op
+}
+
+
 /** used only for instantiate-on-the-fly model recursions (all RecastModel
     instantiations and alternate DataFitSurrModel instantiations).  Simulation,
     Hierarchical, and Nested Models do not redefine the function since they
@@ -2833,30 +3533,26 @@ void Model::update_from_subordinate_model(size_t depth)
     be performed on the original envelope object. */
 Interface& Model::derived_interface()
 {
-  if (modelRep)
-    return modelRep->derived_interface(); // envelope fwd to letter
-  else // letter lacking redefinition of virtual fn.
-    return dummy_interface; // return null/empty envelope
+  if (modelRep) return modelRep->derived_interface(); // fwd to letter
+  else          return dummy_interface; // return null/empty envelope
 }
 
 
 /** return the number of levels within a solution / discretization hierarchy. */
-size_t Model::solution_levels() const
+size_t Model::solution_levels(bool lwr_bnd) const
 {
-  if (modelRep)
-    return modelRep->solution_levels(); // envelope fwd to letter
-  else // letter lacking redefinition of virtual fn.
-    return 1;
+  if (modelRep) return modelRep->solution_levels(lwr_bnd); // fwd to letter
+  else          return (lwr_bnd) ? 1 : 0; // default
 }
 
 
-/** activate a particular level within a solution / discretization
-    hierarchy and return the cost estimate. */
-void Model::solution_level_index(size_t index)
+/** activate a particular level within a solution / discretization hierarchy. */
+void Model::solution_level_index(unsigned short index)
 {
   if (modelRep)
     modelRep->solution_level_index(index); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.
+  else if (index != USHRT_MAX) {
+    // letter lacking redefinition of virtual fn (for case that requires fwd)
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
          << "() function.\n       solution_level_index is not supported by this"
 	 << " Model class." << std::endl;
@@ -2865,7 +3561,27 @@ void Model::solution_level_index(size_t index)
 }
 
 
-RealVector Model::solution_level_cost() const
+unsigned short Model::solution_level_index() const
+{
+  if (modelRep) return modelRep->solution_level_index(); // fwd to letter
+  else          return USHRT_MAX; // not defined (default)
+}
+
+
+RealVector Model::solution_level_costs() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_costs"
+         << "() function.\n       solution_level_costs is not supported by "
+	 << "this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_costs(); // envelope fwd to letter
+}
+
+
+Real Model::solution_level_cost() const
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_cost"
@@ -2951,13 +3667,41 @@ int Model::derivative_concurrency() const
 }
 
 
+Pecos::ProbabilityTransformation& Model::probability_transformation()
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual probability_"
+	 << "transformation() function.\n       Probability transformations "
+	 << "are not supported by this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->probability_transformation(); // envelope fwd to letter
+}
+
+
 bool Model::initialize_mapping(ParLevLIter pl_iter)
 {
   if (modelRep)
     return modelRep->initialize_mapping(pl_iter);
   else {
-    // Base class default behavior is no-op
-    return false; // Variables size did not change
+    // restore initial states for re-entrancy
+    currentResponse.reset(); // for completeness
+    if (!warmStartFlag) {
+      // Dakota::Variables does not support reset() since initial points are not
+      // cached in Model/Variables -- they are generally (re)set from Iterator.
+      //currentVariables.reset(); // not supported
+
+      if (!quasiHessians.empty()) {
+	for (size_t i=0; i<numFns; ++i)
+	  quasiHessians[i] = 0.;
+	numQuasiUpdates.assign(numFns, 0);// {x,fnGrads}Prev will be overwritten
+      }
+    }
+
+    mappingInitialized = true;
+
+    return false; // size did not change
   }
 }
 
@@ -2966,21 +3710,19 @@ bool Model::finalize_mapping()
 {
   if (modelRep)
     return modelRep->finalize_mapping();
-  else {
-    // Base class default behavior is no-op
-    return false; // Variables size did not change
+  else { // base class behavior
+    mappingInitialized = false;
+    return false; // size did not change
   }
 }
 
 
-bool Model::mapping_initialized()
+bool Model::resize_pending() const
 {
   if (modelRep)
-    return modelRep->mapping_initialized();
-  else {
-    // Base class default behavior is true
-    return true;
-  }
+    return modelRep->resize_pending();
+  else // Base class default is false
+    return false;
 }
 
 
@@ -3009,6 +3751,15 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   // envelope fwd to letter
   return modelRep->build_approximation(vars, response_pr);
+}
+
+
+void Model::rebuild_approximation()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation();
+  else
+    build_approximation(); // default: build from scratch
 }
 
 
@@ -3155,15 +3906,7 @@ void Model::push_approximation()
 
 
 bool Model::push_available()
-{
-  if (!modelRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual push_available()"
-	 << "function.\n       This model does not support approximation "
-	 << "augmentation." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  return modelRep->push_available();
-}
+{ return (modelRep) ? modelRep->push_available() : false; }
 
 
 void Model::finalize_approximation()
@@ -3179,49 +3922,10 @@ void Model::finalize_approximation()
 }
 
 
-void Model::store_approximation(size_t index)
+void Model::combine_approximation()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->store_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
-	 << "() function.\n       This model does not support approximation "
-	 << "storage." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-void Model::restore_approximation(size_t index)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->restore_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
-	 << "approximation() function.\n       This model does not support "
-	 << "approximation restoration." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-void Model::remove_stored_approximation(size_t index)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->remove_stored_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual remove_stored_"
-	 << "approximation() function.\n       This model does not support "
-	 << "approximation storage." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-void Model::combine_approximation(short corr_type)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->combine_approximation(corr_type);
+    modelRep->combine_approximation();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
 	 << "approximation() function.\n       This model does not support "
@@ -3231,14 +3935,35 @@ void Model::combine_approximation(short corr_type)
 }
 
 
-void Model::run_dace_iterator(bool rebuild_flag)
+void Model::combined_to_active(bool clear_combined)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->run_dace_iterator(rebuild_flag);
+    modelRep->combined_to_active(clear_combined);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual run_dace_iterator()"
-	 << "function.\n       This model does not support DACE executions."
-	 << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
+	 << " function.\n       This model does not support approximation"
+	 << " combination." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::clear_inactive()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->clear_inactive();
+  //else // letter lacking redefinition of virtual fn.
+  //  default: no inactive data to clear
+}
+
+
+void Model::run_dace()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->run_dace();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual run_dace() function."
+	 << "\n       This model does not support DACE executions."<< std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -3352,7 +4077,21 @@ const RealVector& Model::approximation_variances(const Variables& vars)
 }
 
 
-const Pecos::SurrogateData& Model::approximation_data(size_t index)
+const RealVector& Model::error_estimates()
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual error_estimates() "
+	 << "function.\n       This model does not support error estimation."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  // envelope fwd to letter
+  return modelRep->error_estimates();
+}
+
+
+const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"
@@ -3362,7 +4101,7 @@ const Pecos::SurrogateData& Model::approximation_data(size_t index)
   }
 
   // envelope fwd to letter
-  return modelRep->approximation_data(index);
+  return modelRep->approximation_data(fn_index);
 }
 
 
@@ -3383,6 +4122,21 @@ short Model::surrogate_response_mode() const
 }
 
 
+/*
+void Model::link_multilevel_approximation_data()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->link_multilevel_approximation_data();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual link_multilevel_"
+	 << "approximation_data() function.\nThis model does not support "
+	 << "multilevel data." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+*/
+
+
 DiscrepancyCorrection& Model::discrepancy_correction()
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
@@ -3397,11 +4151,28 @@ DiscrepancyCorrection& Model::discrepancy_correction()
 }
 
 
-void Model::single_apply(const Variables& vars, Response& resp,
-			 const SizetSizet2DPair& indices)
+short Model::correction_type()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->single_apply(vars, resp, indices);
+    return modelRep->correction_type();
+  else
+    return NO_CORRECTION; // default for non-surrogate models
+}
+
+
+void Model::correction_type(short corr_type)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->correction_type(corr_type);
+  //else no-op
+}
+
+
+void Model::single_apply(const Variables& vars, Response& resp,
+			 const UShortArray& paired_key)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->single_apply(vars, resp, paired_key);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual single_apply() "
 	 << "function.\n." << std::endl;
@@ -3426,11 +4197,7 @@ void Model::component_parallel_mode(short mode)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->component_parallel_mode(mode);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual "
-	 << "component_parallel_mode() function.\n." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+  // else: default implementation is no-op
 }
 
 
@@ -3645,7 +4412,7 @@ int Model::serve_init_mapping(ParLevLIter pl_iter)
   if (modelRep) // envelope fwd to letter
     return modelRep->serve_init_mapping(pl_iter);
   else {
-    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    // Base class is a no-op, return 0 since init_communicators() was not called
     return 0;
   }
 }
@@ -3666,9 +4433,22 @@ int Model::serve_finalize_mapping(ParLevLIter pl_iter)
   if (modelRep) // envelope fwd to letter
     return modelRep->serve_finalize_mapping(pl_iter);
   else {
-    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    // Base class is a no-op, return 0 since init_communicators() was not called
     return 0;
   }
+}
+
+
+void Model::warm_start_flag(const bool flag)
+{
+  if (modelRep) modelRep->warm_start_flag(flag);
+  else          warmStartFlag = flag;
+}
+
+
+void Model::declare_sources() {
+  if(modelRep) modelRep->declare_sources();
+  else return;
 }
 
 
@@ -3790,18 +4570,7 @@ void Model::estimate_message_lengths()
       // worst case before packing. Variables aren't aware of the set
       // elements, so set them here with helper functions.
       Variables new_vars(currentVariables.copy());
-      size_t offset = 0;
-      string_variable_max(discreteDesignSetStringValues, offset, new_vars);
-      offset += discreteDesignSetStringValues.size();
-      string_variable_max(aleatDistParams.histogram_point_string_pairs(), 
-			  offset, new_vars);
-      offset += aleatDistParams.histogram_point_string_pairs().size();
-      string_variable_max(
-        epistDistParams.discrete_set_string_values_probabilities(),
-	offset, new_vars);
-      offset +=
-	epistDistParams.discrete_set_string_values_probabilities().size();
-      string_variable_max(discreteStateSetStringValues, offset, new_vars);
+      assign_max_strings(mvDist, new_vars);
 
       buff << new_vars;
       messageLengths[0] = buff.size(); // length of message containing vars
@@ -3826,8 +4595,7 @@ void Model::estimate_message_lengths()
       buff << new_response;
       messageLengths[2] = buff.size(); // length of message containing response
       buff.reset();
-      ParamResponsePair current_pair(new_vars, interface_id(),
-				     new_response);
+      ParamResponsePair current_pair(new_vars, interface_id(), new_response);
       buff << current_pair;
       messageLengths[3] = buff.size(); // length of message containing a PRPair
 #ifdef MPI_DEBUG
@@ -3838,43 +4606,56 @@ void Model::estimate_message_lengths()
 }
 
 
-void Model::string_variable_max(const StringSetArray& ssa, size_t offset, 
-				Variables& vars) {
-  if (modelRep) // envelope fwd to letter
-    modelRep->string_variable_max(ssa, offset, vars);
-  else { // not a virtual function: base class definition for all letters
-    size_t num_vars = ssa.size();
-    for (size_t i=0; i<num_vars; ++i) {
-      String max_string("");
-      SSCIter ss_it = ssa[i].begin(), ss_end = ssa[i].end();
-      for ( ; ss_it!=ss_end; ++ss_it) {
-	if (ss_it->size() > max_string.size())
-	  max_string = *ss_it;
-      }
-      if (!max_string.empty())
-	vars.all_discrete_string_variable(max_string, offset+i);
-    }
-  }
-}
+void Model::
+assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
+		   Variables& vars)
+{
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)mv_dist.multivar_dist_rep();
+  const SharedVariablesData& svd = vars.shared_data();
+  StringSet ss; StringRealMap srm;
+  size_t rv, start_rv, end_rv, adsv_index = 0,
+    num_cv, num_div, num_dsv, num_drv;
 
-
-void Model::string_variable_max(const StringRealMapArray& srma, size_t offset, 
-				Variables& vars) {
-  if (modelRep) // envelope fwd to letter
-    modelRep->string_variable_max(srma, offset, vars);
-  else { // not a virtual function: base class definition for all letters
-    size_t num_vars = srma.size();
-    for (size_t i=0; i<num_vars; ++i) {
-      String max_string("");
-      SRMCIter ss_it = srma[i].begin(), ss_end = srma[i].end();
-      for ( ; ss_it!=ss_end; ++ss_it) {
-	if (ss_it->first.size() > max_string.size())
-	  max_string = ss_it->first;
-      }
-      if (!max_string.empty())
-	vars.all_discrete_string_variable(max_string, offset+i);
-    }
+  // discrete design set string
+  svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv = num_cv + num_div;  end_rv = start_rv + num_dsv;
+  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+    mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
+    SSCIter max_it = max_string(ss);
+    vars.all_discrete_string_variable(*max_it, adsv_index);
   }
+  start_rv = end_rv + num_drv;
+
+  // histogram pt string
+  svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
+  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+    mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::H_BIN_PAIRS, srm);
+    SRMCIter max_it = max_string(srm);
+    vars.all_discrete_string_variable(max_it->first, adsv_index);
+  }
+  start_rv = end_rv + num_drv;
+
+  // discrete epistemic set string
+  svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
+  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+    mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::DUSS_VALUES_PROBS, srm);
+    SRMCIter max_it = max_string(srm);
+    vars.all_discrete_string_variable(max_it->first, adsv_index);
+  }
+  start_rv = end_rv + num_drv;
+
+  // discrete state set string
+  svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
+  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+    mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
+    SSCIter max_it = max_string(ss);
+    vars.all_discrete_string_variable(*max_it, adsv_index);
+  }
+  //start_rv = end_rv + num_drv;
 }
 
 
@@ -3947,6 +4728,156 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
+void Model::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  if (modelRep)
+    modelRep->nested_variable_mappings(c_index1, di_index1, ds_index1,
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
+  //else no-op
+}
+
+
+const SizetArray& Model::nested_acv1_indices() const
+{
+  if (!modelRep) {
+    Cerr << "Error: Letter lacking redefinition of virtual nested_acv1_indices"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return modelRep->nested_acv1_indices();
+}
+
+
+const ShortArray& Model::nested_acv2_targets() const
+{
+  if (!modelRep) {
+    Cerr << "Error: Letter lacking redefinition of virtual nested_acv2_targets"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return modelRep->nested_acv2_targets();
+}
+
+
+short Model::query_distribution_parameter_derivatives() const
+{
+  if (modelRep)
+    return modelRep->query_distribution_parameter_derivatives();
+  else // default implementation
+    return NO_DERIVS;
+}
+
+
+void Model::activate_distribution_parameter_derivatives()
+{
+  if (modelRep)
+    return modelRep->activate_distribution_parameter_derivatives();
+  // else no-op
+}
+
+
+void Model::deactivate_distribution_parameter_derivatives()
+{
+  if (modelRep)
+    return modelRep->deactivate_distribution_parameter_derivatives();
+  // else no-op
+}
+
+
+void Model::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{
+  if (modelRep)
+    modelRep->trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_grad_X_to_U"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{
+  if (modelRep)
+    modelRep->trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_grad_U_to_X"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{
+  if (modelRep)
+    modelRep->trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_grad_X_to_S"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
+		  const RealVector& x_vars, const RealVector& fn_grad_x)
+{
+  if (modelRep)
+    modelRep->trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual trans_hess_X_to_U"
+         << "() function.\nNo default defined at base class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+ActiveSet Model::default_active_set()
+{
+  if (modelRep)
+    return modelRep->default_active_set();
+  else {
+    // This member fn is called from Model::evaluate(_no_wait) and the
+    // ActiveSet returned is used to allocate evaluation storage in HDF5
+
+    ActiveSet set; 
+    set.derivative_vector(currentVariables.all_continuous_variable_ids());
+    ShortArray asv(numFns, 1);
+    if (!set.derivative_vector().empty()) {
+      if ( gradientType != "none" &&
+	   ( gradientType == "analytic" || supportsEstimDerivs ) )
+	for(auto &a : asv)
+	  a |=  2;
+
+      if ( hessianType != "none" &&
+	   ( hessianType == "analytic" || supportsEstimDerivs ) )
+	for(auto &a : asv)
+	  a |=  4;
+    }
+
+    set.request_vector(asv);
+    return set;
+  }
+}
+
+
 void Model::inactive_view(short view, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
@@ -3984,8 +4915,8 @@ const BitArray& Model::discrete_int_sets(short active_view)
     size_t ardi_cntr = 0;
     // discrete design
     if (active_totals[TOTAL_DDIV]) {
-      size_t num_ddsiv = discreteDesignSetIntValues.size(),
-	num_ddriv = all_totals[TOTAL_DDIV] - num_ddsiv;
+      size_t num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE),
+	     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
       for (i=0; i<num_ddriv; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;                  // leave bit as false
@@ -3996,8 +4927,8 @@ const BitArray& Model::discrete_int_sets(short active_view)
     else ardi_cntr += all_totals[TOTAL_DDIV];
     // discrete aleatory uncertain
     if (active_totals[TOTAL_DAUIV]) {
-      size_t num_dausiv = aleatDistParams.histogram_point_int_pairs().size(),
-	num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv; 
+      size_t num_dausiv = svd.vc_lookup(HISTOGRAM_POINT_UNCERTAIN_INT),
+	     num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv; 
       for (i=0; i<num_dauriv; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;                  // leave bit as false
@@ -4008,10 +4939,8 @@ const BitArray& Model::discrete_int_sets(short active_view)
     else ardi_cntr += all_totals[TOTAL_DAUIV];
     // discrete epistemic uncertain
     if (active_totals[TOTAL_DEUIV]) {
-      size_t num_deuriv
-	  = epistDistParams.discrete_interval_basic_probabilities().size(),
-	num_deusiv
-	  = epistDistParams.discrete_set_int_values_probabilities().size();
+      size_t num_deuriv = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+	     num_deusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
       for (i=0; i<num_deuriv; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;                  // leave bit as false
@@ -4022,8 +4951,8 @@ const BitArray& Model::discrete_int_sets(short active_view)
     else ardi_cntr += all_totals[TOTAL_DEUIV];
     // discrete state
     if (active_totals[TOTAL_DSIV]) {
-      size_t num_dssiv = discreteStateSetIntValues.size(),
-	num_dsriv = all_totals[TOTAL_DSIV] - num_dssiv;
+      size_t num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
+	     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
       for (i=0; i<num_dsriv; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;                  // leave bit as false
@@ -4035,26 +4964,25 @@ const BitArray& Model::discrete_int_sets(short active_view)
   else { // MIXED_*
     size_t num_ddiv, num_dauiv, num_deuiv, num_dsiv;
     if (num_ddiv = active_totals[TOTAL_DDIV]) {
-      size_t set_ddiv = discreteDesignSetIntValues.size();
+      size_t set_ddiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT);
       di_cntr += num_ddiv - set_ddiv;//svd.vc_lookup(DISCRETE_DESIGN_RANGE)
       for (i=0; i<set_ddiv; ++i, ++di_cntr)
 	discreteIntSets.set(di_cntr);
     }
     if (num_dauiv = active_totals[TOTAL_DAUIV]) {
-      size_t set_dauiv = aleatDistParams.histogram_point_int_pairs().size();
+      size_t set_dauiv = svd.vc_lookup(HISTOGRAM_POINT_UNCERTAIN_INT);
       di_cntr += num_dauiv - set_dauiv; // range_dauiv
       for (i=0; i<set_dauiv; ++i, ++di_cntr)
 	discreteIntSets.set(di_cntr);
     }
     if (num_deuiv = active_totals[TOTAL_DEUIV]) {
-      size_t set_deuiv
-	= epistDistParams.discrete_set_int_values_probabilities().size();
+      size_t set_deuiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
       di_cntr += num_deuiv - set_deuiv;//vc_lookup(DISCRETE_INTERVAL_UNCERTAIN)
       for (i=0; i<set_deuiv; ++i, ++di_cntr)
 	discreteIntSets.set(di_cntr);
     }
     if (num_dsiv = active_totals[TOTAL_DSIV]) {
-      size_t set_dsiv = discreteStateSetIntValues.size();
+      size_t set_dsiv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
       di_cntr += num_dsiv - set_dsiv;//svd.vc_lookup(DISCRETE_STATE_RANGE)
       for (i=0; i<set_dsiv; ++i, ++di_cntr)
 	discreteIntSets.set(di_cntr);
@@ -4094,14 +5022,26 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
   if (modelRep)
     return modelRep->discrete_set_int_values(active_view);
 
-  // TO DO: return if already defined by a previous invocation
+  // return previous result for previous invocation with consistent view
+  // Note: any external update of DSI values should reset prevDSIView to 0
+  if (active_view == prevDSIView) return activeDiscSetIntValues;
 
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
-  case MIXED_DESIGN:
-    return discreteDesignSetIntValues; break;
+  case MIXED_DESIGN: {
+    size_t num_rv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
+         start_rv = svd.vc_lookup(CONTINUOUS_DESIGN)
+                  + svd.vc_lookup(DISCRETE_DESIGN_RANGE);
+    mvd_rep->pull_parameters<IntSet>(start_rv, num_rv, Pecos::DSI_VALUES,
+				     activeDiscSetIntValues);
+    break;
+  }
   case MIXED_ALEATORY_UNCERTAIN: {
-    const IntRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_int_pairs();
+    IntRealMapArray h_pt_prs;
+    mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
+      Pecos::H_PT_INT_PAIRS, h_pt_prs);
     size_t i, num_dausiv = h_pt_prs.size();
     activeDiscSetIntValues.resize(num_dausiv);
     for (i=0; i<num_dausiv; ++i)
@@ -4109,8 +5049,9 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
     break;
   }
   case MIXED_EPISTEMIC_UNCERTAIN: {
-    const IntRealMapArray& deusi_vals_probs
-      = epistDistParams.discrete_set_int_values_probabilities();
+    IntRealMapArray deusi_vals_probs;
+    mvd_rep->pull_parameters<IntRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_INT,
+      Pecos::DUSI_VALUES_PROBS, deusi_vals_probs);
     size_t i, num_deusiv = deusi_vals_probs.size();
     activeDiscSetIntValues.resize(num_deusiv);
     for (i=0; i<num_deusiv; ++i)
@@ -4118,115 +5059,143 @@ const IntSetArray& Model::discrete_set_int_values(short active_view)
     break;
   }
   case MIXED_UNCERTAIN: {
-    const IntRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_int_pairs();
-    const IntRealMapArray& deusi_vals_probs
-      = epistDistParams.discrete_set_int_values_probabilities();
-    size_t i, num_dausiv = h_pt_prs.size(),
-      num_deusiv = deusi_vals_probs.size();
+    IntRealMapArray h_pt_prs, deusi_vals_probs;
+    mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
+      Pecos::H_PT_INT_PAIRS, h_pt_prs);
+    mvd_rep->pull_parameters<IntRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_INT,
+      Pecos::DUSI_VALUES_PROBS, deusi_vals_probs);
+    size_t i, num_dausiv = h_pt_prs.size(),num_deusiv = deusi_vals_probs.size();
     activeDiscSetIntValues.resize(num_dausiv+num_deusiv);
     for (i=0; i<num_dausiv; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[i]);
     for (i=0; i<num_deusiv; ++i)
-      map_keys_to_set(deusi_vals_probs[i],
-		      activeDiscSetIntValues[i+num_dausiv]);
+      map_keys_to_set(deusi_vals_probs[i],activeDiscSetIntValues[i+num_dausiv]);
     break;
   }
-  case MIXED_STATE:
-    return discreteStateSetIntValues; break;
+  case MIXED_STATE: {
+    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0,
+      num_rv = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv
+      + svd.vc_lookup(CONTINUOUS_STATE) + svd.vc_lookup(DISCRETE_STATE_RANGE);
+    mvd_rep->pull_parameters<IntSet>(start_rv, num_rv, Pecos::DSI_VALUES,
+				     activeDiscSetIntValues);
+    break;
+  }
   case MIXED_ALL: {
-    const IntRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_int_pairs();
-    const IntRealMapArray& deusi_vals_probs
-      = epistDistParams.discrete_set_int_values_probabilities();
-    size_t i, offset, num_ddsiv = discreteDesignSetIntValues.size(),
-      num_dausiv = h_pt_prs.size(), num_deusiv = deusi_vals_probs.size(),
-      num_dssiv  = discreteStateSetIntValues.size();
-    activeDiscSetIntValues.resize(num_ddsiv  + num_dausiv +
-				  num_deusiv + num_dssiv);
-    for (i=0; i<num_ddsiv; ++i)
-      activeDiscSetIntValues[i] = discreteDesignSetIntValues[i];
-    offset = num_ddsiv;
-    for (i=0; i<num_dausiv; ++i)
-      map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[i+offset]);
-    offset += num_dausiv;
-    for (i=0; i<num_deusiv; ++i)
-      map_keys_to_set(deusi_vals_probs[i], activeDiscSetIntValues[i+offset]);
-    offset += num_deusiv;
-    for (i=0; i<num_dssiv; ++i)
-      activeDiscSetIntValues[i+offset] = discreteStateSetIntValues[i];
+    IntRealMapArray h_pt_prs, deusi_vals_probs;
+    mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
+      Pecos::H_PT_INT_PAIRS, h_pt_prs);
+    mvd_rep->pull_parameters<IntRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_INT,
+      Pecos::DUSI_VALUES_PROBS, deusi_vals_probs);
+    size_t i, di_cntr = 0, num_ddsi = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
+      num_dausi = h_pt_prs.size(), num_deusi = deusi_vals_probs.size(),
+      num_dssi  = svd.vc_lookup(DISCRETE_STATE_SET_INT);
+    activeDiscSetIntValues.resize(num_ddsi + num_dausi + num_deusi + num_dssi);
+    size_t num_cv, num_div, num_dsv, num_drv;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    size_t rv_cntr = num_cv + num_div - num_ddsi;
+    for (i=0; i<num_ddsi; ++i, ++rv_cntr, ++di_cntr)
+      mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+				      activeDiscSetIntValues[di_cntr]);
+    rv_cntr += num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_dausi; ++i, ++di_cntr)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[di_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_deusi; ++i, ++di_cntr)
+      map_keys_to_set(deusi_vals_probs[i], activeDiscSetIntValues[di_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv +
+      svd.vc_lookup(CONTINUOUS_STATE) + svd.vc_lookup(DISCRETE_STATE_RANGE);
+    for (i=0; i<num_dssi; ++i, ++rv_cntr, ++di_cntr)
+      mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+				      activeDiscSetIntValues[di_cntr]);
     break;
   }
   default: { // RELAXED_*
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
-    const SizetArray& all_totals = svd.components_totals();
+    const BitArray&    all_relax_di = svd.all_relaxed_discrete_int();
+    const SizetArray&    all_totals = svd.components_totals();
     const SizetArray& active_totals = svd.active_components_totals();
-    size_t i, di_cntr = 0, ardi_cntr = 0;
+    size_t i, num_cv, num_div, num_dsv, num_drv,
+           di_cntr = 0, ardi_cntr = 0, rv_cntr = 0;      
     // discrete design
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DDIV]) {
-      size_t num_ddsiv = discreteDesignSetIntValues.size(),
-	num_ddriv = all_totals[TOTAL_DDIV] - num_ddsiv;
-      for (i=0; i<num_ddriv; ++i, ++ardi_cntr)
+      size_t num_ddsi = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
+	     num_ddri = num_div - num_ddsi;
+      rv_cntr = num_cv;
+      for (i=0; i<num_ddri; ++i, ++ardi_cntr, ++rv_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;
-      for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  activeDiscSetIntValues[di_cntr] = discreteDesignSetIntValues[i];
-	  ++di_cntr;
-	}
+      for (i=0; i<num_ddsi; ++i, ++ardi_cntr, ++rv_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+					  activeDiscSetIntValues[di_cntr++]);
+      rv_cntr += num_dsv + num_drv;
     }
-    else ardi_cntr += all_totals[TOTAL_DDIV];
+    else {
+      ardi_cntr += num_div;
+      rv_cntr   += num_cv + num_div + num_dsv + num_drv;
+    }
     // discrete aleatory uncertain
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DAUIV]) {
-      const IntRealMapArray& h_pt_prs
-	= aleatDistParams.histogram_point_int_pairs();
-      size_t num_dausiv = h_pt_prs.size(),
-	num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv; 
-      for (i=0; i<num_dauriv; ++i, ++ardi_cntr)
+      IntRealMapArray h_pt_prs;
+      mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
+        Pecos::H_PT_INT_PAIRS, h_pt_prs);
+      size_t num_dausi = h_pt_prs.size(), num_dauri = num_div - num_dausi; 
+      for (i=0; i<num_dauri; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;
-      for (i=0; i<num_dausiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[di_cntr]);
-	  ++di_cntr;
-	}
+      for (i=0; i<num_dausi; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  map_keys_to_set(h_pt_prs[i], activeDiscSetIntValues[di_cntr++]);
     }
-    else ardi_cntr += all_totals[TOTAL_DAUIV];
+    else
+      ardi_cntr += num_div;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete epistemic uncertain
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DEUIV]) {
-      const IntRealMapArray& deusi_vals_probs
-       = epistDistParams.discrete_set_int_values_probabilities();
-      size_t num_deuriv
-	  = epistDistParams.discrete_interval_basic_probabilities().size(),
-	num_deusiv = deusi_vals_probs.size();
-      for (i=0; i<num_deuriv; ++i, ++ardi_cntr)
+      IntRealMapArray deusi_vals_probs;
+      mvd_rep->pull_parameters<IntRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_INT,
+        Pecos::DUSI_VALUES_PROBS, deusi_vals_probs);
+      size_t num_deuri = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+	     num_deusi = deusi_vals_probs.size();
+      for (i=0; i<num_deuri; ++i, ++ardi_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;
-      for (i=0; i<num_deusiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  map_keys_to_set(deusi_vals_probs[i], activeDiscSetIntValues[di_cntr]);
-	  ++di_cntr;
-	}
+      for (i=0; i<num_deusi; ++i, ++ardi_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  map_keys_to_set(deusi_vals_probs[i],
+			  activeDiscSetIntValues[di_cntr++]);
     }
-    else ardi_cntr += all_totals[TOTAL_DEUIV];
+    else
+      ardi_cntr += num_div;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete state
     if (active_totals[TOTAL_DSIV]) {
-      size_t num_dssiv = discreteStateSetIntValues.size(),
-	num_dsriv = all_totals[TOTAL_DSIV] - num_dssiv;
-      for (i=0; i<num_dsriv; ++i, ++ardi_cntr)
+      size_t num_dssi = svd.vc_lookup(DISCRETE_STATE_SET_INT),
+	     num_dsri = all_totals[TOTAL_DSIV] - num_dssi;
+      rv_cntr += all_totals[TOTAL_CSV];
+      for (i=0; i<num_dsri; ++i, ++ardi_cntr, ++rv_cntr)
 	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
 	  ++di_cntr;                  // leave bit as false
-      for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-	if (!all_relax_di[ardi_cntr]) { // part of active discrete vars
-	  activeDiscSetIntValues[di_cntr] = discreteStateSetIntValues[i];
-	  ++di_cntr;
-	}
+      for (i=0; i<num_dssi; ++i, ++ardi_cntr, ++rv_cntr)
+	if (!all_relax_di[ardi_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<IntSet>(rv_cntr, Pecos::DSI_VALUES,
+					  activeDiscSetIntValues[di_cntr++]);
     }
     break;
   }
   }
 
+  prevDSIView = active_view;
   return activeDiscSetIntValues;
 }
 
@@ -4236,72 +5205,111 @@ const StringSetArray& Model::discrete_set_string_values(short active_view)
   if (modelRep)
     return modelRep->discrete_set_string_values(active_view);
 
-  // TO DO: return if already defined (previous call)
+  // return previous result for previous invocation with consistent view
+  // Note: any external update of DSS values should reset prevDSSView to 0
+  if (active_view == prevDSSView) return activeDiscSetStringValues;
 
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
-  case MIXED_DESIGN: case RELAXED_DESIGN:
-    return discreteDesignSetStringValues; break;
+  case MIXED_DESIGN: case RELAXED_DESIGN: {
+    size_t num_cv, num_div, num_dsv, num_drv;      
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    mvd_rep->pull_parameters<StringSet>(num_cv + num_div, num_dsv,
+      Pecos::DSS_VALUES, activeDiscSetStringValues);
+    break;
+  }
   case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN: {
-    const StringRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_string_pairs();
-    size_t i, num_dausrv = h_pt_prs.size();
-    activeDiscSetStringValues.resize(num_dausrv);
-    for (i=0; i<num_dausrv; ++i)
+    StringRealMapArray h_pt_prs;
+    mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
+      Pecos::H_PT_STR_PAIRS, h_pt_prs);
+    size_t i, num_dauss = h_pt_prs.size();
+    activeDiscSetStringValues.resize(num_dauss);
+    for (i=0; i<num_dauss; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i]);
     break;
   }
   case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
-    const StringRealMapArray& deusr_vals_probs
-      = epistDistParams.discrete_set_string_values_probabilities();
-    size_t i, num_deusrv = deusr_vals_probs.size();
-    activeDiscSetStringValues.resize(num_deusrv);
-    for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(deusr_vals_probs[i], activeDiscSetStringValues[i]);
+    StringRealMapArray deuss_vals_probs;
+    mvd_rep->pull_parameters<StringRealMap>(
+      Pecos::DISCRETE_UNCERTAIN_SET_STRING, Pecos::DUSS_VALUES_PROBS,
+      deuss_vals_probs);
+    size_t i, num_deuss = deuss_vals_probs.size();
+    activeDiscSetStringValues.resize(num_deuss);
+    for (i=0; i<num_deuss; ++i)
+      map_keys_to_set(deuss_vals_probs[i], activeDiscSetStringValues[i]);
     break;
   }
   case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
-    const StringRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_string_pairs();
-    const StringRealMapArray& deusr_vals_probs
-      = epistDistParams.discrete_set_string_values_probabilities();
-    size_t i, num_dausrv = h_pt_prs.size(),
-      num_deusrv = deusr_vals_probs.size();
-    activeDiscSetStringValues.resize(num_dausrv+num_deusrv);
-    for (i=0; i<num_dausrv; ++i)
+    StringRealMapArray h_pt_prs, deuss_vals_probs;
+    mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
+      Pecos::H_PT_STR_PAIRS, h_pt_prs);
+    mvd_rep->pull_parameters<StringRealMap>(
+      Pecos::DISCRETE_UNCERTAIN_SET_STRING,
+      Pecos::DUSS_VALUES_PROBS, deuss_vals_probs);
+    size_t i, num_dauss = h_pt_prs.size(), num_deuss = deuss_vals_probs.size();
+    activeDiscSetStringValues.resize(num_dauss + num_deuss);
+    for (i=0; i<num_dauss; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i]);
-    for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(deusr_vals_probs[i],
-		      activeDiscSetStringValues[i+num_dausrv]);
+    for (i=0; i<num_deuss; ++i)
+      map_keys_to_set(deuss_vals_probs[i],
+		      activeDiscSetStringValues[i+num_dauss]);
     break;
   }
-  case MIXED_STATE: case RELAXED_STATE:
-    return discreteStateSetStringValues; break;
+  case MIXED_STATE: case RELAXED_STATE: {
+    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div;
+    mvd_rep->pull_parameters<StringSet>(start_rv, num_dsv, Pecos::DSS_VALUES,
+					activeDiscSetStringValues);
+    break;
+  }
   case MIXED_ALL: case RELAXED_ALL: {
-    const StringRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_string_pairs();
-    const StringRealMapArray& deusr_vals_probs
-      = epistDistParams.discrete_set_string_values_probabilities();
-    size_t i, offset, num_ddsiv = discreteDesignSetStringValues.size(),
-      num_dausrv = h_pt_prs.size(), num_deusrv = deusr_vals_probs.size(),
-      num_dssiv = discreteStateSetStringValues.size();
-    activeDiscSetStringValues.resize(num_ddsiv  + num_dausrv +
-				   num_deusrv + num_dssiv);
-    for (i=0; i<num_ddsiv; ++i)
-      activeDiscSetStringValues[i] = discreteDesignSetStringValues[i];
-    offset = num_ddsiv;
-    for (i=0; i<num_dausrv; ++i)
-      map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[i+offset]);
-    offset += num_dausrv;
-    for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(deusr_vals_probs[i], activeDiscSetStringValues[i+offset]);
-    offset += num_deusrv;
-    for (i=0; i<num_dssiv; ++i)
-      activeDiscSetStringValues[i+offset] = discreteStateSetStringValues[i];
+    StringRealMapArray h_pt_prs, deuss_vals_probs;
+    mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
+      Pecos::H_PT_STR_PAIRS, h_pt_prs);
+    mvd_rep->pull_parameters<StringRealMap>(
+      Pecos::DISCRETE_UNCERTAIN_SET_STRING, Pecos::DUSS_VALUES_PROBS,
+      deuss_vals_probs);
+    size_t i, ds_cntr = 0,
+      num_ddss  = svd.vc_lookup(DISCRETE_DESIGN_SET_STRING),
+      num_dauss = h_pt_prs.size(), num_deuss= deuss_vals_probs.size(),
+      num_dsss  = svd.vc_lookup(DISCRETE_STATE_SET_STRING);
+    activeDiscSetStringValues.resize(num_ddss + num_dauss +
+				     num_deuss + num_dsss);
+    size_t num_cv, num_div, num_dsv, num_drv;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    size_t rv_cntr = num_cv + num_div;
+    for (i=0; i<num_ddss; ++i, ++rv_cntr, ++ds_cntr)
+      mvd_rep->pull_parameter<StringSet>(rv_cntr, Pecos::DSS_VALUES,
+					 activeDiscSetStringValues[ds_cntr]);
+    rv_cntr += num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_dauss; ++i, ++ds_cntr)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetStringValues[ds_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_deuss; ++i, ++ds_cntr)
+      map_keys_to_set(deuss_vals_probs[i], activeDiscSetStringValues[ds_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    rv_cntr += num_cv + num_div;
+    for (i=0; i<num_dsss; ++i, ++rv_cntr, ++ds_cntr)
+      mvd_rep->pull_parameter<StringSet>(rv_cntr, Pecos::DSS_VALUES,
+					 activeDiscSetStringValues[ds_cntr]);
     break;
   }
   }
 
-  return activeDiscSetStringValues; // if not previously returned
+  prevDSSView = active_view;
+  return activeDiscSetStringValues;
 }
 
 
@@ -4310,123 +5318,163 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
   if (modelRep)
     return modelRep->discrete_set_real_values(active_view);
 
-  // TO DO: return if already defined (previous call)
+  // return previous result for previous invocation with consistent view
+  // Note: any external update of DSR values should reset prevDSRView to 0
+  if (active_view == prevDSRView) return activeDiscSetRealValues;
 
+  Pecos::MarginalsCorrDistribution* mvd_rep
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  const SharedVariablesData& svd = currentVariables.shared_data();
   switch (active_view) {
-  case MIXED_DESIGN:
-    return discreteDesignSetRealValues; break;
+  case MIXED_DESIGN: {
+    size_t num_cv, num_div, num_dsv, num_drv;      
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    mvd_rep->pull_parameters<RealSet>(num_cv + num_div + num_dsv, num_drv,
+      Pecos::DSR_VALUES, activeDiscSetRealValues);
+    break;
+  }
   case MIXED_ALEATORY_UNCERTAIN: {
-    const RealRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_real_pairs();
-    size_t i, num_dausrv = h_pt_prs.size();
-    activeDiscSetRealValues.resize(num_dausrv);
-    for (i=0; i<num_dausrv; ++i)
+    RealRealMapArray h_pt_prs;
+    mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+      Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+    size_t i, num_dausr = h_pt_prs.size();
+    activeDiscSetRealValues.resize(num_dausr);
+    for (i=0; i<num_dausr; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[i]);
     break;
   }
   case MIXED_EPISTEMIC_UNCERTAIN: {
-    const RealRealMapArray& deusr_vals_probs
-      = epistDistParams.discrete_set_real_values_probabilities();
-    size_t i, num_deusrv = deusr_vals_probs.size();
-    activeDiscSetRealValues.resize(num_deusrv);
-    for (i=0; i<num_deusrv; ++i)
+    RealRealMapArray deusr_vals_probs;
+    mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+      Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+    size_t i, num_deusr = deusr_vals_probs.size();
+    activeDiscSetRealValues.resize(num_deusr);
+    for (i=0; i<num_deusr; ++i)
       map_keys_to_set(deusr_vals_probs[i], activeDiscSetRealValues[i]);
     break;
   }
   case MIXED_UNCERTAIN: {
-    const RealRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_real_pairs();
-    const RealRealMapArray& deusr_vals_probs
-      = epistDistParams.discrete_set_real_values_probabilities();
-    size_t i, num_dausrv = h_pt_prs.size(),
-      num_deusrv = deusr_vals_probs.size();
-    activeDiscSetRealValues.resize(num_dausrv+num_deusrv);
-    for (i=0; i<num_dausrv; ++i)
+    RealRealMapArray h_pt_prs, deusr_vals_probs;
+    mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+      Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+    mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+      Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+    size_t i, num_dausr = h_pt_prs.size(), num_deusr = deusr_vals_probs.size();
+    activeDiscSetRealValues.resize(num_dausr + num_deusr);
+    for (i=0; i<num_dausr; ++i)
       map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[i]);
-    for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(deusr_vals_probs[i],
-		      activeDiscSetRealValues[i+num_dausrv]);
+    for (i=0; i<num_deusr; ++i)
+      map_keys_to_set(deusr_vals_probs[i],activeDiscSetRealValues[i+num_dausr]);
     break;
   }
-  case MIXED_STATE:
-    return discreteStateSetRealValues; break;
+  case MIXED_STATE: {
+    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    start_rv += num_cv + num_div + num_dsv;
+    mvd_rep->pull_parameters<RealSet>(start_rv, num_drv, Pecos::DSR_VALUES,
+				      activeDiscSetRealValues);
+    break;
+  }
   case MIXED_ALL: {
-    const RealRealMapArray& h_pt_prs
-      = aleatDistParams.histogram_point_real_pairs();
-    const RealRealMapArray& deusr_vals_probs
-      = epistDistParams.discrete_set_real_values_probabilities();
-    size_t i, offset, num_ddsiv = discreteDesignSetRealValues.size(),
-      num_dausrv = h_pt_prs.size(), num_deusrv = deusr_vals_probs.size(),
-      num_dssiv = discreteStateSetRealValues.size();
-    activeDiscSetRealValues.resize(num_ddsiv  + num_dausrv +
-				   num_deusrv + num_dssiv);
-    for (i=0; i<num_ddsiv; ++i)
-      activeDiscSetRealValues[i] = discreteDesignSetRealValues[i];
-    offset = num_ddsiv;
-    for (i=0; i<num_dausrv; ++i)
-      map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[i+offset]);
-    offset += num_dausrv;
-    for (i=0; i<num_deusrv; ++i)
-      map_keys_to_set(deusr_vals_probs[i], activeDiscSetRealValues[i+offset]);
-    offset += num_deusrv;
-    for (i=0; i<num_dssiv; ++i)
-      activeDiscSetRealValues[i+offset] = discreteStateSetRealValues[i];
+    RealRealMapArray h_pt_prs, deusr_vals_probs;
+    mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+      Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+    mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+      Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+    size_t i, dr_cntr = 0, num_dausr = h_pt_prs.size(),
+      num_deusr = deusr_vals_probs.size(),
+      num_dssr  = svd.vc_lookup(DISCRETE_STATE_SET_REAL);
+    size_t num_cv, num_div, num_dsv, num_drv;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    activeDiscSetRealValues.resize(num_drv + num_dausr + num_deusr + num_dssr);
+    size_t rv_cntr = num_cv + num_div + num_dsv;
+    for (i=0; i<num_drv; ++i, ++rv_cntr, ++dr_cntr)
+      mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+				       activeDiscSetRealValues[dr_cntr]);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_dausr; ++i, ++dr_cntr)
+      map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[dr_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    for (i=0; i<num_deusr; ++i, ++dr_cntr)
+      map_keys_to_set(deusr_vals_probs[i], activeDiscSetRealValues[dr_cntr]);
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    rv_cntr += num_cv + num_div + num_dsv;
+    for (i=0; i<num_drv; ++i, ++rv_cntr, ++dr_cntr)
+      mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+				       activeDiscSetRealValues[dr_cntr]);
     break;
   }
   default: { // RELAXED_*
-    const SharedVariablesData& svd = currentVariables.shared_data();
-    const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
-    const SizetArray& all_totals = svd.components_totals();
+    const BitArray&    all_relax_dr = svd.all_relaxed_discrete_real();
+    const SizetArray&    all_totals = svd.components_totals();
     const SizetArray& active_totals = svd.active_components_totals();
-    size_t i, dr_cntr = 0, ardr_cntr = 0;
+    size_t i, num_cv, num_div, num_dsv, num_drv,
+           dr_cntr = 0, ardr_cntr = 0, rv_cntr = 0;
     // discrete design
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DDRV]) {
-      size_t num_ddsrv = discreteDesignSetRealValues.size();
-      for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  activeDiscSetRealValues[dr_cntr] = discreteDesignSetRealValues[i];
-	  ++dr_cntr;
-	}
+      rv_cntr = num_cv + num_div + num_dsv;
+      for (i=0; i<num_drv; ++i, ++ardr_cntr, ++rv_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+					   activeDiscSetRealValues[dr_cntr++]);
     }
-    else ardr_cntr += all_totals[TOTAL_DDRV];
+    else {
+      ardr_cntr += num_drv;
+      rv_cntr   += num_cv + num_div + num_dsv + num_drv;
+    }
     // discrete aleatory uncertain
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DAURV]) {
-      const RealRealMapArray& h_pt_prs
-	= aleatDistParams.histogram_point_real_pairs();
-      size_t num_dausrv = h_pt_prs.size(); 
-      for (i=0; i<num_dausrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[dr_cntr]);
-	  ++dr_cntr;
-	}
+      RealRealMapArray h_pt_prs;
+      mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+        Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+      size_t num_dausr = h_pt_prs.size(); 
+      for (i=0; i<num_dausr; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  map_keys_to_set(h_pt_prs[i], activeDiscSetRealValues[dr_cntr++]);
     }
-    else ardr_cntr += all_totals[TOTAL_DAURV];
+    else
+      ardr_cntr += num_drv;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete epistemic uncertain
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     if (active_totals[TOTAL_DEURV]) {
-      const RealRealMapArray& deusr_vals_probs
-       = epistDistParams.discrete_set_real_values_probabilities();
-      size_t num_deusrv = deusr_vals_probs.size();
-      for (i=0; i<num_deusrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  map_keys_to_set(deusr_vals_probs[i],activeDiscSetRealValues[dr_cntr]);
-	  ++dr_cntr;
-	}
+      RealRealMapArray deusr_vals_probs;
+      mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+        Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+      size_t num_deusr = deusr_vals_probs.size();
+      for (i=0; i<num_deusr; ++i, ++ardr_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  map_keys_to_set(deusr_vals_probs[i],
+			  activeDiscSetRealValues[dr_cntr++]);
     }
-    else ardr_cntr += all_totals[TOTAL_DEURV];
+    else
+      ardr_cntr += num_drv;
+    rv_cntr += num_cv + num_div + num_dsv + num_drv;
     // discrete state
     if (active_totals[TOTAL_DSRV]) {
-      size_t num_dssrv = discreteStateSetRealValues.size();
-      for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
-	if (!all_relax_dr[ardr_cntr]) { // part of active discrete vars
-	  activeDiscSetRealValues[dr_cntr] = discreteStateSetRealValues[i];
-	  ++dr_cntr;
-	}
+      svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+      rv_cntr += num_cv + num_div + num_dsv;
+      for (i=0; i<num_drv; ++i, ++ardr_cntr, ++rv_cntr)
+	if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+	  mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+					   activeDiscSetRealValues[dr_cntr++]);
     }
     break;
   }
   }
 
-  return activeDiscSetRealValues; // if not previously returned
+  prevDSRView = active_view;
+  return activeDiscSetRealValues;
 }
 
 
@@ -4529,7 +5577,7 @@ bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 		      Response& found_resp)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->db_lookup(search_vars, search_set, found_resp);
+    return modelRep->db_lookup(search_vars, search_set, found_resp);
   else { // default implementation
     // dependence on interface_id() restricts successful find() operation to
     // cases where response is generated by a single non-approximate interface
@@ -4538,6 +5586,7 @@ bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
     PRPCacheHIter cache_it
       = lookup_by_val(data_pairs, interface_id(), search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
+      found_resp.active_set(search_set);
       found_resp.update(cache_it->response());
       return true;
     }
@@ -4624,5 +5673,98 @@ void Model::inactive_variables(const RealVector& config_vars, Model& model,
   //offset += model.idrv();
 }
 
+
+void Model::evaluate(const RealMatrix& samples_matrix,
+		     Model& model, RealMatrix& resp_matrix)
+{
+  // TODO: option for setting its active or inactive variables
+
+  RealMatrix::ordinalType i, num_evals = samples_matrix.numCols();
+  resp_matrix.shape(model.response_size(), num_evals);
+
+  for (i=0; i<num_evals; ++i) {
+
+    const RealVector sample_i =
+      Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(samples_matrix), i);
+    Model::active_variables(sample_i, model);
+
+    if (model.asynch_flag())
+      model.evaluate_nowait();
+    else {
+      model.evaluate();
+      const RealVector& fn_vals = model.current_response().function_values();
+      Teuchos::setCol(fn_vals, i, resp_matrix);
+    }
+  }
+
+  // synchronize asynchronous evaluations
+  if (model.asynch_flag()) {
+    const IntResponseMap& resp_map = model.synchronize();
+    IntRespMCIter r_cit;
+    for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+      Teuchos::setCol(r_cit->second.function_values(), i, resp_matrix);
+  }
+}
+
+// Called from rekey_response_map to allow Models to store their interfaces asynchronous
+// evaluations. When the meta_object is a model, no action is performed.
+void Model::asynch_eval_store(const Model &model, const int &id, const Response &response) {
+  return;
+}
+
+// Called from rekey_response_map to allow Models to store their interfaces asynchronous
+// evaluations. I strongly suspect that there's a better design for this.
+void Model::asynch_eval_store(const Interface &interface, const int &id, const Response &response) {
+  evaluationsDB.store_interface_response(modelId, interface.interface_id(), id, response);
+}
+
+/// Return the interface flag for the EvaluationsDB state
+EvaluationsDBState Model::evaluations_db_state(const Interface &interface) {
+  return interfEvaluationsDBState;
+}
+  /// Return the model flag for the EvaluationsDB state
+EvaluationsDBState Model::evaluations_db_state(const Model &model) {
+  // always return INACTIVE because models don't store evaluations of their
+  // submodels
+  return EvaluationsDBState::INACTIVE;
+}
+
+/** Rationale: The parser allows multiple user-specified models with
+    empty (unspecified) ID. However, only a single Model with empty
+    ID can be constructed (if it's the only one present, or the "last
+    one parsed"). Therefore decided to prefer NO_MODEL_ID over 
+    NO_MODEL_ID_<num> for (some) consistency with interface 
+    NO_ID convention. _MODEL_ was inserted in the middle to distinguish
+    "anonymous" MODELS from methods and interfaces in the hdf5 output. 
+    Note that this function is not used to name recast models; see their 
+    constructors for how its done. */
+String Model::user_auto_id()
+{
+  // // increment and then use the current ID value
+  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  return String("NO_MODEL_ID");
+}
+
+/** Rationale: For now NOSPEC_MODEL_ID_ is chosen due to historical
+    id="NO_SPECIFICATION" used for internally-constructed
+    Models. Longer-term, consider auto-generating an ID that
+    includes the context from which the method is constructed, e.g.,
+    the parent method or model's ID, together with its name. 
+    Note that this function is not used to name recast models; see 
+    their constructors for how its done.
+**/
+String Model::no_spec_id()
+{
+  // increment and then use the current ID value
+  return String("NOSPEC_MODEL_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+}
+
+// This is overridden by RecastModel so that it and its derived classes return 
+// the root_model_id() of their subModels. The base Model class version terminates
+// the "recursion" for models of other types.
+String Model::root_model_id() {
+  if(modelRep) return modelRep->root_model_id();
+  else return modelId;
+}
 
 } // namespace Dakota

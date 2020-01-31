@@ -4,7 +4,10 @@ Description::
 \c soft_convergence_limit (a soft convergence control for the
 surrogate_based_local iterations which limits the number of
 consecutive iterations with improvement less than the convergence
-tolerance)
+tolerance). soft_convergence>1 counts an iteration in which a design
+point was rejected as an iteration with no improvement. 
+Setting soft_convergence=1 ignores iterations involving rejected points,
+instead comparing only consecutive iterations of accepted points.
 
 Topics::
 Examples::

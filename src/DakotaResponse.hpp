@@ -118,10 +118,11 @@ public:
   /// values vector from a const response
   RealVector function_values_view() const;
   /// set a function value
-  void function_value(const Real& function_val, size_t i);
+  void function_value(const Real& fn_val, size_t i);
   /// set all function values
-  void function_values(const RealVector& function_vals);
-  
+  void function_values(const RealVector& fn_vals);
+
+
   /// return the i-th function gradient as a const Real*
   const Real* function_gradient(int i) const;
   /// return the i-th function gradient as a SerialDenseVector view
@@ -140,9 +141,9 @@ public:
   /// return all function gradients as a view for updating in place
   RealMatrix function_gradients_view() const;
   /// set a function gradient
-  void function_gradient(const RealVector& function_grad, int i);
+  void function_gradient(const RealVector& fn_grad, int i);
   /// set all function gradients
-  void function_gradients(const RealMatrix& function_grads);
+  void function_gradients(const RealMatrix& fn_grads);
 
   /// return the i-th function Hessian
   const RealSymMatrix& function_hessian(size_t i) const;
@@ -161,9 +162,9 @@ public:
   /// for updating in place
   RealSymMatrixArray function_hessians_view() const;
   /// set a function Hessian
-  void function_hessian(const RealSymMatrix& function_hessian, size_t i);
+  void function_hessian(const RealSymMatrix& fn_hessian, size_t i);
   /// set all function Hessians
-  void function_hessians(const RealSymMatrixArray& function_hessians);
+  void function_hessians(const RealSymMatrixArray& fn_hessians);
 
   /// return const field values
   RealVector field_values_view(size_t i) const;
@@ -332,7 +333,6 @@ protected:
   /// derived class constructors - Coplien, p. 139)
   Response(BaseConstructor, const SharedResponseData& srd);
 
-
   //
   //- Heading: Virtual member functions
   //
@@ -341,7 +341,6 @@ protected:
   /// some derived letter types); pulls base class data from
   /// source_resp_rep into the this object.  
   virtual void copy_rep(Response* source_resp_rep);
-
 
   //
   //- Heading: Protected data members
@@ -513,7 +512,8 @@ inline RealVector Response::field_values_view(size_t i) const
     const IntVector& field_len = sharedRespData.field_lengths();
     for (j=0; j<i; j++)
       cntr += field_len[j];
-    return RealVector(Teuchos::View, const_cast<Real*>(&functionValues[cntr]), field_len[i]);
+    return RealVector(Teuchos::View, const_cast<Real*>(&functionValues[cntr]),
+		      field_len[i]);
   }
 }
 
@@ -538,7 +538,8 @@ inline RealMatrix Response::field_coords_view(size_t i)
     if( fieldCoords.find(i) == fieldCoords.end() )
       return RealMatrix(); // return empty matrix?  error out? - RWH
     else
-      return RealMatrix(Teuchos::View, fieldCoords[i], fieldCoords[i].numRows(), fieldCoords[i].numCols());
+      return RealMatrix(Teuchos::View, fieldCoords[i], fieldCoords[i].numRows(),
+			fieldCoords[i].numCols());
   }
 }
 
@@ -572,10 +573,10 @@ inline RealVector Response::function_values_view() const
 }
 
 
-inline void Response::function_value(const Real& function_val, size_t i)
+inline void Response::function_value(const Real& fn_val, size_t i)
 {
-  if (responseRep) responseRep->functionValues[i] = function_val;
-  else             functionValues[i] = function_val;
+  if (responseRep) responseRep->functionValues[i] = fn_val;
+  else             functionValues[i] = fn_val;
 }
 
 
@@ -588,7 +589,7 @@ inline void Response::field_values(const RealVector& field_vals, size_t i)
     size_t j, cntr = sharedRespData.num_scalar_responses();
     for (j=0; j<i; j++)
       cntr += field_len[j];
-    int len_i = field_len[i];
+    size_t len_i = field_len[i];
     for (j=0; j<len_i; ++j, ++cntr)
       functionValues[cntr] = field_vals[j];
   }
@@ -597,17 +598,16 @@ inline void Response::field_values(const RealVector& field_vals, size_t i)
 
 inline void Response::field_coords(const RealMatrix& coords, size_t i)
 {
-  if (responseRep)
-    responseRep->field_coords(coords, i);
-  else
-    fieldCoords[i] = coords;
+  if (responseRep) responseRep->field_coords(coords, i);
+  else             fieldCoords[i] = coords;
 }
 
 
-inline void Response::function_values(const RealVector& function_vals)
+inline void Response::function_values(const RealVector& fn_vals)
 {
-  if (responseRep) responseRep->functionValues = function_vals;
-  else             functionValues = function_vals;
+  // take care to avoid assuming a vector view
+  if (responseRep) copy_data(fn_vals, responseRep->functionValues);
+  else             copy_data(fn_vals, functionValues);
 }
 
 
@@ -675,19 +675,18 @@ inline RealMatrix Response::function_gradients_view() const
 
 
 inline void Response::
-function_gradient(const RealVector& function_grad, int i)
+function_gradient(const RealVector& fn_grad, int i)
 {
-  if (responseRep)
-    Teuchos::setCol(function_grad, i, responseRep->functionGradients);
-  else
-    Teuchos::setCol(function_grad, i, functionGradients);
+  if (responseRep) Teuchos::setCol(fn_grad, i, responseRep->functionGradients);
+  else             Teuchos::setCol(fn_grad, i, functionGradients);
 }
 
 
-inline void Response::function_gradients(const RealMatrix& function_grads)
+inline void Response::function_gradients(const RealMatrix& fn_grads)
 {
-  if (responseRep) responseRep->functionGradients = function_grads;
-  else             functionGradients = function_grads;
+  // take care to avoid assuming a vector view
+  if (responseRep) copy_data(fn_grads, responseRep->functionGradients);
+  else             copy_data(fn_grads, functionGradients);
 }
 
 
@@ -761,18 +760,26 @@ inline RealSymMatrixArray Response::function_hessians_view() const
 
 
 inline void Response::
-function_hessian(const RealSymMatrix& function_hessian, size_t i)
+function_hessian(const RealSymMatrix& fn_hessian, size_t i)
 {
-  if (responseRep) responseRep->functionHessians[i] = function_hessian;
-  else             functionHessians[i] = function_hessian;
+  // take care to avoid assuming a vector view
+  if (responseRep) copy_data(fn_hessian, responseRep->functionHessians[i]);
+  else             copy_data(fn_hessian, functionHessians[i]);
 }
 
 
 inline void Response::
-function_hessians(const RealSymMatrixArray& function_hessians)
+function_hessians(const RealSymMatrixArray& fn_hessians)
 {
-  if (responseRep) responseRep->functionHessians = function_hessians;
-  else             functionHessians = function_hessians;
+  if (responseRep) responseRep->function_hessians(fn_hessians);
+  else {
+    // take care to avoid assuming a vector view
+    size_t i, num_hess = fn_hessians.size();
+    if (functionHessians.size() != num_hess)
+      functionHessians.resize(num_hess);
+    for (i=0; i<num_hess; ++i)
+      copy_data(fn_hessians[i], functionHessians[i]);
+  }
 }
 
 
@@ -803,6 +810,7 @@ inline void Response::function_labels(const StringArray& fn_labels)
   else             sharedRespData.function_labels(fn_labels);
 }
 
+
 inline const StringArray& Response::field_group_labels()
 {
   if (responseRep) 
@@ -810,6 +818,7 @@ inline const StringArray& Response::field_group_labels()
   else             
     return sharedRespData.field_group_labels();
 }
+
 
 inline const ActiveSet& Response::active_set() const
 { return (responseRep) ? responseRep->responseActiveSet : responseActiveSet; }
@@ -846,7 +855,7 @@ inline void Response::update(const Response& response)
 {
   // rep forward handled downstream
   update(response.function_values(), response.function_gradients(),
-	 response.function_hessians(), response.active_set());
+        response.function_hessians(), response.active_set());
 }
 
 
@@ -893,8 +902,9 @@ inline RealSymMatrixArray Response::field_hessians_view(size_t i) const
       cntr += field_len[j];
     RealSymMatrixArray fn_hessians_view(num_field_hess);
     for (j=0; j<num_field_hess; ++j)
-      fn_hessians_view[j] = RealSymMatrix(Teuchos::View,functionHessians[cntr+j],
-					  functionHessians[j].numRows());
+      fn_hessians_view[j]
+	= RealSymMatrix(Teuchos::View,functionHessians[cntr+j],
+			functionHessians[j].numRows());
     return fn_hessians_view;
   }
 }

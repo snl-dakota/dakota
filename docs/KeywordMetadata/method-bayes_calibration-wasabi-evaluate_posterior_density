@@ -1,0 +1,6 @@
+Blurb:: (Experimental Capability) Evaluate the posterior density and output to the specified file
+
+Description:  This keyword will allow the evaluation of the posterior density for all 
+of the prior samples, typically specified with the number given in \c pushforward_samples. 
+The density will be printed either to a file named 'pdens.txt' as a default, or to 
+the file specified in \c posterior_density_export_filename. 

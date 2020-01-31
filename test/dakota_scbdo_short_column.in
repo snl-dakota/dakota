@@ -5,7 +5,6 @@
 # Kuschel and Rackwitz, 1997.
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################

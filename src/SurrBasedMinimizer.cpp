@@ -12,6 +12,7 @@
 //- Checked by:
 
 #include "SurrBasedMinimizer.hpp"
+#include "SurrBasedLevelData.hpp"
 #include "DakotaGraphics.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -20,6 +21,9 @@
 #include "dakota_data_io.hpp"
 
 static const char rcsId[]="@(#) $Id: SurrBasedMinimizer.cpp 4718 2007-11-15 21:44:58Z wjbohnh $";
+
+//#define DEBUG
+
 
 extern "C" {
 
@@ -54,8 +58,8 @@ using namespace std;
 namespace Dakota {
   extern PRPCache data_pairs; // global container
 
-SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model):
-  Minimizer(problem_db, model), sbIterNum(0),
+SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(problem_db, model, traits), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
@@ -115,7 +119,10 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
   // (initiated from the restored starting point following construction).
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
-  probDescDB.set_db_list_nodes(approxSubProbMinimizer.method_id());
+  // As in SurrBasedLocalMinimizer::initialize_sub_minimizer(), the SBLM
+  // model_pointer is relevant and any sub-method model_pointer is ignored
+  probDescDB.set_db_method_node(approxSubProbMinimizer.method_id());
+  probDescDB.set_db_model_nodes(iteratedModel.model_id());
   approxSubProbMinimizer.init_communicators(pl_iter);
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
@@ -187,18 +194,18 @@ void SurrBasedMinimizer::initialize_graphics(int iterator_server_id)
     through solution of a nonnegative linear least squares problem. */
 void SurrBasedMinimizer::
 update_lagrange_multipliers(const RealVector& fn_vals,
-			    const RealMatrix& fn_grads)
+			    const RealMatrix& fn_grads, SurrBasedLevelData& tr_data)
 {
   // solve nonnegative linear least squares [A]{lambda} = -{grad_f} for
   // lambda where A = gradient matrix for active/violated constraints.
 
   // identify active inequality constraints (equalities always active)
-  size_t i, j, cntr = 0;
+  size_t i, j, n = 0, cntr = 0, num_free_continuous_vars;
   IntList active_lag_ineq, lag_index;
-  for (i=0; i<numNonlinearIneqConstraints; i++) {
-    int ineq_id = i+1; // can't use +/- 0
-    Real g = fn_vals[numUserPrimaryFns+i], l_bnd = origNonlinIneqLowerBnds[i],
-      u_bnd = origNonlinIneqUpperBnds[i];
+  for (j=0; j<numNonlinearIneqConstraints; j++) {
+    int ineq_id = j+1; // can't use +/- 0
+    Real g = fn_vals[numUserPrimaryFns+j], l_bnd = origNonlinIneqLowerBnds[j],
+      u_bnd = origNonlinIneqUpperBnds[j];
     // check for active, not violated --> apply constraintTol on feasible side
     //   g < l_bnd + constraintTol, g > u_bnd - constraintTol
     if (l_bnd > -bigRealBoundSize) { // g has a lower bound
@@ -206,14 +213,14 @@ update_lagrange_multipliers(const RealVector& fn_vals,
 	active_lag_ineq.push_back(-ineq_id);
 	lag_index.push_back(cntr);
       }
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) { // g has an upper bound
       if (g > u_bnd - constraintTol) {
 	active_lag_ineq.push_back(ineq_id);
 	lag_index.push_back(cntr);
       }
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -222,31 +229,50 @@ update_lagrange_multipliers(const RealVector& fn_vals,
     num_active_lag = num_active_lag_ineq + numNonlinearEqConstraints;
   lagrangeMult = 0.;
   if (num_active_lag) {
-    // form [A]
-    RealVector A(num_active_lag*numContinuousVars);
-    ILIter iter;
-    for (i=0, iter=active_lag_ineq.begin(); i<num_active_lag_ineq; i++, iter++){
-      int ineq_id = *iter;
-      size_t index = numUserPrimaryFns + std::abs(ineq_id) - 1;
-      const Real* grad_g = fn_grads[index];
-      for (j=0; j<numContinuousVars; j++)
-	A[i+j*num_active_lag] = (ineq_id > 0) ? grad_g[j] : -grad_g[j];
-    }
-    for (i=0; i<numNonlinearEqConstraints; i++) {
-      const Real* grad_h
-	= fn_grads[numUserPrimaryFns+numNonlinearIneqConstraints+i];
-      for (j=0; j<numContinuousVars; j++)
-	A[i+num_active_lag_ineq+j*num_active_lag] = grad_h[j];
-    }
-
-    // form -{grad_f}
     RealVector m_grad_f;
     const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
     const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+    const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
+    const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
     objective_gradient(fn_vals, fn_grads, sense, wts, m_grad_f);
-    for (j=0; j<numContinuousVars; ++j)
-      m_grad_f[j] = -m_grad_f[j];
-    //Cout << "[A]:\n" << A << "-{grad_f}:\n" << m_grad_f;
+
+    RealVector A(num_active_lag*numContinuousVars);
+    ILIter iter;
+    const RealVector& c_vars = tr_data.c_vars_center();
+    for (i=0; i<numContinuousVars; i++) {
+      Real c_var = c_vars[i], l_bnd = lower_bnds[i], u_bnd = upper_bnds[i];
+      // Determine if the calculated gradient component dg/dx_i is directed into
+      // an active bound constraint.
+	   Cout << "c_var=" << c_var << "\n";
+      bool active_lower_bnd = ( (l_bnd == 0.0 && std::fabs(c_var) < 1.e-10) ||
+        (l_bnd != 0.0 && std::fabs(1.0 - c_var/l_bnd) < 1.e-10) );
+      bool active_upper_bnd = ( (u_bnd == 0.0 && std::fabs(c_var) < 1.e-10) ||
+        (u_bnd != 0.0 && std::fabs(1.0 - c_var/u_bnd) < 1.e-10) );
+      if ( !( (active_lower_bnd && m_grad_f[i] > 0.0) ||
+	           (active_upper_bnd && m_grad_f[i] < 0.0) ) ) {
+		  Cout << "active variable, i=" << i << ", n=" << n << "\n";
+        for (j=0, iter=active_lag_ineq.begin(); j<num_active_lag_ineq; j++, iter++){
+          int ineq_id = *iter;
+          size_t index = numUserPrimaryFns + std::abs(ineq_id) - 1;
+          const Real* grad_g = fn_grads[index];
+          // form [A]
+          Cout << "constraint, j=" << j << "\n";
+          A[j+n*num_active_lag] = (ineq_id > 0) ? grad_g[i] : -grad_g[i];
+        }
+        for (j=0; j<numNonlinearEqConstraints; j++) {
+          const Real* grad_h	= fn_grads[numUserPrimaryFns+numNonlinearIneqConstraints+j];
+          A[j+num_active_lag_ineq+n*num_active_lag] = grad_h[i];
+        }
+        // form -{grad_f}
+        m_grad_f[n] = -m_grad_f[n];
+        ++n;
+      }
+    }
+    num_free_continuous_vars = n;
+#ifdef DEBUG
+	 Cout << "number of free variables, n = " << num_free_continuous_vars << "\n";
+    Cout << "[A]:\n" << A << "-{grad_f}:\n" << m_grad_f;
+#endif
 
     // solve bound-constrained least squares using Lawson & Hanson routines:
     // > if inequality-constrained, use non-negative least squares (NNLS)
@@ -254,7 +280,7 @@ update_lagrange_multipliers(const RealVector& fn_vals,
     RealVector lambda(num_active_lag), w(num_active_lag);
     IntVector index(num_active_lag);
     double res_norm;
-    int m = numContinuousVars, n = num_active_lag;
+    int m = num_free_continuous_vars, n = num_active_lag;
     if (numNonlinearEqConstraints) {
 #ifdef DAKOTA_F90
       int nsetp, ierr;
@@ -286,7 +312,7 @@ update_lagrange_multipliers(const RealVector& fn_vals,
 	abort_handler(-1);
       }
     }
-    //Cout << "{lambda}:\n" << lambda << "res_norm: " << res_norm << '\n';
+//  Cout << "{lambda}:\n" << lambda << "res_norm: " << res_norm << '\n';
 
     // update lagrangeMult from least squares solution
     cntr = 0;
@@ -344,65 +370,26 @@ update_augmented_lagrange_multipliers(const RealVector& fn_vals)
 }
 
 
-/** Update the sbFilter with fn_vals if new iterate is non-dominated. */
-bool SurrBasedMinimizer::update_filter(const RealVector& fn_vals)
+void SurrBasedMinimizer::
+initialize_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals)
 {
-  // test new point against current filter
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
-  Real new_f = objective(fn_vals, sense, wts), new_g, filt_f, filt_g,
-    beta, gamma;
-  if (numNonlinearConstraints) {
-    new_g = constraint_violation(fn_vals, 0.);
-    gamma = 1.e-5;
-    beta  = 1. - gamma;
-  }
-  RVLIter filt_it;
-  std::list<RVLIter> rm_list;
-  for (filt_it = sbFilter.begin(); filt_it != sbFilter.end(); filt_it++) {
-    filt_f = objective(*filt_it, sense, wts);
-    if (numNonlinearConstraints) {
-      filt_g = constraint_violation(*filt_it, 0.);
+  Real new_f = objective(fn_vals, iteratedModel.primary_response_fn_sense(),
+			 iteratedModel.primary_response_fn_weights());
+  Real new_g = (numNonlinearConstraints)
+             ? constraint_violation(fn_vals, 0.) : 0.;
+  tr_data.initialize_filter(new_f, new_g);
+}
 
-      // Simple filter (no gamma, beta):
-      //if (new_f >= filt_f && new_g >= filt_g)
-      //  return false;            // new point is dominated: reject iterate
-      //else if (new_f < filt_f && new_g < filt_g)
-      //  rm_list.push_back(filt_it); // old pt dominated by new: que for removl
 
-      // Slanting filter: Fletcher, Leyffer, and Toint (SIAM J. Optim., 2002).
-      // The slanting logic is applied to new iterate acceptance, but the simple
-      // filter logic is used for the pruning of old points which are dominated
-      // by the new iterate.  This is due to the inclusion property of the
-      // slanting filter (the envelope for an accepted iterate includes the
-      // envelope for any filter point it dominates).
-      if (new_f + gamma*new_g > filt_f && new_g > beta*filt_g) // slanting logic
-	return false; // new point unacceptable: reject iterate
-      //else if (new_f + gamma*new_g <= filt_f && new_g <= beta*filt_g)
-      else if (new_f < filt_f && new_g < filt_g) // simple logic
-	rm_list.push_back(filt_it);// old pt dominated by new: queue for removal
-    }
-    else { // unconstrained
-      if (new_f >= filt_f)
-        return false;              // new point is dominated: reject iterate
-      else
-        rm_list.push_back(filt_it);// old pt dominated by new: queue for removal
-    }
-  }
-
-  // prune dominated points from filter.  Since these are iterators into a
-  // std::list, erasures do not invalidate other iterators.
-  std::list<RVLIter>::iterator rm_it;
-  for (rm_it = rm_list.begin(); rm_it != rm_list.end(); ++rm_it)
-    sbFilter.erase(*rm_it);
-  // new point is not dominated: add to filter and accept iterate
-  sbFilter.push_back(fn_vals);
-#ifdef DEBUG
-  Cout << "Filter:\n";
-  for (filt_it = sbFilter.begin(); filt_it != sbFilter.end(); ++filt_it)
-    Cout << *filt_it << '\n';
-#endif
-  return true;
+/** Update the paretoFilter with fn_vals if new iterate is non-dominated. */
+bool SurrBasedMinimizer::
+update_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals)
+{
+  Real new_f = objective(fn_vals, iteratedModel.primary_response_fn_sense(),
+			 iteratedModel.primary_response_fn_weights());
+  return (numNonlinearConstraints) ?
+    tr_data.update_filter(new_f, constraint_violation(fn_vals, 0.)) :
+    tr_data.update_filter(new_f);
 }
 
 
@@ -413,7 +400,7 @@ filter_merit(const RealVector& fns_center, const RealVector& fns_star)
 {
   Real obj_delta = objective(fns_star, sense, wts)
                  - objective(fns_center, sense, wts),
-       cv_delta  = constraint_violation(fns_star,   0.)
+        cv_delta = constraint_violation(fns_star,   0.)
                  - constraint_violation(fns_center, 0.);
 
   // This filter merit can be positive or negative.  The sign is not critical,
@@ -422,7 +409,7 @@ filter_merit(const RealVector& fns_center, const RealVector& fns_star)
   // *** TO DO: handle unconstrained and feasible cases properly!
   if (fabs(obj_delta) < DBL_MIN)
     return cv_delta;
-    else if (std::fabs(cv_delta) < DBL_MIN)
+  else if (std::fabs(cv_delta) < DBL_MIN)
     return obj_delta;
   else
     return obj_delta * cv_delta;
@@ -460,13 +447,13 @@ lagrangian_merit(const RealVector& fn_vals, const BoolDeque& sense,
       g0 = l_bnd - g;                // convert l <= g to l - g <= 0
       if (g0 + constraintTol > 0.)   // g is active
 	lag += lagrangeMult[cntr]*g0;
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) {  // g has an upper bound
       g0 = g - u_bnd;                // convert g <= u to g - u <= 0
       if (g0 + constraintTol > 0.)   // g is active
 	lag += lagrangeMult[cntr]*g0;
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -486,8 +473,7 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
 		    const BoolDeque& sense, const RealVector& primary_wts,
 		    const RealVector& nln_ineq_l_bnds,
 		    const RealVector& nln_ineq_u_bnds,
-		    const RealVector& nln_eq_tgts,
-		    RealVector& lag_grad)
+		    const RealVector& nln_eq_tgts, RealVector& lag_grad)
 {
   size_t i, j, cntr = 0;
 
@@ -507,13 +493,13 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
       if (g < l_bnd + constraintTol) // g is active
 	for (j=0; j<numContinuousVars; j++) // l - g <= 0  ->  grad g0 = -grad g
 	  lag_grad[j] -= lagrangeMult[cntr] * grad_g[j];
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) {  // g has an upper bound
       if (g > u_bnd - constraintTol) // g is active
 	for (j=0; j<numContinuousVars; j++) // g - u <= 0  ->  grad g0 = +grad g
 	  lag_grad[j] += lagrangeMult[cntr] * grad_g[j];
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -523,7 +509,59 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
       = fn_grads[numUserPrimaryFns+numNonlinearIneqConstraints+i];
     for (j=0; j<numContinuousVars; j++)
       lag_grad[j] += lagrangeMult[cntr] * grad_h[j];
-    cntr++;
+    ++cntr;
+  }
+}
+
+
+void SurrBasedMinimizer::
+lagrangian_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads, 
+		   const RealSymMatrixArray& fn_hessians,
+		   const BoolDeque& sense, const RealVector& primary_wts,
+		   const RealVector& nln_ineq_l_bnds,
+		   const RealVector& nln_ineq_u_bnds,
+		   const RealVector& nln_eq_tgts, RealSymMatrix& lag_hess)
+{
+  size_t i, j, k, index, cntr = 0;
+
+  // objective function portion
+  objective_hessian(fn_vals, fn_grads, fn_hessians, sense, primary_wts,
+		    lag_hess);
+
+  // inequality constraint portion
+  for (i=0; i<numNonlinearIneqConstraints; i++) {
+    // check for active, not violated --> apply constraintTol on feasible side
+    //   g < l_bnd + constraintTol, g > u_bnd - constraintTol
+    // Note: if original bounds/targets, lagrangeMult will be 0 for inactive
+    index = i + numUserPrimaryFns;
+    const Real& g = fn_vals[index];
+    const RealSymMatrix& hess_g = fn_hessians[index];
+    const Real& l_bnd = nln_ineq_l_bnds[i];
+    const Real& u_bnd = nln_ineq_u_bnds[i];
+    if (l_bnd > -bigRealBoundSize) { // g has a lower bound
+      if (g < l_bnd + constraintTol) // g is active
+	for (j=0; j<numContinuousVars; j++) // l - g <= 0  ->  hess g0 = -hess g
+	  for (k=0; k<=j; ++k)
+	    lag_hess(j,k) -= lagrangeMult[cntr] * hess_g(j,k);
+      ++cntr;
+    }
+    if (u_bnd < bigRealBoundSize) {  // g has an upper bound
+      if (g > u_bnd - constraintTol) // g is active
+	for (j=0; j<numContinuousVars; j++) // g - u <= 0  ->  hess g0 = +hess g
+	  for (k=0; k<=j; ++k)
+	    lag_hess(j,k) += lagrangeMult[cntr] * hess_g(j,k);
+      ++cntr;
+    }
+  }
+
+  // equality constraint portion
+  for (i=0; i<numNonlinearEqConstraints; i++) {
+    index = i + numUserPrimaryFns + numNonlinearIneqConstraints;
+    const RealSymMatrix& hess_h = fn_hessians[index];
+    for (j=0; j<numContinuousVars; j++)
+      for (k=0; k<=j; ++k)
+	lag_hess(j,k) += lagrangeMult[cntr] * hess_h(j,k);
+    ++cntr;
   }
 }
 
@@ -609,7 +647,7 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
 	for (j=0; j<numContinuousVars; j++)
 	  alag_grad[j] -= (augLagrangeMult[cntr] + 2.*penaltyParameter*g0)
                        *  grad_g[j]; // l - g <= 0  -->  grad g0 = -grad g
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) { // g has an upper bound
       g0 = g - u_bnd; // convert g <= u to g - u <= 0
@@ -618,7 +656,7 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
 	for (j=0; j<numContinuousVars; j++)
 	  alag_grad[j] += (augLagrangeMult[cntr] + 2.*penaltyParameter*g0)
                        *  grad_g[j]; // g - u <= 0  -->  grad g0 = +grad g
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -630,7 +668,72 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
     for (j=0; j<numContinuousVars; j++)
       alag_grad[j] += (augLagrangeMult[cntr] + 2.*penaltyParameter*h0)
                    *  grad_h[j];
-    cntr++;
+    ++cntr;
+  }
+}
+
+
+void SurrBasedMinimizer::
+augmented_lagrangian_hessian(const RealVector& fn_vals, 
+			     const RealMatrix& fn_grads, 
+			     const RealSymMatrixArray& fn_hessians,
+			     const BoolDeque&  sense,
+			     const RealVector& primary_wts,
+			     const RealVector& nln_ineq_l_bnds,
+			     const RealVector& nln_ineq_u_bnds,
+			     const RealVector& nln_eq_tgts,
+			     RealSymMatrix& alag_hess)
+{
+  size_t i, j, k, index, cntr = 0;
+
+  // objective function portion
+  objective_hessian(fn_vals, fn_grads, fn_hessians, sense, primary_wts,
+		    alag_hess);
+
+  // inequality constraint portion
+  Real g0;
+  for (i=0; i<numNonlinearIneqConstraints; i++) {
+    // For the Rockafellar augmented Lagrangian, augLagrangeMult is an
+    // "extended" multiplier vector and includes inactive constraints.
+    index = i + numUserPrimaryFns;
+    const Real& g = fn_vals[index];
+    const Real& l_bnd = nln_ineq_l_bnds[i];
+    const Real& u_bnd = nln_ineq_u_bnds[i];
+    const RealSymMatrix& hess_g = fn_hessians[index];
+    if (l_bnd > -bigRealBoundSize) { // g has a lower bound
+      g0 = l_bnd - g; // convert l <= g to l - g <= 0
+      // grad psi = grad g0 if "active", 0 if "inactive"
+      if (g0 >= -augLagrangeMult[cntr]/2./penaltyParameter) {
+	Real term = augLagrangeMult[cntr] + 2.*penaltyParameter*g0;
+	for (j=0; j<numContinuousVars; j++)
+	  for (k=0; k<=j; ++k) // l - g <= 0  -->  hess g0 = -hess g
+	    alag_hess(j,k) -= term * hess_g(j,k);
+      }
+      ++cntr;
+    }
+    if (u_bnd < bigRealBoundSize) { // g has an upper bound
+      g0 = g - u_bnd; // convert g <= u to g - u <= 0
+      // grad psi = grad g0 if "active", 0 if "inactive"
+      if (g0 >= -augLagrangeMult[cntr]/2./penaltyParameter) {
+	Real term = augLagrangeMult[cntr] + 2.*penaltyParameter*g0;
+	for (j=0; j<numContinuousVars; j++)
+	  for (k=0; k<=j; ++k) // g - u <= 0  -->  hess g0 = +hess g
+	    alag_hess(j,k) += term * hess_g(j,k);
+      }
+      ++cntr;
+    }
+  }
+
+  // equality constraint portion
+  for (i=0; i<numNonlinearEqConstraints; i++) {
+    index = i + numUserPrimaryFns + numNonlinearIneqConstraints;
+    const RealSymMatrix& hess_h = fn_hessians[index];
+    Real h0 = fn_vals[index] - nln_eq_tgts[i], // convert to h0 = 0
+      term  = augLagrangeMult[cntr] + 2.*penaltyParameter*h0;
+    for (j=0; j<numContinuousVars; j++)
+      for (k=0; k<=j; ++k) // g - u <= 0  -->  hess g0 = +hess g
+	alag_hess(j,k) += term * hess_h(j,k);
+    ++cntr;
   }
 }
 
@@ -741,7 +844,7 @@ constraint_violation(const RealVector& fn_vals, const Real& constraint_tol)
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void SurrBasedMinimizer::print_results(std::ostream& s)
+void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
@@ -750,15 +853,11 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
     abort_handler(-1); 
   } 
 
-  // initialize the results archive for this dataset
-  archive_allocate_best(num_best);
-
   const String& interface_id = (methodName == SURROGATE_BASED_LOCAL ||
 				methodName == SURROGATE_BASED_GLOBAL) ?
     iteratedModel.truth_model().interface_id() : iteratedModel.interface_id();
   int eval_id;
   activeSet.request_values(1);
-
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
@@ -772,11 +871,14 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
     if (optimizationFlag) {
       if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions ";
       else                       s << "<<<<< Best objective function  ";
+      if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
+      write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
     }
-    else
-      s << "<<<<< Best residual terms      ";
-    if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
-    write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
+    else 
+      print_residuals(numUserPrimaryFns, best_fns,
+                              RealVector(),
+                              num_best, i,
+                              s);
     size_t num_cons = numFunctions - numUserPrimaryFns;
     if (num_cons) {
       s << "<<<<< Best constraint values   ";
@@ -789,8 +891,10 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
     // search in data_pairs to extract the evalId for the best fn eval.
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
 					   bestVariablesArray[i], activeSet);
-    if (cache_it == data_pairs.get<hashed>().end())
+    if (cache_it == data_pairs.get<hashed>().end()) {
       s << "<<<<< Best data not found in evaluation cache\n\n";
+      eval_id = 0;
+    }
     else {
       eval_id = cache_it->eval_id();
       if (eval_id > 0)
@@ -801,10 +905,6 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
 	  << "\n      but retrieved from restart archive with evaluation id "
 	  << -eval_id << "\n\n";
     }
-
-    // pass data to the results archive
-    archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
-
   }
 }
 

@@ -3,7 +3,6 @@
 # PCBDO with mixed insertion/augmentation using the cantilever test function.
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################
@@ -15,6 +14,7 @@ method,
 	dot_sqp
 #	npsol_sqp
 	  convergence_tolerance = 1.e-6
+	scaling
 
 model,
 	id_model = 'OPTIM_M'
@@ -35,6 +35,7 @@ variables,
 	  lower_bounds       1.     1.   200.   200.
 	  upper_bounds      10.    10.  2000.  2000.
 	  descriptors 'w' 't' 'X_mean' 'Y_mean'
+	scale_type = 'auto'
 
 responses,
 # minimize mean Weight

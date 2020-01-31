@@ -30,7 +30,7 @@ namespace Dakota {
 
 ProgramOptions::ProgramOptions():
   worldRank(0),
-  echoInput(true), stopRestartEvals(0),
+  echoInput(true), preprocInput(false), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
   preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
   preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
@@ -42,7 +42,7 @@ ProgramOptions::ProgramOptions():
 
 ProgramOptions::ProgramOptions(int world_rank):
   worldRank(world_rank),
-  echoInput(true), stopRestartEvals(0),
+  echoInput(true), preprocInput(false), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
   preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
   preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
@@ -54,7 +54,7 @@ ProgramOptions::ProgramOptions(int world_rank):
 
 ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
   worldRank(world_rank),
-  echoInput(true), stopRestartEvals(0),
+  echoInput(true), preprocInput(false), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
   preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
   preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
@@ -74,6 +74,14 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
 
   if (clh.retrieve("input"))
     inputFile = clh.retrieve("input");
+
+  if (clh.retrieve("preproc")) {
+    preprocInput = true;
+    preprocCmd = clh.retrieve("preproc");
+    if (preprocCmd.empty())
+      preprocCmd = "pyprepro.py";
+  }
+
   if (clh.retrieve("output"))
     outputFile = clh.retrieve("output");
   if (clh.retrieve("error"))
@@ -114,9 +122,14 @@ const String& ProgramOptions::input_string() const
 bool ProgramOptions::echo_input() const
 { return echoInput; }
 
+bool ProgramOptions::preproc_input() const
+{ return preprocInput; }
+
+const String& ProgramOptions::preproc_cmd() const
+{ return preprocCmd; }
+
 const String& ProgramOptions::parser_options() const
 { return parserOptions; }
-
 
 String ProgramOptions::output_file() const
 { return outputFile.empty() ? "dakota.out" : outputFile; }
@@ -218,7 +231,10 @@ void ProgramOptions::input_file(const String& in_file)
 { 
   inputFile = in_file; 
   // not an error if client later resolves
-  if ( !inputFile.empty() && !inputString.empty() && worldRank == 0)
+  if ( !inputFile.empty()   && 
+       inputFile != "-"     &&
+       !inputString.empty() && 
+       worldRank == 0)
     Cout << "Warning (ProgramOptions): both input file and string specified."
 	 << std::endl;
 }
@@ -227,7 +243,10 @@ void ProgramOptions::input_string(const String& in_string)
 {  
   inputString = in_string; 
   // not an error if client later resolves
-  if ( !inputFile.empty() && !inputString.empty() && worldRank == 0)
+  if ( !inputFile.empty()   && 
+       inputFile != "-"     &&
+       !inputString.empty() && 
+       worldRank == 0)
     Cout << "Warning (ProgramOptions): both input file and string specified."
 	 << std::endl;
 }
@@ -235,6 +254,11 @@ void ProgramOptions::input_string(const String& in_string)
 void ProgramOptions::echo_input(bool echo_flag)
 { echoInput = echo_flag; }
 
+void ProgramOptions::preproc_input(bool pp_flag)
+{ preprocInput = pp_flag; }
+
+void ProgramOptions::preproc_cmd(const String& pp_cmd)
+{ preprocCmd = pp_cmd; }
 
 void ProgramOptions::output_file(const String& out_file)
 { outputFile = out_file; }

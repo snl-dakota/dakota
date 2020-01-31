@@ -35,8 +35,8 @@ namespace Dakota {
 
 Minimizer* SNLLBase::optLSqInstance(NULL);
 bool       SNLLBase::modeOverrideFlag(false);
-EvalType   SNLLBase::lastFnEvalLocn(NLFEvaluator);
-int        SNLLBase::lastEvalMode(1);
+EvalType   SNLLBase::lastFnEvalLocn(NO_EVALUATOR);
+int        SNLLBase::lastEvalMode(0);
 RealVector SNLLBase::lastEvalVars;
 
 
@@ -49,7 +49,9 @@ SNLLBase::SNLLBase(ProblemDescDB& problem_db)
   // through member function parameter lists rather than re-extracted from
   // problem_db.
   searchMethod    =  problem_db.get_string("method.optpp.search_method");
-  constantASVFlag = !problem_db.get_bool("interface.active_set_vector");
+  // active Model specification may not contain an interface spec
+  constantASVFlag = (problem_db.interface_locked()) ? false :
+    !problem_db.get_bool("interface.active_set_vector");
   maxStep         =  problem_db.get_real("method.optpp.max_step");
   stepLenToBndry  =  problem_db.get_real("method.optpp.steplength_to_boundary");
   centeringParam  =  problem_db.get_real("method.optpp.centering_parameter");

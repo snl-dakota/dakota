@@ -13,6 +13,7 @@
 
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
+#include "DakotaTraitsBase.hpp"
 #include "MetaIterator.hpp"
 #include "ConcurrentMetaIterator.hpp"
 #include "CollabHybridMetaIterator.hpp"
@@ -21,7 +22,11 @@
 #include "ParamStudy.hpp"
 #include "RichExtrapVerification.hpp"
 #include "NonDPolynomialChaos.hpp"
+#include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
+#include "NonDMultilevelStochCollocation.hpp"
+//#include "NonDMultilevelStochCollocation.hpp"
+#include "NonDSurrogateExpansion.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
@@ -92,8 +97,18 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
+#ifdef HAVE_ROL
+#include "ROLOptimizer.hpp"
+#endif
+#ifdef HAVE_DEMO_TPL
+#include "DemoOptimizer.hpp"
+#endif
 #ifdef HAVE_JEGA
 #include "JEGAOptimizer.hpp"
+#endif
+#ifdef HAVE_C3
+#include "NonDC3FunctionTrain.hpp"
+#include "NonDMultilevelFunctionTrain.hpp"
 #endif
 #ifdef HAVE_QUESO_GPMSA
 #include "NonDGPMSABayesCalibration.hpp"
@@ -112,7 +127,12 @@
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
+#include "EvaluationStore.hpp"
 #include "NonDWASABIBayesCalibration.hpp"
+
+#include <boost/bimap.hpp>
+#include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 
 //#define REFCOUNT_DEBUG
 
@@ -120,9 +140,14 @@ static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02
 
 namespace Dakota {
 
-extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
-extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+// defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        
+extern ParallelLibrary dummy_lib;
 extern ResultsManager  iterator_results_db;
+extern EvaluationStore evaluation_store_db;
+
+// Initialization of static method ID counters
+size_t Iterator::noSpecIdNum = 0;
 
 
 /** This constructor builds the base class data for all inherited
@@ -132,16 +157,16 @@ extern ResultsManager  iterator_results_db;
     the base class constructor calling get_iterator() again).  Since
     the letter IS the representation, its representation pointer is
     set to NULL (an uninitialized pointer causes problems in ~Iterator). */
-Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
+Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
+		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
-  myModelLayers(0),
-  methodName(probDescDB.get_ushort("method.algorithm")),
-  convergenceTol(probDescDB.get_real("method.convergence_tolerance")),
-  maxIterations(probDescDB.get_int("method.max_iterations")),
-  maxFunctionEvals(probDescDB.get_int("method.max_function_evaluations")),
+  myModelLayers(0), methodName(problem_db.get_ushort("method.algorithm")),
+  convergenceTol(problem_db.get_real("method.convergence_tolerance")),
+  maxIterations(problem_db.get_int("method.max_iterations")),
+  maxFunctionEvals(problem_db.get_int("method.max_function_evaluations")),
   subIteratorFlag(false),
-  numFinalSolutions(probDescDB.get_sizet("method.final_solutions")),
+  numFinalSolutions(problem_db.get_sizet("method.final_solutions")),
   // Output verbosity is observed within Iterator (algorithm verbosity),
   // Model (synchronize/estimate_derivatives verbosity), Interface
   // (map/synch verbosity, file operations verbosity), and Approximation
@@ -155,12 +180,19 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
   // where "silent," "quiet", "verbose" and "debug" must be user specified and
   // "normal" is the default for no user specification.  Note that iterators
   // and interfaces have the most granularity in verbosity.
-  outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
-  resultsDB(iterator_results_db), methodId(probDescDB.get_string("method.id")),
-  iteratorRep(NULL), referenceCount(1)
+  outputLevel(problem_db.get_short("method.output")), summaryOutputFlag(true),
+  topLevel(false), resultsDB(iterator_results_db),
+  evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  methodId(problem_db.get_string("method.id")), execNum(0),
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
+  if (methodId.empty())
+    methodId = user_auto_id();
+
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
+    // iteratorRep = get_iterator(problem_db);
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db) "
@@ -173,19 +205,19 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
+Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
+	 std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
-  myModelLayers(0),
-  iteratedModel(model), methodName(method_name), convergenceTol(0.0001),
-  maxIterations(100), maxFunctionEvals(1000), maxEvalConcurrency(1),
-  subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(model.output_level()), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
-  iteratorRep(NULL), referenceCount(1)
+  myModelLayers(0), iteratedModel(model), methodName(method_name),
+  convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
+  maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
+  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
        << "class\n";
@@ -199,14 +231,17 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
     meta-iterators.  It has no incoming model, so only sets up a
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
-Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
+Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
+		   std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib), 
   myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
-  resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
-  iteratorRep(NULL), referenceCount(1)
+  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false), topLevel(false),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  methodId(no_spec_id()), execNum(0),
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
@@ -220,9 +255,12 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
-Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
-  resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
-  iteratorRep(NULL), referenceCount(1)
+Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
+  probDescDB(dummy_db), parallelLib(dummy_lib),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  myModelLayers(0), methodName(DEFAULT_METHOD),
+  execNum(0), iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -234,12 +272,14 @@ Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
 /** This constructor assigns a representation pointer and optionally
     increments its reference count.  It behaves the same as a default
     construction followed by assign_rep(). */
-Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
+Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr,
+		   std::shared_ptr<TraitsBase> traits):
   // same as default ctor above
   probDescDB(dummy_db), parallelLib(dummy_lib),
-  resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  myModelLayers(0), methodName(DEFAULT_METHOD),
   // bypass some logic in assign_rep():
-  iteratorRep(iterator_rep), referenceCount(1)
+  iteratorRep(iterator_rep), referenceCount(1), methodTraits(traits)
 {
   // relevant portion of assign_rep():
   if (iteratorRep && ref_count_incr)
@@ -257,19 +297,17 @@ Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
     data.  This version is used for top-level ProblemDescDB-driven
     construction of all Iterators and MetaIterators, which construct
     their own Model instances. */
-Iterator::Iterator(ProblemDescDB& problem_db):
+Iterator::Iterator(ProblemDescDB& problem_db,
+		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(ProblemDescDB&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-
   iteratorRep = get_iterator(problem_db);
+  
   if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -280,10 +318,17 @@ bool Iterator::resize()
   else {
     // Update activeSet:
     activeSet = iteratedModel.current_response().active_set();
-
     return false; // No need to re-initialize communicators base on what
                   // was done here.
   }
+}
+
+
+void Iterator::declare_sources() {
+  evaluationsDB.declare_source(method_id(), 
+                               "iterator",
+                               iterated_model().model_id(),
+                               iterated_model().model_type());
 }
 
 
@@ -337,9 +382,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
     (e.g., a MetaIterator instantiates its sub-iterator(s) by name
     instead of pointer and passes in its iteratedModel, since these
     sub-iterators lack their own model pointers). */
-Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
+Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db),
+  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -349,8 +394,9 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
 
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(problem_db, model);
+
   if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -408,19 +454,41 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     default:            return new NonDGlobalEvidence(problem_db, model); break;
     } break;
   case POLYNOMIAL_CHAOS:
-    return new NonDPolynomialChaos(problem_db, model);  break;
+    return new NonDPolynomialChaos(problem_db, model);           break;
+  case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    return new NonDMultilevelPolynomialChaos(problem_db, model); break;
   case STOCH_COLLOCATION:
     return new NonDStochCollocation(problem_db, model); break;
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    return new NonDMultilevelStochCollocation(problem_db, model); break;
+#ifdef HAVE_C3
+  case C3_FUNCTION_TRAIN:
+    return new NonDC3FunctionTrain(problem_db, model); break;
+  case MULTILEVEL_FUNCTION_TRAIN: case MULTIFIDELITY_FUNCTION_TRAIN:
+    return new NonDMultilevelFunctionTrain(problem_db, model); break;
+#endif
+  case SURROGATE_BASED_UQ:
+    return new NonDSurrogateExpansion(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
-#ifdef HAVE_QUESO_GPMSA
     case SUBMETHOD_GPMSA:
+#ifdef HAVE_QUESO_GPMSA
       return new NonDGPMSABayesCalibration(problem_db, model); break;
+#else
+      Cerr << "\nError: QUESO/GPMSA Bayesian calibration method unavailable.\n"
+	   << "(Not enabled in some Dakota distributions due to dependence on "
+	   << "GSL;\ncan be enabled when compiling from source code.)\n";
+      return NULL; break;
 #endif
-#ifdef HAVE_QUESO
     case SUBMETHOD_QUESO:
+#ifdef HAVE_QUESO
       return new NonDQUESOBayesCalibration(problem_db, model); break;
+#else
+      Cerr << "\nError: QUESO Bayesian calibration method unavailable.\n"
+	   << "(Not enabled in some Dakota distributions due to dependence on "
+	   << "GSL;\ncan be enabled when compiling from source code.)\n";
+      return NULL; break;
 #endif
 #ifdef HAVE_DREAM
     case SUBMETHOD_DREAM:
@@ -429,7 +497,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     case SUBMETHOD_WASABI:
       return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
-      Cerr << "Bayesian calibration selection not available." << std::endl;
+      Cerr << "\nError: Bayesian calibration method '"
+	   << submethod_enum_to_string(probDescDB.get_ushort("method.sub_method"))
+	   << "' unavailable.\n";
       return NULL;                                            break;
     } break;
   case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
@@ -527,9 +597,32 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #ifdef HAVE_NCSU
   case NCSU_DIRECT: return new NCSUOptimizer(problem_db, model);       break;
 #endif
+#ifdef HAVE_ROL
+  case ROL:
+    return new ROLOptimizer(problem_db, model); break;
+#endif
+#ifdef HAVE_DEMO_TPL
+  case DEMO_TPL:
+    return new DemoTPLOptimizer(problem_db, model); break;
+#endif
   default:
-    Cerr << "Invalid iterator: " << method_enum_to_string(method_name)
-	 << " not available." << std::endl;
+    switch (method_name) {
+    case NPSOL_SQP: case NLPQL_SQP:
+    case DOT_BFGS: case DOT_FRCG: case DOT_MMFD: case DOT_SLP: case DOT_SQP:
+      Cerr << "Method " << method_enum_to_string(method_name)
+	   << " not available; requires a separate software license."
+	   << "\nCONMIN or OPT++ methods may be suitable alternatives.\n";
+      break;
+    case NLSSOL_SQP:
+      Cerr << "Method " << method_enum_to_string(method_name)
+	   << " not available; requires a separate software license."
+	   << "\nnl2sol or optpp_g_newton may be suitable alternatives.\n";
+      break;
+    default:
+      Cerr << "Method " << method_enum_to_string(method_name)
+	   << " not available.\n";
+      break;
+    }
     return NULL; break;
   }
 }
@@ -540,9 +633,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     execute get_iterator(), since letter holds the actual base class
     data.  This version is used for lightweight constructions without
     the ProblemDescDB. */
-Iterator::Iterator(const String& method_string, Model& model):
+Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(model.problem_description_db()),
   parallelLib(model.parallel_library()), resultsDB(iterator_results_db),
+  evaluationsDB(evaluation_store_db),  methodTraits(traits), 
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -552,8 +646,9 @@ Iterator::Iterator(const String& method_string, Model& model):
 
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(method_string, model);
+
   if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -646,9 +741,26 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
   else if (method_string == "ncsu_direct")
     return new NCSUOptimizer(model);
 #endif
+#ifdef HAVE_NCSU
+  else if (method_string == "ncsu_direct")
+    return new NCSUOptimizer(model);
+#endif
+#ifdef HAVE_ROL
+  else if (method_string == "rol")
+    return new ROLOptimizer(method_string, model);
+#endif
   else {
-    Cerr << "Invalid iterator: " << method_string << " not available by name."
-	 << std::endl;
+    if ( method_string == "npsol_sqp" || method_string == "nlpql_sqp" ||
+	 strbegins(method_string, "dot_") )
+      Cerr << "Method " << method_string
+	   << " not available by name; requires a separate software license."
+	   << "\nCONMIN or OPT++ methods may be suitable alternatives.\n";
+    else if (method_string == "nlssol_sqp")
+      Cerr << "Method " << method_string
+	   << " not available by name; requires a separate software license."
+	   << "\nnl2sol may be a suitable alternative.\n";
+    else
+      Cerr << "Method " << method_string << " not available by name.\n";
     return NULL;
   }
 }
@@ -658,7 +770,8 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
     of referenceCount. */
 Iterator::Iterator(const Iterator& iterator):
   probDescDB(iterator.problem_description_db()),
-  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db)
+  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
+  evaluationsDB(evaluation_store_db), methodTraits(iterator.traits())
 {
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
@@ -750,7 +863,7 @@ void Iterator::assign_rep(Iterator* iterator_rep, bool ref_count_incr)
       Cerr << "Error: duplicated iterator_rep pointer assignment without "
 	   << "reference count increment in Iterator::assign_rep()."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
   }
   else { // normal case: old != new
@@ -774,216 +887,161 @@ void Iterator::assign_rep(Iterator* iterator_rep, bool ref_count_incr)
 }
 
 
-String Iterator::method_enum_to_string(unsigned short method_name) const
+/// bimaps to convert from enums <--> strings
+typedef boost::bimap<unsigned short, std::string> UShortStrBimap;
+
+/// bimap between method enums and strings; only used in this
+/// compilation unit
+static UShortStrBimap method_map =
+  boost::assign::list_of<UShortStrBimap::relation>
+  (HYBRID,                          "hybrid")
+  (PARETO_SET,                      "pareto_set")
+  (MULTI_START,                     "multi_start")
+  (CENTERED_PARAMETER_STUDY,        "centered_parameter_study")
+  (LIST_PARAMETER_STUDY,            "list_parameter_study")
+  (MULTIDIM_PARAMETER_STUDY,        "multidim_parameter_study")
+  (VECTOR_PARAMETER_STUDY,          "vector_parameter_study")
+  (RICHARDSON_EXTRAP,               "richardson_extrap")
+  (LOCAL_RELIABILITY,               "local_reliability")
+  (LOCAL_INTERVAL_EST,              "local_interval_est")
+  (LOCAL_EVIDENCE,                  "local_evidence")
+  (GLOBAL_RELIABILITY,              "global_reliability")
+  (GLOBAL_INTERVAL_EST,             "global_interval_est")
+  (GLOBAL_EVIDENCE,                 "global_evidence")
+  (POLYNOMIAL_CHAOS,                "polynomial_chaos")
+  (MULTIFIDELITY_POLYNOMIAL_CHAOS,  "multifidelity_polynomial_chaos")
+  (MULTILEVEL_POLYNOMIAL_CHAOS,     "multilevel_polynomial_chaos")
+  (STOCH_COLLOCATION,               "stoch_collocation")
+  (MULTIFIDELITY_STOCH_COLLOCATION, "multifidelity_stoch_collocation")
+  (C3_FUNCTION_TRAIN,               "c3_function_train")
+  (MULTIFIDELITY_FUNCTION_TRAIN,    "multifidelity_function_train")
+  (BAYES_CALIBRATION,               "bayes_calibration")
+  (CUBATURE_INTEGRATION,            "cubature")
+  (QUADRATURE_INTEGRATION,          "quadrature")
+  (SPARSE_GRID_INTEGRATION,         "sparse_grid")
+  (GPAIS,                           "gpais")
+  (POF_DARTS,                       "pof_darts")
+  (RKD_DARTS,                       "rkd_darts")
+  (IMPORTANCE_SAMPLING,             "importance_sampling")
+  (ADAPTIVE_SAMPLING,               "adaptive_sampling")
+  (RANDOM_SAMPLING,                 "random_sampling")
+  (MULTILEVEL_SAMPLING,             "multilevel_sampling")
+  (LIST_SAMPLING,                   "list_sampling")
+  (SURROGATE_BASED_LOCAL,           "surrogate_based_local")
+  (DATA_FIT_SURROGATE_BASED_LOCAL,  "data_fit_surrogate_based_local")
+  (HIERARCH_SURROGATE_BASED_LOCAL,  "hierarch_surrogate_based_local")
+  (SURROGATE_BASED_GLOBAL,          "surrogate_based_global")
+  (EFFICIENT_GLOBAL,                "efficient_global")
+  (NONLINEAR_CG,                    "nonlinear_cg")
+  (GENIE_DIRECT,                    "genie_direct")
+  (GENIE_OPT_DARTS,                 "genie_opt_darts")
+  (OPTPP_G_NEWTON,                  "optpp_g_newton")
+  (OPTPP_Q_NEWTON,                  "optpp_q_newton")
+  (OPTPP_FD_NEWTON,                 "optpp_fd_newton")
+  (OPTPP_NEWTON,                    "optpp_newton")
+  (OPTPP_CG,                        "optpp_cg")
+  (OPTPP_PDS,                       "optpp_pds")
+  (ASYNCH_PATTERN_SEARCH,           "asynch_pattern_search")
+  (COLINY_BETA,                     "coliny_beta")
+  (COLINY_COBYLA,                   "coliny_cobyla")
+  (COLINY_DIRECT,                   "coliny_direct")
+  (COLINY_EA,                       "coliny_ea")
+  (COLINY_PATTERN_SEARCH,           "coliny_pattern_search")
+  (COLINY_SOLIS_WETS,               "coliny_solis_wets")
+  (BRANCH_AND_BOUND,                "branch_and_bound")
+  (MOGA,                            "moga")
+  (SOGA,                            "soga")
+  (DL_SOLVER,                       "dl_solver")
+  (MESH_ADAPTIVE_SEARCH,            "mesh_adaptive_search")
+  (MIT_NOWPAC,                      "nowpac")
+  (MIT_SNOWPAC,                     "snowpac")
+  (NPSOL_SQP,                       "npsol_sqp")
+  (NLSSOL_SQP,                      "nlssol_sqp")
+  (NLPQL_SQP,                       "nlpql_sqp")
+  (NL2SOL,                          "nl2sol")
+  //(REDUCED_SQP,                   "reduced_sqp")
+  (DOT_BFGS,                        "dot_bfgs")
+  (DOT_FRCG,                        "dot_frcg")
+  (DOT_MMFD,                        "dot_mmfd")
+  (DOT_SLP,                         "dot_slp")
+  (DOT_SQP,                         "dot_sqp")
+  (CONMIN_FRCG,                     "conmin_frcg")
+  (CONMIN_MFD,                      "conmin_mfd")
+  (DACE,                            "dace")
+  (FSU_CVT,                         "fsu_cvt")
+  (FSU_HALTON,                      "fsu_halton")
+  (FSU_HAMMERSLEY,                  "fsu_hammersley")
+  (PSUADE_MOAT,                     "psuade_moat")
+  (NCSU_DIRECT,                     "ncsu_direct")
+  (ROL,                             "rol")
+  (DEMO_TPL,                        "demo_tpl")
+  ;
+
+
+/// bimap between sub-method enums and strings; only used in this
+/// compilation unit (using bimap for consistency, though at time of
+/// addition, only uni-directional mapping is supported)
+static UShortStrBimap submethod_map =
+  boost::assign::list_of<UShortStrBimap::relation>
+  (HYBRID,                      "hybrid")
+  (SUBMETHOD_COLLABORATIVE,     "collaborative")
+  (SUBMETHOD_EMBEDDED,          "embedded")
+  (SUBMETHOD_SEQUENTIAL,        "sequential")
+  (SUBMETHOD_LHS,               "lhs")
+  (SUBMETHOD_RANDOM,            "random")
+  (SUBMETHOD_BOX_BEHNKEN,       "box_behnken")
+  (SUBMETHOD_CENTRAL_COMPOSITE, "central_composite")
+  (SUBMETHOD_GRID,              "grid")
+  (SUBMETHOD_OA_LHS,            "oa_lhs")
+  (SUBMETHOD_OAS,               "oas")
+  (SUBMETHOD_DREAM,             "dream")
+  (SUBMETHOD_WASABI,            "wasabi")
+  (SUBMETHOD_GPMSA,             "gpmsa")
+  (SUBMETHOD_QUESO,             "queso")
+  (SUBMETHOD_NIP,               "nip")
+  (SUBMETHOD_SQP,               "sqp")
+  (SUBMETHOD_EA,                "ea")
+  (SUBMETHOD_EGO,               "ego")
+  (SUBMETHOD_SBO,               "sbo")
+  (SUBMETHOD_CONVERGE_ORDER,    "converge_order")
+  (SUBMETHOD_CONVERGE_QOI,      "converge_qoi")
+  (SUBMETHOD_ESTIMATE_ORDER,    "estimate_order")
+  ;
+
+
+String Iterator::method_enum_to_string(unsigned short method_enum) const
 {
-  switch (method_name) {
-  case HYBRID:                  return String("hybrid"); break;
-  case PARETO_SET:              return String("pareto_set"); break;
-  case MULTI_START:             return String("multi_start"); break;
-  case CENTERED_PARAMETER_STUDY:return String("centered_parameter_study");break;
-  case LIST_PARAMETER_STUDY:    return String("list_parameter_study");    break;
-  case MULTIDIM_PARAMETER_STUDY:return String("multidim_parameter_study");break;
-  case VECTOR_PARAMETER_STUDY:  return String("vector_parameter_study");  break;
-  case RICHARDSON_EXTRAP:       return String("richardson_extrap"); break;
-  case LOCAL_RELIABILITY:       return String("local_reliability"); break;
-  case LOCAL_INTERVAL_EST:      return String("local_interval_est"); break;
-  case LOCAL_EVIDENCE:          return String("local_evidence"); break;
-  case GLOBAL_RELIABILITY:      return String("global_reliability"); break;
-  case GLOBAL_INTERVAL_EST:     return String("global_interval_est"); break;
-  case GLOBAL_EVIDENCE:         return String("global_evidence"); break;
-  case POLYNOMIAL_CHAOS:        return String("polynomial_chaos"); break;
-  case STOCH_COLLOCATION:       return String("stoch_collocation"); break;
-  case BAYES_CALIBRATION:       return String("bayes_calibration"); break;
-  case CUBATURE_INTEGRATION:    return String("cubature"); break;
-  case QUADRATURE_INTEGRATION:  return String("quadrature"); break;
-  case SPARSE_GRID_INTEGRATION: return String("sparse_grid"); break;
-  case GPAIS:                   return String("gpais"); break;
-  case POF_DARTS:               return String("pof_darts"); break;
-  case RKD_DARTS:               return String("rkd_darts"); break;
-  case IMPORTANCE_SAMPLING:     return String("importance_sampling"); break;
-  case ADAPTIVE_SAMPLING:       return String("adaptive_sampling"); break;
-  case RANDOM_SAMPLING:         return String("random_sampling"); break;
-  case MULTILEVEL_SAMPLING:     return String("multilevel_sampling"); break;
-  case LIST_SAMPLING:           return String("list_sampling"); break;
-  case SURROGATE_BASED_LOCAL:   return String("surrogate_based_local"); break;
-  case DATA_FIT_SURROGATE_BASED_LOCAL:
-    return String("data_fit_surrogate_based_local"); break;
-  case HIERARCH_SURROGATE_BASED_LOCAL:
-    return String("hierarch_surrogate_based_local"); break;
-  case SURROGATE_BASED_GLOBAL:  return String("surrogate_based_global"); break;
-  case EFFICIENT_GLOBAL:        return String("efficient_global"); break;
-  case NONLINEAR_CG:            return String("nonlinear_cg"); break;
-  case GENIE_DIRECT:            return String("genie_direct"); break;
-  case GENIE_OPT_DARTS:         return String("genie_opt_darts"); break;
-  case OPTPP_G_NEWTON:          return String("optpp_g_newton"); break;
-  case OPTPP_Q_NEWTON:          return String("optpp_q_newton"); break;
-  case OPTPP_FD_NEWTON:         return String("optpp_fd_newton"); break;
-  case OPTPP_NEWTON:            return String("optpp_newton"); break;
-  case OPTPP_CG:                return String("optpp_cg"); break;
-  case OPTPP_PDS:               return String("optpp_pds"); break;
-  case ASYNCH_PATTERN_SEARCH:   return String("asynch_pattern_search"); break;
-  case COLINY_BETA:             return String("coliny_beta"); break;
-  case COLINY_COBYLA:           return String("coliny_cobyla"); break;
-  case COLINY_DIRECT:           return String("coliny_direct"); break;
-  case COLINY_EA:               return String("coliny_ea"); break;
-  case COLINY_PATTERN_SEARCH:   return String("coliny_pattern_search"); break;
-  case COLINY_SOLIS_WETS:       return String("coliny_solis_wets"); break;
-  case BRANCH_AND_BOUND:        return String("branch_and_bound"); break;
-  case MOGA:                    return String("moga"); break;
-  case SOGA:                    return String("soga"); break;
-  case DL_SOLVER:               return String("dl_solver"); break;
-  case MESH_ADAPTIVE_SEARCH:    return String("mesh_adaptive_search"); break;
-  case MIT_NOWPAC:              return String("nowpac"); break;
-  case MIT_SNOWPAC:             return String("snowpac"); break;
-  case NPSOL_SQP:               return String("npsol_sqp"); break;
-  case NLSSOL_SQP:              return String("nlssol_sqp"); break;
-  case NLPQL_SQP:               return String("nlpql_sqp"); break;
-  case NL2SOL:                  return String("nl2sol"); break;
-  //case REDUCED_SQP:           return String("reduced_sqp"); break;
-  case DOT_BFGS:                return String("dot_bfgs"); break;
-  case DOT_FRCG:                return String("dot_frcg"); break;
-  case DOT_MMFD:                return String("dot_mmfd"); break;
-  case DOT_SLP:                 return String("dot_slp"); break;
-  case DOT_SQP:                 return String("dot_sqp"); break;
-  case CONMIN_FRCG:             return String("conmin_frcg"); break;
-  case CONMIN_MFD:              return String("conmin_mfd"); break;
-  case DACE:                    return String("dace"); break;
-  case FSU_CVT:                 return String("fsu_cvt"); break;
-  case FSU_HALTON:              return String("fsu_halton"); break;
-  case FSU_HAMMERSLEY:          return String("fsu_hammersley"); break;
-  case PSUADE_MOAT:             return String("psuade_moat"); break;
-  case NCSU_DIRECT:             return String("ncsu_direct"); break;
-  default:
-    Cerr << "Invalid method conversion: case " << method_name
-	 << " not available." << std::endl;
-    abort_handler(-1); return String(); break;
+  UShortStrBimap::left_const_iterator lc_iter = method_map.left.find(method_enum);
+  if (lc_iter == method_map.left.end()) {
+    Cerr << "\nError: Invalid method_enum_to_string conversion: "
+	 << method_enum << " not available." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  return lc_iter->second;
 }
 
 
-unsigned short Iterator::method_string_to_enum(const String& method_name) const
+unsigned short Iterator::method_string_to_enum(const String& method_str) const
 {
-  if (method_name == "hybrid")  return HYBRID;
-  else if (method_name == "pareto_set")  return PARETO_SET;
-  else if (method_name == "multi_start") return MULTI_START;
-  else if (method_name == "centered_parameter_study")
-    return CENTERED_PARAMETER_STUDY;
-  else if (method_name == "list_parameter_study")
-    return LIST_PARAMETER_STUDY;
-  else if (method_name == "multidim_parameter_study")
-    return MULTIDIM_PARAMETER_STUDY;
-  else if (method_name == "vector_parameter_study")
-    return VECTOR_PARAMETER_STUDY;
-  else if (method_name == "richardson_extrap")     return RICHARDSON_EXTRAP;
-  else if (method_name == "local_reliability")     return LOCAL_RELIABILITY;
-  else if (method_name == "local_interval_est")    return LOCAL_INTERVAL_EST;
-  else if (method_name == "local_evidence")        return LOCAL_EVIDENCE;
-  else if (method_name == "global_reliability")    return GLOBAL_RELIABILITY;
-  else if (method_name == "global_interval_est")   return GLOBAL_INTERVAL_EST;
-  else if (method_name == "global_evidence")       return GLOBAL_EVIDENCE;
-  else if (method_name == "polynomial_chaos")      return POLYNOMIAL_CHAOS;
-  else if (method_name == "stoch_collocation")     return STOCH_COLLOCATION;
-  else if (method_name == "bayes_calibration")     return BAYES_CALIBRATION;
-  else if (method_name == "cubature")    return CUBATURE_INTEGRATION;
-  else if (method_name == "quadrature")  return QUADRATURE_INTEGRATION;
-  else if (method_name == "sparse_grid") return SPARSE_GRID_INTEGRATION;
-  else if (method_name == "gpais")                 return GPAIS;
-  else if (method_name == "pof_darts")             return POF_DARTS;
-  else if (method_name == "rkd_darts")             return RKD_DARTS;
-  else if (method_name == "importance_sampling")   return IMPORTANCE_SAMPLING;
-  else if (method_name == "adaptive_sampling")     return ADAPTIVE_SAMPLING;
-  else if (method_name == "random_sampling")       return RANDOM_SAMPLING;
-  else if (method_name == "multilevel_sampling")   return MULTILEVEL_SAMPLING;
-  else if (method_name == "list_sampling")         return LIST_SAMPLING;
-  else if (method_name == "surrogate_based_local") return SURROGATE_BASED_LOCAL;
-  else if (method_name == "data_fit_surrogate_based_local")
-    return DATA_FIT_SURROGATE_BASED_LOCAL;
-  else if (method_name == "hierarch_surrogate_based_local")
-    return HIERARCH_SURROGATE_BASED_LOCAL;
-  else if (method_name == "surrogate_based_global")
-    return SURROGATE_BASED_GLOBAL;
-  else if (method_name == "efficient_global") return EFFICIENT_GLOBAL;
-  else if (method_name == "nonlinear_cg")     return NONLINEAR_CG;
-  else if (method_name == "genie_opt_darts")  return GENIE_OPT_DARTS;
-  else if (method_name == "genie_direct")     return GENIE_DIRECT;
-  else if (method_name == "optpp_g_newton")   return OPTPP_G_NEWTON;
-  else if (method_name == "optpp_q_newton")   return OPTPP_Q_NEWTON;
-  else if (method_name == "optpp_fd_newton")  return OPTPP_FD_NEWTON;
-  else if (method_name == "optpp_newton")     return OPTPP_NEWTON;
-  else if (method_name == "optpp_cg")         return OPTPP_CG;
-  else if (method_name == "optpp_pds")        return OPTPP_PDS;
-  else if (method_name == "asynch_pattern_search") return ASYNCH_PATTERN_SEARCH;
-  else if (method_name == "coliny_beta")      return COLINY_BETA;
-  else if (method_name == "coliny_cobyla")    return COLINY_COBYLA;
-  else if (method_name == "coliny_direct")    return COLINY_DIRECT;
-  else if (method_name == "coliny_ea")        return COLINY_EA;
-  else if (method_name == "coliny_pattern_search") return COLINY_PATTERN_SEARCH;
-  else if (method_name == "coliny_solis_wets")     return COLINY_SOLIS_WETS;
-  else if (method_name == "branch_and_bound")      return BRANCH_AND_BOUND;
-  else if (method_name == "moga")             return MOGA;
-  else if (method_name == "soga")             return SOGA;
-  else if (method_name == "dl_solver")        return DL_SOLVER;
-  else if (method_name == "mesh_adaptive_search")  return MESH_ADAPTIVE_SEARCH;
-  else if (method_name == "nowpac")           return MIT_NOWPAC;
-  else if (method_name == "snowpac")          return MIT_SNOWPAC;
-  else if (method_name == "npsol_sqp")        return NPSOL_SQP;
-  else if (method_name == "nlssol_sqp")       return NLSSOL_SQP;
-  else if (method_name == "nlpql_sqp")        return NLPQL_SQP;
-  else if (method_name == "nl2sol")           return NL2SOL;
-  //else if (method_name == "reduced_sqp")    return REDUCED_SQP;
-  else if (method_name == "dot_bfgs")         return DOT_BFGS;
-  else if (method_name == "dot_frcg")         return DOT_FRCG;
-  else if (method_name == "dot_mmfd")         return DOT_MMFD;
-  else if (method_name == "dot_slp")          return DOT_SLP;
-  else if (method_name == "dot_sqp")          return DOT_SQP;
-  else if (method_name == "conmin_frcg")      return CONMIN_FRCG;
-  else if (method_name == "conmin_mfd")       return CONMIN_MFD;
-  else if (method_name == "dace")             return DACE;
-  else if (method_name == "fsu_cvt")          return FSU_CVT;
-  else if (method_name == "fsu_halton")       return FSU_HALTON;
-  else if (method_name == "fsu_hammersley")   return FSU_HAMMERSLEY;
-  else if (method_name == "psuade_moat")      return PSUADE_MOAT;
-  else if (method_name == "ncsu_direct")      return NCSU_DIRECT;
-  else if (method_name == "genie_opt_darts")  return GENIE_OPT_DARTS;
-  else if (method_name == "genie_direct")     return GENIE_DIRECT;
-  else {
-    Cerr << "Invalid method conversion: " << method_name << " not available."
-	 << std::endl;
-    abort_handler(-1); return 0;
+  UShortStrBimap::right_const_iterator rc_iter = method_map.right.find(method_str);
+  if (rc_iter == method_map.right.end()) {
+    Cerr << "\nError: Invalid method_string_to_enum conversion: "
+	 << method_str << " not available." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  return rc_iter->second;
 }
 
 
-String Iterator::submethod_enum_to_string(unsigned short submethod_name) const
+String Iterator::submethod_enum_to_string(unsigned short submethod_enum) const
 {
-  switch (submethod_name) {
-  case SUBMETHOD_COLLABORATIVE: return String("collaborative"); break;
-  case SUBMETHOD_EMBEDDED: return String("embedded"); break;
-  case SUBMETHOD_SEQUENTIAL: return String("sequential"); break;
-  case SUBMETHOD_LHS: return String("lhs"); break;
-  case SUBMETHOD_RANDOM: return String("random"); break;
-  case SUBMETHOD_BOX_BEHNKEN: return String("box_behnken"); break;
-  case SUBMETHOD_CENTRAL_COMPOSITE: return String("central_composite"); break;
-  case SUBMETHOD_GRID: return String("grid"); break; 
-  case SUBMETHOD_OA_LHS: return String("oa_lhs"); break;
-  case SUBMETHOD_OAS: return String("oas"); break;
-  case SUBMETHOD_DREAM: return String("dream"); break;
-  case SUBMETHOD_WASABI: return String("wasabi"); break;
-  case SUBMETHOD_GPMSA: return String("gpmsa"); break;
-  case SUBMETHOD_QUESO: return String("queso"); break;
-  case SUBMETHOD_NIP: return String("nip"); break;
-  case SUBMETHOD_SQP: return String("sqp"); break;
-  case SUBMETHOD_EA: return String("ea"); break;
-  case SUBMETHOD_EGO: return String("ego"); break;
-  case SUBMETHOD_SBO: return String("sbo"); break;
-  case SUBMETHOD_CONVERGE_ORDER: return String("converge_order"); break; 
-  case SUBMETHOD_CONVERGE_QOI: return String("converge_qoi"); break;
-  case SUBMETHOD_ESTIMATE_ORDER: return String("estimate_order"); break;
-  default:
-    Cerr << "Invalid submethod conversion: case " << submethod_name
-	 << " not available." << std::endl;
-    abort_handler(-1); return String(); break;
+  UShortStrBimap::left_const_iterator lc_iter = submethod_map.left.find(submethod_enum);
+  if (lc_iter == submethod_map.left.end()) {
+    Cerr << "\nError: Invalid submethod_enum_to_string conversion: "
+	 << submethod_enum << " not available." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  return lc_iter->second;
 }
 
 
@@ -1006,7 +1064,7 @@ void Iterator::update_from_model(const Model& model)
   bestResponseArray.push_back(best_resp);
 
   //if (err_flag)
-  //  abort_handler(-1);
+  //  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1029,11 +1087,17 @@ void Iterator::run()
   if (iteratorRep)
     iteratorRep->run(); // envelope fwd to letter
   else {
-    // the same iterator might run multiple times, or need a unique ID due to
-    // name/id duplication, so increment execution number for this name/id pair
-    String method_string = method_enum_to_string(methodName);
-    execNum = ResultsID::instance().increment_id(method_string, method_id());
 
+    ++execNum;
+
+    if(evaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+      evaluationsDBState = evaluationsDB.iterator_allocate(method_id(), top_level());
+      if(evaluationsDBState == EvaluationsDBState::ACTIVE)
+        declare_sources();
+    }
+
+
+    String method_string = method_enum_to_string(methodName);
     initialize_run();
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
@@ -1059,6 +1123,7 @@ void Iterator::run()
     if (summaryOutputFlag)
       Cout << "\n<<<<< Iterator " << method_string <<" completed.\n";
     finalize_run();
+    resultsDB.flush();
   }
 }
 
@@ -1100,7 +1165,7 @@ void Iterator::core_run()
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual core_run() function."
 	 << "\nNo default iteration defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1194,9 +1259,18 @@ void Iterator::init_communicators(ParLevLIter pl_iter)
     // this Iterator and its underlying Model.  This may get appended
     // to by any runtime updates as eval ids change.
     eval_tag_prefix(parallelLib.output_manager().build_output_tag());
- }
+  }
 }
 
+bool Iterator::top_level() {
+  if(iteratorRep) return iteratorRep->top_level();
+  else return topLevel;
+}
+
+void Iterator::top_level(const bool &flag) {
+  if(iteratorRep) iteratorRep->top_level(flag);
+  else topLevel = flag;
+}
 
 void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {
@@ -1222,7 +1296,7 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
     if (map_iter == methodPCIterMap.end()) { // this config does not exist
       Cerr << "Error: failure in parallel configuration lookup in "
            << "Iterator::set_communicators() for pl_index = " << pl_index << "." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
     else
       methodPCIter = map_iter->second;
@@ -1292,7 +1366,7 @@ void Iterator::initialize_iterator(int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initialize_iterator virtual "
 	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1304,7 +1378,7 @@ void Iterator::pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine pack_parameters_buffer "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1317,7 +1391,7 @@ unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_parameters_buffer "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1330,7 +1404,7 @@ unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_parameters_initialize"
 	 << " virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1342,7 +1416,7 @@ void Iterator::pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine pack_results_buffer virtual "
 	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1355,7 +1429,7 @@ unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_results_buffer "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1367,7 +1441,7 @@ void Iterator::update_local_results(int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine update_local_results "
 	 << "virtual  fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1412,6 +1486,19 @@ void Iterator::response_results_active_set(const ActiveSet& set)
 }
 
 
+const RealVector& Iterator::response_error_estimates() const
+{
+  // no default implementation if no override
+  if (!iteratorRep) {
+    Cerr << "Error: letter class does not redefine response_error_estimates "
+	 << "virtual fn.\nNo default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  
+  return iteratorRep->response_error_estimates(); // envelope fwd to letter
+}
+
+
 bool Iterator::accepts_multiple_points() const
 {
   if (iteratorRep) // envelope fwd to letter
@@ -1437,7 +1524,7 @@ void Iterator::initial_points(const VariablesArray& pts)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initial_points virtual fn.\n"
 	 << "No default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1447,7 +1534,7 @@ const VariablesArray& Iterator::initial_points() const
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initial_points "
             "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->initial_points(); // envelope fwd to letter
@@ -1505,10 +1592,10 @@ void Iterator::initialize_graphics(int iterator_server_id)
 
 /** This virtual function provides additional iterator-specific final results
     outputs beyond the function evaluation summary printed in finalize_run(). */
-void Iterator::print_results(std::ostream& s)
+void Iterator::print_results(std::ostream& s, short results_state)
 {
   if (iteratorRep)
-    iteratorRep->print_results(s); // envelope fwd to letter
+    iteratorRep->print_results(s, results_state); // envelope fwd to letter
   // else default base class output is nothing additional beyond the fn
   // evaluation summary printed in finalize_run()
 }
@@ -1531,7 +1618,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine sampling_reset() virtual "
          << "fn.\nThis iterator does not support sampling." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1544,7 +1631,7 @@ sampling_reference(int samples_ref)
     Cerr << "Error: letter class does not redefine sampling_reference() "
 	 << "virtual fn.\nThis iterator does not support sampling."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1557,7 +1644,7 @@ sampling_increment()
     Cerr << "Error: letter class does not redefine sampling_increment() "
 	 << "virtual fn.\nThis iterator does not support incremental sampling."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1566,7 +1653,7 @@ unsigned short Iterator::sampling_scheme() const
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine sampling_scheme() virtual "
          << "fn.\nThis iterator does not support sampling." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->sampling_scheme(); // envelope fwd to letter
@@ -1579,7 +1666,7 @@ const Model& Iterator::algorithm_space_model() const
     Cerr << "Error: letter class does not redefine algorithm_space_model() "
          << "virtual fn.\nThis iterator does not support a single model "
 	 << "instance." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
   else // envelope fwd to letter
     return iteratorRep->algorithm_space_model();
@@ -1611,7 +1698,7 @@ void Iterator::method_recourse()
   else { // default definition (letter lacking redefinition of virtual fn.)
     Cerr << "Error: no method recourse defined for detected method conflict.\n"
 	 << "       Please revise method selections." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1622,7 +1709,7 @@ const VariablesArray& Iterator::all_variables()
     Cerr << "Error: letter class does not redefine all_variables() virtual fn."
          << "\n       This iterator does not support variables histories."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->all_variables(); // envelope fwd to letter
@@ -1635,7 +1722,7 @@ const RealMatrix& Iterator::all_samples()
     Cerr << "Error: letter class does not redefine all_samples() virtual fn."
          << "\n       This iterator does not support sample histories."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->all_samples(); // envelope fwd to letter
@@ -1648,7 +1735,7 @@ const IntResponseMap& Iterator::all_responses() const
     Cerr << "Error: letter class does not redefine all_responses() virtual fn."
          << "\n       This iterator does not support response histories."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->all_responses(); // envelope fwd to letter
@@ -1679,6 +1766,24 @@ void Iterator::sub_iterator_flag(bool si_flag)
     // enable summary output for verbose sub-iterators
     summaryOutputFlag = (subIteratorFlag && outputLevel > NORMAL_OUTPUT);
   }
+}
+
+
+void Iterator::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  if (iteratorRep)
+    iteratorRep->
+      nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
+			       c_target2, di_target2, ds_target2, dr_target2);
+  //else no-op
 }
 
 
@@ -1731,7 +1836,7 @@ void Iterator::post_input()
 	// this should be unreachable due to command-line parsing
 	Cerr << "\nError: method " << method_enum_to_string(methodName)
 	     << " does not support post-run file input." << std::endl;
-	abort_handler(-1);
+	abort_handler(METHOD_ERROR);
       }
     }
   }
@@ -1746,6 +1851,30 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
     iteratorRep->eval_tag_prefix(eval_id_str);
   else
     iteratedModel.eval_tag_prefix(eval_id_str);
+}
+
+/** Rationale: The parser allows multiple user-specified methods with
+    empty (unspecified) ID. However, only a single Iterator with empty
+    ID can be constructed (if it's the only one present, or the "last
+    one parsed"). Therefore decided to prefer NO_METHOD_ID over NO_METHOD_ID_<num>
+    for (partial) consistency with interface NO_ID convention. The addition of
+    _METHOD_ is it distinguish methods, models and interfaces in the HDF5 output. */
+String Iterator::user_auto_id()
+{
+  // // increment and then use the current ID value
+  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  return String("NO_METHOD_ID");
+}
+
+/** Rationale: For now NOSPEC_METHOD_ID_ is chosen due to historical
+    id="NO_SPECIFICATION" used for internally-constructed
+    Iterators. Longer-term, consider auto-generating an ID that
+    includes the context from which the method is constructed, e.g.,
+    the parent method or model's ID, together with its name. */
+String Iterator::no_spec_id()
+{
+  // increment and then use the current ID value
+  return String("NOSPEC_METHOD_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
 }
 
 } // namespace Dakota

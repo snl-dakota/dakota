@@ -1,0 +1,71 @@
+#@ s3: DakotaConfig=HAVE_NLPQL
+#@ s4: DakotaConfig=HAVE_NPSOL
+#@ s5: DakotaConfig=HAVE_ROL
+#@ s11: DakotaConfig=HAVE_ROL
+#@ s17: DakotaConfig=HAVE_ROL
+## DAKOTA INPUT FILE - dakota_rosenbrock_ext.in
+
+environment,
+	tabular_data
+	tabular_data_file = 'dakota_rosenbrock_2d_conmin.dat'		#s0
+#	tabular_data_file = 'dakota_rosenbrock_2d_optppcg.dat' 	#s1
+#	tabular_data_file = 'dakota_rosenbrock_2d_optppqn.dat' 	#s2
+#	tabular_data_file = 'dakota_rosenbrock_2d_nlpql.dat' 		#s3
+#	tabular_data_file = 'dakota_rosenbrock_2d_npsol.dat' 		#s4
+#	tabular_data_file = 'dakota_rosenbrock_2d_rol.dat' 		#s5
+
+
+#	tabular_data_file = 'dakota_rosenbrock_10d_conmin.dat'	#s6
+#	tabular_data_file = 'dakota_rosenbrock_10d_optppcg.dat' 	#s7
+#	tabular_data_file = 'dakota_rosenbrock_10d_optppqn.dat' 	#s8
+#	tabular_data_file = 'dakota_rosenbrock_10d_nlpql.dat' 	#s9
+#	tabular_data_file = 'dakota_rosenbrock_10d_npsol.dat' 	#s10
+#	tabular_data_file = 'dakota_rosenbrock_10d_rol.dat' 		#s11
+
+#	tabular_data_file = 'dakota_rosenbrock_100d_conmin.dat'	#s12
+#	tabular_data_file = 'dakota_rosenbrock_100d_optppcg.dat'	#s13
+#	tabular_data_file = 'dakota_rosenbrock_100d_optppqn.dat'	#s14
+#	tabular_data_file = 'dakota_rosenbrock_100d_nlpql.dat' 	#s15
+#	tabular_data_file = 'dakota_rosenbrock_100d_npsol.dat' 	#s16
+#	tabular_data_file = 'dakota_rosenbrock_100d_rol.dat' 		#s17
+
+method,
+	conmin_frcg                      #s0,#s6,#s12
+#	optpp_cg									#s1,#s7,#s13
+#	optpp_q_newton							#s2,#s8,#s14
+#	nlpql										#s3,#s9,#s15
+#	npsol										#s4,#s10,#s16
+#	rol									#s5,#s11,#s17
+#	  variable_tolerance = 1.e-5			#s5,#s11,#s17
+	  max_iterations = 500
+#	  convergence_tolerance = 1e-5	#s0,#s2,#s3,#s4
+#	  convergence_tolerance = 1e-5	#s6,#s8,#s9,#s10
+#	  convergence_tolerance = 1e-5	#s12,#s14,#s15,#s16
+#	  convergence_tolerance = 1e-7	#s1,#s7,#s13 # opt++cg tighter tolerance
+
+variables,					
+	continuous_design = 2					#s0,#s1,#s2,#s3,#s4,#s5
+	initial_point       -1.9,  2.0		#s0,#s1,#s2,#s3,#s4,#s5
+	lower_bounds        -2.0, -2.0		#s0,#s2,#s3,#s4,#s5
+	upper_bounds         2.0,  2.0		#s0,#s2,#s3,#s4,#s5
+#
+#	continuous_design = 10					#s6,#s7,#s8,#s9,#s10,#s11
+#	initial_point  -1.9, 2.0, 8 * 0.0	#s6,#s7,#s8,#s9,#s10,#s11
+#	lower_bounds        10 * -2.048		#s6,#s8,#s9,#s10,#s11
+#	upper_bounds        10 *  2.048		#s6,#s8,#s9,#s10,#s11
+#
+#	continuous_design = 100					#s12,#s13,#s14,#s15,#s16,#s17
+#	initial_point -1.9, 2.0, 98 * 0.0	#s12,#s13,#s14,#s15,#s16,#s17
+#	lower_bounds        100 * -2.048		#s12,#s14,#s15,#s16,#s17
+#	upper_bounds        100 *  2.048		#s12,#s14,#s15,#s16,#s17
+
+interface,
+	direct
+	  analysis_driver = 'extended_rosenbrock'
+#	  analysis_driver = 'generalized_rosenbrock'
+	  deactivate active_set_vector
+
+responses,
+	objective_functions = 1
+	analytic_gradients
+	no_hessians

@@ -17,6 +17,7 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaActiveSet.hpp"
 #include "dakota_data_util.hpp"
+#include "dakota_data_io.hpp"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/export.hpp>
@@ -37,7 +38,8 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   primaryFnType(GENERIC_FNS),
   responsesId(problem_db.get_string("responses.id")), 
-  functionLabels(problem_db.get_sa("responses.labels"))
+  functionLabels(problem_db.get_sa("responses.labels")),
+  simulationVariance(problem_db.get_rv("responses.simulation_variance"))
 {
   // scalar response data types:
   size_t num_scalar_resp_fns
@@ -91,6 +93,13 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
 		      fieldLabels);
     // unroll field response groups to create individual function labels
     fieldRespGroupLengths = problem_db.get_iv("responses.lengths");
+    if (num_field_responses != fieldRespGroupLengths.length()) {
+      Cerr << "Error: For each field response, you must specify " 
+           << "the length of that field.  The number of elements " 
+           << "in the 'lengths' vector must " 
+           << "equal the number of field responses."  << std::endl;
+      abort_handler(-1);
+    } 
     build_field_labels();
   } 
   else if (numScalarResponses) {
@@ -109,6 +118,13 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   else
     Cerr << "Warning: total number of response functions is zero.  This is "
 	 << "admissible in rare cases (e.g., nested overlays)." << std::endl;
+  
+  if (  simulationVariance.length() != 0 && simulationVariance.length() != 1 && 
+        simulationVariance.length() != num_total_responses) {
+    Cerr << "Error: simulation_variance must have length equal to 1 or "
+         << "the total number of calibration terms." << std::endl;
+    abort_handler(-1);
+  }
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedResponseDataRep::SharedResponseDataRep(problem_db) "
@@ -150,6 +166,8 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   fieldRespGroupLengths = srd_rep->fieldRespGroupLengths;
 
   numCoordsPerField     = srd_rep->numCoordsPerField;
+
+  simulationVariance 	= srd_rep->simulationVariance;
 }
 
 
@@ -203,7 +221,6 @@ void SharedResponseDataRep::build_field_labels()
       build_label(functionLabels[unrolled_index++], fieldLabels[i], j+1, "_");
 }
 
-
 /** Deep copies are used when recasting changes the nature of a
     Response set. */
 SharedResponseData SharedResponseData::copy() const
@@ -251,10 +268,40 @@ void SharedResponseData::reshape(size_t num_fns)
     //}
 
     // reshape function labels
-    srdRep->functionLabels.resize(num_fns);
-    build_labels(srdRep->functionLabels, "f");
+    reshape_labels(srdRep->functionLabels, num_fns);
     // update scalar counts (update of field counts requires addtnl data)
     srdRep->numScalarResponses = num_fns - num_field_functions();
+  }
+}
+
+
+void SharedResponseData::
+reshape_labels(StringArray& resp_labels, size_t num_new)
+{
+  // Replicate or prune response labels to meet new size.
+  // Could consider adding / deleting additional level annotation,
+  // e.g. "response_fn_i" --> "response_fn_i_lev_j".
+  size_t num_curr = resp_labels.size();
+  bool overwrite = false;
+  if (num_new > num_curr) {
+    if (num_new % num_curr) // not a growth factor
+      overwrite = true;
+    else { // inflate using set replication (no added annotation)
+      resp_labels.resize(num_new);
+      for (size_t i=num_curr; i<num_new; ++i)
+	resp_labels[i] = resp_labels[i % num_curr];
+    }
+  }
+  else if (num_curr > num_new) {
+    if (num_curr % num_new)
+      overwrite = true;
+    else // deflate by concatenation (no annotation to remove)
+      resp_labels.resize(num_new);
+  }
+
+  if (overwrite) { // last resort
+    resp_labels.resize(num_new);
+    build_labels(resp_labels, "f");
   }
 }
 

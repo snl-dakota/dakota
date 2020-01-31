@@ -2,13 +2,12 @@ namespace Dakota { // for some reason, this doesn't work with mainpage
 
 /** \mainpage Dakota Developers Manual
 
-\image html logo_3d_halfsize.jpg
-
-\author Brian M. Adams, William J. Bohnhoff, Keith
-R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Gianluca Geraci,
-Russell W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman,
-Kathryn A. Maupin, Jason A. Monschke, Elliott M. Ridgway, Ahmad Rushdi, Laura P.
-Swiler, J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey
+\author Brian M. Adams, William J. Bohnhoff, Keith R. Dalbey, Mohamed
+S. Ebeida, John P. Eddy, Michael S. Eldred, Gianluca Geraci, Russell
+W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman, Mohammad
+Khalil, Kathryn A. Maupin, Jason A. Monschke, Elliott M. Ridgway,
+Ahmad A. Rushdi, J. Adam Stephens, Laura P. Swiler, Dena M. Vigil,
+Timothy M. Wildey
 
 \htmlonly
 <b>Main Page Table of Contents</b>
@@ -562,6 +561,7 @@ specific development activities:
     in performing function evaluations synchronously or asynchronously.
 \li \ref VarContainersViews - discussion of data storage for variables
     and explanation of active and inactive views of this data.
+\li \ref demotpl - a README for bringing a new Third-Party Library (TPL) into Dakota
 
 
 \section DevAddtnl Additional Resources
@@ -569,11 +569,14 @@ specific development activities:
 Additional development resources include:
 
 \li The %Dakota Developer Portal linked from
-    http://dakota.sandia.gov/developer/ includes information on getting 
+    http://dakota.sandia.gov/content/developer-portal/ includes information on getting 
     started as a developer and links to project management resources.
 \li Project web pages are maintained at http://dakota.sandia.gov/ including
     links to frequently asked questions, documentation, publications, mailing 
     lists, and other resources.
+\li A Quickstart for bringing a new Third-Party Library (TPL) into Dakota
+    can be found in the Dakota source tree under
+    $DAKOTA_SRC/packages/external/demo_tpl/README.md .
 
 */
 

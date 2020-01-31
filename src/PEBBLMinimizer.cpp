@@ -1,3 +1,11 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 #include "PEBBLMinimizer.hpp"
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
@@ -6,7 +14,8 @@ namespace Dakota
 {
 extern PRPCache data_pairs; // global container
 
-PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minimizer(problem_db, model)
+PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model):
+  Minimizer(problem_db, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
@@ -48,12 +57,12 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minim
 }
 
 PebbldMinimizer::PebbldMinimizer(Model &model)
-	: Minimizer(BRANCH_AND_BOUND, model) 
+	: Minimizer(BRANCH_AND_BOUND, model, std::shared_ptr<TraitsBase>(new PebbldTraits())) 
 {//branchAndBound(model)
 };
 
 PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, int max_iter, int max_eval) 
-       : Minimizer(BRANCH_AND_BOUND, model)
+       : Minimizer(BRANCH_AND_BOUND, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {//branchAndBound(model,random_seed, max_iter, max_eval)
 };
 
@@ -77,7 +86,7 @@ void PebbldMinimizer::core_run()
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void PebbldMinimizer::print_results(std::ostream& s)
+void PebbldMinimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
@@ -85,9 +94,6 @@ void PebbldMinimizer::print_results(std::ostream& s)
          << std::endl;
     abort_handler(-1); 
   } 
-
-  // initialize the results archive for this dataset
-  archive_allocate_best(num_best);
 
   const String& interface_id = iteratedModel.interface_id();
   int eval_id;
@@ -106,25 +112,30 @@ void PebbldMinimizer::print_results(std::ostream& s)
     if (optimizationFlag) {
       if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions ";
       else                       s << "<<<<< Best objective function  ";
+      if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
+      write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
     }
-    else
-      s << "<<<<< Best residual terms      ";
-    if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
-    write_data_partial(s, (size_t)0, numUserPrimaryFns, best_fns);
+    else 
+      print_residuals(numUserPrimaryFns, best_fns,
+                              RealVector(),
+                              num_best, i,
+                              s);
     size_t num_cons = numFunctions - numUserPrimaryFns;
-    //    if (num_cons) {
-    //      s << "<<<<< Best constraint values   ";
-    //      if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
-    //      write_data_partial(s, numUserPrimaryFns, num_cons, best_fns);
-    //    }
+    //        if (num_cons) {
+    //          s << "<<<<< Best constraint values   ";
+    //          if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n";
+    //         write_data_partial(s, numUserPrimaryFns, num_cons, best_fns);
+    //        }
     // lookup evaluation id where best occurred.  This cannot be catalogued 
     // directly because the optimizers track the best iterate internally and 
     // return the best results after iteration completion.  Therfore, perform a
     // search in data_pairs to extract the evalId for the best fn eval.
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
 					   bestVariablesArray[i], activeSet);
-    if (cache_it == data_pairs.get<hashed>().end())
+    if (cache_it == data_pairs.get<hashed>().end()) {
       s << "<<<<< Best data not found in evaluation cache\n\n";
+      eval_id = 0;
+    }
     else {
       eval_id = cache_it->eval_id();
       if (eval_id > 0)
@@ -135,10 +146,6 @@ void PebbldMinimizer::print_results(std::ostream& s)
 	  << "\n      but retrieved from restart archive with evaluation id "
 	  << -eval_id << "\n\n";
     }
-
-    // pass data to the results archive
-    archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
-
   }
 }
 

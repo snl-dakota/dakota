@@ -10,6 +10,16 @@ model-surrogate-global-gaussian_process-surfpack keyword.
 An alternate version of GP surrogates was available in prior versions of
 Dakota. <b> For now, both versions are supported but the \c dakota version is 
 deprecated and intended to be removed in a future release. </b>
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
+
 
 Topics::	
 Examples::

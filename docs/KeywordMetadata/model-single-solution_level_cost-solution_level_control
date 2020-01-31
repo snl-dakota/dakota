@@ -1,0 +1,62 @@
+Blurb::
+Cost estimates associated with a set of solution control values.
+
+Description:: 
+Simulation-based models may have an associated \c solution_level_control,
+which identifies a hierarchy of solution states, such as a set of mesh
+discretizations from coarse to fine, a set of solver tolerances from
+loose to tight, etc.  The string specified as the \c solution_level_control 
+identifies a discrete variable label that parameterizes the hierarchy 
+of solution states.
+
+<b>Note:</b> If the discrete variable identified is a discrete set variable,
+then it is important to note that the variable's set values will be ordered
+(lexicographically in the case of string variables), and the ordering
+of values provided in \c solution_level_cost should correspond to this
+set ordering.  A common error is to provide a listing of 
+set values that is out of order and then providing a set of costs 
+corresponding to this misordered list -- in this case, the solution level 
+costs will be associated with the re-ordered set values.
+
+Topics::
+
+Examples::
+In this example, integer solution control values and solution costs are 
+naturally well ordered.
+\verbatim
+model,
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 1. 8. 64. 512. 4096.
+
+variables,
+	uniform_uncertain = 9
+	  lower_bounds      =  9*-1.
+	  upper_bounds      =  9* 1.
+	discrete_state_set
+	  integer = 1
+      	  set_values = 4 8 16 32 64
+      	  descriptors = 'mesh_size'
+\endverbatim
+
+In this example, string solution control values are lexicographically 
+ordered, and care must be taken to align the solution cost estimates.
+\verbatim
+model,
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 1. 64. 8.	# match set ordering
+
+variables,
+	uniform_uncertain = 9
+	  lower_bounds      =  9*-1.
+	  upper_bounds      =  9* 1.
+	discrete_state_set
+	  string = 1
+      	  set_values = 'COARSE' 'FINE' 'MEDIUM'	# lexicographical ordering
+      	  descriptors = 'mesh_size'
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

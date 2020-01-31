@@ -35,6 +35,7 @@ function(dakota_add_unit_test)
 
 endfunction()
 
+  
 
 # Add file to list of unit test dependency files for addition to
 # higher level target.  This is a macro to make it simpler to set the
@@ -43,3 +44,18 @@ macro(dakota_copy_test_file src_file dest_file dep_files_variable)
   add_file_copy_command(${src_file} ${dest_file})
   list(APPEND ${dep_files_variable} ${dest_file})
 endmacro()
+
+
+# Add the python unittest script and Dakota input file for an h5py
+# test
+macro(dakota_add_h5py_test TEST_NAME)
+  dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/hdf5_${TEST_NAME}.py
+    ${CMAKE_CURRENT_BINARY_DIR}/hdf5_${TEST_NAME}.py dakota_unit_test_copied_files)
+  dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/dakota_hdf5_${TEST_NAME}.in
+    ${CMAKE_CURRENT_BINARY_DIR}/dakota_hdf5_${TEST_NAME}.in dakota_unit_test_copied_files)
+
+  add_test(NAME dakota_hdf5_${TEST_NAME}_test 
+    COMMAND ${PYTHON_EXECUTABLE} -B hdf5_${TEST_NAME}.py --bindir $<TARGET_FILE_DIR:dakota>
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_property(TEST dakota_hdf5_${TEST_NAME}_test PROPERTY LABELS UnitTest)
+endmacro() 

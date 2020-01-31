@@ -1,5 +1,6 @@
 #@ *: Label=Experimental
 #@ *: DakotaConfig=HAVE_QUESO
+#@ s*: TimeoutAbsolute=3600
 #@ s1: ReqFiles=dakota_bayes_expdesign.dat
 #@ s2: ReqFiles=dakota_bayes_expdesign.dat,dakota_bayes_expdesign.cand.dat
 #@ s2: UserMan=bayes_experimental_design
@@ -11,22 +12,33 @@
 # while x is the configuration variable. See Section 4.1 of the JCP paper
 # "An information theoretic approach to use high-fidelity codes to
 # calibration low-fidelity codes" by Lewis, et al, published in 2016.  
+#
+# s3 and s4: Second-order diffs due to changes in Boost versions are 
+# expected. These changes occur in boost/random/normal_distribution.hpp. 
+# Baseline uses Boost 1.53.0. Platforms using 1.58.0 are known to diff. 
+# Moments of posterior parameter and response distributions in s3 and s4 
+# should differ from those in s0; baselines for these tests can be 
+# updated as the variate generator is udpated.
 
 environment
   tabular_data
 
 method,
-       bayes_calibration queso
 #          #output debug						#s1
+       bayes_calibration queso
           dram
 	  seed = 34785				
           chain_samples = 500
           experimental_design
           initial_samples = 2
-	  num_candidates = 2
+	  num_candidates = 2				#s0,#s1,#s2,#s3,#s4
+#	  num_candidates = 5				#s5
+# 	  batch_size = 2				#s5
 #	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
 #		freeform						#s2
-	  max_hifi_evaluations = 1
+#	  #ksg2						#s2
+	  max_hifi_evaluations = 1			#s0,#s1,#s2,#s3,#s4
+#	  max_hifi_evaluations = 3			#s5
           model_pointer = 'HIERARCH'
  
 model,
@@ -60,6 +72,8 @@ variables,
 
 variables,
 	id_variables = 'CONFIG_VARS'
+# MSE: for hierarchical model self-consistency, would prefer to leave state
+#      as inactive and have zero active vars
 	active state
 	continuous_state = 1                                   
           upper_bounds = 70
@@ -69,19 +83,20 @@ interface,
         id_interface = 'hifi_IF'
         analysis_drivers = 'expdesign_high'
           fork
-        asynchronous evaluation_concurrency=2              #s0
+        asynchronous evaluation_concurrency=2              #s0,#s3,#s4,#s5
 
 interface,
         id_interface = 'lofi_IF'
         analysis_drivers = 'expdesign_low'
           fork 
-        asynchronous evaluation_concurrency=4              #s0
+        asynchronous evaluation_concurrency=4              #s0,#s3,#s4,#s5
 
 responses,
  	id_responses = 'lofi_resp'
         calibration_terms = 1
 	no_gradients	
 	no_hessians
+#	simulation_variance = 130			#s3
 
 responses,
  	id_responses = 'hifi_resp'
@@ -91,9 +106,9 @@ responses,
 #	  num_config_variables = 1				#s1,#s2
 #	  num_experiments = 2				        #s2	
 #	  num_experiments = 1					#s1
-#	  variance_type = 'none'				#s1,#s2
-	  #variance_type = 'scalar'
+#	  experiment_variance_type = 'none'			#s1,#s2
 	no_gradients	
 	no_hessians
+#	simulation_variance = 0.5			#s4
 
 

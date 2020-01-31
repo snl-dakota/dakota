@@ -14,7 +14,6 @@
 #include "dakota_system_defs.hpp"
 #include "NL2SOLLeastSq.hpp"
 #include "ProblemDescDB.hpp"
-#include <boost/math/special_functions/fpclassify.hpp>
 
 
 // We use statistical notation:  p is the number of parameters being estimated
@@ -27,17 +26,17 @@ NL2SOLLeastSq* NL2SOLLeastSq::nl2solInstance(NULL);
 
 
 NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model):
-  LeastSq(problem_db, model),
+  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NL2SOLLeastSqTraits())),
   // output controls
   auxprt(31), outlev(1), // normal/verbose/debug
   // finite differencing
   dltfdj(0.), delta0(0.), dltfdc(0.),
   // max limits
   mxfcal(maxFunctionEvals), mxiter(maxIterations),
-  // convergence tolerances
-  rfctol( convergenceTol ),
+  // convergence tolerances (-1.0 triggers NL2SOL default tolerances)
+  rfctol( (convergenceTol < -1.0) ? 1.0e-4 : convergenceTol ),
   afctol( probDescDB.get_real("method.nl2sol.absolute_conv_tol") ),
-  xctol(  probDescDB.get_real("method.nl2sol.x_conv_tol") ),
+  xctol(  probDescDB.get_real("method.x_conv_tol") ),
   sctol(  probDescDB.get_real("method.nl2sol.singular_conv_tol") ),
   lmaxs(  probDescDB.get_real("method.nl2sol.singular_radius") ),
   xftol(  probDescDB.get_real("method.nl2sol.false_conv_tol") ),
@@ -64,7 +63,8 @@ NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NL2SOLLeastSq::NL2SOLLeastSq(Model& model): LeastSq(NL2SOL, model),
+NL2SOLLeastSq::NL2SOLLeastSq(Model& model) :
+  LeastSq(NL2SOL, model, std::shared_ptr<TraitsBase>(new NL2SOLLeastSqTraits())),
   // output controls
   auxprt(31), outlev(1), // normal/verbose/debug
   // finite differencing
@@ -184,7 +184,7 @@ hasnaninf(const double *d, int n)
 void NL2SOLLeastSq::
 calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui, void *ur, Vf vf)
 {
-  using boost::math::isfinite;
+  using std::isfinite;
 
   int i, ic, j, k, n = *np, nf = *nfp, nfc, p = *pp, spec;
   Nl2Misc *q = (Nl2Misc*)ur;
@@ -248,7 +248,7 @@ calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui, void *ur, Vf vf)
 void NL2SOLLeastSq::
 calcj(int *np, int *pp, Real *x, int *nfp, Real *J, int *ui, void *ur, Vf vf)
 {
-  using boost::math::isfinite;
+  using std::isfinite;
 
   int i, j, k, n = *np, nf = *nfp, p = *pp;
   Nl2Misc *q = (Nl2Misc*)ur;
@@ -462,9 +462,9 @@ void NL2SOLLeastSq::core_run()
   else
     dn2g_(&n, &p, x, calcr, calcj, iv, &liv, &lv, v, 0, &q, 0);
 
-  RealVector xd(p);
-  copy_data(x, p, xd);
-  bestVariablesArray.front().continuous_variables(xd);
+  // Always populate bestVariables; DakotaLeastSq will unscale if needed
+  copy_data(x, p, bestVariablesArray.front().continuous_variables_view());
+
   R = 0;
   for(i = 0; i < 4; ++i)
 	if (q.RC[i].nf > 0 && !memcmp(x, q.RC[i].x, p*sizeof(Real))) {
@@ -476,13 +476,10 @@ void NL2SOLLeastSq::core_run()
 	calcr(&n, &p, x, &i, q.RC[0].r, 0, &q, 0);
 	R = q.RC[0].r;
 	}
-  // If no interpolation, numUserPrimaryFns <= numLsqTerms.  Copy the
-  // first block of inbound model fns to best.  If data transform,
-  // will be further transformed back to user space (weights, scale,
-  // data) if needed in LeastSq::post_run
-  if ( !(calibrationDataFlag && expData.interpolate_flag()) )
-    for (size_t i=0; i<numUserPrimaryFns; ++i)
-      bestResponseArray.front().function_value(R[i], i);
+
+  // Always cache best iterator functions
+  copy_data(R, numLeastSqTerms, bestIterPriFns);
+  retrievedIterPriFns = true;
 
   free(x);
 

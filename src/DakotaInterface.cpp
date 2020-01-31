@@ -49,6 +49,9 @@
 
 namespace Dakota {
 
+// Initialization of static interface ID counters
+size_t Interface::noSpecIdNum = 0;
+
 
 /** This constructor is the one which must build the base class data for all
     inherited interfaces.  get_interface() instantiates a derived class letter
@@ -59,7 +62,10 @@ namespace Dakota {
     pointer causes problems in ~Interface). */
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_ushort("interface.type")),
-  interfaceId(problem_db.get_string("interface.id")), algebraicMappings(false),
+  interfaceId(problem_db.get_string("interface.id")), 
+  analysisComponents(
+    problem_db.get_s2a("interface.application.analysis_components")),
+  algebraicMappings(false),
   coreMappings(true), outputLevel(problem_db.get_short("method.output")),
   currEvalId(0), fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT),
   evalIdCntr(0), newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0),
@@ -71,7 +77,8 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
 #endif // DEBUG
-
+  if(interfaceId.empty())
+      interfaceId = user_auto_id();
   // Process the algebraic_mappings file (an AMPL .nl file) to get the number
   // of variables/responses (currently, the tags are converted to index arrays
   // at evaluation time, using the passed vars and response).
@@ -166,7 +173,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
 
 Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
-  interfaceId("NO_SPECIFICATION"), algebraicMappings(false), coreMappings(true),
+  interfaceId(no_spec_id()), algebraicMappings(false), coreMappings(true),
   outputLevel(output_level), currEvalId(0), 
   fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
   newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
@@ -494,14 +501,14 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 
     // standard evaluation summary
     if (minimal_header) {
-      if (interfaceId.empty())
+      if (interfaceId.empty() || interfaceId == "NO_ID")
 	s << "  Interface evaluations";
       else
 	s << "  " << interfaceId << " evaluations";
     }
     else {
       s << "<<<<< Function evaluation summary";
-      if (!interfaceId.empty())
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
 	s << " (" << interfaceId << ')';
     }
     int     fn_evals = (relative_count) ? evalIdCntr - evalIdRefPt
@@ -1024,12 +1031,43 @@ int Interface::recommended_points(bool constraint_flag) const
 }
 
 
+void Interface::active_model_key(const UShortArray& mi_key)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->active_model_key(mi_key);
+  // else: default implementation is no-op
+}
+
+
+void Interface::clear_model_keys()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->clear_model_keys();
+  // else: default implementation is no-op
+}
+
+
 void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->approximation_function_indices(approx_fn_indices);
   // else: default implementation is no-op
 }
+
+
+/*
+void Interface::link_multilevel_approximation_data()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->link_multilevel_approximation_data();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual link_multilevel_"
+	 << "approximation_data() function.\n       This interface does not "
+	 << "support multilevel data." << std::endl;
+    abort_handler(-1);
+  }
+}
+*/
 
 
 void Interface::
@@ -1134,8 +1172,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 }
 
-void Interface::
-export_approximation()
+void Interface::export_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->export_approximation();
@@ -1161,10 +1198,10 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
 }
 
 
-void Interface::pop_approximation(bool save_surr_data)
+void Interface::pop_approximation(bool save_data)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->pop_approximation(save_surr_data);
+    interfaceRep->pop_approximation(save_data);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
 	 << "(bool)\n       function. This interface does not support "
@@ -1212,49 +1249,19 @@ void Interface::finalize_approximation()
 }
 
 
-void Interface::store_approximation(size_t index)
+void Interface::clear_inactive()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->store_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
-	 << "() function.\n       This interface does not support approximation"
-	 << " storage." << std::endl;
-    abort_handler(-1);
-  }
+    interfaceRep->clear_inactive();
+  //else // letter lacking redefinition of virtual fn.
+  //  default: no inactive data to clear
 }
 
 
-void Interface::restore_approximation(size_t index)
+void Interface::combine_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->restore_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximation storage." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Interface::remove_stored_approximation(size_t index)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->remove_stored_approximation(index);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual remove_stored_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximation storage." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Interface::combine_approximation(short corr_type)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->combine_approximation(corr_type);
+    interfaceRep->combine_approximation();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
 	 << "approximation() function.\n       This interface does not "
@@ -1262,6 +1269,20 @@ void Interface::combine_approximation(short corr_type)
     abort_handler(-1);
   }
 }
+
+
+void Interface::combined_to_active(bool clear_combined)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->combined_to_active(clear_combined);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
+	 << " function.\n       This interface does not support approximation"
+	 << " combination." << std::endl;
+    abort_handler(-1);
+  }
+}
+
 
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
@@ -1291,33 +1312,21 @@ RealArray Interface::challenge_diagnostics(const String& metric_type,
 }
 
 
-void Interface::clear_current()
+void Interface::clear_current_active_data()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_current();
-  else { // letter lacking redefinition of virtual fn.
+    interfaceRep->clear_current_active_data();
+  //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
-  }
 }
 
 
-void Interface::clear_all()
+void Interface::clear_active_data()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_all();
-  else { // letter lacking redefinition of virtual fn.
+    interfaceRep->clear_active_data();
+  //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
-  }
-}
-
-
-void Interface::clear_popped()
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_popped();
-  else { // letter lacking redefinition of virtual fn.
-    // ApplicationInterfaces: do nothing
-  }
 }
 
 
@@ -1349,7 +1358,7 @@ std::vector<Approximation>& Interface::approximations()
 }
 
 
-const Pecos::SurrogateData& Interface::approximation_data(size_t index)
+const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
@@ -1357,9 +1366,9 @@ const Pecos::SurrogateData& Interface::approximation_data(size_t index)
 	 << std::endl;
     abort_handler(-1);
   }
-  
+
   // envelope fwd to letter
-  return interfaceRep->approximation_data(index);
+  return interfaceRep->approximation_data(fn_index);
 }
 
 
@@ -1371,7 +1380,7 @@ const RealVectorArray& Interface::approximation_coefficients(bool normalized)
          << "approximations." << std::endl;
     abort_handler(-1);
   }
-  
+
   // envelope fwd to letter
   return interfaceRep->approximation_coefficients(normalized);
 }
@@ -1418,6 +1427,12 @@ const StringArray& Interface::analysis_drivers() const
   return interfaceRep->analysis_drivers();
 }
 
+const String2DArray & Interface::analysis_components() const
+{
+  if(interfaceRep)
+    return interfaceRep->analysis_components();
+  return analysisComponents;
+}
 
 bool Interface::evaluation_cache() const
 {
@@ -1444,4 +1459,29 @@ void Interface::file_cleanup() const
   // else no-op
 }
 
+/** Rationale: The parser allows multiple user-specified interfaces with
+    empty (unspecified) ID. However, only a single Interface with empty
+    ID can be constructed (if it's the only one present, or the "last
+    one parsed"). Therefore decided to prefer NO_ID over NO_ID_<num>
+    for consistency with interface NO_ID convention. Additionally, NO_ID
+    is preferred over NO_INTERFACE_ID (contrast with Iterator and Model)
+    to preserve backward compatibility
+ */
+String Interface::user_auto_id()
+{
+  // // increment and then use the current ID value
+  // return String("NO_ID_") + boost::lexical_cast<String>(++userAutoIdNum);
+  return String("NO_ID");
+}
+
+/** Rationale: For now NOSPEC_ID_ is chosen due to historical
+    id="NO_SPECIFICATION" used for internally-constructed
+    Iterators. Longer-term, consider auto-generating an ID that
+    includes the context from which the method is constructed, e.g.,
+    the parent method or model's ID, together with its name. */
+String Interface::no_spec_id()
+{
+  // increment and then use the current ID value
+  return String("NOSPEC_INTERFACE_ID_") + boost::lexical_cast<String>(++noSpecIdNum);
+}
 } // namespace Dakota

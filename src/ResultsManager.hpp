@@ -16,93 +16,13 @@
 #define RESULTS_MANAGER_H
 
 #include "dakota_results_types.hpp"
-#include "ResultsDBAny.hpp"
+#include "ResultsDBBase.hpp"
 #include "dakota_data_util.hpp"
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-
-#ifdef DAKOTA_HAVE_HDF5
-#include "ResultsDBHDF5.hpp"
-#else
-// forward declaration due to PIMPL in support of conditional compilation HDF5
-namespace Dakota {
-  class ResultsDBHDF5;
-}
-#endif
-
-
-// Design notes (BMA, Fall 2012)
-
-// This API uses concrete data types as underlying out of core DBs may
-// require it
-
-// eventually a set of databases, maybe with a list of what they
-// want notifications about
-
-// Ideally, individual out-of-core databases can choose when to
-// update, for example, HDF might allow continuous insertion, lookup,
-// whereas YAML or XML might only allow dump at end
-
-// Need ability to stream any of the databases, even text?
-
-// Could use observer pattern to notify databases of changes
-
-// Challenge: observer may not work if we don't want to store the new
-// data in-core
-
-// For efficiency, might want to allow posting of views if they'll
-// remain in-scope (dangerous): for now, require out of core for that case
-
-// May want to support heterogeneous storage to core or file, so
-// lookup in core, if fails, lookup in file.
-
-// Any inserted object needs to have associated meta data /
-// attributes; or does it?
-
-// Should we support stored data managed by someone else?
-
-// other formats generated at end, e.g. YAML from file-based HDF5
-
-// TODO: consider whether a factory pattern would be better for the ResultsEntry
+#include <memory>
+#include <boost/any.hpp>
 
 
 namespace Dakota {
-
-/// Get a globally unique 1-based execution number for a given
-/// iterator name (combination of methodName and methodID) for use in
-/// results DB.  Each Iterator::run() call creates or increments this
-/// count for its string identifier.
-class ResultsID {
-
-public:
-  /// get the single unique instance of ResultsID
-  static ResultsID& instance();
-  /// explicitly increment the iterator results ID, init to 1 if needed
-  size_t increment_id(const std::string& method_name, 
-		      const std::string& method_id);
-  /// get (possibly creating) a unique iterator results ID for the passed name
-  size_t get_id(const std::string& method_name, 
-		const std::string& method_id);
-  /// get a unique iterator results ID for the passed name 
-  /// (const version errors if not found)
-  size_t get_id(const std::string& method_name, 
-		const std::string& method_id) const;
-
-private:
-  /// Private constructor for ResultsID
-  ResultsID() { /* empty */ }
-  /// Private destructor for ResultsID
-  ~ResultsID() { /* empty */ }
-  /// Private copy constructor for ResultsID
-  ResultsID(ResultsID const&);
-  /// Private assignment operator for ResultsID
-  ResultsID& operator=(ResultsID const&);
-
-  /// storage for the results IDs
-  std::map<std::pair<std::string, std::string>, size_t> idMap;
-
-};
-
 
 /// List of valid names for iterator results
 /** All data in the ResultsNames class is public, basically just a struct */
@@ -110,100 +30,53 @@ class ResultsNames {
 
 public:
 
-  /// Default constructor initializes all valid names
-  ResultsNames():
-    namesVersion(0),
+  /// Default constructor
+  ResultsNames()  { /* no-op */}
 
-    // optimization
-    best_cv("Best Continuous Variables"),
-    best_div("Best Discrete Integer Variables"),
-    best_dsv("Best Discrete String Variables"),
-    best_drv("Best Discrete Real Variables"),
-    best_fns("Best Functions"),
+  size_t namesVersion = 0; //< Version number of the results names
 
-    // statistics
-    moments_std("Moments: Standard"),
-    moments_central("Moments: Central"),
-    moments_std_num("Moments: Standard: Numerical"),
-    moments_central_num("Moments: Central: Numerical"),
-    moments_std_exp("Moments: Standard: Expansion"),
-    moments_central_exp("Moments: Central: Expansion"),
-    moment_cis("Moment Confidence Intervals"),
-    extreme_values("Extreme Values"),
-    map_resp_prob("Response to Probability Mapping"),
-    map_resp_rel("Response to Reliability Mapping"),
-    map_resp_genrel("Response to Generalized Reliability Mapping"),
-    map_prob_resp("Probability to Response Mapping"),
-    map_rel_resp("Reliability to Response Mapping"),
-    map_genrel_resp("Generalized Reliability to Response Mapping"),
-    pdf_histograms("PDF Histograms"),
-
-    // correlations
-    correl_simple_all("Simple Correlations (All)"),
-    correl_simple_io("Simple Correlations (I/O)"),
-    correl_partial_io("Partial Correlations (I/O)"),
-    correl_simple_rank_all("Simple Rank Correlations (All)"),
-    correl_simple_rank_io("Simple Rank Correlations (I/O)"),	
-    correl_partial_rank_io("Partial Rank Correlations (I/O)"),
-
-    // approximations
-    pce_coeffs("PCE Coefficients: Standardized"),
-    pce_coeff_labels("PCE Coefficient Labels"),
-
-    // labels for variables/resposes
-    cv_labels("Continuous Variable Labels"),
-    div_labels("Discrete Integer Variable Labels"),
-    dsv_labels("Discrete String Variable Labels"),
-    drv_labels("Discrete Real Variable Labels"),
-    fn_labels("Function Labels")
-
-  { /* no-op */}
-
-  size_t namesVersion; //< Revision number Version of the results names
-
-
-  // optimization (all used)
-  std::string best_cv;
-  std::string best_div;
-  std::string best_dsv;
-  std::string best_drv;
-  std::string best_fns;
+  // optimization
+  std::string best_cv = "Best Continuous Variables";
+  std::string best_div = "Best Discrete Integer Variables";
+  std::string best_dsv = "Best Discrete std::string Variables";
+  std::string best_drv = "Best Discrete Real Variables";
+  std::string best_fns = "Best Functions";
 
   // statistics
-  std::string moments_std;              // used
-  std::string moments_central;
-  std::string moments_std_num;
-  std::string moments_central_num;
-  std::string moments_std_exp;
-  std::string moments_central_exp;
-  std::string moment_cis;               // used
-  std::string extreme_values;           // used
-  std::string map_resp_prob;            // used
-  std::string map_resp_rel;             // used
-  std::string map_resp_genrel;          // used
-  std::string map_prob_resp;            // used
-  std::string map_rel_resp;             // used
-  std::string map_genrel_resp;          // used
-  std::string pdf_histograms;           // used
+  std::string moments_std = "Moments: Standard";
+  std::string moments_central = "Moments: Central";
+  std::string moments_std_num = "Moments: Standard: Numerical";
+  std::string moments_central_num = "Moments: Central: Numerical";
+  std::string moments_std_exp = "Moments: Standard: Expansion";
+  std::string moments_central_exp = "Moments: Central: Expansion";
+  std::string moment_cis = "Moment Confidence Intervals";
+  std::string extreme_values = "Extreme Values";
+  std::string map_resp_prob = "Response to Probability Mapping";
+  std::string map_resp_rel = "Response to Reliability Mapping";
+  std::string map_resp_genrel = "Response to Generalized Reliability Mapping";
+  std::string map_prob_resp = "Probability to Response Mapping";
+  std::string map_rel_resp = "Reliability to Response Mapping";
+  std::string map_genrel_resp = "Generalized Reliability to Response Mapping";
+  std::string pdf_histograms = "PDF Histograms";
 
-  // correlations (all used)
-  std::string correl_simple_all;
-  std::string correl_simple_io;
-  std::string correl_partial_io;
-  std::string correl_simple_rank_all;
-  std::string correl_simple_rank_io;
-  std::string correl_partial_rank_io;
+  // correlations
+  std::string correl_simple_all = "Simple Correlations (All)";
+  std::string correl_simple_io = "Simple Correlations (I/O)";
+  std::string correl_partial_io = "Partial Correlations (I/O)";
+  std::string correl_simple_rank_all = "Simple Rank Correlations (All)";
+  std::string correl_simple_rank_io = "Simple Rank Correlations (I/O)";
+  std::string correl_partial_rank_io = "Partial Rank Correlations (I/O)";
 
-  // approximations (all used)
-  std::string pce_coeffs;
-  std::string pce_coeff_labels;
+  // approximations
+  std::string pce_coeffs = "PCE Coefficients: Standardized";
+  std::string pce_coeff_labels = "PCE Coefficient Labels";
 
-  // labels for variables/resposes (all used)
-  std::string cv_labels;
-  std::string div_labels;
-  std::string dsv_labels;
-  std::string drv_labels;
-  std::string fn_labels;
+  // labels for variables/resposes
+  std::string cv_labels = "Continuous Variable Labels";
+  std::string div_labels = "Discrete Integer Variable Labels";
+  std::string dsv_labels = "Discrete std::string Variable Labels";
+  std::string drv_labels = "Discrete Real Variable Labels";
+  std::string fn_labels = "Function Labels";
 };
 
 
@@ -230,59 +103,98 @@ class ResultsManager
 
 public:
 
-  /// default constructor: no databases active until initialize called
-  ResultsManager(): coreDBActive(false), hdf5DBActive(false)
+  /// default constructor: no databases active until they are added
+  ResultsManager()
   { /* no-op*/ }
 
-  /// initialize the results manager to manage an in-core database,
-  /// writing to the specified file name
-  void initialize(const std::string& base_filename);
+  /// Delete all databases
+  void clear_databases();
+
+  /// Add a database
+  void add_database(std::unique_ptr<ResultsDBBase>);
 
   /// whether any databases are active
   bool active() const;
 
-  // TODO: const
-  /// Write in-core databases to file
-  void write_databases();
+  /// Flush data to the database or disk, if supported
+  void flush() const;
+
+  /// Close the database, if supported. This removes it from the active
+  /// list of databases.
+  void close();
+
+  // ##############################################################
+  // Methods to support HDF5
+  // ##############################################################
+
+
+  /// Insert using dimension scales and attributes (DimScaleMap and 
+  /// AttributeArray in dakota_results_types.hpp)
+  template<typename StoredType>
+  void insert(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              const StoredType& sent_data,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray(),
+              const bool &transpose = false) const
+  {
+    for( auto & db : resultsDBs )
+      db->insert(iterator_id, location, sent_data, scales, attrs, transpose);
+  }
+
+  /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
+  /// rows or columns using insert_into(...)
+  void allocate_matrix(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              ResultsOutputType stored_type, 
+              const int &num_rows, const int &num_cols,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray());
+ 
+  /// Pre-allocate a vector and (optionally) attach dimension scales and attributes. Insert
+  /// elements insert_into(...)
+  void allocate_vector(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              ResultsOutputType stored_type, 
+              const int &len,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray());
+ 
+  /// Insert a row or column into a matrix that was pre-allocated using allocate_matrix
+  template<typename StoredType>
+  void insert_into(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              const StoredType &data,
+              const int &index,
+              const bool &row = true) const {
+    for( auto & db : resultsDBs )
+      db->insert_into(iterator_id, location, data, index, row);
+  }
+
+
+  /// Associate key:value metadata with all the results and executions of a method
+  void add_metadata_to_method(const StrStrSizet& iterator_id,
+                               const AttributeArray &attrs);
+
+  /// Associate key:value metadata with all the results for this execution of a method
+  void add_metadata_to_execution(const StrStrSizet& iterator_id,
+                                  const AttributeArray &attrs);
+
+  /// Associate key:value metadata with the object at the location
+  void add_metadata_to_object(const StrStrSizet& iterator_id,
+                               const StringArray &location,
+                               const AttributeArray &attrs);
+
+  /// Associate key:value metadata with the object at the location
+  void add_metadata_to_study(const AttributeArray &attrs);
+
+
+  // ##############################################################
+  // Methods and variables to support legacy text output
+  // ##############################################################
 
   /// Copy of valid results names for when manager is passed around
   ResultsNames results_names;
-
-  // TODO: consider templating on container and scalar type
-
-  /// insert data
-  template<typename StoredType>
-  void insert(const StrStrSizet& iterator_id,
-	      const std::string& data_name,
-	      const StoredType& sent_data,
-	      const MetaDataType metadata = MetaDataType())
-  {
-    if (coreDBActive)
-      coreDB->insert(iterator_id, data_name, sent_data, metadata);
-#ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->insert(iterator_id, data_name, sent_data, metadata);
-#endif
-  }
-  
-  // TODO: can't seem to pass SMACV by const ref...
-  void insert(const StrStrSizet& iterator_id,
-	      const std::string& data_name,
-	      StringMultiArrayConstView sma_labels,
-	      const MetaDataType metadata = MetaDataType())
-  {
-    std::vector<std::string> vs_labels;
-    if (coreDBActive || hdf5DBActive) {
-      // convert to standard data type to store
-      copy_data(sma_labels, vs_labels);
-    }
-   if (coreDBActive)
-      coreDB->insert(iterator_id, data_name, vs_labels, metadata);
-#ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->insert(iterator_id, data_name, vs_labels, metadata);
-#endif
-  }
 
   /// allocate an entry with array of StoredType of array_size for
   /// future insertion; likely move to non-templated accessors for these
@@ -293,15 +205,8 @@ public:
 		 size_t array_size,
 		 const MetaDataType metadata = MetaDataType())
   {
-    if (coreDBActive)
-      coreDB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
-					 metadata);
-#ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->array_allocate<StoredType>(iterator_id, data_name, array_size, 
-					 metadata);
-#endif
-
+    for( auto & db : resultsDBs )
+      db->array_allocate<StoredType>(iterator_id, data_name, array_size, metadata);
   }
 
   /// insert into a previously allocated array of StoredType at index
@@ -313,14 +218,8 @@ public:
 	       size_t index,
 	       const StoredType& sent_data)
   {
-    if (coreDBActive)
-      coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data);
-#ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data);
-#endif
+    for( auto & db : resultsDBs )
+      db->array_insert<StoredType>(iterator_id, data_name, index, sent_data);
   }
 
   /// specialization: insert a SMACV into a previously allocated array
@@ -333,67 +232,86 @@ public:
 	       size_t index,
 	       StringMultiArrayConstView sent_data)
   {
-    // copy the data to native container for storage
-    StringArray sent_data_sa;
-    copy_data(sent_data, sent_data_sa);
+    if( active() ) {
+      // copy the data to native container for storage
+      StringArray sent_data_sa;
+      copy_data(sent_data, sent_data_sa);
 
-    if (coreDBActive)
-      coreDB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data_sa);
-#ifdef DAKOTA_HAVE_HDF5
-    if (hdf5DBActive)
-      hdf5DB->array_insert<StoredType>(iterator_id, data_name, index, 
-				       sent_data_sa);
-#endif
+      for( auto & db : resultsDBs )
+        db->array_insert<StoredType>(iterator_id, data_name, index, sent_data_sa);
+    }
   }
+
+
+  /// insert data
+  template<typename StoredType>
+  void insert(const StrStrSizet& iterator_id,
+	      const std::string& data_name,
+	      const StoredType& sent_data,
+	      const MetaDataType metadata = MetaDataType())
+  {
+    for( auto & db : resultsDBs )
+      db->insert(iterator_id, data_name, sent_data, metadata);
+  }
+  
+  // TODO: can't seem to pass SMACV by const ref...
+  void insert(const StrStrSizet& iterator_id,
+	      const std::string& data_name,
+	      StringMultiArrayConstView sma_labels,
+	      const MetaDataType metadata = MetaDataType());
+
 
 private:
 
-  /// retrieve in-core entry given by id and name
-  template<typename StoredType>
-  StoredType core_lookup(const StrStrSizet& iterator_id,
-			 const std::string& data_name) const
-  {
-    return coreDB->get_data<StoredType>(iterator_id, data_name);
-  }
+  std::vector<std::unique_ptr<ResultsDBBase> > resultsDBs;
 
-  /// retrieve data via pointer to avoid copy; work-around for Boost
-  /// any use of pointer (could use utilib::Any)
-  template<typename StoredType>
-  StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
-			      const std::string& data_name) const
-  {
-    return coreDB->get_data_ptr<StoredType>(iterator_id, data_name);
-  }
+  ResultsManager(const ResultsManager&) {return;}
 
-  /// retrieve data from in-core array of StoredType at given index
-  template<typename StoredType>
-  StoredType core_lookup(const StrStrSizet& iterator_id,
-			 const std::string& data_name,
-			 size_t index) const
-  {
-    return coreDB->get_array_data<StoredType>(iterator_id, data_name, index);
-  }
-
-  /// retrieve data via pointer to entry in in-core array
-  template<typename StoredType>
-  const StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
-				    const std::string& data_name,
-				    size_t index) const
-  {
-    return coreDB->get_array_data_ptr<StoredType>(iterator_id, data_name, index);
-  }
-
-  /// retrieve requested data into provided db_data StoredType
-  template<typename StoredType>
-  void file_lookup(StoredType& db_data,
-		   const StrStrSizet& iterator_id,
-		   const std::string& data_name) const
-  {
-    abort_handler(-1);
-    return;
-    //db_data = hdf5DB.lookup(iterator_id data_name);
-  }
+//  /// retrieve in-core entry given by id and name
+//  template<typename StoredType>
+//  StoredType core_lookup(const StrStrSizet& iterator_id,
+//			 const std::string& data_name) const
+//  {
+//    return coreDB->get_data<StoredType>(iterator_id, data_name);
+//  }
+//
+//  /// retrieve data via pointer to avoid copy; work-around for Boost
+//  /// any use of pointer (could use utilib::Any)
+//  template<typename StoredType>
+//  StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
+//			      const std::string& data_name) const
+//  {
+//    return coreDB->get_data_ptr<StoredType>(iterator_id, data_name);
+//  }
+//
+//  /// retrieve data from in-core array of StoredType at given index
+//  template<typename StoredType>
+//  StoredType core_lookup(const StrStrSizet& iterator_id,
+//			 const std::string& data_name,
+//			 size_t index) const
+//  {
+//    return coreDB->get_array_data<StoredType>(iterator_id, data_name, index);
+//  }
+//
+//  /// retrieve data via pointer to entry in in-core array
+//  template<typename StoredType>
+//  const StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
+//				    const std::string& data_name,
+//				    size_t index) const
+//  {
+//    return coreDB->get_array_data_ptr<StoredType>(iterator_id, data_name, index);
+//  }
+//
+//  /// retrieve requested data into provided db_data StoredType
+//  template<typename StoredType>
+//  void file_lookup(StoredType& db_data,
+//		   const StrStrSizet& iterator_id,
+//		   const std::string& data_name) const
+//  {
+//    abort_handler(-1);
+//    return;
+//    //db_data = hdf5DB.lookup(iterator_id data_name);
+//  }
 
 
   // ----
@@ -402,24 +320,11 @@ private:
 
   // TODO: consider removing or renaming flags based on HDF5 needs
 
-  /// whether the in-core database in active
-  bool coreDBActive;
-  /// filename for the in-core database
-  std::string coreDBFilename;
-
-  /// whether the file database is active
-  bool hdf5DBActive;
-
-  /// In-core database, with option to flush to file at end
-  boost::scoped_ptr<ResultsDBAny> coreDB;
-
-  /// File-based database; using shared_ptr due to potentially incomplete type
-  /// and requirements for checked_delete in debug builds
-  boost::shared_ptr<ResultsDBHDF5> hdf5DB;
 
 };  // class ResultsManager
 
 
+#if 0 // This code appears to capture ideas but is not used anywhere
 
 // Notes on ResultsEntry: 
 // * Would want to generalize this to be able to possibly a templated
@@ -427,6 +332,7 @@ private:
 // * Would probably need partial specialization to actually load the data
 // * Could also use operator[] to index the array
 // * Consider utilib::Any
+// * Would a factory pattern be better for the ResultsEntry?
 
 /// Class to manage in-core vs. file database lookups
 /** ResultsEntry manages database lookups.  If a core database is
@@ -481,7 +387,7 @@ ResultsEntry<StoredType>::
 ResultsEntry(const ResultsManager& results_mgr,
 	     const StrStrSizet& iterator_id,
 	     const std::string& data_name): 
-  coreActive(results_mgr.coreDBActive)
+  coreActive(results_mgr.core_db_active())
 {
   // populate the local dbData object if needed
   if (coreActive)
@@ -503,7 +409,7 @@ ResultsEntry(const ResultsManager& results_mgr,
 	     const StrStrSizet& iterator_id,
 	     const std::string& data_name,
 	     size_t array_index):
-  coreActive(results_mgr.coreDBActive)
+  coreActive(results_mgr.core_db_active())
 {
   // populate the local dbData object if needed
   if (coreActive)
@@ -535,6 +441,7 @@ ResultsEntry(const ResultsManager& results_mgr,
 //   return dbData;
 // }
 
+#endif
 
 }  // namespace Dakota
 

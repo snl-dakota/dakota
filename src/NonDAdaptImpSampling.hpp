@@ -57,11 +57,20 @@ public:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+
   /// performs adaptive importance sampling and computes probability of failure
   void core_run();
 
   /// print the final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions
@@ -138,7 +147,7 @@ private:
 
   /// importance sampling is performed in standardized probability space.
   /// This u-space model is either passed in (alternate constructor for
-  /// helper AIS) or constructed using transform_model() (standard
+  /// helper AIS) or constructed using ProbabilityTransformModel (standard
   /// constructor for stand-alone AIS)
   Model uSpaceModel;
 
@@ -178,6 +187,22 @@ private:
 
 inline NonDAdaptImpSampling::~NonDAdaptImpSampling()
 { }
+
+
+inline void NonDAdaptImpSampling::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
+}
 
 
 inline Real NonDAdaptImpSampling::final_probability()

@@ -1,0 +1,47 @@
+Blurb::
+Formulation for emulation of model discrepancies.
+
+Description:: 
+In many uncertainty quantification approaches, model discrepancies are 
+emulated using, e.g., polynomial chaos, stochastic collocation, or 
+Gaussian process models.  Two formulations are available for this 
+emulation: 
+<ol>
+  <li> \c distinct emulation (default), in which we directly approximate 
+       the difference or ratio between the evaluations of two models 
+       or solution levels.
+  <li> \c recursive emulation (experimental option), in which we 
+       approximate a difference or ratio among the new model evaluation 
+       and the emulator approximation of the previous model.
+</ol>
+
+The latter approach is a form of hierarchical emulation in which we 
+emulate the surplus between the previous emulator and the new modeling 
+level.  This approach has a few advantages: (i) it reduces bias by
+correcting for emulation errors that occur at previous levels, and (ii)
+it does not require paired model evaluations for each discrepancy level,
+which reduces cost, allows for disparate sample points, and simplifies 
+data imports. 
+<!-- and (iii) discrepancy emulation supports local error estimation 
+     through hierarchical surplus. -->
+On the other hand, its primary disadvantage is that the aggregate
+emulation is only as good as its weakest link, in that a poor emulator 
+recovery can create difficulty in accurately resolving discrepancies 
+that are recursively dependent on it.  Thus, the \c distinct approach
+may tend to be more expensive in exchange for greater robustness.
+
+Topics::
+
+Examples::
+\verbatim
+method,
+        multilevel_polynomial_chaos
+	  expansion_order_sequence = 2
+	  collocation_ratio = .9
+	  orthogonal_matching_pursuit
+	  discrepancy_emulation recursive
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

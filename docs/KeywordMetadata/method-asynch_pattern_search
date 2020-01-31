@@ -23,7 +23,7 @@ releases.
 <b> Algorithm Behavior </b>
 
 \li \c initial_delta: the initial step length, must be positive
-\li \c threshold_delta: step length used to determine convergence,
+\li \c variable_tolerance: step length used to determine convergence,
 must be greater than or equal to 4.4e-16
 \li \c contraction_factor: amount by which step length is rescaled
 after unsuccesful iterates, must be strictly between 0 and 1
@@ -75,6 +75,17 @@ variable and constraint summaries, and new best points
 \li \c silent: display final solution
 
 
+
+<b>Expected HDF5 Output</b> 
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method 
+writes the following results to HDF5: 
+
+- \ref hdf5_results-best_params 
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified) 
+- \ref hdf5_results-best_constraints 
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified) 
 
 Topics::	package_hopspack, global_optimization_methods
 Examples::

@@ -23,7 +23,7 @@ Topics::	block_pointer
 Examples::
 \verbatim
 environment
-  tabular_graphics_data
+  tabular_data
   method_pointer = 'UQ'
 
 method

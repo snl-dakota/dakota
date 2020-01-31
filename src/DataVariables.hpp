@@ -435,15 +435,16 @@ public:
   /// initial_point specification in \ref VarCAUV_Weibull)
   RealVector weibullUncVars;
 
-  /// An array for each real-valued bin-based histogram uncertain
-  /// variable. Each array entry is a map from a real value to its
-  /// probability. (See continuous linear histogram in LHS manual;
-  /// from the \c histogram_bin_uncertain specification in \ref
-  /// VarCAUV_Bin_Histogram).  (x,y) ordinate specifications are
-  /// converted to (x,c) counts within NIDR.
+  /// An array for each real-valued bin-based histogram uncertain variable.
+  /// Each array entry is a map from a real value to its probability (from the
+  /// \c histogram_bin_uncertain specification in \ref VarCAUV_Bin_Histogram;
+  /// see also continuous_linear variable type in LHS manual).  Note: bin
+  /// widths may be unequal and any (x,c) count specifications are converted
+  /// to (x,y) ordinates (probability densities) within Vchk_HistogramBinUnc()
+  /// in the NIDR parser.
   RealRealMapArray histogramUncBinPairs;
-  /// initial values of the histogram bin uncertain variables (from the \c
-  /// initial_point specification in \ref VarCAUV_Bin_Histogram)
+  /// initial values of the histogram bin uncertain variables (from the
+  /// \c initial_point specification in \ref VarCAUV_Bin_Histogram)
   RealVector histogramBinUncVars;
 
   // discrete types
@@ -923,50 +924,64 @@ public:
   // Get Functions (composite variable counts only):
 
   /// return total number of design variables
-  size_t design() { return dataVarsRep->numContinuousDesVars +
-    dataVarsRep->numDiscreteDesRangeVars +
+  size_t continuous_design() { return dataVarsRep->numContinuousDesVars; }
+  /// return total number of design variables
+  size_t discrete_design() { return dataVarsRep->numDiscreteDesRangeVars +
     dataVarsRep->numDiscreteDesSetIntVars +
     dataVarsRep->numDiscreteDesSetStrVars +
     dataVarsRep->numDiscreteDesSetRealVars; }
-  /// return total number of aleatory uncertain variables
-  size_t aleatory_uncertain() { return dataVarsRep->numNormalUncVars +
+  /// return total number of continuous aleatory uncertain variables
+  size_t continuous_aleatory_uncertain()
+  { return dataVarsRep->numNormalUncVars +
     dataVarsRep->numLognormalUncVars + dataVarsRep->numUniformUncVars +
     dataVarsRep->numLoguniformUncVars + dataVarsRep->numTriangularUncVars +
     dataVarsRep->numExponentialUncVars + dataVarsRep->numBetaUncVars +
     dataVarsRep->numGammaUncVars + dataVarsRep->numGumbelUncVars +
     dataVarsRep->numFrechetUncVars + dataVarsRep->numWeibullUncVars +
-    dataVarsRep->numHistogramBinUncVars + dataVarsRep->numPoissonUncVars + 
-    dataVarsRep->numBinomialUncVars + dataVarsRep->numNegBinomialUncVars+
-    dataVarsRep->numGeometricUncVars + dataVarsRep->numHyperGeomUncVars +
-    dataVarsRep->numHistogramPtIntUncVars + 
-    dataVarsRep->numHistogramPtStrUncVars + 
+    dataVarsRep->numHistogramBinUncVars; }
+  /// return total number of continuous aleatory uncertain variables
+  size_t discrete_aleatory_uncertain()
+  { return dataVarsRep->numPoissonUncVars + dataVarsRep->numBinomialUncVars +
+    dataVarsRep->numNegBinomialUncVars + dataVarsRep->numGeometricUncVars +
+    dataVarsRep->numHyperGeomUncVars + dataVarsRep->numHistogramPtIntUncVars +
+    dataVarsRep->numHistogramPtStrUncVars +
     dataVarsRep->numHistogramPtRealUncVars; }
   /// return total number of epistemic uncertain variables
-  size_t epistemic_uncertain() { return
-    dataVarsRep->numContinuousIntervalUncVars +
-    dataVarsRep->numDiscreteIntervalUncVars +
+  size_t continuous_epistemic_uncertain()
+  { return dataVarsRep->numContinuousIntervalUncVars; }
+  /// return total number of epistemic uncertain variables
+  size_t discrete_epistemic_uncertain()
+  { return dataVarsRep->numDiscreteIntervalUncVars +
     dataVarsRep->numDiscreteUncSetIntVars +
+    dataVarsRep->numDiscreteUncSetStrVars +
     dataVarsRep->numDiscreteUncSetRealVars; }
-  /// return total number of uncertain variables
-  size_t uncertain() { return aleatory_uncertain() + epistemic_uncertain(); }
   /// return total number of state variables
-  size_t state() { return dataVarsRep->numContinuousStateVars +
-    dataVarsRep->numDiscreteStateRangeVars +
+  size_t continuous_state() { return dataVarsRep->numContinuousStateVars; }
+  /// return total number of state variables
+  size_t discrete_state() { return dataVarsRep->numDiscreteStateRangeVars +
     dataVarsRep->numDiscreteStateSetIntVars +
     dataVarsRep->numDiscreteStateSetStrVars +
     dataVarsRep->numDiscreteStateSetRealVars; }
+  /// return total number of design variables
+  size_t design() { return continuous_design() + discrete_design(); }
+  /// return total number of aleatory uncertain variables
+  size_t aleatory_uncertain()
+  { return continuous_aleatory_uncertain() + discrete_aleatory_uncertain(); }
+  /// return total number of epistemic uncertain variables
+  size_t epistemic_uncertain()
+  { return continuous_epistemic_uncertain() + discrete_epistemic_uncertain(); }
+  /// return total number of uncertain variables
+  size_t uncertain() { return aleatory_uncertain() + epistemic_uncertain(); }
+  /// return total number of state variables
+  size_t state() { return continuous_state() + discrete_state(); }
   /// return total number of continuous variables
-  size_t continuous_variables() { return dataVarsRep->numContinuousDesVars +
-    uncertain() + dataVarsRep->numContinuousStateVars; }
+  size_t continuous_variables() { return continuous_design() +
+    continuous_aleatory_uncertain() + continuous_epistemic_uncertain() +
+    continuous_state(); }
   /// return total number of discrete variables
-  // BMA TODO: should point histogram be included here?
-  size_t discrete_variables()   { return dataVarsRep->numDiscreteDesRangeVars +
-    dataVarsRep->numDiscreteDesSetIntVars +
-    dataVarsRep->numDiscreteDesSetStrVars +
-    dataVarsRep->numDiscreteDesSetRealVars +
-    dataVarsRep->numDiscreteStateRangeVars +
-    dataVarsRep->numDiscreteStateSetIntVars +
-    dataVarsRep->numDiscreteStateSetRealVars; }
+  size_t discrete_variables()
+  { return discrete_design() + discrete_aleatory_uncertain() +
+    discrete_epistemic_uncertain() + discrete_state(); }
   /// return total number of variables
   size_t total_variables() { return design() + uncertain() + state(); }
 

@@ -5,11 +5,11 @@ Description::
 The \c interval_type setting is used to select between \c forward and
 \c central differences in the numerical gradient calculations. The \c
 dakota, DOT \c vendor, and OPT++ \c vendor routines have both forward
-and central differences available, the CONMIN and NL2SOL \c vendor routines
-support forward differences only, and the NPSOL and NLSSOL \c vendor
-routines start with forward differences and automatically switch to
-central differences as the iteration progresses (the user has no
-control over this). The following forward difference expression
+and central differences available, the CONMIN, NL2SOL and ROL \c vendor
+routines support forward differences only, and the NPSOL and NLSSOL
+\c vendor routines start with forward differences and automatically
+switch to central differences as the iteration progresses (the user has
+no control over this). The following forward difference expression
 \f[
 \nabla f ({\bf x}) \cong 
 \frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x})}{h}

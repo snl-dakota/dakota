@@ -1,9 +1,17 @@
 Blurb::
-A conjugate gradient optimization method
-Description::
-This is a duplicated keyword. Please use \ref method-dot instead.
+DOT conjugate gradient optimization method
 
-We here provide a caution regarding \c dot_frcg. In DOT
+Description::
+DOT library \cite Van95 implementation of Fletcher-Reeves conjugate
+gradient method for unconstrained optimizaiton.
+
+See \ref topic-package_dot for information common to all \c DOT methods.
+
+<em>DOT requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
+
+<em>Caution regarding \c dot_frcg.</em> In DOT
 Version 4.20, we have noticed inconsistent behavior of this algorithm
 across different versions of Linux. Our best assessment is that it is
 due to different treatments of uninitialized variables. As we do not
@@ -13,8 +21,19 @@ recommending any code changes to address this. However, all users who
 use \c dot_frcg in DOT Version 4.20 should be aware that
 results may not be reliable.
 
+<b>Expected HDF5 Output</b>
+
+If Dakota was built with HDF5 support and run with the 
+\ref environment-results_output-hdf5 keyword, this method
+writes the following results to HDF5:
+
+- \ref hdf5_results-best_params
+- \ref hdf5_results-best_obj_fncs (when \ref responses-objective_functions) are specified)
+- \ref hdf5_results-calibration (when \ref responses-calibration_terms are specified)
+
+
 Topics::	
 Examples::
 Theory::
 Faq::
-See_Also::	method-dot-frcg
+See_Also::

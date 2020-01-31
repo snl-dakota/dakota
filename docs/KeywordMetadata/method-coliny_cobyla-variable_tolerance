@@ -1,0 +1,29 @@
+Blurb::
+Required or expected accuracy in optimization variables.
+
+Description::
+Unlike it's use as a stopping criteria in other methods, \c
+variable_tolerance is used to communicate the accuracy of the
+optimization variables to COBYLA.  It represents the mimimum distance
+from the simplex within which linear approximation subproblems can be
+trusted to be sufficiently representative of the true problem.  It is
+analagous to the minimum trust-region size used in trust-region
+methods.  Note that, per COBYLA documentation, the level of accuracy
+is not guaranteed.
+
+<b> Default Behavior </b>
+
+The default value is 0.0001.
+
+<b> Additional Discussion </b>
+
+While \c variable_tolerance is not a stopping criteria for COBYLA, we
+note that it may have a side effect regarding convergence.  In
+particular, if lower accuracy is required of the optimization
+variables, it may stop sooner than if higher accuracy is required.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

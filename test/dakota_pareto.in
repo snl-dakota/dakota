@@ -19,7 +19,6 @@
 
 environment
   top_method_pointer = 'PS'
-  graphics                                #s0,#s1
 
 method
   id_method = 'PS'
@@ -36,20 +35,22 @@ method
 
 #method,                                  #s2
 #  id_method = 'SBLO'			                #s2
-#  model_pointer = 'SURROGATE'		        #s2
 #  surrogate_based_local		              #s2
+#    model_pointer = 'SURROGATE'		        #s2
 #    approx_method_pointer = 'NLP'	      #s2
 #    trust_region initial_size = .4	      #s2
 
 method
   id_method = 'NLP'
+## (DOT requires a software license; if not available, try	      #s0
+## conmin_mfd or optpp_q_newton instead)     			      #s0
   dot_bfgs
 #          convergence_tolerance = 1e-8   #s2
 
 #method,				                          #s2
 #  id_method = 'SAMPLING'		              #s2
-#  model_pointer = 'TRUTH'		            #s2
 #  sampling                               #s2
+#    model_pointer = 'TRUTH'		            #s2
 #    seed = 531				                    #s2
 #    sample_type lhs			                #s2
 

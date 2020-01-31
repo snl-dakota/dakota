@@ -16,6 +16,13 @@
 
 #include "dakota_data_util.hpp"
 
+namespace Pecos {
+class MultivariateDistribution;
+class ExpansionConfigOptions;
+class BasisConfigOptions;
+class RegressionConfigOptions;
+}
+
 namespace Dakota {
 
 class ProblemDescDB;
@@ -40,10 +47,16 @@ class SharedApproxData
   friend class Approximation;
   friend class TaylorApproximation;
   friend class TANA3Approximation;
+  friend class QMEApproximation;
   friend class GaussProcApproximation;
   friend class VPSApproximation;
-  friend class SurfpackApproximation;
   friend class PecosApproximation;
+#ifdef HAVE_C3
+  friend class C3Approximation;
+#endif // HAVE_C3
+#ifdef HAVE_SURFPACK
+  friend class SurfpackApproximation;
+#endif // HAVE_SURFPACK
 
 public:
 
@@ -71,6 +84,18 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// activate an approximation state based on its multi-index key
+  virtual void active_model_key(const UShortArray& key);
+  /// reset initial state by clearing all model keys for an approximation
+  virtual void clear_model_keys();
+
+  // define data keys and active data index for aggregated response data
+  // (SharedPecosApproxData)
+  //virtual void link_multilevel_surrogate_data();
+
+  /// return the discrepancy type for approximations that support MLMF
+  virtual short discrepancy_type() const;
+
   /// builds the shared approximation data from scratch
   virtual void build();
 
@@ -80,33 +105,54 @@ public:
   virtual void pop(bool save_surr_data);
   /// queries availability of pushing data associated with a trial set
   virtual bool push_available();
-  /// return index of trial set within popped bookkeeping sets
-  virtual size_t retrieval_index();
+  /// return index for restoring trial set within stored data sets
+  virtual size_t push_index(const UShortArray& key);
   /// push a previous state of the shared approximation data 
   virtual void pre_push();
   /// clean up popped bookkeeping following push 
   virtual void post_push();
-  /// return index of i-th trailing trial set within restorable bookkeeping sets
-  virtual size_t finalization_index(size_t i);
+  /// return index of i-th trial set within restorable bookkeeping sets
+  virtual size_t finalize_index(size_t i, const UShortArray& key);
   /// finalize the shared approximation data following a set of increments
   virtual void pre_finalize();
   /// clean up popped bookkeeping following aggregation
   virtual void post_finalize();
 
-  /// store the current state of the shared approximation data for
-  /// later combination (defaults to push_back)
-  virtual void store(size_t index = _NPOS);
-  /// restore a previous state of the shared approximation data
-  /// (defaults to pop_back from stored)
-  virtual void restore(size_t index = _NPOS);
-  /// remove an instance of stored approximation data prior to combination
-  /// (defaults to pop_back)
-  virtual void remove_stored(size_t index = _NPOS);
+  /// clear inactive approximation data
+  virtual void clear_inactive();
 
   /// aggregate the shared approximation data from current and stored states
-  virtual size_t pre_combine(short corr_type);
+  virtual void pre_combine();
   /// clean up stored data sets after aggregation
-  virtual void post_combine(short corr_type);
+  virtual void post_combine();
+  /// promote aggregated data sets to active state
+  virtual void combined_to_active(bool clear_combined = true);
+
+  /// propagate updates to random variable distribution parameters to a
+  /// polynomial basis
+  virtual void update_basis_distribution_parameters(
+    const Pecos::MultivariateDistribution& mvd);
+
+  /// set ExpansionConfigOptions instance as a group specification
+  virtual void configuration_options(
+    const Pecos::ExpansionConfigOptions& ec_options);
+  /// set BasisConfigOptions instance as a group specification
+  virtual void configuration_options(
+    const Pecos::BasisConfigOptions& bc_options);
+  /// set BasisConfigOptions instance as a group specification
+  virtual void configuration_options(
+    const Pecos::RegressionConfigOptions& rc_options);
+
+  /// assign key identifying a subset of variables that are to be
+  /// treated as random for statistical purposes (e.g. expectation)
+  virtual void random_variables_key(const BitArray& random_vars_key);
+
+  /// assign statistics mode: {ACTIVE,COMBINED}_EXPANSION_STATS
+  virtual void refinement_statistics_type(short stats_type);
+
+  /// return set of Sobol indices that have been requested (e.g., as constrained
+  /// by throttling) and are computable by a (sparse) expansion of limited order
+  virtual const Pecos::BitArrayULongMap& sobol_index_map() const;
 
   //
   //- Heading: Member functions
@@ -114,6 +160,9 @@ public:
 
   // return the number of variables used in the approximation
   //int num_variables() const;
+
+  /// return active multi-index key
+  const UShortArray& active_model_key() const;
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -165,11 +214,17 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
+  /// multi-index key indicating the active model or model-pair used
+  /// for approximation data
+  UShortArray activeKey;
+  /// set of multi-index model keys to enumerate when updating the
+  /// SurrogateData for each Approximation
+  UShort2DArray approxDataKeys;
+
   /// Prefix for model export files
   String modelExportPrefix;
-  /// Bitmapped format reques for exported models
+  /// Bitmapped format request for exported models
   unsigned short modelExportFormat;
-
 
   /// approximation continuous lower bounds (used by 3D graphics and
   /// Surfpack KrigingModel)
@@ -216,6 +271,10 @@ private:
 
 //inline int SharedApproxData::num_variables() const
 //{ return (dataRep) ? dataRep->numVars : numVars; }
+
+
+inline const UShortArray& SharedApproxData::active_model_key() const
+{ return (dataRep) ? dataRep->activeKey : activeKey; }
 
 
 inline void SharedApproxData::

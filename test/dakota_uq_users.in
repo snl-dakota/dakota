@@ -23,7 +23,7 @@ method
                       0.1 0.2 0.6
                       0.1 0.2 0.6
     distribution cumulative
-#  model_pointer = 'SURR'		#s4
+#    model_pointer = 'SURR'		#s4
 
 #model                              #s4
 #  id_model = 'SURR'                #s4
@@ -38,8 +38,8 @@ method
 #method                                   #s4
 #  id_method = 'DACE'                     #s4
 #  sampling sample_type lhs		 	          #s4
-#  model_pointer = 'DACE_M'		 	          #s4
 #    samples = 121 seed = 5034 	#s4
+#    model_pointer = 'DACE_M'		 	          #s4
 
 #model						                 #s4
 #  id_model = 'DACE_M'				     #s4

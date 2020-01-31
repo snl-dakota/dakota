@@ -1,36 +1,105 @@
-Blurb:: (Experimental) Gaussian Process Models for Simulation Analysis (GPMSA)
-Markov Chain Monte Carlo algorithm with Gaussian Process Surrogate
-Description::
-GPMSA (Gaussian Process Models for Simulation Analysis) is another 
-approach that provides the capability for Bayesian
-calibration. The GPMSA implementation currently is an experimental capability and not ready for production use at this time. 
-A key part of GPMSA is the construction of an emulator from simulation runs
-collected at various settings of input parameters. The emulator is a
-statistical model of the system response, and it is used to incorporate
-the observational data to improve system predictions and constrain or
-calibrate the unknown parameters. The GPMSA code draws heavily
-on the theory developed in the seminal Bayesian calibration paper
-by Kennedy and O'Hagan \cite Kenn01. 
-The particular approach in GPMSA has been developed
-by the Los Alamos group and document in \cite Hig08. 
-GPMSA uses
-Gaussian process models in the emulation, but the emulator is
-actually a set of basis functions (e.g. from a singular value
-decomposition) which have GPs as the coefficients. 
+Blurb:: (Experimental) Gaussian Process Models for Simulation Analysis
+(GPMSA) Bayesian calibration
 
-For the GPMSA method, one can define the number of samples which will be used 
-in construction of the emulator, \c build_samples. The emulator 
-involves Gaussian processes in GPMSA, so the user does not specify anything 
-about emulator type. At this point, the only controls active for GPMSA 
-are \c build_samples, \c seed and \c rng, and \c samples (the number of MCMC
-samples) and the type of MCMC algorithm (e.g. \c dram, \c delayed_rejection, 
-\c adaptive_metropolis, \c metropolis_hastings, or \c multilevel).  
-NOTE: the GPMSA method is in a very preliminary, prototype state at this time. 
-The user will need to modify certain data structures in the code for their particular application and recompile to run
-with GPMSA.
+
+Description::
+GPMSA (Gaussian Process Models for Simulation Analysis) is a
+surrogate-based Markov Chain Monte Carlo Bayesian calibration
+method. Dakota's GPMSA is an experimental capability and not ready for
+production use at this time.
+
+Central to GPMSA is the construction of a Gaussian Process emulator
+from simulation runs collected at various settings of input
+parameters. The emulator is a statistical model of the system
+response, and it is used to incorporate the observational data to
+improve system predictions and constrain or calibrate the unknown
+parameters. The GPMSA code draws heavily on the theory developed in
+the seminal Bayesian calibration paper by Kennedy and O'Hagan 
+\cite Kenn01.  The particular approach in GPMSA was developed by the Los
+Alamos National Labortory statistics group and documented in \cite Hig08.
+Dakota's GPMSA capability comes from the QUESO package developed at UT Austin.
+
+<b> Usage Tips: </b>
+
+Configuring GPMSA essentially involves identifying the simulation
+build data, the experiment data, the calibration and configuration
+(state) variables, and any necessary algorithm controls.  The GP
+surrogate model is automatically constructed internal to the algorithm
+and need not be specified through Dakota input.
+
+Dakota's GPMSA implementation is not intended for production use.
+There are a number of known limitations, including:
+
+<ul>
+<li>Only works for scalar and multivariate responses, not field
+responses.  Field responses will be treated as a single multi-variate
+response set.  Consequently, simulation and experiment data must have
+the same dimensions.</li>
+
+<li>When build data is not imported a design of experiments will be
+conducted over all calibration and scenario variables present.</li>
+
+<li>Experiment data is required (one cannot pose the simulation data
+as a set of residuals with the assumption of 0-valued
+experiments).</li>
+
+<li>Output and diagnostics are limited.  Advanced users will need to
+examine QUESO output files (potentially written in a transformed
+scaled space) in the QuesoDiagnostic directory</li>
+</ul>
 
 Topics::	package_queso, bayesian_calibration
+
 Examples::
+
+The following input file fragment illustrates GPMSA-based Bayesian
+calibration of 3 \f$\beta\f$ variables with a uniform prior, with 3
+configuration (scenario) variables \f$x\f$.  A total of 60 simulation
+build points are provided in <tt>sim_data.dat</tt>, which contains
+columns for each \f$\beta\f$, followed by each \f$x\f$, and then the
+simulation response 'lin'.  Each row of the experiment data file
+<tt>y_exp_with_var.dat</tt> contains the values of the 3 \f$x\f$
+variables, followed by the value of 'lin' and its observation error
+(variance).
+
+\verbatim
+
+method
+  bayes_calibration gpmsa
+    chain_samples 1000
+    seed 2460
+    build_samples 60
+    import_build_points_file  'sim_data.dat'  freeform
+    export_chain_points_file  'posterior.dat'
+      burn_in_samples = 100  sub_sampling_period = 2
+    posterior_stats kl
+
+variables
+  uniform_uncertain  3
+    upper_bounds   0.4500   -0.1000    0.4000
+    initial_point  0.2750   -0.3000    0.1000
+    lower_bounds  -0.1000   -0.5000   -0.2000
+    descriptors   'beta0'   'beta1'   'beta2' 
+
+  continuous_state  3
+    upper_bounds   3 * 1.0
+    initial_state  3 * 0.5
+    lower_bounds   3 * 0.0
+    descriptors    'x0'  'x1'  'x2'
+
+responses
+  descriptors 'lin'
+  calibration_terms   1
+  calibration_data_file 'y_exp_with_var.dat'
+    freeform
+    num_experiments  5
+      num_config_variables   3
+    experiment_variance_type 'scalar'
+  no_gradients
+  no_hessians
+
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	

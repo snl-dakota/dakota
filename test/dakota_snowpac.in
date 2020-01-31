@@ -1,0 +1,102 @@
+#@ *: DakotaConfig=HAVE_NOWPAC
+
+environment,
+	  method_pointer = 'OPTIM'
+
+###########################
+# begin opt specification #
+###########################
+method,
+	id_method = 'OPTIM'
+	model_pointer = 'OPTIM_M'
+	snowpac
+	  seed = 25041981
+#	  max_iterations = 500
+	  max_function_evaluations = 250
+#	  convergence_tolerance = 1e-4
+	  trust_region
+	    initial_size = 0.10
+	    minimum_size = 1.e-6
+	    contract_threshold = 0.25
+	    expand_threshold   = 0.75
+	    contraction_factor = 0.50
+	    expansion_factor   = 1.50
+#	  scaling						#s3
+#	  output debug
+
+model,
+	id_model = 'OPTIM_M'
+	nested
+	  variables_pointer  = 'OPTIM_V'
+	  sub_method_pointer = 'UQ'
+	  responses_pointer  = 'OPTIM_R'
+	  primary_response_mapping   = 1. 0. 0. 0. 0. 0.	#s0,#s1
+#	  primary_response_mapping   = 0. 0. 0. 1.e+5 0. 1.e+5	#s2
+#	  primary_response_mapping   = 0. 0. 0. 1. 0. 1.	#s3
+	  secondary_response_mapping = 0. 0. 1. 0. 0. 0.	#s0,#s2,#s3
+                                       0. 0. 0. 0. 1. 0.	#s0,#s2,#s3
+#	  secondary_response_mapping = 0. 0. 1. 3. 0. 0.	#s1
+#	  			       0. 0. 0. 0. 1. 3.	#s1
+
+variables,
+	id_variables = 'OPTIM_V'
+	continuous_design = 2
+	  initial_point    8.0    8.0 #2.5 2.5 (trouble w/ infeasible start)
+	  upper_bounds    10.0   10.0
+	  lower_bounds     1.0    1.0
+	  descriptors      'w'    't'
+
+responses,
+# minimize mean Weight
+# s.t.     mean_S <= 0
+#          mean_D <= 0
+	id_responses = 'OPTIM_R'
+	objective_functions = 1
+#	  primary_scale_types 'value'				#s3
+#	  primary_scales = 1.e-5				#s3
+	nonlinear_inequality_constraints = 2 # default upper bounds < 0.0
+#	  scale_types 'value'
+#	  primary_scales = 1. 1.
+	no_gradients
+	no_hessians
+
+
+##########################
+# begin UQ specification #
+##########################
+method,
+	id_method = 'UQ'
+	model_pointer = 'UQ_M'
+        sampling
+	  samples = 50 seed = 12347 
+	  sample_type random # use MC error estimates
+#	  fixed_seed
+	  output silent
+#	final_moments central					#s2,#s3
+
+model,
+	id_model = 'UQ_M'
+	single
+	  variables_pointer = 'UQ_V'
+	  interface_pointer = 'UQ_I'
+	  responses_pointer = 'UQ_R'
+
+variables,
+	id_variables = 'UQ_V'
+	continuous_design = 2
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =   'R'   'E'   'X'   'Y'
+
+interface,
+	id_interface = 'UQ_I'
+	direct
+	  analysis_driver = 'cantilever'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'UQ_R'
+	response_functions = 3
+	no_gradients
+	no_hessians

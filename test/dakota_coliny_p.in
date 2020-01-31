@@ -26,9 +26,9 @@ method,
 	  initial_delta = .2			#s0,#p0,#p1,#p2,#p3,#p8,#p9,#p10
 #	  initial_delta = .2			#p11,#p12,#p13,#p14,#p15,#p16
 #	  initial_delta = .2			#p17,#p18,#p19
-	  threshold_delta = 1.e-4		#s0,#p0,#p1,#p2,#p3,#p8,#p9,#p10
-#	  threshold_delta = 1.e-4		#p11,#p12,#p13,#p14,#p15,#p16
-#	  threshold_delta = 1.e-4 	        #p17,#p18,#p19
+	  variable_tolerance = 1.e-4		#s0,#p0,#p1,#p2,#p3,#p8,#p9,#p10
+#	  variable_tolerance = 1.e-4		#p11,#p12,#p13,#p14,#p15,#p16
+#	  variable_tolerance = 1.e-4 	        #p17,#p18,#p19
 #	SYNCHRONIZATION FOR APPS/PS
 #	  synchronization nonblocking		#p13,#p14,#p17
 #	EXPLORATORY MOVES FOR PS

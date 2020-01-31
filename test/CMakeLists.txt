@@ -6,6 +6,7 @@ include(CheckIncludeFile)
 include(CMakeParseArguments)
 include(DakotaCopyTarget)
 include(ListFilterEmacsBackups)
+include(ModifyTargetRpath)
 
 # Macro: dakota_get_test_properties; macro so can set in parent context.
 #
@@ -135,8 +136,8 @@ function(dakota_app_test _test_name _last_subtest)
       ${_test_name}
       SUBTEST 0
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
-      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove ${_diffs_filename}
-      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
+      APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -153,7 +154,7 @@ function(dakota_app_test _test_name _last_subtest)
         add_application_test(
     	${_test_name}
   	SUBTEST ${st_num}
-    	APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+	APPLICATION COMMAND ${PERL_EXECUTABLE}
             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
               --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
               --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -174,8 +175,8 @@ function(dakota_app_test _test_name _last_subtest)
     add_application_test(
       ${_test_name}
       FILE_DEPENDENCIES "${_dat_FILE_DEPENDENCIES}"
-      PREPROCESS COMMAND \"${CMAKE_COMMAND}\" -E remove ${_diffs_filename}
-      APPLICATION COMMAND \"${PERL_EXECUTABLE}\"
+      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove ${_diffs_filename}
+      APPLICATION COMMAND ${PERL_EXECUTABLE}
         ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${_par_clopt}
           --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${_test_name}
           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
@@ -419,6 +420,7 @@ set(dakota_test_executables
   steel_column_cost
   steel_column_perf
   steel_section
+  svanberg
   text_book
   text_book1
   text_book2
@@ -430,17 +432,20 @@ set(dakota_test_executables
 
 foreach(dte ${dakota_test_executables})
   add_executable(${dte} ${dte}.cpp)
+  ModifyTargetRpath(${dte} 3)
 endforeach()
 
 # nl2func has two source files
 list(APPEND dakota_test_executables nl2func)
 add_executable(nl2func nl2func.cpp nl2test.cpp)
+ModifyTargetRpath(nl2func 3)
 
 # parallel tester
 if(DAKOTA_HAVE_MPI)
   add_executable(text_book_par text_book_par.cpp)
   list(APPEND dakota_test_executables text_book_par)
   DakotaApplyMPISettings(text_book_par)
+  ModifyTargetRpath(text_book_par 3)
 endif()
 
 # Enforce an "imaginary" dependency

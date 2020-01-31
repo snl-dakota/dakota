@@ -1,5 +1,8 @@
+#@ Cross-platform diffs in tests 10-16 carried until we can ensure that surrogates are working correctly with discrete variables
+#@ *: Label=CarryDiff
 #@ s1: TimeoutAbsolute=2100
 #@ s5: TimeoutAbsolute=1800
+# s18: test correct traits coverage
 
 # DAKOTA INPUT FILE - dakota_nomad.in
 
@@ -13,7 +16,7 @@ method,
 #	use_surrogate inform_search				#s14,#s15,#s16
 	seed = 1234
 #	initial_delta = 2.0					#s1,#s9
-#	threshold_delta = 0.01					#s2,#s10
+#	variable_tolerance = 0.01					#s2,#s10
 #       max_function_evaluations = 1000				#s5,#s14
 #	max_iterations = 100					#s5,#s14
 #	function_precision = 0.00000001				#s5,#s14
@@ -36,11 +39,11 @@ variables,
 	  upper_bounds    10.0   10.0  10.0			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 	  lower_bounds   -10.0  -10.0 -10.0			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 	  descriptors      'x1'  'x2'  'x3'			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	continuous_design = 3					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#	  initial_point   -1.0    1.5   2.0			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#	  upper_bounds    10.0   10.0  10.0			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#	  lower_bounds   -10.0  -10.0 -10.0			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#	  descriptors      'x1'  'x2'  'x3'			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	continuous_design = 3					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#	  initial_point   -1.0    1.5   2.0			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#	  upper_bounds    10.0   10.0  10.0			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#	  lower_bounds   -10.0  -10.0 -10.0			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#	  descriptors      'x1'  'x2'  'x3'			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
 #	continuous_design = 2					#s8,#s17
 #	  initial_point     0.5 0.5				#s8,#s17
 #	  lower_bounds      0.  0.				#s8,#s17
@@ -51,41 +54,41 @@ variables,
 #	  lower_bounds       1     1				#s1,#s4,#s5,#s6,#s7
 #	  upper_bounds       4     9				#s1,#s4,#s5,#s6,#s7
 #	  descriptors      'y1'   'y2'				#s1,#s4,#s5,#s6,#s7
-#	discrete_design_range = 2				#s10,#s13,#s14,#s15,#s16
-#	  initial_point      2     2				#s10,#s13,#s14,#s15,#s16
-#	  lower_bounds       1     1				#s10,#s13,#s14,#s15,#s16
-#	  upper_bounds       4     9				#s10,#s13,#s14,#s15,#s16
-#	  descriptors      'y1'   'y2'				#s10,#s13,#s14,#s15,#s16
+#	discrete_design_range = 2				#s10,#s13,#s14,#s15,#s16,#s18
+#	  initial_point      2     2				#s10,#s13,#s14,#s15,#s16,#s18
+#	  lower_bounds       1     1				#s10,#s13,#s14,#s15,#s16,#s18
+#	  upper_bounds       4     9				#s10,#s13,#s14,#s15,#s16,#s18
+#	  descriptors      'y1'   'y2'				#s10,#s13,#s14,#s15,#s16,#s18
 #       discrete_design_set					#s2,#s3,#s4,#s5,#s6,#s7
 #         real = 2						#s2,#s4,#s5,#s6,#s7
 #           elements_per_variable = 4 5				#s2,#s4,#s5,#s6,#s7
 #           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s2,#s4,#s5,#s6,#s7
 #           descriptors      'y3'   'y4' 	       	       	#s2,#s4,#s5,#s6,#s7
-#       discrete_design_set					#s11,#s12,#s13,#s14,#s15,#s16
-#         real = 2						#s11,#s13,#s14,#s15,#s16
-#           elements_per_variable = 4 5				#s11,#s13,#s14,#s15,#s16
-#           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s11,#s13,#s14,#s15,#s16
-#           descriptors      'y3'   'y4' 	       	       	#s11,#s13,#s14,#s15,#s16
-#	    categorical 'yes' 'yes' 				#s6,#s7,#s15,#s16
-#	    adjacency_matrix 1 1 0 0				#s6,#s7,#s15,#s16
-#	    	      	     1 1 1 0   				#s6,#s7,#s15,#s16
-#		      	     0 1 1 1				#s6,#s7,#s15,#s16
-#		      	     0 0 1 1				#s6,#s7,#s15,#s16
-#		      	     1 0 1 0 1				#s6,#s7,#s15,#s16
-#		      	     0 1 0 1 0				#s6,#s7,#s15,#s16
-#		      	     1 0 1 0 1				#s6,#s7,#s15,#s16
-#		      	     0 1 0 1 0				#s6,#s7,#s15,#s16
-#		      	     1 0 1 0 1				#s6,#s7,#s15,#s16
+#       discrete_design_set					#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#         real = 2						#s11,#s13,#s14,#s15,#s16,#s18
+#           elements_per_variable = 4 5				#s11,#s13,#s14,#s15,#s16,#s18
+#           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7	#s11,#s13,#s14,#s15,#s16,#s18
+#           descriptors      'y3'   'y4' 	       	       	#s11,#s13,#s14,#s15,#s16,#s18
+#	    categorical 'yes' 'yes' 				#s6,#s7,#s15,#s16,#s18
+#	    adjacency_matrix 1 1 0 0				#s6,#s7,#s15,#s16,#s18
+#	    	      	     1 1 1 0   				#s6,#s7,#s15,#s16,#s18
+#		      	     0 1 1 1				#s6,#s7,#s15,#s16,#s18
+#		      	     0 0 1 1				#s6,#s7,#s15,#s16,#s18
+#		      	     1 0 1 0 1				#s6,#s7,#s15,#s16,#s18
+#		      	     0 1 0 1 0				#s6,#s7,#s15,#s16,#s18
+#		      	     1 0 1 0 1				#s6,#s7,#s15,#s16,#s18
+#		      	     0 1 0 1 0				#s6,#s7,#s15,#s16,#s18
+#		      	     1 0 1 0 1				#s6,#s7,#s15,#s16,#s18
 #         integer = 2						#s3,#s4,#s5,#s7
 #           elements_per_variable = 2 2	  			#s3,#s4,#s5,#s7
 #           elements = 4 7 8 9					#s3,#s4,#s5,#s7
 #           descriptors      'z1'   'z2'			#s3,#s4,#s5,#s7
 #	    categorical 'yes' 'yes' 				#s7
-#         integer = 2						#s12,#s13,#s14,#s16
-#           elements_per_variable = 2 2	  			#s12,#s13,#s14,#s16
-#           elements = 4 7 8 9					#s12,#s13,#s14,#s16
-#           descriptors      'z1'   'z2'			#s12,#s13,#s14,#s16
-#	    categorical 'yes' 'yes' 				#s16
+#         integer = 2						#s12,#s13,#s14,#s16,#s18
+#           elements_per_variable = 2 2	  			#s12,#s13,#s14,#s16,#s18
+#           elements = 4 7 8 9					#s12,#s13,#s14,#s16,#s18
+#           descriptors      'z1'   'z2'			#s12,#s13,#s14,#s16,#s18
+#	    categorical 'yes' 'yes' 				#s16,#s18
 #       discrete_design_set string = 1			#s8,#s17
 #	    elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'  	#s8,#s17
 #           descriptors = 'ancomp'    				#s8,#s17
@@ -95,7 +98,7 @@ variables,
 #                     	     0 0 1 1 1				#s8,#s17
 #                     	     0 0 1 1 1				#s8,#s17
 
-#method,		       	     				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#method,		       	     				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,
 #	id_method = 'SAMPLING'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #	model_pointer = 'TRUTH'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #	sampling      						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
@@ -109,10 +112,10 @@ variables,
 
 interface,
 #	id_interface = 'TRUE_FN'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
-       direct							#s0,#s2,#s3,#s4,#s5,#s6,#s7
+       direct							#s0,#s2,#s3,#s4,#s5,#s6,#s7,#s18
 #       direct							#s9,#s11,#s12,#s13,#s14,#s15,#s16
 #	fork asynch evaluation_concurrency 4			#s1,#s8,#s10,#s17
-	  analysis_driver = 'text_book'	   			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	  analysis_driver = 'text_book'	   			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s18
 #	  analysis_driver = 'text_book'	   			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #          analysis_driver = 'gerstner_string'			#s8,#s17
 #          parameters_file = 'params.in'			#s8,#s17
@@ -123,5 +126,7 @@ responses,
 	objective_functions = 1
 #	nonlinear_inequality_constraints = 2			#s1,#s3,#s4,#s6,#s7
 #	nonlinear_inequality_constraints = 2			#s10,#s12,#s13,#s15,#s16
+#	nonlinear_inequality_constraints = 1			#s18
+#	nonlinear_equality_constraints = 1				#s18
 	no_gradients
 	no_hessians

@@ -1,7 +1,11 @@
 Blurb:: The base file name of the results file
 
 Description::
-Default file name is \c dakota_results.txt
+
+The default filename is \c dakota_results.txt for text output  and 
+\c dakota_results.h5 for \c HDF5. The \c dakota_results stem can be
+changed using this keyword. Do not include the extension; these will
+be added by %Dakota.
 
 Topics::	dakota_output
 Examples::

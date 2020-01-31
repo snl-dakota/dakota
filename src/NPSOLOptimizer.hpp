@@ -46,6 +46,46 @@ namespace Dakota {
     Saunders, M.A., and Wright, M.H., 1986] for information on NPSOL's
     optional input parameters and the npoptn() subroutine. */
 
+/**
+ * \brief A version of TraitsBase specialized for NPSOL optimizers
+ *
+ */
+
+class NPSOLTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NPSOLTraits() { }
+
+  /// destructor
+  virtual ~NPSOLTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
+
+};
+
+
 class NPSOLOptimizer: public Optimizer, public SOLBase
 {
 public:
@@ -85,6 +125,7 @@ public:
 
   void core_run();
 
+  void declare_sources();
 private:
 
   //

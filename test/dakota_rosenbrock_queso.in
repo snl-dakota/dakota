@@ -18,17 +18,22 @@ method,
 #	      max_iterations = 9				#p5,#p6,#p8,#p14,#p26
 #	      convergence_tolerance = 1.e-14			#p6
 #	    standardized_space					#p11,#p12,#p13,#p14,#p17,#p20,#p23
+#          pre_solve nip        #s1
+#          model_evidence       #s1
+#            mc_approx laplace_approx  #s1
+#          evidence_samples = 1000  #s1
 	  proposal_covariance
 	    derivatives	
-	    proposal_updates = 50 # default update is every 100 samples
+	      update_period = 40
 	  logit_transform         # default is off
+	  posterior_stats kl_divergence
 #         calibrate_error_multipliers  #p27
 #           per_experiment             #p27
 #	  output verbose
 
 variables,								
 #	normal_uncertain 2  		#p7,#p8,#p10
-	uniform_uncertain 2		#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p25,#p26,#p27
+	uniform_uncertain 2		#s0,#s1,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p25,#p26,#p27
 #	exponential_uncertain 2  	#p16,#p17,#p18
 #	beta_uncertain 2     		#p19,#p20,#p21
 #	gamma_uncertain 2     		#p22,#p23,#p24
@@ -36,9 +41,9 @@ variables,
 #	  std_deviations 1.  1.		#p7,#p8,#p10
 #	  alphas         2.  2.		#p19,#p20,#p21,#p22,#p23,#p24
 #	  betas          2.  2.		#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24
-	  lower_bounds  -2. -2.		#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21,#p25,#p26,#p27
-	  upper_bounds   2.  2.		#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21,#p25,#p26,#p27
-	  initial_point -1.  1.		#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21,#p25,#p26,#p27
+	  lower_bounds  -2. -2.		#s0,#s1,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21,#p25,#p26,#p27
+	  upper_bounds   2.  2.		#s0,#s1,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p9,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21,#p25,#p26,#p27
+	  initial_point -1.  1.		#s0,#s1,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14,#p15,#p19,#p20,#p21,#p25,#p26,#p27
 #	  initial_point .2  .2		#p16,#p17,#p18,#p22,#p23,#p24
 	  descriptors  'x1' 'x2'
 
@@ -48,12 +53,12 @@ interface,
 
 responses,								
 	calibration_terms = 2
-        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24,#p25,#p26
-          freeform num_experiments = 1 variance_type = 'scalar'  #s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24,#p25,#p26
+        calibration_data_file = 'dakota_rosenbrock_queso.withsigma.dat'  #s0,#s1,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24,#p25,#p26
+          freeform num_experiments = 1 variance_type = 'scalar'  #s0,#s1,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p16,#p17,#p18,#p19,#p20,#p21,#p22,#p23,#p24,#p25,#p26
 #       calibration_data_file = 'dakota_rosenbrock_queso.withsigma2.dat'  #p27
 #         freeform num_experiments = 2 variance_type = 'scalar'  #p27
   	descriptors = 'f1' 'f2'
  	no_gradients		#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p16,#p17,#p19,#p20,#p22,#p23,#p25,#p26,#p27
 	no_hessians		#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p15,#p16,#p17,#p19,#p20,#p22,#p23,#p25,#p26,#p27
-#	analytic_gradients	#p9,#p10,#p13,#p15,#p18,#p21,#p24
-#	analytic_hessians	#p9,#p10,#p13,#p18,#p21,#p24
+#	analytic_gradients	#s1,#p9,#p10,#p13,#p15,#p18,#p21,#p24
+#	analytic_hessians	#s1,#p9,#p10,#p13,#p18,#p21,#p24

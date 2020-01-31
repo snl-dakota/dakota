@@ -23,7 +23,8 @@ DataModelRep::DataModelRep():
   hierarchicalTags(false),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), exportSurrogate(false),
   modelExportPrefix("exported_surrogate"), modelExportFormat(NO_MODEL_FORMAT),
-  importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
+  importBuildFormat(TABULAR_ANNOTATED),  importUseVariableLabels(false),
+  importBuildActive(false),
 //importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
@@ -35,7 +36,9 @@ DataModelRep::DataModelRep():
   decompDiscontDetect(false), discontJumpThresh(0.0), discontGradThresh(0.0),
   trendOrder("reduced_quadratic"), pointSelection(false),
   crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
-  importChallengeFormat(TABULAR_ANNOTATED), importChallengeActive(false),
+  importChallengeFormat(TABULAR_ANNOTATED), importChalUseVariableLabels(false),
+  importChallengeActive(false),
+  identityRespMap(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING), initialSamples(0),
   maxIterations(100), convergenceTolerance(1.0e-4), softConvergenceLimit(0),
@@ -43,13 +46,17 @@ DataModelRep::DataModelRep():
   subspaceIdEnergy(false), subspaceIdCV(false), subspaceBuildSurrogate(false),
   subspaceSampleType(SUBMETHOD_DEFAULT), subspaceDimension(0),
   subspaceNormalization(SUBSPACE_NORM_DEFAULT),
-  numReplicates(100), autoRefine(false), maxFunctionEvals(1000),
+  numReplicates(100), relTolerance(1.0e-6),
+  decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
+  subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
+  regressionL2Penalty(0.), maxSolverIterations(1000), maxCrossIterations(1),
+  solverTolerance(1.e-10), roundingTolerance(1.e-8), startOrder(2), maxOrder(4),
+  startRank(2), kickRank(2), maxRank(3), adaptRank(false),
+  autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
-  analyticCovIdForm(NOCOVAR), referenceCount(1), relTolerance(1.0e-6),
-  decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
-  subspaceIdCVMethod(CV_ID_DEFAULT)
+  analyticCovIdForm(NOCOVAR), referenceCount(1)
 { }
 
 
@@ -61,7 +68,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << surrogateType << actualModelPointer << orderedModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importBuildActive
+    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
@@ -74,15 +82,19 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
-    << importChallengeFormat << importChallengeActive
+    << importChallengeFormat << importChalUseVariableLabels
+    << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
-    << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
-    << subMethodProcs << subMethodScheduling 
+    << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
+    << subMethodServers << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
-    << subspaceDimension << subspaceNormalization << numReplicates << autoRefine
-    << maxFunctionEvals << refineCVMetric << refineCVFolds
+    << subspaceDimension << subspaceNormalization << numReplicates
+    << regressionType << regressionL2Penalty << maxSolverIterations
+    << maxCrossIterations << solverTolerance << roundingTolerance
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
@@ -95,12 +107,13 @@ void DataModelRep::write(MPIPackBuffer& s) const
 void DataModelRep::read(MPIUnpackBuffer& s)
 {
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
-    >> responsesPointer >> hierarchicalTags >> subMethodPointer 
+    >> responsesPointer >> hierarchicalTags >> subMethodPointer
     >> solutionLevelControl >> solutionLevelCost >> surrogateFnIndices
     >> surrogateType >> actualModelPointer >> orderedModelPointers
     >> pointsTotal >> pointsManagement >> approxPointReuse
     >> importBuildPtsFile >> importBuildFormat >> exportSurrogate
-    >> modelExportPrefix >> modelExportFormat >> importBuildActive
+    >> modelExportPrefix >> modelExportFormat >> importUseVariableLabels
+    >> importBuildActive
   //>> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat 
     >> approxCorrectionType >> approxCorrectionOrder >> modelUseDerivsFlag
@@ -113,15 +126,19 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> decompDiscontDetect >> discontJumpThresh >> discontGradThresh
     >> trendOrder >> pointSelection >> diagMetrics >> crossValidateFlag
     >> numFolds >> percentFold >> pressFlag >> importChallengePtsFile
-    >> importChallengeFormat >> importChallengeActive
+    >> importChallengeFormat >> importChalUseVariableLabels 
+    >> importChallengeActive
     >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
-    >> primaryRespCoeffs >> secondaryRespCoeffs >> subMethodServers
-    >> subMethodProcs >> subMethodScheduling     
+    >> primaryRespCoeffs >> secondaryRespCoeffs >> identityRespMap
+    >> subMethodServers >> subMethodProcs >> subMethodScheduling 
     >> initialSamples >> refineSamples >> maxIterations 
     >> convergenceTolerance >> softConvergenceLimit >> subspaceIdBingLi 
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
-    >> subspaceDimension >> subspaceNormalization >> numReplicates >> autoRefine
-    >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
+    >> subspaceDimension >> subspaceNormalization >> numReplicates
+    >> regressionType >> regressionL2Penalty >> maxSolverIterations
+    >> maxCrossIterations >> solverTolerance >> roundingTolerance
+    >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
+    >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
     >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
     >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
     >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
@@ -134,12 +151,13 @@ void DataModelRep::read(MPIUnpackBuffer& s)
 void DataModelRep::write(std::ostream& s) const
 {
   s << idModel << modelType << variablesPointer << interfacePointer
-    << responsesPointer << hierarchicalTags << subMethodPointer 
+    << responsesPointer << hierarchicalTags << subMethodPointer
     << solutionLevelControl << solutionLevelCost << surrogateFnIndices
     << surrogateType << actualModelPointer << orderedModelPointers
     << pointsTotal << pointsManagement << approxPointReuse
     << importBuildPtsFile << importBuildFormat << exportSurrogate
-    << modelExportPrefix << modelExportFormat << importBuildActive
+    << modelExportPrefix << modelExportFormat << importUseVariableLabels
+    << importBuildActive
   //<< importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat 
     << approxCorrectionType << approxCorrectionOrder << modelUseDerivsFlag
@@ -152,15 +170,19 @@ void DataModelRep::write(std::ostream& s) const
     << decompDiscontDetect << discontJumpThresh << discontGradThresh
     << trendOrder << pointSelection << diagMetrics << crossValidateFlag
     << numFolds << percentFold << pressFlag << importChallengePtsFile
-    << importChallengeFormat << importChallengeActive
+    << importChallengeFormat << importChalUseVariableLabels
+    << importChallengeActive
     << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
-    << primaryRespCoeffs << secondaryRespCoeffs << subMethodServers
-    << subMethodProcs << subMethodScheduling 
+    << primaryRespCoeffs << secondaryRespCoeffs << identityRespMap
+    << subMethodServers << subMethodProcs << subMethodScheduling 
     << initialSamples << refineSamples << maxIterations 
-    << convergenceTolerance << subspaceIdBingLi << subspaceIdConstantine
-    << subspaceIdEnergy << subspaceBuildSurrogate
-    << subspaceDimension << subspaceNormalization << numReplicates << autoRefine
-    << maxFunctionEvals << refineCVMetric << refineCVFolds
+    << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
+    << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
+    << subspaceDimension << subspaceNormalization << numReplicates
+    << regressionType << regressionL2Penalty << maxSolverIterations
+    << maxCrossIterations << solverTolerance << roundingTolerance
+    << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
     << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm

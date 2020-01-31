@@ -1,0 +1,18 @@
+name: Weights (pareto_set)
+dataset:
+  description: "Response Weights for pareto_set"
+  location: "weights"
+  shape: "2-dimensional: number of sets by number of responses"
+  type: Real
+scales:
+  - dimension: 0
+    type: Integer
+    label: set_ids
+    contents: set Ids
+    literal_contents: False
+  - dimension: 1
+    type: String
+    label: weights
+    contents: w1, w2, ... wN
+    literal_contents: True
+

@@ -1,0 +1,16 @@
+Testing Changing code blocks
+a # Should NOT fill
+{A} # Should not fill *and* show escape
+[[A]] # Should fill
+\[[A\]] # Should not fill -- test escape
+
+0
+1
+
+$ for j in range(2):
+[[j]]
+$ end
+
+Test inline expansions:
+[[tt = 1]][[tt = tt + 1]][[tt = tt + 1]][[tt = Immutable(tt)]][[tt = tt + 1]]
+12333

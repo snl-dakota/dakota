@@ -1,3 +1,7 @@
+% needed by pyrepro manual section, which was converted by
+% pandoc from markdown.
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \chapter{Interfaces}\label{interfaces}
 
 
@@ -65,7 +69,7 @@ following test functions are available: \texttt{cantilever},
 \texttt{short\_column}, and \texttt{text\_book} (including
 \texttt{text\_book1}, \texttt{text\_book2}, \texttt{text\_book3}, and
 \texttt{text\_book\_ouu}). While these functions are also available
-as external programs in the \texttt{Dakota/test} directory,
+as external programs in the \path{dakota/share/dakota/test} directory,
 maintaining internally linked versions allows more rapid testing. See
 Chapter~\ref{additional} for additional information on several of
 these test problems. An example input specification for a direct
@@ -155,37 +159,46 @@ Section~\ref{parallel:SLP:local:fork}.
 
 \subsection{Syntax for Filter and Driver Strings}\label{interfaces:syntax}
 
-With the fork interface, and on most systems, with the system interface
-as well, the string values supplied for \texttt{input\_filter}, \texttt{output\_filter},
-and \texttt{analysis\_driver} can involve simple Bourne-shell
-syntax for specifying environment values that the filter or driver will see.
-For example,
-\begin{verbatim}
-    analysis_driver = 'opfile=myspec outlev=2 mydriver'
-\end{verbatim}
-would cause \texttt{mydriver} to be invoked with environment
-variables \texttt{opfile} and \texttt{outlev} having the
-values ``myspec" and ``2", respectively.  If the driver is a
-shell script, it can access these values as \texttt{\$opfile} and
-\texttt{\$outlev}; a compiled driver can obtain these values
-from a function; drivers written in C or C++ can use the standard
-\texttt{getenv} function (e.g., invoking \verb@getenv("opfile")@).
+Dakota's default behavior is to construct input filter, analysis driver, and
+output filter commands by appending the names of the parameters file and results file
+for the evaluation/analysis to the user-provided
+\texttt{input\_filter}, \texttt{output\_filter}, and \texttt{analysis\_drivers} 
+strings. After adding its working directory to the \texttt{PATH}, Dakota executes 
+these commands in its working directory or, if the \texttt{work\_directory} keyword 
+group is present, in a work directory.
 
-Both the values assigned to environment variables and name of the
-file invoked as filter or driver can contain spaces, provided that the values
-in question are quoted.  Within strings delimited by single quotes,
-you can use double quotes for quoting, and vice versa.  For instance,
-\begin{verbatim}
-    analysis_driver = 'opfile="my spec" "my driver"'
-\end{verbatim}
-and
-\begin{verbatim}
-    analysis_driver = "opfile='my spec' 'my driver'"
-\end{verbatim}
-both specify a driver named ``\texttt{my driver}" and value ``\texttt{my spec}"
-for \texttt{\$opfile}.
+Filter and driver strings may contain absolute or relative path information and 
+whitespace; Dakota will pass them through without modification.
 
+Quotes are also permitted with the restriction that if double-quotes (") are used to 
+enclose the driver or filter string as a whole, then only single quotes (') are allowed 
+within it, and vice versa. The input filter string \texttt{'dprepro --var "foo=1"'} 
+works, as does \texttt{"dprepro --var 'foo=1'"}, but not \texttt{"dprepro --var "foo=1""}.
 
+In some situations, users may not wish Dakota to append the names of the parameters
+or results files to filter and driver strings. The \texttt{verbatim} keyword prevents
+this behavior, and causes Dakota to execute filter and driver strings "as is".
+
+Beginning with version 6.10, Dakota will substitute the tokens \texttt{\{PARAMETERS\}} 
+and \texttt{\{RESULTS\}} in driver and filter strings with the names of the paramters 
+and results files for that analysis/evaluation just prior to execution.
+
+For example, if an \texttt{interface} block in the input file included:
+
+\begin{verbatim}
+  input_filter 'preprocess {PARAMETERS}'
+  analysis_drivers 'run_sim.sh'
+  output_filter 'postprocess {RESULTS}'
+  verbatim
+\end{verbatim}
+
+Then, the input filter \texttt{preprocess} would be run with only the parameters file 
+as a command line argument, the analysis driver \texttt{run\_sim.sh} would receive no 
+command line arguments, and the output filter \texttt{postprocess} would receive only 
+the results file name.
+
+The combination of \texttt{verbatim} and substitution provide users with considerable
+flexibility in specifying the form of filter and driver commands.
 
 \subsection{Fork or System Call: Which to Use?}\label{interfaces:which}
 
@@ -252,7 +265,7 @@ can be used. If the user prefers, the desired pre- and post-processing
 functionality may also be compiled or interpreted from any number of
 programming languages (C, C++, F77, F95, JAVA, Basic, etc.).
 
-In the \texttt{Dakota/examples/script\_interfaces/generic} directory,
+In the \path{dakota/share/dakota/examples/script_interfaces/generic} directory,
 a simple example uses the Rosenbrock test function as a mock
 engineering simulation code. Several scripts have been included to
 demonstrate ways to accomplish the pre- and post-processing
@@ -262,18 +275,19 @@ only to demonstrate the issues associated with interfacing a
 simulator. Modifications will almost surely be required for new
 applications.
 
-\subsection{Generic Script Interface Files} 
+\subsection{Generic Script Interface Files}\label{interfaces:generic}
 
-The {\tt Dakota/examples/script\_interfaces/generic} directory contains four important files:
-\texttt{dakota\_rosenbrock.in} (the Dakota input file),
-\texttt{simulator\_script} (the simulation driver script),
-\texttt{dprepro} (a pre-processing utility), and \\
-\texttt{templatedir/ros.template} (a template simulation input file).
+The \path{dakota/share/dakota/examples/script_interfaces/generic}
+directory contains four important files:
+\path{dakota_rosenbrock.in} (the Dakota input file),
+\path{simulator_script} (the simulation driver script),
+\path{dprepro} (a pre-processing utility), and
+\path{templatedir/ros.template} (a template simulation input file).
 
-The file \texttt{dakota\_rosenbrock.in} specifies the study that
+The file \path{dakota_rosenbrock.in} specifies the study that
 Dakota will perform and, in the interface section, describes the
 components to be used in performing function evaluations. In
-particular, it identifies \\ \texttt{simulator\_script} as its
+particular, it identifies \path{simulator_script} as its
 \texttt{analysis\_driver}, as shown in Figure~\ref{advint:figure01}.
 \begin{figure}
   \centering
@@ -282,16 +296,16 @@ particular, it identifies \\ \texttt{simulator\_script} as its
       \verbatimtabinput[8]{dakota_rosenbrock.in}
     \end{small}
   \end{bigbox}
-  \caption{The \texttt{dakota\_rosenbrock.in} input file.}
+  \caption{The \protect\path{dakota_rosenbrock.in} input file.}
   \label{advint:figure01}
 \end{figure}
 
-The \texttt{simulator\_script} listed in Figure~\ref{advint:figure02}
+The \path{simulator_script} listed in Figure~\ref{advint:figure02}
 is a short driver shell script that Dakota executes to perform each
 function evaluation. The names of the parameters and results files are
 passed to the script on its command line; they are
-referenced in the script by \texttt{\$argv[1]}
-and \texttt{\$argv[2]}, respectively. The \texttt{simulator\_script}
+referenced in the script by \texttt{\$1}
+and \texttt{\$2}, respectively. The \path{simulator_script}
 is divided into three parts: pre-processing, analysis, and post-processing.
 % is divided into five parts: set up, pre-processing, analysis,
 % post-processing, and clean up.
@@ -303,7 +317,7 @@ is divided into three parts: pre-processing, analysis, and post-processing.
       \verbatimtabinput[8]{simulator_script}
     \end{small}
   \end{bigbox}
-  \caption{The \texttt{simulator\_script} sample driver script.}
+  \caption{The \protect\path{simulator_script} sample driver script.}
   \label{advint:figure02}
 \end{figure}
 
@@ -317,60 +331,52 @@ is divided into three parts: pre-processing, analysis, and post-processing.
 % simulation do not conflict with those for another simulation. This is
 % particularly important when executing concurrent simulations in
 % parallel (to actually execute function evaluations concurrently,
-% uncomment the \texttt{asynchronous} line in \texttt{dakota\_rosenbrock.in}).
+% uncomment the \texttt{asynchronous} line in \path{dakota_rosenbrock.in}).
 % %Once executing within the confines of the working directory, tags on the 
 % %files are no longer necessary, and for this reason, the tagged parameters
-% %file is moved to a more convenient name of ``\texttt{dakota\_vars}''.
+% %file is moved to a more convenient name of ``\path{dakota_vars}''.
 
-In the pre-processing portion, the \texttt{simulator\_script} uses
-\texttt{dprepro}, a parsing utility, to extract the
-current variable values from a parameters file (\texttt{\$argv[1]})
+In the pre-processing portion, the \path{simulator_script} uses
+\path{dprepro}, a template processing utility, to extract the
+current variable values from a parameters file (\texttt{\$1})
 and combine them with the simulator template input file
-(\texttt{ros.template}) to create a new input file (\texttt{ros.in})
+(\path{ros.template}) to create a new input file (\path{ros.in})
 for the simulator. Internal to Sandia, the APREPRO utility is often
 used for this purpose. For external sites where APREPRO is not
-available, the DPrePro utility mentioned above is an alternative with
-many of the capabilities of APREPRO that is specifically tailored for
-use with Dakota and is distributed with it (in
-\\ \texttt{Dakota/examples/script\_interfaces/generic/dprepro}, or {\tt
-Dakota/bin} in a binary distribution). Additionally, the BPREPRO
-utility is another alternative to APREPRO (see~\cite{WalXX}), and at
-Lockheed Martin sites, the JPrePost utility is available as a JAVA
-pre- and post-processor~\cite{Fla}. The \texttt{dprepro} script
-(usage shown in Figure~\ref{advint:figure03}) will be used here for
-simplicity of discussion. It can use either Dakota's \texttt{aprepro}
-parameters file format (see
+available, \texttt{dprepro} is an alternative with many of the 
+capabilities of APREPRO that is specifically tailored for use with Dakota
+and is distributed with it (in \path{dakota/scripts/pyprepro/}, or
+\path{dakota/bin} in a binary distribution). Dakota also provides a second,
+more general-purpose template processing tool named \texttt{pyprepro}, 
+which is as a Python-based alternative to APREPRO. This pair of
+tools, which permit not only parameter substitution, but execution of
+arbitrary Python scripting within templates, is extensively documented in 
+Section~\ref{interfaces:dprepro-and-pyprepro}.
+
+Other preprocessing tools of potential interest are the BPREPRO
+utility (see~\cite{WalXX}), and at Lockheed Martin sites, the JPrePost 
+utility, a JAVA pre- and post-processor~\cite{Fla}. The \texttt{dprepro} script
+will be used here for simplicity of discussion. It can use either 
+Dakota's \texttt{aprepro} parameters file format (see
 Section~\ref{variables:parameters:aprepro}) or Dakota's standard
 format (see Section~\ref{variables:parameters:standard}), so either
 option may be selected in the interface section of the Dakota input
-file. The \texttt{ros.template} file listed in
+file. The \path{ros.template} file listed in
 Figure~\ref{advint:figure04} is a template simulation input file which
 contains targets for the incoming variable values, identified by the
 strings ``\texttt{\{x1\}}'' and ``\texttt{\{x2\}}''. These
 identifiers match the variable descriptors specified in
-\texttt{dakota\_rosenbrock.in}. The template input file is contrived
+\path{dakota_rosenbrock.in}. The template input file is contrived
 as Rosenbrock has nothing to do with finite element analysis; it only
 mimics a finite element code to demonstrate the simulator
 template process. The \texttt{dprepro} script will search the
 simulator template input file for fields marked with curly
-brackets and then create a new file (\texttt{ros.in}) by replacing
+brackets and then create a new file (\path{ros.in}) by replacing
 these targets with the corresponding numerical values for the
-variables. As noted in the usage information for \texttt{dprepro} and
-shown in \texttt{simulator\_script}, the names for the Dakota
-parameters file (\texttt{\$argv[1]}), template file
-(\texttt{ros.template}), and generated input file (\texttt{ros.in})
+variables. As shown in \path{simulator_script}, the names for the Dakota
+parameters file (\texttt{\$1}), template file
+(\path{ros.template}), and generated input file (\path{ros.in})
 must be specified in the \texttt{dprepro} command line arguments.
-
-\begin{figure}
-  \centering
-  \begin{bigbox}
-    \begin{small}
-      \verbatimtabinput[8]{dprepro_usage}
-    \end{small}
-  \end{bigbox}
-  \caption{Partial listing of the \texttt{dprepro} script.}
-  \label{advint:figure03}
-\end{figure}
 
 \begin{figure}
   \centering
@@ -379,24 +385,24 @@ must be specified in the \texttt{dprepro} command line arguments.
       \verbatimtabinput[8]{ros.template}
     \end{small}
   \end{bigbox}
-  \caption{Listing of the \texttt{ros.template} file}
+  \caption{Listing of the \protect\path{ros.template} file}
   \label{advint:figure04}
 \end{figure}
 
-The second part of the script executes the \texttt{rosenbrock\_bb}
-simulator. The input and output file names, \texttt{ros.in} and
-\texttt{ros.out}, respectively, are hard-coded into the FORTRAN 77
-program \texttt{rosenbrock\_bb.f}. When the \texttt{rosenbrock\_bb}
+The second part of the script executes the \path{rosenbrock_bb}
+simulator. The input and output file names, \path{ros.in} and
+\path{ros.out}, respectively, are hard-coded into the FORTRAN 77
+program \path{rosenbrock_bb.f}. When the \path{rosenbrock_bb}
 simulator is executed, the values for \texttt{x1} and \texttt{x2} are
-read in from \texttt{ros.in}, the Rosenbrock function is evaluated,
-and the function value is written out to \texttt{ros.out}.
+read in from \path{ros.in}, the Rosenbrock function is evaluated,
+and the function value is written out to \path{ros.out}.
 
 The third part performs the post-processing and writes the response
 results to a file for Dakota to read. Using the UNIX ``\texttt{grep}'' utility, the
 particular response values of interest are extracted from the raw
-simulator output and saved to a temporary file (\texttt{results.tmp}).
-When complete, this file is renamed \texttt{\$argv[2]}, which in this
-example is always ``\texttt{results.out}''.
+simulator output and saved to a temporary file (\path{results.tmp}).
+When complete, this file is renamed \texttt{\$2}, which in this
+example is always ``\path{results.out}''.
 Note that moving or renaming the completed results file
 avoids any problems with read race
 conditions (see Section~\ref{parallel:SLP:local:system}).
@@ -407,35 +413,35 @@ conditions (see Section~\ref{parallel:SLP:local:system}).
 % commented out by inserting a ``\texttt{\#}'' character before
 % ``\texttt{$\backslash$rm -rf}''.
 
-Because the Dakota input file \texttt{dakota\_rosenbrock.in}
+Because the Dakota input file \path{dakota_rosenbrock.in}
 (Figure~\ref{advint:figure01}) specifies
 \texttt{work\_directory} and \texttt{directory\_tag} in its interface
-section, each invocation of \texttt{simulator\_script} wakes up in
+section, each invocation of \path{simulator_script} wakes up in
 its own temporary directory, which Dakota has populated with the
-contents of directory \texttt{templatedir}. Having a separate directory
-for each invocation of \texttt{simulator\_script} simplifies the script
+contents of directory \path{templatedir/}. Having a separate directory
+for each invocation of \path{simulator_script} simplifies the script
 when the Dakota input file specifies \texttt{asynchronous} (so
-several instances of \texttt{simulator\_script} might run simultaneously),
-as fixed names such as \texttt{ros.in}, \texttt{ros.out}, and \texttt{results.tmp}
+several instances of \path{simulator_script} might run simultaneously),
+as fixed names such as \path{ros.in}, \path{ros.out}, and \path{results.tmp}
 can be used for intermediate files. If neither \texttt{asynchronous} nor
 \texttt{file\_tag} is specified, and if there is no need (e.g., for debugging)
 to retain intermediate files having fixed names, then \texttt{directory\_tag}
 offers no benefit and can be omitted. An alternative to \texttt{directory\_tag}
 is to proceed as earlier versions of this chapter --- prior to Dakota 5.0's
 introduction of \texttt{work\_directory} --- recommended:  add two more
-steps to the \texttt{simulator\_script},
+steps to the \path{simulator_script},
 an initial one to create a temporary directory explicitly and
-copy \texttt{templatedir} to it if needed, and a final step to remove the temporary
+copy \path{templatedir/} to it if needed, and a final step to remove the temporary
 directory and any files in it.
 
 When \texttt{work\_directory} is specified, Dakota adjusts the \texttt{\$PATH} seen
-by \texttt{simulator\_script} so that simple program names
-%in the \texttt{simulator\_script}
+by \path{simulator_script} so that simple program names
+%in the \path{simulator_script}
 (i.e., names not containing a slash) that
 are visible in Dakota's directory will also be visible in the work directory.
 Relative path names ---
 involving an intermediate slash but not an initial one,
-such as \texttt{./rosenbrock\_bb} or \texttt{a/bc/rosenbrock\_bb} ---
+such as \path{./rosenbrock_bb} or \path{a/bc/rosenbrock_bb} ---
 will only be visible in the work directory if a \texttt{link\_files}
 or \texttt{copy\_files} specification (see \S\ref{interfaces:workdir})
 has made them visible there.
@@ -456,7 +462,7 @@ consider evaluation 60. The parameters file for this evaluation consists of:
 \end{verbatim}
 \end{small}
 
-This file is called \texttt{workdir/workdir.60/params.in} if the line
+This file is called \path{workdir/workdir.60/params.in} if the line
 \begin{small}
 \begin{verbatim}
  	  named 'workdir' file_save  directory_save
@@ -468,12 +474,12 @@ followed by new values for variables \texttt{x1} and \texttt{x2}, and
 one response function (an objective function), followed by an active
 set vector (ASV) value of \texttt{1}. The ASV indicates the need to
 return the value of the objective function for these parameters (see
-Section~\ref{variables:asv}). The \texttt{dprepro} script reads the
+Section~\ref{variables:asv}). The \path{dprepro} script reads the
 variable values from this file, namely \texttt{1.638247697999295e-01}
 and \texttt{2.197298209103481e-02} for \texttt{x1} and \texttt{x2}
 respectively, and substitutes them in the \texttt{\{x1\}} and
-\texttt{\{x2\}} fields of the \texttt{ros.template} file. The final
-three lines of the resulting input file (\texttt{ros.in}) then appear
+\texttt{\{x2\}} fields of the \path{ros.template} file. The final
+three lines of the resulting input file (\path{ros.in}) then appear
 as follows:
 \begin{small}
 \begin{verbatim}
@@ -484,8 +490,8 @@ as follows:
 \end{small}
 
 where all other lines are identical to the template file. The
-\texttt{rosenbrock\_bb} simulator accepts \texttt{ros.in} as its input
-file and generates the following output to the file \texttt{ros.out}:
+\path{rosenbrock_bb} simulator accepts \path{ros.in} as its input
+file and generates the following output to the file \path{ros.out}:
 \begin{small}
 \begin{verbatim}
     Beginning execution of model: Rosenbrock black box
@@ -508,15 +514,15 @@ file and generates the following output to the file \texttt{ros.out}:
 
 Next, the appropriate values are extracted from the raw simulator output
 and returned in the results file. This post-processing is relatively
-trivial in this case, and the \texttt{simulator\_script} uses the
+trivial in this case, and the \path{simulator_script} uses the
 \texttt{grep} and \texttt{cut} utilities to extract the value from the
-``\texttt{Function value}" line of the \texttt{ros.out} output file and save it to
-\texttt{\$argv[2]}, which is the \texttt{results.out} file for this
+``\texttt{Function value}" line of the \path{ros.out} output file and save it to
+\texttt{\$2}, which is the \path{results.out} file for this
 evaluation. This single value provides the objective function value
 requested by the ASV.
 
 After 132 of these function evaluations, the following Dakota output
-shows the final solution using the \\ \texttt{rosenbrock\_bb} simulator:
+shows the final solution using the \path{rosenbrock_bb} simulator:
 \begin{small}
 \begin{verbatim}
     Exit NPSOL - Optimal solution found.
@@ -560,19 +566,19 @@ need to be performed:
   simulation.
 
 \item Modify the \texttt{dprepro} arguments in
-  \texttt{simulator\_script} to reflect names of the Dakota parameters
-  file (previously ``\texttt{\$argv[1]}''), template file name
-  (previously ``\texttt{ros.template}'') and generated input file
-  (previously ``\texttt{ros.in}''). Alternatively, use APREPRO,
+  \path{simulator_script} to reflect names of the Dakota parameters
+  file (previously ``\texttt{\$1}''), template file name
+  (previously ``\path{ros.template}'') and generated input file
+  (previously ``\path{ros.in}''). Alternatively, use APREPRO,
   BPREPRO, or JPrePost to perform this step (and adapt the syntax
   accordingly).
 
-\item Modify the analysis section of \texttt{simulator\_script} to
-  replace the \texttt{rosenbrock\_bb} function call with the new
+\item Modify the analysis section of \path{simulator_script} to
+  replace the \path{rosenbrock_bb} function call with the new
   simulator name and command line syntax (typically including the
   input and output file names).
 
-\item Change the post-processing section in \texttt{simulator\_script}
+\item Change the post-processing section in \path{simulator_script}
   to reflect the revised extraction process. At a minimum, this would
   involve changing the \texttt{grep} command to reflect the name of
   the output file, the string to search for, and the characters to cut
@@ -580,7 +586,7 @@ need to be performed:
   tasks, invocation of additional tools may have to be added to the
   script.
 
-\item Modify the \texttt{dakota\_rosenbrock.in} input file to reflect,
+\item Modify the \path{dakota_rosenbrock.in} input file to reflect,
   at a minimum, updated variables and responses specifications.
 \end{enumerate}
 
@@ -610,9 +616,8 @@ Section~\ref{intro:coupling}.
 \subsection{Additional Examples}
 
 A variety of additional examples of black-box interfaces to simulation
-codes are maintained in the\\
-\texttt{Dakota/examples/script\_interfaces} directory in the source
-code distribution.
+codes are maintained in the
+\path{dakota/share/dakota/examples/script_interfaces} directory.
 
 
 \section{Simulation Interface Components}\label{interfaces:components}
@@ -685,8 +690,8 @@ system call case is:
 \end{verbatim}
 \end{small}
 
-where ``\texttt{driver}'' is the user-specified analysis driver and
-``\texttt{params.in}'' and ``\texttt{results.out}'' are the names of the
+where ``\path{driver}'' is the user-specified analysis driver and
+``\path{params.in}'' and ``\path{results.out}'' are the names of the
 parameters and results files, respectively, passed on the command
 line. In this case, the user need not retrieve the command line
 arguments since the same file names will be used each time.
@@ -751,8 +756,8 @@ performs is:
 \end{verbatim}
 \end{small}
 
-in which the input filter (``\texttt{ifilter}''), analysis driver
-(``\texttt{driver}''), and output filter (``\texttt{ofilter}'')
+in which the input filter (``\path{ifilter}''), analysis driver
+(``\path{driver}''), and output filter (``\path{ofilter}'')
 processes are combined into a single system call through the use of
 semi-colons (see~\cite{And86}). All three portions are
 passed the names of the parameters and results files on the command
@@ -831,9 +836,9 @@ would appear as:
 \end{verbatim}
 \end{small}
 
-where ``\texttt{driver1}'', ``\texttt{driver2}'', and
-``\texttt{driver3}'' are the user-specified analysis drivers and
-``\texttt{params.in}'' and ``\texttt{results.out}'' are the
+where ``\path{driver1}'', ``\path{driver2}'', and
+``\path{driver3}'' are the user-specified analysis drivers and
+``\path{params.in}'' and ``\path{results.out}'' are the
 user-selected names of the parameters and results files. Note that the
 results files for the different analysis drivers have been
 automatically tagged to prevent overwriting. This automatic tagging of
@@ -976,7 +981,7 @@ execution of the input filter, each of the analysis drivers, and the
 output filter.
 
 A complete example of these filters and multi-part drivers can be
-found in \texttt{Dakota/test/dakota\_3pc/dakota\_3pc.in}.
+found in \path{dakota/share/dakota/test/dakota_3pc/dakota_3pc.in}.
 
 \section{Simulation File Management}\label{interfaces:file}
 
@@ -1071,13 +1076,13 @@ multiple models with a nested or hierarchical relationship.  For
 example a nested model has a sub-method, which itself likely operates
 on a sub-model, or a hierarchical approximation involves coordination
 of low and high fidelity models.  Specifying {\tt
-  hierarchical\_tagging} will yield function evaluation identifiers
+hierarchical\_tagging} will yield function evaluation identifiers
 (``tags'') composed of the evaluation IDs of the models involved,
 e.g., outermodel.innermodel.interfaceid = 4.9.2.  This communicates
 the outer contexts to the analysis driver when performing a function
 evaluation.  For an example of using hierarhical tagging in a nested
-model context, see {\tt
-  dakota/test/dakota\_uq\_timeseries\_*\_optinterf.in}.
+model context,
+see \path{dakota/share/dakota/test/dakota_uq_timeseries_*_optinterf.in}.
 
 \subsection{Temporary Files}\label{interfaces:file:temporary}
 
@@ -1155,16 +1160,16 @@ since each analysis driver must contribute a
 user-defined subset of the total response results for the evaluation.
 If an output filter is not supplied, Dakota will combine these
 portions through a simple overlaying of the individual contributions
-(i.e., summing the results in \texttt{/var/tmp/baaxkaOKZ.1},
-\texttt{/var/tmp/baaxkaOKZ.2}, and \texttt{/var/tmp/baaxkaOKZ.3}). If
+(i.e., summing the results in \path{/var/tmp/baaxkaOKZ.1},
+\path{/var/tmp/baaxkaOKZ.2}, and \path{/var/tmp/baaxkaOKZ.3}). If
 this simple approach is inadequate, then an output filter should be
 supplied to perform the combination. This is the reason why the
 results file for the output filter does not use analysis tagging; it
 is responsible for the results combination (i.e., combining
-\texttt{/var/tmp/baaxkaOKZ.1}, \texttt{/var/tmp/baaxkaOKZ.2}, and
-\texttt{/var/tmp/baaxkaOKZ.3} into \texttt{/var/tmp/baaxkaOKZ}). In
+\path{/var/tmp/baaxkaOKZ.1}, \path{/var/tmp/baaxkaOKZ.2}, and
+\path{/var/tmp/baaxkaOKZ.3} into \path{/var/tmp/baaxkaOKZ}). In
 this case, Dakota will read only the results file from the output
-filter (i.e., \texttt{/var/tmp/baaxkaOKZ}) and interpret it as the
+filter (i.e., \path{/var/tmp/baaxkaOKZ}) and interpret it as the
 total response set for the evaluation.
 
 Parameters files are not currently tagged with an analysis identifier.
@@ -1210,7 +1215,7 @@ path to them (i.e., by a name not involving any slashes) from
 Dakota's directory can also be invoked from the simulator's (and filter's)
 directory.  On occasion, it is convenient for the simulator to have
 various files, e.g., data files, available in the directory where it
-runs.  If, say, \texttt{my/special/directory} is such a directory
+runs.  If, say, \path{my/special/directory/} is such a directory
 (as seen from Dakota's directory), the interface specification
 \begin{small}
 \begin{verbatim}
@@ -1241,7 +1246,7 @@ new directory populated with some files.  Adding
 \end{verbatim}
 \end{small}
 to the work directory specification would cause the
-contents of directory \texttt{templatedir} to be linked
+contents of directory \path{templatedir/} to be linked
 into the work directory.  Linking makes sense if files are large,
 but when practical, it is far more reliable to have
 copies of the files; adding \texttt{copy\_files} to the specification
@@ -1262,6 +1267,109 @@ with {\tt\verb=[=$...$\verb=]=} denoting that $...$ is optional:
     [ replace ]
 \end{verbatim}
 \end{small}
+
+\section{Batched Evaluations}\label{interfaces:batch}
+
+Beginning with release 6.11, Dakota provides for execution of
+evaluations in batches. Batch mode is intended to allow a user
+to assume greater control over where and when to run individual
+evaluations. It is activated using the \texttt{batch} keyword.
+
+In batch mode, Dakota writes the parameters for multiple (a batch of)
+evaluations to a single batch parameters file and then invokes the
+analysis driver once for the entire batch. The pathname of the
+combined parameters file (and of the results file) are communicated
+to the driver as command line arguments. After the driver exits, Dakota
+expects to find results for the entire batch in a single combined results
+file.
+
+The analysis driver is responsible for parsing the parameters file
+and performing an evaluation for each set of parameters it contains,
+and for returning results for all the evaluations to Dakota. The user
+is free to set up the driver to perform the evaluations in the batch in
+a way that is convenient.
+
+By default, all currently available evaluations are added to a single
+batch. For example, in a sampling study that has a 1000 samples, by
+default all 1000 evaluations would be added to a single batch. The batch
+size may be limited using the \texttt{size} subkeyword. Setting 
+\texttt{size = 100} would result in 10 equal-size batches being run one
+after another in a 1000-sample study. 
+
+\subsection{File Formats}
+
+The combined parameters file for a batch is simply the concatenation of 
+all the parameters files for the evaluations in the batch. The individual
+parameter sets may use the default Dakota format, or the user can select
+the aprepro format.
+
+The following example parameters file contains parameter sets for two
+evaluations. 
+
+\begin{small}
+\begin{verbatim}
+                                          1 variables
+                     -4.912558193411678e-01 x1
+                                          1 functions
+                                          1 ASV_1:response_fn_1
+                                          1 derivative_variables
+                                          1 DVV_1:x1
+                                          0 analysis_components
+                                        1:1 eval_id
+                                          1 variables
+                     -2.400695372000337e-01 x1
+                                          1 functions
+                                          1 ASV_1:response_fn_1
+                                          1 derivative_variables
+                                          1 DVV_1:x1
+                                          0 analysis_components
+                                        1:2 eval_id    interface,
+\end{verbatim}
+\end{small}
+
+Note that the \texttt{eval\_id} contains two pieces of 
+information separated by a colon. The second is the evaluation number,
+and the first is the batch number. The batch number is an incrementing
+integer that uniquely identifies the batch.
+
+The combined results file format is likewise a concatenation of the results
+for all the evaluations in the batch. However, a line beginning with the
+``\#'' character must separate the results for each evaluation.
+
+The order of the evaluations in the results file must match the order in the
+parameters file.
+
+The following is an example batch results file corresponding to the batch
+parameters file above. The initial \# on the first line is optional, and a
+final \# (not shown here) is allowed.
+\begin{small}
+\begin{verbatim}
+#
+                     4.945481774823024e+00 f
+#
+                     2.364744129789246e+00 f
+\end{verbatim}
+\end{small}
+
+
+\subsection{Work Directories, Tagging, and Other Features}
+
+Each batch is executed in a work directory when this feature is enabled.
+The batch number is used to tag files and directories if tagging is requested
+(or Dakota automatically applies a tag to safely save a file or directory). As
+explained in the previous section, the batch number is an incrementing integer
+beginning with 1 that uniquely identifies a batch.
+
+Batch mode restricts the use of several other Dakota features.
+
+\begin{itemize}
+
+  \item No \texttt{input\_filter} or \texttt{output\_filter} is allowed.
+  \item Only one \texttt{analysis\_driver} is permitted.
+  \item \texttt{failure\_capture} modes are limited to abort and recover.
+  \item Asynchronous evaluation is disallowed (only one batch at a time may be executed).
+\end{itemize}
+
 
 \section{Parameter to Response Mapping Examples}\label{interfaces:mappings}
 
@@ -1555,3 +1663,1218 @@ and the corresponding results would appear as
        0.000000000000000e+00 ]
 \end{verbatim}
 \end{small}
+
+\section{Parameters and Results Files with dakota.interfacing}\label{interfaces:dakota.interfacing}
+
+The Python module {\tt dakota.interfacing} first was made available with Dakota 6.6. (It was released with 
+Dakota 6.5 as the module {\tt dipy}.) By providing a Python interface to read and write, respectively,
+Dakota parameters and results files, {\tt dakota.interfacing} can greatly simplify development of black-box
+interfaces. The benefit may be greatest when one or more phases of the interface (pre-processing, execution,
+post-processing) is written in Python.
+
+The following sections describe the components of {\tt dakota.interfacing}. These include a {\tt Parameters}
+class for making variable information available, a {\tt Results} class for collecting results and writing
+them to file, and a convenience function {\tt read\_parameters\_file}, the preferred way to construct 
+{\tt Parameters} and {\tt Results} objects from a Dakota parameters file.
+
+\subsection{Creating Parameters and Results objects}
+
+{\tt dakota.interfacing} has one free function, {\tt read\_parameters\_file}, which creates {\tt Parameters}
+and {\tt Results} objects based on a Dakota parameters file. Its signature is:
+
+\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None}, \emph{ignore\_asv=False}}){}
+
+\emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read
+and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or
+just filenames. If a parameters file or results file is not provided, it will be obtained from the command 
+line arguments. (The results filename is assumed to be the last command line argument, and the parameters 
+file the second to last.) Note that if the working directory has changed since script invocation, filenames
+provided as command line arguments by Dakota's {\tt fork} or {\tt system} interfaces may be incorrect.
+
+If \emph{results\_file} is set to the constant {\tt dakota.interfacing.UNNAMED}, the {\tt Results} object
+is constructed without a results file name.  In this case, an output stream must be provided when {\tt Results.write()}
+is called. Unnamed results files are most helpful when no results file will be written, as with a script
+intended purely for pre-processing.
+
+By default, the returned {\tt Results} object enforces the active set vector (see the {\tt Results} class section).
+This behavior can be overriden, allowing any property (function, gradient, Hessian) of a response to be set, by
+setting \emph{ignore\_asv} to True.
+
+
+\subsection{Parameters objects}
+
+{\tt Parameters} objects make the variables, analysis components, evaluation ID, and evaluation number read from a Dakota parameters file available through a combination of key-value access and object attributes. Although {\tt Parameters} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+
+Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types (integer, real, string) are inferred by first attempting to convert to {\tt int} and then, if this fails, to {\tt float}.
+
+Analysis components are accessible by index only using the {\tt an\_comps} attribute. Iterating over a {\tt Parameters} 
+object yields the variable descriptors.
+
+{\tt Parameters} objects have the attributes:
+
+\begin{itemize}
+
+  \item\index{an\_comps (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.an_comps}\textbf{\texttt{an\_comps}} List of the analysis components (strings).
+
+  \item\index{eval\_id (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.eval_id}\textbf{\texttt{eval\_id}} Evaluation id (string).
+
+  \item\index{eval\_num (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.eval_num}\textbf{\texttt{eval\_num}} Evaluation number (final token in eval\_id) (int).
+
+
+  \item\index{aprepro\_format (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.aprepro_format}\textbf{\texttt{aprepro\_format}} Boolean indicating whether the parameters file was in aprepro (True) or Dakota (False) format.
+
+  \item\index{descriptors (dakota.interfacing.Parameters attribute)}\phantomsection\label{index:dakota.interfacing.Parameters.descriptors}\textbf{\texttt{descriptors}} List of the variable descriptors
+
+  \item\index{num\_variables (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.num_variables}\textbf{\texttt{num\_variables}} Number of variables
+
+  \item\index{num\_an\_comps (dakota.interfacing.Parameters attribute)}\phantomsection\label{index:dakota.interfacing.Parameters.num_an_comps}\textbf{\texttt{num\_an\_comps}} Number of analysis components
+
+\end{itemize}
+
+Parameters objects have the methods:
+
+\begin{itemize}
+  \item\index{items() (dakota.interfacing.Parameters method)}
+	  \phantomsection\label{index:dakota.interfacing.Parameters.items}\textbf{\texttt{items}}{()}{}
+          Return an iterator that yields tuples of the descriptor and value for each parameter. ({\tt Results} objects also have {\tt items()}.)
+
+  \item\index{values() (dakota.interfacing.Parameters method)}
+	  \phantomsection\label{index:dakota.interfacing.Parameters.values}\textbf{\texttt{values}}{()}{}
+          Return an iterator that yields the value for each parameter. ({\tt Results} objects have the corresponding method {\tt responses()}.)
+
+\end{itemize}
+
+\subsection{Results objects}
+
+{\tt Results} objects:
+\begin{itemize}
+
+  \item communicate response requests from Dakota (active set vector and derivative variables)
+  \item collect response data (function values, gradients, and Hessians)
+  \item write Dakota results files
+\end{itemize}
+
+{\tt Results} objects are collections of {\tt Response} objects, which are documented in the following section. Each {\tt Response} can be accessed by name (Dakota descriptor) or by index using {[}{]} on the {\tt Results} object itself. Iterating over a {\tt Results} object yields the response descriptors. Although {\tt Results} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+
+Results objects have the attributes:
+
+\begin{itemize}
+
+  \item\index{eval\_id (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.eval_id}\textbf{\texttt{eval\_id}} Evaluation id (a string).
+
+  \item\index{eval\_num (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.eval_num}\textbf{\texttt{eval\_num}} Evaluation number (final token in eval\_id) (int).
+
+  \item\index{aprepro\_format (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.aprepro_format}\textbf{\texttt{aprepro\_format}} Boolean indicating whether the parameters file was in
+aprepro (True) or Dakota (False) format.
+
+  \item\index{descriptors (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.descriptors}\textbf{\texttt{descriptors}} List of the response descriptors (strings)
+
+  \item\index{num\_responses (dakota.interfacing.Results attribute)}  \phantomsection\label{index:dakota.interfacing.Results.num_responses}\textbf{\texttt{num\_responses}} Number of variables (read-only)
+
+  \item\index{deriv\_vars (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.deriv_vars}\textbf{\texttt{deriv\_vars}} List of the derivative variables (strings)
+
+  \item\index{num\_deriv\_vars (dakota.interfacing.Results attribute)}\phantomsection\label{index:dakota.interfacing.Results.num_deriv_vars}\textbf{\texttt{num\_deriv\_vars}}Number of derivative variables (int)
+
+\end{itemize}
+
+Results objects have the methods:
+
+\begin{itemize}
+  \item\index{items() (dakota.interfacing.Results method)}
+	  \phantomsection\label{index:dakota.interfacing.Results.items}\textbf{\texttt{items}}{()}{}
+          Return an iterator that yields tuples of the descriptor and {\tt Response} object for each response. ({\tt Parameters} objects also have {\tt items()}.)
+
+  \item\index{responses() (dakota.interfacing.Results method)}
+	  \phantomsection\label{index:dakota.interfacing.Results.responses}\textbf{\texttt{responses}}{()}{}
+          Return an iterator that yields the {\tt Response} object for each response. ({\tt Parameters} objects have the corresponding method {\tt values()}.)
+
+  \item\index{fail() (dakota.interfacing.Results method)}
+	  \phantomsection\label{index:dakota.interfacing.Results.fail}\textbf{\texttt{fail}}{()}{}
+	  Set the FAIL attribute. When the results file is written, it will contain only the word FAIL, triggering Dakota's failure capturing behavior (See Chapter~\ref{failure}).
+
+\item \index{write() (dakota.interfacing.Results method)}
+	\phantomsection\label{index:dakota.interfacing.Results.write}\textbf{\texttt{write}}({\emph{stream=None}, \emph{ignore\_asv=None}}){}
+Write the results to the Dakota results file. If \emph{stream} is set, it overrides the results file name provided at construct time. It must be an open file-like object, rather than the name of a file. If \emph{ignore\_asv} is True, the file will be written even if information requested via the active set vector is missing.
+
+\end{itemize}
+
+\subsection{Response object}
+
+{\tt Response} objects store response information. They typically are instantiated and accessed through a Results object by index or response descriptor using {[}{]}.
+
+{\tt Response}s have the attributes:
+
+\begin{itemize}
+  \item \index{asv (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.asv}\textbf{\texttt{asv}} a {\tt collections.namedtuple} with three members, \emph{function}, \emph{gradient}, and \emph{hessian}.
+Each is a boolean indicating whether Dakota requested the
+associated information for the response. {\tt namedtuples} can be
+accessed by index or by member.
+
+  \item \index{function (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.function}\textbf{\texttt{function}} Function value for the response. A ResponseError
+is raised if Dakota did not request the function value (and
+ignore\_asv is False).
+  \item\index{gradient (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.gradient}\textbf{\texttt{gradient}} Gradient for the response. Gradients must be a 1D iterable of values that can be converted to floats, such as a {\tt list} or 1D {\tt numpy array}. A ResponseError is raised if Dakota did not request the gradient (and ignore\_asv is False), or if the number of elements does not equal the number of derivative variables.
+
+  \item \index{hessian (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.hessian}\textbf{\texttt{hessian}} Hessian value for the response. Hessians must be an iterable of iterables (e.g. a 2D {\tt numpy array} or list of lists). A ResponseError is raised if Dakota did not request the Hessian (and ignore\_asv is False), or if the dimension does not correspond correctly with the number of derivative variables.
+
+\end{itemize}
+
+\subsection{Processing Templates}
+
+Dakota is packaged with a sophisticated command-line template processor
+called \texttt{dprepro}. It is fully documented in 
+Section~\ref{interfaces:dprepro-and-pyprepro}. Templates may be processed 
+within Python analysis drivers without externally invoking \texttt{dprepro} 
+by calling the \texttt{dprepro} function:
+
+\phantomsection\label{index:dakota.interfacing.dprepro}\texttt{dakota.interfacing.}\textbf{\texttt{dprepro}}({\emph{template}, \emph{parameters=None}, \emph{results=None}, \emph{include=None},
+	\emph{output=None}, \emph{fmt='\%0.10g'}, \emph{code='\%'}, \emph{code\_block='\{\% \%\}'},
+		\emph{inline='\{ \}'}, \emph{warn=True}){}
+
+If \emph{template} is a string, it is assumed to contain a template. If it 
+is a file-like object (that has a \texttt{.read()}
+method), the template will be read from it. (Templates that are already in
+string form can be passed in by first wrapping them in a \texttt{StringIO}
+object.)
+
+\texttt{Parameters} and \texttt{Results} objects can be made available to the
+template using The \emph{parameters} and \emph{results} keyword arguments, and 
+additional variable defintions can be provided in a \texttt{dict} via the
+\emph{include} argument.
+
+The \emph{output} keyword is used to specify an output file for the processed 
+template. \emph{output=None} causes the output to be returned as a string. A
+string is interpreted as a file name, and a file-like object (that has a 
+\texttt{.write()} method) is written to.
+
+The \emph{fmt} keyword sets the global numerical format for template output.
+
+\emph{code}, \emph{code\_block}, and \emph{inline} are used to specify custom 
+delimiters for these three types of expressions within the template.
+
+Finally, the \emph{warn} keyword controls whether warnings are printed by the
+template engine.
+
+\subsection{dakota.interfacing Examples}
+
+In addition to those in this section, the \path{dakota/share/dakota/examples/script_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, \path{rosenbrock_bb.py}, parameters file parsing is performed manually. The other, \path{rosenbrock_bb_di.py}, demonstrates the {\tt dakota.interfacing} module.
+
+For most applications, using {\tt dakota.interfacing} is straightforward. The first example, in Figure~\ref{diexample:simple}, is a mock analysis driver. Two variables with the descriptors {\tt x1} and {\tt x2} are read from the Dakota parameters file and used to evaluate the fictitious user function {\tt applic\_module.run()}. The result, stored in {\tt f}, is assigned to the {\tt function} value of the appropriate response. (A common error is leaving off the {\tt function} attribute, which is needed to distinguish the function value of the response from its gradient and Hessian.)
+
+\begin{figure}
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+  import dakota.interfacing as di
+  import applic_module # fictitious application 
+
+  params, results = di.read_parameters_file()
+
+  # parameters can be accessed by descriptor, as shown here, or by index
+  x1 = params["x1"]
+  x2 = params["x2"]
+
+  f = applic_module.run(x1,x2)
+
+  # Responses also can be accessed by descriptor or index
+  results["f"].function = f
+  results.write()
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{A simple analysis driver that uses {\tt dakota.interfacing}}
+\label{diexample:simple}
+\end{figure}
+
+The {\tt Results} object exposes the active set vector read from the parameters file. When analytic gradients or Hessians are available for a response, the ASV should be queried to determine what Dakota has requested for an evaluation. If an attempt is made to addunrequested information to a response, a {\tt dakota.interface.ResponseError} is raised. The same exception results if a requested piece of information is missing when {\tt Results.write()} is called. The \emph{ignore\_asv} option to {\tt read\_parameters\_file} and {\tt Results.write()} overrides ASV checks.
+
+In Figure~\ref{diexample:asv}, {\tt applic\_module.run()} has been modified to return not only the function value of {\tt f}, but also its gradient and Hessian. The {\tt asv} attribute is examined to determine which of these to add to {\tt results["f"]}.
+
+\begin{figure}
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+  import dakota.interfacing as di
+  import applic_module # fictitious application
+
+  params, results = di.read_parameters_file()
+
+  x1 = params["x1"]
+  x2 = params["x2"]
+
+  f, df, df2 = applic_module.run(x1,x2)
+
+  if Results.asv.function:
+      results["f"].function = f
+  if Results.asv.gradient:
+      results["f"].gradient = df
+  if Results.asv.hessian:
+      results["f"].hessian = df2
+
+  results.write()
+\end{verbatim}
+
+
+\end{small}
+\end{bigbox}
+\caption{Examining the active set vector}
+\label{diexample:asv}
+\end{figure}
+
+\section{Preprocessing with \texttt{dprepro} and \texttt{pyprepro}}\label{interfaces:dprepro-and-pyprepro}
+
+Dakota is packaged with two template processing tools that are
+intended for use in the preprocessing phase of analysis drivers.
+
+The first tool, \texttt{pyprepro}, features simple parameter 
+substitution, setting of immutable (fixed) variable names, and 
+provides full access within templates to all of the Python programming 
+language. As such, templates can contain loops, conditionals, lists, 
+dictionaries, and other Python language features.
+
+The second tool, \texttt{dprepro}, uses the same template engine
+as \texttt{pyprepro}, and in addition undertands Dakota's parameter
+file formats. In particular, when using \texttt{dprepro} in an analysis driver, 
+Dakota variables become available for use within templates. \texttt{dprepro} 
+is also integrated with the \texttt{dakota.interfacing} module to provide direct
+access to \texttt{Parameters} and \texttt{Results} objects within templates 
+(see Section~\ref{interfaces:params-and-results}) and to provide template 
+processing capability within Python scripts that import 
+\texttt{dakota.interfacing}.
+
+\subsection{Changes and Updates to \texttt{dprepro}}\label{interfaces:dprepro-changes}
+
+The version of \texttt{dprepro} described in this section is a replacement for 
+an earlier version that shipped with Dakota releases prior to 6.8. Although
+the new version offers a wide array of new features, it largely maintains 
+backward compatibility with the old. Users should be aware of two important 
+differences between the two versions.
+
+\begin{itemize}
+ \item The earlier version of \texttt{dprepro} was written in Perl, but the 
+	 new one is written in Python. It is compatible with Python 2 (2.6 and 
+	 greater) and 3. Some users, especially on Windows, may need to modify 
+	 existing analysis drivers to invoke \texttt{dprepro} using Python instead of
+	 Perl.
+ \item  Recent versions of Perl \texttt{dprepro} supported per-field output
+	 formatting in addition to the global numerical format that could be 
+	 specified on the command line. This was accomplished by adding a comma-
+	 separated format string to individual substitution expressions in 
+	 templates (e.g. \texttt{\{x1,\%5.3f\}}). Per-field formatting remains
+	 a feature of the new \texttt{dprepro}, but the syntax has changed. 
+	 Python-style string formatting is used, as explained in 
+	 Section~\ref{interfaces:per-field-output-formatting}. Existing
+	 templates that make use of per-field formatting will need to
+	 be updated.
+\end{itemize}
+Although the old \texttt{dprepro} has been deprecated as of the 6.8 release 
+of Dakota, it is still available in Dakota's \texttt{bin/} folder under the name 
+\texttt{dprepro.perl}.
+
+\subsection{Usage}\label{interfaces:dprepro-usage}
+
+Running \texttt{dprepro} with the \texttt{ -\/-help} option at the command prompt 
+causes its options and arguments to be listed. These are shown in 
+Figure~\ref{advint:dprepro_usage}.
+
+\texttt{dprepro} accepts three positional command line arguments. They are:
+
+\begin{enumerate}
+ \item \texttt{include}: The name of a Dakota parameters file (\emph{required}),
+ \item \texttt{infile}: The name of a template file (or a dash if the template 
+	 is provided on \texttt{stdin}) (\emph{required}), and 
+ \item \texttt{outfile}: The name of the output file, which is the result of
+         processing the template. This argument is optional, and output is 
+	 written to \texttt{stdout} if it is missing.
+\end{enumerate}
+
+The remaining options are used to
+\begin{itemize}
+  \item Set custom delimiters for Python code lines (\texttt{-\/-code}) and blocks 
+    (\texttt{-\/-code-block}) and for inline statements that print 
+    (\texttt{-\/-inline}). The last of these is equivalent to Perl \texttt{dprepro}'s 
+    \texttt{-\/-left-delimiter} and \texttt{-\/-right-delimter} switches, which also
+    have been preserved to maintain backward compatibility. They default to 
+    \texttt{"\{ \}"}.
+  \item Insert additional parameters for substitution, either from a JSON file
+   (\texttt{-\/-json-include}) or directly on the command line (\texttt{-\/-var}).
+   Variables that are defined using these options are \emph{immutable}
+   (Section~\ref{interfaces:immutable-variables}).
+  \item Silence warnings (\texttt{-\/-no-warn})
+  \item Set the default numerical output format (\texttt{-\/-output-format}).
+\end{itemize}
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{tiny}
+      \verbatimtabinput[8]{dprepro_usage}
+    \end{tiny}
+  \end{bigbox}
+  \caption{\texttt{dprepro} usage}
+  \label{advint:dprepro_usage}
+\end{figure}
+
+The \texttt{pyprepro} script accepts largely the same command line options.
+The primary differences are that \texttt{pyprepro} does not require or accept
+Dakota-format parameters files, and it has just two positional command line
+arguments, the \texttt{infile} and \texttt{outfile}, both defined as above.
+In addition, \texttt{pyprepro} accepts one or more \texttt{-\/-include} files.
+These may be used to set parameters and execute arbitrary Python scripting 
+before template processing occurs (See 
+Section~\ref{interfaces:immutable-variables}).
+
+\subsection{Template Expressions}\label{interfaces:template-expressions}
+
+This section describes the expressions that are permitted in templates. All 
+examples, except where otherwise noted, use the default delimiters 
+\texttt{"\{\ \ \}"} for inline printed expressions, \texttt{\%} for single-line 
+Python statements, and \texttt{"\{\%\ \%\}"} for Python code blocks.
+
+Expressions can be of three different forms (with defaults)
+
+\begin{itemize}
+\tightlist
+\item
+  Inline single-line expressions (rendered): \texttt{\{expression\}}
+\item
+  Python code single-line (silent): \texttt{\%\ expression}
+\item
+  Python code multi-line blocks (silent):
+  \texttt{\{\%\ expression\ (that\ can\ span\ many\ lines)\ \%\}}
+\end{itemize}
+
+Expressions can contain just about any valid Python code. The only
+important difference is that indentation is ignored and blocks must end 
+with \texttt{end}. See the examples below.
+
+\subsubsection{Inline Expressions}\label{interfaces:inline-expressions}
+
+Inline expressions are delineated with \texttt{\{expression\}} and
+\emph{always display}.
+
+Consider:
+
+\begin{verbatim}
+param1 = {param1 = 10}
+param2 = {param1 + 3}
+param3 = {param3 = param1**2}
+\end{verbatim}
+
+Returns:
+
+\begin{verbatim}
+param1 = 10
+param2 = 13
+param3 = 100
+\end{verbatim}
+
+In this example, the first and third line both display a value
+\emph{and} set the parameter.
+
+\subsubsection{Python Single Line Code}\label{interfaces:python-single-line-code}
+
+A \texttt{\%} at the start of a line is used to begin a single-line code expression.
+These are non-printing.
+Consider the following example.
+
+\begin{verbatim}
+% param1 = pi/4
+The new value is {sin(param1)}
+\end{verbatim}
+
+It returns:
+
+\begin{verbatim}
+The new value is 0.7071067812
+\end{verbatim}
+
+Furthermore, single lines can be used for Python logic and loops. This example 
+demonstrates looping over an array, which is explained in further detail below.
+As stated previously, unlike ordinary Python, indentation is not required and is 
+ignored. Blocks of Python code are concluded with \texttt{end}.
+
+\begin{verbatim}
+% angles = [0,pi/4,pi/2,3*pi/4,pi]
+% for angle in angles:
+cos({angle}) = { cos(angle)}
+% end
+\end{verbatim}
+
+Returns:
+
+\begin{verbatim}
+cos(0) = 1
+cos(0.7853981634) = 0.7071067812
+cos(1.570796327) = 6.123233996e-17
+cos(2.35619449) = -0.7071067812
+cos(3.141592654) = -1
+\end{verbatim}
+
+\subsubsection{Code Blocks}\label{interfaces:code-blocks}
+
+Finally, multi-line code blocks may be specified without prepending each 
+Python statement with \texttt{\%}. Instead, the entire block is enclosed
+in \texttt{\{\% \%\}}. (Indentation is ignored within code blocks.)
+
+\begin{verbatim}
+{%
+# Can have comments too!
+txt = ''
+for ii in range(10):
+    txt += ' {}'.format(ii)
+end
+%}
+txt: {txt}
+\end{verbatim}
+
+returns:
+
+\begin{verbatim}
+txt:  0 1 2 3 4 5 6 7 8 9
+\end{verbatim}
+
+\subsubsection{Changing Delimiters}\label{interfaces:changing-delimiters}
+
+As noted in the \texttt{-\/-help} for \texttt{dprepro} and \texttt{pyprepro},
+the delimiters for single-line Python statements, code blocks, and inline 
+printed expressions can be changed. This is useful when the defaults are 
+reserved characters in the output format.
+
+For code blocks (default \texttt{\{\%\ \%\}}), the innermost characters
+cannot be any of ``\texttt{\{\}{[}{]}()}''.
+
+\subsubsection{Escaping Delimiters}\label{interfaces:escaping-delimiters}
+
+All delimiters can be escaped with a leading \texttt{\textbackslash{}}.
+A double \texttt{\textbackslash{}\textbackslash{}} followed by the
+delimiter will return \texttt{\textbackslash{}}. For example:
+
+\begin{verbatim}
+{A=5}
+\{A=5\}
+\\{A=5\\}
+\end{verbatim}
+
+Returns:
+
+\begin{verbatim}
+5
+{A=5}
+\{A=5\}  
+\end{verbatim}
+
+Note that escaping the trailing delimiter (e.g.
+\texttt{\textbackslash{}\}}) is optional.
+
+\subsubsection{Whitespace Control}\label{interfaces:whitespace-control}
+
+Expressions span the entire line, which can possibly introduce undesired white space. 
+Ending a line with \texttt{\textbackslash\textbackslash} will prevent the additional space. Consider the following:
+\begin{verbatim}
+BLOCK \\
+{%
+if True:
+    block = 10
+else:
+    block = 20
+end
+%}
+{block}
+\end{verbatim}
+
+Which renders as:
+\begin{verbatim}
+BLOCK 10
+\end{verbatim}
+
+Without the trailing \texttt{\textbackslash\textbackslash}, the result would instead be:
+\begin{verbatim}
+BLOCK
+10
+\end{verbatim}
+This can also be abused to allow spacing. Consider the following:
+
+\begin{verbatim}
+I want this to \\
+%
+render as \\
+%
+one line
+\end{verbatim}
+Since the \texttt{\%} symbolize a code block (empty in this case), it will render
+\begin{verbatim}
+I want this to render as one line
+\end{verbatim}
+
+\subsubsection{Immutable Variables}\label{interfaces:immutable-variables}
+
+Variables can be fixed such that they cannot be redefined (without
+explicitly allowing it).
+
+In this example, the attempted reassignment of \texttt{param} to 20 is
+ignored,
+
+\begin{verbatim}
+% param = Immutable(10)
+% param = 20 
+{param}
+\end{verbatim}
+
+and the output is
+
+\begin{verbatim}
+10
+\end{verbatim}
+
+because \texttt{param} is \texttt{Immutable}. To explicitly make a
+variable mutable again, call it with \texttt{Mutable()}:
+
+\begin{verbatim}
+set             : \{ param = Immutable(10) \} : { param = Immutable(10) }           
+try to reset    : \{ param = 20 \}            : { param = 20 }          
+make mutable    : \{ param = Mutable(21) \}   : { param = Mutable(21) } 
+reset           : \{ param = 20 \}            : { param = 20 }         
+\end{verbatim}
+
+Returns:
+
+\begin{verbatim}
+set             : { param = Immutable(10) } : 10
+try to reset    : { param = 20 }            : 10
+make mutable    : { param = Mutable(21) }   : 21
+reset           : { param = 20 }            : 20
+\end{verbatim}
+
+Note that any variable set on the command line by any of these three means:
+\begin{itemize}
+ \item \texttt{-\/-var} argument 
+ \item \texttt{-\/-include} file
+ \item \texttt{-\/-json-include} file
+\end{itemize}
+is immutable. This listing is in order of precendence; variables set by a 
+\texttt{-\/-var} argument cannot be modified by \texttt{-\/-include}
+or \texttt{-\/-json-include} files. This feature is useful for overriding
+defaults set in templates.
+
+Suppose the template file \texttt{MyTemplate.inp} contains:
+
+\begin{verbatim}
+param1 = {param1 = 10}
+param2 = {param2 = pi}
+\end{verbatim}
+
+Executing \texttt{pyprepro MyTemplate.in} yields:
+
+\begin{verbatim}
+param1 = 10
+param2 = 3.141592654
+\end{verbatim}
+
+However, for \texttt{pyprepro\ -\/-var\ "param1=30"\ MyTemplate.in}:
+
+\begin{verbatim}
+param1 = 30
+param2 = 3.141592654
+\end{verbatim}
+
+Or, if an optional \texttt{-\/-include} file that is named 
+\texttt{MyInclude.inp} and contains the following is added:
+
+\begin{verbatim}
+{param1 = 32}
+\end{verbatim}
+
+Then running \texttt{pyprepro\ -\/-include\ MyInclude.inp\ MyTemplate.inp} 
+outputs:
+
+\begin{verbatim}
+param1 = 32
+param2 = 3.141592654
+\end{verbatim}
+
+Note that variable definitions set using \texttt{-\/-var} override 
+definitions in \texttt{-\/-include} files.
+
+There is one caveat to variable immutability. While the variable name is 
+reserved, the value can still be changed if it is a mutable Python object 
+(``mutable'' has different meanings for Python objects than is used in 
+\texttt{pyprepro} and \texttt{dprepro} templates). For example:
+
+\begin{verbatim}
+% param = Immutable( [1,2,3])
+% param.append(4)   # This will work because it is modifying the object
+% param = ['a','b','c']   # This won't because it is redefining
+{param}
+\end{verbatim}
+
+Will output:
+
+\begin{verbatim}
+[1, 2, 3, 4]
+\end{verbatim}
+
+\subsubsection{\texttt{DakotaParams} and \texttt{DakotaResults}}\label{interfaces:params-and-results}
+
+If the \texttt{dakota} Python package (see 
+Section~\ref{interfaces:dakota.interfacing}) is available for import (e.g. has
+been added to the \texttt{PYTHONPATH}), then \texttt{dprepro} generates 
+\texttt{Parameters} and \texttt{Results} objects from the Dakota parameters 
+file. These are available for use in templates under the names 
+\texttt{DakotaParams} and \texttt{DakotaResults}.
+
+Use of these objects permits convenient access to information such as the 
+evaluation ID (\texttt{DakotaParams.eval\_id}) and the active set vector 
+entries (\texttt{DakotaResults[0].asv.function}). Dakota 
+variables also become available not only directly within the template, but as 
+members of \texttt{DakotaParams}. That is, if  \texttt{x1} is a Dakota variable,
+it will be available within a template both by the name \texttt{x1}, and as 
+\texttt{DakotaParams["x1"]}. In this way, variables that have prohibited names
+(explained in the following section) can still be accessed using their original 
+names.
+
+\subsubsection{Unicode Support}\label{interfaces:unicode}
+
+Variables must obey the naming conventions for the version of Python that is
+used to run \texttt{d/pyprepro}. For Python 2, only ASCII alphanumeric
+characters and the underscore are permitted, and identifiers must not begin
+with a number. In Python 3, this requirement is relaxed considerably, and
+many Unicode characters are permitted in identifiers.
+
+Because Dakota itself has few such restrictions on variable names,
+\texttt{d/pyprepro} "mangles" noncompliant names in the following ways
+before making them available in templates:
+\begin{itemize}
+ \item Variables/paramters that begin with a number are prepended by the lowercase
+	 letter 'i'.
+ \item Disallowed characters such as \# are replaced by underscores (\texttt{\_}).
+ \item In Python 2, non-ASCII letters are normalized to their rough ASCII
+	 equivalents (e.g. ñ is replaced by n).
+\end{itemize}
+
+As stated in the previous section, when using \texttt{dprepro} with 
+\texttt{dakota.interfacing}, the original variable names are always available
+via the \texttt{DakotaParams} object.
+
+\subsection{Scripting}\label{interfaces:scripting}
+
+The language of \texttt{pyprepro} and \texttt{dprepro} templates is 
+Python with a single modification: In normal Python, indentation 
+delineates blocks of code. However, in \texttt{d/pyprepro} templates, 
+indentation is ignored and blocks must end with an \texttt{end} statement
+whether they are part of multi-line code (\texttt{\{\%\ \%\}}) or part of 
+single line operation (\texttt{\%}).
+
+Users unfamiliar with Python, but who do have experience with
+other scripting languages such as MATLAB, should find it straightforward
+to incorporate simple Python scripts into their templates. A brief guide 
+in basic Python programming follows. Interested users should consult any
+of the many available Python tutorials and guides for more advanced usage.
+
+\subsubsection{Python Coding Tips}\label{interfaces:python-coding-tips}
+
+Here are a few characteristics of Python that may be important to note 
+by users familiar with other languages.
+
+\begin{itemize}
+\tightlist
+  \item Lists (array-like containers) are zero-based
+  \item Exponentiation is double \texttt{**}. Example: \texttt{x**y} (``x to
+  the y'')
+  \item In many languages, blocks of code such as the bodies of loops, 
+	  functions, or conditional statements, are enclosed in symbols such as 
+	  \{ \}. In ordinary Python, statements that initialize new blocks end in
+	  a colon (\texttt{:}), and code within the block is indented, conventionally
+	  by a single tab or by 4 spaces. In Python in \texttt{d/pyprepro} templates, 
+	  initializing statements also end in colons, but indentation is ignored, 
+	  and code blocks continue until an \texttt{end} statement is encountered.
+\end{itemize}
+
+\subsubsection{Conditionals}\label{interfaces:conditionals}
+
+Python has the standard set of conditionals. Conditional
+block declaration must end with a \texttt{:}, and the entire block must
+have an \texttt{end} statement. Consider the following example:
+
+\begin{verbatim}
+% param = 10.5
+% if param == 10.0:
+param is 10! See: {param}
+% else:
+param does not equal 10, it is {param}
+% end
+
+% if 10 <= param <= 11:
+param ({param}) is between 10 and 11
+% else:
+param is out of range
+% end
+\end{verbatim}
+
+results in:
+
+\begin{verbatim}
+param does not equal 10, it is 10.5
+
+param (10.5) is between 10 and 11
+\end{verbatim}
+
+Boolean operations are also possible using simple \texttt{and},
+\texttt{or}, and \texttt{not} syntax
+
+\begin{verbatim}
+% param = 10.5
+% if param >= 10 and param <= 11:
+param is in [10 11]
+% else:
+param is NOT in [10,11]
+% end
+\end{verbatim}
+
+returns:
+
+\begin{verbatim}
+param is in [10 11]
+\end{verbatim}
+
+\subsubsection{Loops}\label{interfaces:loops}
+
+\texttt{for} loops may be used to iterate over containers that
+support it. As with conditionals, the declaration must end with
+\texttt{:} and the block must have an \texttt{end}.
+
+To iterate over an index, from 0 to 4, use the \texttt{range} command.
+
+\begin{verbatim}
+% for ii in range(5):
+{ii}
+% end
+\end{verbatim}
+
+This returns:
+
+\begin{verbatim}
+0
+1
+2
+3
+4
+\end{verbatim}
+
+This example demonstrates iteration over strings in a list:
+
+\begin{verbatim}
+% animals = ['cat','mouse','dog','lion']
+% for animal in animals:
+I want a {animal}
+%end
+\end{verbatim}
+
+The output is:
+
+\begin{verbatim}
+I want a cat
+I want a mouse
+I want a dog
+I want a lion
+\end{verbatim}
+
+\subsubsection{Lists}\label{interfaces:lists}
+
+Lists are \emph{zero\ indexed}. Negative indices are also supported, and
+are interperted as offsets from the last element in the negative direction. 
+Elements are accessed using square brackets (\texttt{[]}).
+
+Consider:
+
+\begin{verbatim}
+% animals = ['cat','mouse','dog','lion']
+{animals[0]}
+{animals[-1]}
+\end{verbatim}
+
+which results in:
+
+\begin{verbatim}
+cat
+lion
+\end{verbatim}
+
+Note that \texttt{d/pyprepro} tries to nicely format lists for printing.
+For certain types of objects, it may not work well.
+
+\begin{verbatim}
+{theta = [0,45,90,135,180,225,270,315]}
+\end{verbatim}
+
+(with \texttt{\{\ \}} to print input) results in
+
+\begin{verbatim}
+[0, 45, 90, 135, 180, 225, 270, 315]
+\end{verbatim}
+
+\subsubsection{Math on lists}\label{interfaces:math-on-lists}
+
+Unlike some tools (e.g.~MATLAB) mathematical operations may not be performed
+on lists as a whole. Element-by-element operations can be compactly written in 
+many cases using \emph{list comprehensions}:
+
+\begin{verbatim}
+% theta = [0,45,90,135,180,225,270,315] 
+{ [ sin(pi*th/180) for th in theta ] }
+\end{verbatim}
+
+This results in
+
+\begin{verbatim}
+[0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
+\end{verbatim}
+
+Alternatively, if the NumPy package is available on the host system, lists can be 
+converted to arrays, which do support MATLAB-style element-wise operations:
+
+\begin{verbatim}
+% theta = [0,45,90,135,180,225,270,315]
+% import numpy as np
+% theta = np.array(theta) # Redefine as numpy array
+{ np.sin(pi*theta/180) }
+\end{verbatim}
+
+Returns:
+
+\begin{verbatim}
+[0, 0.7071067812, 1, 0.7071067812, 1.224646799e-16, -0.7071067812, -1, -0.7071067812]
+\end{verbatim}
+
+\subsubsection{Strings}\label{interfaces:strings}
+
+Python has powerful and extensive string support. Strings can be initialized 
+in any of the following ways:
+
+\begin{verbatim}
+{mystring1="""
+multi-line
+string inline
+"""}
+{mystring1}
+{% mystring2 = '''
+another multi-line example
+but in a block
+''' %}
+mystring2: {mystring2}
+
+Single quotes: {'single'}
+Double quotes: {'double'}
+\end{verbatim}
+
+Which returns:
+
+\begin{verbatim}
+multi-line
+string inline
+
+
+multi-line
+string inline
+
+mystring2:
+another multi-line example
+but in a block
+
+
+Single quotes: single
+Double quotes: double
+\end{verbatim}
+
+Strings can be enclosed by either single quotes (\texttt{\textquotesingle{}}) 
+or double quotes (\texttt{"}). The choice is a matter of convenience or style.
+
+Strings can be joined by adding them:
+
+\begin{verbatim}
+{%
+a = 'A'
+b = 'B'
+%}
+{a + ' ' + b}
+\end{verbatim}
+
+returns:
+
+\begin{verbatim}
+A B
+\end{verbatim}
+
+\subsubsection{Custom Functions}\label{interfaces:custom-functions}
+
+Arbitrary functions can be defined using either \texttt{def} or
+\texttt{lambda}. 
+
+Consider the following: (note, we use indentation here for readability
+but indentation \emph{is ignored} and the function definition is
+terminated with \texttt{end}):
+
+\begin{verbatim}
+{%
+def myfun1(param):
+    return (param + 1) ** 2 + 3
+end
+
+myfun2 = lambda param: (param + 1) ** 2 + 5
+%}
+{myfun1(1.2)}
+{myfun2(1.2)}
+{ [ myfun1(x) for x in [1,2,3,4] ] }
+\end{verbatim}
+
+Returns:
+
+\begin{verbatim}
+7.84
+9.84
+[7, 12, 19, 28]
+\end{verbatim}
+
+\subsection{Auxiliary Functions}\label{interfaces:auxiliary-functions}
+
+Several auxiliary functions that are not part of Python are also available 
+within templates. The first is the \texttt{include} function.
+
+\subsubsection{Include}\label{interfaces:include}
+
+Using
+
+\begin{verbatim}
+% include('path/to/include.txt')
+\end{verbatim}
+
+will insert the contents of
+\texttt{\textquotesingle{}path/to/include.txt\textquotesingle{}}. The inserted
+file can contain new variable definitions, and it can access older ones.
+Parameters defined in the file are not immutable by default, unlike those
+defined in files included from the command line using the \texttt{-\/-include} 
+option.
+
+%TODO: review these claims after talking to Justin
+\texttt{d/pyprepro} performs limited searching for included files, first
+in the path of the original template, and then in the path where 
+\texttt{pyprepro} is executed.
+
+\subsubsection{Immutable and Mutable}\label{interfaces:immutable-and-mutable}
+
+As explained elsewhere, variables can be defined as
+\texttt{Immutable(value)} or \texttt{Mutable(value)}. If a variable is
+Immutable, it cannot be reassigned without first explicitly make it Mutable.
+
+\emph{Note}: Unlike variables defined \texttt{-\/-include} files 
+(Section~\ref{interfaces:immutable-variables}), variables from files read in 
+using the \texttt{include()} function are not Immutable by default.
+
+\subsubsection{Print All Variables}\label{interfaces:print-all-variables}
+
+\texttt{all\_vars()} and \texttt{all\_var\_names()} print out all
+\emph{defined} variables. Consider the following that also demonstrates
+setting a comment string (two ways)
+
+\begin{verbatim}
+% param1 = 1
+{param2 = 'two'}
+all variables and values: {all_vars()}
+all varables: {all_var_names()}
+
+{all_var_names(comment='//')}
+// {all_var_names()} <--- Don't do this
+\end{verbatim}
+
+Returns:
+
+\begin{verbatim}
+two
+all variables and values: {'param1': 1, 'param2': u'two'}
+all varables: ['param2', 'param1']
+
+// ['param2', 'param1']
+// ['param2', 'param1'] <--- Don't do this
+\end{verbatim}
+
+Notice the empty \texttt{()} at the end of \texttt{all\_vars} and
+\texttt{all\_var\_names}. If possible, it is better to use
+\texttt{comment=\textquotesingle{}//\textquotesingle{}} syntax since the
+result of these can be multiple lines.
+
+\subsubsection{Set Global Numerical Format}\label{interfaces:set-global-print-format} 
+As discussed elsewhere, the print format can be set on a per item basis
+by manually converting to a string. Alternatively, it can be (re)set
+globally inside the template (as well as at the command line).
+
+\begin{verbatim}
+{pi}
+% setfmt('%0.3e')
+{pi}
+% setfmt() # resets
+{pi}
+\end{verbatim}
+
+returns:
+
+\begin{verbatim}
+3.141592654
+3.142e+00
+3.141592654
+\end{verbatim}
+
+\subsubsection{Per-field Output Formatting}\label{interfaces:per-field-output-formatting}
+
+Use Python string formatting syntax to set the output format of a particular 
+expression.
+
+\begin{verbatim}
+{pi}
+{ '%0.3f' % pi }
+\end{verbatim}
+
+Will output:
+
+\begin{verbatim}
+3.141592654
+3.142
+\end{verbatim}
+
+\subsubsection{Defaults and Undefined Parameters}\label{interfaces:using-defaults-undefined-parameters}
+
+Directly calling undefined parameters will result in an error. There is
+no \emph{universal} default value. However, there are the following
+functions:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{get} -- get param with optional default
+\item
+  \texttt{defined} -- determine if the variable is defined
+\end{itemize}
+
+The usage is explained in the following examples:
+
+\begin{verbatim}
+Defined Parameter:
+% param1 = 'one'
+{ get('param1') } <-- one
+{ get('param1','ONE') } <-- one
+
+Undefined Parameter
+{ get('param2') } <-- *blank*
+{ get('param2',0) } <-- 0
+
+Check if defined: { defined('param2') }
+
+% if defined('param2'):
+param2 is defined: {param2}
+% else:
+param2 is undefined
+% end
+\end{verbatim}
+
+returns:
+
+\begin{verbatim}
+Defined Parameter:
+one <-- one
+one <-- one
+
+Undefined Paremater
+ <-- *blank*
+0 <-- 0
+
+Check if defined: False
+
+param2 is undefined
+\end{verbatim}
+
+But notice if you have the following:
+
+\begin{verbatim}
+{param3}
+\end{verbatim}
+
+you will get the following error:
+
+\begin{verbatim}
+Error occurred:
+    NameError: name 'param3' is not defined
+\end{verbatim}
+
+\subsubsection{Mathematical Functions}\label{interfaces:mathematical-functions}
+
+All of the Python \texttt{math} module in imported with the functions:
+
+\begin{verbatim}
+  acos       degrees     gamma   radians  
+  acosh      erf         hypot   sin      
+  asin       erfc        isinf   sinh      
+  asinh      exp         isnan   sqrt      
+  atan       expm1       ldexp   tan       
+  atan2      fabs        lgamma  tanh      
+  atanh      factorial   log     trunc     
+  ceil       floor       log10   
+  copysign   fmod        log1p   
+  cos        frexp       modf             
+  cosh       fsum                               
+\end{verbatim}
+
+Also included are the following constants
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule
+Name & value\tabularnewline
+\midrule
+\endhead
+\texttt{pi},\texttt{PI} & 3.141592654\tabularnewline
+\texttt{e},\texttt{E} & 2.718281828\tabularnewline
+\texttt{tau} (\texttt{2*pi}) & 6.283185307\tabularnewline
+\texttt{deg} (\texttt{180/pi}) & 57.29577951\tabularnewline
+\texttt{rad} (\texttt{pi/180}) & 0.01745329252\tabularnewline
+\texttt{phi} (\texttt{(sqrt(5)+1\ )/2}) & 1.618033989\tabularnewline
+\bottomrule
+\end{longtable}
+
+Note that all trigonometric functions assume that inputs are in radians. 
+See \href{https://docs.Python.org/3/library/math.html}{Python's
+\texttt{math} library} for more details. To compute based on degrees,
+convert first:
+
+\begin{verbatim}
+{ tan( radians(45) )}
+{ tan( 45*rad)}
+{ degrees( atan(1) )}
+{ atan(1) * deg }
+\end{verbatim}
+
+returns:
+
+\begin{verbatim}
+1
+1
+45
+45
+\end{verbatim}
+
+\subsubsection{Other Functions}\label{interfaces:other-functions}
+
+Other functions, modules, and packages that are part of the Python standard 
+library or that are availble for import on the host system can be used in
+templates. Use of NumPy to perform element-wise operations on arrays was
+demonstrated in a previous section. The following example illustrates using
+Python's \texttt{random} module to draw a sample from a uniform distribution:
+
+\begin{verbatim}
+% from random import random,seed
+% seed(1)
+{A = random()}
+\end{verbatim}
+
+Returns (may depend on the system)
+
+\begin{verbatim}
+0.1343642441
+\end{verbatim}

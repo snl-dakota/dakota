@@ -1,0 +1,23 @@
+Blurb::
+Maximum allowable constraint violation still considered feasible
+
+Description::
+Sets the maximum allowable value of infeasibility that any constraint
+in an optimization problem may possess and still be considered to be
+satisfied.
+ 
+If a constraint's violation is greater than this value then it is
+considered to be violated by the optimization algorithm. This
+specification gives some control over how tightly the constraints will
+be satisfied at convergence of the algorithm. However, if the value is
+set too small the algorithm may terminate with one or more constraints
+being violated.
+
+Dakota's \c convergence_tolerance settings maps to NPSOL's feasbility
+tolerance which is an absolute tolerance on the constraints.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

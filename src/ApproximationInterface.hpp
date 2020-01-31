@@ -73,7 +73,12 @@ protected:
   /// functionSurfaces
   int recommended_points(bool constraint_flag) const;
 
+  void active_model_key(const UShortArray& key);
+  void clear_model_keys();
+
   void approximation_function_indices(const IntSet& approx_fn_indices);
+
+  //void link_multilevel_approximation_data();
 
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr);
@@ -99,34 +104,32 @@ protected:
   void export_approximation();
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
-  void pop_approximation(bool save_surr_data);
+  void pop_approximation(bool save_data);
   void push_approximation();
   bool push_available();
   void finalize_approximation();
 
-  void store_approximation(size_t index = _NPOS);
-  void restore_approximation(size_t index = _NPOS);
-  void remove_stored_approximation(size_t index = _NPOS);
-  void combine_approximation(short corr_type);
+  void combine_approximation();
+  void combined_to_active(bool clear_combined = true);
 
-  Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
-  Real2DArray challenge_diagnostics(const StringArray& metric_types,
-				    const RealMatrix& challenge_pts,
-				    const RealVector& challenge_resps);
-
-  void clear_current();
-  void clear_all();
-  void clear_popped();
+  void clear_inactive();
+  void clear_current_active_data();
+  void clear_active_data();
 
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
-  const Pecos::SurrogateData& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   const RealVectorArray& approximation_coefficients(bool normalized = false);
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
 				  bool normalized = false);
 
   const RealVector& approximation_variances(const Variables& vars);
+
+  Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
+  Real2DArray challenge_diagnostics(const StringArray& metric_types,
+				    const RealMatrix& challenge_pts,
+				    const RealVector& challenge_resps);
 
   // mimic asynchronous operations for those iterators which call
   // asynch_compute_response and synchronize/synchronize_nowait on an
@@ -154,17 +157,27 @@ private:
   void sample_to_variables(const Real* sample_c_vars, size_t num_cv,
 			   Variables& vars);
 
-  /// append to the popCountStack within each of the functionSurfaces
-  /// based on the active set definitions within resp_map
+  /// append to the stack of pop counts within each of the functionSurfaces
+  /// based on the active set definition within a single incoming response
+  void update_pop_counts(const IntResponsePair& response_pr);
+  /// append to the stack of pop counts within each of the functionSurfaces
+  /// based on the active set definitions within a map of incoming responses
   void update_pop_counts(const IntResponseMap& resp_map);
 
+  /// following Approximation::add() and Approximation::pop_count() operations,
+  /// which may enumerate multiple approxDataKeys, restore the active
+  /// approxData to the nominal key
+  void restore_data_key();
+
   /// Load approximation test points from user challenge points file
-  void read_challenge_points(bool active_only);
+  void read_challenge_points();
 
   //
   //- Heading: Data
   //
 
+  /// counter for giving unique names to approximation interfaces
+  static size_t approxIdNum;
   /// for incomplete approximation sets, this array specifies the
   /// response function subset that is approximated
   IntSet approxFnIndices;
@@ -197,6 +210,8 @@ private:
   String challengeFile;
   /// tabular format of the challenge points file
   unsigned short challengeFormat;
+  /// whether to validate variable labels in header
+  bool challengeUseVarLabels;
   /// whether to import active only
   bool challengeActiveOnly;
   /// container for the challenge points data (variables only)
@@ -250,19 +265,71 @@ recommended_points(bool constraint_flag) const
 }
 
 
+inline void ApproximationInterface::active_model_key(const UShortArray& key)
+{
+  sharedData.active_model_key(key);
+
+  // functionSurfaces access active key at run time through shared data; 
+  // however they each contain their own approxData which must be updated.
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].active_model_key(key);
+}
+
+
+inline void ApproximationInterface::clear_model_keys()
+{
+  sharedData.clear_model_keys();
+
+  // No Approximation currently requires a default key assignment at construct
+  // time: all key assignments can be performed at run time.  However, they
+  // each contain their own approxData which must be cleared.
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    // Approximation::approxData instances: clear all keys
+    functionSurfaces[*it].clear_model_keys();
+}
+
+
+/** Restore active key in approxData using shared key. */
+inline void ApproximationInterface::restore_data_key()
+{
+  const UShortArray& active_key = sharedData.active_model_key();
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].active_model_key(active_key);
+}
+
+
 inline void ApproximationInterface::
 approximation_function_indices(const IntSet& approx_fn_indices)
 { approxFnIndices = approx_fn_indices; }
 
 
+/*
+inline void ApproximationInterface::link_multilevel_approximation_data()
+{
+  // define approx data keys and active index
+  sharedData.link_multilevel_surrogate_data();
+
+  // (create and) link SurrogateData instances
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].link_multilevel_surrogate_data();
+}
+*/
+
+
 /** This function removes data provided by a previous append_approximation()
     call, possibly different numbers for each function, or as specified in
     pop_count, which is assumed to be the same for all functions. */
-inline void ApproximationInterface::pop_approximation(bool save_surr_data)
+inline void ApproximationInterface::pop_approximation(bool save_data)
 {
-  sharedData.pop(save_surr_data); // operation order not currently important
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].pop(save_surr_data);
+  sharedData.pop(save_data); // operation order not currently important
+
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    Approximation& fn_surf = functionSurfaces[*it];
+    // Approximation::approxData (1 or more keys for 1 or more instances)
+    fn_surf.pop_data(save_data);
+    // Approximation coefficients
+    fn_surf.pop_coefficients(save_data);
+  }
 }
 
 
@@ -271,8 +338,15 @@ inline void ApproximationInterface::pop_approximation(bool save_surr_data)
 inline void ApproximationInterface::push_approximation()
 {
   sharedData.pre_push(); // do shared aggregation first
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].push(); // requires sharedData restoration index
+
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    Approximation& fn_surf = functionSurfaces[*it];
+    // Approximation::approxData (1 or more keys for 1 or more instances)
+    fn_surf.push_data(); // uses shared restoration index
+    // Approximation coefficients
+    fn_surf.push_coefficients();
+  }
+
   sharedData.post_push(); // do shared cleanup last
 }
 
@@ -284,63 +358,65 @@ inline bool ApproximationInterface::push_available()
 inline void ApproximationInterface::finalize_approximation()
 {
   sharedData.pre_finalize(); // do shared aggregation first
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].finalize(); // requires sharedData finalization index
+
+  size_t fn_index, key_index, num_keys;
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    Approximation& fn_surf = functionSurfaces[*it];
+    // Approximation::approxData (1 or more keys for 1 or more instances)
+    fn_surf.finalize_data(); // uses shared finalization index
+    // Approximation coefficients
+    fn_surf.finalize_coefficients();
+  }
+
   sharedData.post_finalize(); // do shared cleanup last
 }
 
 
-inline void ApproximationInterface::store_approximation(size_t index)
+inline void ApproximationInterface::combine_approximation()
 {
-  sharedData.store(index); // do shared storage first
+  sharedData.pre_combine(); // shared aggregation first
+
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].store(index);
+    functionSurfaces[*it].combine_coefficients();
+
+  sharedData.post_combine(); // shared cleanup last
 }
 
 
-inline void ApproximationInterface::restore_approximation(size_t index)
+inline void ApproximationInterface::combined_to_active(bool clear_combined)
 {
-  sharedData.restore(index); // do shared storage first
+  sharedData.combined_to_active(clear_combined); // shared aggregation first
+
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].restore(index);
+    functionSurfaces[*it].combined_to_active_coefficients(clear_combined);
 }
 
 
-inline void ApproximationInterface::remove_stored_approximation(size_t index)
+inline void ApproximationInterface::clear_inactive()
 {
-  sharedData.remove_stored(index); // do shared storage first
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].remove_stored(index);
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    Approximation& fn_surf = functionSurfaces[*it];
+    // Approximation::approxData instances:
+    fn_surf.clear_inactive_data(); // only retain 1st of active data keys
+    // Approximation coefficients
+    fn_surf.clear_inactive_coefficients();
+  }
+
+  sharedData.clear_inactive(); // shared cleanup last
 }
 
 
-inline void ApproximationInterface::combine_approximation(short corr_type)
-{
-  size_t swap_index = sharedData.pre_combine(corr_type);//shared aggregation 1st
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combine(corr_type, swap_index);
-  sharedData.post_combine(corr_type); // shared cleanup last
-}
-
-
-inline void ApproximationInterface::clear_current()
+inline void ApproximationInterface::clear_current_active_data()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
-    functionSurfaces[*it].clear_current();
+    functionSurfaces[*it].clear_current_active_data();
 }
 
 
-inline void ApproximationInterface::clear_all()
+inline void ApproximationInterface::clear_active_data()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
-    functionSurfaces[*it].clear_all();
-}
-
-
-inline void ApproximationInterface::clear_popped()
-{
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
-    functionSurfaces[*it].clear_popped();
+    functionSurfaces[*it].clear_active_data();
 }
 
 
@@ -353,14 +429,14 @@ inline std::vector<Approximation>& ApproximationInterface::approximations()
 
 
 inline const Pecos::SurrogateData& ApproximationInterface::
-approximation_data(size_t index)
+approximation_data(size_t fn_index)
 {
-  if (approxFnIndices.find(index) == approxFnIndices.end()) {
+  if (approxFnIndices.find(fn_index) == approxFnIndices.end()) {
     Cerr << "Error: index passed to ApproximationInterface::approximation_data"
 	 << "() does not correspond to an approximated function." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
-  return functionSurfaces[index].approximation_data();
+  return functionSurfaces[fn_index].surrogate_data();
 }
 
 
@@ -376,7 +452,7 @@ sample_to_variables(const Real* sample_c_vars, size_t num_cv, Variables& vars)
   else {
     Cerr << "Error: size mismatch in ApproximationInterface::"
 	 << "sample_to_variables()" << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 

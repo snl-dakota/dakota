@@ -19,12 +19,13 @@
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "SensAnalysisGlobal.hpp"
+#include "ProbabilityTransformation.hpp"
+#include "dakota_stat_util.hpp"
 #include "pecos_data_types.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include <algorithm>
 
 #include <boost/math/special_functions/beta.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDSampling.cpp 7036 2010-10-22 23:20:24Z mseldre $";
 
@@ -45,8 +46,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
   backfillFlag(probDescDB.get_bool("method.backfill")),
-  wilksFlag(probDescDB.get_bool("method.wilks")),
-  numLHSRuns(0)
+  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0)
 {
   // pushed down as some derived classes (MLMC) use a MC default
   //if (!sampleType)
@@ -55,7 +55,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   if (epistemicStats && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   // initialize finalStatistics using the default statistics set
@@ -65,16 +65,17 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory
     if ( sampleType != SUBMETHOD_RANDOM ) {
-      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type." << std::endl;
-      abort_handler(-1);
+      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
     }
 
     // Check for conflicting samples spec. Note that this still allows
     // a user to specify "samples = 0" alongside wilks
     if ( numSamples > 0 ) { 
-      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"." 
+      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
 
     // Wilks order statistics
@@ -99,7 +100,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     wilksBeta = probDescDB.get_real("method.confidence_level");
     if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
       wilksBeta = 0.95;
-    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilks_twosided);
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
+					   wilksBeta, wilks_twosided);
     samplesRef = numSamples;
   }
 
@@ -117,17 +119,21 @@ NonDSampling(unsigned short method_name, Model& model,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
-  sampleType(sample_type), wilksFlag(false), samplesIncrement(0), 
-  statsFlag(false), allDataFlag(true),
-  samplingVarsMode(sampling_vars_mode), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(vary_pattern), backfillFlag(false), numLHSRuns(0)
+  sampleType(sample_type), wilksFlag(false), samplesIncrement(0),
+  statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern), backfillFlag(false),
+  numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
   // override default epistemicStats setting from NonD ctor
+  const Variables& vars = iteratedModel.current_variables();
+  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
   bool aleatory_mode = (samplingVarsMode == ALEATORY_UNCERTAIN ||
 			samplingVarsMode == ALEATORY_UNCERTAIN_UNIFORM);
-  epistemicStats = (numEpistemicUncVars && !aleatory_mode);
+  epistemicStats = (euv && !aleatory_mode);
 
   // enforce LHS as default sample type
   if (!sampleType)
@@ -147,11 +153,10 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), 
-  wilksFlag(false), samplesIncrement(0), statsFlag(false),
-  allDataFlag(true), samplingVarsMode(ACTIVE_UNIFORM),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
-  numLHSRuns(0)
+  numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
+  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
+  varyPattern(true), backfillFlag(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -163,6 +168,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
+
 
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of normal, correlated sample sets. */
@@ -173,11 +179,10 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds, RealSymMatrix& correl):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), 
-  wilksFlag(false), samplesIncrement(0), statsFlag(false),
-  allDataFlag(true), samplingVarsMode(ACTIVE),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
-  numLHSRuns(0)
+  numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
+  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
+  backfillFlag(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -189,6 +194,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
+
 
 /** This alternate constructor defines allSamples from an incoming
     sample matrix. */
@@ -215,60 +221,43 @@ NonDSampling::~NonDSampling()
 { }
 
 
-void NonDSampling::transform_samples(bool x_to_u)
-{
-  // transform x_samples to u_samples for use by expansionSampler
-  transform_samples(allSamples, x_to_u, numSamples);
-}
-
-
-void NonDSampling::transform_samples(RealMatrix& sample_matrix, bool x_to_u,
-				     int num_samples)
+void NonDSampling::
+transform_samples(Pecos::ProbabilityTransformation& nataf,
+		  RealMatrix& sample_matrix, int num_samples, bool x_to_u)
 {
   if (num_samples == 0)
     num_samples = sample_matrix.numCols();
+  else if (sample_matrix.numCols() != num_samples)
+    sample_matrix.shapeUninitialized(numContinuousVars, num_samples);
+
   if (x_to_u)
     for (size_t i=0; i<num_samples; ++i) {
       RealVector x_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector u_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      natafTransform.trans_X_to_U(x_samp, u_samp);
+      nataf.trans_X_to_U(x_samp, u_samp);
     }
   else
     for (size_t i=0; i<num_samples; ++i) {
       RealVector u_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector x_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      natafTransform.trans_U_to_X(u_samp, x_samp);
+      nataf.trans_U_to_X(u_samp, x_samp);
     }
 }
 
-
-/** This version of get_parameter_sets() extracts data from the
-    user-defined model in any of the four sampling modes and populates
-    class member allSamples. */
-void NonDSampling::get_parameter_sets(Model& model)
-{
-  get_parameter_sets(model, numSamples, allSamples);
-}
-
-/** This version of get_parameter_sets() extracts data from the
-    user-defined model in any of the four sampling modes and populates
-    the specified design matrix. */
-void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
-                                      RealMatrix& design_matrix)
-{
-  get_parameter_sets(model, num_samples, design_matrix, true);
-}
 
 void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
                                       RealMatrix& design_matrix, bool write_msg)
 {
   initialize_lhs(write_msg, num_samples);
 
-  short model_view = model.current_variables().view().first;
+  // Invoke LHSDriver to generate samples within the specified distributions
+
   switch (samplingVarsMode) {
-  case ACTIVE_UNIFORM: case ALL_UNIFORM: case UNCERTAIN_UNIFORM:
-  case ALEATORY_UNCERTAIN_UNIFORM: case EPISTEMIC_UNCERTAIN_UNIFORM: 
+  case ACTIVE_UNIFORM:  case ALL_UNIFORM:  case UNCERTAIN_UNIFORM:
+  case ALEATORY_UNCERTAIN_UNIFORM:  case EPISTEMIC_UNCERTAIN_UNIFORM: {
+    short model_view = model.current_variables().view().first;
     // Use LHSDriver::generate_uniform_samples() between lower/upper bounds
+    RealSymMatrix corr; // uncorrelated samples
     if ( samplingVarsMode == ACTIVE_UNIFORM ||
 	 ( samplingVarsMode == ALL_UNIFORM && 
 	   ( model_view == RELAXED_ALL || model_view == MIXED_ALL ) ) ||
@@ -288,8 +277,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       // TO DO: add support for uniform discrete
       lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
 					 model.continuous_upper_bounds(),
-					 num_samples, design_matrix, 
-					 backfillFlag);
+					 corr, num_samples, design_matrix); 
     }
     else if (samplingVarsMode == ALL_UNIFORM) {
       // sample uniformly from ALL lower/upper bnds with model in distinct view.
@@ -297,20 +285,19 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       // TO DO: add support for uniform discrete
       lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
 					 model.all_continuous_upper_bounds(),
-					 num_samples, design_matrix, 
-					 backfillFlag);
+					 corr, num_samples, design_matrix); 
     }
-    else { // A, E, A+E UNCERTAIN
+    else { // A, E, A+E UNCERTAIN_UNIFORM
       // sample uniformly from {A,E,A+E} UNCERTAIN lower/upper bounds
       // with model using a non-corresponding view (corresponding views
       // handled in first case above)
       size_t start_acv, num_acv, dummy;
-      mode_counts(model, start_acv, num_acv, dummy, dummy, dummy, dummy,
-		  dummy, dummy);
+      mode_counts(model.current_variables(), start_acv, num_acv,
+		  dummy, dummy, dummy, dummy, dummy, dummy);
       if (!num_acv) {
 	Cerr << "Error: no active continuous variables for sampling in "
 	     << "uniform mode" << std::endl;
-	abort_handler(-1);
+	abort_handler(METHOD_ERROR);
       }
       const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
       const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
@@ -321,147 +308,42 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode
       // TO DO: add support for uniform discrete
       lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, uncertain_c_u_bnds,
-					 num_samples, design_matrix, 
-					 backfillFlag);
+					 corr, num_samples, design_matrix); 
     }
     break;
-  case ALEATORY_UNCERTAIN:
-    lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
-			       num_samples, design_matrix, backfillFlag);
-    break;
-  case EPISTEMIC_UNCERTAIN:
-    lhsDriver.generate_samples(model.epistemic_distribution_parameters(),
-			       num_samples, design_matrix, backfillFlag);
-    break;
-  case UNCERTAIN:
-    lhsDriver.generate_samples(model.aleatory_distribution_parameters(),
-			       model.epistemic_distribution_parameters(),
-			       num_samples, design_matrix, backfillFlag);
-    break;
-  case ACTIVE: case ALL: {
-    // extract design and state bounds
-    RealVector  cdv_l_bnds,   cdv_u_bnds,   csv_l_bnds,   csv_u_bnds;
-    IntVector ddriv_l_bnds, ddriv_u_bnds, dsriv_l_bnds, dsriv_u_bnds;
-    const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
-    const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
-    if (numContDesVars) {
-      cdv_l_bnds
-	= RealVector(Teuchos::View, all_c_l_bnds.values(), numContDesVars);
-      cdv_u_bnds
-	= RealVector(Teuchos::View, all_c_u_bnds.values(), numContDesVars);
-    }
-    if (numContStateVars) {
-      size_t cv_start = model.acv() - numContStateVars;
-      csv_l_bnds = RealVector(Teuchos::View,
-	const_cast<Real*>(&all_c_l_bnds[cv_start]), numContStateVars);
-      csv_u_bnds = RealVector(Teuchos::View,
-	const_cast<Real*>(&all_c_u_bnds[cv_start]), numContStateVars);
-    }
-    const IntVector& all_di_l_bnds = model.all_discrete_int_lower_bounds();
-    const IntVector& all_di_u_bnds = model.all_discrete_int_upper_bounds();
-    size_t num_ddriv = (numDiscIntDesVars) ?
-      numDiscIntDesVars - model.discrete_design_set_int_values().size() : 0;
-    if (num_ddriv) {
-      ddriv_l_bnds = IntVector(Teuchos::View, all_di_l_bnds.values(),num_ddriv);
-      ddriv_u_bnds = IntVector(Teuchos::View, all_di_u_bnds.values(),num_ddriv);
-    }
-    size_t num_dsriv = (numDiscIntStateVars) ?
-      numDiscIntStateVars - model.discrete_state_set_int_values().size() : 0;
-    if (num_dsriv) {
-      size_t di_start = model.adiv() - numDiscIntStateVars;
-      dsriv_l_bnds = IntVector(Teuchos::View,
-	const_cast<int*>(&all_di_l_bnds[di_start]), num_dsriv);
-      dsriv_u_bnds = IntVector(Teuchos::View,
-	const_cast<int*>(&all_di_u_bnds[di_start]), num_dsriv);
-    }
-    IntSetArray empty_isa; StringSetArray empty_ssa; RealSetArray empty_rsa;
-    const IntSetArray&    di_design_sets = (numDiscIntDesVars) ?
-      model.discrete_design_set_int_values()    : empty_isa;
-    const StringSetArray& ds_design_sets = (numDiscStringDesVars) ?
-      model.discrete_design_set_string_values() : empty_ssa;
-    const RealSetArray&   dr_design_sets = (numDiscRealDesVars) ?
-      model.discrete_design_set_real_values()   : empty_rsa;
-    const IntSetArray&    di_state_sets  = (numDiscIntStateVars) ?
-      model.discrete_state_set_int_values()     : empty_isa;
-    const StringSetArray& ds_state_sets  = (numDiscStringStateVars) ?
-      model.discrete_state_set_string_values()  : empty_ssa;
-    const RealSetArray&   dr_state_sets  = (numDiscRealStateVars) ?
-      model.discrete_state_set_real_values()    : empty_rsa;    
+  }
 
-    // Call LHS to generate the specified samples within the specified
-    // distributions.  Use model distribution parameters unless ACTIVE
-    // excludes {aleatory,epistemic,both} uncertain variables.
-    if ( samplingVarsMode == ACTIVE &&
-	 ( model_view == RELAXED_DESIGN || model_view == RELAXED_STATE ||
-	   model_view ==   MIXED_DESIGN || model_view ==   MIXED_STATE ) ) {
-      Pecos::AleatoryDistParams empty_adp; Pecos::EpistemicDistParams empty_edp;
-      if ( !backfillFlag )
-	lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-   	  ds_state_sets, dr_state_sets, empty_adp, empty_edp, num_samples,
-	  design_matrix, sampleRanks);
-      else
-	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-   	  ds_state_sets, dr_state_sets, empty_adp, empty_edp, num_samples,
-	  design_matrix, sampleRanks);
-    }
-    else if ( samplingVarsMode == ACTIVE &&
-	      ( model_view == RELAXED_ALEATORY_UNCERTAIN ||
-		model_view == MIXED_ALEATORY_UNCERTAIN ) ) {
-      Pecos::EpistemicDistParams empty_edp;
-      if ( !backfillFlag )
-	lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-  	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  empty_edp, num_samples, design_matrix, sampleRanks);
-      else
-	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-  	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  empty_edp, num_samples, design_matrix, sampleRanks);
-    }
-    else if ( samplingVarsMode == ACTIVE &&
-	      ( model_view == RELAXED_EPISTEMIC_UNCERTAIN ||
-		model_view == MIXED_EPISTEMIC_UNCERTAIN ) ) {
-      Pecos::AleatoryDistParams empty_adp;
-      if ( !backfillFlag )
-	lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-  	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets, empty_adp,
-	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
-	  sampleRanks);
-      else
-	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-  	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets, empty_adp,
-	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
-	  sampleRanks);
-    }
-    else {
-      if ( !backfillFlag )
-	lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
-	  sampleRanks);
-      else
-	lhsDriver.generate_unique_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-	  ddriv_u_bnds, di_design_sets, ds_design_sets, dr_design_sets,
-	  csv_l_bnds, csv_u_bnds, dsriv_l_bnds, dsriv_u_bnds, di_state_sets,
-	  ds_state_sets, dr_state_sets,model.aleatory_distribution_parameters(),
-	  model.epistemic_distribution_parameters(), num_samples, design_matrix,
-	  sampleRanks);
-	  // warning sampleRanks will empty. 
-	  // See comment in lhs_driver.cpp generate_unique_samples()
-    }
+  case ACTIVE: { // utilize model view to sample active variables
+    Pecos::MultivariateDistribution& mv_dist
+      = model.multivariate_distribution();
+    if (backfillFlag)
+      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	mv_dist.active_variables(), mv_dist.active_correlations());
+      // sampleRanks remains empty. See LHSDriver::generate_unique_samples()
+    else
+      lhsDriver.generate_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	mv_dist.active_variables(), mv_dist.active_correlations());
+    break;
+  }
+
+  case DESIGN: case ALEATORY_UNCERTAIN: case EPISTEMIC_UNCERTAIN:
+  case UNCERTAIN: case STATE: case ALL: {
+    // override active model view to sample alternate subset/superset
+    BitArray active_vars, active_corr;
+    mode_bits(model.current_variables(), active_vars, active_corr);
+    Pecos::MultivariateDistribution& mv_dist
+      = model.multivariate_distribution();
+    if (backfillFlag)
+      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	active_vars, active_corr);
+      // sampleRanks remains empty. See LHSDriver::generate_unique_samples()
+    else
+      lhsDriver.generate_samples(mv_dist.random_variables(),
+	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
+	active_vars, active_corr);
     break;
   }
   }
@@ -473,17 +355,18 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
     definition.  It only support a UNIFORM sampling mode, where the
     distinction of ACTIVE_UNIFORM vs. ALL_UNIFORM is handled elsewhere. */
 void NonDSampling::
-get_parameter_sets(const RealVector& lower_bnds,
-		   const RealVector& upper_bnds)
+get_parameter_sets(const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
   initialize_lhs(true, numSamples);
-  lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds,
+  RealSymMatrix correl; // uncorrelated
+  lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds, correl,
 				     numSamples, allSamples);
 }
 
+
 /** This version of get_parameter_sets() does not extract data from the
     user-defined model, but instead relies on the incoming 
-    definition.  It only support the sampling of normal variables. */
+    definition.  It only supports the sampling of normal variables. */
 void NonDSampling::
 get_parameter_sets(const RealVector& means, const RealVector& std_devs, 
                    const RealVector& lower_bnds, const RealVector& upper_bnds,
@@ -491,114 +374,262 @@ get_parameter_sets(const RealVector& means, const RealVector& std_devs,
 {
   initialize_lhs(true, numSamples);
   lhsDriver.generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
-				    numSamples, correl, allSamples);
+				    correl, numSamples, allSamples);
 }
 
 
+// Map the active variables from vars to sample_vars (a column in allSamples)
 void NonDSampling::
-update_model_from_sample(Model& model, const Real* sample_vars)
+sample_to_variables(const Real* sample_vars, Variables& vars, Model& model)
 {
-  size_t i, cntr = 0, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-    drv_start, num_drv;
-  mode_counts(model, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-	      drv_start, num_drv);
+  // sample_vars are in RandomVariable order, which mirrors the XML spec
+  // vars updates utilize all continuous,discrete {int,string,real} indexing
 
-  // sampled continuous vars (by value)
-  size_t end = cv_start + num_cv;
-  for (i=cv_start; i<end; ++i, ++cntr)
-    model.all_continuous_variable(sample_vars[cntr], i);
-  // sampled discrete int vars (by value cast from Real)
-  end = div_start + num_div;
-  for (i=div_start; i<end; ++i, ++cntr)
-    model.all_discrete_int_variable((int)sample_vars[cntr], i);
-  // sampled discrete string vars (by index cast from Real)
-  short active_view = model.current_variables().view().first;
-  bool relax = (active_view == RELAXED_ALL ||
-    ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
-  short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
-  const StringSetArray& all_dss_values
-    = model.discrete_set_string_values(all_view);
-  end = dsv_start + num_dsv;
-  for (i=dsv_start; i<end; ++i, ++cntr)
-    model.all_discrete_string_variable(set_index_to_value(
-      (size_t)sample_vars[cntr], all_dss_values[i]), i);
-  // sampled discrete real vars (by value)
-  end = drv_start + num_drv;
-  for (i=drv_start; i<end; ++i, ++cntr)
-    model.all_discrete_real_variable(sample_vars[cntr], i);
+  const SharedVariablesData& svd = vars.shared_data();
+  short vars_mode;
+  switch (samplingVarsMode) {
+  case ACTIVE:
+    switch (vars.view().first) {
+    case RELAXED_ALL:       case MIXED_ALL:       vars_mode = ALL;        break;
+    case RELAXED_DESIGN:    case MIXED_DESIGN:    vars_mode = DESIGN;     break;
+    case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN: vars_mode = UNCERTAIN;  break;
+    case RELAXED_ALEATORY_UNCERTAIN:   case MIXED_ALEATORY_UNCERTAIN:
+      vars_mode = ALEATORY_UNCERTAIN;                                     break;
+    case RELAXED_EPISTEMIC_UNCERTAIN:  case MIXED_EPISTEMIC_UNCERTAIN:
+      vars_mode = EPISTEMIC_UNCERTAIN;                                    break;
+    case RELAXED_STATE:     case MIXED_STATE:     vars_mode = STATE;      break;
+    }
+    break;
+  case ACTIVE_UNIFORM:
+    switch (vars.view().first) {
+    case RELAXED_ALL:     case MIXED_ALL:    vars_mode = ALL_UNIFORM;     break;
+    case RELAXED_DESIGN:  case MIXED_DESIGN:
+      vars_mode = DESIGN/*_UNIFORM*/;                                     break;
+    case RELAXED_UNCERTAIN:            case MIXED_UNCERTAIN:
+      vars_mode = UNCERTAIN_UNIFORM;                                      break;
+    case RELAXED_ALEATORY_UNCERTAIN:   case MIXED_ALEATORY_UNCERTAIN:
+      vars_mode = ALEATORY_UNCERTAIN_UNIFORM;                             break;
+    case RELAXED_EPISTEMIC_UNCERTAIN:  case MIXED_EPISTEMIC_UNCERTAIN:
+      vars_mode = EPISTEMIC_UNCERTAIN_UNIFORM;                            break;
+    case RELAXED_STATE:                case MIXED_STATE:
+      vars_mode = STATE/*_UNIFORM*/;                                      break;
+    }
+    break;
+  default:  vars_mode = samplingVarsMode;                                 break;
+  }
+
+  size_t cv_index, num_cv, div_index, num_div, dsv_index, num_dsv,
+    drv_index, num_drv, samp_index = 0;
+  switch (vars_mode) {
+  case DESIGN:
+    cv_index = div_index = dsv_index = drv_index = 0;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    break;
+  //case DESIGN_UNIFORM:
+  //  cv_index = div_index = dsv_index = drv_index = 0;
+  //  svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+  //  sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+  // 		        dsv_index, num_dsv, drv_index, num_drv, samp_index);
+  //  break;
+  case ALEATORY_UNCERTAIN:
+    // design vars define starting indices
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+    // aleatory uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    break;
+  case ALEATORY_UNCERTAIN_UNIFORM:
+    // continuous design vars define starting indices
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+    // continuous aleatory uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    break;
+  case EPISTEMIC_UNCERTAIN:
+    // design + aleatory uncertain vars define starting indices
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_index  += num_cv;   div_index += num_div;
+    dsv_index += num_dsv;  drv_index += num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    break;
+  case EPISTEMIC_UNCERTAIN_UNIFORM:
+    // continuous design + aleatory uncertain vars define starting indices
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_index  += num_cv;   div_index += num_div;
+    dsv_index += num_dsv;  drv_index += num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    break;
+  case UNCERTAIN:
+    // aleatory
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    // epistemic
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    break;
+  case UNCERTAIN_UNIFORM:
+    // aleatory
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    // epistemic
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    break;
+  case STATE:
+    svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_index  += num_cv;  div_index += num_div;
+    dsv_index += num_dsv; drv_index += num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_index  += num_cv;  div_index += num_div;
+    dsv_index += num_dsv; drv_index += num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    break;
+  //case STATE_UNIFORM:
+  //  svd.design_counts(cv_index, div_index, dsv_index, drv_index);
+  //  svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  //  cv_index  += num_cv;  div_index += num_div;
+  //  dsv_index += num_dsv; drv_index += num_drv;
+  //  svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  //  cv_index  += num_cv;  div_index += num_div;
+  //  dsv_index += num_dsv; drv_index += num_drv;
+  //  svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+  //  sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+  //	      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+  //  break;
+  case ALL:
+    // design
+    cv_index = div_index = dsv_index = drv_index = 0;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    // aleatory
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    // epistemic
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    // state
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		   dsv_index, num_dsv, drv_index, num_drv, samp_index, model);
+    break;
+  case ALL_UNIFORM:
+    // design
+    cv_index = div_index = dsv_index = drv_index = 0;
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    // aleatory
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    // epistemic
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    // state
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    sample_to_cv_type(sample_vars, vars, cv_index, num_cv, div_index, num_div,
+		      dsv_index, num_dsv, drv_index, num_drv, samp_index);
+    break;
+  }
 }
 
 
-// BMA TODO: consolidate with other use cases
+/*
+// TO DO: avoid inefficiency from repeated lookups...
 void NonDSampling::
-sample_to_variables(const Real* sample_vars, Variables& vars)
+sample_to_variables(const Real* sample_vars, Variables& vars, size_t acv_start,
+		    size_t num_acv, size_t adiv_start, size_t num_adiv,
+		    size_t adsv_start, size_t num_adsv, size_t adrv_start,
+		    size_t num_adrv, const StringSetArray& dss_values)
 {
-  size_t i, cntr = 0, cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-    drv_start, num_drv;
-  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div, dsv_start,
-	      num_dsv, drv_start, num_drv);
-
-  // BMA TODO: make sure inactive get updated too as needed?
+  const SharedVariablesData& svd = vars.shared_data();
 
   // sampled continuous vars (by value)
-  size_t end = cv_start + num_cv;
-  for (i=cv_start; i<end; ++i, ++cntr)
-    vars.all_continuous_variable(sample_vars[cntr], i);
+  size_t i, end = acv_start + num_acv;
+  for (i=acv_start; i<end; ++i)
+    vars.all_continuous_variable(sample_vars[svd.acv_index_to_all_index(i)], i);
   // sampled discrete int vars (by value cast from Real)
-  end = div_start + num_div;
-  for (i=div_start; i<end; ++i, ++cntr)
-    vars.all_discrete_int_variable((int)sample_vars[cntr], i);
+  end = adiv_start + num_adiv;
+  for (i=adiv_start; i<end; ++i)
+    vars.all_discrete_int_variable(
+      (int)sample_vars[svd.adiv_index_to_all_index(i)], i);
   // sampled discrete string vars (by index cast from Real)
-  short active_view = vars.view().first;
-  bool relax = (active_view == RELAXED_ALL ||
-    ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
-  short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
-  const StringSetArray& all_dss_values
-    = iteratedModel.discrete_set_string_values(all_view);
-  end = dsv_start + num_dsv;
-  for (i=dsv_start; i<end; ++i, ++cntr)
+  end = adsv_start + num_adsv;
+  for (i=adsv_start; i<end; ++i)
     vars.all_discrete_string_variable(set_index_to_value(
-      (size_t)sample_vars[cntr], all_dss_values[i]), i);
+      (size_t)sample_vars[svd.adsv_index_to_all_index(i)], dss_values[i]),i);
   // sampled discrete real vars (by value)
-  end = drv_start + num_drv;
-  for (i=drv_start; i<end; ++i, ++cntr)
-    vars.all_discrete_real_variable(sample_vars[cntr], i);
+  end = adrv_start + num_adrv;
+  for (i=adrv_start; i<end; ++i)
+    vars.all_discrete_real_variable(
+      sample_vars[svd.adrv_index_to_all_index(i)], i);
 }
+*/
 
 
-// BMA TODO: consolidate with other use cases
-/** Map the active variables from vars to sample_vars (column in allSamples) */
+// Some inefficiency is acceptable here, as this is for one-time imports,
+// so retain the compact approach of per-index conversion for now
 void NonDSampling::
 variables_to_sample(const Variables& vars, Real* sample_vars)
 {
-  size_t cntr = 0;
+  size_t acv_start, num_acv, adiv_start, num_adiv, adsv_start, num_adsv,
+    adrv_start, num_adrv;
+  mode_counts(vars, acv_start, num_acv, adiv_start, num_adiv,
+	      adsv_start, num_adsv, adrv_start, num_adrv);
 
-  const RealVector& c_vars = vars.continuous_variables();
-  for (size_t j=0; j<numContinuousVars; ++j, ++cntr)
-    sample_vars[cntr] = c_vars[j]; // jth row of samples_matrix
+  const SharedVariablesData& svd = vars.shared_data();
 
-  const IntVector& di_vars = vars.discrete_int_variables();
-  for (size_t j=0; j<numDiscreteIntVars; ++j, ++cntr)
-    sample_vars[cntr] = (Real) di_vars[j]; // jth row of samples_matrix
-
-  // to help with mapping string variables
-  // sampled discrete string vars (by index cast from Real)
-  short active_view = vars.view().first;
-  bool relax = (active_view == RELAXED_ALL ||
-    ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
-  short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
-  const StringSetArray& all_dss_values
-    = iteratedModel.discrete_set_string_values(all_view);
-
-  // is care needed to manage active vs. all string variables?
-
-  StringMultiArrayConstView ds_vars = vars.discrete_string_variables();
-  for (size_t j=0; j<numDiscreteStringVars; ++j, ++cntr) // jth row
-    sample_vars[cntr] = (Real)set_value_to_index(ds_vars[j], all_dss_values[j]);
-
-  const RealVector& dr_vars = vars.discrete_real_variables();
-  for (size_t j=0; j<numDiscreteRealVars; ++j, ++cntr)
-    sample_vars[cntr] = (Real)dr_vars[j]; // jth row
+  // sampled continuous vars (by value)
+  size_t i, end = acv_start + num_acv;
+  for (i=acv_start; i<end; ++i)
+    sample_vars[svd.acv_index_to_all_index(i)]
+      = vars.all_continuous_variables()[i];
+  // sampled discrete int vars (cast value to Real)
+  end = adiv_start + num_adiv;
+  for (i=adiv_start; i<end; ++i)
+    sample_vars[svd.adiv_index_to_all_index(i)]
+      = (Real)vars.all_discrete_int_variables()[i];
+  // sampled discrete string vars (cast index to Real)
+  if (num_adsv) { // incur overhead of extracting DSS values
+    short active_view = vars.view().first;
+    bool relax = (active_view == RELAXED_ALL ||
+      ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
+    short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
+    const StringSetArray& dss_values
+      = iteratedModel.discrete_set_string_values(all_view);
+    end = adsv_start + num_adsv;
+    for (i=adsv_start; i<end; ++i)
+      sample_vars[svd.adsv_index_to_all_index(i)] = (Real)set_value_to_index(
+	vars.all_discrete_string_variables()[i], dss_values[i]);
+  }
+  // sampled discrete real vars (by value)
+  end = adrv_start + num_adrv;
+  for (i=adrv_start; i<end; ++i)
+    sample_vars[svd.adrv_index_to_all_index(i)]
+      = vars.all_discrete_real_variables()[i];
 }
 
 
@@ -611,214 +642,152 @@ variables_to_sample(const Variables& vars, Real* sample_vars)
     views, the results of this function are starts and counts for use
     within model.all_*() set/get functions. */
 void NonDSampling::
-mode_counts(const Model& model, size_t& cv_start,  size_t& num_cv,
-	    size_t& div_start,  size_t& num_div,   size_t& dsv_start,
-	    size_t& num_dsv,    size_t& drv_start, size_t& num_drv) const
+mode_counts(const Variables& vars, size_t& cv_start,  size_t& num_cv,
+	    size_t& div_start,     size_t& num_div,   size_t& dsv_start,
+	    size_t& num_dsv,       size_t& drv_start, size_t& num_drv) const
 {
   cv_start = div_start = dsv_start = drv_start = 0;
   num_cv   = num_div   = num_dsv   = num_drv   = 0;
+  const SharedVariablesData& svd = vars.shared_data();
+  size_t dummy;
+  // Note: UNIFORM views do not currently support non-relaxed discrete
   switch (samplingVarsMode) {
+  case DESIGN:
+    // design vars define counts
+    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+    break;
+  //case DESIGN_UNIFORM:
+  //  // continuous design vars define counts
+  //  svd.design_counts(num_cv, dummy, dummy, dummy);
+  //  break;
   case ALEATORY_UNCERTAIN:
     // design vars define starting indices
-    view_design_counts(model, cv_start, div_start, dsv_start, drv_start);
-    // A uncertain vars define counts
-    view_aleatory_uncertain_counts(model, num_cv, num_div, num_dsv, num_drv);
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    // aleatory uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
     break;
-  case ALEATORY_UNCERTAIN_UNIFORM: {
-    // UNIFORM views do not currently support non-relaxed discrete
-    size_t dummy;
+  case ALEATORY_UNCERTAIN_UNIFORM:
     // continuous design vars define starting indices
-    view_design_counts(model, cv_start, dummy, dummy, dummy);
-    // continuous A uncertain vars define counts
-    view_aleatory_uncertain_counts(model, num_cv, dummy, dummy, dummy);   break;
-  }
-  case EPISTEMIC_UNCERTAIN: {
-    // design + A uncertain vars define starting indices
-    size_t num_cdv,  num_ddiv,  num_ddsv,  num_ddrv,
-           num_cauv, num_dauiv, num_dausv, num_daurv;
-    view_design_counts(model, num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    view_aleatory_uncertain_counts(model, num_cauv, num_dauiv, num_dausv,
-				   num_daurv);
-    cv_start  = num_cdv  + num_cauv;  div_start = num_ddiv + num_dauiv;
-    dsv_start = num_ddsv + num_dausv; drv_start = num_ddrv + num_daurv;
-    // E uncertain vars define counts
-    view_epistemic_uncertain_counts(model, num_cv, num_div, num_dsv, num_drv);
+    svd.design_counts(cv_start, dummy, dummy, dummy);
+    // continuous aleatory uncertain vars define counts
+    svd.aleatory_uncertain_counts(num_cv, dummy, dummy, dummy);
     break;
-  }
-  case EPISTEMIC_UNCERTAIN_UNIFORM: {
-    // UNIFORM views do not currently support non-relaxed discrete
-    // continuous design + A uncertain vars define starting indices
-    size_t num_cdv, num_cauv, dummy;
-    view_design_counts(model, num_cdv, dummy, dummy, dummy);
-    view_aleatory_uncertain_counts(model, num_cauv, dummy, dummy, dummy);
-    cv_start = num_cdv + num_cauv;
-    // continuous E uncertain vars define counts
-    view_epistemic_uncertain_counts(model, num_cv, dummy, dummy, dummy);  break;
-  }
+  case EPISTEMIC_UNCERTAIN:
+    // design + aleatory uncertain vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_start  += num_cv;  div_start += num_div;
+    dsv_start += num_dsv; drv_start += num_drv;
+    // epistemic uncertain vars define counts
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    break;
+  case EPISTEMIC_UNCERTAIN_UNIFORM:
+    // continuous design + aleatory uncertain vars define starting indices
+    svd.design_counts(cv_start, dummy, dummy, dummy);
+    svd.aleatory_uncertain_counts(num_cv, dummy, dummy, dummy);
+    cv_start += num_cv;
+    // continuous epistemic uncertain vars define counts
+    svd.epistemic_uncertain_counts(num_cv, dummy, dummy, dummy);
+    break;
   case UNCERTAIN:
     // design vars define starting indices
-    view_design_counts(model, cv_start, div_start, dsv_start, drv_start);
-    // A+E uncertain vars define counts
-    view_uncertain_counts(model, num_cv, num_div, num_dsv, num_drv);      break;
-  case UNCERTAIN_UNIFORM: {
-    // UNIFORM views do not currently support non-relaxed discrete
-    size_t dummy;
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    // aleatory+epistemic uncertain vars define counts
+    svd.uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    break;
+  case UNCERTAIN_UNIFORM:
     // continuous design vars define starting indices
-    view_design_counts(model, cv_start, dummy, dummy, dummy);
-    // continuous A+E uncertain vars define counts
-    view_uncertain_counts(model, num_cv, dummy, dummy, dummy);            break;
-  }
-  case ACTIVE: {
-    const Variables& vars = model.current_variables();
+    svd.design_counts(cv_start, dummy, dummy, dummy);
+    // continuous aleatory+epistemic uncertain vars define counts
+    svd.uncertain_counts(num_cv, dummy, dummy, dummy);
+    break;
+  case STATE:
+    // design + aleatory + epistemic vars define starting indices
+    svd.design_counts(cv_start, div_start, dsv_start, drv_start);
+    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_start  += num_cv;  div_start += num_div;
+    dsv_start += num_dsv; drv_start += num_drv;
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    cv_start  += num_cv;  div_start += num_div;
+    dsv_start += num_dsv; drv_start += num_drv;
+    // state vars define counts
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    break;
+  //case STATE_UNIFORM:
+  //  // continuous design + aleatory + epistemic vars define starting indices
+  //  svd.design_counts(cv_start, dummy, dummy, dummy);
+  //  svd.aleatory_uncertain_counts(num_cv, dummy, dummy, dummy);
+  //  cv_start += num_cv;
+  //  svd.epistemic_uncertain_counts(num_cv, dummy, dummy, dummy);
+  //  cv_start += num_cv;
+  //  // continuous state vars define counts
+  //  svd.state_counts(num_cv, dummy, dummy, dummy);
+  //  break;
+  case ACTIVE:
     cv_start  = vars.cv_start();  num_cv  = vars.cv();
     div_start = vars.div_start(); num_div = vars.div();
     dsv_start = vars.dsv_start(); num_dsv = vars.dsv();
-    drv_start = vars.drv_start(); num_drv = vars.drv();                   break;
-  }
-  case ACTIVE_UNIFORM: {
-    // UNIFORM views do not currently support non-relaxed discrete
-    const Variables& vars = model.current_variables();
-    cv_start = vars.cv_start(); num_cv = vars.cv();                       break;
-  }
+    drv_start = vars.drv_start(); num_drv = vars.drv();   break;
+  case ACTIVE_UNIFORM:
+    cv_start  = vars.cv_start();  num_cv  = vars.cv();    break;
   case ALL:
-    num_cv  = model.acv();  num_div = model.adiv();
-    num_dsv = model.adsv(); num_drv = model.adrv();                       break;
+    num_cv    = vars.acv();       num_div = vars.adiv();
+    num_dsv   = vars.adsv();      num_drv = vars.adrv();  break;
   case ALL_UNIFORM:
-    // UNIFORM views do not currently support non-relaxed discrete
-    num_cv = model.acv();                                                 break;
-  }
-}
-
-
-/** This function computes total design variable counts, not active counts,
-    for use in defining offsets and counts within all variables arrays. */
-void NonDSampling::
-view_design_counts(const Model& model, size_t& num_cdv, size_t& num_ddiv,
-		   size_t& num_ddsv, size_t& num_ddrv) const
-{
-  const Variables& vars = model.current_variables();
-  short active_view = vars.view().first;
-  switch (active_view) {
-  case RELAXED_ALL: case MIXED_ALL: case RELAXED_DESIGN: case MIXED_DESIGN:
-    // design vars are included in active counts from NonD and relaxation
-    // counts have already been applied
-    num_cdv  = numContDesVars;       num_ddiv = numDiscIntDesVars;
-    num_ddsv = numDiscStringDesVars; num_ddrv = numDiscRealDesVars; break;
-  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_STATE:
-  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_STATE:
-    // design vars are not included in active counts from NonD
-    vars.shared_data().design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-    break;
-  case RELAXED_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-  case   MIXED_UNCERTAIN: case   MIXED_ALEATORY_UNCERTAIN:
-    num_cdv  = vars.cv_start();  num_ddiv = vars.div_start();
-    num_ddsv = vars.dsv_start(); num_ddrv = vars.drv_start(); break;
-  }
-}
-
-
-/** This function computes total aleatory uncertain variable counts,
-    not active counts, for use in defining offsets and counts within
-    all variables arrays. */
-void NonDSampling::
-view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
-			       size_t& num_dauiv, size_t& num_dausv,
-			       size_t& num_daurv) const
-{
-  const Variables& vars = model.current_variables();
-  short active_view = vars.view().first;
-  switch (active_view) {
-  case RELAXED_ALL: case RELAXED_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-  case   MIXED_ALL: case   MIXED_UNCERTAIN: case   MIXED_ALEATORY_UNCERTAIN:
-    // aleatory vars are included in active counts from NonD and relaxation
-    // counts have already been applied
-    num_cauv  = numContAleatUncVars;       num_dauiv = numDiscIntAleatUncVars;
-    num_dausv = numDiscStringAleatUncVars; num_daurv = numDiscRealAleatUncVars;
-    break;
-  case RELAXED_DESIGN: case RELAXED_STATE: case RELAXED_EPISTEMIC_UNCERTAIN:
-  case MIXED_DESIGN:   case MIXED_STATE:   case MIXED_EPISTEMIC_UNCERTAIN:
-    vars.shared_data().aleatory_uncertain_counts(num_cauv,  num_dauiv,
-						 num_dausv, num_daurv);
-    break;
-  }
-}
-
-
-/** This function computes total epistemic uncertain variable counts,
-    not active counts, for use in defining offsets and counts within
-    all variables arrays. */
-void NonDSampling::
-view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
-				size_t& num_deuiv, size_t& num_deusv,
-				size_t& num_deurv) const
-{
-  const Variables& vars = model.current_variables();
-  short active_view = vars.view().first;
-  switch (active_view) {
-  case RELAXED_ALL: case RELAXED_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-  case   MIXED_ALL: case   MIXED_UNCERTAIN: case   MIXED_EPISTEMIC_UNCERTAIN:
-    num_ceuv  = numContEpistUncVars;       num_deuiv = numDiscIntEpistUncVars;
-    num_deusv = numDiscStringEpistUncVars; num_deurv = numDiscRealEpistUncVars;
-    break;
-  case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_STATE:
-  case MIXED_DESIGN:   case MIXED_ALEATORY_UNCERTAIN:   case MIXED_STATE:
-    vars.shared_data().epistemic_uncertain_counts(num_ceuv,  num_deuiv,
-						  num_deusv, num_deurv);
-    break;
-  }
-}
-
-
-/** This function computes total uncertain variable counts, not active counts,
-    for use in defining offsets and counts within all variables arrays. */
-void NonDSampling::
-view_uncertain_counts(const Model& model, size_t& num_cuv, size_t& num_duiv,
-		      size_t& num_dusv, size_t& num_durv) const
-{
-  const Variables& vars = model.current_variables();
-  short active_view = vars.view().first;
-  switch (active_view) {
-  case RELAXED_ALL: case MIXED_ALL: // UNCERTAIN = subset of ACTIVE
-    num_cuv  = numContAleatUncVars       + numContEpistUncVars;
-    num_duiv = numDiscIntAleatUncVars    + numDiscIntEpistUncVars;
-    num_dusv = numDiscStringAleatUncVars + numDiscStringEpistUncVars;
-    num_durv = numDiscRealAleatUncVars   + numDiscRealEpistUncVars;      break;
-  case RELAXED_DESIGN:             case RELAXED_STATE:
-  case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-  case MIXED_DESIGN:               case MIXED_STATE:
-  case MIXED_ALEATORY_UNCERTAIN:   case MIXED_EPISTEMIC_UNCERTAIN:
-    vars.shared_data().uncertain_counts(num_cuv, num_duiv, num_dusv, num_durv);
-    break;
-  case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN: // UNCERTAIN = same as ACTIVE
-    num_cuv  = vars.cv();  num_duiv = vars.div();
-    num_dusv = vars.dsv(); num_durv = vars.drv(); break;
+    num_cv    = vars.acv();                               break;
   }
 }
 
 
 void NonDSampling::
-view_state_counts(const Model& model, size_t& num_csv, size_t& num_dsiv,
-		  size_t& num_dssv, size_t& num_dsrv) const
+mode_bits(const Variables& vars, BitArray& active_vars,
+	  BitArray& active_corr) const
 {
-  const Variables& vars = model.current_variables();
-  short active_view = vars.view().first;
-  switch (active_view) {
-  case RELAXED_ALL: case MIXED_ALL: case RELAXED_STATE: case MIXED_STATE:
-    // state vars are included in active counts from NonD and relaxation
-    // counts have already been applied
-    num_csv  = numContStateVars;       num_dsiv = numDiscIntStateVars;
-    num_dssv = numDiscStringStateVars; num_dsrv = numDiscRealStateVars; break;
-  case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_DESIGN:
-  case   MIXED_ALEATORY_UNCERTAIN: case   MIXED_DESIGN:
-    // state vars are not included in active counts from NonD
-    vars.shared_data().state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
+  const SharedVariablesData& svd = vars.shared_data();
+  size_t num_v = vars.tv(), num_cv, num_div, num_dsv, num_drv,
+    num_dv, num_auv, num_euv;
+  svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+  num_dv = num_cv + num_div + num_dsv + num_drv,
+  svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  num_auv = num_cv + num_div + num_dsv + num_drv;
+  active_corr.resize(num_v, false);
+  assign_value(active_corr, true, num_dv, num_auv);
+
+  switch (samplingVarsMode) {
+  case DESIGN:
+    active_vars.resize(num_v, false);
+    assign_value(active_vars, true, 0, num_dv);  break;
+  case ALEATORY_UNCERTAIN:
+    active_vars = active_corr;  break;
+  case EPISTEMIC_UNCERTAIN:
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    active_vars.resize(num_v, false);
+    assign_value(active_vars, true, num_dv + num_auv,
+		 num_cv + num_div + num_dsv + num_drv);
     break;
-  case RELAXED_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-  case   MIXED_UNCERTAIN: case   MIXED_EPISTEMIC_UNCERTAIN:
-    num_csv  = vars.acv()  - vars.cv_start()  - vars.cv();
-    num_dsiv = vars.adiv() - vars.div_start() - vars.div();
-    num_dssv = vars.adsv() - vars.dsv_start() - vars.dsv();
-    num_dsrv = vars.adrv() - vars.drv_start() - vars.drv(); break;
+  case UNCERTAIN:
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    active_vars.resize(num_v, false);
+    assign_value(active_vars, true, num_dv,
+		 num_auv + num_cv + num_div + num_dsv + num_drv);
+    break;
+  case STATE:
+    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+    num_euv = num_cv + num_div + num_dsv + num_drv;
+    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+    active_vars.resize(num_v, false);
+    assign_value(active_vars, true, num_dv + num_auv + num_euv,
+		 num_cv + num_div + num_dsv + num_drv);
+    break;
+  case ALL:
+    active_vars.clear(); break; // no subset, all are active
+  //case ALEATORY_UNCERTAIN_UNIFORM:
+  //case EPISTEMIC_UNCERTAIN_UNIFORM:
+  //case UNCERTAIN_UNIFORM:
+  default:
+    Cerr << "Error: unsupported sampling mode in NonDSampling::mode_bits()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);  break;
   }
 }
 
@@ -838,8 +807,17 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
   // one run to the next.
   if (numLHSRuns == 1) { // set initial seed
     lhsDriver.rng(rngName);
-    if (!seedSpec) // no user specification --> nonrepeatable behavior
+    if (!seedSpec) { // no user specification --> nonrepeatable behavior
+      // Generate initial seed from a system clock.  NOTE: the system clock
+      // should not used for multiple LHS calls since (1) clock granularity can
+      // be too coarse (can repeat on subsequent runs for inexpensive test fns)
+      // and (2) seed progression can be highly structured, which could induce
+      // correlation between sample sets.  Instead, the clock-generated case
+      // varies the seed below using the same approach as the user-specified
+      // case.  This has the additional benefit that a random run can be
+      // recreated by specifying the clock-generated seed in the input file.
       randomSeed = generate_system_seed();
+    }
     lhsDriver.seed(randomSeed);
   }
   else if (varyPattern) // define sequence of seed values for numLHSRuns > 1
@@ -870,6 +848,80 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
 }
 
 
+/** Map ASV/DVV requests in final statistics into activeSet for use in
+    evaluate_parameter_sets() */
+void NonDSampling::active_set_mapping()
+{
+  // Adapted from NonDExpansion::compute_expansion()
+
+  // Note: the ASV within finalStatistics corresponds to the stats vector,
+  // not the QoI vector, but the DVV carries over.
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  size_t num_final_stats = final_asv.size();
+  if (!num_final_stats) // finalStatistics not initialized
+    return;             // leave activeSet as is; nothing to augment
+
+  // activeSet ASV/DVV can include active-variable derivatives for surrogate
+  // creation (use_derivatives spec option).  Cannot easily support both this
+  // and moment gradients w.r.t. inactive variables without new logic for an
+  // aggregate DVV; however, the former case occurs in DataFitSurrModel
+  // contexts and the latter case occurs in NestedModel contexts:
+  // > for now, augment the incoming ASV (preserve the DataFitSurrModel case)
+  //   with any moment grad requirements and only overwrite the incoming DVV
+  //   when moment gradients are required (support the NestedModel case).
+  // > Model recursions that embed a derivative-enhanced DataFitSurrModel
+  //   within a NestedModel may dictate additional care...
+  ShortArray sampler_asv = activeSet.request_vector();//(numFunctions, 0);
+  bool assign_dvv = false, qoi_fn, qoi_grad, moment1_grad, moment2_grad;
+  size_t i, j, rl_len, pl_len, bl_len, gl_len, total_i, cntr = 0,
+    moment_offset = (finalMomentsType) ? 2 : 0;
+  for (i=0; i<numFunctions; ++i) {
+
+    if (totalLevelRequests) {
+      rl_len = requestedRespLevels[i].length();
+      pl_len = requestedProbLevels[i].length();
+      bl_len = requestedRelLevels[i].length();
+      gl_len = requestedGenRelLevels[i].length();
+    }
+    else // requested level arrays may not be sized
+      rl_len = pl_len = bl_len = gl_len = 0;
+
+    // map final_asv value bits into qoi_fns requirements
+    qoi_fn = qoi_grad = moment1_grad = moment2_grad = false;
+    total_i = moment_offset + rl_len + pl_len + bl_len + gl_len;
+    for (j=0; j<total_i; ++j)
+      if (final_asv[cntr+j] & 1)
+        { qoi_fn = true; break; }
+
+    // map final_asv gradient bits into moment grad requirements
+    if (finalMomentsType) {
+      if (final_asv[cntr++] & 2) moment1_grad = true;
+      if (final_asv[cntr++] & 2) moment2_grad = true;
+    }
+    if (respLevelTarget == RELIABILITIES)
+      for (j=0; j<rl_len; ++j) // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
+	if (final_asv[cntr+j] & 2)
+	  { moment1_grad = moment2_grad = qoi_fn = true; break;}
+    cntr += rl_len + pl_len;
+    for (j=0; j<bl_len; ++j)   // dz/ds requires dmu/ds, dsigma/ds
+      if (final_asv[cntr+j] & 2)
+	{ moment1_grad = moment2_grad = true; break; }
+    cntr += bl_len + gl_len;
+    if (moment1_grad) assign_dvv = qoi_grad = true;
+    if (moment2_grad) assign_dvv = qoi_grad = qoi_fn = true;
+
+    // map qoi_{fn,grad} requirements into ASV settings
+    if (qoi_fn)                    sampler_asv[i] |= 1;
+    if (qoi_grad /*|| useDerivs*/) sampler_asv[i] |= 2; // future aggregation...
+  }
+  activeSet.request_vector(sampler_asv);
+
+  if (assign_dvv)
+    activeSet.derivative_vector(finalStatistics.active_set_derivative_vector());
+  //else leave DVV as default active cv's (from Iterator::update_from_model())
+}
+
+
 /** Default implementation generates allResponses from either allSamples
     or allVariables. */
 void NonDSampling::core_run()
@@ -890,8 +942,8 @@ compute_statistics(const RealMatrix&     vars_samples,
     adrv_labels = iteratedModel.all_discrete_real_variable_labels();
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
-	      dsv_start, num_dsv, drv_start, num_drv);
+  mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
+	      div_start, num_div, dsv_start, num_dsv, drv_start, num_drv);
   StringMultiArrayConstView
     cv_labels  =
       acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
@@ -929,12 +981,13 @@ compute_statistics(const RealMatrix&     vars_samples,
   if (!subIteratorFlag) {
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
     // archive the correlations to the results DB
-    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-				      div_labels, dsv_labels, drv_labels,
-				      iteratedModel.response_labels());
+//    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
+//				      div_labels, dsv_labels, drv_labels,
+//				      iteratedModel.response_labels());
   }
-  if (!finalStatistics.is_null())
-    update_final_statistics();
+
+  // push results into finalStatistics
+  update_final_statistics();
 }
 
 
@@ -943,18 +996,17 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
 {
   // For the samples array, calculate min/max response intervals
 
-  using boost::math::isfinite;
   size_t i, j, num_obs = samples.size(), num_samp;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  if (extreme_fns.empty()) extreme_fns.resize(numFunctions);
+  extreme_fns.resize(numFunctions);
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
     num_samp = 0;
     Real min = DBL_MAX, max = -DBL_MAX;
     for (it=samples.begin(); it!=samples.end(); ++it) {
       Real sample = it->second.function_value(i);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
+      if (std::isfinite(sample)) { // neither NaN nor +/-Inf
 	if (sample < min) min = sample;
 	if (sample > max) max = sample;
 	++num_samp;
@@ -978,230 +1030,496 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
 }
 
 
-void NonDSampling::compute_moments(const IntResponseMap& samples)
+void NonDSampling::
+compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
+		RealMatrix& moment_grads, RealMatrix& moment_conf_ints,
+		short moments_type, const StringArray& labels)
 {
-  // For the samples array, calculate means and standard deviations
-  // with confidence intervals
+  // For the samples array, calculate 1st four moments and confidence intervals
 
-  using boost::math::isfinite;
-  size_t i, j, num_obs = samples.size(), num_samp;
-  Real sum, var, skew, kurt, sample;
-  const StringArray& resp_labels = iteratedModel.response_labels();
+  // if subIteratorFlag, final_asv will be general.  If not a sub-iterator, then
+  // NonD::initialize_final_statistics() sets default request vector to 1's.
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
 
-  if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
-  if (momentCIs.empty()) momentCIs.shapeUninitialized(4, numFunctions);
-
-  IntRespMCIter it;
-  for (i=0; i<numFunctions; ++i) {
-
-    num_samp  = 0;
-    sum = var = skew = kurt = 0.;
-    // means
-    for (it=samples.begin(); it!=samples.end(); ++it) {
-      sample = it->second.function_value(i);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	sum += sample;
-	++num_samp;
+  // if statsFlag, always compute moments for output regardless of final ASV.
+  // else define moment requirements from final_asv and finalMomentsType.
+  bool mom_fns = statsFlag, mom_grads = false;
+  size_t i, l, m, cntr, num_lev, num_obs = samples.size();
+  for (i=0, cntr=0; i<numFunctions; ++i) {
+    if (finalMomentsType) { // only compute moments if needed
+      for (m=0; m<2; ++m, ++cntr) {
+        if (final_asv[cntr] & 1) mom_fns   = true;
+        if (final_asv[cntr] & 2) mom_grads = true;
       }
     }
-
-    if (num_samp != num_obs)
-      Cerr << "Warning: sampling statistics for " << resp_labels[i] << " omit "
-	   << num_obs-num_samp << " failed evaluations out of " << num_obs
-	   << " samples.\n";
-    if (!num_samp) {
-      Cerr << "Error: Number of samples for " << resp_labels[i]
-	   << " must be nonzero for moment calculation in NonDSampling::"
-	   << "compute_statistics()." << std::endl;
-      abort_handler(-1);
-    }
-
-    Real* moments_i = momentStats[i];
-    Real& mean = moments_i[0];
-    mean = sum/((Real)num_samp);
-
-    // accumulate variance, skewness, and kurtosis
-    Real centered_fn, pow_fn;
-    for (it=samples.begin(); it!=samples.end(); ++it) {
-      sample = it->second.function_value(i);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	pow_fn  = centered_fn = sample - mean;
-	pow_fn *= centered_fn; var  += pow_fn;
-	pow_fn *= centered_fn; skew += pow_fn;
-	pow_fn *= centered_fn; kurt += pow_fn;
+    if (respLevelTarget == RELIABILITIES) {
+      num_lev = requestedRespLevels[i].length();
+      for (l=0; l<num_lev; ++l, ++cntr) {
+        if (final_asv[cntr] & 1) mom_fns = true;
+        // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
+        if (final_asv[cntr] & 2) mom_fns = mom_grads = true;
       }
-    }
-
-    // sample std deviation
-    Real& std_dev = moments_i[1];
-    std_dev = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
-
-    // skewness
-    moments_i[2] = (num_samp > 2 && var > 0.) ? 
-      // sample skewness
-      skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) *
-      // population skewness 
-      std::sqrt((Real)(num_samp*(num_samp-1)))/(Real)(num_samp-2) :
-      // for no variation, central moment is zero
-      0.;
-
-    // kurtosis
-    moments_i[3] = (num_samp > 3 && var > 0.) ?
-      // sample kurtosis
-      (Real)((num_samp+1)*num_samp*(num_samp-1))*kurt/
-      (Real)((num_samp-2)*(num_samp-3)*var*var) -
-      // population kurtosis
-      3.*std::pow((Real)(num_samp-1),2)/(Real)((num_samp-2)*(num_samp-3)) :
-      // for no variation, central moment is zero minus excess kurtosis
-      -3.;
-
-    if (num_samp > 1) {
-      // 95% confidence intervals (2-sided interval, not 1-sided limit)
-      Real dof = num_samp - 1;
-//#ifdef HAVE_BOOST
-      // mean: the better formula does not assume known variance but requires
-      // a function for the Student's t-distr. with (num_samp-1) degrees of
-      // freedom (Haldar & Mahadevan, p. 127).
-      Pecos::students_t_dist t_dist(dof);
-      Real mean_ci_delta = 
-	std_dev*bmth::quantile(t_dist,0.975)/std::sqrt((Real)num_samp);
-      momentCIs(0,i) = mean - mean_ci_delta;
-      momentCIs(1,i) = mean + mean_ci_delta;
-      // std dev: chi-square distribution with (num_samp-1) degrees of freedom
-      // (Haldar & Mahadevan, p. 132).
-      Pecos::chi_squared_dist chisq(dof);
-      momentCIs(2,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.975));
-      momentCIs(3,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.025));
-/*
-#elif HAVE_GSL
-      // mean: the better formula does not assume known variance but requires
-      // a function for the Student's t-distr. with (num_samp-1) degrees of
-      // freedom (Haldar & Mahadevan, p. 127).
-      mean95CIDeltas[i]
-	= std_dev*gsl_cdf_tdist_Pinv(0.975,dof)/std::sqrt((Real)num_samp);
-      // std dev: chi-square distribution with (num_samp-1) degrees of freedom
-      // (Haldar & Mahadevan, p. 132).
-      stdDev95CILowerBnds[i]
-        = std_dev*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.975, dof));
-      stdDev95CIUpperBnds[i]
-        = std_dev*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.025, dof));
-#else
-      // mean: k_(alpha/2) = Phi^(-1)(0.975) = 1.96 (Haldar & Mahadevan,
-      // p. 123).  This simple formula assumes a known variance, which
-      // requires a sample of sufficient size (i.e., greater than 10).
-      mean95CIDeltas[i] = 1.96*std_dev/std::sqrt((Real)num_samp);
-#endif // HAVE_BOOST
-*/
     }
     else
-      momentCIs(0,i) = momentCIs(1,i) = momentCIs(2,i) = momentCIs(3,i) = 0.0;
+      cntr += requestedRespLevels[i].length();
+    cntr += requestedProbLevels[i].length();
+    num_lev = requestedRelLevels[i].length();
+    for (l=0; l<num_lev; ++l, ++cntr) {
+      if (final_asv[cntr] & 1) mom_fns = true;
+      // dz/ds requires dmu/ds, dsigma/ds
+      if (final_asv[cntr] & 2) mom_grads = true;
+    }
+    cntr += requestedGenRelLevels[i].length();
+  }
+  if (!mom_fns && !mom_grads)
+    return;
+
+  RealVectorArray fn_samples(num_obs);
+  SizetArray sample_counts;
+  IntRespMCIter it;
+  for (it=samples.begin(), i=0; it!=samples.end(); ++it, ++i)
+    fn_samples[i] = it->second.function_values_view();
+
+  if (mom_fns) {
+    compute_moments(fn_samples,sample_counts,moment_stats,moments_type,labels);
+    compute_moment_confidence_intervals(moment_stats, moment_conf_ints,
+					sample_counts, moments_type);
+    functionMomentsComputed = true;
   }
 
-  if (resultsDB.active()) {
-    // archive the moments to results DB
-    MetaDataType md_moments;
-    md_moments["Row Labels"] = 
-      make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
-    md_moments["Column Labels"] = make_metadatavalue(resp_labels);
-    resultsDB.insert(run_identifier(), resultsNames.moments_std, 
-		     momentStats, md_moments);
-    // archive the confidence intervals to results DB
-    MetaDataType md;
-    md["Row Labels"] = 
-      make_metadatavalue("LowerCI_Mean", "UpperCI_Mean", "LowerCI_StdDev", 
-			 "UpperCI_StdDev");
-    md["Column Labels"] = make_metadatavalue(resp_labels);
-    resultsDB.insert(run_identifier(), resultsNames.moment_cis, momentCIs, md);
+  if (mom_grads) {
+    RealMatrixArray grad_samples(num_obs);
+    for (it=samples.begin(), i=0; it!=samples.end(); ++it, ++i)
+      grad_samples[i] = it->second.function_gradients_view();
+    compute_moment_gradients(fn_samples, grad_samples, moment_stats,
+			     moment_grads, moments_type);
   }
-}
-
-
-void NonDSampling::compute_moments(const RealMatrix& samples)
-{
-  compute_moments(samples, momentStats);
 }
 
 
 void NonDSampling::
-compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
+compute_moments(const RealVectorArray& fn_samples, SizetArray& sample_counts,
+		RealMatrix& moment_stats, short moments_type,
+		const StringArray& labels)
 {
-  // For a samples matrix, calculate mean, standard deviation,
-  // skewness, and kurtosis
+  size_t i, j, num_obs = fn_samples.size(), num_qoi;
+  if (num_obs)
+    num_qoi = fn_samples[0].length();
+  else {
+    Cerr << "Error: empty samples array in NonDSampling::compute_moments()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  Real sum, cm2, cm3, cm4, sample;
 
-  using boost::math::isfinite;
-  size_t i, j, num_qoi = samples.numRows(), num_obs = samples.numCols(),
-    num_samp;
-  Real sum, var, skew, kurt, sample;
+  if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
+  sample_counts.resize(num_qoi);
+
+  for (i=0; i<num_qoi; ++i) {
+    size_t& num_samp = sample_counts[i];
+    Real*  moments_i =  moment_stats[i];
+    accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
+    if (num_samp != num_obs)
+      Cerr << "Warning: sampling statistics for " << labels[i] << " omit "
+	   << num_obs-num_samp << " failed evaluations out of " << num_obs
+	   << " samples.\n";
+
+    if (num_samp)
+      accumulate_moments(fn_samples, i, moments_type, moments_i);
+    else {
+      Cerr << "Warning: Number of samples for " << labels[i]
+	   << " must be nonzero for moment calculation in NonDSampling::"
+	   << "compute_moments().\n";
+      for (int j=0; j<4; ++j)
+	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
+    }
+  }
+}
+
+
+void NonDSampling::
+compute_moments(const RealVectorArray& fn_samples, RealMatrix& moment_stats,
+		short moments_type)
+{
+  size_t i, j, num_obs = fn_samples.size(), num_qoi, num_samp;
+  if (num_obs)
+    num_qoi = fn_samples[0].length();
+  else {
+    Cerr << "Error: empty samples array in NonDSampling::compute_moments()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
 
-    num_samp  = 0;
-    sum = var = skew = kurt = 0.;
-    // means
-    for (j=0; j<num_obs; ++j) {
-      sample = samples(i,j);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	sum += sample;
-	++num_samp;
-      }
-    }
-
+    Real* moments_i = moment_stats[i];
+    accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
-      Cerr << "Warning: sampling statistics for qoi " << i+1 << " omit "
+      Cerr << "Warning: sampling statistics for quantity " << i+1 << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
-    if (!num_samp) {
-      Cerr << "Error: Number of samples for qoi " << i+1 << " must be nonzero "
-	   << "for moment calculation in NonDSampling::compute_statistics()."
-	   << std::endl;
-      abort_handler(-1);
+
+    if (num_samp)
+      accumulate_moments(fn_samples, i, moments_type, moments_i);
+    else {
+      Cerr << "Warning: Number of samples for quantity " << i+1
+	   << " must be nonzero in NonDSampling::compute_moments().\n";
+      for (size_t j=0; j<4; ++j)
+	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
     }
-
-    Real* moments_i = moment_stats[i];
-    Real& mean = moments_i[0];
-    mean = sum/((Real)num_samp);
-
-    // accumulate variance, skewness, and kurtosis
-    Real centered_fn, pow_fn;
-    for (j=0; j<num_obs; ++j) {
-      sample = samples(i,j);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	pow_fn  = centered_fn = sample - mean;
-	pow_fn *= centered_fn; var  += pow_fn;
-	pow_fn *= centered_fn; skew += pow_fn;
-	pow_fn *= centered_fn; kurt += pow_fn;
-      }
-    }
-
-    // sample std deviation
-    moments_i[1] = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
-
-    // skewness
-    moments_i[2] = (num_samp > 2 && var > 0.) ? 
-      // sample skewness
-      skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) *
-      // population skewness 
-      std::sqrt((Real)(num_samp*(num_samp-1)))/(Real)(num_samp-2) :
-      // for no variation, central moment is zero
-      0.;
-
-    // kurtosis
-    moments_i[3] = (num_samp > 3 && var > 0.) ?
-      // sample kurtosis
-      (Real)((num_samp+1)*num_samp*(num_samp-1))*kurt/
-      (Real)((num_samp-2)*(num_samp-3)*var*var) -
-      // population kurtosis
-      3.*std::pow((Real)(num_samp-1),2)/(Real)((num_samp-2)*(num_samp-3)) :
-      // for no variation, central moment is zero minus excess kurtosis
-      -3.;
   }
 }
 
 
-int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha, 
-					    Real beta, bool twosided)
+void NonDSampling::
+compute_moments(const RealMatrix& fn_samples, RealMatrix& moment_stats,
+		short moments_type)
+{
+  int i, num_qoi = fn_samples.numRows(), num_obs = fn_samples.numCols();
+  RealVectorArray rva_samples(num_obs);
+  for (i=0; i<num_obs; ++i)
+    rva_samples[i]
+      = RealVector(Teuchos::View, const_cast<Real*>(fn_samples[i]), num_qoi);
+  compute_moments(rva_samples, moment_stats, moments_type);
+}
+
+
+void NonDSampling::
+compute_moment_confidence_intervals(const RealMatrix& moment_stats,
+				    RealMatrix& moment_conf_ints,
+				    const SizetArray& sample_counts,
+				    short moments_type)
+{
+  size_t i, num_qoi = moment_stats.numCols();
+  if (moment_conf_ints.empty())
+    moment_conf_ints.shapeUninitialized(4, num_qoi);
+
+  Real mean, std_dev, var, qnan = std::numeric_limits<double>::quiet_NaN();
+  for (i=0; i<num_qoi; ++i) {
+    if (sample_counts[i] > 1) {
+      const Real* moment_i = moment_stats[i];
+      Real*    moment_ci_i = moment_conf_ints[i];
+      mean = moment_i[0];
+      if (moments_type == CENTRAL_MOMENTS)
+        { var = moment_i[1]; std_dev = std::sqrt(var); }
+      else
+        { std_dev = moment_i[1]; var = std_dev * std_dev; }
+      if (mean == qnan || std_dev == qnan || var == qnan)
+	for (size_t j=0; j<4; ++j)
+	  moment_ci_i[j] = qnan;
+      else {
+	// 95% confidence intervals (2-sided interval, not 1-sided limit)
+	Real ns = (Real)sample_counts[i], dof = ns - 1.;
+	// mean: the better formula does not assume known variance but requires
+	// a function for the Student's t-distr. with (num_samp-1) degrees of
+	// freedom (Haldar & Mahadevan, p. 127).
+	Pecos::students_t_dist t_dist(dof);
+	Real mean_ci_delta = std_dev*bmth::quantile(t_dist,0.975)/std::sqrt(ns);
+	moment_ci_i[0] = mean - mean_ci_delta;
+	moment_ci_i[1] = mean + mean_ci_delta;
+	// std dev: chi-square distribution with (num_samp-1) degrees of freedom
+	// (Haldar & Mahadevan, p. 132).
+	Pecos::chi_squared_dist chisq(dof);
+	Real z_975 = bmth::quantile(chisq, 0.975),
+	     z_025 = bmth::quantile(chisq, 0.025);
+	if (moments_type == CENTRAL_MOMENTS) {
+	  moment_ci_i[2] = var*dof/z_975;
+	  moment_ci_i[3] = var*dof/z_025;
+	}
+	else {
+	  moment_ci_i[2] = std_dev*std::sqrt(dof/z_975);
+	  moment_ci_i[3] = std_dev*std::sqrt(dof/z_025);
+	}
+      }
+    }
+    else
+      for (size_t j=0; j<4; ++j)
+	moment_conf_ints(j,i) = 0.;
+  }
+}
+
+
+void NonDSampling::
+compute_moment_gradients(const RealVectorArray& fn_samples,
+			 const RealMatrixArray& grad_samples,
+			 const RealMatrix& moment_stats,
+			 RealMatrix& moment_grads, short moments_type)
+{
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  size_t q, cntr = 0;
+  int m1_index, m2_index, num_mom = 2*numFunctions,
+    num_deriv_vars = finalStatistics.active_set_derivative_vector().size();
+  if (moment_grads.numRows() != num_deriv_vars ||
+      moment_grads.numRows() != num_mom)
+    moment_grads.shape(num_deriv_vars, num_mom); // init to 0.
+  else
+    moment_grads = 0.;
+
+  for (q=0; q<numFunctions; ++q) {
+    m1_index = 2*q; m2_index = m1_index + 1;
+    // Compute moment_grads
+    accumulate_moment_gradients(fn_samples, grad_samples, q, moments_type,
+				moment_stats(0,q), moment_stats(1,q),
+				moment_grads[m1_index], moment_grads[m2_index]);
+    // Assign moment_grads into finalStatistics (could do this in one step,
+    // but retain API of moment_stats and moment_grads as their own matrices).
+    // > NonDExpansion and NonDLocalReliability do not store moment grads as
+    //   member variables; they update finalStats directly in NonDExpansion::
+    //   compute_analytic_statistics() and NonDLocalRel::update_level_data().
+    //   Note: NonDExpansion::update_final_statistics_gradients() provides
+    //   post-processing for special cases (combined vars, insertion).
+    // > NonDSampling could retain a class member or use a local variable for
+    //   moment_grads (currently a local, whereas momentStats is a member)
+    if (moments_type) {
+      if (final_asv[cntr] & 2) // moment 1 (mean) gradient
+	finalStatistics.function_gradient(
+	  Teuchos::getCol(Teuchos::View, moment_grads, m1_index), cntr);
+      ++cntr;
+      if (final_asv[cntr] & 2) // moment 2 (var or stdev) gradient
+	finalStatistics.function_gradient(
+	  Teuchos::getCol(Teuchos::View, moment_grads, m2_index), cntr);
+      cntr += 1 +
+	requestedRespLevels[q].length() + requestedProbLevels[q].length() +
+	requestedRelLevels[q].length()  + requestedGenRelLevels[q].length();
+    }
+  }
+}
+
+
+void NonDSampling::
+accumulate_mean(const RealVectorArray& fn_samples, size_t q, size_t& num_samp,
+		Real& mean)
+{
+  num_samp = 0;
+  Real sum = 0., sample;
+  size_t s, num_obs = fn_samples.size();
+  for (s=0; s<num_obs; ++s) {
+    sample = fn_samples[s][q];
+    if (std::isfinite(sample)) { // neither NaN nor +/-Inf
+      sum += sample;
+      ++num_samp;
+    }
+  }
+
+  if (num_samp)
+    mean = sum / (Real)num_samp;
+}
+
+
+void NonDSampling::
+accumulate_moments(const RealVectorArray& fn_samples, size_t q,
+		   short moments_type, Real* moments)
+{
+  // accumulate central moments (e.g., variance)
+  size_t s, num_obs = fn_samples.size(), num_samp = 0;
+  Real& mean = moments[0]; // already computed in accumulate_mean()
+  Real sample, centered_fn, pow_fn, sum2 = 0., sum3 = 0., sum4 = 0.;
+  for (s=0; s<num_obs; ++s) {
+    sample = fn_samples[s][q];
+    if (std::isfinite(sample)) { // neither NaN nor +/-Inf
+      pow_fn  = centered_fn = sample - mean;
+      pow_fn *= centered_fn; sum2 += pow_fn; // variance
+      pow_fn *= centered_fn; sum3 += pow_fn; // 3rd central moment
+      pow_fn *= centered_fn; sum4 += pow_fn; // 4th central moment
+      ++num_samp;
+    }
+  }
+  Real ns = (Real)num_samp, nm1 = ns - 1., nm2 = ns - 2.;
+  // biased central moment estimators (bypass and use raw sums below):
+  //biased_cm2 = sum2 / ns; biased_cm3 = sum3 / ns; biased_cm4 = sum4 / ns;
+
+  // unbiased moment estimators (central and standardized):
+  bool central = (moments_type == CENTRAL_MOMENTS), pos_var = (sum2 > 0.);
+  Real cm2 = sum2 / nm1;
+  if (num_samp > 1 && pos_var)
+    moments[1] = (central) ? cm2 : std::sqrt(cm2); // unbiased central : std dev
+  else moments[1] = 0.;
+
+  if (num_samp > 2 && pos_var)
+    moments[2] = (central) ?
+      // unbiased central:
+      sum3 * ns / (nm1 * nm2) :
+      // unbiased standard: cm3 / sigma^3 = N / (nm1 nm2) sum3 / (cm2)^1.5
+      sum3 * ns / (nm1 * nm2 * std::pow(cm2, 1.5));
+  else moments[2] = 0.;
+
+  if (num_samp > 3 && pos_var)
+    moments[3] = (central) ?
+      // unbiased central (non-excess) from "Modeling with Data," Klemens 2009
+      // (Appendix M):  unbiased_cm4 =
+      // ( N^3 biased_cm4 / (N-1) - (6N - 9) unbiased_cm2^2 ) / (N^2 - 3N + 3)
+      (ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
+      // unbiased standard (excess kurtosis) from Wikipedia ("Estimators of
+      // population kurtosis")
+      nm1 * ((ns + 1.) * ns * sum4 / (sum2*sum2) - 3.*nm1) / (nm2*(ns - 3.));
+  else moments[3] = (central) ? 0. : -3.;
+}
+
+
+void NonDSampling::
+accumulate_moment_gradients(const RealVectorArray& fn_samples,
+			    const RealMatrixArray& grad_samples, size_t q,
+			    short moments_type, Real mean, Real mom2,
+			    Real* mean_grad, Real* mom2_grad)
+{
+  size_t s, v, num_deriv_vars,
+    num_obs = std::min(fn_samples.size(), grad_samples.size());
+  if (num_obs)
+    num_deriv_vars = grad_samples[0].numRows(); // functionGradients = V x Q
+  else {
+    Cerr << "Error: emply samples array in NonDSampling::"
+	 << "accumulate_moment_gradients()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  //for (v=0; v<num_deriv_vars; ++v)
+  //  mean_grad[v] = mom2_grad[v] = 0.;
+
+  SizetArray num_samp(num_deriv_vars, 0);
+  for (s=0; s<num_obs; ++s) {
+    // manage faults hierarchically as in Pecos::SurrogateData::response_check()
+    Real fn = fn_samples[s][q];
+    if (std::isfinite(fn)) {          // neither NaN nor +/-Inf
+      const Real* grad = grad_samples[s][q];
+      for (v=0; v<num_deriv_vars; ++v)
+	if (std::isfinite(grad[v])) { // neither NaN nor +/-Inf
+	  mean_grad[v] += grad[v];
+	  mom2_grad[v] += fn * grad[v];
+	  ++num_samp[v];
+	}
+    }
+  }
+
+  Real ns, nm1; size_t nsv;
+  bool central_mom = (moments_type == CENTRAL_MOMENTS);
+  for (v=0; v<num_deriv_vars; ++v) {
+    nsv = num_samp[v];
+    if (nsv) {
+      ns = (Real)nsv;
+      // dMean/ds = E[dQ/ds] --> unbiased estimator 1/N Sum(dQ/ds)
+      mean_grad[v] /= ns;
+    }
+    if (nsv > 1) {
+      nm1 = ns - 1.;
+      // dVar/ds = 2 E[(Q - Mean)(dQ/ds - dMean/ds)] --> unbiased var estimator:
+      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean Sum(dQ/ds) -
+      //             dMean/ds Sum(Q) + N Mean Mean/ds ]
+      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean dMean/ds (N + N - N) ]
+      // = 2/(N-1) [ Sum(Q dQ/ds) - N Mean dMean/ds ]
+      // dVar/ds = 2 Sigma dSigma/ds -->
+      // dSigma/ds = [ Sum(Q dQ/ds) - N Mean dMean/ds ] / (Sigma (N-1))
+      mom2_grad[v]  = (central_mom) ?
+	2. * ( mom2_grad[v] - ns * mean * mean_grad[v] ) / nm1 :
+	     ( mom2_grad[v] - ns * mean * mean_grad[v] ) / (mom2 * nm1);
+    }
+  }
+}
+
+
+void NonDSampling::
+archive_moments(size_t inc_id)
+{
+  if(!resultsDB.active()) return;
+ 
+  const StringArray &labels = iteratedModel.response_labels();
+
+  // archive the moments to results DB
+  MetaDataType md_moments;
+  md_moments["Row Labels"] = (finalMomentsType == CENTRAL_MOMENTS) ?
+    make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral") :
+    make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
+  md_moments["Column Labels"] = make_metadatavalue(labels);
+  resultsDB.insert(run_identifier(), resultsNames.moments_std, momentStats,
+		   md_moments);
+  
+  // send to prototype hdf5DB, too
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("moments");
+  location.push_back("");
+  for(int i = 0; i < labels.size(); ++i) {
+    location.back() = labels[i]; 
+    DimScaleMap scales;
+    if(finalMomentsType == CENTRAL_MOMENTS)
+      scales.emplace(0, 
+                     StringScale("moments",
+                     {"mean", "variance", "third_central", "fourth_central"},
+                     ScaleScope::SHARED));
+    else
+      scales.emplace(0,
+                     StringScale("moments", 
+                     {"mean", "std_deviation", "skewness", "kurtosis"},
+                     ScaleScope::SHARED));
+    // extract column or row of moment_stats
+    resultsDB.insert(run_identifier(), location, 
+        Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&momentStats), i), scales);
+  }
+}
+
+
+void NonDSampling::
+archive_moment_confidence_intervals(size_t inc_id)
+{
+  if(!resultsDB.active())
+    return;
+
+  const StringArray &labels = iteratedModel.response_labels();
+  // archive the confidence intervals to results DB
+  MetaDataType md;
+  md["Row Labels"] = (finalMomentsType == CENTRAL_MOMENTS) ?
+    make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
+		       "LowerCI_Variance", "UpperCI_Variance") :
+    make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
+		       "LowerCI_StdDev", "UpperCI_StdDev");
+  md["Column Labels"] = make_metadatavalue(labels);
+  resultsDB.insert(run_identifier(), resultsNames.moment_cis,
+		   momentCIs, md);
+  // archive in HDF5. Store in a 2d dataset with mean and var/stdev on the 1st dimension
+  // and lower and upper bounds on the 2nd dimension
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("bounds", {"lower", "upper"})); 
+  if(finalMomentsType == CENTRAL_MOMENTS)
+    scales.emplace(1, StringScale("moments", {"mean", "variance"})); 
+  else
+    scales.emplace(1, StringScale("moments", {"mean", "std_deviation"})); 
+
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("moment_confidence_intervals");
+  location.push_back("");
+  for(int i = 0; i < labels.size(); ++i) { // loop over responses
+    location.back() = labels[i];
+    RealMatrix ci(2,2,false);
+    ci(0,0) = momentCIs(0,i);
+    ci(1,0) = momentCIs(1,i);
+    ci(0,1) = momentCIs(2,i);
+    ci(1,1) = momentCIs(3,i);
+    resultsDB.insert(run_identifier(), location, ci, scales);
+  }
+}
+
+void NonDSampling::
+archive_extreme_responses(size_t inc_id) {
+  const StringArray &labels = iteratedModel.response_labels();
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("extreme_responses");
+  location.push_back("");
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("extremes", {"minimum", "maximum"})); 
+  for(int i = 0; i < labels.size(); ++i) { // loop over responses
+    location.back() = labels[i];
+    RealVector extreme_values(2);
+    extreme_values[0] = extremeValues[i].first;
+    extreme_values[1] = extremeValues[i].second;
+    resultsDB.insert(run_identifier(), location, extreme_values, scales);
+  }
+}
+
+int NonDSampling::
+compute_wilks_sample_size(unsigned short order, Real alpha, Real beta,
+			  bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1224,7 +1542,9 @@ int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha,
 }
 
 
-Real NonDSampling::compute_wilks_residual(unsigned short order, int nsamples, Real alpha, Real beta, bool twosided)
+Real NonDSampling::
+compute_wilks_residual(unsigned short order, int nsamples, Real alpha,
+		       Real beta, bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1238,7 +1558,9 @@ Real NonDSampling::compute_wilks_residual(unsigned short order, int nsamples, Re
 }
 
 
-Real NonDSampling::compute_wilks_alpha(unsigned short order, int nsamples, Real beta, bool twosided)
+Real NonDSampling::
+compute_wilks_alpha(unsigned short order, int nsamples, Real beta,
+		    bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1279,7 +1601,9 @@ Real NonDSampling::compute_wilks_alpha(unsigned short order, int nsamples, Real 
 }
 
 
-Real NonDSampling::compute_wilks_beta(unsigned short order, int nsamples, Real alpha, bool twosided)
+Real NonDSampling::
+compute_wilks_beta(unsigned short order, int nsamples, Real alpha,
+		   bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1326,7 +1650,6 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   // For the samples array, calculate the following statistics:
   // > CDF/CCDF mappings of response levels to probability/reliability levels
   // > CDF/CCDF mappings of probability/reliability levels to response levels
-  using boost::math::isfinite;
   size_t i, j, k, num_obs = samples.size(), num_samp, bin_accumulator;
   const StringArray& resp_labels = iteratedModel.response_labels();
   std::multiset<Real> sorted_samples; // STL-based array for sorting
@@ -1343,7 +1666,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     if (need_moments) {
       Cerr << "Error: required moments not available in compute_distribution_"
 	   << "mappings().  Call compute_moments() first." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
       // Issue with the following approach is that subsequent invocations of
       // compute_level_mappings() without compute_moments() would not be
       // detected and old moments would be used.  Performing more rigorous
@@ -1356,7 +1679,13 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 
   if (pdfOutput) extremeValues.resize(numFunctions);
   IntRespMCIter s_it; std::multiset<Real>::iterator ss_it;
-  bool extrapolated_mappings = false;
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  bool extrapolated_mappings = false,
+    central_mom = (finalMomentsType == CENTRAL_MOMENTS);
+  size_t cntr = 0,
+    num_deriv_vars = finalStatistics.active_set_derivative_vector().size(),
+    moment_offset = (finalMomentsType) ? 2 : 0;
+  RealVector mean_grad, mom2_grad;
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -1373,7 +1702,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       sorted_samples.clear();
       for (s_it=samples.begin(); s_it!=samples.end(); ++s_it) {
         sample = s_it->second.function_value(i);
-	if (isfinite(sample))
+	if (std::isfinite(sample))
 	  { ++num_samp; sorted_samples.insert(sample); }
       }
       // sort in ascending order
@@ -1395,7 +1724,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       bins.assign(rl_len+1, 0); min = DBL_MAX; max = -DBL_MAX;
       for (s_it=samples.begin(); s_it!=samples.end(); ++s_it) {
 	sample = s_it->second.function_value(i);
-	if (isfinite(sample)) {
+	if (std::isfinite(sample)) {
 	  ++num_samp;
 	  if (pdfOutput) {
 	    if (sample < min) min = sample;
@@ -1415,6 +1744,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     if (pdfOutput)
       { extremeValues[i].first = min; extremeValues[i].second = max; }
 
+    cntr += moment_offset;
     // ----------------
     // Process mappings
     // ----------------
@@ -1422,7 +1752,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       switch (respLevelTarget) {
       case PROBABILITIES: case GEN_RELIABILITIES: // z -> p/beta* (from binning)
 	bin_accumulator = 0;
-	for (j=0; j<rl_len; ++j) { // compute CDF/CCDF p/beta*
+	for (j=0; j<rl_len; ++j, ++cntr) { // compute CDF/CCDF p/beta*
 	  bin_accumulator += bins[j];
 	  Real cdf_prob = (Real)bin_accumulator/(Real)num_samp;
 	  Real computed_prob = (cdfFlag) ? cdf_prob : 1. - cdf_prob;
@@ -1434,22 +1764,45 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	}
 	break;
       case RELIABILITIES: { // z -> beta (from moment projection)
-	Real mean = momentStats(0,i), std_dev = momentStats(1,i);
-	for (j=0; j<rl_len; j++) {
-	  Real z = requestedRespLevels[i][j];
-	  if (std_dev > Pecos::SMALL_NUMBER)
+	Real mean  = momentStats(0,i);
+	Real stdev = (central_mom) ?
+	  std::sqrt(momentStats(1,i)) : momentStats(1,i);
+	if (!momentGrads.empty()) {
+	  int i2 = 2*i;
+	  mean_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2);
+	  mom2_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2+1);
+	}
+	for (j=0; j<rl_len; j++, ++cntr) {
+	  // *** beta
+	  Real z_bar = requestedRespLevels[i][j];
+	  if (stdev > Pecos::SMALL_NUMBER)
 	    computedRelLevels[i][j] = (cdfFlag) ?
-	      (mean - z)/std_dev : (z - mean)/std_dev;
+	      (mean - z_bar)/stdev : (z_bar - mean)/stdev;
 	  else
 	    computedRelLevels[i][j]
-	      = ( (cdfFlag && mean <= z) || (!cdfFlag && mean > z) )
+	      = ( (cdfFlag && mean <= z_bar) || (!cdfFlag && mean > z_bar) )
 	      ? -Pecos::LARGE_NUMBER : Pecos::LARGE_NUMBER;
+	  // *** beta gradient
+	  if (final_asv[cntr] & 2) {
+	    RealVector beta_grad = finalStatistics.function_gradient_view(cntr);
+	    if (stdev > Pecos::SMALL_NUMBER) {
+	      for (k=0; k<num_deriv_vars; ++k) {
+		Real stdev_grad = (central_mom) ?
+		  mom2_grad[k] / (2.*stdev) : mom2_grad[k];
+		Real dratio_dx = (stdev*mean_grad[k] - (mean-z_bar)*stdev_grad)
+		               / std::pow(stdev, 2);
+		beta_grad[k] = (cdfFlag) ? dratio_dx : -dratio_dx;
+	      }
+	    }
+	    else
+	      beta_grad = 0.;
+	  }
 	}
 	break;
       }
       }
     }
-    for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
+    for (j=0; j<pl_len+gl_len; j++, ++cntr) { // p/beta* -> z
       Real p = (j<pl_len) ? requestedProbLevels[i][j] :	Pecos::
 	NormalRandomVariable::std_cdf(-requestedGenRelLevels[i][j-pl_len]);
       Real p_cdf = (cdfFlag) ? p : 1. - p;
@@ -1482,18 +1835,31 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       else          computedRespLevels[i][j+bl_len] = z;
     }
     if (bl_len) {
-      Real mean = momentStats(0,i), std_dev = momentStats(1,i);
-      for (j=0; j<bl_len; j++) { // beta -> z
-	Real beta = requestedRelLevels[i][j];
+      Real mean  = momentStats(0,i);
+      Real stdev = (finalMomentsType == CENTRAL_MOMENTS) ?
+	std::sqrt(momentStats(1,i)) : momentStats(1,i);
+      if (!momentGrads.empty()) {
+	int i2 = 2*i;
+	mean_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2);
+	mom2_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2+1);
+      }
+      for (j=0; j<bl_len; j++, ++cntr) {
+	// beta_bar -> z
+	Real beta_bar = requestedRelLevels[i][j];
 	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
-	  mean - beta * std_dev : mean + beta * std_dev;
+	  mean - beta_bar * stdev : mean + beta_bar * stdev;
+	// *** z gradient
+	if (final_asv[cntr] & 2) {
+	  RealVector z_grad = finalStatistics.function_gradient_view(cntr);
+	  for (k=0; k<num_deriv_vars; ++k) {
+	    Real stdev_grad = (central_mom) ?
+	      mom2_grad[k] / (2.*stdev) : mom2_grad[k];
+	    z_grad[k] = (cdfFlag) ? mean_grad[k] - beta_bar * stdev_grad
+	                          : mean_grad[k] + beta_bar * stdev_grad;
+	  }
+	}
       }
     }
-
-    // archive the mappings from response levels
-    archive_from_resp(i);
-    // archive the mappings to response levels
-    archive_to_resp(i);
   }
 
   if (extrapolated_mappings)
@@ -1510,8 +1876,8 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 
 void NonDSampling::update_final_statistics()
 {
-  //if (finalStatistics.is_null())
-  //  initialize_final_statistics();
+  if (finalStatistics.is_null()) // some ctor chains do not track final stats
+    return;
 
   if (epistemicStats) {
     size_t i, cntr = 0;
@@ -1546,8 +1912,8 @@ void NonDSampling::print_statistics(std::ostream& s) const
       adrv_labels = iteratedModel.all_discrete_real_variable_labels();
     size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
       drv_start, num_drv;
-    mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
-		dsv_start, num_dsv, drv_start, num_drv);
+    mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
+		div_start, num_div, dsv_start, num_dsv, drv_start, num_drv);
     StringMultiArrayConstView
       cv_labels  =
         acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
@@ -1577,16 +1943,8 @@ print_intervals(std::ostream& s, String qoi_type,
 
 
 void NonDSampling::
-print_moments(std::ostream& s, String qoi_type,
-	      const StringArray& moment_labels) const
-{
-  bool print_cis = (numSamples > 1);
-  print_moments(s, momentStats, momentCIs, qoi_type, moment_labels, print_cis);
-}
-
-void NonDSampling::
 print_moments(std::ostream& s, const RealMatrix& moment_stats,
-	      const RealMatrix moment_cis, String qoi_type,
+	      const RealMatrix moment_cis, String qoi_type, short moments_type,
 	      const StringArray& moment_labels, bool print_cis)
 {
   size_t i, j, width = write_precision+7, num_moments = moment_stats.numRows(),
@@ -1594,8 +1952,13 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
 
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
-    << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
-    << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
+    << std::setw(width+15) << "Mean";
+  if (moments_type == CENTRAL_MOMENTS)
+    s << std::setw(width+1) << "Variance" << std::setw(width+1) << "3rdCentral"
+      << std::setw(width+2) << "4thCentral\n";
+  else
+    s << std::setw(width+1) << "Std Dev" << std::setw(width+1)  << "Skewness"
+      << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";
   for (i=0; i<num_qoi; ++i) {
     const Real* moments_i = moment_stats[i];
@@ -1608,8 +1971,11 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
     // output 95% confidence intervals as (,) interval
     s << "\n95% confidence intervals for each " << qoi_type << ":\n"
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
-      << "UpperCI_Mean" << std::setw(width+1)  << "LowerCI_StdDev" 
-      << std::setw(width+2) << "UpperCI_StdDev\n";
+      << "UpperCI_Mean" << std::setw(width+1);
+    if (moments_type == CENTRAL_MOMENTS)
+      s << "LowerCI_Variance" << std::setw(width+2) << "UpperCI_Variance\n";
+    else
+      s << "LowerCI_StdDev"   << std::setw(width+2) << "UpperCI_StdDev\n";
     for (i=0; i<num_qoi; ++i)
       s << std::setw(14) << moment_labels[i]
 	<< ' ' << std::setw(width) << moment_cis(0, i)
@@ -1619,11 +1985,10 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
   }
 }
 
+
 void NonDSampling::
 print_wilks_stastics(std::ostream& s) const
 {
-  using boost::math::isfinite;
-
   //std::multiset<Real> sorted_resp;
   //IntRespMCIter it2;
   //std::multiset<Real>::const_iterator cit2;
@@ -1656,9 +2021,14 @@ print_wilks_stastics(std::ostream& s) const
       << 100.0*wilksBeta << "% Confidence Level, Order = " << wilksOrder 
       << " for "  << iteratedModel.response_labels()[fn_index] << ":\n\n";
 
-    std::string one_sided_bound_label = (wilksSidedness == ONE_SIDED_UPPER ? "Upper" : "Lower");
-    s << "    Coverage Level     " << (wilks_twosided ? "Lower Bound      " : "")  << "  " << one_sided_bound_label << " Bound     Number of Samples"
-      << "\n    --------------  "  << (wilks_twosided ? "----------------- " : "") << " -----------------  ----------------- \n";
+    if(wilks_twosided) {
+      s << "    Coverage Level     Lower Bound        Upper Bound     Number of Samples\n"
+        << "    --------------  -----------------  -----------------  -----------------\n";
+    } else {    
+      s << "    Coverage Level       " << (wilksSidedness == ONE_SIDED_UPPER ? "Upper" : "Lower")
+        << " Bound     Number of Samples\n"
+        << "    --------------   -----------------  -----------------\n";
+    } 
 
     // Create a default probability level if none given
     RealVector prob_levels;
@@ -1681,7 +2051,7 @@ print_wilks_stastics(std::ostream& s) const
       for (n=0, it=allResponses.begin(); n<num_samples; ++n, ++it)
       {
         Real sample = it->second.function_value(fn_index);
-        if (isfinite(sample)) // neither NaN nor +/-Inf
+        if (std::isfinite(sample)) // neither NaN nor +/-Inf
           sorted_resp_subset.insert(sample);
       }
       cit = sorted_resp_subset.begin();
@@ -1699,4 +2069,5 @@ print_wilks_stastics(std::ostream& s) const
     }
   }
 }
+
 } // namespace Dakota

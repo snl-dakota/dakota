@@ -136,7 +136,6 @@ if ( NOT DAKOTA_MAKE_PARALLEL_LEVEL )
 
   # Mac
   elseif(APPLE)
-    message ("DENA: in APPLE")
     set(sysctl_cmd sysctl)
     execute_process(COMMAND ${sysctl_cmd} -n hw.ncpu 
                       OUTPUT_VARIABLE processorCount)
@@ -238,6 +237,7 @@ if ( ${ConfigStatus} EQUAL 0 )
     execute_process( COMMAND ${CMAKE_CTEST_COMMAND}
       -L ${unit_test_subset}
       -O ${CTEST_BINARY_DIRECTORY}/unit_test/${unit_test_subset}.out
+      -C ${CTEST_BUILD_CONFIGURATION}
       WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
       RESULT_VARIABLE CtestStatus
       )
@@ -425,6 +425,7 @@ foreach(v
     CTEST_BUILD_COMMAND
     CTEST_TEST_COMMAND
     CTEST_NOTES_FILES
+    DAKOTA_CDASH_SUBMIT
     DAKOTA_CMAKE_PLATFORM
     DAKOTA_CMAKE_COMPILER
     DAKOTA_CMAKE_HOSTFILE

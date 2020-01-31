@@ -1,0 +1,28 @@
+#@ s*: DakotaConfig=DAKOTA_HAVE_HDF5
+
+environment,
+  tabular_data
+  results_output
+    hdf5
+    results_output_file = 'calib.results'
+
+method,
+  nl2sol
+  output debug
+
+variables,
+  active design
+  continuous_design = 2
+  upper_bounds  1.0 10.0
+  lower_bounds 0.0 0.1
+  descriptors 'E' 'w'
+
+interface,
+  direct
+  analysis_driver = 'text_book'
+
+responses,
+  calibration_terms = 2
+  descriptors 'stress' 'displacement'
+  numerical_gradients
+  no_hessians

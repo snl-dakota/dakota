@@ -19,6 +19,21 @@
 #include "WorkdirHelper.hpp"     // for copy/link file op utilities
 #include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
+#include "LognormalRandomVariable.hpp"
+#include "LoguniformRandomVariable.hpp"
+#include "TriangularRandomVariable.hpp"
+#include "BetaRandomVariable.hpp"
+#include "GammaRandomVariable.hpp"
+#include "GumbelRandomVariable.hpp"
+#include "FrechetRandomVariable.hpp"
+#include "WeibullRandomVariable.hpp"
+#include "HistogramBinRandomVariable.hpp"
+#include "PoissonRandomVariable.hpp"
+#include "BinomialRandomVariable.hpp"
+#include "NegBinomialRandomVariable.hpp"
+#include "GeometricRandomVariable.hpp"
+#include "HypergeometricRandomVariable.hpp"
+#include "DiscreteSetRandomVariable.hpp"
 #include <functional>
 #include <string>
 #include <sstream>
@@ -108,34 +123,24 @@ void NIDRProblemDescDB::warn(const char *fmt, ...)
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
     IDR populates the IDRProblemDescDB object with the input file data. */
 void NIDRProblemDescDB::
-derived_parse_inputs(const ProgramOptions& prog_opts)
+derived_parse_inputs(const std::string& dakota_input_file,
+		     const std::string& dakota_input_string,
+		     const std::string& parser_options)
 {
   // set the pDDBInstance
   pDDBInstance = this;
 
-  const String& dakota_input_file = prog_opts.input_file();
-  const String& dakota_input_string = prog_opts.input_string();
-  const String& parser_options = prog_opts.parser_options();
-
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)
-  if (!dakota_input_file.empty()) {
-
-    Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
-    if (dakota_input_file.size() == 1 && dakota_input_file[0] == '-')
-      nidrin = stdin;
-    else if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
-      botch("cannot open \"%s\"", dakota_input_file.c_str());
-
-  } 
-  else if (!dakota_input_string.empty()) {
-
+  if(!dakota_input_string.empty()) {
     Cout << "Using provided Dakota input string" << std::endl;
     // BMA TODO: output the string contents if verbose
     nidr_set_input_string(dakota_input_string.c_str());
-
-  }
-  else {
+  } else if (!dakota_input_file.empty()) {
+      Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
+      if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
+        botch("cannot open \"%s\"", dakota_input_file.c_str());
+  } else {
     Cerr << "\nError: NIDR parser called with no input." << std::endl;
     abort_handler(PARSE_ERROR);
   }
@@ -314,6 +319,11 @@ struct Method_mp_utype_lit {
   unsigned short DataMethodRep::* ip;
   String DataMethodRep::* sp;
   unsigned short utype;
+};
+
+struct Method_mp_ord {
+  short DataMethodRep::* sp;
+  int ord;
 };
 
 struct Method_mp_type {
@@ -802,9 +812,23 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   DataInterfaceRep *di = ii->di;
 
   StringArray& analysis_drivers = di->analysisDrivers;
+  bool ife = di->inputFilter.empty();
+  bool ofe = di->outputFilter.empty();
   int nd = analysis_drivers.size();
   int ac = di->asynchLocalAnalysisConcurrency;
   int ec = di->asynchLocalEvalConcurrency;
+
+  if(di->batchEvalFlag && (nd > 1 || !ife || !ofe))
+    squawk("For batch evaluation, specification of an input_filter, output_filter,\n\t"
+        "or more than one analysis_drivers is disallowed");
+  if(di->batchEvalFlag && ec == 1) {
+    warn("batch option not required for evaluation concurrency == 1.\n\t"
+        "Sequential operation will be used");
+      di->batchEvalFlag = false;
+  }
+
+  if(di->batchEvalFlag && ! (di->failAction == "abort" || di->failAction == "recover"))
+    squawk("For batch evaluation, only failure_capture abort and recover are supported");
 
   if (di->algebraicMappings == "" && nd == 0)
     squawk("interface specification must provide algebraic_mappings,\n\t"
@@ -818,7 +842,7 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
     warn("asynchronous option not required for evaluation and analysis.\n\t"
 	 "Concurrency limited to %d and %d.\n\t"
 	 "Synchronous operations will be used", ec, ac);
-    di->interfaceSynchronization = SYNCHRONOUS_INTERFACE;
+    di->asynchFlag = false;
   }
 
   // validate each of the analysis_drivers
@@ -1105,6 +1129,12 @@ method_litz(const char *keyname, Values *val, void **g, void *v)
     botch("%s must be nonnegative",keyname);
   if ((dm->*((Method_mp_litc*)v)->rp = t) == 0.)
     dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
+}
+
+void NIDRProblemDescDB::
+method_order(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Meth_Info**)g)->dme->*((Method_mp_ord*)v)->sp = ((Method_mp_ord*)v)->ord;
 }
 
 void NIDRProblemDescDB::
@@ -1457,6 +1487,17 @@ model_pint(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+model_nnint(const char *keyname, Values *val, void **g, void *v)
+{
+  int n = *val->i;
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
+#endif
+  (*(Mod_Info**)g)->dmo->**(int DataModelRep::**)v = n;
+}
+
+void NIDRProblemDescDB::
 model_type(const char *keyname, Values *val, void **g, void *v)
 {
   (*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
@@ -1482,6 +1523,19 @@ model_shint(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(short DataModelRep::**)v = (short)*val->i;
 }
 
+
+void NIDRProblemDescDB::
+model_sizet(const char *keyname, Values *val, void **g, void *v)
+{
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
+#endif
+  (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
+}
+
+    
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1511,6 +1565,7 @@ model_str(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(String DataModelRep::**)v = *val->s;
 }
 
+   
 void NIDRProblemDescDB::
 model_strL(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1677,9 +1732,11 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 	    "nonlinear_inequality", aln_scaletypes);
   scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 	    "nonlinear_equality", aln_scaletypes);
-  if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
-    squawk("Specify calibration weights or experimental errors, not both.");
-  }
+  // The following check was relevant prior to refactoring the way transformations
+  // are applied (now in a layered manner)
+  // if ( dr->primaryRespFnWeights.length() > 0 && dr->varianceType.size() > 0 ) {
+  //   squawk("Specify calibration weights or experimental errors, not both.");
+  // }
   if ((n = dr->responseLabels.size()) > 0) {
     if (!(k = dr->numResponseFunctions)) {
       if (!(k = dr->numObjectiveFunctions))
@@ -1697,6 +1754,64 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 
 
 void NIDRProblemDescDB::
+check_descriptors_for_repeats(const StringArray& labels) {
+  StringArray sorted(labels.size());
+  std::copy(labels.begin(), labels.end(), sorted.begin());
+  // error if descriptors are repeated
+  std::sort(sorted.begin(), sorted.end());
+  StringArray::iterator sorted_i = 
+    std::adjacent_find(sorted.begin(), sorted.end());
+  if(sorted_i != sorted.end())
+    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str()); 
+}
+
+void NIDRProblemDescDB::
+check_descriptors_for_repeats(const StringArray &cd_labels,
+                               const StringArray &ddr_labels,
+                               const StringArray &ddsi_labels,
+                               const StringArray &ddss_labels,
+                               const StringArray &ddsr_labels,
+                               const StringArray &cs_labels,
+                               const StringArray &dsr_labels,
+                               const StringArray &dssi_labels,
+                               const StringArray &dsss_labels,
+                               const StringArray &dssr_labels,
+                               const StringArray &cau_labels,
+                               const StringArray &diau_labels,
+                               const StringArray &dsau_labels,
+                               const StringArray &drau_labels,
+                               const StringArray &ceu_labels,
+                               const StringArray &dieu_labels,
+                               const StringArray &dseu_labels,
+                               const StringArray &dreu_labels) {
+  StringArray sorted;
+  std::copy(cd_labels.begin(),   cd_labels.end(),   std::back_inserter(sorted));
+  std::copy(ddr_labels.begin(),  ddr_labels.end(),  std::back_inserter(sorted));
+  std::copy(ddsi_labels.begin(), ddsi_labels.end(), std::back_inserter(sorted));
+  std::copy(ddss_labels.begin(), ddss_labels.end(), std::back_inserter(sorted));
+  std::copy(ddsr_labels.begin(), ddsr_labels.end(), std::back_inserter(sorted));
+  std::copy(cs_labels.begin(),   cs_labels.end(),   std::back_inserter(sorted));
+  std::copy(dsr_labels.begin(),  dsr_labels.end(),  std::back_inserter(sorted));
+  std::copy(dssi_labels.begin(), dssi_labels.end(), std::back_inserter(sorted));
+  std::copy(dsss_labels.begin(), dsss_labels.end(), std::back_inserter(sorted));
+  std::copy(dssr_labels.begin(), dssr_labels.end(), std::back_inserter(sorted));
+  std::copy(cau_labels.begin(),  cau_labels.end(),  std::back_inserter(sorted));
+  std::copy(diau_labels.begin(), diau_labels.end(), std::back_inserter(sorted));
+  std::copy(dsau_labels.begin(), dsau_labels.end(), std::back_inserter(sorted));
+  std::copy(drau_labels.begin(), drau_labels.end(), std::back_inserter(sorted));
+  std::copy(ceu_labels.begin(),  ceu_labels.end(),  std::back_inserter(sorted));
+  std::copy(dieu_labels.begin(), dieu_labels.end(), std::back_inserter(sorted));
+  std::copy(dseu_labels.begin(), dseu_labels.end(), std::back_inserter(sorted));
+  std::copy(dreu_labels.begin(), dreu_labels.end(), std::back_inserter(sorted));
+  std::sort(sorted.begin(), sorted.end());
+  StringArray::iterator sorted_i = 
+    std::adjacent_find(sorted.begin(), sorted.end());
+  if(sorted_i != sorted.end())
+    Squawk("Repeated descriptors (\"%s\") are not permitted",sorted_i->c_str()); 
+}
+
+
+void NIDRProblemDescDB::
 check_responses(std::list<DataResponses>* drl)
 {
   // TO DO: move Schk from below?
@@ -1706,10 +1821,10 @@ check_responses(std::list<DataResponses>* drl)
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; ++It) {
     const DataResponsesRep* drr = It->data_rep();
-    check_descriptors(drr->responseLabels);
+    check_descriptor_format(drr->responseLabels);
+    check_descriptors_for_repeats(drr->responseLabels);
   }
 }
-
 
 void NIDRProblemDescDB::
 make_response_defaults(std::list<DataResponses>* drl)
@@ -2956,9 +3071,9 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
 }
 
 
-/// Check the histogram bin input data, normalize the counts and
-/// populate the histogramUncBinPairs map data structure; map keys are
-/// guaranteed unique since the abscissas must increase
+/// Check the histogram bin input data, normalize the counts and populate
+/// the histogramUncBinPairs map data structure; map keys are guaranteed
+/// unique since the abscissas must increase
 static void 
 Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
@@ -2969,7 +3084,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   Real x, y, bin_width, count_sum;
 
   if (hba = vi->hba) { // abscissas are required
-    num_a = hba->length();                         // abscissas
+    num_a = hba->length();                            // abscissas
     hbo = vi->hbo; num_o = (hbo) ? hbo->length() : 0; // ordinates
     hbc = vi->hbc; num_c = (hbc) ? hbc->length() : 0; // counts
     if (num_o && num_o != num_a) {
@@ -2985,7 +3100,7 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       key = true;
       m = nhbp->size();
       //dv->numHistogramBinUncVars = m;
-      for(i=tothbp=0; i<m; ++i) {
+      for (i=tothbp=0; i<m; ++i) {
 	tothbp += nhbpi = (*nhbp)[i];
 	if (nhbpi < 2) {
 	  Squawk("pairs_per_variable must be >= 2");
@@ -3016,25 +3131,22 @@ Vchk_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
       count_sum = 0.;
       for (j=0; j<nhbpi; ++j, ++cntr) {
 	Real x = (*hba)[cntr];                          // abscissas
-	Real y = (num_o) ? (*hbo)[cntr] : (*hbc)[cntr]; // ordinates/counts
+	Real y = (num_c) ? (*hbc)[cntr] : (*hbo)[cntr]; // ordinates/counts
 	if (j<nhbpi-1) {
 	  Real bin_width = (*hba)[cntr+1] - x;
-	  if (bin_width <= 0.) {
-	    Squawk("histogram bin x values must increase");
-	    return;
+	  if (bin_width <= 0.)
+	    { Squawk("histogram bin x values must increase");          return; }
+	  if (y <= 0.)
+	    { Squawk("nonpositive intermediate histogram bin y value");return; }
+	  if (num_c) {
+	    count_sum += y; // accumulate counts
+	    y /= bin_width; // convert counts to ordinates (probability density)
 	  }
-	  if (y <= 0.) {
-	    Squawk("nonpositive intermediate histogram bin y value");
-	    return;
-	  }
-	  if (num_o) // convert from ordinates (probability density) to counts
-	    y *= bin_width;
-	  count_sum += y;
+	  else
+	    count_sum += y * bin_width; // accumulate counts
 	}
-	else if (y != 0) {
-	  Squawk("histogram bin y values must end with 0");
-	  return;
-	}
+	else if (y != 0.)
+	  { Squawk("histogram bin y values must end with 0"); return; }
 	// insert without checking since keys (abscissas) must increase
 	hbpi[x] = y;
       }
@@ -3361,7 +3473,7 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<int>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -3487,7 +3599,7 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
       // for string-valued histograms, mean and stddev are of
       // zero-based indices from beginning of the map
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<String>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -3606,7 +3718,7 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
     }
     else {
       Real mean, stdev;
-      Pecos::HistogramPtRandomVariable::
+      Pecos::DiscreteSetRandomVariable<Real>::
 	moments_from_params(hist_pt_prs, mean, stdev);
       if (hist_pt_prs.size() == 1)
 	V[i] = hist_pt_prs.begin()->first;
@@ -5582,7 +5694,7 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   static IntArray   *Var_Info::* Ia_delete[]
     = { AVI nddsi, AVI nddss, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, 
 	AVI nhpip, AVI nhpsp, AVI nhprp, AVI ndusi, AVI nduss, AVI ndusr, 
-	AVI ndssi, AVI ndssr };
+	AVI ndssi, AVI ndsss, AVI ndssr };
   static RealVector *Var_Info::* Rv_delete[]
     = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp,
 	AVI DSIp, AVI DSSp, AVI DSRp,
@@ -5591,9 +5703,10 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 	AVI ucm,
 	AVI dssr };
   static IntVector *Var_Info::* Iv_delete[]
-    = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
+    = { AVI ddsi, AVI DIlb, AVI DIub, AVI hpia, AVI dusi, AVI dssi,
+        AVI ddsia, AVI ddssa, AVI ddsra };
   static StringArray *Var_Info::* Sa_delete[]
-    = { AVI ddss, AVI duss, AVI dsss };
+    = { AVI ddss, AVI hpsa, AVI duss, AVI dsss };
 #undef AVI
 
   Var_Info *vi = (Var_Info*)v;
@@ -6096,7 +6209,7 @@ static void flatten_int_intervals(const IntIntPairRealMapArray& iiprma,
 
 
 void NIDRProblemDescDB::
-check_descriptors(const StringArray& labels) {
+check_descriptor_format(const StringArray& labels) {
   StringArray::const_iterator li = labels.begin();
   String::const_iterator si;
   for(; li != labels.end(); ++li) {
@@ -6108,10 +6221,11 @@ check_descriptors(const StringArray& labels) {
         break;
       }
     }
-    if(isfloat(*li)) {
+    if(isfloat(*li)) 
       Squawk("Descriptor \"%s\" is invalid: floating point numbers not permitted",
           li->c_str());
-    }
+    if(li->empty())
+      Squawk("Empty variable or response descriptors are not permitted");
   }
 }
 
@@ -6127,31 +6241,6 @@ check_variables(std::list<DataVariables>* dvl)
   // input keyword not accounted for below
 
 
-  // validate descriptors. The string arrays are empty unless the user
-  // explicitly set descriptors.
-  std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
-  for(; It != Ite; ++It) {
-    const DataVariablesRep* dvr = It->data_rep();
-    check_descriptors(dvr->continuousDesignLabels);
-    check_descriptors(dvr->discreteDesignRangeLabels);
-    check_descriptors(dvr->discreteDesignSetIntLabels);
-    check_descriptors(dvr->discreteDesignSetStrLabels);
-    check_descriptors(dvr->discreteDesignSetRealLabels);
-    check_descriptors(dvr->continuousStateLabels);
-    check_descriptors(dvr->discreteStateRangeLabels);
-    check_descriptors(dvr->discreteStateSetIntLabels);
-    check_descriptors(dvr->discreteStateSetStrLabels);
-    check_descriptors(dvr->discreteStateSetRealLabels);
-    check_descriptors(dvr->continuousAleatoryUncLabels);
-    check_descriptors(dvr->discreteIntAleatoryUncLabels);
-    check_descriptors(dvr->discreteStrAleatoryUncLabels);
-    check_descriptors(dvr->discreteRealAleatoryUncLabels);
-    check_descriptors(dvr->continuousEpistemicUncLabels);
-    check_descriptors(dvr->discreteIntEpistemicUncLabels);
-    check_descriptors(dvr->discreteStrEpistemicUncLabels);
-    check_descriptors(dvr->discreteRealEpistemicUncLabels);
-  }
-
   if (pDDBInstance) {
     std::list<void*>::iterator It, Ite = pDDBInstance->VIL.end();
     for(It = pDDBInstance->VIL.begin(); It != Ite; ++It)
@@ -6166,7 +6255,7 @@ check_variables(std::list<DataVariables>* dvl)
     RealSymMatrix *rsm;
     IntVector *iv_a;
     StringArray *sa_a;
-    RealVector *rv, *rv_a, *rv_c;
+    RealVector *rv, *rv_a, *rv_o, *rv_c;
     RealVectorArray *rva;
     Var_Info *vi;
     size_t i, j, m, n, cntr;
@@ -6205,28 +6294,27 @@ check_variables(std::list<DataVariables>* dvl)
 	flatten_rsa(&dv->discreteDesignSetReal,     &vi->ddsr);
       }
       // histogram bin uncertain vars
-      // convert RealRealMapArray to RealVectors of abscissas and counts
+      // convert RealRealMapArray to RealVectors of abscissas + ordinates
       const RealRealMapArray& hbp = dv->histogramUncBinPairs;
       if ((m = hbp.size())) {
 	vi->nhbp = ia = new IntArray(m);
 	for(i = 0; i < m; ++i)
 	  total_prs += (*ia)[i] = hbp[i].size();
 	vi->hba = rv_a = new RealVector(total_prs); // abscissas
-	vi->hbc = rv_c = new RealVector(total_prs); // counts
-	vi->hbo = NULL;                            // no ordinates
+	vi->hbo = rv_o = new RealVector(total_prs); // ordinates only
+	vi->hbc = NULL;                             // no counts
 	for(i = cntr = 0; i < m; ++i) {
-	  RRMCIter it = hbp[i].begin();
-	  RRMCIter it_end = hbp[i].end();
+	  RRMCIter it = hbp[i].begin(), it_end = hbp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*rv_a)[cntr] = it->first;   // abscissas
-	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
+	    (*rv_a)[cntr] = it->first;  // abscissas
+	    (*rv_o)[cntr] = it->second; // ordinates only (no counts)
 	  }
 	  // normalization occurs in Vchk_HistogramBinUnc going other direction
 	}
       }
 
       // histogram point int uncertain vars
-      // convert IntRealMapArray to Int/RealVectors of abscissas and counts
+      // convert IntRealMapArray to Int/RealVectors of abscissas + counts
       const IntRealMapArray& hpip = dv->histogramUncPointIntPairs;
       if ((m = hpip.size())) {
 	vi->nhpip = ia = new IntArray(m);
@@ -6238,7 +6326,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  IRMCIter it = hpip[i].begin();
 	  IRMCIter it_end = hpip[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*iv_a)[cntr] = it->first;   // abscissas
+	    (*iv_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6246,7 +6334,7 @@ check_variables(std::list<DataVariables>* dvl)
       }
 
       // histogram point string uncertain vars
-      // convert StringRealMapArray to String/RealVectors of abscissas and counts
+      // convert StringRealMapArray to String/RealVectors of abscissas + counts
       const StringRealMapArray& hpsp = dv->histogramUncPointStrPairs;
       if ((m = hpsp.size())) {
 	vi->nhpsp = ia = new IntArray(m);
@@ -6258,7 +6346,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  SRMCIter it = hpsp[i].begin();
 	  SRMCIter it_end = hpsp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*sa_a)[cntr] = it->first;   // abscissas
+	    (*sa_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6266,7 +6354,7 @@ check_variables(std::list<DataVariables>* dvl)
       }
 
       // histogram point real uncertain vars
-      // convert RealRealMapArray to RealVectors of abscissas and counts
+      // convert RealRealMapArray to RealVectors of abscissas + counts
       const RealRealMapArray& hprp = dv->histogramUncPointRealPairs;
       if ((m = hprp.size())) {
 	vi->nhprp = ia = new IntArray(m);
@@ -6278,7 +6366,7 @@ check_variables(std::list<DataVariables>* dvl)
 	  RRMCIter it = hprp[i].begin();
 	  RRMCIter it_end = hprp[i].end();
 	  for( ; it != it_end; ++cntr) {
-	    (*rv_a)[cntr] = it->first;   // abscissas
+	    (*rv_a)[cntr] = it->first;  // abscissas
 	    (*rv_c)[cntr] = it->second; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vchk_HistogramPtUnc going other direction
@@ -6344,6 +6432,49 @@ check_variables(std::list<DataVariables>* dvl)
 
       check_variables_node((void*)vi);
     }
+  }
+  // validate descriptors. The string arrays are empty unless the user
+  // explicitly set descriptors.
+  std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
+  for(; It != Ite; ++It) {
+    const DataVariablesRep* dvr = It->data_rep();
+    check_descriptor_format(dvr->continuousDesignLabels);
+    check_descriptor_format(dvr->discreteDesignRangeLabels);
+    check_descriptor_format(dvr->discreteDesignSetIntLabels);
+    check_descriptor_format(dvr->discreteDesignSetStrLabels);
+    check_descriptor_format(dvr->discreteDesignSetRealLabels);
+    check_descriptor_format(dvr->continuousStateLabels);
+    check_descriptor_format(dvr->discreteStateRangeLabels);
+    check_descriptor_format(dvr->discreteStateSetIntLabels);
+    check_descriptor_format(dvr->discreteStateSetStrLabels);
+    check_descriptor_format(dvr->discreteStateSetRealLabels);
+    check_descriptor_format(dvr->continuousAleatoryUncLabels);
+    check_descriptor_format(dvr->discreteIntAleatoryUncLabels);
+    check_descriptor_format(dvr->discreteStrAleatoryUncLabels);
+    check_descriptor_format(dvr->discreteRealAleatoryUncLabels);
+    check_descriptor_format(dvr->continuousEpistemicUncLabels);
+    check_descriptor_format(dvr->discreteIntEpistemicUncLabels);
+    check_descriptor_format(dvr->discreteStrEpistemicUncLabels);
+    check_descriptor_format(dvr->discreteRealEpistemicUncLabels);
+
+    check_descriptors_for_repeats(dvr->continuousDesignLabels,
+                                  dvr->discreteDesignRangeLabels,
+                                  dvr->discreteDesignSetIntLabels,
+                                  dvr->discreteDesignSetStrLabels,
+                                  dvr->discreteDesignSetRealLabels,
+                                  dvr->continuousStateLabels,
+                                  dvr->discreteStateRangeLabels,
+                                  dvr->discreteStateSetIntLabels,
+                                  dvr->discreteStateSetStrLabels,
+                                  dvr->discreteStateSetRealLabels,
+                                  dvr->continuousAleatoryUncLabels,
+                                  dvr->discreteIntAleatoryUncLabels,
+                                  dvr->discreteStrAleatoryUncLabels,
+                                  dvr->discreteRealAleatoryUncLabels,
+                                  dvr->continuousEpistemicUncLabels,
+                                  dvr->discreteIntEpistemicUncLabels,
+                                  dvr->discreteStrEpistemicUncLabels,
+                                  dvr->discreteRealEpistemicUncLabels);
   }
 }
 
@@ -6469,9 +6600,7 @@ static Iface_mp_type
 	MP2s(evalScheduling,PEER_DYNAMIC_SCHEDULING),
 	MP2s(evalScheduling,PEER_STATIC_SCHEDULING),
 	MP2s(asynchLocalEvalScheduling,DYNAMIC_SCHEDULING),
-        MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING),
-        MP2s(interfaceSynchronization,ASYNCHRONOUS_INTERFACE),
-        MP2s(interfaceSynchronization,SYNCHRONOUS_INTERFACE);
+        MP2s(asynchLocalEvalScheduling,STATIC_SCHEDULING);
 
 static Iface_mp_utype
 	MP2s(interfaceType,TEST_INTERFACE),
@@ -6505,6 +6634,8 @@ static bool
 	MP_(activeSetVectorFlag),
 	MP_(allowExistingResultsFlag),
 	MP_(apreproFlag),
+	MP_(asynchFlag),
+	MP_(batchEvalFlag),
 	MP_(dirSave),
 	MP_(dirTag),
 	MP_(evalCacheFlag),
@@ -6567,9 +6698,9 @@ static Method_mp_ilit2z
 
 static Method_mp_lit
 	MP2(batchSelectionType,naive),
-	MP2(batchSelectionType,distance_penalty),
+	MP2(batchSelectionType,distance),
 	MP2(batchSelectionType,topology),
-	MP2(batchSelectionType,constant_liar),
+	MP2(batchSelectionType,cl),
 	MP2(boxDivision,all_dimensions),
 	MP2(boxDivision,major_dimension),
 	MP2(convergenceType,average_fitness_tracker),
@@ -6615,6 +6746,8 @@ static Method_mp_lit
 	MP2(mcmcType,dram),
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
+	MP2(modelDiscrepancyType,global_kriging),
+	MP2(modelDiscrepancyType,global_polynomial),
 	MP2(mutationType,bit_random),
 	MP2(mutationType,offset_cauchy),
 	MP2(mutationType,offset_normal),
@@ -6667,6 +6800,11 @@ static Method_mp_slit2
 static Method_mp_utype_lit
         MP3s(methodName,dlDetails,DL_SOLVER); // struct order: ip, sp, utype
 
+static Method_mp_ord
+	MP2s(approxCorrectionOrder,0),
+	MP2s(approxCorrectionOrder,1),
+	MP2s(approxCorrectionOrder,2);
+
 static Real
 	MP_(absConvTol),
 	MP_(centeringParam),
@@ -6696,16 +6834,20 @@ static Real
 	MP_(maxStep),
 	MP_(minBoxSize),
 	MP_(minMeshSize),
+	MP_(multilevEstimatorRate),
 	MP_(mutationRate),
 	MP_(mutationScale),
 	MP_(percentVarianceExplained),
+        MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
+	MP_(roundingTolerance),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
+	MP_(solverTolerance),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -6729,6 +6871,7 @@ static RealVector
 	MP_(hyperPriorAlphas),
 	MP_(hyperPriorBetas),
 	MP_(listOfPoints),
+	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
         MP_(stepVector),
@@ -6744,27 +6887,36 @@ static unsigned short
 	MP_(adaptedBasisAdvancements),
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
+        MP_(expansionOrder),
+        MP_(quadratureOrder),
 	MP_(softConvLimit),
+	MP_(sparseGridLevel),
 	MP_(vbdOrder),
 	MP_(wilksOrder);
 
 static SizetArray
-	MP_(collocationPoints),
-        MP_(expansionSamples),
-  	MP_(pilotSamples);
+	MP_(collocationPointsSeq),
+        MP_(expansionSamplesSeq),
+  	MP_(pilotSamples),
+  	MP_(startOrderSeq),
+  	MP_(startRankSeq);
 
 static UShortArray
-        MP_(expansionOrder),
-        MP_(quadratureOrder),
-	MP_(sparseGridLevel),
+        MP_(expansionOrderSeq),
+        MP_(quadratureOrderSeq),
+	MP_(sparseGridLevelSeq),
         MP_(tensorGridOrder),
 	MP_(varPartitions);
 
 static String
+        MP_(advancedOptionsFilename),
         MP_(betaSolverName),
         MP_(dataDistFile),
         MP_(displayFormat),
 	MP_(exportApproxPtsFile),
+	MP_(exportCorrModelFile),
+	MP_(exportCorrVarFile),
+	MP_(exportDiscrepFile),
 	MP_(exportExpansionFile),
 	MP_(exportMCMCPtsFile),
 	MP_(historyFile),
@@ -6779,6 +6931,7 @@ static String
 	MP_(importBuildPtsFile),
 	MP_(importCandPtsFile),
 	MP_(importExpansionFile),
+	MP_(importPredConfigs),
 	MP_(logFile),
 	MP_(lowFidModelPointer),
 	MP_(modelPointer),
@@ -6789,7 +6942,7 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-        MP_(subModelPointer);
+    MP_(subModelPointer);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6800,7 +6953,11 @@ static StringArray
 static bool
 	MP_(adaptExpDesign),
 	MP_(adaptPosteriorRefine),
+        MP_(adaptRank),
 	MP_(backfillFlag),
+	MP_(calModelDiscrepancy),
+	MP_(chainDiagnostics),
+	MP_(chainDiagnosticsCI),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(crossValidNoiseOnly),
@@ -6811,6 +6968,7 @@ static bool
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
         MP_(generatePosteriorSamples),
+	MP_(gpmsaNormalize),
 	MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(latinizeFlag),
@@ -6818,10 +6976,15 @@ static bool
 	MP_(mainEffectsFlag),
 	MP_(methodScaling),
 	MP_(methodUseDerivsFlag),
+        MP_(modelEvidence),
+        MP_(modelEvidLaplace),
+        MP_(modelEvidMC),
+	MP_(mutualInfoKSG2),
 	MP_(mutationAdaptive),
 	MP_(normalizedCoeffs),
 	MP_(pcaFlag),
 	MP_(posteriorStatsKL),
+	MP_(posteriorStatsKDE),
 	MP_(posteriorStatsMutual),
 	MP_(printPopFlag),
 	MP_(pstudyFileActive),
@@ -6845,6 +7008,7 @@ static short
 	MP_(wilksSidedInterval);
 
 static int
+	MP_(batchSize),
 	MP_(buildSamples),
 	MP_(burnInSamples),
 	MP_(chainSamples),
@@ -6854,9 +7018,12 @@ static int
         MP_(crossoverChainPairs),
         MP_(emulatorOrder),
 	MP_(expandAfterSuccess),
+        MP_(evidenceSamples),
         MP_(iteratorServers),
 	MP_(jumpStep),
+	MP_(maxCrossIterations),
 	MP_(maxFunctionEvaluations),
+	MP_(maxHifiEvals),
 	MP_(maxIterations),
 	MP_(maxRefineIterations),
 	MP_(maxSolverIterations),
@@ -6871,7 +7038,8 @@ static int
 	MP_(numTrials),
 	MP_(populationSize),
         MP_(procsPerIterator),
-        MP_(proposalCovUpdates),
+        MP_(proposalCovUpdatePeriod),
+	MP_(numPushforwardSamples),
 	MP_(randomSeed),
 	MP_(samplesOnEmulator),
 	MP_(searchSchemeSize),
@@ -6880,14 +7048,21 @@ static int
 	MP_(verifyLevel);
 
 static size_t
-	MP_(maxHifiEvals),
+	MP_(collocationPoints),
+        MP_(expansionSamples),
+        MP_(kickRank),
+        MP_(maxOrder),        
+        MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
-        MP_(numDesigns),
-        MP_(numFinalSolutions),
+	MP_(numDesigns),
+	MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
-	MP_(numParents);
+	MP_(numParents),
+  	MP_(numPredConfigs),
+        MP_(startOrder),
+        MP_(startRank);
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -6896,6 +7071,9 @@ static Method_mp_type
 	MP2s(distributionType,CUMULATIVE),
 	MP2s(emulatorType,GP_EMULATOR),
 	MP2s(emulatorType,KRIGING_EMULATOR),
+	MP2s(emulatorType,MF_PCE_EMULATOR),
+	MP2s(emulatorType,MF_SC_EMULATOR),
+	MP2s(emulatorType,ML_PCE_EMULATOR),
 	MP2s(emulatorType,PCE_EMULATOR),
 	MP2s(emulatorType,SC_EMULATOR),
 	MP2s(emulatorType,VPS_EMULATOR),
@@ -6907,6 +7085,9 @@ static Method_mp_type
 	MP2p(expansionBasisType,TOTAL_ORDER_BASIS),
 	MP2s(expansionType,ASKEY_U),
 	MP2s(expansionType,STD_NORMAL_U),
+	MP2s(finalMomentsType,CENTRAL_MOMENTS),
+	MP2s(finalMomentsType,NO_MOMENTS),
+	MP2s(finalMomentsType,STANDARD_MOMENTS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
@@ -6923,6 +7104,12 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
+	MP2s(multilevAllocControl,ESTIMATOR_VARIANCE),
+	MP2s(multilevAllocControl,GREEDY_REFINEMENT),
+	MP2s(multilevAllocControl,RANK_SAMPLING),
+	MP2s(multilevAllocControl,RIP_SAMPLING),
+	MP2s(multilevDiscrepEmulation,DISTINCT_EMULATION),
+	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
@@ -6939,6 +7126,8 @@ static Method_mp_type
 	MP2p(regressionType,LEAST_ANGLE_REGRESSION),       // Pecos enumeration
 	MP2p(regressionType,ORTHOG_LEAST_INTERPOLATION),   // Pecos enumeration
 	MP2p(regressionType,ORTHOG_MATCH_PURSUIT),         // Pecos enumeration
+	MP2s(regressionType,FT_LS),
+	MP2s(regressionType,FT_RLS2),
 	MP2s(responseLevelTarget,GEN_RELIABILITIES),
 	MP2s(responseLevelTarget,PROBABILITIES),
 	MP2s(responseLevelTarget,RELIABILITIES),
@@ -6972,6 +7161,21 @@ static Method_mp_utype
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
         MP2s(exportApproxFormat,TABULAR_IFACE_ID),
         MP2s(exportApproxFormat,TABULAR_ANNOTATED),
+        MP2s(exportCorrModelFormat,TABULAR_NONE),
+        MP2s(exportCorrModelFormat,TABULAR_HEADER),
+        MP2s(exportCorrModelFormat,TABULAR_EVAL_ID),
+        MP2s(exportCorrModelFormat,TABULAR_IFACE_ID),
+        MP2s(exportCorrModelFormat,TABULAR_ANNOTATED),
+        MP2s(exportCorrVarFormat,TABULAR_NONE),
+        MP2s(exportCorrVarFormat,TABULAR_HEADER),
+        MP2s(exportCorrVarFormat,TABULAR_EVAL_ID),
+        MP2s(exportCorrVarFormat,TABULAR_IFACE_ID),
+        MP2s(exportCorrVarFormat,TABULAR_ANNOTATED),
+        MP2s(exportDiscrepFormat,TABULAR_NONE),
+        MP2s(exportDiscrepFormat,TABULAR_HEADER),
+        MP2s(exportDiscrepFormat,TABULAR_EVAL_ID),
+        MP2s(exportDiscrepFormat,TABULAR_IFACE_ID),
+        MP2s(exportDiscrepFormat,TABULAR_ANNOTATED),
         MP2s(exportSamplesFormat,TABULAR_NONE),
         MP2s(exportSamplesFormat,TABULAR_HEADER),
         MP2s(exportSamplesFormat,TABULAR_EVAL_ID),
@@ -6992,11 +7196,17 @@ static Method_mp_utype
         MP2s(importCandFormat,TABULAR_EVAL_ID),
         MP2s(importCandFormat,TABULAR_IFACE_ID),
         MP2s(importCandFormat,TABULAR_ANNOTATED),
+        MP2s(importPredConfigFormat,TABULAR_NONE),
+        MP2s(importPredConfigFormat,TABULAR_HEADER),
+        MP2s(importPredConfigFormat,TABULAR_EVAL_ID),
+        MP2s(importPredConfigFormat,TABULAR_IFACE_ID),
+        MP2s(importPredConfigFormat,TABULAR_ANNOTATED),
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
 	MP2s(methodName,BRANCH_AND_BOUND),
+    MP2s(methodName,C3_FUNCTION_TRAIN),
 	MP2s(methodName,COLINY_BETA),
 	MP2s(methodName,COLINY_COBYLA),
 	MP2s(methodName,COLINY_DIRECT),
@@ -7021,11 +7231,14 @@ static Method_mp_utype
 	MP2s(methodName,MESH_ADAPTIVE_SEARCH),
 	MP2s(methodName,MOGA),
 	MP2s(methodName,MULTI_START),
-	MP2s(methodName,NCSU_DIRECT),
+  MP2s(methodName,NCSU_DIRECT),
+  MP2s(methodName,ROL),
+  MP2s(methodName,DEMO_TPL),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
 	MP2s(methodName,MIT_NOWPAC),
+	MP2s(methodName,MIT_SNOWPAC),
         MP2s(methodName,ADAPTIVE_SAMPLING),
 	MP2s(methodName,BAYES_CALIBRATION),
 	MP2s(methodName,GENIE_DIRECT),
@@ -7038,12 +7251,18 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTIFIDELITY_FUNCTION_TRAIN),
+	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
+	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
+	MP2s(methodName,MULTILEVEL_FUNCTION_TRAIN),
+	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTILEVEL_SAMPLING),
         MP2s(methodName,POF_DARTS),
 	MP2s(methodName,RKD_DARTS),
 	MP2s(methodName,POLYNOMIAL_CHAOS),
-	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,STOCH_COLLOCATION),
+	MP2s(methodName,SURROGATE_BASED_UQ),
+	MP2s(methodName,RANDOM_SAMPLING),
 	MP2s(methodName,NONLINEAR_CG),
 	MP2s(methodName,NPSOL_SQP),
 	MP2s(methodName,OPTPP_CG),
@@ -7077,6 +7296,8 @@ static Method_mp_utype
 	MP2s(reliabilitySearchType,EGRA_U),
 	MP2s(reliabilitySearchType,EGRA_X),
 	MP2s(reliabilitySearchType,NO_APPROX),
+	MP2s(reliabilitySearchType,QMEA_U),
+	MP2s(reliabilitySearchType,QMEA_X),
 	MP2s(reliabilitySearchType,TANA_U),
 	MP2s(reliabilitySearchType,TANA_X),
 	MP2s(sampleType,SUBMETHOD_LHS),
@@ -7135,6 +7356,7 @@ static Model_mp_lit
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
+	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
 	MP2(surrogateType,global_mars),
@@ -7144,6 +7366,7 @@ static Model_mp_lit
 	MP2(surrogateType,global_radial_basis),
 	MP2(surrogateType,global_voronoi_surrogate),
 	MP2(surrogateType,local_taylor),
+        MP2(surrogateType,multipoint_qmea),
         MP2(surrogateType,multipoint_tana),
         MP2(trendOrder,constant),
         MP2(trendOrder,linear),
@@ -7164,6 +7387,8 @@ static Model_mp_type
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
+	MP2s(regressionType,FT_LS),
+	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
@@ -7199,26 +7424,29 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
         MP2s(randomFieldIdForm,RF_PCA_GP),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_GRAD),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_LOCAL_GRAD),
-	      MP2s(subspaceSampleType,SUBMETHOD_LHS),
-	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM),
-	      MP2s(subspaceIdCVMethod,MINIMUM_METRIC),
-	      MP2s(subspaceIdCVMethod,RELATIVE_TOLERANCE),
-	      MP2s(subspaceIdCVMethod,DECREASE_TOLERANCE);
+	MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
+	MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_GRAD),
+	MP2s(subspaceNormalization,SUBSPACE_NORM_LOCAL_GRAD),
+	MP2s(subspaceSampleType,SUBMETHOD_LHS),
+	MP2s(subspaceSampleType,SUBMETHOD_RANDOM),
+	MP2s(subspaceIdCVMethod,MINIMUM_METRIC),
+	MP2s(subspaceIdCVMethod,RELATIVE_TOLERANCE),
+	MP2s(subspaceIdCVMethod,DECREASE_TOLERANCE);
 
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
 	MP_(convergenceTolerance),
+	MP_(decreaseTolerance),
         MP_(discontGradThresh),
         MP_(discontJumpThresh),
 	MP_(krigingNugget),
 	MP_(percentFold),
-	MP_(truncationTolerance),
+	MP_(regressionL2Penalty),
 	MP_(relTolerance),
-	MP_(decreaseTolerance);
+	MP_(roundingTolerance),
+	MP_(solverTolerance),
+	MP_(truncationTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),
@@ -7258,24 +7486,28 @@ static StringArray
         MP_(secondaryVarMaps);
 
 static bool
+        MP_(adaptRank),
 	MP_(autoRefine),
 	MP_(crossValidateFlag),
 	MP_(decompDiscontDetect),
 	MP_(exportSurrogate),
 	MP_(hierarchicalTags),
+        MP_(identityRespMap),
       //MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(importChallengeActive),
+	MP_(importChalUseVariableLabels),
+	MP_(importUseVariableLabels),
 	MP_(modelUseDerivsFlag),
         MP_(domainDecomp),
         MP_(pointSelection),
         MP_(pressFlag),
-  MP_(subspaceIdBingLi),
-  MP_(subspaceIdConstantine),
-  MP_(subspaceIdEnergy),
-  MP_(subspaceBuildSurrogate),
-  MP_(subspaceIdCV),
-  MP_(subspaceCVIncremental);
+        MP_(subspaceIdBingLi),
+        MP_(subspaceIdConstantine),
+        MP_(subspaceIdEnergy),
+        MP_(subspaceBuildSurrogate),
+        MP_(subspaceIdCV),
+        MP_(subspaceCVIncremental);
 
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
@@ -7297,8 +7529,10 @@ static short
 static int
         MP_(decompSupportLayers),
         MP_(initialSamples),
+        MP_(maxCrossIterations),
         MP_(maxFunctionEvals),
         MP_(maxIterations),
+	MP_(maxSolverIterations),
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
@@ -7309,6 +7543,14 @@ static int
         MP_(subspaceDimension),
         MP_(subspaceCVMaxRank);
 
+static size_t
+    MP_(kickRank),
+    MP_(maxOrder),        
+    MP_(maxRank),
+    MP_(startOrder),
+    MP_(startRank);
+//  MP_(verbosity);
+    
 #undef MP2s
 #undef MP2
 #undef MP_
@@ -7335,6 +7577,7 @@ static RealVector
 	MP_(nonlinearEqTargets),
 	MP_(nonlinearIneqLowerBnds),
 	MP_(nonlinearIneqUpperBnds),
+	MP_(simVariance),
 	MP_(fdGradStepSize),
 	MP_(fdHessStepSize),
 	MP_(primaryRespFnScales),
@@ -7432,7 +7675,16 @@ static Env_mp_utype
         MP2s(tabularFormat,TABULAR_HEADER),
         MP2s(tabularFormat,TABULAR_EVAL_ID),
         MP2s(tabularFormat,TABULAR_IFACE_ID),
-        MP2s(tabularFormat,TABULAR_ANNOTATED);
+        MP2s(tabularFormat,TABULAR_ANNOTATED),
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_TEXT),
+        MP2s(resultsOutputFormat,RESULTS_OUTPUT_HDF5),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_TOP_METHOD),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_NONE),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL),
+        MP2s(modelEvalsSelection,MODEL_EVAL_STORE_ALL_METHODS),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_SIMULATION),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_NONE),
+        MP2s(interfEvalsSelection,INTERF_EVAL_STORE_ALL);
 
 static String
         MP_(errorFile),

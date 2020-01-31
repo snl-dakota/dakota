@@ -56,10 +56,16 @@ public:
 
   /// Dakota input file base name (no tag)
   const String& input_file() const;
-  /// alternate Dakota input string literal
+  /// alternate Dakota input string literal; also set when input is read from stdin
   const String& input_string() const;
   /// is input echo specified?
   bool echo_input() const;
+
+  /// pre-process input file
+  bool preproc_input() const;
+  /// pre-processing command, possibly specifying another tool
+  const String& preproc_cmd() const;
+
   /// (deprecated) NIDR parser options
   const String& parser_options() const;
   
@@ -134,6 +140,10 @@ public:
   void input_string(const String& in_string);
   /// set whether to echo input to output
   void echo_input(bool echo_flag);
+  /// set whether to pre-process input file
+  void preproc_input(bool pp_flag);
+  /// set alternate pre-processing command
+  void preproc_cmd(const String& pp_cmd);
   /// set behavior for abort_handler
   void exit_mode(const String& mode);
   /// set base file name for Dakota output
@@ -220,6 +230,10 @@ private:
   /// (mutually exclusive with input file)
   String inputString;
   bool echoInput;         ///< whether to echo client's input file at parse 
+
+  bool preprocInput;      ///< whether to pre-process input with pyprepro/etc.
+  String preprocCmd;      ///< pre-processing command (default pyprepro.py)
+
   String parserOptions;   ///< Deprecated option for NIDR parser options
   String exitMode;        ///< Abort or throw on error
 

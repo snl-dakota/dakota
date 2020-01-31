@@ -69,6 +69,48 @@ namespace Dakota {
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
 
+/**
+ * \brief A version of TraitsBase specialized for SNLL optimizers
+ *
+ */
+
+class SNLLTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  SNLLTraits() { }
+
+  /// destructor
+  virtual ~SNLLTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  // Traits are chosen to be the most common ones across a majority of methods within this TPL.
+
+  /// Return the value of supportsContinuousVariables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
+
+};
+
+
 class SNLLOptimizer: public Optimizer, public SNLLBase
 {
 public:
@@ -103,6 +145,10 @@ public:
 
   /// Performs the iterations to determine the optimal solution.
   void core_run();
+
+  void reset();
+
+  void declare_sources();
 
 protected:
 

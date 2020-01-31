@@ -35,9 +35,14 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
     = (SharedPecosApproxData*)sharedDataRep;
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
+
+  // Make a shallow copy of approxData instance (shared rep).
+  // Note: this SurrogateData instance is empty at construct time.
+  pecosBasisApprox.surrogate_data(approxData);
+
+  // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
-  polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
 }
 
 
@@ -58,9 +63,42 @@ PecosApproximation(ProblemDescDB& problem_db,
     = (SharedPecosApproxData*)sharedDataRep;
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
+
+  // Make a shallow copy of approxData instance (shared rep).
+  // Note: this SurrogateData instance is empty at construct time.
+  pecosBasisApprox.surrogate_data(approxData);
+
+  // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
-  polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
 }
+
+
+/*
+void PecosApproximation::link_multilevel_surrogate_data()
+{
+  // Manage {surr,modSurr}Data instances (approxDataKeys and original/modified
+  // approxData indices are managed in SharedPecosApproxData).
+  // > SurrogateModel::aggregate_response() uses order of HF,LF
+  // > ApproximationInterface::{mixed,shallow}_add() assigns aggregate response
+  //   data to each approxData instance in turn.
+
+  SharedPecosApproxData* shared_data_rep
+    = (SharedPecosApproxData*)sharedDataRep;
+  switch (shared_data_rep->pecos_shared_data_rep()->discrepancy_type()) {
+  case Pecos::DISTINCT_DISCREP: case Pecos::RECURSIVE_DISCREP: {
+    // push another SurrogateData instance for modSurrData
+    // (allows consolidation of Approximation::push/pop operations)
+    const UShortArray& key = approxData.back().active_key();
+    Pecos::SurrogateData mod_surr(key);
+    approxData.push_back(mod_surr);
+    pecosBasisApprox.modified_surrogate_data(mod_surr);
+    break;
+  }
+  default: // default ctor linkages are sufficient
+    break;
+  }
+}
+*/
 
 } // namespace Dakota

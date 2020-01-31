@@ -103,7 +103,7 @@ void RichExtrapVerification::
 extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
 {
   if (outputLevel == DEBUG_OUTPUT)
-    { Cout << "refine_triple:\n"; write_data(Cout, refine_triple); }
+    Cout << "refine_triple:\n" << refine_triple;
 
   ShortArray asrv(numFunctions, 1); // all fns can be evaluated in this case
   activeSet.request_vector(asrv);
@@ -196,10 +196,9 @@ void RichExtrapVerification::converge_order()
       delta_order -= prev_order;
       tolerance    = delta_order.normFrobenius();
       // scalar: tolerance = std::fabs(prev_order - convOrder)/convOrder;
-      if (outputLevel == DEBUG_OUTPUT) {
-	Cout << "Change in orders:\n"; write_data(Cout, delta_order);
-	Cout << "converge_order() tolerance = " << tolerance << '\n';
-      }
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Change in orders:\n" << delta_order
+	     << "converge_order() tolerance = " << tolerance << '\n';
 
       // updates for next iteration
       copy_data(convOrder[factorIndex], (int)numFunctions, prev_order);
@@ -294,7 +293,7 @@ void RichExtrapVerification::post_run(std::ostream& s)
 */
 
 
-void RichExtrapVerification::print_results(std::ostream& s)
+void RichExtrapVerification::print_results(std::ostream& s, short results_state)
 {
   StringArray cv_labels;
   copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
@@ -302,7 +301,7 @@ void RichExtrapVerification::print_results(std::ostream& s)
 
   // Print resulting order and error estimates
   Cout << "\nRefinement Rate = " << refinementRate;
-  Cout << "\nRefinement Reference Pt  =\n"; write_data(Cout, refinementRefPt);
+  Cout << "\nRefinement Reference Pt  =\n" << refinementRefPt;
   Cout << "\nFinal Convergence Rates  =\n";
   write_data(Cout,   convOrder, fn_labels, cv_labels);
   Cout << "\nExtrapolated QOI         =\n";
@@ -311,7 +310,7 @@ void RichExtrapVerification::print_results(std::ostream& s)
   write_data(Cout, numErrorQOI, fn_labels, cv_labels);
   Cout << '\n';
 
-  Verification::print_results(s);
+  Verification::print_results(s, results_state);
 }
 
 } // namespace Dakota

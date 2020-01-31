@@ -19,6 +19,7 @@
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DakotaGraphics.hpp"
+#include <memory>
 
 
 namespace Dakota {
@@ -99,7 +100,7 @@ protected:
 
   /// stack of redirections to OutputWriters; shared pointers are used
   /// to potentially share the same ostream at multiple levels
-  std::vector<boost::shared_ptr<OutputWriter> > ostreamDestinations;
+  std::vector<std::shared_ptr<OutputWriter> > ostreamDestinations;
 
 private:
   // private ctors since current implementation with streams isn't
@@ -122,8 +123,12 @@ public:
   /// optional default ctor allowing a non-outputting RestartWriter
   RestartWriter();
 
-  /// typical ctor taking a filename
+  /// typical ctor taking a filename; this class encapsulates the output stream
   RestartWriter(const String& write_restart_filename);
+
+  /// alternate ctor taking a stream, helpful for testing; assumes
+  /// client manages the output stream
+  RestartWriter(std::ostream& write_restart_stream);
   
   /// output filename for this writer
   const String& filename();
@@ -150,7 +155,7 @@ private:
 
   /// Binary output archive to which data is written (pointer since no
   /// default ctor for oarchive and may not be initialized); 
-  boost::scoped_ptr<boost::archive::binary_oarchive> restartOutputArchive;
+  std::unique_ptr<boost::archive::binary_oarchive> restartOutputArchive;
 
 };  // class RestartWriter
 
@@ -256,6 +261,17 @@ public:
 
 
   // -----
+  // Results DB outputs
+  // -----
+
+  /// At runtime, initialize the global ResultsManager, tagging
+  /// filename with MPI worldRank + 1 if needed
+  void init_results_db();
+
+  /// Archive the input file to the results database
+  void archive_input(const ProgramOptions &prog_opts) const;
+
+  // -----
   // Data to later be made private
   // -----
 
@@ -271,6 +287,11 @@ public:
 
   String tabularDataFile;   ///< filename for tabulation of graphics data
   String resultsOutputFile; ///< filename for results data
+
+  /// Models selected to store their evaluations
+  unsigned short modelEvalsSelection;
+  /// Interfaces selected to store their evaluations
+  unsigned short interfEvalsSelection;
 
 private:
 
@@ -297,9 +318,6 @@ private:
   /// set of tags for various input/output files (default none)
   StringArray fileTags;
 
-  /// temporary variable to prevent recursive tagging initially
-  bool redirCalled;
-
   /// set of redirections for Dakota::Cout; stores any tagged filename
   /// when there are concurrent Iterators
   ConsoleRedirector coutRedirector;
@@ -311,7 +329,7 @@ private:
 
   /// Stack of active restart destinations; end is the last (active)
   /// redirection. All remain open until popped or destroyed.
-  std::vector<boost::shared_ptr<RestartWriter> > restartDestinations;
+  std::vector<std::shared_ptr<RestartWriter> > restartDestinations;
 
   /// message to print at startup when proceeding to instantiate objects
   String startupMessage;
@@ -340,8 +358,9 @@ private:
   /// output level (for debugging only; not passed in)
   short outputLevel;
 
-};  // class OutputManager
-
+  /// Output results  format
+  unsigned short resultsOutputFormat;
+};
 
 } //namespace Dakota
 

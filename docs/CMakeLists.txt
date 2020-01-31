@@ -27,15 +27,17 @@ list_filter_emacs_backups(ref_kw_md)
 file(GLOB ref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
 list_filter_emacs_backups(ref_topic_md)
 file(GLOB ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
+file(GLOB ref_hdf5 RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "hdf5_tables/*.html")
 file(GLOB ref_images RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images/*")
 list_filter_emacs_backups(ref_images)
-set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox} Doxyfile-ref 
+set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox} ${ref_hdf5}
+  ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref 
   ${ref_images} header-ref.html header-ref.tex Dakota.bib)
 
 # Doxygen developer dependencies
 file(GLOB dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
-set(dox_dev_deps 
-  ${dox_dev_dox} Doxyfile header-dev.html header-dev.tex)
+set(dox_dev_deps ${dox_dev_dox} 
+  ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile header-dev.html header-dev.tex)
 
 
 # Generate the doxygen files for ref man keywords and topics,
@@ -66,10 +68,10 @@ add_custom_command(
 # Generate the master DakotaReferenceManual.dox
 add_custom_command(
   DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
-  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
+    dakota-input-summary
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaKeywords.dox 
     ${CMAKE_CURRENT_BINARY_DIR}/DakotaTopics.dox 
-    ${ref_dox}
+    ${ref_dox} ${ref_hdf5}
   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ref_concat_dox.sh 
   ARGS ${CMAKE_CURRENT_SOURCE_DIR} 
   ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
@@ -176,16 +178,6 @@ add_custom_target(docs-pdf-ref
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.pdf)
 
 
-# These needed for the SAND shells that follow
-add_subdirectory(latex-theory)
-if(DAKOTA_ENABLE_TESTS)
-  add_subdirectory(latex-user)
-else()
-  message(WARNING 
-    "Users Manual will not be built; requires DAKOTA_ENABLE_TESTS")
-endif()
-
-
 #              ${CMAKE_CURRENT_BINARY_DIR}/latex-${manual}/${sourcePDFname}.pdf
 
 # Helper function to build a SAND manual
@@ -202,25 +194,39 @@ function(pdf2sand manual sourcePDFname)
 
 endfunction(pdf2sand)
 
-
-# Build SAND versions of manuals
 pdf2sand(dev refman)
 pdf2sand(ref refman)
+add_subdirectory(latex-theory)
 pdf2sand(theory Theory_Main)
-pdf2sand(user Users_Main)
-
+if(DAKOTA_ENABLE_TESTS)
+  add_subdirectory(latex-user)
+  pdf2sand(user Users_Main)
+else()
+  message(WARNING
+    "Users Manual will not be built; requires DAKOTA_ENABLE_TESTS")
+endif()
 
 # Generate HTML Dev/Ref, PDF Theory/Users
 add_custom_target(docs)
-add_dependencies(docs docs-doxygen docs-pdf-user docs-pdf-theory)
+add_dependencies(docs docs-doxygen docs-pdf-theory)
+if(DAKOTA_ENABLE_TESTS)
+  add_dependencies(docs docs-pdf-user)
+endif()
 
 # Generate PDF Dev/Ref/Theory/Users
 add_custom_target(docs-pdf)
-add_dependencies(docs-pdf docs-pdf-dev docs-pdf-ref docs-pdf-theory docs-pdf-user)
+add_dependencies(docs-pdf docs-pdf-dev docs-pdf-ref docs-pdf-theory)
+if(DAKOTA_ENABLE_TESTS)
+  add_dependencies(docs-pdf docs-pdf-user)
+endif()
 
 # Generate SAND versions of all
 add_custom_target(docs-sand)
-add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory docs-sand-user)
+add_dependencies(docs-sand docs-sand-dev docs-sand-ref docs-sand-theory)
+if(DAKOTA_ENABLE_TESTS)
+  add_dependencies(docs-sand docs-sand-user)
+endif()
+
 
 # Package docs for nightly builds (HTML and PDF for dev, ref; PDF for
 # theory, users)

@@ -1,0 +1,38 @@
+Blurb::
+Trust region initial size (relative to bounds)
+Description::
+The \c trust_region optional group specification can be used to
+specify the initial size of the trust region (using \c initial_size)
+relative to the total variable bounds, the minimum size of the trust
+region (using \c minimum_size), the contraction factor for the trust
+region size (using \c contraction_factor) used when the surrogate
+model is performing poorly, and the expansion factor for the trust
+region size (using \c expansion_factor) used when the the surrogate
+model is performing well. Two additional commands are the trust region
+size contraction threshold (using \c contract_threshold) and the trust
+region size expansion threshold (using \c expand_threshold).  These
+two commands are related to what is called the trust region ratio,
+which is the actual decrease in the truth model divided by the
+predicted decrease in the truth model in the current trust region. The
+command \c contract_threshold sets the minimum acceptable value for
+the trust region ratio, i.e., values below this threshold cause the
+trust region to shrink for the next SBL iteration. The command \c
+expand_threshold determines the trust region value above which the
+trust region will expand for the next SBL iteration.
+
+All of these specifications are \c REAL scalars, with the exception of
+the specification of \c initial_size, which is a \c REALLIST.  This
+array corresponds to the case when there are more than 2 model forms
+or discretizations within a model hierarchy.  The default \c
+initial_size involves a recursive halving of the global bounds for
+each trust region in the hierarchy: e.g., a scalar value of .5 for a
+single trust region managing two model forms/discretizations, or an
+array of ( .125, .25, .5 ) for four model forms/discretizations 
+(three trust regions ordered from the lowest to highest fidelity
+surrogate, with model four as truth).
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

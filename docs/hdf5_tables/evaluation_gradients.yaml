@@ -1,0 +1,17 @@
+name: Gradients
+dataset:
+  description: "Values of gradients in evaluations"
+  location: "responses/gradients"
+  shape: "3-dimensional: number of evaluations by number of responses by number of variables"
+  type: Real
+scales:
+  - dimension: 0
+    type: Integer
+    label: evaluation_ids
+    contents: Evaluation Ids
+    literal_contents: False
+  - dimension: 1
+    type: String
+    label: responses
+    contents: Response descriptors
+    literal_contents: False

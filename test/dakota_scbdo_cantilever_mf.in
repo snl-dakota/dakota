@@ -1,6 +1,8 @@
 #@ *: DakotaConfig=HAVE_NPSOL
+# s8: test correct traits coverage
+
+
 environment,
-#	graphics
 	method_pointer = 'SBLO'
 
 method,
@@ -33,7 +35,7 @@ model,
 	surrogate hierarchical
 	  ordered_model_fidelities = 'LO_FI' 'HI_FI'
 	  correction additive first_order	#s0,#s2,#s4,#s6
-#	  correction additive second_order	#s1,#s3,#s5,#s7
+#	  correction additive second_order	#s1,#s3,#s5,#s7,#s8
 
 variables,
 	id_variables = 'OPTIM_V'
@@ -42,33 +44,41 @@ variables,
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
 	  descriptors 'w' 't'
+#   linear_equality_constraint_matrix = 2. 1.       #s8
+#   linear_equality_targets = 4.0                   #s8
+#   linear_inequality_constraint_matrix = 1. 1.     #s8
+#   linear_inequality_upper_bounds = 5.0            #s8
 
 responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
 #       which is a combination of nested & interface responses.
 	id_responses = 'OPTIM_R'
 	objective_functions = 1
-	nonlinear_inequality_constraints = 2
-	nonlinear_inequality_lower_bounds = 3. 3.
-	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50
+	nonlinear_inequality_constraints = 2				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	nonlinear_equality_constraints = 1					#s8
+#	nonlinear_inequality_constraints = 1				#s8
+	nonlinear_inequality_lower_bounds = 3. 3.			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 	analytic_gradients
 	no_hessians				#s0,#s2,#s4,#s6
-#	quasi_hessians sr1			#s1,#s3,#s5,#s7
+#	quasi_hessians sr1			#s1,#s3,#s5,#s7,#s8
 
 responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
 #       which is a combination of nested & interface responses.
 	id_responses = 'OPTIM_R_FD'
 	objective_functions = 1
-	nonlinear_inequality_constraints = 2
-	nonlinear_inequality_lower_bounds = 3. 3.
-	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50
+	nonlinear_inequality_constraints = 2				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#	nonlinear_equality_constraints = 1					#s8
+#	nonlinear_inequality_constraints = 1				#s8
+	nonlinear_inequality_lower_bounds = 3. 3.			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 	numerical_gradients
 #	mixed_gradients
 #	  id_analytic_gradients  = 1
 #	  id_numerical_gradients = 2 3
 	no_hessians				#s0,#s2,#s4,#s6
-#	quasi_hessians sr1			#s1,#s3,#s5,#s7
+#	quasi_hessians sr1			#s1,#s3,#s5,#s7,#s8
 
 ##########################
 # begin LF specification #
@@ -79,7 +89,7 @@ model,
 	  variables_pointer  = 'OPTIM_V'
 	  sub_method_pointer = 'UQ_COMBINED_EXP'
 	  responses_pointer  = 'OPTIM_R'	#s0,#s1,#s4,#s5
-#	  responses_pointer  = 'OPTIM_R_FD'	#s2,#s3,#s6,#s7
+#	  responses_pointer  = 'OPTIM_R_FD'	#s2,#s3,#s6,#s7,#s8
 # maximize beta
 	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
 	  secondary_response_mapping = 0. 0. 0. 0. 1. 0. 0. 0.
@@ -91,7 +101,7 @@ method,
 	stoch_collocation			#s0,#s1,#s4,#s5
 	  quadrature_order = 3			#s0,#s1
 #	  sparse_grid_level = 4 non_nested	#s4,#s5
-#	local_reliability			#s2,#s3,#s6,#s7
+#	local_reliability			#s2,#s3,#s6,#s7,#s8
 	  num_response_levels = 0 1 1
 	  response_levels = 0.0 0.0
 	  compute reliabilities
@@ -116,7 +126,7 @@ method,
 	model_pointer = 'UQ_M_HI_FI'
 	stoch_collocation
 	  quadrature_order = 3			#s0,#s1,#s2,#s3
-#	  sparse_grid_level = 2 non_nested	#s4,#s5,#s6,#s7
+#	  sparse_grid_level = 2 non_nested	#s4,#s5,#s6,#s7,#s8
 	  num_response_levels = 0 1 1
 	  response_levels = 0.0 0.0
 	  compute reliabilities
@@ -167,7 +177,7 @@ responses,
 	id_responses = 'UQ_R_LO_FI'
 	response_functions = 3
 	no_gradients				#s0,#s1,#s4,#s5
-#	analytic_gradients			#s2,#s3,#s6,#s7
+#	analytic_gradients			#s2,#s3,#s6,#s7,#s8
 	no_hessians
 
 responses,

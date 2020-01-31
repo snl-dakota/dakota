@@ -9,11 +9,12 @@ uncertainty quantification, parameter estimation, and sensitivity
 analysis, which may be used individually or as components within
 surrogate-based and other advanced strategies.
 
-\author Brian M. Adams, William J. Bohnhoff, Keith
-R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Gianluca Geraci,
-Russell W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman,
-Kathryn A. Maupin, Jason A. Monschke, Elliott M. Ridgway, Ahmad Rushdi, Laura P.
-Swiler, J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey
+\author Brian M. Adams, William J. Bohnhoff, Keith R. Dalbey, Mohamed
+S. Ebeida, John P. Eddy, Michael S. Eldred, Gianluca Geraci, Russell
+W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman, Mohammad
+Khalil, Kathryn A. Maupin, Jason A. Monschke, Elliott M. Ridgway,
+Ahmad A. Rushdi, J. Adam Stephens, Laura P. Swiler, Dena M. Vigil,
+Timothy M. Wildey
 
 <!-----
  %Dakota contains algorithms for:
@@ -78,20 +79,21 @@ If the \c dakota command is entered at the command prompt without any
 arguments, a usage message similar to the following appears:
 \verbatim
 usage: dakota [options and <args>]
-        -help (Print this summary)
-        -version (Print Dakota version number)
-        -input <$val> (REQUIRED Dakota input file $val)
-        -output <$val> (Redirect Dakota standard output to file $val)
-        -error <$val> (Redirect Dakota standard error to file $val)
-        -parser <$val> (Parsing technology: nidr[strict][:dumpfile])
-        -no_input_echo (Do not echo Dakota input file)
-        -check (Perform input checks)
-        -pre_run [$val] (Perform pre-run (variables generation) phase)
-        -run [$val] (Perform run (model evaluation) phase)
-        -post_run [$val] (Perform post-run (final results) phase)
-        -read_restart [$val] (Read an existing Dakota restart file $val)
-        -stop_restart <$val> (Stop restart file processing at evaluation $val)
-        -write_restart [$val] (Write a new Dakota restart file $val)
+	-help (Print this summary)
+	-version (Print DAKOTA version number)
+	-input <$val> (REQUIRED DAKOTA input file $val)
+	-preproc [$val] (Pre-process input file with pyprepro or tool $val)
+	-output <$val> (Redirect DAKOTA standard output to file $val)
+	-error <$val> (Redirect DAKOTA standard error to file $val)
+	-parser <$val> (Parsing technology: nidr[strict][:dumpfile])
+	-no_input_echo (Do not echo DAKOTA input file)
+	-check (Perform input checks)
+	-pre_run [$val] (Perform pre-run (variables generation) phase)
+	-run [$val] (Perform run (model evaluation) phase)
+	-post_run [$val] (Perform post-run (final results) phase)
+	-read_restart [$val] (Read an existing DAKOTA restart file $val)
+	-stop_restart <$val> (Stop restart file processing at evaluation $val)
+	-write_restart [$val] (Write a new DAKOTA restart file $val)
 \endverbatim
 
 Of these command line options, only \c input is required, and the \c
@@ -106,7 +108,8 @@ inputs are optional.
 \li \c check invokes a dry-run mode in which the input file is processed and
 checked for errors, but the study is not performed.
 
-\li \c input provides the name of the Dakota input file.
+\li \c input provides the name of the Dakota input file, which can
+optionally be pre-processed as a template using the \c preproc option.
 
 \li \c output and \c error options provide file
 names for redirection of the Dakota standard output (stdout) and
@@ -132,9 +135,9 @@ followed by filenames as described in \ref running_dakota-phases.
 
 Command line switches can be abbreviated so long as the abbreviation
 is unique, so the following are valid, unambiguous specifications: \c
--h, \c -v, \c -c, \c -i, \c -o, \c -e, \c -s, \c -w, \c -re, \c -pr,
-\c -ru, and \c -po and can be used in place of the longer forms of the
-command line options.
+-h, \c -v, \c -c, \c -i, \c -o, \c -e, \c -s, \c -w, \c -re, \c -ru,
+and \c -po and can be used in place of the longer forms of the command
+line options.
 
 For information on restarting Dakota, see \subpage dakota_restart and
 \subpage dakota_restart_utility.
@@ -169,6 +172,42 @@ The simplest of these redirects stdout to another file:
 \verbatim
     dakota dakota.in > dakota.out
 \endverbatim
+
+The specified Dakota input file may instead be an
+dprepro/aprepro-style template file to be pre-processed prior to
+running Dakota. For example it might contain template expressions in
+curly braces:
+\verbatim
+# {MyLB = 2.0} {MyUB = 8.6}
+variables
+  uniform_uncertain 3
+    upper_bounds {MyUB} {MyUB} {MyUB}
+    lower_bounds {MyLB} {MyLB} {MyLB}
+\endverbatim
+
+(See the Interfaces chapter in the Dakota User's Manual \cite UserMan
+for more information and use cases.) To pre-process the input file,
+specify the \c preproc flag which generates an intermediate temporary
+input file for use in Dakota. If Dakota's pyprepro.py utility is not
+available on the execution PATH and/or additional pre-processing
+options are needed, the tool location and syntax can be specified, for
+example:
+
+\verbatim
+# Assumes pyprepro.py is on PATH:
+dakota -i dakota_rosen.tmpl -preproc
+
+# Specify path/name of pre-processor:
+dakota -i dakota_rosen.tmpl \
+  -preproc "/home/user/dakota/bin/pyprepro"
+
+# Specify Python interpreter to use, for example on Windows
+dakota -i dakota_rosen.tmpl -preproc "C:/python27/python.exe \
+  C:/dakota/6.10/bin/pyprepro/pyprepro.py"
+
+# Specify additional options to pyprepro, e.g., include file:
+dakota -i dakota_rosen.tmpl -preproc "pyprepro.py -I default.params"
+\endverbatim 
 
 \section running_dakota-phases Execution Phases
 
@@ -223,7 +262,7 @@ still write a restart file, but using the default name
 \c dakota.rst instead of a user-specified name.
 
 To turn restart recording off, the user may use the 
-\ref interface-analysis_drivers-deactivate-restart_file keyword, in the \c
+\ref interface-deactivate-restart_file keyword, in the \c
 interface block.  This can increase execution speed and reduce disk
 storage requirements, but at the expense of a loss in the ability to
 recover and continue a run that terminates prematurely. This option is
@@ -337,7 +376,7 @@ Several of these functions involve format conversions. In particular,
 the binary format used for restart files can be converted to ASCII
 text and printed to the screen, converted to and from a neutral file
 format, or converted to a tabular format for importing into 3rd-party
-graphics programs. In addition, a restart file with corrupted data can
+plotting programs. In addition, a restart file with corrupted data can
 be repaired by value or id, and multiple restart files can be combined
 to create a master database.
 

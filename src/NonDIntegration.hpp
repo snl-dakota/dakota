@@ -45,14 +45,35 @@ public:
   virtual void increment_grid() = 0;
   /// increment SSG level/TPQ order and update anisotropy
   virtual void increment_grid_preference(const RealVector& dim_pref);
+  /// increment SSG level/TPQ order and preserve anisotropy
+  virtual void increment_grid_preference();
   /// increment SSG level/TPQ order and update anisotropy
   virtual void increment_grid_weights(const RealVector& aniso_wts);
-  /// increment sequenceIndex and update active orders/levels
-  virtual void increment_specification_sequence();
+  /// increment SSG level/TPQ order and preserve anisotropy
+  virtual void increment_grid_weights();
+  /// decrement SSG level/TPQ order
+  virtual void decrement_grid() = 0;
+
+  /// computes a grid increment and evaluates the new parameter sets
+  virtual void evaluate_grid_increment();
+  /// restores a previously computed grid increment (no new evaluations)
+  virtual void push_grid_increment();
+  /// removes a previously computed grid increment
+  virtual void pop_grid_increment();
+  /// merges a grid increment into the reference grid
+  virtual void merge_grid_increment();
+  
+  /// update reference grid within adaptive grid refinement procedures
+  virtual void update_reference();
 
   //
   //- Heading: Member functions
   //
+
+  /// return IntegrationDriver::polynomialBasis
+  const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
+  /// return IntegrationDriver::polynomialBasis
+  std::vector<Pecos::BasisPolynomial>& polynomial_basis();
 
   /// convert scalar_order_spec and vector dim_pref_spec to vector aniso_order
   static void dimension_preference_to_anisotropic_order(
@@ -104,8 +125,8 @@ protected:
   //- Heading: Member functions
   //
 
-  /// verify self-consistency of variables data
-  void check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars);
+  // verify self-consistency of variables data
+  //void check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars);
 
   /// output integration points and weights to a tabular file
   void print_points_weights(const String& tabular_name);
@@ -120,9 +141,6 @@ protected:
 
   /// counter for number of integration executions for this object
   size_t numIntegrations;
-  /// index into NonDQuadrature::quadOrderSpec and NonDSparseGrid::ssgLevelSpec
-  /// that defines the current instance of several possible refinement levels
-  size_t sequenceIndex;
 
   /// the user specification for anisotropic dimension preference
   RealVector dimPrefSpec;
@@ -137,6 +155,15 @@ private:
 
 inline const Pecos::IntegrationDriver& NonDIntegration::driver() const
 { return numIntDriver; }
+
+
+inline const std::vector<Pecos::BasisPolynomial>& NonDIntegration::
+polynomial_basis() const
+{ return numIntDriver.polynomial_basis(); }
+
+
+inline std::vector<Pecos::BasisPolynomial>& NonDIntegration::polynomial_basis()
+{ return numIntDriver.polynomial_basis(); }
 
 
 //inline const Pecos::RealVector& NonDIntegration::weight_products() const

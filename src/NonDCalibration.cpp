@@ -58,7 +58,7 @@ bool NonDCalibration::resize()
 }
 
 
-//void NonDCalibration::print_results(std::ostream& s)
+//void NonDCalibration::print_results(std::ostream& s, short results_state)
 //{ Cout << "Posterior sample results " << '\n'; }
 
 

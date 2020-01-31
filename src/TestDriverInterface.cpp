@@ -3705,6 +3705,7 @@ int TestDriverInterface::illumination()
 }
 
 /// barnes test for SBO perforamnce from Rodriguez, Perez, Renaud, et al.
+/// Modified 3/7/18 to incorporate random a[].
 int TestDriverInterface::barnes()
 {
   if (multiProcAnalysisFlag) {
@@ -3725,7 +3726,7 @@ int TestDriverInterface::barnes()
     abort_handler(INTERFACE_ERROR);
   }
 
-  if ( numACV != 2) {
+  if ( numACV < 2 || numACV > 23) {
     Cerr << "Error: Bad number of variables in barnes direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -3748,6 +3749,15 @@ int TestDriverInterface::barnes()
 		 -6.3e-8,   7.0e-10,   3.4054e-4,  -1.6638e-6, -2.8673,
 		  0.0005};
   double x1 = xC[0], x2 = xC[1], x1x2 = x1*x2, x2_sq = x2*x2, x1_sq = x1*x1;
+
+  // modify trailing a[] coeffs, according to number of variables
+  // Assume design followed by uncertain:
+  //   numACV =  2: 2 design, no uncertain
+  //   numACV =  5: 2 design, a[18]--a[20] are uncertain
+  //   numACV = 23: 2 design, a[0] --a[20] are uncertain
+  size_t i, cntr;
+  for (i=23-numACV, cntr=2; i<21; ++i, ++cntr)
+    a[i] = xC[cntr];
 
   // **** f
   if (directFnASV[0] & 1) {
@@ -4225,11 +4235,12 @@ int TestDriverInterface::bayes_linear()
   RealVector n_means, n_std_devs, n_l_bnds, n_u_bnds;
   n_means.resize(numFns); n_std_devs.resize(numFns); 
   n_l_bnds.resize(numFns); n_u_bnds.resize(numFns);
+  Real dbl_inf = std::numeric_limits<Real>::infinity();
   for (i=0; i<numFns; i++) {
     n_means(i)=mean_pred;
     n_std_devs(i)=0.0316; // initial lambda = 1000.
-    n_l_bnds(i)=-DBL_MAX;
-    n_u_bnds(i)=DBL_MAX;
+    n_l_bnds(i)=-dbl_inf;
+    n_u_bnds(i)= dbl_inf;
   }
 
   NonDLHSSampling* normal_sampler;

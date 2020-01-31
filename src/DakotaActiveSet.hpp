@@ -163,12 +163,27 @@ inline ActiveSet& ActiveSet::operator=(const ActiveSet& set)
 //{ return !(set1 == set2); }
 
 
-inline void ActiveSet::reshape(size_t num_fns, size_t num_deriv_vars)
-{ requestVector.resize(num_fns); derivVarsVector.resize(num_deriv_vars); }
-
-
 inline void ActiveSet::reshape(size_t num_fns)
-{ requestVector.resize(num_fns); }
+{
+  size_t curr_fns = requestVector.size();
+  if (curr_fns != num_fns) {
+    requestVector.resize(num_fns);
+    if (curr_fns && num_fns > curr_fns) // inflate: repeat pattern
+      for (size_t i=curr_fns; i<num_fns; ++i)
+	requestVector[i] = requestVector[i % curr_fns];
+  }
+}
+
+
+inline void ActiveSet::reshape(size_t num_fns, size_t num_deriv_v)
+{
+  reshape(num_fns);
+  if (derivVarsVector.size() != num_deriv_v) {
+    derivVarsVector.resize(num_deriv_v);
+    //if (curr_deriv_v && num_deriv_v > curr_deriv_v) // inflate
+    //  continue sequence?
+  }
+}
 
 
 inline const ShortArray& ActiveSet::request_vector() const
@@ -212,11 +227,11 @@ inline void ActiveSet::derivative_start_value(size_t dvv_start_val)
 
 
 inline void ActiveSet::read(std::istream& s)
-{ array_read(s, requestVector);  array_read(s, derivVarsVector); }
+{ s >> requestVector >> derivVarsVector; }
 
 
 inline void ActiveSet::write(std::ostream& s) const
-{ array_write(s, requestVector); array_write(s, derivVarsVector); }
+{ s << requestVector << derivVarsVector; }
 
 
 inline void ActiveSet::write_annotated(std::ostream& s) const

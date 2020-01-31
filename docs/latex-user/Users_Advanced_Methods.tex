@@ -89,8 +89,8 @@ determined by convergence criteria (e.g.,
 Figure~\ref{adv_meth:figure01} shows a Dakota input file that specifies
 a sequential hybrid optimization method to solve the
 ``textbook'' optimization test problem.
-The \texttt{textbook\_hybrid\_strat.in} file
-provided in {\tt Dakota/examples/users} starts with a
+The \path{textbook_hybrid_strat.in} file
+provided in \path{dakota/share/dakota/examples/users} starts with a
 \texttt{coliny\_ea} solution which feeds its best point into a
 \texttt{coliny\_pattern\_search} optimization which feeds its best
 point into \texttt{optpp\_newton}. While this approach is overkill for
@@ -134,7 +134,7 @@ Hessian data to perform its search.
     \end{tiny}
   \end{bigbox}
   \caption{Dakota input file for a sequential hybrid optimization method --
-see \texttt{Dakota/examples/users/textbook\_hybrid\_strat.in} }
+see \protect\path{dakota/share/dakota/examples/users/textbook_hybrid_strat.in} }
   \label{adv_meth:figure01}
 \end{figure}
 
@@ -155,8 +155,8 @@ solutions for different starting points are independent, parallel
 computing may be used to concurrently run the local minimizations.
 
 An example input file for multistart local optimization on the
-``quasi\_sine'' test function (see \texttt{quasi\_sine\_fcn.C} in
-\texttt{Dakota\_Source/test}) is shown in Figure~\ref{adv_meth:figure02}. 
+``quasi\_sine'' test function (see \path{quasi_sine_fcn.C} in
+\path{dakota_source/test}) is shown in Figure~\ref{adv_meth:figure02}.
 The method keyword block in the input file contains the keyword
 \texttt{multi\_start}, along with the set of starting points (3 random 
 and 5 listed) that will be used for the optimization runs. The other
@@ -171,7 +171,7 @@ a single optimization run.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for a multistart local optimization method --
-see \texttt{Dakota/examples/users/qsf\_multistart\_strat.in} }
+see \protect\path{dakota/share/dakota/examples/users/qsf_multistart_strat.in} }
   \label{adv_meth:figure02}
 \end{figure}
 
@@ -250,7 +250,7 @@ competing objectives.
     \end{small}
   \end{bigbox}
   \caption{Dakota input file for the Pareto optimization method --
-see \texttt{Dakota/examples/users/textbook\_pareto\_strat.in} }
+see \protect\path{dakota/share/dakota/examples/users/textbook_pareto_strat.in} }
   \label{adv_meth:figure04}
 \end{figure}
 
@@ -362,8 +362,8 @@ Section~\ref{additional:textbook}. In addition to the introduction of
 two integer variables, a modified value of $1.4$ is used inside the
 quartic sum to render the continuous solution a non-integral solution.
 %Figure~\ref{adv_meth:figure06} shows a Dakota input file for solving this
-%problem. This input file is named \texttt{dakota\_bandb.in} in the
-%\texttt{Dakota/test} directory. Note the specification for the
+%problem. This input file is named \path{dakota_bandb.in} in the
+%\path{dakota/share/dakota/test} directory. Note the specification for the
 %discrete variables, where lower and upper bounds are given. The
 %discrete variables can take on any integer value within these bounds.
 
@@ -597,7 +597,7 @@ bounds) from this point in the $x_1$ and $x_2$ coordinate directions.
   \end{bigbox}
   \caption{Dakota input file for the surrogate-based local optimization
     example --
-see \texttt{Dakota/examples/users/rosen\_opt\_sbo.in} }
+see \protect\path{dakota/share/dakota/examples/users/rosen_opt_sbo.in} }
   \label{sbm:sblm_rosen}
 \end{figure}
 
@@ -616,8 +616,8 @@ optima~\cite{Giu02}. In these types of engineering design problems,
 traditional gradient-based optimizers often are ineffective, whereas
 global data fits can extract the global trends of interest despite the
 presence of local nonsmoothness (for an example problem with multiple
-local optima, look in \texttt{Dakota/test} for the file
-\texttt{dakota\_sbo\_sine\_fcn.in}~\cite{Giu00}).
+local optima, look in \path{dakota/share/dakota/test} for the file
+\path{dakota_sbo_sine_fcn.in}~\cite{Giu00}).
 
 The surrogate-based local minimizer is only mathematically
 guaranteed to find a local minimum. However, in practice, SBO can often find 
@@ -693,12 +693,12 @@ model~\cite{Eld04}.
 %multifidelity models.
 
 A multifidelity test problem named
-\texttt{dakota\_sbo\_hierarchical.in} is available in
-\texttt{Dakota/test} to demonstrate this SBO approach. This test
+\path{dakota_sbo_hierarchical.in} is available in
+\path{dakota/share/dakota/test} to demonstrate this SBO approach. This test
 problem uses the Rosenbrock function as the high fidelity model and a
 function named ``lf\_rosenbrock'' as the low fidelity model. Here,
 lf\_rosenbrock is a variant of the Rosenbrock function (see
-\texttt{Dakota\_Source/test/lf\_rosenbrock.C} for formulation) with the
+\path{dakota_source/test/lf_rosenbrock.C} for formulation) with the
 minimum point at $(x_1,x_2)=(0.80,0.44)$, whereas the minimum of the
 original Rosenbrock function is $(x_1,x_2)=(1,1)$. Multifidelity SBO
 locates the high-fidelity minimum in 11 high fidelity evaluations for
@@ -850,6 +850,6 @@ as objective functions from that driver.
     \end{scriptsize}
   \end{bigbox}
   \caption{MOGA example -- 
-see \texttt{Dakota/examples/users/mogatest1\_opt\_sbo.in} }
+see \protect\path{dakota/share/dakota/examples/users/mogatest1_opt_sbo.in} }
   \label{sbm:sbgm_moga}
 \end{figure}

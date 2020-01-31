@@ -112,7 +112,7 @@ public:
 
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
-  void parse_inputs(const ProgramOptions& prog_opts,
+  void parse_inputs(ProgramOptions& prog_opts,
 		    DbCallbackFunctionPtr callback = NULL,
 		    void* callback_data = NULL);
   /// performs check_input, broadcast, and post_process, but for now,
@@ -331,6 +331,17 @@ public:
   /// and concurrency levels
   int max_procs_per_ie(int max_eval_concurrency);
 
+  /// return methodDBLocked
+  bool method_locked() const;
+  /// return modelDBLocked
+  bool model_locked() const;
+  /// return variablesDBLocked
+  bool variables_locked() const;
+  /// return interfaceDBLocked
+  bool interface_locked() const;
+  /// return responsesDBLocked
+  bool responses_locked() const;
+
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
 
@@ -350,7 +361,9 @@ protected:
   //
 
   /// derived class specifics within parse_inputs()
-  virtual void derived_parse_inputs(const ProgramOptions& prog_opts);
+  virtual void derived_parse_inputs(const std::string& dakota_input_file,
+				    const std::string& dakota_input_string,
+				    const std::string& parser_options);
   /// derived class specifics within broadcast()
   virtual void derived_broadcast();
   /// derived class specifics within post_process()
@@ -422,13 +435,18 @@ private:
   /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,
   /// and dataResponsesList.  Used by manage_inputs().
   void receive_db_buffer();
-
   /// helper function for determining whether an interface specification
   /// should be active, based on model type
   bool model_has_interface(DataModelRep* model_rep) const;
 
   /// echo the (potentially) specified input file or string to stdout
-  void echo_input_file(const ProgramOptions& prog_opts);
+  void echo_input_file(const std::string& dakota_input_file,
+		       const std::string& dakota_input_string,
+		       const std::string& tmpl_qualifier = "");
+
+  /// require user-specified block identifiers to be unique
+  void enforce_unique_ids();
+
 
   //
   //- Heading: Data
@@ -483,7 +501,6 @@ private:
   ProblemDescDB* dbRep;
   /// number of objects sharing dbRep
   int referenceCount;
-
 };
 
 
@@ -609,6 +626,26 @@ inline void ProblemDescDB::insert_node(const DataResponses& data_responses)
   else
     dataResponsesList.push_back(data_responses);
 }
+
+
+inline bool ProblemDescDB::method_locked() const
+{ return (dbRep) ? dbRep->methodDBLocked : methodDBLocked; }
+
+
+inline bool ProblemDescDB::model_locked() const
+{ return (dbRep) ? dbRep->modelDBLocked : modelDBLocked; }
+
+
+inline bool ProblemDescDB::variables_locked() const
+{ return (dbRep) ? dbRep->variablesDBLocked : variablesDBLocked; }
+
+
+inline bool ProblemDescDB::interface_locked() const
+{ return (dbRep) ? dbRep->interfaceDBLocked : interfaceDBLocked; }
+
+
+inline bool ProblemDescDB::responses_locked() const
+{ return (dbRep) ? dbRep->responsesDBLocked : responsesDBLocked; }
 
 
 inline bool ProblemDescDB::is_null() const

@@ -38,9 +38,13 @@ SNLLLeastSq* SNLLLeastSq::snllLSqInstance(NULL);
 
 
 SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
-  LeastSq(problem_db, model), SNLLBase(problem_db), nlfObjective(NULL),
+  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
+  SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   // convenience function from SNLLBase
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
@@ -118,14 +122,14 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
 			iteratedModel.interval_type(),
 			iteratedModel.fd_gradient_step_size(),
 			maxIterations, maxFunctionEvals, convergenceTol,
-			probDescDB.get_real("method.optpp.gradient_tolerance"), 
+			probDescDB.get_real("method.gradient_tolerance"),
 			maxStep, boundConstraintFlag, numConstraints,
 			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
 }
 
 
 SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
-  LeastSq(OPTPP_G_NEWTON, model), // use default SNLLBase ctor
+  LeastSq(OPTPP_G_NEWTON, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())), // use default SNLLBase ctor
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL)
 {
@@ -275,7 +279,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::nlf2_evaluator_gn vars = \n" << x;
   if (!snllLSqInstance->numNonlinearConstraints ||
-      lastFnEvalLocn != CONEvaluator || lsq_mode != lastEvalMode ||
+      lastFnEvalLocn != CON_EVALUATOR || lsq_mode != lastEvalMode ||
       x != lastEvalVars) {
     // data not available from constraint evaluator, so perform
     // a new function evaluation.
@@ -295,7 +299,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
 
     snllLSqInstance->activeSet.request_vector(local_asv);
     snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
-    lastFnEvalLocn = NLFEvaluator;
+    lastFnEvalLocn = NLF_EVALUATOR;
   }
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
@@ -344,10 +348,9 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       //for (j=0; j<i; j++)
       //  hess_f(j, i) = hess_f(i, j); // fill in symmetric values
     }
-    if (snllLSqInstance->outputLevel > NORMAL_OUTPUT) {
-      Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n";
-      write_data(Cout, hess_f);
-    }
+    if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
+      Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n"
+	   << hess_f;
     result_mode |= OPTPP::NLPHessian;
   }
   Cout << std::endl;
@@ -388,7 +391,7 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
   snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
@@ -453,7 +456,7 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
   snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
-  lastFnEvalLocn = CONEvaluator;
+  lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
@@ -517,13 +520,9 @@ void SNLLLeastSq::initialize_run()
 
 
 void SNLLLeastSq::core_run()
-{ theOptimizer->optimize(); }
-
-
-/// SNLLLeastSq requires fn DB lookup, so overrides LeastSq::post_run
-/// and directly invokes Iterator::post_run when complete
-void SNLLLeastSq::post_run(std::ostream& s)
 {
+  theOptimizer->optimize();
+
   // BMA NOTE: casting away the constness as done historically in DakotaString  
   String status("Solution from Opt++");
   char* nonconst_status = (char *) status.c_str();
@@ -533,84 +532,47 @@ void SNLLLeastSq::post_run(std::ostream& s)
   // the strategy level.
 
   // best variables is updated using a convenience function from SNLLBase
+  // Always populate bestVariables; DakotaLeastSq will unscale if needed
   snll_post_run(nlfObjective);
 
-  // transform variables back to user/native for lookup
-  // Default unscaling does not apply in this case, so can't use
-  // implementation in LeastSq::post_run
-  if (scaleFlag) {
-    ScalingModel* scale_model_rep = 
-      static_cast<ScalingModel*>(scalingModel.model_rep());
-    bestVariablesArray.front().continuous_variables
-      (scale_model_rep->
-       cv_scaled2native(bestVariablesArray.front().continuous_variables()));
-  }
-  // update best response to contain the final lsq terms.  Since OPT++ has no
-  // knowledge of these terms, the OPT++ final design variables must be matched
-  // to final lsq terms using data_pairs.find().
+  // Update best response to contain the final lsq terms.  Since OPT++
+  // has no knowledge of these terms, the OPT++ final design variables
+  // must be matched to final lsq terms using data_pairs.find().  This
+  // lookup is handled by DakotaLeastSq::post_run()
+  retrievedIterPriFns = false;
 
-  // Since we always perform DB lookup for OPT++ final results, don't
-  // need to transform by weights or calibration data.
-
-  size_t num_user_fns = numUserPrimaryFns + numNonlinearConstraints;
-  RealVector best_fns(num_user_fns);
-  ShortArray search_asv(num_user_fns, 1);
-  for (size_t i=numUserPrimaryFns; i<num_user_fns; ++i)
-    search_asv[i] = 0; // don't need constr from DB due to getConstraintValue()
-  // take care to not resize activeSet due to post_run
-  ActiveSet search_set(activeSet);
-  search_set.request_vector(search_asv);
-
-  // The retrieved primary response will be unweighted and unscaled
-  PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-    iteratedModel.interface_id(), bestVariablesArray.front(), search_set);
-  if (cache_it == data_pairs.get<hashed>().end()) {
-    // This can occur in model calibration under uncertainty using nested
-    // models, or surrogate models so make this non-fatal.
-    Cerr << "Warning: failure in recovery of final least squares terms."
-         << std::endl;
-    //abort_handler(-1);
-  }
-  else // unscaled -> user/native
-    copy_data_partial(cache_it->response().function_values(), (size_t)0,
-		      numUserPrimaryFns, best_fns, (size_t)0);
+  // Always populate bestResponse with constraints; DakotaLeastSq will
+  // unscale if needed.
+  // This must use an offset of the # user/native functions since the
+  // bestResponseArray is in original space
 
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.
-  // Therefore, reorder the constraint values, unscale them, and store them.
+  // Therefore, reorder the constraint values, and store them.
   if (numNonlinearConstraints) {
-    // This is sized for the original user model, so applied scales
-    // are the right size (primary fns are ignored here anyway):
-    RealVector scaled_cons(numUserPrimaryFns + numNonlinearConstraints);
-    scaled_cons = 1.;
-    copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), scaled_cons,
+    RealVector best_fns = bestResponseArray.front().function_values_view();
+    copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), best_fns,
 			       numUserPrimaryFns);
-    // primary functions unscaled/unweighted from lookup; unscale
-    // secondary from the OPT++ solver
-    if (scaleFlag) {
-      // ScalingModel manages which transformations are needed
-      ScalingModel* scale_model_rep = 
-        static_cast<ScalingModel*>(scalingModel.model_rep());
-      // This function will update the nonlinear constraints in best_fns
-      scale_model_rep->
-        secondary_resp_scaled2native(scaled_cons, activeSet.request_vector(), 
-                                     best_fns);
-    }
-    else
-      copy_data_partial(scaled_cons, numUserPrimaryFns, numNonlinearConstraints,
-                        best_fns, numUserPrimaryFns);
   }
-
-  bestResponseArray.front().function_values(best_fns);
-
-  // post-process results to compute confidence intervals on parameter estimates
-  get_confidence_intervals();
-
-  // bypass duplicate post-processing in LeastSq, since we did a DB lookup
-  Minimizer::post_run(s);
 }
+
 
 void SNLLLeastSq::finalize_run()
 {
+  reset(); // MSE: PDH supports trying to move this up into pre_run() ...
+
+  // restore in case of recursion
+  optLSqInstance  = prevMinInstance;
+  snllLSqInstance = prevSnllLSqInstance;
+
+  LeastSq::finalize_run();
+}
+
+
+void SNLLLeastSq::reset()
+{
+  // reset in case of recursion
+  theOptimizer->reset();
+
   // Compound constraint doesn't get managed in an Optpp::SmartPtr;
   // mirror the alloc in snll_initialize_run() with this delete in
   // finalize_run()
@@ -620,11 +582,8 @@ void SNLLLeastSq::finalize_run()
     nlfObjective->setConstraints(NULL);
   }
 
-  // restore in case of recursion
-  optLSqInstance  = prevMinInstance;
-  snllLSqInstance = prevSnllLSqInstance;
-
-  LeastSq::finalize_run();
+  // reset last{FnEvalLocn,EvalMode,EvalVars}
+  reset_base();
 }
 
 } // namespace Dakota

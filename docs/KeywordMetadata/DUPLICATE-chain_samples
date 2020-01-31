@@ -9,8 +9,8 @@ will be the number of samples on the constructed surrogate model.
 <b> Default Behavior </b>
 
 The default number of chain samples is method-dependent.  QUESO
-methods use 48576.  DREAM uses (number of generations) x (number of
-chains).
+methods use 1000.  DREAM uses (number of generations) x (number of
+chains), resulting in chain_samples close to that specified.
 
 <b> Usage Tips </b>
 

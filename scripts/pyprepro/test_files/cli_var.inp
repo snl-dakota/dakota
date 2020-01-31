@@ -1,0 +1,7 @@
+A = { A = 1.5 }
+B = { B = A*10}
+C = { C = B*10}
+D = { D = C*10}
+E = { E = D*10}
+
+other: {other = None}

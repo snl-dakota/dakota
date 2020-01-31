@@ -41,7 +41,7 @@ enum {
 };
 
 // put this helper function here to encourage sync with enum above
-static String interface_enum_to_string(unsigned short interface_type) 
+inline String interface_enum_to_string(unsigned short interface_type) 
 {
   switch (interface_type) {
   case DEFAULT_INTERFACE: return String("default");       break;
@@ -150,10 +150,12 @@ public:
   // processors per host machine for a grid interface (from the \c
   // processors_per_host specification in \ref InterfApplicG)
   //IntArray gridProcsPerHost;
-  /// parallel mode for a simulation-based interface: synchronous or
+  /// Batch or sequential evaluation mode (true for batch)
+  bool batchEvalFlag;
+  /// parallel mode for a simulation-based interface: true for
   /// asynchronous (from the \c asynchronous specification in \ref
   /// InterfIndControl)
-  short interfaceSynchronization;
+  bool asynchFlag;
   /// evaluation concurrency for asynchronous simulation-based interfaces (from
   /// the \c evaluation_concurrency specification in \ref InterfIndControl)
   int asynchLocalEvalConcurrency;

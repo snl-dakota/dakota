@@ -21,6 +21,8 @@
 
 namespace Dakota {
 
+class SurrBasedLevelData;
+
 
 /// Base class for local/global surrogate-based optimization/least squares.
 
@@ -35,7 +37,7 @@ protected:
   //- Heading: Constructor and destructor
   //
 
-  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model); ///< constructor
+  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits); ///< constructor
   ~SurrBasedMinimizer();                                       ///< destructor
     
   //
@@ -48,7 +50,7 @@ protected:
 
   /// initialize graphics customized for surrogate-based iteration
   void initialize_graphics(int iterator_server_id = 1);
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Utility member functions
@@ -56,13 +58,16 @@ protected:
 
   /// initialize and update Lagrange multipliers for basic Lagrangian
   void update_lagrange_multipliers(const RealVector& fn_vals,
-				   const RealMatrix& fn_grads);
+				   const RealMatrix& fn_grads, SurrBasedLevelData& tr_data);
 
   /// initialize and update the Lagrange multipliers for augmented Lagrangian
   void update_augmented_lagrange_multipliers(const RealVector& fn_vals);
 
-  /// update a filter from a set of function values
-  bool update_filter(const RealVector& fn_vals);
+  /// (re-)initialize filter from a set of function values
+  void initialize_filter(SurrBasedLevelData& tr_data,
+			 const RealVector& fn_vals);
+  /// update filter using a new set of function values
+  bool update_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals);
 
   // compute a filter merit function from a set of function values
   //Real filter_merit(const RealVector& fns_center, const RealVector& fns_star);
@@ -73,7 +78,6 @@ protected:
 			const RealVector& nln_ineq_l_bnds,
 			const RealVector& nln_ineq_u_bnds,
 			const RealVector& nln_eq_tgts);
-
   /// compute the gradient of the Lagrangian function
   void lagrangian_gradient(const RealVector& fn_vals,
 			   const RealMatrix& fn_grads,
@@ -83,6 +87,16 @@ protected:
 			   const RealVector& nln_ineq_u_bnds,
 			   const RealVector& nln_eq_tgts,
 			   RealVector& lag_grad);
+  /// compute the Hessian of the Lagrangian function
+  void lagrangian_hessian(const RealVector& fn_vals,
+			  const RealMatrix& fn_grads, 
+			  const RealSymMatrixArray& fn_hessians,
+			  const BoolDeque&  sense,
+			  const RealVector& primary_wts,
+			  const RealVector& nln_ineq_l_bnds,
+			  const RealVector& nln_ineq_u_bnds,
+			  const RealVector& nln_eq_tgts,
+			  RealSymMatrix& lag_hess);
 
   /// compute an augmented Lagrangian function from a set of function values
   Real augmented_lagrangian_merit(const RealVector& fn_vals,
@@ -91,7 +105,6 @@ protected:
 				  const RealVector& nln_ineq_l_bnds,
 				  const RealVector& nln_ineq_u_bnds,
 				  const RealVector& nln_eq_tgts);
-
   /// compute the gradient of the augmented Lagrangian function
   void augmented_lagrangian_gradient(const RealVector& fn_vals,
 				     const RealMatrix& fn_grads,
@@ -101,6 +114,16 @@ protected:
 				     const RealVector& nln_ineq_u_bnds,
 				     const RealVector& nln_eq_tgts,
 				     RealVector& alag_grad);
+  /// compute the Hessian of the augmented Lagrangian function
+  void augmented_lagrangian_hessian(const RealVector& fn_vals,
+				    const RealMatrix& fn_grads, 
+				    const RealSymMatrixArray& fn_hessians,
+				    const BoolDeque&  sense,
+				    const RealVector& primary_wts,
+				    const RealVector& nln_ineq_l_bnds,
+				    const RealVector& nln_ineq_u_bnds,
+				    const RealVector& nln_eq_tgts,
+				    RealSymMatrix& alag_hess);
 
   /// compute a penalty function from a set of function values
   Real penalty_merit(const RealVector& fn_vals, const BoolDeque& sense,
@@ -123,12 +146,10 @@ protected:
   /// approximate subproblem on each surrogate-based iteration
   Iterator approxSubProbMinimizer;
 
-  /// surrogate-based minimization iteration number
-  int sbIterNum;
+  /// global iteration counter corresponding to number of
+  /// surrogate-based minimizations
+  size_t globalIterCount;
 
-  /// Set of response function vectors defining a filter (objective vs.
-  /// constraint violation) for iterate selection/rejection
-  RealVectorList sbFilter;
   /// Lagrange multipliers for basic Lagrangian calculations
   RealVector lagrangeMult;
   /// Lagrange multipliers for augmented Lagrangian calculations

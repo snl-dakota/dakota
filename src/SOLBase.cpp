@@ -12,7 +12,6 @@
 //- Checked by:
 
 #include "SOLBase.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaMinimizer.hpp"
 #include "DataMethod.hpp"
@@ -320,8 +319,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
 
 
 void SOLBase::
-augment_bounds(RealVector& augmented_l_bnds,
-	       RealVector& augmented_u_bnds,
+augment_bounds(RealVector& augmented_l_bnds, RealVector& augmented_u_bnds,
 	       const RealVector& lin_ineq_l_bnds,
 	       const RealVector& lin_ineq_u_bnds,
 	       const RealVector& lin_eq_targets,
@@ -355,26 +353,17 @@ augment_bounds(RealVector& augmented_l_bnds,
   augmented_l_bnds.resize(boundsArraySize); // retains variables data
   augmented_u_bnds.resize(boundsArraySize); // retains variables data
   size_t i, cntr = num_cv;
-  for (i=0; i<num_lin_ineq; i++) { // linear inequality
-    augmented_l_bnds[cntr] = lin_ineq_l_bnds[i];
-    augmented_u_bnds[cntr] = lin_ineq_u_bnds[i];
-    cntr++;
-  }
-  for (i=0; i<num_lin_eq; i++) { // linear equality
-    augmented_l_bnds[cntr] = lin_eq_targets[i];
-    augmented_u_bnds[cntr] = lin_eq_targets[i];
-    cntr++;
-  }
-  for (i=0; i<num_nln_ineq; i++) { // nonlinear inequality
-    augmented_l_bnds[cntr] = nln_ineq_l_bnds[i];
-    augmented_u_bnds[cntr] = nln_ineq_u_bnds[i];
-    cntr++;
-  }
-  for (i=0; i<num_nln_eq; i++) { // nonlinear equality
-    augmented_l_bnds[cntr] = nln_eq_targets[i];
-    augmented_u_bnds[cntr] = nln_eq_targets[i];
-    cntr++;
-  }
+  copy_data_partial(lin_ineq_l_bnds, 0, augmented_l_bnds, cntr, num_lin_ineq );
+  copy_data_partial(lin_ineq_u_bnds, 0, augmented_u_bnds, cntr, num_lin_ineq );
+  cntr += num_lin_ineq;
+  copy_data_partial(lin_eq_targets, 0, augmented_l_bnds, cntr, num_lin_eq );
+  copy_data_partial(lin_eq_targets, 0, augmented_u_bnds, cntr, num_lin_eq );
+  cntr += num_lin_eq;
+  copy_data_partial(nln_ineq_l_bnds, 0, augmented_l_bnds, cntr, num_nln_ineq );
+  copy_data_partial(nln_ineq_u_bnds, 0, augmented_u_bnds, cntr, num_nln_ineq );
+  cntr += num_nln_ineq;
+  copy_data_partial(nln_eq_targets, 0, augmented_l_bnds, cntr, num_nln_eq );
+  copy_data_partial(nln_eq_targets, 0, augmented_u_bnds, cntr, num_nln_eq );
 }
 
 

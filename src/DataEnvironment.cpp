@@ -12,7 +12,7 @@
 
 #include "DataEnvironment.hpp"
 #include "dakota_data_io.hpp"
-
+#include "dakota_global_defs.hpp"
 
 using namespace std;
 
@@ -26,8 +26,9 @@ DataEnvironmentRep::DataEnvironmentRep():
   graphicsFlag(false), tabularDataFlag(false), 
   tabularDataFile("dakota_tabular.dat"), tabularFormat(TABULAR_ANNOTATED), 
   outputPrecision(0), 
-  resultsOutputFlag(false), resultsOutputFile("dakota_results.txt"), 
-  referenceCount(1)
+  resultsOutputFlag(false), resultsOutputFile("dakota_results"),
+  resultsOutputFormat(0), modelEvalsSelection(MODEL_EVAL_STORE_TOP_METHOD),
+  interfEvalsSelection(INTERF_EVAL_STORE_SIMULATION),  referenceCount(1)
 { }
 
 
@@ -39,8 +40,9 @@ void DataEnvironmentRep::write(MPIPackBuffer& s) const
     << runInput << runOutput << postRunInput << postRunOutput
     << preRunOutputFormat << postRunInputFormat
     << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
-    << outputPrecision
-    << resultsOutputFlag << resultsOutputFile << topMethodPointer;
+    << outputPrecision << resultsOutputFlag << resultsOutputFile 
+    << resultsOutputFormat << modelEvalsSelection << interfEvalsSelection
+    << topMethodPointer;
 }
 
 
@@ -53,7 +55,8 @@ void DataEnvironmentRep::read(MPIUnpackBuffer& s)
     >> preRunOutputFormat >> postRunInputFormat
     >> graphicsFlag >> tabularDataFlag >> tabularDataFile >> tabularFormat 
     >> outputPrecision
-    >> resultsOutputFlag >> resultsOutputFile >> topMethodPointer;
+    >> resultsOutputFlag >> resultsOutputFile >> resultsOutputFormat 
+    >> modelEvalsSelection >> interfEvalsSelection >> topMethodPointer;
 }
 
 
@@ -66,7 +69,8 @@ void DataEnvironmentRep::write(std::ostream& s) const
     << preRunOutputFormat << postRunInputFormat
     << graphicsFlag << tabularDataFlag << tabularDataFile << tabularFormat 
     << outputPrecision
-    << resultsOutputFlag << resultsOutputFile << topMethodPointer;
+    << resultsOutputFlag << resultsOutputFile << resultsOutputFormat 
+    << modelEvalsSelection << interfEvalsSelection << topMethodPointer;
 }
 
 

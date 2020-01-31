@@ -31,7 +31,7 @@ namespace Dakota {
 
 SurrBasedGlobalMinimizer::
 SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedMinimizer(problem_db, model),
+  SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
   replacePoints(probDescDB.get_bool("method.sbg.replace_points"))
 {
   // Verify that iteratedModel is a surrogate model so that
@@ -41,6 +41,9 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 	 << "surrogate model." << std::endl;
     abort_handler(-1);
   }
+
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
 
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
@@ -99,12 +102,8 @@ void SurrBasedGlobalMinimizer::core_run()
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
   // samples are read in from a file rather than obtained from sampling).
-  if (!dace_iterator.is_null()) {
-    short asv_val = 1;
-    ActiveSet dace_set = truth_model.current_response().active_set(); // copy
-    dace_set.request_values(asv_val);
-    dace_iterator.active_set(dace_set);
-  }
+  if (!dace_iterator.is_null())
+    dace_iterator.active_set_request_values(1);
 
   // get data points using sampling, file read, or whatever.
   iteratedModel.build_approximation();
@@ -120,7 +119,7 @@ void SurrBasedGlobalMinimizer::core_run()
   // This flag will be used to indicate when we are finished iterating.  An
   // iteration is a solution of the approximate model followed by an update
   // of the surrogate.
-  while (sbIterNum < maxIterations) {
+  while (globalIterCount < maxIterations) {
 
     // Test how well the surrogate matches up with the truth model.  For this
     // test, we currently use R-squared as a measure of goodness of fit,
@@ -172,7 +171,7 @@ void SurrBasedGlobalMinimizer::core_run()
     // Variable/response results were generated using the current approximate
     // model.  For appending to the current approximate model, we must evaluate
     // the variable results with the truth model.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL);
+    iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     IntResponseMap truth_resp_results;
     for (i=0; i<num_results; i++) {
       // set the current values of the active variables in the truth model
@@ -195,14 +194,14 @@ void SurrBasedGlobalMinimizer::core_run()
     // Beyond this point, we will want to know if this is the last iteration.
     // We will use this information to prevent updating of the surrogate since
     // it will not be used again.
-    bool last_iter = ++sbIterNum >= maxIterations;
+    bool last_iter = ++globalIterCount >= maxIterations;
 
     if (outputLevel > QUIET_OUTPUT) {
       // In here we want to write the truth values into a simple tab delimited
       // file so that we can easily compare them with the surrogate values of
       // the points returned by the iterator.
       std::string ofname("finaldatatruth");
-      ofname += boost::lexical_cast<std::string>(sbIterNum);
+      ofname += boost::lexical_cast<std::string>(globalIterCount);
       ofname += ".dat";
       std::ofstream ofile(ofname.c_str());
       ofile.precision(12);
@@ -239,7 +238,7 @@ void SurrBasedGlobalMinimizer::core_run()
     }
     else {
       // restore state prior to previous append_approximation()
-      if (replacePoints && sbIterNum > 1)
+      if (replacePoints && globalIterCount > 1)
 	approx_model.pop_approximation(false);// don't store SDP set; no restore
       // update the data set and rebuild the approximation
       approx_model.append_approximation(vars_results, truth_resp_results, true);

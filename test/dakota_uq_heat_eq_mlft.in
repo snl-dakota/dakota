@@ -1,0 +1,71 @@
+#@ s*: Label=FastTest
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=1200
+
+#environment,
+#	graphics
+
+method,
+	model_pointer = 'HIERARCH'
+	multifidelity_function_train			#s0,#s1
+#	  allocation_control greedy			#s1
+#	multilevel_function_train			#s2,#s3
+#	  pilot_samples = 100 40 20 10			#s2,#s3
+#	  allocation_control rank_sampling		#s2
+#	  allocation_control estimator_variance		#s3
+          adapt_rank
+          start_rank_sequence = 2 2 2 2
+	  kick_rank = 2  max_rank = 10
+          solver_tolerance = 1e-8  rounding_tolerance = 1e-8
+	  convergence_tol = 0.0001
+	  seed = 1237
+	  output silent
+
+model,
+	id_model = 'FT'
+	surrogate global function_train
+          adapt_rank
+#         max_num = 3
+          start_rank = 2  kick_rank = 2  max_rank = 10
+          solver_tolerance = 1e-8  rounding_tolerance = 1e-8
+#         verbosity = 1
+
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'SIM1'
+	  correction = zeroth_order additive
+
+model,
+	id_model = 'SIM1'
+	simulation
+	  solution_level_control = 'N_x'
+# linear in modes, linear in spatial coords:
+#	  solution_level_cost = 630. 1260. 2100. 4200.
+# linear in modes, cubic in spatial coords:
+	  solution_level_cost = 567. 4536. 21000. 168000.
+
+variables,
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set integer = 2
+#	  num_set_values = 6 2
+#	  set_values = 5 15 30 60 100 200 # number of spatial coords
+#	  	       3 21    	      	  # number of Fourier solution modes
+	  num_set_values = 4 2
+	  set_values = 30 60 100 200	  # number of spatial coords
+	  	       3 21    	      	  # number of Fourier solution modes
+	  initial_state = 30 21
+	  descriptors 'N_x' 'N_mod'
+
+interface,
+	direct
+	  analysis_driver = 'transient_diffusion_1d'
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians

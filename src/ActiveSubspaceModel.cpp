@@ -13,6 +13,10 @@
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataFitSurrModel.hpp"
+#include "MarginalsCorrDistribution.hpp"
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/variate_generator.hpp>
 
 namespace Dakota
 {
@@ -38,11 +42,11 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   subspaceIdCV(
     probDescDB.get_bool("model.active_subspace.truncation_method.cv")),
   numReplicates(problem_db.get_int("model.active_subspace.bootstrap_samples")),
-  numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
-  totalSamples(0), subspaceInitialized(false),
+  numFullspaceVars(subModel.cv()), totalSamples(0),
   reducedRank(problem_db.get_int("model.active_subspace.dimension")),
-  gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
+  gradientScaleFactors(RealArray(numFns, 1.0)),
+  truncationTolerance(probDescDB.get_real(
+    "model.active_subspace.truncation_method.energy.truncation_tolerance")),
   buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
   refinementSamples(0),
   subspaceNormalization(
@@ -55,9 +59,8 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
     probDescDB.get_real("model.active_subspace.cv.decrease_tolerance")),
   cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
 {
-  asmInstance = this;
-  modelType = "subspace";
-
+  modelType = "active_subspace";
+  modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   // Set seed of bootstrap sampler:
   BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
 
@@ -94,15 +97,13 @@ ActiveSubspaceModel::
 ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
                     const RealMatrix &rotation_matrix,
                     short output_level) :
-  RecastModel(sub_model),
-  numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
-  subspaceInitialized(false), reducedRank(dimension),
-  gradientScaleFactors(RealArray(numFunctions, 1.0)),
+  RecastModel(sub_model), numFullspaceVars(sub_model.cv()),
+  reducedRank(dimension), gradientScaleFactors(RealArray(numFns, 1.0)),
   buildSurrogate(false), refinementSamples(0),
   subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
-  modelType = "subspace";
-
+  modelType = "active_subspace";
+  modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   outputLevel = output_level;
 
   componentParallelMode = CONFIG_PHASE;
@@ -120,9 +121,23 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
 
   inactiveBasis = reduced_basis_W2;
 
+  initialize_subspace();
+  mappingInitialized = true; // no need to initialize_mapping() for this ctor
+}
+
+
+ActiveSubspaceModel::~ActiveSubspaceModel()
+{
+  /* empty dtor */
+}
+
+
+void ActiveSubspaceModel::initialize_subspace()
+{
   // complete initialization of the base RecastModel
   initialize_recast();
 
+  // TODO: generalize to other distribution types
   // convert the normal distributions to the reduced space and set in the
   // reduced model
   uncertain_vars_to_subspace();
@@ -136,20 +151,12 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
   if (buildSurrogate)
     build_surrogate();
 
-  subspaceInitialized = true;
-
   // Perform numerical derivatives in subspace:
   supportsEstimDerivs = true;
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nSubspace Model: Initialization of active subspace is complete."
+    Cout << "\nActiveSubspaceModel: Initialization of subspace is complete."
          << std::endl;
-}
-
-
-ActiveSubspaceModel::~ActiveSubspaceModel()
-{
-  /* empty dtor */
 }
 
 
@@ -165,8 +172,8 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   transformVars = true;
 
   if (transformVars) {
-    sub_model.assign_rep(new ProbabilityTransformModel(problem_db.get_model()),
-                         false);
+    sub_model.assign_rep(new
+      ProbabilityTransformModel(problem_db.get_model(), STD_NORMAL_U), false);
   } else {
     sub_model = problem_db.get_model();
   }
@@ -256,10 +263,8 @@ void ActiveSubspaceModel::build_subspace()
 
   inactiveBasis = reduced_basis_W2;
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: Active basis is:\n";
-    write_data(Cout, activeBasis, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSubspace Model: Active basis is:\n" << activeBasis;
 
   Cout << "\n**************************************************************"
        << "************\nSubspace Model: Build Statistics"
@@ -271,16 +276,12 @@ void ActiveSubspaceModel::build_subspace()
 }
 
 
-void ActiveSubspaceModel::
-generate_fullspace_samples(unsigned int diff_samples)
+void ActiveSubspaceModel::generate_fullspace_samples(unsigned int diff_samples)
 {
   // Rank-revealing phase requires derivatives (for now)
-  ActiveSet dace_set = fullspaceSampler.active_set(); // copy
   // TODO: always gradients only; no functions
   //       analysis_driver needs to parse active_set
-  unsigned short request_value = 3;
-  dace_set.request_values(request_value);
-  fullspaceSampler.active_set(dace_set);
+  fullspaceSampler.active_set_request_values(3);
 
   // Generate the samples.  Have to adjust the base number of samples
   // with sampling_reference() since the number of samples may go down
@@ -294,8 +295,7 @@ generate_fullspace_samples(unsigned int diff_samples)
 }
 
 
-void ActiveSubspaceModel::
-populate_matrices(unsigned int diff_samples)
+void ActiveSubspaceModel::populate_matrices(unsigned int diff_samples)
 {
   // extract into a matrix
   // all_samples vs. all_variables
@@ -310,7 +310,7 @@ populate_matrices(unsigned int diff_samples)
   }
 
   int sample_insert_point = varsMatrix.numCols();
-  derivativeMatrix.reshape(numFullspaceVars, totalSamples*numFunctions);
+  derivativeMatrix.reshape(numFullspaceVars, totalSamples*numFns);
   varsMatrix.reshape(numFullspaceVars, totalSamples);
 
   unsigned int diff_sample_ind = 0;
@@ -318,11 +318,11 @@ populate_matrices(unsigned int diff_samples)
   IntRespMCIter resp_end = all_responses.end();
 
   // Compute gradient scaling factors if more than 1 response function
-  if(numFunctions > 1) {
+  if(numFns > 1) {
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
       if (subspaceNormalization == SUBSPACE_NORM_MEAN_VALUE) {
         const RealVector& resp_vector = resp_it->second.function_values();
-        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+        for (unsigned int fn_ind = 0; fn_ind < numFns; ++fn_ind) {
           gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
                                           static_cast<Real>(diff_samples);
         }
@@ -330,7 +330,7 @@ populate_matrices(unsigned int diff_samples)
         // handled later
       else if (subspaceNormalization == SUBSPACE_NORM_MEAN_GRAD) {
         const RealMatrix& resp_matrix = resp_it->second.function_gradients();
-        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+        for (unsigned int fn_ind = 0; fn_ind < numFns; ++fn_ind) {
           RealVector grad(numFullspaceVars);
           for (size_t ii = 0; ii < numFullspaceVars; ++ii)
             grad[ii] = resp_matrix(ii,fn_ind);
@@ -354,11 +354,11 @@ populate_matrices(unsigned int diff_samples)
     unsigned int sample_ind = sample_insert_point + diff_sample_ind;
     // matrix of num_variables x num_functions
     const RealMatrix& resp_matrix = resp_it->second.function_gradients();
-    for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
-      unsigned int col_ind = sample_ind * numFunctions + fn_ind;
+    for (unsigned int fn_ind = 0; fn_ind < numFns; ++fn_ind) {
+      unsigned int col_ind = sample_ind * numFns + fn_ind;
       for (unsigned int var_ind = 0; var_ind < numFullspaceVars; ++var_ind) {
         Real scale = 1.0;
-        if (numFunctions > 1 &&
+        if (numFns > 1 &&
             (subspaceNormalization == SUBSPACE_NORM_DEFAULT ||
              subspaceNormalization == SUBSPACE_NORM_LOCAL_GRAD)) {
           RealVector grad(numFullspaceVars);
@@ -377,15 +377,13 @@ populate_matrices(unsigned int diff_samples)
     }
   }
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: Compiled derivative matrix is:\n";
-    write_data(Cout, derivativeMatrix, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSubspace Model: Compiled derivative matrix is:\n"
+	 << derivativeMatrix;
 }
 
 
-void ActiveSubspaceModel::
-compute_svd()
+void ActiveSubspaceModel::compute_svd()
 {
   // Want eigenvalues of derivMatrix*derivMatrix^T, so perform SVD of
   // derivMatrix and square them
@@ -412,8 +410,7 @@ compute_svd()
 }
 
 
-void ActiveSubspaceModel::
-identify_subspace()
+void ActiveSubspaceModel::identify_subspace()
 {
   unsigned int bing_li_rank = computeBingLiCriterion(singularValues);
   unsigned int constantine_rank = computeConstantineMetric(singularValues);
@@ -552,7 +549,7 @@ computeBingLiCriterion(RealVector& singular_values)
 
   std::vector<Real> bootstrapped_det(bing_li_criterion.size());
 
-  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,numFunctions);
+  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,numFns);
 
   for (size_t i = 0; i < numReplicates; ++i) {
     bootstrap_sampler(bootstrapped_sample);
@@ -649,8 +646,7 @@ computeConstantineMetric(RealVector& singular_values)
 
   Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
 
-  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,
-      numFunctions);
+  BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix, numFns);
 
   for (size_t i = 0; i < numReplicates; ++i) {
     bootstrap_sampler(bootstrapped_sample);
@@ -763,6 +759,12 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
     Cout << "\nSubspace Model: Beginning cross validation subspace id "
          << "method.\n" << std::endl;
 
+  // TODO: replace with C++11 std::mt19937 and related components
+  boost::mt19937 rnum_generator(randomSeed);
+  boost::uniform_int<> uniform_dist;
+  boost::variate_generator<boost::mt19937&, boost::uniform_int<> >
+    rnum_variate_gen(rnum_generator, uniform_dist);
+
   int num_folds = 10;
 
   int poly_degree = 2; // quadratic bases
@@ -849,7 +851,8 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
     for (int ind = 0; ind < n; ++ind)
       random_index_vec.push_back(ind);
     // shuffle these indices:
-    std::random_shuffle(random_index_vec.begin(), random_index_vec.end());
+    std::random_shuffle(random_index_vec.begin(), random_index_vec.end(),
+			rnum_variate_gen);
 
     // Compute the size of each fold:
     std::vector<int> fold_size(num_folds, n / num_folds);
@@ -1065,14 +1068,14 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
   IntRespMCIter resp_end = test_y.end();
   IntRespMCIter resp_surr_it = test_y_surr.begin();
   IntRespMCIter resp_surr_end = test_y_surr.end();
-  RealVector error_norm(numFunctions);
-  RealVector mean(numFunctions);
+  RealVector error_norm(numFns);
+  RealVector mean(numFns);
   for (; resp_it != resp_end
        && resp_surr_it != resp_surr_end; resp_it++, resp_surr_it++) {
     const RealVector& resp_vector = resp_it->second.function_values();
     const RealVector& resp_surr_vector = resp_surr_it->second.function_values();
 
-    for (size_t ii = 0; ii < numFunctions; ii++) {
+    for (size_t ii = 0; ii < numFns; ii++) {
       error_norm[ii] += std::pow(resp_vector[ii] - resp_surr_vector[ii], 2);
       mean[ii] += resp_vector[ii] / test_y.size();
     }
@@ -1081,17 +1084,17 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
 
   resp_it = test_y.begin();
   resp_end = test_y.end();
-  RealVector stdev(numFunctions);
+  RealVector stdev(numFns);
   for (; resp_it != resp_end; resp_it++) {
     const RealVector& resp_vector = resp_it->second.function_values();
-    for (size_t ii = 0; ii < numFunctions; ii++)
+    for (size_t ii = 0; ii < numFns; ii++)
       stdev[ii] += std::pow(resp_vector[ii] - mean[ii], 2) / test_y.size();
   }
-  for (size_t ii = 0; ii < numFunctions; ii++)
+  for (size_t ii = 0; ii < numFns; ii++)
     stdev[ii] = std::sqrt(stdev[ii]);
 
   Real max_error_norm = 0;
-  for (size_t ii = 0; ii < numFunctions; ii++) {
+  for (size_t ii = 0; ii < numFns; ii++) {
     Real norm_rms_error = std::sqrt(error_norm[ii] / test_y.size()) / stdev[ii];
 
     if (norm_rms_error > max_error_norm)
@@ -1106,65 +1109,29 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  bool sub_model_resize = RecastModel::initialize_mapping(pl_iter);
+
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nSubspace Model: Initializing active subspace." << std::endl;
 
   // init-time setting of miPLIndex for use in component_parallel_mode()
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
-
   // Set mode OFFLINE_PHASE
   component_parallel_mode(OFFLINE_PHASE);
 
-  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+  // TODO: create modes to switch between active, inactive, complete subspaces
 
-  // TODO: create modes to switch between active, inactive, and complete
-  //       subspaces
-
-  // runtime operation to identify the subspace model (if not later
+  // runtime operations to identify the subspace model (if not later
   // returning to update the subspace)
   build_subspace();
-
-  // complete initialization of the base RecastModel
-  initialize_recast();
-
-  // TODO: generalize to other distribution types
-  // convert the normal distributions to the reduced space and set in the
-  // reduced model
-  uncertain_vars_to_subspace();
-
-  // update with subspace constraints
-  update_linear_constraints();
-
-  // set new subspace variable labels
-  update_var_labels();
-
-  if (buildSurrogate)
-    build_surrogate();
-
-  subspaceInitialized = true;
-
-  // Perform numerical derivatives in subspace:
-  supportsEstimDerivs = true;
+  initialize_subspace();
 
   // Kill servers and return ranks [1,n-1] to serve_init_mapping()
   component_parallel_mode(CONFIG_PHASE);
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nSubspace Model: Initialization of active subspace is complete."
-         << std::endl;
-
-  if (reducedRank != numFullspaceVars || // Active SS is reduced rank
-      sub_model_resize) // Active SS is full rank but subModel resized
-    return true; // Size of variables has changed
-  else
-    return false;
-}
-
-
-bool ActiveSubspaceModel::finalize_mapping()
-{
-  // TODO: return to full space
-  return false; // This will become true when TODO is implemented.
+  // return true if size of variables has changed
+  return (reducedRank != numFullspaceVars || // Active SS is reduced rank
+	  sub_model_resize); // Active SS is full rank but subModel resized
 }
 
 
@@ -1275,7 +1242,7 @@ int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
 
 void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 {
-  if (!subspaceInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -1298,7 +1265,7 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 
 void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  if (!subspaceInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -1321,7 +1288,7 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 {
-  if (!subspaceInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -1340,7 +1307,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 {
-  if (!subspaceInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -1382,7 +1349,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   onlineEvalConcurrency = max_eval_concurrency;
 
   if (recurse_flag) {
-    if (!subspaceInitialized)
+    if (!mappingInitialized)
       fullspaceSampler.init_communicators(pl_iter);
 
     subModel.init_communicators(pl_iter, max_eval_concurrency);
@@ -1397,7 +1364,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    if (!subspaceInitialized)
+    if (!mappingInitialized)
       fullspaceSampler.set_communicators(pl_iter);
 
     subModel.set_communicators(pl_iter, max_eval_concurrency);
@@ -1483,8 +1450,8 @@ void ActiveSubspaceModel::initialize_recast()
   // Primary and secondary mapping are one-to-one (NULL callbacks)
   // TODO: can we get RecastModel to tolerate empty indices when no
   // map is present?
-  size_t num_primary = subModel.num_primary_fns(),
-         num_secondary = subModel.num_functions() - subModel.num_primary_fns(),
+  size_t num_primary   = subModel.num_primary_fns(),
+         num_secondary = subModel.num_secondary_fns(),
          num_recast_fns = num_primary + num_secondary,
          recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
 
@@ -1500,8 +1467,7 @@ void ActiveSubspaceModel::initialize_recast()
     secondary_resp_map_indices[i][0] = num_primary + i;
   }
 
-  BoolDequeArray nonlinear_resp_mapping(numFunctions,
-                                        BoolDeque(numFunctions, false));
+  BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
 
   // Initial response order for the newly built subspace model same as
   // the subModel (does not augment with gradient request)
@@ -1592,47 +1558,38 @@ void ActiveSubspaceModel::update_linear_constraints()
 /// transform and set the distribution parameters in the reduced model
 void ActiveSubspaceModel::uncertain_vars_to_subspace()
 {
-  const Pecos::AleatoryDistParams& native_params =
-    subModel.aleatory_distribution_parameters();
+  const Pecos::MultivariateDistribution& native_dist =
+    subModel.multivariate_distribution();
+  Pecos::MarginalsCorrDistribution* native_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
 
-  // update the reduced space model
-  Pecos::AleatoryDistParams& reduced_dist_params =
-    aleatory_distribution_parameters();
-
-  // initialize AleatoryDistParams for reduced model
+  // initialize distribution params for reduced model
   // This is necessary if subModel has been transformed
   // to standard normals from a different distribution
-  reduced_dist_params.copy(native_params); // deep copy
+  //mvDist.pull_distribution_parameters(native_dist); // deep copy
 
   // native space characterization
-  const RealVector& mu_x = native_params.normal_means();
-  const RealVector& sd_x = native_params.normal_std_deviations();
-  const RealSymMatrix& correl_x = native_params.uncertain_correlations();
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: correl_x = \n";
-    write_data(Cout, correl_x, true, true, true);
-  }
+  RealVector mu_x, sd_x;
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_x);
+  native_dist_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_x);
+  const RealSymMatrix& correl_x = native_dist.correlation_matrix();
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSubspace Model: correl_x = \n" << correl_x;
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
     Cerr << "\nError (subspace model): Wrong correlation size." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // reduced space characterization: mean mu, std dev sd
-  RealVector mu_y(reducedRank), sd_y(reducedRank);
-  RealVector mu_z(inactiveBasis.numCols());
-
+  RealVector mu_y(reducedRank), sd_y(reducedRank),
+             mu_z(inactiveBasis.numCols());
 
   // mu_y = activeBasis^T * mu_x
-  int m = activeBasis.numRows();
-  int n = activeBasis.numCols();
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
+  int  m = activeBasis.numRows(), n = activeBasis.numCols();
+  Real alpha = 1.0,               beta = 0.0;
+  int  incx  = 1,                 incy = 1;
 
   // y <-- alpha*A*x + beta*y
   // mu_y <-- 1.0 * activeBasis^T * mu_x + 0.0 * mu_y
@@ -1648,42 +1605,35 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
     for (int row=0; row<activeBasis.numRows(); ++row)
       for (int col=0; col<activeBasis.numRows(); ++col)
         V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
-  } else {
+  }
+  else {
     V_x = 0.0;
     for (int row=0; row<activeBasis.numRows(); ++row)
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
-
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: activeBasis = \n";
-    write_data(Cout, activeBasis, true, true, true);
-    Cout << "\nSubspace Model: V_x =\n";
-    write_data(Cout, V_x, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSubspace Model: activeBasis = \n" << activeBasis
+	 << "\nSubspace Model: V_x =\n"          << V_x;
 
   // compute V_y = U^T * V_x * U
-  alpha = 1.0;
-  beta = 0.0;
+  alpha = 1.0;  beta = 0.0;
   RealMatrix UTVx(n, m, false);
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
                 alpha, activeBasis, V_x, beta);
   RealMatrix V_y(reducedRank, reducedRank, false);
   V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
                alpha, UTVx, activeBasis, beta);
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: V_y = \n";
-    write_data(Cout, V_y, true, true, true);
-  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSubspace Model: V_y = \n" << V_y;
 
   // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
     sd_y(i) = std::sqrt(V_y(i,i));
 
-  reduced_dist_params.normal_means(mu_y);
-  reduced_dist_params.normal_std_deviations(sd_y);
-
+  Pecos::MarginalsCorrDistribution* reduced_dist_rep
+    = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    mu_y);
+  reduced_dist_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, sd_y);
 
   // compute the correlations in reduced space
   // TODO: fix symmetric access to not loop over whole matrix
@@ -1695,37 +1645,28 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   for (int row=0; row<reducedRank; ++row)
     for (int col=0; col<reducedRank; ++col)
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: correl_y = \n";
-    write_data(Cout, correl_y, true, true, true);
-  }
-
-  reduced_dist_params.uncertain_correlations(correl_y);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSubspace Model: correl_y = \n" << correl_y;
+  mvDist.correlation_matrix(correl_y);
 
   // Set inactive subspace variables
   // mu_z = inactiveBasis^T * mu_x
   m = inactiveBasis.numRows();
   n = inactiveBasis.numCols();
-  alpha = 1.0;
-  beta = 0.0;
+  alpha = 1.0;  beta = 0.0;
 
   incx = 1;
   int incz = 1;
-
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, inactiveBasis.values(), m,
                     mu_x.values(), incx, beta, mu_z.values(), incz);
-
   inactiveVars = mu_z;
 
-
   // Set continuous variable types:
-  UShortMultiArray cont_variable_types(boost::extents[reducedRank]);
-  for (int i = 0; i < reducedRank; i++) {
-    cont_variable_types[i] = NORMAL_UNCERTAIN;
-  }
+  UShortMultiArray cv_types(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++)
+    cv_types[i] = NORMAL_UNCERTAIN;
   currentVariables.continuous_variable_types(
-    cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
+    cv_types[boost::indices[idx_range(0, reducedRank)]]);
 
   // Set currentVariables to means of active variables:
   continuous_variables(mu_y);
@@ -1752,42 +1693,29 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
   //  Calculate x = activeBasis*y + inactiveBasis*inactiveVars via matvec
   //  directly into x cv in submodel
   const RealMatrix& W1 = asmInstance->activeBasis;
-  int m = W1.numRows();
-  int n = W1.numCols();
-
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
+  int m = W1.numRows(), n = W1.numCols();
+  Real alpha = 1.0,     beta = 0.0;
+  int  incx  = 1,       incy = 1;
 
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W1.values(), m,
                     y.values(), incy, beta, x.values(), incx);
 
   // Now add the inactive variable's contribution:
   const RealMatrix& W2 = asmInstance->inactiveBasis;
-  const RealVector& z = asmInstance->inactiveVars;
-  m = W2.numRows();
-  n = W2.numCols();
+  const RealVector&  z = asmInstance->inactiveVars;
+  m = W2.numRows();  n = W2.numCols();
 
-  alpha = 1.0;
-  beta = 1.0;
-
+  alpha = 1.0;  beta = 1.0;
   int incz = 1;
-
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W2.values(), m,
                     z.values(), incz, beta, x.values(), incx);
 
   sub_model_x_vars.continuous_variables(x);
 
-  if (asmInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nSubspace Model: Subspace vars are\n";
-    Cout << recast_y_vars << std::endl;
-
-    Cout << "\nSubspace Model: Fullspace vars are\n";
-    Cout << sub_model_x_vars << std::endl;
-  }
-
+  if (asmInstance->outputLevel >= DEBUG_OUTPUT)
+    Cout <<   "\nSubspace Model: Subspace vars are\n"  << recast_y_vars
+	 << "\n\nSubspace Model: Fullspace vars are\n" << sub_model_x_vars
+	 << std::endl;
 }
 
 
@@ -1887,7 +1815,7 @@ void ActiveSubspaceModel::build_surrogate()
   // is built.
 
   Model asm_model;
-  asm_model.assign_rep(asmInstance, false);
+  asm_model.assign_rep(this, false);
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
   ActiveSet surr_set = current_response().active_set(); // copy
@@ -1959,10 +1887,7 @@ void ActiveSubspaceModel::build_surrogate()
            << " refinement_samples for building surrogate." << std::endl;
     }
 
-    ActiveSet dace_set = fullspaceSampler.active_set(); // copy
-    unsigned short request_value = 1;
-    dace_set.request_values(request_value);
-    fullspaceSampler.active_set(dace_set);
+    fullspaceSampler.active_set_request_values(1);
     fullspaceSampler.sampling_reference(refinementSamples);
     fullspaceSampler.sampling_reset(refinementSamples, true, false);
 

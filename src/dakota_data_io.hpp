@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_IO_H
-#define DATA_IO_H
+#ifndef DAKOTA_DATA_IO_H
+#define DAKOTA_DATA_IO_H
 
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr, write_precision
@@ -20,6 +20,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/split_free.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace boost {
 namespace serialization {
@@ -133,210 +134,176 @@ BOOST_SERIALIZATION_SPLIT_FREE(Dakota::BitArray)
 /// Register separate load/save for StringMultiArray type
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::StringMultiArray)
 
+#if 0
+// WJB - ToDo:  double-check with Brian Adams.  Any value in leaving this
+// hack in the code base if not being used / tested?
+namespace {
+  template<class SharedPointer> struct Holder {
+    SharedPointer p;
+
+    Holder(const SharedPointer &p) : p(p) {}
+    Holder(const Holder &other) : p(other.p) {}
+    Holder(Holder &&other) : p(std::move(other.p)) {}
+
+    void operator () (...) { p.reset(); }
+  };
+}
+
+template<class T> std::shared_ptr<T> to_std_ptr(const boost::shared_ptr<T> &p) {
+  typedef Holder<std::shared_ptr<T>> H;
+  if(H *h = boost::get_deleter<H, T>(p)) {
+    return h->p;
+  }
+  else {
+    return std::shared_ptr<T>(p.get(), Holder<boost::shared_ptr<T>>(p));
+  }
+}
+
+template<class T> boost::shared_ptr<T> to_boost_ptr(const std::shared_ptr<T> &p){
+  typedef Holder<boost::shared_ptr<T>> H;
+  if(H * h = std::get_deleter<H, T>(p)) {
+    return h->p;
+  }
+   else {
+    return boost::shared_ptr<T>(p.get(), Holder<std::shared_ptr<T>>(p));
+  }
+}
+#endif
 
 namespace Dakota {
 
-// -----------------------
-// templated I/O functions
-// -----------------------
 
+// Forward declarations since these operators are used in read/write data and vice-versa
+
+/// global std::istream extraction operator for std::vector
+template <typename T>
+std::istream& operator>>(std::istream& s, std::vector<T>& data);
+
+/// global std::ostream insertion operator for std::vector
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const std::vector<T>& data);
+
+/// global std::ostream insertion operator for std::list
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const std::list<T>& data);
 
 /// global ostream insertion operator for std::pair
 template <typename U, typename V>
-std::ostream& operator<<(std::ostream& s, const std::pair<U,V>& data)
-{
-  size_t width = write_precision+7;
-  s << "                     " << std::setw(width) 
-    << data.first << ' ' << data.second << '\n';
-  return s;
-}
-
-
-/// global MPIUnpackBuffer extraction operator for std::pair
-template <typename U, typename V>
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::pair<U,V>& data)
-{
-  U first; V second;
-  s >> first >> second;
-  data.first = first; data.second = second;
-  return s;
-}
-
-
-/// global MPIPackBuffer insertion operator for std::pair
-template <typename U, typename V>
-MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::pair<U,V>& data)
-{
-  s << data.first << data.second;
-  return s;
-}
-
+std::ostream& operator<<(std::ostream& s, const std::pair<U,V>& data);
 
 /// global std::ostream insertion operator for std::set
 template <typename T>
-std::ostream& operator<<(std::ostream& s, const std::set<T>& data)
-{
-  size_t width = write_precision+7;
-  for (typename std::set<T>::const_iterator cit = data.begin();
-       cit != data.end(); ++cit)
-    s << "                     " << std::setw(width) << *cit << '\n';
-  return s;
-}
-
-
-/// global MPIUnpackBuffer extraction operator for std::set
-template <typename T>
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::set<T>& data)
-{
-  data.clear();
-  size_t i, len;
-  s >> len;
-  T val;
-  for (i=0; i<len; ++i){
-    s >> val; 
-    data.insert(val);
-  }
-  return s;
-}
-
-
-/// global MPIPackBuffer insertion operator for std::set
-template <typename T>
-MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::set<T>& data)
-{
-  size_t len = data.size();
-  s << len;
-  for (typename std::set<T>::const_iterator cit = data.begin();
-       cit != data.end(); ++cit)
-    s << *cit;
-  return s;
-}
-
+std::ostream& operator<<(std::ostream& s, const std::set<T>& data);
 
 /// global std::ostream insertion operator for std::map
 template <typename KeyT, typename ValueT>
-std::ostream& operator<<(std::ostream& s, const std::map<KeyT, ValueT>& data)
-{
-  size_t width = write_precision+7;
-  for (typename std::map<KeyT, ValueT>::const_iterator cit = data.begin();
-       cit != data.end(); ++cit)
-    s << "                     " << std::setw(width) << cit->first
-      << "  " << std::setw(width) << cit->second << '\n';
-  return s;
-}
+std::ostream& operator<<(std::ostream& s, const std::map<KeyT, ValueT>& data);
+
+/// global std::istream extraction operator for SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+std::istream& operator>>(std::istream& s,
+			 Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data);
+
+/// global std::ostream insertion operator for SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+std::ostream& operator<<(std::ostream& s,
+			 const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data);
+
+/// global std::istream extraction operator for SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::istream& operator>>(std::istream& s,
+			 Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data);
+
+/// global std::ostream insertion operator for SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::ostream& operator<<(std::ostream& s,
+			 const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data);
+
+/// global std::istream extraction operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::istream& operator>>(std::istream& s,
+			 Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data);
+
+/// global std::ostream insertion operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+std::ostream& operator<<(std::ostream& s,
+			 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data);
 
 
-/// global MPIUnpackBuffer extraction operator for std::map
-template <typename KeyT, typename ValueT>
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::map<KeyT, ValueT>& data)
-{
-  data.clear();
-  size_t i, len; KeyT key; ValueT val;
-  s >> len;
-  for (i=0; i<len; ++i){
-    s >> key >> val; 
-    data[key] = val;
+/// simple utility to convert intrinsics to strings 
+template <typename T>
+  inline std::string convert_to_string(const T &value) {
+    std::ostringstream out;
+    out << value;
+    return out.str();
   }
-  return s;
-}
+
+/// istream extraction operator for configuration data of known dim and length
+void read_sized_data(std::istream& s,
+                     RealVectorArray& va,
+                     size_t num_experiments,
+                     int num_state_variables);
+
+/// istream extraction operator for response data of known dim and
+/// unknown length
+void read_fixed_rowsize_data(std::istream& s,
+                             RealVectorArray& va,
+                             int num_responses,
+                             bool row_major = true);
+
+/// istream extraction operator for coordinate data of unknown dim and
+/// unknown length
+void read_unsized_data(std::istream& s,
+                       RealVectorArray& va,
+                       bool row_major = true);
+
+/// file reader for configuration data supplied via multiple files
+void read_config_vars_multifile(const std::string& basename,
+                                int num_expts,
+                                int ncv,
+                                RealVectorArray& config_vars);
+
+/// file reader for configuration data supplied via a single file
+void read_config_vars_singlefile(const std::string& basename,
+                                 int num_expts,
+                                 int ncv,
+                                 RealVectorArray& config_vars);
+
+/// file reader for vector field (response) data
+void read_field_values(const std::string& basename,
+                       int expt_num,
+                       RealVectorArray& field_vars);
+
+/// file reader for scalar field (response) data
+void read_field_values(const std::string& basename,
+                       int expt_num,
+                       RealVector& field_vars);
+
+/// file reader for simulation coordinate data
+void read_coord_values(const std::string& basename,
+                       RealMatrix& coords);
+
+/// file reader for experimental coordinate data
+void read_coord_values(const std::string& basename,
+                       int expt_num,
+                       RealMatrix& coords);
+
+/// file reader for CONSTANT covariance data
+void read_covariance(const std::string& basename,
+                     int expt_num,
+                     RealMatrix& cov_vals);
+
+/// file reader for VECTOR and MATRIX covariance data
+void read_covariance(const std::string& basename,
+                     int expt_num,
+                     Dakota::CovarianceMatrix::FORMAT,
+                     int num_vals,
+                     RealMatrix& cov_vals);
 
 
-/// global MPIPackBuffer insertion operator for std::map
-template <typename KeyT, typename ValueT>
-MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::map<KeyT, ValueT>& data)
-{
-  size_t len = data.size();
-  s << len;
-  for (typename std::map<KeyT, ValueT>::const_iterator cit = data.begin();
-       cit != data.end(); ++cit)
-    s << cit->first << cit->second;
-  return s;
-}
-
-
-/// global MPIPackBuffer insertion operator for Teuchos::SerialDenseVector
-template <typename OrdinalType, typename ScalarType> 
-MPIPackBuffer& operator<<(MPIPackBuffer& s,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
-{
-  OrdinalType i, n = data.length();
-  s << n;
-  for (i=0; i<n; ++i)
-    s << data[i];
-  return s;
-}
-
-
-/// global MPIPackBuffer insertion operator for Teuchos::SerialDenseMatrix
-template <typename OrdinalType, typename ScalarType> 
-MPIPackBuffer& operator<<(MPIPackBuffer& s,
-  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data)
-{
-  OrdinalType i, j, n = data.numRows(), m = data.numCols();
-  s << n << m;
-  for (i=0; i<n; ++i)
-    for (j=0; j<m; ++j)
-      s << data(i,j);
-  return s;
-}
-
-
-/// global MPIPackBuffer insertion operator for Teuchos::SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType> 
-MPIPackBuffer& operator<<(MPIPackBuffer& s,
-  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
-{
-  OrdinalType i, j, n = data.numRows();
-  s << n;
-  for (i=0; i<n; ++i)
-    for (j=0; j<=i; ++j)
-      s << data(i,j);
-  return s;
-}
-
-
-/// global MPIUnpackBuffer extraction operator for Teuchos::SerialDenseVector
-template <typename OrdinalType, typename ScalarType> 
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
-  Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
-{
-  OrdinalType i, n;
-  s >> n;
-  data.sizeUninitialized(n);
-  for(i=0; i<n; ++i)
-    s >> data[i];
-  return s;
-}
-
-
-/// global MPIUnpackBuffer extraction operator for Teuchos::SerialDenseMatrix
-template <typename OrdinalType, typename ScalarType> 
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
-  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data)
-{
-  OrdinalType i, j, n, m;
-  s >> n >> m;
-  data.shapeUninitialized(n, m);
-  for (i=0; i<n; ++i)
-    for (j=0; j<m; ++j)
-      s >> data(i,j);
-  return s;
-}
-
-
-/// global MPIUnpackBuffer extraction operator for Teuchos::SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType> 
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
-  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
-{
-  OrdinalType i, j, n;
-  s >> n;
-  data.shapeUninitialized(n);
-  for (i=0; i<n; ++i)
-    for (j=0; j<=i; ++j)
-      s >> data(i,j);
-  return s;
-}
+// --------------------------------
+// templated istream read functions (some called from operator>>)
+// --------------------------------
 
 
 /// standard istream extraction operator for full SerialDenseVector
@@ -345,8 +312,50 @@ void read_data(std::istream& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
   OrdinalType i, len = v.length();
+  std::string token;
   for (i=0; i<len; ++i)
-    s >> v[i];
+    { s >> token; v[i] = std::atof(token.c_str()); }
+}
+
+
+/// standard istream extraction operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_data(std::istream& s,
+               Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m)
+{
+  // for istream, read full matrix
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  std::string token;
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
+      { s >> token; m(i,j) = std::atof(token.c_str()); }
+}
+
+
+/// standard istream extraction operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_data(std::istream& s,
+               Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
+{
+  // for istream, read full matrix
+  OrdinalType i, j, nrows = m.numRows();
+  std::string token;
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<nrows; ++j)
+      { s >> token; m(i,j) = std::atof(token.c_str()); }
+}
+
+
+/// standard istream extraction operator for std::vector of SerialDenseVectors
+template <typename OrdinalType, typename ScalarType>
+void read_data(std::istream& s,
+  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& va)
+{
+  OrdinalType i, j, nrows = va.size(), ncols = (nrows > 0) ? va[0].length() : 0;
+  std::string token;
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
+      { s >> token; va[i][j] = std::atof(token.c_str()); }
 }
 
 
@@ -528,7 +537,7 @@ void read_data_partial_tabular(std::istream& s,
     else {
       char err[80];
       std::sprintf(err,
-	      "At EOF: insufficient tabular data for SerialDenseVector[%d]", i);
+	      "At EOF: insufficient tabular data for SerialDenseVector[%zu]", i);
       // TODO: enable this code once we can safely include lexical_cast.hpp
       // std::string err;
       // err += "At EOF: insufficient tabular data for SerialDenseVector[";
@@ -556,7 +565,7 @@ void read_data_partial_tabular(std::istream& s, OrdinalType start_index,
     else {
       char err[80];
       std::sprintf(err,
-	      "At EOF: insufficient tabular data for StringMultiArray[%d]", i);
+	      "At EOF: insufficient tabular data for StringMultiArray[%zu]", i);
       // TODO: enable this code once we can safely include lexical_cast.hpp
       // std::string err;
       // err += "At EOF: insufficient tabular data for StringMultiArray[";
@@ -603,74 +612,6 @@ void read_data_annotated(std::istream& s,
     s >> v[i] >> label_array[i];
 }
 
-/// simple utility to convert intrinsics to strings 
-template <typename T>
-  inline std::string convert_to_string(const T &value) {
-    std::ostringstream out;
-    out << value;
-    return out.str();
-  }
-
-/// istream extraction operator for configuration data of known dim and length
-void read_sized_data(std::istream& s,
-                     RealVectorArray& va,
-                     size_t num_experiments,
-                     int num_state_variables);
-
-/// istream extraction operator for response data of known dim and unknown length
-void read_fixed_rowsize_data(std::istream& s,
-                             RealVectorArray& va,
-                             int num_responses,
-                             bool row_major = true);
-
-/// istream extraction operator for coordinate data of unknown dim and unknown length
-void read_unsized_data(std::istream& s,
-                       RealVectorArray& va,
-                       bool row_major = true);
-
-/// file reader for configuration data supplied via multiple files
-void read_config_vars_multifile(const std::string& basename,
-                                int num_expts,
-                                int ncv,
-                                RealVectorArray& config_vars);
-
-/// file reader for configuration data supplied via a single file
-void read_config_vars_singlefile(const std::string& basename,
-                                 int num_expts,
-                                 int ncv,
-                                 RealVectorArray& config_vars);
-
-/// file reader for vector field (response) data
-void read_field_values(const std::string& basename,
-                       int expt_num,
-                       RealVectorArray& field_vars);
-
-/// file reader for scalar field (response) data
-void read_field_values(const std::string& basename,
-                       int expt_num,
-                       RealVector& field_vars);
-
-/// file reader for simulation coordinate data
-void read_coord_values(const std::string& basename,
-                       RealMatrix& coords);
-
-/// file reader for experimental coordinate data
-void read_coord_values(const std::string& basename,
-                       int expt_num,
-                       RealMatrix& coords);
-
-/// file reader for CONSTANT covariance data
-void read_covariance(const std::string& basename,
-                     int expt_num,
-                     RealMatrix& cov_vals);
-
-/// file reader for VECTOR and MATRIX covariance data
-void read_covariance(const std::string& basename,
-                     int expt_num,
-                     Dakota::CovarianceMatrix::FORMAT,
-                     int num_vals,
-                     RealMatrix& cov_vals);
-
 
 /// annotated istream extraction operator for StringMultiArray with labels
 inline void read_data_annotated(std::istream& s, StringMultiArray& v,
@@ -688,6 +629,75 @@ inline void read_data_annotated(std::istream& s, StringMultiArray& v,
   for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
+
+
+/// istream partial specialization for reading the lower triangle of a
+/// SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_lower_triangle(std::istream& s,
+  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  std::string token;
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      { s >> token; sm(i,j) = std::atof(token.c_str()); }
+}
+
+
+/// generic input stream template for reading the lower triangle of a
+/// SerialSymDenseMatrix
+template <typename IStreamType, typename OrdinalType, typename ScalarType>
+void read_lower_triangle(IStreamType& s,
+  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      s >> sm(i,j);
+}
+
+
+/// istream partial specialization for reading a column vector of a
+/// SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_col_vector_trans(std::istream& s, OrdinalType col,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = sdm.numRows();
+  ScalarType* sdm_c = sdm[col]; // column vector
+  std::string token; // handles NaN and +/-Inf
+  for (OrdinalType row=0; row<nr; ++row)
+    { s >> token; sdm_c[row] = std::atof(token.c_str()); }
+}
+
+
+/// generic input stream template for reading a column vector of a
+/// SerialDenseMatrix
+template <typename IStreamType, typename OrdinalType, typename ScalarType>
+void read_col_vector_trans(IStreamType& s, OrdinalType col,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = sdm.numRows();
+  ScalarType* sdm_c = sdm[col]; // column vector
+  for (OrdinalType row=0; row<nr; ++row)
+    s >> sdm_c[row];
+}
+
+
+/// read array from std::istream
+template <typename ArrayT>
+inline void array_read(std::istream& s, ArrayT& v)
+{
+  typename ArrayT::size_type len = v.size();
+  for (register typename ArrayT::size_type i=0; i<len; ++i)
+    s >> v[i];
+}
+
+
+// ---------------------------------
+// templated ostream write functions (some called from operator<<)
+// ---------------------------------
 
 
 /// standard ostream insertion operator for pointer
@@ -732,13 +742,6 @@ void write_data(std::ostream& s,
       << label_array[i] << '\n';
 }
 
-
-//#ifdef __SUNPRO_CC
-// custom func needed for SunPro CC 5.10
-/* WJB - ToDo (after 1.5 release):  Dig deeper into this new "ambiguity" that
-         has surprisingly cropped up on Solaris
-"DakotaMinimizer.cpp", line 691: Could not find a match for Dakota::write_data ...
-*/
 
 // BMA: Also needed for MSVS 2008, and probably in general as a
 // const_array_view shouldn't be convertible to const multi_array&
@@ -1137,18 +1140,243 @@ inline void write_data_tabular(std::ostream& s, StringMultiArrayConstView ma)
 }
 
 
-/// global std::istream extraction operator for SerialDenseVector
+/// formatted ostream insertion operator for SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
-inline std::istream& operator>>(std::istream& s,
-  Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
-{ read_data(s, data); return s; }
+void write_data(std::ostream& s,
+                const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
+                bool brackets = true, bool row_rtn = true,
+		bool final_rtn = true)
+{
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  s << std::scientific << std::setprecision(write_precision);
+  if (brackets) s << "[[ ";
+  else          s << "   ";
+  for (i=0; i<nrows; ++i) {
+    for (j=0; j<ncols; ++j)
+      s << std::setw(write_precision+7) << m(i,j) << ' ';
+    // NOTE: newlines on every 4th component (as in the row vector case)
+    // could lead to ambiguity in the matrix case.
+    if (row_rtn && i!=m.numRows()-1)
+      s << "\n   ";
+  }
+  if (brackets)  s << "]] ";
+  if (final_rtn) s << '\n';
+}
 
 
-/// global std::ostream insertion operator for SerialDenseVector
+/// formatted ostream insertion operator for SerialSymDenseMatrix
 template <typename OrdinalType, typename ScalarType>
-inline std::ostream& operator<<(std::ostream& s,
-  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
-{ write_data(s, data); return s; }
+void write_data(std::ostream& s,
+                const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m,
+                bool brackets = true, bool row_rtn = true,
+		bool final_rtn = true)
+{
+  OrdinalType i, j, nrows = m.numRows();
+  s << std::scientific << std::setprecision(write_precision);
+  if (brackets) s << "[[ ";
+  else          s << "   ";
+  for (i=0; i<nrows; ++i) {
+    for (j=0; j<nrows; ++j)
+      s << std::setw(write_precision+7) << m(i,j) << ' ';
+    // NOTE: newlines on every 4th component (as in the row vector case)
+    // could lead to ambiguity in the matrix case.
+    if (row_rtn && i!=nrows-1)
+      s << "\n   ";
+  }
+  if (brackets)  s << "]] ";
+  if (final_rtn) s << '\n';
+}
+
+
+/// ostream insertion operator for SerialDenseMatrix with row/col labels
+template <typename OrdinalType, typename ScalarType>
+void write_data(std::ostream& s,
+                const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
+                const StringArray& row_labels, const StringArray& col_labels)
+{
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  s << std::scientific << std::setprecision(write_precision)
+    << "                 ";
+  for (j=0; j<ncols; ++j)
+    s << std::setw(write_precision+7) << col_labels[j] << ' ';
+  s << '\n';
+  for (i=0; i<nrows; ++i) {
+    s << std::setw(15) << row_labels[i] << "  ";
+    for (j=0; j<ncols; ++j)
+      s << std::setw(write_precision+7) << m(i,j) << ' ';
+    s << '\n';
+  }
+}
+
+
+/// ostream version for writing the lower triangle of a SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void write_lower_triangle(std::ostream& s,
+  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm,
+  bool row_rtn = true)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  s << std::scientific << std::setprecision(write_precision);
+  for (i=0; i<nrows; ++i) {
+    for (j=0; j<=i; ++j)
+      s << std::setw(write_precision+7) << sm(i,j) << ' ';
+    if (row_rtn)
+      s << '\n';
+  }
+}
+
+
+/// generic output stream template for writing the lower triangle of a
+/// SerialSymDenseMatrix
+template <typename OStreamType, typename OrdinalType, typename ScalarType>
+void write_lower_triangle(OStreamType& s,
+  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      s << sm(i,j);
+}
+
+
+/// ostream insertion operator for a column vector from a SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void write_col_vector_trans(std::ostream& s, OrdinalType col,
+  OrdinalType num_items, 
+  const Teuchos::SerialDenseMatrix<OrdinalType,ScalarType>& sdm,
+  bool brackets = true, bool break_line = true, bool final_rtn = true)
+{
+  s << std::scientific << std::setprecision(write_precision);
+  if (brackets) s << " [ ";
+  else          s << "   ";
+  for (OrdinalType row=0; row < num_items; ++row) {
+    s << std::setw(write_precision+7) << sdm(row,col) << ' ';
+    if (break_line && (row+1)%4 == 0)
+      s << "\n   "; // Output 4 gradient components per line
+  }
+  if (brackets)  s << "] ";
+  if (final_rtn) s << '\n';
+}
+
+
+/// ostream insertion operator for a column vector from a SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void write_col_vector_trans(std::ostream& s, OrdinalType col,
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+  bool brackets = true, bool break_line = true, bool final_rtn = true)
+{
+  write_col_vector_trans(s, col, sdm.numRows(), sdm, brackets, break_line,
+                         final_rtn);
+}
+
+
+/// ostream insertion operator for a column vector from a SerialDenseMatrix
+template <typename OStreamType, typename OrdinalType, typename ScalarType>
+void write_col_vector_trans(OStreamType& s, OrdinalType col,
+  OrdinalType num_items,
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{ for (OrdinalType row=0; row < num_items; ++row) s << sdm(row,col); }
+
+
+/// ostream insertion operator for a column vector from a SerialDenseMatrix
+template <typename OStreamType, typename OrdinalType, typename ScalarType>
+void write_col_vector_trans(OStreamType& s, OrdinalType col,
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{ write_col_vector_trans(s, col, sdm.numRows(), sdm); }
+
+
+/// write array to std::ostream
+template <typename ArrayT>
+inline void array_write(std::ostream& s, const ArrayT& v)
+{
+  s << std::scientific << std::setprecision(write_precision);
+  typename ArrayT::size_type len = v.size();
+  for (register typename ArrayT::size_type i=0; i<len; ++i)
+    s << "                     " << std::setw(write_precision+7)
+      << v[i] << '\n';
+}
+
+
+/// write array to std::ostream with labels
+template <typename ArrayT>
+inline void array_write(std::ostream& s, const ArrayT& v,
+                        const std::vector<String>& label_array)
+{
+  s << std::scientific << std::setprecision(write_precision);
+  typename ArrayT::size_type len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in vector<T>::write() does not equal "
+	 << "length of vector." << std::endl;
+    abort_handler(-1);
+  }
+  for (register typename ArrayT::size_type i=0; i<len; ++i)
+    s << "                     " << std::setw(write_precision+7)
+      << v[i] << ' ' << label_array[i] << '\n';
+}
+
+
+/// write array to std::ostream (APREPRO format)
+/// specialize for StringArray: values need quoting
+inline void array_write_aprepro(std::ostream& s, const StringArray& v,
+                                const std::vector<String>& label_array)
+{
+  s << std::scientific << std::setprecision(write_precision);
+  StringArray::size_type len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in vector<T>::write() does not equal "
+	 << "length of vector." << std::endl;
+    abort_handler(-1);
+  }
+  for (StringArray::size_type i=0; i<len; ++i)
+    s << "                    { "
+      << std::setw(15) << std::setiosflags(std::ios::left)
+      << label_array[i].c_str() << std::resetiosflags(std::ios::adjustfield)
+      << " = " << std::setw(write_precision+7)
+      << '"' << v[i] << '"' << " }\n";
+}
+
+
+/// write array to std::ostream (APREPRO format)
+template <typename ArrayT>
+inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
+                                const std::vector<String>& label_array)
+{
+  s << std::scientific << std::setprecision(write_precision);
+  typename ArrayT::size_type len = v.size();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in vector<T>::write() does not equal "
+	 << "length of vector." << std::endl;
+    abort_handler(-1);
+  }
+  for (register typename ArrayT::size_type i=0; i<len; ++i)
+    s << "                    { "
+      << std::setw(15) << std::setiosflags(std::ios::left)
+      << label_array[i].c_str() << std::resetiosflags(std::ios::adjustfield)
+      << " = " << std::setw(write_precision+7)
+      << v[i] << " }\n";
+}
+
+
+// WJB: confer with MSE -- e.g. desired API? naming style of read/write funcs,
+//                              order of the argument list; mv to data_io.h??
+/// Write array to ostream as a row vector; precede with length if
+/// write_len = true
+template <typename ArrayT>
+inline void array_write_annotated(std::ostream& s, const ArrayT& v,
+				  bool write_len)
+{
+  s << std::scientific << std::setprecision(write_precision);
+  typename ArrayT::size_type len = v.size();
+  if (write_len)
+    s << len << ' ';
+  for (register typename ArrayT::size_type i=0; i<len; ++i)
+    s << v[i] << ' ';
+}
+
+
+// ----------------------------------------
+// templated MPIUnpackBuffer read functions
+// ----------------------------------------
 
 
 /// standard MPI buffer extraction operator for full SerialDenseVector
@@ -1208,6 +1436,11 @@ inline void read_data(MPIUnpackBuffer& s, StringMultiArray& v,
 }
 
 
+// ---------------------------------------
+// templated MPIPackBuffer write functions (in namespace Dakota)
+// ---------------------------------------
+
+
 /// standard MPI buffer insertion operator for full SerialDenseVector
 /// with labels
 template <typename OrdinalType, typename ScalarType>
@@ -1243,262 +1476,205 @@ inline void write_data(MPIPackBuffer& s, const StringMultiArray& v,
 }
 
 
-/// standard istream extraction operator for std::vector of SerialDenseVectors
-template <typename OrdinalType, typename ScalarType>
-void read_data(std::istream& s,
-  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& va)
+// ----------------------------------------------------------------------------
+// templated MPIPackBuffer insertion/extraction operators (in namespace Dakota)
+// ----------------------------------------------------------------------------
+
+
+/// global MPIUnpackBuffer extraction operator for std::pair
+template <typename U, typename V>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::pair<U,V>& data)
 {
-  OrdinalType i, j, nrows = va.size(), ncols = (nrows > 0) ? va[0].length() : 0;
-  std::string token;
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<ncols; ++j)
-      { s >> token; va[i][j] = std::atof(token.c_str()); }
+  U first; V second;
+  s >> first >> second;
+  data.first = first; data.second = second;
+  return s;
 }
 
 
-/// standard istream extraction operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void read_data(std::istream& s,
-               Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
+/// global MPIPackBuffer insertion operator for std::pair
+template <typename U, typename V>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::pair<U,V>& data)
 {
-  // for istream, read full matrix
-  OrdinalType i, j, nrows = m.numRows();
-  std::string token;
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<nrows; ++j)
-      { s >> token; m(i,j) = std::atof(token.c_str()); }
+  s << data.first << data.second;
+  return s;
 }
 
 
-/// formatted ostream insertion operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_data(std::ostream& s,
-                const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m,
-                bool brackets = true, bool row_rtn = true,
-		bool final_rtn = true)
+/*
+/// global MPIUnpackBuffer extraction operator for std::vector
+/// (specialization of ContainerT template in MPIPackBuffer.hpp)
+template <typename T>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::vector<T>& data)
 {
-  OrdinalType i, j, nrows = m.numRows();
-  s << std::scientific << std::setprecision(write_precision);
-  if (brackets) s << "[[ ";
-  else          s << "   ";
-  for (i=0; i<nrows; ++i) {
-    for (j=0; j<nrows; ++j)
-      s << std::setw(write_precision+7) << m(i,j) << ' ';
-    // NOTE: newlines on every 4th component (as in the row vector case)
-    // could lead to ambiguity in the matrix case.
-    if (row_rtn && i!=nrows-1)
-      s << "\n   ";
+  size_t i, len;
+  s >> len;
+  data.resize(len);
+  for (i=0; i<len; ++i)
+    s >> data[i];
+  return s;
+}
+
+
+/// global MPIPackBuffer insertion operator for std::vector
+/// (specialization of ContainerT template in MPIPackBuffer.hpp)
+template <typename T>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::vector<T>& data)
+{
+  size_t i, len = data.size();
+  s << len;
+  for (i=0; i<len; ++i)
+    s << data[i];
+  return s;
+}
+*/
+
+
+/// global MPIUnpackBuffer extraction operator for std::set
+template <typename T>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::set<T>& data)
+{
+  data.clear();
+  size_t i, len;
+  s >> len;
+  T val;
+  for (i=0; i<len; ++i){
+    s >> val; 
+    data.insert(val);
   }
-  if (brackets)  s << "]] ";
-  if (final_rtn) s << '\n';
+  return s;
 }
 
 
-/// formatted ostream insertion operator for SerialDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_data(std::ostream& s,
-                const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
-                bool brackets = true, bool row_rtn = true,
-		bool final_rtn = true)
+/// global MPIPackBuffer insertion operator for std::set
+template <typename T>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::set<T>& data)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
-  s << std::scientific << std::setprecision(write_precision);
-  if (brackets) s << "[[ ";
-  else          s << "   ";
-  for (i=0; i<nrows; ++i) {
-    for (j=0; j<ncols; ++j)
-      s << std::setw(write_precision+7) << m(i,j) << ' ';
-    // NOTE: newlines on every 4th component (as in the row vector case)
-    // could lead to ambiguity in the matrix case.
-    if (row_rtn && i!=m.numRows()-1)
-      s << "\n   ";
+  size_t len = data.size();
+  s << len;
+  for (typename std::set<T>::const_iterator cit = data.begin();
+       cit != data.end(); ++cit)
+    s << *cit;
+  return s;
+}
+
+
+/// global MPIUnpackBuffer extraction operator for std::map
+template <typename KeyT, typename ValueT>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::map<KeyT, ValueT>& data)
+{
+  data.clear();
+  size_t i, len; KeyT key; ValueT val;
+  s >> len;
+  for (i=0; i<len; ++i){
+    s >> key >> val; 
+    data[key] = val;
   }
-  if (brackets)  s << "]] ";
-  if (final_rtn) s << '\n';
+  return s;
 }
 
 
-/// ostream insertion operator for SerialDenseMatrix with row/col labels
-template <typename OrdinalType, typename ScalarType>
-void write_data(std::ostream& s,
-                const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
-                const StringArray& row_labels, const StringArray& col_labels)
+/// global MPIPackBuffer insertion operator for std::map
+template <typename KeyT, typename ValueT>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::map<KeyT, ValueT>& data)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
-  s << std::scientific << std::setprecision(write_precision)
-    << "                 ";
-  for (j=0; j<ncols; ++j)
-    s << std::setw(write_precision+7) << col_labels[j] << ' ';
-  s << '\n';
-  for (i=0; i<nrows; ++i) {
-    s << std::setw(15) << row_labels[i] << "  ";
-    for (j=0; j<ncols; ++j)
-      s << std::setw(write_precision+7) << m(i,j) << ' ';
-    s << '\n';
-  }
+  size_t len = data.size();
+  s << len;
+  for (typename std::map<KeyT, ValueT>::const_iterator cit = data.begin();
+       cit != data.end(); ++cit)
+    s << cit->first << cit->second;
+  return s;
 }
 
 
-/// istream partial specialization for reading the lower triangle of a
-/// SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void read_lower_triangle(std::istream& s,
-  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+/// global MPIPackBuffer insertion operator for Teuchos::SerialDenseVector
+template <typename OrdinalType, typename ScalarType> 
+MPIPackBuffer& operator<<(MPIPackBuffer& s,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
 {
-  OrdinalType i, j, nrows = sm.numRows();
-  std::string token;
-  for (i=0; i<nrows; ++i)
+  OrdinalType i, n = data.length();
+  s << n;
+  for (i=0; i<n; ++i)
+    s << data[i];
+  return s;
+}
+
+
+/// global MPIPackBuffer insertion operator for Teuchos::SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType> 
+MPIPackBuffer& operator<<(MPIPackBuffer& s,
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data)
+{
+  OrdinalType i, j, n = data.numRows(), m = data.numCols();
+  s << n << m;
+  for (i=0; i<n; ++i)
+    for (j=0; j<m; ++j)
+      s << data(i,j);
+  return s;
+}
+
+
+/// global MPIPackBuffer insertion operator for Teuchos::SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType> 
+MPIPackBuffer& operator<<(MPIPackBuffer& s,
+  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
+{
+  OrdinalType i, j, n = data.numRows();
+  s << n;
+  for (i=0; i<n; ++i)
     for (j=0; j<=i; ++j)
-      { s >> token; sm(i,j) = std::atof(token.c_str()); }
+      s << data(i,j);
+  return s;
 }
 
 
-/// generic input stream template for reading the lower triangle of a
-/// SerialSymDenseMatrix
-template <typename IStreamType, typename OrdinalType, typename ScalarType>
-void read_lower_triangle(IStreamType& s,
-  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+/// global MPIUnpackBuffer extraction operator for Teuchos::SerialDenseVector
+template <typename OrdinalType, typename ScalarType> 
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
+  Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
 {
-  OrdinalType i, j, nrows = sm.numRows();
-  for (i=0; i<nrows; ++i)
+  OrdinalType i, n;
+  s >> n;
+  data.sizeUninitialized(n);
+  for(i=0; i<n; ++i)
+    s >> data[i];
+  return s;
+}
+
+
+/// global MPIUnpackBuffer extraction operator for Teuchos::SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType> 
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data)
+{
+  OrdinalType i, j, n, m;
+  s >> n >> m;
+  data.shapeUninitialized(n, m);
+  for (i=0; i<n; ++i)
+    for (j=0; j<m; ++j)
+      s >> data(i,j);
+  return s;
+}
+
+
+/// global MPIUnpackBuffer extraction operator for Teuchos::SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType> 
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
+  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
+{
+  OrdinalType i, j, n;
+  s >> n;
+  data.shapeUninitialized(n);
+  for (i=0; i<n; ++i)
     for (j=0; j<=i; ++j)
-      s >> sm(i,j);
+      s >> data(i,j);
+  return s;
 }
 
 
-/// ostream version for writing the lower triangle of a SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_lower_triangle(std::ostream& s,
-  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm,
-  bool row_rtn = true)
-{
-  OrdinalType i, j, nrows = sm.numRows();
-  s << std::scientific << std::setprecision(write_precision);
-  for (i=0; i<nrows; ++i) {
-    for (j=0; j<=i; ++j)
-      s << std::setw(write_precision+7) << sm(i,j) << ' ';
-    if (row_rtn)
-      s << '\n';
-  }
-}
-
-
-/// generic output stream template for writing the lower triangle of a
-/// SerialSymDenseMatrix
-template <typename OStreamType, typename OrdinalType, typename ScalarType>
-void write_lower_triangle(OStreamType& s,
-  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
-{
-  OrdinalType i, j, nrows = sm.numRows();
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<=i; ++j)
-      s << sm(i,j);
-}
-
-
-/// istream partial specialization for reading a column vector of a
-/// SerialDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void read_col_vector_trans(std::istream& s, OrdinalType col,
-  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
-{
-  OrdinalType nr = sdm.numRows();
-  ScalarType* sdm_c = sdm[col]; // column vector
-  std::string token; // handles NaN and +/-Inf
-  for (OrdinalType row=0; row<nr; ++row)
-    { s >> token; sdm_c[row] = std::atof(token.c_str()); }
-}
-
-
-/// generic input stream template for reading a column vector of a
-/// SerialDenseMatrix
-template <typename IStreamType, typename OrdinalType, typename ScalarType>
-void read_col_vector_trans(IStreamType& s, OrdinalType col,
-  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
-{
-  OrdinalType nr = sdm.numRows();
-  ScalarType* sdm_c = sdm[col]; // column vector
-  for (OrdinalType row=0; row<nr; ++row)
-    s >> sdm_c[row];
-}
-
-
-/// ostream insertion operator for a column vector from a SerialDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_col_vector_trans(std::ostream& s, OrdinalType col,
-  OrdinalType num_items, 
-  const Teuchos::SerialDenseMatrix<OrdinalType,ScalarType>& sdm,
-  bool brackets = true, bool break_line = true, bool final_rtn = true)
-{
-  s << std::scientific << std::setprecision(write_precision);
-  if (brackets) s << " [ ";
-  else          s << "   ";
-  for (OrdinalType row=0; row < num_items; ++row) {
-    s << std::setw(write_precision+7) << sdm(row,col) << ' ';
-    if (break_line && (row+1)%4 == 0)
-      s << "\n   "; // Output 4 gradient components per line
-  }
-  if (brackets)  s << "] ";
-  if (final_rtn) s << '\n';
-}
-
-
-/// ostream insertion operator for a column vector from a SerialDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_col_vector_trans(std::ostream& s, OrdinalType col,
-  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
-  bool brackets = true, bool break_line = true, bool final_rtn = true)
-{
-  write_col_vector_trans(s, col, sdm.numRows(), sdm, brackets, break_line,
-                         final_rtn);
-}
-
-
-/// ostream insertion operator for a column vector from a SerialDenseMatrix
-template <typename OStreamType, typename OrdinalType, typename ScalarType>
-void write_col_vector_trans(OStreamType& s, OrdinalType col,
-  OrdinalType num_items,
-  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
-{ for (OrdinalType row=0; row < num_items; ++row) s << sdm(row,col); }
-
-
-/// ostream insertion operator for a column vector from a SerialDenseMatrix
-template <typename OStreamType, typename OrdinalType, typename ScalarType>
-void write_col_vector_trans(OStreamType& s, OrdinalType col,
-  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
-{ write_col_vector_trans(s, col, sdm.numRows(), sdm); }
-
-
-/// read array from std::istream
-template <typename ArrayT>
-inline void array_read(std::istream& s, ArrayT& v)
-{
-  typename ArrayT::size_type len = v.size();
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
-    s >> v[i];
-}
-
-
-/// write array to std::ostream
-template <typename ArrayT>
-inline void array_write(std::ostream& s, const ArrayT& v)
-{
-  s << std::scientific << std::setprecision(write_precision);
-  typename ArrayT::size_type len = v.size();
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
-    s << "                     " << std::setw(write_precision+7)
-      << v[i] << '\n';
-}
-
-
-/// write list to std::ostream
-template <typename ListT>
-inline void list_write(const ListT& l, std::ostream& s)
-{
-  BOOST_FOREACH(const typename ListT::value_type& entry, l) {
-    s << "                     " << entry << '\n';
-  }  
-}
+// -----------------------------------------------------------------------
+// templated iostream insertion/extraction operators (in namespace Dakota)
+// -----------------------------------------------------------------------
 
 
 /// global std::istream extraction operator for std::vector
@@ -1516,85 +1692,91 @@ inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& data)
 /// global std::ostream insertion operator for std::list
 template <typename T>
 inline std::ostream& operator<<(std::ostream& s, const std::list<T>& data)
-{ list_write(data, s); return s; }
-
-
-/// write array to std::ostream with labels
-template <typename ArrayT>
-inline void array_write(std::ostream& s, const ArrayT& v,
-                        const std::vector<String>& label_array)
 {
-  s << std::scientific << std::setprecision(write_precision);
-  typename ArrayT::size_type len = v.size();
-  if (label_array.size() != len) {
-    Cerr << "Error: size of label_array in vector<T>::write() does not equal "
-	 << "length of vector." << std::endl;
-    abort_handler(-1);
-  }
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
-    s << "                     " << std::setw(write_precision+7)
-      << v[i] << ' ' << label_array[i] << '\n';
-}
-
-/// write array to std::ostream (APREPRO format)
-/// specialize for StringArray: values need quoting
-inline void array_write_aprepro(std::ostream& s, const StringArray& v,
-                                const std::vector<String>& label_array)
-{
-  s << std::scientific << std::setprecision(write_precision);
-  StringArray::size_type len = v.size();
-  if (label_array.size() != len) {
-    Cerr << "Error: size of label_array in vector<T>::write() does not equal "
-	 << "length of vector." << std::endl;
-    abort_handler(-1);
-  }
-  for (StringArray::size_type i=0; i<len; ++i)
-    s << "                    { "
-      << std::setw(15) << std::setiosflags(std::ios::left)
-      << label_array[i].c_str() << std::resetiosflags(std::ios::adjustfield)
-      << " = " << std::setw(write_precision+7)
-      << '"' << v[i] << '"' << " }\n";
+  BOOST_FOREACH(const typename std::list<T>::value_type& entry, data) {
+    s << "                     " << entry << '\n';
+  }  
+  return s;
 }
 
 
-
-/// write array to std::ostream (APREPRO format)
-template <typename ArrayT>
-inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
-                                const std::vector<String>& label_array)
+/// global ostream insertion operator for std::pair
+template <typename U, typename V>
+std::ostream& operator<<(std::ostream& s, const std::pair<U,V>& data)
 {
-  s << std::scientific << std::setprecision(write_precision);
-  typename ArrayT::size_type len = v.size();
-  if (label_array.size() != len) {
-    Cerr << "Error: size of label_array in vector<T>::write() does not equal "
-	 << "length of vector." << std::endl;
-    abort_handler(-1);
-  }
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
-    s << "                    { "
-      << std::setw(15) << std::setiosflags(std::ios::left)
-      << label_array[i].c_str() << std::resetiosflags(std::ios::adjustfield)
-      << " = " << std::setw(write_precision+7)
-      << v[i] << " }\n";
+  size_t width = write_precision+7;
+  s << "                     " << std::setw(width) 
+    << data.first << ' ' << data.second << '\n';
+  return s;
 }
 
 
-// WJB: confer with MSE -- e.g. desired API? naming style of read/write funcs,
-//                              order of the argument list; mv to data_io.h??
-/// Write array to ostream as a row vector; precede with length if
-/// write_len = true
-template <typename ArrayT>
-inline void array_write_annotated(std::ostream& s, const ArrayT& v,
-				  bool write_len)
+/// global std::ostream insertion operator for std::set
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const std::set<T>& data)
 {
-  s << std::scientific << std::setprecision(write_precision);
-  typename ArrayT::size_type len = v.size();
-  if (write_len)
-    s << len << ' ';
-  for (register typename ArrayT::size_type i=0; i<len; ++i)
-    s << v[i] << ' ';
+  size_t width = write_precision+7;
+  for (typename std::set<T>::const_iterator cit = data.begin();
+       cit != data.end(); ++cit)
+    s << "                     " << std::setw(width) << *cit << '\n';
+  return s;
 }
+
+
+/// global std::ostream insertion operator for std::map
+template <typename KeyT, typename ValueT>
+std::ostream& operator<<(std::ostream& s, const std::map<KeyT, ValueT>& data)
+{
+  size_t width = write_precision+7;
+  for (typename std::map<KeyT, ValueT>::const_iterator cit = data.begin();
+       cit != data.end(); ++cit)
+    s << "                     " << std::setw(width) << cit->first
+      << "  " << std::setw(width) << cit->second << '\n';
+  return s;
+}
+
+
+/// global std::istream extraction operator for SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+inline std::istream& operator>>(std::istream& s,
+  Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
+{ read_data(s, data); return s; }
+
+
+/// global std::ostream insertion operator for SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+inline std::ostream& operator<<(std::ostream& s,
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& data)
+{ write_data(s, data); return s; }
+
+
+/// global std::istream extraction operator for SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+inline std::istream& operator>>(std::istream& s,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data)
+{ read_data(s, data); return s; }
+
+
+/// global std::ostream insertion operator for SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+inline std::ostream& operator<<(std::ostream& s,
+  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data)
+{ write_data(s, data, true, true, true); return s; }
+
+
+/// global std::istream extraction operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+inline std::istream& operator>>(std::istream& s,
+  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
+{ read_data(s, data); return s; }
+
+
+/// global std::ostream insertion operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+inline std::ostream& operator<<(std::ostream& s,
+  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
+{ write_data(s, data, true, true, true); return s; }
 
 } // namespace Dakota
 
-#endif // DATA_IO_H
+#endif // DAKOTA_DATA_IO_H

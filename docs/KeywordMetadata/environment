@@ -5,7 +5,7 @@ The environment section in a %Dakota input file is optional.  It
 specifies the top-level solution environment, optionally including run
 modes, output controls, and identification of the primary iterative
 method (\c top_method_pointer).  The output-related keywords address
-graphics, generation of tabular and results data, and precision of
+generation of tabular and results data, and precision of
 numerical output.
 
 <b> Run Mode Defaults </b> 

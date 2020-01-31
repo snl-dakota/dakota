@@ -41,19 +41,23 @@ public:
   NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
-		      const UShortArray& num_int_seq,
-		      const RealVector& dim_pref, short u_space_type,
+		      unsigned short num_int, const RealVector& dim_pref,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short rule_nest, short rule_growth,
 		      bool piecewise_basis, bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
-		      const UShortArray& exp_order_seq,
-		      const RealVector& dim_pref,
-		      const SizetArray& colloc_pts_seq, Real colloc_ratio,
-		      int seed, short u_space_type, bool piecewise_basis,
-		      bool use_derivs, bool cv_flag,
-		      const String& import_build_points_file,
+		      unsigned short exp_order, const RealVector& dim_pref,
+		      size_t colloc_pts, Real colloc_ratio, int seed,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      //short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs, bool cv_flag,
+		      const String& import_build_pts_file,
 		      unsigned short import_build_format,
 		      bool import_build_active_only);
+
   /// destructor
   ~NonDPolynomialChaos();
 
@@ -64,6 +68,35 @@ public:
   bool resize();
 
 protected:
+
+  //
+  //- Heading: Constructors
+  //
+ 
+  /// base constructor for DB construction of multilevel/multifidelity PCE
+  /// (method_name is not necessary, rather it is just a convenient overload
+  /// allowing the derived ML PCE class to bypass the standard PCE ctor)
+  NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
+		      Model& model);
+  /// base constructor for lightweight construction of multifidelity PCE
+  /// using numerical integration
+  NonDPolynomialChaos(unsigned short method_name, Model& model,
+		      short exp_coeffs_approach, const RealVector& dim_pref,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short ml_alloc_control, short ml_discrep, short rule_nest,
+		      short rule_growth, bool piecewise_basis, bool use_derivs);
+  /// base constructor for lightweight construction of multilevel PCE
+  /// using regression
+  NonDPolynomialChaos(unsigned short method_name, Model& model,
+		      short exp_coeffs_approach, const RealVector& dim_pref,
+		      short u_space_type, short refine_type,
+		      short refine_control, short covar_control,
+		      short ml_alloc_control, short ml_discrep,
+		      const SizetArray& pilot,
+		      //short rule_nest, short rule_growth,
+		      bool piecewise_basis, bool use_derivs,
+		      Real colloc_ratio, int seed, bool cv_flag);
 
   //
   //- Heading: Virtual function redefinitions
@@ -77,12 +110,8 @@ protected:
 
   void initialize_u_space_model();
 
-  void increment_specification_sequence();
-
-  /// form or import an orthogonal polynomial expansion using PCE methods
+  //void initialize_expansion();
   void compute_expansion();
-
-  void multifidelity_expansion();
 
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
@@ -96,11 +125,14 @@ protected:
 			const IntResponseMap& resp_map);
 
   void increment_order_and_grid();
+  void decrement_order_and_grid();
 
   /// print the final coefficients and final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
+  /// export the PCE coefficient array to expansionExportFile
+  void export_coefficients();
 
   /// archive the PCE coefficient array for the orthogonal basis
   void archive_coefficients();
@@ -109,22 +141,29 @@ protected:
   //- Heading: Member functions
   //
 
-  /// special case of multifidelity_expansion() for multilevel allocation of
-  /// samples, mirroring NonDMultilevelSampling for least sq/compressed sensing
-  void multilevel_regression(size_t model_form);
-  /// increment the sequence in numSamplesOnModel for multilevel_regression()
-  void increment_sample_sequence(size_t new_samp, size_t total_samp);
-  /// generate new samples from numSamplesOnModel and update expansion
-  void append_expansion();
-
-private:
-
-  /// define a grid increment that is consistent with an advancement in
-  /// expansion order
-  void increment_grid_from_order();
-  /// define an expansion order that is consistent with an advancement in
-  /// structured/unstructured grid level/density
-  void increment_order_from_grid();
+  /// configure exp_orders from inputs
+  void config_expansion_orders(unsigned short exp_order,
+			       const RealVector& dim_pref,
+			       UShortArray& exp_orders);
+  /// configure u_space_sampler and approx_type based on numerical
+  /// integration specification
+  bool config_integration(unsigned short quad_order, unsigned short ssg_level,
+			  unsigned short cub_int, Iterator& u_space_sampler,
+			  Model& g_u_model, String& approx_type);
+  /// configure u_space_sampler and approx_type based on expansion_samples
+  /// specification
+  bool config_expectation(size_t exp_samples, unsigned short sample_type,
+			  const String& rng, Iterator& u_space_sampler,
+			  Model& g_u_model,  String& approx_type);
+  /// configure u_space_sampler and approx_type based on regression
+  /// specification
+  bool config_regression(const UShortArray& exp_orders, size_t colloc_pts,
+			 Real colloc_ratio_order, short regress_type,
+			 short ls_regress_type,
+			 const UShortArray& tensor_grid_order,
+			 unsigned short sample_type, const String& rng,
+			 const String& pt_reuse, Iterator& u_space_sampler,
+			 Model& g_u_model, String& approx_type);
 
   /// convert number of expansion terms and collocation ratio to a
   /// number of collocation samples
@@ -135,6 +174,59 @@ private:
   /// convert collocation ratio and number of samples to expansion order
   void ratio_samples_to_order(Real colloc_ratio, int num_samples,
 			      UShortArray& exp_order, bool less_than_or_equal);
+
+  //
+  //- Heading: Data
+  //
+
+  /// user requested expansion type
+  short uSpaceType;
+
+  /// cubature integrand
+  unsigned short cubIntSpec;
+
+  /// user specification for dimension_preference
+  RealVector dimPrefSpec;
+
+  /// factor applied to terms^termsOrder in computing number of regression
+  /// points, either user specified or inferred
+  Real collocRatio;
+  /// option for regression PCE using a filtered set of tensor-product
+  /// quadrature points
+  bool tensorRegression;
+
+  /// flag for use of cross-validation for selection of parameter settings
+  /// in regression approaches
+  bool crossValidation;
+  /// flag to restrict cross-validation to only estimate the noise
+  /// tolerance in order to manage computational cost
+  bool crossValidNoiseOnly;
+
+  /// user-specified file for importing build points
+  String importBuildPointsFile;
+
+  /// filename for import of chaos coefficients
+  String expansionImportFile;
+  /// filename for export of chaos coefficients
+  String expansionExportFile;
+
+private:
+
+  /// define a grid increment that is consistent with an advancement in
+  /// expansion order
+  void increment_grid_from_order();
+  /// revert a previous grid increment following an order decrement
+  void decrement_grid_from_order();
+
+  /// define an expansion order that is consistent with an advancement in
+  /// structured/unstructured grid level/density
+  void increment_order_from_grid();
+
+  /// update numSamplesOnModel after an order increment/decrement
+  void update_samples_from_order();
+  /// publish numSamplesOnModel update to the DataFitSurrModel instance
+  void update_model_from_samples();
+
   /// convert an isotropic/anisotropic expansion_order vector into a scalar
   /// plus a dimension preference vector
   void order_to_dim_preference(const UShortArray& order, unsigned short& p,
@@ -144,14 +236,6 @@ private:
   //- Heading: Data
   //
 
-  /// filename for export of chaos coefficients
-  String expansionExportFile;
-  /// filename for import of chaos coefficients
-  String expansionImportFile;
-
-  /// factor applied to terms^termsOrder in computing number of regression
-  /// points, either user specified or inferred
-  Real collocRatio;
   /// exponent applied to number of expansion terms for computing
   /// number of regression points
   Real termsOrder;
@@ -159,16 +243,6 @@ private:
   /// seed for random number generator used for regression with LHS
   /// and sub-sampled tensor grids
   int randomSeed;
-
-  /// option for regression PCE using a filtered set tensor-product points
-  bool tensorRegression;
-
-  /// flag for use of cross-validation for selection of parameter settings
-  /// in regression approaches
-  bool crossValidation;
-  /// flag to restrict cross-validation to only estimate the noise
-  /// tolerance in order to manage computational cost
-  bool crossValidNoiseOnly;
 
   /// noise tolerance for compressive sensing algorithms; vector form used
   /// in cross-validation
@@ -184,15 +258,15 @@ private:
   unsigned short numAdvance;
 
   /// user specification for expansion_order (array for multifidelity)
-  UShortArray expOrderSeqSpec;
-  /// user specification for dimension_preference
-  RealVector dimPrefSpec;
+  unsigned short expOrderSpec;
   /// user specification for collocation_points (array for multifidelity)
-  SizetArray collocPtsSeqSpec;
+  size_t collocPtsSpec;
   /// user specification for expansion_samples (array for multifidelity)
-  SizetArray expSamplesSeqSpec;
-  /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
-  size_t sequenceIndex;
+  size_t expSamplesSpec;
+  /// user request of quadrature order
+  unsigned short quadOrderSpec;
+  /// user request of sparse grid level
+  unsigned short ssgLevelSpec;
 
   /// derivative of the PCE with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)
@@ -201,68 +275,27 @@ private:
   /// user request for use of normalization when outputting PCE coefficients
   bool normalizedCoeffOutput;
 
-  /// user requested expansion type
-  short uSpaceType;
-
-  /// user request of quadrature order
-  UShortArray quadOrderSeqSpec;
-  /// user request of sparse grid level
-  UShortArray ssgLevelSeqSpec;
-  /// cubature integrand
-  unsigned short cubIntSpec;
-
-  /// user specified import build points file
-  String importBuildPointsFile;
-  /// user specified import build file format
-  unsigned short importBuildFormat;
-  /// user specified import build active only
-  bool importBuildActiveOnly;
-
-  /// user specified import approx. points file
-  String importApproxPointsFile;
-  /// user specified import approx. file format
-  unsigned short importApproxFormat;
-  /// user specified import approx. active only
-  bool importApproxActiveOnly;
-
-  /// local flag to signal a resizing occurred
-  bool resizedFlag;
-
-  /// local flag to signal an explicit call to resize
-  /// is necessary if resizedFlag is false
-  bool callResize;
-
-  /// number of samples allocated to each level of a discretization
-  /// hierarchy within multilevel regression
-  SizetArray NLev;
-  /// equivalent number of high fidelity evaluations accumulated using samples
-  /// across multiple model forms and/or discretization levels
-  Real equivHFEvals;
+  // local flag to signal a resizing occurred
+  //bool resizedFlag;
+  // local flag to signal an explicit call to resize() is necessary
+  //bool callResize;
 };
 
 
 inline void NonDPolynomialChaos::
 append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  // adapt the expansion in sync with the dataset
-  numSamplesOnModel += resp_map.size();
-  if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION)
+  switch (expansionCoeffsApproach) {
+  case Pecos::ORTHOG_LEAST_INTERPOLATION: // no exp order update
+    NonDExpansion::append_expansion(samples, resp_map); break;
+  default:
+    // adapt the expansion in sync with the dataset
+    numSamplesOnModel += resp_map.size();
     increment_order_from_grid();
-
-  // utilize rebuild following expansion updates
-  uSpaceModel.append_approximation(samples, resp_map, true);
-}
-
-
-inline void NonDPolynomialChaos::append_expansion()
-{
-  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
-  //         increment_order_from_grid() called
-
-  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
-  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
-						    true, false);
-  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
+    // utilize rebuild following expansion updates
+    uSpaceModel.append_approximation(samples, resp_map, true);
+    break;
+  }
 }
 
 

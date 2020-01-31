@@ -34,11 +34,14 @@ extern PRPCache data_pairs;
 Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(probDescDB.get_int("environment.output_precision"))
+  writePrecision(problem_db.get_int("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
+
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
 
   if (model.primary_fn_type() == OBJECTIVE_FNS)
     numObjFns = model.num_primary_fns();
@@ -77,11 +80,11 @@ bool Analyzer::resize()
 {
   bool parent_reinit_comms = Iterator::resize();
 
-  numContinuousVars = iteratedModel.cv();
-  numDiscreteIntVars = iteratedModel.div();
+  numContinuousVars     = iteratedModel.cv();
+  numDiscreteIntVars    = iteratedModel.div();
   numDiscreteStringVars = iteratedModel.dsv();
-  numDiscreteRealVars = iteratedModel.drv();
-  numFunctions = iteratedModel.num_functions();
+  numDiscreteRealVars   = iteratedModel.drv();
+  numFunctions          = iteratedModel.response_size();
 
   return parent_reinit_comms;
 }
@@ -92,7 +95,7 @@ void Analyzer::update_from_model(const Model& model)
 
   numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
   numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
-  numFunctions          = model.num_functions();
+  numFunctions          = model.response_size();
 
   bool err_flag = false;
   // Check for correct bit associated within methodName
@@ -147,14 +150,17 @@ void Analyzer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator()
+    // are not called through IteratorScheduler::run_iterator().  Within a
+    // recursion, it will correspond to the first initialize_run() with an
+    // uninitialized mapping, such as the outer-iterator on the first pass
+    // of a recursion.  On subsequent passes, it may correspond to the inner
+    // iterator.  The Iterator scope should not matter for the iteratedModel
+    // mapping initialize/finalize.
     if (!iteratedModel.mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
       bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
-      if (var_size_changed) {
-        // Ignore return value
-        bool reinit_comms = resize();
-      }
+      if (var_size_changed)
+        /*bool reinit_comms =*/ resize(); // Ignore return value
     }
 
     // Do not reset the evaluation reference for sub-iterators
@@ -180,8 +186,21 @@ void Analyzer::post_run(std::ostream& s)
     // The remaining final results output varies by iterator branch
     print_results(s);
   }
+}
 
-  resultsDB.write_databases();
+
+void Analyzer::finalize_run()
+{
+  // Finalize an initialized mapping.  This will correspond to the first
+  // finalize_run() with an uninitialized mapping, such as the inner-iterator
+  // in a recursion.
+  if (iteratedModel.mapping_initialized()) {
+    bool var_size_changed = iteratedModel.finalize_mapping();
+    if (var_size_changed)
+      /*bool reinit_comms =*/ resize(); // Ignore return value
+  }
+
+  Iterator::finalize_run(); // included for completeness
 }
 
 
@@ -225,9 +244,11 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
         update_best(model.current_variables(), eval_id, resp);
       if (log_resp_flag) // log response data
         allResponses[eval_id] = resp.copy();
+      archive_model_response(resp, i);
     }
-  }
 
+    archive_model_variables(model, i);
+  }
   // synchronize asynchronous evaluations
   if (asynch_flag) {
     const IntResponseMap& resp_map = model.synchronize();
@@ -236,11 +257,17 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
     if (log_best_flag) { // update best variables/response
       IntRespMCIter r_cit;
       if (compactMode)
-	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-	  update_best(allSamples[i], r_cit->first, r_cit->second);
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+          update_best(allSamples[i], r_cit->first, r_cit->second);
       else
-	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-	  update_best(allVariables[i], r_cit->first, r_cit->second);
+        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+          update_best(allVariables[i], r_cit->first, r_cit->second);
+    }
+    if (resultsDB.active()) {
+      IntRespMCIter r_cit;
+      for(r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
+        archive_model_response(r_cit->second,
+			       std::distance(resp_map.begin(), r_cit));
     }
   }
 }
@@ -254,6 +281,10 @@ void Analyzer::update_model_from_variables(Model& model, const Variables& vars)
   model.active_variables(vars);
 }
 
+// ***************************************************
+// MSE TO DO: generalize for all active variable types
+// NonDSampling still overrrides in the case of samplingVarsMode != active view
+// ***************************************************
 
 void Analyzer::update_model_from_sample(Model& model, const Real* sample_vars)
 {
@@ -271,15 +302,15 @@ sample_to_variables(const Real* sample_c_vars, Variables& vars)
 {
   // pack sample_matrix into vars_array
   const Variables& model_vars = iteratedModel.current_variables();
-  size_t i, j, num_adiv = model_vars.adiv(), num_adrv = model_vars.adrv();
   if (vars.is_null()) // use minimal data ctor
     vars = Variables(model_vars.shared_data());
-  for (j=0; j<numContinuousVars; ++j)
-    vars.continuous_variable(sample_c_vars[j], j); // jth row
+  for (size_t i=0; i<numContinuousVars; ++i)
+    vars.continuous_variable(sample_c_vars[i], i); // ith row
   // BMA: this may be needed if vars wasn't initialized off the model
   vars.inactive_continuous_variables(
     model_vars.inactive_continuous_variables());
   // preserve any active discrete vars (unsupported by sample_matrix)
+  size_t num_adiv = model_vars.adiv(), num_adrv = model_vars.adrv();
   if (num_adiv)
     vars.all_discrete_int_variables(model_vars.all_discrete_int_variables());
   if (num_adrv)
@@ -292,10 +323,10 @@ samples_to_variables_array(const RealMatrix& sample_matrix,
 			   VariablesArray& vars_array)
 {
   // pack sample_matrix into vars_array
-  size_t num_samples = sample_matrix.numCols(); // #vars by #samples
+  size_t i, num_samples = sample_matrix.numCols(); // #vars by #samples
   if (vars_array.size() != num_samples)
     vars_array.resize(num_samples);
-  for (size_t i=0; i<num_samples; ++i)
+  for (i=0; i<num_samples; ++i)
     sample_to_variables(sample_matrix[i], vars_array[i]);
 }
 
@@ -305,8 +336,8 @@ void Analyzer::
 variables_to_sample(const Variables& vars, Real* sample_c_vars)
 {
   const RealVector& c_vars = vars.continuous_variables();
-  for (size_t j=0; j<numContinuousVars; ++j)
-    sample_c_vars[j] = c_vars[j]; // jth row of samples_matrix
+  for (size_t i=0; i<numContinuousVars; ++i)
+    sample_c_vars[i] = c_vars[i]; // ith row of samples_matrix
 }
 
 
@@ -315,7 +346,7 @@ variables_array_to_samples(const VariablesArray& vars_array,
 			   RealMatrix& sample_matrix)
 {
   // pack vars_array into sample_matrix
-  size_t i, j, num_samples = vars_array.size();
+  size_t i, num_samples = vars_array.size();
   if (sample_matrix.numRows() != numContinuousVars ||
       sample_matrix.numCols() != num_samples)
     sample_matrix.reshape(numContinuousVars, num_samples); // #vars by #samples
@@ -675,6 +706,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
+  // This reader will either get the eval ID from the file, or number
+  // the IDs starting from 1
   TabularIO::read_data_tabular(filename, "post-run input", vars, resp,
 			       import_prp_list, tabular_format, verbose,
 			       active_only);
@@ -718,7 +751,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     // update allVariables,allSamples
     if (compactMode) variables_to_sample(iter_vars, allSamples[i]);
     else             allVariables[i] = iter_vars;
-    // update allResponses
+    // update allResponses (requires unique eval IDs)
     allResponses[pr.eval_id()] = iter_resp;
 
     // mirror any post-processing in Analyzer::evaluate_parameter_sets()
@@ -756,29 +789,90 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
   for (k=0; k<numFunctions; ++k) {
     s << resp_labels[k] << " Sobol' indices:\n"; 
     s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
-    
-    for (i=0; i<numContinuousVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
-        s << "                     " << std::setw(write_precision+7) << S4[k][i]
-	  << ' ' << std::setw(write_precision+7) << T4[k][i] << ' '
+    Real main, total; 
+    for (i=0; i<numContinuousVars; ++i) {
+      main = S4[k][i]; total = T4[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
+        s << "                     " << std::setw(write_precision+7) << main
+	  << ' ' << std::setw(write_precision+7) << total << ' '
 	  << cv_labels[i] << '\n';
+    }
     offset = numContinuousVars;
-    for (i=0; i<numDiscreteIntVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
+    for (i=0; i<numDiscreteIntVars; ++i) {
+      main = S4[k][i+offset]; total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
-	  << T4[k][i+offset] << ' ' << div_labels[i] << '\n';
+	  << main << ' ' << std::setw(write_precision+7)
+	  << total << ' ' << div_labels[i] << '\n';
+    }
     offset += numDiscreteIntVars;
     //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
     //offset += numDiscreteStringVars;
-    for (i=0; i<numDiscreteRealVars; ++i)
-      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
+    for (i=0; i<numDiscreteRealVars; ++i) {
+      main = S4[k][i+offset]; total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
-          << T4[k][i+offset] << ' ' << drv_labels[i] << '\n';
+	  << main << ' ' << std::setw(write_precision+7)
+          << total << ' ' << drv_labels[i] << '\n';
+    }
   }
 }
 
+/** printing of variance based decomposition indices. */
+void Analyzer::archive_sobol_indices() const
+{
+  if(!resultsDB.active())
+    return;
+
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+
+  size_t i, k, offset;
+  for (k=0; k<numFunctions; ++k) {
+    RealArray main_effects, total_effects;
+    StringArray scale_labels;
+    for (i=0; i<numContinuousVars; ++i) {
+      Real main = S4[k][i], total = T4[k][i];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(cv_labels[i]);
+      }
+    }
+    offset = numContinuousVars;
+    for (i=0; i<numDiscreteIntVars; ++i) {
+      Real main = S4[k][i+offset], total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(div_labels[i]);
+      }
+    }
+    offset += numDiscreteIntVars;
+    //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
+    //offset += numDiscreteStringVars;
+    for (i=0; i<numDiscreteRealVars; ++i) {
+      Real main = S4[k][i+offset], total = T4[k][i+offset];
+      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(drv_labels[i]);
+      }
+    }
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
+    resultsDB.insert(run_identifier(), {String("main_effects"), resp_labels[k]}, 
+                     main_effects, scales);
+    resultsDB.insert(run_identifier(), {String("total_effects"), resp_labels[k]}, 
+                     total_effects, scales);
+  }
+}
 
 void Analyzer::compute_best_metrics(const Response& response,
 				    std::pair<Real,Real>& metrics)
@@ -909,7 +1003,7 @@ update_best(const Variables& vars, int eval_id, const Response& response)
 }
 
 
-void Analyzer::print_results(std::ostream& s)
+void Analyzer::print_results(std::ostream& s, short results_state)
 {
   if (!numObjFns && !numLSqTerms) {
     s << "<<<<< Best data metrics not defined for generic response functions\n";

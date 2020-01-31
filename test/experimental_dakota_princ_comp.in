@@ -1,0 +1,40 @@
+#@ s*: Label=FastTest
+#@ *: Label=Experimental
+# DAKOTA INPUT FILE - dakota_princ_comp.in
+# This input file demonstates an initial prototype 
+# principal components analysis (PCA).  In this version, 
+# we take an initial LHS sample, typically of field 
+# responses.  The sample matrix is decomposed using PCA
+# and the first M components that contribute to 95% or 
+# percent_variance_explained are retained and used in prediction.
+# Setting debug output will result in all of the PCA 
+# information being printed. 
+
+environment
+        tabular_data
+
+method,
+	  seed = 34785				
+          sampling
+          samples = 3 
+          principal_components
+          #percent_variance_explained = 0.99999
+          #output debug
+
+variables,
+	uniform_uncertain = 2
+	  upper_bounds  0.5  0.5
+	  lower_bounds  0.1  0.1
+	  descriptors   'x1' 'x2'
+
+interface,
+        direct	
+	  analysis_driver = 'damped_oscillator'
+
+responses,
+	response_functions = 1
+        field_responses = 1
+        lengths = 10
+	no_gradients	
+	no_hessians
+

@@ -1,3 +1,11 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 #ifdef _WIN32
 #include "dakota_windows.h"
 #define dlopen(x,y) LoadLibrary(x)
@@ -228,7 +236,8 @@ DLSolver::botch(const char *fmt, ...)
 	}
 
 DLSolver::DLSolver(Model& model):
-	Optimizer1(model), dl_core_run(0), dl_destructor(0), dlLib(0)
+	Optimizer1(model, std::shared_ptr<TraitsBase>(new DLSolverTraits())),
+	dl_core_run(0), dl_destructor(0), dlLib(0)
 {
 	const String &dlDetails = probDescDB.get_string("method.dl_solver.dlDetails");
 	char *s, *s0;

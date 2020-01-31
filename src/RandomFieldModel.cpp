@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "RandomFieldModel.hpp"
+#include "MarginalsCorrDistribution.hpp"
 #include "ParallelLibrary.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 
@@ -19,7 +20,6 @@ RandomFieldModel* RandomFieldModel::rfmInstance(NULL);
 RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   // LPS TODO: initialize other class data members off problemDB
-  numFunctions(subModel.num_functions()),
   numObservations(0), 
   expansionForm(problem_db.get_ushort("model.rf.expansion_form")),
   covarianceForm(problem_db.get_ushort("model.rf.analytic_covariance")),
@@ -27,9 +27,8 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
   percentVariance(problem_db.get_real("model.truncation_tolerance")),
   actualReducedRank(5)
 {
-  rfmInstance = this;
   modelType = "random_field";
-
+  modelId = RecastModel::recast_model_id(root_model_id(), "RANDOM_FIELD");
   init_dace_iterator(problem_db);
 
   validate_inputs();
@@ -110,6 +109,8 @@ void RandomFieldModel::validate_inputs()
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  bool sub_model_resize = RecastModel::initialize_mapping(pl_iter);
+
   // TODO: create modes to switch between generating, accepting, and
   // underlying model
   fieldRealizationId=0;
@@ -128,7 +129,7 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   initialize_recast();
 
   if (expansionForm == RF_KARHUNEN_LOEVE) {
-    // augment AleatoryDistParams with normal(0,1)
+    // augment mvDist with normal(0,1)
     initialize_rf_coeffs();
     // update message lengths for send/receive of parallel jobs (normally
     // performed once in Model::init_communicators() just after construct time)
@@ -138,14 +139,6 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   }
   // may need true for PCA/GP if the vars characterization changes
   return false; // size of variables unchanged
-}
-
-
-bool RandomFieldModel::finalize_mapping()
-{
-  // TODO: return to submodel space
-  // probably don't do this...
-  return false; // This will become true when TODO is implemented.
 }
 
 
@@ -176,11 +169,11 @@ void RandomFieldModel::get_field_data()
       rfBuildVars.reshape(subModel.cv(), num_samples);
       rfBuildVars.assign(daceIterator.all_samples());
     }
-    rfBuildData.reshape(num_samples, numFunctions);
+    rfBuildData.reshape(num_samples, numFns);
     const IntResponseMap& all_resp = daceIterator.all_responses();
     IntRespMCIter r_it = all_resp.begin(); 
     for (size_t samp=0; samp<num_samples; ++samp, ++r_it)
-      for (size_t fn=0; fn<numFunctions; ++fn) 
+      for (size_t fn=0; fn<numFns; ++fn) 
         rfBuildData(samp,fn) = r_it->second.function_value(fn);
   }
 }
@@ -227,13 +220,13 @@ void RandomFieldModel::identify_field_model()
       = rfBasis.get_right_singular_vector_transpose();
 
     // Compute the factor scores
-    RealMatrix factor_scores(num_samples, numFunctions);
+    RealMatrix factor_scores(num_samples, numFns);
     int myerr = factor_scores.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., 
                                        centered_matrix, principal_comp, 0.);
 
     // BMA TODO: verify why this size differs; seems that factor
     // scores should be n x p and that this could seg fault if
-    // num_samples > numFunctions...
+    // num_samples > numFns...
     RealMatrix
       f_scores(Teuchos::Copy, factor_scores, num_samples, num_samples, 0, 0);
 
@@ -254,7 +247,7 @@ void RandomFieldModel::identify_field_model()
       gpApproximations.push_back(Approximation(sharedData));
     for (int i = 0; i < actualReducedRank; ++i) {
       RealVector factor_i = Teuchos::getCol(Teuchos::View,f_scores,i);
-      gpApproximations[i].add(rfBuildVars, factor_i);
+      gpApproximations[i].add_array(rfBuildVars, factor_i);
       gpApproximations[i].build();
       const String gp_string = boost::lexical_cast<String>(i);
       const String gp_prefix = "PCA_GP";
@@ -298,9 +291,9 @@ void RandomFieldModel::initialize_recast()
   size_t recast_vars = submodel_vars + actualReducedRank;
 
   // BMA TODO: This is wrong!  Assumes normal lead the cv array!
-  const Pecos::AleatoryDistParams& adp = 
-    rfmInstance->subModel.aleatory_distribution_parameters();
-  size_t num_sm_normal = adp.normal_means().length();
+  UShortMultiArrayConstView sm_cv_types = subModel.continuous_variable_types();
+  size_t num_sm_normal
+    = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
 
   // TODO: don't assume this for PCA case!
 
@@ -326,8 +319,8 @@ void RandomFieldModel::initialize_recast()
   // TODO: can we get RecastModel to tolerate empty indices when no
   // map is present?
   size_t num_primary = subModel.num_primary_fns(),
-    num_secondary = subModel.num_functions() - subModel.num_primary_fns(),
-    num_recast_fns = num_primary + num_secondary,
+    num_secondary    = subModel.num_secondary_fns(),
+    num_recast_fns   = num_primary + num_secondary,
     recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
 
   Sizet2DArray primary_resp_map_indices(num_primary);
@@ -342,8 +335,7 @@ void RandomFieldModel::initialize_recast()
     secondary_resp_map_indices[i][0] = num_primary + i;
   }
 
-  BoolDequeArray nonlinear_resp_mapping(numFunctions,
-					BoolDeque(numFunctions, false));
+  BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
 
   // Initial response order for the newly built subspace model same as
   // the subModel (does not augment with gradient request)
@@ -391,17 +383,20 @@ void RandomFieldModel::initialize_rf_coeffs()
   if (expansionForm == RF_KARHUNEN_LOEVE) {
 
     // get submodel normal parameters (could get from current object as well)
-    const Pecos::AleatoryDistParams& sm_adp = 
-      subModel.aleatory_distribution_parameters();
-    RealVector normal_means = sm_adp.normal_means();
-    RealVector normal_std_deviations = sm_adp.normal_std_deviations();
-    RealVector normal_lb = sm_adp.normal_lower_bounds();
-    RealVector normal_ub = sm_adp.normal_upper_bounds();
+    const Pecos::MultivariateDistribution& sm_dist
+      = subModel.multivariate_distribution();
+    Pecos::MarginalsCorrDistribution* sm_mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)sm_dist.multivar_dist_rep();
+    RealVector normal_means, normal_stdev, normal_lb, normal_ub;
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);
+    sm_mvd_rep->pull_parameters(Pecos::NORMAL, Pecos::N_UPR_BND, normal_ub);
 
     // append normal variables
     int num_sm_normal = normal_means.length();
     normal_means.resize(num_sm_normal + actualReducedRank);
-    normal_std_deviations.resize(num_sm_normal + actualReducedRank);
+    normal_stdev.resize(num_sm_normal + actualReducedRank);
     normal_lb.resize(num_sm_normal + actualReducedRank);
     normal_ub.resize(num_sm_normal + actualReducedRank);
     // BMA TODO: update label management to not assume normal are leading vars
@@ -411,9 +406,9 @@ void RandomFieldModel::initialize_rf_coeffs()
       currentVariables.continuous_variable_label(sm_cv_labels[i], i);
     for (int i=0; i<actualReducedRank; ++i) {
       normal_means[num_sm_normal + i] = 0.0;
-      normal_std_deviations[num_sm_normal + i] = 1.0;
+      normal_stdev[num_sm_normal + i] = 1.0;
       normal_lb[num_sm_normal + i] = -std::numeric_limits<Real>::infinity();
-      normal_ub[num_sm_normal + i] = std::numeric_limits<Real>::infinity();
+      normal_ub[num_sm_normal + i] =  std::numeric_limits<Real>::infinity();
       String xi_label = "xi_" + boost::lexical_cast<String>(i+1);
       currentVariables.
         continuous_variable_label(xi_label, num_sm_normal + i);
@@ -422,12 +417,13 @@ void RandomFieldModel::initialize_rf_coeffs()
       currentVariables.
         continuous_variable_label(sm_cv_labels[i], actualReducedRank + i);
 
-    // update ADP on the RandomFieldModel
-    Pecos::AleatoryDistParams& rfm_adp = aleatory_distribution_parameters();
-    rfm_adp.normal_means(normal_means);
-    rfm_adp.normal_std_deviations(normal_std_deviations);
-    rfm_adp.normal_lower_bounds(normal_lb);
-    rfm_adp.normal_upper_bounds(normal_ub);
+    // update mvDist for the RandomFieldModel
+    Pecos::MarginalsCorrDistribution* mvd_rep
+      = (Pecos::MarginalsCorrDistribution*)mvDist.multivar_dist_rep();
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_MEAN,    normal_means);
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_STD_DEV, normal_stdev);
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_LWR_BND, normal_lb);
+    mvd_rep->push_parameters(Pecos::NORMAL, Pecos::N_UPR_BND, normal_ub);
   }
 }
 
@@ -442,9 +438,11 @@ void RandomFieldModel::vars_mapping(const Variables& recast_augmented_vars,
     // BMA TODO: generalize this for other views; for now, assume cv()
     // starts with normal uncertain
     size_t num_sm_cv = rfmInstance->subModel.cv();
-    const Pecos::AleatoryDistParams& adp = 
-      rfmInstance->subModel.aleatory_distribution_parameters();
-    size_t num_sm_normal = adp.normal_means().length();
+    UShortMultiArrayConstView sm_cv_types
+      = rfmInstance->subModel.continuous_variable_types();
+    size_t num_sm_normal
+      = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
+
     const RealVector& augmented_cvars = 
       recast_augmented_vars.continuous_variables();
 
@@ -512,9 +510,9 @@ void RandomFieldModel::generate_kl_realization()
   // BMA TODO: properly extract the N(0,1) vars from their place in
   // the overall vector when not in aleatory view (what's in the total
   // vector depends on the view...)
-  const Pecos::AleatoryDistParams& adp = 
-    subModel.aleatory_distribution_parameters();
-  size_t num_sm_normal = adp.normal_means().length();
+  UShortMultiArrayConstView sm_cv_types = subModel.continuous_variable_types();
+  size_t num_sm_normal
+    = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
   const RealVector& augmented_cvars = currentVariables.continuous_variables();
   RealVector kl_coeffs(Teuchos::View, augmented_cvars.values() + num_sm_normal,
                        actualReducedRank);
@@ -529,9 +527,8 @@ void RandomFieldModel::generate_kl_realization()
   //std::system("dprepro randomcoeffs.txt KL_realize.template KL_realize.i");
   //std::system("launch -n 1 encore -i KL_realize.i");
 
-  if (covarianceForm != NOCOVAR) { 
+  if (covarianceForm != NOCOVAR)
     std::system("./run_kl_realize.sh");
-  }
 
   // post-condition: mesh file gets written containing the field realization
   // probably want to tag it with evalID...
@@ -549,7 +546,7 @@ void RandomFieldModel::generate_kl_realization()
   for (int i=0; i<actualReducedRank; ++i) {
     // BMA TODO: replace with matrix-vector ops (perhaps in ReducedBasis)
     Real mult = data_singular_values[i]/cov_dof * kl_coeffs[i];
-    for (int k=0; k<numFunctions; ++k)
+    for (int k=0; k<numFns; ++k)
       kl_prediction[k] += mult*rf_ev_trans(i,k);
   }
 
@@ -570,7 +567,7 @@ void RandomFieldModel::generate_pca_gp_realization()
     Real pca_coeff = gpApproximations[i].value(new_sample);
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "DEBUG: pca_coeff = " << pca_coeff << '\n';
-    for (int k=0; k<numFunctions; ++k)
+    for (int k=0; k<numFns; ++k)
       pca_prediction[k] += pca_coeff*principal_comp(i,k);
   }
 
@@ -594,13 +591,11 @@ void RandomFieldModel::write_field(const RealVector& field_prediction)
   }
 }
 
+
 /// map the inbound ActiveSet to the sub-model (map derivative variables)
 void RandomFieldModel::set_mapping(const Variables& recast_vars,
 				   const ActiveSet& recast_set,
 				   ActiveSet& sub_model_set)
-{
-
-}
-
+{ }
  
 }
