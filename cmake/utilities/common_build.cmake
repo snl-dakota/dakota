@@ -212,8 +212,6 @@ ctest_start(${DAKOTA_CTEST_PROJECT_TAG})
 ctest_configure(RETURN_VALUE ConfigStatus)
 message("ctest_configure: cmake return code: ${ConfigStatus}")
 
-message(STATUS "Wesley in common_build.cmake. ctest_configure: cmake return code: ${ConfigStatus}")
-
 # Using file(WRITE...) resets the dakotaCtestResultsFile for each CTest run
 file( WRITE ${dakotaCtestResultsFile} "ctest_configure: ${ConfigStatus}\n" )
 
@@ -341,12 +339,8 @@ if ( DAKOTA_DO_PACK )
     #ctest_build(TARGET package APPEND) - WJB: too bad no ctest_package function
     execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
       WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
-      RESULT_VARIABLE CpackStatus
       )
   endif() # CPackConfig.cmake exists
-
-  message("ctest_cpackt: Pack return code: ${CpackStatus}")
-  file( APPEND ${dakotaCtestResultsFile} "ctest_pack: ${CpackStatus}\n" )
 
   # WJB- ToDo: Assess the need for another variable, DAKOTA_DO_SOURCE_PACK
   #            PROBABLY is needed since only need to create source tarball once
@@ -369,10 +363,7 @@ if ( DAKOTA_DO_PACK )
   if ( DAKOTA_BUILD_DOCS )
     #message( "ctest_build - Building: ${CMAKE_COMMAND} --target package_docs" )
     execute_process( COMMAND ${CMAKE_COMMAND} --build ${CTEST_BINARY_DIRECTORY}
-                     --target package_docs
-                     RESULT_VARIABLE CbuildDocStatus)
-    message("ctest_buildDoc: buildDoc return code: ${CbuildDocStatus}")
-    file( APPEND ${dakotaCtestResultsFile} "ctest_buildDoc: ${CbuildDocStatus}\n" )
+                     --target package_docs )
   endif() # DAKOTA_BUILD_DOCS
 endif() # DAKOTA_DO_PACK
 
