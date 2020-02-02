@@ -116,6 +116,20 @@ private:
                         unsigned short eif_convergence_cntr,
                         unsigned short dist_convergence_cntr);
 
+  /// print mean and variance if debug flag is ON // Edited by AT
+  void debug_print_values();
+
+  /// print counter if debug flag is ON // Edited by AT
+  void debug_print_counter(unsigned short globalIterCount,
+                           const Real& eif_star,
+                           Real distCStar,
+                           unsigned short dist_convergence_cntr);
+
+  // DEBUG - output set of samples used to build the GP
+  // If problem is 2d, output a grid of points on the GP
+  //   and truth (if requested)
+  void debug_plots(); // Edited by AT
+
   /// expected improvement function for the GP
   Real expected_improvement(const RealVector& means,
 			                     const RealVector& variances);
@@ -176,7 +190,11 @@ private:
 
   /// counter for convergence
   // unsigned short eif_convergence_cntr, dist_convergence_cntr; // Edited by AT
-  Real distCstar; // Edited by AT
+  Real distCStar; // Edited by AT
+
+  // input array holder for a batch (batch acquisition)
+  RealMatrix inputArrayBatchAcquisition; // Edited by AT
+
 };
 
 
