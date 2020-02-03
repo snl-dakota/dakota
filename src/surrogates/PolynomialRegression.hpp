@@ -29,8 +29,8 @@ public:
 
   // Getters
 
-  MatrixXd get_samples();
-  MatrixXd get_response();
+  MatrixXd& get_samples();
+  MatrixXd& get_response();
   int get_polynomial_order();
 
   // Setters

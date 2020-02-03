@@ -19,6 +19,7 @@ dakota_add_unit_test(NAME GaussianProcessTest SOURCES
 )
 
 dakota_add_unit_test(NAME PolynomialRegressionTest SOURCES
+  ../../util/unit/CommonTestUtils.cpp
   teuchos_unit_test_driver.cpp
   PolynomialRegressionTest.cpp
 )

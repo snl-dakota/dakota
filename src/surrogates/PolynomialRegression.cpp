@@ -21,9 +21,9 @@ PolynomialRegression::~PolynomialRegression() {}
 
 // Getters
 
-MatrixXd PolynomialRegression::get_samples() { return samples; }
+MatrixXd& PolynomialRegression::get_samples() { return samples; }
 
-MatrixXd PolynomialRegression::get_response() { return response; }
+MatrixXd& PolynomialRegression::get_response() { return response; }
 
 int PolynomialRegression::get_polynomial_order() { return polynomial_order; }
 
