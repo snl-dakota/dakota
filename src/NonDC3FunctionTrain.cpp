@@ -218,18 +218,18 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   //configure_pecos_options(); // C3 does not use Pecos options
 
+  // Note: method and model spec are redundant, without a good way to
+  // encapsulate XML entities that differ only in their bindings.
+  // > Defining a shared spec class with instances in Data{Method,Model} works
+  //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
+  push_c3_options(); // needs to precede construct_basis()
+
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
   shared_data_rep->construct_basis(u_dist);
-
-  // TO DO: method and model spec are redundant.  How to encapsulate an
-  // XML entity for {method,model} to allow it in either location?
-  // > Defining a shared spec class with instances in Data{Method,Model} works
-  //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
-  push_c3_options();
 }
 
 

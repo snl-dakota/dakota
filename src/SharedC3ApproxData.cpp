@@ -43,7 +43,8 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   c3Verbosity(0),//problem_db.get_int("model.c3function_train.verbosity")),
   adaptConstruct(false), crossVal(false)
 {
-  // This ctor used for user-spec of DataFitSurrModel (surrogate global ft)
+  // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
+  // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
   approxOpts = multi_approx_opts_alloc(num_vars);
   oneApproxOpts = (struct OneApproxOpts **)
@@ -78,6 +79,7 @@ SharedC3ApproxData(const String& approx_type,
   c3Verbosity(0), adaptConstruct(false), crossVal(false)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
+  // (used to build an FT on top of a user model in NonDC3FuntionTrain)
 
   // short basis_type; approx_type_to_basis_type(approxType, basis_type);
 
