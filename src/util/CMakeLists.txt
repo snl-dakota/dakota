@@ -45,9 +45,10 @@ target_compile_definitions(dakota_util PUBLIC
 dakota_strict_warnings(dakota_util)
 dakota_gcov_target(dakota_util)
 
-target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
-
+target_link_libraries(dakota_util PUBLIC
+  Eigen3::Eigen)
 
 install(FILES ${util_headers} DESTINATION "include")
+install(TARGETS dakota_util EXPORT ${ExportTarget} DESTINATION lib)
 
 add_subdirectory(unit)

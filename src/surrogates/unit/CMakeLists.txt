@@ -21,11 +21,6 @@ dakota_add_unit_test(NAME GaussianProcessTest
 target_include_directories(GaussianProcessTest PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_link_libraries(GaussianProcessTest PRIVATE dakota_surrogates ${Teuchos_LIBRARIES})
 
-dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/rol_params.xml"
-  "${CMAKE_CURRENT_BINARY_DIR}/rol_params.xml"
-  surrogates_unit_test_copied_files
-  )
-
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gp_test_data"
   "${CMAKE_CURRENT_BINARY_DIR}/gp_test_data"
   surrogates_unit_test_copied_files

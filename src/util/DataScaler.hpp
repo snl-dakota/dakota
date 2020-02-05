@@ -19,7 +19,7 @@ namespace util {
 
 /**
  *  \brief The DataScaler class computes the scaling coefficients and scales
- *         a 2D data matrix with dimensions num_features by num_samples.
+ *         a 2D data matrix with dimensions num_samples by num_features.
  *
  *  There are currently 3 scaling options for the DataScaler class:
  *
@@ -63,7 +63,7 @@ class DataScaler {
 
 /**
  *  \brief Get the the scaled data matrix.
- *  \returns Scaled features - (num_features by num_samples).
+ *  \returns Scaled features - (num_samples by num_features).
 */
     MatrixXd getScaledFeatures() {return scaledFeatures;}
 
@@ -80,7 +80,7 @@ class DataScaler {
     VectorXd scalerFeaturesOffsets;
     /// Vector of scaling factors - (num_features).
     VectorXd scalerFeaturesScaleFactors;
-    /// Scaled surrogate data matrix - (num_features by num_samples).
+    /// Scaled surrogate data matrix - (num_samples by num_features).
     MatrixXd scaledFeatures;
 
 
@@ -108,7 +108,7 @@ class NormalizationScaler: public DataScaler {
 /**
  * \brief Main constructor for NormalizationScaler
  *
- * \param[in] features           Unscaled data matrix - (num_features by num_samples).
+ * \param[in] features           Unscaled data matrix - (num_samples by num_features).
  * \param[in] mean_normalization Flag for whether to use mean or min value
  *                               as the offset.
  * \param[in] norm_factor        Optional scaling factor applied to each feature.
@@ -136,7 +136,7 @@ class StandardizationScaler: public DataScaler {
 /**
  * \brief Main constructor for StandardizationScaler
  *
- * \param[in] features           Unscaled data matrix - (num_features by num_samples).
+ * \param[in] features           Unscaled data matrix - (num_samples by num_features).
  * \param[in] norm_factor        Optional scaling factor applied to each feature.
  *                               Has a default value of 1.0 .
  */
@@ -163,7 +163,7 @@ class NoScaler: public DataScaler {
 /**
  * \brief Main constructor for NoScaler.
  *
- * \param[in] features           Unscaled data matrix - (num_features by num_samples).
+ * \param[in] features           Unscaled data matrix - (num_samples by num_features).
  */
 };
 

@@ -27,6 +27,9 @@
 #ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.hpp"
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+#include "DakotaSurrogates.hpp"
+#endif // HAVE_DAKOTA_SURROGATES
 #include "DakotaGraphics.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
@@ -157,6 +160,10 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	     approx_type == "global_moving_least_squares")
       return new SurfpackApproximation(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+    else if (approx_type == "global_gauss_proc")
+      return new GPApproximation(problem_db, shared_data, approx_label);
+#endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
 	   << std::endl;
@@ -220,6 +227,10 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
 	   approx_type == "global_moving_least_squares")
     approx = new SurfpackApproximation(shared_data);
 #endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+    else if (approx_type == "global_gauss_proc")
+      return new GPApproximation(shared_data);
+#endif // HAVE_DAKOTA_SURROGATES
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;

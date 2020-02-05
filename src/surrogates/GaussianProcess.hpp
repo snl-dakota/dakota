@@ -12,6 +12,7 @@
 #include <memory>
 #include "DataScaler.hpp"
 #include "Eigen/StdVector"
+#include "Teuchos_ParameterList.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -51,8 +52,8 @@ public:
 /**
  * \brief Main constructor for the GaussianProcess.
  *
- * \param[in] samples Matrix of data for surrogate construction - (num_features by num_samples)
- * \param[in] response Vector of targets for surrogate construction.
+ * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+ * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
  * \param[in] sigma_bounds Bounds for the scaling hyperparameter
  * \param[in] length_scale_bounds Bounds for each length scale hyperparameter.
  * \param[in] scaler_type String for which type of scaling will be applied to the surrogate data.
@@ -108,6 +109,13 @@ public:
  *  points.
 */
   void value(const MatrixXd &samples, MatrixXd &approx_values);
+
+/**
+ *  \brief Get the dimension of the feature space
+*/
+  int get_num_variables() const
+    { return numVariables; }
+
 
 private:
 
@@ -211,7 +219,12 @@ private:
                                 const VectorXd &sigma_bounds,
                                 const MatrixXd &length_scale_bounds);
 
-
+/**
+ *  \brief Set the default optimization parameters for ROL for GP hyperparameter
+ *  estimation.
+ *  \param[in] rol_params RCP to a Teuchos::ParameterList of ROL's options.
+*/
+  void set_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params);
 
 }; // class GaussianProcess
 

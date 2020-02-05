@@ -7342,6 +7342,7 @@ static Model_mp_lit
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
 	MP2(surrogateType,global_function_train),
+	MP2(surrogateType,global_gauss_proc),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
 	MP2(surrogateType,global_mars),

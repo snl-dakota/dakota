@@ -1,0 +1,5 @@
+%eval_id interface              x1    x2
+1        SimulationInterface    0.2   0.45
+2        SimulationInterface   -0.3   -0.7
+3        SimulationInterface    0.4   -0.1
+4        SimulationInterface   -0.25  0.33

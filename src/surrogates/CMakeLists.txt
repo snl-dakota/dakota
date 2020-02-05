@@ -39,5 +39,6 @@ dakota_gcov_target(dakota_surrogates)
 target_link_libraries(dakota_surrogates PUBLIC dakota_util)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
+install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
 
 add_subdirectory(unit)
