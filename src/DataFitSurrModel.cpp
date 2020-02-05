@@ -84,15 +84,27 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
 
   // Instantiate actual model from DB
+  bool basis_expansion = false;  short u_space_type;
   if (model_construct) {
     // If approx type uses standardized random variables (hard-wired for now),
     // wrap with a ProbabilityTransformModel (retaining distribution bounds as
     // in PCE, SC, C3 ctors)
     if (strends(surrogateType, "_orthogonal_polynomial") ||
-	strends(surrogateType, "_interpolation_polynomial") ||
-	strends(surrogateType, "_function_train" )) {
-      // Hardwire for C3 case prior to availability of general Model spec:
-      short u_space_type = PARTIAL_ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
+	strends(surrogateType, "_interpolation_polynomial")) {
+      basis_expansion = true;
+      u_space_type = problem_db.get_short("model.surrogate.expansion_type");
+    }
+    else if (strends(surrogateType, "_function_train" )) {
+      basis_expansion = true;
+      // Hardwire for C3 case prior to availability of XML spec:
+      u_space_type = PARTIAL_ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
+    }
+    else {
+      actualModel = problem_db.get_model();
+      // leave mvDist as initialized in Model ctor (from variables spec)
+    }
+
+    if (basis_expansion) {
       actualModel.assign_rep(new
 	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
       // overwrite mvDist from Model ctor by copying transformed u-space dist
@@ -100,10 +112,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
       // construct time augmented with run time pull_distribution_parameters().
       mvDist = actualModel.multivariate_distribution().copy();
     }
-    else {
-      actualModel = problem_db.get_model();
-      // leave mvDist as initialized in Model ctor (from variables spec)
-    }
+
     // ensure consistency of inputs/outputs between actual and approx
     check_submodel_compatibility(actualModel);
   }
@@ -163,13 +172,22 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
     cache, am_interface_id, currentResponse.function_labels()), false);
 
+  // initialize the basis, if needed
+  if (basis_expansion)
+    shared_approximation().construct_basis(mvDist);
+
   // initialize the DiscrepancyCorrection instance
-  deltaCorr.initialize(*this, surrogateFnIndices, corrType,
-    problem_db.get_short("model.surrogate.correction_order"));
+  switch (responseMode) {
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
+    if (corrType)
+      deltaCorr.initialize(*this, surrogateFnIndices, corrType,
+	problem_db.get_short("model.surrogate.correction_order"));
+    break;
+  }
 
   if (import_pts)
     import_points(problem_db.get_ushort("model.surrogate.import_build_format"),
-		  problem_db.get_bool("model.surrogate.import_use_variable_labels"),
+      problem_db.get_bool("model.surrogate.import_use_variable_labels"),
       problem_db.get_bool("model.surrogate.import_build_active_only"));
   if (export_pts)
     initialize_export();

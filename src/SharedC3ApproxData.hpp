@@ -60,8 +60,6 @@ public:
   size_t pre_combine(short);
   void post_combine(short);
 
-  void construct_basis(const Pecos::MultivariateDistribution& u_dist);
-
   void set_parameter(String var, size_t val);
   void set_parameter(String var, bool   val);
   void set_parameter(String var, short  val);
@@ -83,6 +81,8 @@ protected:
   //
 
   //void clear_model_keys();
+
+  void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
 
   short discrepancy_type() const;
 

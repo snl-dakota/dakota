@@ -225,11 +225,9 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   push_c3_options(); // needs to precede construct_basis()
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
   const Pecos::MultivariateDistribution& u_dist
     = uSpaceModel.truth_model().multivariate_distribution();
-  shared_data_rep->construct_basis(u_dist);
+  uSpaceModel.shared_approximation().construct_basis(u_dist);
 }
 
 
