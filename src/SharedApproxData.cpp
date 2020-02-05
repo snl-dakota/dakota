@@ -423,6 +423,17 @@ void SharedApproxData::link_multilevel_surrogate_data()
 */
 
 
+void SharedApproxData::integration_iterator(const Iterator& iterator)
+{
+  if (dataRep) dataRep->integration_iterator(iterator);
+  else { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: integration_iterator() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
 short SharedApproxData::discrepancy_type() const
 {
   if (dataRep) return dataRep->discrepancy_type();
@@ -432,25 +443,21 @@ short SharedApproxData::discrepancy_type() const
 
 void SharedApproxData::build()
 {
-  if (dataRep)
-    dataRep->build();
+  if (dataRep) dataRep->build();
   //else no-op (implementation not required for shared data)
 }
 
 
 void SharedApproxData::rebuild()
 {
-  if (dataRep)
-    dataRep->rebuild();
-  else // if incremental rebuild not defined, fall back to full build
-    build();
+  if (dataRep) dataRep->rebuild();
+  else         build();// if incremental not defined, fall back to full build
 }
 
 
 void SharedApproxData::pop(bool save_surr_data)
 {
-  if (dataRep)
-    dataRep->pop(save_surr_data);
+  if (dataRep) dataRep->pop(save_surr_data);
   //else no-op (derived implementation not required)
 }
 
@@ -553,6 +560,18 @@ void SharedApproxData::combined_to_active(bool clear_combined)
   if (dataRep)
     dataRep->combined_to_active(clear_combined);
   //else no-op (derived implementation not required)
+}
+
+
+void SharedApproxData::
+construct_basis(const Pecos::MultivariateDistribution& mv_dist)
+{
+  if (dataRep) dataRep->construct_basis(mv_dist);
+  else { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: construct_basis() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
 }
 
 
