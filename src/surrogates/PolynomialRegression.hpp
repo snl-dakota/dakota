@@ -32,25 +32,33 @@ public:
   MatrixXd& get_samples();
   MatrixXd& get_response();
   int get_polynomial_order();
+  bool get_scaling();
+  VectorXd& get_polynomial_coeffs();
+  double get_polynomial_intercept();
 
   // Setters
 
   void set_samples(const MatrixXd &samples_);
   void set_response(const MatrixXd &response_);
   void set_polynomial_order(const int polynomial_order_);
+  void set_scaling(const bool scaling_);
 
   // Surrogate
 
   void build_surrogate();
-  void value(const MatrixXd &samples, MatrixXd &approx_values);
+  void surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values);
 
 private:
 
-  // Fields
+  // Input fields
   MatrixXd samples;
   MatrixXd response;
   int polynomial_order;
+  bool scaling;
 
+  // Polynomial surrogate fields
+  VectorXd polynomial_coeffs;
+  double polynomial_intercept;
 };
 } // namespace surrogates
 } // namespace dakota
