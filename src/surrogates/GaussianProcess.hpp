@@ -111,10 +111,26 @@ public:
   void value(const MatrixXd &samples, MatrixXd &approx_values);
 
 /**
- *  \brief Get the dimension of the feature space
+ *  \brief Evaluate the gradient of the Gaussian process at a single point.
+ *  \param[in] samples Coordinates of the prediction points.
+ *  \param[out] gradient Matrix of gradient vectors at the prediction points.
+*/
+  void gradient(const MatrixXd &samples, MatrixXd &gradient);
+
+/**
+ *  \brief Evaluate the Hessian of the Gaussian process at a single point.
+ *  \param[in] sample Coordinates of the prediction point.
+ *  \param[out] hessian Hessian matrix at the prediction point.
+*/
+  void hessian(const MatrixXd &sample, MatrixXd &hessian);
+
+/**
+ *  \brief Get the dimension of the feature space.
+ *  \param[out] numVariables The dimension of the feature space.
 */
   int get_num_variables() const
     { return numVariables; }
+
 
 
 private:
@@ -191,6 +207,7 @@ private:
 */
   void compute_Gram_pred(const MatrixXd &samples, MatrixXd &Gram_pred);
 
+
 /**
  *  \brief Evaluate the squared exponential kernel for the prediction points
  *  given a pair a points.
@@ -206,7 +223,31 @@ private:
  *  \param[in] pred_pts Matrix of prediction points.
  *  \param[out] pred_mat Matrix of surrogate data-prediction points kernel evaluations.
 */
-  void compute_prediction_matrix(const MatrixXd &pred_pts, MatrixXd &pred_mat);
+  void compute_prediction_matrix(const MatrixXd &scaled_pred_pts, MatrixXd &pred_mat);
+
+/**
+ *  \brief Compute the first derivatve of the prediction matrix for a given component.
+ *  \param[in] pred_mat Prediction matrix - Rectangular matrix of kernel evaluations between 
+ *  the surrogate and prediction points.
+ *  \param[in] scaled_pred_pts Matrix of prediction points.
+ *  \param[in] index Specifies the component of the derivative.
+ *  \param[out] first_deriv_pred_mat First derivative of the prediction matrix for a given component.
+*/
+  void compute_first_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd &scaled_pred_pts,
+                                    const int index, MatrixXd &fist_deriv_pred_mat);
+
+/**
+ *  \brief Compute the second derivatve of the prediction matrix for a pair of components.
+ *  \param[in] pred_mat Prediction matrix - Rectangular matrix of kernel evaluations between
+ *  the surrogate and prediction points.
+ *  \param[in] scaled_pred_pts Matrix of prediction points.
+ *  \param[in] index_i Specifies the first component of the second derivative.
+ *  \param[in] index_j Specifies the second component of the second derivative.
+ *  \param[out] second_deriv_pred_mat Second derivative of the prediction matrix for a pair of components.
+*/
+  void compute_second_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd &scaled_pred_pts,
+                                     const int index_i, const int index_j,
+                                     MatrixXd &second_deriv_pred_mat);
 
 /**
  *  \brief Randomly generate initial guesses for the optimization routine.

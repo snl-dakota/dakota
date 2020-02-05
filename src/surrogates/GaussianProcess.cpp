@@ -53,13 +53,55 @@ void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int nu
 }
 
 
-void GaussianProcess::compute_prediction_matrix(const MatrixXd &pred_pts, MatrixXd &pred_mat) {
-  const int numPredictionPts = pred_pts.rows();
+void GaussianProcess::compute_prediction_matrix(const MatrixXd &scaled_pred_pts, MatrixXd &pred_mat) {
+  const int numPredictionPts = scaled_pred_pts.rows();
   pred_mat.resize(numPredictionPts,numSamples);
   MatrixXd scaled_samples = dataScaler->getScaledFeatures();
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
-      pred_mat(i,j) = sq_exp_cov_pred(pred_pts.row(i),scaled_samples.row(j));
+      pred_mat(i,j) = sq_exp_cov_pred(scaled_pred_pts.row(i),scaled_samples.row(j));
+    }
+  }
+}
+
+void GaussianProcess::compute_first_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd & scaled_pred_pts,
+                                                   const int index, MatrixXd &first_deriv_pred_mat) {
+  const int numPredictionPts = scaled_pred_pts.rows();
+  first_deriv_pred_mat.resize(numPredictionPts,numSamples);
+  first_deriv_pred_mat.setZero();
+
+  MatrixXd scaled_samples = dataScaler->getScaledFeatures();
+
+  for (int i = 0; i < numPredictionPts; i++) {
+    for (int j = 0; j < numSamples; j++) {
+      first_deriv_pred_mat(i,j) = -pred_mat(i,j)
+                                   *(scaled_pred_pts(i,index) - scaled_samples(j,index))
+                                   *exp(-2.0*thetaValues(index+1));
+    }
+  }
+}
+
+void GaussianProcess::compute_second_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd & scaled_pred_pts,
+                                                    const int index_i, const int index_j,
+                                                    MatrixXd &second_deriv_pred_mat) {
+  const int numPredictionPts = 1; /* Hessian evaluations are at a single point */
+  second_deriv_pred_mat.resize(numPredictionPts,numSamples);
+  second_deriv_pred_mat.setZero();
+
+  MatrixXd scaled_samples = dataScaler->getScaledFeatures();
+
+  double diagonal_factor = 0.0;
+
+  if (index_i == index_j)
+    diagonal_factor = 1.0;
+
+  for (int i = 0; i < numPredictionPts; i++) {
+    for (int j = 0; j < numSamples; j++) {
+      second_deriv_pred_mat(i,j) = pred_mat(i,j)
+                                   *((scaled_pred_pts(i,index_i) - scaled_samples(j,index_i))
+                                   *(scaled_pred_pts(i,index_j) - scaled_samples(j,index_j))
+                                   *exp(-2.0*(thetaValues(index_i+1) + thetaValues(index_j+1)))
+                                   - diagonal_factor*exp(-2.0*(thetaValues(index_i+1))));
     }
   }
 }
@@ -284,11 +326,20 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 }
 
 void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
-  const int numPredictionPts = samples.rows();
+  if (samples.cols() != numVariables) {
+    throw(std::runtime_error("Gaussian Process value inputs are not consistent."
+          " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
+  }
+
+  /*
   if (numPredictionPts != approx_values.rows()) {
     throw(std::runtime_error("Gaussian Process value inputs are not consistent."
           " Number of samples and approximation sizes do not match"));
   }
+  */
+
+  const int numPredictionPts = samples.rows();
+  approx_values.resize(numPredictionPts,numVariables);
 
   /* scale the samples (prediction points) */
   MatrixXd scaled_pred_pts = dataScaler->scaleSamples(samples);
@@ -312,9 +363,78 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   compute_Gram_pred(scaled_pred_pts,Gram_pred);
   posteriorCov = Gram_pred - pred_mat*chol_solve_pred_mat;
 
+
   posteriorStdDev.resize(numPredictionPts);
   for (int i = 0; i < numPredictionPts; i++) {
     posteriorStdDev(i) = sqrt(posteriorCov(i,i));
+  }
+
+}
+
+void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient) {
+
+  if (samples.cols() != numVariables) {
+    throw(std::runtime_error("Gaussian Process gradient inputs are not consistent."
+          " Dimension of the feature space for the evaluation points and Gaussian Process do not match"));
+  }
+
+  const int numPredictionPts = samples.rows();
+
+  /* resize the gradient */
+  gradient.resize(numPredictionPts,numVariables);
+
+  /* scale the samples (prediction points) */
+  MatrixXd scaled_pred_pts = dataScaler->scaleSamples(samples);
+
+  /* compute the Gram matrix and its Cholesky factorization */
+  compute_Gram(false);
+  CholFact.compute(GramMatrix);
+
+  MatrixXd pred_mat, chol_solve_target, first_deriv_pred_mat;
+  compute_prediction_matrix(scaled_pred_pts,pred_mat);
+  chol_solve_target = CholFact.solve(targetValues);
+
+  /* gradient */
+  for (int i = 0; i < numPredictionPts; i++) {
+    for (int j = 0; j < numVariables; j++) {
+      compute_first_deriv_pred_mat(pred_mat,scaled_pred_pts,j,first_deriv_pred_mat);
+      auto grad_components = first_deriv_pred_mat*chol_solve_target;
+      gradient(i,j) = grad_components(i,0);
+    }
+  }
+
+}
+
+void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian) {
+
+  if (sample.rows() != 1) {
+    throw(std::runtime_error("Gaussian Process Hessian evaluation is for a single point."
+          "The input contains more than one sample."));
+  }
+
+  /* resize the Hessian */
+  hessian.resize(numVariables,numVariables);
+
+  /* scale the samples (prediction points) */
+  MatrixXd scaled_pred_point = dataScaler->scaleSamples(sample);
+
+  /* compute the Gram matrix and its Cholesky factorization */
+  compute_Gram(false);
+  CholFact.compute(GramMatrix);
+
+  MatrixXd pred_mat, chol_solve_target, second_deriv_pred_mat;
+  compute_prediction_matrix(scaled_pred_point,pred_mat);
+  chol_solve_target = CholFact.solve(targetValues);
+
+  /* Hessian */
+  for (int i = 0; i < numVariables; i++) {
+    for (int j = i; j < numVariables; j++) {
+      compute_second_deriv_pred_mat(pred_mat,scaled_pred_point,i,j,second_deriv_pred_mat);
+      auto hessian_component = second_deriv_pred_mat*chol_solve_target;
+      hessian(i,j) = hessian_component(0,0);
+      if (i != j)
+        hessian(j,i) = hessian(i,j);
+    }
   }
 
 }

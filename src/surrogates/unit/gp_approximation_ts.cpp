@@ -222,6 +222,41 @@ int test_gp(double atol){
     std::cout << cov_2D << std::endl;
   }
 
+  /* try to compute the derivative at a point */
+  int eval_index = 1;
+  auto eval_point = eval_pts_2D.row(eval_index);
+
+  MatrixXd gp_grad;
+  MatrixXd gold_gp_grad(1,2);
+  gold_gp_grad << -0.31280824, -0.25430975;
+  gp_2D.gradient(eval_point,gp_grad);
+
+  
+  if (print_output) {
+    std::cout << "\nGP grad value at evaluation point:\n" << gp_grad << std::endl;
+  }
+
+  if (!matrix_equals(gp_grad,gold_gp_grad,atol)){
+    std::cout << "7\n";
+    return 7;
+  }
+
+  MatrixXd gp_hessian;
+  MatrixXd gold_gp_hessian(2,2);
+  gold_gp_hessian << 0.87452373, 0.1014484, 0.1014484, -0.84271328;
+  gp_2D.hessian(eval_point,gp_hessian);
+
+  if (print_output) {
+    std::cout << "\nGP Hessian value at evaluation point:\n" << gp_hessian << std::endl;
+  }
+
+  if (!matrix_equals(gp_hessian,gold_gp_hessian,atol)){
+    std::cout << "8\n";
+    return 8;
+  }
+
+  std::cout << "\n\n";
+
   return 0;
 }
 
