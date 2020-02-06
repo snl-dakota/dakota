@@ -261,6 +261,12 @@ private:
 
 inline void C3Approximation::active_model_key(const UShortArray& key)
 {
+  // sets approxData keys
+  // Note: this may be required even if levApproxIter->first is consistent
+  // with incoming key due to enumeration of multiple approx data sets by
+  // ApproximationInterface::*_add()
+  Approximation::active_model_key(key);
+
   // Test for change
   if (levApproxIter != levelApprox.end() && levApproxIter->first == key)
     return;
@@ -271,9 +277,6 @@ inline void C3Approximation::active_model_key(const UShortArray& key)
     std::pair<UShortArray, C3FnTrainPtrs> ftp_pair(key, C3FnTrainPtrs());
     levApproxIter = levelApprox.insert(ftp_pair).first;
   }
-
-  // sets approxData keys
-  Approximation::active_model_key(key);
 }
 
 

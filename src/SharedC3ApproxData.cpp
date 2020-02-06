@@ -105,33 +105,40 @@ SharedC3ApproxData::~SharedC3ApproxData()
 void SharedC3ApproxData::
 construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 {
-  const ShortArray& rv_types = mv_dist.random_variable_types();
-  assert (rv_types.size() == numVars);
+  const ShortArray& rv_types  = mv_dist.random_variable_types();
+  const BitArray& active_vars = mv_dist.active_variables();
+  bool no_mask = active_vars.empty();
+  size_t i, av_cntr = 0, num_rv = rv_types.size(),
+    num_active_rv = (no_mask) ? num_rv : active_vars.count();
+  assert (num_active_rv == numVars);
 
-  for (size_t i=0; i < numVars; ++i) {
-    // printf("i = %zu\n",i);
-    struct OpeOpts * opts;
-    switch (rv_types[i]) {
-    case Pecos::STD_NORMAL:
-      opts = ope_opts_alloc(HERMITE);  break;
-    case Pecos::STD_UNIFORM:
-      opts = ope_opts_alloc(LEGENDRE); break;
-    default:
-      opts = NULL;
-      PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
-	    << "SharedC3ApproxData::distribution_parameters()" << std::endl;
-      abort_handler(-1);               break;
+  struct OpeOpts       * o_opts;
+  struct OneApproxOpts * a_opts;
+  for (i=0; i<num_rv; ++i)
+    if (no_mask || active_vars[i]) {
+      switch (rv_types[i]) {
+      case Pecos::STD_NORMAL:
+	o_opts = ope_opts_alloc(HERMITE);  break;
+      case Pecos::STD_UNIFORM:
+	o_opts = ope_opts_alloc(LEGENDRE); break;
+      default:
+	o_opts = NULL;
+	PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
+	      << "SharedC3ApproxData::distribution_parameters()" << std::endl;
+	abort_handler(-1);               break;
+      }
+      // printf("push_back\n");
+      ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
+      // Note: maxOrder unused for regression;
+      //       to be used for adaptation by cross-approximation
+      ope_opts_set_maxnum(o_opts, maxOrder+1);    //   maxnum =   maxord + 1
+      a_opts = oneApproxOpts[av_cntr];
+      one_approx_opts_free_deep(&a_opts);
+      a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
+      // printf("set i\n");
+      multi_approx_opts_set_dim(approxOpts, av_cntr, a_opts);
+      ++av_cntr;
     }
-    // printf("push_back\n");
-    ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
-    // Note: maxOrder unused for regression;
-    //       to be used for adaptation by cross-approximation
-    ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
-    one_approx_opts_free_deep(&oneApproxOpts[i]);
-    oneApproxOpts[i] = one_approx_opts_alloc(POLYNOMIAL,opts);
-    // printf("set i\n");
-    multi_approx_opts_set_dim(approxOpts,i,oneApproxOpts[i]);
-  }
 }
 
     
