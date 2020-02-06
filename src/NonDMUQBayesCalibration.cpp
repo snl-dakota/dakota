@@ -19,10 +19,13 @@
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "NonDSampling.hpp"
+#include "PRPMultiIndex.hpp"
 
 #include <boost/property_tree/ptree.hpp>
 
 namespace Dakota {
+
+extern PRPCache data_pairs; // global container
 
 
 // initialization of statics, not being used yet
@@ -151,7 +154,7 @@ void NonDMUQBayesCalibration::calibrate()
   /////////////////////////////
   // input specification is communicated using Boost property trees
   boost::property_tree::ptree pt; // TO DO: look at options...
-  int N = 1000;
+  int N =  (chainSamples > 0) ? chainSamples : 1000;
   pt.put("NumSamples", N); // number of Monte Carlo samples
   pt.put("PrintLevel",0);
   pt.put("KernelList", "Kernel1"); // the transition kernel
@@ -172,7 +175,124 @@ void NonDMUQBayesCalibration::calibrate()
     init_pt[i] = init_point[i];
 
   samps = mcmc->Run(init_pt);
+
+  // populate acceptanceChain, acceptedFnVals
+  cache_chain();
+
+  // Generate useful stats from the posterior samples
+  compute_statistics();
 }
+
+
+/** Populate all of acceptanceChain(num_params, chainSamples)
+    acceptedFnVals(numFunctions, chainSamples) */
+void NonDMUQBayesCalibration::cache_chain()
+{
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
+             chainSamples);
+  acceptedFnVals.shapeUninitialized(numFunctions, chainSamples);
+
+  // temporaries for evals/lookups
+  // the MCMC model omits the hyper params and residual transformations...
+  Variables lookup_vars = nonDMUQInstance->mcmcModel.current_variables().copy();
+  String   interface_id = nonDMUQInstance->mcmcModel.interface_id();
+  Response  lookup_resp = nonDMUQInstance->mcmcModel.current_response().copy();
+  ActiveSet   lookup_as = lookup_resp.active_set();
+  lookup_as.request_values(1);
+  lookup_resp.active_set(lookup_as);
+  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
+
+
+  Eigen::MatrixXd const& chain = samps->AsMatrix();
+
+  unsigned int num_mcmc = chain.size();
+  if (num_mcmc != chainSamples) {
+    Cerr << "\nError: MUQ cache_chain(): chain length is " << num_mcmc
+   << "; expected " << chainSamples << '\n';
+    abort_handler(METHOD_ERROR);
+  }
+
+  unsigned int lookup_failures = 0;
+  unsigned int num_params = numContinuousVars + numHyperparams;
+  for (int i=0; i<num_mcmc; ++i) {
+
+    // translate the output matrix into x- or u-space lookup vars and
+    // x-space acceptanceChain
+\    if (standardizedSpace) {
+      // u_rv and x_rv omit any hyper-parameters
+      RealVector u_rv(numContinuousVars, false);
+      for (int j=0; j<numContinuousVars; ++j)
+        u_rv(j) = chain(j,i);
+
+      Real* acc_chain_i = acceptanceChain[i];
+      RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
+      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+      for (int j=numContinuousVars; j<num_params; ++j){
+
+        acc_chain_i[j] = chain(j,i); // trailing hyperparams are not transformed
+        
+      }
+      // surrogate needs u-space variables for eval
+      if (mcmcModel.model_type() == "surrogate")
+        lookup_vars.continuous_variables(u_rv);
+      else
+        lookup_vars.continuous_variables(x_rv);
+    }
+    else {
+      // A view that includes calibration params and Dakota-managed
+      // hyper-parameters, to facilitate copying from the longer qv
+      // into acceptanceChain:
+      RealVector theta_hp(Teuchos::View, acceptanceChain[i], 
+        numContinuousVars + numHyperparams);
+      for (int j=0; j<numContinuousVars; ++j){
+        theta_hp(j) = chain(j,i);
+        // std::cout << chain(j,i) << std::endl;
+      }
+      // lookup vars only need the calibration parameters
+      RealVector x_rv(Teuchos::View, acceptanceChain[i], 
+          numContinuousVars);
+      lookup_vars.continuous_variables(x_rv);
+    }
+
+    // now retreive function values
+
+    // NOTE: The MCMC may be PCE/SC model, DataFitSurrModel, or raw
+    // model, but it's type may be a ProbabilityTransform wrapper if
+    // standardizedSpace is active.  mcmcModelHasSurrogate controls
+    // model re-evals.  This is not sufficiently general, e.g., if the
+    // mcmcModel is a HierarchSurrModel, could perform costly re-eval.
+
+    // TODO: Consider doing lookup first, then surrogate re-eval, or
+    // querying a more complete eval database when available...
+
+    if (mcmcModelHasSurrogate) {
+      nonDMUQInstance->mcmcModel.active_variables(lookup_vars);
+      nonDMUQInstance->mcmcModel.evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = nonDMUQInstance->mcmcModel.current_response().function_values();
+      Teuchos::setCol(fn_vals, i, acceptedFnVals);
+    }
+    else {
+      lookup_pr.variables(lookup_vars);
+      PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+      if (cache_it == data_pairs.get<hashed>().end()) {
+  ++lookup_failures;
+  // Set NaN in the chain points to avoid misleading the user
+  RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+  nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+  Teuchos::setCol(nan_fn_vals, i, acceptedFnVals);
+      }
+      else {
+  const RealVector& fn_vals = cache_it->response().function_values();
+  Teuchos::setCol(fn_vals, i, acceptedFnVals);
+      }
+    }
+
+  }
+  if (lookup_failures > 0 && outputLevel > SILENT_OUTPUT)
+    Cout << "Warning: could not retrieve function values for " 
+   << lookup_failures << " MCMC chain points." << std::endl;
+}
+
 
 
 void NonDMUQBayesCalibration::
