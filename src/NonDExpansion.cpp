@@ -28,7 +28,7 @@
 #include "DiscrepancyCorrection.hpp"
 #include "dakota_tabular_io.hpp"
 #include "ParallelLibrary.hpp"
-#include "ProbabilityTransformation.hpp"
+#include "NatafTransformation.hpp"
 
 //#define DEBUG
 //#define CONVERGENCE_DATA
@@ -3466,20 +3466,25 @@ void NonDExpansion::update_final_statistics_gradients()
     SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
     const SizetArray& final_dvv
       = finalStatistics.active_set_derivative_vector();
-    size_t num_final_grad_vars = final_dvv.size();
-    Real factor, x = 0.; // x is a dummy for common pdf API (unused by uniform)
     const std::vector<Pecos::RandomVariable>& x_ran_vars
       = iteratedModel.multivariate_distribution().random_variables();
+    Pecos::ProbabilityTransformation& nataf
+      = uSpaceModel.probability_transformation();
 
+    RealVector init_x;  nataf.trans_U_to_X(initialPtU, init_x);
     RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
-    int num_final_stats = final_stat_grads.numCols();
-    size_t i, j, end_cauv = startCAUV + numCAUV;
+    int num_final_stats = final_stat_grads.numCols();  Real z, x, factor;
+    size_t num_final_grad_vars = final_dvv.size(), i, j, rv_index, deriv_j,
+      end_cauv = startCAUV + numCAUV;
     for (j=0; j<num_final_grad_vars; ++j) {
-      size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
+      deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
       if ( deriv_j < startCAUV || deriv_j >= end_cauv ) {
-	// augmented design var sensitivity: 2/range (see jacobian_dZ_dX())
-	factor = x_ran_vars[svd.cv_index_to_all_index(deriv_j)].pdf(x)
-	       / Pecos::UniformRandomVariable::std_pdf();
+	// design/epistemic/state: factor = 2/range (see jacobian_dZ_dX())
+	rv_index = svd.cv_index_to_all_index(deriv_j);
+	z = initialPtU[deriv_j];  x = init_x[deriv_j];
+	//nataf_rep->trans_Z_to_X(z, x, deriv_j); // private
+	factor = x_ran_vars[rv_index].pdf(x)
+	       / Pecos::UniformRandomVariable::std_pdf(z);
 	for (i=0; i<num_final_stats; ++i)
 	  final_stat_grads(j,i) *= factor;
       }
