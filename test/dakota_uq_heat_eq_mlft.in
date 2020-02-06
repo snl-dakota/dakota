@@ -10,6 +10,7 @@
 method,
 	model_pointer = 'HIERARCH'
 	multifidelity_function_train			#s0,#s1
+	  collocation_points_sequence = 100 40 20 10	#s0
 #	  allocation_control greedy			#s1
 #	multilevel_function_train			#s2,#s3
 #	  pilot_samples = 100 40 20 10			#s2,#s3
@@ -22,15 +23,6 @@ method,
 	  convergence_tol = 0.0001
 	  seed = 1237
 	  output silent
-
-model,
-	id_model = 'FT'
-	surrogate global function_train
-          adapt_rank
-#         max_num = 3
-          start_rank = 2  kick_rank = 2  max_rank = 10
-          solver_tolerance = 1e-8  rounding_tolerance = 1e-8
-#         verbosity = 1
 
 model,
 	id_model = 'HIERARCH'
