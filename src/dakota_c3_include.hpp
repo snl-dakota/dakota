@@ -124,7 +124,7 @@ extern "C"
     void multi_approx_opts_free(struct MultiApproxOpts *);
     void multi_approx_opts_set_dim(struct MultiApproxOpts *,size_t,struct OneApproxOpts *);
                                
-    void c3axpy (double a, struct FunctionTrain *x, struct FunctionTrain **y, double epsilon);
+    void c3axpy (double a, struct FunctionTrain *x, struct FunctionTrain **y, double epsilon, struct MultiApproxOpts * opts);
     
     // sobol sensitivities;
     struct C3SobolSensitivity;

@@ -345,13 +345,15 @@ void C3Approximation::push_coefficients()
 
 void C3Approximation::combine_coefficients()
 {
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+
   // Option 1: adds x to y and overwrites y (I allocate x and y)
   combinedC3FTPtrs.free_ft();
   std::map<UShortArray, C3FnTrainPtrs>::iterator it = levelApprox.begin();
   struct FunctionTrain * y = function_train_copy(it->second.function_train());
   ++it;
   for (; it!= levelApprox.end(); ++it)
-    c3axpy(1., it->second.function_train(), &y, 1.e-8);
+    c3axpy(1., it->second.function_train(), &y, 1.e-2, data_rep->approxOpts);
   combinedC3FTPtrs.function_train(y);
 
   // Could also do this at the C3FnTrainPtrs level with ft1d_array support:
