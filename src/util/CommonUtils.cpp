@@ -36,6 +36,20 @@ void error(const std::string msg)
   throw(std::runtime_error(msg));
 }
 
+bool vector_equals(const VectorXd &a, const VectorXd &b, double tol)
+{
+  if ( a.size()!=b.size() ) {
+    std::cout << a.size() << std::endl;
+    std::cout << b.size() << std::endl;
+    error("vector_equals() vector sizes are inconsistent");
+  }
+  for (int i=0; i<a.size(); i++){
+    if (std::abs(a(i)-b(i))>tol)
+      return false;
+  }
+  return true;
+}
+
 bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
 {
   if ( (A.rows()!=B.rows()) || (A.cols()!=B.cols())){
