@@ -1,0 +1,73 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:       NonDSurrogateExpansion
+//- Description: Generic UQ iterator leveraging surrogate model specification
+//- Owner:       Michael Eldred, Sandia National Laboratories
+
+#ifndef NOND_SURROGATE_EXPANSION_H
+#define NOND_SURROGATE_EXPANSION_H
+
+#include "NonDExpansion.hpp"
+
+namespace Dakota {
+
+
+/// Generic uncertainty quantification with Model-based stochastic expansions
+
+/** The NonDSurrogateExpansion class leverages a Model specification for
+    stochastic expansions (PCE, SC, FT) to build a stochastic emulator and
+    then queries the emulator to generate the set of requested statistics. */
+
+class NonDSurrogateExpansion: public NonDExpansion
+{
+public:
+
+  //
+  //- Heading: Constructors and destructor
+  //
+
+  /// standard constructor
+  NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model);
+  /// destructor
+  ~NonDSurrogateExpansion();
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  /// perform a forward uncertainty propagation using PCE/SC methods
+  void core_run();
+
+protected:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  void print_results(std::ostream&);
+
+  //
+  //- Heading: Member function definitions
+  //
+
+
+private:
+
+  //
+  //- Heading: Data
+  //
+
+  //unsigned int randomSeed;
+  //size_t numSamplesOnModel;
+  //int numSamplesOnEmulator;
+};
+    
+} // namespace Dakota
+
+#endif

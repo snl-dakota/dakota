@@ -351,7 +351,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       approx_converged = true;
     else {
       // Evaluate response_star_truth
-      fHatModel.component_parallel_mode(TRUTH_MODEL);
+      fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
       iteratedModel.continuous_variables(c_vars);
       ActiveSet set = iteratedModel.current_response().active_set();
       set.request_values(dataOrder);

@@ -465,7 +465,7 @@ update_approx_sub_problem(SurrBasedLevelData& tr_data)
 void SurrBasedLocalMinimizer::minimize()
 {
   Cout << "\n>>>>> Starting approximate optimization cycle.\n";
-  iteratedModel.component_parallel_mode(SURROGATE_MODEL);
+  iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);

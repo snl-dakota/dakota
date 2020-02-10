@@ -1047,22 +1047,6 @@ void Interface::clear_model_keys()
 }
 
 
-void Interface::surrogate_model_key(const UShortArray& key)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->surrogate_model_key(key);
-  // else: default implementation is no-op
-}
-
-
-void Interface::truth_model_key(const UShortArray& key)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->truth_model_key(key);
-  // else: default implementation is no-op
-}
-
-
 void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1071,6 +1055,7 @@ void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 }
 
 
+/*
 void Interface::link_multilevel_approximation_data()
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1082,6 +1067,7 @@ void Interface::link_multilevel_approximation_data()
     abort_handler(-1);
   }
 }
+*/
 
 
 void Interface::
@@ -1372,8 +1358,7 @@ std::vector<Approximation>& Interface::approximations()
 }
 
 
-const Pecos::SurrogateData& Interface::
-approximation_data(size_t fn_index, size_t d_index)
+const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
@@ -1381,9 +1366,9 @@ approximation_data(size_t fn_index, size_t d_index)
 	 << std::endl;
     abort_handler(-1);
   }
-  
+
   // envelope fwd to letter
-  return interfaceRep->approximation_data(fn_index, d_index);
+  return interfaceRep->approximation_data(fn_index);
 }
 
 
@@ -1395,7 +1380,7 @@ const RealVectorArray& Interface::approximation_coefficients(bool normalized)
          << "approximations." << std::endl;
     abort_handler(-1);
   }
-  
+
   // envelope fwd to letter
   return interfaceRep->approximation_coefficients(normalized);
 }
