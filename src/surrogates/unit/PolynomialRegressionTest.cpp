@@ -12,6 +12,7 @@
 #include <boost/test/minimal.hpp> // Boost.Test
 #include "../../util/CommonUtils.hpp"
 #include "PolynomialRegression.hpp"
+#include "LinearSolver.hpp"
 
 // Namespace
 
@@ -72,6 +73,9 @@ void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
   pr.set_scaling(false);
   pr.set_samples(line_vector);
   pr.set_response(response);
+
+  LinearSolver ls;
+  pr.set_solver(ls);
   pr.build_surrogate();
 
   const VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
@@ -102,7 +106,6 @@ void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
 
 } // namespace
 
-// This needs to be outside the anonymous namespace to make Boost happy - RWH
 int test_main( int argc, char* argv[] ) // note the name!
 {
   PolynomialRegressionSurrogate_getters_and_setters();
@@ -113,4 +116,3 @@ int test_main( int argc, char* argv[] ) // note the name!
 
   return boost::exit_success;
 }
-

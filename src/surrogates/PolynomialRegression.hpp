@@ -12,6 +12,7 @@
 #include <iostream>
 #include <memory>
 #include "DataScaler.hpp"
+#include "Solver.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -36,6 +37,7 @@ public:
   bool get_scaling();
   const VectorXd get_polynomial_coeffs();
   double get_polynomial_intercept();
+  const Solver get_solver();
 
   // Setters
 
@@ -43,6 +45,7 @@ public:
   void set_response(const MatrixXd response_);
   void set_polynomial_order(const int polynomial_order_);
   void set_scaling(const bool scaling_);
+  void set_solver(const Solver solver_);
 
   // Surrogate
 
@@ -57,6 +60,7 @@ private:
   std::shared_ptr<MatrixXd> response;
   int polynomial_order;
   bool scaling;
+  std::shared_ptr<Solver> solver;
 
   // Polynomial surrogate fields
   std::shared_ptr<VectorXd> polynomial_coeffs;
