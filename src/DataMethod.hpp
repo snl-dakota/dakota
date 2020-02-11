@@ -191,6 +191,9 @@ enum { UNCERTAIN,           UNCERTAIN_UNIFORM,
 // Wilks type of confidence interval
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
+// define special values for target variance and sample allocation over levels and QoIs
+enum {AGGREGATED_VARIANCE=0, WORST_CASE};
+
 // ---------------
 // NonDReliability
 // ---------------
@@ -945,6 +948,8 @@ public:
   SizetArray pilotSamples;
   /// the \c target_moment selection in \ref MethodMultilevelMC
   size_t targetMoment;
+  /// the |c sample_allocation selection in \ref MethodMultilevelMC
+  short sampleAllocationType;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short mlmfAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE

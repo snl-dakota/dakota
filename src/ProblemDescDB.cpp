@@ -2711,6 +2711,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
 	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
+  {"nond.sample_allocation", P sampleAllocationType},
 	{"optpp.merit_function", P meritFn},
 	{"output", P methodOutput},
 	{"sbl.acceptance_logic", P surrBasedLocalAcceptLogic},

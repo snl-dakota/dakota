@@ -7018,7 +7018,8 @@ static size_t
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
-  	MP_(numPredConfigs);
+  	MP_(numPredConfigs),
+  	MP_(targetMoment);
 
 
 static Method_mp_type
@@ -7087,6 +7088,8 @@ static Method_mp_type
 	MP2s(responseLevelTarget,RELIABILITIES),
 	MP2s(responseLevelTargetReduce,SYSTEM_PARALLEL),
 	MP2s(responseLevelTargetReduce,SYSTEM_SERIES),
+  MP2s(sampleAllocationType,AGGREGATED_VARIANCE),
+  MP2s(sampleAllocationType,WORST_CASE),
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),

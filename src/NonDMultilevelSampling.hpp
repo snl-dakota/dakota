@@ -491,6 +491,12 @@ private:
   ///     - 2 = Second moment (Variance or standard deviation depending on moments central or standard)
   size_t targetMoment;
 
+  /// store the sample_allocation input specification, prior to run-time
+  /// Options right now:
+  ///     - aggregated_variance = aggregate the variance over all QoIs, compute samples from that
+  ///     - worst_case          = take maximum sample allocation over QoIs for each level
+  short sampleAllocationType;
+
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
   /// equivalent number of high fidelity evaluations accumulated using samples
@@ -761,8 +767,8 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   {
     Real agg_var_l = 0., var_Y;
     //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
-      agg_var_l += (lev) ?
+    //for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+      agg_var_l = (lev) ?
                    variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
                                  sum_Qlm1Qlm1[qoi], N_l[qoi]) :
                    variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], N_l[qoi]);
