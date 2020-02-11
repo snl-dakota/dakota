@@ -12,7 +12,7 @@
 #include <iostream>
 #include <memory>
 #include "DataScaler.hpp"
-#include "Solver.hpp"
+#include "../util/LinearSolvers.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -32,20 +32,20 @@ public:
   // Getters
 
   const MatrixXd get_samples();
-  const MatrixXd get_response();
+  const VectorXd get_response();
   int get_polynomial_order();
   bool get_scaling();
   const VectorXd get_polynomial_coeffs();
   double get_polynomial_intercept();
-  const Solver get_solver();
+  const util::LinearSolverBase get_solver();
 
   // Setters
 
   void set_samples(const MatrixXd samples_);
-  void set_response(const MatrixXd response_);
+  void set_response(const VectorXd response_);
   void set_polynomial_order(const int polynomial_order_);
   void set_scaling(const bool scaling_);
-  void set_solver(const Solver solver_);
+  void set_solver(const util::SOLVER_TYPE solver_type_);
 
   // Surrogate
 
@@ -57,10 +57,10 @@ private:
   // Input fields
   const int num_terms;
   std::shared_ptr<MatrixXd> samples;
-  std::shared_ptr<MatrixXd> response;
+  std::shared_ptr<VectorXd> response;
   int polynomial_order;
   bool scaling;
-  std::shared_ptr<Solver> solver;
+  std::shared_ptr<util::LinearSolverBase> solver;
 
   // Polynomial surrogate fields
   std::shared_ptr<VectorXd> polynomial_coeffs;

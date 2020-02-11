@@ -10,15 +10,12 @@
 set(surrogates_sources
   GaussianProcess.cpp 
   GP_Objective.cpp
-  LinearSolver.cpp
   PolynomialRegression.cpp
 )
 
 set(surrogates_headers
   GaussianProcess.hpp
   GP_Objective.hpp
-  Solver.hpp
-  LinearSolver.hpp
   PolynomialRegression.hpp
 )
 

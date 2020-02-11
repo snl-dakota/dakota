@@ -32,7 +32,7 @@ class LinearSolverBase
     /**
      * \brief Find a solution to Ax = b
      */
-    virtual void solve( MatrixXd & A, VectorXd & b, VectorXd & x )
+    virtual void solve( MatrixXd &, VectorXd &, VectorXd & )
     {
       std::string msg = "solve() Has not been implemented for this class.";
       throw( std::runtime_error( msg ) );

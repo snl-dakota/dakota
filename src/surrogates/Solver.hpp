@@ -19,10 +19,10 @@ class Solver {
 public:
 
   // Constructor
-  Solver();
+  Solver() {}
 
   // Destructor
-  virtual ~Solver();
+  virtual ~Solver() {}
 
   // Virtual functions
   virtual const VectorXd solve(const MatrixXd& basis_matrix, const MatrixXd& responses);

@@ -12,7 +12,7 @@
 #include <boost/test/minimal.hpp> // Boost.Test
 #include "../../util/CommonUtils.hpp"
 #include "PolynomialRegression.hpp"
-#include "LinearSolver.hpp"
+#include "LinearSolvers.hpp"
 
 // Namespace
 
@@ -74,8 +74,7 @@ void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
   pr.set_samples(line_vector);
   pr.set_response(response);
 
-  LinearSolver ls;
-  pr.set_solver(ls);
+  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
   const VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
