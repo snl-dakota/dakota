@@ -10,6 +10,7 @@
 #define DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 
 #include <iostream>
+#include <memory>
 #include "DataScaler.hpp"
 
 namespace dakota {
@@ -21,7 +22,7 @@ public:
 
   // Constructor
 
-  PolynomialRegression();
+  PolynomialRegression(const int num_terms);
 
   // Destructor
 
@@ -29,17 +30,17 @@ public:
 
   // Getters
 
-  MatrixXd& get_samples();
-  MatrixXd& get_response();
+  const MatrixXd get_samples();
+  const MatrixXd get_response();
   int get_polynomial_order();
   bool get_scaling();
-  VectorXd& get_polynomial_coeffs();
+  const VectorXd get_polynomial_coeffs();
   double get_polynomial_intercept();
 
   // Setters
 
-  void set_samples(const MatrixXd &samples_);
-  void set_response(const MatrixXd &response_);
+  void set_samples(const MatrixXd samples_);
+  void set_response(const MatrixXd response_);
   void set_polynomial_order(const int polynomial_order_);
   void set_scaling(const bool scaling_);
 
@@ -51,13 +52,14 @@ public:
 private:
 
   // Input fields
-  MatrixXd samples;
-  MatrixXd response;
+  const int num_terms;
+  std::shared_ptr<MatrixXd> samples;
+  std::shared_ptr<MatrixXd> response;
   int polynomial_order;
   bool scaling;
 
   // Polynomial surrogate fields
-  VectorXd polynomial_coeffs;
+  std::shared_ptr<VectorXd> polynomial_coeffs;
   double polynomial_intercept;
 };
 } // namespace surrogates

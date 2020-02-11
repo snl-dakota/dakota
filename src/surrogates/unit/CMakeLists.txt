@@ -10,6 +10,9 @@
 
 include(DakotaUnitTest)
 
+# --- Boost dependencies
+include_directories(${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+
 # List of test files to copy into this directory
 set(surrogates_unit_test_copied_files)
 
@@ -20,7 +23,6 @@ dakota_add_unit_test(NAME GaussianProcessTest SOURCES
 
 dakota_add_unit_test(NAME PolynomialRegressionTest SOURCES
   ../../util/unit/CommonTestUtils.cpp
-  teuchos_unit_test_driver.cpp
   PolynomialRegressionTest.cpp
 )
 

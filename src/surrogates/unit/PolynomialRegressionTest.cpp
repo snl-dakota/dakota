@@ -9,7 +9,7 @@
 
 // Includes
 
-#include <Teuchos_UnitTestHarness.hpp>
+#include <boost/test/minimal.hpp> // Boost.Test
 #include "../../util/unit/CommonTestUtils.hpp"
 #include "PolynomialRegression.hpp"
 
@@ -44,9 +44,9 @@ MatrixXd create_multiple_features_matrix()
 
 // Unit tests
 
-TEUCHOS_UNIT_TEST(PolynomialRegressionSurrogate, getters_and_setters)
+void PolynomialRegressionSurrogate_getters_and_setters()
 {
-  PolynomialRegression pr;
+  PolynomialRegression pr(1);
   MatrixXd samples  = create_multiple_features_matrix();
   MatrixXd response = create_single_feature_matrix();
 
@@ -55,30 +55,30 @@ TEUCHOS_UNIT_TEST(PolynomialRegressionSurrogate, getters_and_setters)
   pr.set_polynomial_order(2);
   pr.set_scaling(true);
 
-  TEST_ASSERT(matrix_equals(pr.get_samples(),  samples,  1.0e-4));
-  TEST_ASSERT(matrix_equals(pr.get_response(), response, 1.0e-4));
-  TEST_ASSERT(pr.get_polynomial_order() == 2);
-  TEST_ASSERT(pr.get_scaling());
+  BOOST_CHECK(matrix_equals(pr.get_samples(),  samples,  1.0e-4));
+  BOOST_CHECK(matrix_equals(pr.get_response(), response, 1.0e-4));
+  BOOST_CHECK(pr.get_polynomial_order() == 2);
+  BOOST_CHECK(pr.get_scaling());
 }
 
 
-TEUCHOS_UNIT_TEST(PolynomialRegressionSurrogate, straight_line_fit_unscaled)
+void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
 {
   VectorXd line_vector = VectorXd::LinSpaced(20,0,1); // size, low, high
   VectorXd response    = VectorXd::LinSpaced(20,0,1);
   response = (response.array() + 2.0).matrix(); // +2.0 because the line's y-intercept is 2.0
 
-  PolynomialRegression pr;
+  PolynomialRegression pr(2); //2 terms for straight line
   pr.set_scaling(false);
   pr.set_samples(line_vector);
   pr.set_response(response);
   pr.build_surrogate();
 
-  VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
-  double polynomial_intercept = pr.get_polynomial_intercept();
-  TEST_FLOATING_EQUALITY(2.0, polynomial_coeffs(0), 1.0e-4);
-  TEST_FLOATING_EQUALITY(1.0, polynomial_coeffs(1), 1.0e-4);
-  TEST_ASSERT(polynomial_intercept < 1.0e-4); // test for zero
+  const VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
+  const double polynomial_intercept = pr.get_polynomial_intercept();
+  BOOST_CHECK(std::abs(2.0 - polynomial_coeffs(0)) < 1.0e-4);
+  BOOST_CHECK(std::abs(1.0 - polynomial_coeffs(1)) < 1.0e-4);
+  BOOST_CHECK(polynomial_intercept < 1.0e-4); // test for zero
 
   VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100,0,1);
   MatrixXd expected_approx_values(100, 1);
@@ -97,7 +97,18 @@ TEUCHOS_UNIT_TEST(PolynomialRegressionSurrogate, straight_line_fit_unscaled)
   MatrixXd actual_approx_values;
   pr.surrogate_value(unscaled_eval_pts, actual_approx_values); 
 
-  bool result = matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5);
-  TEST_ASSERT(result);
+  BOOST_CHECK(matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
 }
+
+int test_main( int argc, char* argv[] ) // note the name!
+{
+  PolynomialRegressionSurrogate_getters_and_setters();
+  PolynomialRegressionSurrogate_straight_line_fit_unscaled();
+
+  int run_result = 0;
+  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
+
+  return boost::exit_success;
+}
+
 } // namespace
