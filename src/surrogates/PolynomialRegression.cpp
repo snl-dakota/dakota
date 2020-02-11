@@ -7,7 +7,6 @@
     _______________________________________________________________________ */
 
 #include "PolynomialRegression.hpp"
-//#include <cmath>
 
 namespace dakota {
 namespace surrogates {
@@ -34,6 +33,8 @@ const VectorXd PolynomialRegression::get_polynomial_coeffs() { return *polynomia
 
 double PolynomialRegression::get_polynomial_intercept() { return polynomial_intercept; }
 
+const Solver PolynomialRegression::get_solver() { return *solver; }
+
 // Setters
 
 void PolynomialRegression::set_samples(const MatrixXd samples_) { samples = std::make_shared<MatrixXd>(samples_); }
@@ -43,6 +44,8 @@ void PolynomialRegression::set_response(const MatrixXd response_) { response = s
 void PolynomialRegression::set_polynomial_order(const int polynomial_order_) { polynomial_order = polynomial_order_; }
 
 void PolynomialRegression::set_scaling(const bool scaling_) { scaling = scaling_; }
+
+void PolynomialRegression::set_solver(const Solver solver_) { solver = std::make_shared<Solver>(solver_); }
 
 // Surrogate
 
@@ -75,7 +78,7 @@ void PolynomialRegression::build_surrogate() {
   }
 
   // Compute the singular value decomposition of the basis matrix using SVD.
-  polynomial_coeffs = std::make_shared<VectorXd>(scaled_basis_matrix.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(get_response()));
+  polynomial_coeffs = std::make_shared<VectorXd>(solver->solve(scaled_basis_matrix, *response));
 
   // Compute the intercept
   polynomial_intercept = 0.0;
