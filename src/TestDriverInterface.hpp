@@ -49,6 +49,7 @@ private:
 
   int cantilever();   ///< scaled cantilever test function for optimization
   int mod_cantilever(); ///< unscaled cantilever test function for UQ
+  int mod_cantilever_ml(); ///< unscaled cantilever test function for UQ with levels
   int cyl_head();     ///< the cylinder head constrained optimization test fn
   int multimodal();   ///< multimodal UQ test function
   int log_ratio();    ///< the log_ratio UQ test function

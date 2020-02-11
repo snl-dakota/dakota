@@ -31,7 +31,7 @@ namespace Dakota {
 /// enumeration of possible variable types (to index to names)
 enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 	     VAR_b, VAR_h, VAR_P, VAR_M, VAR_Y, // short column
-	     VAR_w, VAR_t, VAR_R, VAR_E, VAR_X, /* VAR_Y, */ // cantilever beam
+	     VAR_w, VAR_t, VAR_R, VAR_E, VAR_X, VAR_area_type, /* VAR_Y, */ // cantilever beam
 	     VAR_Fs, VAR_P1, VAR_P2, VAR_P3, VAR_B, VAR_D, VAR_H,
 	     VAR_F0, VAR_d, /* VAR_b, VAR_h, VAR_E */ // steel column
 	     VAR_MForm, // mf_*() test functions
@@ -43,7 +43,7 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 //		   STC_F0, STC_E }; // steel column
 
 /// enumeration of possible direct driver types (to index to names)
-enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
+enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM, MOD_CANTILEVER_BEAM_ML,
 		CYLINDER_HEAD, EXTENDED_ROSENBROCK, GENERALIZED_ROSENBROCK,
 		LF_ROSENBROCK, EXTRA_LF_ROSENBROCK, MF_ROSENBROCK, MODIFIED_ROSENBROCK,
 		ROSENBROCK, LF_POLY_PROD, POLY_PROD,
