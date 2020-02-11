@@ -732,6 +732,7 @@ if(HAVE_NOWPAC)
   message(STATUS "NOWPAC EIGEN DIR ${DAKOTA_NOWPAC_EIGEN_ROOT}")
   list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT}/include/eigen3)
   link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib) # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
+ 
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
   #list(APPEND EXPORT_TARGETS nowpac nlopt)
@@ -897,6 +898,7 @@ if(HAVE_NOWPAC)
   if(NOT HAVE_EXTERNAL_NOWPAC)
   add_dependencies(dakota_src EIGEN NLOPT)
   endif()
+  target_link_libraries(dakota_src ${DAKOTA_NOWPAC_ROOT_DIR}/lib/libnowpac.a)
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
