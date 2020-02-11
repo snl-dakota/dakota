@@ -22,7 +22,6 @@ dakota_add_unit_test(NAME GaussianProcessTest SOURCES
 )
 
 dakota_add_unit_test(NAME PolynomialRegressionTest SOURCES
-  ../../util/unit/CommonTestUtils.cpp
   PolynomialRegressionTest.cpp
 )
 

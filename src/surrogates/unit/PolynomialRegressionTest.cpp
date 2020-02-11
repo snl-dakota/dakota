@@ -10,7 +10,7 @@
 // Includes
 
 #include <boost/test/minimal.hpp> // Boost.Test
-#include "../../util/unit/CommonTestUtils.hpp"
+#include "../../util/CommonUtils.hpp"
 #include "PolynomialRegression.hpp"
 
 // Namespace
@@ -100,6 +100,9 @@ void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
   BOOST_CHECK(matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
 }
 
+} // namespace
+
+// This needs to be outside the anonymous namespace to make Boost happy - RWH
 int test_main( int argc, char* argv[] ) // note the name!
 {
   PolynomialRegressionSurrogate_getters_and_setters();
@@ -111,4 +114,3 @@ int test_main( int argc, char* argv[] ) // note the name!
   return boost::exit_success;
 }
 
-} // namespace
