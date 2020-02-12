@@ -61,7 +61,7 @@ namespace {
 
     solver.solve(A, b, x);
 
-    TEST_ASSERT(vector_equals(A*x, b, 1.0e-12));
+    TEST_ASSERT(matrix_equals(A*x, b, 1.0e-12));
   }
 
   // -------------------------------------

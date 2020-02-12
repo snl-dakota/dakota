@@ -46,15 +46,6 @@ using namespace Eigen;
 void error(const std::string msg);
 
 /**
- *  \brief Tests whether two Eigen VectorXd objects are equal, within a given tolerance.
- *  \param[A] The first vector to test.
- *  \param[B] The second vector to test.
- *  \param[tol] The tolerance to use when comparing double values.
- *  \returns Whether the vectors are equal.
-*/
-bool vector_equals(const VectorXd &A, const VectorXd &B, double tol);
-
-/**
  *  \brief Tests whether two Eigen MatrixXd objects are equal, within a given tolerance.
  *  \param[A] The first matrix to test.
  *  \param[B] The second matrix to test.

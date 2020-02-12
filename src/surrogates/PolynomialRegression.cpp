@@ -21,31 +21,31 @@ PolynomialRegression::~PolynomialRegression() {}
 
 // Getters
 
-const MatrixXd PolynomialRegression::get_samples() { return *samples; }
+const MatrixXd & PolynomialRegression::get_samples() const { return *samples; }
 
-const VectorXd PolynomialRegression::get_response() { return *response; }
+const VectorXd & PolynomialRegression::get_response() const { return *response; }
 
-int PolynomialRegression::get_polynomial_order() { return polynomial_order; }
+int PolynomialRegression::get_polynomial_order() const { return polynomial_order; }
 
-bool PolynomialRegression::get_scaling() { return scaling; }
+bool PolynomialRegression::get_scaling() const { return scaling; }
 
-const VectorXd PolynomialRegression::get_polynomial_coeffs() { return *polynomial_coeffs; }
+const VectorXd & PolynomialRegression::get_polynomial_coeffs() const { return *polynomial_coeffs; }
 
-double PolynomialRegression::get_polynomial_intercept() { return polynomial_intercept; }
+double PolynomialRegression::get_polynomial_intercept() const { return polynomial_intercept; }
 
-const util::LinearSolverBase PolynomialRegression::get_solver() { return *solver; }
+const util::LinearSolverBase & PolynomialRegression::get_solver() const { return *solver; }
 
 // Setters
 
-void PolynomialRegression::set_samples(const MatrixXd samples_) { samples = std::make_shared<MatrixXd>(samples_); }
+void PolynomialRegression::set_samples(const MatrixXd & samples_) { samples = std::make_shared<MatrixXd>(samples_); }
 
-void PolynomialRegression::set_response(const VectorXd response_) { response = std::make_shared<VectorXd>(response_); }
+void PolynomialRegression::set_response(const VectorXd & response_) { response = std::make_shared<VectorXd>(response_); }
 
-void PolynomialRegression::set_polynomial_order(const int polynomial_order_) { polynomial_order = polynomial_order_; }
+void PolynomialRegression::set_polynomial_order(int polynomial_order_) { polynomial_order = polynomial_order_; }
 
-void PolynomialRegression::set_scaling(const bool scaling_) { scaling = scaling_; }
+void PolynomialRegression::set_scaling(bool scaling_) { scaling = scaling_; }
 
-void PolynomialRegression::set_solver(const util::SOLVER_TYPE solver_type_) { solver = solver_factory(solver_type_); }
+void PolynomialRegression::set_solver(util::SOLVER_TYPE solver_type_) { solver = solver_factory(solver_type_); }
 
 // Surrogate
 

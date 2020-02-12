@@ -31,21 +31,21 @@ public:
 
   // Getters
 
-  const MatrixXd get_samples();
-  const VectorXd get_response();
-  int get_polynomial_order();
-  bool get_scaling();
-  const VectorXd get_polynomial_coeffs();
-  double get_polynomial_intercept();
-  const util::LinearSolverBase get_solver();
+  const MatrixXd & get_samples() const;
+  const VectorXd & get_response() const;
+  int get_polynomial_order() const;
+  bool get_scaling() const;
+  const VectorXd & get_polynomial_coeffs() const;
+  double get_polynomial_intercept() const;
+  const util::LinearSolverBase & get_solver() const;
 
   // Setters
 
-  void set_samples(const MatrixXd samples_);
-  void set_response(const VectorXd response_);
-  void set_polynomial_order(const int polynomial_order_);
-  void set_scaling(const bool scaling_);
-  void set_solver(const util::SOLVER_TYPE solver_type_);
+  void set_samples(const MatrixXd & samples_);
+  void set_response(const VectorXd & response_);
+  void set_polynomial_order(int polynomial_order_);
+  void set_scaling(bool scaling_);
+  void set_solver(util::SOLVER_TYPE solver_type_);
 
   // Surrogate
 
