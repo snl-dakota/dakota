@@ -23,11 +23,13 @@ std::shared_ptr<MatrixXd> DataScaler::scale_samples(const MatrixXd &unscaled_sam
   }
   const int num_samples = unscaled_samples.rows();
   MatrixXd scaledSamples(num_samples,num_features);
-  for (int i = 0; i < num_samples; i++) {
-    for (int j = 0; j < num_features; j++) {
-      double scaleFactor = check_for_zero_scaler_factor(j) ? 1.0 : (*scalerFeaturesScaleFactors)(j);
-      scaledSamples(i,j) = (unscaled_samples(i,j) - (*scalerFeaturesOffsets)(j))/scaleFactor;
-    }
+  for (int j = 0; j < num_features; j++) {
+    if( check_for_zero_scaler_factor(j) )
+      for (int i = 0; i < num_samples; i++)
+        scaledSamples(i,j) = unscaled_samples(i,j);
+    else
+      for (int i = 0; i < num_samples; i++)
+        scaledSamples(i,j) = (unscaled_samples(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);
   }
   return std::make_shared<MatrixXd>(scaledSamples);
 }
@@ -57,10 +59,12 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
     mean_val = features.col(j).mean();
     (*scalerFeaturesOffsets)(j) = (mean_normalization) ? mean_val : min_val;
     (*scalerFeaturesScaleFactors)(j) = (max_val - min_val)/norm_factor;
-    double scaleFactor = check_for_zero_scaler_factor(j) ? 1.0 : (*scalerFeaturesScaleFactors)(j);
-    for (int i = 0; i < num_samples; i++) {
-      (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j)) / scaleFactor;
-   }
+    if( check_for_zero_scaler_factor(j) )
+      for (int i = 0; i < num_samples; i++)
+        (*scaledFeatures)(i,j) = features(i,j);
+    else
+      for (int i = 0; i < num_samples; i++)
+        (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j)) / (*scalerFeaturesScaleFactors)(j);
   }
 
   has_scaling = true;

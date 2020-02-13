@@ -45,6 +45,8 @@ MatrixXd create_multiple_features_matrix()
 
 // Unit tests
 
+// --------------------------------------------------------------------------------
+
 void PolynomialRegressionSurrogate_getters_and_setters()
 {
   PolynomialRegression pr(1);
@@ -60,8 +62,9 @@ void PolynomialRegressionSurrogate_getters_and_setters()
   BOOST_CHECK(pr.get_polynomial_order() == 2);
 }
 
+// --------------------------------------------------------------------------------
 
-void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
+void PolynomialRegressionSurrogate_straight_line_fit(bool do_scaling)
 {
   VectorXd line_vector = VectorXd::LinSpaced(20,0,1); // size, low, high
   VectorXd response    = VectorXd::LinSpaced(20,0,1);
@@ -70,14 +73,18 @@ void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
   PolynomialRegression pr(2); //2 terms for straight line
   pr.set_samples(line_vector);
   pr.set_response(response);
-  pr.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  if( do_scaling )
+    pr.set_scaler_type(dakota::util::SCALER_TYPE::NORMALIZATION);
   pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
   const VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
   const double polynomial_intercept = pr.get_polynomial_intercept();
-  BOOST_CHECK(std::abs(2.0 - polynomial_coeffs(0)) < 1.0e-4);
-  BOOST_CHECK(std::abs(1.0 - polynomial_coeffs(1)) < 1.0e-4);
+  double expected_poly_intercept = 2.0; // unscaled
+  if( do_scaling )
+    expected_poly_intercept = 2.5; // scaled
+  BOOST_CHECK(std::abs(expected_poly_intercept - polynomial_coeffs(0)) < 1.0e-4);
+  BOOST_CHECK(std::abs(1.0                     - polynomial_coeffs(1)) < 1.0e-4);
   BOOST_CHECK(polynomial_intercept < 1.0e-4); // test for zero
 
   VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100,0,1);
@@ -100,59 +107,20 @@ void PolynomialRegressionSurrogate_straight_line_fit_unscaled()
   BOOST_CHECK(matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
 }
 
-
-void PolynomialRegressionSurrogate_straight_line_fit_with_normalization_scaler()
-{
-  VectorXd line_vector = VectorXd::LinSpaced(20,0,1); // size, low, high
-  VectorXd response    = VectorXd::LinSpaced(20,0,1);
-  response = (response.array() + 2.0).matrix(); // +2.0 because the line's y-intercept is 2.0
-
-  PolynomialRegression pr(2); //2 terms for straight line
-  pr.set_samples(line_vector);
-  pr.set_response(response);
-  pr.set_scaler_type(dakota::util::SCALER_TYPE::NORMALIZATION);
-  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
-  pr.build_surrogate();
-
-  const VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
-  const double polynomial_intercept = pr.get_polynomial_intercept();
-  BOOST_CHECK(polynomial_coeffs(0) < 1.0e-4); // equal to zero
-  BOOST_CHECK(std::abs(-4.0 - polynomial_coeffs(1)) < 1.0e-4);
-  BOOST_CHECK(std::abs(2.5 - polynomial_intercept) < 1.0e-4);
-
-  VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100,0,1);
-  MatrixXd expected_approx_values(100, 1);
-  expected_approx_values <<
-     4.5,  4.4596, 4.41919, 4.37879, 4.33838, 4.29798, 4.25758, 4.21717, 4.17677, 4.13636,
- 4.09596, 4.05556, 4.01515, 3.97475, 3.93434, 3.89394, 3.85354, 3.81313, 3.77273, 3.73232,
- 3.69192, 3.65152, 3.61111, 3.57071,  3.5303,  3.4899, 3.44949, 3.40909, 3.36869, 3.32828,
- 3.28788, 3.24747, 3.20707, 3.16667, 3.12626, 3.08586, 3.04545, 3.00505, 2.96465, 2.92424,
- 2.88384, 2.84343, 2.80303, 2.76263, 2.72222, 2.68182, 2.64141, 2.60101, 2.56061,  2.5202,
-  2.4798, 2.43939, 2.39899, 2.35859, 2.31818, 2.27778, 2.23737, 2.19697, 2.15657, 2.11616,
- 2.07576, 2.03535, 1.99495, 1.95455, 1.91414, 1.87374, 1.83333, 1.79293, 1.75253, 1.71212,
- 1.67172, 1.63131, 1.59091, 1.55051,  1.5101,  1.4697, 1.42929, 1.38889, 1.34848, 1.30808,
- 1.26768, 1.22727, 1.18687, 1.14646, 1.10606, 1.06566, 1.02525,0.984848,0.944444, 0.90404,
-0.863636,0.823232,0.782828,0.742424, 0.70202,0.661616,0.621212,0.580808,0.540404,     0.5;
-
-  MatrixXd actual_approx_values;
-  pr.surrogate_value(unscaled_eval_pts, actual_approx_values);
-
-  //std::cout << actual_approx_values << std::endl;
-
-  BOOST_CHECK(matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
-}
-
-
 } // namespace
+
+// --------------------------------------------------------------------------------
 
 int test_main( int argc, char* argv[] ) // note the name!
 {
   PolynomialRegressionSurrogate_getters_and_setters();
-  PolynomialRegressionSurrogate_straight_line_fit_unscaled();
-  PolynomialRegressionSurrogate_straight_line_fit_with_normalization_scaler();
+  PolynomialRegressionSurrogate_straight_line_fit(false);
+  PolynomialRegressionSurrogate_straight_line_fit(true);
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
 
   return boost::exit_success;
 }
+
+// --------------------------------------------------------------------------------

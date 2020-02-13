@@ -89,7 +89,7 @@ void PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd
   MatrixXd unscaled_basis_matrix = MatrixXd::Zero(num_eval_points, num_terms);
   for(int i = 0; i < num_eval_points; i++) {
     for(int j = 0; j < num_terms; j++) {
-      unscaled_basis_matrix(i, j) = std::pow(eval_points(i), (double)j);
+      unscaled_basis_matrix(i, j) = std::pow(eval_points(i), j);
     }
   }
 
