@@ -13,7 +13,9 @@ namespace surrogates {
 
 // Constructor
 
-PolynomialRegression::PolynomialRegression(const int num_terms_) : num_terms(num_terms_) {}
+PolynomialRegression::PolynomialRegression(const int num_terms_) : num_terms(num_terms_) {
+  scaler_type = util::SCALER_TYPE::NONE;
+}
 
 // Destructor
 
@@ -27,7 +29,7 @@ const VectorXd & PolynomialRegression::get_response() const { return *response; 
 
 int PolynomialRegression::get_polynomial_order() const { return polynomial_order; }
 
-bool PolynomialRegression::get_scaling() const { return scaling; }
+util::SCALER_TYPE PolynomialRegression::get_scaler_type() const { return scaler_type; }
 
 const VectorXd & PolynomialRegression::get_polynomial_coeffs() const { return *polynomial_coeffs; }
 
@@ -43,7 +45,7 @@ void PolynomialRegression::set_response(const VectorXd & response_) { response =
 
 void PolynomialRegression::set_polynomial_order(int polynomial_order_) { polynomial_order = polynomial_order_; }
 
-void PolynomialRegression::set_scaling(bool scaling_) { scaling = scaling_; }
+void PolynomialRegression::set_scaler_type(const util::SCALER_TYPE scaler_type_) { scaler_type = scaler_type_; }
 
 void PolynomialRegression::set_solver(util::SOLVER_TYPE solver_type_) { solver = solver_factory(solver_type_); }
 
@@ -64,18 +66,10 @@ void PolynomialRegression::build_surrogate() {
       unscaled_basis_matrix(i, j) = std::pow(get_samples()(i), (double)j);
     }
   }
-  //std::cout << "unscaled_basis_matrix:" << std::endl;
-  //std::cout << unscaled_basis_matrix << std::endl;
 
-  // Standardize the basis matrix
-  MatrixXd scaled_basis_matrix;
-  if(scaling) {
-    //TODO:
-    // scaler = StandardScaler()
-    // scaled_basis_matrix = scaler.fit_transform(unscaled_basis_matrix)
-  } else {
-  	scaled_basis_matrix = unscaled_basis_matrix;
-  }
+  // Scale the basis matrix.
+  scaler = util::scaler_factory(scaler_type, unscaled_basis_matrix);
+  MatrixXd scaled_basis_matrix = scaler->get_scaled_features();
 
   // These have not been constructed and so am doing it here - RWH
   // Is there a better place to initialize the polynomial_coeffs?
@@ -85,10 +79,7 @@ void PolynomialRegression::build_surrogate() {
   solver->solve(scaled_basis_matrix, *response, *polynomial_coeffs);
 
   // Compute the intercept
-  polynomial_intercept = 0.0;
-  if(scaling) {
-  	polynomial_intercept = get_response().mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
-  }
+  polynomial_intercept = get_response().mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
 }
 
 void PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values) {
@@ -102,9 +93,8 @@ void PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd
     }
   }
 
-  // Scale sample points if scaling was used.
-  //TODO
-  MatrixXd scaled_basis_matrix = unscaled_basis_matrix;
+  // Scale sample points.
+  MatrixXd scaled_basis_matrix = *(scaler->scale_samples(unscaled_basis_matrix));
 
   // Find the polynomial regression values.
   approx_values = scaled_basis_matrix * (get_polynomial_coeffs());

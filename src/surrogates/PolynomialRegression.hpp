@@ -34,7 +34,7 @@ public:
   const MatrixXd & get_samples() const;
   const VectorXd & get_response() const;
   int get_polynomial_order() const;
-  bool get_scaling() const;
+  util::SCALER_TYPE get_scaler_type() const;
   const VectorXd & get_polynomial_coeffs() const;
   double get_polynomial_intercept() const;
   const util::LinearSolverBase & get_solver() const;
@@ -44,8 +44,8 @@ public:
   void set_samples(const MatrixXd & samples_);
   void set_response(const VectorXd & response_);
   void set_polynomial_order(int polynomial_order_);
-  void set_scaling(bool scaling_);
-  void set_solver(util::SOLVER_TYPE solver_type_);
+  void set_scaler_type(const util::SCALER_TYPE scaler_type);
+  void set_solver(const util::SOLVER_TYPE solver_type_);
 
   // Surrogate
 
@@ -59,7 +59,8 @@ private:
   std::shared_ptr<MatrixXd> samples;
   std::shared_ptr<VectorXd> response;
   int polynomial_order;
-  bool scaling;
+  util::SCALER_TYPE scaler_type;
+  std::shared_ptr<util::DataScaler> scaler;
   std::shared_ptr<util::LinearSolverBase> solver;
 
   // Polynomial surrogate fields
