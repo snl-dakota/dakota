@@ -2454,11 +2454,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
      ]
     [ target_moment INTEGER > 0 {N_mdm(sizet,targetMoment)} ]
-    [ sample_allocation {0}
-      aggregated_variance {N_mdm(type, sampleAllocationType_AGGREGATED_VARIANCE)}
-      |
-      worst_case {N_mdm(type, sampleAllocationType_WORST_CASE)}
-     ]
+        [ sample_allocation {0}
+              aggregated_variance {N_mdm(type, sampleAllocationType_AGGREGATED_VARIANCE)}
+              |
+              worst_case {N_mdm(type, sampleAllocationType_WORST_CASE)}
+         ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
       [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
       [ compute {0}
