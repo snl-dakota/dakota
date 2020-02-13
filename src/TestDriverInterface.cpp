@@ -51,7 +51,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   // at the base class
   driverTypeMap["cantilever"]             = CANTILEVER_BEAM;
   driverTypeMap["mod_cantilever"]         = MOD_CANTILEVER_BEAM;
-  driverTypeMap["mod_cantilever_ml"]      = MOD_CANTILEVER_BEAM_ML;
+  driverTypeMap["cantilever_ml"]          = CANTILEVER_BEAM_ML;
   driverTypeMap["cyl_head"]               = CYLINDER_HEAD;
   driverTypeMap["extended_rosenbrock"]    = EXTENDED_ROSENBROCK;
   driverTypeMap["generalized_rosenbrock"] = GENERALIZED_ROSENBROCK;
@@ -147,7 +147,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   localDataView = 0;
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
-    case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM_ML:
+    case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case CANTILEVER_BEAM_ML:
     case ROSENBROCK:   case LF_ROSENBROCK:    case EXTRA_LF_ROSENBROCK:
     case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK: case PROBLEM18:
     case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
@@ -233,8 +233,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = cantilever(); break;
   case MOD_CANTILEVER_BEAM:
     fail_code = mod_cantilever(); break;
-  case MOD_CANTILEVER_BEAM_ML:
-    fail_code = mod_cantilever_ml(); break;
+  case CANTILEVER_BEAM_ML:
+    fail_code = cantilever_ml(); break;
   case CYLINDER_HEAD:
     fail_code = cyl_head(); break;
   case ROSENBROCK:
@@ -705,7 +705,7 @@ int TestDriverInterface::mod_cantilever()
   return 0; // no failure
 }
 
-int TestDriverInterface::mod_cantilever_ml()
+int TestDriverInterface::cantilever_ml()
   {
     using std::pow;
 
@@ -770,7 +770,7 @@ int TestDriverInterface::mod_cantilever_ml()
 
       stress = 6.*L*Y/w/t_sq + 6.*L*X/w_sq/t;
 
-      D1 = 4.*pow(L,3)/E/area;
+      D1 = 4.*pow(L, 3)/E/area;
       D2 = pow(Y/t_sq, 2)+pow(X/w_sq, 2);
       D3 = D1/std::sqrt(D2);
       displ = D1*std::sqrt(D2);
@@ -788,7 +788,8 @@ int TestDriverInterface::mod_cantilever_ml()
           pow((pow(L, 3) * Y)/(3.*E*I_x), 2)
       );
     }else{
-      abort_throw_or_exit(-1);
+      Cout << "TestDriverInterface::mod_cantilever_ml(): wrong area type.\n";
+      abort_handler(INTERFACE_ERROR);
     }
     // **** f:
     if (objective && (directFnASV[0] & 1))
