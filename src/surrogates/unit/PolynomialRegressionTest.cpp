@@ -64,7 +64,7 @@ void PolynomialRegressionSurrogate_getters_and_setters()
 
 // --------------------------------------------------------------------------------
 
-void PolynomialRegressionSurrogate_straight_line_fit(bool do_scaling)
+void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE scaler_type)
 {
   VectorXd line_vector = VectorXd::LinSpaced(20,0,1); // size, low, high
   VectorXd response    = VectorXd::LinSpaced(20,0,1);
@@ -73,18 +73,26 @@ void PolynomialRegressionSurrogate_straight_line_fit(bool do_scaling)
   PolynomialRegression pr(2); //2 terms for straight line
   pr.set_samples(line_vector);
   pr.set_response(response);
-  if( do_scaling )
-    pr.set_scaler_type(dakota::util::SCALER_TYPE::NORMALIZATION);
+  pr.set_scaler_type(scaler_type);
   pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
   const VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
   const double polynomial_intercept = pr.get_polynomial_intercept();
-  double expected_poly_intercept = 2.0; // unscaled
-  if( do_scaling )
-    expected_poly_intercept = 2.5; // scaled
-  BOOST_CHECK(std::abs(expected_poly_intercept - polynomial_coeffs(0)) < 1.0e-4);
-  BOOST_CHECK(std::abs(1.0                     - polynomial_coeffs(1)) < 1.0e-4);
+
+  double expected_constant_term = 2.0; // unscaled
+  double expected_first_term = 1.0; // unscaled
+  if( scaler_type == dakota::util::SCALER_TYPE::NORMALIZATION ||
+      scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
+    expected_constant_term = 2.5; // scaled
+  if( scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
+    expected_first_term = 0.303488; // scaled
+
+  double actual_constant_term = polynomial_coeffs(0);
+  double actual_first_term = polynomial_coeffs(1);
+
+  BOOST_CHECK(std::abs(expected_constant_term - actual_constant_term) < 1.0e-4);
+  BOOST_CHECK(std::abs(expected_first_term    - actual_first_term) < 1.0e-4);
   BOOST_CHECK(polynomial_intercept < 1.0e-4); // test for zero
 
   VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100,0,1);
@@ -114,8 +122,9 @@ void PolynomialRegressionSurrogate_straight_line_fit(bool do_scaling)
 int test_main( int argc, char* argv[] ) // note the name!
 {
   PolynomialRegressionSurrogate_getters_and_setters();
-  PolynomialRegressionSurrogate_straight_line_fit(false);
-  PolynomialRegressionSurrogate_straight_line_fit(true);
+  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
+  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NORMALIZATION);
+  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );

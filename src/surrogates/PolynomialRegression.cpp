@@ -63,7 +63,7 @@ void PolynomialRegression::build_surrogate() {
   MatrixXd unscaled_basis_matrix = MatrixXd::Zero(num_samples, num_terms);
   for(int i = 0; i < num_samples; i++) {
     for(int j = 0; j < num_terms; j++) {
-      unscaled_basis_matrix(i, j) = std::pow(get_samples()(i), (double)j);
+      unscaled_basis_matrix(i, j) = std::pow(get_samples()(i), j);
     }
   }
 

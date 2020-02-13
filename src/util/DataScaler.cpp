@@ -95,10 +95,12 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
     var_val = ((features.col(j).array() - mean_val).pow(2.0)).mean();
     (*scalerFeaturesOffsets)(j) = mean_val;
     (*scalerFeaturesScaleFactors)(j) = std::sqrt(var_val)/norm_factor;
-    for (int i = 0; i < num_samples; i++) {
-      double scaleFactor = check_for_zero_scaler_factor(j) ? 1.0 : (*scalerFeaturesScaleFactors)(j);
-      (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j))/scaleFactor;
-   }
+    if( check_for_zero_scaler_factor(j) )
+      for (int i = 0; i < num_samples; i++)
+        (*scaledFeatures)(i,j) = features(i,j);
+    else
+      for (int i = 0; i < num_samples; i++)
+        (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);      
   }
 
   has_scaling = true;
