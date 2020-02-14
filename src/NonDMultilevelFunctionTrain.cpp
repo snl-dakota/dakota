@@ -29,7 +29,6 @@ namespace Dakota {
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
-  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
@@ -55,12 +54,22 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Construct u_space_sampler
   // -------------------------
   // extract sequences and invoke shared helper fn with a scalar...
-  size_t colloc_pts = std::numeric_limits<size_t>::max();
-  if (!collocPtsSeqSpec.empty())
-    colloc_pts = (sequenceIndex < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+  switch (methodName) {
+  case MULTIFIDELITY_FUNCTION_TRAIN:
+    regressPtsSeq = problem_db.get_sza("method.nond.collocation_points");
+    break;
+  case MULTILEVEL_FUNCTION_TRAIN:
+    regressPtsSeq = problem_db.get_sza("method.nond.pilot_samples");
+    break;
+  }
+  size_t build_pts;
+  if (regressPtsSeq.empty())
+    build_pts = std::numeric_limits<size_t>::max();
+  else
+    build_pts = (sequenceIndex < regressPtsSeq.size()) ?
+      regressPtsSeq[sequenceIndex] : regressPtsSeq.back();
   Iterator u_space_sampler;
-  if (!config_regression(colloc_pts, u_space_sampler, g_u_model)) {
+  if (!config_regression(build_pts, u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -132,7 +141,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 		      ml_alloc_control, ml_discrep, pilot,
 		      //rule_nest, rule_growth,
 		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
-  expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
+  expOrderSeqSpec(exp_order_seq), regressPtsSeq(colloc_pts_seq),
   sequenceIndex(0)
 {
   assign_discrepancy_mode();
@@ -155,21 +164,21 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // Construct u_space_sampler
   // -------------------------
   unsigned short exp_order_spec = USHRT_MAX;
-  size_t colloc_pts = std::numeric_limits<size_t>::max();
+  size_t build_pts = std::numeric_limits<size_t>::max();
   UShortArray exp_orders; // defined for expansion_samples/regression
   if (!expOrderSeqSpec.empty()) {
     exp_order_spec = (sequenceIndex  < expOrderSeqSpec.size()) ?
       expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
     config_expansion_orders(exp_order_spec, dimPrefSpec, exp_orders);
   }
-  if (!collocPtsSeqSpec.empty())
-    colloc_pts =      (sequenceIndex  < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+  if (!regressPtsSeq.empty())
+    build_pts =      (sequenceIndex  < regressPtsSeq.size()) ?
+      regressPtsSeq[sequenceIndex] : regressPtsSeq.back();
 
   Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
   String approx_type, rng("mt19937"), pt_reuse;
-  config_regression(exp_orders, colloc_pts, 1, exp_coeffs_approach,
+  config_regression(exp_orders, build_pts, 1, exp_coeffs_approach,
 		    Pecos::DEFAULT_LEAST_SQ_REGRESSION, tensor_grid_order,
 		    SUBMETHOD_LHS, rng, pt_reuse, u_space_sampler,
 		    g_u_model, approx_type);
@@ -276,8 +285,15 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
     switch (multilevAllocControl) {
     case DEFAULT_MLMF_CONTROL: // define MLFT-specific default
       multilevAllocControl = RANK_SAMPLING; break;
-    case RANK_SAMPLING:
-      //crossValidation = crossValidNoiseOnly = true;
+    case RANK_SAMPLING: {
+      // ensure adaptRank is on (cross-validation is not yet supported)
+      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+	uSpaceModel.shared_approximation().data_rep();
+      shared_data_rep->set_parameter("adapt_rank", true);
+      break;
+    }
+    case ESTIMATOR_VARIANCE:
+      // estimator variance is not dependent on rank: adapt rank is optional
       break;
     default:
       Cerr << "Error: unsupported multilevAllocControl in "
@@ -294,8 +310,8 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
   // regression
-  if (sequenceIndex < collocPtsSeqSpec.size())
-    numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+  if (sequenceIndex < regressPtsSeq.size())
+    numSamplesOnModel = regressPtsSeq[sequenceIndex];
 
   update_from_specification();
 }
@@ -306,8 +322,8 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i < collocPtsSeqSpec.size())
-    { numSamplesOnModel = collocPtsSeqSpec[next_i]; ++sequenceIndex; }
+  if (next_i < regressPtsSeq.size())
+    { numSamplesOnModel = regressPtsSeq[next_i]; ++sequenceIndex; }
   //else leave at previous value
 
   update_from_specification();

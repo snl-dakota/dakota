@@ -12,8 +12,12 @@ method,
 	multifidelity_function_train				#s0,#s1
 	  collocation_points_sequence = 1000 400 200 100	#s0
 # TO DO: there are 2 dimensions of MF candidate advancement: order, rank.
-# > ramp start_order and leave adapt_rank on (no user ramping of rank).
-# > Then use regression_size() to compute sample increment.
+# > ramp start_order and leave adapt_rank on (no user ramping of rank).  Then
+#   use regression_size() to compute sample increment.
+# > spec supports start_{rank,order}_seq in addition to colloc_pts_seq, where
+#   all 3 stipulate initial resolutions per level, not the adaptation procedure.
+#   Since we have adapt_rank and not adapt_order, support bullet above for now.
+#	  collocation_points_sequence = 100  40  20  10		#s1
 #	  allocation_control greedy				#s1
 #	multilevel_function_train				#s2,#s3
 #	  pilot_samples = 100 40 20 10				#s2,#s3

@@ -917,6 +917,7 @@ static UShortStrBimap method_map =
   (MULTIFIDELITY_STOCH_COLLOCATION, "multifidelity_stoch_collocation")
   (C3_FUNCTION_TRAIN,               "c3_function_train")
   (MULTIFIDELITY_FUNCTION_TRAIN,    "multifidelity_function_train")
+  (MULTILEVEL_FUNCTION_TRAIN,       "multilevel_function_train")
   (BAYES_CALIBRATION,               "bayes_calibration")
   (CUBATURE_INTEGRATION,            "cubature")
   (QUADRATURE_INTEGRATION,          "quadrature")

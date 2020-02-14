@@ -464,6 +464,12 @@
 	     &default_max_solver_iterations;
 	     '>
 
+    <!ENTITY colloc_pts_sequence '
+	     <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number of collocation points to estimate coeffs" >
+	       <param type="INTEGERLIST" />
+	     </keyword>
+	     ' >
+
     <!ENTITY pce_regression_sequence '
 	     <oneOf label="Collocation Control">
 	       <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs"   >
@@ -558,9 +564,7 @@
       	     <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)"  minOccurs="1" >
 	       <alias name="least_interpolation"/>
 	       <alias name="oli"/>
-	       <keyword  id="collocation_points_sequence1" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs"   >
-		 <param type="INTEGERLIST" />
-	       </keyword>
+	       &colloc_pts_sequence;
 	       <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
 	       <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid"  minOccurs="0" default="regression with LHS sample set (point collocation)" >
 		 <param type="INTEGERLIST" />
@@ -2515,10 +2519,8 @@
 	  &mf_alloc_control;
 	  &discrep_emulation;
 	  &ft_method_controls;
-	  <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs"   >
-	    <param type="INTEGERLIST" />
-	    <!-- &pce_regression_opts; cross val, derivs, tensor, etc. -->
-	  </keyword>
+	  &colloc_pts_sequence;
+	  <!-- &pce_regression_opts; cross val, derivs, tensor, etc. -->
 	  &mlft_method_order_sequence;
 	  &mlft_method_rank_sequence;
 	  &expansion_options;
@@ -2531,11 +2533,10 @@
 	  &mlft_alloc_control; <!-- default is DEFAULT_MLMF_CONTROL -->
 	  &discrep_emulation;
 	  &ft_method_controls;
-	  <!-- No sequence spec (for now), only pilot
-	  <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" >
-	    <param type="INTEGERLIST" />
-	  </keyword>
-	  -->
+	  <!-- pilot samples replaces colloc_pts_sequence, but still support -->
+	  <!-- starting {order,rank} resolution optional specifications -->
+	  &mlft_method_order_sequence;
+	  &mlft_method_rank_sequence;
 	  &expansion_options;
 	  &method_optional_model_pointer;
         </keyword>

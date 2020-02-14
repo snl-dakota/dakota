@@ -1389,6 +1389,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ max_cross_iterations INTEGER >= 0 {N_mdm(nnint,maxCrossIterations)} ]
     [ solver_tolerance REAL {N_mdm(Real,solverTolerance)} ]
     [ rounding_tolerance REAL {N_mdm(Real,roundingTolerance)} ]
+    [ start_order_sequence ALIAS order_sequence INTEGERLIST {N_mdm(szarray,startOrderSeq)} ]
+    [ max_order INTEGER >= 0 {N_mdm(sizet,maxOrder)} ]
+    [ start_rank_sequence ALIAS rank_sequence INTEGERLIST {N_mdm(szarray,startRankSeq)} ]
+    [ kick_rank INTEGER >= 0 {N_mdm(sizet,kickRank)} ]
+    [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
+    [ adapt_rank {N_mdm(true,adaptRank)} ]
     [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}

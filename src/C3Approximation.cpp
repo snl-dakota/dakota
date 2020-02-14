@@ -352,8 +352,15 @@ void C3Approximation::combine_coefficients()
   std::map<UShortArray, C3FnTrainPtrs>::iterator it = levelApprox.begin();
   struct FunctionTrain * y = function_train_copy(it->second.function_train());
   ++it;
+  // Note: the FT rounding tolerance is relative.  Memory overhead is strongly
+  // correlated with this tolerance and 1.e-3 did not result in significant
+  // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
+  // > TO DO: shared roundingTol defaults to 1e-8 -> too tight for this context.
+  //          Need a MF roundingTol or can main context be loosened?
+  Real ml_round_tol = 1.e-2;//data_rep->roundingTol;
+  struct MultiApproxOpts * opts = data_rep->approxOpts;
   for (; it!= levelApprox.end(); ++it)
-    c3axpy(1., it->second.function_train(), &y, 1.e-2, data_rep->approxOpts);
+    c3axpy(1., it->second.function_train(), &y, ml_round_tol, opts);
   combinedC3FTPtrs.function_train(y);
 
   // Could also do this at the C3FnTrainPtrs level with ft1d_array support:

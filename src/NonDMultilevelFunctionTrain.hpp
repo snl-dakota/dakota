@@ -108,8 +108,10 @@ private:
   //- Heading: Data
   //
 
-  /// user specification for collocation_points (array for multifidelity)
-  SizetArray collocPtsSeqSpec;
+  /// user specification of sequence of regression build points (from
+  /// collocation_points_sequence (MF) or pilot_samples (ML)), one per
+  /// model form/resolution
+  SizetArray regressPtsSeq;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 };
