@@ -35,8 +35,10 @@ C3FnTrainPtrs C3FnTrainPtrs::copy() const
   C3FnTrainPtrs ftp; // new envelope with ftpRep default allocated
 
   ftp.ftpRep->ft          = function_train_copy(ftpRep->ft);
-  ftp.ftpRep->ft_gradient = ft1d_array_copy(ftpRep->ft_gradient);
-  ftp.ftpRep->ft_hessian  = ft1d_array_copy(ftpRep->ft_hessian);
+  ftp.ftpRep->ft_gradient = (ftpRep->ft_gradient == NULL) ? NULL :
+    ft1d_array_copy(ftpRep->ft_gradient);
+  ftp.ftpRep->ft_hessian  = (ftpRep->ft_hessian  == NULL) ? NULL :
+    ft1d_array_copy(ftpRep->ft_hessian);
 
   // ft_derived_fns,ft_sobol have been assigned NULL and can be allocated
   // downsteam when needed for stats,indices
