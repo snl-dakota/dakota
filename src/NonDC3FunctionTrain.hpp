@@ -86,9 +86,6 @@ protected:
   /// quadrature points
   bool tensorRegression;
 
-  size_t numSamplesOnModel;
-  //int numSamplesOnEmulator;
-
   /// user-specified file for importing build points
   String importBuildPointsFile;
 

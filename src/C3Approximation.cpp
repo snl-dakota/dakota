@@ -34,7 +34,8 @@ C3FnTrainPtrs C3FnTrainPtrs::copy() const
 {
   C3FnTrainPtrs ftp; // new envelope with ftpRep default allocated
 
-  ftp.ftpRep->ft          = function_train_copy(ftpRep->ft);
+  ftp.ftpRep->ft          = (ftpRep->ft          == NULL) ? NULL :
+    function_train_copy(ftpRep->ft);
   ftp.ftpRep->ft_gradient = (ftpRep->ft_gradient == NULL) ? NULL :
     ft1d_array_copy(ftpRep->ft_gradient);
   ftp.ftpRep->ft_hessian  = (ftpRep->ft_hessian  == NULL) ? NULL :
