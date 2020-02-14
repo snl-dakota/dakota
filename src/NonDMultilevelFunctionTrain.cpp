@@ -75,9 +75,6 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // Configure settings for ML allocation (following solver config)
-  assign_allocation_control();
-
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
   // --------------------------------
@@ -103,6 +100,9 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
+
+  // Configure settings for ML allocation (requires uSpaceModel)
+  assign_allocation_control();
 
   // -------------------------------------
   // Construct expansionSampler, if needed
