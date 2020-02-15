@@ -259,112 +259,95 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     // Define batch settings // Edited by AT
 
     int BatchSizeAcquisition = 3; // size of the first batch (acquisition batch)
-    int BatchSizeExploration = 2; // size of the second batch (exploration batch)
+    int BatchSizeExploration = 0; // size of the second batch (exploration batch)
 
     // Initialize the input array for the batch // Edit by AT
-    RealMatrix input_array_batch_acquisition(numContinuousVars, BatchSizeAcquisition);
+    // RealMatrix input_array_batch_acquisition(numContinuousVars, BatchSizeAcquisition);
+    VariablesArray input_array_batch_acquisition(BatchSizeAcquisition);
 
     // vars_star: input
     // resp_star: output (liar)
     // resp_star_truth: output (true)
 
     // Prepare the batch // Edited by AT
-    for(int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-      // determine fnStar from among sample data
-      get_best_sample();
+    for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
+        // determine fnStar from among sample data
+        get_best_sample();
 
-      // Execute GLOBAL search and retrieve results
-      Cout << "\n>>>>> Initiating global optimization\n";
-      ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-      approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
-      const Variables&  vars_star = approxSubProbMinimizer.variables_results();
-      const RealVector& c_vars    = vars_star.continuous_variables();
-      const Response&   resp_star = approxSubProbMinimizer.response_results();
-      const Real&       eif_star  = resp_star.function_value(0);
+        // Execute GLOBAL search and retrieve results
+        Cout << "\n>>>>> Initiating global optimization\n";
+        ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+        approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fucntion
+        const Variables&  vars_star = approxSubProbMinimizer.variables_results();
+        const RealVector& c_vars    = vars_star.continuous_variables();
+        const Response&   resp_star = approxSubProbMinimizer.response_results();
+        const Real&       eif_star  = resp_star.function_value(0);
 
-      // Get expected value for output
-      fHatModel.continuous_variables(c_vars);
-      fHatModel.evaluate();
-      const RealVector& mean = fHatModel.current_response().function_values();
+        // Get expected value for output
+        fHatModel.continuous_variables(c_vars);
+        fHatModel.evaluate();
+        const Response& approx_response = fHatModel.current_response(); // .function_values();
 
-      Real aug_lag = get_augmented_lagrangian(mean, c_vars, eif_star); // Edited by AT
+        Real aug_lag = get_augmented_lagrangian(approx_response.function_values(), c_vars, eif_star); // Edited by AT
 
-      debug_print_values(); // Edited by AT
+        debug_print_values(); // Edited by AT
 
-      check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr); // Edited by AT
+        check_convergence(eif_star, c_vars, prev_cv_star, eif_convergence_cntr, dist_convergence_cntr); // Edited by AT
 
-      debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr); // Edited by AT
+        debug_print_counter(globalIterCount, eif_star, distCStar, dist_convergence_cntr); // Edited by AT
 
-      // Constant liar
-      fHatModel.component_parallel_mode(TRUTH_MODEL);
-      iteratedModel.continuous_variables(c_vars);
-      ActiveSet set = iteratedModel.current_response().active_set();
-      set.request_values(dataOrder);
-      // iteratedModel.evaluate(set);
 
-      // need fixing: resp_star_truth -> resp_star
-      IntResponsePair resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response()); // sequential evaluation
-      fHatModel.append_approximation(vars_star, resp_star_truth, true); // append constant liar (aka heuristic liar)
+        // Constant liar
+        // need fixing: resp_star_truth -> resp_star
+        // IntResponsePair resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response()); // sequential evaluation
+        IntResponsePair resp_star_liar(iteratedModel.evaluation_id(), approx_response); // temporarily cast constant liar as observations
+        fHatModel.append_approximation(vars_star, resp_star_liar, true); // append constant liar (aka heuristic liar)
 
-      const RealVector& recast_vars_star = vars_star.continuous_variables();
+        // const RealVector& recast_vars_star = vars_star.continuous_variables();
 
-      // Append vars_star (input) to the batch before querying
-      for (int j = 0; j < numContinuousVars; j++) {
-        input_array_batch_acquisition(j, i_batch_acquisition) = recast_vars_star(j);
-      }
-
+        // Append vars_star (input) to the batch before querying
+        input_array_batch_acquisition[i_batch_acquisition] = vars_star.copy();
     }
 
     // Delete liar responses
     for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-      fHatModel.pop_approximation(true);
+        fHatModel.pop_approximation(false);
     }
 
-    // Query the batch -- to do
+    // Query the batch
+    for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
+        fHatModel.component_parallel_mode(TRUTH_MODEL);
+        iteratedModel.active_variables(input_array_batch_acquisition[i_batch_acquisition]);
+        ActiveSet set = iteratedModel.current_response().active_set();
+        set.request_values(dataOrder);
+        iteratedModel.evaluate_nowait(set);
+    }
+
+    // Get true responses resp_star_truth
+    const IntResponseMap resp_star_truth = iteratedModel.synchronize(); // const IntResponseMap& resp_star_truth = iteratedModel.synchronize();
 
     // Update the GP approximation with batch results
+    fHatModel.append_approximation(input_array_batch_acquisition, resp_star_truth, true);
+
+    // Check convergence
     if ( dist_convergence_cntr >= dist_convergence_limit ||
          eif_convergence_cntr  >= eif_convergence_limit ||
          globalIterCount       >= maxIterations )
-      approx_converged = true;
+        approx_converged = true;
     else {
-      // // Evaluate response_star_truth
-      // fHatModel.component_parallel_mode(TRUTH_MODEL);
-      // iteratedModel.continuous_variables(c_vars);
-      // ActiveSet set = iteratedModel.current_response().active_set();
-      // set.request_values(dataOrder);
-      // iteratedModel.evaluate(set);
 
-      IntResponsePair resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response()); // sequential evaluation
-      // IntResponseMap resp_star_truth(iteratedModel.evaluation_id(), iteratedModel.current_response()); // parallel evaluation -- does not work so far
-      // RealMatrix& all_samples = iteratedModel.all_samples();
-      // IntResponseMap& all_responses = iteratedModel.all_responses();
-
-      if (numNonlinearConstraints) {
-        // Update the merit function parameters
-        // Logic follows Conn, Gould, and Toint, section 14.4:
-        const RealVector& fns_star_truth = resp_star_truth.second.function_values();
-        Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
-        if (norm_cv_star < etaSequence)
-          update_augmented_lagrange_multipliers(fns_star_truth);
-        else
-          update_penalty();
+        // // Update constraints -- temporarily disabled
+        // if (numNonlinearConstraints) {
+        //   // Update the merit function parameters
+        //   // Logic follows Conn, Gould, and Toint, section 14.4:
+        //   const RealVector& fns_star_truth = resp_star_truth.second.function_values();
+        //   Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
+        //   if (norm_cv_star < etaSequence)
+        //     update_augmented_lagrange_multipliers(fns_star_truth);
+        //   else
+        //     update_penalty();
+        // }
       }
-
-      // Update the GP approximation for the batch
-
-      for (int i_batch_acquisition = 0; i_batch_acquisition < BatchSizeAcquisition; i_batch_acquisition++) {
-        const Variables& vars_star = approxSubProbMinimizer.variables_results(); // need fixing: get vars_star from input_array_batch_acquisition
-        // Get input vars_star
-        for (int j = 0; j < numContinuousVars; j++) {
-          // vars_star(j) = input_array_batch_acquisition(i_batch_acquisition, j);
-        }
-        // Get output resp_star_truth
-
-        // Update the GP approximation for each point in the batch
-        fHatModel.append_approximation(vars_star, resp_star_truth, true);
-      }
-    }
 
   } // end approx convergence while loop
 

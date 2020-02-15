@@ -192,9 +192,6 @@ private:
   // unsigned short eif_convergence_cntr, dist_convergence_cntr; // Edited by AT
   Real distCStar; // Edited by AT
 
-  // input array holder for a batch (batch acquisition)
-  RealMatrix inputArrayBatchAcquisition; // Edited by AT
-
 };
 
 
