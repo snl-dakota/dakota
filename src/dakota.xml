@@ -265,16 +265,15 @@
 	     ' >
 
     <!ENTITY ft_refinement '
-             <!-- No context-specific/goal-oriented (UQ) refinement at this time, only generic refinement within Model (adapt_rank) -->
              <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement"  minOccurs="0" default="no refinement" >
-               <oneOf label="p-refinement Type">
-		 <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform"   />
-		 <keyword  id="dimension_adaptive" name="dimension_adaptive" code="{0}" label="dimension_adaptive"  minOccurs="1" >
-		   <oneOf label="Dimension Adaptivity Estimation Approach">
-		     <keyword  id="generalized" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized"   />
-		   </oneOf>
-		 </keyword>
-	       </oneOf>
+	       <keyword  id="uniform4" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" >
+		 <!--
+		 <oneOf label="Uniform Refinement Approach">
+		   <keyword  id="order" name="order" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL_ORDER)}" label="order" />
+		   <keyword  id="rank" name="rank" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL_RANK)}" label="rank" />
+		 </oneOf>
+		 -->
+	       </keyword>
 	     </keyword>
 	     &default_max_refinement_iterations;
 	     ' >
@@ -283,7 +282,7 @@
 	     <optional>
 	       <oneOf label="Quadrature Rule Nesting">
 		 <keyword  id="nested" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested"   default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
-		 <keyword  id="non_nested" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested"   />
+		 <keyword  id="non_nested" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested" />
 	       </oneOf>
 	     </optional>
 	     ' >
@@ -2501,7 +2500,7 @@
         </keyword>
 
         <keyword  id="function_train" name="function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
-	  <!-- &ft_refinement; -->
+	  &ft_refinement;
 	  <!-- &import_build; Rely on DFSModel data import -->
 	  <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" minOccurs="0" default="20"  >
 	    <param type="INTEGER" constraint=">= 0" />
@@ -2515,7 +2514,7 @@
         </keyword>
 
         <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" minOccurs="1" group="Uncertainty Quantification" >
-	  <!-- &ft_refinement; INDIVIDUAL ADAPTIVE REFINEMENT PER LEVEL (currently use adapt_rank) -->
+	  &ft_refinement;
 	  &mf_alloc_control;
 	  &discrep_emulation;
 	  &ft_method_controls;

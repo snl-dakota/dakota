@@ -18,6 +18,8 @@ method,
 #   all 3 stipulate initial resolutions per level, not the adaptation procedure.
 #   Since we have adapt_rank and not adapt_order, support bullet above for now.
 #	  collocation_points_sequence = 100  40  20  10		#s1
+# > Distingish uniform poly order (default) vs. rank (option) refinement?
+#	  p_refinement uniform	      	     	     		#s1
 #	  allocation_control greedy				#s1
 #	multilevel_function_train				#s2,#s3
 #	  pilot_samples = 100 40 20 10				#s2,#s3

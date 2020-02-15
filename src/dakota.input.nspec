@@ -1124,6 +1124,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( function_train {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
+    [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+     ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
     [ collocation_points INTEGER >= 0 {N_mdm(sizet,collocationPoints)} ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
@@ -1240,6 +1244,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( multifidelity_function_train {N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}
+    [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+     ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
     [ allocation_control {0}
       greedy {N_mdm(type,multilevAllocControl_GREEDY_REFINEMENT)}
      ]
