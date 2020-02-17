@@ -39,7 +39,6 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type"))
 {
-
 }
 
 
@@ -125,16 +124,15 @@ void NonDMUQBayesCalibration::calibrate()
   // build the emulator and initialize transformations, as needed
   initialize_model();
 
-  parameterPtr = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
-  posteriorPtr = std::make_shared<muq::Modeling::DensityProduct>(2);
   distPtr = std::make_shared<muq::Modeling::Distribution>(numContinuousVars);
-  workGraph = std::make_shared<muq::Modeling::WorkGraph>();
-  MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, distPtr);
-  MUQPriorPtr = std::make_shared<MUQPrior>(nonDMUQInstance, distPtr);
 
-  //////////////////////
-  // DEFINE THE GRAPH //
-  //////////////////////
+
+  parameterPtr = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
+  workGraph = std::make_shared<muq::Modeling::WorkGraph>();
+  MUQPriorPtr = std::make_shared<MUQPrior>(nonDMUQInstance, distPtr);
+  MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, distPtr);
+  posteriorPtr = std::make_shared<muq::Modeling::DensityProduct>(2);
+
   workGraph->AddNode(parameterPtr,      "Parameters");
   workGraph->AddNode(MUQLikelihoodPtr,  "Likelihood");
   workGraph->AddNode(MUQPriorPtr,       "Prior");

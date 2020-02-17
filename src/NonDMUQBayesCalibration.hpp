@@ -98,11 +98,11 @@ private:
 
 class MUQLikelihood : public muq::Modeling::Density {
 
-
 public:
 
-  inline MUQLikelihood(NonDMUQBayesCalibration* nond_muq_ptr, std::shared_ptr<muq::Modeling::Distribution> distPtr) :
-  muq::Modeling::Density(distPtr), nonDMUQInstancePtr(nond_muq_ptr) { };
+  inline MUQLikelihood(NonDMUQBayesCalibration* nond_muq_ptr,
+    std::shared_ptr<muq::Modeling::Distribution> distPtr) :
+    muq::Modeling::Density(distPtr), nonDMUQInstancePtr(nond_muq_ptr) {};
 
   double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
 
@@ -111,7 +111,6 @@ protected:
 private:
 
     NonDMUQBayesCalibration* nonDMUQInstancePtr;
-
 };
 
 class MUQPrior : public muq::Modeling::Density {
