@@ -189,7 +189,7 @@ extern "C"
 namespace Dakota {
 struct FTDerivedFunctions
 {
-  int set;
+  bool allocated;
     
   struct FunctionTrain * ft_squared;
   struct FunctionTrain * ft_cubed;
@@ -217,6 +217,7 @@ struct FTDerivedFunctions
   double skewness;
   double kurtosis;
 };
+
 }
 
 #endif

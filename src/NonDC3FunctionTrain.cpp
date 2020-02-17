@@ -218,18 +218,16 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   //configure_pecos_options(); // C3 does not use Pecos options
 
-  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.truth_model().multivariate_distribution();
-  shared_data_rep->construct_basis(u_dist);
-
-  // TO DO: method and model spec are redundant.  How to encapsulate an
-  // XML entity for {method,model} to allow it in either location?
+  // Note: method and model spec are redundant, without a good way to
+  // encapsulate XML entities that differ only in their bindings.
   // > Defining a shared spec class with instances in Data{Method,Model} works
   //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
-  push_c3_options();
+  push_c3_options(); // needs to precede construct_basis()
+
+  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.truth_model().multivariate_distribution();
+  uSpaceModel.shared_approximation().construct_basis(u_dist);
 }
 
 
@@ -268,24 +266,13 @@ void NonDC3FunctionTrain::push_c3_options()
   shared_data_rep->set_parameter("max_solver_iterations",
     probDescDB.get_int("method.nond.max_solver_iterations"));
 
-  shared_data_rep->set_parameter("combine_type",     Pecos::ADD_COMBINE);
-  shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
+  short comb_type = Pecos::ADD_COMBINE;
   int verbosity = (outputLevel > NORMAL_OUTPUT) ? 1 : 0;
-  shared_data_rep->set_parameter("verbosity", verbosity);
-}
+  shared_data_rep->set_parameter("combine_type",     comb_type);
+  shared_data_rep->set_parameter("verbosity",        verbosity);
 
-
-void NonDC3FunctionTrain::print_results(std::ostream& s)
-{
-  if (//iteratedModel.subordinate_models(false).size() == 1 &&
-      iteratedModel.truth_model().solution_levels() > 1) {
-    s << "<<<<< Samples per solution level:\n";
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << std::endl;
-  }
-
-  NonDExpansion::print_results(s);
+  shared_data_rep->set_parameter("discrepancy_type", multilevDiscrepEmulation);
+  shared_data_rep->set_parameter("alloc_control",    multilevAllocControl);
 }
 
 

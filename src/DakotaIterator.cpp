@@ -474,7 +474,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     switch (probDescDB.get_ushort("method.sub_method")) {
     case SUBMETHOD_GPMSA:
 #ifdef HAVE_QUESO_GPMSA
-      return new NonDGPMSABayesCalibration(problem_db, model); break;
+      return new NonDGPMSABayesCalibration(problem_db, model);  break;
 #else
       Cerr << "\nError: QUESO/GPMSA Bayesian calibration method unavailable.\n"
 	   << "(Not enabled in some Dakota distributions due to dependence on "
@@ -483,7 +483,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #endif
     case SUBMETHOD_QUESO:
 #ifdef HAVE_QUESO
-      return new NonDQUESOBayesCalibration(problem_db, model); break;
+      return new NonDQUESOBayesCalibration(problem_db, model);  break;
 #else
       Cerr << "\nError: QUESO Bayesian calibration method unavailable.\n"
 	   << "(Not enabled in some Dakota distributions due to dependence on "
@@ -492,16 +492,17 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 #endif
 #ifdef HAVE_DREAM
     case SUBMETHOD_DREAM:
-      return new NonDDREAMBayesCalibration(problem_db, model); break;
+      return new NonDDREAMBayesCalibration(problem_db, model);  break;
 #endif
     case SUBMETHOD_WASABI:
       return new NonDWASABIBayesCalibration(problem_db, model); break;
     default:
       Cerr << "\nError: Bayesian calibration method '"
-	   << submethod_enum_to_string(probDescDB.get_ushort("method.sub_method"))
-	   << "' unavailable.\n";
-      return NULL;                                            break;
-    } break;
+	   << submethod_enum_to_string(
+	      probDescDB.get_ushort("method.sub_method")) << "' unavailable.\n";
+      return NULL;                                              break;
+    }
+    break;
   case GPAIS:     return new NonDGPImpSampling(problem_db, model);     break;
   case POF_DARTS: return new NonDPOFDarts(problem_db, model);          break;
   case RKD_DARTS: return new NonDRKDDarts(problem_db, model);          break;
@@ -908,6 +909,7 @@ static UShortStrBimap method_map =
   (GLOBAL_RELIABILITY,              "global_reliability")
   (GLOBAL_INTERVAL_EST,             "global_interval_est")
   (GLOBAL_EVIDENCE,                 "global_evidence")
+  (SURROGATE_BASED_UQ,              "surrogate_based_uq")
   (POLYNOMIAL_CHAOS,                "polynomial_chaos")
   (MULTIFIDELITY_POLYNOMIAL_CHAOS,  "multifidelity_polynomial_chaos")
   (MULTILEVEL_POLYNOMIAL_CHAOS,     "multilevel_polynomial_chaos")
@@ -1011,7 +1013,8 @@ static UShortStrBimap submethod_map =
 
 String Iterator::method_enum_to_string(unsigned short method_enum) const
 {
-  UShortStrBimap::left_const_iterator lc_iter = method_map.left.find(method_enum);
+  UShortStrBimap::left_const_iterator lc_iter
+    = method_map.left.find(method_enum);
   if (lc_iter == method_map.left.end()) {
     Cerr << "\nError: Invalid method_enum_to_string conversion: "
 	 << method_enum << " not available." << std::endl;
@@ -1023,7 +1026,8 @@ String Iterator::method_enum_to_string(unsigned short method_enum) const
 
 unsigned short Iterator::method_string_to_enum(const String& method_str) const
 {
-  UShortStrBimap::right_const_iterator rc_iter = method_map.right.find(method_str);
+  UShortStrBimap::right_const_iterator rc_iter
+    = method_map.right.find(method_str);
   if (rc_iter == method_map.right.end()) {
     Cerr << "\nError: Invalid method_string_to_enum conversion: "
 	 << method_str << " not available." << std::endl;
@@ -1035,7 +1039,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_str) const
 
 String Iterator::submethod_enum_to_string(unsigned short submethod_enum) const
 {
-  UShortStrBimap::left_const_iterator lc_iter = submethod_map.left.find(submethod_enum);
+  UShortStrBimap::left_const_iterator lc_iter
+    = submethod_map.left.find(submethod_enum);
   if (lc_iter == submethod_map.left.end()) {
     Cerr << "\nError: Invalid submethod_enum_to_string conversion: "
 	 << submethod_enum << " not available." << std::endl;

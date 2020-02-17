@@ -59,12 +59,6 @@ public:
   /// set pecosBasisApprox.randomVarsKey
   void random_variables_key(const Pecos::BitArray& random_vars_key);
 
-  /// set pecosBasisApprox.driverRep
-  void integration_iterator(const Iterator& iterator);
-
-  /// invoke Pecos::SharedPolyApproxData::construct_basis()
-  void construct_basis(const Pecos::MultivariateDistribution& u_dist);
-
   /// invoke Pecos::SharedPolyApproxData::update_basis_distribution_parameters()
   void update_basis_distribution_parameters(
     const Pecos::MultivariateDistribution& u_dist);
@@ -127,6 +121,10 @@ protected:
 
   void active_model_key(const UShortArray& key);
   void clear_model_keys();
+
+  void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
+
+  void integration_iterator(const Iterator& iterator);
 
   short discrepancy_type() const;
 
@@ -273,8 +271,8 @@ random_variables_key(const Pecos::BitArray& random_vars_key)
 
 
 inline void SharedPecosApproxData::
-construct_basis(const Pecos::MultivariateDistribution& u_dist)
-{ pecosSharedDataRep->construct_basis(u_dist); }
+construct_basis(const Pecos::MultivariateDistribution& mv_dist)
+{ pecosSharedDataRep->construct_basis(mv_dist); }
 
 
 inline void SharedPecosApproxData::

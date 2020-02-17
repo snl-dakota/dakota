@@ -44,9 +44,7 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model):
   }
 
   const String& surr_type = iteratedModel.surrogate_type();
-  if (surr_type == "global_function_train" ||
-      surr_type == "global_" ||
-      surr_type == "global_" ) {
+  if (surr_type == "global_function_train") {// || surr_type == "global_"
     // transformation, DataFit, and DACE configuration performed by Model spec
     // All expansion config settings are pulled in that ctor chain
     uSpaceModel = iteratedModel; // shared rep

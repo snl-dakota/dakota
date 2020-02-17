@@ -13,7 +13,7 @@ namespace Dakota {
 
 void C3FnTrainPtrsRep::ft_derived_functions_init_null()
 {
-  ft_derived_fns.set = 0;
+  ft_derived_fns.allocated = false;
         
   ft_derived_fns.ft_squared = NULL;
   ft_derived_fns.ft_cubed   = NULL;
@@ -41,7 +41,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts)
   //  = function_train_product(ft_derived_fns.ft_squared,
   //                           ft_derived_fns.ft_squared);
 
-  ft_derived_fns.first_moment   = function_train_integrate_weighted(ft);
+  ft_derived_fns.first_moment = function_train_integrate_weighted(ft);
   ft_derived_fns.ft_constant_at_mean
     = function_train_constant(-ft_derived_fns.first_moment,opts);
   ft_derived_fns.ft_diff_from_mean
@@ -95,7 +95,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts)
     / ft_derived_fns.second_central_moment
     / ft_derived_fns.second_central_moment;
 
-  ft_derived_fns.set = 1;
+  ft_derived_fns.allocated = true;
 }
 
 
@@ -127,8 +127,7 @@ void C3FnTrainPtrsRep::ft_derived_functions_free()
   function_train_free(ft_derived_fns.ft_diff_from_mean_normalized_cubed);
   ft_derived_fns.ft_diff_from_mean_normalized_cubed = NULL;
 
-  ft_derived_fns.set = 0;
+  ft_derived_fns.allocated = false;
 }
-
 
 } // namespace

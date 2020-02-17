@@ -136,7 +136,6 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   sequenceIndex(0)
 {
   assign_discrepancy_mode();
-  assign_allocation_control();
   assign_hierarchical_response_mode();
 
   // ----------------
@@ -174,6 +173,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 		    Pecos::DEFAULT_LEAST_SQ_REGRESSION, tensor_grid_order,
 		    SUBMETHOD_LHS, rng, pt_reuse, u_space_sampler,
 		    g_u_model, approx_type);
+
+  assign_allocation_control();
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel

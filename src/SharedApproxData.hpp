@@ -93,6 +93,9 @@ public:
   // (SharedPecosApproxData)
   //virtual void link_multilevel_surrogate_data();
 
+  /// set integration driver for structured grid approximations
+  virtual void integration_iterator(const Iterator& iterator);
+
   /// return the discrepancy type for approximations that support MLMF
   virtual short discrepancy_type() const;
 
@@ -128,6 +131,8 @@ public:
   /// promote aggregated data sets to active state
   virtual void combined_to_active(bool clear_combined = true);
 
+  /// construct the shared basis for an expansion-based approximation
+  virtual void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
   /// propagate updates to random variable distribution parameters to a
   /// polynomial basis
   virtual void update_basis_distribution_parameters(
