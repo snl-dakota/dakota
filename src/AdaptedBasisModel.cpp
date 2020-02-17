@@ -53,14 +53,14 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   Real colloc_ratio
     = problem_db.get_real("model.adapted_basis.collocation_ratio");
   short refine_type
-      = probDescDB.get_short("method.nond.expansion_refinement_type"),
+      = problem_db.get_short("method.nond.expansion_refinement_type"),
     refine_cntl
-      = probDescDB.get_short("method.nond.expansion_refinement_control"),
-    cov_cntl = probDescDB.get_short("method.nond.covariance_control"),
-    rule_nest = probDescDB.get_short("method.nond.nesting_override"),
-    rule_growth = probDescDB.get_short("method.nond.growth_override");
-  bool pw_basis = probDescDB.get_bool("method.nond.piecewise_basis"),
-     use_derivs = probDescDB.get_bool("method.derivative_usage");
+      = problem_db.get_short("method.nond.expansion_refinement_control"),
+    cov_cntl = problem_db.get_short("method.nond.covariance_control"),
+    rule_nest = problem_db.get_short("method.nond.nesting_override"),
+    rule_growth = problem_db.get_short("method.nond.growth_override");
+  bool pw_basis = problem_db.get_bool("method.nond.piecewise_basis"),
+     use_derivs = problem_db.get_bool("method.derivative_usage");
 
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
@@ -82,7 +82,7 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
     pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
       exp_coeffs_approach, exp_order, dim_pref, colloc_pts, colloc_ratio, seed,
       EXTENDED_U, refine_type, refine_cntl, cov_cntl, //rule_nest, rule_growth,
-      pw_basis, use_derivs, probDescDB.get_bool("method.nond.cross_validation"),
+      pw_basis, use_derivs, problem_db.get_bool("method.nond.cross_validation"),
       import_file, TABULAR_ANNOTATED, false);
   }
   else {
@@ -582,8 +582,12 @@ SizetArray AdaptedBasisModel::variables_resize()
 /// transform and set the distribution parameters in the reduced model
 void AdaptedBasisModel::uncertain_vars_to_subspace()
 {
+  // Unlike activeSubspaceModel (from which this fn is adapted), this subModel
+  // is in the transformed space.  Need to dive one level deeper to access
+  // distribution parameters in the native space.
+  const Model& native_model = subModel.subordinate_model();
   const Pecos::MultivariateDistribution& native_dist =
-    subModel.multivariate_distribution();
+    native_model.multivariate_distribution();
   Pecos::MarginalsCorrDistribution* native_dist_rep
     = (Pecos::MarginalsCorrDistribution*)native_dist.multivar_dist_rep();
 
