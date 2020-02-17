@@ -392,18 +392,17 @@ void NonDStochCollocation::initialize_u_space_model()
     initialize_covariance();
 
   // Precedes construct_basis() since basis is stored in Pecos driver
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->integration_iterator(uSpaceModel.subordinate_iterator());
+  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
+  shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
 
   // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
   const Pecos::MultivariateDistribution& u_mvd
     = uSpaceModel.multivariate_distribution();
   // construct the polynomial basis (shared by integration drivers)
-  shared_data_rep->construct_basis(u_mvd);
+  shared_data.construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
   // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
-  //shared_data_rep->update_basis_distribution_parameters(u_mvd);
+  //shared_data.update_basis_distribution_parameters(u_mvd);
 
   initialize_u_space_grid();
 }

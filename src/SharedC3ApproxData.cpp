@@ -43,23 +43,23 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   c3Verbosity(0),//problem_db.get_int("model.c3function_train.verbosity")),
   adaptConstruct(false), crossVal(false)
 {
-  // This ctor used for user-spec of DataFitSurrModel (surrogate global ft)
+  // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
+  // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
   approxOpts = multi_approx_opts_alloc(num_vars);
   oneApproxOpts = (struct OneApproxOpts **)
     malloc(num_vars * sizeof(struct OneApproxOpts *));
-  for (size_t ii = 0; ii < num_vars; ii++){
-    struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
-    ope_opts_set_lb(opts,-2); // BUG?
-    ope_opts_set_ub(opts, 2); // BUG?
-    ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
+  for (size_t ii = 0; ii < num_vars; ii++) {
+    //struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
+    //ope_opts_set_lb(opts,-2);
+    //ope_opts_set_ub(opts, 2);
+    //ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
     // Note: maxOrder unused for regression;
     //       to be used for adaptation by cross-approximation
-    ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
-    oneApproxOpts[ii] = one_approx_opts_alloc(POLYNOMIAL,opts);
-    multi_approx_opts_set_dim(approxOpts,ii,oneApproxOpts[ii]);
-    // oneApproxOpts[ii] = NULL;
-    // multi_approx_opts_set_dim(approxOpts,ii,oneApproxOpts[ii]);
+    //ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
+    //oneApproxOpts[ii] = one_approx_opts_alloc(POLYNOMIAL,opts);
+    //multi_approx_opts_set_dim(approxOpts,ii,oneApproxOpts[ii]);
+    oneApproxOpts[ii] = NULL;
   }
 }
 
@@ -78,6 +78,7 @@ SharedC3ApproxData(const String& approx_type,
   c3Verbosity(0), adaptConstruct(false), crossVal(false)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
+  // (used to build an FT on top of a user model in NonDC3FuntionTrain)
 
   // short basis_type; approx_type_to_basis_type(approxType, basis_type);
 
@@ -102,26 +103,24 @@ SharedC3ApproxData::~SharedC3ApproxData()
 
 
 void SharedC3ApproxData::
-construct_basis(const Pecos::MultivariateDistribution& u_dist)
+construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 {
-  const ShortArray& u_types = u_dist.random_variable_types();
-  assert (u_types.size() == numVars);
+  const ShortArray& rv_types = mv_dist.random_variable_types();
+  assert (rv_types.size() == numVars);
 
   for (size_t i=0; i < numVars; ++i) {
     // printf("i = %zu\n",i);
-    struct OpeOpts * opts = NULL;
-    switch (u_types[i]) {
+    struct OpeOpts * opts;
+    switch (rv_types[i]) {
     case Pecos::STD_NORMAL:
-      opts = ope_opts_alloc(HERMITE);
-      break;
+      opts = ope_opts_alloc(HERMITE);  break;
     case Pecos::STD_UNIFORM:
-      opts = ope_opts_alloc(LEGENDRE);
-      break;
+      opts = ope_opts_alloc(LEGENDRE); break;
     default:
-      PCerr << "Error: unsupported u-space type (" << u_types[i] << ") in "
+      opts = NULL;
+      PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
 	    << "SharedC3ApproxData::distribution_parameters()" << std::endl;
-      abort_handler(-1);
-      break;
+      abort_handler(-1);               break;
     }
     // printf("push_back\n");
     ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1

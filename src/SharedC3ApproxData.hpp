@@ -60,8 +60,6 @@ public:
   size_t pre_combine(short);
   void post_combine(short);
 
-  void construct_basis(const Pecos::MultivariateDistribution& u_dist);
-
   void set_parameter(String var, size_t val);
   void set_parameter(String var, bool   val);
   void set_parameter(String var, short  val);
@@ -83,6 +81,8 @@ protected:
   //
 
   //void clear_model_keys();
+
+  void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
 
   short discrepancy_type() const;
 
@@ -150,6 +150,9 @@ protected:
   short combineType;
   /// type of multilevel discrepancy emulation: distinct or recursive
   short discrepancyType;
+  /// type of multilevel strategy for sample allocation: ESTIMATOR_VARIANCE,
+  /// RANK_SAMPLING, GREEDY
+  short allocControl;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -208,6 +211,7 @@ inline void SharedC3ApproxData::set_parameter(String var, short val)
 {
   if      (var.compare("regress_type")     == 0)     regressType = val;
   else if (var.compare("discrepancy_type") == 0) discrepancyType = val;
+  else if (var.compare("alloc_control")    == 0)    allocControl = val;
   else if (var.compare("combine_type")     == 0)     combineType = val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }

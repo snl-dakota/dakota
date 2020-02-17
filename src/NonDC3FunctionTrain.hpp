@@ -62,11 +62,6 @@ protected:
   //void core_run();
 
   /// override certain print functions
-  // I should not have to define my own print functions -- AG
-  // This suggests there needs to be some refactoring to truly separate
-  // computing things and printing things
-  // The only thing I should have to print is FT specific results 
-  void print_results(std::ostream&);
   void print_moments(std::ostream& s);
   void print_sobol_indices(std::ostream& s);
 

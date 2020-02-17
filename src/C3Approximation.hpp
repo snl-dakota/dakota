@@ -54,7 +54,7 @@ public:
   //- Heading: Member functions
   //
 
-  /// perform a deep copy (unlike copy ctor and operator=, which are shallow)
+  /// perform a deep copy (copy ctor and operator= use shallow copies)
   C3FnTrainPtrs copy() const;
   /// swap ftpReps between two envelopes
   void swap(C3FnTrainPtrs& ftp);
@@ -224,7 +224,7 @@ private:
 
   void base_init();
     
-  void compute_derived_statistics(bool overwrite);
+  void compute_derived_statistics(bool overwrite = false);
 
   struct FunctionTrain * subtract_const(Real val);
 

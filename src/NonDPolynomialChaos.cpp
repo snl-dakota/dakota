@@ -850,8 +850,9 @@ void NonDPolynomialChaos::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   configure_pecos_options(); // pulled out of base because C3 does not use it
 
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
+  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
+  SharedPecosApproxData* shared_data_rep
+    = (SharedPecosApproxData*)shared_data.data_rep();
   // Transfer regression data: cross validation, noise tol, and L2 penalty.
   // Note: regression solver type is transferred via expansionCoeffsApproach
   //       in NonDExpansion::initialize_u_space_model()
@@ -872,7 +873,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   const Pecos::MultivariateDistribution& u_mvd
     = uSpaceModel.multivariate_distribution();
   // construct the polynomial basis (shared by integration drivers)
-  shared_data_rep->construct_basis(u_mvd);
+  shared_data.construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
   // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
   //shared_data_rep->update_basis_distribution_parameters(u_mvd);
@@ -886,11 +887,11 @@ void NonDPolynomialChaos::initialize_u_space_model()
 		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
 		  expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID);
   if ( num_int || ( tensorRegression && numSamplesOnModel ) ) {
-    shared_data_rep->integration_iterator(uSpaceModel.subordinate_iterator());
+    shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
     initialize_u_space_grid(); // propagates dist param updates
   }
   else // propagate dist param updates in case without IntegrationDriver
-    shared_data_rep->update_basis_distribution_parameters(u_mvd);
+    shared_data.update_basis_distribution_parameters(u_mvd);
 }
 
 
