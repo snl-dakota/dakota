@@ -621,6 +621,7 @@ namespace Dakota {
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
   void NonDMultilevelSampling::multilevel_mc_Qsum(unsigned short model_form) {
+
     iteratedModel.surrogate_model_key(model_form);// soln lev not updated yet
     iteratedModel.truth_model_key(model_form);    // soln lev not updated yet
 
@@ -629,21 +630,18 @@ namespace Dakota {
     Model &truth_model = iteratedModel.truth_model();
     size_t lev, num_lev = truth_model.solution_levels(), // single model form
         qoi, iter = 0;
+
+    Cout << "NumFunctions: " << numFunctions << ", NumLevels:" << num_lev << std::endl;
+
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
     Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost, place_holder;
     // retrieve cost estimates across soln levels for a particular model form
-    RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev), agg_var_of_var(
-        num_lev), estimator_var0_qoi, eps_sq_div_2_qoi, sum_sqrt_var_cost_qoi, sum_sqrt_var_cost_var_qoi, sum_sqrt_var_cost_mean_qoi;
-    RealMatrix agg_var_qoi(numFunctions, num_lev), agg_var_mean_qoi(numFunctions, num_lev), agg_var_var_qoi(numFunctions, num_lev);
-    RealMatrix N_target_qoi(numFunctions, num_lev);
-    estimator_var0_qoi.size(numFunctions);
-    eps_sq_div_2_qoi.size(numFunctions);
-    sum_sqrt_var_cost_qoi.size(numFunctions);
-    sum_sqrt_var_cost_mean_qoi.size(numFunctions);
-    sum_sqrt_var_cost_var_qoi.size(numFunctions);
-    RealVector agg_var_l_qoi(numFunctions);
-    RealVector level_cost;
-    level_cost.size(num_lev);
+    RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev), agg_var_of_var(num_lev),
+      estimator_var0_qoi(numFunctions), eps_sq_div_2_qoi(numFunctions),
+      sum_sqrt_var_cost_qoi(numFunctions), sum_sqrt_var_cost_var_qoi(numFunctions), sum_sqrt_var_cost_mean_qoi(numFunctions),
+      agg_var_l_qoi(numFunctions), level_cost(num_lev);
+    RealMatrix agg_var_qoi(numFunctions, num_lev), agg_var_mean_qoi(numFunctions, num_lev),
+      agg_var_var_qoi(numFunctions, num_lev), N_target_qoi(numFunctions, num_lev);
     // For moment estimation, we accumulate telescoping sums for Q^i using
     // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
     // For computing N_l from estimator variance, we accumulate square of Y1
@@ -679,7 +677,7 @@ namespace Dakota {
     }
 
     // now converge on sample counts per level (N_l)
-    while ( (Pecos::l1_norm(delta_N_l) && iter <= max_iter) ) {
+    while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
       sum_sqrt_var_cost = 0.;
       for (qoi = 0; qoi < numFunctions; ++qoi) {
@@ -746,7 +744,7 @@ namespace Dakota {
               }
             } else{
               Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: TargetMoment is not implemented.\n";
-              exit(-1);
+              abort_handler(INTERFACE_ERROR);
             }
           }else if (sampleAllocationType==WORST_CASE) {
             for (qoi = 0; qoi < numFunctions; ++qoi) {
@@ -763,7 +761,7 @@ namespace Dakota {
             }
           }else{
             Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: SampleAllocationType is not known.\n";
-            exit(-1);
+            abort_handler(INTERFACE_ERROR);
           }
         }
 
@@ -812,7 +810,7 @@ namespace Dakota {
         // Equation 3.9 in CTR Annual Research Briefs:
         // "A multifidelity control variate approach for the multilevel Monte
         // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-        N_target = std::sqrt(agg_var[lev] / lev_cost) * fact;
+        N_target = std::sqrt(agg_var[lev] / level_cost[lev]) * fact;
         Cout << N_target << " ";
         delta_N_l[lev] = one_sided_delta(average(N_l[lev]), N_target);
       }
