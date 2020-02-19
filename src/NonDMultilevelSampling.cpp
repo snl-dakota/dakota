@@ -642,6 +642,8 @@ namespace Dakota {
       agg_var_l_qoi(numFunctions), level_cost(num_lev);
     RealMatrix agg_var_qoi(numFunctions, num_lev), agg_var_mean_qoi(numFunctions, num_lev),
       agg_var_var_qoi(numFunctions, num_lev), N_target_qoi(numFunctions, num_lev);
+
+
     // For moment estimation, we accumulate telescoping sums for Q^i using
     // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
     // For computing N_l from estimator variance, we accumulate square of Y1
@@ -670,9 +672,10 @@ namespace Dakota {
     RealVectorArray mu_hat(num_lev);
     Sizet2DArray &N_l = NLev[model_form];
 
+    // Safe guard.
     for(qoi = 0; qoi < numFunctions; ++qoi) {
       for (lev = 0; lev < num_lev; ++lev) {
-        N_target_qoi[qoi][lev] = pilotSamples[lev];
+        N_target_qoi(qoi, lev) = -1;
       }
     }
 
@@ -716,6 +719,7 @@ namespace Dakota {
           // process allResponses: accumulate new samples for each qoi and
           // update number of successful samples for each QoI
           //if (iter == 0) accumulate_offsets(mu_hat[lev]);
+
           accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev,
                               mu_hat[lev], N_l[lev]);
           if (outputLevel == DEBUG_OUTPUT)
@@ -746,18 +750,20 @@ namespace Dakota {
               Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: TargetMoment is not implemented.\n";
               abort_handler(INTERFACE_ERROR);
             }
+            check_negative(agg_var_l);
           }else if (sampleAllocationType==WORST_CASE) {
             for (qoi = 0; qoi < numFunctions; ++qoi) {
-              agg_var_mean_qoi[qoi][lev] = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
+              agg_var_mean_qoi(qoi, lev) = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
                                                                    sum_Ql[2][lev], sum_QlQlm1[pr11][lev],
                                                                    sum_Qlm1[2][lev],
                                                                    N_l[lev], lev, qoi);
-              agg_var_var_qoi[qoi][lev] = ((lev == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[lev][qoi],
+              agg_var_var_qoi(qoi, lev) = ((lev == 0) ? var_of_var_ml_l0(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[lev][qoi],
                                                                          N_l[lev][qoi], qoi, false, place_holder)
                                                       : var_of_var_ml_l(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l[lev][qoi],
                                                                         N_l[lev][qoi], qoi, lev, false, place_holder)) *
                                           N_l[lev][qoi]; //As described in the paper by Krumscheid, Pisaroni, Nobile
-              agg_var_qoi[qoi][lev] = (targetMoment == 1) ? agg_var_mean_qoi[qoi][lev] : agg_var_var_qoi[qoi][lev];
+              agg_var_qoi(qoi, lev) = (targetMoment == 1) ? agg_var_mean_qoi(qoi, lev) : agg_var_var_qoi(qoi, lev);
+              check_negative(agg_var_qoi(qoi, lev));
             }
           }else{
             Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: SampleAllocationType is not known.\n";
@@ -770,7 +776,7 @@ namespace Dakota {
         for (qoi = 0; qoi < numFunctions && sampleAllocationType==WORST_CASE; ++qoi) {
           //sum_sqrt_var_cost_mean_qoi[qoi] += std::sqrt(agg_var_mean_qoi[qoi][lev] * lev_cost);
           //sum_sqrt_var_cost_var_qoi[qoi] += std::sqrt(agg_var_var_qoi[qoi][lev] * lev_cost);
-          sum_sqrt_var_cost_qoi[qoi] += std::sqrt(agg_var_qoi[qoi][lev] * lev_cost);
+          sum_sqrt_var_cost_qoi[qoi] += std::sqrt(agg_var_qoi(qoi, lev) * lev_cost);
         }
         // MSE reference is MC applied to HF:
         if (iter == 0) {
@@ -817,14 +823,15 @@ namespace Dakota {
       Cout << "\n";
       Cout << "N_target per Qoi: " << std::endl;
       for (qoi = 0; qoi < numFunctions && (sampleAllocationType == WORST_CASE); ++qoi) {
+        Cout << "\tQoi: " << qoi << ", sum_sqrt_var_cost_qoi: " << sum_sqrt_var_cost_qoi[qoi] << std::endl;
         fact_qoi = sum_sqrt_var_cost_qoi[qoi]/eps_sq_div_2_qoi[qoi];
         Cout << "\tQoi: " << qoi << ", lagrange: " << fact_qoi << std::endl;
         for (lev = 0; lev < num_lev; ++lev) {
-          Cout << "\t\tVar of target: " << agg_var_qoi[qoi][lev] << std::endl;
+          Cout << "\t\tVar of target: " << agg_var_qoi(qoi, lev) << std::endl;
           Cout << "\t\tCost: " << level_cost[lev] << "\n";
-          N_target_qoi[qoi][lev] = std::sqrt(agg_var_qoi[qoi][lev] / level_cost[lev]) * fact_qoi;
+          N_target_qoi(qoi, lev) = std::sqrt(agg_var_qoi(qoi, lev) / level_cost[lev]) * fact_qoi;
 
-          Cout << "\t\tN_target_qoi: " << N_target_qoi[qoi][lev] << "\n";
+          Cout << "\t\tN_target_qoi: " << N_target_qoi(qoi, lev) << "\n";
         }
         Cout << "\n";
       }
@@ -1029,7 +1036,7 @@ namespace Dakota {
             Cout << "\n";
           }
           for (lev = 0; lev < num_lev; ++lev) {
-              N_target_qoi[qoi][lev] =  optimizer->variables_results().continuous_variable(lev);
+              N_target_qoi(qoi, lev) =  optimizer->variables_results().continuous_variable(lev);
           }
           delete optimizer;
         }
@@ -1040,8 +1047,9 @@ namespace Dakota {
         for (qoi = 0; qoi < numFunctions; ++qoi) {
           Cout << "\t\tQoi: " << qoi << "\n\t\t\t";
           for (lev = 0; lev < num_lev; ++lev) {
-            delta_N_l_qoi[qoi][lev] = one_sided_delta(N_l[lev][qoi], std::ceil(N_target_qoi[qoi][lev]));
-            Cout << delta_N_l_qoi[qoi][lev] << ", \t";
+            assert(N_target_qoi(qoi, lev) >= 0);
+            delta_N_l_qoi(qoi, lev) = one_sided_delta(N_l[lev][qoi], std::ceil(N_target_qoi(qoi, lev)));
+            Cout << delta_N_l_qoi(qoi, lev) << ", \t";
           }
           Cout << "\n";
         }
@@ -1050,9 +1058,9 @@ namespace Dakota {
         for (lev = 0; lev < num_lev; ++lev) {
           max_qoi_idx = 0;
           for (qoi = 1; qoi < numFunctions; ++qoi) {
-            max_qoi_idx = delta_N_l_qoi[qoi][lev] > delta_N_l_qoi[max_qoi_idx][lev] ? qoi : max_qoi_idx;
+            max_qoi_idx = delta_N_l_qoi(qoi, lev) > delta_N_l_qoi(max_qoi_idx, lev) ? qoi : max_qoi_idx;
           }
-          delta_N_l[lev] = delta_N_l_qoi[max_qoi_idx][lev];
+          delta_N_l[lev] = delta_N_l_qoi(max_qoi_idx, lev);
         }
       }
       Cout << "Max Delta: " << std::endl;
@@ -1064,6 +1072,7 @@ namespace Dakota {
       ++iter;
       Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
            << std::endl;
+
     }
     Cout << "\nMLMC final sample size\n" << N_l
          << std::endl;
@@ -1853,7 +1862,6 @@ namespace Dakota {
 
     for (r_it = allResponses.begin(); r_it != allResponses.end(); ++r_it) {
       const RealVector &fn_vals = r_it->second.function_values();
-
       for (qoi = 0; qoi < numFunctions; ++qoi) {
         q_l_prod = q_l = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
@@ -1862,7 +1870,6 @@ namespace Dakota {
           ord = q_it->first;
           active_ord = 1;
           while (q_it != sum_Q.end()) {
-
             if (ord == active_ord) {
               q_it->second(qoi, lev) += q_l_prod;
               ++q_it;
