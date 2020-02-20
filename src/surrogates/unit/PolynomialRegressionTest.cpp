@@ -14,6 +14,9 @@
 #include "PolynomialRegression.hpp"
 #include "LinearSolvers.hpp"
 
+#include <boost/random.hpp>
+#include <boost/random/uniform_real.hpp>
+
 // Namespace
 
 using namespace dakota::surrogates;
@@ -115,6 +118,94 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   BOOST_CHECK(matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
 }
 
+// --------------------------------------------------------------------------------
+
+// More utilities to aid unit testing and which migh tlater get parceled into
+// othe util classes - RWH
+void get_samples(int num_vars, int num_samples, MatrixXd & samples)
+{
+  samples.resize(num_samples, num_vars);
+
+  //std::random_device rd;
+  //std::mt19937 gen(rd());
+
+  int seed = 1337;
+  //std::mt19937 gen(seed);
+  //std::uniform_real_distribution<double> dis(-1.0, 1.0);
+
+  // This choice allows consistent comparison with pecos/surrogates/models/src/RegressionBuilder
+  typedef boost::uniform_real<> NumberDistribution; 
+  typedef boost::mt19937 RNG; 
+  typedef boost::variate_generator<RNG&,NumberDistribution> Generator; 
+
+  boost::uniform_real<double> distribution( -1.0, 1.0 ); 
+  boost::mt19937 generator; 
+  generator.seed( seed );
+  boost::variate_generator<boost::mt19937, NumberDistribution> numberGenerator( generator, distribution ); 
+
+  for( int j=0; j<num_vars; ++j )
+    for( int i=0; i<num_samples; ++i )
+      //samples(i,j) = dis(gen);
+      samples(i,j) = numberGenerator();
+}
+
+  // ------------------------------------------------------------
+
+void
+another_additive_quadratic_function(const MatrixXd & samples, VectorXd & func_vals)
+{
+  func_vals.resize(samples.rows());
+  const int num_vars = samples.cols();
+
+  for( int i=0; i<samples.rows(); ++i )
+  {
+    func_vals(i) = 1.0;
+    for (int j=0; j<num_vars; ++j)
+    {
+      double x = (2*samples(i,j)-1);
+      func_vals[i] += x*x+2.0*x;
+    }
+  }
+}
+
+
+//
+//// ------------------------------------------------------------
+//void compute_hyperbolic_indices( int num_dims, int level, Real p,
+//    IntMatrix &indices )
+//{
+//  compute_hyperbolic_level_indices( num_dims, 0, p, indices );
+//  for ( int l = 1; l < level+1; l++ )
+//  {
+//    IntMatrix level_indices;
+//    compute_hyperbolic_level_indices( num_dims, l, p, level_indices );
+//    column_append( level_indices, indices );
+//  }
+//}
+
+  // ------------------------------------------------------------
+
+void
+PolynomialRegressionSurrogate_multivariate_regression_builder()
+{
+  int num_vars    = 2,
+      num_qoi     = 2,
+      num_samples = 20,
+      degree      = 3;
+
+  // Generate realizations of function variables
+
+  MatrixXd samples;
+  get_samples(num_vars, num_samples, samples);
+  //std::cout << samples << std::endl;
+
+  VectorXd f_vals;
+  another_additive_quadratic_function(samples, f_vals);
+  std::cout << f_vals << std::endl;
+
+  // Pick up HERE ... RWH
+}
+
 } // namespace
 
 // --------------------------------------------------------------------------------
@@ -125,6 +216,7 @@ int test_main( int argc, char* argv[] ) // note the name!
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NORMALIZATION);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
+  PolynomialRegressionSurrogate_multivariate_regression_builder();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );

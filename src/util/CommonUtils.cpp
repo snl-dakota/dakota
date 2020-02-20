@@ -36,6 +36,11 @@ void error(const std::string msg)
   throw(std::runtime_error(msg));
 }
 
+bool matrix_equals(const MatrixXi &A, const MatrixXi &B)
+{
+  return A == B;
+}
+
 bool matrix_equals(const MatrixXd &A, const MatrixXd &B, double tol)
 {
   if ( (A.rows()!=B.rows()) || (A.cols()!=B.cols())){

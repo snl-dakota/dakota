@@ -46,6 +46,14 @@ using namespace Eigen;
 void error(const std::string msg);
 
 /**
+ *  \brief Tests whether two Eigen MatrixXi objects are equal
+ *  \param[A] The first matrix to test.
+ *  \param[B] The second matrix to test.
+ *  \returns Whether the matrices are equal.
+*/
+bool matrix_equals(const MatrixXi &A, const MatrixXi &B);
+
+/**
  *  \brief Tests whether two Eigen MatrixXd objects are equal, within a given tolerance.
  *  \param[A] The first matrix to test.
  *  \param[B] The second matrix to test.
