@@ -1,0 +1,44 @@
+#@ s*: Label=FastTest
+#@ s0: UserMan=muq_uq
+#@ *: DakotaConfig=HAVE_MUQ
+#@ *: ReqFiles=dakota_bayes_linear.1.dat
+# s0-s2: using metropolis hastings
+# s3: using adaptive metropolis
+# s0-s1: using uniform priors
+# s0: uninformative prior
+# s1: informative prior, resulting in truncated posterior
+# s0-s1: 1000 samples
+# s2-s3: 5000 samples
+
+
+environment
+  tabular_data
+
+method,
+  bayes_calibration muq
+  metropolis_hastings     #s0,#s1,#s2
+# adaptive_metropolis     #s3
+  seed = 34784
+  chain_samples = 1000    #s0,#s1
+# chain_samples = 5000    #s2,#s3
+
+variables,
+  uniform_uncertain = 1
+    upper_bounds   0.6
+    lower_bounds   0.1    #s0,#s2,#s3
+#   lower_bounds   0.4    #s1
+    initial_point  0.41
+
+
+interface,
+  direct
+    analysis_driver = 'bayes_linear'
+
+responses,
+  calibration_terms = 1
+    calibration_data_file = 'dakota_bayes_linear.1.dat'
+        freeform
+        num_experiments = 100
+        variance_type = 'scalar'
+  no_gradients
+  no_hessians

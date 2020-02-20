@@ -20,6 +20,7 @@
 #include "ProbabilityTransformation.hpp"
 #include "NonDSampling.hpp"
 #include "PRPMultiIndex.hpp"
+#include "MUQ/Utilities/RandomGenerator.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -156,10 +157,19 @@ void NonDMUQBayesCalibration::calibrate()
   pt.put("NumSamples", N); // number of Monte Carlo samples
   pt.put("PrintLevel",0);
   pt.put("KernelList", "Kernel1"); // the transition kernel
-  pt.put("Kernel1.Method","MHKernel"); // Metropolis-Hastings (have AM) (DR is in muq1, but maybe not yet available in MUQ2)
+  pt.put("Kernel1.Method","MHKernel");
   pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
-  pt.put("Kernel1.MyProposal.Method", "MHProposal");
-  pt.put("Kernel1.MyProposal.ProposalVariance", 0.00001); // the variance of the isotropic MH proposal
+
+  // Metropolis-Hastings with or without adaptivity
+  if (mcmcType == "metropolis_hastings")
+      pt.put("Kernel1.MyProposal.Method","MHProposal");
+  else if (mcmcType == "adaptive_metropolis")
+      pt.put("Kernel1.MyProposal.Method","AMProposal");
+
+  pt.put("Kernel1.MyProposal.ProposalVariance", 0.000001); // the variance of the isotropic MH proposal
+  pt.put("Kernel1.MyProposal.AdaptSteps",200);
+  pt.put("Kernel1.MyProposal.AdaptStart",2000);
+  pt.put("Kernel1.MyProposal.AdaptScale",1.0);
 
   auto dens = workGraph->CreateModPiece("Posterior");
 
@@ -171,6 +181,11 @@ void NonDMUQBayesCalibration::calibrate()
   Eigen::VectorXd init_pt(num_cv);
   for (i=0; i<num_cv; ++i)
     init_pt[i] = init_point[i];
+
+  Cout << "Running Bayesian Calibration with MUQ " << mcmcType << " using "
+       << N << " MCMC samples." << std::endl;
+
+  muq::Utilities::RandomGenerator::SetSeed(randomSeed);
 
   samps = mcmc->Run(init_pt);
 
@@ -216,7 +231,7 @@ void NonDMUQBayesCalibration::cache_chain()
 
     // translate the output matrix into x- or u-space lookup vars and
     // x-space acceptanceChain
-\    if (standardizedSpace) {
+    if (standardizedSpace) {
       // u_rv and x_rv omit any hyper-parameters
       RealVector u_rv(numContinuousVars, false);
       for (int j=0; j<numContinuousVars; ++j)

@@ -3055,10 +3055,11 @@
 		<alias name="samples" />
 		<param type="INTEGER" />
 	      </keyword>
+	      &bayes_seed_rng;
 	      <optional>
 		<oneOf label="MCMC Algorithm" >
-		  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  minOccurs="1" default="dram" />
-		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
+		  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="metropolis_hastings" />
+		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="metropolis_hastings" />
 		</oneOf>
 	      </optional>
 	    </keyword>
