@@ -22,10 +22,13 @@ struct FT1DArray;
 struct C3SobolSensitivity;
 struct MultiApproxOpts;
 
+namespace Pecos {
+class SurrogateData;
+}
+    
 namespace Dakota {
     
-// forward declares previously defined in this header
-// now in dakota_c3_include.hpp
+// fwd declares previously defined in this header now in dakota_c3_include.hpp
 struct FTDerivedFunctions;
 // now in separate implementation file
 class C3FnTrainPtrsRep;
@@ -127,17 +130,9 @@ public:
   size_t average_rank();
   size_t maximum_rank();
 
-  /// I Dont know what the next 4 are for, but I will leave them in
-  /// in case I ever find out!
-    
-  /// set pecosBasisApprox.configOptions.expansionCoeffFlag
   void expansion_coefficient_flag(bool coeff_flag);
-  /// get pecosBasisApprox.configOptions.expansionCoeffFlag
   bool expansion_coefficient_flag() const;
-
-  /// set pecosBasisApprox.configOptions.expansionGradFlag
   void expansion_gradient_flag(bool grad_flag);
-  /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
   void compute_moments(bool full_stats = true, bool combined_stats = false);
@@ -147,11 +142,7 @@ public:
   Real moment(size_t i) const;
   void moment(Real mom, size_t i);
 
-  /// Performs global sensitivity analysis using Sobol' Indices by
-  /// computing component (main and interaction) effects
   void compute_component_effects();
-  /// Performs global sensitivity analysis using Sobol' Indices by
-  /// computing total effects
   void compute_total_effects();
 
   void compute_all_sobol_indices(size_t); // computes total and interacting sobol indices
@@ -160,35 +151,44 @@ public:
   // iterate over sobol indices and apply a function
   void sobol_iterate_apply(void (*)(double, size_t, size_t*,void*), void*); 
     
-  Real mean();                            // expectation with respect to all variables
-  Real mean(const RealVector &);          // expectation with respect to uncertain variables
+  Real mean();                   // expectation with respect to all variables
+  Real mean(const RealVector &); // expectation with respect to random vars
+
   const RealVector& mean_gradient();      // NOT SURE
-  // gradient with respect fixed variables
   const RealVector& mean_gradient(const RealVector &, const SizetArray &); 
     
-  //     inline const Pecos::RealVector& PecosApproximation::
-  // mean_gradient(const Pecos::RealVector& x, const Pecos::SizetArray& dvv)
-  // { return polyApproxRep->mean_gradient(x, dvv); }
-
-  Real variance();                        // variance with respect to all variables
-  Real variance(const RealVector&);       // variance with respect to RV, others fixed
+  Real variance();
+  Real variance(const RealVector&);
   const RealVector& variance_gradient();      // NOT SURE
-  // gradient with respect fixed variables
   const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
 
-  Real covariance(Approximation& approx_2);                    // covariance between two functions
-  Real covariance(const RealVector& x, Approximation& approx_2); // covariance with respect so subset
+  Real covariance(Approximation& approx_2);
+  Real covariance(const RealVector& x, Approximation& approx_2);
 
   Real skewness();
   Real kurtosis();
   Real third_central();
   Real fourth_central();
 
+  Real combined_mean();
+  Real combined_mean(const RealVector &);
+  Real combined_variance();
+  Real combined_variance(const RealVector &);
+  Real combined_third_central();
+  Real combined_fourth_central();
+
   const RealVector& expansion_moments() const;
   const RealVector& numerical_integration_moments() const;
 
+  /// update surrData to define aggregated data from raw data, when indicated
+  /// by an active aggregated key
   void synchronize_surrogate_data();
-  //void response_data_to_surplus_data();
+  /// generate synthetic data for the surrogate QoI prediction corresponding
+  /// to the level key preceding active key; for use in surplus estimation
+  /// for new level data relative to a previous level's surrogate prediction
+  void generate_synthetic_data(Pecos::SurrogateData& surr_data,
+			       const UShortArray& active_key,
+			       short combine_type);
 
 protected:
 
@@ -224,7 +224,7 @@ private:
 
   void base_init();
     
-  void compute_derived_statistics(bool overwrite = false);
+  void compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite = false);
 
   struct FunctionTrain * subtract_const(Real val);
 
@@ -232,6 +232,11 @@ private:
   void check_function_gradient();
   /// differentiate the ftg to form the ft Hessian, if not previously performed
   void check_function_hessian();
+
+  /// compute mean corresponding to the passed FT expansion
+  Real mean(const RealVector &x, C3FnTrainPtrs& ftp);
+  /// compute variance corresponding to the passed FT expansion
+  Real variance(const RealVector &x, C3FnTrainPtrs& ftp);
 
   //
   //- Heading: Data
@@ -315,6 +320,22 @@ inline Real C3Approximation::moment(size_t i) const
 
 inline void C3Approximation::moment(Real mom, size_t i)
 { expansionMoments[i] = mom; }
+
+
+inline Real C3Approximation::mean(const RealVector &x)
+{ return mean(x, levApproxIter->second); }
+
+
+inline Real C3Approximation::variance(const RealVector &x)
+{ return variance(x, levApproxIter->second); }
+
+
+inline Real C3Approximation::combined_mean(const RealVector &x)
+{ return mean(x, combinedC3FTPtrs); }
+
+
+inline Real C3Approximation::combined_variance(const RealVector &x)
+{ return variance(x, combinedC3FTPtrs); }
 
 
 inline const RealVector& C3Approximation::expansion_moments() const

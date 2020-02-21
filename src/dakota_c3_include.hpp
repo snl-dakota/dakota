@@ -83,6 +83,9 @@ extern "C"
     function_train_sum(const struct FunctionTrain *,
                        const struct FunctionTrain *);
     struct FunctionTrain *
+    function_train_round(struct FunctionTrain *, double,
+                         struct MultiApproxOpts *);
+    struct FunctionTrain *
     function_train_product(const struct FunctionTrain *, 
                            const struct FunctionTrain *);
     int function_train_save(struct FunctionTrain *,char *);

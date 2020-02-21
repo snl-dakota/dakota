@@ -489,8 +489,8 @@ Real Approximation::prediction_variance(const Variables& vars)
 Real Approximation::mean()
 {
   if (!approxRep) {
-    Cerr << "Error:mean() not available for this approximation "
-	 << "type." << std::endl;
+    Cerr << "Error: mean() not available for this approximation type."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
@@ -500,12 +500,34 @@ Real Approximation::mean()
 Real Approximation::mean(const RealVector& x)
 {
   if (!approxRep) {
-    Cerr << "Error:mean(x) not available for this approximation "
-	 << "type." << std::endl;
+    Cerr << "Error: mean(x) not available for this approximation type."
+	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
 
   return approxRep->mean(x);
+}
+
+Real Approximation::combined_mean()
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_mean() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_mean();
+}
+
+Real Approximation::combined_mean(const RealVector& x)
+{
+  if (!approxRep) {
+    Cerr << "Error: combined_mean(x) not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->combined_mean(x);
 }
 
 const RealVector& Approximation::mean_gradient()

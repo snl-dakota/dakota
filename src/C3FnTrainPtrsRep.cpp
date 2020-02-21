@@ -33,10 +33,20 @@ void C3FnTrainPtrsRep::ft_derived_functions_init_null()
 void C3FnTrainPtrsRep::
 ft_derived_functions_create(struct MultiApproxOpts * opts)
 {
-  ft_derived_fns.ft_squared = function_train_product(ft,ft);
+  struct FunctionTrain * temp = NULL;
+  double eps = 1.e-2; // *** may want to go looser ... ?
+  // arithmetic tolerance (same as for combination axpy)
+  //   --> how accurate do you want the result of an algebraic manipulation?
+  // other is a regression tolerance that is more like a noise toleracne
 
-  ft_derived_fns.ft_cubed
-    = function_train_product(ft_derived_fns.ft_squared,ft);
+  temp = function_train_product(ft,ft);
+  ft_derived_fns.ft_squared = function_train_round(temp, eps, opts);
+  function_train_free(temp); temp = NULL;
+
+  temp = function_train_product(ft_derived_fns.ft_squared,ft);    
+  ft_derived_fns.ft_cubed  = function_train_round(temp, eps, opts);
+  function_train_free(temp); temp = NULL;    
+
   //ft_derived_fns.ft_tesseracted
   //  = function_train_product(ft_derived_fns.ft_squared,
   //                           ft_derived_fns.ft_squared);
@@ -46,51 +56,61 @@ ft_derived_functions_create(struct MultiApproxOpts * opts)
     = function_train_constant(-ft_derived_fns.first_moment,opts);
   ft_derived_fns.ft_diff_from_mean
     = function_train_sum(ft,ft_derived_fns.ft_constant_at_mean);
-  ft_derived_fns.ft_diff_from_mean_squared =
-    function_train_product(ft_derived_fns.ft_diff_from_mean,
-			   ft_derived_fns.ft_diff_from_mean);
-  ft_derived_fns.ft_diff_from_mean_cubed =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
-			   ft_derived_fns.ft_diff_from_mean);        
-  ft_derived_fns.ft_diff_from_mean_tesseracted =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
-			   ft_derived_fns.ft_diff_from_mean_squared);
 
-  ft_derived_fns.second_central_moment
-    = function_train_integrate_weighted(
-      ft_derived_fns.ft_diff_from_mean_squared); // var
-        
-  ft_derived_fns.third_central_moment
-    = function_train_integrate_weighted(ft_derived_fns.ft_diff_from_mean_cubed);
-        
-  ft_derived_fns.fourth_central_moment
-    = function_train_integrate_weighted(
-      ft_derived_fns.ft_diff_from_mean_tesseracted);
+  temp = function_train_product(ft_derived_fns.ft_diff_from_mean,
+				ft_derived_fns.ft_diff_from_mean);
+  ft_derived_fns.ft_diff_from_mean_squared
+    = function_train_round(temp, eps, opts);
+  function_train_free(temp); temp = NULL;
+
+  temp = function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
+				ft_derived_fns.ft_diff_from_mean);
+  ft_derived_fns.ft_diff_from_mean_cubed
+    = function_train_round(temp, eps, opts);
+  function_train_free(temp); temp = NULL;
+
+  temp = function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
+				ft_derived_fns.ft_diff_from_mean_squared);      
+  ft_derived_fns.ft_diff_from_mean_tesseracted
+    = function_train_round(temp, eps, opts);      
+  function_train_free(temp); temp = NULL;
+
+  ft_derived_fns.second_central_moment = function_train_integrate_weighted(
+    ft_derived_fns.ft_diff_from_mean_squared); // var
+
+  ft_derived_fns.third_central_moment = function_train_integrate_weighted(
+    ft_derived_fns.ft_diff_from_mean_cubed);
+
+  ft_derived_fns.fourth_central_moment = function_train_integrate_weighted(
+    ft_derived_fns.ft_diff_from_mean_tesseracted);
 
   ft_derived_fns.second_moment
     = function_train_integrate_weighted(ft_derived_fns.ft_squared);
   ft_derived_fns.third_moment
     = function_train_integrate_weighted(ft_derived_fns.ft_cubed);
 
-  ft_derived_fns.std_dev
-    = std::sqrt(ft_derived_fns.second_central_moment);
+  ft_derived_fns.std_dev = std::sqrt(ft_derived_fns.second_central_moment);
 
   ft_derived_fns.ft_diff_from_mean_normalized
     = function_train_copy(ft_derived_fns.ft_diff_from_mean);
   function_train_scale(ft_derived_fns.ft_diff_from_mean_normalized,
 		       1.0/ft_derived_fns.std_dev);
 
-  ft_derived_fns.ft_diff_from_mean_normalized_squared =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_normalized,
-			   ft_derived_fns.ft_diff_from_mean_normalized);
+  temp = function_train_product(ft_derived_fns.ft_diff_from_mean_normalized,
+				ft_derived_fns.ft_diff_from_mean_normalized);
+  ft_derived_fns.ft_diff_from_mean_normalized_squared
+    = function_train_round(temp, eps, opts);      
+  function_train_free(temp); temp = NULL;    
 
-  ft_derived_fns.ft_diff_from_mean_normalized_cubed =
-    function_train_product(ft_derived_fns.ft_diff_from_mean_normalized_squared,
-			   ft_derived_fns.ft_diff_from_mean_normalized);
+  temp = function_train_product(
+    ft_derived_fns.ft_diff_from_mean_normalized_squared,
+    ft_derived_fns.ft_diff_from_mean_normalized);      
+  ft_derived_fns.ft_diff_from_mean_normalized_cubed
+    = function_train_round(temp, eps, opts);      
+  function_train_free(temp); temp = NULL;
 
-  ft_derived_fns.skewness
-    = function_train_integrate_weighted(
-      ft_derived_fns.ft_diff_from_mean_normalized_cubed);
+  ft_derived_fns.skewness = function_train_integrate_weighted(
+    ft_derived_fns.ft_diff_from_mean_normalized_cubed);
   ft_derived_fns.kurtosis = ft_derived_fns.fourth_central_moment
     / ft_derived_fns.second_central_moment
     / ft_derived_fns.second_central_moment;

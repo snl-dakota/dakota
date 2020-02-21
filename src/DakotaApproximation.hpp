@@ -115,12 +115,22 @@ public:
   /// retrieve the variance of the predicted value for a given parameter vector
   virtual Real prediction_variance(const RealVector& c_vars);
 
-  /// Statistics
-  virtual Real mean();                            
-  virtual Real mean(const RealVector& x);          
-  virtual const RealVector& mean_gradient();      
+  /// return the mean of the expansion, where all active vars are random
+  virtual Real mean();
+  /// return the mean of the expansion for a given parameter vector,
+  /// where a subset of the active variables are random
+  virtual Real mean(const RealVector& x);
+  /// return the mean of the combined expansion, where all active vars
+  /// are random
+  virtual Real combined_mean();
+  /// return the mean of the combined expansion for a given parameter vector,
+  /// where a subset of the active variables are random
+  virtual Real combined_mean(const RealVector& x);
+  /// return the gradient of the expansion mean
+  virtual const RealVector& mean_gradient();
+  /// return the gradient of the expansion mean
   virtual const RealVector& mean_gradient(const RealVector& x,
-					  const SizetArray& dvv);     
+					  const SizetArray& dvv);
 
   /// return the variance of the expansion, where all active vars are random
   virtual Real variance();

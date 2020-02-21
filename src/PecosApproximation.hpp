@@ -103,6 +103,12 @@ public:
   /// return the mean of the expansion for a given parameter vector,
   /// where a subset of the active variables are random
   Real mean(const Pecos::RealVector& x);
+  /// return the mean of the combined expansion, treating all variables
+  /// as random
+  Real combined_mean();
+  /// return the mean of the combined expansion for a given parameter vector,
+  /// where a subset of the active variables are treated as random
+  Real combined_mean(const Pecos::RealVector& x);
   /// return the gradient of the expansion mean for a given parameter
   /// vector, where all active variables are random
   const Pecos::RealVector& mean_gradient();
@@ -423,6 +429,14 @@ inline Real PecosApproximation::mean()
 
 inline Real PecosApproximation::mean(const Pecos::RealVector& x)
 { return polyApproxRep->mean(x); }
+
+
+inline Real PecosApproximation::combined_mean()
+{ return polyApproxRep->combined_mean(); }
+
+
+inline Real PecosApproximation::combined_mean(const Pecos::RealVector& x)
+{ return polyApproxRep->combined_mean(x); }
 
 
 inline const Pecos::RealVector& PecosApproximation::mean_gradient()

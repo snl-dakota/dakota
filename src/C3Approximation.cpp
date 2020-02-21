@@ -153,7 +153,6 @@ void C3Approximation::base_init()
   // NULL ptr initializations now managed by C3FnTrainPtrs ctor
 
   // Initialize memory for the rest of private data
-  expansionMoments.size(4);
 }
 
 
@@ -208,7 +207,8 @@ void C3Approximation::build()
     c3opt_set_verbose(optimizer,data_rep->c3Verbosity);
 
     // free if previously built
-    levApproxIter->second.free_ft();
+    C3FnTrainPtrs& ftp = levApproxIter->second;
+    ftp.free_ft();
 
     if (data_rep->crossVal) // future capability for poly orders
       Cerr << "Warning: CV is not yet implemented in C3Approximation.  "
@@ -241,8 +241,8 @@ void C3Approximation::build()
 
     // Build FT model
     struct FunctionTrain * ft
-      = ft_regress_run(ftr,optimizer,ndata,xtrain,ytrain);
-    levApproxIter->second.function_train(ft);
+      = ft_regress_run(ftr, optimizer, ndata, xtrain, ytrain);
+    ftp.function_train(ft);
     // Important distinction among derivative cases:
     // > expansionCoeffGradFlag: expansions of derivs w.r.t. inactive/non-build/
     //   non-random vars (not yet supported, but would be managed here)
@@ -256,8 +256,8 @@ void C3Approximation::build()
     //      expansions on demand using helper fns within evaluators
     //if (...supportDerivEvals...) {
     //  struct FT1DArray * ftg = function_train_gradient(ft);
-    //  levApproxIter->second.ft_gradient(ftg);
-    //  levApproxIter->second.ft_hessian(ft1d_array_jacobian(ftg));
+    //  ftp.ft_gradient(ftg);
+    //  ftp.ft_hessian(ft1d_array_jacobian(ftg));
     //}
 
     // free approximation stuff
@@ -312,7 +312,8 @@ void C3Approximation::push_coefficients()
   active_model_key(key);
 
   // store current state for use in pop_coefficients()
-  prevC3FTPtrs = levApproxIter->second.copy(); // deep copy
+  C3FnTrainPtrs& active_ftp = levApproxIter->second;
+  prevC3FTPtrs = active_ftp.copy(); // deep copy
 
   // retrieve a previously popped state
   std::map<UShortArray, std::deque<C3FnTrainPtrs> >::iterator prv_it
@@ -331,8 +332,8 @@ void C3Approximation::push_coefficients()
       std::deque<C3FnTrainPtrs>::iterator rv_it	= ftp_deque.begin() + p_index;
       // reset expansion to popped state.  Shallow copy is appropriate
       // (levApprox assumes popped state prior to erase from bookkeeping).
-      levApproxIter->second = *rv_it; // shallow copy of popped state
-      ftp_deque.erase(rv_it);         // removal of original
+      active_ftp = *rv_it;    // shallow copy of popped state
+      ftp_deque.erase(rv_it); // removal of original
     }
   }
 
@@ -461,7 +462,7 @@ void C3Approximation::synchronize_surrogate_data()
     // the new surrData so that we form an expansion on the surplus.  Prior
     // to using compute() to form the surplus, LF-hat must be generated and
     // will be stored within surrData in a format that compute() can utilize.
-    //generate_synthetic_data(surrData, active_key, combine_type);
+    generate_synthetic_data(approxData, active_key, combine_type);
     break;
   //case Pecos::DISTINCT_DISCREP:
     // When using a distinct discrepancy with additive/multiplicative corr,
@@ -474,76 +475,200 @@ void C3Approximation::synchronize_surrogate_data()
 }
 
 
-/*
 void C3Approximation::
-generate_synthetic_data(SurrogateData& surr_data, const UShortArray& active_key,
-			short combine_type
+generate_synthetic_data(Pecos::SurrogateData& surr_data,
+			const UShortArray& active_key, short combine_type)
 {
+  Cerr << "Error: C3Approximation::generate_synthetic_data() not yet available."
+       << std::endl;
+  abort_handler(APPROX_ERROR);
+
   // ...
 
   // compute discrepancy faults from scratch (mostly mirrors HF failures but
   // might possibly add new ones for multiplicative FPE)
-  approxData.data_checks();
+  surr_data.data_checks();
 }
-*/
 
 
 void C3Approximation::compute_all_sobol_indices(size_t interaction_order)
 {
-  C3SobolSensitivity* fts = levApproxIter->second.sobol();
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  C3SobolSensitivity* fts = ftp.sobol();
   if (fts) c3_sobol_sensitivity_free(fts);
-  fts = c3_sobol_sensitivity_calculate(levApproxIter->second.function_train(),
-				       interaction_order);
-  levApproxIter->second.sobol(fts);
+  fts = c3_sobol_sensitivity_calculate(ftp.function_train(), interaction_order);
+  ftp.sobol(fts);
 }
 
 
-void C3Approximation::compute_derived_statistics(bool overwrite)
+void C3Approximation::
+compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  if (!levApproxIter->second.derived_functions().allocated)
-    levApproxIter->second.derived_functions_create(data_rep->approxOpts);
+  if (!ftp.derived_functions().allocated)
+    ftp.derived_functions_create(data_rep->approxOpts);
   else if (overwrite) {
-    levApproxIter->second.derived_functions_free();
-    levApproxIter->second.derived_functions_create(data_rep->approxOpts);
+    ftp.derived_functions_free();
+    ftp.derived_functions_create(data_rep->approxOpts);
   }
 }
 
 
 void C3Approximation::compute_moments(bool full_stats, bool combined_stats)
 {
-  expansionMoments[0] = mean();          expansionMoments[1] = variance();
-  expansionMoments[2] = third_central(); expansionMoments[3] = fourth_central();
+  int len = (full_stats) ? 4 : 2;
+  if (expansionMoments.length() != len)
+    expansionMoments.sizeUninitialized(len);
+
+  if (combined_stats) {
+    expansionMoments[0] = combined_mean();
+    expansionMoments[1] = combined_variance();
+    if (full_stats) {// should not happen: combined exp is an intermediate state
+      expansionMoments[2] = combined_third_central();
+      expansionMoments[3] = combined_fourth_central();
+    }
+  }
+  else {
+    expansionMoments[0] = mean();
+    expansionMoments[1] = variance();
+    if (full_stats) {
+      expansionMoments[2] = third_central();
+      expansionMoments[3] = fourth_central();
+    }
+  }
 }
 
 
 void C3Approximation::
 compute_moments(const RealVector& x, bool full_stats, bool combined_stats)
-{ expansionMoments[0] = mean(x);         expansionMoments[1] = variance(x); }
+{
+  if (expansionMoments.length() != 2)
+    expansionMoments.sizeUninitialized(2);
+
+  if (combined_stats) {
+    expansionMoments[0] = combined_mean(x);
+    expansionMoments[1] = combined_variance(x);
+  }
+  else {
+    expansionMoments[0] = mean(x);
+    expansionMoments[1] = variance(x);
+  }
+}
 
 
 Real C3Approximation::mean()
 {
-  compute_derived_statistics();
-  return levApproxIter->second.derived_functions().first_moment;
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  compute_derived_statistics(ftp); // if not already computed
+  return ftp.derived_functions().first_moment;
 }
 
 
-Real C3Approximation::mean(const RealVector &x)
+Real C3Approximation::mean(const RealVector &x, C3FnTrainPtrs& ftp)
 {
-  //compute_derived_statistics();
+  //compute_derived_statistics(ftp);
 
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   const SizetVector& rand_indices = data_rep->randomIndices;
-  struct FunctionTrain * ftnonrand =
-    function_train_integrate_weighted_subset(
-      levApproxIter->second.function_train(), rand_indices.length(),
-      rand_indices.values());
+  struct FunctionTrain * ftnonrand = function_train_integrate_weighted_subset(
+    ftp.function_train(), rand_indices.length(), rand_indices.values());
 
-  double out = function_train_eval(ftnonrand,x.values());
+  Real out = function_train_eval(ftnonrand, x.values());
   function_train_free(ftnonrand); //ftnonrand = NULL;
-    
+
   return out;
+}
+
+
+Real C3Approximation::variance()
+{
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  compute_derived_statistics(ftp); // if not already computed
+  return ftp.derived_functions().second_central_moment;
+}
+
+
+Real C3Approximation::variance(const RealVector &x, C3FnTrainPtrs& ftp)
+{
+  compute_derived_statistics(ftp);
+
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  const SizetVector& rand_indices = data_rep->randomIndices;
+  struct FunctionTrain * ftnonrand = function_train_integrate_weighted_subset(
+    ftp.derived_functions().ft_squared, rand_indices.length(),
+    rand_indices.values());
+
+  //size_t num_det = sharedDataRep->numVars - num_rand;
+  //for (size_t ii = 0; ii < num_det;ii++)
+  //  pt_det[ii] = x(ii);
+  //double var = function_train_eval(ftnonrand, pt_det) - mean * mean;
+
+  Real mu = mean(),
+      var = function_train_eval(ftnonrand, x.values()) - mu * mu;
+
+  function_train_free(ftnonrand); //ftnonrand = NULL;
+
+  return var;
+}
+
+
+Real C3Approximation::third_central()
+{
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  compute_derived_statistics(ftp); // if not already computed
+  return ftp.derived_functions().third_central_moment;
+}
+
+
+Real C3Approximation::fourth_central()
+{
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  compute_derived_statistics(ftp); // if not already computed
+  return ftp.derived_functions().fourth_central_moment;
+}
+
+
+Real C3Approximation::skewness()
+{
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  compute_derived_statistics(ftp); // if not already computed
+  return ftp.derived_functions().skewness;
+}
+
+
+Real C3Approximation::kurtosis()
+{
+  C3FnTrainPtrs& ftp = levApproxIter->second;
+  compute_derived_statistics(ftp); // if not already computed
+  return ftp.derived_functions().kurtosis;
+}
+
+
+Real C3Approximation::combined_mean()
+{
+  compute_derived_statistics(combinedC3FTPtrs); // if not already computed
+  return combinedC3FTPtrs.derived_functions().first_moment;
+}
+
+
+Real C3Approximation::combined_variance()
+{
+  compute_derived_statistics(combinedC3FTPtrs); // if not already computed
+  return combinedC3FTPtrs.derived_functions().second_central_moment;
+}
+
+
+Real C3Approximation::combined_third_central()
+{
+  compute_derived_statistics(combinedC3FTPtrs); // if not already computed
+  return combinedC3FTPtrs.derived_functions().third_central_moment;
+}
+
+
+Real C3Approximation::combined_fourth_central()
+{
+  compute_derived_statistics(combinedC3FTPtrs); // if not already computed
+  return combinedC3FTPtrs.derived_functions().fourth_central_moment;
 }
 
 
@@ -564,43 +689,11 @@ mean_gradient(const RealVector &x, const SizetArray & dvv)
 }
 
 
-Real C3Approximation::variance()
-{
-  compute_derived_statistics();
-  return levApproxIter->second.derived_functions().second_central_moment;
-}
-
-
-Real C3Approximation::variance(const RealVector &x)
-{
-  compute_derived_statistics();
-
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  const SizetVector& rand_indices = data_rep->randomIndices;
-  struct FunctionTrain * ftnonrand =
-    function_train_integrate_weighted_subset(
-      levApproxIter->second.derived_functions().ft_squared,
-      rand_indices.length(),rand_indices.values());
-
-  //size_t num_det = sharedDataRep->numVars - num_rand;
-  //for (size_t ii = 0; ii < num_det;ii++)
-  //  pt_det[ii] = x(ii);
-  //double var = function_train_eval(ftnonrand,pt_det) - mean * mean;
-
-  Real mu = mean(),
-      var = function_train_eval(ftnonrand,x.values()) - mu * mu;
-    
-  function_train_free(ftnonrand); //ftnonrand = NULL;
-    
-  return var;
-}
-
-
 const RealVector& C3Approximation::variance_gradient()
 {
-  // Gradient of the Variance with respect to design variables *NOT VARIANCE OF GRADIENT*
-  // I need to manage low-rank representations of the gradient, then evaluate the variance of each
-  // of the partial derivatives
+  // Gradient of Variance with respect to design vars *NOT VARIANCE OF GRADIENT*
+  // I need to manage low-rank representations of the gradient, then evaluate
+  // the variance of each of the partial derivatives
   Cerr << "Error: mean_gradient() in C3Approximation is not implemented "
        << "because\n       Alex is not sure how what it means" << std::endl;
   abort_handler(APPROX_ERROR);
@@ -610,7 +703,8 @@ const RealVector& C3Approximation::variance_gradient()
 const RealVector & C3Approximation::
 variance_gradient(const RealVector &x,const SizetArray & dvv)
 {
-  // size of output is size of dvv, only take gradients with respect to dvv fix design and epistemic at x
+  // size of output is size of dvv, only take gradients with respect to dvv fix
+  // design and epistemic at x
   Cerr << "Error: mean_gradient(x,dvv) in C3Approximation is not implemented "
        << "because\n       Alex is not sure how what it means" << std::endl;
   abort_handler(APPROX_ERROR);        
@@ -621,7 +715,7 @@ struct FunctionTrain * C3Approximation::subtract_const(Real val)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   struct FunctionTrain * ftconst
-    = function_train_constant(val,data_rep->approxOpts);
+    = function_train_constant(val, data_rep->approxOpts);
   struct FunctionTrain * updated
     = function_train_sum(levApproxIter->second.function_train(),ftconst);
 
@@ -750,34 +844,6 @@ size_t C3Approximation::maximum_rank()
 { return function_train_get_maxrank(levApproxIter->second.function_train()); }
 
 
-Real C3Approximation::third_central()
-{
-  compute_derived_statistics();
-  return levApproxIter->second.derived_functions().third_central_moment;
-}
-
-
-Real C3Approximation::fourth_central()
-{
-  compute_derived_statistics();
-  return levApproxIter->second.derived_functions().fourth_central_moment;
-}
-
-
-Real C3Approximation::skewness()
-{
-  compute_derived_statistics();
-  return levApproxIter->second.derived_functions().skewness;
-}
-
-
-Real C3Approximation::kurtosis()
-{
-  compute_derived_statistics();
-  return levApproxIter->second.derived_functions().kurtosis;
-}
-
-
 Real C3Approximation::main_sobol_index(size_t dim)
 { return c3_sobol_sensitivity_get_main(levApproxIter->second.sobol(),dim); }
 
@@ -790,7 +856,5 @@ void C3Approximation::
 sobol_iterate_apply(void (*f)(double val, size_t ninteract,
 			      size_t*interactions,void* arg), void* args)
 { c3_sobol_sensitivity_apply_external(levApproxIter->second.sobol(),f,args); }
-
-
 
 } // namespace Dakota
