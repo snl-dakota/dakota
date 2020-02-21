@@ -194,21 +194,24 @@ struct FTDerivedFunctions
 {
   bool allocated;
     
-  struct FunctionTrain * ft_squared;
-  struct FunctionTrain * ft_cubed;
-  struct FunctionTrain * ft_constant_at_mean;
+  struct FunctionTrain * ft_squared; // needed for allVars
+  //struct FunctionTrain * ft_cubed;
+
+  //struct FunctionTrain * ft_constant_at_mean;
   struct FunctionTrain * ft_diff_from_mean;
   struct FunctionTrain * ft_diff_from_mean_squared;
   struct FunctionTrain * ft_diff_from_mean_cubed;    
-  struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan 
-  struct FunctionTrain * ft_diff_from_mean_normalized;
-  struct FunctionTrain * ft_diff_from_mean_normalized_squared;
-  struct FunctionTrain * ft_diff_from_mean_normalized_cubed;
+  struct FunctionTrain * ft_diff_from_mean_tesseracted;// courtesy of dan
+
+  //struct FunctionTrain * ft_diff_from_mean_normalized;
+  //struct FunctionTrain * ft_diff_from_mean_normalized_squared;
+  //struct FunctionTrain * ft_diff_from_mean_normalized_cubed;
 
   // raw moments
   double first_moment;
-  double second_moment;
-  double third_moment;
+  //double second_moment;
+  //double third_moment;
+  //double fourth_moment;
 
   // central moments
   double second_central_moment;

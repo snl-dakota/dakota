@@ -536,6 +536,8 @@ void C3Approximation::compute_moments(bool full_stats, bool combined_stats)
       expansionMoments[3] = fourth_central();
     }
   }
+
+  // Note: moment standardization occurs in NonDExpansion::print_moments()
 }
 
 
@@ -603,7 +605,7 @@ Real C3Approximation::variance(const RealVector &x, C3FnTrainPtrs& ftp)
   //  pt_det[ii] = x(ii);
   //double var = function_train_eval(ftnonrand, pt_det) - mean * mean;
 
-  Real mu = mean(),
+  Real mu = mean(x, ftp),
       var = function_train_eval(ftnonrand, x.values()) - mu * mu;
 
   function_train_free(ftnonrand); //ftnonrand = NULL;
