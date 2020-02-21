@@ -222,8 +222,6 @@ private:
   //- Heading: Convenience member functions
   //
 
-  void base_init();
-    
   void compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite = false);
 
   struct FunctionTrain * subtract_const(Real val);

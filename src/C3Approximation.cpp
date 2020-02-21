@@ -133,27 +133,17 @@ C3Approximation(ProblemDescDB& problem_db,
 		const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
   levApproxIter(levelApprox.end())
-{ base_init(); }
+{ } // FT memory allocations managed by C3FnTrainPtrs
 
 
 C3Approximation::C3Approximation(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data),
   levApproxIter(levelApprox.end())
-{ base_init(); }
+{ } // FT memory allocations managed by C3FnTrainPtrs
 
 
 C3Approximation::~C3Approximation()
-{
-  // memory deallocations now managed by C3FnTrainPtrs dtor
-}
-
-
-void C3Approximation::base_init()
-{
-  // NULL ptr initializations now managed by C3FnTrainPtrs ctor
-
-  // Initialize memory for the rest of private data
-}
+{ } // FT memory deallocations managed by C3FnTrainPtrs
 
 
 void C3Approximation::build()

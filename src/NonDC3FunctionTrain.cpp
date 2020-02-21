@@ -268,6 +268,19 @@ void NonDC3FunctionTrain::push_c3_options()
 }
 
 
+void NonDC3FunctionTrain::update_samples_from_order()
+{
+  // TO DO:
+  Cerr << "Error: NonDC3FunctionTrain::update_samples_from_order() not "
+       << "implemented." << std::endl;
+  abort_handler(METHOD_ERROR);
+
+  Real max_regress;
+  //level_metric(max_regress, DBL_MAX); // TO DO: trap infinity-norm
+  numSamplesOnModel = std::floor(max_regress + .5);
+}
+
+
 /* No overrride appears to be required (NonDExp is sufficient)
    > initialize_expansion()
    > compute_expansion()

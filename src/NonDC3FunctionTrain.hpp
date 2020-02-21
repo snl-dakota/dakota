@@ -61,6 +61,8 @@ protected:
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
 
+  void update_samples_from_order();
+
   /// override certain print functions
   void print_moments(std::ostream& s);
   void print_sobol_indices(std::ostream& s);

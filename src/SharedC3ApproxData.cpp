@@ -112,8 +112,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
     num_active_rv = (no_mask) ? num_rv : active_vars.count();
   assert (num_active_rv == numVars);
 
-  struct OpeOpts       * o_opts;
-  struct OneApproxOpts * a_opts;
+  struct OpeOpts * o_opts;  struct OneApproxOpts * a_opts;
   for (i=0; i<num_rv; ++i)
     if (no_mask || active_vars[i]) {
       switch (rv_types[i]) {
@@ -127,18 +126,38 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 	      << "SharedC3ApproxData::distribution_parameters()" << std::endl;
 	abort_handler(-1);               break;
       }
-      // printf("push_back\n");
+
       ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
       // Note: maxOrder unused for regression;
       //       to be used for adaptation by cross-approximation
-      ope_opts_set_maxnum(o_opts, maxOrder+1);    //   maxnum =   maxord + 1
-      a_opts = oneApproxOpts[av_cntr];
-      one_approx_opts_free_deep(&a_opts);
+      ope_opts_set_maxnum(o_opts,    maxOrder+1); //   maxnum =   maxord + 1
+ 
+      a_opts = oneApproxOpts[av_cntr];  one_approx_opts_free_deep(&a_opts);
       a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
-      // printf("set i\n");
-      multi_approx_opts_set_dim(approxOpts, av_cntr, a_opts);
+      multi_approx_opts_set_dim(approxOpts, av_cntr, a_opts);// redundant?
+
       ++av_cntr;
     }
+}
+
+
+void SharedC3ApproxData::
+update_basis()//const Pecos::MultivariateDistribution& mv_dist)
+{
+  struct OpeOpts * o_opts;  struct OneApproxOpts * a_opts;
+  for (size_t i=0; i<numVars; ++i) {
+    /*
+    // Update o_opts
+    //o_opts = ??_opts_get(approxOpts, i); // TO DO: retrieve-able?
+    ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
+    ope_opts_set_maxnum(o_opts,    maxOrder+1); //   maxnum =   maxord + 1
+
+    // Reallocate a_opts ?
+    a_opts = oneApproxOpts[i];  one_approx_opts_free_deep(&a_opts);
+    a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
+    multi_approx_opts_set_dim(approxOpts, i, a_opts);
+    */
+  }
 }
 
     

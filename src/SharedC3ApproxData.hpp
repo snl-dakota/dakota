@@ -101,7 +101,9 @@ protected:
 
   //void build();
   //void rebuild();
-  
+
+  void increment_order();
+
   void   pop(bool save_surr_data);
   bool   push_available();
   size_t push_index(const UShortArray& key);
@@ -169,6 +171,8 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  void update_basis();
 
   //
   //- Heading: Data
@@ -253,6 +257,15 @@ random_variables_key(const BitArray& random_vars_key)
     for (i=0, cntr=0; i<numVars; ++i)
       if (random_vars_key[i])
 	randomIndices[cntr++] = i;
+  }
+}
+
+
+inline void SharedC3ApproxData::increment_order()
+{
+  if (startOrder < maxOrder) { // consider a default for maxOrder = SZ_MAX
+    ++startOrder;
+    update_basis();
   }
 }
 
