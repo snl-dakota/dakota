@@ -563,6 +563,30 @@ void SharedApproxData::combined_to_active(bool clear_combined)
 }
 
 
+void SharedApproxData::increment_order()
+{
+  if (dataRep)
+    dataRep->increment_order();
+  else { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: increment_order() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+void SharedApproxData::decrement_order()
+{
+  if (dataRep)
+    dataRep->decrement_order();
+  else { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: decrement_order() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
 void SharedApproxData::
 construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 {

@@ -37,7 +37,6 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   randomSeed(problem_db.get_int("method.random_seed")),
-  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
@@ -252,7 +251,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		DEFAULT_EMULATION, SizetArray(), Pecos::NO_NESTING_OVERRIDE,
 		Pecos::NO_GROWTH_OVERRIDE, piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
-  tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
+  crossValidation(cv_flag), crossValidNoiseOnly(false),
   importBuildPointsFile(import_build_pts_file), l2Penalty(0.), numAdvance(3),
   expOrderSpec(exp_order), dimPrefSpec(dim_pref), collocPtsSpec(colloc_pts),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -321,7 +320,6 @@ NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
   NonDExpansion(problem_db, model),
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   randomSeed(problem_db.get_int("method.random_seed")),
-  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
@@ -394,10 +392,9 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		pilot, Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs),
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
-  tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type)
-  //resizedFlag(false), callResize(false)
+  crossValidation(cv_flag), crossValidNoiseOnly(false), l2Penalty(0.),
+  numAdvance(3), dimPrefSpec(dim_pref), normalizedCoeffOutput(false),
+  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
 {
   // -------------------
   // input sanity checks
@@ -1078,63 +1075,6 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
 
 
 /** Used for uniform refinement of regression-based PCE. */
-void NonDPolynomialChaos::increment_order_and_grid()
-{
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->increment_order();
-  increment_grid_from_order();
-}
-
-
-/** Used for uniform refinement of regression-based PCE. */
-void NonDPolynomialChaos::decrement_order_and_grid()
-{
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  shared_data_rep->decrement_order();
-  decrement_grid_from_order();
-}
-
-
-/** Used for uniform refinement of regression-based PCE. */
-void NonDPolynomialChaos::increment_grid_from_order()
-{
-  update_samples_from_order();
-
-  // update u-space sampler to use new sample count
-  if (tensorRegression) {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_quad->samples(numSamplesOnModel);
-    if (nond_quad->mode() == RANDOM_TENSOR)
-      nond_quad->increment_grid(); // increment dimension quad order
-    nond_quad->update();
-  }
-  else
-    update_model_from_samples();
-}
-
-
-void NonDPolynomialChaos::decrement_grid_from_order()
-{
-  update_samples_from_order();
-
-  // update u-space sampler to use new sample count
-  if (tensorRegression) {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_quad->samples(numSamplesOnModel);
-    //if (nond_quad->mode() == RANDOM_TENSOR) ***
-    //  nond_quad->decrement_grid(); // decrement dimension quad order
-    nond_quad->update();
-  }
-  else
-    update_model_from_samples();
-}
-
-
-/** Used for uniform refinement of regression-based PCE. */
 void NonDPolynomialChaos::increment_order_from_grid()
 {
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
@@ -1164,16 +1104,6 @@ void NonDPolynomialChaos::update_samples_from_order()
   // update numSamplesOnModel based on existing collocation ratio and
   // updated number of expansion terms
   numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-}
-
-
-void NonDPolynomialChaos::update_model_from_samples()
-{
-  // enforce increment through sampling_reset()
-  // no lower bound on samples in the subiterator
-  uSpaceModel.subordinate_iterator().sampling_reference(0);
-  DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-  dfs_model->total_points(numSamplesOnModel);
 }
 
 

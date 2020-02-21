@@ -41,7 +41,6 @@ struct SPrintArgs
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {
@@ -122,7 +121,6 @@ NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 		    Model& model):
   NonDExpansion(problem_db, model),
-  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {

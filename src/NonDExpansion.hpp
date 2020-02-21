@@ -119,12 +119,6 @@ protected:
   virtual void compute_expansion();
   /// finalize mappings for the uSpaceModel
   virtual void finalize_expansion();
-  /// uniformly increment the expansion order and structured/unstructured
-  /// grid (PCE only)
-  virtual void increment_order_and_grid();
-  /// uniformly decrement the expansion order and structured/unstructured
-  /// grid (PCE only)
-  virtual void decrement_order_and_grid();
   /// assign the current values from the input specification sequence
   virtual void assign_specification_sequence();
   /// increment the input specification sequence and assign values
@@ -168,6 +162,9 @@ protected:
 					SizetArray& delta_N_l);
   /// finalizations for multilevel_regression()
   virtual void finalize_ml_regression();
+
+  /// update numSamplesOnModel after an order increment/decrement
+  virtual void update_samples_from_order();  
 
   /// print global sensitivity indices
   virtual void print_sobol_indices(std::ostream& s);
@@ -286,6 +283,16 @@ protected:
   /// helper function to manage different pop increment cases
   void pop_increment();
 
+  /// uniformly increment the expansion order and structured/unstructured grid
+  /// (PCE and FT)
+  void increment_order_and_grid();
+  /// uniformly decrement the expansion order and structured/unstructured grid
+  /// (PCE and FT)
+  void decrement_order_and_grid();
+
+  /// publish numSamplesOnModel update to the DataFitSurrModel instance
+  void update_model_from_samples();
+
   /// update statsType, here and in Pecos::ExpansionConfigOptions
   void statistics_type(short stats_type, bool clear_bits = true);
 
@@ -376,6 +383,10 @@ protected:
   /// flag for combined variable expansions which include a
   /// non-probabilistic subset (design, epistemic, state)
   bool allVars;
+
+  /// option for regression FT using a filtered set of tensor-product
+  /// quadrature points
+  bool tensorRegression;
 
   /// type of sample allocation scheme for discretization levels / model forms
   /// within multilevel / multifidelity methods

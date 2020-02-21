@@ -124,8 +124,8 @@ protected:
   void append_expansion(const RealMatrix& samples,
 			const IntResponseMap& resp_map);
 
-  void increment_order_and_grid();
-  void decrement_order_and_grid();
+  /// update numSamplesOnModel after an order increment/decrement
+  void update_samples_from_order();
 
   /// print the final coefficients and final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -165,6 +165,10 @@ protected:
 			 const String& pt_reuse, Iterator& u_space_sampler,
 			 Model& g_u_model, String& approx_type);
 
+  /// define an expansion order that is consistent with an advancement in
+  /// structured/unstructured grid level/density
+  void increment_order_from_grid();
+
   /// convert number of expansion terms and collocation ratio to a
   /// number of collocation samples
   int  terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio);
@@ -191,9 +195,6 @@ protected:
   /// factor applied to terms^termsOrder in computing number of regression
   /// points, either user specified or inferred
   Real collocRatio;
-  /// option for regression PCE using a filtered set of tensor-product
-  /// quadrature points
-  bool tensorRegression;
 
   /// flag for use of cross-validation for selection of parameter settings
   /// in regression approaches
@@ -211,21 +212,6 @@ protected:
   String expansionExportFile;
 
 private:
-
-  /// define a grid increment that is consistent with an advancement in
-  /// expansion order
-  void increment_grid_from_order();
-  /// revert a previous grid increment following an order decrement
-  void decrement_grid_from_order();
-
-  /// define an expansion order that is consistent with an advancement in
-  /// structured/unstructured grid level/density
-  void increment_order_from_grid();
-
-  /// update numSamplesOnModel after an order increment/decrement
-  void update_samples_from_order();
-  /// publish numSamplesOnModel update to the DataFitSurrModel instance
-  void update_model_from_samples();
 
   /// convert an isotropic/anisotropic expansion_order vector into a scalar
   /// plus a dimension preference vector

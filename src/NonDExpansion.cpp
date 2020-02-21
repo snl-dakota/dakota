@@ -19,6 +19,7 @@
 #include "NonDLHSSampling.hpp"
 #include "NonDAdaptImpSampling.hpp" 
 #include "RecastModel.hpp"
+#include "DataFitSurrModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "SharedPecosApproxData.hpp"
@@ -41,6 +42,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
+  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
   multilevAllocControl(
     problem_db.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
@@ -92,7 +94,7 @@ NonDExpansion(unsigned short method_name, Model& model,
 	      short rule_growth, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
-  statsType(Pecos::ACTIVE_EXPANSION_STATS),
+  statsType(Pecos::ACTIVE_EXPANSION_STATS), tensorRegression(false),
   multilevAllocControl(ml_alloc_control), multilevDiscrepEmulation(ml_discrep),
   pilotSamples(pilot), kappaEstimatorRate(2.), gammaEstimatorScale(1.),
   numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
@@ -1694,21 +1696,61 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 }
 
 
+/** Used for uniform refinement of regression-based PCE / FT. */
 void NonDExpansion::increment_order_and_grid()
 {
-  Cerr << "Error: virtual increment_order_and_grid() not redefined by derived "
-       << "class.\n       NonDExpansion does not support uniform expansion "
-       << "order and grid increments." << std::endl;
+  uSpaceModel.shared_approximation().increment_order();
+  update_samples_from_order();
+
+  // update u-space sampler to use new sample count
+  if (tensorRegression) {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_quad->samples(numSamplesOnModel);
+    if (nond_quad->mode() == RANDOM_TENSOR)
+      nond_quad->increment_grid(); // increment dimension quad order
+    nond_quad->update();
+  }
+  else
+    update_model_from_samples();
+}
+
+
+/** Used for uniform de-refinement of regression-based PCE / FT. */
+void NonDExpansion::decrement_order_and_grid()
+{
+  uSpaceModel.shared_approximation().decrement_order();
+  update_samples_from_order();
+
+  // update u-space sampler to use new sample count
+  if (tensorRegression) {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_quad->samples(numSamplesOnModel);
+    //if (nond_quad->mode() == RANDOM_TENSOR) ***
+    //  nond_quad->decrement_grid(); // decrement dimension quad order
+    nond_quad->update();
+  }
+  else
+    update_model_from_samples();
+}
+
+
+void NonDExpansion::update_samples_from_order()
+{
+  Cerr << "Error: no base class implementation for NonDExpansion::"
+       << "update_samples_from_order()" << std::endl;
   abort_handler(METHOD_ERROR);
 }
 
 
-void NonDExpansion::decrement_order_and_grid()
+void NonDExpansion::update_model_from_samples()
 {
-  Cerr << "Error: virtual decrement_order_and_grid() not redefined by derived "
-       << "class.\n       NonDExpansion does not support uniform expansion "
-       << "order and grid decrements." << std::endl;
-  abort_handler(METHOD_ERROR);
+  // enforce increment through sampling_reset()
+  // no lower bound on samples in the subiterator
+  uSpaceModel.subordinate_iterator().sampling_reference(0);
+  DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+  dfs_model->total_points(numSamplesOnModel);
 }
 
 

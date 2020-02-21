@@ -131,6 +131,11 @@ public:
   /// promote aggregated data sets to active state
   virtual void combined_to_active(bool clear_combined = true);
 
+  /// increments polynomial expansion order (PCE, FT)
+  virtual void increment_order();
+  /// decrements polynomial expansion order (PCE, FT)
+  virtual void decrement_order();
+
   /// construct the shared basis for an expansion-based approximation
   virtual void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
   /// propagate updates to random variable distribution parameters to a
