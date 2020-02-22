@@ -6807,6 +6807,7 @@ static Method_mp_ord
 
 static Real
 	MP_(absConvTol),
+	MP_(arithmeticTol),
 	MP_(centeringParam),
 	MP_(collocationRatio),
 	MP_(collocRatioTermsOrder),
@@ -6841,13 +6842,13 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
-	MP_(roundingTolerance),
+	MP_(roundingTol),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
         MP_(smoothFactor),
  	MP_(solnTarget),
-	MP_(solverTolerance),
+	MP_(solverTol),
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -7436,6 +7437,7 @@ static Model_mp_utype
 static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
+	MP_(arithmeticTol),
 	MP_(convergenceTolerance),
 	MP_(decreaseTolerance),
         MP_(discontGradThresh),
@@ -7444,8 +7446,8 @@ static Real
 	MP_(percentFold),
 	MP_(regressionL2Penalty),
 	MP_(relTolerance),
-	MP_(roundingTolerance),
-	MP_(solverTolerance),
+	MP_(roundingTol),
+	MP_(solverTol),
 	MP_(truncationTolerance);
 
 static RealVector

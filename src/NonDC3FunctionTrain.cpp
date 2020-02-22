@@ -253,6 +253,8 @@ void NonDC3FunctionTrain::push_c3_options()
     probDescDB.get_real("method.nond.c3function_train.solver_tolerance"));
   shared_data_rep->set_parameter("rounding_tol",
     probDescDB.get_real("method.nond.c3function_train.rounding_tolerance"));
+  shared_data_rep->set_parameter("arithmetic_tol",
+    probDescDB.get_real("method.nond.c3function_train.arithmetic_tolerance"));
   shared_data_rep->set_parameter("max_cross_iterations",
     probDescDB.get_int("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",

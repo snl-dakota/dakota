@@ -381,9 +381,11 @@ public:
   /// maximum number of cross iterations
   int maxCrossIterations;
   /// optimization tolerance for FT regression
-  double solverTolerance;
-  /// Rounding tolerance for adaptive algorithms
-  double roundingTolerance;
+  Real solverTol;
+  /// Rounding tolerance for FT regression
+  Real roundingTol;
+  /// arithmetic (rounding) tolerance for FT sums and products
+  Real arithmeticTol;
   /// starting polynomial order
   size_t startOrder;
   /// maximum order of basis polynomials

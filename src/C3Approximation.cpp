@@ -6,7 +6,6 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-
 #include "C3Approximation.hpp"
 #include "C3FnTrainPtrsRep.hpp"
 #include "ProblemDescDB.hpp"
@@ -80,14 +79,15 @@ void C3FnTrainPtrs::ft_derived_functions_init_null()
 
 
 void C3FnTrainPtrs::
-ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
-{ ftpRep->ft_derived_functions_create(opts, full_stats); }
+ft_derived_functions_create(struct MultiApproxOpts * opts,
+			    bool full_stats, Real round_tol)
+{ ftpRep->ft_derived_functions_create(opts, full_stats, round_tol); }
 
 
 void C3FnTrainPtrs::
 ft_derived_functions_create_av(struct MultiApproxOpts * opts,
-			       const SizetArray& rand_indices)
-{ ftpRep->ft_derived_functions_create_av(opts, rand_indices); }
+			       const SizetArray& rand_indices, Real round_tol)
+{ ftpRep->ft_derived_functions_create_av(opts, rand_indices, round_tol); }
 
 
 void C3FnTrainPtrs::ft_derived_functions_free()
@@ -352,15 +352,14 @@ void C3Approximation::combine_coefficients()
   std::map<UShortArray, C3FnTrainPtrs>::iterator it = levelApprox.begin();
   struct FunctionTrain * y = function_train_copy(it->second.function_train());
   ++it;
-  // Note: the FT rounding tolerance is relative.  Memory overhead is strongly
+  // Note: the FT rounding tolerance is relative and default (1.e-8) is too
+  // tight for this context --> new arithmetic tol.  Memory overhead is strongly
   // correlated with this tolerance and 1.e-3 did not result in significant
   // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
-  // > TO DO: shared roundingTol defaults to 1e-8 -> too tight for this context.
-  //          Need a MF roundingTol or can main context be loosened?
-  Real ml_round_tol = 1.e-2;//data_rep->roundingTol;
+  Real arith_tol = data_rep->arithmeticTol;
   struct MultiApproxOpts * opts = data_rep->approxOpts;
   for (; it!= levelApprox.end(); ++it)
-    c3axpy(1., it->second.function_train(), &y, ml_round_tol, opts);
+    c3axpy(1., it->second.function_train(), &y, arith_tol, opts);
   combinedC3FTPtrs.function_train(y);
 
   // Could also do this at the C3FnTrainPtrs level with ft1d_array support:
@@ -503,10 +502,12 @@ compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite)
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   bool full_stats = (expansionMoments.length() == 4); // default to partial
   if (!ftp.derived_functions().allocated)
-    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats);
+    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats,
+				    data_rep->arithmeticTol);
   else if (overwrite) {
     ftp.ft_derived_functions_free();
-    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats);
+    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats,
+				    data_rep->arithmeticTol);
   }
 }
 
@@ -517,11 +518,13 @@ compute_derived_statistics_av(C3FnTrainPtrs& ftp, bool overwrite)
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   if (!ftp.derived_functions().allocated)
     ftp.ft_derived_functions_create_av(data_rep->approxOpts,
-				       data_rep->randomIndices);
+				       data_rep->randomIndices,
+				       data_rep->arithmeticTol);
   else if (overwrite) {
     ftp.ft_derived_functions_free();
     ftp.ft_derived_functions_create_av(data_rep->approxOpts,
-				       data_rep->randomIndices);
+				       data_rep->randomIndices,
+				       data_rep->arithmeticTol);
   }
 }
 

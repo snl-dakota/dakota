@@ -50,9 +50,9 @@ DataModelRep::DataModelRep():
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
   subspaceIdCVMethod(CV_ID_DEFAULT), regressionType(FT_LS),
   regressionL2Penalty(0.), maxSolverIterations(1000), maxCrossIterations(1),
-  solverTolerance(1.e-10), roundingTolerance(1.e-8), startOrder(2), maxOrder(4),
-  startRank(2), kickRank(2), maxRank(3), adaptRank(false),
-  autoRefine(false), maxFunctionEvals(1000),
+  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-8),
+  startOrder(2), maxOrder(4), startRank(2), kickRank(2), maxRank(3),
+  adaptRank(false), autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
   adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
@@ -92,7 +92,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
-    << maxCrossIterations << solverTolerance << roundingTolerance
+    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
     << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder
@@ -136,7 +136,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
     >> subspaceDimension >> subspaceNormalization >> numReplicates
     >> regressionType >> regressionL2Penalty >> maxSolverIterations
-    >> maxCrossIterations >> solverTolerance >> roundingTolerance
+    >> maxCrossIterations >> solverTol >> roundingTol >> arithmeticTol
     >> startOrder >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
     >> autoRefine >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
     >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
@@ -180,7 +180,7 @@ void DataModelRep::write(std::ostream& s) const
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates
     << regressionType << regressionL2Penalty << maxSolverIterations
-    << maxCrossIterations << solverTolerance << roundingTolerance
+    << maxCrossIterations << solverTol << roundingTol << arithmeticTol
     << startOrder << maxOrder << startRank << kickRank << maxRank << adaptRank
     << autoRefine << maxFunctionEvals << refineCVMetric << refineCVFolds
     << adaptedBasisSparseGridLev << adaptedBasisExpOrder

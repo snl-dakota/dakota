@@ -748,10 +748,13 @@
 		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mdm(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mdm(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 		    <param type="REAL" />
 		  </keyword>
-		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mdm(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
+		    <param type="REAL" />
+		  </keyword>
+		  <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mdm(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
 		    <param type="REAL" />
 		  </keyword>
 	     ' >
@@ -824,10 +827,13 @@
 		  <keyword  id="max_cross_iterations" name="max_cross_iterations" code="{N_mom(nnint,maxCrossIterations)}" label="Maximum number of cross approximation iterations" help="" minOccurs="0" default="1">
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTolerance)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		  <keyword  id="solver_tolerance" name="solver_tolerance" code="{N_mom(Real,solverTol)}" label="Solver Tolerance" help="" minOccurs="0" default="1.0e-10" >
 		    <param type="REAL" />
 		  </keyword>
-		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTolerance)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-10" >
+		  <keyword  id="rounding_tolerance" name="rounding_tolerance" code="{N_mom(Real,roundingTol)}" label="Rounding Tolerance" help="" minOccurs="0" default="1.0e-8" >
+		    <param type="REAL" />
+		  </keyword>
+		  <keyword  id="arithmetic_tolerance" name="arithmetic_tolerance" code="{N_mom(Real,arithmeticTol)}" label="Arithmetic Tolerance" help="" minOccurs="0" default="1.0e-2" >
 		    <param type="REAL" />
 		  </keyword>
 	     ' >

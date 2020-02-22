@@ -37,7 +37,7 @@ void C3FnTrainPtrsRep::ft_derived_functions_init_null()
 
 void C3FnTrainPtrsRep::
 ft_derived_functions_create_av(struct MultiApproxOpts * opts,
-			       const SizetArray& rand_indices)
+			       const SizetArray& rand_indices, Real round_tol)
 {
   // For all-variables mode, ft and ft_squared are partially integrated (random
   // vars) and partially interrogated (for a particular non-random x).  In this
@@ -45,8 +45,7 @@ ft_derived_functions_create_av(struct MultiApproxOpts * opts,
   // estimated at this time (since x is passed at moment eval time).
 
   struct FunctionTrain * ft_tmp = function_train_product(ft, ft);
-  Real eps = 1.e-2; // *** may want to go looser ... ?
-  ft_derived_fns.ft_squared = function_train_round(ft_tmp, eps, opts);
+  ft_derived_fns.ft_squared = function_train_round(ft_tmp, round_tol, opts);
   function_train_free(ft_tmp);
 
   size_t  num_rand = rand_indices.size();
@@ -61,10 +60,11 @@ ft_derived_functions_create_av(struct MultiApproxOpts * opts,
 
 
 void C3FnTrainPtrsRep::
-ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
+ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats,
+			    Real round_tol)
 {
   struct FunctionTrain * ft_tmp = NULL;
-  Real eps = 1.e-2, var, stdev; // *** may want to go looser ... ?
+  Real var, stdev;
   // arithmetic tolerance (same as for combination axpy)
   //   --> how accurate do you want the result of an algebraic manipulation?
   // other is a regression tolerance that is more like a noise tolerance
@@ -86,7 +86,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
 
   // Skip raw moment: (this FT is used for allVars case above)
   //ft_tmp = function_train_product(ft, ft);
-  //ft_derived_fns.ft_squared = function_train_round(ft_tmp, eps, opts);
+  //ft_derived_fns.ft_squared = function_train_round(ft_tmp, round_tol, opts);
   //function_train_free(ft_tmp);
   //ft_derived_fns.second_moment
   //  = function_train_integrate_weighted(ft_derived_fns.ft_squared);
@@ -99,7 +99,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
   ft_tmp = function_train_product(ft_derived_fns.ft_diff_from_mean,
 				  ft_derived_fns.ft_diff_from_mean);
   ft_derived_fns.ft_diff_from_mean_squared
-    = function_train_round(ft_tmp, eps, opts);
+    = function_train_round(ft_tmp, round_tol, opts);
   function_train_free(ft_tmp);
 
   var = ft_derived_fns.second_central_moment =
@@ -113,7 +113,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
   if (full_stats) {
     // Skip raw moment:
     //ft_tmp = function_train_product(ft_derived_fns.ft_squared, ft);    
-    //ft_derived_fns.ft_cubed = function_train_round(ft_tmp, eps, opts);
+    //ft_derived_fns.ft_cubed = function_train_round(ft_tmp, round_tol, opts);
     //function_train_free(ft_tmp);
     //ft_derived_fns.third_moment
     //  = function_train_integrate_weighted(ft_derived_fns.ft_cubed);
@@ -121,7 +121,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
     ft_tmp = function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
 				    ft_derived_fns.ft_diff_from_mean);
     ft_derived_fns.ft_diff_from_mean_cubed
-      = function_train_round(ft_tmp, eps, opts);
+      = function_train_round(ft_tmp, round_tol, opts);
     function_train_free(ft_tmp);
 
     ft_derived_fns.third_central_moment = function_train_integrate_weighted(
@@ -137,14 +137,14 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
     //  ft_derived_fns.ft_diff_from_mean_normalized,
     //  ft_derived_fns.ft_diff_from_mean_normalized);
     //ft_derived_fns.ft_diff_from_mean_normalized_squared
-    //  = function_train_round(ft_tmp, eps, opts);      
+    //  = function_train_round(ft_tmp, round_tol, opts);      
     //function_train_free(ft_tmp);
     //
     //ft_tmp = function_train_product(
     //  ft_derived_fns.ft_diff_from_mean_normalized_squared,
     //  ft_derived_fns.ft_diff_from_mean_normalized);      
     //ft_derived_fns.ft_diff_from_mean_normalized_cubed
-    //  = function_train_round(ft_tmp, eps, opts);      
+    //  = function_train_round(ft_tmp, round_tol, opts);      
     //function_train_free(ft_tmp);
     //
     //ft_derived_fns.skewness = function_train_integrate_weighted(
@@ -160,7 +160,8 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
     // Skip raw moment:
     //ft_tmp = function_train_product(ft_derived_fns.ft_squared,
     //                                ft_derived_fns.ft_squared);
-    //ft_derived_fns.ft_tesseracted = function_train_round(ft_tmp, eps, opts);
+    //ft_derived_fns.ft_tesseracted
+    //  = function_train_round(ft_tmp, round_tol, opts);
     //function_train_free(ft_tmp);
     //ft_derived_fns.fourth_moment = function_train_integrate_weighted(
     //  ft_derived_fns.ft_tesseracted);
@@ -168,7 +169,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
     ft_tmp = function_train_product(ft_derived_fns.ft_diff_from_mean_squared,
 				    ft_derived_fns.ft_diff_from_mean_squared);
     ft_derived_fns.ft_diff_from_mean_tesseracted
-      = function_train_round(ft_tmp, eps, opts);      
+      = function_train_round(ft_tmp, round_tol, opts);      
     function_train_free(ft_tmp);
 
     ft_derived_fns.fourth_central_moment = function_train_integrate_weighted(

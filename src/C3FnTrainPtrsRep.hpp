@@ -43,9 +43,10 @@ public:
   // Manage stats (FTDerivedFunctions) computed from FT approximation
   void ft_derived_functions_init_null();
   void ft_derived_functions_create(struct MultiApproxOpts * opts,
-				   bool full_stats);
+				   bool full_stats, double eps);
   void ft_derived_functions_create_av(struct MultiApproxOpts * opts,
-				      const std::vector<size_t>& rand_indices);
+				      const std::vector<size_t>& rand_indices,
+				      double eps);
   void ft_derived_functions_free();
 
   //

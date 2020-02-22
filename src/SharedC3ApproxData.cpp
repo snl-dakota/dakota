@@ -35,8 +35,10 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
   regressType(problem_db.get_short("model.surrogate.regression_type")),
   regressRegParam(problem_db.get_real("model.surrogate.regression_penalty")),
-  roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
   solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
+  roundingTol(problem_db.get_real("model.c3function_train.rounding_tolerance")),
+  arithmeticTol(
+    problem_db.get_real("model.c3function_train.arithmetic_tolerance")),
   maxSolverIterations(problem_db.get_int("model.max_solver_iterations")),
   crossMaxIter(
     problem_db.get_int("model.c3function_train.max_cross_iterations")),
@@ -74,8 +76,9 @@ SharedC3ApproxData(const String& approx_type,
   startOrder(2), maxOrder(4), //maxnum(5),
   startRank(5), kickRank(2), maxRank(10), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
-  solverTol(), roundingTol(1.e-10), crossMaxIter(5), maxSolverIterations(1000),
-  c3Verbosity(0), adaptConstruct(false), crossVal(false)
+  solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
+  crossMaxIter(5), maxSolverIterations(1000), c3Verbosity(0),
+  adaptConstruct(false), crossVal(false)
 {
   // This ctor used by lightweight/on-the-fly DataFitSurrModel ctor
   // (used to build an FT on top of a user model in NonDC3FuntionTrain)

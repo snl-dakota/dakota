@@ -137,8 +137,9 @@ protected:
 
   short  regressType;
   double regressRegParam; // penalty parameter if regularized regression
-  double roundingTol;
   double solverTol;
+  double roundingTol;
+  double arithmeticTol;
   int maxSolverIterations;
   int crossMaxIter;
   int c3Verbosity;
@@ -225,6 +226,7 @@ inline void SharedC3ApproxData::set_parameter(String var, double val)
 {
   if      (var.compare("solver_tol")               == 0)       solverTol = val;
   else if (var.compare("rounding_tol")             == 0)     roundingTol = val;
+  else if (var.compare("arithmetic_tol")           == 0)   arithmeticTol = val;
   else if (var.compare("regularization_parameter") == 0) regressRegParam = val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
