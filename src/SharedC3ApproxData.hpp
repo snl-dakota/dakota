@@ -160,7 +160,7 @@ protected:
   // as random, for purposes of computing statistics
   //BitArray ranVarsKey; // stored locally rather than passed to library (Pecos)
   /// indices for random subset when approximating in all-variables mode
-  SizetVector randomIndices;
+  SizetArray randomIndices;
 
   /// number of instances within the popped arrays (mostly a placeholder for
   /// supporting push_available())
@@ -247,13 +247,13 @@ random_variables_key(const BitArray& random_vars_key)
 
   // convert incoming mask to a set of random indices:
   if (random_vars_key.empty()) {
-    randomIndices.sizeUninitialized(numVars);
+    randomIndices.resize(numVars);
     for (size_t i=0; i<numVars; ++i)
       randomIndices[i] = i;
   }
   else {
     size_t i, cntr, num_rand = random_vars_key.count();
-    randomIndices.sizeUninitialized(num_rand);
+    randomIndices.resize(num_rand);
     for (i=0, cntr=0; i<numVars; ++i)
       if (random_vars_key[i])
 	randomIndices[cntr++] = i;

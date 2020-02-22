@@ -194,8 +194,11 @@ struct FTDerivedFunctions
 {
   bool allocated;
     
+  struct FunctionTrain * ft_nonrand; // needed for allVars
   struct FunctionTrain * ft_squared; // needed for allVars
+  struct FunctionTrain * ft_squared_nonrand; // needed for allVars
   //struct FunctionTrain * ft_cubed;
+  //struct FunctionTrain * ft_tesseracted;
 
   //struct FunctionTrain * ft_constant_at_mean;
   struct FunctionTrain * ft_diff_from_mean;
@@ -221,7 +224,7 @@ struct FTDerivedFunctions
   // standardized moments
   double std_dev;
   double skewness;
-  double kurtosis;
+  double excess_kurtosis;
 };
 
 }

@@ -75,16 +75,22 @@ void C3FnTrainPtrs::free_all()
 { ftpRep->free_all(); }
 
 
-void C3FnTrainPtrs::derived_functions_init_null()
+void C3FnTrainPtrs::ft_derived_functions_init_null()
 { ftpRep->ft_derived_functions_init_null(); }
 
 
 void C3FnTrainPtrs::
-derived_functions_create(struct MultiApproxOpts * opts)
-{ ftpRep->ft_derived_functions_create(opts); }
+ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats)
+{ ftpRep->ft_derived_functions_create(opts, full_stats); }
 
 
-void C3FnTrainPtrs::derived_functions_free()
+void C3FnTrainPtrs::
+ft_derived_functions_create_av(struct MultiApproxOpts * opts,
+			       const SizetArray& rand_indices)
+{ ftpRep->ft_derived_functions_create_av(opts, rand_indices); }
+
+
+void C3FnTrainPtrs::ft_derived_functions_free()
 { ftpRep->ft_derived_functions_free(); }
 
 
@@ -495,11 +501,27 @@ void C3Approximation::
 compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  bool full_stats = (expansionMoments.length() == 4); // default to partial
   if (!ftp.derived_functions().allocated)
-    ftp.derived_functions_create(data_rep->approxOpts);
+    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats);
   else if (overwrite) {
-    ftp.derived_functions_free();
-    ftp.derived_functions_create(data_rep->approxOpts);
+    ftp.ft_derived_functions_free();
+    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats);
+  }
+}
+
+
+void C3Approximation::
+compute_derived_statistics_av(C3FnTrainPtrs& ftp, bool overwrite)
+{
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+  if (!ftp.derived_functions().allocated)
+    ftp.ft_derived_functions_create_av(data_rep->approxOpts,
+				       data_rep->randomIndices);
+  else if (overwrite) {
+    ftp.ft_derived_functions_free();
+    ftp.ft_derived_functions_create_av(data_rep->approxOpts,
+				       data_rep->randomIndices);
   }
 }
 
@@ -558,17 +580,8 @@ Real C3Approximation::mean()
 
 Real C3Approximation::mean(const RealVector &x, C3FnTrainPtrs& ftp)
 {
-  //compute_derived_statistics(ftp);
-
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  const SizetVector& rand_indices = data_rep->randomIndices;
-  struct FunctionTrain * ftnonrand = function_train_integrate_weighted_subset(
-    ftp.function_train(), rand_indices.length(), rand_indices.values());
-
-  Real out = function_train_eval(ftnonrand, x.values());
-  function_train_free(ftnonrand); //ftnonrand = NULL;
-
-  return out;
+  compute_derived_statistics_av(ftp); // if not already computed
+  return function_train_eval(ftp.derived_functions().ft_nonrand, x.values());
 }
 
 
@@ -582,25 +595,10 @@ Real C3Approximation::variance()
 
 Real C3Approximation::variance(const RealVector &x, C3FnTrainPtrs& ftp)
 {
-  compute_derived_statistics(ftp);
-
-  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  const SizetVector& rand_indices = data_rep->randomIndices;
-  struct FunctionTrain * ftnonrand = function_train_integrate_weighted_subset(
-    ftp.derived_functions().ft_squared, rand_indices.length(),
-    rand_indices.values());
-
-  //size_t num_det = sharedDataRep->numVars - num_rand;
-  //for (size_t ii = 0; ii < num_det;ii++)
-  //  pt_det[ii] = x(ii);
-  //double var = function_train_eval(ftnonrand, pt_det) - mean * mean;
-
-  Real mu = mean(x, ftp),
-      var = function_train_eval(ftnonrand, x.values()) - mu * mu;
-
-  function_train_free(ftnonrand); //ftnonrand = NULL;
-
-  return var;
+  compute_derived_statistics_av(ftp); // if not already computed
+  Real mu = mean(x, ftp);
+  return function_train_eval(ftp.derived_functions().ft_squared_nonrand,
+			     x.values()) - mu * mu;
 }
 
 
@@ -632,7 +630,7 @@ Real C3Approximation::kurtosis()
 {
   C3FnTrainPtrs& ftp = levApproxIter->second;
   compute_derived_statistics(ftp); // if not already computed
-  return ftp.derived_functions().kurtosis;
+  return ftp.derived_functions().excess_kurtosis;
 }
 
 

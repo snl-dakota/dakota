@@ -65,19 +65,21 @@ public:
   void free_ft();
   void free_all();
 
-  // Manage stats (FTDerivedFunctions) computed from approx (FunctionTrain):
-  void derived_functions_init_null();
-  // pass in sharedC3DataRep->approxOpts
-  void derived_functions_create(struct MultiApproxOpts* opts);
-  void derived_functions_free();
+  // Manage stats (FTDerivedFunctions) computed from FT approximation
+  void ft_derived_functions_init_null();
+  void ft_derived_functions_create(struct MultiApproxOpts* opts,
+				   bool full_stats);
+  void ft_derived_functions_create_av(struct MultiApproxOpts* opts,
+				      const SizetArray& rand_indices);
+  void ft_derived_functions_free();
 
   struct FunctionTrain * function_train();
   void function_train(struct FunctionTrain * ft);
 
-  struct FT1DArray *     ft_gradient();
+  struct FT1DArray * ft_gradient();
   void ft_gradient(struct FT1DArray * ftg);
 
-  struct FT1DArray *     ft_hessian();
+  struct FT1DArray * ft_hessian();
   void ft_hessian(struct FT1DArray * fth);
 
   const struct FTDerivedFunctions& derived_functions();
@@ -222,7 +224,8 @@ private:
   //- Heading: Convenience member functions
   //
 
-  void compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite = false);
+  void compute_derived_statistics(C3FnTrainPtrs& ftp,   bool overwrite = false);
+  void compute_derived_statistics_av(C3FnTrainPtrs& ftp,bool overwrite = false);
 
   struct FunctionTrain * subtract_const(Real val);
 
