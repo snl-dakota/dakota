@@ -266,8 +266,15 @@ random_variables_key(const BitArray& random_vars_key)
 inline void SharedC3ApproxData::increment_order()
 {
   if (startOrder < maxOrder) { // consider a default for maxOrder = SZ_MAX
+    // could consider a kickOrder (parallel to kickRank), but other
+    // advancements (regression PCE) use exp order increment of 1
     ++startOrder;
     update_basis();
+  }
+  else {
+    Cerr << "Error: SharedC3ApproxData::increment_order() has reached maxOrder"
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
   }
 }
 

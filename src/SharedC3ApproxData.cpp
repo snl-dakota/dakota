@@ -114,7 +114,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
       }
 
       ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
-      // Note: maxOrder unused for regression;
+      // Note: maxOrder not used for regression (only limits increment_order());
       //       to be used for adaptation by cross-approximation
       ope_opts_set_maxnum(o_opts,    maxOrder+1); //   maxnum =   maxord + 1
  
@@ -128,31 +128,13 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 }
 
 
-void SharedC3ApproxData::
-update_basis()//const Pecos::MultivariateDistribution& mv_dist)
+void SharedC3ApproxData::update_basis()
 {
-  /*
-  // Brute force option: move shared dtor code to free_a_opts() ?
+  struct OneApproxOpts * a_opts;
   for (size_t i=0; i<numVars; ++i) {
-    struct OneApproxOpts * a_opts = oneApproxOpts[i];
-    if (a_opts)
-      { one_approx_opts_free_deep(a_opts); a_opts = NULL; }
-  }
-  construct_basis(mv_dist); // *** not in current update_basis() API
-  */
-
-  struct OpeOpts * o_opts;  //struct OneApproxOpts * a_opts;
-  for (size_t i=0; i<numVars; ++i) {
-    // Update o_opts
-    //o_opts = one_approx_opts_get(oneApproxOpts[i]); // TO DO: retrieve-able?
-    ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
-    ope_opts_set_maxnum(o_opts,    maxOrder+1); //   maxnum =   maxord + 1
-
-    // Reallocate a_opts ?
-    //a_opts = oneApproxOpts[i];
-    //if (a_opts) one_approx_opts_free_deep(a_opts);
-    //a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
-    //multi_approx_opts_set_dim(approxOpts, i, a_opts);
+    a_opts = oneApproxOpts[i];
+    one_approx_opts_set_nparams(&a_opts, startOrder+1); // updated
+    one_approx_opts_set_maxnum( &a_opts,   maxOrder+1); // not currently updated
   }
 }
 

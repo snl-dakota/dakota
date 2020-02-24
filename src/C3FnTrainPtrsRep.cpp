@@ -127,29 +127,6 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats,
     ft_derived_fns.third_central_moment = function_train_integrate_weighted(
       ft_derived_fns.ft_diff_from_mean_cubed);
 
-    // MSE: Are these additional products necessary?
-    //ft_derived_fns.ft_diff_from_mean_normalized
-    //  = function_train_copy(ft_derived_fns.ft_diff_from_mean);
-    //function_train_scale(ft_derived_fns.ft_diff_from_mean_normalized,
-    //                     1./stdev);
-    //
-    //ft_tmp = function_train_product(
-    //  ft_derived_fns.ft_diff_from_mean_normalized,
-    //  ft_derived_fns.ft_diff_from_mean_normalized);
-    //ft_derived_fns.ft_diff_from_mean_normalized_squared
-    //  = function_train_round(ft_tmp, round_tol, opts);      
-    //function_train_free(ft_tmp);
-    //
-    //ft_tmp = function_train_product(
-    //  ft_derived_fns.ft_diff_from_mean_normalized_squared,
-    //  ft_derived_fns.ft_diff_from_mean_normalized);      
-    //ft_derived_fns.ft_diff_from_mean_normalized_cubed
-    //  = function_train_round(ft_tmp, round_tol, opts);      
-    //function_train_free(ft_tmp);
-    //
-    //ft_derived_fns.skewness = function_train_integrate_weighted(
-    //  ft_derived_fns.ft_diff_from_mean_normalized_cubed);
-
     // Compute skew w/o additional FTs by standardizing third_central_moment
     ft_derived_fns.skewness = ft_derived_fns.third_central_moment / var / stdev;
 
