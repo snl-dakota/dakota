@@ -25,13 +25,13 @@ PolynomialRegression::~PolynomialRegression() {}
 
 const MatrixXd & PolynomialRegression::get_samples() const { return *samples; }
 
-const VectorXd & PolynomialRegression::get_response() const { return *response; }
+const MatrixXd & PolynomialRegression::get_response() const { return *response; }
 
 int PolynomialRegression::get_polynomial_order() const { return polynomial_order; }
 
 util::SCALER_TYPE PolynomialRegression::get_scaler_type() const { return scaler_type; }
 
-const VectorXd & PolynomialRegression::get_polynomial_coeffs() const { return *polynomial_coeffs; }
+const MatrixXd & PolynomialRegression::get_polynomial_coeffs() const { return *polynomial_coeffs; }
 
 double PolynomialRegression::get_polynomial_intercept() const { return polynomial_intercept; }
 
@@ -41,7 +41,7 @@ const util::LinearSolverBase & PolynomialRegression::get_solver() const { return
 
 void PolynomialRegression::set_samples(const MatrixXd & samples_) { samples = std::make_shared<MatrixXd>(samples_); }
 
-void PolynomialRegression::set_response(const VectorXd & response_) { response = std::make_shared<VectorXd>(response_); }
+void PolynomialRegression::set_response(const MatrixXd & response_) { response = std::make_shared<MatrixXd>(response_); }
 
 void PolynomialRegression::set_polynomial_order(int polynomial_order_) { polynomial_order = polynomial_order_; }
 
@@ -71,11 +71,8 @@ void PolynomialRegression::build_surrogate() {
   scaler = util::scaler_factory(scaler_type, unscaled_basis_matrix);
   MatrixXd scaled_basis_matrix = scaler->get_scaled_features();
 
-  // These have not been constructed and so am doing it here - RWH
-  // Is there a better place to initialize the polynomial_coeffs?
-  polynomial_coeffs = std::make_shared<VectorXd>(*response);
-
-  // Compute the singular value decomposition of the basis matrix using SVD.
+  // Solve the basis matrix.
+  polynomial_coeffs = std::make_shared<MatrixXd>(*response);
   solver->solve(scaled_basis_matrix, *response, *polynomial_coeffs);
 
   // Compute the intercept

@@ -32,17 +32,17 @@ public:
   // Getters
 
   const MatrixXd & get_samples() const;
-  const VectorXd & get_response() const;
+  const MatrixXd & get_response() const;
   int get_polynomial_order() const;
   util::SCALER_TYPE get_scaler_type() const;
-  const VectorXd & get_polynomial_coeffs() const;
+  const MatrixXd & get_polynomial_coeffs() const;
   double get_polynomial_intercept() const;
   const util::LinearSolverBase & get_solver() const;
 
   // Setters
 
   void set_samples(const MatrixXd & samples_);
-  void set_response(const VectorXd & response_);
+  void set_response(const MatrixXd & response_);
   void set_polynomial_order(int polynomial_order_);
   void set_scaler_type(const util::SCALER_TYPE scaler_type);
   void set_solver(const util::SOLVER_TYPE solver_type_);
@@ -57,14 +57,14 @@ private:
   // Input fields
   const int num_terms;
   std::shared_ptr<MatrixXd> samples;
-  std::shared_ptr<VectorXd> response;
+  std::shared_ptr<MatrixXd> response;
   int polynomial_order;
   util::SCALER_TYPE scaler_type;
   std::shared_ptr<util::DataScaler> scaler;
   std::shared_ptr<util::LinearSolverBase> solver;
 
   // Polynomial surrogate fields
-  std::shared_ptr<VectorXd> polynomial_coeffs;
+  std::shared_ptr<MatrixXd> polynomial_coeffs;
   double polynomial_intercept;
 };
 } // namespace surrogates

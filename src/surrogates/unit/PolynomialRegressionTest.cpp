@@ -80,7 +80,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
   pr.build_surrogate();
 
-  const VectorXd& polynomial_coeffs = pr.get_polynomial_coeffs();
+  const MatrixXd& polynomial_coeffs = pr.get_polynomial_coeffs();
   const double polynomial_intercept = pr.get_polynomial_intercept();
 
   double expected_constant_term = 2.0; // unscaled
@@ -91,8 +91,8 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   if( scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
     expected_first_term = 0.303488; // scaled
 
-  double actual_constant_term = polynomial_coeffs(0);
-  double actual_first_term = polynomial_coeffs(1);
+  double actual_constant_term = polynomial_coeffs(0, 0);
+  double actual_first_term = polynomial_coeffs(1, 0);
 
   BOOST_CHECK(std::abs(expected_constant_term - actual_constant_term) < 1.0e-4);
   BOOST_CHECK(std::abs(expected_first_term    - actual_first_term) < 1.0e-4);

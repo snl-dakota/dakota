@@ -32,7 +32,7 @@ class LinearSolverBase
     /**
      * \brief Find a solution to Ax = b
      */
-    virtual void solve( MatrixXd &, VectorXd &, VectorXd & )
+    virtual void solve( MatrixXd &, MatrixXd &, MatrixXd & )
     {
       std::string msg = "solve() Has not been implemented for this class.";
       throw( std::runtime_error( msg ) );
@@ -59,10 +59,9 @@ class LUSolver : public LinearSolverBase
 
     ~LUSolver() { };
 
-    void solve( MatrixXd & A, VectorXd & b, VectorXd & x ) override
+    void solve( MatrixXd & A, MatrixXd & b, MatrixXd & x ) override
     {
-      Eigen::FullPivLU<MatrixXd> lu(A);
-      x = lu.solve(b);
+      x = (A.transpose() * A).ldlt().solve(A.transpose() * b);
       //std::cout << "Here's LU: " << lu.matrixLU() << std::endl;
     };
 };
@@ -77,7 +76,7 @@ class SVDSolver : public LinearSolverBase
 
     ~SVDSolver() { };
 
-    void solve( MatrixXd & A, VectorXd & b, VectorXd & x ) override
+    void solve( MatrixXd & A, MatrixXd & b, MatrixXd & x ) override
     {
       x = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
     };
@@ -94,7 +93,7 @@ class QRSolver : public LinearSolverBase
 
     ~QRSolver() { };
 
-    void solve( MatrixXd & A, VectorXd & b, VectorXd & x ) override
+    void solve( MatrixXd & A, MatrixXd & b, MatrixXd & x ) override
     {
       x = A.colPivHouseholderQr().solve(b);
     };

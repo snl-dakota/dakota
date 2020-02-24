@@ -26,7 +26,7 @@ std::shared_ptr<MatrixXd> DataScaler::scale_samples(const MatrixXd &unscaled_sam
   for (int j = 0; j < num_features; j++) {
     if( check_for_zero_scaler_factor(j) )
       for (int i = 0; i < num_samples; i++)
-        scaledSamples(i,j) = unscaled_samples(i,j);
+        scaledSamples(i,j) = unscaled_samples(i,j)  - (*scalerFeaturesOffsets)(j);
     else
       for (int i = 0; i < num_samples; i++)
         scaledSamples(i,j) = (unscaled_samples(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);
@@ -61,7 +61,7 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
     (*scalerFeaturesScaleFactors)(j) = (max_val - min_val)/norm_factor;
     if( check_for_zero_scaler_factor(j) )
       for (int i = 0; i < num_samples; i++)
-        (*scaledFeatures)(i,j) = features(i,j);
+        (*scaledFeatures)(i,j) = features(i,j)  - (*scalerFeaturesOffsets)(j);
     else
       for (int i = 0; i < num_samples; i++)
         (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j)) / (*scalerFeaturesScaleFactors)(j);
@@ -97,7 +97,7 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
     (*scalerFeaturesScaleFactors)(j) = std::sqrt(var_val)/norm_factor;
     if( check_for_zero_scaler_factor(j) )
       for (int i = 0; i < num_samples; i++)
-        (*scaledFeatures)(i,j) = features(i,j);
+        (*scaledFeatures)(i,j) = features(i,j) - (*scalerFeaturesOffsets)(j);
     else
       for (int i = 0; i < num_samples; i++)
         (*scaledFeatures)(i,j) = (features(i,j) - (*scalerFeaturesOffsets)(j))/(*scalerFeaturesScaleFactors)(j);      
@@ -124,7 +124,9 @@ NoScaler::NoScaler(const MatrixXd &features) {
 }
 
 bool DataScaler::check_for_zero_scaler_factor(int index) {
-  return (*scalerFeaturesScaleFactors)(index) < 100.0*std::numeric_limits<double>::min();
+  double value     = std::abs((*scalerFeaturesScaleFactors)(index));
+  double near_zero = std::abs(100.0*std::numeric_limits<double>::min());
+  return value < near_zero;
 }
 
 std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix) {

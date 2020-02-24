@@ -56,8 +56,8 @@ namespace {
                    bool & success )
   {
     MatrixXd A = create_simple_invertible_matrix();
-    VectorXd b = VectorXd::Random(A.cols());
-    VectorXd x(A.cols());
+    MatrixXd b = MatrixXd::Random(A.cols(), 1);
+    MatrixXd x(A.cols(), 1);
 
     solver.solve(A, b, x);
 
@@ -86,8 +86,8 @@ namespace {
 TEUCHOS_UNIT_TEST(util, solver_base)
 {
   MatrixXd A = create_simple_invertible_matrix();
-  VectorXd b = VectorXd::Random(A.cols());
-  VectorXd x(A.cols());
+  MatrixXd b = MatrixXd::Random(A.cols(), 1);
+  MatrixXd x(A.cols(), 1);
 
   LinearSolverBase base;
   TEST_THROW( base.solve(A, b, x), std::runtime_error);
