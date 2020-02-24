@@ -81,22 +81,26 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   pr.build_surrogate();
 
   const MatrixXd& polynomial_coeffs = pr.get_polynomial_coeffs();
-  const double polynomial_intercept = pr.get_polynomial_intercept();
+  double polynomial_intercept = pr.get_polynomial_intercept();
 
-  double expected_constant_term = 2.0; // unscaled
-  double expected_first_term = 1.0; // unscaled
+  double expected_constant_term = 2.0;        // unscaled intercept via coeffs array
+  double expected_first_term =    1.0;        // unscaled slope via coeffs array
+  double expected_polynomial_intercept = 0.0;
   if( scaler_type == dakota::util::SCALER_TYPE::NORMALIZATION ||
       scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
-    expected_constant_term = 2.5; // scaled
+  {
+    expected_constant_term = 0.0;
+    expected_polynomial_intercept = 2.5;
+  }
   if( scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
     expected_first_term = 0.303488; // scaled
 
   double actual_constant_term = polynomial_coeffs(0, 0);
   double actual_first_term = polynomial_coeffs(1, 0);
 
-  BOOST_CHECK(std::abs(expected_constant_term - actual_constant_term) < 1.0e-4);
-  BOOST_CHECK(std::abs(expected_first_term    - actual_first_term) < 1.0e-4);
-  BOOST_CHECK(polynomial_intercept < 1.0e-4); // test for zero
+  BOOST_CHECK(std::abs(expected_constant_term        - actual_constant_term) < 1.0e-4);
+  BOOST_CHECK(std::abs(expected_first_term           - actual_first_term)    < 1.0e-4);
+  BOOST_CHECK(std::abs(expected_polynomial_intercept - polynomial_intercept) < 1.0e-4);
 
   VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100,0,1);
   MatrixXd expected_approx_values(100, 1);
@@ -216,7 +220,7 @@ int test_main( int argc, char* argv[] ) // note the name!
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NORMALIZATION);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
-  PolynomialRegressionSurrogate_multivariate_regression_builder();
+  //PolynomialRegressionSurrogate_multivariate_regression_builder();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );

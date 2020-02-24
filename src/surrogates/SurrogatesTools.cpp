@@ -84,7 +84,7 @@ compute_hyperbolic_subdim_level_indices(
 {
   double eps = 100 * std::numeric_limits<double>::epsilon();
 
-  MatrixXi working_indices( num_active_dims, 10 );
+  MatrixXi working_indices( num_active_dims, 1000 );
   int l = num_active_dims;
   int num_indices = 0;
   while ( true )
