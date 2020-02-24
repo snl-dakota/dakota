@@ -49,20 +49,7 @@ SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
   approxOpts = multi_approx_opts_alloc(num_vars);
-  oneApproxOpts = (struct OneApproxOpts **)
-    malloc(num_vars * sizeof(struct OneApproxOpts *));
-  for (size_t ii = 0; ii < num_vars; ii++) {
-    //struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
-    //ope_opts_set_lb(opts,-2);
-    //ope_opts_set_ub(opts, 2);
-    //ope_opts_set_nparams(opts,startOrder+1); // startnum = startord + 1
-    // Note: maxOrder unused for regression;
-    //       to be used for adaptation by cross-approximation
-    //ope_opts_set_maxnum(opts,maxOrder+1);    //   maxnum =   maxord + 1
-    //oneApproxOpts[ii] = one_approx_opts_alloc(POLYNOMIAL,opts);
-    //multi_approx_opts_set_dim(approxOpts,ii,oneApproxOpts[ii]);
-    oneApproxOpts[ii] = NULL;
-  }
+  oneApproxOpts.assign(num_vars, NULL);
 }
 
   
@@ -86,22 +73,18 @@ SharedC3ApproxData(const String& approx_type,
   // short basis_type; approx_type_to_basis_type(approxType, basis_type);
 
   approxOpts = multi_approx_opts_alloc(num_vars);
-  oneApproxOpts = (struct OneApproxOpts **)
-    malloc(num_vars * sizeof(struct OneApproxOpts *));
-  for (size_t ii = 0; ii < num_vars; ii++)
-    oneApproxOpts[ii] = NULL;
+  oneApproxOpts.assign(num_vars, NULL);
 }
 
 
 SharedC3ApproxData::~SharedC3ApproxData()
 {
   multi_approx_opts_free(approxOpts); approxOpts = NULL;
-
   for (size_t i=0; i<numVars; ++i) {
-    one_approx_opts_free_deep(&oneApproxOpts[i]);
-    oneApproxOpts[i] = NULL;
+    struct OneApproxOpts * a_opts = oneApproxOpts[i];
+    if (a_opts)
+      { one_approx_opts_free_deep(&a_opts); a_opts = NULL; }
   }
-  free(oneApproxOpts); oneApproxOpts = NULL;
 }
 
 
@@ -135,9 +118,10 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
       //       to be used for adaptation by cross-approximation
       ope_opts_set_maxnum(o_opts,    maxOrder+1); //   maxnum =   maxord + 1
  
-      a_opts = oneApproxOpts[av_cntr];  one_approx_opts_free_deep(&a_opts);
+      a_opts = oneApproxOpts[av_cntr];
+      if (a_opts) one_approx_opts_free_deep(&a_opts); // frees old o_opts ?
       a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
-      multi_approx_opts_set_dim(approxOpts, av_cntr, a_opts);// redundant?
+      multi_approx_opts_set_dim(approxOpts, av_cntr, a_opts);
 
       ++av_cntr;
     }
@@ -147,19 +131,28 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 void SharedC3ApproxData::
 update_basis()//const Pecos::MultivariateDistribution& mv_dist)
 {
-  struct OpeOpts * o_opts;  struct OneApproxOpts * a_opts;
+  /*
+  // Brute force option: move shared dtor code to free_a_opts() ?
   for (size_t i=0; i<numVars; ++i) {
-    /*
+    struct OneApproxOpts * a_opts = oneApproxOpts[i];
+    if (a_opts)
+      { one_approx_opts_free_deep(a_opts); a_opts = NULL; }
+  }
+  construct_basis(mv_dist); // *** not in current update_basis() API
+  */
+
+  struct OpeOpts * o_opts;  //struct OneApproxOpts * a_opts;
+  for (size_t i=0; i<numVars; ++i) {
     // Update o_opts
-    //o_opts = ??_opts_get(approxOpts, i); // TO DO: retrieve-able?
+    //o_opts = one_approx_opts_get(oneApproxOpts[i]); // TO DO: retrieve-able?
     ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
     ope_opts_set_maxnum(o_opts,    maxOrder+1); //   maxnum =   maxord + 1
 
     // Reallocate a_opts ?
-    a_opts = oneApproxOpts[i];  one_approx_opts_free_deep(&a_opts);
-    a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
-    multi_approx_opts_set_dim(approxOpts, i, a_opts);
-    */
+    //a_opts = oneApproxOpts[i];
+    //if (a_opts) one_approx_opts_free_deep(a_opts);
+    //a_opts = one_approx_opts_alloc(POLYNOMIAL, o_opts);
+    //multi_approx_opts_set_dim(approxOpts, i, a_opts);
   }
 }
 

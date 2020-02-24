@@ -412,7 +412,8 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 }
 
 
-/* Compute power mean of rank (common power values: 1 = average, 2 = RMS). */
+/* Compute power mean of rank (common power values: 1 = average, 2 = RMS,
+   DBL_MAX = max (infinity norm)). */
 void NonDMultilevelFunctionTrain::
 level_metric(Real& regress_metric_l, Real power)
 {
@@ -429,20 +430,31 @@ level_metric(Real& regress_metric_l, Real power)
   //   (applied in compute_sample_increment())
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real sum = 0.; bool pow1 = (power == 1.); // detect simple average
+  Real sum = 0., max = 0.;
+  bool norm_1   = (power == 1.), // detect special cases
+       norm_inf = (power == std::numeric_limits<double>::max());
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     C3Approximation* poly_approx_q
       = (C3Approximation*)poly_approxs[qoi].approx_rep();
     // Don't need to track average ranks as regression_size() is more direct:
     //Real regress_l = poly_approx_q->average_rank(); // average rank over dims
     Real regress_l = poly_approx_q->regression_size(); // number of unknowns
-    sum += (pow1) ? regress_l : std::pow(regress_l, power);
+    if (norm_inf) {
+      if (regress_l > max)
+	max = regress_l;
+    }
+    else
+      sum += (norm_1) ? regress_l : std::pow(regress_l, power);
     //if (outputLevel >= DEBUG_OUTPUT)
       Cout << "System size(" /*lev " << lev << ", "*/ << "qoi " << qoi
 	/* << ", iter " << iter */ << ") = " << regress_l << '\n';
   }
-  sum /= numFunctions;
-  regress_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
+  if (norm_inf)
+    regress_metric_l = max;
+  else {
+    sum /= numFunctions;
+    regress_metric_l = (norm_1) ? sum : std::pow(sum, 1. / power);
+  }
 }
 
 

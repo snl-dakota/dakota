@@ -116,7 +116,7 @@ protected:
   // This data is shared per QoI _and_ per level
   //
   /// 1D approximation options (basis type, poly order, etc.)
-  struct OneApproxOpts ** oneApproxOpts;
+  std::vector<struct OneApproxOpts *> oneApproxOpts;
   /// n-D approximation options, augmenting 1D options
   struct MultiApproxOpts * approxOpts;
 
