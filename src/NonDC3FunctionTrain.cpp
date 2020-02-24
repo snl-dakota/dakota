@@ -274,8 +274,11 @@ void NonDC3FunctionTrain::update_samples_from_order()
 {
   Real max_regress;
   level_metric(max_regress, 2);//DBL_MAX);// implement/use infinity-norm ?
+
+  // This function computes an update to the total points.  The increment
+  // induced relative to the current data set is managed in DataFitSurrModel::
+  // rebuild_global())
   numSamplesOnModel = (int)std::floor(max_regress + .5);
-  // TO DO: why isn't this a delta_N_l as for ML compute_sample_increment() ?
 }
 
 

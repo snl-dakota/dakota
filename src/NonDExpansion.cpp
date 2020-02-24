@@ -1746,8 +1746,7 @@ void NonDExpansion::update_samples_from_order()
 
 void NonDExpansion::update_model_from_samples()
 {
-  // enforce increment through sampling_reset()
-  // no lower bound on samples in the subiterator
+  // enforce total pts (increment managed in DataFitSurrModel::rebuild_global())
   uSpaceModel.subordinate_iterator().sampling_reference(0);
   DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
   dfs_model->total_points(numSamplesOnModel);
