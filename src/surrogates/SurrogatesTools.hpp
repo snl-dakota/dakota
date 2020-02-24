@@ -37,6 +37,14 @@ void compute_hyperbolic_level_indices( int num_dims, int level,
                                        double p,
                                        Eigen::MatrixXi & indices );
 
+/**
+ *  \brief Utility to ...
+ *
+ */
+void compute_hyperbolic_indices( int num_dims, int level,
+                                 double p,
+                                 Eigen::MatrixXi & indices );
+
 }  // namespace surrogates
 }  // namespace dakota
 

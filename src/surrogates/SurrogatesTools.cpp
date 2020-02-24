@@ -188,6 +188,18 @@ compute_hyperbolic_level_indices( int num_dims, int level, double p, MatrixXi & 
   }
 }
 
+// ------------------------------------------------------------
+
+void compute_hyperbolic_indices( int num_dims, int level, double p, MatrixXi & indices )
+{
+  compute_hyperbolic_level_indices( num_dims, 0, p, indices );
+  for ( int l = 1; l < level+1; ++l )
+  {
+    MatrixXi level_indices;
+    compute_hyperbolic_level_indices( num_dims, l, p, level_indices );
+    util::append_columns( level_indices, indices );
+  }
+}
 
 }  // namespace surrogates
 }  // namespace dakota

@@ -173,20 +173,6 @@ another_additive_quadratic_function(const MatrixXd & samples, VectorXd & func_va
 }
 
 
-//
-//// ------------------------------------------------------------
-//void compute_hyperbolic_indices( int num_dims, int level, Real p,
-//    IntMatrix &indices )
-//{
-//  compute_hyperbolic_level_indices( num_dims, 0, p, indices );
-//  for ( int l = 1; l < level+1; l++ )
-//  {
-//    IntMatrix level_indices;
-//    compute_hyperbolic_level_indices( num_dims, l, p, level_indices );
-//    column_append( level_indices, indices );
-//  }
-//}
-
   // ------------------------------------------------------------
 
 void

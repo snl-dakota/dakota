@@ -121,3 +121,23 @@ TEUCHOS_UNIT_TEST(util, hyperbolic_level_indices)
 }
 
 // ------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(util, hyperbolic_indices)
+{
+  // These values were used in manual comparisons with Pecos::util::compute_hyperbolic_indices
+  double p = 1.0;
+  int ndims = 3, level = 3;
+
+  Eigen::MatrixXi level_indices;
+  Eigen::MatrixXi gold_indices;
+
+  gold_indices = Eigen::MatrixXi::Identity(3,20);
+  gold_indices << 0, 1, 0, 0, 2, 0, 0, 1, 1, 0, 3, 0, 0, 2, 1, 2, 1, 0, 0, 1,  
+                  0, 0, 1, 0, 0, 2, 0, 1, 0, 1, 0, 3, 0, 1, 2, 0, 0, 2, 1, 1,  
+                  0, 0, 0, 1, 0, 0, 2, 0, 1, 1, 0, 0, 3, 0, 0, 1, 2, 1, 2, 1 ; 
+
+  compute_hyperbolic_indices(ndims, level, p, level_indices);
+  TEST_ASSERT( matrix_equals(level_indices, gold_indices) );
+}
+
+// ------------------------------------------------------------
