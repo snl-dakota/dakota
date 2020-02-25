@@ -225,6 +225,8 @@ private:
   //- Heading: Convenience member functions
   //
 
+  Real stored_value(const RealVector& c_vars, const UShortArray& key);
+
   void compute_derived_statistics(C3FnTrainPtrs& ftp,   bool overwrite = false);
   void compute_derived_statistics_av(C3FnTrainPtrs& ftp,bool overwrite = false);
 

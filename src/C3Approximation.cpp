@@ -474,11 +474,92 @@ void C3Approximation::
 generate_synthetic_data(Pecos::SurrogateData& surr_data,
 			const UShortArray& active_key, short combine_type)
 {
-  Cerr << "Error: C3Approximation::generate_synthetic_data() not yet available."
-       << std::endl;
-  abort_handler(APPROX_ERROR);
+  // Modeled after Pecos::PolynomialApproximation::generate_synthetic_data()
 
-  // ...
+  UShortArray hf_key, lf0_key, lf_hat_key; // LF-hat in surplus case
+  Pecos::DiscrepancyCalculator::extract_keys(active_key, hf_key, lf_hat_key);
+  lf0_key = surr_data.filtered_key(Pecos::RAW_DATA_FILTER, 0);
+
+  // initialize surr_data[lf_hat_key]
+  surr_data.active_key(lf_hat_key); // active key restored at fn end
+  surr_data.variables_data(surr_data.variables_data(hf_key)); // shallow copies
+  surr_data.anchor_index(surr_data.anchor_index(hf_key));
+  surr_data.pop_count_stack(surr_data.pop_count_stack(hf_key));
+
+  const Pecos::SDRArray& hf_sdr_array = surr_data.response_data(hf_key);
+  surr_data.size_active_sdr(hf_sdr_array); // size lf_hat_sdr_array
+  const Pecos::SDVArray&  sdv_array = surr_data.variables_data();
+  Pecos::SDRArray& lf_hat_sdr_array = surr_data.response_data();
+
+  // extract all discrepancy data sets (which have expansions supporting
+  // stored_{value,gradient} evaluations)
+  const std::map<UShortArray, Pecos::SDRArray>& discrep_resp_map
+    = surr_data.filtered_response_data_map(Pecos::AGGREGATED_DATA_FILTER);
+  std::map<UShortArray, Pecos::SDRArray>::const_iterator cit;
+  size_t i, num_pts = hf_sdr_array.size();
+  /*
+  switch (combine_type) {
+  case MULT_COMBINE: {
+    Real stored_val, fn_val_j, fn_val_jm1;
+    RealVector fn_grad_j, fn_grad_jm1;
+    size_t j, k, num_deriv_vars = surr_data.num_derivative_variables();
+    for (i=0; i<num_pts; ++i) {
+      const RealVector&       c_vars = sdv_array[i].continuous_variables();
+      SurrogateDataResp& lf_hat_sdr  = lf_hat_sdr_array[i];
+      short              lf_hat_bits = lf_hat_sdr.active_bits();
+      // start from emulation of lowest fidelity QoI (LF-hat)
+      fn_val_j = stored_value(c_vars, lf0_key); // coarsest fn
+      if (lf_hat_bits & 2)                      // coarsest grad
+	fn_grad_j = stored_gradient_nonbasis_variables(c_vars, lf0_key);
+      // augment w/ emulation of discrepancies (Delta-hat) preceding active_key
+      for (cit = discrep_resp_map.begin(), j=0;
+	   cit->first != active_key; ++cit, ++j) {
+	stored_val = stored_value(c_vars, cit->first); // Delta-hat
+	if (lf_hat_bits & 2) { // recurse using levels j and j-1
+	  const RealVector& stored_grad   // discrepancy gradient-hat
+	    = stored_gradient_nonbasis_variables(c_vars, cit->first);
+	  fn_val_jm1 = fn_val_j;  fn_grad_jm1 = fn_grad_j;
+	  for (k=0; k<num_deriv_vars; ++k) // grad corrected to level j
+	    fn_grad_j[k] = ( fn_grad_jm1[k] * stored_val +
+			     fn_val_jm1 * stored_grad[k] );
+	}
+	fn_val_j *= stored_val; // fn corrected to level j
+      }
+      if (lf_hat_bits & 1)
+	lf_hat_sdr.response_function(fn_val_j);
+      if (lf_hat_bits & 2)
+	lf_hat_sdr.response_gradient(fn_grad_j);
+    }
+    break;
+  }
+  default: { //case ADD_COMBINE: (correction specification not required)
+  */
+    Real sum_val;  RealVector sum_grad;
+    for (i=0; i<num_pts; ++i) {
+      const RealVector& c_vars = sdv_array[i].continuous_variables();
+      Pecos::SurrogateDataResp& lf_hat_sdr  = lf_hat_sdr_array[i];
+      short                     lf_hat_bits = lf_hat_sdr.active_bits();
+      if (lf_hat_bits & 1) {
+	sum_val = stored_value(c_vars, lf0_key);
+	for (cit = discrep_resp_map.begin(); cit->first != active_key; ++cit)
+	  sum_val += stored_value(c_vars, cit->first);
+	lf_hat_sdr.response_function(sum_val);
+      }
+      /*
+      if (lf_hat_bits & 2) {
+	sum_grad = stored_gradient_nonbasis_variables(c_vars, lf0_key);
+	for (cit = discrep_resp_map.begin(); cit->first != active_key; ++cit)
+	  sum_grad += stored_gradient_nonbasis_variables(c_vars, cit->first);
+	lf_hat_sdr.response_gradient(sum_grad);
+      }
+      */
+    }
+  /*
+    break;
+  }
+  }
+  */
+  surr_data.active_key(active_key); // restore
 
   // compute discrepancy faults from scratch (mostly mirrors HF failures but
   // might possibly add new ones for multiplicative FPE)
@@ -797,6 +878,7 @@ Real C3Approximation::value(const Variables& vars)
 }
 
 
+// These derivative routines correspond to *_basis_variables() cases
 const RealVector& C3Approximation::gradient(const Variables& vars)
 {
   check_function_gradient(); // compute on demand
@@ -822,6 +904,32 @@ const RealSymMatrix& C3Approximation::hessian(const Variables& vars)
       approxHessian(i,j) = function_train_eval(fth->ft[i+j*num_v], c_vars);
   return approxHessian;
 }
+
+
+// used for stored contributions to synthetic data:
+Real C3Approximation::
+stored_value(const RealVector& c_vars, const UShortArray& key)
+{
+  return function_train_eval(levelApprox[key].function_train(),
+			     c_vars.values());
+}
+
+
+/* TO DO: synthetic data can utilize *_nonbasis_variables() derivative cases,
+   but code below differentiates the FT w.r.t. the basis vars
+const RealVector& C3Approximation::
+gradient(const Variables& vars, const UShortArray& key)
+{
+  check_function_gradient(key); // compute on demand
+
+  struct FT1DArray * ftg = levelApprox[key].ft_gradient();
+  const Real* c_vars = vars.continuous_variables().values();
+  size_t i, num_v = sharedDataRep->numVars;
+  for (i=0; i<num_v; ++i)
+    approxGradient(i) = function_train_eval(ftg->ft[i], c_vars);
+  return approxGradient;
+}
+*/
 
 
 /** this replaces the need to model data requirements as O(p r^2 d) */
