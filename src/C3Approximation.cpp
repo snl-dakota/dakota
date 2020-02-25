@@ -497,25 +497,25 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
     = surr_data.filtered_response_data_map(Pecos::AGGREGATED_DATA_FILTER);
   std::map<UShortArray, Pecos::SDRArray>::const_iterator cit;
   size_t i, num_pts = hf_sdr_array.size();
-  /*
   switch (combine_type) {
-  case MULT_COMBINE: {
+  case Pecos::MULT_COMBINE: {
     Real stored_val, fn_val_j, fn_val_jm1;
-    RealVector fn_grad_j, fn_grad_jm1;
-    size_t j, k, num_deriv_vars = surr_data.num_derivative_variables();
+    //RealVector fn_grad_j, fn_grad_jm1;
+    size_t j;//, k, num_deriv_vars = surr_data.num_derivative_variables();
     for (i=0; i<num_pts; ++i) {
-      const RealVector&       c_vars = sdv_array[i].continuous_variables();
-      SurrogateDataResp& lf_hat_sdr  = lf_hat_sdr_array[i];
-      short              lf_hat_bits = lf_hat_sdr.active_bits();
+      const RealVector& c_vars = sdv_array[i].continuous_variables();
+      Pecos::SurrogateDataResp& lf_hat_sdr  = lf_hat_sdr_array[i];
+      short                     lf_hat_bits = lf_hat_sdr.active_bits();
       // start from emulation of lowest fidelity QoI (LF-hat)
       fn_val_j = stored_value(c_vars, lf0_key); // coarsest fn
-      if (lf_hat_bits & 2)                      // coarsest grad
-	fn_grad_j = stored_gradient_nonbasis_variables(c_vars, lf0_key);
+      //if (lf_hat_bits & 2)                      // coarsest grad
+      //  fn_grad_j = stored_gradient_nonbasis_variables(c_vars, lf0_key);
       // augment w/ emulation of discrepancies (Delta-hat) preceding active_key
       for (cit = discrep_resp_map.begin(), j=0;
 	   cit->first != active_key; ++cit, ++j) {
 	stored_val = stored_value(c_vars, cit->first); // Delta-hat
-	if (lf_hat_bits & 2) { // recurse using levels j and j-1
+	/*
+	if (lf_hat_bits & 2) { / recurse using levels j and j-1
 	  const RealVector& stored_grad   // discrepancy gradient-hat
 	    = stored_gradient_nonbasis_variables(c_vars, cit->first);
 	  fn_val_jm1 = fn_val_j;  fn_grad_jm1 = fn_grad_j;
@@ -523,17 +523,17 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
 	    fn_grad_j[k] = ( fn_grad_jm1[k] * stored_val +
 			     fn_val_jm1 * stored_grad[k] );
 	}
+	*/
 	fn_val_j *= stored_val; // fn corrected to level j
       }
       if (lf_hat_bits & 1)
 	lf_hat_sdr.response_function(fn_val_j);
-      if (lf_hat_bits & 2)
-	lf_hat_sdr.response_gradient(fn_grad_j);
+      //if (lf_hat_bits & 2)
+      //  lf_hat_sdr.response_gradient(fn_grad_j);
     }
     break;
   }
-  default: { //case ADD_COMBINE: (correction specification not required)
-  */
+  default: { //case Pecos::ADD_COMBINE: (correction specification not required)
     Real sum_val;  RealVector sum_grad;
     for (i=0; i<num_pts; ++i) {
       const RealVector& c_vars = sdv_array[i].continuous_variables();
@@ -554,11 +554,9 @@ generate_synthetic_data(Pecos::SurrogateData& surr_data,
       }
       */
     }
-  /*
     break;
   }
   }
-  */
   surr_data.active_key(active_key); // restore
 
   // compute discrepancy faults from scratch (mostly mirrors HF failures but
