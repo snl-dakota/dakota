@@ -29,10 +29,30 @@ class LinearSolverBase
 
     ~LinearSolverBase() { }
 
+    virtual bool is_factorized()
+    {
+      return false;
+    };
+
+    virtual void factorize( MatrixXd & )
+    {
+      std::string msg = "factorize() Has not been implemented for this class.";
+      throw( std::runtime_error( msg ) );
+    };
+
     /**
      * \brief Find a solution to Ax = b
      */
     virtual void solve( MatrixXd &, MatrixXd &, MatrixXd & )
+    {
+      std::string msg = "solve() Has not been implemented for this class.";
+      throw( std::runtime_error( msg ) );
+    };
+
+    /**
+     * \brief Find a solution to Ax = b, is A is already computed.
+     */
+    virtual void solve( MatrixXd &, MatrixXd & )
     {
       std::string msg = "solve() Has not been implemented for this class.";
       throw( std::runtime_error( msg ) );
@@ -42,9 +62,10 @@ class LinearSolverBase
 // --------------------------------------------------------------------------------
 
 enum class SOLVER_TYPE {
-                         SVD_LEAST_SQ_REGRESSION ,
-                         QR_LEAST_SQ_REGRESSION  ,
-                         LU_LEAST_SQ_REGRESSION
+                         SVD_LEAST_SQ_REGRESSION,
+                         QR_LEAST_SQ_REGRESSION,
+                         LU,
+                         CHOLESKY
                        };
 
 std::shared_ptr<LinearSolverBase> solver_factory(SOLVER_TYPE);
@@ -59,11 +80,37 @@ class LUSolver : public LinearSolverBase
 
     ~LUSolver() { };
 
+    bool is_factorized() override
+    {
+      if(lu_ptr) return true;
+      return false;
+    };
+
+    void factorize ( MatrixXd & A ) override
+    {
+      Eigen::FullPivLU<MatrixXd> lu;
+      lu_ptr = std::make_shared<Eigen::FullPivLU<MatrixXd>>(lu.compute(A));
+    };
+
     void solve( MatrixXd & A, MatrixXd & b, MatrixXd & x ) override
     {
-      x = (A.transpose() * A).ldlt().solve(A.transpose() * b);
-      //std::cout << "Here's LU: " << lu.matrixLU() << std::endl;
+      factorize(A);
+      solve(b, x);
     };
+
+    void solve( MatrixXd & b, MatrixXd & x ) override
+    {
+      if(lu_ptr) {
+        x = lu_ptr->solve(b);
+      } else {
+        std::string msg = "LU has not been previously computed.";
+        throw( std::runtime_error( msg ) );
+      }
+    };
+
+  private:
+
+    std::shared_ptr<Eigen::FullPivLU<MatrixXd>> lu_ptr;
 };
 
 // --------------------------------------------------------------------------------
@@ -76,10 +123,37 @@ class SVDSolver : public LinearSolverBase
 
     ~SVDSolver() { };
 
+    bool is_factorized() override
+    {
+      if(svd_ptr) return true;
+      return false;
+    };
+
+    void factorize ( MatrixXd & A ) override
+    {
+      Eigen::BDCSVD<MatrixXd> bdcsvd;
+      svd_ptr = std::make_shared<Eigen::BDCSVD<MatrixXd>>(bdcsvd.compute(A, Eigen::ComputeThinU | Eigen::ComputeThinV));
+    };
+
     void solve( MatrixXd & A, MatrixXd & b, MatrixXd & x ) override
     {
-      x = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+      factorize(A);
+      solve(b, x);
     };
+
+    void solve( MatrixXd & b, MatrixXd & x ) override
+    {
+      if(svd_ptr) {
+        x = svd_ptr->solve(b);
+      } else {
+        std::string msg = "SVD has not been previously computed.";
+        throw( std::runtime_error( msg ) );
+      }
+    };
+
+  private:
+
+    std::shared_ptr<Eigen::BDCSVD<MatrixXd>> svd_ptr;
 
 };
 
@@ -93,13 +167,87 @@ class QRSolver : public LinearSolverBase
 
     ~QRSolver() { };
 
+    bool is_factorized() override
+    {
+      if(qr_ptr) return true;
+      return false;
+    };
+
+    void factorize ( MatrixXd & A ) override
+    {
+      Eigen::ColPivHouseholderQR<MatrixXd> qr;
+      qr_ptr = std::make_shared<Eigen::ColPivHouseholderQR<MatrixXd>>(qr.compute(A));
+    };
+
     void solve( MatrixXd & A, MatrixXd & b, MatrixXd & x ) override
     {
-      x = A.colPivHouseholderQr().solve(b);
+      factorize(A);
+      solve(b, x);
     };
+
+    void solve( MatrixXd & b, MatrixXd & x ) override
+    {
+      if(qr_ptr) {
+        x = qr_ptr->solve(b);
+      } else {
+        std::string msg = "QR has not been previously computed.";
+        throw( std::runtime_error( msg ) );
+      }
+    };
+
+  private:
+
+    std::shared_ptr<Eigen::ColPivHouseholderQR<MatrixXd>> qr_ptr;
 
 };
 
+// --------------------------------------------------------------------------------
+
+/**
+ * \brief The CholeskySolver class can be used to solve Ax = b,
+ * provided that A is a symmetric matrix.
+ */
+class CholeskySolver : public LinearSolverBase
+{
+  public:
+
+    CholeskySolver() : LinearSolverBase() { };
+
+    ~CholeskySolver() { };
+
+    bool is_factorized() override
+    {
+      if(ldlt_ptr) return true;
+      return false;
+    };
+
+    void factorize ( MatrixXd & A ) override
+    {
+      Eigen::LDLT<MatrixXd> ldlt;
+      ldlt_ptr = std::make_shared<Eigen::LDLT<MatrixXd>>(ldlt.compute(A));
+    };
+
+    void solve( MatrixXd & A, MatrixXd & b, MatrixXd & x ) override
+    {
+      factorize(A);
+      solve(b, x);
+    };
+
+    void solve( MatrixXd & b, MatrixXd & x ) override
+    {
+      if(ldlt_ptr) {
+        x = ldlt_ptr->solve(b);
+      } else {
+        std::string msg = "Cholesky has not been previously computed.";
+        throw( std::runtime_error( msg ) );
+      }
+    };
+
+  private:
+
+    std::shared_ptr<Eigen::LDLT<MatrixXd>> ldlt_ptr;
+
+};
 
 } // namespace util
 } // namespace dakota

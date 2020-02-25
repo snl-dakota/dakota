@@ -51,6 +51,19 @@ namespace {
 
   // -------------------------------------
 
+  MatrixXd create_symmetric_matrix()
+  {
+    MatrixXd simple_matrix(3, 3);
+  
+    simple_matrix << 1.0, 7.0, 3.0,
+                     7.0, 4.0, -5.0,
+                     3.0, -5.0, 6.0;
+
+    return simple_matrix;
+  }
+
+  // -------------------------------------
+
   void test_solver(LinearSolverBase & solver,
                    Teuchos::FancyOStream &out,
                    bool & success )
@@ -72,6 +85,31 @@ namespace {
   {
     std::shared_ptr<LinearSolverBase> solver = solver_factory(type);
     return test_solver(*solver, out, success);
+  }
+
+  // -------------------------------------
+
+  void test_solver_symmetric(LinearSolverBase & solver,
+                             Teuchos::FancyOStream &out,
+                             bool & success )
+  {
+    MatrixXd A = create_symmetric_matrix();
+    MatrixXd b = MatrixXd::Random(A.cols(), 1);
+    MatrixXd x(A.cols(), 1);
+
+    solver.solve(A, b, x);
+
+    TEST_ASSERT(matrix_equals(A*x, b, 1.0e-12));
+  }
+
+  // -------------------------------------
+
+  void test_solver_symmetric(SOLVER_TYPE type,
+                             Teuchos::FancyOStream &out,
+                             bool & success )
+  {
+    std::shared_ptr<LinearSolverBase> solver = solver_factory(type);
+    return test_solver_symmetric(*solver, out, success);
   }
 
 } // anonymous namespace
@@ -99,7 +137,7 @@ TEUCHOS_UNIT_TEST(util, solver_lu)
 {
   LUSolver lu_solver;
   test_solver(lu_solver, out, success);
-  test_solver(SOLVER_TYPE::LU_LEAST_SQ_REGRESSION, out, success);
+  test_solver(SOLVER_TYPE::LU, out, success);
 }
 
 // --------------------------------------------------------------------------------
@@ -118,6 +156,16 @@ TEUCHOS_UNIT_TEST(util, solver_qr)
   QRSolver qr_solver;
   test_solver(qr_solver, out, success);
   test_solver(SOLVER_TYPE::QR_LEAST_SQ_REGRESSION, out, success);
+}
+
+// --------------------------------------------------------------------------------
+
+
+TEUCHOS_UNIT_TEST(util, solver_cholesky)
+{
+  CholeskySolver cholesky_solver;
+  test_solver_symmetric(cholesky_solver, out, success);
+  test_solver_symmetric(SOLVER_TYPE::CHOLESKY, out, success);
 }
 
 // --------------------------------------------------------------------------------
