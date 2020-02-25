@@ -176,8 +176,8 @@ void C3Approximation::build()
     for (i=1; i<num_v; ++i)
       start_ranks(i) = data_rep->startRank;
 
-    struct FTRegress * ftr
-      = ft_regress_alloc(num_v, data_rep->approxOpts, start_ranks.values());
+    struct FTRegress * ftr = ft_regress_alloc(num_v, data_rep->multiApproxOpts,
+					      start_ranks.values());
 	    
     if (data_rep->regressType == FT_RLS2) {
       ft_regress_set_alg_and_obj(ftr,AIO,FTLS_SPARSEL2);
@@ -357,7 +357,7 @@ void C3Approximation::combine_coefficients()
   // correlated with this tolerance and 1.e-3 did not result in significant
   // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
   Real arith_tol = data_rep->arithmeticTol;
-  struct MultiApproxOpts * opts = data_rep->approxOpts;
+  struct MultiApproxOpts * opts = data_rep->multiApproxOpts;
   for (; it!= levelApprox.end(); ++it)
     c3axpy(1., it->second.function_train(), &y, arith_tol, opts);
   combinedC3FTPtrs.function_train(y);
@@ -502,11 +502,11 @@ compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite)
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   bool full_stats = (expansionMoments.length() == 4); // default to partial
   if (!ftp.derived_functions().allocated)
-    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats,
+    ftp.ft_derived_functions_create(data_rep->multiApproxOpts, full_stats,
 				    data_rep->arithmeticTol);
   else if (overwrite) {
     ftp.ft_derived_functions_free();
-    ftp.ft_derived_functions_create(data_rep->approxOpts, full_stats,
+    ftp.ft_derived_functions_create(data_rep->multiApproxOpts, full_stats,
 				    data_rep->arithmeticTol);
   }
 }
@@ -517,12 +517,12 @@ compute_derived_statistics_av(C3FnTrainPtrs& ftp, bool overwrite)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   if (!ftp.derived_functions().allocated)
-    ftp.ft_derived_functions_create_av(data_rep->approxOpts,
+    ftp.ft_derived_functions_create_av(data_rep->multiApproxOpts,
 				       data_rep->randomIndices,
 				       data_rep->arithmeticTol);
   else if (overwrite) {
     ftp.ft_derived_functions_free();
-    ftp.ft_derived_functions_create_av(data_rep->approxOpts,
+    ftp.ft_derived_functions_create_av(data_rep->multiApproxOpts,
 				       data_rep->randomIndices,
 				       data_rep->arithmeticTol);
   }
@@ -708,7 +708,7 @@ struct FunctionTrain * C3Approximation::subtract_const(Real val)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
   struct FunctionTrain * ftconst
-    = function_train_constant(val, data_rep->approxOpts);
+    = function_train_constant(val, data_rep->multiApproxOpts);
   struct FunctionTrain * updated
     = function_train_sum(levApproxIter->second.function_train(),ftconst);
 

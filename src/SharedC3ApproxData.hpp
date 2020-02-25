@@ -116,9 +116,10 @@ protected:
   // This data is shared per QoI _and_ per level
   //
   /// 1D approximation options (basis type, poly order, etc.)
-  std::vector<struct OneApproxOpts *> oneApproxOpts;
+  std::vector<struct OneApproxOpts *> oneApproxOpts;//struct OneApproxOpts ** oneApproxOpts;
+  //std::vector<struct OneApproxOpts *> oneApproxOpts;
   /// n-D approximation options, augmenting 1D options
-  struct MultiApproxOpts * approxOpts;
+  struct MultiApproxOpts * multiApproxOpts;
 
   // these are stored in oneApproxOpts, but currently need to be cached
   // to persist between set_parameter() and construct_basis()
