@@ -353,7 +353,7 @@ void C3Approximation::combine_coefficients()
   struct FunctionTrain * y = function_train_copy(it->second.function_train());
   ++it;
   // Note: the FT rounding tolerance is relative and default (1.e-8) is too
-  // tight for this context --> new arithmetic tol.  Memory overhead is strongly
+  // tight for this context --> use arithmetic tol.  Memory overhead is strongly
   // correlated with this tolerance and 1.e-3 did not result in significant
   // accuracy gain in some numerical experiments (dakota_uq_heat_eq_mlft.in).
   Real arith_tol = data_rep->arithmeticTol;
@@ -370,6 +370,13 @@ void C3Approximation::combine_coefficients()
   // Option 2: function_train_sum (I allocate a and b and C3 allocates c)
   // > remember to deallocate c when done
   //struct FunctionTrain* c = function_train_sum(a, b);
+
+  // This replaces fine-grained moment bit trackers with a single override
+  const SizetArray& rand_ind = data_rep->randomIndices;
+  if (rand_ind.empty() || rand_ind.size() == data_rep->numVars)
+    compute_derived_statistics(   combinedC3FTPtrs, true); // overwrite previous
+  else
+    compute_derived_statistics_av(combinedC3FTPtrs, true); // overwrite previous
 }
 
 

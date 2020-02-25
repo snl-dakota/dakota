@@ -57,9 +57,6 @@ public:
   //- Heading: Member functions
   //
 
-  size_t pre_combine(short);
-  void post_combine(short);
-
   void set_parameter(String var, size_t val);
   void set_parameter(String var, bool   val);
   void set_parameter(String var, short  val);
@@ -109,6 +106,9 @@ protected:
   bool   push_available();
   size_t push_index(const UShortArray& key);
   void   post_push();
+
+  //void pre_combine();
+  //void post_combine();
 
   //
   //- Heading: Data

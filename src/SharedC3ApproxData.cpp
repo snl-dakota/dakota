@@ -147,21 +147,4 @@ void SharedC3ApproxData::update_basis()
   }
 }
 
-    
-size_t SharedC3ApproxData::pre_combine(short combine_type)
-{
-  Cerr << "Error: SharedC3ApproxData::pre_combine() not yet implemented."
-       << std::endl;
-  abort_handler(APPROX_ERROR);
-  return 0;
-}
-
-
-void SharedC3ApproxData::post_combine(short combine_type)
-{
-  Cerr << "Error: SharedC3ApproxData::post_combine() not yet implemented."
-       << std::endl;
-  abort_handler(APPROX_ERROR);
-}
-
 } // namespace Dakota

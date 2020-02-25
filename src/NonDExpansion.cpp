@@ -962,13 +962,14 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
-    update_expansion();
-
-    // combine expansions if necessary for stats computation:
-    // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
-    metric_roll_up();
     RealVector stats_ref;
     if (revert) pull_reference(stats_ref);
+
+    update_expansion();
+    // combine expansions if necessary for metric computation:
+    // Note: Multilevel SC overrides this fn to remove roll-up for Hier SC
+    //       (its delta metrics can be computed w/o exp combination)
+    metric_roll_up();
 
     // assess increment by computing refinement metric:
     // defer revert (pass false) -> simplifies best candidate tracking to follow
@@ -982,7 +983,7 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     default: //case Pecos::LEVEL_STATS_METRIC:
       metric = compute_level_mappings_metric(false, print_metric);  break;
     }
-    compute_statistics(REFINEMENT_RESULTS); // augment compute_*_metric()
+    compute_statistics(REFINEMENT_RESULTS); // augment delta metrics if needed
     if (print_metric) print_results(Cout, REFINEMENT_RESULTS); // augment output
     pull_candidate(statsStar); // pull compute_*_metric() + augmented stats
 
@@ -1883,8 +1884,9 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
       uSpaceModel.append_approximation(true); // rebuild
     }
 
-    // combine expansions if necessary for stats computation:
-    // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
+    // combine expansions if necessary for metric computation:
+    // Note: Multilevel SC overrides this fn to remove roll-up for Hier SC
+    //       (its delta metrics can be computed w/o exp combination)
     metric_roll_up();
     // assess increment by computing refinement metric:
     // defer revert (pass false) -> simplifies best candidate tracking to follow
