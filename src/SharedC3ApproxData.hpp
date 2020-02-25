@@ -103,6 +103,7 @@ protected:
   //void rebuild();
 
   void increment_order();
+  void decrement_order();
 
   void   pop(bool save_surr_data);
   bool   push_available();
@@ -273,7 +274,23 @@ inline void SharedC3ApproxData::increment_order()
     update_basis();
   }
   else {
-    Cerr << "Error: SharedC3ApproxData::increment_order() has reached maxOrder"
+    Cerr << "Error: SharedC3ApproxData::increment_order() has reached maxOrder."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+inline void SharedC3ApproxData::decrement_order()
+{
+  if (startOrder) {
+    // could consider a kickOrder (parallel to kickRank), but other
+    // advancements (regression PCE) use exp order decrement of 1
+    --startOrder;
+    update_basis();
+  }
+  else {
+    Cerr << "Error: SharedC3ApproxData::decrement_order() has reached 0."
 	 << std::endl;
     abort_handler(APPROX_ERROR);
   }
