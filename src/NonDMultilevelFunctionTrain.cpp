@@ -340,7 +340,7 @@ void NonDMultilevelFunctionTrain::update_from_specification()
     if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
       SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
 	uSpaceModel.shared_approximation().data_rep();
-      size_t ft_start_order = shared_data_rep->polynomial_order();
+      size_t ft_start_order = shared_data_rep->start_order();
       UShortArray dim_quad_order(numContinuousVars);
       for (size_t i=0; i<numContinuousVars; ++i)
 	//dim_quad_order[i] = exp_order[i] + 1;
@@ -372,7 +372,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
     if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
       SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
 	uSpaceModel.shared_approximation().data_rep();
-      size_t ft_start_order = shared_data_rep->polynomial_order();
+      size_t ft_start_order = shared_data_rep->start_order();
       UShortArray dim_quad_order(numContinuousVars);
       for (size_t i=0; i<numContinuousVars; ++i)
 	//dim_quad_order[i] = exp_order[i] + 1;

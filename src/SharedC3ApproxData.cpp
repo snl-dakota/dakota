@@ -27,9 +27,9 @@ namespace Dakota {
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
-  startOrder(problem_db.get_sizet("model.c3function_train.start_order")),
+  startOrderSpec(problem_db.get_sizet("model.c3function_train.start_order")),
   maxOrder(problem_db.get_sizet("model.c3function_train.max_order")),
-  startRank(problem_db.get_sizet("model.c3function_train.start_rank")),
+  startRankSpec(problem_db.get_sizet("model.c3function_train.start_rank")),
   kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
   maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
   adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
@@ -65,8 +65,8 @@ SharedC3ApproxData(const String& approx_type,
   SharedApproxData(NoDBBaseConstructor(), approx_type, num_vars, data_order,
 		   output_level),
   // default values overridden by set_parameter
-  startOrder(2), maxOrder(4), //maxnum(5),
-  startRank(5), kickRank(2), maxRank(10), adaptRank(false),
+  startOrderSpec(2), maxOrder(4), //maxnum(5),
+  startRankSpec(5), kickRank(2), maxRank(10), adaptRank(false),
   regressType(FT_LS), // non-regularized least sq
   solverTol(1.e-10), roundingTol(1.e-8), arithmeticTol(1.e-2),
   crossMaxIter(5), maxSolverIterations(1000), c3Verbosity(0),
@@ -109,6 +109,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
   assert (num_active_rv == numVars);
 
   struct OpeOpts * o_opts;
+  size_t nparam = startOrder[activeKey] + 1, max_np = maxOrder + 1;
   for (i=0; i<num_rv; ++i)
     if (no_mask || active_vars[i]) {
       switch (rv_types[i]) {
@@ -123,10 +124,10 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 	abort_handler(-1);                 break;
       }
 
-      ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
+      ope_opts_set_nparams(o_opts, nparam); // startnum = startord + 1
       // Note: maxOrder not used for regression (only limits increment_order());
       //       to be used for adaptation by cross-approximation
-      ope_opts_set_maxnum(o_opts,    maxOrder+1); //   maxnum =   maxord + 1
+      ope_opts_set_maxnum(o_opts,  max_np); //   maxnum =   maxord + 1
  
       struct OneApproxOpts*& a_opts = oneApproxOpts[av_cntr]; // ref to ptr
       if (a_opts) one_approx_opts_free_deep(&a_opts); // a_opts frees o_opts
@@ -140,10 +141,11 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 
 void SharedC3ApproxData::update_basis()
 {
+  size_t nparam = startOrder[activeKey] + 1, max_np = maxOrder + 1;
   for (size_t i=0; i<numVars; ++i) {
     struct OneApproxOpts*& a_opts = oneApproxOpts[i];
-    one_approx_opts_set_nparams(a_opts, startOrder+1); // updated
-    one_approx_opts_set_maxnum( a_opts,   maxOrder+1); // not currently updated
+    one_approx_opts_set_nparams(a_opts, nparam); // updated
+    one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
   }
 }
 

@@ -170,11 +170,10 @@ void C3Approximation::build()
     abort_handler(APPROX_ERROR);
   }
   else {
-    size_t i, j, num_v = sharedDataRep->numVars;
-    SizetVector start_ranks(num_v+1);  
-    start_ranks(0) = 1;  start_ranks(num_v) = 1;
-    for (i=1; i<num_v; ++i)
-      start_ranks(i) = data_rep->startRank;
+    size_t i, j, num_v = sharedDataRep->numVars, sr = data_rep->start_rank();
+    SizetVector start_ranks(num_v+1);
+    start_ranks(0) = 1;     start_ranks(num_v) = 1;
+    for (i=1; i<num_v; ++i) start_ranks(i) = sr;
 
     struct FTRegress * ftr = ft_regress_alloc(num_v, data_rep->multiApproxOpts,
 					      start_ranks.values());

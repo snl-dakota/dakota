@@ -68,8 +68,10 @@ public:
   // get SharedOrthogPolyApproxData::basisTypes
   //const ShortArray& basis_types() const;
 
-  /// return current basis polynomial order (startOrder for now)
-  size_t polynomial_order() const;
+  /// return current basis polynomial order (active key in startOrder)
+  size_t start_order() const;
+  /// return current expansion rank (active key in startRank)
+  size_t start_rank() const;
 
 protected:
 
@@ -77,6 +79,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void active_model_key(const UShortArray& key);
   //void clear_model_keys();
 
   void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
@@ -117,25 +120,33 @@ protected:
   // This data is shared per QoI _and_ per level
   //
   /// 1D approximation options (basis type, poly order, etc.)
-  std::vector<struct OneApproxOpts *> oneApproxOpts;//struct OneApproxOpts ** oneApproxOpts;
-  //std::vector<struct OneApproxOpts *> oneApproxOpts;
+  std::vector<OneApproxOpts*> oneApproxOpts;//OneApproxOpts ** oneApproxOpts;
   /// n-D approximation options, augmenting 1D options
-  struct MultiApproxOpts * multiApproxOpts;
+  MultiApproxOpts* multiApproxOpts;
 
   // these are stored in oneApproxOpts, but currently need to be cached
   // to persist between set_parameter() and construct_basis()
-  //
-  /// starting point for polynomial order (not currently adapted for regression)
-  size_t startOrder; // Sequence?
+
+  /// user specification for start_order
+  size_t startOrderSpec; // or SizetArray for start_order_sequence spec
+  /// starting values for polynomial order (prior to adaptive refinement)
+  std::map<UShortArray, size_t> startOrder;
   /// maximum value for polynomial order (if adapted)
   size_t maxOrder;
 
   // the remaining data are separate as can be seen in C3Approximation::build()
 
-  size_t startRank; // Sequence?
+  /// user specification for start_rank
+  size_t startRankSpec; // or SizetArray for start_rank_sequence spec
+  /// starting values for rank (note: adapt_rank currently covers refinement)
+  std::map<UShortArray, size_t> startRank;
+  /// user specification for increment in rank within adapt_rank
   size_t  kickRank;
+  /// user specification for maximum rank within adapt_rank 
   size_t   maxRank;
-  bool   adaptRank; // converted to size_t (0 no, 1 yes) for C3
+  /// internal C3 adaptation that identifies the best rank representation
+  ///for a set of sample data 
+  bool   adaptRank;
 
   short  regressType;
   double regressRegParam; // penalty parameter if regularized regression
@@ -188,21 +199,45 @@ inline SharedC3ApproxData::SharedC3ApproxData()
 { }
 
 
+inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
+{
+  // set activeKey and approxDataKeys
+  SharedApproxData::active_model_key(key);
+
+  // these aren't used enough to warrant active iterators
+  if (startOrder.find(key) == startOrder.end()) 
+    startOrder[key] = startOrderSpec;
+  if (startRank.find(key)  == startRank.end()) 
+    startRank[key]  = startRankSpec;  
+}
+
+
 inline short SharedC3ApproxData::discrepancy_type() const
 { return discrepancyType; }
 
 
-inline size_t SharedC3ApproxData::polynomial_order() const
-{ return startOrder; }
+inline size_t SharedC3ApproxData::start_order() const
+{
+  std::map<UShortArray, size_t>::const_iterator cit
+    = startOrder.find(activeKey);
+  return (cit == startOrder.end()) ? startOrderSpec : cit->second;
+}
+
+
+inline size_t SharedC3ApproxData::start_rank() const
+{
+  std::map<UShortArray, size_t>::const_iterator cit = startRank.find(activeKey);
+  return (cit == startRank.end()) ? startRankSpec : cit->second;
+}
 
 
 inline void SharedC3ApproxData::set_parameter(String var, size_t val)
 {
-  if      (var.compare("start_poly_order") == 0) startOrder = val;
-  else if (var.compare("max_poly_order")   == 0)   maxOrder = val;
-  else if (var.compare("start_rank")       == 0)  startRank = val;
-  else if (var.compare("kick_rank")        == 0)   kickRank = val;
-  else if (var.compare("max_rank")         == 0)    maxRank = val;
+  if      (var.compare("start_poly_order") == 0) startOrderSpec = val;
+  else if (var.compare("max_poly_order")   == 0)       maxOrder = val;
+  else if (var.compare("start_rank")       == 0)  startRankSpec = val;
+  else if (var.compare("kick_rank")        == 0)       kickRank = val;
+  else if (var.compare("max_rank")         == 0)        maxRank = val;
   else std::cerr << "Unrecognized C3 parameter: " << var << std::endl;
 }
 
@@ -269,10 +304,12 @@ random_variables_key(const BitArray& random_vars_key)
 
 inline void SharedC3ApproxData::increment_order()
 {
-  if (startOrder < maxOrder) { // consider a default for maxOrder = SZ_MAX
+  std::map<UShortArray, size_t>::iterator it = startOrder.find(activeKey);
+  size_t& active_so = it->second;
+  if (active_so < maxOrder) { // consider a default for maxOrder = SZ_MAX
     // could consider a kickOrder (parallel to kickRank), but other
     // advancements (regression PCE) use exp order increment of 1
-    ++startOrder;
+    ++active_so;
     update_basis();
   }
   else {
@@ -285,10 +322,12 @@ inline void SharedC3ApproxData::increment_order()
 
 inline void SharedC3ApproxData::decrement_order()
 {
-  if (startOrder) {
+  std::map<UShortArray, size_t>::iterator it = startOrder.find(activeKey);
+  size_t& active_so = it->second;
+  if (active_so) {
     // could consider a kickOrder (parallel to kickRank), but other
     // advancements (regression PCE) use exp order decrement of 1
-    --startOrder;
+    --active_so;
     update_basis();
   }
   else {
