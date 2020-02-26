@@ -120,7 +120,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 	o_opts = NULL;
 	PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
 	      << "SharedC3ApproxData::distribution_parameters()" << std::endl;
-	abort_handler(-1);               break;
+	abort_handler(-1);                 break;
       }
 
       ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1
@@ -145,23 +145,6 @@ void SharedC3ApproxData::update_basis()
     one_approx_opts_set_nparams(a_opts, startOrder+1); // updated
     one_approx_opts_set_maxnum( a_opts,   maxOrder+1); // not currently updated
   }
-}
-
-    
-size_t SharedC3ApproxData::pre_combine(short combine_type)
-{
-  Cerr << "Error: SharedC3ApproxData::pre_combine() not yet implemented."
-       << std::endl;
-  abort_handler(APPROX_ERROR);
-  return 0;
-}
-
-
-void SharedC3ApproxData::post_combine(short combine_type)
-{
-  Cerr << "Error: SharedC3ApproxData::post_combine() not yet implemented."
-       << std::endl;
-  abort_handler(APPROX_ERROR);
 }
 
 } // namespace Dakota
