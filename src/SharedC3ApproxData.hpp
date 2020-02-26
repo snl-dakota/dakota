@@ -256,6 +256,8 @@ random_variables_key(const BitArray& random_vars_key)
       randomIndices[i] = i;
   }
   else {
+    // NonDExpansion::initialize_u_space_model() assigns startCAUV,numCAUV
+    // subset within numContinuousVars
     size_t i, cntr, num_rand = random_vars_key.count();
     randomIndices.resize(num_rand);
     for (i=0, cntr=0; i<numVars; ++i)

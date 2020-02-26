@@ -464,7 +464,7 @@ void NonDExpansion::initialize_u_space_model()
       refineMetric = Pecos::COVARIANCE_METRIC;
   }
 
-  // if all variables mode, initialize key to random variable subset
+  // if all variables mode, init bookkeeping for the random variable subset
   if (allVars) {
     SharedApproxData* shared_data_rep =
       uSpaceModel.shared_approximation().data_rep();
