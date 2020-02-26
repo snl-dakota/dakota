@@ -445,7 +445,7 @@ level_metric(Real& regress_metric_l, Real power)
     }
     else
       sum += (norm_1) ? regress_l : std::pow(regress_l, power);
-    //if (outputLevel >= DEBUG_OUTPUT)
+    if (outputLevel >= DEBUG_OUTPUT)
       Cout << "System size(" /*lev " << lev << ", "*/ << "qoi " << qoi
 	/* << ", iter " << iter */ << ") = " << regress_l << '\n';
   }

@@ -120,7 +120,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 	o_opts = NULL;
 	PCerr << "Error: unsupported RV type (" << rv_types[i] << ") in "
 	      << "SharedC3ApproxData::distribution_parameters()" << std::endl;
-	abort_handler(-1);               break;
+	abort_handler(-1);                 break;
       }
 
       ope_opts_set_nparams(o_opts, startOrder+1); // startnum = startord + 1

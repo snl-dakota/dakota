@@ -937,7 +937,10 @@ gradient(const Variables& vars, const UShortArray& key)
 */
 
 
-/** this replaces the need to model data requirements as O(p r^2 d) */
+/** this replaces the need to model data requirements as O(p r^2 d), but
+    requires an up-to-date FT build/rebuild (updates to options like
+    start{Order,Rank} will not propagate to this fn on their own, but 
+    should work folowing push,pop of an FT) */
 size_t C3Approximation::regression_size()
 { return function_train_get_nparams(levApproxIter->second.function_train()); }
 
