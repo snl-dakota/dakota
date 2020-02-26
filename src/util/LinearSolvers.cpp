@@ -16,17 +16,29 @@ solver_factory(SOLVER_TYPE type)
 {
   switch (type)
   {
-    case SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION :
-      return std::make_shared<SVDSolver>();
+    case SOLVER_TYPE::CHOLESKY :
+      return std::make_shared<CholeskySolver>();
+
+    case SOLVER_TYPE::EQ_CONS_LEAST_SQ_REGRESSION :
+      throw(std::runtime_error("EQ_CONS_LEAST_SQ_REGRESSION not yet implemented."));
+
+    case SOLVER_TYPE::LASSO_REGRESSION :
+      throw(std::runtime_error("LASSO_REGRESSION not yet implemented."));
+
+    case SOLVER_TYPE::LEAST_ANGLE_REGRESSION :
+      throw(std::runtime_error("LEAST_ANGLE_REGRESSION not yet implemented."));
+
+    case SOLVER_TYPE::LU :
+      return std::make_shared<LUSolver>();      
+
+    case SOLVER_TYPE::ORTHOG_MATCH_PURSUIT :
+      throw(std::runtime_error("ORTHOG_MATCH_PURSUIT not yet implemented."));      
 
     case SOLVER_TYPE::QR_LEAST_SQ_REGRESSION :
       return std::make_shared<QRSolver>();
 
-    case SOLVER_TYPE::LU :
-      return std::make_shared<LUSolver>();
-
-    case SOLVER_TYPE::CHOLESKY :
-      return std::make_shared<CholeskySolver>();
+    case SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION :
+      return std::make_shared<SVDSolver>();
 
     default :
       throw(std::runtime_error("Unknown solver type in solver_factory."));

@@ -62,10 +62,14 @@ class LinearSolverBase
 // --------------------------------------------------------------------------------
 
 enum class SOLVER_TYPE {
-                         SVD_LEAST_SQ_REGRESSION,
-                         QR_LEAST_SQ_REGRESSION,
+                         CHOLESKY,
+                         EQ_CONS_LEAST_SQ_REGRESSION,
+                         LASSO_REGRESSION,
+                         LEAST_ANGLE_REGRESSION,
                          LU,
-                         CHOLESKY
+                         ORTHOG_MATCH_PURSUIT,
+                         QR_LEAST_SQ_REGRESSION,
+                         SVD_LEAST_SQ_REGRESSION
                        };
 
 std::shared_ptr<LinearSolverBase> solver_factory(SOLVER_TYPE);
