@@ -11,6 +11,7 @@
 
 #include <boost/test/minimal.hpp> // Boost.Test
 #include "../../util/CommonUtils.hpp"
+#include "../SurrogatesTools.hpp"
 #include "PolynomialRegression.hpp"
 #include "LinearSolvers.hpp"
 
@@ -52,7 +53,8 @@ MatrixXd create_multiple_features_matrix()
 
 void PolynomialRegressionSurrogate_getters_and_setters()
 {
-  PolynomialRegression pr(1);
+  Eigen::MatrixXi empty_indices;
+  PolynomialRegression pr(empty_indices, 0);
   MatrixXd samples  = create_multiple_features_matrix();
   MatrixXd response = create_single_feature_matrix();
 
@@ -73,7 +75,16 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   VectorXd response    = VectorXd::LinSpaced(20,0,1);
   response = (response.array() + 2.0).matrix(); // +2.0 because the line's y-intercept is 2.0
 
-  PolynomialRegression pr(2); //2 terms for straight line
+  // Compute basis index set 
+  Eigen::MatrixXi basis_indices;
+  compute_hyperbolic_indices( /* num_vars */ 1,
+                              /* degree */   1,
+                              /* p-norm */ 1.0,
+                              basis_indices    );
+
+  PolynomialRegression pr(basis_indices, /* num_vars */ 1);
+  BOOST_CHECK( 1 == basis_indices.rows() );
+  BOOST_CHECK( 2 == basis_indices.cols() ); // should be 2 terms for straight line
   pr.set_samples(line_vector);
   pr.set_response(response);
   pr.set_scaler_type(scaler_type);
@@ -156,18 +167,18 @@ void get_samples(int num_vars, int num_samples, MatrixXd & samples)
   // ------------------------------------------------------------
 
 void
-another_additive_quadratic_function(const MatrixXd & samples, VectorXd & func_vals)
+another_additive_quadratic_function(const MatrixXd & samples, MatrixXd & func_vals)
 {
-  func_vals.resize(samples.rows());
+  func_vals.resize(samples.rows(),1); // hard-coded to one response for now - RWH
   const int num_vars = samples.cols();
 
   for( int i=0; i<samples.rows(); ++i )
   {
-    func_vals(i) = 1.0;
+    func_vals(i,0) = 1.0;
     for (int j=0; j<num_vars; ++j)
     {
       double x = (2*samples(i,j)-1);
-      func_vals[i] += x*x+2.0*x;
+      func_vals(i,0) += x*x+2.0*x;
     }
   }
 }
@@ -179,21 +190,45 @@ void
 PolynomialRegressionSurrogate_multivariate_regression_builder()
 {
   int num_vars    = 2,
-      num_qoi     = 2,
       num_samples = 20,
       degree      = 3;
 
   // Generate realizations of function variables
-
-  MatrixXd samples;
+  MatrixXd samples, responses;
   get_samples(num_vars, num_samples, samples);
-  //std::cout << samples << std::endl;
+  another_additive_quadratic_function(samples, responses);
 
-  VectorXd f_vals;
-  another_additive_quadratic_function(samples, f_vals);
-  std::cout << f_vals << std::endl;
+  // Compute basis index set 
+  Eigen::MatrixXi basis_indices;
+  compute_hyperbolic_indices(num_vars, degree, 1.0, basis_indices);
 
-  // Pick up HERE ... RWH
+  PolynomialRegression pr(basis_indices, num_vars);
+  pr.set_samples(samples);
+  pr.set_response(responses);
+  pr.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  pr.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr.build_surrogate();
+
+  const MatrixXd& polynomial_coeffs = pr.get_polynomial_coeffs();
+  // Will need to see how this interacts with the constant term and scaling/transforms - RWH
+  double polynomial_intercept = pr.get_polynomial_intercept();
+  BOOST_CHECK( std::abs(polynomial_intercept) < 1.0e-10 );
+
+  // Check correctness of computed polynomial coefficients against the one used to construct the model
+  MatrixXd gold_coeffs(10,1);
+  // Term exponents for f(x,y) = -1 + 4*x*x + 4*y*y
+  // x:            0    1    0    2    0    1    3    0    2    1
+  // y:            0    0    1    0    2    1    0    3    1    2
+  gold_coeffs << -1.0, 0.0, 0.0, 4.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs, 1.0e-10));
+
+  // Now try out some interpolants that should be exact
+  MatrixXd eval_points, gold_responses, test_responses;
+  get_samples(num_vars, 7, eval_points);
+  another_additive_quadratic_function(eval_points, gold_responses);
+
+  pr.surrogate_value(eval_points, test_responses);
+  BOOST_CHECK(matrix_equals(gold_responses, test_responses, 1.0e-10));
 }
 
 } // namespace
@@ -202,11 +237,14 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
 
 int test_main( int argc, char* argv[] ) // note the name!
 {
+  // Univariate tests
   PolynomialRegressionSurrogate_getters_and_setters();
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NORMALIZATION);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
-  //PolynomialRegressionSurrogate_multivariate_regression_builder();
+
+  // Multivariate tests
+  PolynomialRegressionSurrogate_multivariate_regression_builder();
 
   int run_result = 0;
   BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );

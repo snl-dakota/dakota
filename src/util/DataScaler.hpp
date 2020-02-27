@@ -12,6 +12,7 @@
 #include "Eigen/Dense"
 #include <memory>
 
+using Eigen::MatrixXi;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 

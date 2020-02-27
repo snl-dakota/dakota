@@ -23,7 +23,8 @@ public:
 
   // Constructor
 
-  PolynomialRegression(const int num_terms);
+  // TODO: nvars should soon be replaced by an options object - RWH
+  PolynomialRegression(const MatrixXi & indices, int nvars);
 
   // Destructor
 
@@ -49,6 +50,7 @@ public:
 
   // Surrogate
 
+  void compute_basis_matrix(const MatrixXd & samples, MatrixXd & basis_matrix) const;
   void build_surrogate();
   void surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values);
 
@@ -56,8 +58,10 @@ private:
 
   // Input fields
   const int num_terms;
-  std::shared_ptr<MatrixXd> samples;
+  const int num_vars;
+  std::shared_ptr<MatrixXd> samples_;
   std::shared_ptr<MatrixXd> response;
+  std::shared_ptr<MatrixXi> basis_indices;
   int polynomial_order;
   util::SCALER_TYPE scaler_type;
   std::shared_ptr<util::DataScaler> scaler;

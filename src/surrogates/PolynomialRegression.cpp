@@ -11,19 +11,27 @@
 namespace dakota {
 namespace surrogates {
 
+// ------------------------------------------------------------
+
 // Constructor
 
-PolynomialRegression::PolynomialRegression(const int num_terms_) : num_terms(num_terms_) {
+PolynomialRegression::PolynomialRegression(const MatrixXi & indices, int nvars) :
+  basis_indices(std::make_shared<MatrixXi>(indices)),
+  num_terms(indices.cols()),
+  num_vars(nvars) // should have these come in through options once that mechanism exists - RWH
+{
   scaler_type = util::SCALER_TYPE::NONE;
 }
 
+// ------------------------------------------------------------
 // Destructor
 
 PolynomialRegression::~PolynomialRegression() {}
 
+// ------------------------------------------------------------
 // Getters
 
-const MatrixXd & PolynomialRegression::get_samples() const { return *samples; }
+const MatrixXd & PolynomialRegression::get_samples() const { return *samples_; }
 
 const MatrixXd & PolynomialRegression::get_response() const { return *response; }
 
@@ -39,7 +47,7 @@ const util::LinearSolverBase & PolynomialRegression::get_solver() const { return
 
 // Setters
 
-void PolynomialRegression::set_samples(const MatrixXd & samples_) { samples = std::make_shared<MatrixXd>(samples_); }
+void PolynomialRegression::set_samples(const MatrixXd & samples) { samples_ = std::make_shared<MatrixXd>(samples); }
 
 void PolynomialRegression::set_response(const MatrixXd & response_) { response = std::make_shared<MatrixXd>(response_); }
 
@@ -49,23 +57,44 @@ void PolynomialRegression::set_scaler_type(const util::SCALER_TYPE scaler_type_)
 
 void PolynomialRegression::set_solver(util::SOLVER_TYPE solver_type_) { solver = solver_factory(solver_type_); }
 
+// ------------------------------------------------------------
 // Surrogate
 
-void PolynomialRegression::build_surrogate() {
+void
+PolynomialRegression::compute_basis_matrix(const MatrixXd & samples, MatrixXd & basis_matrix) const
+{
+  if( samples.size() == 0 )
+    return;
+
+  const int num_samples = samples.rows();
+
+  // Generate the basis matrix
+  basis_matrix = MatrixXd::Zero(num_samples, num_terms);
+
+  for(int j=0; j<num_terms; ++j) {
+    for(int i=0; i<num_samples; ++i) {
+      double val = 1.0;
+      for( int d=0; d<num_vars; ++d )
+	val *= std::pow(samples(i,d), (*basis_indices)(d,j));
+      basis_matrix(i,j) = val;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+
+void
+PolynomialRegression::build_surrogate()
+{
   const int num_samples = get_samples().size();
   const int num_responses = get_response().size();
 
-  if(num_samples == 0 || num_responses == 0) {
-  	return;
-  }
+  if(num_samples == 0 || num_responses == 0)
+    return;
 
   // Generate the basis matrix
-  MatrixXd unscaled_basis_matrix = MatrixXd::Zero(num_samples, num_terms);
-  for(int i = 0; i < num_samples; i++) {
-    for(int j = 0; j < num_terms; j++) {
-      unscaled_basis_matrix(i, j) = std::pow(get_samples()(i), j);
-    }
-  }
+  MatrixXd unscaled_basis_matrix;
+  compute_basis_matrix(get_samples(), unscaled_basis_matrix);
 
   // Scale the basis matrix.
   scaler = util::scaler_factory(scaler_type, unscaled_basis_matrix);
@@ -79,16 +108,16 @@ void PolynomialRegression::build_surrogate() {
   polynomial_intercept = get_response().mean() - (scaled_basis_matrix*(get_polynomial_coeffs())).mean();
 }
 
-void PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values) {
-  const int num_eval_points = eval_points.size();
+// ------------------------------------------------------------
+
+void
+PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values)
+{
+  const int num_eval_points = eval_points.rows();
 
   // Generate the basis matrix for the eval points
-  MatrixXd unscaled_basis_matrix = MatrixXd::Zero(num_eval_points, num_terms);
-  for(int i = 0; i < num_eval_points; i++) {
-    for(int j = 0; j < num_terms; j++) {
-      unscaled_basis_matrix(i, j) = std::pow(eval_points(i), j);
-    }
-  }
+  MatrixXd unscaled_basis_matrix;
+  compute_basis_matrix(eval_points, unscaled_basis_matrix);
 
   // Scale sample points.
   MatrixXd scaled_basis_matrix = *(scaler->scale_samples(unscaled_basis_matrix));
@@ -97,6 +126,8 @@ void PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd
   approx_values = scaled_basis_matrix * (get_polynomial_coeffs());
   approx_values = (approx_values.array() + polynomial_intercept).matrix();
 }
+
+// ------------------------------------------------------------
 
 } // namespace surrogates
 } // namespace dakota
