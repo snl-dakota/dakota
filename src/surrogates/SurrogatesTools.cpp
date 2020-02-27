@@ -124,7 +124,7 @@ void
 compute_hyperbolic_level_indices( int num_dims, int level, double p, MatrixXi & indices )
 {
   if ( level == 0 )
-    indices = MatrixXi::Zero(3, 1);
+    indices = MatrixXi::Zero(num_dims, 1);
   else
   {
     indices.resize( num_dims, num_dims );
