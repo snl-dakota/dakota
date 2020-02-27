@@ -109,7 +109,9 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
   assert (num_active_rv == numVars);
 
   struct OpeOpts * o_opts;
-  size_t nparam = startOrder[activeKey] + 1, max_np = maxOrder + 1;
+  // use startOrderSpec at construct time (initialize_u_space_model()) since
+  // startOrder[activeKey] not meaningful until run time active key assignment
+  size_t nparam = startOrderSpec + 1, max_np = maxOrder + 1;
   for (i=0; i<num_rv; ++i)
     if (no_mask || active_vars[i]) {
       switch (rv_types[i]) {
@@ -141,6 +143,7 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 
 void SharedC3ApproxData::update_basis()
 {
+  // use startOrder[activeKey] for run time updates
   size_t nparam = startOrder[activeKey] + 1, max_np = maxOrder + 1;
   for (size_t i=0; i<numVars; ++i) {
     struct OneApproxOpts*& a_opts = oneApproxOpts[i];
