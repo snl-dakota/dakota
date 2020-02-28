@@ -104,23 +104,25 @@ public:
 
 /**
  *  \brief Evaluate the Gaussian Process at a set of prediction points.
- *  \param[in] samples Matrix of prediction points.
+ *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
  *  \param[out] approx_values Mean of the Gaussian process at the prediction
- *  points.
+ *  points - (num_samples by num_qoi = 1) 
 */
   void value(const MatrixXd &samples, MatrixXd &approx_values);
 
 /**
  *  \brief Evaluate the gradient of the Gaussian process at a single point.
- *  \param[in] samples Coordinates of the prediction points.
- *  \param[out] gradient Matrix of gradient vectors at the prediction points.
+ *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
+ *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
+ *  (num_samples by num_features).
 */
   void gradient(const MatrixXd &samples, MatrixXd &gradient);
 
 /**
  *  \brief Evaluate the Hessian of the Gaussian process at a single point.
- *  \param[in] sample Coordinates of the prediction point.
- *  \param[out] hessian Hessian matrix at the prediction point.
+ *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
+ *  \param[out] hessian Hessian matrix at the prediction point - 
+ *  (num_features by num_features).
 */
   void hessian(const MatrixXd &sample, MatrixXd &hessian);
 
