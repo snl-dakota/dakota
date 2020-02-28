@@ -113,6 +113,12 @@ Real GPApproximation::value(const Variables& vars)
 }
 
 
+const RealVector& GPApproximation::gradient(const Variables& vars)
+{
+  return gradient(vars.continuous_variables());
+}
+
+
 Real
 GPApproximation::value(const RealVector& c_vars)
 {
@@ -145,5 +151,29 @@ GPApproximation::value(const RealVector& c_vars)
   return pred(0,0); // should only be one prediuction using this particular call? - RWH 
 }
     
+const RealVector& GPApproximation::gradient(const RealVector& c_vars)
+{
+  const size_t num_evals = 1;
+  const size_t num_vars = c_vars.length();
+
+  // Need to use Teuchos-to-Eigen converters - RWH
+  MatrixXd eval_pts(num_evals, num_vars);
+  for (size_t j = 0; j < num_vars; j++)
+    eval_pts(0,j) = c_vars[j];
+
+  // could avoid the temporary and copy by passing an Eigen view of
+  // approxGradient
+  MatrixXd pred_grad(num_evals, num_vars);
+  model->gradient(eval_pts, pred_grad);
+
+  approxGradient.sizeUninitialized(c_vars.length());
+  for (size_t j = 0; j < num_vars; j++)
+    approxGradient[j] = pred_grad(0,j);
+
+  // BMA TODO: redesign Approximation to not return the class member
+  // as its state could be invalidated
+  return approxGradient;
+}
+
 
 } // namespace Dakota

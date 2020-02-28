@@ -67,9 +67,12 @@ protected:
   /// Return the value of the surrogate for a given Variables object vars
   Real value(const Variables& vars) override;
 
+  const RealVector& gradient(const Variables& vars);
+
   /// Return the value of the surrogate for a given parameter vector x
   Real value(const RealVector& c_vars) override;
- 
+
+  const RealVector& gradient(const RealVector& c_vars);
 
 private:
 
