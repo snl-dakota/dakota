@@ -167,8 +167,8 @@ void NonDMUQBayesCalibration::calibrate()
       pt.put("Kernel1.MyProposal.Method","AMProposal");
 
   pt.put("Kernel1.MyProposal.ProposalVariance", 0.000001); // the variance of the isotropic MH proposal
-  pt.put("Kernel1.MyProposal.AdaptSteps",200);
-  pt.put("Kernel1.MyProposal.AdaptStart",2000);
+  pt.put("Kernel1.MyProposal.AdaptSteps",100);
+  pt.put("Kernel1.MyProposal.AdaptStart",1000);
   pt.put("Kernel1.MyProposal.AdaptScale",1.0);
 
   auto dens = workGraph->CreateModPiece("Posterior");
@@ -189,13 +189,15 @@ void NonDMUQBayesCalibration::calibrate()
 
   samps = mcmc->Run(init_pt);
 
+    const std::string filename = "output.h5";
+  samps->WriteToFile(filename);
+
   // populate acceptanceChain, acceptedFnVals
   cache_chain();
 
   // Generate useful stats from the posterior samples
   compute_statistics();
 }
-
 
 /** Populate all of acceptanceChain(num_params, chainSamples)
     acceptedFnVals(numFunctions, chainSamples) */
@@ -218,7 +220,7 @@ void NonDMUQBayesCalibration::cache_chain()
 
   Eigen::MatrixXd const& chain = samps->AsMatrix();
 
-  unsigned int num_mcmc = chain.size();
+  unsigned int num_mcmc = chain.cols();
   if (num_mcmc != chainSamples) {
     Cerr << "\nError: MUQ cache_chain(): chain length is " << num_mcmc
    << "; expected " << chainSamples << '\n';
