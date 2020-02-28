@@ -165,14 +165,11 @@ std::string WorkdirHelper::init_startup_path()
 {
   char* env_path = std::getenv(DAK_PATH_ENV_NAME);
 
-  if (!env_path) {
-    Cerr << "\nERROR: "
-         << "getenv(\"" DAK_PATH_ENV_NAME "\") failed in init_startup_path().\n"
-         << std::endl;
-    abort_handler(-1);
+  if (env_path) {
+    return std::string(env_path);
+  } else {
+    return std::string();
   }
-
-  return std::string(env_path);
 }
 
 

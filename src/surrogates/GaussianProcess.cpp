@@ -56,7 +56,7 @@ void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int nu
 void GaussianProcess::compute_prediction_matrix(const MatrixXd &scaled_pred_pts, MatrixXd &pred_mat) {
   const int numPredictionPts = scaled_pred_pts.rows();
   pred_mat.resize(numPredictionPts,numSamples);
-  MatrixXd scaled_samples = dataScaler->getScaledFeatures();
+  MatrixXd scaled_samples = dataScaler->get_scaled_features();
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
       pred_mat(i,j) = sq_exp_cov_pred(scaled_pred_pts.row(i),scaled_samples.row(j));
@@ -70,7 +70,7 @@ void GaussianProcess::compute_first_deriv_pred_mat(const MatrixXd &pred_mat, con
   first_deriv_pred_mat.resize(numPredictionPts,numSamples);
   first_deriv_pred_mat.setZero();
 
-  MatrixXd scaled_samples = dataScaler->getScaledFeatures();
+  MatrixXd scaled_samples = dataScaler->get_scaled_features();
 
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
@@ -88,7 +88,7 @@ void GaussianProcess::compute_second_deriv_pred_mat(const MatrixXd &pred_mat, co
   second_deriv_pred_mat.resize(numPredictionPts,numSamples);
   second_deriv_pred_mat.setZero();
 
-  MatrixXd scaled_samples = dataScaler->getScaledFeatures();
+  MatrixXd scaled_samples = dataScaler->get_scaled_features();
 
   double diagonal_factor = 0.0;
 
@@ -207,7 +207,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
   else
     throw(std::string("Invalid scaler type"));
 
-  MatrixXd scaled_samples = dataScaler->getScaledFeatures();
+  MatrixXd scaled_samples = dataScaler->get_scaled_features();
 
   /* size of thetaValues for squared exponential kernel and one QoI */
   thetaValues.resize(numVariables+1);
@@ -342,7 +342,7 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   approx_values.resize(numPredictionPts,numVariables);
 
   /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_pts = dataScaler->scaleSamples(samples);
+  MatrixXd scaled_pred_pts = *(dataScaler->scale_samples(samples));
 
   /* compute the Gram matrix and its Cholesky factorization */
   compute_Gram(false);
@@ -384,7 +384,7 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient) {
   gradient.resize(numPredictionPts,numVariables);
 
   /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_pts = dataScaler->scaleSamples(samples);
+  MatrixXd scaled_pred_pts = *(dataScaler->scale_samples(samples));
 
   /* compute the Gram matrix and its Cholesky factorization */
   compute_Gram(false);
@@ -416,7 +416,7 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian) {
   hessian.resize(numVariables,numVariables);
 
   /* scale the samples (prediction points) */
-  MatrixXd scaled_pred_point = dataScaler->scaleSamples(sample);
+  MatrixXd scaled_pred_point = *(dataScaler->scale_samples(sample));
 
   /* compute the Gram matrix and its Cholesky factorization */
   compute_Gram(false);

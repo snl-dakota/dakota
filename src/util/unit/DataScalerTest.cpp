@@ -71,7 +71,7 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizat
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.getScaledFeatures();
+  matrix_actual = ns.get_scaled_features();
   matrix_expected << -0.5, -0.333333, -0.166667, 0.0, 0.166667, 0.333333, 0.5;
 
   //std::cout << matrix_expected << std::endl;
@@ -88,7 +88,7 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizat
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.getScaledFeatures();
+  matrix_actual = ns.get_scaled_features();
   matrix_expected << 0, 0.166667, 0.333333, 0.5, 0.666667, 0.833333, 1;
 
   //std::cout << matrix_expected << std::endl;
@@ -105,7 +105,7 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestMeanNormalizat
   MatrixXd matrix_actual(7, 3);
   MatrixXd matrix_expected(7, 3);
   
-  matrix_actual = ns.getScaledFeatures();
+  matrix_actual = ns.get_scaled_features();
 
   matrix_expected << 0, 0, 0,
                      9.00001e-06, 5.6e-06, 7.85715e-06,
@@ -131,7 +131,7 @@ TEUCHOS_UNIT_TEST(util, NormalizationScaler_getScaledFeatures_TestNormFactor)
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.getScaledFeatures();
+  matrix_actual = ns.get_scaled_features();
   matrix_expected << -1, -0.666667, -0.333333, 1.85037e-16, 0.333333, 0.666667, 1;
 
   //std::cout << matrix_expected << std::endl;
@@ -147,7 +147,7 @@ TEUCHOS_UNIT_TEST(util, StandardizationScaler_getScaledFeatures_TestDefault)
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ss.getScaledFeatures();
+  matrix_actual = ss.get_scaled_features();
   matrix_expected << -1.5, -1, -0.5, 2.77556e-16, 0.5, 1, 1.5;
 
   //std::cout << matrix_expected << std::endl;
@@ -168,7 +168,7 @@ TEUCHOS_UNIT_TEST(util, StandardizationScaler_getScaledFeatures_TestMultipleSamp
   MatrixXd matrix_actual(7, 3);
   MatrixXd matrix_expected(7, 3);
   
-  matrix_actual = ss.getScaledFeatures();
+  matrix_actual = ss.get_scaled_features();
 
   matrix_expected << -0.45993, -0.439588, -0.441129,
                      -0.459904, -0.439572, -0.441107,
@@ -201,7 +201,7 @@ TEUCHOS_UNIT_TEST(util, StandardizationScaler_scaleSamples)
   MatrixXd matrix_actual_scaled(7, 3);
   MatrixXd matrix_expected(7, 3);
   
-  matrix_actual_scaled = ss.scaleSamples(matrix_actual_unscaled);
+  matrix_actual_scaled = *(ss.scale_samples(matrix_actual_unscaled));
 
   matrix_expected << -0.45993, -0.439588, -0.441129,
                      -0.459904, -0.439572, -0.441107,
@@ -236,7 +236,7 @@ TEUCHOS_UNIT_TEST(util, StandardizationScaler_scaleSamples_wrongSize)
                        20, 50, 100, 300, 700, 1000, 3000,
                        8000, 10000, 30000, 40000, 100000, 500000, 700000;
   
-  TEST_THROW(ss.scaleSamples(wrong_size_matrix), std::runtime_error);
+  TEST_THROW(ss.scale_samples(wrong_size_matrix), std::runtime_error);
 }
 
 TEUCHOS_UNIT_TEST(util, NoScaler_getScaledFeatures_TestDefault)
@@ -246,7 +246,7 @@ TEUCHOS_UNIT_TEST(util, NoScaler_getScaledFeatures_TestDefault)
   MatrixXd matrix_actual(7, 1);
   MatrixXd matrix_expected(7, 1);
   
-  matrix_actual = ns.getScaledFeatures();
+  matrix_actual = ns.get_scaled_features();
   matrix_expected = create_single_feature_matrix();
 
   //std::cout << matrix_expected << std::endl;

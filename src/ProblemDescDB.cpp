@@ -1794,6 +1794,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<SizetArray, DataMethodRep> SZAdme[] = {	
       // must be sorted by string (key)
+      {"nond.c3function_train.start_order_sequence", P startOrderSeq},
+      {"nond.c3function_train.start_rank_sequence", P startRankSeq},
       {"nond.collocation_points", P collocationPointsSeq},
       {"nond.expansion_samples", P expansionSamplesSeq},
       {"nond.pilot_samples", P pilotSamples}};
@@ -2526,7 +2528,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"jega.shrinkage_percentage", P shrinkagePercent},
 	{"mesh_adaptive_search.initial_delta", P initMeshSize},
 	{"mesh_adaptive_search.variable_neighborhood_search", P vns},
-  {"mesh_adaptive_search.variable_tolerance", P minMeshSize},
+	{"mesh_adaptive_search.variable_tolerance", P minMeshSize},
 	{"min_boxsize_limit", P minBoxSize},
 	{"mutation_rate", P mutationRate},
 	{"mutation_scale", P mutationScale},
@@ -2535,6 +2537,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"nl2sol.initial_trust_radius", P initTRRadius},
 	{"nl2sol.singular_conv_tol", P singConvTol},
 	{"nl2sol.singular_radius", P singRadius},
+	{"nond.c3function_train.rounding_tolerance", P roundingTolerance},
+	{"nond.c3function_train.solver_tolerance", P solverTolerance},
 	{"nond.collocation_ratio", P collocationRatio},
 	{"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
 	{"nond.multilevel_estimator_rate", P multilevEstimatorRate},
@@ -2551,7 +2555,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"trust_region.expand_threshold", P trustRegionExpandTrigger},
 	{"trust_region.expansion_factor", P trustRegionExpand},
 	{"trust_region.minimum_size", P trustRegionMinSize},
-  {"variable_tolerance", P threshStepLength},
+	{"variable_tolerance", P threshStepLength},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
 	{"volume_boxsize_limit", P volBoxSize},
@@ -2580,6 +2584,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"surrogate.neural_network_range", P annRange},
       {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold},
+      {"surrogate.regression_penalty", P regressionL2Penalty},
       {"truncation_tolerance", P truncationTolerance}};
     #undef P
 
@@ -2642,6 +2647,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"max_iterations", P maxIterations},
 	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
 	{"nl2sol.covariance", P covarianceType},
+        {"nond.c3function_train.max_cross_iterations", P maxCrossIterations},
 	{"nond.chain_samples", P chainSamples},
 	{"nond.max_refinement_iterations", P maxRefineIterations},
 	{"nond.max_solver_iterations", P maxSolverIterations},
@@ -2673,7 +2679,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"active_subspace.dimension", P subspaceDimension},
-        {"c3function_train.max_cross_iterations", P crossMaxIter},
+        {"c3function_train.max_cross_iterations", P maxCrossIterations},
         {"initial_samples", P initialSamples},
         {"max_function_evals", P maxFunctionEvals},
         {"max_iterations", P maxIterations},
@@ -2740,7 +2746,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.final_moments", P finalMomentsType},
 	{"nond.growth_override", P growthOverride},
 	{"nond.least_squares_regression_type", P lsRegressionType},
-	{"nond.multilevel_allocation_control", P mlmfAllocControl},
+	{"nond.multilevel_allocation_control", P multilevAllocControl},
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.regression_type", P regressionType},
@@ -2780,7 +2786,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"surrogate.rbf_bases", P rbfBases},
 	{"surrogate.rbf_max_pts", P rbfMaxPts},
 	{"surrogate.rbf_max_subsets", P rbfMaxSubsets},
-	{"surrogate.rbf_min_partition", P rbfMinPartition}};
+	{"surrogate.rbf_min_partition", P rbfMinPartition},
+	{"surrogate.regression_type", P regressionType}
+    };
     #undef P
 
     KW<short, DataModelRep> *kw;
@@ -2954,6 +2962,11 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
 	{"jega.num_parents", P numParents},
+        {"nond.c3function_train.kick_rank", P kickRank},
+        {"nond.c3function_train.max_order", P maxOrder},
+      	{"nond.c3function_train.max_rank", P maxRank},
+        {"nond.c3function_train.start_order", P startOrder},
+        {"nond.c3function_train.start_rank", P startRank},
 	{"nond.collocation_points", P collocationPoints},
 	{"nond.expansion_samples", P expansionSamples},
 	{"num_candidate_designs", P numCandidateDesigns},
@@ -3150,6 +3163,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adapt_exp_design", P adaptExpDesign},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
+        {"nond.c3function_train.adapt_rank", P adaptRank},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
 	{"nond.d_optimal", P dOptimal},

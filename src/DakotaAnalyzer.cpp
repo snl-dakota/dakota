@@ -34,7 +34,7 @@ extern PRPCache data_pairs;
 Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(probDescDB.get_int("environment.output_precision"))
+  writePrecision(problem_db.get_int("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;

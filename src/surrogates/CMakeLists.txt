@@ -10,10 +10,15 @@
 set(surrogates_sources
   GaussianProcess.cpp 
   GP_Objective.cpp
-  )
+  PolynomialRegression.cpp
+  SurrogatesTools.cpp
+)
 
 set(surrogates_headers
-  GaussianProcess.hpp GP_Objective.hpp
+  GaussianProcess.hpp
+  GP_Objective.hpp
+  PolynomialRegression.hpp
+  SurrogatesTools.hpp
 )
 
 add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})

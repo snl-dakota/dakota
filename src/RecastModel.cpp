@@ -22,12 +22,11 @@ using namespace std;
 
 namespace Dakota {
 
-// define special values for componentParallelMode
-#define SUB_MODEL 2
 //#define DEBUG
 
 // init static var
 StringStringPairIntMap RecastModel::recastModelIdCounters;
+
 
 /** Default recast model constructor.  Requires full definition of the
     transformation; if any mappings are NULL, they are assumed to
@@ -743,7 +742,7 @@ inverse_transform_response(const Variables& sub_model_vars,
 
 void RecastModel::initialize_data_from_submodel()
 {
-  componentParallelMode = SUB_MODEL;
+  componentParallelMode = SUB_MODEL_MODE;
   outputLevel           = subModel.output_level();
 
   gradientType          = subModel.gradient_type();

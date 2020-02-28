@@ -171,7 +171,7 @@ void SurrBasedGlobalMinimizer::core_run()
     // Variable/response results were generated using the current approximate
     // model.  For appending to the current approximate model, we must evaluate
     // the variable results with the truth model.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL);
+    iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     IntResponseMap truth_resp_results;
     for (i=0; i<num_results; i++) {
       // set the current values of the active variables in the truth model

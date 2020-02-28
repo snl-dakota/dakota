@@ -1420,6 +1420,12 @@ void SharedVariablesDataRep::copy_rep(SharedVariablesDataRep* svd_rep)
 
   allContinuousIds.resize(boost::extents[num_acv]);
   allContinuousIds = svd_rep->allContinuousIds;
+  allDiscreteIntIds.resize(boost::extents[num_adiv]);
+  allDiscreteIntIds = svd_rep->allDiscreteIntIds;
+  allDiscreteStringIds.resize(boost::extents[num_adsv]);
+  allDiscreteStringIds = svd_rep->allDiscreteStringIds;
+  allDiscreteRealIds.resize(boost::extents[num_adrv]);
+  allDiscreteRealIds = svd_rep->allDiscreteRealIds;
 
   allRelaxedDiscreteInt  = svd_rep->allRelaxedDiscreteInt;
   allRelaxedDiscreteReal = svd_rep->allRelaxedDiscreteReal;

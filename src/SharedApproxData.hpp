@@ -88,24 +88,19 @@ public:
   //
 
   /// activate an approximation state based on its multi-index key
-  virtual void active_model_key(const UShortArray& mi_key);
-  /// return active multi-index key
-  virtual const UShortArray& active_model_key() const;
+  virtual void active_model_key(const UShortArray& key);
   /// reset initial state by clearing all model keys for an approximation
   virtual void clear_model_keys();
 
-  /// define data keys and active data index for aggregated response data
-  /// (SharedPecosApproxData)
-  virtual void link_multilevel_surrogate_data();
+  // define data keys and active data index for aggregated response data
+  // (SharedPecosApproxData)
+  //virtual void link_multilevel_surrogate_data();
 
-  /// update approxDataKeys[activeDataIndex] with trailing surrogate key
-  virtual void surrogate_model_key(const UShortArray& key);
-  /// return trailing surrogate key from approxDataKeys[activeDataIndex]
-  virtual const UShortArray& surrogate_model_key() const;
-  /// update approxDataKeys[activeDataIndex] with leading truth key
-  virtual void truth_model_key(const UShortArray& key);
-  /// return leading truth key from approxDataKeys[activeDataIndex]
-  virtual const UShortArray& truth_model_key() const;
+  /// set integration driver for structured grid approximations
+  virtual void integration_iterator(const Iterator& iterator);
+
+  /// return the discrepancy type for approximations that support MLMF
+  virtual short discrepancy_type() const;
 
   /// builds the shared approximation data from scratch
   virtual void build();
@@ -139,6 +134,8 @@ public:
   /// promote aggregated data sets to active state
   virtual void combined_to_active(bool clear_combined = true);
 
+  /// construct the shared basis for an expansion-based approximation
+  virtual void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
   /// propagate updates to random variable distribution parameters to a
   /// polynomial basis
   virtual void update_basis_distribution_parameters(
@@ -172,8 +169,8 @@ public:
   // return the number of variables used in the approximation
   //int num_variables() const;
 
-  /// set activeDataIndex
-  void surrogate_data_index(size_t d_index);
+  /// return active multi-index key
+  const UShortArray& active_model_key() const;
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -225,11 +222,12 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
-  /// index of active approxData instance 
-  size_t activeDataIndex;
-  /// set of multi-index model keys (#surrData x #numKeys) to enumerate
-  /// when updating SurrogateData instances within each Approximation
-  UShort3DArray approxDataKeys;
+  /// multi-index key indicating the active model or model-pair used
+  /// for approximation data
+  UShortArray activeKey;
+  /// set of multi-index model keys to enumerate when updating the
+  /// SurrogateData for each Approximation
+  UShort2DArray approxDataKeys;
 
   /// Prefix for model export files
   String modelExportPrefix;
@@ -283,19 +281,8 @@ private:
 //{ return (dataRep) ? dataRep->numVars : numVars; }
 
 
-inline void SharedApproxData::surrogate_data_index(size_t d_index)
-{
-  if (dataRep)
-    dataRep->surrogate_data_index(d_index);
-  else { // not virtual: all derived classes use following definition
-    //if (d_index >= approxData.size()) {
-    //  Cerr << "Error: index out of range in SharedApproxData::"
-    //       << "surrogate_data_index()." << std::endl;
-    //  abort_handler(APPROX_ERROR);
-    //}
-    activeDataIndex = d_index;
-  }
-}
+inline const UShortArray& SharedApproxData::active_model_key() const
+{ return (dataRep) ? dataRep->activeKey : activeKey; }
 
 
 inline void SharedApproxData::

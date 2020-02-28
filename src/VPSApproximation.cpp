@@ -260,8 +260,7 @@ namespace Dakota
         std::cout << std::endl;
         std::cout << "-- Problem Info --" << std::endl;
         
-	const Pecos::SurrogateData& approx_data = surrogate_data();
-        numObs = approx_data.points(); // number of points
+        numObs = approxData.points(); // number of points
         size_t num_v = sharedDataRep->numVars;  // number of variables
         
         std::cout<< ".: VPS :.   Constructing a surrogate using " <<  numObs << " sample points." << std::endl;
@@ -355,7 +354,7 @@ namespace Dakota
         _f_min = DBL_MAX;
         _f_max = -_f_min;
 
-	short active_bits_0 = approx_data.response_data()[0].active_bits();
+	short active_bits_0 = approxData.response_data()[0].active_bits();
 
         #ifdef DEBUG_TEST_FUNCTION
         
@@ -498,8 +497,8 @@ namespace Dakota
         #else
         
         // Retrieve function values
-	const SDVArray& sdv_array = approx_data.variables_data();
-	const SDRArray& sdr_array = approx_data.response_data();
+	const SDVArray& sdv_array = approxData.variables_data();
+	const SDRArray& sdr_array = approxData.response_data();
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
             const RealVector& c_vars = sdv_array[ipoint].continuous_variables();
@@ -853,9 +852,8 @@ namespace Dakota
         }
         else if (_vps_subsurrogate == GP)
         {
-	    const Pecos::SurrogateData& approx_data = surrogate_data();
-            const SDVArray& training_vars = approx_data.variables_data();
-            const SDRArray& training_resp = approx_data.response_data();
+            const SDVArray& training_vars = approxData.variables_data();
+            const SDRArray& training_resp = approxData.response_data();
             
             for (size_t j = 0; j <= _vps_ext_neighbors[cell_index][0]; j++) // loop over neighbors
             {
@@ -3241,7 +3239,7 @@ namespace Dakota
     }
 
     //int VPSApproximation::num_constraints() const
-    //{ return (surrogate_data().anchor()) ? 1 : 0; }
+    //{ return (approxData.anchor()) ? 1 : 0; }
 
     void VPSApproximation::build()
     {

@@ -10,12 +10,20 @@
 #define DAKOTA_UTIL_DATA_SCALER_HPP
 
 #include "Eigen/Dense"
+#include <memory>
 
+using Eigen::MatrixXi;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 namespace dakota {
 namespace util {
+
+enum class SCALER_TYPE {
+                         NONE ,
+                         STANDARDIZATION  ,
+                         NORMALIZATION
+                       };
 
 /**
  *  \brief The DataScaler class computes the scaling coefficients and scales
@@ -44,28 +52,36 @@ class DataScaler {
     ~DataScaler();
 /**
  *  \brief Apply scaling to a set of unscaled samples.
- *  \param[in] Unscaled matrix of samples.
- *  \returns Scaled matrix of samples.
+ *  \param[in] unscaled_samples Unscaled matrix of samples.
+ *  \returns A shared_ptr to the scaled matrix of samples.
 */
-    MatrixXd scaleSamples(const MatrixXd &unscaled_samples);
+    std::shared_ptr<MatrixXd> scale_samples(const MatrixXd &unscaled_samples);
 
 /**
  *  \brief Get the vector of offsets.
  *  \returns Vector of scaler offsets - (num_features).
 */
-    VectorXd getScalerFeaturesOffsets() {return scalerFeaturesOffsets;}
+    const VectorXd& get_scaler_features_offsets() const { return *scalerFeaturesOffsets; }
 
 /**
  *  \brief Get the vector of scaling factors
  *  \returns Vector of scaling factors - (num_features).
 */
-    VectorXd getScalerFeaturesScaleFactors() {return scalerFeaturesScaleFactors;}
+    const VectorXd& get_scaler_features_scale_factors() const { return *scalerFeaturesScaleFactors; }
 
 /**
  *  \brief Get the the scaled data matrix.
  *  \returns Scaled features - (num_samples by num_features).
 */
-    MatrixXd getScaledFeatures() {return scaledFeatures;}
+    const MatrixXd& get_scaled_features() const { return *scaledFeatures; }
+
+/**
+ *  \brief Checks an individual scaler feature scale factor for being close to zero.  If it is
+ *  near zero, we can potentially run into a divide-by-zero error if not handled appropriately.
+ *  \param[in] index The scaler feature index to check.
+ *  \returns True if the value is near zero.
+*/
+    bool check_for_zero_scaler_factor(int index);
 
 /**
  *  \brief Bool for whether or not the the scaling coefficients
@@ -77,11 +93,11 @@ class DataScaler {
   protected: 
 
     /// Vector of offsets - (num_features).
-    VectorXd scalerFeaturesOffsets;
+    std::shared_ptr<VectorXd> scalerFeaturesOffsets;
     /// Vector of scaling factors - (num_features).
-    VectorXd scalerFeaturesScaleFactors;
+    std::shared_ptr<VectorXd> scalerFeaturesScaleFactors;
     /// Scaled surrogate data matrix - (num_samples by num_features).
-    MatrixXd scaledFeatures;
+    std::shared_ptr<MatrixXd> scaledFeatures;
 
 
 };
@@ -167,6 +183,7 @@ class NoScaler: public DataScaler {
  */
 };
 
+std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const MatrixXd & unscaled_matrix);
 
 }  // namespace util
 }  // namespace dakota

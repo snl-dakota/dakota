@@ -33,18 +33,18 @@ NonD* NonD::nondInstance(NULL);
 
 NonD::NonD(ProblemDescDB& problem_db, Model& model):
   Analyzer(problem_db, model),
-  respLevelTarget(probDescDB.get_short("method.nond.response_level_target")),
+  respLevelTarget(problem_db.get_short("method.nond.response_level_target")),
   respLevelTargetReduce(
-    probDescDB.get_short("method.nond.response_level_target_reduce")),
-  requestedRespLevels(probDescDB.get_rva("method.nond.response_levels")),
-  requestedProbLevels(probDescDB.get_rva("method.nond.probability_levels")),
-  requestedRelLevels(probDescDB.get_rva("method.nond.reliability_levels")),
+    problem_db.get_short("method.nond.response_level_target_reduce")),
+  requestedRespLevels(problem_db.get_rva("method.nond.response_levels")),
+  requestedProbLevels(problem_db.get_rva("method.nond.probability_levels")),
+  requestedRelLevels(problem_db.get_rva("method.nond.reliability_levels")),
   requestedGenRelLevels(
-    probDescDB.get_rva("method.nond.gen_reliability_levels")),
+    problem_db.get_rva("method.nond.gen_reliability_levels")),
   totalLevelRequests(0),
-  cdfFlag(probDescDB.get_short("method.nond.distribution") != COMPLEMENTARY),
+  cdfFlag(problem_db.get_short("method.nond.distribution") != COMPLEMENTARY),
   pdfOutput(false),
-  finalMomentsType(probDescDB.get_short("method.nond.final_moments"))
+  finalMomentsType(problem_db.get_short("method.nond.final_moments"))
 {
   initialize_counts();
 

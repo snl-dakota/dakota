@@ -22,10 +22,6 @@ static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z m
 
 //#define DEBUG
 
-// define special values for componentParallelMode
-#define OPTIONAL_INTERFACE 1
-#define SUB_MODEL          2
-
 
 namespace Dakota {
 
@@ -1326,7 +1322,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 	 << "--\nNestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr
 	 << ": performing optional interface mapping\n-------------------------"
 	 << "-----------------------------------------\n";
-    component_parallel_mode(OPTIONAL_INTERFACE);
+    component_parallel_mode(INTERFACE_MODE);
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' + 
 	boost::lexical_cast<String>(nestedModelEvalCntr);
@@ -1364,7 +1360,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     Cout << "\n-------------------------------------------------\nNestedModel "
 	 << "Evaluation " << std::setw(4) << nestedModelEvalCntr << ": running "
 	 << "sub_iterator\n-------------------------------------------------\n";
-    component_parallel_mode(SUB_MODEL);
+    component_parallel_mode(SUB_MODEL_MODE);
     update_sub_model(currentVariables, userDefinedConstraints);
     subIterator.response_results_active_set(sub_iterator_set);
     if (hierarchicalTagging) {
@@ -1504,7 +1500,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
 
   IntIntMIter id_it; IntRespMCIter r_cit;
   if (!optInterfacePointer.empty()) {
-    component_parallel_mode(OPTIONAL_INTERFACE);
+    component_parallel_mode(INTERFACE_MODE);
 
     ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     parallelLib.parallel_configuration_iterator(modelPCIter);
@@ -1531,7 +1527,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
 
   if (!subIteratorPRPQueue.empty()) {
     // schedule subIteratorPRPQueue jobs
-    component_parallel_mode(SUB_MODEL);
+    component_parallel_mode(SUB_MODEL_MODE);
     subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
     subIteratorSched.schedule_iterators(*this, subIterator);
     // overlay response sets (no rekey or cache necessary)
@@ -1987,7 +1983,7 @@ void NestedModel::component_parallel_mode(short mode)
 
   // terminate previous serve mode (if active)
   if (componentParallelMode != mode) {
-    if (componentParallelMode == OPTIONAL_INTERFACE) {
+    if (componentParallelMode == INTERFACE_MODE) {
       size_t index = subIteratorSched.miPLIndex;
       if (modelPCIter->mi_parallel_level_defined(index) && 
 	  modelPCIter->mi_parallel_level(index).server_communicator_size() > 1){
@@ -1999,7 +1995,7 @@ void NestedModel::component_parallel_mode(short mode)
     }
     // concurrent subIterator scheduling exits on its own (see IteratorScheduler
     // ::schedule_iterators(), but subModel eval scheduling is terminated here.
-    else if (componentParallelMode == SUB_MODEL &&
+    else if (componentParallelMode == SUB_MODEL_MODE &&
 	     !subIteratorSched.messagePass) {
       ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
       size_t index = subModel.mi_parallel_level_index();
@@ -2011,20 +2007,21 @@ void NestedModel::component_parallel_mode(short mode)
 
   /* Moved up a level so that config can be restored after optInterface usage
   // set ParallelConfiguration for new mode
-  if (mode == OPTIONAL_INTERFACE)
+  if (mode == INTERFACE_MODE)
     parallelLib.parallel_configuration_iterator(modelPCIter);
-  else if (mode == SUB_MODEL) {
+  else if (mode == SUB_MODEL_MODE) {
     // ParallelLibrary::currPCIter activation delegated to subModel
   }
   */
 
   // activate new serve mode (matches NestedModel::serve_run(pl_iter)).  This
   // bcast matches the outer parallel context prior to subIterator partitioning.
-  // > OPTIONAL_INTERFACE & subModel eval scheduling only bcast if mode change
+  // > INTERFACE_MODE & subModel eval scheduling only broadcasts
+  //   for mode change
   // > concurrent subIterator scheduling rebroadcasts every time since this
   //   scheduling exits on its own (see IteratorScheduler::schedule_iterators())
   if ( ( componentParallelMode != mode ||
-	 ( mode == SUB_MODEL && subIteratorSched.messagePass ) ) &&
+	 ( mode == SUB_MODEL_MODE && subIteratorSched.messagePass ) ) &&
        modelPCIter->mi_parallel_level_defined(outerMIPLIndex) ) {
     const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(outerMIPLIndex);
     if (mi_pl.server_communicator_size() > 1)
@@ -2045,7 +2042,7 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   while (componentParallelMode) {
     // outer context: matches bcast at bottom of component_parallel_mode()
     parallelLib.bcast(componentParallelMode, *pl_iter);
-    if (componentParallelMode == OPTIONAL_INTERFACE &&
+    if (componentParallelMode == INTERFACE_MODE &&
 	!optInterfacePointer.empty()) {
       // store/set/restore the ParallelLibrary::currPCIter
       ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
@@ -2053,7 +2050,7 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       optionalInterface.serve_evaluations();
       parallelLib.parallel_configuration_iterator(pc_iter); // restore
     }
-    else if (componentParallelMode == SUB_MODEL) {
+    else if (componentParallelMode == SUB_MODEL_MODE) {
       if (subIteratorSched.messagePass) // serve concurrent subIterator execs
 	subIteratorSched.schedule_iterators(*this, subIterator);
       else { // service the subModel for a single subIterator execution

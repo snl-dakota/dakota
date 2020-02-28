@@ -43,8 +43,6 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
   tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
 
-  // natafTransform available: initialize_random_variables() called in
-  // NonDIntegration ctor
   //check_variables(x_dist.random_variables());
   // TO DO: create a ProbabilityTransformModel, if needed
   const Pecos::MultivariateDistribution& u_dist

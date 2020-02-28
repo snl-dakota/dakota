@@ -128,17 +128,12 @@ public:
   /// reset initial state by removing all model keys for an approximation
   virtual void clear_model_keys();
 
-  /// assign key for the surrogate model within a {truth,surrogate} pairing
-  virtual void surrogate_model_key(const UShortArray& key);
-  /// assign key for the truth model within a {truth,surrogate} pairing
-  virtual void truth_model_key(const UShortArray& key);
-
   /// set the (currently active) approximation function index set
   virtual void approximation_function_indices(const IntSet& approx_fn_indices);
 
-  /// link together more than one SurrogateData instance within an
-  /// ApproximationInterface
-  virtual void link_multilevel_approximation_data();
+  // link together more than one SurrogateData instance within an
+  // ApproximationInterface
+  //virtual void link_multilevel_approximation_data();
 
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
@@ -209,8 +204,7 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve the approximation data from a particular Approximation
   /// within an ApproximationInterface
-  virtual const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface

@@ -113,6 +113,10 @@ DataMethodRep::DataMethodRep():
   initMeshSize(1.0), minMeshSize(1.e-6), historyFile("mads_history"),
   displayFormat("bbe obj"), vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),
+  // C3 FT
+  maxCrossIterations(1), solverTolerance(1.e-10), roundingTolerance(1.e-8),
+  startOrder(2), maxOrder(4), startRank(2), kickRank(2), maxRank(3),
+  adaptRank(false),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
@@ -136,10 +140,10 @@ DataMethodRep::DataMethodRep():
   regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
-  multilevDiscrepEmulation(DEFAULT_EMULATION),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  mlmfAllocControl(DEFAULT_MLMF_CONTROL), multilevEstimatorRate(2.),
+  multilevAllocControl(DEFAULT_MLMF_CONTROL), multilevEstimatorRate(2.),
+  multilevDiscrepEmulation(DEFAULT_EMULATION),
   finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
   responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
   chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
@@ -268,6 +272,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
     << neighborOrder << showAllEval << useSurrogate;
 
+  // C3 FT
+  s << maxCrossIterations << solverTolerance << roundingTolerance << startOrder
+    << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << startOrderSeq << startRankSeq;
+
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
     << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
@@ -286,11 +295,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << regressionNoiseTol << regressionL2Penalty << crossValidation
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
+    << tensorGridFlag << tensorGridOrder
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << refineSamples << pilotSamples
-    << mlmfAllocControl << multilevEstimatorRate
+    << multilevAllocControl << multilevEstimatorRate << multilevDiscrepEmulation
     << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
@@ -304,8 +313,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
-    << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << burnInSamples << subSamplingPeriod << evidenceSamples
+    << batchSelectionType << lipschitzType << calibrateErrorMode
+    << hyperPriorAlphas << hyperPriorBetas
+    << burnInSamples << subSamplingPeriod << evidenceSamples
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
@@ -423,6 +433,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> initMeshSize >> minMeshSize >> historyFile >> displayFormat >> vns
     >> neighborOrder >> showAllEval >> useSurrogate;
 
+  // C3 FT
+  s >> maxCrossIterations >> solverTolerance >> roundingTolerance >> startOrder
+    >> maxOrder >> startRank >> kickRank >> maxRank >> adaptRank
+    >> startOrderSeq >> startRankSeq;
+
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
     >> vbdFlag >> vbdDropTolerance >> backfillFlag >> pcaFlag
@@ -441,11 +456,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> regressionNoiseTol >> regressionL2Penalty >> crossValidation
     >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
-    >> tensorGridFlag >> tensorGridOrder >> multilevDiscrepEmulation
+    >> tensorGridFlag >> tensorGridOrder
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
     >> numCandidateDesigns >> reliabilitySearchType >> reliabilityIntegration
     >> integrationRefine >> refineSamples >> pilotSamples
-    >> mlmfAllocControl >> multilevEstimatorRate
+    >> multilevAllocControl >> multilevEstimatorRate >> multilevDiscrepEmulation
     >> finalMomentsType >> distributionType
     >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
@@ -459,8 +474,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
     >> advancedOptionsFilename >> quesoOptionsFilename >> fitnessMetricType
-    >> batchSelectionType >> lipschitzType >> calibrateErrorMode >> hyperPriorAlphas
-    >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod >> evidenceSamples
+    >> batchSelectionType >> lipschitzType >> calibrateErrorMode
+    >> hyperPriorAlphas >> hyperPriorBetas
+    >> burnInSamples >> subSamplingPeriod >> evidenceSamples
     >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
     >> importPredConfigs >> importPredConfigFormat >> modelDiscrepancyType
     >> approxCorrectionOrder >> exportCorrModelFile >> exportCorrModelFormat
@@ -578,6 +594,11 @@ void DataMethodRep::write(std::ostream& s) const
   s << initMeshSize << minMeshSize << historyFile << displayFormat << vns
     << neighborOrder << showAllEval << useSurrogate;
 
+  // C3 FT
+  s << maxCrossIterations << solverTolerance << roundingTolerance << startOrder
+    << maxOrder << startRank << kickRank << maxRank << adaptRank
+    << startOrderSeq << startRankSeq;
+
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
     << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
@@ -596,11 +617,11 @@ void DataMethodRep::write(std::ostream& s) const
     << regressionNoiseTol << regressionL2Penalty << crossValidation
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
+    << tensorGridFlag << tensorGridOrder
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << refineSamples << pilotSamples
-    << mlmfAllocControl << multilevEstimatorRate
+    << multilevAllocControl << multilevEstimatorRate << multilevDiscrepEmulation
     << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
@@ -614,8 +635,9 @@ void DataMethodRep::write(std::ostream& s) const
     << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
     << advancedOptionsFilename << quesoOptionsFilename << fitnessMetricType
-    << batchSelectionType << lipschitzType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << burnInSamples << subSamplingPeriod << evidenceSamples
+    << batchSelectionType << lipschitzType << calibrateErrorMode
+    << hyperPriorAlphas << hyperPriorBetas
+    << burnInSamples << subSamplingPeriod << evidenceSamples
     << calModelDiscrepancy << numPredConfigs << predictionConfigList
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
     << approxCorrectionOrder << exportCorrModelFile << exportCorrModelFormat
