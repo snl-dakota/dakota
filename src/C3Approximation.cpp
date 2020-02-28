@@ -944,7 +944,8 @@ size_t C3Approximation::regression_size(C3FnTrainPtrs& ftp)
 { return function_train_get_nparams(ftp.function_train()); }
 
 
-/* when adapt_rank is on, this is a posthumous query on  a fully-formed FT */
+/* when adapt_rank is on, this is a posthumous query on a fully-formed
+   (and optionally adapted) FT */
 size_t C3Approximation::regression_size()
 { return regression_size(levApproxIter->second); }
 
@@ -982,7 +983,8 @@ regression_size(const SizetArray& ranks, size_t order)
 }
 
 
-/** incoming rank and order are real-valued to allow for averages */
+/** simplified estimation: incoming rank and order are real-valued to allow
+    for constants or averages
 size_t C3Approximation::regression_size(Real rank, Real order)
 {
   // Each dimension has its own rank within the product of function cores.
@@ -994,11 +996,11 @@ size_t C3Approximation::regression_size(Real rank, Real order)
   switch (num_v) {
   case 1:  est = p;         break; // collapses to a 1D PCE
   case 2:  est = 2.*p*rank; break; // first and last core, no middle
-  default:
-    est = p*rank*(2. /*first,last*/ + (num_v-2)*rank /*middle*/);  break;
+  default: est = p*rank*(2. + (num_v-2)*rank); break; // first,last,middle
   }
   return (size_t)std::floor(est + .5); // round estimate to size_t
 }
+*/
 
 
 size_t C3Approximation::average_rank()

@@ -63,6 +63,7 @@ extern "C"
     struct FunctionTrain;
     size_t function_train_get_dim(const struct FunctionTrain *);
     size_t function_train_get_nparams(const struct FunctionTrain *);
+    size_t * function_train_get_ranks(const struct FunctionTrain *);
     size_t function_train_get_avgrank(const struct FunctionTrain *);
     size_t function_train_get_maxrank(const struct FunctionTrain *);
 

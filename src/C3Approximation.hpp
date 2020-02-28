@@ -129,10 +129,10 @@ public:
   //- Heading: Member functions
   //
 
-  size_t regression_size(C3FnTrainPtrs& ftp);
-  size_t regression_size(); // pass active ftp
+  size_t regression_size(C3FnTrainPtrs& ftp); // for passed ftp
+  size_t regression_size();                   // uses active ftp
   size_t regression_size(const SizetArray& ranks, size_t order);
-  size_t regression_size(Real rank, Real order);
+  //size_t regression_size(Real rank, Real order);// simplification for scalar r
 
   size_t average_rank();
   size_t maximum_rank();
