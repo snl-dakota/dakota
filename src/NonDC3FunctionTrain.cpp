@@ -270,6 +270,16 @@ void NonDC3FunctionTrain::push_c3_options()
 }
 
 
+void NonDC3FunctionTrain::push_increment()
+{
+  // Reverse order relative to NonDExpansion base implementation since
+  // required sample resolution is inferred from the state of the FT
+
+  uSpaceModel.push_approximation(); // uses reference in append_tensor_exp
+  increment_grid(false); // don't recompute anisotropy
+}
+
+
 void NonDC3FunctionTrain::update_samples_from_order()
 {
   Real max_regress;
@@ -282,7 +292,7 @@ void NonDC3FunctionTrain::update_samples_from_order()
 }
 
 
-/* No overrride appears to be required (NonDExp is sufficient)
+/* No override appears to be required (NonDExp is sufficient)
    > initialize_expansion()
    > compute_expansion()
    Overrides needed:

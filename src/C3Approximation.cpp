@@ -940,8 +940,65 @@ gradient(const Variables& vars, const UShortArray& key)
     requires an up-to-date FT build/rebuild (updates to options like
     start{Order,Rank} will not propagate to this fn on their own, but 
     should work folowing push,pop of an FT) */
+size_t C3Approximation::regression_size(C3FnTrainPtrs& ftp)
+{ return function_train_get_nparams(ftp.function_train()); }
+
+
+/* when adapt_rank is on, this is a posthumous query on  a fully-formed FT */
 size_t C3Approximation::regression_size()
-{ return function_train_get_nparams(levApproxIter->second.function_train()); }
+{ return regression_size(levApproxIter->second); }
+
+
+/** incoming ranks per dimension and a single expansion order */
+size_t C3Approximation::
+regression_size(const SizetArray& ranks, size_t order)
+{
+  // Each dimension has its own rank within the product of function cores.
+  // This fn estimates for the case where rank varies per dimension/core
+  // and basis order is constant.  Using 1-based indexing:
+  // > the first core is a 1 x r_1 row vector and contributes p * r_1 terms
+  // > the  last core is a r_v x 1 col vector and contributes p * r_v terms
+  // > the middle v-2 cores are matrices that contribute r_i * r_{i+1} * p terms
+  // > neighboring vec/mat dimensions must match, so there are v-1 unique ranks
+  //   (could also allow ranks.size() == v and check constraints)
+  // > could also allow p to vary per dimension in an orders array, should this
+  //   granularity become warranted in the future
+  size_t p = order + 1, num_v = sharedDataRep->numVars;
+  if (ranks.size() != num_v - 1) {
+    Cerr << "Error: wrong size (" << ranks.size() << ") for ranks array in "
+	 << "C3Approximation::regression_size()." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+  switch (num_v) {
+  case 1:  return p;             break; // collapses to a 1D PCE
+  case 2:  return 2.*p*ranks[0]; break; // first,last core (no middle)
+  default: { // first, last, and num_v-2 middle cores
+    size_t core, num_vm2 = num_v - 2, sum = ranks[0] + ranks[num_vm2];
+    for (core=0; core<num_vm2; ++core)
+      sum += ranks[core] * ranks[core+1];
+    return sum * p;  break;
+  }
+  }
+}
+
+
+/** incoming rank and order are real-valued to allow for averages */
+size_t C3Approximation::regression_size(Real rank, Real order)
+{
+  // Each dimension has its own rank within the product of function cores.
+  // This fn estimates for the case where rank and order are either constant
+  // across dimensions or averaged into a scalar.
+  // > the first and last core contribute p*r terms
+  // > the middle cores contribute r*r*p terms
+  Real p = order+1., est;  size_t num_v = sharedDataRep->numVars;
+  switch (num_v) {
+  case 1:  est = p;         break; // collapses to a 1D PCE
+  case 2:  est = 2.*p*rank; break; // first and last core, no middle
+  default:
+    est = p*rank*(2. /*first,last*/ + (num_v-2)*rank /*middle*/);  break;
+  }
+  return (size_t)std::floor(est + .5); // round estimate to size_t
+}
 
 
 size_t C3Approximation::average_rank()

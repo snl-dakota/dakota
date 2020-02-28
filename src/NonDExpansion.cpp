@@ -1565,6 +1565,11 @@ void NonDExpansion::multilevel_regression()
 			       eps_sq_div_2, NLev, delta_N_l);
       break;
     default:
+      // TO DO: should the oversample factor (2.) be tied to collocRatio ?
+      // > ML PCE: provides an upper bound on all samples within the profile
+      //           to control feedback, so not used as a sample target
+      // > ML FT:  is used like a collocRatio multiplier on regression size
+      // TO DO: Push this logic down and remove constant at this level
       compute_sample_increment(2., level_metrics, NLev, delta_N_l);
       break;
     }

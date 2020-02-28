@@ -906,14 +906,13 @@ compute_sample_increment(Real factor, const RealVector& sparsity,
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
   // update targets based on sparsity estimates
-  Real s/*, card*/; size_t lev, num_lev = N_l.size();
+  Real s_l/*, card_l*/; size_t lev, num_lev = N_l.size();
   RealVector new_N_l(num_lev, false);
-  for (lev=0; lev<num_lev; ++lev) {
-    s = sparsity[lev]; //card = (Real)cit->second.size();
-    // RIP samples ~= s log^3(s) log(C), but we are more interested in the shape
-    // of the profile, since the actual values are conservative upper bounds
-    // --> can omit constant terms that don't affect shape, e.g. log(C)
-    new_N_l[lev] = s * std::pow(std::log(s), 3.); //* std::log(card);
+  for (lev=0; lev<num_lev; ++lev) { //cit=mi_map.begin(); ++cit;
+    s_l = sparsity[lev]; //card_l = (Real)cit->second.size();
+    // RIP samples ~= s_l log^3(s_l) log(card_l) but we are currently omitting
+    // card_l since the actual sample reqmts are conservative upper bounds
+    new_N_l[lev] = s_l * std::pow(std::log(s_l), 3.); //* std::log(card_l);
   }
 
   // Sparsity estimates tend to grow for compressible QoI as increased samples

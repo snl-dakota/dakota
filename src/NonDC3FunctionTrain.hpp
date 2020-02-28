@@ -53,7 +53,6 @@ protected:
   //
 
   void resolve_inputs(short& u_space_type, short& data_order);
-
   void initialize_u_space_model();
 
   // TODO
@@ -61,6 +60,7 @@ protected:
   // perform a forward uncertainty propagation using PCE/SC methods
   //void core_run();
 
+  void push_increment();
   void update_samples_from_order();
 
   /// override certain print functions

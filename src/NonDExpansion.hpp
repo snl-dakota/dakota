@@ -133,6 +133,11 @@ protected:
   /// perform any required expansion roll-ups prior to metric computation
   virtual void metric_roll_up();
 
+  /// helper function to manage different push increment cases
+  virtual void push_increment();
+  /// helper function to manage different pop increment cases
+  virtual void pop_increment();
+
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric(bool revert, bool print_metric);
   /// compute 2-norm of change in final statistics
@@ -277,11 +282,6 @@ protected:
   void decrement_grid();
   /// helper function to manage different grid merge cases
   void merge_grid();
-
-  /// helper function to manage different push increment cases
-  void push_increment();
-  /// helper function to manage different pop increment cases
-  void pop_increment();
 
   /// uniformly increment the expansion order and structured/unstructured grid
   /// (PCE and FT)
