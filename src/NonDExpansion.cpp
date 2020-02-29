@@ -47,7 +47,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     problem_db.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
     problem_db.get_short("method.nond.multilevel_discrepancy_emulation")),
-  pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
+  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   kappaEstimatorRate(
     problem_db.get_real("method.nond.multilevel_estimator_rate")),
   gammaEstimatorScale(1.), numSamplesOnModel(0),
@@ -90,16 +90,17 @@ NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, short refine_type,
 	      short refine_control, short covar_control, short ml_alloc_control,
-	      short ml_discrep, const SizetArray& pilot, short rule_nest,
-	      short rule_growth, bool piecewise_basis, bool use_derivs):
+	      short ml_discrep, const SizetArray& colloc_pts_seq,
+	      short rule_nest, short rule_growth, bool piecewise_basis,
+	      bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsType(Pecos::ACTIVE_EXPANSION_STATS), tensorRegression(false),
   multilevAllocControl(ml_alloc_control), multilevDiscrepEmulation(ml_discrep),
-  pilotSamples(pilot), kappaEstimatorRate(2.), gammaEstimatorScale(1.),
-  numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
-  nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
-  refineType(refine_type), refineControl(refine_control),
+  collocPtsSeqSpec(colloc_pts_seq), kappaEstimatorRate(2.),
+  gammaEstimatorScale(1.), numSamplesOnModel(0), numSamplesOnExpansion(0),
+  relativeMetric(true), nestedRules(false), piecewiseBasis(piecewise_basis),
+  useDerivs(use_derivs), refineType(refine_type), refineControl(refine_control),
   refineMetric(Pecos::NO_METRIC), softConvLimit(3), numUncertainQuant(0),
   maxRefineIterations(100), maxSolverIterations(-1),
   ruleNestingOverride(rule_nest),
@@ -1492,7 +1493,7 @@ void NonDExpansion::multilevel_regression()
   // Initialize NLev and load the pilot sample from user specification
   NLev.assign(num_steps, 0);
   SizetArray delta_N_l(num_steps);
-  load_pilot_sample(pilotSamples, delta_N_l);
+  load_pilot_sample(collocPtsSeqSpec, delta_N_l);
 
   // now converge on sample counts per level (NLev)
   while ( iter <= max_iter &&

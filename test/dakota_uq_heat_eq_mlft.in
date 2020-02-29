@@ -33,8 +33,8 @@ method,
 #	  allocation_control rank_sampling			#s2
 #	  allocation_control estimator_variance			#s3
           adapt_rank
-          start_rank_sequence = 2 2 2 2
-	  kick_rank = 2  max_rank = 10
+          start_rank_sequence  = 2 2 2 2  kick_rank = 2  max_rank  = 10
+	  start_order_sequence = 2 2 2 2                 max_order = 10
           solver_tolerance = 1e-8  rounding_tolerance = 1e-8
 	  convergence_tol = 0.0001
 	  seed = 1237

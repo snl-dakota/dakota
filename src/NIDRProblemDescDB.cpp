@@ -7340,6 +7340,7 @@ static Method_mp_utype
 #define MP_(x) DataModelRep::* model_mp_##x = &DataModelRep::x
 #define MP2(x,y) model_mp_##x##_##y = {&DataModelRep::x,#y}
 #define MP2s(x,y) model_mp_##x##_##y = {&DataModelRep::x,y}
+#define MP2p(x,y) model_mp_##x##_##y = {&DataModelRep::x,Pecos::y}
 
 static IntSet
 	MP_(surrogateFnIndices);
@@ -7388,6 +7389,8 @@ static Model_mp_type
 	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
 	MP2s(pointsManagement,MINIMUM_POINTS),
 	MP2s(pointsManagement,RECOMMENDED_POINTS),
+	MP2p(refinementControl,UNIFORM_CONTROL),  // Pecos
+	MP2p(refinementType,P_REFINEMENT),        // Pecos
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,MASTER_SCHEDULING),
@@ -7438,6 +7441,7 @@ static Real
         MP_(adaptedBasisCollocRatio),
         MP_(annRange),
 	MP_(arithmeticTol),
+	MP_(collocationRatio),
 	MP_(convergenceTolerance),
 	MP_(decreaseTolerance),
         MP_(discontGradThresh),
@@ -7509,7 +7513,8 @@ static bool
         MP_(subspaceIdEnergy),
         MP_(subspaceBuildSurrogate),
         MP_(subspaceIdCV),
-        MP_(subspaceCVIncremental);
+        MP_(subspaceCVIncremental),
+	MP_(tensorGridFlag);
 
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
@@ -7546,13 +7551,15 @@ static int
         MP_(subspaceCVMaxRank);
 
 static size_t
-    MP_(kickRank),
-    MP_(maxOrder),        
-    MP_(maxRank),
-    MP_(startOrder),
-    MP_(startRank);
-//  MP_(verbosity);
+	MP_(collocationPoints),
+	MP_(kickRank),
+	MP_(maxOrder),        
+	MP_(maxRank),
+	MP_(startOrder),
+	MP_(startRank);
+//	MP_(verbosity);
     
+#undef MP2p
 #undef MP2s
 #undef MP2
 #undef MP_

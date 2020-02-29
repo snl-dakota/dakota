@@ -944,13 +944,14 @@ size_t C3Approximation::regression_size(C3FnTrainPtrs& ftp)
 { return function_train_get_nparams(ftp.function_train()); }
 
 
-/* when adapt_rank is on, this is a posthumous query on a fully-formed
-   (and optionally adapted) FT */
+/* this returns the as-built size for a fully-formed FT which may have been
+   adapted (if adapt_rank is on) relative to the start{Rank,Order} settings */
 size_t C3Approximation::regression_size()
 { return regression_size(levApproxIter->second); }
 
 
-/** incoming ranks per dimension and a single expansion order */
+/** compute the regression size (number of unknowns) for a set of ranks per
+    dimension and a single expansion (polynomial) order */
 size_t C3Approximation::
 regression_size(const SizetArray& ranks, size_t order)
 {

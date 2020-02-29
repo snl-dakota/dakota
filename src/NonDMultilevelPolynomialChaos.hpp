@@ -54,10 +54,10 @@ public:
 				const UShortArray& exp_order_seq,
 				const RealVector& dim_pref,
 				const SizetArray& colloc_pts_seq,
-				Real colloc_ratio, const SizetArray& pilot,
-				int seed, short u_space_type, short refine_type,
-				short refine_control, short covar_control,
-				short ml_alloc_cntl, short ml_discrep,
+				Real colloc_ratio, int seed, short u_space_type,
+				short refine_type, short refine_control,
+				short covar_control, short ml_alloc_cntl,
+				short ml_discrep,
 				//short rule_nest, short rule_growth,
 				bool piecewise_basis, bool use_derivs,
 				bool cv_flag,
@@ -119,8 +119,6 @@ private:
 
   /// user specification for expansion_order (array for multifidelity)
   UShortArray expOrderSeqSpec;
-  /// user specification for collocation_points (array for multifidelity)
-  SizetArray collocPtsSeqSpec;
   /// user specification for expansion_samples (array for multifidelity)
   SizetArray expSamplesSeqSpec;
   /// user request of quadrature order

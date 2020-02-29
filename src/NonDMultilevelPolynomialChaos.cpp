@@ -31,7 +31,6 @@ NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDPolynomialChaos(DEFAULT_METHOD, problem_db, model), // bypass PCE ctor
   expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
-  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
@@ -241,8 +240,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
 			      const SizetArray& colloc_pts_seq,
-			      Real colloc_ratio, const SizetArray& pilot,
-			      int seed, short u_space_type,
+			      Real colloc_ratio, int seed, short u_space_type,
 			      short refine_type, short refine_control,
 			      short covar_control, short ml_alloc_control,
 			      short ml_discrep,
@@ -253,11 +251,10 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 			      bool import_build_active_only):
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
-		      ml_alloc_control, ml_discrep, pilot,
+		      ml_alloc_control, ml_discrep, colloc_pts_seq,
 		      //rule_nest, rule_growth,
 		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
-  expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
-  sequenceIndex(0)
+  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();

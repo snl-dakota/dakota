@@ -40,8 +40,8 @@ public:
 		short exp_coeffs_approach, short refine_type,
 		short refine_control, short covar_control,
 		short ml_alloc_control, short ml_discrep,
-		const SizetArray& pilot, short rule_nest, short rule_growth,
-		bool piecewise_basis, bool use_derivs);
+		const SizetArray& colloc_pts_seq, short rule_nest,
+		short rule_growth, bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -394,9 +394,10 @@ protected:
   /// emulation approach for multilevel / multifidelity discrepancy:
   /// distinct or recursive
   short multilevDiscrepEmulation;
-  /// number of initial samples per level, when an optimal sample profile is
-  /// the target of iteration (e.g. multilevel_regression())
-  SizetArray pilotSamples;
+  /// user specification of number of initial samples per model instance,
+  /// including adaptive cases where an optimal sample profile is the
+  /// target of iteration (e.g., multilevel_regression())
+  SizetArray collocPtsSeqSpec;
   /// number of samples allocated to each level of a discretization/model
   /// hierarchy within multilevel/multifidelity methods
   SizetArray NLev;

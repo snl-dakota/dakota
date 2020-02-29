@@ -53,21 +53,12 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  // extract sequences and invoke shared helper fn with a scalar...
-  switch (methodName) {
-  case MULTIFIDELITY_FUNCTION_TRAIN:
-    regressPtsSeq = problem_db.get_sza("method.nond.collocation_points");
-    break;
-  case MULTILEVEL_FUNCTION_TRAIN:
-    regressPtsSeq = problem_db.get_sza("method.nond.pilot_samples");
-    break;
-  }
   size_t build_pts;
-  if (regressPtsSeq.empty())
+  if (collocPtsSeqSpec.empty())
     build_pts = std::numeric_limits<size_t>::max();
   else
-    build_pts = (sequenceIndex < regressPtsSeq.size()) ?
-      regressPtsSeq[sequenceIndex] : regressPtsSeq.back();
+    build_pts = (sequenceIndex < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
   Iterator u_space_sampler;
   if (!config_regression(build_pts, u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
@@ -126,8 +117,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			    const UShortArray& exp_order_seq,
 			    const RealVector& dim_pref,
 			    const SizetArray& colloc_pts_seq,
-			    Real colloc_ratio, const SizetArray& pilot,
-			    int seed, short u_space_type,
+			    Real colloc_ratio, int seed, short u_space_type,
 			    short refine_type, short refine_control,
 			    short covar_control, short ml_alloc_control,
 			    short ml_discrep,
@@ -138,11 +128,10 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			    bool import_build_active_only):
   NonDC3FunctionTrain(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
-		      ml_alloc_control, ml_discrep, pilot,
+		      ml_alloc_control, ml_discrep, colloc_pts_seq,
 		      //rule_nest, rule_growth,
 		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
-  expOrderSeqSpec(exp_order_seq), regressPtsSeq(colloc_pts_seq),
-  sequenceIndex(0)
+  expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -171,9 +160,9 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
       expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
     config_expansion_orders(exp_order_spec, dimPrefSpec, exp_orders);
   }
-  if (!regressPtsSeq.empty())
-    build_pts =      (sequenceIndex  < regressPtsSeq.size()) ?
-      regressPtsSeq[sequenceIndex] : regressPtsSeq.back();
+  if (!collocPtsSeqSpec.empty())
+    build_pts =      (sequenceIndex  < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
 
   Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
@@ -310,8 +299,8 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
   // regression
-  if (sequenceIndex < regressPtsSeq.size())
-    numSamplesOnModel = regressPtsSeq[sequenceIndex];
+  if (sequenceIndex < collocPtsSeqSpec.size())
+    numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
 
   update_from_specification();
 }
@@ -322,8 +311,8 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i < regressPtsSeq.size())
-    { numSamplesOnModel = regressPtsSeq[next_i]; ++sequenceIndex; }
+  if (next_i < collocPtsSeqSpec.size())
+    { numSamplesOnModel = collocPtsSeqSpec[next_i]; ++sequenceIndex; }
   //else leave at previous value
 
   update_from_specification();

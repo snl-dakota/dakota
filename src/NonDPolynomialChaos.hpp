@@ -93,7 +93,7 @@ protected:
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
 		      short ml_alloc_control, short ml_discrep,
-		      const SizetArray& pilot,
+		      const SizetArray& colloc_pts_seq,
 		      //short rule_nest, short rule_growth,
 		      bool piecewise_basis, bool use_derivs,
 		      Real colloc_ratio, int seed, bool cv_flag);
