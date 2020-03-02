@@ -89,7 +89,7 @@ protected:
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
 				 size_t lev);
   void level_metric(Real& sparsity_metric_l, Real power);
-  void compute_sample_increment(Real factor, const RealVector& sparsity,
+  void compute_sample_increment(const RealVector& sparsity,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);

@@ -448,7 +448,7 @@ level_metric(Real& regress_metric_l, Real power)
 
 
 void NonDMultilevelFunctionTrain::
-compute_sample_increment(Real factor, const RealVector& regress_metrics,
+compute_sample_increment(const RealVector& regress_metrics,
 			 const SizetArray& N_l, SizetArray& delta_N_l)
 {
   // case RANK_SAMPLING in NonDExpansion::multilevel_regression():
@@ -457,7 +457,7 @@ compute_sample_increment(Real factor, const RealVector& regress_metrics,
   // O(p r^2 d), which shapes the profile
   //size_t lev, num_lev = N_l.size();
   //RealVector new_N_l(num_lev, false);
-  //Real r, fact_var = factor * numContinuousVars;
+  //Real r, fact_var = collocRatio * numContinuousVars;
   //for (lev=0; lev<num_lev; ++lev)
   //  { r = rank[lev];  new_N_l[lev] = fact_var * r * r; }
 
@@ -468,9 +468,9 @@ compute_sample_increment(Real factor, const RealVector& regress_metrics,
   // > May need to tune this user spec (and its default)
 
   // update targets based on regression size
-  // > TO DO: repurpose collocation_ratio spec to allow user tuning of factor
   RealVector new_N_l = regress_metrics; // number of unknowns (RMS across QoI)
-  new_N_l.scale(factor); // over-sample
+  if (collocRatio > 0.)  new_N_l.scale(collocRatio);
+  else                   new_N_l.scale(2.); // default: over-sample 2x
 
   // Retain the shape of the profile but enforce an upper bound
   //scale_profile(..., new_N_l);

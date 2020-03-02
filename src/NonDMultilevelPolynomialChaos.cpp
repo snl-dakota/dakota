@@ -897,8 +897,8 @@ level_metric(Real& sparsity_metric_l, Real power)
 
 
 void NonDMultilevelPolynomialChaos::
-compute_sample_increment(Real factor, const RealVector& sparsity,
-			 const SizetArray& N_l, SizetArray& delta_N_l)
+compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
+			 SizetArray& delta_N_l)
 {
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
@@ -916,7 +916,12 @@ compute_sample_increment(Real factor, const RealVector& sparsity,
   // drive increased accuracy in less important terms --> CV scores improve for
   // dense solutions.  To control this effect, we retain the shape of the
   // profile but enforce an upper bound on one of the levels.
-  Real curr_factor, max_curr_factor = 0., factor_ratio;
+  // > ML  FT factor: collocRatio multiplier is applied to regression size
+  // > ML PCE factor: provides an upper bound on all samples within the profile
+  //                  to control feedback, so not used as a sample target
+
+  Real curr_factor, max_curr_factor = 0., factor_ratio,
+    factor_bound = 2.; // hard-wired (collocRatio not appropriate to reuse here)
   SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   const std::map<UShortArray, UShort2DArray>& mi_map
@@ -928,7 +933,7 @@ compute_sample_increment(Real factor, const RealVector& sparsity,
     if (curr_factor > max_curr_factor)
       max_curr_factor = curr_factor;
   }
-  factor_ratio = factor / max_curr_factor;
+  factor_ratio = factor_bound / max_curr_factor;
   if (factor_ratio < 1.) // exceeds upper bound -> scale back
     for (lev=0; lev<num_lev; ++lev)
       new_N_l[lev] *= factor_ratio;

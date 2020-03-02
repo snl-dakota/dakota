@@ -1565,13 +1565,8 @@ void NonDExpansion::multilevel_regression()
       compute_sample_increment(level_metrics, cost, sum_root_var_cost,
 			       eps_sq_div_2, NLev, delta_N_l);
       break;
-    default:
-      // TO DO: should the oversample factor (2.) be tied to collocRatio ?
-      // > ML PCE: provides an upper bound on all samples within the profile
-      //           to control feedback, so not used as a sample target
-      // > ML FT:  is used like a collocRatio multiplier on regression size
-      // TO DO: Push this logic down and remove constant at this level
-      compute_sample_increment(2., level_metrics, NLev, delta_N_l);
+    default: // RIP_SAMPLING (ML PCE), RANK_SAMPLING (ML FT)
+      compute_sample_increment(level_metrics, NLev, delta_N_l);
       break;
     }
     ++iter;
@@ -2252,8 +2247,8 @@ void NonDExpansion::level_metric(Real& lev_metric_l, Real power)
 
 
 void NonDExpansion::
-compute_sample_increment(Real factor, const RealVector& lev_metrics,
-			 const SizetArray& N_l,	SizetArray& delta_N_l)
+compute_sample_increment(const RealVector& lev_metrics, const SizetArray& N_l,
+			 SizetArray& delta_N_l)
 {
   Cerr << "Error: no default implementation for compute_sample_increment() "
        << "defined for multilevel_regression()." << std::endl;
