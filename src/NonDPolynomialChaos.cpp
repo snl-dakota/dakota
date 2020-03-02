@@ -35,7 +35,6 @@ namespace Dakota {
 NonDPolynomialChaos::
 NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   randomSeed(problem_db.get_int("method.random_seed")),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
@@ -164,8 +163,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    short covar_control, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_MLMF_CONTROL,
-		DEFAULT_EMULATION, SizetArray(), rule_nest, rule_growth,
+		refine_control, covar_control, 0., rule_nest, rule_growth,
 		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
@@ -247,14 +245,14 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short import_build_format,
 		    bool import_build_active_only):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_MLMF_CONTROL,
-		DEFAULT_EMULATION, SizetArray(), Pecos::NO_NESTING_OVERRIDE,
-		Pecos::NO_GROWTH_OVERRIDE, piecewise_basis, use_derivs), 
-  collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
-  crossValidation(cv_flag), crossValidNoiseOnly(false),
-  importBuildPointsFile(import_build_pts_file), l2Penalty(0.), numAdvance(3),
-  expOrderSpec(exp_order), dimPrefSpec(dim_pref), collocPtsSpec(colloc_pts),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+		refine_control, covar_control, colloc_ratio,
+		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
+		piecewise_basis, use_derivs), 
+  termsOrder(1.), randomSeed(seed), crossValidation(cv_flag),
+  crossValidNoiseOnly(false), importBuildPointsFile(import_build_pts_file),
+  l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
+  collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
+  uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
   // -------------------
@@ -318,7 +316,6 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
 		    Model& model):
   NonDExpansion(problem_db, model),
-  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   randomSeed(problem_db.get_int("method.random_seed")),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
@@ -359,14 +356,16 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short ml_discrep, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_alloc_control, ml_discrep,
-		SizetArray(), rule_nest, rule_growth, piecewise_basis,
-		use_derivs), 
+		refine_control, covar_control, 0., rule_nest, rule_growth,
+		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
+  multilevAllocControl     = ml_alloc_control;
+  multilevDiscrepEmulation = ml_discrep;
+
   // -------------------
   // input sanity checks
   // -------------------
@@ -382,20 +381,24 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
-		    short covar_control, short ml_alloc_control,
-		    short ml_discrep, const SizetArray& colloc_pts_seq,
+		    short covar_control, const SizetArray& colloc_pts_seq,
+		    Real colloc_ratio, short ml_alloc_control, short ml_discrep,
 		    //short rule_nest, short rule_growth,
-		    bool piecewise_basis, bool use_derivs, Real colloc_ratio,
-		    int seed, bool cv_flag):
+		    bool piecewise_basis, bool use_derivs, int seed,
+		    bool cv_flag):
   NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_alloc_control, ml_discrep,
-		colloc_pts_seq, Pecos::NO_NESTING_OVERRIDE,
-		Pecos::NO_GROWTH_OVERRIDE, piecewise_basis, use_derivs),
-  collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
-  crossValidation(cv_flag), crossValidNoiseOnly(false), l2Penalty(0.),
-  numAdvance(3), dimPrefSpec(dim_pref), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
+		refine_control, covar_control, colloc_ratio,
+		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
+		piecewise_basis, use_derivs),
+  termsOrder(1.), randomSeed(seed), crossValidation(cv_flag),
+  crossValidNoiseOnly(false), l2Penalty(0.), numAdvance(3),
+  dimPrefSpec(dim_pref), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false)
 {
+  multilevAllocControl     = ml_alloc_control;
+  multilevDiscrepEmulation = ml_discrep;
+  collocPtsSeqSpec         = colloc_pts_seq;
+
   // -------------------
   // input sanity checks
   // -------------------

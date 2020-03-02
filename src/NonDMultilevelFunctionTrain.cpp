@@ -128,9 +128,9 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
 			    bool import_build_active_only):
   NonDC3FunctionTrain(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, refine_type, refine_control, covar_control,
-		      ml_alloc_control, ml_discrep, colloc_pts_seq,
-		      //rule_nest, rule_growth,
-		      piecewise_basis, use_derivs, colloc_ratio, seed, cv_flag),
+		      colloc_pts_seq, colloc_ratio, ml_alloc_control,
+		      ml_discrep, //rule_nest, rule_growth,
+		      piecewise_basis, use_derivs, seed, cv_flag),
   expOrderSeqSpec(exp_order_seq), sequenceIndex(0)
 {
   assign_discrepancy_mode();

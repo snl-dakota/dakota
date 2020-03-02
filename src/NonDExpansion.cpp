@@ -42,12 +42,13 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
+  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
+  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
   multilevAllocControl(
     problem_db.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
     problem_db.get_short("method.nond.multilevel_discrepancy_emulation")),
-  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   kappaEstimatorRate(
     problem_db.get_real("method.nond.multilevel_estimator_rate")),
   gammaEstimatorScale(1.), numSamplesOnModel(0),
@@ -89,15 +90,14 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, short refine_type,
-	      short refine_control, short covar_control, short ml_alloc_control,
-	      short ml_discrep, const SizetArray& colloc_pts_seq,
-	      short rule_nest, short rule_growth, bool piecewise_basis,
-	      bool use_derivs):
+	      short refine_control, short covar_control,
+	      Real colloc_ratio, short rule_nest, short rule_growth,
+	      bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
-  statsType(Pecos::ACTIVE_EXPANSION_STATS), tensorRegression(false),
-  multilevAllocControl(ml_alloc_control), multilevDiscrepEmulation(ml_discrep),
-  collocPtsSeqSpec(colloc_pts_seq), kappaEstimatorRate(2.),
+  statsType(Pecos::ACTIVE_EXPANSION_STATS), collocRatio(colloc_ratio),
+  tensorRegression(false), multilevAllocControl(DEFAULT_MLMF_CONTROL),
+  multilevDiscrepEmulation(DEFAULT_EMULATION), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), numSamplesOnModel(0), numSamplesOnExpansion(0),
   relativeMetric(true), nestedRules(false), piecewiseBasis(piecewise_basis),
   useDerivs(use_derivs), refineType(refine_type), refineControl(refine_control),

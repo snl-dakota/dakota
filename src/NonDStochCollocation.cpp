@@ -105,8 +105,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_MLMF_CONTROL,
-		DEFAULT_EMULATION, SizetArray(), rule_nest, rule_growth,
+		refine_control, covar_control, 0., rule_nest, rule_growth,
 		piecewise_basis, use_derivs)
 {
   // ----------------
@@ -164,7 +163,6 @@ NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
   NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
-  size_t dummy_break_pt = 0;
 }
 
 
@@ -176,10 +174,12 @@ NonDStochCollocation(unsigned short method_name, Model& model,
 		     short ml_alloc_control, short ml_discrep, short rule_nest,
 		     short rule_growth, bool piecewise_basis, bool use_derivs):
   NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_alloc_control, ml_discrep,
-		SizetArray(), rule_nest, rule_growth, piecewise_basis,
-		use_derivs)
+		refine_control, covar_control, 0., rule_nest, rule_growth,
+		piecewise_basis, use_derivs)
 {
+  multilevAllocControl     = ml_alloc_control;
+  multilevDiscrepEmulation = ml_discrep;
+
   // Logic delegated to derived class constructor...
 }
 

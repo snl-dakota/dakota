@@ -92,11 +92,11 @@ protected:
 		      short exp_coeffs_approach, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
+		      const SizetArray& colloc_pts_seq, Real colloc_ratio,
 		      short ml_alloc_control, short ml_discrep,
-		      const SizetArray& colloc_pts_seq,
 		      //short rule_nest, short rule_growth,
-		      bool piecewise_basis, bool use_derivs,
-		      Real colloc_ratio, int seed, bool cv_flag);
+		      bool piecewise_basis, bool use_derivs, int seed,
+		      bool cv_flag);
 
   //
   //- Heading: Virtual function redefinitions
@@ -191,10 +191,6 @@ protected:
 
   /// user specification for dimension_preference
   RealVector dimPrefSpec;
-
-  /// factor applied to terms^termsOrder in computing number of regression
-  /// points, either user specified or inferred
-  Real collocRatio;
 
   /// flag for use of cross-validation for selection of parameter settings
   /// in regression approaches

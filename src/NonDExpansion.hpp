@@ -38,10 +38,9 @@ public:
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
 		short exp_coeffs_approach, short refine_type,
-		short refine_control, short covar_control,
-		short ml_alloc_control, short ml_discrep,
-		const SizetArray& colloc_pts_seq, short rule_nest,
-		short rule_growth, bool piecewise_basis, bool use_derivs);
+		short refine_control, short covar_control, Real colloc_ratio,
+		short rule_nest, short rule_growth, bool piecewise_basis,
+		bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -380,10 +379,17 @@ protected:
   /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
   short statsType;
 
+  /// user specification of number of initial samples per model instance,
+  /// including adaptive cases where an optimal sample profile is the
+  /// target of iteration (e.g., multilevel_regression())
+  SizetArray collocPtsSeqSpec;
+  /// factor applied to terms^termsOrder in computing number of regression
+  /// points, either user-specified or inferred
+  Real collocRatio;
+
   /// flag for combined variable expansions which include a
   /// non-probabilistic subset (design, epistemic, state)
   bool allVars;
-
   /// option for regression FT using a filtered set of tensor-product
   /// quadrature points
   bool tensorRegression;
@@ -394,10 +400,7 @@ protected:
   /// emulation approach for multilevel / multifidelity discrepancy:
   /// distinct or recursive
   short multilevDiscrepEmulation;
-  /// user specification of number of initial samples per model instance,
-  /// including adaptive cases where an optimal sample profile is the
-  /// target of iteration (e.g., multilevel_regression())
-  SizetArray collocPtsSeqSpec;
+
   /// number of samples allocated to each level of a discretization/model
   /// hierarchy within multilevel/multifidelity methods
   SizetArray NLev;
