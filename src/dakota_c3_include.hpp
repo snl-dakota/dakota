@@ -55,6 +55,7 @@ extern "C"
     struct OneApproxOpts * one_approx_opts_alloc(enum function_class, void *);
     void one_approx_opts_set_nparams(struct OneApproxOpts *, size_t);
     void one_approx_opts_set_maxnum(struct OneApproxOpts *, size_t);
+    size_t one_approx_opts_get_nparams(const struct OneApproxOpts *);
     void one_approx_opts_free_deep(struct OneApproxOpts **);
 
     struct MultiApproxOpts;
