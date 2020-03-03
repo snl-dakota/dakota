@@ -159,7 +159,9 @@ config_regression(size_t colloc_pts, Iterator& u_space_sampler,
 
   // given regression size, either compute numSamplesOnModel from collocRatio
   // or vice versa
-  size_t regress_size = 100;// TO DO: sharedDataRep->regression_size(); // startOrder.begin()/startRank.begin()
+  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  size_t regress_size = shared_data_rep->regression_size();// uses startRank,Ord
   if (colloc_pts != std::numeric_limits<size_t>::max()) {
     numSamplesOnModel = colloc_pts;
     collocRatio = terms_samples_to_ratio(regress_size, numSamplesOnModel);    

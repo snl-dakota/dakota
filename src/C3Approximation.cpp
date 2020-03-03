@@ -996,25 +996,7 @@ regression_size(const SizetArray& ranks, size_t order)
 }
 
 
-/** simplified estimation: incoming rank and order are real-valued to allow
-    for constants or averages
-size_t C3Approximation::regression_size(Real rank, Real order)
-{
-  // Each dimension has its own rank within the product of function cores.
-  // This fn estimates for the case where rank and order are either constant
-  // across dimensions or averaged into a scalar.
-  // > the first and last core contribute p*r terms
-  // > the middle cores contribute r*r*p terms
-  Real p = order+1., est;  size_t num_v = sharedDataRep->numVars;
-  switch (num_v) {
-  case 1:  est = p;         break; // collapses to a 1D PCE
-  case 2:  est = 2.*p*rank; break; // first and last core, no middle
-  default: est = p*rank*(2. + (num_v-2)*rank); break; // first,last,middle
-  }
-  return (size_t)std::floor(est + .5); // round estimate to size_t
-}
-
-
+/* For future use where poly order can vary per core:
 size_t C3Approximation::
 regression_size(const SizetArray& ranks, const SizetArray& orders)
 {
