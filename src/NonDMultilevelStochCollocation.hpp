@@ -59,7 +59,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_u_space_model();
+  //void initialize_u_space_model();
   void core_run();
   void assign_specification_sequence();
   void increment_specification_sequence();
@@ -72,19 +72,10 @@ private:
   //- Heading: Utility functions
   //
 
-  /// verify supported and define default discrepancy emulation mode
-  void assign_discrepancy_mode();
-  /// define the surrogate response mode for a hierarchical model in 
-  /// multilevel/multifidelity expansions
-  void assign_hierarchical_response_mode();
 
   //
   //- Heading: Data
   //
-
-  /// type of sample allocation scheme for discretization levels / model forms
-  /// within multilevel / multifidelity methods
-  short mlmfAllocControl;
 
   /// user request of quadrature order
   UShortArray quadOrderSeqSpec;

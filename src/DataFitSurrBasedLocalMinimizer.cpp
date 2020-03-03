@@ -406,7 +406,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
   // since we're bypassing iteratedModel, iteratedModel.serve()
   // must be in the correct server mode.
-  iteratedModel.component_parallel_mode(TRUTH_MODEL);
+  iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
   Model& truth_model = iteratedModel.truth_model();
   truth_model.active_variables(trustRegionData.vars_star());
   // In all cases (including gradient mode), we only need the truth fn
@@ -515,7 +515,7 @@ void DataFitSurrBasedLocalMinimizer::find_center_truth()
     Cout << "\n>>>>> Evaluating actual model at trust region center.\n";
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL);
+    iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     Model& truth_model = iteratedModel.truth_model();
     truth_model.active_variables(trustRegionData.vars_center());
     if (multiLayerBypassFlag) {

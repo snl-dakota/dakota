@@ -249,23 +249,13 @@ protected:
 
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
-  /// set surrogate model key within subModel
-  void surrogate_model_key(unsigned short lf_model_index,
-			   unsigned short lf_soln_lev_index);
-  /// set surrogate model key within subModel
-  void surrogate_model_key(const UShortArray& lf_key);
-  /// return surrogate model key from subModel
-  const UShortArray& surrogate_model_key() const;
+  /// return surrogate model, if present, within subModel
+  const Model& surrogate_model() const;
 
   /// return truth model, if present, within subModel
   Model& truth_model();
-  /// set truth model key within subModel
-  void truth_model_key(unsigned short hf_model_index,
-		       unsigned short hf_soln_lev_index);
-  /// set truth model key within subModel
-  void truth_model_key(const UShortArray& hf_key);
-  /// return truth model key from subModel
-  const UShortArray& truth_model_key() const;
+  /// return truth model, if present, within subModel
+  const Model& truth_model() const;
 
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -302,8 +292,8 @@ protected:
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
 
-  /// link SurrogateData instances within the subModel
-  void link_multilevel_approximation_data();
+  // link SurrogateData instances within the subModel
+  //void link_multilevel_approximation_data();
 
   /// retrieve subModel's correction type
   short correction_type();
@@ -365,8 +355,7 @@ protected:
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
-  const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
@@ -733,35 +722,16 @@ inline Model& RecastModel::surrogate_model()
 { return subModel.surrogate_model(); }
 
 
-inline void RecastModel::
-surrogate_model_key(unsigned short lf_model_index,
-		    unsigned short lf_soln_lev_index)
-{ subModel.surrogate_model_key(lf_model_index, lf_soln_lev_index); }
-
-
-inline void RecastModel::surrogate_model_key(const UShortArray& lf_key)
-{ subModel.surrogate_model_key(lf_key); }
-
-
-inline const UShortArray& RecastModel::surrogate_model_key() const
-{ return subModel.surrogate_model_key(); }
+inline const Model& RecastModel::surrogate_model() const
+{ return subModel.surrogate_model(); }
 
 
 inline Model& RecastModel::truth_model()
 { return subModel.truth_model(); }
 
 
-inline void RecastModel::
-truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
-{ subModel.truth_model_key(hf_model_index, hf_soln_lev_index); }
-
-
-inline void RecastModel::truth_model_key(const UShortArray& hf_key)
-{ subModel.truth_model_key(hf_key); }
-
-
-inline const UShortArray& RecastModel::truth_model_key() const
-{ return subModel.truth_model_key(); }
+inline const Model& RecastModel::truth_model() const
+{ return subModel.truth_model(); }
 
 
 inline void RecastModel::
@@ -857,8 +827,8 @@ inline void RecastModel::surrogate_response_mode(short mode)
 { /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
 
 
-inline void RecastModel::link_multilevel_approximation_data()
-{ subModel.link_multilevel_approximation_data(); }
+//inline void RecastModel::link_multilevel_approximation_data()
+//{ subModel.link_multilevel_approximation_data(); }
 
 
 inline short RecastModel::correction_type()
@@ -978,14 +948,14 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& RecastModel::
-approximation_data(size_t fn_index, size_t d_index)
-{ return subModel.approximation_data(fn_index, d_index); }
+approximation_data(size_t fn_index)
+{ return subModel.approximation_data(fn_index); }
 
 
 inline void RecastModel::component_parallel_mode(short mode)
 {
-  //if (mode != SUB_MODEL) {
-  //  Cerr << "Error: RecastModel only supports the SUB_MODEL component "
+  //if (mode != SUB_MODEL_MODE) {
+  //  Cerr << "Error: RecastModel only supports the SUB_MODEL_MODE component "
   //       << "parallel mode." << std::endl;
   //  abort_handler(-1);
   //}

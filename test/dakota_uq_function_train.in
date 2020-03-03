@@ -4,19 +4,27 @@ environment,
 	#output_precision = 16
 
 method,
-# These cases exercise FT as a method (like PCE/SC):
-	function_train_uq				#s0,#s1,#s2,#s3
-	  convergence_tol = 1e-6			#s0,#s1,#s2,#s3
-#      	  build_samples = 100 (defined by DACE spec)
-#      	  import_build_points_file = "rosenbrock_samples.dat"
+# These cases exercise FT as a method (like PCE/SC) on a Sim Model:
+	function_train 	  				#s0,#s1,#s2,#s3
+	  start_order = 5			     	#s0,#s1,#s2,#s3
+	  start_rank = 2  kick_rank = 2  max_rank = 10	#s0,#s1,#s2,#s3
+	  adapt_rank   	  	      	 	    	#s0,#s1,#s2,#s3
+	  solver_tolerance    = 1e-12			#s0,#s1,#s2,#s3
+	  rounding_tolerance  = 1e-12			#s0,#s1,#s2,#s3
+	  convergence_tol     = 1e-6			#s0,#s1,#s2,#s3
+	  collocation_points  = 100			#s0,#s1,#s2,#s3
 	  samples_on_emulator = 100000			#s0,#s1,#s2,#s3
 	  variance_based_decomp #interaction_order = 1	#s0,#s1,#s2,#s3
-# These cases perform generic UQ on FT as a model:
+	  model_pointer = 'SIM'				#s0,#s1,#s2,#s3
+# These cases perform generic UQ on an FT model:
 #	sampling					#s4,#s5,#s6,#s7
 #	  samples = 100000  sample_type lhs		#s4,#s5,#s6,#s7
+#	  model_pointer = 'FT'				#s4,#s5,#s6,#s7
+#	surrogate_based_uq				#s8,#s9,#s10,#s11
+#	  samples = 100000  sample_type lhs		#s8,#s9,#s10,#s11
+#	  model_pointer = 'FT'				#s8,#s9,#s10,#s11
 	  seed = 531
 	  response_levels = .1 1. 50. 100. 500. 1000.
-	model_pointer = 'FT'
 
 model,
 	id_model = 'FT'
@@ -27,33 +35,33 @@ model,
 	  solver_tolerance   = 1e-12
 	  rounding_tolerance = 1e-12
 #	  verbosity = 0
-	dace_method_pointer = 'SAMPLING'
+	dace_method_pointer = 'DACE'
 
 method
-	id_method = 'SAMPLING'
+	id_method = 'DACE'
 	sampling
 	  samples = 100  seed = 531  sample_type lhs
 	model_pointer = 'SIM'
 
 model,
 	id_model = 'SIM'
-	single
+	simulation
           interface_pointer = 'I1'
           variables_pointer = 'V1'
           responses_pointer = 'R1'
 
 variables,
 	id_variables = 'V1'
-	normal_uncertain = 2		#s0,#s1,#s4,#s5
-	  means          =  0.   0.	#s0,#s4
-	  std_deviations =  1.   1.	#s0,#s4
-#	  means          =  2.   3.	#s1,#s5
-#	  std_deviations =  3.   2.	#s1,#s5
-#	uniform_uncertain = 2	 	#s2,#s3,#s6,#s7
-#	  lower_bounds = -1. -1. 	#s2,#s6
-#	  upper_bounds =  1.  1.	#s2,#s6
-#	  lower_bounds = -3. -2.	#s3,#s7
-#	  upper_bounds =  2.  3.	#s3,#s7
+	normal_uncertain = 2		#s0,#s1,#s4,#s5,#s8,#s9
+	  means          =  0.   0.	#s0,#s4,#s8
+	  std_deviations =  1.   1.	#s0,#s4,#s8
+#	  means          =  2.   3.	#s1,#s5,#s9
+#	  std_deviations =  3.   2.	#s1,#s5,#s9
+#	uniform_uncertain = 2	 	#s2,#s3,#s6,#s7,#s10,#s11
+#	  lower_bounds = -1. -1. 	#s2,#s6,#s10
+#	  upper_bounds =  1.  1.	#s2,#s6,#s10
+#	  lower_bounds = -3. -2.	#s3,#s7,#s11
+#	  upper_bounds =  2.  3.	#s3,#s7,#s11
 	descriptors  = 'x1' 'x2'
 
 interface,
