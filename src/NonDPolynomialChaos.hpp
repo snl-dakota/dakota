@@ -169,12 +169,6 @@ protected:
   /// structured/unstructured grid level/density
   void increment_order_from_grid();
 
-  /// convert number of expansion terms and collocation ratio to a
-  /// number of collocation samples
-  int  terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio);
-  /// convert number of expansion terms and number of collocation samples
-  /// to a collocation ratio
-  Real terms_samples_to_ratio(size_t num_exp_terms, int samples);
   /// convert collocation ratio and number of samples to expansion order
   void ratio_samples_to_order(Real colloc_ratio, int num_samples,
 			      UShortArray& exp_order, bool less_than_or_equal);
@@ -217,10 +211,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// exponent applied to number of expansion terms for computing
-  /// number of regression points
-  Real termsOrder;
 
   /// seed for random number generator used for regression with LHS
   /// and sub-sampled tensor grids
@@ -278,39 +268,6 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
     uSpaceModel.append_approximation(samples, resp_map, true);
     break;
   }
-}
-
-
-inline int NonDPolynomialChaos::
-terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio)
-{
-  // for under-determined solves (compressed sensing), colloc_ratio can be < 1
-  size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;
-  Real min_pts = std::pow((Real)num_exp_terms, termsOrder) / (Real)data_per_pt;
-  int tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
-  if (colloc_ratio >= 1.) {
-    // logic is to round to the nearest integral sample count for the given
-    // colloc_ratio, but with a lower bound determined by rounding up with a
-    // unit colloc_ratio.  The lower bound prevents creating an under-determined
-    // system due to rounding down when the intent is over- or uniquely
-    // determined (can only happen with non-integral min_pts due to use of
-    // derivative enhancement).
-    int min_samples = (int)std::ceil(min_pts); // lower bound
-    return std::max(min_samples, tgt_samples);
-  }
-  else
-    // for under-determined systems, data starvation is not a problem and we
-    // just need at least one sample.
-    return std::max(tgt_samples, 1);
-}
-
-
-inline Real NonDPolynomialChaos::
-terms_samples_to_ratio(size_t num_exp_terms, int samples)
-{
-  size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;
-  return (Real)(samples * data_per_pt) /
-    std::pow((Real)num_exp_terms, termsOrder);
 }
 
 } // namespace Dakota

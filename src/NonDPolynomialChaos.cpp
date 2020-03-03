@@ -93,7 +93,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   short regress_type = probDescDB.get_short("method.nond.regression_type"),
     ls_regress_type
       = probDescDB.get_short("method.nond.least_squares_regression_type");
-  Real colloc_ratio_order
+  Real terms_order
     = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
   const UShortArray& tensor_grid_order
     = probDescDB.get_usa("method.nond.tensor_grid_order");
@@ -110,7 +110,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 			       u_space_sampler, g_u_model, approx_type) &&
 	   !config_expectation(expSamplesSpec, sample_type, rng,
 			       u_space_sampler, g_u_model, approx_type) &&
-	   !config_regression(exp_orders, collocPtsSpec, colloc_ratio_order,
+	   !config_regression(exp_orders, collocPtsSpec, terms_order,
 			      regress_type, ls_regress_type, tensor_grid_order,
 			      sample_type, rng, pt_reuse, u_space_sampler,
 			      g_u_model, approx_type)) {
@@ -248,7 +248,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs), 
-  termsOrder(1.), randomSeed(seed), crossValidation(cv_flag),
+  randomSeed(seed), crossValidation(cv_flag),
   crossValidNoiseOnly(false), importBuildPointsFile(import_build_pts_file),
   l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
   collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
@@ -390,9 +390,9 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 		refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs),
-  termsOrder(1.), randomSeed(seed), crossValidation(cv_flag),
-  crossValidNoiseOnly(false), l2Penalty(0.), numAdvance(3),
-  dimPrefSpec(dim_pref), normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  randomSeed(seed), crossValidation(cv_flag), crossValidNoiseOnly(false),
+  l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
   multilevAllocControl     = ml_alloc_control;

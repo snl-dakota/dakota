@@ -873,26 +873,38 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 }
 
 
-/* Compute power mean of sparsity (common power values: 1 = average,
-   2 = root mean square). */
+/* Compute power mean of sparsity (common power values: 1 = average value,
+   2 = root mean square, DBL_MAX = max value). */
 void NonDMultilevelPolynomialChaos::
 level_metric(Real& sparsity_metric_l, Real power)
 {
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real sum = 0.; bool pow1 = (power == 1.); // simple average
+  bool pow_1   = (power == 1.), // simple average
+       pow_inf = (power == std::numeric_limits<Real>::max());
+  Real sum = 0., max = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     PecosApproximation* poly_approx_q
       = (PecosApproximation*)poly_approxs[qoi].approx_rep();
     size_t sparsity_l = poly_approx_q->sparsity();
-    sum += (pow1) ? sparsity_l : std::pow((Real)sparsity_l, power);
-    //if (outputLevel >= DEBUG_OUTPUT)
+    if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
 	/* << ", iter " << iter */ << ") = " << sparsity_l << '\n';
+
+    if (pow_inf) {
+      if (sparsity_l > max)
+	max = sparsity_l;
+    }
+    else
+      sum += (pow_1) ? sparsity_l : std::pow((Real)sparsity_l, power);
   }
-  sum /= numFunctions;
-  sparsity_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
+  if (pow_inf)
+    sparsity_metric_l = max;
+  else {
+    sum /= numFunctions;
+    sparsity_metric_l = (pow_1) ? sum : std::pow(sum, 1. / power);
+  }
 }
 
 
@@ -921,7 +933,7 @@ compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
   //                  to control feedback, so not used as a sample target
 
   Real curr_factor, max_curr_factor = 0., factor_ratio,
-    factor_bound = 2.; // hard-wired (collocRatio not appropriate to reuse here)
+    factor_bound = 2.; // hard-wired (bound is separate from collocRatio)
   SharedPecosApproxData* data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   const std::map<UShortArray, UShort2DArray>& mi_map

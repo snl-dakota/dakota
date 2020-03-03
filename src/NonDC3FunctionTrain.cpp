@@ -157,11 +157,17 @@ config_regression(size_t colloc_pts, Iterator& u_space_sampler,
 {
   // Adapted from NonDPolynomialChaos::config_regression()
 
-  if (colloc_pts == std::numeric_limits<size_t>::max())
-    return false;
+  // given regression size, either compute numSamplesOnModel from collocRatio
+  // or vice versa
+  size_t regress_size = 100;// TO DO: sharedDataRep->regression_size(); // startOrder.begin()/startRank.begin()
+  if (colloc_pts != std::numeric_limits<size_t>::max()) {
+    numSamplesOnModel = colloc_pts;
+    collocRatio = terms_samples_to_ratio(regress_size, numSamplesOnModel);    
+  }
+  else if (collocRatio > 0.) // define colloc pts from collocRatio
+    numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
 
-  numSamplesOnModel = colloc_pts;
-
+  // given numSamplesOnModel, configure u_space_sampler
   if (probDescDB.get_bool("method.nond.tensor_grid")) {
     // structured grid: uniform sub-sampling of TPQ
     UShortArray dim_quad_order
