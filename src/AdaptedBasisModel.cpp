@@ -706,7 +706,6 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   // compute V_y = U^T * V_x * U
   alpha = 1.0;  beta = 0.0;
   RealMatrix UTVx(n, m, false);
-  Cout << "\n rotationMatrix in uncertain_vars_to_subspace = \n" << rotationMatrix << "\n";
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
                 alpha, rotationMatrix, V_x, beta);
   RealMatrix V_y(reducedRank, reducedRank, false);
@@ -761,30 +760,38 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
 
 
 /** Perform the variables mapping from recast reduced dimension
-    variables y to original model x variables via linear
+    variables \eta to original model \xi variables via linear
     transformation.  Maps only continuous variables. */
 void AdaptedBasisModel::
-vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
+vars_mapping(const Variables& recast_eta_vars, Variables& sub_model_xi_vars)
 {
   Teuchos::BLAS<int, Real> teuchos_blas;
 
-  const RealVector& y =    recast_y_vars.continuous_variables();
-  RealVector&       x = sub_model_x_vars.continuous_variables_view();
+  const RealVector& eta =    recast_eta_vars.continuous_variables();
+  RealVector&       xi = sub_model_xi_vars.continuous_variables_view();
 
-  //  Calculate x = A*y + inA*inactiveVars via matvec
-  //  directly into x cv in submodel
-  const RealMatrix& W1 = abmInstance->rotationMatrix;
-  int m = W1.numRows(), n = W1.numCols(), incx = 1, incy = 1;
+  const RealMatrix& A = abmInstance->rotationMatrix;
+  int m = A.numRows(), n = A.numCols(), incx = 1, incy = 1;
   Real alpha = 1.0, beta = 0.0;
-  teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W1.values(), m,
-                    y.values(), incy, beta, x.values(), incx);
+  // expand \eta with zeros
+  int dim_eta = eta.length();
+  RealVector eta_ex(n);
+  for (int i=0; i<n; i++){
+  	if (i<dim_eta)
+  		eta_ex(i) = eta(i);
+  	else
+  		eta_ex(i) = 0.0;
+  }
+  //  Calculate \xi = A^T \eta
+  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, A.values(), m,
+                    eta_ex.values(), incy, beta, xi.values(), incx);
 
   if (abmInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: Subspace vars are\n";
-    Cout << recast_y_vars << std::endl;
+    Cout << recast_eta_vars << std::endl;
 
     Cout << "\nAdapted Basis Model: Fullspace vars are\n";
-    Cout << sub_model_x_vars << std::endl;
+    Cout << sub_model_xi_vars << std::endl;
   }
 
 }
