@@ -68,7 +68,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void initialize_u_space_model();
+  void initialize_u_space_model();
   void core_run();
 
   void assign_specification_sequence();
@@ -97,6 +97,10 @@ private:
   //- Heading: Utility functions
   //
 
+  size_t collocation_points() const;
+  size_t start_rank() const;
+  size_t start_order() const;
+
   /// perform specification updates (shared code from
   // {assign,increment}_specification_sequence())
   void update_from_specification();
@@ -108,9 +112,41 @@ private:
   //- Heading: Data
   //
 
+  /// user specification for start_rank_sequence
+  SizetArray startRankSeqSpec;
+  /// user specification for start_order_sequence
+  SizetArray startOrderSeqSpec;
+
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 };
+
+
+inline size_t NonDMultilevelFunctionTrain::collocation_points() const
+{
+  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (sequenceIndex < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelFunctionTrain::start_rank() const
+{
+  if (startRankSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (sequenceIndex < startRankSeqSpec.size()) ?
+      startRankSeqSpec[sequenceIndex] : startRankSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelFunctionTrain::start_order() const
+{
+  if (startOrderSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (sequenceIndex < startOrderSeqSpec.size()) ?
+      startOrderSeqSpec[sequenceIndex] : startOrderSeqSpec.back();
+}
 
 } // namespace Dakota
 

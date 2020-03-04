@@ -70,13 +70,15 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler; // evaluates true model
-
-  //if (!expansionImportFile.empty())
-  //  approx_type = "global_function_train";
-  //else
-  if (!config_regression(probDescDB.get_sizet("method.nond.collocation_points"),
-			 u_space_sampler, g_u_model)) {
+  Iterator u_space_sampler; // evaluates truth model
+  // compute initial regression size using a static helper
+  // (uSpaceModel.shared_approximation() is not yet available)
+  size_t colloc_pts = probDescDB.get_sizet("method.nond.collocation_points"),
+    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
+      probDescDB.get_sizet("method.nond.c3function_train.start_rank"),
+      probDescDB.get_sizet("method.nond.c3function_train.start_order"));
+  // configure u-space sampler and model
+  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -152,22 +154,24 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 
 bool NonDC3FunctionTrain::
-config_regression(size_t colloc_pts, Iterator& u_space_sampler,
-		  Model& g_u_model)
+config_regression(size_t colloc_pts, size_t regress_size,
+		  Iterator& u_space_sampler, Model& g_u_model)
 {
   // Adapted from NonDPolynomialChaos::config_regression()
 
+  // Note: colloc_pts and regress_size are passed so that they can be defined
+  // either from scalar (this class) or sequence (derived class) specifications
+
   // given regression size, either compute numSamplesOnModel from collocRatio
   // or vice versa
-  SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  size_t regress_size = shared_data_rep->regression_size();// uses startRank,Ord
   if (colloc_pts != std::numeric_limits<size_t>::max()) {
     numSamplesOnModel = colloc_pts;
     collocRatio = terms_samples_to_ratio(regress_size, numSamplesOnModel);    
   }
   else if (collocRatio > 0.) // define colloc pts from collocRatio
     numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
+  else
+    return false;
 
   // given numSamplesOnModel, configure u_space_sampler
   if (probDescDB.get_bool("method.nond.tensor_grid")) {
@@ -218,11 +222,10 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   //configure_pecos_options(); // C3 does not use Pecos options
 
-  // Note: method and model spec are redundant, without a good way to
-  // encapsulate XML entities that differ only in their bindings.
-  // > Defining a shared spec class with instances in Data{Method,Model} works
-  //   fine for XML and Data ops, but not for {NIDR,}ProblemDescDB macros
-  push_c3_options(); // needs to precede construct_basis()
+  // needs to precede construct_basis()
+  push_c3_options(
+    probDescDB.get_sizet("method.nond.c3function_train.start_rank"),
+    probDescDB.get_sizet("method.nond.c3function_train.start_order"));
 
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
   const Pecos::MultivariateDistribution& u_dist
@@ -231,7 +234,8 @@ void NonDC3FunctionTrain::initialize_u_space_model()
 }
 
 
-void NonDC3FunctionTrain::push_c3_options()
+void NonDC3FunctionTrain::
+push_c3_options(size_t start_rank, size_t start_order)
 {
   // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
   // passed through the DataFitSurrModel ctor chain.  Additional data needed
@@ -241,12 +245,13 @@ void NonDC3FunctionTrain::push_c3_options()
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
 
-  shared_data_rep->set_parameter("start_poly_order",
-    probDescDB.get_sizet("method.nond.c3function_train.start_order"));
+  // These two are passed in since they may be a scalar or part of a sequence:
+  shared_data_rep->set_parameter("start_poly_order", start_order);
+  shared_data_rep->set_parameter("start_rank",       start_rank);
+
+  // These are pulled from the DB as they are always scalars:
   shared_data_rep->set_parameter("max_poly_order",
     probDescDB.get_sizet("method.nond.c3function_train.max_order"));
-  shared_data_rep->set_parameter("start_rank",
-    probDescDB.get_sizet("method.nond.c3function_train.start_rank"));
   shared_data_rep->set_parameter("kick_rank",
     probDescDB.get_sizet("method.nond.c3function_train.kick_rank"));
   shared_data_rep->set_parameter("max_rank",

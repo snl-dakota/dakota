@@ -29,6 +29,10 @@ namespace Dakota {
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
+  startRankSeqSpec(
+    problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
+  startOrderSeqSpec(
+    problem_db.get_sza("method.nond.c3function_train.start_order_sequence")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   assign_discrepancy_mode();
@@ -53,14 +57,12 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  size_t build_pts;
-  if (collocPtsSeqSpec.empty())
-    build_pts = std::numeric_limits<size_t>::max();
-  else
-    build_pts = (sequenceIndex < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-  Iterator u_space_sampler;
-  if (!config_regression(build_pts, u_space_sampler, g_u_model)) {
+  Iterator u_space_sampler; // evaluates truth model
+  // extract (initial) values from sequences
+  // TO DO: average the regression size over range of sequenceIndex
+  size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
+    regression_size(numContinuousVars, start_rank(), start_order());
+  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -202,7 +204,6 @@ NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 { }
 
 
-/*
 void NonDMultilevelFunctionTrain::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
@@ -210,14 +211,16 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   //if (multilevAllocControl == GREEDY_REFINEMENT)
   //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
-  // initializes ExpansionConfigOptions, among other things
-  NonDC3FunctionTrain::initialize_u_space_model();
+  NonDExpansion::initialize_u_space_model();
 
-  // Bind more than one SurrogateData instance via DataFitSurrModel ->
-  // PecosApproximation
-  //uSpaceModel.link_multilevel_approximation_data();
+  // needs to precede construct_basis()
+  push_c3_options(start_rank(), start_order());// extract scalars from sequences
+
+  // SharedC3ApproxData invokes ope_opts_alloc() to construct basis
+  const Pecos::MultivariateDistribution& u_dist
+    = uSpaceModel.truth_model().multivariate_distribution();
+  uSpaceModel.shared_approximation().construct_basis(u_dist);
 }
-*/
 
 
 void NonDMultilevelFunctionTrain::core_run()

@@ -57,9 +57,9 @@ public:
   //- Heading: Member functions
   //
 
-  /// return the number of FT unknowns given scalar rank and order
-  size_t regression_size(size_t rank, size_t order);
-  /// return the number of FT unknowns using start_rank() and start_order()
+  /// return number of FT unknowns given scalars: num vars, rank, order
+  static size_t regression_size(size_t num_v, size_t rank, size_t order);
+  /// return number of FT unknowns using numVars, start_rank(), start_order()
   size_t regression_size();
 
   void set_parameter(String var, size_t val);
@@ -238,7 +238,8 @@ inline size_t SharedC3ApproxData::start_rank() const
 
 /** simplified estimation for scalar-valued rank and order (e.g., from 
     start rank/order user specification) */
-inline size_t SharedC3ApproxData::regression_size(size_t rank, size_t order)
+inline size_t SharedC3ApproxData::
+regression_size(size_t num_v, size_t rank, size_t order)
 {
   // Each dimension has its own rank within the product of function cores.
   // This fn estimates for the case where rank and order are either constant
@@ -246,16 +247,16 @@ inline size_t SharedC3ApproxData::regression_size(size_t rank, size_t order)
   // > the first and last core contribute p*r terms
   // > the middle cores contribute r*r*p terms
   size_t p = order+1.;
-  switch (numVars) {
+  switch (num_v) {
   case 1:  return p;         break; // collapses to a 1D PCE
   case 2:  return 2.*p*rank; break; // first and last core, no middle
-  default: return p*rank*(2. + (numVars-2)*rank); break; // first,last,middle
+  default: return p*rank*(2. + (num_v-2)*rank); break; // first,last,middle
   }
 }
 
 
 inline size_t SharedC3ApproxData::regression_size()
-{ return regression_size(start_rank(), start_order()); }
+{ return regression_size(numVars, start_rank(), start_order()); }
 // TO DO: incorporate dimension preference -> ranks array
 
 

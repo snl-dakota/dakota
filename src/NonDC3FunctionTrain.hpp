@@ -73,12 +73,12 @@ protected:
 
   /// configure u_space_sampler and approx_type based on regression
   /// specification
-  bool config_regression(size_t colloc_pts, Iterator& u_space_sampler,
-			 Model& g_u_model);
+  bool config_regression(size_t colloc_pts, size_t regress_size,
+			 Iterator& u_space_sampler, Model& g_u_model);
 
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
-  void push_c3_options();
+  void push_c3_options(size_t start_rank, size_t start_order);
 
   //
   //- Heading: Data
