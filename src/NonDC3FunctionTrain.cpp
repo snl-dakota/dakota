@@ -293,15 +293,73 @@ void NonDC3FunctionTrain::push_increment()
 }
 
 
-void NonDC3FunctionTrain::update_samples_from_order()
+void NonDC3FunctionTrain::update_samples_from_order_increment()
 {
-  Real max_regress;
-  level_metric(max_regress, 2);//DBL_MAX);// implement/use infinity-norm ?
+  // Given a candidate advancement since the last solve (e.g., NonDExpansion::
+  // increment_order_and_grid()), we can't just rely on size of the last solve
+  // > sample_allocation_metric() uses recovered QoI ranks + order advancements
+  // > collocRatio is then applied to number of unknowns within floor() below
+  Real pow_mean_qoi_regress;
+  sample_allocation_metric(pow_mean_qoi_regress, 2.);//DBL_MAX);
 
   // This function computes an update to the total points.  The increment
   // induced relative to the current data set is managed in DataFitSurrModel::
   // rebuild_global())
-  numSamplesOnModel = (int)std::floor(max_regress + .5);
+  prevSamplesOnModel = numSamplesOnModel;
+  numSamplesOnModel  = (int)std::floor(collocRatio * pow_mean_qoi_regress + .5);
+}
+
+
+/** inconvenient to recompute: store previous samples rather than
+    previous ranks */
+void NonDC3FunctionTrain::update_samples_from_order_decrement()
+{ numSamplesOnModel = prevSamplesOnModel; }
+
+
+/* Compute power mean of rank (common power values: 1 = average value,
+   2 = root mean square, DBL_MAX = max value). */
+void NonDC3FunctionTrain::
+sample_allocation_metric(Real& regress_metric, Real power)
+{
+  // case RANK_SAMPLING in NonDExpansion::multilevel_regression() as well as
+  // uniform refinements:
+
+  // > sample requirements scale as O(p r^2 d) -- see regression_size()
+  //   implementations in SharedC3ApproxData (scalar spec) and C3Approximation
+  //   (adapted ranks per dimension along with latest startOrder increment)
+  // > The function function_train_get_nparams(const struct FunctionTrain*),
+  //   which is one implementation of C3Approximation::regression_size(),
+  //   returns the number of unknowns from the most recent FT regression
+  //   (per QoI, per model level) which provides the sample requirements
+  //   prior to over-sampling/collocRaio.  Given this, only need to compute
+  //   power mean over numFunctions (below) and then add any over-sampling
+  //   factor (applied in compute_sample_increment())
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  Real sum = 0., max = 0.;
+  bool pow_1   = (power == 1.), // detect special cases
+       pow_inf = (power == std::numeric_limits<Real>::max());
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    C3Approximation* poly_approx_q
+      = (C3Approximation*)poly_approxs[qoi].approx_rep();
+    Real regress_q = poly_approx_q->regression_size(); // number of unknowns
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "System size(" /*lev " << lev << ", "*/ << "qoi " << qoi
+	/* << ", iter " << iter */ << ") = " << regress_q << '\n';
+
+    if (pow_inf) {
+      if (regress_q > max)
+	max = regress_q;
+    }
+    else
+      sum += (pow_1) ? regress_q : std::pow(regress_q, power);
+  }
+  if (pow_inf)
+    regress_metric = max;
+  else {
+    sum /= numFunctions;
+    regress_metric = (pow_1) ? sum : std::pow(sum, 1. / power);
+  }
 }
 
 

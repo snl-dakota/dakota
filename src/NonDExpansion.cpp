@@ -1551,7 +1551,7 @@ void NonDExpansion::multilevel_regression()
       }
       default:
 	if (delta_N_l[step] > 0)
-	  level_metric(level_metrics[step], 2.);
+	  sample_allocation_metric(level_metrics[step], 2.);
 	//else sparsity,rank metric for this level same as previous iteration
 	break;
       }
@@ -1704,7 +1704,7 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 void NonDExpansion::increment_order_and_grid()
 {
   uSpaceModel.shared_approximation().increment_order();
-  update_samples_from_order();
+  update_samples_from_order_increment();
 
   // update u-space sampler to use new sample count
   if (tensorRegression) {
@@ -1724,7 +1724,7 @@ void NonDExpansion::increment_order_and_grid()
 void NonDExpansion::decrement_order_and_grid()
 {
   uSpaceModel.shared_approximation().decrement_order();
-  update_samples_from_order();
+  update_samples_from_order_decrement();
 
   // update u-space sampler to use new sample count
   if (tensorRegression) {
@@ -1740,12 +1740,17 @@ void NonDExpansion::decrement_order_and_grid()
 }
 
 
-void NonDExpansion::update_samples_from_order()
+void NonDExpansion::update_samples_from_order_increment()
 {
   Cerr << "Error: no base class implementation for NonDExpansion::"
-       << "update_samples_from_order()" << std::endl;
+       << "update_samples_from_order_increment()" << std::endl;
   abort_handler(METHOD_ERROR);
 }
+
+
+/** Default implementation: increment/decrement update process is identical */
+void NonDExpansion::update_samples_from_order_decrement()
+{ update_samples_from_order_increment(); }
 
 
 void NonDExpansion::update_model_from_samples()
@@ -2240,10 +2245,10 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 }
 
 
-void NonDExpansion::level_metric(Real& lev_metric_l, Real power)
+void NonDExpansion::sample_allocation_metric(Real& metric, Real power)
 {
-  Cerr << "Error: no default implementation for level_metric() "
-       << "defined for multilevel_regression()." << std::endl;
+  Cerr << "Error: no default implementation for sample_allocation_metric() "
+       << "required for multilevel_regression()." << std::endl;
   abort_handler(METHOD_ERROR);
 }
 

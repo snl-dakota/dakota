@@ -1095,7 +1095,7 @@ void NonDPolynomialChaos::increment_order_from_grid()
 }
 
 
-void NonDPolynomialChaos::update_samples_from_order()
+void NonDPolynomialChaos::update_samples_from_order_increment()
 {
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
@@ -1108,6 +1108,8 @@ void NonDPolynomialChaos::update_samples_from_order()
   // updated number of expansion terms
   numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 }
+// Note: update_samples_from_order_decrement() defaults to
+// update_samples_from_order_increment(), so no redefinition reqd for PCE
 
 
 void NonDPolynomialChaos::
@@ -1142,6 +1144,41 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
   if (less_than_or_equal && incr && data_reqd > data_size) // 1 too many
     for (i=0; i<numContinuousVars; ++i)
       --exp_order[i];
+}
+
+
+/* Compute power mean of sparsity (common power values: 1 = average value,
+   2 = root mean square, DBL_MAX = max value). */
+void NonDPolynomialChaos::
+sample_allocation_metric(Real& sparsity_metric, Real power)
+{
+  // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  bool pow_1   = (power == 1.), // simple average
+       pow_inf = (power == std::numeric_limits<Real>::max());
+  Real sum = 0., max = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    PecosApproximation* poly_approx_q
+      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+    size_t sparsity_q = poly_approx_q->sparsity();
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
+	/* << ", iter " << iter */ << ") = " << sparsity_q << '\n';
+
+    if (pow_inf) {
+      if (sparsity_q > max)
+	max = sparsity_q;
+    }
+    else
+      sum += (pow_1) ? sparsity_q : std::pow((Real)sparsity_q, power);
+  }
+  if (pow_inf)
+    sparsity_metric = max;
+  else {
+    sum /= numFunctions;
+    sparsity_metric = (pow_1) ? sum : std::pow(sum, 1. / power);
+  }
 }
 
 

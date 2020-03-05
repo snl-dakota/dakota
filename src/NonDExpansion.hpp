@@ -158,7 +158,7 @@ protected:
   virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
 					 size_t lev);
   /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
-  virtual void level_metric(Real& lev_metric_l, Real power);
+  virtual void sample_allocation_metric(Real& metric, Real power);
   /// compute delta_N_l for {RIP,RANK}_SAMPLING cases
   virtual void compute_sample_increment(const RealVector& lev_metrics,
 					const SizetArray& N_l,
@@ -166,8 +166,10 @@ protected:
   /// finalizations for multilevel_regression()
   virtual void finalize_ml_regression();
 
-  /// update numSamplesOnModel after an order increment/decrement
-  virtual void update_samples_from_order();  
+  /// update numSamplesOnModel after an order increment
+  virtual void update_samples_from_order_increment();  
+  /// update (restore previous) numSamplesOnModel after an order decrement
+  virtual void update_samples_from_order_decrement();  
 
   /// print global sensitivity indices
   virtual void print_sobol_indices(std::ostream& s);

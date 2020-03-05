@@ -404,53 +404,6 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 }
 
 
-/* Compute power mean of rank (common power values: 1 = average value,
-   2 = root mean square, DBL_MAX = max value). */
-void NonDMultilevelFunctionTrain::
-level_metric(Real& regress_metric_l, Real power)
-{
-  // case RANK_SAMPLING in NonDExpansion::multilevel_regression():
-
-  // > sample requirements scale as O(p r^2 d), which shapes the profile
-  // > there is a weak dependence on the polynomial order p, but this should
-  //   not grow very high (could just fix this factor at ~10).
-  // > The function function_train_get_nparams(const struct FunctionTrain*),
-  //   accessed through C3Approximation::regression_size(), returns the number
-  //   of unknowns in the regression (per QoI, per level) which is directly
-  //   O(p r^2 d) without over-sampling.  Given this, only need to average
-  //   over numFunctions (below) and then add any over-sampling factor
-  //   (applied in compute_sample_increment())
-
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real sum = 0., max = 0.;
-  bool pow_1   = (power == 1.), // detect special cases
-       pow_inf = (power == std::numeric_limits<Real>::max());
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    C3Approximation* poly_approx_q
-      = (C3Approximation*)poly_approxs[qoi].approx_rep();
-    // Don't need to track average ranks as regression_size() is more direct:
-    //Real regress_l = poly_approx_q->average_rank(); // average rank over dims
-    Real regress_l = poly_approx_q->regression_size(); // number of unknowns
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "System size(" /*lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << regress_l << '\n';
-
-    if (pow_inf) {
-      if (regress_l > max)
-	max = regress_l;
-    }
-    else
-      sum += (pow_1) ? regress_l : std::pow(regress_l, power);
-  }
-  if (pow_inf)
-    regress_metric_l = max;
-  else {
-    sum /= numFunctions;
-    regress_metric_l = (pow_1) ? sum : std::pow(sum, 1. / power);
-  }
-}
-
-
 void NonDMultilevelFunctionTrain::
 compute_sample_increment(const RealVector& regress_metrics,
 			 const SizetArray& N_l, SizetArray& delta_N_l)

@@ -873,41 +873,6 @@ initialize_ml_regression(size_t num_lev, bool& import_pilot)
 }
 
 
-/* Compute power mean of sparsity (common power values: 1 = average value,
-   2 = root mean square, DBL_MAX = max value). */
-void NonDMultilevelPolynomialChaos::
-level_metric(Real& sparsity_metric_l, Real power)
-{
-  // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
-
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool pow_1   = (power == 1.), // simple average
-       pow_inf = (power == std::numeric_limits<Real>::max());
-  Real sum = 0., max = 0.;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    PecosApproximation* poly_approx_q
-      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
-    size_t sparsity_l = poly_approx_q->sparsity();
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
-	/* << ", iter " << iter */ << ") = " << sparsity_l << '\n';
-
-    if (pow_inf) {
-      if (sparsity_l > max)
-	max = sparsity_l;
-    }
-    else
-      sum += (pow_1) ? sparsity_l : std::pow((Real)sparsity_l, power);
-  }
-  if (pow_inf)
-    sparsity_metric_l = max;
-  else {
-    sum /= numFunctions;
-    sparsity_metric_l = (pow_1) ? sum : std::pow(sum, 1. / power);
-  }
-}
-
-
 void NonDMultilevelPolynomialChaos::
 compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
 			 SizetArray& delta_N_l)

@@ -77,7 +77,6 @@ protected:
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
 				 size_t lev);
-  void level_metric(Real& regress_metric_l, Real power);
   void compute_sample_increment(const RealVector& regress_metrics,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 

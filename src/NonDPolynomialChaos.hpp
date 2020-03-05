@@ -124,8 +124,8 @@ protected:
   void append_expansion(const RealMatrix& samples,
 			const IntResponseMap& resp_map);
 
-  /// update numSamplesOnModel after an order increment/decrement
-  void update_samples_from_order();
+  void update_samples_from_order_increment();
+  void sample_allocation_metric(Real& sparsity_metric, Real power);
 
   /// print the final coefficients and final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);

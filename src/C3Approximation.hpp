@@ -129,11 +129,10 @@ public:
   //- Heading: Member functions
   //
 
-  size_t regression_size(C3FnTrainPtrs& ftp); // for passed ftp
   size_t regression_size();                   // uses active ftp
-  size_t regression_size(const SizetArray& ranks, size_t order);
+  size_t regression_size(const SizetVector& ranks, size_t order);
   //size_t regression_size(const SizetArray& ranks, const SizetArray& orders);
-  //size_t regression_size(Real rank, Real order);// simplification for scalar r
+  // Note: SharedC3ApproxData implements regression_size() for scalars from spec
 
   size_t average_rank();
   size_t maximum_rank();

@@ -948,24 +948,26 @@ gradient(const Variables& vars, const UShortArray& key)
 */
 
 
-/** this replaces the need to model data requirements as O(p r^2 d), but
-    requires an up-to-date FT build/rebuild (updates to options like
-    start{Order,Rank} will not propagate to this fn on their own, but 
-    should work folowing push,pop of an FT) */
-size_t C3Approximation::regression_size(C3FnTrainPtrs& ftp)
-{ return function_train_get_nparams(ftp.function_train()); }
-
-
-/* this returns the as-built size for a fully-formed FT which may have been
-   adapted (if adapt_rank is on) relative to the start{Rank,Order} settings */
 size_t C3Approximation::regression_size()
-{ return regression_size(levApproxIter->second); }
+{
+  SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
+
+  // Reflects most recent FT build; omits any order increments prior to build:
+  //return function_train_get_nparams(ftp.function_train());
+
+  // Capture most recent rank adaptation (from build with adapt_rank), if any,
+  // as well as any polynomial order increments (since last build)
+  struct FunctionTrain * ft = levApproxIter->second.function_train();
+  SizetVector ft_ranks(Teuchos::View, function_train_get_ranks(ft),
+		       data_rep->numVars+1);
+  return regression_size(ft_ranks, data_rep->start_order());
+}
 
 
 /** compute the regression size (number of unknowns) for a set of ranks per
     dimension and a single expansion (polynomial) order */
 size_t C3Approximation::
-regression_size(const SizetArray& ranks, size_t order)
+regression_size(const SizetVector& ranks, size_t order)
 {
   // Each dimension has its own rank within the product of function cores.
   // This fn estimates for the case where rank varies per dimension/core
@@ -978,8 +980,8 @@ regression_size(const SizetArray& ranks, size_t order)
   // > could also allow p to vary per dimension in an orders array, should this
   //   granularity become warranted in the future
   size_t p = order + 1, num_v = sharedDataRep->numVars;
-  if (ranks.size() != num_v + 1) { // both ends padded with 1's
-    Cerr << "Error: wrong size (" << ranks.size() << ") for ranks array in "
+  if (ranks.length() != num_v + 1) { // both ends padded with 1's
+    Cerr << "Error: wrong size (" << ranks.length() << ") for ranks array in "
 	 << "C3Approximation::regression_size()." << std::endl;
     abort_handler(APPROX_ERROR);
   }
