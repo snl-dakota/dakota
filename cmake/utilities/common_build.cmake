@@ -212,8 +212,6 @@ ctest_start(${DAKOTA_CTEST_PROJECT_TAG})
 ctest_configure(RETURN_VALUE ConfigStatus)
 message("ctest_configure: cmake return code: ${ConfigStatus}")
 
-message(STATUS "Wesley in common_build.cmake. ctest_configure: cmake return code: ${ConfigStatus}")
-
 # Using file(WRITE...) resets the dakotaCtestResultsFile for each CTest run
 file( WRITE ${dakotaCtestResultsFile} "ctest_configure: ${ConfigStatus}\n" )
 
