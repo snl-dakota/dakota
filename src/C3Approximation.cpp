@@ -264,7 +264,8 @@ void C3Approximation::build()
       for (i=0; i<num_v; ++i)
 	Cout << "                     " << std::setw(write_precision+7)
 	     << one_approx_opts_get_nparams(opts[i]) - 1 << '\n';
-      Cout << "  Regression size:  " << regression_size() << std::endl;
+      Cout << "  Regression size:  " << function_train_get_nparams(ft)
+	   << std::endl;
     }
 
     // free approximation stuff

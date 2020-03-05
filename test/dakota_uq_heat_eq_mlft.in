@@ -28,9 +28,10 @@ method,
 #	  p_refinement uniform	      	     	     		#s1
 #	  allocation_control greedy				#s1
 ### MULTILEVEL ###
-#	multilevel_function_train				#s2,#s3
+#	multilevel_function_train				#s2,#s3,#s4
 #	  pilot_samples = 100 40 20 10				#s2,#s3
-#	  allocation_control rank_sampling			#s2
+#	  collocation_ratio = 1.5				#s4
+#	  allocation_control rank_sampling			#s2,#s4
 #	  allocation_control estimator_variance			#s3
           adapt_rank
           start_rank_sequence  = 2 2 2 2  kick_rank = 2  max_rank  = 10
@@ -38,7 +39,7 @@ method,
           solver_tolerance = 1e-8  rounding_tolerance = 1e-8
 	  convergence_tol = 0.0001
 	  seed = 1237
-	  output silent
+#	  output silent
 
 model,
 	id_model = 'HIERARCH'

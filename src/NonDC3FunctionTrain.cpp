@@ -166,7 +166,7 @@ config_regression(size_t colloc_pts, size_t regress_size,
   // or vice versa
   if (colloc_pts != std::numeric_limits<size_t>::max()) {
     numSamplesOnModel = colloc_pts;
-    collocRatio = terms_samples_to_ratio(regress_size, numSamplesOnModel);    
+    collocRatio = 2.;// for now.  TO DO: manage average using terms_samples_to_ratio(regress_size, numSamplesOnModel);  ???
   }
   else if (collocRatio > 0.) // define colloc pts from collocRatio
     numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
@@ -305,7 +305,7 @@ void NonDC3FunctionTrain::update_samples_from_order_increment()
   // This function computes an update to the total points.  The increment
   // induced relative to the current data set is managed in DataFitSurrModel::
   // rebuild_global())
-  prevSamplesOnModel = numSamplesOnModel;
+  prevSamplesOnModel = numSamplesOnModel; // *** numSamplesOnModel requires level mgmt
   numSamplesOnModel  = (int)std::floor(collocRatio * pow_mean_qoi_regress + .5);
 }
 
