@@ -760,8 +760,8 @@ void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
   approxInterface.pop_approximation(save_surr_data);
 
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque; // empty: default rebuild of all fns
-    approxInterface.rebuild_approximation(rebuild_deque);
+    BitArray rebuild_fns; // empty: default rebuild of all fns
+    approxInterface.rebuild_approximation(rebuild_fns);
     ++approxBuilds;
   }
 
@@ -781,8 +781,8 @@ void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
 
   /*
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque; // empty: default rebuild of all fns
-    approxInterface.rebuild_approximation(rebuild_deque);
+    BitArray rebuild_fns; // empty: default rebuild of all fns
+    approxInterface.rebuild_approximation(rebuild_fns);
     ++approxBuilds;
   }
   */
@@ -802,8 +802,8 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
 
   /*
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque; // empty: default rebuild of all fns
-    approxInterface.rebuild_approximation(rebuild_deque);
+    BitArray rebuild_fns; // empty: default rebuild of all fns
+    approxInterface.rebuild_approximation(rebuild_fns);
     ++approxBuilds;
   }
   */
@@ -1183,8 +1183,8 @@ void DataFitSurrModel::rebuild_global()
       append_approximation(true);
     }
     else if (true) {//approxInterface.formulation_update()) { // TO DO: rebuild new exp with existing data
-      BoolDeque rebuild_deque; // empty: default rebuild of all fns
-      approxInterface.rebuild_approximation(rebuild_deque);
+      BitArray rebuild_fns; // empty: default rebuild of all fns
+      approxInterface.rebuild_approximation(rebuild_fns);
       ++approxBuilds;
     }
 

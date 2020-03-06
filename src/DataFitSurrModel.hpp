@@ -738,13 +738,13 @@ inline void DataFitSurrModel::
 rebuild_approximation(const IntResponsePair& response_pr)
 {
   // decide which surrogates to rebuild based on resp_map content
-  BoolDeque rebuild_deque(numFns, false);
+  BitArray rebuild_fns(numFns); // init to false
   const ShortArray& asv = response_pr.second.active_set_request_vector();
   for (size_t i=0; i<numFns; ++i)
     if (asv[i])
-      rebuild_deque[i] = true;
+      rebuild_fns.set(i);
   // rebuild the designated surrogates
-  approxInterface.rebuild_approximation(rebuild_deque);
+  approxInterface.rebuild_approximation(rebuild_fns);
   ++approxBuilds;
 }
 
@@ -753,13 +753,13 @@ inline void DataFitSurrModel::
 rebuild_approximation(const IntResponseMap& all_resp)
 {
   // decide which surrogates to rebuild based on resp_map content
-  BoolDeque rebuild_deque(numFns, false);
+  BitArray rebuild_fns(numFns); // init to false
   for (size_t i=0; i<numFns; ++i)
     for (IntRespMCIter r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it)
       if (r_it->second.active_set_request_vector()[i])
-	{ rebuild_deque[i] = true; break; }
+	{ rebuild_fns.set(i); break; }
   // rebuild the designated surrogates
-  approxInterface.rebuild_approximation(rebuild_deque);
+  approxInterface.rebuild_approximation(rebuild_fns);
   ++approxBuilds;
 }
 

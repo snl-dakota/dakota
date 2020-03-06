@@ -1172,6 +1172,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 }
 
+
 void Interface::export_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1184,11 +1185,12 @@ void Interface::export_approximation()
   }
 }
 
+
 void Interface::
-rebuild_approximation(const BoolDeque& rebuild_deque)
+rebuild_approximation(const BitArray& rebuild_fns)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->rebuild_approximation(rebuild_deque);
+    interfaceRep->rebuild_approximation(rebuild_fns);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
 	 << "approximation() function.\n       This interface does not "

@@ -103,7 +103,7 @@ protected:
 
   void export_approximation();
 
-  void rebuild_approximation(const BoolDeque& rebuild_deque);
+  void rebuild_approximation(const BitArray& rebuild_fns);
   void pop_approximation(bool save_data);
   void push_approximation();
   bool push_available();

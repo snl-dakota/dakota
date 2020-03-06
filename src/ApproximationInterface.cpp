@@ -725,8 +725,7 @@ void ApproximationInterface::export_approximation()
 
 /** This function updates the coefficients for each Approximation based
     on data increments provided by {update,append}_approximation(). */
-void ApproximationInterface::
-rebuild_approximation(const BoolDeque& rebuild_deque)
+void ApproximationInterface::rebuild_approximation(const BitArray& rebuild_fns)
 {
   // rebuild data shared among approximation instances
   sharedData.rebuild();
@@ -734,7 +733,7 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int fn_index = *it;
     // check for rebuild request (defaults to true if no deque defined)
-    if (rebuild_deque.empty() || rebuild_deque[fn_index]) {
+    if (rebuild_fns.empty() || rebuild_fns[fn_index]) {
       // approx bounds not updated as in build_approximation()
 
       // invokes increment_coefficients()

@@ -165,7 +165,7 @@ public:
   virtual void export_approximation();
 
   /// rebuilds the approximation after a data update
-  virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
+  virtual void rebuild_approximation(const BitArray& rebuild_fns);
 
   /// removes data from last append from the approximation
   virtual void pop_approximation(bool save_data);
@@ -231,7 +231,6 @@ public:
 
   /// clean up any interface parameter/response files when aborting
   virtual void file_cleanup() const;
-
 
   //
   //- Heading: Set and Inquire functions
