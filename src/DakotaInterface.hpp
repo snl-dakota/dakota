@@ -186,6 +186,9 @@ public:
   /// clear inactive approximation data
   virtual void clear_inactive();
 
+  /// query for change in approximation formulation
+  virtual bool formulation_updated() const;
+
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
 				     unsigned num_folds);

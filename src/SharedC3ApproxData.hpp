@@ -104,8 +104,8 @@ protected:
   //void refinement_statistics_type(short stats_type);
   //const Pecos::BitArrayULongMap& SharedApproxData::sobol_index_map();
 
-  //void build();
-  //void rebuild();
+  void build();
+  //void rebuild(); // defaults to build()
 
   void increment_order();
   void decrement_order();
@@ -211,9 +211,9 @@ inline void SharedC3ApproxData::active_model_key(const UShortArray& key)
 
   // these aren't used enough to warrant active iterators
   if (startOrder.find(key) == startOrder.end()) 
-    startOrder[key] = startOrderSpec;
+    { startOrder[key] = startOrderSpec;  formUpdated[key] = true; }
   if (startRank.find(key)  == startRank.end()) 
-    startRank[key]  = startRankSpec;  
+    { startRank[key]  =  startRankSpec;  formUpdated[key] = true; }
 }
 
 
@@ -328,6 +328,17 @@ random_variables_key(const BitArray& random_vars_key)
       if (random_vars_key[i])
 	randomIndices[cntr++] = i;
   }
+}
+
+
+inline void SharedC3ApproxData::build()
+{
+  // Ideally this would occur in post_build(), but for now there is only a
+  // SharedApproxData::build() that precedes Approximation::build()
+
+  // formulation updates (rank,order increments/decrements) have been
+  // synchronized once build is complete (no longer need to force a rebuild):
+  formUpdated[activeKey] = false;
 }
 
 

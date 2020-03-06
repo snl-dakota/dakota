@@ -126,6 +126,8 @@ protected:
 
   const RealVector& approximation_variances(const Variables& vars);
 
+  bool formulation_updated() const;
+
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
   Real2DArray challenge_diagnostics(const StringArray& metric_types,
 				    const RealMatrix& challenge_pts,
@@ -418,6 +420,10 @@ inline void ApproximationInterface::clear_active_data()
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
     functionSurfaces[*it].clear_active_data();
 }
+
+
+inline bool ApproximationInterface::formulation_updated() const
+{ return sharedData.formulation_updated(); }
 
 
 inline SharedApproxData& ApproximationInterface::shared_approximation()

@@ -1182,7 +1182,8 @@ void DataFitSurrModel::rebuild_global()
       // append new data sets, rebuild approximation, increment approxBuilds
       append_approximation(true);
     }
-    else if (true) {//approxInterface.formulation_update()) { // TO DO: rebuild new exp with existing data
+    else if (approxInterface.formulation_updated()) {
+      // rebuild new approximation form with existing data set
       BitArray rebuild_fns; // empty: default rebuild of all fns
       approxInterface.rebuild_approximation(rebuild_fns);
       ++approxBuilds;

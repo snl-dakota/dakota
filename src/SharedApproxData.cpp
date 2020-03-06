@@ -608,6 +608,17 @@ update_basis_distribution_parameters(const Pecos::MultivariateDistribution& mvd)
 }
 
 
+bool SharedApproxData::formulation_updated() const
+{
+  if (dataRep) return dataRep->formulation_updated();
+  else { // not virtual
+    std::map<UShortArray, bool>::const_iterator cit
+      = formUpdated.find(activeKey);
+    return (cit == formUpdated.end()) ? false : cit->second;
+  }
+}
+
+
 void SharedApproxData::
 configuration_options(const Pecos::ExpansionConfigOptions& ec_options)
 {

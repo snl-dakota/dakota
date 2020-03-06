@@ -138,6 +138,8 @@ construct_basis(const Pecos::MultivariateDistribution& mv_dist)
 
       ++av_cntr;
     }
+
+  formUpdated[activeKey] = true;
 }
 
 
@@ -150,6 +152,8 @@ void SharedC3ApproxData::update_basis()
     one_approx_opts_set_nparams(a_opts, nparam); // updated
     one_approx_opts_set_maxnum( a_opts, max_np); // not currently updated
   }
+
+  formUpdated[activeKey] = true;
 }
 
 } // namespace Dakota
