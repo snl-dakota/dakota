@@ -166,7 +166,11 @@ config_regression(size_t colloc_pts, size_t regress_size,
   // or vice versa
   if (colloc_pts != std::numeric_limits<size_t>::max()) {
     numSamplesOnModel = colloc_pts;
-    collocRatio = 2.;// for now.  TO DO: manage average using terms_samples_to_ratio(regress_size, numSamplesOnModel);  ???
+    collocRatio = 2.; // TO DO: don't want to hardwire ratio for pts spec
+    // Other options:
+    // > infer from pilot (terms_samples_to_ratio()) & fix for iters to follow
+    //   (may require averaging for shaped pilot/order/rank)
+    // > allow dual pts/ratio spec with overridable default
   }
   else if (collocRatio > 0.) // define colloc pts from collocRatio
     numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
@@ -245,7 +249,7 @@ push_c3_options(size_t start_rank, size_t start_order)
   SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
     uSpaceModel.shared_approximation().data_rep();
 
-  // These two are passed in since they may be a scalar or part of a sequence:
+  // These are passed in since they may be a scalar or part of a sequence:
   shared_data_rep->set_parameter("start_poly_order", start_order);
   shared_data_rep->set_parameter("start_rank",       start_rank);
 
@@ -305,15 +309,16 @@ void NonDC3FunctionTrain::update_samples_from_order_increment()
   // This function computes an update to the total points.  The increment
   // induced relative to the current data set is managed in DataFitSurrModel::
   // rebuild_global())
-  prevSamplesOnModel = numSamplesOnModel; // *** numSamplesOnModel requires level mgmt
-  numSamplesOnModel  = (int)std::floor(collocRatio * pow_mean_qoi_regress + .5);
+  //prevSamplesOnModel = numSamplesOnModel;//requires level mgmt for persistence
+  numSamplesOnModel = (int)std::floor(collocRatio * pow_mean_qoi_regress + .5);
 }
 
 
 /** inconvenient to recompute: store previous samples rather than
-    previous ranks */
+    previous ranks
 void NonDC3FunctionTrain::update_samples_from_order_decrement()
-{ numSamplesOnModel = prevSamplesOnModel; }
+{ numSamplesOnModel = prevSamplesOnModel; }//requires level mgmt for persistence
+*/
 
 
 /* Compute power mean of rank (common power values: 1 = average value,

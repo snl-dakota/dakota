@@ -38,10 +38,8 @@ public:
   /*
   /// alternate constructor for helper iterator
   NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
-			      short exp_coeffs_approach,
-			      const UShortArray& exp_order_seq,
-			      const RealVector& dim_pref,
 			      const SizetArray& colloc_pts_seq,
+			      const RealVector& dim_pref,
 			      Real colloc_ratio, const SizetArray& pilot,
 			      int seed, short u_space_type, short refine_type,
 			      short refine_control, short covar_control,

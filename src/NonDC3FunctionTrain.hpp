@@ -62,7 +62,7 @@ protected:
 
   void push_increment();
   void update_samples_from_order_increment();
-  void update_samples_from_order_decrement();
+  //void update_samples_from_order_decrement();
   void sample_allocation_metric(Real& regress_metric, Real power);
 
   /// override certain print functions
@@ -104,8 +104,8 @@ private:
   //- Heading: Data
   //
 
-  /// for decremented order without recomputation from previous ranks
-  int prevSamplesOnModel;
+  // for decremented order without recomputation from previous ranks
+  //int prevSamplesOnModel;
 
   // pointer to the active object instance used within the static evaluator
   // functions in order to avoid the need for static data

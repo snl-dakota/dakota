@@ -115,10 +115,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
     that employ regression.
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
-			    short exp_coeffs_approach,
-			    const UShortArray& exp_order_seq,
-			    const RealVector& dim_pref,
 			    const SizetArray& colloc_pts_seq,
+			    const RealVector& dim_pref,
 			    Real colloc_ratio, int seed, short u_space_type,
 			    short refine_type, short refine_control,
 			    short covar_control, short ml_alloc_control,
@@ -154,27 +152,14 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  unsigned short exp_order_spec = USHRT_MAX;
-  size_t build_pts = std::numeric_limits<size_t>::max();
-  UShortArray exp_orders; // defined for expansion_samples/regression
-  if (!expOrderSeqSpec.empty()) {
-    exp_order_spec = (sequenceIndex  < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-    config_expansion_orders(exp_order_spec, dimPrefSpec, exp_orders);
-  }
-  if (!collocPtsSeqSpec.empty())
-    build_pts =      (sequenceIndex  < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-
   Iterator u_space_sampler;
-  UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
-  String approx_type, rng("mt19937"), pt_reuse;
-  config_regression(exp_orders, build_pts, 1, exp_coeffs_approach,
-		    Pecos::DEFAULT_LEAST_SQ_REGRESSION, tensor_grid_order,
-		    SUBMETHOD_LHS, rng, pt_reuse, u_space_sampler,
-		    g_u_model, approx_type);
-
-  assign_allocation_control();
+  size_t colloc_pts = collocation_points(), regress_size = SharedC3ApproxData::
+    regression_size(numContinuousVars, start_rank(), start_order());
+  if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
+    Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
+	 << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -194,6 +179,9 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
     outputLevel, pt_reuse, import_build_pts_file, import_build_format,
     import_build_active_only), false);
   initialize_u_space_model();
+
+  // Configure settings for ML allocation (requires uSpaceModel)
+  assign_allocation_control();
 
   // no expansionSampler, no numSamplesOnExpansion
 }
@@ -322,41 +310,19 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
 }
 
 
-void NonDMultilevelFunctionTrain::update_from_specification()
-{
-  // udpate sampler settings (NonDQuadrature or NonDSampling)
-  if (tensorRegression) {
-    NonDQuadrature* nond_quad
-      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
-    nond_quad->samples(numSamplesOnModel);
-    if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
-      SharedC3ApproxData* shared_data_rep = (SharedC3ApproxData*)
-	uSpaceModel.shared_approximation().data_rep();
-      size_t ft_start_order = shared_data_rep->start_order();
-      UShortArray dim_quad_order(numContinuousVars);
-      for (size_t i=0; i<numContinuousVars; ++i)
-	//dim_quad_order[i] = exp_order[i] + 1;
-	dim_quad_order[i] = ft_start_order + 1;// or tensor order user spec ?
-      nond_quad->quadrature_order(dim_quad_order);
-    }
-    nond_quad->update(); // sanity check on sizes, likely a no-op
-  }
-  else { // enforce increment through sampling_reset()
-    // no lower bound on samples in the subiterator
-    uSpaceModel.subordinate_iterator().sampling_reference(0);
-    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    dfs_model->total_points(numSamplesOnModel);
-  }
-}
-
-
 void NonDMultilevelFunctionTrain::
 increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 {
   numSamplesOnModel = new_samp;
   // total_samp,lev not required for this derived implementation
 
-  // update sampler settings (NonDQuadrature or NonDSampling)
+  update_from_specification();
+}
+
+
+void NonDMultilevelFunctionTrain::update_from_specification()
+{
+  // udpate sampler settings (NonDQuadrature or NonDSampling)
   Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
   if (tensorRegression) {
     NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
@@ -377,8 +343,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   else if (sub_iter_rep != NULL) { // enforce increment using sampling_reset()
     sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
     DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    // total including reuse from DB/file (does not include previous ML iter)
-    dfs_model->total_points(numSamplesOnModel);
+    dfs_model->total_points(numSamplesOnModel); // total including previous 
   }
 }
 
