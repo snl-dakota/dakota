@@ -203,7 +203,7 @@ void C3Approximation::build()
 
     // free if previously built
     C3FnTrainPtrs& ftp = levApproxIter->second;
-    ftp.free_ft();
+    ftp.free_all();
 
     if (data_rep->crossVal) // future capability for poly orders
       Cerr << "Warning: CV is not yet implemented in C3Approximation.  "
