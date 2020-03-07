@@ -89,6 +89,11 @@ protected:
   /// user-specified file for importing build points
   String importBuildPointsFile;
 
+  /// scalar specification for initial rank (prior to adapt_rank)
+  size_t startRankSpec;
+  /// scalar specification for initial basis order (prior to uniform refinement)
+  size_t startOrderSpec;
+
 private:
 
   //

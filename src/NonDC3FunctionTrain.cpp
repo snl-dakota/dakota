@@ -41,6 +41,10 @@ struct SPrintArgs
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
+  startRankSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_rank")),
+  startOrderSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_order")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {
@@ -74,9 +78,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // compute initial regression size using a static helper
   // (uSpaceModel.shared_approximation() is not yet available)
   size_t colloc_pts = probDescDB.get_sizet("method.nond.collocation_points"),
-    regress_size = SharedC3ApproxData::regression_size(numContinuousVars,
-      probDescDB.get_sizet("method.nond.c3function_train.start_rank"),
-      probDescDB.get_sizet("method.nond.c3function_train.start_order"));
+    regress_size = SharedC3ApproxData::
+      regression_size(numContinuousVars, startRankSpec, startOrderSpec);
   // configure u-space sampler and model
   if (!config_regression(colloc_pts, regress_size, u_space_sampler, g_u_model)){
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
@@ -123,6 +126,10 @@ NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 		    Model& model):
   NonDExpansion(problem_db, model),
+  startRankSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_rank")),
+  startOrderSpec(
+    problem_db.get_sizet("method.nond.c3function_train.start_order")),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file"))
 {

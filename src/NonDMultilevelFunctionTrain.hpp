@@ -130,7 +130,8 @@ inline size_t NonDMultilevelFunctionTrain::collocation_points() const
 
 inline size_t NonDMultilevelFunctionTrain::start_rank() const
 {
-  if (startRankSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  if (startRankSeqSpec.empty())
+    return startRankSpec; // use default provided by DataMethod
   else
     return (sequenceIndex < startRankSeqSpec.size()) ?
       startRankSeqSpec[sequenceIndex] : startRankSeqSpec.back();
@@ -139,7 +140,8 @@ inline size_t NonDMultilevelFunctionTrain::start_rank() const
 
 inline size_t NonDMultilevelFunctionTrain::start_order() const
 {
-  if (startOrderSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  if (startOrderSeqSpec.empty())
+    return startOrderSpec; // use default provided by DataMethod
   else
     return (sequenceIndex < startOrderSeqSpec.size()) ?
       startOrderSeqSpec[sequenceIndex] : startOrderSeqSpec.back();

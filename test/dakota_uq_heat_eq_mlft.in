@@ -10,36 +10,36 @@
 method,
 	model_pointer = 'HIERARCH'
 ### MULTIFIDELITY ###
-	multifidelity_function_train				#s0,#s1
+	multifidelity_function_train			     #s0,#s1,#s2,#s3,#s4
 ## No refinement:
 	  collocation_points_sequence = 1000 400 200 100	#s0
-## Individual adaptive refinement
-#	  collocation_points_sequence = 100  40  20  10		# TO DO
-#	  p_refinement uniform					# TO DO
-## Integrated adaptive refinement:
-# Note: there are 2 dimensions of MF candidate advancement: order, rank.
-# > ramp start_order and leave adapt_rank on (no user ramping of rank).  Then
-#   use regression_size() to compute sample increment.
-# > spec supports start_{rank,order}_seq in addition to colloc_pts_seq, where
-#   all 3 stipulate initial resolutions per level, not the adaptation procedure.
-#   Since we have adapt_rank and not adapt_order, support bullet above for now.
-#	  collocation_points_sequence = 100  40  20  10		#s1
-# > Distingish uniform poly order (default) vs. rank (option) refinement?
-#	  p_refinement uniform	      	     	     		#s1
-#	  allocation_control greedy				#s1
+#	  collocation_ratio = 1.75     	     	     		#s1
+## Adaptive refinement: (individual, integrated)
+# > FT can adapt along dimensions of both rank and order.  For now, we refine
+#   order and rely on C3 adapt_rank (optionally):
+# > spec supports start_{rank,order}_seq and colloc_pts_seq/plot_samples, which
+#   specify _initial_ resolutions per level, prior to refinement/adaptation
+# > Uniform refinement could support poly order (default) vs. rank (option)
+#	  collocation_points_sequence = 100  40  20  10		#s2,#s3
+#	  collocation_ratio = 1.75     	     	     		#s4
+#	  p_refinement uniform					#s2,#s3,#s4
+#	  allocation_control greedy				#s3
+	  start_rank_sequence = 3 2 2 1 			#s0,#s1,#s2,#s4
+#	  start_rank_sequence = 2 2 2 2	 adapt_rank		#s3
+#
 ### MULTILEVEL ###
-#	multilevel_function_train				#s2,#s3,#s4
-#	  pilot_samples = 100 40 20 10				#s2,#s3
-#	  collocation_ratio = 1.5				#s4
-#	  allocation_control rank_sampling			#s2,#s4
-#	  allocation_control estimator_variance			#s3
-          adapt_rank
-          start_rank_sequence  = 2 2 2 2  kick_rank = 2  max_rank  = 10
-	  start_order_sequence = 2 2 2 2                 max_order = 10
+#	multilevel_function_train				#s5,#s6,#s7
+#	  pilot_samples = 100 40 20 10				#s5,#s6
+#	  collocation_ratio = 1.75				#s7
+#	  allocation_control rank_sampling			#s5,#s7
+#	  allocation_control estimator_variance			#s6
+#          start_rank_sequence  = 2 2 2 2			#s5,#s6,#s7	
+	  kick_rank = 2  max_rank  = 10
+	  start_order_sequence = 2 2 2 2   max_order = 10
           solver_tolerance = 1e-8  rounding_tolerance = 1e-8
-	  convergence_tol = 0.0001
+	  convergence_tol  = 1e-4
 	  seed = 1237
-#	  output silent
+	  output silent
 
 model,
 	id_model = 'HIERARCH'

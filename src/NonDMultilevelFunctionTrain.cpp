@@ -289,8 +289,19 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
-  // regression
-  if (sequenceIndex < collocPtsSeqSpec.size())
+  if (collocPtsSeqSpec.empty()) {
+    if (collocRatio > 0.) {
+      size_t regress_size = SharedC3ApproxData::
+	regression_size(numContinuousVars, start_rank(), start_order());
+      numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
+    }
+    else {
+      Cerr << "Error: incomplete specification in NonDMultilevelFunctionTrain"
+	   << "::assign_specification_sequence()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+  else if (sequenceIndex < collocPtsSeqSpec.size())
     numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
 
   update_from_specification();
@@ -302,11 +313,10 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
   // regression
   // advance expansionOrder and/or collocationPoints, as admissible
   size_t next_i = sequenceIndex + 1;
-  if (next_i < collocPtsSeqSpec.size())
-    { numSamplesOnModel = collocPtsSeqSpec[next_i]; ++sequenceIndex; }
-  //else leave at previous value
-
-  update_from_specification();
+  if (next_i < collocPtsSeqSpec.size() || next_i < startRankSeqSpec.size() ||
+      next_i < startOrderSeqSpec.size())
+    ++sequenceIndex;
+  assign_specification_sequence();
 }
 
 
