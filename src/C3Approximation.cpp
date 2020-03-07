@@ -79,9 +79,9 @@ void C3FnTrainPtrs::ft_derived_functions_init_null()
 
 
 void C3FnTrainPtrs::
-ft_derived_functions_create(struct MultiApproxOpts * opts,
-			    bool full_stats, Real round_tol)
-{ ftpRep->ft_derived_functions_create(opts, full_stats, round_tol); }
+ft_derived_functions_create(struct MultiApproxOpts * opts, size_t num_mom,
+			    Real round_tol)
+{ ftpRep->ft_derived_functions_create(opts, num_mom, round_tol); }
 
 
 void C3FnTrainPtrs::
@@ -598,15 +598,15 @@ void C3Approximation::
 compute_derived_statistics(C3FnTrainPtrs& ftp, bool overwrite)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  bool full_stats = (expansionMoments.length() == 4); // default to partial
-  if (!ftp.derived_functions().allocated)
-    ftp.ft_derived_functions_create(data_rep->multiApproxOpts, full_stats,
-				    data_rep->arithmeticTol);
-  else if (overwrite) {
+  size_t num_mom = expansionMoments.length();
+  if (overwrite) {
     ftp.ft_derived_functions_free();
-    ftp.ft_derived_functions_create(data_rep->multiApproxOpts, full_stats,
+    ftp.ft_derived_functions_create(data_rep->multiApproxOpts, num_mom,
 				    data_rep->arithmeticTol);
   }
+  else if (ftp.derived_functions().allocated < num_mom)
+    ftp.ft_derived_functions_create(data_rep->multiApproxOpts, num_mom,
+				    data_rep->arithmeticTol);
 }
 
 
@@ -614,16 +614,16 @@ void C3Approximation::
 compute_derived_statistics_av(C3FnTrainPtrs& ftp, bool overwrite)
 {
   SharedC3ApproxData* data_rep = (SharedC3ApproxData*)sharedDataRep;
-  if (!ftp.derived_functions().allocated)
-    ftp.ft_derived_functions_create_av(data_rep->multiApproxOpts,
-				       data_rep->randomIndices,
-				       data_rep->arithmeticTol);
-  else if (overwrite) {
+  if (overwrite) {
     ftp.ft_derived_functions_free();
     ftp.ft_derived_functions_create_av(data_rep->multiApproxOpts,
 				       data_rep->randomIndices,
 				       data_rep->arithmeticTol);
   }
+  else if (ftp.derived_functions().allocated < expansionMoments.length())
+    ftp.ft_derived_functions_create_av(data_rep->multiApproxOpts,
+				       data_rep->randomIndices,
+				       data_rep->arithmeticTol);
 }
 
 

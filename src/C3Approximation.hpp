@@ -68,7 +68,7 @@ public:
   // Manage stats (FTDerivedFunctions) computed from FT approximation
   void ft_derived_functions_init_null();
   void ft_derived_functions_create(struct MultiApproxOpts* opts,
-				   bool full_stats, Real round_tol);
+				   size_t num_mom, Real round_tol);
   void ft_derived_functions_create_av(struct MultiApproxOpts* opts,
 				      const SizetArray& rand_indices,
 				      Real round_tol);

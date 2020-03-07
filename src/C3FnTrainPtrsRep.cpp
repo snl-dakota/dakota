@@ -15,7 +15,7 @@ namespace Dakota {
 
 void C3FnTrainPtrsRep::ft_derived_functions_init_null()
 {
-  ft_derived_fns.allocated = false;
+  ft_derived_fns.allocated = 0;
 
   ft_derived_fns.ft_nonrand = NULL;
   ft_derived_fns.ft_squared = NULL;
@@ -60,12 +60,14 @@ ft_derived_functions_create_av(struct MultiApproxOpts * opts,
 
 
 void C3FnTrainPtrsRep::
-ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats,
+ft_derived_functions_create(struct MultiApproxOpts * opts, size_t num_mom,
 			    Real round_tol)
 {
   struct FunctionTrain * ft_tmp = NULL;
   Real var, stdev;
-  // arithmetic tolerance (same as for combination axpy)
+  size_t prev_alloc = ft_derived_fns.allocated; // cache a copy
+
+  // arithmetic tolerance (same as for combination c3axpy)
   //   --> how accurate do you want the result of an algebraic manipulation?
   // other is a regression tolerance that is more like a noise tolerance
 
@@ -77,40 +79,41 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats,
   // -------------
   // First moment:
   // -------------
-
-  ft_derived_fns.first_moment = function_train_integrate_weighted(ft);
+  if (num_mom && !prev_alloc)
+    ft_derived_fns.first_moment = function_train_integrate_weighted(ft);
 
   // -------------
   // Second moment:
   // -------------
+  if (num_mom >= 2 && prev_alloc < 2) {
+    // Skip raw moment: (this FT is used for allVars case above)
+    //ft_tmp = function_train_product(ft, ft);
+    //ft_derived_fns.ft_squared = function_train_round(ft_tmp, round_tol, opts);
+    //function_train_free(ft_tmp);
+    //ft_derived_fns.second_moment
+    //  = function_train_integrate_weighted(ft_derived_fns.ft_squared);
 
-  // Skip raw moment: (this FT is used for allVars case above)
-  //ft_tmp = function_train_product(ft, ft);
-  //ft_derived_fns.ft_squared = function_train_round(ft_tmp, round_tol, opts);
-  //function_train_free(ft_tmp);
-  //ft_derived_fns.second_moment
-  //  = function_train_integrate_weighted(ft_derived_fns.ft_squared);
+    //ft_derived_fns.ft_constant_at_mean =
+    ft_tmp = function_train_constant(-ft_derived_fns.first_moment, opts);
+    ft_derived_fns.ft_diff_from_mean
+      = function_train_sum(ft, /*ft_derived_fns.ft_constant_at_mean*/ft_tmp);
+    function_train_free(ft_tmp);
+    ft_tmp = function_train_product(ft_derived_fns.ft_diff_from_mean,
+				    ft_derived_fns.ft_diff_from_mean);
+    ft_derived_fns.ft_diff_from_mean_squared
+      = function_train_round(ft_tmp, round_tol, opts);
+    function_train_free(ft_tmp);
 
-  //ft_derived_fns.ft_constant_at_mean =
-  ft_tmp = function_train_constant(-ft_derived_fns.first_moment, opts);
-  ft_derived_fns.ft_diff_from_mean
-    = function_train_sum(ft, /*ft_derived_fns.ft_constant_at_mean*/ft_tmp);
-  function_train_free(ft_tmp);
-  ft_tmp = function_train_product(ft_derived_fns.ft_diff_from_mean,
-				  ft_derived_fns.ft_diff_from_mean);
-  ft_derived_fns.ft_diff_from_mean_squared
-    = function_train_round(ft_tmp, round_tol, opts);
-  function_train_free(ft_tmp);
-
-  var = ft_derived_fns.second_central_moment =
-    function_train_integrate_weighted(ft_derived_fns.ft_diff_from_mean_squared);
-  stdev = ft_derived_fns.std_dev = std::sqrt(var);
+    var = ft_derived_fns.second_central_moment =
+      function_train_integrate_weighted(
+	ft_derived_fns.ft_diff_from_mean_squared);
+    stdev = ft_derived_fns.std_dev = std::sqrt(var);
+  }
 
   // -------------
   // Third moment:
   // -------------
-
-  if (full_stats) {
+  if (num_mom >= 3 && prev_alloc < 3) {
     // Skip raw moment:
     //ft_tmp = function_train_product(ft_derived_fns.ft_squared, ft);    
     //ft_derived_fns.ft_cubed = function_train_round(ft_tmp, round_tol, opts);
@@ -129,11 +132,12 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats,
 
     // Compute skew w/o additional FTs by standardizing third_central_moment
     ft_derived_fns.skewness = ft_derived_fns.third_central_moment / var / stdev;
+  }
 
-    // -------------
-    // Fourth moment:
-    // -------------
-
+  // -------------
+  // Fourth moment:
+  // -------------
+  if (num_mom >= 4 && prev_alloc < 4) {
     // Skip raw moment:
     //ft_tmp = function_train_product(ft_derived_fns.ft_squared,
     //                                ft_derived_fns.ft_squared);
@@ -155,7 +159,7 @@ ft_derived_functions_create(struct MultiApproxOpts * opts, bool full_stats,
       = ft_derived_fns.fourth_central_moment / var / var - 3.;// excess kurtosis
   }
 
-  ft_derived_fns.allocated = true;
+  ft_derived_fns.allocated = num_mom;
 }
 
 
@@ -216,7 +220,7 @@ void C3FnTrainPtrsRep::ft_derived_functions_free()
   //  ft_derived_fns.ft_diff_from_mean_normalized_cubed = NULL;
   //}
 
-  ft_derived_fns.allocated = false;
+  ft_derived_fns.allocated = 0;
 }
 
 } // namespace
