@@ -311,13 +311,13 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
     negative_marginal_log_likelihood(final_obj_value, final_obj_gradient);
     if (final_obj_value < bestObjFunValue) {
       bestObjFunValue = final_obj_value;
-      bestThetaValues = thetaValues;
+      *bestThetaValues = *thetaValues;
     }
     (*objectiveFunctionHistory)(i) = final_obj_value;
     algo.reset();
   }
 
-  thetaValues = bestThetaValues;
+  *thetaValues = *bestThetaValues;
 
   /*
   std::cout << "\n";
