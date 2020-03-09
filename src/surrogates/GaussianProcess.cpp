@@ -27,9 +27,17 @@ namespace surrogates {
 GaussianProcess::GaussianProcess(){}
 GaussianProcess::~GaussianProcess(){}
 
+const VectorXd & GaussianProcess::get_posterior_std_dev() const { return *posteriorStdDev; }
+
+const MatrixXd & GaussianProcess::get_posterior_covariance() const { return *posteriorCov; }
+
+const VectorXd & GaussianProcess::get_theta_values() const { return *thetaValues; }
+
+int GaussianProcess::get_num_variables() const { return numVariables; }
+
 void GaussianProcess::set_theta(const std::vector<double> theta_new) {
-  for (int i = 0; i < thetaValues.size(); i++)
-    thetaValues(i) = theta_new[i];
+  for (int i = 0; i < thetaValues->size(); i++)
+    (*thetaValues)(i) = theta_new[i];
 }
 
 void GaussianProcess::generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
@@ -71,12 +79,13 @@ void GaussianProcess::compute_first_deriv_pred_mat(const MatrixXd &pred_mat, con
   first_deriv_pred_mat.setZero();
 
   MatrixXd scaled_samples = dataScaler->get_scaled_features();
+  MatrixXd thetaValuesMatrix = *thetaValues;
 
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
       first_deriv_pred_mat(i,j) = -pred_mat(i,j)
                                    *(scaled_pred_pts(i,index) - scaled_samples(j,index))
-                                   *exp(-2.0*thetaValues(index+1));
+                                   *exp(-2.0*(thetaValuesMatrix(index+1)));
     }
   }
 }
@@ -95,55 +104,59 @@ void GaussianProcess::compute_second_deriv_pred_mat(const MatrixXd &pred_mat, co
   if (index_i == index_j)
     diagonal_factor = 1.0;
 
+  MatrixXd thetaValuesMatrix = *thetaValues;
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
       second_deriv_pred_mat(i,j) = pred_mat(i,j)
                                    *((scaled_pred_pts(i,index_i) - scaled_samples(j,index_i))
                                    *(scaled_pred_pts(i,index_j) - scaled_samples(j,index_j))
-                                   *exp(-2.0*(thetaValues(index_i+1) + thetaValues(index_j+1)))
-                                   - diagonal_factor*exp(-2.0*(thetaValues(index_i+1))));
+                                   *exp(-2.0*(thetaValuesMatrix(index_i+1) + thetaValuesMatrix(index_j+1)))
+                                   - diagonal_factor*exp(-2.0*(thetaValuesMatrix(index_i+1))));
     }
   }
 }
 
 double GaussianProcess::sq_exp_cov(const int i, const int j) {
   double inside = 0.0;
+  MatrixXd thetaValuesMatrix = *thetaValues;
   for (int k = 0; k < numVariables; k++)
-    inside += componentwiseDistances[k](i,j)*std::exp(-2.0*thetaValues(k+1));
+    inside += componentwiseDistances[k](i,j)*std::exp(-2.0*thetaValuesMatrix(k+1));
 
-  return std::exp(2.0*thetaValues(0))*exp(-0.5*inside);
+  return std::exp(2.0*thetaValuesMatrix(0))*exp(-0.5*inside);
 }
 
 double GaussianProcess::sq_exp_cov_pred(const VectorXd &x, const VectorXd &y) {
   VectorXd diff = x - y;
   double inside = 0.0;
+  MatrixXd thetaValuesMatrix = *thetaValues;
   for (int k = 0; k < numVariables; k++)
-    inside += std::pow(diff(k),2.0)*std::exp(-2.0*thetaValues(k+1));
+    inside += std::pow(diff(k),2.0)*std::exp(-2.0*thetaValuesMatrix(k+1));
 
-  return std::exp(2.0*thetaValues(0))*std::exp(-0.5*inside);
+  return std::exp(2.0*thetaValuesMatrix(0))*std::exp(-0.5*inside);
 }
                 
 
-void GaussianProcess::compute_Gram(bool compute_derivs){
+void GaussianProcess::compute_gram(bool compute_derivs){
   for (int i = 0; i < numSamples; i++) {
     for (int j = i; j < numSamples; j++) {
-      GramMatrix(i,j) = sq_exp_cov(i,j);
+      (*GramMatrix)(i,j) = sq_exp_cov(i,j);
       if (i != j)
-        GramMatrix(j,i) = GramMatrix(i,j);
+        (*GramMatrix)(j,i) = (*GramMatrix)(i,j);
     }
   }
 
   if (compute_derivs) {
-    GramMatrixDerivs[0] = 2.0*GramMatrix;
+    GramMatrixDerivs[0] = 2.0*(*GramMatrix);
     for (int k = 1 ; k < numVariables + 1; k++) {
-      GramMatrixDerivs[k] = GramMatrix.cwiseProduct(componentwiseDistances[k-1])
-                            *std::exp(-2.0*thetaValues(k));
+      MatrixXd thetaValuesMatrix = *thetaValues;
+      GramMatrixDerivs[k] = GramMatrix->cwiseProduct(componentwiseDistances[k-1])
+                            *std::exp(-2.0*thetaValuesMatrix(k));
     }
   }
 
   /* add in the nugget */
   for (int i = 0; i < numSamples; i++)
-    GramMatrix(i,i) += nuggetValue;
+    (*GramMatrix)(i,i) += nuggetValue;
 }
 
 void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient) {
@@ -152,15 +165,15 @@ void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, Vector
   MatrixXd Q, eye_matrix;
   eye_matrix = MatrixXd::Identity(numSamples,numSamples);
 
-  compute_Gram(true);
-  CholFact.compute(GramMatrix);
+  compute_gram(true);
+  CholFact.compute(*GramMatrix);
   VectorXd D(CholFact.vectorD());
 
-  z = CholFact.solve(targetValues);
+  z = CholFact.solve(*targetValues);
   logSum = 0.5*log(D.array()).matrix().sum();
   Q = -0.5*(z*z.transpose() - CholFact.solve(eye_matrix));
 
-  obj_value = logSum + 0.5*targetValues.col(0).dot(z) + 
+  obj_value = logSum + 0.5*targetValues->col(0).dot(z) + 
               static_cast<double>(numSamples)/2.0*log(2.0*PI);
 
   MatrixXd product(numSamples,numSamples);
@@ -168,8 +181,7 @@ void GaussianProcess::negative_marginal_log_likelihood(double &obj_value, Vector
     obj_gradient(k) = (GramMatrixDerivs[k].cwiseProduct(Q)).sum();
 }
 
-
-void GaussianProcess::compute_Gram_pred(const MatrixXd &samples, MatrixXd &Gram_pred) {
+void GaussianProcess::compute_gram_pred(const MatrixXd &samples, MatrixXd &Gram_pred) {
   const int numPredictionPts = samples.rows();
   Gram_pred.resize(numPredictionPts,numPredictionPts);
   for (int i = 0; i < numPredictionPts; i++) {
@@ -179,7 +191,6 @@ void GaussianProcess::compute_Gram_pred(const MatrixXd &samples, MatrixXd &Gram_
         Gram_pred(j,i) = Gram_pred(i,j);
     }
   }
-
 }
 
 GaussianProcess::GaussianProcess(const MatrixXd &samples, 
@@ -193,7 +204,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 
   numSamples = samples.rows();
   numVariables = samples.cols();
-  targetValues = response;
+  targetValues = std::make_shared<MatrixXd>(response);
   
   /* Scale the data */
   if (scaler_type == "mean normalization")
@@ -210,10 +221,10 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
   MatrixXd scaled_samples = dataScaler->get_scaled_features();
 
   /* size of thetaValues for squared exponential kernel and one QoI */
-  thetaValues.resize(numVariables+1);
-  bestThetaValues.resize(numVariables+1);
+  thetaValues = std::make_shared<VectorXd>(numVariables+1);
+  bestThetaValues = std::make_shared<VectorXd>(numVariables+1);
   /* set the size of the GramMatrix and its derivatives */
-  GramMatrix.resize(numSamples, numSamples);
+  GramMatrix = std::make_shared<MatrixXd>(numSamples, numSamples);
   GramMatrixDerivs.resize(numVariables+1);
   for (int k = 0; k < numVariables+1; k++) {
     GramMatrixDerivs[k].resize(numSamples, numSamples);
@@ -288,7 +299,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 
   std::vector<std::string> output;
 
-  objectiveFunctionHistory.resize(num_restarts);
+  objectiveFunctionHistory = std::make_shared<VectorXd>(num_restarts);
   bestObjFunValue = 1.0e300;
 
   double final_obj_value;
@@ -299,8 +310,8 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
       (*x_ptr)[j] = initial_guesses(i,j);
     }
     output = algo.run(x, *gp_objective, *bound, true, *outStream);
-    for (int j = 0; j < thetaValues.size(); ++j) {
-      thetaValues(j) = (*x_ptr)[j];
+    for (int j = 0; j < thetaValues->size(); ++j) {
+      (*thetaValues)(j) = (*x_ptr)[j];
     }
     /* get the final objective function value */
     negative_marginal_log_likelihood(final_obj_value, final_obj_gradient);
@@ -308,7 +319,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
       bestObjFunValue = final_obj_value;
       bestThetaValues = thetaValues;
     }
-    objectiveFunctionHistory(i) = final_obj_value;
+    (*objectiveFunctionHistory)(i) = final_obj_value;
     algo.reset();
   }
 
@@ -322,7 +333,6 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
   std::cout << "best objective function value is " <<  bestObjFunValue << std::endl;
   std::cout << "best objective function gradient norm is " <<  final_obj_gradient.norm() << std::endl;
   */
-
 }
 
 void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
@@ -345,14 +355,14 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
   MatrixXd scaled_pred_pts = *(dataScaler->scale_samples(samples));
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_Gram(false);
-  CholFact.compute(GramMatrix);
+  compute_gram(false);
+  CholFact.compute(*GramMatrix);
 
   MatrixXd pred_mat;
   compute_prediction_matrix(scaled_pred_pts,pred_mat);
 
   MatrixXd chol_solve_target, chol_solve_pred_mat;
-  chol_solve_target = CholFact.solve(targetValues);
+  chol_solve_target = CholFact.solve(*targetValues);
   chol_solve_pred_mat = CholFact.solve(pred_mat.transpose());
 
   /* value */
@@ -360,15 +370,13 @@ void GaussianProcess::value(const MatrixXd &samples, MatrixXd &approx_values) {
 
   /* compute the covariance matrix and standard deviation */
   MatrixXd Gram_pred;
-  compute_Gram_pred(scaled_pred_pts,Gram_pred);
-  posteriorCov = Gram_pred - pred_mat*chol_solve_pred_mat;
+  compute_gram_pred(scaled_pred_pts,Gram_pred);
+  posteriorCov = std::make_shared<MatrixXd>( Gram_pred - pred_mat*chol_solve_pred_mat );
 
-
-  posteriorStdDev.resize(numPredictionPts);
+  posteriorStdDev = std::make_shared<VectorXd>(numPredictionPts);
   for (int i = 0; i < numPredictionPts; i++) {
-    posteriorStdDev(i) = sqrt(posteriorCov(i,i));
+    (*posteriorStdDev)(i) = sqrt((*posteriorCov)(i,i));
   }
-
 }
 
 void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient) {
@@ -387,12 +395,12 @@ void GaussianProcess::gradient(const MatrixXd &samples, MatrixXd &gradient) {
   MatrixXd scaled_pred_pts = *(dataScaler->scale_samples(samples));
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_Gram(false);
-  CholFact.compute(GramMatrix);
+  compute_gram(false);
+  CholFact.compute(*GramMatrix);
 
   MatrixXd pred_mat, chol_solve_target, first_deriv_pred_mat;
   compute_prediction_matrix(scaled_pred_pts,pred_mat);
-  chol_solve_target = CholFact.solve(targetValues);
+  chol_solve_target = CholFact.solve(*targetValues);
 
   /* gradient */
   for (int i = 0; i < numPredictionPts; i++) {
@@ -419,12 +427,12 @@ void GaussianProcess::hessian(const MatrixXd &sample, MatrixXd &hessian) {
   MatrixXd scaled_pred_point = *(dataScaler->scale_samples(sample));
 
   /* compute the Gram matrix and its Cholesky factorization */
-  compute_Gram(false);
-  CholFact.compute(GramMatrix);
+  compute_gram(false);
+  CholFact.compute(*GramMatrix);
 
   MatrixXd pred_mat, chol_solve_target, second_deriv_pred_mat;
   compute_prediction_matrix(scaled_pred_point,pred_mat);
-  chol_solve_target = CholFact.solve(targetValues);
+  chol_solve_target = CholFact.solve(*targetValues);
 
   /* Hessian */
   for (int i = 0; i < numVariables; i++) {

@@ -43,96 +43,110 @@ class GaussianProcess {
 
 public:
 
+  // ------------------------------------------------------------
+  // Constructors and destructors
 
   GaussianProcess();
 
   ~GaussianProcess();
 
 
-/**
- * \brief Main constructor for the GaussianProcess.
- *
- * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
- * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
- * \param[in] sigma_bounds Bounds for the scaling hyperparameter
- * \param[in] length_scale_bounds Bounds for each length scale hyperparameter.
- * \param[in] scaler_type String for which type of scaling will be applied to the surrogate data.
- * \param[in] num_restarts Number of restarts for gradient-based optimization.
- * \param[in] nugget_val Value of the Gaussian process's nugget - a small positive constant
- * \param[in] seed Seed for the random number generator. This affects the initial guesses.
- */
-  GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
+  /**
+   * \brief Main constructor for the GaussianProcess.
+   *
+   * \param[in] samples Matrix of data for surrogate construction - (num_samples by num_features)
+   * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
+   * \param[in] sigma_bounds Bounds for the scaling hyperparameter
+   * \param[in] length_scale_bounds Bounds for each length scale hyperparameter.
+   * \param[in] scaler_type String for which type of scaling will be applied to the surrogate data.
+   * \param[in] num_restarts Number of restarts for gradient-based optimization.
+   * \param[in] nugget_val Value of the Gaussian process's nugget - a small positive constant
+   * \param[in] seed Seed for the random number generator. This affects the initial guesses.
+   */
+  GaussianProcess(const MatrixXd &samples,
+                  const MatrixXd &response,
                   const VectorXd &sigma_bounds,
                   const MatrixXd &length_scale_bounds,
                   const std::string scaler_type = "mean_normalization",
                   const int num_restarts = 5,
-                  const double nugget_val = 1.0e-10, const int seed = 129);
+                  const double nugget_val = 1.0e-10,
+                  const int seed = 129);
 
-/**
- *  \brief Get the standard deviations for a set of prediction points
- *  passed to value.
- *  \returns Vector of standard deviations for the prediction points.
-*/
-  VectorXd get_posterior_std_dev() {return posteriorStdDev;}
 
-/**
- *  \brief Get the covariance matrix for a set of prediction points
- *  passed to value.
- *  \returns Covariance matrix for the prediction points.
-*/
-  MatrixXd get_posterior_covariance() {return posteriorCov;}
+  // ------------------------------------------------------------
+  // Getters
 
-/**
- *  \brief Get the vector of log-space hyperparameters (theta).
- *  \returns Vector of log-space hyperparameters (theta).
-*/
-  VectorXd get_theta_values() {return thetaValues;}
+  /**
+   *  \brief Get the standard deviations for a set of prediction points
+   *  passed to value.
+   *  \returns Vector of standard deviations for the prediction points.
+   */
+  const VectorXd & get_posterior_std_dev() const;
 
-/**
- *  \brief Update the vector of log-space hyperparamters (theta).
- *  \param[in] theta_new Vector of new theta values.
-*/
+  /**
+   *  \brief Get the covariance matrix for a set of prediction points
+   *  passed to value.
+   *  \returns Covariance matrix for the prediction points.
+   */
+  const MatrixXd & get_posterior_covariance() const;
+
+  /**
+   *  \brief Get the vector of log-space hyperparameters (theta).
+   *  \returns Vector of log-space hyperparameters (theta).
+   */
+  const VectorXd & get_theta_values() const;
+
+  /**
+   *  \brief Get the dimension of the feature space.
+   *  \param[out] numVariables The dimension of the feature space.
+   */
+  int get_num_variables() const;
+
+
+  // ------------------------------------------------------------
+  // Setters
+
+  /**
+   *  \brief Update the vector of log-space hyperparamters (theta).
+   *  \param[in] theta_new Vector of new theta values.
+   */
   void set_theta(const std::vector<double> theta_new);
 
-/**
- *  \brief Evaluate the negative marginal loglikelihood and its 
- *  gradient.
- *  \param[out] obj_value Value of the objection function.
- *  \param[out] obj_gradient Gradient of the objective function.
-*/
+
+  // ------------------------------------------------------------
+  // Public utility functions
+
+  /**
+   *  \brief Evaluate the negative marginal loglikelihood and its 
+   *  gradient.
+   *  \param[out] obj_value Value of the objection function.
+   *  \param[out] obj_gradient Gradient of the objective function.
+   */
   void negative_marginal_log_likelihood(double &obj_value, VectorXd &obj_gradient);
 
-/**
- *  \brief Evaluate the Gaussian Process at a set of prediction points.
- *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
- *  \param[out] approx_values Mean of the Gaussian process at the prediction
- *  points - (num_samples by num_qoi = 1) 
-*/
+  /**
+   *  \brief Evaluate the Gaussian Process at a set of prediction points.
+   *  \param[in] samples Matrix of prediction points - (num_samples by num_features).
+   *  \param[out] approx_values Mean of the Gaussian process at the prediction
+   *  points - (num_samples by num_qoi = 1) 
+   */
   void value(const MatrixXd &samples, MatrixXd &approx_values);
 
-/**
- *  \brief Evaluate the gradient of the Gaussian process at a single point.
- *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
- *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
- *  (num_samples by num_features).
-*/
+  /**
+   *  \brief Evaluate the gradient of the Gaussian process at a single point.
+   *  \param[in] samples Coordinates of the prediction points - (num_samples by num_features).
+   *  \param[out] gradient Matrix of gradient vectors at the prediction points - 
+   *  (num_samples by num_features).
+   */
   void gradient(const MatrixXd &samples, MatrixXd &gradient);
 
-/**
- *  \brief Evaluate the Hessian of the Gaussian process at a single point.
- *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
- *  \param[out] hessian Hessian matrix at the prediction point - 
- *  (num_features by num_features).
-*/
+  /**
+   *  \brief Evaluate the Hessian of the Gaussian process at a single point.
+   *  \param[in] sample Coordinates of the prediction point - (num_samples by num_features).
+   *  \param[out] hessian Hessian matrix at the prediction point - 
+   *  (num_features by num_features).
+   */
   void hessian(const MatrixXd &sample, MatrixXd &hessian);
-
-/**
- *  \brief Get the dimension of the feature space.
- *  \param[out] numVariables The dimension of the feature space.
-*/
-  int get_num_variables() const
-    { return numVariables; }
-
 
 
 private:
@@ -147,19 +161,19 @@ private:
   double nuggetValue;
 
   /// Corresponding target values for the surrogate dataset.
-  MatrixXd targetValues;
+  std::shared_ptr<MatrixXd> targetValues;
 
   /// Vector of log-space hyperparameters (theta).
-  VectorXd thetaValues;
+  std::shared_ptr<VectorXd> thetaValues;
 
   /// Vector of best hyperparameters from MLE with restarts.
-  VectorXd bestThetaValues;
+  std::shared_ptr<VectorXd> bestThetaValues;
 
   /// Final objective function values for each optimization run.
-  VectorXd objectiveFunctionHistory;
+  std::shared_ptr<VectorXd> objectiveFunctionHistory;
 
   /// Gram matrix for the GaussianProcess kernel.
-  MatrixXd GramMatrix;
+  std::shared_ptr<MatrixXd> GramMatrix;
 
   /// Derivatives of the Gram matrix w.r.t. the hyperparameters.
   std::vector<MatrixXd> GramMatrixDerivs;
@@ -171,10 +185,10 @@ private:
   Eigen::LDLT<MatrixXd> CholFact;
 
   /// Posterior covariance matrix for prediction points.
-  MatrixXd posteriorCov;
+  std::shared_ptr<MatrixXd> posteriorCov;
 
   /// Vector of posterior standard deviation at prediction points.
-  VectorXd posteriorStdDev;
+  std::shared_ptr<VectorXd> posteriorStdDev;
 
   /// DataScaler for the surrogate data.
   std::shared_ptr<util::DataScaler> dataScaler;
@@ -185,88 +199,91 @@ private:
   /// Final objective function value.
   double bestObjFunValue;
 
-/**
- *  \brief Compute the GramMatrix for the surrogate dataset and
- *  optionally compute its derivatives.
- *  \param[in] compute_derivs Bool for whether or not to compute the 
- *  derivatives of the Gram matrix.
-*/
-  void compute_Gram(bool compute_derivs);
+  // ------------------------------------------------------------
+  // Private utility functions
 
-/**
- *  \brief Evaluate the squared exponential kernel for the surrogate dataset
- *  using pre-computed distances.
- *  \param[in] i Index for ith sample point.
- *  \param[in] j Index for jth sample point.
- *  \returns The value of the squared exponential kernel.
-*/
+  /**
+   *  \brief Compute the GramMatrix for the surrogate dataset and
+   *  optionally compute its derivatives.
+   *  \param[in] compute_derivs Bool for whether or not to compute the 
+   *  derivatives of the Gram matrix.
+   */
+  void compute_gram(bool compute_derivs);
+
+  /**
+   *  \brief Evaluate the squared exponential kernel for the surrogate dataset
+   *  using pre-computed distances.
+   *  \param[in] i Index for ith sample point.
+   *  \param[in] j Index for jth sample point.
+   *  \returns The value of the squared exponential kernel.
+   */
   double sq_exp_cov(const int i, const int j);
 
-/**
- *  \brief Compute the Gram matrix for a set of prediction points.
- *  \param[in] samples Matrix of prediction points.
- *  \param[out] Gram_pred Gram matrix for the prediction points.
-*/
-  void compute_Gram_pred(const MatrixXd &samples, MatrixXd &Gram_pred);
+  /**
+   *  \brief Compute the Gram matrix for a set of prediction points.
+   *  \param[in] samples Matrix of prediction points.
+   *  \param[out] Gram_pred Gram matrix for the prediction points.
+   */
+  void compute_gram_pred(const MatrixXd &samples, MatrixXd &Gram_pred);
 
 
-/**
- *  \brief Evaluate the squared exponential kernel for the prediction points
- *  given a pair a points.
- *  \param[in] x Predicition point x.
- *  \param[in] y Predicition point y.
- *  \returns The value of the squared exponential kernel.
-*/
+  /**
+   *  \brief Evaluate the squared exponential kernel for the prediction points
+   *  given a pair a points.
+   *  \param[in] x Predicition point x.
+   *  \param[in] y Predicition point y.
+   *  \returns The value of the squared exponential kernel.
+   */
   double sq_exp_cov_pred(const VectorXd &x, const VectorXd &y);
 
-/**
- *  \brief Evaluate the rectangular matrix of kernel evaluations between
- *  the surrogate and prediction datasets.
- *  \param[in] pred_pts Matrix of prediction points.
- *  \param[out] pred_mat Matrix of surrogate data-prediction points kernel evaluations.
-*/
+  /**
+   *  \brief Evaluate the rectangular matrix of kernel evaluations between
+   *  the surrogate and prediction datasets.
+   *  \param[in] pred_pts Matrix of prediction points.
+   *  \param[out] pred_mat Matrix of surrogate data-prediction points kernel evaluations.
+   */
   void compute_prediction_matrix(const MatrixXd &scaled_pred_pts, MatrixXd &pred_mat);
 
-/**
- *  \brief Compute the first derivatve of the prediction matrix for a given component.
- *  \param[in] pred_mat Prediction matrix - Rectangular matrix of kernel evaluations between 
- *  the surrogate and prediction points.
- *  \param[in] scaled_pred_pts Matrix of prediction points.
- *  \param[in] index Specifies the component of the derivative.
- *  \param[out] first_deriv_pred_mat First derivative of the prediction matrix for a given component.
-*/
+  /**
+   *  \brief Compute the first derivatve of the prediction matrix for a given component.
+   *  \param[in] pred_mat Prediction matrix - Rectangular matrix of kernel evaluations between 
+   *  the surrogate and prediction points.
+   *  \param[in] scaled_pred_pts Matrix of prediction points.
+   *  \param[in] index Specifies the component of the derivative.
+   *  \param[out] first_deriv_pred_mat First derivative of the prediction matrix for a given component.
+   */
   void compute_first_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd &scaled_pred_pts,
                                     const int index, MatrixXd &fist_deriv_pred_mat);
 
-/**
- *  \brief Compute the second derivatve of the prediction matrix for a pair of components.
- *  \param[in] pred_mat Prediction matrix - Rectangular matrix of kernel evaluations between
- *  the surrogate and prediction points.
- *  \param[in] scaled_pred_pts Matrix of prediction points.
- *  \param[in] index_i Specifies the first component of the second derivative.
- *  \param[in] index_j Specifies the second component of the second derivative.
- *  \param[out] second_deriv_pred_mat Second derivative of the prediction matrix for a pair of components.
-*/
+  /**
+   *  \brief Compute the second derivatve of the prediction matrix for a pair of components.
+   *  \param[in] pred_mat Prediction matrix - Rectangular matrix of kernel evaluations between
+   *  the surrogate and prediction points.
+   *  \param[in] scaled_pred_pts Matrix of prediction points.
+   *  \param[in] index_i Specifies the first component of the second derivative.
+   *  \param[in] index_j Specifies the second component of the second derivative.
+   *  \param[out] second_deriv_pred_mat Second derivative of the prediction matrix for a pair of components.
+   */
   void compute_second_deriv_pred_mat(const MatrixXd &pred_mat, const MatrixXd &scaled_pred_pts,
                                      const int index_i, const int index_j,
                                      MatrixXd &second_deriv_pred_mat);
 
-/**
- *  \brief Randomly generate initial guesses for the optimization routine.
- *  \param[out] initial_guesses Matrix of initial guesses.
- *  \param[in] num_restarts Number of restarts for the optimizer.
- *  \param[in] sigma_bounds Bounds for the scaling hyperparameter (sigma).
- *  \param[in] length_scale_bounds Bounds for the length scales for each feature (l).
-*/
+  /**
+   *  \brief Randomly generate initial guesses for the optimization routine.
+   *  \param[out] initial_guesses Matrix of initial guesses.
+   *  \param[in] num_restarts Number of restarts for the optimizer.
+   *  \param[in] sigma_bounds Bounds for the scaling hyperparameter (sigma).
+   *  \param[in] length_scale_bounds Bounds for the length scales for each feature (l).
+  */
   void generate_initial_guesses(MatrixXd &initial_guesses, int num_restarts,
                                 const VectorXd &sigma_bounds,
                                 const MatrixXd &length_scale_bounds);
 
-/**
- *  \brief Set the default optimization parameters for ROL for GP hyperparameter
- *  estimation.
- *  \param[in] rol_params RCP to a Teuchos::ParameterList of ROL's options.
-*/
+  /**
+   *  \brief Set the default optimization parameters for ROL for GP hyperparameter
+   *  estimation.
+   *  \param[in] rol_params RCP to a Teuchos::ParameterList of ROL's options.
+   */
   void set_default_optimization_params(Teuchos::RCP<Teuchos::ParameterList> rol_params);
 
 }; // class GaussianProcess
