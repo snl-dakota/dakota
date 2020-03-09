@@ -8,7 +8,6 @@
 
 #include "GaussianProcess.hpp"
 
-//#include "Teuchos_ParameterList.hpp"
 #include "Teuchos_XMLParameterListHelpers.hpp"
 #include "Teuchos_oblackholestream.hpp"
 
@@ -79,13 +78,12 @@ void GaussianProcess::compute_first_deriv_pred_mat(const MatrixXd &pred_mat, con
   first_deriv_pred_mat.setZero();
 
   MatrixXd scaled_samples = dataScaler->get_scaled_features();
-  MatrixXd thetaValuesMatrix = *thetaValues;
 
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
       first_deriv_pred_mat(i,j) = -pred_mat(i,j)
                                    *(scaled_pred_pts(i,index) - scaled_samples(j,index))
-                                   *exp(-2.0*(thetaValuesMatrix(index+1)));
+                                   *exp(-2.0*((*thetaValues)(index+1)));
     }
   }
 }
@@ -104,35 +102,32 @@ void GaussianProcess::compute_second_deriv_pred_mat(const MatrixXd &pred_mat, co
   if (index_i == index_j)
     diagonal_factor = 1.0;
 
-  MatrixXd thetaValuesMatrix = *thetaValues;
   for (int i = 0; i < numPredictionPts; i++) {
     for (int j = 0; j < numSamples; j++) {
       second_deriv_pred_mat(i,j) = pred_mat(i,j)
                                    *((scaled_pred_pts(i,index_i) - scaled_samples(j,index_i))
                                    *(scaled_pred_pts(i,index_j) - scaled_samples(j,index_j))
-                                   *exp(-2.0*(thetaValuesMatrix(index_i+1) + thetaValuesMatrix(index_j+1)))
-                                   - diagonal_factor*exp(-2.0*(thetaValuesMatrix(index_i+1))));
+                                   *exp(-2.0*((*thetaValues)(index_i+1) + (*thetaValues)(index_j+1)))
+                                   - diagonal_factor*exp(-2.0*((*thetaValues)(index_i+1))));
     }
   }
 }
 
 double GaussianProcess::sq_exp_cov(const int i, const int j) {
   double inside = 0.0;
-  MatrixXd thetaValuesMatrix = *thetaValues;
   for (int k = 0; k < numVariables; k++)
-    inside += componentwiseDistances[k](i,j)*std::exp(-2.0*thetaValuesMatrix(k+1));
+    inside += componentwiseDistances[k](i,j)*std::exp(-2.0*(*thetaValues)(k+1));
 
-  return std::exp(2.0*thetaValuesMatrix(0))*exp(-0.5*inside);
+  return std::exp(2.0*(*thetaValues)(0))*exp(-0.5*inside);
 }
 
 double GaussianProcess::sq_exp_cov_pred(const VectorXd &x, const VectorXd &y) {
   VectorXd diff = x - y;
   double inside = 0.0;
-  MatrixXd thetaValuesMatrix = *thetaValues;
   for (int k = 0; k < numVariables; k++)
-    inside += std::pow(diff(k),2.0)*std::exp(-2.0*thetaValuesMatrix(k+1));
+    inside += std::pow(diff(k),2.0)*std::exp(-2.0*(*thetaValues)(k+1));
 
-  return std::exp(2.0*thetaValuesMatrix(0))*std::exp(-0.5*inside);
+  return std::exp(2.0*(*thetaValues)(0))*std::exp(-0.5*inside);
 }
                 
 
@@ -148,9 +143,8 @@ void GaussianProcess::compute_gram(bool compute_derivs){
   if (compute_derivs) {
     GramMatrixDerivs[0] = 2.0*(*GramMatrix);
     for (int k = 1 ; k < numVariables + 1; k++) {
-      MatrixXd thetaValuesMatrix = *thetaValues;
       GramMatrixDerivs[k] = GramMatrix->cwiseProduct(componentwiseDistances[k-1])
-                            *std::exp(-2.0*thetaValuesMatrix(k));
+                            *std::exp(-2.0*(*thetaValues)(k));
     }
   }
 
