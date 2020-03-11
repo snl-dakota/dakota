@@ -289,7 +289,8 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
 
 void NonDMultilevelFunctionTrain::assign_specification_sequence()
 {
-  if (collocPtsSeqSpec.empty()) {
+  size_t colloc_pts = collocation_points();
+  if (colloc_pts == std::numeric_limits<size_t>::max()) { // seq not defined
     if (collocRatio > 0.) {
       size_t regress_size = SharedC3ApproxData::
 	regression_size(numContinuousVars, start_rank(), start_order());
@@ -301,8 +302,8 @@ void NonDMultilevelFunctionTrain::assign_specification_sequence()
       abort_handler(METHOD_ERROR);
     }
   }
-  else if (sequenceIndex < collocPtsSeqSpec.size())
-    numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
+  else
+    numSamplesOnModel = colloc_pts;
 
   update_from_specification();
 }

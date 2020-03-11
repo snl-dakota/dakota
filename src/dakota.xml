@@ -469,16 +469,20 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY colloc_pts_sequence_with_pce_opts '
-	     <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" >
-	       <alias name="pilot_samples"/> 
-	       <param type="INTEGERLIST" />
+    <!ENTITY colloc_ratio_pts_sequence_with_pce_regress '
+	     <!-- Note: options within this entity are limited by NIDR requirements for an unambiguous anchor: cannot support ratio or pts or both, so anchoring with the more useful of the two.  With a new regression anchor, could mirror ft_method_regression_sequence and allow both to be optional. -->
+	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
+	       <param type="REAL" />
+	       <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" minOccurs="0" >
+	         <alias name="pilot_samples"/> 
+	         <param type="INTEGERLIST" />
+	       </keyword>
 	       &pce_regression_alg_select;
 	       &pce_regression_opts;
 	     </keyword>
 	     ' >
 
-    <!ENTITY colloc_pts_with_pce_opts '
+    <!ENTITY colloc_pts_with_pce_regress '
 	     <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" >
 	       <param type="INTEGER" />
 	       &pce_regression_alg_select;
@@ -486,7 +490,7 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY colloc_ratio_with_pce_opts '
+    <!ENTITY colloc_ratio_with_pce_regress '
 	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
 	       <param type="REAL" />
 	       &pce_regression_alg_select;
@@ -518,8 +522,8 @@
       	     &expansion_dim_pref;
 	     &pce_basis_type;
 	     <oneOf>
-	       &colloc_pts_with_pce_opts;
-	       &colloc_ratio_with_pce_opts;
+	       &colloc_pts_with_pce_regress;
+	       &colloc_ratio_with_pce_regress;
 	       &pce_expansion_samples;
 	     </oneOf>
 	     &import_build;
@@ -531,8 +535,7 @@
 	       &expansion_dim_pref;
 	       &pce_basis_type;
 	       <oneOf>
-		 &colloc_pts_sequence_with_pce_opts;
-		 &colloc_ratio_with_pce_opts;
+		 &colloc_ratio_pts_sequence_with_pce_regress;
 		 &pce_expansion_samples_sequence;
 	       </oneOf>
 	       &import_build;
@@ -748,20 +751,18 @@
 	       <param type="REAL" />
 	     </keyword>
 	     <!-- <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives"  minOccurs="0" default="use function values only"/> -->
-	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid"  minOccurs="0" default="regression with random sample set" />
+	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" minOccurs="0" default="regression with random sample set" />
 	     ' >
 
     <!ENTITY ft_method_regression_sequence '
 	     &ft_method_regression_opts;
-	     <oneOf label="Collocation Control">
-	       <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" >
-	         <alias name="pilot_samples"/> 
-		 <param type="INTEGERLIST" />
-	       </keyword>
-	       <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
-		 <param type="REAL" />
-	       </keyword>
-	     </oneOf>
+	     <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" minOccurs="0" >
+	       <alias name="pilot_samples"/> 
+	       <param type="INTEGERLIST" />
+	     </keyword>
+	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" minOccurs="0" default="0." >
+	       <param type="REAL" />
+	     </keyword>
 	     ' >
 
     <!ENTITY ft_method_regression '

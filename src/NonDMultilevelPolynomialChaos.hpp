@@ -87,7 +87,7 @@ protected:
 
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
-				 size_t lev);
+				 size_t step);
   void compute_sample_increment(const RealVector& sparsity,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
@@ -106,6 +106,12 @@ private:
   //
   //- Heading: Utility functions
   //
+
+  size_t collocation_points() const;
+  size_t expansion_samples() const;
+  unsigned short expansion_order() const;
+  unsigned short quadrature_order() const;
+  unsigned short sparse_grid_level() const;
 
   /// perform specification updates (shared code from
   // {assign,increment}_specification_sequence())
@@ -127,6 +133,51 @@ private:
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 };
+
+
+inline size_t NonDMultilevelPolynomialChaos::collocation_points() const
+{
+  if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (sequenceIndex < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+}
+
+
+inline size_t NonDMultilevelPolynomialChaos::expansion_samples() const
+{
+  if (expSamplesSeqSpec.empty()) return std::numeric_limits<size_t>::max();
+  else
+    return (sequenceIndex < expSamplesSeqSpec.size()) ?
+      expSamplesSeqSpec[sequenceIndex] : expSamplesSeqSpec.back();
+}
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::expansion_order() const
+{
+  if (expOrderSeqSpec.empty()) return USHRT_MAX;
+  else
+    return (sequenceIndex < expOrderSeqSpec.size()) ?
+      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+}
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::quadrature_order() const
+{
+  if (quadOrderSeqSpec.empty()) return USHRT_MAX;
+  else
+    return (sequenceIndex < quadOrderSeqSpec.size()) ?
+      quadOrderSeqSpec[sequenceIndex] : quadOrderSeqSpec.back();
+}
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::sparse_grid_level() const
+{
+  if (ssgLevelSeqSpec.empty()) return USHRT_MAX;
+  else
+    return (sequenceIndex < ssgLevelSeqSpec.size()) ?
+      ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
+}
 
 } // namespace Dakota
 

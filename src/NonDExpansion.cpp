@@ -2237,7 +2237,7 @@ void NonDExpansion::increment_specification_sequence()
 
 
 void NonDExpansion::
-increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   Cerr << "Error: no default implementation for increment_sample_sequence() "
        << "defined for multilevel_regression()." << std::endl;

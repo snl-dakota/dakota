@@ -88,17 +88,10 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
-  short regress_type = probDescDB.get_short("method.nond.regression_type"),
-    ls_regress_type
-      = probDescDB.get_short("method.nond.least_squares_regression_type");
-  Real terms_order
-    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
-  const UShortArray& tensor_grid_order
-    = probDescDB.get_usa("method.nond.tensor_grid_order");
   Iterator u_space_sampler;
   String approx_type;
+  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
+  const String& rng = probDescDB.get_string("method.random_number_generator");
 
   UShortArray exp_orders; // defined for expansion_samples/regression
   config_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
@@ -107,13 +100,15 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     approx_type = //(piecewiseBasis) ? "piecewise_orthogonal_polynomial" :
       "global_orthogonal_polynomial";
   else if (!config_integration(quadOrderSpec, ssgLevelSpec, cubIntSpec,
-			       u_space_sampler, g_u_model, approx_type) &&
+	     u_space_sampler, g_u_model, approx_type) &&
 	   !config_expectation(expSamplesSpec, sample_type, rng,
-			       u_space_sampler, g_u_model, approx_type) &&
-	   !config_regression(exp_orders, collocPtsSpec, terms_order,
-			      regress_type, ls_regress_type, tensor_grid_order,
-			      sample_type, rng, pt_reuse, u_space_sampler,
-			      g_u_model, approx_type)) {
+	     u_space_sampler, g_u_model, approx_type) &&
+	   !config_regression(exp_orders, collocPtsSpec,
+	     probDescDB.get_real("method.nond.collocation_ratio_terms_order"),
+	     probDescDB.get_short("method.nond.regression_type"),
+	     probDescDB.get_short("method.nond.least_squares_regression_type"),
+	     probDescDB.get_usa("method.nond.tensor_grid_order"), sample_type,
+	     rng, pt_reuse, u_space_sampler, g_u_model, approx_type)) {
     Cerr << "Error: incomplete configuration in NonDPolynomialChaos "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -417,7 +412,9 @@ config_expansion_orders(unsigned short exp_order, const RealVector& dim_pref,
 			UShortArray& exp_orders)
 {
   // expansion_order defined for expansion_samples/regression
-  if (exp_order != USHRT_MAX)
+  if (exp_order == USHRT_MAX)
+    exp_orders.clear();
+  else
     NonDIntegration::dimension_preference_to_anisotropic_order(exp_order,
       dim_pref, numContinuousVars, exp_orders);
 }
@@ -567,7 +564,8 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
     termsOrder = colloc_ratio_terms_order;
     if (colloc_pts != SZ_MAX) { // define collocRatio from colloc pts
       numSamplesOnModel = colloc_pts;
-      collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
+      if (collocRatio == 0.) // if default (no user spec), then infer
+	collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
     }
     else if (collocRatio > 0.)     // define colloc pts from collocRatio
       numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
