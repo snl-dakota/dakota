@@ -14,6 +14,8 @@
 #include "DataScaler.hpp"
 #include "../util/LinearSolvers.hpp"
 
+#include "Teuchos_ParameterList.hpp"
+
 namespace dakota {
 namespace surrogates {
 
@@ -23,8 +25,11 @@ public:
 
   // Constructor
 
-  // TODO: nvars should soon be replaced by an options object - RWH
-  PolynomialRegression(const MatrixXi & indices, int nvars);
+  // Options-based constructor
+  PolynomialRegression(std::shared_ptr<Teuchos::ParameterList> options);
+
+  // Simple constructor
+  PolynomialRegression(int total_order, int nvars);
 
   // Destructor
 
@@ -42,11 +47,11 @@ public:
 
   // Setters
 
-  void set_samples(const MatrixXd & samples_);
-  void set_response(const MatrixXd & response_);
-  void set_polynomial_order(int polynomial_order_);
-  void set_scaler_type(const util::SCALER_TYPE scaler_type);
-  void set_solver(const util::SOLVER_TYPE solver_type_);
+  void set_samples(const MatrixXd & );
+  void set_response(const MatrixXd & );
+  void set_polynomial_order(int);
+  void set_scaler_type(const util::SCALER_TYPE);
+  void set_solver(const util::SOLVER_TYPE);
 
   // Surrogate
 
@@ -57,13 +62,13 @@ public:
 private:
 
   // Input fields
-  const int num_terms;
-  const int num_vars;
+  int numTerms;
+  int numVars;
   std::shared_ptr<MatrixXd> samples_;
   std::shared_ptr<MatrixXd> response;
-  std::shared_ptr<MatrixXi> basis_indices;
-  int polynomial_order;
-  util::SCALER_TYPE scaler_type;
+  std::shared_ptr<MatrixXi> basisIndices;
+  int polynomialOrder;
+  util::SCALER_TYPE scalerType;
   std::shared_ptr<util::DataScaler> scaler;
   std::shared_ptr<util::LinearSolverBase> solver;
 
