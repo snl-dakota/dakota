@@ -187,6 +187,24 @@ void GaussianProcess::compute_gram_pred(const MatrixXd &samples, MatrixXd &Gram_
   }
 }
 
+
+// BMA NOTE: ParameterList::get() can throw, so direct delegation
+// probably not good
+GaussianProcess::GaussianProcess(const MatrixXd &samples,
+				 const MatrixXd &response,
+				 const Teuchos::ParameterList& param_list):
+  GaussianProcess(samples, response,
+		  param_list.get<VectorXd>("sigma_bounds"),
+		  param_list.get<MatrixXd>("length_scale_bounds"),
+		  param_list.get<std::string>("scaler_type"),
+		  param_list.get<int>("num_restarts"),
+		  param_list.get<double>("nugget"),
+		  param_list.get<int>("gp_seed")
+		  )
+{
+}
+
+
 GaussianProcess::GaussianProcess(const MatrixXd &samples, 
                                  const MatrixXd &response, 
                                  const VectorXd &sigma_bounds,

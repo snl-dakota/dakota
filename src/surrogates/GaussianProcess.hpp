@@ -50,6 +50,12 @@ public:
 
   ~GaussianProcess();
 
+  GaussianProcess(const MatrixXd &samples,
+                  const MatrixXd &response,
+		  const Teuchos::ParameterList& param_list);
+
+  // BMA: Leaving both ctors during refactoring; consider making
+  // following constructor protected or removing
 
   /**
    * \brief Main constructor for the GaussianProcess.

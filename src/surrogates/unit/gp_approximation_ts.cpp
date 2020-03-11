@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <Teuchos_UnitTestHarness.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include "CommonUtils.hpp"
 #include "GaussianProcess.hpp"
 
@@ -24,11 +25,6 @@ int test_gp(double atol){
 
   // gp parameters
   int num_qoi = 1; // only using 1 for now
-  std::string scaler_type = "standardization";
-  //std::string scaler_type = "none";
-  int num_restarts = 10;
-  int gp_seed = 42;
-  double nugget = 1.0e-12;
 
   // num_samples x num_features
   MatrixXd xs_u(7,1);
@@ -57,11 +53,19 @@ int test_gp(double atol){
   length_scale_bounds(0,0) = 1.0e-2;
   length_scale_bounds(0,1) = 1.0e2;
 
+  Teuchos::ParameterList param_list("GP Test Parameters");
+  param_list.set("sigma_bounds", sigma_bounds);
+  param_list.set("length_scale_bounds", length_scale_bounds);
+  param_list.set("scaler_type",
+		 std::string("standardization")
+		 //std::string("none")
+		 );
+  param_list.set("num_restarts", int(10));
+  param_list.set("nugget", double(1.0e-12));
+  param_list.set("gp_seed", int(42));
+
   /* 1D GP test */
-  GaussianProcess gp(xs_u,response,
-                     sigma_bounds,length_scale_bounds,
-                     scaler_type,num_restarts,
-                     nugget,gp_seed);
+  GaussianProcess gp(xs_u, response, param_list);
 
   gp.value(eval_pts, pred);
   VectorXd std_dev = gp.get_posterior_std_dev();
@@ -110,12 +114,6 @@ int test_gp(double atol){
   int num_vars = 2;
   int num_samples = 64;
 
-  /* options */
-  scaler_type = "standardization";
-  num_restarts = 10;
-  nugget = 1.0e-10;
-  gp_seed = 42;
-
   /* bounds */
   /* 64 pts - herbie and smooth herbie */
   sigma_bounds(0) = 1.0e-2;
@@ -147,6 +145,11 @@ int test_gp(double atol){
   length_scale_bounds(0,1) = 1.0e+1;
   length_scale_bounds(1,1) = 1.0e+1;
   */
+
+  // Update ParameterList for this test
+  param_list.set("sigma_bounds", sigma_bounds);
+  param_list.set("length_scale_bounds", length_scale_bounds);
+  param_list.set("nugget", double(1.0e-10));
 
   std::string samples_fname = "gp_test_data/lhs_data_64.txt";
   std::string responses_fname = "gp_test_data/smooth_herbie_64.txt";
@@ -192,8 +195,7 @@ int test_gp(double atol){
   //}
 
   std::cout << "\n";
-  GaussianProcess gp_2D(samples_list[0],responses_list[0],sigma_bounds,length_scale_bounds,
-                        scaler_type,num_restarts, nugget, gp_seed);
+  GaussianProcess gp_2D(samples_list[0],responses_list[0], param_list);
   gp_2D.value(eval_pts_2D, pred_2D);
   VectorXd std_dev_2D = gp_2D.get_posterior_std_dev();
   MatrixXd cov_2D = gp_2D.get_posterior_covariance();
