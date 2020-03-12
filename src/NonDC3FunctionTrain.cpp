@@ -173,11 +173,10 @@ config_regression(size_t colloc_pts, size_t regress_size,
   // or vice versa
   if (colloc_pts != std::numeric_limits<size_t>::max()) {
     numSamplesOnModel = colloc_pts;
-    collocRatio = 2.; // TO DO: don't want to hardwire ratio for pts spec
-    // Other options:
-    // > infer from pilot (terms_samples_to_ratio()) & fix for iters to follow
-    //   (may require averaging for shaped pilot/order/rank)
-    // > allow dual pts/ratio spec with overridable default
+    if (collocRatio == 0.) // default (no user spec)
+      collocRatio = 2.; // assign method-specific default for sample refinement
+    // Another option: infer from pilot (terms_samples_to_ratio()) & fix for
+    // iters to follow (may require averaging for shaped pilot/order/rank)
   }
   else if (collocRatio > 0.) // define colloc pts from collocRatio
     numSamplesOnModel = terms_ratio_to_samples(regress_size, collocRatio);
