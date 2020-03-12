@@ -14,14 +14,33 @@ namespace surrogates {
 
 // ------------------------------------------------------------
 
+// Constructor using "options"
+
+PolynomialRegression::PolynomialRegression(std::shared_ptr<Teuchos::ParameterList> options)
+{
+  numVars        = options->get<int>("Num Vars");
+  int max_degree = options->get<int>("Max Degree");
+  double p_norm  = options->get     ("P-Norm", 1.0);
+
+  basisIndices   = std::make_shared<MatrixXi>();
+  compute_hyperbolic_indices(numVars, max_degree, p_norm, *basisIndices);
+  numTerms       = basisIndices->cols();
+
+  scalerType = util::SCALER_TYPE::NONE;
+}
+
+// ------------------------------------------------------------
+
 // Constructor
 
-PolynomialRegression::PolynomialRegression(const MatrixXi & indices, int nvars) :
-  basis_indices(std::make_shared<MatrixXi>(indices)),
-  num_terms(indices.cols()),
-  num_vars(nvars) // should have these come in through options once that mechanism exists - RWH
+PolynomialRegression::PolynomialRegression(int total_order, int nvars) :
+  numVars(nvars)
 {
-  scaler_type = util::SCALER_TYPE::NONE;
+  basisIndices   = std::make_shared<MatrixXi>();
+  compute_hyperbolic_indices(numVars, total_order, 1.0, *basisIndices);
+  numTerms       = basisIndices->cols();
+
+  scalerType = util::SCALER_TYPE::NONE;
 }
 
 // ------------------------------------------------------------
@@ -36,9 +55,9 @@ const MatrixXd & PolynomialRegression::get_samples() const { return *samples_; }
 
 const MatrixXd & PolynomialRegression::get_response() const { return *response; }
 
-int PolynomialRegression::get_polynomial_order() const { return polynomial_order; }
+int PolynomialRegression::get_polynomial_order() const { return polynomialOrder; }
 
-util::SCALER_TYPE PolynomialRegression::get_scaler_type() const { return scaler_type; }
+util::SCALER_TYPE PolynomialRegression::get_scaler_type() const { return scalerType; }
 
 const MatrixXd & PolynomialRegression::get_polynomial_coeffs() const { return *polynomial_coeffs; }
 
@@ -52,9 +71,9 @@ void PolynomialRegression::set_samples(const MatrixXd & samples) { samples_ = st
 
 void PolynomialRegression::set_response(const MatrixXd & response_) { response = std::make_shared<MatrixXd>(response_); }
 
-void PolynomialRegression::set_polynomial_order(int polynomial_order_) { polynomial_order = polynomial_order_; }
+void PolynomialRegression::set_polynomial_order(int polynomial_order) { polynomialOrder = polynomial_order; }
 
-void PolynomialRegression::set_scaler_type(const util::SCALER_TYPE scaler_type_) { scaler_type = scaler_type_; }
+void PolynomialRegression::set_scaler_type(const util::SCALER_TYPE scaler_type) { scalerType = scaler_type; }
 
 void PolynomialRegression::set_solver(util::SOLVER_TYPE solver_type_) { solver = solver_factory(solver_type_); }
 
@@ -70,13 +89,13 @@ PolynomialRegression::compute_basis_matrix(const MatrixXd & samples, MatrixXd & 
   const int num_samples = samples.rows();
 
   // Generate the basis matrix
-  basis_matrix = MatrixXd::Zero(num_samples, num_terms);
+  basis_matrix = MatrixXd::Zero(num_samples, numTerms);
 
-  for(int j=0; j<num_terms; ++j) {
+  for(int j=0; j<numTerms; ++j) {
     for(int i=0; i<num_samples; ++i) {
       double val = 1.0;
-      for( int d=0; d<num_vars; ++d )
-	val *= std::pow(samples(i,d), (*basis_indices)(d,j));
+      for( int d=0; d<numVars; ++d )
+	val *= std::pow(samples(i,d), (*basisIndices)(d,j));
       basis_matrix(i,j) = val;
     }
   }
@@ -98,7 +117,7 @@ PolynomialRegression::build_surrogate()
   compute_basis_matrix(get_samples(), unscaled_basis_matrix);
 
   // Scale the basis matrix.
-  scaler = util::scaler_factory(scaler_type, unscaled_basis_matrix);
+  scaler = util::scaler_factory(scalerType, unscaled_basis_matrix);
   MatrixXd scaled_basis_matrix = scaler->get_scaled_features();
 
   // Solve the basis matrix.
@@ -114,8 +133,6 @@ PolynomialRegression::build_surrogate()
 void
 PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values)
 {
-  const int num_eval_points = eval_points.rows();
-
   // Generate the basis matrix for the eval points
   MatrixXd unscaled_basis_matrix;
   compute_basis_matrix(eval_points, unscaled_basis_matrix);
