@@ -7,6 +7,7 @@
     _______________________________________________________________________ */
 
 #include "PolynomialRegression.hpp"
+#include "SurrogatesTools.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -128,6 +129,73 @@ PolynomialRegression::surrogate_value(const MatrixXd &eval_points, MatrixXd &app
 }
 
 // ------------------------------------------------------------
+
+void
+PolynomialRegression::gradient(const MatrixXd &samples, MatrixXd &gradient) {
+  MatrixXd polynomial_coeffs = get_polynomial_coeffs();
+  const int num_variables = samples.cols();
+  const int p_norm = 1.0;
+
+  Eigen::MatrixXi basis_indices;
+  compute_hyperbolic_indices( num_variables, polynomial_order, p_norm, basis_indices);
+
+  for ( int i = 0; i < num_variables; i++ )
+  {
+    MatrixXi derivative_matrix;
+    VectorXi scaling_factors;
+
+    for ( int j = 0; j < basis_indices.size(); j++ )
+    {
+      VectorXi next_row;
+      bool fail = false;
+      for ( int k = 0; k < num_variables; k++ )
+      {
+        if ( i == k )
+        {
+          int derivative = basis_indices(i, j) - 1;
+          if ( derivative > -1 )
+          {
+            next_row << derivative;
+          }
+          else
+          {
+            fail = true;
+            break;
+          }
+        }
+        else
+        {
+          next_row << basis_indices(i, j);
+        }
+      }
+
+      if ( !fail )
+      {
+        derivative_matrix << next_row;
+      }
+    }
+
+    for ( int l = 0; l < beta_indices.size(); l++ )
+    {
+      int beta_index = find_matching_row(basis_indices, derivative_matrix(l));
+      gradient(i, l) = polynomial_coeffs(beta_indices(l), 0) * scaling_factors(beta_index);
+    }
+  }
+}
+
+int find_matching_row(MatrixXd &hyperbolic_indices, MatrixXd &decremented_indices, VectorXd &target_row) {
+  MatrixXd c = hyperbolic_indices - decremented_indices;
+  VectorXd d = c.rowwise().sum();
+
+  MatrixXd::Index minRow, minCol;
+  double min = d.cwiseAbs().minCoeff(&minRow, &minCol);
+  return minRow.index();
+}
+
+void
+PolynomialRegression::hessian(const MatrixXd &sample, MatrixXd &hessian) {
+
+}
 
 } // namespace surrogates
 } // namespace dakota

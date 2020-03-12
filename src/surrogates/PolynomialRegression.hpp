@@ -54,6 +54,11 @@ public:
   void build_surrogate();
   void surrogate_value(const MatrixXd &eval_points, MatrixXd &approx_values);
 
+  // Derivatives
+
+  void gradient(const MatrixXd &samples, MatrixXd &gradient);
+  void hessian(const MatrixXd &sample, MatrixXd &hessian); 
+
 private:
 
   // Input fields
