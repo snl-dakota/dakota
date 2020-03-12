@@ -44,12 +44,9 @@ NormalizationScaler::NormalizationScaler(const MatrixXd &features,
   const int num_samples  = features.rows();
   const int num_features = features.cols();
 
-  VectorXd scalerFeaturesOffsets_(num_features);
-  VectorXd scalerFeaturesScaleFactors_(num_features);
-  MatrixXd scaledFeatures_(num_samples,num_features);
-  scalerFeaturesOffsets = std::make_shared<VectorXd>(scalerFeaturesOffsets_);
-  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(scalerFeaturesScaleFactors_);
-  scaledFeatures = std::make_shared<MatrixXd>(scaledFeatures_);
+  scalerFeaturesOffsets = std::make_shared<VectorXd>(num_features);
+  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(num_features);
+  scaledFeatures = std::make_shared<MatrixXd>(num_samples,num_features);
 
   double min_val, max_val, mean_val;
   
@@ -81,12 +78,9 @@ StandardizationScaler::StandardizationScaler(const MatrixXd &features,
   const int num_samples = features.rows();
   const int num_features = features.cols();
 
-  VectorXd scalerFeaturesOffsets_(num_features);
-  VectorXd scalerFeaturesScaleFactors_(num_features);
-  MatrixXd scaledFeatures_(num_samples,num_features);
-  scalerFeaturesOffsets = std::make_shared<VectorXd>(scalerFeaturesOffsets_);
-  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(scalerFeaturesScaleFactors_);
-  scaledFeatures = std::make_shared<MatrixXd>(scaledFeatures_);
+  scalerFeaturesOffsets = std::make_shared<VectorXd>(num_features);
+  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(num_features);
+  scaledFeatures = std::make_shared<MatrixXd>(num_samples,num_features);
 
   double mean_val, var_val;
   
@@ -114,11 +108,8 @@ NoScaler::NoScaler(const MatrixXd &features) {
 
   const int num_features = features.cols();
   scaledFeatures = std::make_shared<MatrixXd>(features);
-
-  VectorXd scalerFeaturesOffsets_ = VectorXd::Zero(num_features);
-  VectorXd scalerFeaturesScaleFactors_ = VectorXd::Ones(num_features);
-  scalerFeaturesOffsets = std::make_shared<VectorXd>(scalerFeaturesOffsets_);
-  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(scalerFeaturesScaleFactors_);
+  scalerFeaturesOffsets = std::make_shared<VectorXd>(num_features);
+  scalerFeaturesScaleFactors = std::make_shared<VectorXd>(num_features);
 
   has_scaling = true;
 }
