@@ -157,6 +157,20 @@ public:
 
 private:
 
+  /// Key/value options to configure the surrogate (encapsulates
+  /// defaults, but can be overridden by user)
+  Teuchos::ParameterList configOptions;
+
+  /// runtime build once data are finalized
+  void build(const MatrixXd &samples,
+	     const MatrixXd &response,
+	     const VectorXd &sigma_bounds,
+	     const MatrixXd &length_scale_bounds,
+	     const std::string scaler_type,
+	     const int num_restarts,
+	     const double nugget_val,
+	     const int seed);
+
   /// Dimension of the feature space.
   int numVariables;
   /// Number of samples in the surrogate dataset.
@@ -207,6 +221,11 @@ private:
 
   // ------------------------------------------------------------
   // Private utility functions
+
+  /// setup default options: one possible way to encode the defaults
+  /// when using a ParameterList
+  void default_options();
+
 
   /**
    *  \brief Compute the GramMatrix for the surrogate dataset and

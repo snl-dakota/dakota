@@ -188,32 +188,93 @@ void GaussianProcess::compute_gram_pred(const MatrixXd &samples, MatrixXd &Gram_
 }
 
 
-// BMA NOTE: ParameterList::get() can throw, so direct delegation
-// probably not good
-GaussianProcess::GaussianProcess(const MatrixXd &samples,
-				 const MatrixXd &response,
-				 const Teuchos::ParameterList& param_list):
-  GaussianProcess(samples, response,
-		  param_list.get<VectorXd>("sigma_bounds"),
-		  param_list.get<MatrixXd>("length_scale_bounds"),
-		  param_list.get<std::string>("scaler_type"),
-		  param_list.get<int>("num_restarts"),
-		  param_list.get<double>("nugget"),
-		  param_list.get<int>("gp_seed")
-		  )
+void GaussianProcess::default_options()
 {
+  // bound constraints -- will be converted to log-scale
+  // sigma bounds - lower and upper
+  VectorXd sigma_bounds(2);
+  sigma_bounds(0) = 1.0e-2;
+  sigma_bounds(1) = 1.0e2;
+  // length scale bounds - num_vars x 2
+  MatrixXd length_scale_bounds(1,2);
+  length_scale_bounds(0,0) = 1.0e-2;
+  length_scale_bounds(0,1) = 1.0e2;
+
+  configOptions.set("sigma_bounds", sigma_bounds, "sigma [lb, ub]");
+  // BMA: Do we want to allow 1 x 2 always as a fallback?
+  configOptions.set("length_scale_bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
+  configOptions.set("scaler_type", std::string("mean_normalization"));
+  configOptions.set("num_restarts", int(5));
+  // BMA: Should default be 0.0?
+  configOptions.set("nugget", double(1.0e-10));
+  configOptions.set("gp_seed", int(129));
 }
 
 
-GaussianProcess::GaussianProcess(const MatrixXd &samples, 
-                                 const MatrixXd &response, 
+// BMA NOTE: ParameterList::get() can throw, so direct delegation
+// probably not good; might want to give a helpful message
+GaussianProcess::GaussianProcess(const MatrixXd &samples,
+				 const MatrixXd &response,
+				 const Teuchos::ParameterList& param_list)
+{
+  default_options();
+
+  // check that the passed parameters are valid for this surrogate
+  // (doesn't allow unused parameters, which we might want)
+  // (also overwrites the defaults, which we might want to preserve)
+  try {
+    param_list.validateParameters(configOptions);
+  }
+  catch (const Teuchos::Exceptions::InvalidParameter& e) {
+    std::cerr << "Invalid parameter passed to GaussianProcess; details:\n"
+	      << e.what() << std::endl;
+    throw;
+  }
+  configOptions.setParameters(param_list);
+  std::cout << "Building GaussianProcess with final parameters\n"
+	    << param_list << std::endl;
+
+  build(samples,
+	response,
+	param_list.get<VectorXd>("sigma_bounds"),
+	param_list.get<MatrixXd>("length_scale_bounds"),
+	param_list.get<std::string>("scaler_type"),
+	param_list.get<int>("num_restarts"),
+	param_list.get<double>("nugget"),
+	param_list.get<int>("gp_seed")
+	);
+}
+
+
+GaussianProcess::GaussianProcess(const MatrixXd &samples,
+                                 const MatrixXd &response,
                                  const VectorXd &sigma_bounds,
                                  const MatrixXd &length_scale_bounds,
                                  const std::string scaler_type,
                                  const int num_restarts,
                                  const double nugget_val,
-                                 const int seed) {
+                                 const int seed)
+{
+  build(samples,
+	response,
+	sigma_bounds,
+	length_scale_bounds,
+	scaler_type,
+	num_restarts,
+	nugget_val,
+	seed);
+}
 
+
+void GaussianProcess::build(const MatrixXd &samples,
+			    const MatrixXd &response,
+			    const VectorXd &sigma_bounds,
+			    const MatrixXd &length_scale_bounds,
+			    const std::string scaler_type,
+			    const int num_restarts,
+			    const double nugget_val,
+			    const int seed)
+{
   numSamples = samples.rows();
   numVariables = samples.cols();
   targetValues = std::make_shared<MatrixXd>(response);
