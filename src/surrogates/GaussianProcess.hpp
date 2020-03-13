@@ -172,13 +172,13 @@ private:
 	     const int seed);
 
   /// Dimension of the feature space.
-  int numVariables;
+  int numVariables = 0;
   /// Number of samples in the surrogate dataset.
-  int numSamples;
+  int numSamples = 0;
 
   /// Small constant added to the diagonal of the Gram matrix to avoid
   /// ill-conditioning.
-  double nuggetValue;
+  double nuggetValue = 0.0;
 
   /// Corresponding target values for the surrogate dataset.
   std::shared_ptr<MatrixXd> targetValues;
@@ -217,7 +217,7 @@ private:
   const double PI = 3.14159265358979323846;
 
   /// Final objective function value.
-  double bestObjFunValue;
+  double bestObjFunValue = std::numeric_limits<double>::max();
 
   // ------------------------------------------------------------
   // Private utility functions
