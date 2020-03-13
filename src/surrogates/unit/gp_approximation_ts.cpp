@@ -57,12 +57,12 @@ int test_gp(double atol){
   param_list.set("sigma_bounds", sigma_bounds);
   param_list.set("length_scale_bounds", length_scale_bounds);
   param_list.set("scaler_type",
-		 std::string("standardization")
-		 //std::string("none")
+		 "standardization"
+		 // "none"
 		 );
-  param_list.set("num_restarts", int(10));
-  param_list.set("nugget", double(1.0e-12));
-  param_list.set("gp_seed", int(42));
+  param_list.set("num_restarts", 10);
+  param_list.set("nugget", 1.0e-12);
+  param_list.set("gp_seed", 42);
 
   /* 1D GP test */
   GaussianProcess gp(xs_u, response, param_list);
@@ -149,7 +149,7 @@ int test_gp(double atol){
   // Update ParameterList for this test
   param_list.set("sigma_bounds", sigma_bounds);
   param_list.set("length_scale_bounds", length_scale_bounds);
-  param_list.set("nugget", double(1.0e-10));
+  param_list.set("nugget", 1.0e-10);
 
   std::string samples_fname = "gp_test_data/lhs_data_64.txt";
   std::string responses_fname = "gp_test_data/smooth_herbie_64.txt";

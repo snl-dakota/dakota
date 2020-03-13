@@ -203,11 +203,11 @@ void GaussianProcess::default_options()
   configOptions.set("sigma_bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   configOptions.set("length_scale_bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
-  configOptions.set("scaler_type", std::string("mean_normalization"));
-  configOptions.set("num_restarts", int(5));
+  configOptions.set("scaler_type", "mean_normalization", "scaler for variables");
+  configOptions.set("num_restarts", 5, "local optimizer number of initial iterates");
   // BMA: Should default be 0.0?
-  configOptions.set("nugget", double(1.0e-10));
-  configOptions.set("gp_seed", int(129));
+  configOptions.set("nugget", 1.0e-10, "diagonal nugget");
+  configOptions.set("gp_seed", 129, "random seed for initial iterate generation");
 }
 
 
