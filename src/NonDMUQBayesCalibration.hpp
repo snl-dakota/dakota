@@ -22,6 +22,7 @@
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
 #include "MUQ/SamplingAlgorithms/MCMCFactory.h"
 #include "MUQ/SamplingAlgorithms/SamplingProblem.h"
+#include "MUQ/SamplingAlgorithms/SamplingState.h"
 #include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"
 #include "MUQ/Modeling/Distributions/Gaussian.h"
 #include "MUQ/Modeling/Distributions/Density.h"
@@ -63,7 +64,16 @@ protected:
 
   void calibrate();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+
+  /// convenience function to print calibration parameters, e.g., for
+  /// MAP / best parameters
+  void print_variables(std::ostream& s, const RealVector& c_vars);
+
+  /// cache the chain to acceptanceChain and acceptedFnVals
   void cache_chain();
+
+  /// log at most batchSize best chain points into bestSamples
+  void log_best();
 
 
   //
