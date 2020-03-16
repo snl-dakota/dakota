@@ -41,6 +41,7 @@ NonDMUQBayesCalibration* NonDMUQBayesCalibration::nonDMUQInstance(NULL);
 NonDMUQBayesCalibration::
 NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
+  numBestSamples(1),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type"))
 {
 }
@@ -227,6 +228,8 @@ void NonDMUQBayesCalibration::log_best()
     if( it != states->meta.end() ){
       log_posterior = muq::Utilities::AnyCast(states->meta["LogTarget"]);
       bestSamples.insert(std::make_pair(log_posterior, mcmc_rv));
+      if (bestSamples.size() > numBestSamples)
+        bestSamples.erase(bestSamples.begin()); // pop front (lowest prob)
     }
 
   }

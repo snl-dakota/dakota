@@ -98,6 +98,9 @@ protected:
   /// Pointer to current class instance for use in static callback functions
   static NonDMUQBayesCalibration* nonDMUQInstance;
 
+  /// number of best samples (max log_posterior values) to keep 
+  unsigned int numBestSamples;
+
 private:
 
   //
