@@ -458,6 +458,8 @@ private:
 
   static Real var_of_var_ml_l0(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
 
+  static Real var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g);
+
   static Real var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1, const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g);
 
   ///OPTPP definition
@@ -1006,6 +1008,42 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l0(IntRealMatrixMap sum_Ql, In
   return var_of_var;
 }
 
+
+inline Real NonDMultilevelSampling::var_of_var_ml_lmax(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
+                                                     const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const bool& compute_gradient, Real& grad_g){
+  Real cm1l, cm2l, cm3l, cm4l, cm2l_sq, var_of_var;
+
+  IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
+  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
+      &sum_Q2l = sum_Ql[2], &sum_Q2lm1 = sum_Qlm1[2],
+      &sum_Q3l = sum_Ql[3], &sum_Q3lm1 = sum_Qlm1[3],
+      &sum_Q4l = sum_Ql[4], &sum_Q4lm1 = sum_Qlm1[4],
+      &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
+      &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
+
+  uncentered_to_centered(sum_Q1l(qoi, 1) / Nlq_pilot, sum_Q2l(qoi, 1) / Nlq_pilot,
+                         sum_Q3l(qoi, 1) / Nlq_pilot, sum_Q4l(qoi, 1) / Nlq_pilot,
+                         cm1l, cm2l, cm3l, cm4l, Nlq_pilot);
+
+  cm2l_sq = cm2l * cm2l;
+  var_of_var = (Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq);
+
+  if(compute_gradient) {
+    grad_g = ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 1.) * (2. * Nlq - 2.)) /
+             ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm4l
+             - ((Nlq * Nlq - 2. * Nlq + 3.) - (Nlq - 3.) * (2. * Nlq - 2.)) /
+               ((Nlq * Nlq - 2. * Nlq + 3.) * (Nlq * Nlq - 2. * Nlq + 3.)) * cm2l_sq;
+    Real grad_fd, fd_upper, fd_lower;
+    Real h = 0.00001;
+    fd_upper = std::log(( (Nlq + h) - 1.) / ( (Nlq + h) * (Nlq + h) - 2. * (Nlq + h) + 3.) * (cm4l - ((Nlq + h) - 3.) / ((Nlq + h) - 1.) * cm2l_sq) );
+    fd_lower = std::log((Nlq - 1.) / (Nlq * Nlq - 2. * Nlq + 3.) * (cm4l - (Nlq - 3.) / (Nlq - 1.) * cm2l_sq) );
+    grad_fd = (fd_upper - fd_lower)/h;
+    //grad_g = grad_fd;
+  }
+  //[fm] bias correction for var_P2l
+  return var_of_var;
+}
+
 inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, IntRealMatrixMap sum_Qlm1, IntIntPairRealMatrixMap sum_QlQlm1,
                                                     const size_t& Nlq_pilot, const Real& Nlq, const size_t& qoi, const size_t& lev, const bool& compute_gradient, Real& grad_g){
   Real cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
@@ -1135,7 +1173,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
 //#ifdef HAVE_NPSOL
 //#elif HAVE_OPTPP
 //    if(mode & OPTPP::NLPGradient){
-
+			/*
       Cout << "Gradients: ";
       Cout << grad_g << " ";
       Cout << "\n";
@@ -1160,6 +1198,7 @@ inline Real NonDMultilevelSampling::var_of_var_ml_l(IntRealMatrixMap sum_Ql, Int
       Cout << "term3 FD: ";
         Cout << term3_fd << " ";
       Cout << "\n";
+      */
     }
 //#endif
 

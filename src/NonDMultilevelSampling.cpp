@@ -679,8 +679,81 @@ namespace Dakota {
       }
     }
 
+    ////TODO
+    /*
+    {
+      IntRealMatrixMap sum_Ql_ref, sum_Qlm1_ref;
+      IntIntPairRealMatrixMap sum_QlQlm1_ref;
+      initialize_ml_Qsums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_lev);
+      IntIntPair pr11_ref(1, 1);
+      RealVectorArray mu_hat_ref(num_lev);
+      RealVector agg_var_mean_qoi_ref(numFunctions), agg_var_var_qoi_ref(numFunctions), agg_var_qoi_ref(numFunctions);
+
+      configure_indices(num_lev-1, model_form, cost, lev_cost);
+
+      numSamples = 10000;
+
+      // generate new MC parameter sets
+      get_parameter_sets(iteratedModel);// pull dist params from any model
+
+      // compute allResponses from allVariables using hierarchical model
+      evaluate_parameter_sets(iteratedModel, true, false);
+
+      // process allResponses: accumulate new samples for each qoi and
+      // update number of successful samples for each QoI
+      //if (iter == 0) accumulate_offsets(mu_hat[lev]);
+
+      SizetArray num_samples_array(numFunctions);
+      for (qoi = 0; qoi < numFunctions; ++qoi) {
+        num_samples_array[qoi] = numSamples;
+      }
+      accumulate_ml_Qsums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_lev-1,
+                          mu_hat_ref[num_lev-1], num_samples_array);
+      Real agg_var_l_ref = 0;
+      if (sampleAllocationType==AGGREGATED_VARIANCE) {
+        if (targetMoment == 1) {
+          agg_var_l_ref = aggregate_variance_Qsum(sum_Ql_ref[1][num_lev-1], sum_Qlm1_ref[1][lev],
+                                              sum_Ql_ref[2][num_lev-1], sum_QlQlm1_ref[pr11][lev], sum_Qlm1_ref[2][lev],
+                                                  num_samples_array, num_lev-1);
+        } else if (targetMoment == 2) {
+          for (qoi = 0; qoi < numFunctions; ++qoi) {
+            agg_var_l_ref += var_of_var_ml_lmax(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, numSamples,
+                                                        100, qoi, false, place_holder)
+                                                           * 100; //As described in the paper by Krumscheid, Pisaroni, Nobile
+          }
+        } else{
+          Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: TargetMoment is not implemented.\n";
+          abort_handler(INTERFACE_ERROR);
+        }
+        check_negative(agg_var_l_ref);
+      }else if (sampleAllocationType==WORST_CASE) {
+        for (qoi = 0; qoi < numFunctions; ++qoi) {
+          num_samples_array[qoi] = numSamples;
+
+          agg_var_mean_qoi_ref[qoi] = variance_Ysum(sum_Ql_ref[1][num_lev-1][qoi], sum_Ql_ref[2][num_lev-1][qoi], numSamples);
+
+          agg_var_var_qoi_ref[qoi] = var_of_var_ml_lmax(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, numSamples,
+                                                                          100, qoi, false, place_holder) *
+                                      100; //As described in the paper by Krumscheid, Pisaroni, Nobile
+          agg_var_qoi_ref[qoi] = (targetMoment == 1) ? agg_var_mean_qoi_ref[qoi] : agg_var_var_qoi_ref[qoi];
+          check_negative(agg_var_qoi_ref[qoi]);
+        }
+      }else{
+        Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: SampleAllocationType is not known.\n";
+        abort_handler(INTERFACE_ERROR);
+      }
+      //convergenceTol = agg_var_qoi_ref[1]/100;
+      Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: Convergence Tolerance.\n" << convergenceTol << std::endl;
+      convergenceTol = agg_var_qoi_ref[2]/100;
+      //Cout << "NonDMultilevelSampling::multilevel_mc_Qsum: Convergence Tolerance.\n" << convergenceTol << std::endl;
+
+    }
+    */
+    ////
+
     // now converge on sample counts per level (N_l)
     while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
+      Real underrelaxation_factor = static_cast<Real>(iter + 1)/static_cast<Real>(max_iter);
 
       sum_sqrt_var_cost = 0.;
       for (qoi = 0; qoi < numFunctions; ++qoi) {
@@ -1058,23 +1131,26 @@ namespace Dakota {
         }
         Real max_qoi_idx = -1, max_cost = -1, cur_cost = 0;
 
+        Cout << "\nMLMC iteration prev " << iter << std::endl;
         for (lev = 0; lev < num_lev; ++lev) {
           max_qoi_idx = 0;
           for (qoi = 1; qoi < numFunctions; ++qoi) {
             max_qoi_idx = delta_N_l_qoi(qoi, lev) > delta_N_l_qoi(max_qoi_idx, lev) ? qoi : max_qoi_idx;
           }
+          Cout << delta_N_l_qoi(max_qoi_idx, lev) << std::endl;
           delta_N_l[lev] = delta_N_l_qoi(max_qoi_idx, lev);
+          if(static_cast<size_t>(delta_N_l_qoi(max_qoi_idx, lev) * underrelaxation_factor) == 0 && delta_N_l_qoi(max_qoi_idx, lev) != 0){
+            delta_N_l[lev] = delta_N_l_qoi(max_qoi_idx, lev);
+          }else{
+            delta_N_l[lev] = static_cast<size_t>(delta_N_l_qoi(max_qoi_idx, lev) * underrelaxation_factor);
+          }
         }
       }
-      Cout << "Max Delta: " << std::endl;
-      for (lev = 0; lev < num_lev; ++lev) {
-        Cout << delta_N_l[lev] << " ";
-      }
-      Cout << "\n";
 
       ++iter;
       Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
            << std::endl;
+      Cout << "\nUnderrelaxation: " << underrelaxation_factor << std::endl;
 
     }
     Cout << "\nMLMC final sample size\n" << N_l
