@@ -44,6 +44,28 @@ dakotaParams = """                                          3 variables
                                           1 eval_id
 """
 
+dakotaBatchParams = """                                          2 variables
+                      2.109465794009156e-01 x1
+                     -9.675715913879684e-01 x2
+                                          1 functions
+                                          1 ASV_1:obj_fn
+                                          2 derivative_variables
+                                          1 DVV_1:x1
+                                          2 DVV_2:x2
+                                          0 analysis_components
+                                        1:1 eval_id
+                                          2 variables
+                      3.222614371054804e-01 x1
+                      4.946014218730854e-02 x2
+                                          1 functions
+                                          1 ASV_1:obj_fn
+                                          2 derivative_variables
+                                          1 DVV_1:x1
+                                          2 DVV_2:x2
+                                          0 analysis_components
+                                        1:2 eval_id
+"""
+
 # Helper functions needed for Python < 2.7
 def set_function(r):
     r["response_fn_1"].function = 5.0
@@ -53,8 +75,6 @@ def set_gradient(r):
 
 def set_hessian(r):
     r["response_fn_1"].hessian = [[1.0, 2.0],[2.0,3.0]]
-
-
 
 
 class dakotaInterfacingTestCase(unittest.TestCase):
@@ -170,6 +190,50 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         expected = "FAIL\n"
         self.assertEqual(rio.getvalue(), expected)
 
+    def test_batch_support(self):
+        """Verify that batch-format params and results files are handled correctly"""
+       
+        num_vars = 2
+        num_fns = 1
+        x1_vals = [2.109465794009156e-01, 3.222614371054804e-01]
+        batch_id = 1
+        eval_ids = ["1:1", "1:2"]
+        sio = StringIO.StringIO(dakotaBatchParams)
+        p, r = di.interfacing._read_parameters_stream(sio, False, None)
+        # correct number of parameter sets and response sets
+        self.assertEqual(len(p),2)
+        self.assertEqual(len(r),2)
+        # batch ids
+        self.assertEqual(p.batch_id, "1") 
+        self.assertEqual(r.batch_id, "1") 
+        # Indexing
+        for i in range(len(p)):
+            self.assertAlmostEqual(p[i]["x1"], x1_vals[i])
+            self.assertEqual(r[i].eval_id, eval_ids[i])
+        with self.assertRaises(IndexError):
+            p[2]
+        with self.assertRaises(IndexError):
+            r[2]
+        
+        # Test iteration
+        for i, pi in enumerate(p):
+             self.assertEqual(pi.eval_id, eval_ids[i])
+        # Test write locking
+        with self.assertRaises(di.interfacing.BatchWriteError):
+            r[0].write("foo")
+        # Verify writes
+        r[0][0].function = 1.0
+        r[1][0].function = 2.0
+        results_file = StringIO.StringIO()
+        r.write(results_file)
+        results_strings = results_file.getvalue().split("\n")
+        self.assertEqual(results_strings[0], "#")
+        val, label = results_strings[1].split()
+        self.assertAlmostEqual(float(val),1.0)
+        self.assertEqual(results_strings[2], "#")
+        val, label = results_strings[3].split()
+        self.assertAlmostEqual(float(val),2.0)
+        
     def test_dprepro(self):
         """Verify that templates are substituted correctly"""
  
