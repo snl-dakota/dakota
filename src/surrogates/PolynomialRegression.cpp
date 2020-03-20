@@ -29,10 +29,32 @@ PolynomialRegression::PolynomialRegression(std::shared_ptr<Teuchos::ParameterLis
   scalerType = util::SCALER_TYPE::NONE;
 }
 
+PolynomialRegression::
+PolynomialRegression(const MatrixXd& samples_in, const MatrixXd& response_in,
+		     Teuchos::ParameterList& options)
+{
+  // BMA: delegation only required due to shared_ptr
+  set_samples(samples_in);
+  set_response(response_in);
+
+  // what to do about "Num Vars" option when it's ignored?
+  numVars = samples_->cols();
+
+  int max_degree = options.get<int>("Max Degree");
+  double p_norm  = options.get     ("P-Norm", 1.0);
+
+  basisIndices   = std::make_shared<MatrixXi>();
+  compute_hyperbolic_indices(numVars, max_degree, p_norm, *basisIndices);
+  numTerms       = basisIndices->cols();
+
+  scalerType = util::DataScaler::scaler_type(options.get<std::string>("scaler_name", "none"));
+}
+
+
 // ------------------------------------------------------------
 
 // Constructor
-
+// BMA: This ctor has the advantage of building basis without having the data
 PolynomialRegression::PolynomialRegression(int total_order, int nvars) :
   numVars(nvars)
 {
