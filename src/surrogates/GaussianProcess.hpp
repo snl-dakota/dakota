@@ -50,8 +50,7 @@ public:
 
   ~GaussianProcess();
 
-  GaussianProcess(const MatrixXd &samples,
-                  const MatrixXd &response,
+  GaussianProcess(const MatrixXd &samples, const MatrixXd &response,
 		  const Teuchos::ParameterList& param_list);
 
   // BMA: Leaving both ctors during refactoring; consider making
@@ -64,7 +63,7 @@ public:
    * \param[in] response Vector of targets for surrogate construction - (num_samples by num_qoi = 1; only 1 response is supported currently).
    * \param[in] sigma_bounds Bounds for the scaling hyperparameter
    * \param[in] length_scale_bounds Bounds for each length scale hyperparameter.
-   * \param[in] scaler_type String for which type of scaling will be applied to the surrogate data.
+   * \param[in] scaler_name String for which type of scaling will be applied to the surrogate data.
    * \param[in] num_restarts Number of restarts for gradient-based optimization.
    * \param[in] nugget_val Value of the Gaussian process's nugget - a small positive constant
    * \param[in] seed Seed for the random number generator. This affects the initial guesses.
@@ -73,7 +72,7 @@ public:
                   const MatrixXd &response,
                   const VectorXd &sigma_bounds,
                   const MatrixXd &length_scale_bounds,
-                  const std::string scaler_type = "mean_normalization",
+                  const std::string scaler_name = "mean_normalization",
                   const int num_restarts = 5,
                   const double nugget_val = 1.0e-10,
                   const int seed = 129);
@@ -166,7 +165,7 @@ private:
 	     const MatrixXd &response,
 	     const VectorXd &sigma_bounds,
 	     const MatrixXd &length_scale_bounds,
-	     const std::string scaler_type,
+	     const std::string scaler_name,
 	     const int num_restarts,
 	     const double nugget_val,
 	     const int seed);

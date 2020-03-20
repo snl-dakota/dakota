@@ -28,6 +28,10 @@ public:
   // Options-based constructor
   PolynomialRegression(std::shared_ptr<Teuchos::ParameterList> options);
 
+  // Options-based constructor to model defaults like GP
+  PolynomialRegression(const MatrixXd& samples, const MatrixXd& response,
+		       Teuchos::ParameterList& options);
+
   // Simple constructor
   PolynomialRegression(int total_order, int nvars);
 

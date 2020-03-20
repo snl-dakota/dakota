@@ -56,7 +56,7 @@ int test_gp(double atol){
   Teuchos::ParameterList param_list("GP Test Parameters");
   param_list.set("sigma_bounds", sigma_bounds);
   param_list.set("length_scale_bounds", length_scale_bounds);
-  param_list.set("scaler_type",
+  param_list.set("scaler_name",
 		 "standardization"
 		 // "none"
 		 );

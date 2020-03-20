@@ -153,6 +153,7 @@ std::shared_ptr<DataScaler> scaler_factory(SCALER_TYPE scaler_type, const Matrix
   else if (scaler_type == util::SCALER_TYPE::MINMAX_NORMALIZATION) {
     return std::make_shared<util::NormalizationScaler>(unscaled_matrix, false); 
   }
+  // BMA TODO: This should likely error on unknown scaler
   return std::make_shared<util::NoScaler>(unscaled_matrix);
 }
 

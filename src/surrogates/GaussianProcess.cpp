@@ -190,6 +190,8 @@ void GaussianProcess::compute_gram_pred(const MatrixXd &samples, MatrixXd &Gram_
 
 void GaussianProcess::default_options()
 {
+  // BMA TODO: with both approaches, how to publish a list of all valid options?
+
   // bound constraints -- will be converted to log-scale
   // sigma bounds - lower and upper
   VectorXd sigma_bounds(2);
@@ -203,7 +205,7 @@ void GaussianProcess::default_options()
   configOptions.set("sigma_bounds", sigma_bounds, "sigma [lb, ub]");
   // BMA: Do we want to allow 1 x 2 always as a fallback?
   configOptions.set("length_scale_bounds", length_scale_bounds, "length scale num_vars x [lb, ub]");
-  configOptions.set("scaler_type", "mean_normalization", "scaler for variables");
+  configOptions.set("scaler_name", "mean_normalization", "scaler for variables");
   configOptions.set("num_restarts", 5, "local optimizer number of initial iterates");
   // BMA: Should default be 0.0?
   configOptions.set("nugget", 1.0e-10, "diagonal nugget");
@@ -238,7 +240,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 	response,
 	param_list.get<VectorXd>("sigma_bounds"),
 	param_list.get<MatrixXd>("length_scale_bounds"),
-	param_list.get<std::string>("scaler_type"),
+	param_list.get<std::string>("scaler_name"),
 	param_list.get<int>("num_restarts"),
 	param_list.get<double>("nugget"),
 	param_list.get<int>("gp_seed")
@@ -250,7 +252,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
                                  const MatrixXd &response,
                                  const VectorXd &sigma_bounds,
                                  const MatrixXd &length_scale_bounds,
-                                 const std::string scaler_type,
+                                 const std::string scaler_name,
                                  const int num_restarts,
                                  const double nugget_val,
                                  const int seed)
@@ -259,7 +261,7 @@ GaussianProcess::GaussianProcess(const MatrixXd &samples,
 	response,
 	sigma_bounds,
 	length_scale_bounds,
-	scaler_type,
+	scaler_name,
 	num_restarts,
 	nugget_val,
 	seed);
@@ -270,7 +272,7 @@ void GaussianProcess::build(const MatrixXd &samples,
 			    const MatrixXd &response,
 			    const VectorXd &sigma_bounds,
 			    const MatrixXd &length_scale_bounds,
-			    const std::string scaler_type,
+			    const std::string scaler_name,
 			    const int num_restarts,
 			    const double nugget_val,
 			    const int seed)
@@ -280,17 +282,7 @@ void GaussianProcess::build(const MatrixXd &samples,
   targetValues = std::make_shared<MatrixXd>(response);
   
   /* Scale the data */
-  if (scaler_type == "mean normalization")
-    dataScaler = std::make_shared<NormalizationScaler>(samples,true);
-  else if (scaler_type == "min-max normalization")
-    dataScaler = std::make_shared<NormalizationScaler>(samples,false);
-  if (scaler_type == "standardization")
-    dataScaler = std::make_shared<StandardizationScaler>(samples);
-  else if (scaler_type == "none" )
-    dataScaler = std::make_shared<NoScaler>(samples);
-  else
-    throw(std::string("Invalid scaler type"));
-
+  dataScaler = util::scaler_factory(util::DataScaler::scaler_type(scaler_name), samples);
   MatrixXd scaled_samples = dataScaler->get_scaled_features();
 
   /* size of thetaValues for squared exponential kernel and one QoI */
