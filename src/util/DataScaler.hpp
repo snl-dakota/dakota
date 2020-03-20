@@ -20,9 +20,10 @@ namespace dakota {
 namespace util {
 
 enum class SCALER_TYPE {
-                         NONE ,
-                         STANDARDIZATION  ,
-                         NORMALIZATION
+                         NONE,
+                         STANDARDIZATION,
+		         MEAN_NORMALIZATION,   // formerly just NORMALIZATION
+			 MINMAX_NORMALIZATION
                        };
 
 /**
@@ -89,6 +90,9 @@ class DataScaler {
  *
 */
     bool has_scaling = false;
+
+
+  static SCALER_TYPE scaler_type(const std::string& scaler_name);
 
   protected: 
 

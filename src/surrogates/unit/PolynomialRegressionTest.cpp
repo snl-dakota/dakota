@@ -87,7 +87,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   double expected_constant_term = 2.0;        // unscaled intercept via coeffs array
   double expected_first_term =    1.0;        // unscaled slope via coeffs array
   double expected_polynomial_intercept = 0.0;
-  if( scaler_type == dakota::util::SCALER_TYPE::NORMALIZATION ||
+  if( scaler_type == dakota::util::SCALER_TYPE::MEAN_NORMALIZATION ||
       scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
   {
     expected_constant_term = 0.0;
@@ -246,7 +246,7 @@ int test_main( int argc, char* argv[] ) // note the name!
   // Univariate tests
   PolynomialRegressionSurrogate_getters_and_setters();
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
-  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NORMALIZATION);
+  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::MEAN_NORMALIZATION);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
 
   // Multivariate tests
