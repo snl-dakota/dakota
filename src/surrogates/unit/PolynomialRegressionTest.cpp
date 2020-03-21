@@ -53,8 +53,7 @@ MatrixXd create_multiple_features_matrix()
 
 void PolynomialRegressionSurrogate_getters_and_setters()
 {
-  Eigen::MatrixXi empty_indices;
-  PolynomialRegression pr(empty_indices, 0);
+  PolynomialRegression pr(1, 0);
   MatrixXd samples  = create_multiple_features_matrix();
   MatrixXd response = create_single_feature_matrix();
 
@@ -75,16 +74,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   VectorXd response    = VectorXd::LinSpaced(20,0,1);
   response = (response.array() + 2.0).matrix(); // +2.0 because the line's y-intercept is 2.0
 
-  // Compute basis index set 
-  Eigen::MatrixXi basis_indices;
-  compute_hyperbolic_indices( /* num_vars */ 1,
-                              /* degree */   1,
-                              /* p-norm */ 1.0,
-                              basis_indices    );
-
-  PolynomialRegression pr(basis_indices, /* num_vars */ 1);
-  BOOST_CHECK( 1 == basis_indices.rows() );
-  BOOST_CHECK( 2 == basis_indices.cols() ); // should be 2 terms for straight line
+  PolynomialRegression pr(/* degree */ 1, /* num_vars */ 1);
   pr.set_samples(line_vector);
   pr.set_response(response);
   pr.set_scaler_type(scaler_type);
@@ -97,7 +87,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE s
   double expected_constant_term = 2.0;        // unscaled intercept via coeffs array
   double expected_first_term =    1.0;        // unscaled slope via coeffs array
   double expected_polynomial_intercept = 0.0;
-  if( scaler_type == dakota::util::SCALER_TYPE::NORMALIZATION ||
+  if( scaler_type == dakota::util::SCALER_TYPE::MEAN_NORMALIZATION ||
       scaler_type == dakota::util::SCALER_TYPE::STANDARDIZATION )
   {
     expected_constant_term = 0.0;
@@ -198,11 +188,7 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
   get_samples(num_vars, num_samples, samples);
   another_additive_quadratic_function(samples, responses);
 
-  // Compute basis index set 
-  Eigen::MatrixXi basis_indices;
-  compute_hyperbolic_indices(num_vars, degree, 1.0, basis_indices);
-
-  PolynomialRegression pr(basis_indices, num_vars);
+  PolynomialRegression pr(degree, num_vars);
   pr.set_samples(samples);
   pr.set_response(responses);
   pr.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
@@ -229,6 +215,26 @@ PolynomialRegressionSurrogate_multivariate_regression_builder()
 
   pr.surrogate_value(eval_points, test_responses);
   BOOST_CHECK(matrix_equals(gold_responses, test_responses, 1.0e-10));
+
+
+
+  // Now use the options-based API
+  auto options = std::make_shared<Teuchos::ParameterList>();
+  options->set("Num Vars", num_vars);
+  options->set("Max Degree", degree);
+  PolynomialRegression pr2(options);
+  pr2.set_samples(samples);
+  pr2.set_response(responses);
+  pr2.set_scaler_type(dakota::util::SCALER_TYPE::NONE);
+  pr2.set_solver(dakota::util::SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
+  pr2.build_surrogate();
+
+  const MatrixXd& polynomial_coeffs2 = pr2.get_polynomial_coeffs();
+  double polynomial_intercept2 = pr2.get_polynomial_intercept();
+  BOOST_CHECK( std::abs(polynomial_intercept2) < 1.0e-10 );
+
+  // Check correctness of computed polynomial coefficients against the one used to construct the model
+  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs2, 1.0e-10));
 }
 
 } // namespace
@@ -240,7 +246,7 @@ int test_main( int argc, char* argv[] ) // note the name!
   // Univariate tests
   PolynomialRegressionSurrogate_getters_and_setters();
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NONE);
-  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::NORMALIZATION);
+  PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::MEAN_NORMALIZATION);
   PolynomialRegressionSurrogate_straight_line_fit(dakota::util::SCALER_TYPE::STANDARDIZATION);
 
   // Multivariate tests
