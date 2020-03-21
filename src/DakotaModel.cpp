@@ -3952,8 +3952,7 @@ void Model::clear_inactive()
 {
   if (modelRep) // envelope fwd to letter
     modelRep->clear_inactive();
-  //else // letter lacking redefinition of virtual fn.
-  //  default: no inactive data to clear
+  //else no op: no inactive data to clear
 }
 
 

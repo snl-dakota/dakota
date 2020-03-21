@@ -39,7 +39,7 @@ method,
           solver_tolerance = 1e-8  rounding_tolerance = 1e-8
 	  convergence_tol  = 1e-4
 	  seed = 1237
-	  output silent
+#	  output silent
 
 model,
 	id_model = 'HIERARCH'

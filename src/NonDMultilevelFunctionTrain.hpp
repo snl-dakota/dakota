@@ -73,6 +73,7 @@ protected:
   void increment_specification_sequence();
 
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
 				 size_t step);
   void compute_sample_increment(const RealVector& regress_metrics,
@@ -95,6 +96,8 @@ private:
   //
 
   size_t collocation_points() const;
+  size_t start_rank(size_t index) const;
+  size_t start_order(size_t index) const;
   size_t start_rank() const;
   size_t start_order() const;
 
@@ -128,24 +131,32 @@ inline size_t NonDMultilevelFunctionTrain::collocation_points() const
 }
 
 
-inline size_t NonDMultilevelFunctionTrain::start_rank() const
+inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const
 {
   if (startRankSeqSpec.empty())
     return startRankSpec; // use default provided by DataMethod
   else
-    return (sequenceIndex < startRankSeqSpec.size()) ?
-      startRankSeqSpec[sequenceIndex] : startRankSeqSpec.back();
+    return (index < startRankSeqSpec.size()) ?
+      startRankSeqSpec[index] : startRankSeqSpec.back();
 }
 
 
-inline size_t NonDMultilevelFunctionTrain::start_order() const
+inline size_t NonDMultilevelFunctionTrain::start_order(size_t index) const
 {
   if (startOrderSeqSpec.empty())
     return startOrderSpec; // use default provided by DataMethod
   else
-    return (sequenceIndex < startOrderSeqSpec.size()) ?
-      startOrderSeqSpec[sequenceIndex] : startOrderSeqSpec.back();
+    return (index < startOrderSeqSpec.size()) ?
+      startOrderSeqSpec[index] : startOrderSeqSpec.back();
 }
+
+
+inline size_t NonDMultilevelFunctionTrain::start_rank() const
+{ return start_rank(sequenceIndex); }
+
+
+inline size_t NonDMultilevelFunctionTrain::start_order() const
+{ return start_order(sequenceIndex); }
 
 } // namespace Dakota
 

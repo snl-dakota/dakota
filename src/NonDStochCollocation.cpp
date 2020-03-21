@@ -425,14 +425,15 @@ void NonDStochCollocation::initialize_covariance()
 void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false;
+  bool   warn_flag = false,
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
 
   if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
     PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (pa_rep_i->expansion_coefficient_flag()) {
-      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+      if (combined_stats)
 	// refinement assessed for impact on combined expansion from roll up
 	deltaRespMean[i] = (allVars) ?
 	  pa_rep_i->delta_combined_mean(initialPtU) :
@@ -442,8 +443,14 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
 	  pa_rep_i->delta_mean(initialPtU) : pa_rep_i->delta_mean();
 
       if (update_ref) {
-	Real new_mean = pa_rep_i->moment(0) + deltaRespMean[i];
-	pa_rep_i->moment(new_mean, 0);
+	if (combined_stats) {
+	  Real new_mean = pa_rep_i->combined_moment(0) + deltaRespMean[i];
+	  pa_rep_i->combined_moment(new_mean, 0);
+	}
+	else {
+	  Real new_mean = pa_rep_i->moment(0) + deltaRespMean[i];
+	  pa_rep_i->moment(new_mean, 0);
+	}
       }
     }
     else
@@ -465,7 +472,8 @@ void NonDStochCollocation::
 compute_delta_variance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false;
+  bool   warn_flag = false,
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
 
   if (deltaRespVariance.empty())
     deltaRespVariance.sizeUninitialized(numFunctions);
@@ -474,7 +482,7 @@ compute_delta_variance(bool update_ref, bool print_metric)
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     Real& delta = deltaRespVariance[i];
     if (pa_rep_i->expansion_coefficient_flag()) {
-      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+      if (combined_stats)
 	// refinement assessed for impact on combined expansion from roll up
 	delta = (allVars) ? pa_rep_i->delta_combined_variance(initialPtU) :
 	  pa_rep_i->delta_combined_variance();
@@ -484,7 +492,8 @@ compute_delta_variance(bool update_ref, bool print_metric)
 
       if (update_ref) {
 	respVariance[i] += delta;
-	pa_rep_i->moment(respVariance[i], 1);
+	if (combined_stats) pa_rep_i->combined_moment(respVariance[i], 1);
+	else                pa_rep_i->moment(respVariance[i], 1);
       }
     }
     else
@@ -503,7 +512,8 @@ void NonDStochCollocation::
 compute_delta_covariance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false;
+  bool   warn_flag = false,
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   size_t i, j;
 
   if (deltaRespCovariance.empty())
@@ -516,7 +526,7 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 	Approximation& approx_j = poly_approxs[j];
 	Real& delta = deltaRespCovariance(i,j);
 	if (approx_j.expansion_coefficient_flag()) {
-	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+	  if (combined_stats)
 	    // refinement assessed for impact on combined exp from roll up
 	    delta = (allVars) ?
 	      pa_rep_i->delta_combined_covariance(initialPtU, approx_j) :
@@ -528,7 +538,12 @@ compute_delta_covariance(bool update_ref, bool print_metric)
 
 	  if (update_ref) {
 	    respCovariance(i,j) += delta;
-	    if (i == j) pa_rep_i->moment(respCovariance(i,i), 1);
+	    if (i == j) {
+	      if (combined_stats)
+		pa_rep_i->combined_moment(respCovariance(i,i), 1);
+	      else
+		pa_rep_i->moment(respCovariance(i,i), 1);
+	    }
 	  }
 	}
 	else
@@ -942,7 +957,9 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
       // pull means
       for (size_t i=0; i<numFunctions; ++i) {
 	poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-	stats_star[i] = poly_approx_rep->moment(0) + deltaRespMean[i];
+	stats_star[i] = (combined_stats) ?
+	  poly_approx_rep->combined_moment(0) + deltaRespMean[i] :
+	  poly_approx_rep->moment(0)          + deltaRespMean[i];
       }
       // pull resp{V,Cov}ariance
       if (full_covar) {

@@ -93,6 +93,8 @@ public:
   /// multilevel/multifidelity expansions
   virtual void assign_hierarchical_response_mode();
 
+  virtual void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
+
   //
   //- Heading: Member functions
   //

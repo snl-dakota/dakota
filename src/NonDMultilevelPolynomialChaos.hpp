@@ -86,6 +86,7 @@ protected:
   void increment_specification_sequence();
 
   void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  void infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l);
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
 				 size_t step);
   void compute_sample_increment(const RealVector& sparsity,
@@ -106,6 +107,12 @@ private:
   //
   //- Heading: Utility functions
   //
+
+  size_t collocation_points(size_t index) const;
+  size_t expansion_samples(size_t index) const;
+  unsigned short expansion_order(size_t index) const;
+  unsigned short quadrature_order(size_t index) const;
+  unsigned short sparse_grid_level(size_t index) const;
 
   size_t collocation_points() const;
   size_t expansion_samples() const;
@@ -135,49 +142,74 @@ private:
 };
 
 
-inline size_t NonDMultilevelPolynomialChaos::collocation_points() const
+inline size_t NonDMultilevelPolynomialChaos::
+collocation_points(size_t index) const
 {
   if (collocPtsSeqSpec.empty()) return std::numeric_limits<size_t>::max();
   else
-    return (sequenceIndex < collocPtsSeqSpec.size()) ?
-      collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+    return (index < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[index] : collocPtsSeqSpec.back();
 }
 
 
-inline size_t NonDMultilevelPolynomialChaos::expansion_samples() const
+inline size_t NonDMultilevelPolynomialChaos::
+expansion_samples(size_t index) const
 {
   if (expSamplesSeqSpec.empty()) return std::numeric_limits<size_t>::max();
   else
-    return (sequenceIndex < expSamplesSeqSpec.size()) ?
-      expSamplesSeqSpec[sequenceIndex] : expSamplesSeqSpec.back();
+    return (index < expSamplesSeqSpec.size()) ?
+      expSamplesSeqSpec[index] : expSamplesSeqSpec.back();
 }
 
 
-inline unsigned short NonDMultilevelPolynomialChaos::expansion_order() const
+inline unsigned short NonDMultilevelPolynomialChaos::
+expansion_order(size_t index) const
 {
   if (expOrderSeqSpec.empty()) return USHRT_MAX;
   else
-    return (sequenceIndex < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+    return (index < expOrderSeqSpec.size()) ?
+      expOrderSeqSpec[index] : expOrderSeqSpec.back();
 }
 
 
-inline unsigned short NonDMultilevelPolynomialChaos::quadrature_order() const
+inline unsigned short NonDMultilevelPolynomialChaos::
+quadrature_order(size_t index) const
 {
   if (quadOrderSeqSpec.empty()) return USHRT_MAX;
   else
-    return (sequenceIndex < quadOrderSeqSpec.size()) ?
-      quadOrderSeqSpec[sequenceIndex] : quadOrderSeqSpec.back();
+    return (index < quadOrderSeqSpec.size()) ?
+      quadOrderSeqSpec[index] : quadOrderSeqSpec.back();
 }
 
 
-inline unsigned short NonDMultilevelPolynomialChaos::sparse_grid_level() const
+inline unsigned short NonDMultilevelPolynomialChaos::
+sparse_grid_level(size_t index) const
 {
   if (ssgLevelSeqSpec.empty()) return USHRT_MAX;
   else
-    return (sequenceIndex < ssgLevelSeqSpec.size()) ?
-      ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
+    return (index < ssgLevelSeqSpec.size()) ?
+      ssgLevelSeqSpec[index] : ssgLevelSeqSpec.back();
 }
+
+
+inline size_t NonDMultilevelPolynomialChaos::collocation_points() const
+{ return collocation_points(sequenceIndex); }
+
+
+inline size_t NonDMultilevelPolynomialChaos::expansion_samples() const
+{ return expansion_samples(sequenceIndex); }
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::expansion_order() const
+{ return expansion_order(sequenceIndex); }
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::quadrature_order() const
+{ return quadrature_order(sequenceIndex); }
+
+
+inline unsigned short NonDMultilevelPolynomialChaos::sparse_grid_level() const
+{ return sparse_grid_level(sequenceIndex); }
 
 } // namespace Dakota
 

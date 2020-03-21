@@ -1391,6 +1391,9 @@ void NonDExpansion::greedy_multifidelity_expansion()
   compute_statistics(INTERMEDIATE_RESULTS);
   print_results(Cout, INTERMEDIATE_RESULTS);
 
+  Cout << "\n-----------------------------------------------"
+       << "\nMultifidelity UQ: initiating greedy competition"
+       << "\n-----------------------------------------------\n";
   // Initialize again (or must propagate settings from mf_expansion())
   unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
   configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
@@ -1418,10 +1421,16 @@ void NonDExpansion::greedy_multifidelity_expansion()
   RealVector best_stats_star;
   while ( best_step_metric > convergenceTol && iter < max_refine_iter ) {
 
+    ++iter;
+    Cout << "\n>>>>> Begin iteration " << iter << ": competing candidates "
+	 << "across " << num_steps << " sequence steps\n";
+
     // Generate candidates at each level
-    // > TO DO: need to be able to push / pop for all refine types (beyond GSG)
     best_step_metric = 0.;
     for (step=0; step<num_steps; ++step) {
+      Cout << "\n>>>>> Generating candidate(s) for sequence step " << step+1
+	   << '\n';
+
       // configure hierarchical model indices and activate key in data fit model
       configure_indices(step, form, lev, seq_index);
 
@@ -1449,7 +1458,6 @@ void NonDExpansion::greedy_multifidelity_expansion()
     select_candidate(best_step_candidate);
     push_candidate(best_stats_star); // update stats from best (no recompute)
 
-    ++iter;
     Cout << "\n<<<<< Iteration " << iter
 	 << " completed: selected refinement indices = sequence step "
 	 << best_step+1 << " candidate " << best_step_candidate+1 << '\n';
@@ -1495,7 +1503,10 @@ void NonDExpansion::multilevel_regression()
   // Initialize NLev and load the pilot sample from user specification
   NLev.assign(num_steps, 0);
   SizetArray delta_N_l(num_steps);
-  load_pilot_sample(collocPtsSeqSpec, delta_N_l);
+  if (collocPtsSeqSpec.empty() && collocRatio > 0.)
+    infer_pilot_sample(/*collocRatio, */delta_N_l);
+  else
+    load_pilot_sample(collocPtsSeqSpec, delta_N_l);
 
   // now converge on sample counts per level (NLev)
   while ( iter <= max_iter &&
@@ -1819,15 +1830,15 @@ void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
       = uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->refinement_statistics_type(stats_type);
 
-    // poly_approxs share computed* trackers between active and combined stats
-    // --> clear these trackers
+    /*
+    // if poly_approxs share computed* trackers between active and combined,
+    // then need to clear these trackers
     if (clear_bits) {
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       for (size_t i=0; i<numFunctions; ++i)
 	poly_approxs[i].clear_computed_bits();
     }
 
-    /*
     // Changing stats type does *not* invalidate prodType{1,2}Coeffs since it
     // is defined only for expType{1,2}Coeffs (supporting delta_*() use cases),
     // but combined_to_active *does* for the active model index.
@@ -2215,10 +2226,17 @@ void NonDExpansion::aggregate_variance(Real& agg_var_l)
 }
 
 
+/** Default implementation redefined by Multilevel derived classes. */
+void NonDExpansion::infer_pilot_sample(/*Real ratio, */SizetArray& delta_N_l)
+{
+  Cerr << "Error: no default implementation for infer_pilot_sample() used by "
+       << "multilevel expansions." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void NonDExpansion::assign_specification_sequence()
 {
-  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
-
   Cerr << "Error: no default implementation for assign_specification_"
        << "sequence() used by multifidelity expansions." << std::endl;
   abort_handler(METHOD_ERROR);
@@ -2228,8 +2246,6 @@ void NonDExpansion::assign_specification_sequence()
 /** Default implementation redefined by Multilevel derived classes. */
 void NonDExpansion::increment_specification_sequence()
 {
-  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
-
   Cerr << "Error: no default implementation for increment_specification_"
        << "sequence() used by multifidelity expansions." << std::endl;
   abort_handler(METHOD_ERROR);
@@ -2700,10 +2716,10 @@ void NonDExpansion::compute_moments()
 	approx_i.compute_moments(false, combined_stats);
 
       // extract variance (Pecos provides central moments)
-      if (covarianceControl == DIAGONAL_COVARIANCE)
-	respVariance[i]      = approx_i.moment(1);
-      else if (covarianceControl == FULL_COVARIANCE)
-	respCovariance(i,i)  = approx_i.moment(1);
+      Real var = (combined_stats) ?
+	approx_i.combined_moment(1) : approx_i.moment(1);
+      if (covarianceControl == DIAGONAL_COVARIANCE)  respVariance[i]     = var;
+      else if (covarianceControl == FULL_COVARIANCE) respCovariance(i,i) = var;
     }
   }
 }
@@ -3132,13 +3148,19 @@ void NonDExpansion::pull_reference(RealVector& stats_ref)
   case Pecos::COVARIANCE_METRIC: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     bool full_covar = (covarianceControl == FULL_COVARIANCE);
-    size_t vec_len = (full_covar) ?
+    size_t i, vec_len = (full_covar) ?
       (numFunctions*(numFunctions + 3))/2 : 2*numFunctions;
     if (stats_ref.length() != vec_len) stats_ref.sizeUninitialized(vec_len);
+
     // pull means
-    for (size_t i=0; i<numFunctions; ++i)
-      stats_ref[i] = poly_approxs[i].moment(0);
-    // pull resp{V,Cov}ariance
+    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+      for (i=0; i<numFunctions; ++i)
+	stats_ref[i] = poly_approxs[i].combined_moment(0);
+    else
+      for (i=0; i<numFunctions; ++i)
+	stats_ref[i] = poly_approxs[i].moment(0);
+
+    // pull resp{V,Cov}ariance (comb stats managed in compute_*_covariance())
     if (full_covar)
       pull_lower_triangle(respCovariance, stats_ref, numFunctions);
     else
@@ -3156,18 +3178,28 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    bool full_covar = (covarianceControl == FULL_COVARIANCE);
+    bool  full_covar = (covarianceControl == FULL_COVARIANCE),
+      combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
+
     // push resp{V|Cov}ariance
     if (full_covar)
       push_lower_triangle(stats_ref, respCovariance, numFunctions);
     else
       copy_data_partial(stats_ref, numFunctions, numFunctions, respVariance);
+
     // push Pecos::{expansion|numerical}Moments
-    for (size_t i=0; i<numFunctions; ++i) {
-      poly_approxs[i].moment(stats_ref[i], 0); // mean values
-      if (full_covar) poly_approxs[i].moment(respCovariance(i,i), 1);
-      else            poly_approxs[i].moment(respVariance[i],     1);
-    }
+    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
+      for (size_t i=0; i<numFunctions; ++i) {
+	poly_approxs[i].combined_moment(stats_ref[i], 0); // mean values
+	if (full_covar) poly_approxs[i].combined_moment(respCovariance(i,i), 1);
+	else            poly_approxs[i].combined_moment(respVariance[i],     1);
+      }
+    else
+      for (size_t i=0; i<numFunctions; ++i) {
+	poly_approxs[i].moment(stats_ref[i], 0); // mean values
+	if (full_covar) poly_approxs[i].moment(respCovariance(i,i), 1);
+	else            poly_approxs[i].moment(respVariance[i],     1);
+      }
     break;
   }
   default:
@@ -3586,74 +3618,76 @@ void NonDExpansion::print_moments(std::ostream& s)
   //   exp only:     PCE with unstructured grids (regression, exp sampling)
   // Also handle numerical exception of negative variance in either exp or num
   size_t exp_mom, num_int_mom;
-  bool exception = false, curr_exception, prev_exception = false;
-  RealVector std_exp_moments, std_num_int_moments;
+  bool exception = false, curr_exception, prev_exception = false,
+    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
+  RealVector std_exp_moments, std_num_int_moments, empty_moments;
   for (i=0; i<numFunctions; ++i) {
     Approximation& approx_i = poly_approxs[i];
-    if (approx_i.expansion_coefficient_flag()) {
-      // Pecos provides central moments
-      const RealVector& exp_moments = approx_i.expansion_moments();
-      const RealVector& num_int_moments
-	= approx_i.numerical_integration_moments();
-      exp_mom = exp_moments.length(); num_int_mom = num_int_moments.length();
-      curr_exception
-	= ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
-	    (num_int_mom == 2 && num_int_moments[1] <  0.) ||
-	    (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
-	    (num_int_mom >  2 && num_int_moments[1] <= 0.) );
-      if (curr_exception || finalMomentsType == CENTRAL_MOMENTS) {
-	if (i==0 || !prev_exception)
-	  s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
-	    << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
-	    << "4thCentral\n";
-	if (exp_mom && num_int_mom) s << fn_labels[i];
-	else                        s << std::setw(14) << fn_labels[i];
-	if (exp_mom) {
-	  if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
-	  for (j=0; j<exp_mom; ++j)
-	    s << ' ' << std::setw(width) << exp_moments[j];
-	}
-	if (num_int_mom) {
-	  if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
-	  for (j=0; j<num_int_mom; ++j)
-	    s << ' ' << std::setw(width) << num_int_moments[j];
-	}
-	prev_exception = curr_exception;
-	if (curr_exception && finalMomentsType == STANDARD_MOMENTS)
-	  exception = true;
+    if (!approx_i.expansion_coefficient_flag()) continue;
+    // Pecos provides central moments.  Note: combined moments could be
+    // expansion or numerical integration, but what is important for header
+    // output is that there is only one primary type with no secondary.
+    const RealVector& exp_moments     = (combined_stats) ?
+      approx_i.combined_moments() : approx_i.expansion_moments();
+    const RealVector& num_int_moments = (combined_stats) ? empty_moments :
+      approx_i.numerical_integration_moments();
+    exp_mom = exp_moments.length(); num_int_mom = num_int_moments.length();
+    curr_exception = ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
+		       (num_int_mom == 2 && num_int_moments[1] <  0.) ||
+		       (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
+		       (num_int_mom >  2 && num_int_moments[1] <= 0.) );
+    if (curr_exception || finalMomentsType == CENTRAL_MOMENTS) {
+      if (i==0 || !prev_exception)
+	s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
+	  << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
+	  << "4thCentral\n";
+      if (exp_mom && num_int_mom) s << fn_labels[i];
+      else                        s << std::setw(14) << fn_labels[i];
+      if (exp_mom) {
+	if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
+	for (j=0; j<exp_mom; ++j)
+	  s << ' ' << std::setw(width) << exp_moments[j];
       }
-      else {
-	if (i==0 || prev_exception)
-	  s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
-	    << std::setw(width+1)  << "Skewness" << std::setw(width+2)
-	    << "Kurtosis\n";
-	if (exp_mom && num_int_mom) s << fn_labels[i];
-	else                        s << std::setw(14) << fn_labels[i];
-	if (exp_mom) {
-	  Pecos::PolynomialApproximation::
-	    standardize_moments(exp_moments, std_exp_moments);
-	  if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
-	  for (j=0; j<exp_mom; ++j)
-	    s << ' ' << std::setw(width) << std_exp_moments[j];
-	}
-	if (num_int_mom) {
-	  Pecos::PolynomialApproximation::
-	    standardize_moments(num_int_moments, std_num_int_moments);
-	  if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
-	  for (j=0; j<num_int_mom; ++j)
-	    s << ' ' << std::setw(width) << std_num_int_moments[j];
-	}
-	prev_exception = false;
+      if (num_int_mom) {
+	if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+	for (j=0; j<num_int_mom; ++j)
+	  s << ' ' << std::setw(width) << num_int_moments[j];
       }
-      s << '\n';
-
-      /* COV has been removed:
-      if (std::abs(mean) > Pecos::SMALL_NUMBER)
-        s << "  " << std::setw(width)   << std_dev/mean << '\n';
-      else
-        s << "  " << std::setw(width+1) << "Undefined\n";
-      */
+      prev_exception = curr_exception;
+      if (curr_exception && finalMomentsType == STANDARD_MOMENTS)
+	exception = true;
     }
+    else {
+      if (i==0 || prev_exception)
+	s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Std Dev"
+	  << std::setw(width+1)  << "Skewness" << std::setw(width+2)
+	  << "Kurtosis\n";
+      if (exp_mom && num_int_mom) s << fn_labels[i];
+      else                        s << std::setw(14) << fn_labels[i];
+      if (exp_mom) {
+	Pecos::PolynomialApproximation::
+	  standardize_moments(exp_moments, std_exp_moments);
+	if (num_int_mom) s << '\n' << std::setw(14) << "expansion:  ";
+	for (j=0; j<exp_mom; ++j)
+	  s << ' ' << std::setw(width) << std_exp_moments[j];
+      }
+      if (num_int_mom) {
+	Pecos::PolynomialApproximation::
+	  standardize_moments(num_int_moments, std_num_int_moments);
+	if (exp_mom)     s << '\n' << std::setw(14) << "integration:";
+	for (j=0; j<num_int_mom; ++j)
+	  s << ' ' << std::setw(width) << std_num_int_moments[j];
+      }
+      prev_exception = false;
+    }
+    s << '\n';
+
+    /* COV has been removed:
+    if (std::abs(mean) > Pecos::SMALL_NUMBER)
+      s << "  " << std::setw(width)   << std_dev/mean << '\n';
+    else
+      s << "  " << std::setw(width+1) << "Undefined\n";
+    */
   }
   if (exception)
     s << "\nNote: due to non-positive variance (resulting from under-resolved "

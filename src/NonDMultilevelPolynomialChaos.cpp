@@ -736,6 +736,22 @@ update_from_specification(bool update_exp, bool update_sampler,
 
 
 void NonDMultilevelPolynomialChaos::
+infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
+{
+  size_t i, num_steps = pilot.size();
+  UShortArray exp_orders;
+  for (i=0; i<num_steps; ++i) {
+    NonDIntegration::dimension_preference_to_anisotropic_order(
+      expansion_order(i), dimPrefSpec, numContinuousVars, exp_orders);
+    size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+      Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders) :
+      Pecos::SharedPolyApproxData::total_order_terms(exp_orders);
+    pilot[i] = terms_ratio_to_samples(exp_terms, collocRatio);
+  }
+}
+
+
+void NonDMultilevelPolynomialChaos::
 increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 {
   numSamplesOnModel = new_samp;

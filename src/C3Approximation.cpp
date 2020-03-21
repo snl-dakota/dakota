@@ -177,7 +177,7 @@ void C3Approximation::build()
 
     struct FTRegress * ftr = ft_regress_alloc(num_v, data_rep->multiApproxOpts,
 					      start_ranks.values());
-	    
+
     if (data_rep->regressType == FT_RLS2) {
       ft_regress_set_alg_and_obj(ftr,AIO,FTLS_SPARSEL2);
       // reg param is required (no reasonable default due to scaling)

@@ -322,6 +322,18 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
 
 
 void NonDMultilevelFunctionTrain::
+infer_pilot_sample(/*Real ratio, */SizetArray& pilot)
+{
+  size_t i, num_steps = pilot.size(), regress_i;
+  for (i=0; i<num_steps; ++i) {
+    regress_i = SharedC3ApproxData::
+      regression_size(numContinuousVars, start_rank(i), start_order(i));
+    pilot[i] = (size_t)std::floor(collocRatio * (Real)regress_i + .5);
+  }
+}
+
+
+void NonDMultilevelFunctionTrain::
 increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 {
   numSamplesOnModel = new_samp;
