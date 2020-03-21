@@ -102,6 +102,7 @@ protected:
   void random_variables_key(const BitArray& random_vars_key);
 
   //void refinement_statistics_type(short stats_type);
+
   //const Pecos::BitArrayULongMap& SharedApproxData::sobol_index_map();
 
   void build();
@@ -146,9 +147,9 @@ protected:
   /// starting values for rank (note: adapt_rank currently covers refinement)
   std::map<UShortArray, size_t> startRank;
   /// user specification for increment in rank within adapt_rank
-  size_t  kickRank;
+  size_t kickRank;
   /// user specification for maximum rank within adapt_rank 
-  size_t   maxRank;
+  size_t maxRank;
   /// internal C3 adaptation that identifies the best rank representation
   ///for a set of sample data 
   bool   adaptRank;
@@ -174,6 +175,8 @@ protected:
   /// type of multilevel strategy for sample allocation: ESTIMATOR_VARIANCE,
   /// RANK_SAMPLING, GREEDY
   short allocControl;
+  // indicates refinement based on active or combined statistics
+  //short refineStatsType;
 
   // key identifying the subset of build variables that can be treated
   // as random, for purposes of computing statistics
@@ -329,6 +332,10 @@ random_variables_key(const BitArray& random_vars_key)
 	randomIndices[cntr++] = i;
   }
 }
+
+
+//inline void SharedC3ApproxData::refinement_statistics_type(short stats_type)
+//{ refineStatsType = stats_type; }
 
 
 inline void SharedC3ApproxData::build()

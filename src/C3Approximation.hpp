@@ -129,6 +129,11 @@ public:
   //- Heading: Member functions
   //
 
+  /// return the active C3FnTrainPtrs instance in levelApprox
+  C3FnTrainPtrs& active_ftp();
+  /// return 
+  C3FnTrainPtrs& combined_ftp();
+
   size_t regression_size();                   // uses active ftp
   size_t regression_size(const SizetVector& ranks, size_t order);
   //size_t regression_size(const SizetArray& ranks, const SizetArray& orders);
@@ -142,17 +147,26 @@ public:
   void expansion_gradient_flag(bool grad_flag);
   bool expansion_gradient_flag() const;
 
+  //size_t moment_size() const;
+
   void compute_moments(bool full_stats = true, bool combined_stats = false);
   void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
 		       bool combined_stats = false);
+
   const RealVector& moments() const;
+  const RealVector& expansion_moments() const;
+  const RealVector& numerical_integration_moments() const;
+  const RealVector& combined_moments() const;
+
   Real moment(size_t i) const;
   void moment(Real mom, size_t i);
+  Real combined_moment(size_t i) const;
+  void combined_moment(Real mom, size_t i);
 
   void compute_component_effects();
   void compute_total_effects();
 
-  void compute_all_sobol_indices(size_t); // computes total and interacting sobol indices
+  void compute_all_sobol_indices(size_t); // computes total and interactions
   Real total_sobol_index(size_t);         // returns total sobol index
   Real main_sobol_index(size_t);          // returns main sobol index
   // iterate over sobol indices and apply a function
@@ -160,15 +174,13 @@ public:
     
   Real mean();                   // expectation with respect to all variables
   Real mean(const RealVector &); // expectation with respect to random vars
-
   const RealVector& mean_gradient();      // NOT SURE
   const RealVector& mean_gradient(const RealVector &, const SizetArray &); 
     
   Real variance();
-  Real variance(const RealVector&);
+  Real variance(const RealVector &);
   const RealVector& variance_gradient();      // NOT SURE
   const RealVector& variance_gradient(const RealVector &, const SizetArray &); 
-
   Real covariance(Approximation& approx_2);
   Real covariance(const RealVector& x, Approximation& approx_2);
 
@@ -181,11 +193,10 @@ public:
   Real combined_mean(const RealVector &);
   Real combined_variance();
   Real combined_variance(const RealVector &);
+  Real combined_covariance(Approximation& approx_2);
+  Real combined_covariance(const RealVector& x, Approximation& approx_2);
   Real combined_third_central();
   Real combined_fourth_central();
-
-  const RealVector& expansion_moments() const;
-  const RealVector& numerical_integration_moments() const;
 
   /// update surrData to define aggregated data from raw data, when indicated
   /// by an active aggregated key
@@ -231,10 +242,12 @@ private:
 
   Real stored_value(const RealVector& c_vars, const UShortArray& key);
 
-  void compute_derived_statistics(C3FnTrainPtrs& ftp,   bool overwrite = false);
-  void compute_derived_statistics_av(C3FnTrainPtrs& ftp,bool overwrite = false);
+  void compute_derived_statistics(C3FnTrainPtrs& ftp, size_t num_mom,
+				  bool overwrite = false);
+  void compute_derived_statistics_av(C3FnTrainPtrs& ftp, size_t num_mom,
+				     bool overwrite = false);
 
-  struct FunctionTrain * subtract_const(Real val);
+  struct FunctionTrain * subtract_const(struct FunctionTrain * ft, Real val);
 
   /// differentiate the ft to form its gradient, if not previously performed
   void check_function_gradient();
@@ -242,9 +255,25 @@ private:
   void check_function_hessian();
 
   /// compute mean corresponding to the passed FT expansion
+  Real mean(C3FnTrainPtrs& ftp);
+  /// compute mean corresponding to the passed FT expansion
   Real mean(const RealVector &x, C3FnTrainPtrs& ftp);
   /// compute variance corresponding to the passed FT expansion
+  Real variance(C3FnTrainPtrs& ftp);
+  /// compute variance corresponding to the passed FT expansion
   Real variance(const RealVector &x, C3FnTrainPtrs& ftp);
+  /// compute variance corresponding to the passed FT expansion
+  Real covariance(C3FnTrainPtrs& ftp1, C3FnTrainPtrs& ftp2);
+  /// compute variance corresponding to the passed FT expansion
+  Real covariance(const RealVector &x, C3FnTrainPtrs& ftp1,C3FnTrainPtrs& ftp2);
+  /// compute 3rd central moment corresponding to the passed FT expansion
+  Real third_central(C3FnTrainPtrs& ftp);
+  /// compute 4th central moment corresponding to the passed FT expansion
+  Real fourth_central(C3FnTrainPtrs& ftp);
+  /// compute skewness corresponding to the passed FT expansion
+  Real skewness(C3FnTrainPtrs& ftp);
+  /// compute excess kurtosis corresponding to the passed FT expansion
+  Real kurtosis(C3FnTrainPtrs& ftp);
 
   //
   //- Heading: Data
@@ -266,9 +295,14 @@ private:
   bool expansionCoeffFlag;     // build a fn train for the QoI
   bool expansionCoeffGradFlag; // build a fn train for the gradient of the QoI
     
-  // containers allowing const ref return of latest result (active key)
-  RealVector expansionMoments;
-  RealVector numericalMoments;
+  /// mean and central moments 2/3/4 computed from either the expansion form
+  std::map<UShortArray, RealVector> primaryMoments;
+  /// iterator to active entry in primaryMoments
+  std::map<UShortArray, RealVector>::iterator primaryMomIter;
+  /// secondary (numerical) moments: inactive
+  RealVector secondaryMoments;
+  /// combined moments from multilevel-multifidelity FT rollup
+  RealVector combinedMoments;
 };
 
 
@@ -290,6 +324,12 @@ inline void C3Approximation::active_model_key(const UShortArray& key)
     std::pair<UShortArray, C3FnTrainPtrs> ftp_pair(key, C3FnTrainPtrs());
     levApproxIter = levelApprox.insert(ftp_pair).first;
   }
+
+  primaryMomIter = primaryMoments.find(key);
+  if (primaryMomIter == primaryMoments.end()) {
+    std::pair<UShortArray, RealVector> rv_pair(key, RealVector());
+    primaryMomIter = primaryMoments.insert(rv_pair).first;
+  }
 }
 
 
@@ -298,8 +338,17 @@ inline void C3Approximation::clear_model_keys()
   // clears approxData keys
   Approximation::clear_model_keys();
 
-  levelApprox.clear();  levApproxIter = levelApprox.end();
+  levelApprox.clear();    levApproxIter  = levelApprox.end();
+  primaryMoments.clear(); primaryMomIter = primaryMoments.end();
 }
+
+
+inline C3FnTrainPtrs& C3Approximation::active_ftp()
+{ return levApproxIter->second; }
+
+
+inline C3FnTrainPtrs& C3Approximation::combined_ftp()
+{ return combinedC3FTPtrs; }
 
 
 inline void C3Approximation::expansion_coefficient_flag(bool coeff_flag)
@@ -318,40 +367,129 @@ inline bool C3Approximation::expansion_gradient_flag() const
 { return expansionCoeffGradFlag; }
 
 
+//inline size_t C3Approximation::moment_size() const
+//{
+//  return (data_rep->refineStatsType == Pecos::COMBINED_EXPANSION_STATS) ?
+//    combinedMoments.length() : primaryMomIter->second.length();
+//}
+
+
 inline const RealVector& C3Approximation::moments() const
-{ return expansionMoments; }
+{ return primaryMomIter->second; }
+
+
+inline const RealVector& C3Approximation::expansion_moments() const
+{ return primaryMomIter->second; }
+
+
+inline const RealVector& C3Approximation::numerical_integration_moments() const
+{ return secondaryMoments; } // empty
+
+
+inline const RealVector& C3Approximation::combined_moments() const
+{ return combinedMoments; }
 
 
 inline Real C3Approximation::moment(size_t i) const
-{ return expansionMoments[i]; }
+{ return primaryMomIter->second[i]; }
 
 
 inline void C3Approximation::moment(Real mom, size_t i)
-{ expansionMoments[i] = mom; }
+{ primaryMomIter->second[i] = mom; }
+
+
+inline Real C3Approximation::combined_moment(size_t i) const
+{ return combinedMoments[i]; }
+
+
+inline void C3Approximation::combined_moment(Real mom, size_t i)
+{ combinedMoments[i] = mom; }
+
+
+inline Real C3Approximation::mean()
+{ return mean(levApproxIter->second); }
 
 
 inline Real C3Approximation::mean(const RealVector &x)
 { return mean(x, levApproxIter->second); }
 
 
+inline Real C3Approximation::variance()
+{ return variance(levApproxIter->second); }
+
+
 inline Real C3Approximation::variance(const RealVector &x)
 { return variance(x, levApproxIter->second); }
+
+
+inline Real C3Approximation::combined_mean()
+{ return mean(combinedC3FTPtrs); }
 
 
 inline Real C3Approximation::combined_mean(const RealVector &x)
 { return mean(x, combinedC3FTPtrs); }
 
 
+inline Real C3Approximation::combined_variance()
+{ return variance(combinedC3FTPtrs); }
+
+
 inline Real C3Approximation::combined_variance(const RealVector &x)
 { return variance(x, combinedC3FTPtrs); }
 
 
-inline const RealVector& C3Approximation::expansion_moments() const
-{ return expansionMoments; } // populated
+inline Real C3Approximation::covariance(Approximation& approx_2)
+{
+  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  return covariance(levApproxIter->second, c3_approx_rep_2->active_ftp());
+}
 
 
-inline const RealVector& C3Approximation::numerical_integration_moments() const
-{ return numericalMoments; } // empty
+inline Real C3Approximation::combined_covariance(Approximation& approx_2)
+{
+  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  return covariance(combinedC3FTPtrs, c3_approx_rep_2->combined_ftp());
+}
+
+
+inline Real C3Approximation::
+covariance(const RealVector &x, Approximation& approx_2)
+{
+  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  return covariance(x, levApproxIter->second, c3_approx_rep_2->active_ftp());
+}
+
+
+inline Real C3Approximation::
+combined_covariance(const RealVector &x, Approximation& approx_2)
+{
+  C3Approximation* c3_approx_rep_2 = (C3Approximation*)approx_2.approx_rep();
+  return covariance(x, combinedC3FTPtrs, c3_approx_rep_2->combined_ftp());
+}
+
+
+inline Real C3Approximation::skewness()
+{ return skewness(levApproxIter->second); }
+
+
+inline Real C3Approximation::kurtosis()
+{ return kurtosis(levApproxIter->second); }
+
+
+inline Real C3Approximation::third_central()
+{ return third_central(levApproxIter->second); }
+
+
+inline Real C3Approximation::fourth_central()
+{ return fourth_central(levApproxIter->second); }
+
+
+inline Real C3Approximation::combined_third_central()
+{ return third_central(combinedC3FTPtrs); }
+
+
+inline Real C3Approximation::combined_fourth_central()
+{ return fourth_central(combinedC3FTPtrs); }
 
 
 // Next two. Should access through compute_all_sobol_indices()
