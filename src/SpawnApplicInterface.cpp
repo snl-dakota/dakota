@@ -87,7 +87,7 @@ wait_for_one(size_t n, HANDLE *h, int req1, size_t *pi)
 	}
 
 
-void SpawnApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
+void SpawnApplicInterface::wait_local_evaluation_sequence(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Wait for at least one completion and complete all jobs that have returned.
@@ -119,7 +119,7 @@ void SpawnApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
 }
 
 
-void SpawnApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
+void SpawnApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 {
   // Check for return of process id's corresponding to those stored in PRPairs.
   // Do not wait - complete all jobs that are immediately available.

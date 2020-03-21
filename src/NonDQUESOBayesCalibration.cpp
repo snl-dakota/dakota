@@ -125,9 +125,6 @@ void NonDQUESOBayesCalibration::calibrate()
   tk_factory_dipc.set_callback(nonDQUESOInstance);
   tk_factory_dipclogit.set_callback(nonDQUESOInstance);
 
-  // build the emulator and initialize transformations, as needed
-  initialize_model();
-
   // initialize the ASV request value for preconditioning and
   // construct a Response for use in residual computation
   if (proposalCovarType == "derivatives")
@@ -138,8 +135,13 @@ void NonDQUESOBayesCalibration::calibrate()
   //  short request_value_needed = 1 | precondRequestValue;
   //  init_residual_response(request_value_needed);
 
+  // pull vars data prior to emulator build
   init_parameter_domain();
 
+  // build the emulator and initialize transformations, as needed
+  initialize_model();
+
+  // may pull Hessian data from emulator
   init_proposal_covariance();
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
@@ -190,36 +192,36 @@ void NonDQUESOBayesCalibration::calibrate()
 
 void NonDQUESOBayesCalibration::map_pre_solve()
 {
-  // Pre-solve for MAP point using optimization prior to MCMC.
   // Management of pre_solve spec options occurs in NonDBayesCalibration ctor,
   // manifesting here as a valid mapOptimizer instance.
-  if (!mapOptimizer.is_null()) {
-    Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
-	 << std::endl;
-    // set initial point (update gets pulled at run time by optimizer)
-    if (mapSoln.empty()) // no previous map solution
-      copy_gsl_partial(*paramInitials, 0,
-        negLogPostModel.current_variables().continuous_variables_view());
-    else // warm start using map soln from previous emulator
-      negLogPostModel.current_variables().continuous_variables(mapSoln);
+  if (mapOptimizer.is_null()) return;
+  
+  // Pre-solve for MAP point using optimization prior to MCMC.
 
-    // Perform optimization
-    mapOptimizer.run();
-    //negLogPostModel.print_evaluation_summary(Cout);
-    //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
-    Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
-	 << "\n(will be used as initial point for MCMC chain):\n";
-    const RealVector& map_c_vars
-      = mapOptimizer.variables_results().continuous_variables();
-    print_variables(Cout, map_c_vars);
-    Cout << std::endl;
+  Cout << "\nInitiating pre-solve for maximum a posteriori probability (MAP)."
+       << std::endl;
+  // set initial point pulled from mcmcModel at construct time or
+  // warm start from previous map soln computed from previous emulator
+  negLogPostModel.current_variables().continuous_variables(mapSoln);
 
-    // propagate map solution to paramInitials for starting point of MCMC chain.
-    // This propagates further to mcmcModel::currentVariables either within the
-    // derivative preconditioning or within the likelihood evaluator.
-    copy_gsl_partial(map_c_vars, *paramInitials, 0);
-    if (adaptPosteriorRefine) copy_data(map_c_vars, mapSoln);//deep copy of view
-  }
+  // Perform optimization
+  mapOptimizer.run();
+  //negLogPostModel.print_evaluation_summary(Cout);
+  //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
+  Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
+       << "\n(will be used as initial point for MCMC chain):\n";
+  const RealVector& map_c_vars
+    = mapOptimizer.variables_results().continuous_variables();
+  print_variables(Cout, map_c_vars);
+  Cout << std::endl;
+
+  // propagate MAP to paramInitials for starting point of MCMC chain.  
+  // Note: init_parameter_domain() happens once per calibrate(),
+  // upstream of map_pre_solve()
+  copy_gsl(map_c_vars, *paramInitials);
+  // if multiple pre-solves, propagate MAP as initial guess for next pre-solve
+  if (adaptPosteriorRefine || adaptExpDesign)
+    copy_data(map_c_vars, mapSoln); // deep copy of view
 }
 
 
@@ -230,7 +232,8 @@ void NonDQUESOBayesCalibration::run_chain()
     precondition_proposal(0);
 
   if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "QUESO: Running chain with " << chainSamples << " samples." << std::endl;
+    Cout << "QUESO: Running chain with " << chainSamples << " samples."
+	 << std::endl;
     if (propCovUpdatePeriod < std::numeric_limits<int>::max())
       Cout << "QUESO: Updating proposal covariance every "
 	   << propCovUpdatePeriod << " samples." << std::endl;
@@ -491,15 +494,16 @@ void NonDQUESOBayesCalibration::run_queso_solver()
     acceptedFnVals(numFunctions, chainSamples) */
 void NonDQUESOBayesCalibration::cache_chain()
 {
-  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams, chainSamples);
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
+				     chainSamples);
   acceptedFnVals.shapeUninitialized(numFunctions, chainSamples);
 
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
   Variables lookup_vars = mcmcModel.current_variables().copy();
-  String interface_id = mcmcModel.interface_id();
-  Response lookup_resp = mcmcModel.current_response().copy();
-  ActiveSet lookup_as = lookup_resp.active_set();
+  String   interface_id = mcmcModel.interface_id();
+  Response  lookup_resp = mcmcModel.current_response().copy();
+  ActiveSet   lookup_as = lookup_resp.active_set();
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
@@ -507,7 +511,6 @@ void NonDQUESOBayesCalibration::cache_chain()
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-
   if (num_mcmc != chainSamples) {
     Cerr << "\nError: QUESO cache_chain(): chain length is " << num_mcmc
 	 << "; expected " << chainSamples << '\n';
@@ -517,7 +520,7 @@ void NonDQUESOBayesCalibration::cache_chain()
   // The posterior may include GPMSA hyper-parameters, so use the postRv space
   //  QUESO::GslVector qv(paramSpace->zeroVector());
   QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
-  
+
   unsigned int lookup_failures = 0;
   unsigned int num_params = numContinuousVars + numHyperparams;
   for (int i=0; i<num_mcmc; ++i) {
@@ -531,7 +534,7 @@ void NonDQUESOBayesCalibration::cache_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      natafTransform.trans_U_to_X(u_rv, x_rv);
+      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
 
@@ -862,10 +865,14 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
-  for (size_t i=0; i<numContinuousVars; ++i)
-    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  RealRealPairArray bnds
+    = mcmcModel.multivariate_distribution().distribution_bounds();
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (size_t i=0; i<numContinuousVars; ++i) {
+    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
+    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+  }
   for (size_t i=0; i<numHyperparams; ++i) {
     // inverse gamma is defined on [0,inf), but we may have to divide
     // responses by up to mult^{5/2}, so bound away from 0.
@@ -878,28 +885,10 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
 		    ("param_", *paramSpace, paramMins, paramMaxs));
 
   paramInitials.reset(new QUESO::GslVector(paramSpace->zeroVector()));
-  const RealVector& init_pt = mcmcModel.continuous_variables();
-  if (standardizedSpace) { // param domain in u-space
-    switch (emulatorType) {
-    case PCE_EMULATOR: case SC_EMULATOR:// init_pt already propagated to u-space
-    case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-      copy_gsl_partial(init_pt, *paramInitials, 0);
-      break;
-    default: { // init_pt not already propagated to u-space: use local nataf
-      RealVector u_pt; natafTransform.trans_X_to_U(init_pt, u_pt);
-      copy_gsl_partial(u_pt, *paramInitials, 0);
-      break;
-    }
-    }
-  }
-  else // init_pt and param domain in x-space
-    copy_gsl_partial(init_pt, *paramInitials, 0);
-
-  // Hyper-parameters: inverse gamma mode is defined for all alpha,
-  // beta. Would prefer to use the mean (or 1.0), but would require
-  // conditional logic (or user control).
-  for (size_t i=0; i<numHyperparams; ++i)
-    (*paramInitials)[numContinuousVars + i] = invGammaDists[i].mode();
+  // paramInitials started from mapSoln, which encompasses either:
+  // > most recent solution from map_pre_solve(), if used, or
+  // > initial guess (user-specified or default initial values)
+  copy_gsl(mapSoln, *paramInitials);
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Initial Parameter values sent to QUESO (may be in scaled)\n"
@@ -921,13 +910,12 @@ void NonDQUESOBayesCalibration::init_proposal_covariance()
   if (numHyperparams > 0) {
     // all hyperparams utilize inverse gamma priors, which may not
     // have finite variance; use std_dev = 0.05 * mode
+    Real alpha;
     for (int i=0; i<numHyperparams; ++i) {
-      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
-          invGammaDists[i].variance();
-      else
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
-          std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
+      invGammaDists[i].pull_parameter(Pecos::IGA_ALPHA, alpha);
+      (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
+	(alpha > 2.) ? invGammaDists[i].variance() :
+	std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.);
     }
   }
 
@@ -950,13 +938,12 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
   //QUESO::GslVector covDiag(paramSpace->zeroVector());
 
   // diagonal covariance from variance of prior marginals
-  Real stdev;
-  RealRealPairArray dist_moments = (standardizedSpace) ?
-    natafTransform.u_moments() : natafTransform.x_moments();
-  for (int i=0; i<numContinuousVars; ++i) {
-    stdev = dist_moments[i].second;
-    (*proposalCovMatrix)(i,i) = priorPropCovMult * stdev * stdev;
-  }
+  RealVector dist_var = mcmcModel.multivariate_distribution().variances();
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (int i=0; i<numContinuousVars; ++i)
+    (*proposalCovMatrix)(i,i) = priorPropCovMult * dist_var[i];
+      //* dist_var[svd.cv_index_to_active_index(i)];
   //proposalCovMatrix.reset(new QUESO::GslMatrix(covDiag));
 
   if (outputLevel > NORMAL_OUTPUT) {
@@ -1303,7 +1290,7 @@ print_variables(std::ostream& s, const RealVector& c_vars)
   if (standardizedSpace) {
     RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
     RealVector x_rv;
-    natafTransform.trans_U_to_X(u_rv, x_rv);
+    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else
@@ -1391,21 +1378,21 @@ copy_gsl(const RealVector& rv, QUESO::GslVector& qv)
 
 
 void NonDQUESOBayesCalibration::
-copy_gsl_partial(const QUESO::GslVector& qv, size_t start, RealVector& rv)
+copy_gsl_partial(const QUESO::GslVector& qv, size_t start_qv, RealVector& rv)
 {
   // copy part of qv into all of rv
   size_t ri, qi, size_rv = rv.length();
-  for (ri=0, qi=start; ri<size_rv; ++ri, ++qi)
+  for (ri=0, qi=start_qv; ri<size_rv; ++ri, ++qi)
     rv[ri] = qv[qi];
 }
 
 
 void NonDQUESOBayesCalibration::
-copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv, size_t start)
+copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv, size_t start_qv)
 {
   // copy all of rv into part of qv
   size_t ri, qi, size_rv = rv.length();
-  for (ri=0, qi=start; ri<size_rv; ++ri, ++qi)
+  for (ri=0, qi=start_qv; ri<size_rv; ++ri, ++qi)
     qv[qi] = rv[ri];
 }
 

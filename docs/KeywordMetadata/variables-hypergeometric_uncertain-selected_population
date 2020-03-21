@@ -1,14 +1,17 @@
 Blurb::
-Distribution parameter for the hypergeometric distribution
+Distribution parameter for the hypergeometric distribution describing the size of the population subset of interest
 Description::
+
 The density function for the hypergeometric distribution is given by: 
 \f[f(x) = \frac{\left(\begin{array}{c}m\\x\end{array}\right)\left(\begin{array}{c}{N-m}\\{n-x}\end{array}\right)}{\left(\begin{array}{c}N\\n\end{array}\right)}\f] 
-where
-- N is the total population (e.g. the total number of balls in the urn)
-- m is the number of items in the selected population (e.g. the number of white balls in the full urn of N items)
-- n is the size of the sample (e.g. number of balls drawn)
-- x is the number of sucess (e.g. drawing a white ball)
-- \f$ \frac{a}{b}\f$ is a binomial coeffecient
+where the three distribution parameters are:
+- N is the total population
+- <em>m is the number of items in the selected population</em> (e.g. the number of white balls in the full urn of N items)
+- n is the size of the sample drawn (e.g. number of balls drawn)
+
+In addition,
+- x, the abscissa of the density function, indicates the number of successes (e.g. drawing a white ball)
+- \f$\left(\begin{array}{c}a\\b\end{array}\right)\f$ indicates a binomial coefficient ("a choose b")
 
 Topics::
 Examples::

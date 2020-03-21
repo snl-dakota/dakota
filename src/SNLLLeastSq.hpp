@@ -117,6 +117,8 @@ public:
   /// compute the least squares solution
   void core_run();
 
+  void reset();
+
 protected:
 
   //

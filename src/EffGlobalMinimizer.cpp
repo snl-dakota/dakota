@@ -24,7 +24,7 @@
 #endif
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 #include <boost/lexical_cast.hpp>
 
 //#define DEBUG
@@ -233,7 +233,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // now that variables/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
-  eifModel.update_from_subordinate_model(); // depth = max
+  // There is no need to recur below iteratedModel.
+  size_t layers = 2;
+  eifModel.update_from_subordinate_model(layers-1); // recur once
 
   // (We might want a more selective update from submodel, or make a
   // new EIFModel specialization of RecastModel.)  Always want to
@@ -349,7 +351,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       approx_converged = true;
     else {
       // Evaluate response_star_truth
-      fHatModel.component_parallel_mode(TRUTH_MODEL);
+      fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
       iteratedModel.continuous_variables(c_vars);
       ActiveSet set = iteratedModel.current_response().active_set();
       set.request_values(dataOrder);

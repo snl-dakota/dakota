@@ -180,7 +180,7 @@ or results files to filter and driver strings. The \texttt{verbatim} keyword pre
 this behavior, and causes Dakota to execute filter and driver strings "as is".
 
 Beginning with version 6.10, Dakota will substitute the tokens \texttt{\{PARAMETERS\}} 
-and \texttt{\{RESULTS\}} in driver and filter strings with the names of the paramters 
+and \texttt{\{RESULTS\}} in driver and filter strings with the names of the parameters 
 and results files for that analysis/evaluation just prior to execution.
 
 For example, if an \texttt{interface} block in the input file included:
@@ -1080,7 +1080,7 @@ hierarchical\_tagging} will yield function evaluation identifiers
 (``tags'') composed of the evaluation IDs of the models involved,
 e.g., outermodel.innermodel.interfaceid = 4.9.2.  This communicates
 the outer contexts to the analysis driver when performing a function
-evaluation.  For an example of using hierarhical tagging in a nested
+evaluation.  For an example of using hierarchical tagging in a nested
 model context,
 see \path{dakota/share/dakota/test/dakota_uq_timeseries_*_optinterf.in}.
 
@@ -1225,7 +1225,7 @@ runs.  If, say, \path{my/special/directory/} is such a directory
 would cause Dakota to start the simulator and any filters in that
 directory.  If the directory did not already exist, Dakota would
 create it and would remove it after the simulator (or output filter,
-if specifed) finished, unless instructed not to do so by the
+if specified) finished, unless instructed not to do so by the
 appearance of \texttt{directory\_save} (or its deprecated synonym
 \texttt{dir\_save}) in the interface specification.  If \texttt{named
   '$...$'} does not appear, then \texttt{directory\_save} cannot
@@ -1233,7 +1233,7 @@ appear either, and Dakota creates a temporary directory (using the
 \texttt{tmpnam} function to determine its name) for use by the
 simulator and any filters.  If you specify \texttt{directory\_tag} (or
 the deprecated \texttt{dir\_tag}), Dakota causes each invocation of
-the simulator and any filters to start in a a subdirectory of the work
+the simulator and any filters to start in a subdirectory of the work
 directory with a name composed of the work directory's name followed
 by a period and the invocation number (1, 2, $...$); this might be
 useful in debugging.
@@ -1267,6 +1267,109 @@ with {\tt\verb=[=$...$\verb=]=} denoting that $...$ is optional:
     [ replace ]
 \end{verbatim}
 \end{small}
+
+\section{Batched Evaluations}\label{interfaces:batch}
+
+Beginning with release 6.11, Dakota provides for execution of
+evaluations in batches. Batch mode is intended to allow a user
+to assume greater control over where and when to run individual
+evaluations. It is activated using the \texttt{batch} keyword.
+
+In batch mode, Dakota writes the parameters for multiple (a batch of)
+evaluations to a single batch parameters file and then invokes the
+analysis driver once for the entire batch. The pathname of the
+combined parameters file (and of the results file) are communicated
+to the driver as command line arguments. After the driver exits, Dakota
+expects to find results for the entire batch in a single combined results
+file.
+
+The analysis driver is responsible for parsing the parameters file
+and performing an evaluation for each set of parameters it contains,
+and for returning results for all the evaluations to Dakota. The user
+is free to set up the driver to perform the evaluations in the batch in
+a way that is convenient.
+
+By default, all currently available evaluations are added to a single
+batch. For example, in a sampling study that has a 1000 samples, by
+default all 1000 evaluations would be added to a single batch. The batch
+size may be limited using the \texttt{size} subkeyword. Setting 
+\texttt{size = 100} would result in 10 equal-size batches being run one
+after another in a 1000-sample study. 
+
+\subsection{File Formats}
+
+The combined parameters file for a batch is simply the concatenation of 
+all the parameters files for the evaluations in the batch. The individual
+parameter sets may use the default Dakota format, or the user can select
+the aprepro format.
+
+The following example parameters file contains parameter sets for two
+evaluations. 
+
+\begin{small}
+\begin{verbatim}
+                                          1 variables
+                     -4.912558193411678e-01 x1
+                                          1 functions
+                                          1 ASV_1:response_fn_1
+                                          1 derivative_variables
+                                          1 DVV_1:x1
+                                          0 analysis_components
+                                        1:1 eval_id
+                                          1 variables
+                     -2.400695372000337e-01 x1
+                                          1 functions
+                                          1 ASV_1:response_fn_1
+                                          1 derivative_variables
+                                          1 DVV_1:x1
+                                          0 analysis_components
+                                        1:2 eval_id    interface,
+\end{verbatim}
+\end{small}
+
+Note that the \texttt{eval\_id} contains two pieces of 
+information separated by a colon. The second is the evaluation number,
+and the first is the batch number. The batch number is an incrementing
+integer that uniquely identifies the batch.
+
+The combined results file format is likewise a concatenation of the results
+for all the evaluations in the batch. However, a line beginning with the
+``\#'' character must separate the results for each evaluation.
+
+The order of the evaluations in the results file must match the order in the
+parameters file.
+
+The following is an example batch results file corresponding to the batch
+parameters file above. The initial \# on the first line is optional, and a
+final \# (not shown here) is allowed.
+\begin{small}
+\begin{verbatim}
+#
+                     4.945481774823024e+00 f
+#
+                     2.364744129789246e+00 f
+\end{verbatim}
+\end{small}
+
+
+\subsection{Work Directories, Tagging, and Other Features}
+
+Each batch is executed in a work directory when this feature is enabled.
+The batch number is used to tag files and directories if tagging is requested
+(or Dakota automatically applies a tag to safely save a file or directory). As
+explained in the previous section, the batch number is an incrementing integer
+beginning with 1 that uniquely identifies a batch.
+
+Batch mode restricts the use of several other Dakota features.
+
+\begin{itemize}
+
+  \item No \texttt{input\_filter} or \texttt{output\_filter} is allowed.
+  \item Only one \texttt{analysis\_driver} is permitted.
+  \item \texttt{failure\_capture} modes are limited to abort and recover.
+  \item Asynchronous evaluation is disallowed (only one batch at a time may be executed).
+\end{itemize}
+
 
 \section{Parameter to Response Mapping Examples}\label{interfaces:mappings}
 
@@ -1594,7 +1697,7 @@ is called. Unnamed results files are most helpful when no results file will be w
 intended purely for pre-processing.
 
 By default, the returned {\tt Results} object enforces the active set vector (see the {\tt Results} class section).
-This behavior can be overriden, allowing any property (function, gradient, Hessian) of a response to be set, by
+This behavior can be overridden, allowing any property (function, gradient, Hessian) of a response to be set, by
 setting \emph{ignore\_asv} to True.
 
 
@@ -1736,7 +1839,7 @@ object.)
 
 \texttt{Parameters} and \texttt{Results} objects can be made available to the
 template using The \emph{parameters} and \emph{results} keyword arguments, and 
-additional variable defintions can be provided in a \texttt{dict} via the
+additional variable definitions can be provided in a \texttt{dict} via the
 \emph{include} argument.
 
 The \emph{output} keyword is used to specify an output file for the processed 
@@ -1830,7 +1933,7 @@ language. As such, templates can contain loops, conditionals, lists,
 dictionaries, and other Python language features.
 
 The second tool, \texttt{dprepro}, uses the same template engine
-as \texttt{pyprepro}, and in addition undertands Dakota's parameter
+as \texttt{pyprepro}, and in addition understands Dakota's parameter
 file formats. In particular, when using \texttt{dprepro} in an analysis driver, 
 Dakota variables become available for use within templates. \texttt{dprepro} 
 is also integrated with the \texttt{dakota.interfacing} module to provide direct
@@ -1890,7 +1993,7 @@ The remaining options are used to
   \item Set custom delimiters for Python code lines (\texttt{-\/-code}) and blocks 
     (\texttt{-\/-code-block}) and for inline statements that print 
     (\texttt{-\/-inline}). The last of these is equivalent to Perl \texttt{dprepro}'s 
-    \texttt{-\/-left-delimiter} and \texttt{-\/-right-delimter} switches, which also
+    \texttt{-\/-left-delimiter} and \texttt{-\/-right-delimiter} switches, which also
     have been preserved to maintain backward compatibility. They default to 
     \texttt{"\{ \}"}.
   \item Insert additional parameters for substitution, either from a JSON file
@@ -2149,7 +2252,7 @@ Note that any variable set on the command line by any of these three means:
  \item \texttt{-\/-include} file
  \item \texttt{-\/-json-include} file
 \end{itemize}
-is immutable. This listing is in order of precendence; variables set by a 
+is immutable. This listing is in order of precedence; variables set by a 
 \texttt{-\/-var} argument cannot be modified by \texttt{-\/-include}
 or \texttt{-\/-json-include} files. This feature is useful for overriding
 defaults set in templates.
@@ -2242,7 +2345,7 @@ Because Dakota itself has few such restrictions on variable names,
 \texttt{d/pyprepro} "mangles" noncompliant names in the following ways
 before making them available in templates:
 \begin{itemize}
- \item Variables/paramters that begin with a number are prepended by the lowercase
+ \item Variables/parameters that begin with a number are prepended by the lowercase
 	 letter 'i'.
  \item Disallowed characters such as \# are replaced by underscores (\texttt{\_}).
  \item In Python 2, non-ASCII letters are normalized to their rough ASCII
@@ -2379,7 +2482,7 @@ I want a lion
 \subsubsection{Lists}\label{interfaces:lists}
 
 Lists are \emph{zero\ indexed}. Negative indices are also supported, and
-are interperted as offsets from the last element in the negative direction. 
+are interpreted as offsets from the last element in the negative direction. 
 Elements are accessed using square brackets (\texttt{[]}).
 
 Consider:
@@ -2759,7 +2862,7 @@ returns:
 \subsubsection{Other Functions}\label{interfaces:other-functions}
 
 Other functions, modules, and packages that are part of the Python standard 
-library or that are availble for import on the host system can be used in
+library or that are available for import on the host system can be used in
 templates. Use of NumPy to perform element-wise operations on arrays was
 demonstrated in a previous section. The following example illustrates using
 Python's \texttt{random} module to draw a sample from a uniform distribution:

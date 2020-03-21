@@ -10,16 +10,16 @@
 //- Description: Implementation code for NonDMultilevelStochCollocation class
 //- Owner:       Mike Eldred
 
-#include "dakota_system_defs.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSparseGrid.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "PecosApproximation.hpp"
 #include "SharedInterpPolyApproxData.hpp"
+#include "dakota_system_defs.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
 //#define DEBUG
@@ -31,29 +31,27 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
-  NonDStochCollocation(BaseConstructor(), problem_db, model),
-  mlmfAllocControl(
-    probDescDB.get_short("method.nond.multilevel_allocation_control")),
-  quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
+  NonDStochCollocation(DEFAULT_METHOD, problem_db, model), // bypass SC ctor
+  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
+  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -83,9 +81,10 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation; support surrogate gradient evals
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
@@ -121,9 +120,9 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 			       bool use_derivs):
   NonDStochCollocation(MULTIFIDELITY_STOCH_COLLOCATION, model,
 		       exp_coeffs_approach, refine_type, refine_control,
-		       covar_control, ml_discrep, rule_nest, rule_growth,
-		       piecewise_basis, use_derivs),
-  mlmfAllocControl(ml_alloc_cntl), sequenceIndex(0)
+		       covar_control, ml_alloc_cntl, ml_discrep, rule_nest,
+		       rule_growth, piecewise_basis, use_derivs),
+  sequenceIndex(0)
 {
   assign_discrepancy_mode();
   assign_hierarchical_response_mode();
@@ -133,18 +132,18 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   default:                 ssgLevelSeqSpec = num_int_seq; break;
   }
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -166,9 +165,11 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // TO DO: support surr Hessian evals in helper mode
-                            // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation.
+  // TO DO: support surrogate Hessians in helper mode.
+  ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
@@ -182,71 +183,12 @@ NonDMultilevelStochCollocation::~NonDMultilevelStochCollocation()
 { }
 
 
-void NonDMultilevelStochCollocation::assign_discrepancy_mode()
-{
-  // assign alternate defaults for correction and discrepancy emulation types
-  switch (iteratedModel.correction_type()) {
-  //case ADDITIVE_CORRECTION:
-  //case MULTIPLICATIVE_CORRECTION:
-  case NO_CORRECTION: // assign method-specific default
-    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
-  }
-
-  switch (multilevDiscrepEmulation) {
-  /*
-  case DISTINCT_EMULATION:
-    if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
-      Cerr << "Error: DISTINCT_EMULATION not currently supported for "
-	   << "Multilevel SC with hierarchical interpolants." << std::endl;
-      abort_handler(-1);
-    }
-    break;
-  case RECURSIVE_EMULATION:
-    if (expansionBasisType == Pecos::NODAL_INTERPOLANT) {
-      Cerr << "Error: RECURSIVE_EMULATION not currently supported for "
-	   << "Multilevel SC with nodal interpolants." << std::endl;
-      abort_handler(-1);
-    }
-    break;
-  */
-  case DEFAULT_EMULATION: // assign method-specific default
-    multilevDiscrepEmulation =
-      //(expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) ?
-      //RECURSIVE_EMULATION :
-      DISTINCT_EMULATION;
-    break;
-  }
-}
-
-
-void NonDMultilevelStochCollocation::assign_hierarchical_response_mode()
-{
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-
-  if (iteratedModel.surrogate_type() != "hierarchical") {
-    Cerr << "Error: multilevel/multifidelity expansions require a "
-	 << "hierarchical model." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  // Hierarchical SC is already based on surpluses, so default behavior could
-  // differ from PCE (see assign_discrepancy_mode())
-  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  else
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
-  // AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
-  // but requires repurposing origSurrData + modSurrData for high-low QoI pairs
-}
-
-
+/*
 void NonDMultilevelStochCollocation::initialize_u_space_model()
 {
   // For greedy ML, activate combined stats now for propagation to Pecos
   // > don't call statistics_type() as ExpansionConfigOptions not initialized
-  //if (mlmfAllocControl == GREEDY_REFINEMENT)
+  //if (multilevAllocControl == GREEDY_REFINEMENT)
   //  statsType = Pecos::COMBINED_EXPANSION_STATS;
 
   // initializes ExpansionConfigOptions, among other things
@@ -254,8 +196,9 @@ void NonDMultilevelStochCollocation::initialize_u_space_model()
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
-  uSpaceModel.link_multilevel_approximation_data();
+  //uSpaceModel.link_multilevel_approximation_data();
 }
+*/
 
 
 bool NonDMultilevelStochCollocation::resize()
@@ -279,18 +222,16 @@ void NonDMultilevelStochCollocation::core_run()
   switch (methodName) {
   case MULTIFIDELITY_STOCH_COLLOCATION:
     // algorithms inherited from NonDExpansion:
-    switch (mlmfAllocControl) {
+    switch (multilevAllocControl) {
     case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
     default:                   multifidelity_expansion(refineType); break;
     }
     break;
+  // There is no regression / unstructured grid option for SC.
+  // ML SC would require rounding to closest SSG level/TPQ order.
   //case MULTILEVEL_STOCH_COLLOCATION:
   //  multifid_uq = false;
-  //  switch (mlmfAllocControl) {
-  //  case GREEDY_REFINEMENT:    greedy_multifidelity_expansion();    break;
-  //  case DEFAULT_MLMF_CONTROL: multifidelity_expansion(refineType); break;
-  //  default:                   multilevel_sparse_grid();            break;
-  //  }
+  //  multilevel_sparse_grid();
   //  break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelStochCollocation::"
@@ -312,7 +253,7 @@ void NonDMultilevelStochCollocation::core_run()
   // clean up for re-entrancy of ML SC
   uSpaceModel.clear_inactive();
 
-  ++numUncertainQuant;
+  finalize_expansion();
 }
 
 
@@ -324,8 +265,8 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
       = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
-    else if (refineControl)
-      nond_quad->reset();   // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_quad->reset();   // reset refinement, capture dist param updates
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -334,8 +275,8 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
-    else if (refineControl)
-      nond_sparse->reset(); // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_sparse->reset(); // reset refinement, capture dist param updates
     break;
   }
   default:
@@ -357,8 +298,8 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     }
-    else if (refineControl)
-      nond_quad->reset();   // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_quad->reset();   // reset refinement, capture dist param updates
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -369,8 +310,8 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     }
-    else if (refineControl)
-      nond_sparse->reset(); // reset driver to pre-refinement state
+    else //if (refineControl)
+      nond_sparse->reset(); // reset refinement, capture dist param updates
     break;
   }
   default:

@@ -1,5 +1,6 @@
 #@ *: Label=Experimental
 #@ *: DakotaConfig=HAVE_QUESO
+#@ s*: TimeoutAbsolute=3600
 #@ s1: ReqFiles=dakota_bayes_expdesign.dat
 #@ s2: ReqFiles=dakota_bayes_expdesign.dat,dakota_bayes_expdesign.cand.dat
 #@ s2: UserMan=bayes_experimental_design
@@ -71,6 +72,8 @@ variables,
 
 variables,
 	id_variables = 'CONFIG_VARS'
+# MSE: for hierarchical model self-consistency, would prefer to leave state
+#      as inactive and have zero active vars
 	active state
 	continuous_state = 1                                   
           upper_bounds = 70

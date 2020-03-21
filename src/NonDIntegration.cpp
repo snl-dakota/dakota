@@ -34,18 +34,15 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
   dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference"))
   //standAloneMode(true)
 {
+  /*
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete random variables are not currently supported in "
 	 << "NonDIntegration." << std::endl;
     abort_handler(-1);
   }
+  */
 
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(EXTENDED_U);
-  // Note: initialize_random_variable_parameters() is performed at run time
-  initialize_random_variable_correlations();
-  verify_correlation_support(EXTENDED_U);
   initialize_final_statistics(); // default statistics set
 }
 
@@ -57,10 +54,6 @@ NonDIntegration::NonDIntegration(unsigned short method_name, Model& model):
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
   // standard space and does not include a DataFit recursion.
-
-  // initialize_random_variables(natafTransform) is called externally (e.g.,
-  // NonDExpansion::initialize_u_space_model()) to allow access to data from
-  // outer context.
 }
 
 
@@ -74,10 +67,6 @@ NonDIntegration(unsigned short method_name, Model& model,
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
   // standard space and does not include a DataFit recursion.
-
-  // initialize_random_variables(natafTransform) is called externally (e.g.,
-  // NonDExpansion::initialize_u_space_model()) to allow access to data from
-  // outer context.
 }
 
 
@@ -99,10 +88,8 @@ bool NonDIntegration::resize()
 
 void NonDIntegration::core_run()
 {
-  //if (standAloneMode)
-  //  initialize_random_variable_parameters(); // capture any dist param updates
-  //else
-  check_variables(natafTransform.x_random_variables());//deferred from alt ctors
+  //if (!standAloneMode)
+  //  check_variables(x_dist.random_variables());//deferred from alt ctors
 
   // generate integration points
   get_parameter_sets(iteratedModel);
@@ -120,7 +107,7 @@ void NonDIntegration::core_run()
 
 
 /** Virtual function called from probDescDB-based constructors and from
-    NonDIntegration::core_run() */
+    NonDIntegration::core_run()
 void NonDIntegration::
 check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars)
 {
@@ -148,6 +135,7 @@ check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars)
   if (err_flag)
     abort_handler(-1);
 }
+*/
 
 
 void NonDIntegration::print_points_weights(const String& tabular_name)

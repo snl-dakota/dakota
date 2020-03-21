@@ -424,7 +424,8 @@ set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_data_io.cpp dakota_global_defs.cpp 
-    dakota_linear_algebra.cpp dakota_stat_util.cpp dakota_tabular_io.cpp
+    dakota_linear_algebra.cpp dakota_preproc_util.cpp
+    dakota_stat_util.cpp dakota_tabular_io.cpp
     CommandLineHandler.cpp DakotaGraphics.cpp SensAnalysisGlobal.cpp 
     WorkdirHelper.cpp ResultsManager.cpp ResultsDBAny.cpp
     MPIManager.cpp ProgramOptions.cpp OutputManager.cpp
@@ -522,8 +523,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
-    NonDCalibration.cpp NonDBayesCalibration.cpp NonDWASABIBayesCalibration.cpp
-    NonDSampling.cpp NonDLHSSampling.cpp
+    NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
+    NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
     NonDMultilevelSampling.cpp NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp 
     NonDPOFDarts.cpp NonDRKDDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaTraitsBase.cpp
@@ -613,8 +614,8 @@ endif()
 
 CheckPackage(C3)
 if(HAVE_C3)
-  set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp)
-  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp)
+  set(iterator_src ${iterator_src} NonDC3FunctionTrain.cpp NonDMultilevelFunctionTrain.cpp)
+  list(APPEND interface_src C3Approximation.cpp SharedC3ApproxData.cpp C3FnTrainPtrsRep.cpp)
   # BMA: disabled these includes as we aren't including c3.h
   ##list(APPEND DAKOTA_INCDIRS
   ##  ${C3_SOURCE_DIR}/include

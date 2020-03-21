@@ -12,10 +12,10 @@
 
 #include "dakota_system_defs.hpp"
 #include "NonDPolynomialChaos.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
 #include "NonDQuadrature.hpp"
 #include "NonDSampling.hpp"
 #include "SharedPecosApproxData.hpp"
@@ -35,38 +35,31 @@ namespace Dakota {
 NonDPolynomialChaos::
 NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
-  expansionExportFile(
-    probDescDB.get_string("method.nond.export_expansion_file")),
-  expansionImportFile(
-    probDescDB.get_string("method.nond.import_expansion_file")),
-  collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
-  crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
+  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
+  randomSeed(problem_db.get_int("method.random_seed")),
+  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
-    probDescDB.get_bool("method.nond.cross_validation.noise_only")),
-  noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
-//initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
-  numAdvance(probDescDB.get_ushort("method.nond.adapted_basis.advancements")),
-  expOrderSpec(probDescDB.get_ushort("method.nond.expansion_order")),
-  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
-  collocPtsSpec(probDescDB.get_sizet("method.nond.collocation_points")),
-  expSamplesSpec(probDescDB.get_sizet("method.nond.expansion_samples")),
-  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized")),
-  uSpaceType(probDescDB.get_short("method.nond.expansion_type")),
-  quadOrderSpec(probDescDB.get_ushort("method.nond.quadrature_order")),
-  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level")),
-  cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
+    problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
+  l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
+//initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
+  numAdvance(problem_db.get_ushort("method.nond.adapted_basis.advancements")),
+  expOrderSpec(problem_db.get_ushort("method.nond.expansion_order")),
+  dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
+  collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points")),
+  expSamplesSpec(problem_db.get_sizet("method.nond.expansion_samples")),
+  normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
+  uSpaceType(problem_db.get_short("method.nond.expansion_type")),
+  quadOrderSpec(problem_db.get_ushort("method.nond.quadrature_order")),
+  ssgLevelSpec(problem_db.get_ushort("method.nond.sparse_grid_level")),
+  cubIntSpec(problem_db.get_ushort("method.nond.cubature_integrand")),
   importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file")),
-  importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
-  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
-  importApproxPointsFile(
-    probDescDB.get_string("method.import_approx_points_file")),
-  importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
-  importApproxActiveOnly(
-    probDescDB.get_bool("method.import_approx_active_only"))
+    problem_db.get_string("method.import_build_points_file")),
+  expansionImportFile(
+    problem_db.get_string("method.nond.import_expansion_file")),
+  expansionExportFile(
+    problem_db.get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // -------------------
@@ -74,12 +67,11 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
 
   // --------------------
   // Data import settings
@@ -92,7 +84,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -136,13 +129,15 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-    importBuildActiveOnly,
+    outputLevel, pt_reuse, importBuildPointsFile,
+    probDescDB.get_ushort("method.import_build_format"),
+    probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
   initialize_u_space_model();
@@ -150,8 +145,10 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(importApproxPointsFile, importApproxFormat, 
-			      importApproxActiveOnly);
+  construct_expansion_sampler(
+    probDescDB.get_string("method.import_approx_points_file"),
+    probDescDB.get_ushort("method.import_approx_format"), 
+    probDescDB.get_bool("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
@@ -168,8 +165,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    short covar_control, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_EMULATION, rule_nest,
-		rule_growth, piecewise_basis, use_derivs), 
+		refine_control, covar_control, DEFAULT_MLMF_CONTROL,
+		DEFAULT_EMULATION, SizetArray(), rule_nest, rule_growth,
+		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -180,18 +178,18 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -223,10 +221,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   UShortArray exp_orders; String pt_reuse; // empty for integration approaches
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                             // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel consumes QoI aggregations. Helper mode: support surrogate Hessians
+  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
@@ -250,32 +248,33 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short import_build_format,
 		    bool import_build_active_only):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_EMULATION,
-		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
-		piecewise_basis, use_derivs), 
+		refine_control, covar_control, DEFAULT_MLMF_CONTROL,
+		DEFAULT_EMULATION, SizetArray(), Pecos::NO_NESTING_OVERRIDE,
+		Pecos::NO_GROWTH_OVERRIDE, piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
   tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
-  collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
+  importBuildPointsFile(import_build_pts_file), l2Penalty(0.), numAdvance(3),
+  expOrderSpec(exp_order), dimPrefSpec(dim_pref), collocPtsSpec(colloc_pts),
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false)
 {
   // -------------------
   // input sanity checks
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -299,14 +298,14 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  if (!import_build_pts_file.empty()) pt_reuse = "all";
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
-                             // TO DO: consider passing in data_mode
+  if (!importBuildPointsFile.empty()) pt_reuse = "all";
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
+  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_build_pts_file, import_build_format,
+    outputLevel, pt_reuse, importBuildPointsFile, import_build_format,
     import_build_active_only), false);
   initialize_u_space_model();
 
@@ -314,37 +313,32 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called by derived class constructors. */
+/** This constructor is called by derived class constructors that
+    customize the object construction. */
 NonDPolynomialChaos::
-NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
+		    Model& model):
   NonDExpansion(problem_db, model),
-  expansionExportFile(
-    probDescDB.get_string("method.nond.export_expansion_file")),
-  expansionImportFile(
-    probDescDB.get_string("method.nond.import_expansion_file")),
-  collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
-  crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
+  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
+  randomSeed(problem_db.get_int("method.random_seed")),
+  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
+  crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
-    probDescDB.get_bool("method.nond.cross_validation.noise_only")),
-  noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
-//initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
-  numAdvance(probDescDB.get_ushort("method.nond.adapted_basis.advancements")),
-  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
-  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized")),
-  uSpaceType(probDescDB.get_short("method.nond.expansion_type")),
-  cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
+    problem_db.get_bool("method.nond.cross_validation.noise_only")),
+  noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
+  l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
+//initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
+  numAdvance(problem_db.get_ushort("method.nond.adapted_basis.advancements")),
+  dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
+  normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
+  uSpaceType(problem_db.get_short("method.nond.expansion_type")),
+  cubIntSpec(problem_db.get_ushort("method.nond.cubature_integrand")),
   importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file")),
-  importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
-  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
-  importApproxPointsFile(
-    probDescDB.get_string("method.import_approx_points_file")),
-  importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
-  importApproxActiveOnly(
-    probDescDB.get_bool("method.import_approx_active_only"))
+    problem_db.get_string("method.import_build_points_file")),
+  expansionImportFile(
+    problem_db.get_string("method.nond.import_expansion_file")),
+  expansionExportFile(
+    problem_db.get_string("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // -------------------
@@ -363,11 +357,13 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
-		    short covar_control, short ml_discrep, short rule_nest,
-		    short rule_growth, bool piecewise_basis, bool use_derivs):
+		    short covar_control, short ml_alloc_control,
+		    short ml_discrep, short rule_nest, short rule_growth,
+		    bool piecewise_basis, bool use_derivs):
   NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_discrep, rule_nest,
-		rule_growth, piecewise_basis, use_derivs), 
+		refine_control, covar_control, ml_alloc_control, ml_discrep,
+		SizetArray(), rule_nest, rule_growth, piecewise_basis,
+		use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -388,13 +384,14 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
-		    short covar_control, short ml_discrep,
+		    short covar_control, short ml_alloc_control,
+		    short ml_discrep, const SizetArray& pilot,
 		    //short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs, Real colloc_ratio,
 		    int seed, bool cv_flag):
   NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_discrep,
-		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
+		refine_control, covar_control, ml_alloc_control, ml_discrep,
+		pilot, Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		piecewise_basis, use_derivs),
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
   tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
@@ -564,8 +561,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
       exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_orders);
       break;
     case Pecos::TENSOR_PRODUCT_BASIS:
-      exp_terms
-	= Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders);
+      exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_orders);
       break;
     }
     termsOrder = colloc_ratio_terms_order;
@@ -663,18 +659,18 @@ bool NonDPolynomialChaos::resize()
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel, uSpaceType),
+		       false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -752,8 +748,10 @@ bool NonDPolynomialChaos::resize()
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(7);
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation. Resize: support approx Hessians
+  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ActiveSet pce_set(asv, recast_set.derivative_vector());
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
@@ -767,10 +765,14 @@ bool NonDPolynomialChaos::resize()
     approx_type = "global_regression_orthogonal_polynomial";
     if (!importBuildPointsFile.empty())
       pt_reuse = "all";
+    //DataFitSurrModel* orig_dfs_model
+    //  = (DataFitSurrModel*)uSpaceModel.model_rep();
+    //unsigned short import_format = orig_dfs_model->import_build_format();
+    //bool      import_active_only = orig_dfs_model->import_build_active_only();
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
       pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-      outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-      importBuildActiveOnly), false);
+      outputLevel, pt_reuse), false); // no import after resize
+    //, importBuildPointsFile, import_format, import_active_only), false);
   }
 
   initialize_u_space_model();
@@ -778,8 +780,7 @@ bool NonDPolynomialChaos::resize()
   // -------------------------------------
   // (Re)Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(importApproxPointsFile, importApproxFormat,
-			      importApproxActiveOnly);
+  construct_expansion_sampler(); // no import after resize
 
   return true; // Always need to re-initialize communicators
 }
@@ -846,39 +847,12 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDPolynomialChaos::initialize_u_space_model()
 {
-  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
-  // passed through the DataFitSurrModel ctor chain.  Additional data needed
-  // by OrthogPolyApproximation are passed using Pecos::BasisConfigOptions.
-  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
-  Pecos::BasisConfigOptions bc_options(nestedRules, false, true, useDerivs);
-  shared_data_rep->configuration_options(bc_options);
+  NonDExpansion::initialize_u_space_model();
+  configure_pecos_options(); // pulled out of base because C3 does not use it
 
-  // For PCE, the approximation and integration bases are the same.  We (always)
-  // construct it for the former and (conditionally) pass it in to the latter.
-  shared_data_rep->construct_basis(natafTransform.u_types(),
-    iteratedModel.aleatory_distribution_parameters());
-
-  // If the model is not yet fully initialized, skip grid initialization.
-  if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
-       expansionCoeffsApproach == Pecos::CUBATURE   ||
-       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
-       ( tensorRegression && numSamplesOnModel ) ) {
-    if (iteratedModel.resize_pending()) // defer grid initialization
-      { /* callResize = true; */ }
-    else {
-      NonDIntegration* u_space_sampler_rep = 
-        (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-      u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
-    }
-  }
-
-  // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
-  // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
-  shared_data_rep->coefficients_norms_flag(true);
-
+  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
+  SharedPecosApproxData* shared_data_rep
+    = (SharedPecosApproxData*)shared_data.data_rep();
   // Transfer regression data: cross validation, noise tol, and L2 penalty.
   // Note: regression solver type is transferred via expansionCoeffsApproach
   //       in NonDExpansion::initialize_u_space_model()
@@ -895,8 +869,29 @@ void NonDPolynomialChaos::initialize_u_space_model()
     //...
   }
 
-  // perform last due to numSamplesOnModel update
-  NonDExpansion::initialize_u_space_model();
+  // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
+  const Pecos::MultivariateDistribution& u_mvd
+    = uSpaceModel.multivariate_distribution();
+  // construct the polynomial basis (shared by integration drivers)
+  shared_data.construct_basis(u_mvd);
+  // mainly a run-time requirement, but also needed at construct time
+  // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
+  //shared_data_rep->update_basis_distribution_parameters(u_mvd);
+  // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
+  // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
+  shared_data_rep->coefficients_norms_flag(true);
+
+  // if numerical integration, manage u_space_sampler updates
+  bool num_int = (expansionCoeffsApproach == Pecos::QUADRATURE           ||
+		  expansionCoeffsApproach == Pecos::CUBATURE             ||
+		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+		  expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID);
+  if ( num_int || ( tensorRegression && numSamplesOnModel ) ) {
+    shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
+    initialize_u_space_grid(); // propagates dist param updates
+  }
+  else // propagate dist param updates in case without IntegrationDriver
+    shared_data.update_basis_distribution_parameters(u_mvd);
 }
 
 
@@ -958,7 +953,6 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   SharedApproxData&          shared_approx = uSpaceModel.shared_approximation();
   SharedPecosApproxData* shared_data_rep
     = (SharedPecosApproxData*)shared_approx.data_rep();
-  // returns approxData[activeDataIndex] (= Pecos::modSurrData) by default
   const Pecos::SDVArray& sdv_array
     = poly_approxs[0].surrogate_data().variables_data();
   int num_surr_data_pts = sdv_array.size();
@@ -1238,9 +1232,11 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
+  const Variables&   vars      = iteratedModel.current_variables();
+  const SizetArray&  ac_totals = vars.shared_data().active_components_totals();
 
-  size_t i, width = write_precision+7,
-    num_cuv = numContAleatUncVars+numContEpistUncVars;
+  size_t i, width = write_precision+7, num_ceuv = ac_totals[TOTAL_CEUV],
+    num_csv = ac_totals[TOTAL_CSV];
   char tag[10];
   int j; // for sprintf %i
 
@@ -1252,14 +1248,16 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
     s << "Polynomial Chaos Expansion for " << fn_labels[i] << ":\n";
     // header
     s << "  " << std::setw(width) << "coefficient";
-    for (j=0; j<numContDesVars; j++)
+    for (j=0; j<startCAUV; ++j)
       { std::sprintf(tag, "d%i", j+1); s << std::setw(5) << tag; }
-    for (j=0; j<num_cuv; j++)
+    for (j=0; j<numCAUV; ++j)
       { std::sprintf(tag, "u%i", j+1); s << std::setw(5) << tag; }
-    for (j=0; j<numContStateVars; j++)
+    for (j=0; j<num_ceuv; ++j)
+      { std::sprintf(tag, "e%i", j+1); s << std::setw(5) << tag; }
+    for (j=0; j<num_csv; ++j)
       { std::sprintf(tag, "s%i", j+1); s << std::setw(5) << tag; }
     s << "\n  " << std::setw(width) << "-----------";
-    for (j=0; j<numContinuousVars; j++)
+    for (j=0; j<numContinuousVars; ++j)
       s << " ----";
     poly_approxs[i].print_coefficients(s, normalizedCoeffOutput);
   }

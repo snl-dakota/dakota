@@ -21,7 +21,7 @@ DataInterfaceRep::DataInterfaceRep():
   interfaceType(DEFAULT_INTERFACE),
   allowExistingResultsFlag(false), verbatimFlag(false), apreproFlag(false),
   resultsFileFormat(FLEXIBLE_RESULTS), fileTagFlag(false), fileSaveFlag(false),
-  interfaceSynchronization(SYNCHRONOUS_INTERFACE),
+  batchEvalFlag(false), asynchFlag(false),
   asynchLocalEvalConcurrency(0), asynchLocalEvalScheduling(DEFAULT_SCHEDULING),
   asynchLocalAnalysisConcurrency(0), evalServers(0),
   evalScheduling(DEFAULT_SCHEDULING), procsPerEval(0), analysisServers(0),
@@ -43,7 +43,7 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
     << analysisComponents << inputFilter << outputFilter << parametersFile
     << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
     << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
-    << interfaceSynchronization << asynchLocalEvalConcurrency
+    << batchEvalFlag << asynchFlag << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers
     << analysisScheduling << procsPerAnalysis << failAction << retryLimit
@@ -60,7 +60,7 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
     >> analysisComponents >> inputFilter >> outputFilter >> parametersFile
     >> resultsFile >> allowExistingResultsFlag  >> verbatimFlag >> apreproFlag 
     >> resultsFileFormat >> fileTagFlag >> fileSaveFlag //>> gridHostNames >> gridProcsPerHost
-    >> interfaceSynchronization >> asynchLocalEvalConcurrency
+    >> batchEvalFlag >> asynchFlag >> asynchLocalEvalConcurrency
     >> asynchLocalEvalScheduling >> asynchLocalAnalysisConcurrency
     >> evalServers >> evalScheduling >> procsPerEval >> analysisServers
     >> analysisScheduling >> procsPerAnalysis >> failAction >> retryLimit
@@ -77,7 +77,7 @@ void DataInterfaceRep::write(std::ostream& s) const
     << analysisComponents << inputFilter << outputFilter << parametersFile
     << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
     << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
-    << interfaceSynchronization << asynchLocalEvalConcurrency
+    << batchEvalFlag << asynchFlag << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers
     << analysisScheduling << procsPerAnalysis << failAction << retryLimit

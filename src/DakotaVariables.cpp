@@ -852,6 +852,20 @@ void Variables::write(MPIPackBuffer& s) const
 }
 
 
+StringArray Variables::ordered_labels(unsigned short vars_part) const
+{
+  if (variablesRep)
+    return variablesRep->ordered_labels(vars_part);
+  else {
+    // for convenience, use tabular writer tailored to mixed/relaxed
+    // TODO: generalize the writer to use a helper that builds an array
+    std::ostringstream oss;
+    write_tabular_labels(oss, vars_part);
+    return strsplit(oss.str());
+  }
+}
+
+
 /** Deep copies are used for history mechanisms such as bestVariablesArray
     and data_pairs since these must catalogue copies (and should not
     change as the representation within currentVariables changes). */

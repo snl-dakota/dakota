@@ -76,9 +76,9 @@ public:
 					  const Response& sub_model_response,
 					  Response& recast_response));
 
-  /// alternate constructor; uses provided sizes to construct
-  /// Variables, Response and Constraints so Model can be passed to an
-  /// Iterator; requires subsequent init_maps() call.
+  /// alternate constructor; uses provided sizes to construct Variables,
+  /// Response and Constraints so Model can be passed to an Iterator;
+  /// requires subsequent init_maps() call.
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
@@ -86,8 +86,7 @@ public:
 	      short recast_resp_order);
 
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
-  /// mappings to be initialized later; only initializes based on
-  /// sub-model
+  /// mappings to be initialized later; only initializes based on sub-model
   RecastModel(ProblemDescDB& problem_db, const Model& sub_model);
 
   /// lightest constructor used when transform sizes aren't known at
@@ -105,11 +104,11 @@ public:
 
   /// update recast sizes and size Variables and Response members
   /// after alternate construction
-  void 
-  init_sizes(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-	     const BitArray& all_relax_dr,    size_t num_recast_primary_fns,
-	     size_t num_recast_secondary_fns, size_t recast_secondary_offset,
-	     short recast_resp_order);
+  void init_sizes(const SizetArray& vars_comps_totals,
+		  const BitArray& all_relax_di, const BitArray& all_relax_dr,
+		  size_t num_recast_primary_fns,
+		  size_t num_recast_secondary_fns,
+		  size_t recast_secondary_offset, short recast_resp_order);
 
   /// initialize recast indices and map callbacks after alternate
   /// construction
@@ -185,15 +184,43 @@ public:
   ActiveSet default_active_set();
   void declare_sources();
 
+  /// return nonlinearVarsMapping
+  bool nonlinear_variables_mapping() const;
+
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
 
+  Pecos::ProbabilityTransformation& probability_transformation();
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short query_distribution_parameter_derivatives() const;
+  void activate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives();
+
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
 
   size_t qoi() const;
 
@@ -222,23 +249,13 @@ protected:
 
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
-  /// set surrogate model key within subModel
-  void surrogate_model_key(unsigned short lf_model_index,
-			   unsigned short lf_soln_lev_index);
-  /// set surrogate model key within subModel
-  void surrogate_model_key(const UShortArray& lf_key);
-  /// return surrogate model key from subModel
-  const UShortArray& surrogate_model_key() const;
+  /// return surrogate model, if present, within subModel
+  const Model& surrogate_model() const;
 
   /// return truth model, if present, within subModel
   Model& truth_model();
-  /// set truth model key within subModel
-  void truth_model_key(unsigned short hf_model_index,
-		       unsigned short hf_soln_lev_index);
-  /// set truth model key within subModel
-  void truth_model_key(const UShortArray& hf_key);
-  /// return truth model key from subModel
-  const UShortArray& truth_model_key() const;
+  /// return truth model, if present, within subModel
+  const Model& truth_model() const;
 
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -275,8 +292,8 @@ protected:
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
 
-  /// link SurrogateData instances within the subModel
-  void link_multilevel_approximation_data();
+  // link SurrogateData instances within the subModel
+  //void link_multilevel_approximation_data();
 
   /// retrieve subModel's correction type
   short correction_type();
@@ -338,8 +355,7 @@ protected:
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
-  const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
@@ -413,6 +429,14 @@ protected:
 		 const ActiveSet& search_set, Response& found_resp);
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// assign static pointer instance to this for use in static
+  /// transformation functions
+  virtual void assign_instance();
+
+  //
   //- Heading: Member functions
   //
 
@@ -441,6 +465,15 @@ protected:
   /// initialize userDefinedConstraints from the passed size info
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
+
+  /// update current variables/bounds/labels/constraints from subModel
+  void update_from_model(Model& model);
+  /// update active variables/bounds/labels from subModel
+  bool update_variables_from_model(Model& model);
+  /// update complement of active variables/bounds/labels from subModel
+  void update_variables_active_complement_from_model(Model& model);
+  /// update nonlinear constraint bounds/targets from subModel
+  void update_response_from_model(Model& model);
 
   //
   //- Heading: Data members
@@ -471,6 +504,12 @@ protected:
   /// Counters for naming RecastModels
   static StringStringPairIntMap recastModelIdCounters;
 
+  /// boolean set to true if the variables mapping involves a nonlinear
+  /// transformation.  Used in transform_set() to manage the requirement for
+  /// gradients within the Hessian transformations.  This does not require
+  /// a BoolDeque for each individual variable, since response gradients and
+  /// Hessians are managed per function, not per variable.
+  bool nonlinearVarsMapping;
 
 private:
 
@@ -480,9 +519,6 @@ private:
 
   /// code shared among constructors to initialize base class data from submodel
   void initialize_data_from_submodel();
-
-  /// update current variables/labels/bounds/targets from subModel
-  void update_from_model(Model& model);
 
   /// resize {primary,secondary}MapIndices and nonlinearRespMapping to
   /// synchronize with subModel sizes
@@ -497,16 +533,7 @@ private:
   /// subModel variables; data is packed with only the variable indices
   /// employed rather than a sparsely filled N_sm x N_r matrix).
   Sizet2DArray varsMapIndices;
-  /// boolean set to true if the variables mapping involves a nonlinear
-  /// transformation.  Used in transform_set() to manage the requirement for
-  /// gradients within the Hessian transformations.  This does not require
-  /// a BoolDeque for each individual variable, since response gradients and
-  /// Hessians are managed per function, not per variable.
-  bool nonlinearVarsMapping;
 
-  /// set to true if non-NULL primaryRespMapping or secondaryRespMapping
-  /// are supplied
-  bool respMapping;
   /// For each recast primary function, identifies the indices of the
   /// subModel functions used to define it (maps subModel response
   /// to RecastModel Response).
@@ -544,8 +571,6 @@ private:
 				const Response& sub_model_response,
 				Response& recast_response);
 
-  // flag indicating that inverse mappings have been published
-  //bool inverseMapFlag;
   /// holds pointer for optional inverse variables mapping function
   /// passed in inverse_mappings()
   void (*invVarsMapping)    (const Variables& sub_model_vars,
@@ -575,20 +600,106 @@ inline RecastModel::~RecastModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+inline bool RecastModel::nonlinear_variables_mapping() const
+{ return nonlinearVarsMapping; }
+
+
 inline void RecastModel::submodel_supports_derivative_estimation(bool sed_flag)
 { subModel.supports_derivative_estimation(sed_flag); }
 
 
+inline Pecos::ProbabilityTransformation& RecastModel::
+probability_transformation()
+{ return subModel.probability_transformation(); } // forward along
+
+
 inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
-{ return Model::initialize_mapping(pl_iter); }
+{
+  Model::initialize_mapping(pl_iter);
+
+  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  if (sub_model_resize)
+    estimate_message_lengths();
+
+  return sub_model_resize;
+}
 
 
 inline bool RecastModel::finalize_mapping()
-{ return Model::finalize_mapping(); }
+{
+  bool sub_model_resize = subModel.finalize_mapping();
+  Model::finalize_mapping();
+  return sub_model_resize;
+}
+
+
+inline void RecastModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to subModel:
+  subModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				    dr_index1, c_target2, di_target2,
+				    ds_target2, dr_target2);
+}
+
+
+inline const SizetArray& RecastModel::nested_acv1_indices() const
+{ return subModel.nested_acv1_indices(); }
+
+
+inline const ShortArray& RecastModel::nested_acv2_targets() const
+{ return subModel.nested_acv2_targets(); }
+
+
+inline short RecastModel::query_distribution_parameter_derivatives() const
+{ return subModel.query_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::activate_distribution_parameter_derivatives()
+{ subModel.activate_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::deactivate_distribution_parameter_derivatives()
+{ subModel.deactivate_distribution_parameter_derivatives(); }
+
+
+inline void RecastModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+
+
+inline void RecastModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+
+
+inline void RecastModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{ subModel.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+
+
+inline void RecastModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+		  const RealVector& fn_grad_x)
+{ subModel.trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
 
 
 inline size_t RecastModel::qoi() const
-{ return subModel.qoi(); }
+{ return subModel.qoi(); } // TO DO: check for response mapping
 
 
 inline Iterator& RecastModel::subordinate_iterator()
@@ -611,35 +722,16 @@ inline Model& RecastModel::surrogate_model()
 { return subModel.surrogate_model(); }
 
 
-inline void RecastModel::
-surrogate_model_key(unsigned short lf_model_index,
-		    unsigned short lf_soln_lev_index)
-{ subModel.surrogate_model_key(lf_model_index, lf_soln_lev_index); }
-
-
-inline void RecastModel::surrogate_model_key(const UShortArray& lf_key)
-{ subModel.surrogate_model_key(lf_key); }
-
-
-inline const UShortArray& RecastModel::surrogate_model_key() const
-{ return subModel.surrogate_model_key(); }
+inline const Model& RecastModel::surrogate_model() const
+{ return subModel.surrogate_model(); }
 
 
 inline Model& RecastModel::truth_model()
 { return subModel.truth_model(); }
 
 
-inline void RecastModel::
-truth_model_key(unsigned short hf_model_index, unsigned short hf_soln_lev_index)
-{ subModel.truth_model_key(hf_model_index, hf_soln_lev_index); }
-
-
-inline void RecastModel::truth_model_key(const UShortArray& hf_key)
-{ subModel.truth_model_key(hf_key); }
-
-
-inline const UShortArray& RecastModel::truth_model_key() const
-{ return subModel.truth_model_key(); }
+inline const Model& RecastModel::truth_model() const
+{ return subModel.truth_model(); }
 
 
 inline void RecastModel::
@@ -662,10 +754,10 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
 
   // pull sizing updates from subModel: reflect aggregated counts, if present,
   // by accessing count from response rather than virtual count from Model
-  size_t num_sm_fns   = subModel.response_size();
-  if (currentResponse.num_functions() != num_sm_fns) {
+  numFns = subModel.response_size();
+  if (currentResponse.num_functions() != numFns) {
     resize_response_mapping(); // requires current sizes before reshape below
-    currentResponse.reshape(num_sm_fns, currentVariables.cv(),
+    currentResponse.reshape(numFns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),
                             !currentResponse.function_hessians().empty());
   }
@@ -728,12 +820,15 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 { subModel.surrogate_function_indices(surr_fn_indices); }
 
 
+// For case of RecastModel, forward to subModel for all cases.  SurrogateModels
+// and NestedModels only fwd if BYPASS_SURROGATE (to support recursive bypass),
+// but Recast should allow mode set followed by reset for underlying surrogate.
 inline void RecastModel::surrogate_response_mode(short mode)
-{ if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
+{ /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
 
 
-inline void RecastModel::link_multilevel_approximation_data()
-{ subModel.link_multilevel_approximation_data(); }
+//inline void RecastModel::link_multilevel_approximation_data()
+//{ subModel.link_multilevel_approximation_data(); }
 
 
 inline short RecastModel::correction_type()
@@ -853,14 +948,14 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& RecastModel::
-approximation_data(size_t fn_index, size_t d_index)
-{ return subModel.approximation_data(fn_index, d_index); }
+approximation_data(size_t fn_index)
+{ return subModel.approximation_data(fn_index); }
 
 
 inline void RecastModel::component_parallel_mode(short mode)
 {
-  //if (mode != SUB_MODEL) {
-  //  Cerr << "Error: RecastModel only supports the SUB_MODEL component "
+  //if (mode != SUB_MODEL_MODE) {
+  //  Cerr << "Error: RecastModel only supports the SUB_MODEL_MODE component "
   //       << "parallel mode." << std::endl;
   //  abort_handler(-1);
   //}

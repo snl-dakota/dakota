@@ -22,6 +22,10 @@ Other module features:
   * MIMD model. The launcher functions expect a list of commands along with the
     number of processes for each.
   * Optionally specify the tile size to enable running on a subset of a tile
+  * Extra keyword arguments to tile_run_{dynamic,static} are passed down to
+    the Popen instance that invokes mpirun, permitting the client to provide
+    stdout/stderr/stdin streams, specify a cwd, etc. (By default, stdout,
+    stderr, and stdin are attached to sys.stdout, sys.stderr, and sys.stdin).
 
 Example Usage::
 
@@ -57,6 +61,7 @@ import re
 import sys
 import subprocess
 import time
+import copy
 from . import slurm
 from .interfacing import read_parameters_file, UNNAMED
 
@@ -176,13 +181,16 @@ class _TileLock(object):
 
 
 
-def _mpirun(node_list, user_commands):
+def _mpirun(node_list, user_commands, **kwargs):
     """Use mpirun to launch a command in parallel
 
     Args:
         node_list (string): Relative node list formatted for use with -host option
         commands (list): Each item is a tuple: (applic_procs, tokenized command 
             to be run). len(commands) == 1 for SIMD model.
+        kwargs (dict): Keyword arguments that will be passed to the Popen
+            constructor. stdout, stderr, and stdin are set to those streams for
+            this process if they are not present in kwargs.
     Returns:
         returncode (int) of mpirun.
     """
@@ -192,10 +200,32 @@ def _mpirun(node_list, user_commands):
     user_command = []
     for command in user_commands:
         user_command += ["-np", str(command[0])] + command[1] + [":"]
-    user_command.pop() # remove the final :
-    returncode = subprocess.call(mpi_command + host_args + user_command)
-    sys.stdout.flush()
-    return returncode
+    user_command.pop() # remove the final
+    # If the user didn't provide stdout and stderr for the Popen constructor,
+    # assume they want them written to sys.stdout and sys.stderr
+    try:
+        stdout = kwargs["stdout"]
+        del kwargs["stdout"] # Delete to avoid passing the same kw arg to Popen twice
+    except KeyError:
+        stdout = sys.stdout
+    try:
+        stderr = kwargs["stderr"]
+        del kwargs["stderr"]
+    except KeyError:
+        stderr = sys.stderr
+    try:
+        stdin = kwargs["stdin"]
+        del kwargs["stdin"]
+    except KeyError:
+        stdin = sys.stdin
+    proc = subprocess.Popen(mpi_command + host_args + user_command,stderr=stderr,
+        stdout=stdout, stdin=stdin, **kwargs)
+    proc.wait()
+    if stdout is sys.stdout:
+        stdout.flush()
+    if stderr is sys.stderr:
+        stderr.flush()
+    return proc.returncode
 
 def _calc_num_tiles(tile_size=None, tasks_per_node=None, num_nodes=None, 
         dedicated_master=None):
@@ -225,7 +255,7 @@ def _calc_num_tiles(tile_size=None, tasks_per_node=None, num_nodes=None,
     return num_tiles
 
 def tile_run_static(commands=None, dedicated_master=None, eval_num=None, tile_size=None,
-        parameters_file=None):
+        parameters_file=None, **kwargs):
     """Run a command in parallel on an available tile assuming static scheduling
 
     Keyword args:
@@ -239,6 +269,10 @@ def tile_run_static(commands=None, dedicated_master=None, eval_num=None, tile_si
             commands.
         parameters_file (string): Extract an eval_num from this Dakota
             parameters_file.
+        cwd (string): Launch the job using this as the current working directory
+        **kwargs: passed down to the Popen constructor that invokes mpirun. If custom 
+            stdout/stderr/stdin aren't provided, they are set to sys.stdout, sys.stderr,
+            and sys.stdin. 
 
 
     Returns:
@@ -277,11 +311,11 @@ def tile_run_static(commands=None, dedicated_master=None, eval_num=None, tile_si
     # and mpirun the command(s) on these resources.
     tile = _calc_static_tile(eval_num, num_tiles)
     node_list = _get_node_list(tile, tile_size, tasks_per_node, dedicated_master)
-    returncode = _mpirun(node_list, commands)
+    returncode = _mpirun(node_list, commands, **kwargs)
     return returncode
 
 def tile_run_dynamic(commands=None, dedicated_master=None, tile_size=None, 
-    lock_id=None, lock_dir=None):
+    lock_id=None, lock_dir=None, **kwargs):
     """Run a command in parallel on an available tile assuming dynamic scheduling
 
     Keyword args:
@@ -291,9 +325,13 @@ def tile_run_dynamic(commands=None, dedicated_master=None, tile_size=None,
             for Dakota (default: None).
         tile_size (int): Size of tile; if not None, must be >= the sum of the tasks for all
             commands.
+        cwd (string): Current working directory for the execution
         lock_id (str, optional): Unique prefix for lockfiles used to manage tiles.
         lock_dir (str, optional): Name of directory where lockfiles will be written.
-    
+        **kwargs: Passed down to Popen constructor that invokes mpirun. If custom stdout/
+            stderr/stdin aren't provided, they are set to sys.stdout, sys.stderr, and
+            sys.stdin. 
+
     Returns:
         returncode (int) from mpirun
 
@@ -328,7 +366,7 @@ def tile_run_dynamic(commands=None, dedicated_master=None, tile_size=None,
     # on these resources.
     with _TileLock(num_tiles, lock_id, lock_dir) as tile:
         node_list = _get_node_list(tile, tile_size, tasks_per_node, dedicated_master)
-        returncode = _mpirun(node_list, commands)
+        returncode = _mpirun(node_list, commands, **kwargs)
     sys.stdout.flush()
     return returncode
 

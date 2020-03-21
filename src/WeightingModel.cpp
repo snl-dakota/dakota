@@ -31,8 +31,6 @@ WeightingModel::WeightingModel(Model& sub_model
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Info: Constructing WeightingModel" << std::endl;
 
-  weightModelInstance = this;
-
   // This model maps things through 1--1 in t erms of sizes
   // TODO: reasonable default code in Recast for the following
 

@@ -89,23 +89,31 @@ protected:
   short correction_type();
   void  correction_type(short corr_type);
 
-  /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
-  /// restore state in preparation for next initialization
   bool finalize_mapping();
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
+  const SizetArray& nested_acv1_indices() const;
+  const ShortArray& nested_acv2_targets() const;
+  short query_distribution_parameter_derivatives() const;
+
+  void check_submodel_compatibility(const Model& sub_model);
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs approxInterface.map()/synch()/
   // synch_nowait() where approxInterface is a local, multipoint, or global
   // approximation.
-  //
-  /// portion of evaluate() specific to DataFitSurrModel
+
   void derived_evaluate(const ActiveSet& set);
-  /// portion of evaluate_nowait() specific to DataFitSurrModel
   void derived_evaluate_nowait(const ActiveSet& set);
-  /// portion of synchronize() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize();
-  /// portion of synchronize_nowait() specific to DataFitSurrModel
   const IntResponseMap& derived_synchronize_nowait();
 
   /// map incoming ASV into actual request for surrogate construction, managing
@@ -127,15 +135,12 @@ protected:
 
   /// return this model instance
   Model& surrogate_model();
-  void surrogate_model_key(unsigned short lf_model_index,
-			   unsigned short lf_soln_lev_index);
-  void surrogate_model_key(const UShortArray& lf_key);
-
+  /// return this model instance
+  const Model& surrogate_model() const;
   /// return actualModel
   Model& truth_model();
-  void truth_model_key(unsigned short hf_model_index,
-		       unsigned short hf_soln_lev_index);
-  void truth_model_key(const UShortArray& hf_key);
+  /// return actualModel
+  const Model& truth_model() const;
 
   /// return actualModel (and optionally its sub-models)
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -157,9 +162,9 @@ protected:
   /// any lower-level surrogates.
   void surrogate_response_mode(short mode);
 
-  /// link together more than one SurrogateData instance within
-  /// approxInterface.functionSurfaces[i].approxData[j]
-  void link_multilevel_approximation_data();
+  // link together more than one SurrogateData instance within
+  // approxInterface.functionSurfaces[i].approxData[j]
+  //void link_multilevel_approximation_data();
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
@@ -249,8 +254,7 @@ protected:
   const RealVector& approximation_variances(const Variables& vars);
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
-  const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// update component parallel mode for supporting parallelism in actualModel
   void component_parallel_mode(short mode);
@@ -333,7 +337,7 @@ private:
   //
 
   /// optionally read surrogate data points from provided file
-  void import_points(unsigned short tabular_format, bool active_only);
+  void import_points(unsigned short tabular_format, bool use_var_labels, bool active_only);
   /// initialize file stream for exporting surrogate evaluations
   void initialize_export();
   /// finalize file stream for exporting surrogate evaluations
@@ -435,6 +439,39 @@ inline DataFitSurrModel::~DataFitSurrModel()
 { if (!exportPointsFile.empty()) finalize_export(); }
 
 
+inline void DataFitSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  // forward along to actualModel:
+  if (!actualModel.is_null())
+    actualModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+					 dr_index1, c_target2, di_target2,
+					 ds_target2, dr_target2);
+}
+
+
+inline const SizetArray& DataFitSurrModel::nested_acv1_indices() const
+{ return actualModel.nested_acv1_indices(); }
+
+
+inline const ShortArray& DataFitSurrModel::nested_acv2_targets() const
+{ return actualModel.nested_acv2_targets(); }
+
+
+inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
+{
+  return (actualModel.is_null()) ? NO_DERIVS :
+    actualModel.query_distribution_parameter_derivatives(); // forward along
+}
+
+
 inline size_t DataFitSurrModel::qoi() const
 {
   switch (responseMode) {
@@ -503,30 +540,14 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
-inline void DataFitSurrModel::active_model_key(const UShortArray& mi_key)
+inline void DataFitSurrModel::active_model_key(const UShortArray& key)
 {
-  switch (responseMode) {
-  // Response inflation from aggregation does not proliferate above
-  // this Model recursion level
-  /*
-  case AGGREGATED_MODELS: {
-    // passed mi_key is HF key (see NonDExpansion::configure_{indices,keys}),
-    // so create a LF key for the LF,HF aggregated response
-    // *** TO DO: loss of encapsulation of ML logic ***
-    UShortArray lf_key(mi_key); // copy
-    unsigned short& lf_last = lf_key.back();
-    if (lf_last > 0) {
-      --lf_last; // decrement trailing index
-      approxInterface.active_model_keys(lf_key, mi_key);
-    }
-    else
-      approxInterface.active_model_key(mi_key);
-    break;
-  }
-  */
-  default:
-    approxInterface.active_model_key(mi_key); break;
-  }
+  // assign activeKey and extract {surr,truth}ModelKey
+  SurrogateModel::active_model_key(key);
+
+  // recur both components: (actualModel could be hierarchical)
+  approxInterface.active_model_key(key);
+  actualModel.active_model_key(key);
 }
 
 
@@ -547,54 +568,16 @@ inline Model& DataFitSurrModel::surrogate_model()
 }
 
 
-inline void DataFitSurrModel::
-surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  // update surrModelKey
-  SurrogateModel::surrogate_model_key(model_index, soln_lev_index);
-
-  // recur both components: (actualModel could be hierarchical)
-  approxInterface.surrogate_model_key(surrModelKey);
-  actualModel.surrogate_model_key(surrModelKey);
-}
-
-
-inline void DataFitSurrModel::surrogate_model_key(const UShortArray& key)
-{
-  // update surrModelKey
-  SurrogateModel::surrogate_model_key(key);
-
-  // recur both components: (actualModel could be hierarchical)
-  approxInterface.surrogate_model_key(surrModelKey);
-  actualModel.surrogate_model_key(surrModelKey);
-}
+inline const Model& DataFitSurrModel::surrogate_model() const
+{ return *this; } // return of letter (see above)
 
 
 inline Model& DataFitSurrModel::truth_model()
 { return actualModel; }
 
 
-inline void DataFitSurrModel::
-truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  // update truthModelKey
-  SurrogateModel::truth_model_key(model_index, soln_lev_index);
-
-  // recur both components: (approxInterface could manage AGGREGATED data)
-  approxInterface.truth_model_key(truthModelKey);
-  actualModel.truth_model_key(truthModelKey);
-}
-
-
-inline void DataFitSurrModel::truth_model_key(const UShortArray& key)
-{
-  // update truthModelKey
-  SurrogateModel::truth_model_key(key);
-
-  // recur both components: (approxInterface could manage AGGREGATED data)
-  approxInterface.truth_model_key(truthModelKey);
-  actualModel.truth_model_key(truthModelKey);
-}
+inline const Model& DataFitSurrModel::truth_model() const
+{ return actualModel; }
 
 
 inline void DataFitSurrModel::
@@ -676,7 +659,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
   //   MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
   // > Management of multiple SurrogateData instances is complicated in the
   //   heterogeneous setting where level 0 uses a single instance and levels
-  //   1-L use two isntances.  In the future, could manage activation explicitly
+  //   1-L use two instances.  In the future, could manage activation explicitly
   //   using functions shown below.  For now, SurrogateData::{push,pop}() are
   //   hardened for inactive instances.
   switch (mode) {
@@ -698,8 +681,8 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
 }
 
 
-inline void DataFitSurrModel::link_multilevel_approximation_data()
-{ approxInterface.link_multilevel_approximation_data(); }
+//inline void DataFitSurrModel::link_multilevel_approximation_data()
+//{ approxInterface.link_multilevel_approximation_data(); }
 
 
 inline void DataFitSurrModel::
@@ -751,8 +734,8 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& DataFitSurrModel::
-approximation_data(size_t fn_index, size_t d_index)
-{ return approxInterface.approximation_data(fn_index, d_index); }
+approximation_data(size_t fn_index)
+{ return approxInterface.approximation_data(fn_index); }
 
 
 inline IntIntPair DataFitSurrModel::

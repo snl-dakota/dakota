@@ -59,12 +59,9 @@ public:
   /// set pecosBasisApprox.randomVarsKey
   void random_variables_key(const Pecos::BitArray& random_vars_key);
 
-  /// set pecosBasisApprox.driverRep
-  void integration_iterator(const Iterator& iterator);
-
-  /// invoke Pecos::SharedOrthogPolyApproxData::construct_basis()
-  void construct_basis(const Pecos::ShortArray& u_types,
-		       const Pecos::AleatoryDistParams& adp);
+  /// invoke Pecos::SharedPolyApproxData::update_basis_distribution_parameters()
+  void update_basis_distribution_parameters(
+    const Pecos::MultivariateDistribution& u_dist);
 
   // set Pecos::SharedOrthogPolyApproxData::basisTypes
   //void basis_types(const Pecos::ShortArray& basis_types);
@@ -81,8 +78,11 @@ public:
   /// set Pecos::SharedOrthogPolyApproxData::multiIndex and allocate
   /// associated arrays
   void allocate(const UShort2DArray& mi);
-  /// get Pecos::SharedOrthogPolyApproxData::multiIndex
+
+  /// get active Pecos::SharedOrthogPolyApproxData::multiIndex
   const UShort2DArray& multi_index() const;
+  /// get Pecos::SharedOrthogPolyApproxData::multiIndex
+  const std::map<UShortArray, UShort2DArray>& multi_index_map() const;
 
   /// return Pecos::SharedPolyApproxData::sobolIndexMap
   const Pecos::BitArrayULongMap& sobol_index_map() const;
@@ -119,13 +119,14 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void active_model_key(const UShortArray& mi_key);
-  const UShortArray& active_model_key() const;
+  void active_model_key(const UShortArray& key);
   void clear_model_keys();
 
-  void link_multilevel_surrogate_data();
-  void surrogate_model_key(const UShortArray& key);
-  void truth_model_key(const UShortArray& key);
+  void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
+
+  void integration_iterator(const Iterator& iterator);
+
+  short discrepancy_type() const;
 
   void build();
   void rebuild();
@@ -145,11 +146,6 @@ protected:
   void post_combine();
   void combined_to_active(bool clear_combined = true);
 
-  /*
-  void store(size_t index = _NPOS);
-  void restore(size_t index = _NPOS);
-  void remove_stored(size_t index = _NPOS);
-  */
   void clear_inactive();
 
 private:
@@ -186,16 +182,22 @@ inline SharedPecosApproxData::~SharedPecosApproxData()
 { }
 
 
-inline void SharedPecosApproxData::active_model_key(const UShortArray& mi_key)
-{ pecosSharedDataRep->active_key(mi_key); }
-
-
-inline const UShortArray& SharedPecosApproxData::active_model_key() const
-{ return pecosSharedDataRep->active_key(); }
+inline void SharedPecosApproxData::active_model_key(const UShortArray& key)
+{
+  SharedApproxData::active_model_key(key);
+  pecosSharedDataRep->active_key(key);
+}
 
 
 inline void SharedPecosApproxData::clear_model_keys()
-{ pecosSharedDataRep->clear_keys(); }
+{
+  SharedApproxData::clear_model_keys();
+  pecosSharedDataRep->clear_keys();
+}
+
+
+inline short SharedPecosApproxData::discrepancy_type() const
+{ return pecosSharedDataRep->discrepancy_type(); }
 
 
 inline void SharedPecosApproxData::build()
@@ -247,20 +249,6 @@ inline void SharedPecosApproxData::post_finalize()
 { pecosSharedDataRep->post_finalize_data(); }
 
 
-/*
-inline void SharedPecosApproxData::store(size_t index)
-{ pecosSharedDataRep->store_data(index); }
-
-
-inline void SharedPecosApproxData::restore(size_t index)
-{ pecosSharedDataRep->restore_data(index); }
-
-
-inline void SharedPecosApproxData::remove_stored(size_t index)
-{ pecosSharedDataRep->remove_stored_data(index); }
-*/
-
-
 inline void SharedPecosApproxData::clear_inactive()
 { pecosSharedDataRep->clear_inactive_data(); }
 
@@ -283,12 +271,14 @@ random_variables_key(const Pecos::BitArray& random_vars_key)
 
 
 inline void SharedPecosApproxData::
-construct_basis(const Pecos::ShortArray& u_types,
-		const Pecos::AleatoryDistParams& adp)
-{
-  ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    construct_basis(u_types, adp);
-}
+construct_basis(const Pecos::MultivariateDistribution& mv_dist)
+{ pecosSharedDataRep->construct_basis(mv_dist); }
+
+
+inline void SharedPecosApproxData::
+update_basis_distribution_parameters(
+  const Pecos::MultivariateDistribution& u_dist)
+{ pecosSharedDataRep->update_basis_distribution_parameters(u_dist); }
 
 
 /*
@@ -310,26 +300,17 @@ inline const Pecos::ShortArray& SharedPecosApproxData::basis_types() const
 
 inline void SharedPecosApproxData::
 polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis)
-{
-  ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    polynomial_basis(poly_basis);
-}
+{ pecosSharedDataRep->polynomial_basis(poly_basis); }
 
 
 inline const std::vector<Pecos::BasisPolynomial>& SharedPecosApproxData::
 polynomial_basis() const
-{
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    polynomial_basis();
-}
+{ return pecosSharedDataRep->polynomial_basis(); }
 
 
 inline std::vector<Pecos::BasisPolynomial>& SharedPecosApproxData::
 polynomial_basis()
-{
-  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
-    polynomial_basis();
-}
+{ return pecosSharedDataRep->polynomial_basis(); }
 
 
 inline void SharedPecosApproxData::allocate(const UShort2DArray& mi)
@@ -340,6 +321,14 @@ inline const UShort2DArray& SharedPecosApproxData::multi_index() const
 {
   return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
     multi_index();
+}
+
+
+inline const std::map<UShortArray, UShort2DArray>& SharedPecosApproxData::
+multi_index_map() const
+{
+  return ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->
+    multi_index_map();
 }
 
 

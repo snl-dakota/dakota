@@ -45,7 +45,8 @@ protected:
   SurrogateModel(ProblemDescDB& problem_db);
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-		 const SharedVariablesData& svd, const SharedResponseData& srd,
+		 const SharedVariablesData& svd, bool share_svd,
+		 const SharedResponseData&  srd, bool share_srd,
 		 const ActiveSet& set, short corr_type, short output_level);
   /// destructor
   ~SurrogateModel();
@@ -54,23 +55,28 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
-  /// return mappingInitialized
-  bool mapping_initialized() const;
+  Pecos::ProbabilityTransformation& probability_transformation();
+
+  void activate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives();
+
+  void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+			 const RealVector& x_vars);
+  void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+			 const RealVector& x_vars);
+  void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+			 const RealVector& x_vars);
+  void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+			 const RealVector& fn_grad_x);
+
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
 
   /// return truth_model()
   Model& subordinate_model();
 
-  void surrogate_model_key(unsigned short model_index,
-			   unsigned short soln_lev_index);
-  void surrogate_model_key(const UShortArray& key);
-  const UShortArray& surrogate_model_key() const;
-
-  void truth_model_key(unsigned short model_index,
-		       unsigned short soln_lev_index);
-  void truth_model_key(const UShortArray& key);
-  const UShortArray& truth_model_key() const;
+  void active_model_key(const UShortArray& key);
 
   /// return responseMode
   short surrogate_response_mode() const;
@@ -89,19 +95,24 @@ protected:
   virtual void asv_split(const ShortArray& orig_asv, ShortArray& actual_asv,
 			 ShortArray& approx_asv, bool build_flag);
 
+  /// verify compatibility between SurrogateModel attributes and
+  /// attributes of the submodel (DataFitSurrModel::actualModel or
+  /// HierarchSurrModel::highFidelityModel)
+  virtual void check_submodel_compatibility(const Model& sub_model);
+
   //
   //- Heading: Member functions
   //
+
+  /// define truth and surrogate keys from incoming active key
+  void extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+			  UShortArray& surr_key);
 
   /// return the level index from active low fidelity model key
   unsigned short surrogate_level_index() const;
   /// return the level index from active high fidelity model key
   unsigned short truth_level_index() const;
 
-  /// verify compatibility between SurrogateModel attributes and
-  /// attributes of the submodel (DataFitSurrModel::actualModel or
-  /// HierarchSurrModel::highFidelityModel)
-  void check_submodel_compatibility(const Model& sub_model);
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
 
@@ -134,11 +145,13 @@ protected:
       does not back out old corrections. */
   short responseMode;
 
+  /// array of indices that identify the currently active model key
+  UShortArray activeKey;
   /// array of indices that identify the surrogate (e.g., low fidelity) model
-  /// that is currently active within orderedModels
+  /// (trailing portion of activeKey, if aggregated models)
   UShortArray surrModelKey;
-  /// array of indices that identify the truth (e.g., high fidelity) model that
-  /// is currently active within orderedModels
+  /// array of indices that identify the truth (e.g., high fidelity) model
+  /// (leading portion of activeKey, if aggregated models)
   UShortArray truthModelKey;
 
   /// type of correction: additive, multiplicative, or combined
@@ -223,11 +236,6 @@ private:
   /// copy of the truth model constraints object used to simplify conversion 
   /// among differing variable views in force_rebuild()
   Constraints truthModelCons;
-
-  /// track use of initialize_mapping() and finalize_mapping() due to
-  /// potential redundancy between IteratorScheduler::run_iterator()
-  /// and {Analyzer,Minimizer}::initialize_run()
-  bool mappingInitialized;
 };
 
 
@@ -235,82 +243,81 @@ inline SurrogateModel::~SurrogateModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
-inline bool SurrogateModel::initialize_mapping(ParLevLIter pl_iter)
-{
-  mappingInitialized = true;
-  return Model::initialize_mapping(pl_iter);
-}
+inline Pecos::ProbabilityTransformation& SurrogateModel::
+probability_transformation()
+{ return truth_model().probability_transformation(); } // forward along
 
 
-inline bool SurrogateModel::finalize_mapping()
-{
-  mappingInitialized = false;
-  return Model::finalize_mapping();
-}
+inline void SurrogateModel::activate_distribution_parameter_derivatives()
+{ truth_model().activate_distribution_parameter_derivatives(); }
 
 
-inline bool SurrogateModel::mapping_initialized() const
-{ return mappingInitialized; }
+inline void SurrogateModel::deactivate_distribution_parameter_derivatives()
+{ truth_model().deactivate_distribution_parameter_derivatives(); }
+
+
+inline void SurrogateModel::
+trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+
+
+inline void SurrogateModel::
+trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+
+
+inline void SurrogateModel::
+trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
+		  const RealVector& x_vars)
+{ truth_model().trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+
+
+inline void SurrogateModel::
+trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
+		  const RealVector& fn_grad_x)
+{ truth_model().trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
 
 
 inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
-inline void SurrogateModel::
-surrogate_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  if (model_index == USHRT_MAX) surrModelKey.resize(0);
-  else {
-    if (soln_lev_index == USHRT_MAX)
-      surrModelKey.resize(1);
-    else {
-      surrModelKey.resize(2);
-      surrModelKey[1] = soln_lev_index;
-    }
-    surrModelKey[0] = model_index;
-  }
-}
-
-
-inline void SurrogateModel::surrogate_model_key(const UShortArray& key)
-{ surrModelKey = key; }
-
-
-inline const UShortArray& SurrogateModel::surrogate_model_key() const
-{ return surrModelKey; }
-
-
 inline unsigned short SurrogateModel::surrogate_level_index() const
-{ return (surrModelKey.size() >= 2) ? surrModelKey.back() : USHRT_MAX; }
-
-
-inline void SurrogateModel::
-truth_model_key(unsigned short model_index, unsigned short soln_lev_index)
-{
-  if (model_index == USHRT_MAX) truthModelKey.resize(0);
-  else {
-    if (soln_lev_index == USHRT_MAX)
-      truthModelKey.resize(1);
-    else {
-      truthModelKey.resize(2);
-      truthModelKey[1] = soln_lev_index;
-    }
-    truthModelKey[0] = model_index;
-  }
-}
-
-
-inline void SurrogateModel::truth_model_key(const UShortArray& key)
-{ truthModelKey = key; }
-
-
-inline const UShortArray& SurrogateModel::truth_model_key() const
-{ return truthModelKey; }
+{ return (surrModelKey.empty()) ? USHRT_MAX : surrModelKey[2]; }
 
 
 inline unsigned short SurrogateModel::truth_level_index() const
-{ return (truthModelKey.size() >= 2) ? truthModelKey.back() : USHRT_MAX; }
+{ return (truthModelKey.empty()) ? USHRT_MAX : truthModelKey[2]; }
+
+
+inline void SurrogateModel::
+extract_model_keys(const UShortArray& active_key, UShortArray& truth_key,
+		   UShortArray& surr_key)
+{
+  if (Pecos::DiscrepancyCalculator::aggregated_key(active_key))
+    Pecos::DiscrepancyCalculator::extract_keys(active_key, truth_key, surr_key);
+  else // single key: assign to truth or surr key based on responseMode
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:  case AUTO_CORRECTED_SURROGATE:
+      surr_key  = active_key;  truth_key.clear();  break;
+    default: // AGGREGATED_MODELS, MODEL_DISCREPANCY, {BYPASS,NO}_SURROGATE
+      truth_key = active_key;   surr_key.clear();  break;
+    }
+}
+
+
+inline void SurrogateModel::active_model_key(const UShortArray& key)
+{
+  // base implementation (augmented in derived SurrogateModels)
+
+  // update activeKey
+  activeKey = key;
+  // update {truth,surr}ModelKey
+  extract_model_keys(key, truthModelKey, surrModelKey);
+}
 
 
 inline short SurrogateModel::surrogate_response_mode() const

@@ -272,7 +272,7 @@ int DirectApplicInterface::derived_map_of(const String& of_name)
     err_msg += of_name;
     throw FunctionEvalFailure(err_msg);
   }
- 
+
   return 0;
 }
 

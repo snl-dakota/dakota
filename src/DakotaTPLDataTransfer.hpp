@@ -111,6 +111,19 @@ class TPLDataTransfer
 
     //----------------------------------------------------------------
 
+    template <typename VecT>
+    void get_best_nonlinear_eq_constraints_from_tpl( const VecT & values,
+                                                     RealVector & target )
+    {
+      // Caller is responsible for target being sized/allocated for now
+      // ... we could add a check on size.
+      for( size_t i=0; i<nonlinearEqConstraintMapIndices.size(); ++i )
+        target[nonlinearEqConstraintMapIndices[i]] =
+            values[i] - nonlinearEqConstraintTargets[i];
+    }
+
+    //----------------------------------------------------------------
+
 
   protected:
 

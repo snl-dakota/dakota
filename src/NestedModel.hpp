@@ -58,11 +58,15 @@ public:
   ~NestedModel();                         ///< destructor
 
   void declare_sources();
+
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
 
   // Perform the response computation portions specific to this derived class.
   // In this case, this involves running the subIterator on the subModel.
@@ -163,14 +167,15 @@ protected:
   void update_local_results(int job_index);
 
   ActiveSet default_interface_active_set();
+
 private:
 
   //
   //- Heading: Convenience member functions
   //
 
-  /// update subIterator with mapping data and set subIterator-based counts
-  void update_sub_iterator();
+  /// init subIterator-based counts and init subModel with mapping data
+  void init_sub_iterator();
 
   /// convert job_index to an eval_id through subIteratorIdMap and
   /// eval_id to a subIteratorPRPQueue queue iterator
@@ -183,6 +188,12 @@ private:
   /// unpack_parameters_initialize()
   void unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
 	      ActiveSet& set, int& eval_id);
+
+  /// compute variable mapping indices corresponding to map1 and update
+  /// inactive view if necessary
+  void resolve_map1(const String& map1, size_t& ac_index1, size_t& adi_index1,
+		    size_t& ads_index1, size_t& adr_index1, size_t curr_index,
+		    short& inactive_sm_view);
 
   /// for a named real mapping, resolve primary index and secondary target
   void resolve_real_variable_mapping(const String& map1, const String& map2,
@@ -197,46 +208,12 @@ private:
 				       size_t curr_index,
 				       short& inactive_sm_view);
 
-  /// offset pacvm_index based on sacvm_target to create mapped_index
-  size_t sm_acv_index_map(size_t  pacvm_index,  short sacvm_target);
-  /// offset padivm_index based on sadivm_target to create mapped_index
-  size_t sm_adiv_index_map(size_t padivm_index, short sadivm_target);
-  /// offset padsvm_index based on sadsvm_target to create mapped_index
-  size_t sm_adsv_index_map(size_t padsvm_index, short sadsvm_target);
-  /// offset padrvm_index based on sadrvm_target to create mapped_index
-  size_t sm_adrv_index_map(size_t padrvm_index, short sadrvm_target);
-
-  /// offset cv_index to create index into aggregated primary/secondary arrays
-  size_t cv_index_map(size_t cv_index, const Variables& vars);
-  /// offset div_index to create index into aggregated primary/secondary arrays
-  size_t div_index_map(size_t div_index, const Variables& vars);
-  /// offset dsv_index to create index into aggregated primary/secondary arrays
-  size_t dsv_index_map(size_t dsv_index,
-		       const Variables& vars);
-  /// offset drv_index to create index into aggregated primary/secondary arrays
-  size_t drv_index_map(size_t drv_index, const Variables& vars);
-
-  /// offset active complement ccv_index to create index into all
-  /// continuous arrays
-  size_t ccv_index_map(size_t ccv_index, const Variables& vars);
-  /// offset active complement cdiv_index to create index into all
-  /// discrete int arrays
-  size_t cdiv_index_map(size_t cdiv_index, const Variables& vars);
-  /// offset active complement cdsv_index to create index into all
-  /// discrete string arrays
-  size_t cdsv_index_map(size_t cdsv_index, const Variables& vars);
-  /// offset active complement cdrv_index to create index into all
-  /// discrete real arrays
-  size_t cdrv_index_map(size_t cdrv_index, const Variables& vars);
-
   /// insert r_var into appropriate recipient
-  void real_variable_mapping(const Real& r_var, size_t mapped_index,
-			     short svm_target);
+  void real_variable_mapping(Real r_var, size_t av_index, short svm_target);
   /// insert i_var into appropriate recipient
-  void integer_variable_mapping(const int& i_var, size_t mapped_index,
-				short svm_target);
+  void integer_variable_mapping(int i_var, size_t av_index, short svm_target);
   /// insert s_var into appropriate recipient
-  void string_variable_mapping(const String& s_var, size_t mapped_index,
+  void string_variable_mapping(const String& s_var, size_t av_index,
 			       short svm_target);
 
   /// define the evaluation requirements for the optionalInterface
@@ -458,6 +435,37 @@ inline NestedModel::~NestedModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+/*
+inline bool NestedModel::initialize_mapping(ParLevLIter pl_iter)
+{
+  Model::initialize_mapping(pl_iter);
+
+  // DON'T RECUR: allow subIterator to invoke subModel::initialize_mapping()
+  //              at its run time
+  //bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+  //update_sub_model(currentVariables, userDefinedConstraints);
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  //if (sub_model_resize)
+  //  estimate_message_lengths();
+
+  return false;//sub_model_resize;
+}
+
+
+inline bool NestedModel::finalize_mapping()
+{
+  // DON'T RECUR: allow subIterator to invoke subModel::initialize_mapping()
+  //              at its run time
+  //bool sub_model_resize = subModel.finalize_mapping();
+
+  Model::finalize_mapping();
+  return false;//sub_model_resize;
+}
+*/
+
+
 inline Iterator& NestedModel::subordinate_iterator()
 { return subIterator; }
 
@@ -570,7 +578,7 @@ inline void NestedModel::derived_init_serial()
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 
-  update_sub_iterator();
+  init_sub_iterator();
 
   // initialize optionalInterface and subModel for serial operations
   // (e.g., num servers = 1 instead of the 0 default used by

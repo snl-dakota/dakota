@@ -66,14 +66,14 @@ public:
   void derived_map_asynch(const ParamResponsePair& pair);
 
   ///
-  void wait_local_evaluations(PRPQueue& prp_queue)
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue)
 	{
   	while (completionSet.empty())
-          test_local_evaluations(prp_queue);
+          test_local_evaluation_sequence(prp_queue);
 	}
 
   ///
-  void test_local_evaluations(PRPQueue& prp_queue);
+  void test_local_evaluation_sequence(PRPQueue& prp_queue);
 
   /** This code provides the derived function used by
    *  ApplicationInterface::serve_analyses_synch().

@@ -84,9 +84,9 @@ protected:
   /// (invokes synch_nowait() on userDefinedInterface)
   const IntResponseMap& derived_synchronize_nowait();
 
-  /// SimulationModel only supports parallelism in userDefinedInterface,
-  /// so this virtual function redefinition is simply a sanity check.
-  void component_parallel_mode(short mode);
+  // SimulationModel only supports parallelism in userDefinedInterface,
+  // so this virtual function redefinition is simply a sanity check.
+  //void component_parallel_mode(short mode);
 
   /// return userDefinedInterface synchronization setting
   short local_eval_synchronization();
@@ -177,10 +177,9 @@ private:
   /// index of the discrete variable (within all view) that controls the
   /// set/range of solution levels
   size_t solnCntlADVIndex;
-  /// index of the discrete set variable (within its type array, managing
-  /// offset when solnCntlVarType is a subset of all discrete variables)
-  /// that controls the set/range of solution levels
-  size_t solnCntlSetIndex;
+  /// index of the discrete set variable (within aggregated array of
+  /// RandomVariables) that controls the set/range of solution levels
+  size_t solnCntlRVIndex;
   /// sorted array of relative costs associated with a set of solution levels
   std::map<Real, size_t> solnCntlCostMap;
 

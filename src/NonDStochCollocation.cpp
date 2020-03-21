@@ -13,10 +13,11 @@
 #include "dakota_system_defs.hpp"
 #include "NonDStochCollocation.hpp"
 #include "NonDSparseGrid.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
+#include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
 #include "SharedInterpPolyApproxData.hpp"
 
@@ -32,19 +33,19 @@ NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model)
 {
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -68,9 +69,10 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation; support surrogate grad evals at most
+  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   String empty_str; // build data import not supported for structured grids
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
@@ -103,21 +105,22 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, DEFAULT_EMULATION, rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+		refine_control, covar_control, DEFAULT_MLMF_CONTROL,
+		DEFAULT_EMULATION, SizetArray(), rule_nest, rule_growth,
+		piecewise_basis, use_derivs)
 {
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
+  // ----------------
+  // Resolve settings
+  // ----------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  g_u_model.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    u_space_type), false); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -139,9 +142,11 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  ActiveSet sc_set = g_u_model.current_response().active_set(); // copy
-  sc_set.request_values(3); // TO DO: support surr Hessian evals in helper mode
-                            // TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  // DFSModel: consume any QoI aggregation.
+  // TO DO: support surrogate Hessians in helper mode.
+  ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ActiveSet sc_set(asv, recast_set.derivative_vector());
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
     outputLevel, pt_reuse), false);
@@ -151,13 +156,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called for a standard letter-envelope iterator
-    instantiation using the ProblemDescDB. */
+/** This constructor is called derived class constructors that
+    customize the object construction. */
 NonDStochCollocation::
-NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
+		     Model& model):
   NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
+  size_t dummy_break_pt = 0;
 }
 
 
@@ -166,11 +173,12 @@ NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, Model& model,
 		     short exp_coeffs_approach, short refine_type,
 		     short refine_control, short covar_control,
-		     short ml_discrep, short rule_nest, short rule_growth,
-		     bool piecewise_basis, bool use_derivs):
+		     short ml_alloc_control, short ml_discrep, short rule_nest,
+		     short rule_growth, bool piecewise_basis, bool use_derivs):
   NonDExpansion(method_name, model, exp_coeffs_approach, refine_type,
-		refine_control, covar_control, ml_discrep, rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+		refine_control, covar_control, ml_alloc_control, ml_discrep,
+		SizetArray(), rule_nest, rule_growth, piecewise_basis,
+		use_derivs)
 {
   // Logic delegated to derived class constructor...
 }
@@ -352,12 +360,20 @@ resolve_inputs(short& u_space_type, short& data_order)
 
   // override u_space_type to STD_UNIFORM_U for global Hermite interpolation
   if (useDerivs && !piecewiseBasis) {
-    if (u_space_type == ASKEY_U) // non-default
-      Cerr << "\nWarning: overriding ASKEY to STD_UNIFORM for Hermite "
-	   << "interpolation.\n" << std::endl;
-    else if (u_space_type == STD_NORMAL_U) // non-default
-      Cerr << "\nWarning: overriding WIENER to STD_UNIFORM for Hermite "
-	   << "interpolation.\n" << std::endl;
+
+    switch (u_space_type) {
+    //case EXTENDED_U: // default; not user-selectable -> quiet default reassign
+    //  break;
+    case ASKEY_U: case PARTIAL_ASKEY_U: // non-default
+      Cerr << "\nWarning: overriding transformation from ASKEY to STD_UNIFORM "
+	   << "for Hermite interpolation.\n" << std::endl;
+      break;
+    case STD_NORMAL_U: // non-default
+      Cerr << "\nWarning: overriding transformation from WIENER to STD_UNIFORM "
+	   << "for Hermite interpolation.\n" << std::endl;
+      break;
+    }
+
     u_space_type = STD_UNIFORM_U;
   }
 }
@@ -365,25 +381,8 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDStochCollocation::initialize_u_space_model()
 {
-  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
-  // passed through the DataFitSurrModel ctor chain.  Additional data needed
-  // by InterpPolyApproximation are passed using Pecos::BasisConfigOptions.
-  // Note: passing useDerivs again is redundant with the DataFitSurrModel ctor.
-  Pecos::BasisConfigOptions bc_options(nestedRules, piecewiseBasis,
-				       true, useDerivs);
-
-  // build a polynomial basis for purposes of defining collocation pts/wts
-  std::vector<Pecos::BasisPolynomial> driver_basis;
-  Pecos::SharedInterpPolyApproxData::construct_basis(natafTransform.u_types(),
-    iteratedModel.aleatory_distribution_parameters(), bc_options, driver_basis);
-
-  // set the polynomial basis within the NonDIntegration instance
-  NonDIntegration* u_space_sampler_rep
-    = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-  u_space_sampler_rep->initialize_grid(driver_basis);
-
-  // perform last due to numSamplesOnModel update
   NonDExpansion::initialize_u_space_model();
+  configure_pecos_options(); // pulled out of base because C3 does not use it
 
   // initialize product accumulators with PolynomialApproximation pointers
   // used in covariance calculations
@@ -391,6 +390,21 @@ void NonDStochCollocation::initialize_u_space_model()
        refineControl && ( refineMetric == Pecos::COVARIANCE_METRIC ||
 			  refineMetric == Pecos::MIXED_STATS_METRIC ) )
     initialize_covariance();
+
+  // Precedes construct_basis() since basis is stored in Pecos driver
+  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
+  shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
+
+  // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
+  const Pecos::MultivariateDistribution& u_mvd
+    = uSpaceModel.multivariate_distribution();
+  // construct the polynomial basis (shared by integration drivers)
+  shared_data.construct_basis(u_mvd);
+  // mainly a run-time requirement, but also needed at construct time
+  // (e.g., to initialize NumericGenOrthogPolynomial::distributionType)
+  //shared_data.update_basis_distribution_parameters(u_mvd);
+
+  initialize_u_space_grid();
 }
 
 
@@ -402,11 +416,8 @@ void NonDStochCollocation::initialize_covariance()
     PecosApproximation* pa_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     pa_rep_i->clear_covariance_pointers();
-    for (j=0; j<=i; ++j) {
-      PecosApproximation* pa_rep_j
-	= (PecosApproximation*)poly_approxs[j].approx_rep();
-      pa_rep_i->initialize_covariance(pa_rep_j);
-    }
+    for (j=0; j<=i; ++j)
+      pa_rep_i->initialize_covariance(poly_approxs[j]);
   }
 }
 
@@ -414,8 +425,7 @@ void NonDStochCollocation::initialize_covariance()
 void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
 
   if (deltaRespMean.empty()) deltaRespMean.sizeUninitialized(numFunctions);
   for (size_t i=0; i<numFunctions; ++i) {
@@ -424,11 +434,11 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	// refinement assessed for impact on combined expansion from roll up
-	deltaRespMean[i] = (all_vars) ?
+	deltaRespMean[i] = (allVars) ?
 	  pa_rep_i->delta_combined_mean(initialPtU) :
 	  pa_rep_i->delta_combined_mean();
       else // refinement assessed for impact on the current expansion
-	deltaRespMean[i] = (all_vars) ?
+	deltaRespMean[i] = (allVars) ?
 	  pa_rep_i->delta_mean(initialPtU) : pa_rep_i->delta_mean();
 
       if (update_ref) {
@@ -455,8 +465,7 @@ void NonDStochCollocation::
 compute_delta_variance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
 
   if (deltaRespVariance.empty())
     deltaRespVariance.sizeUninitialized(numFunctions);
@@ -467,10 +476,10 @@ compute_delta_variance(bool update_ref, bool print_metric)
     if (pa_rep_i->expansion_coefficient_flag()) {
       if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	// refinement assessed for impact on combined expansion from roll up
-	delta = (all_vars) ? pa_rep_i->delta_combined_variance(initialPtU) :
+	delta = (allVars) ? pa_rep_i->delta_combined_variance(initialPtU) :
 	  pa_rep_i->delta_combined_variance();
       else // refinement assessed for impact on the current expansion
-	delta = (all_vars) ? pa_rep_i->delta_variance(initialPtU) :
+	delta = (allVars) ? pa_rep_i->delta_variance(initialPtU) :
 	  pa_rep_i->delta_variance();
 
       if (update_ref) {
@@ -494,8 +503,7 @@ void NonDStochCollocation::
 compute_delta_covariance(bool update_ref, bool print_metric)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   size_t i, j;
 
   if (deltaRespCovariance.empty())
@@ -505,19 +513,18 @@ compute_delta_covariance(bool update_ref, bool print_metric)
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (pa_rep_i->expansion_coefficient_flag()) {
       for (j=0; j<=i; ++j) {
-	PecosApproximation* pa_rep_j
-	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	Approximation& approx_j = poly_approxs[j];
 	Real& delta = deltaRespCovariance(i,j);
-	if (pa_rep_j->expansion_coefficient_flag()) {
+	if (approx_j.expansion_coefficient_flag()) {
 	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
 	    // refinement assessed for impact on combined exp from roll up
-	    delta = (all_vars) ?
-	      pa_rep_i->delta_combined_covariance(initialPtU, pa_rep_j) :
-	      pa_rep_i->delta_combined_covariance(pa_rep_j);
+	    delta = (allVars) ?
+	      pa_rep_i->delta_combined_covariance(initialPtU, approx_j) :
+	      pa_rep_i->delta_combined_covariance(approx_j);
 	  else // refinement assessed for impact on the current expansion
-	    delta = (all_vars) ?
-	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
-	      pa_rep_i->delta_covariance(pa_rep_j);
+	    delta = (allVars) ?
+	      pa_rep_i->delta_covariance(initialPtU, approx_j) :
+	      pa_rep_i->delta_covariance(approx_j);
 
 	  if (update_ref) {
 	    respCovariance(i,j) += delta;
@@ -626,8 +633,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
         if (!revert) level_maps_new.size(totalLevelRequests); // init to 0
       }
 
-      bool warn_flag = false,
-	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+      bool warn_flag = false;
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
@@ -642,11 +648,11 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
 	      z_bar = requestedRespLevels[i][j];
 	      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-		delta = deltaLevelMaps[cntr] = (all_vars) ?
+		delta = deltaLevelMaps[cntr] = (allVars) ?
 		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
 	      else
-		delta = deltaLevelMaps[cntr] = (all_vars) ?
+		delta = deltaLevelMaps[cntr] = (allVars) ?
 		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
@@ -676,11 +682,11 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 	  for (j=0; j<bl_len; ++j, ++cntr) {
 	    beta_bar = requestedRelLevels[i][j];
 	    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-	      delta = deltaLevelMaps[cntr] = (all_vars) ?
+	      delta = deltaLevelMaps[cntr] = (allVars) ?
 		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);
 	    else
-	      delta = deltaLevelMaps[cntr] = (all_vars) ?
+	      delta = deltaLevelMaps[cntr] = (allVars) ?
 		pa_rep_i->delta_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_z(cdfFlag, beta_bar);
 	    sum_sq += delta * delta;
@@ -775,8 +781,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
         if (!revert) final_stats_new.size(num_stats); // init to 0
       }
 
-      bool warn_flag = false,
-	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+      bool warn_flag = false;
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
@@ -792,11 +797,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	    for (j=0; j<rl_len; ++j, ++cntr) {
 	      z_bar = requestedRespLevels[i][j];
 	      if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-		delta = delta_final_stats[cntr] = (all_vars) ?
+		delta = delta_final_stats[cntr] = (allVars) ?
 		  pa_rep_i->delta_combined_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_combined_beta(cdfFlag, z_bar);
 	      else
-		delta = delta_final_stats[cntr] = (all_vars) ?
+		delta = delta_final_stats[cntr] = (allVars) ?
 		  pa_rep_i->delta_beta(initialPtU, cdfFlag, z_bar) :
 		  pa_rep_i->delta_beta(cdfFlag, z_bar);
 	      sum_sq += delta * delta;
@@ -808,11 +813,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 		// ref is undefined and delta neglects term; must compute new
 		if (!revert) {
 		  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-		    final_stats_new[cntr] = (all_vars) ?
+		    final_stats_new[cntr] = (allVars) ?
 		      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
 		      pa_rep_i->combined_beta(cdfFlag, z_bar);
 		  else
-		    final_stats_new[cntr] = (all_vars) ?
+		    final_stats_new[cntr] = (allVars) ?
 		      pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
 		      pa_rep_i->beta(cdfFlag, z_bar);
 		}
@@ -838,11 +843,11 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 	  for (j=0; j<bl_len; ++j, ++cntr) {
 	    beta_bar = requestedRelLevels[i][j];
 	    if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-	      delta = delta_final_stats[cntr] = (all_vars) ?
+	      delta = delta_final_stats[cntr] = (allVars) ?
 		pa_rep_i->delta_combined_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_combined_z(cdfFlag, beta_bar);
 	    else
-	      delta = delta_final_stats[cntr] = (all_vars) ?
+	      delta = delta_final_stats[cntr] = (allVars) ?
 		pa_rep_i->delta_z(initialPtU, cdfFlag, beta_bar) :
 		pa_rep_i->delta_z(cdfFlag, beta_bar);
 	    sum_sq += delta * delta;
@@ -974,7 +979,6 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
     level_maps_new.resize(totalLevelRequests);
 
   size_t i, j, cntr, rl_len, pl_len, bl_len, gl_len, pl_bl_gl_len;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
   for (i=0, cntr=0; i<numFunctions; ++i) {
@@ -995,11 +999,11 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
 	  // ref is undefined and delta neglects term; must compute new
 	  z_bar = requestedRespLevels[i][j];
 	  if (statsType == Pecos::COMBINED_EXPANSION_STATS)
-	    level_maps_new[cntr] = (all_vars) ?
+	    level_maps_new[cntr] = (allVars) ?
 	      pa_rep_i->combined_beta(initialPtU, cdfFlag, z_bar) :
 	      pa_rep_i->combined_beta(cdfFlag, z_bar);
 	  else
-	    level_maps_new[cntr] = (all_vars) ?
+	    level_maps_new[cntr] = (allVars) ?
 	      pa_rep_i->beta(initialPtU, cdfFlag, z_bar) :
 	      pa_rep_i->beta(cdfFlag, z_bar);
 	}

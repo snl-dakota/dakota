@@ -27,7 +27,7 @@
 #ifdef HAVE_ACRO
 #include "COLINOptimizer.hpp"
 #endif
-#include "pecos_stat_util.hpp"
+#include "NormalRandomVariable.hpp"
 
 //#define DEBUG
 
@@ -49,7 +49,8 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
 
   // Define optimization sub-problem solver
   unsigned short opt_alg = probDescDB.get_ushort("method.sub_method");
-  bool discrete = (numDiscIntEpistUncVars || numDiscRealEpistUncVars);
+  bool discrete
+    = (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars);
   if (opt_alg == SUBMETHOD_EGO) {
     eifFlag = gpModelFlag = true;
     if (discrete) {
@@ -70,16 +71,21 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     err_flag = true;
   }
 
-  if (numUncertainVars != numContIntervalVars + numDiscIntervalVars +
-      numDiscSetIntUncVars + numDiscSetRealUncVars) {
-    Cerr << "\nError: only continuous and discrete epistemic variables are "
-	 << "currently supported in NonDGlobalInterval." << std::endl;
+  if (numContinuousVars     != numContIntervalVars                        ||
+      numDiscreteIntVars    != numDiscIntervalVars + numDiscSetIntUncVars ||
+      numDiscreteStringVars != 0 /* numDiscSetStringUncVars */            ||
+      numDiscreteRealVars   != numDiscSetRealUncVars) {
+    Cerr << "\nError: only continuous, discrete int, and discrete real "
+	 << "epistemic variables are currently supported in NonDGlobalInterval."
+	 << std::endl;
     err_flag = true;
   }
 
   if (gpModelFlag) {
+    size_t num_uv = numContIntervalVars + numDiscIntervalVars +
+      numDiscSetIntUncVars + numDiscreteRealVars;
     if (!numSamples) // use a default of #terms in a quadratic polynomial
-      numSamples = (numUncertainVars+1)*(numUncertainVars+2)/2;
+      numSamples = (num_uv+1)*(num_uv+2)/2;
     String approx_type = 
       (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR) ?
       "global_gaussian" : "global_kriging";
@@ -115,7 +121,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     // Note: low order trend is more robust when there is limited data, such as
     // a few discrete values --> nan's observed for quad trend w/ 2 model forms
     unsigned short trend_order = (discrete) ? 1 : 2;
-    UShortArray approx_order(numUncertainVars, trend_order);
+    UShortArray approx_order(num_uv, trend_order);
     short corr_order = -1, corr_type = NO_CORRECTION;
     //const Variables& curr_vars = iteratedModel.current_variables();
     ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
@@ -259,7 +265,13 @@ void NonDGlobalInterval::core_run()
   NonDGlobalInterval* prev_instance = nondGIInstance;
   nondGIInstance = this;
 
-  intervalOptModel.update_from_subordinate_model();
+  // now that vars/labels/bounds/targets have flowed down at run-time from
+  // any higher level recursions, propagate them up local Model recursions
+  // so that they are correct when they propagate back down.  There is no
+  // need to recur below iteratedModel.
+  size_t layers = (gpModelFlag) ? 2 : 1;
+  intervalOptModel.update_from_subordinate_model(layers-1);
+
   // Build initial GP once for all response functions
   if (gpModelFlag)
     fHatModel.build_approximation();
@@ -462,7 +474,7 @@ void NonDGlobalInterval::post_process_run_results(bool maximize)
 
 void NonDGlobalInterval::evaluate_response_star_truth()
 {
-  //fHatModel.component_parallel_mode(TRUTH_MODEL);
+  //fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
   const Variables& vars_star = intervalOptimizer.variables_results();
   iteratedModel.active_variables(vars_star);
   ActiveSet set = iteratedModel.current_response().active_set();

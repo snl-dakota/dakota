@@ -38,9 +38,10 @@ public:
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
 		short exp_coeffs_approach, short refine_type,
-		short refine_control, short covar_control, short ml_discrep,
-		short rule_nest, short rule_growth, bool piecewise_basis,
-		bool use_derivs);
+		short refine_control, short covar_control,
+		short ml_alloc_control, short ml_discrep,
+		const SizetArray& pilot, short rule_nest, short rule_growth,
+		bool piecewise_basis, bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -52,6 +53,15 @@ public:
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
+
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2);
 
   /// perform a forward uncertainty propagation using PCE/SC methods
   void core_run();
@@ -70,9 +80,19 @@ public:
     const RealVectorArray& candidate_samples, unsigned short batch_size,
     RealMatrix& best_samples);
 
-  /// append new data to uSpaceModel and update expansion order (PCE only)
+  /// generate numSamplesOnModel, append to approximation data, and update
+  /// QoI expansions
+  virtual void append_expansion();
+  /// append new data to uSpaceModel and, when appropriate,
+  /// update expansion order
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
+
+  /// verify supported and define default discrepancy emulation mode
+  virtual void assign_discrepancy_mode();
+  /// define the surrogate response mode for a hierarchical model in 
+  /// multilevel/multifidelity expansions
+  virtual void assign_hierarchical_response_mode();
 
   //
   //- Heading: Member functions
@@ -97,6 +117,8 @@ protected:
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
   virtual void compute_expansion();
+  /// finalize mappings for the uSpaceModel
+  virtual void finalize_expansion();
   /// uniformly increment the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void increment_order_and_grid();
@@ -132,6 +154,21 @@ protected:
   /// restore statistics into native stats arrays for a selected candidate
   virtual void push_candidate(const RealVector& stats_star);
 
+  /// initializations for multilevel_regression()
+  virtual void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  /// increment sequence in numSamplesOnModel for multilevel_regression()
+  virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
+					 size_t lev);
+  /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
+  virtual void level_metric(Real& lev_metric_l, Real power);
+  /// compute delta_N_l for {RIP,RANK}_SAMPLING cases
+  virtual void compute_sample_increment(Real factor,
+					const RealVector& lev_metrics,
+					const SizetArray& N_l,
+					SizetArray& delta_N_l);
+  /// finalizations for multilevel_regression()
+  virtual void finalize_ml_regression();
+
   /// print global sensitivity indices
   virtual void print_sobol_indices(std::ostream& s);
 
@@ -150,8 +187,8 @@ protected:
   //- Heading: Member functions
   //
 
-  /// common constructor code for initialization of natafTransform
-  void initialize_random(short u_space_type);
+  /// helper for initializing a numerical integration grid
+  void initialize_u_space_grid();
 
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
@@ -183,8 +220,12 @@ protected:
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
 
+  /// configure expansion and basis configuration options for Pecos
+  /// polynomial approximations
+  void configure_pecos_options();
+
   /// construct the expansionSampler for evaluating samples on uSpaceModel
-  void construct_expansion_sampler(const String& import_approx_file,
+  void construct_expansion_sampler(const String& import_approx_file = String(),
     unsigned short import_approx_format = TABULAR_ANNOTATED,
     bool import_approx_active_only = false);
 
@@ -194,28 +235,33 @@ protected:
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
   void greedy_multifidelity_expansion();
+  /// allocate a multilevel expansion based on some approximation to an
+  /// optimal resource allocation across model forms/discretization levels
+  void multilevel_regression();
 
   /// configure fidelity/level counts from model hierarchy
-  void configure_levels(size_t& num_lev, unsigned short& model_form,
-			bool& multilevel, bool mf_precedence);
+  void configure_sequence(unsigned short& num_steps,
+			  unsigned short& fixed_index,
+			  bool& multilevel, bool mf_precedence);
   /// configure fidelity/level counts from model hierarchy
-  void configure_cost(size_t num_lev, bool multilevel, RealVector& cost);
-  /// configure response mode and truth/surrogate model indices within
-  /// hierarchical iteratedModel
-  void configure_indices(unsigned short lev, unsigned short form,
-			 bool multilevel);
+  void configure_cost(unsigned short num_steps, bool multilevel,
+		      RealVector& cost);
+  /// configure response mode and active/truth/surrogate model keys within a
+  /// hierarchical model.  s_index is the sequence index that defines the
+  /// active dimension for a model sequence.
+  void configure_indices(unsigned short group, unsigned short form,
+			 unsigned short lev,   unsigned short s_index);
   /// return aggregate cost (one or more models) for a level sample
-  Real level_cost(unsigned short lev, const RealVector& cost);
+  Real sequence_cost(unsigned short step, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation
   void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
 
-  /// creat a model key from level index, form index, and multilevel flag
-  void form_key(unsigned short lev, unsigned short form, bool multilevel,
-		UShortArray& model_key);
-  /// activate model key within uSpaceModel
-  void activate_key(const UShortArray& model_key);
-  /// activate model key within uSpaceModel
-  void activate_key(unsigned short lev, unsigned short form, bool multilevel);
+  /// compute increment in samples for multilevel_regression() based
+  /// on ESTIMATOR_VARIANCE
+  void compute_sample_increment(const RealVector& agg_var,
+				const RealVector& cost, Real sum_root_var_cost,
+				Real eps_sq_div_2, const SizetArray& N_l,
+				SizetArray& delta_N_l);
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
@@ -242,6 +288,9 @@ protected:
 
   /// update statsType, here and in Pecos::ExpansionConfigOptions
   void statistics_type(short stats_type, bool clear_bits = true);
+
+  /// Aggregate variance across the set of QoI for a particular model level
+  void aggregate_variance(Real& agg_var_l);
 
   /// calculate the response covariance (diagonal or full matrix) for
   /// the expansion indicated by statsType
@@ -324,17 +373,31 @@ protected:
   /// ACTIVE_EXPANSION_STATS, or COMBINED_EXPANSION_STATS
   short statsType;
 
-  /// emulation approach for multilevel discrepancy: distinct or recursive
+  /// flag for combined variable expansions which include a
+  /// non-probabilistic subset (design, epistemic, state)
+  bool allVars;
+
+  /// type of sample allocation scheme for discretization levels / model forms
+  /// within multilevel / multifidelity methods
+  short multilevAllocControl;
+  /// emulation approach for multilevel / multifidelity discrepancy:
+  /// distinct or recursive
   short multilevDiscrepEmulation;
+  /// number of initial samples per level, when an optimal sample profile is
+  /// the target of iteration (e.g. multilevel_regression())
+  SizetArray pilotSamples;
   /// number of samples allocated to each level of a discretization/model
   /// hierarchy within multilevel/multifidelity methods
   SizetArray NLev;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
-
-  /// number of invocations of core_run()
-  size_t numUncertainQuant;
+  /// rate parameter for allocation by ESTIMATOR_VARIANCE in
+  /// multilevel_regression()
+  Real kappaEstimatorRate;
+  /// scale parameter for allocation by ESTIMATOR_VARIANCE in
+  /// multilevel_regression()
+  Real gammaEstimatorScale;
 
   /// number of truth samples performed on g_u_model to form the expansion
   int numSamplesOnModel;
@@ -398,16 +461,20 @@ protected:
   /// vector of response variances (diagonal response covariance option)
   RealVector respVariance;
 
-  /// stats of the best candidate for the current level
-  RealVector levelStatsStar;
-  /// stats of the best candidate across all levels
+  /// stats of the best refinement candidate for the current model indices
   RealVector statsStar;
+
+  /// number of invocations of core_run()
+  size_t numUncertainQuant;
 
 private:
 
   //
   //- Heading: Convenience function definitions
   //
+
+  /// initialize data based on variable counts
+  void initialize_counts();
 
   /// set response mode to AGGREGATED_MODELS and recur response size updates
   void aggregated_models_mode();
@@ -505,6 +572,22 @@ private:
 };
 
 
+inline void NonDExpansion::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
+}
+
+
 inline int NonDExpansion::maximum_refinement_iterations() const
 { return maxRefineIterations; }
 
@@ -541,41 +624,16 @@ inline void NonDExpansion::bypass_surrogate_mode()
 }
 
 
-inline void NonDExpansion::
-form_key(unsigned short lev, unsigned short form, bool multilevel,
-	 UShortArray& model_key)
-{
-  if (multilevel) // model form is fixed @ HF; lev enumerates the levels
-    { model_key.resize(2); model_key[0] = form; model_key[1] = lev; }
-  else            // lev enumerates the model forms; levels are ignored
-    { model_key.resize(1); model_key[0] = lev; } // mi_key[1] = _NPOS;
-}
-
-
-inline void NonDExpansion::
-activate_key(const UShortArray& model_key)
-{ uSpaceModel.active_model_key(model_key); }
-
-
-inline void NonDExpansion::
-activate_key(unsigned short lev, unsigned short form, bool multilevel)
-{
-  UShortArray model_key;
-  form_key(lev, form, multilevel, model_key);
-  activate_key(model_key); // assign key to uSpaceModel
-}
-
-
 inline Real NonDExpansion::
-level_cost(unsigned short lev, const RealVector& cost)
+sequence_cost(unsigned short step, const RealVector& cost)
 {
   if (cost.empty())
     return 0.;
   else {
-    Real lev_cost = cost[lev];
-    if (lev && multilevDiscrepEmulation == DISTINCT_EMULATION)
-      lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-    return lev_cost;
+    Real cost_l = cost[step];
+    if (step && multilevDiscrepEmulation == DISTINCT_EMULATION)
+      cost_l += cost[step-1]; // discrepancies incur 2 level costs
+    return cost_l;
   }
 }
 

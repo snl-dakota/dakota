@@ -67,6 +67,7 @@ typedef std::vector<RealArray>      Real2DArray;
 typedef std::vector<int>            IntArray;
 typedef std::vector<IntArray>       Int2DArray;
 typedef std::vector<short>          ShortArray;
+typedef std::vector<unsigned int>   UIntArray;
 typedef std::vector<unsigned short> UShortArray;
 typedef std::vector<UShortArray>    UShort2DArray;
 typedef std::vector<UShort2DArray>  UShort3DArray;
@@ -128,7 +129,6 @@ typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
 typedef std::pair<String, String>      StringStringPair;
 typedef std::pair<int, Response>       IntResponsePair;
-typedef std::pair<UShortArray, UShortArray> UShortArrayPair;
 typedef std::set<Real>                 RealSet;
 typedef std::set<int>                  IntSet;
 typedef std::set<String>               StringSet;
@@ -164,7 +164,6 @@ typedef std::vector<IntIntPairRealMap>   IntIntPairRealMapArray;
 typedef std::vector<RealRealPairRealMap> RealRealPairRealMapArray;
 typedef std::multimap<RealRealPair, ParamResponsePair> RealPairPRPMultiMap;
 //typedef std::multimap<Real, ParamResponsePair> RealPRPMultiMap;
-typedef std::map<UShortArrayPair, DiscrepancyCorrection> DiscrepCorrMap;
 
 // ---------
 // Iterators

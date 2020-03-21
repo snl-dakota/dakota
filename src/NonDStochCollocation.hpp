@@ -62,13 +62,16 @@ protected:
   //
 
   /// short-cut ctor allowing derived class to replace logic in base class ctor
-  NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db,
+  /// (method_name is not necessary, rather it is just a convenient overload
+  /// allowing the derived ML SC class to bypass the standard SC ctor)
+  NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 		       Model& model);
   /// short-cut ctor allowing derived class to replace logic in base class ctor
   NonDStochCollocation(unsigned short method_name, Model& model,
 		       short exp_coeffs_approach, short refine_type,
 		       short refine_control, short covar_control,
-		       short ml_discrep, short rule_nest, short rule_growth,
+		       short ml_alloc_control, short ml_discrep,
+		       short rule_nest, short rule_growth,
 		       bool piecewise_basis, bool use_derivs);
 
   //
@@ -77,9 +80,9 @@ protected:
 
   void resolve_inputs(short& u_space_type, short& data_order);
   void initialize_u_space_model();
+
   //void initialize_expansion();
   //void compute_expansion();
-  //void update_expansion();
 
   Real compute_covariance_metric(bool revert, bool print_metric);
   Real compute_level_mappings_metric(bool revert, bool print_metric);

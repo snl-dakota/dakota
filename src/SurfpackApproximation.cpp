@@ -903,24 +903,23 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 {
   SurfData* surf_data = new SurfData();
 
-  const Pecos::SurrogateData& approx_data = surrogate_data();
   // screen approximation data for failures
-  approx_data.data_checks();
+  approxData.data_checks();
   // add the remaining surrogate data points
   if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
     Cout << "Requested build data order is " << sharedDataRep->buildDataOrder
 	 << '\n';
 
   SharedSurfpackApproxData* data_rep = (SharedSurfpackApproxData*)sharedDataRep;
-  size_t i, num_data_pts = approx_data.points();
-  const Pecos::SDVArray& sdv_array = approx_data.variables_data();
-  const Pecos::SDRArray& sdr_array = approx_data.response_data();
-  const Pecos::SizetShortMap& failed_resp = approx_data.failed_response_data();
+  size_t i, num_data_pts = approxData.points();
+  const Pecos::SDVArray& sdv_array = approxData.variables_data();
+  const Pecos::SDRArray& sdr_array = approxData.response_data();
+  const Pecos::SizetShortMap& failed_resp = approxData.failed_response_data();
   Pecos::SizetShortMap::const_iterator fit = failed_resp.begin();
 
   // some surrogates, e.g., global_polynomials and kriging, treat the anchor
   // point specially as a constraint; other treat as a regular data point
-  size_t constr_index = approx_data.anchor_index();
+  size_t constr_index = approxData.anchor_index();
   if (factory->supports_constraints() && constr_index != _NPOS) {
     for (i=0; i<num_data_pts; ++i) {
       short fail_code = 0;

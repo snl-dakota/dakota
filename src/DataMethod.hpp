@@ -51,10 +51,10 @@ enum { DEFAULT_METHOD=0,
        DACE, FSU_CVT, FSU_HALTON, FSU_HAMMERSLEY, PSUADE_MOAT,
        // NonD Analyzers:
        LOCAL_RELIABILITY=(ANALYZER_BIT | NOND_BIT), GLOBAL_RELIABILITY,
-       POLYNOMIAL_CHAOS, MULTILEVEL_POLYNOMIAL_CHAOS,
-       MULTIFIDELITY_POLYNOMIAL_CHAOS,
-       STOCH_COLLOCATION, MULTIFIDELITY_STOCH_COLLOCATION,
-       C3_FUNCTION_TRAIN, MULTIFIDELITY_FUNCTION_TRAIN,
+       SURROGATE_BASED_UQ, POLYNOMIAL_CHAOS, MULTILEVEL_POLYNOMIAL_CHAOS,
+       MULTIFIDELITY_POLYNOMIAL_CHAOS, STOCH_COLLOCATION,
+       MULTIFIDELITY_STOCH_COLLOCATION, C3_FUNCTION_TRAIN,
+       MULTILEVEL_FUNCTION_TRAIN, MULTIFIDELITY_FUNCTION_TRAIN,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
@@ -125,8 +125,7 @@ enum { DEFAULT_CONFIG, PUSH_DOWN, PUSH_UP };
 // ----
 // NonD
 // ----
-// define special values for u_space_type in
-// NonD::initialize_random_variable_types()
+// define special values for u-space type used for random var transformations
 enum { STD_NORMAL_U, STD_UNIFORM_U, PARTIAL_ASKEY_U, ASKEY_U, EXTENDED_U };
 // define special values for covarianceControl
 enum { DEFAULT_COVARIANCE, NO_COVARIANCE, DIAGONAL_COVARIANCE,
@@ -141,17 +140,17 @@ enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 enum { CUMULATIVE, COMPLEMENTARY };
 // define special values for finalMomentsType
 enum { NO_MOMENTS=0, STANDARD_MOMENTS, CENTRAL_MOMENTS };
-// define special values for multilevDiscrepEmulation
-enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
 // -------------
 // define special values for lsRegressionType
 enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
-// define special values for mlmfAllocControl
-enum { DEFAULT_MLMF_CONTROL=0, ESTIMATOR_VARIANCE, RIP_SAMPLING,
+// define special values for multilevAllocControl
+enum { DEFAULT_MLMF_CONTROL=0, ESTIMATOR_VARIANCE, RIP_SAMPLING, RANK_SAMPLING,
        GREEDY_REFINEMENT };
+// define special values for multilevDiscrepEmulation
+enum { DEFAULT_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 
 // --------------------
 // NonDBayesCalibration
@@ -168,10 +167,12 @@ enum { CALIBRATE_NONE = 0, CALIBRATE_ONE, CALIBRATE_PER_EXPER,
 // ------------
 // LHS rank array processing modes:
 enum { IGNORE_RANKS, SET_RANKS, GET_RANKS, SET_GET_RANKS };
-// sampling modes (combinations of Uncertain/Active/All and Native/Uniform):
-enum { UNCERTAIN,           UNCERTAIN_UNIFORM,
+// sampling modes (combination of view and native distribution vs. uniform):
+enum { DESIGN,            //DESIGN_UNIFORM,
+       UNCERTAIN,           UNCERTAIN_UNIFORM,
        ALEATORY_UNCERTAIN,  ALEATORY_UNCERTAIN_UNIFORM,
        EPISTEMIC_UNCERTAIN, EPISTEMIC_UNCERTAIN_UNIFORM,
+       STATE,             //STATE_UNIFORM,
        ACTIVE,              ACTIVE_UNIFORM,
        ALL,                 ALL_UNIFORM };
 // (1) {,A,E}UNCERTAIN: sample only over the {,A,E} uncertain variables,
@@ -767,12 +768,31 @@ public:
   String useSurrogate;
 
   // NonD C3 Function Train
+  // Note: regressionType,maxSolverIterations,regressionL2Penalty are shared
 
-  // pointer to model parameters for UQ
-  //String modelParamSpec;
-  // Number of LHS used for construction
-  //size_t numSamplesForConstruct;
-    
+  /// maximum number of cross iterations
+  int maxCrossIterations;
+  /// optimization tolerance for FT regression
+  double solverTolerance;
+  /// Rounding tolerance for adaptive algorithms
+  double roundingTolerance;
+  /// starting polynomial order
+  size_t startOrder;
+  /// maximum order of basis polynomials
+  size_t maxOrder;
+  /// starting rank
+  size_t startRank;
+  /// rank increase increment
+  size_t kickRank;
+  /// maximum rank
+  size_t maxRank;
+  /// whether or not to adapt rank
+  bool adaptRank;
+  /// starting polynomial order
+  SizetArray startOrderSeq;
+  /// starting rank
+  SizetArray startRankSeq;
+
   // NonD & DACE
 
   /// the \c samples specification for NonD & DACE methods
@@ -829,7 +849,7 @@ public:
   short growthOverride;
   /// enumeration for u-space type that defines u-space variable targets
   /// for probability space transformations: EXTENDED_U (default), ASKEY_U,
-  /// STD_NORMAL_U, or STD_UNIFORM_U
+  /// PARTIAL_ASKEY_U, STD_NORMAL_U, or STD_UNIFORM_U
   short expansionType;
   /// boolean indicating presence of \c piecewise keyword
   bool piecewiseBasis;
@@ -915,8 +935,6 @@ public:
   /// orthogonal least interpolation PCE; based on the \c tensor_grid
   /// specification in \ref MethodNonDPCE
   UShortArray tensorGridOrder;
-  /// type of discrepancy emulation in multilevel methods: distinct or recursive
-  short multilevDiscrepEmulation;
   /// the \c import_expansion_file specification in \ref MethodNonDPCE
   String importExpansionFile;
   /// the \c export_expansion_file specification in \ref MethodNonDPCE
@@ -951,9 +969,11 @@ public:
   /// the |c sample_allocation selection in \ref MethodMultilevelMC
   short sampleAllocationType;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
-  short mlmfAllocControl;
+  short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
   Real multilevEstimatorRate;
+  /// type of discrepancy emulation in multilevel methods: distinct or recursive
+  short multilevDiscrepEmulation;  
   /// the \c final_moments specification in \ref MethodNonD
   short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification

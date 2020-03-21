@@ -34,7 +34,7 @@ extern PRPCache data_pairs;
 Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(probDescDB.get_int("environment.output_precision"))
+  writePrecision(problem_db.get_int("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
@@ -221,7 +221,6 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
 
   if (!asynch_flag && log_resp_flag) allResponses.clear();
 
-
   // Loop over parameter sets and compute responses.  Collect data
   // and track best evaluations based on flags.
   for (i=0; i<num_evals; i++) {
@@ -264,10 +263,11 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
         for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
           update_best(allVariables[i], r_cit->first, r_cit->second);
     }
-    if(resultsDB.active()) {
+    if (resultsDB.active()) {
       IntRespMCIter r_cit;
       for(r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
-        archive_model_response(r_cit->second, std::distance(resp_map.begin(), r_cit));
+        archive_model_response(r_cit->second,
+			       std::distance(resp_map.begin(), r_cit));
     }
   }
 }
@@ -281,6 +281,10 @@ void Analyzer::update_model_from_variables(Model& model, const Variables& vars)
   model.active_variables(vars);
 }
 
+// ***************************************************
+// MSE TO DO: generalize for all active variable types
+// NonDSampling still overrrides in the case of samplingVarsMode != active view
+// ***************************************************
 
 void Analyzer::update_model_from_sample(Model& model, const Real* sample_vars)
 {
@@ -298,15 +302,15 @@ sample_to_variables(const Real* sample_c_vars, Variables& vars)
 {
   // pack sample_matrix into vars_array
   const Variables& model_vars = iteratedModel.current_variables();
-  size_t i, j, num_adiv = model_vars.adiv(), num_adrv = model_vars.adrv();
   if (vars.is_null()) // use minimal data ctor
     vars = Variables(model_vars.shared_data());
-  for (j=0; j<numContinuousVars; ++j)
-    vars.continuous_variable(sample_c_vars[j], j); // jth row
+  for (size_t i=0; i<numContinuousVars; ++i)
+    vars.continuous_variable(sample_c_vars[i], i); // ith row
   // BMA: this may be needed if vars wasn't initialized off the model
   vars.inactive_continuous_variables(
     model_vars.inactive_continuous_variables());
   // preserve any active discrete vars (unsupported by sample_matrix)
+  size_t num_adiv = model_vars.adiv(), num_adrv = model_vars.adrv();
   if (num_adiv)
     vars.all_discrete_int_variables(model_vars.all_discrete_int_variables());
   if (num_adrv)
@@ -319,10 +323,10 @@ samples_to_variables_array(const RealMatrix& sample_matrix,
 			   VariablesArray& vars_array)
 {
   // pack sample_matrix into vars_array
-  size_t num_samples = sample_matrix.numCols(); // #vars by #samples
+  size_t i, num_samples = sample_matrix.numCols(); // #vars by #samples
   if (vars_array.size() != num_samples)
     vars_array.resize(num_samples);
-  for (size_t i=0; i<num_samples; ++i)
+  for (i=0; i<num_samples; ++i)
     sample_to_variables(sample_matrix[i], vars_array[i]);
 }
 
@@ -332,8 +336,8 @@ void Analyzer::
 variables_to_sample(const Variables& vars, Real* sample_c_vars)
 {
   const RealVector& c_vars = vars.continuous_variables();
-  for (size_t j=0; j<numContinuousVars; ++j)
-    sample_c_vars[j] = c_vars[j]; // jth row of samples_matrix
+  for (size_t i=0; i<numContinuousVars; ++i)
+    sample_c_vars[i] = c_vars[i]; // ith row of samples_matrix
 }
 
 
@@ -342,7 +346,7 @@ variables_array_to_samples(const VariablesArray& vars_array,
 			   RealMatrix& sample_matrix)
 {
   // pack vars_array into sample_matrix
-  size_t i, j, num_samples = vars_array.size();
+  size_t i, num_samples = vars_array.size();
   if (sample_matrix.numRows() != numContinuousVars ||
       sample_matrix.numCols() != num_samples)
     sample_matrix.reshape(numContinuousVars, num_samples); // #vars by #samples

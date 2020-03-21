@@ -163,11 +163,13 @@ public:
   /// transform allSamples imported by alternate constructor.  This is needed
   /// since random variable distribution parameters are not updated until
   /// run time and an imported sample_matrix is typically in x-space.
-  void transform_samples(bool x_to_u = true);
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+  			 bool x_to_u = true);
 
   /// transform the specified samples matrix from x to u or u to x
-  void transform_samples(RealMatrix& sample_matrix, bool x_to_u, 
-			 int num_samples = 0);
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+			 RealMatrix& sample_matrix, int num_samples = 0,
+			 bool x_to_u = true);
 
 protected:
 
@@ -244,10 +246,9 @@ protected:
 
   /// Override default update of continuous vars only
   void update_model_from_sample(Model& model, const Real* sample_vars);
-
   /// override default mapping of continuous variables only
   void sample_to_variables(const Real* sample_vars, Variables& vars);
-
+  /// override default mapping of continuous variables only
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
   /// return error estimates associated with each of the finalStatistics
@@ -266,33 +267,12 @@ protected:
 
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_design_counts(const Model& model, size_t& num_cdv, size_t& num_ddiv,
-			  size_t& num_ddsv, size_t& num_ddrv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_aleatory_uncertain_counts(const Model& model, size_t& num_cauv,
-				      size_t& num_dauiv, size_t& num_dausv,
-				      size_t& num_daurv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_epistemic_uncertain_counts(const Model& model, size_t& num_ceuv,
-				       size_t& num_deuiv, size_t& num_deusv,
-				       size_t& num_deurv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_uncertain_counts(const Model& model, size_t& num_cuv,
-			     size_t& num_duiv, size_t& num_dusv,
-			     size_t& num_durv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_state_counts(const Model& model, size_t& num_csv, size_t& num_dsiv,
-			 size_t& num_dssv, size_t& num_dsrv) const;
-  /// compute sampled subsets (all, active, uncertain) within all
-  /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
-		   size_t& div_start,  size_t& num_div,
-		   size_t& dsv_start,  size_t& num_dsv,
-		   size_t& drv_start,  size_t& num_drv) const;
+  void mode_counts(const Variables& vars, size_t& cv_start, size_t& num_cv,
+		   size_t& div_start, size_t& num_div, size_t& dsv_start,
+		   size_t& num_dsv, size_t& drv_start, size_t& num_drv) const;
+  /// define subset views for sampling modes
+  void mode_bits(const Variables& vars, BitArray& active_vars,
+		 BitArray& active_corr) const;
 
   /// helper to accumulate sum of finite samples
   static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,
@@ -377,6 +357,39 @@ protected:
 private:
 
   //
+  //- Heading: Convenience functions
+  //
+  
+  /// helper function to consolidate update code
+  void sample_to_variables(const Real* sample_vars, Variables& vars,
+			   Model& model);
+  /// helper function to copy a range from sample_vars to a variables type
+  void sample_to_type(const Real* sample_vars, Variables& vars,
+		      size_t& cv_index, size_t num_cv, size_t& div_index,
+		      size_t num_div, size_t& dsv_index, size_t num_dsv,
+		      size_t& drv_index, size_t num_drv, size_t& samp_index,
+		      Model& model);
+  /// helper function to copy a range from sample_vars to a variables type
+  void sample_to_cv_type(const Real* sample_vars, Variables& vars,
+			 size_t& cv_index, size_t num_cv, size_t& div_index,
+			 size_t num_div, size_t& dsv_index, size_t num_dsv,
+			 size_t& drv_index, size_t num_drv, size_t& samp_index);
+                         //, Model& model);
+  /// helper function to copy a range from sample_vars to continuous variables
+  void sample_to_cv(const Real* sample_vars, Variables& vars, size_t& acv_index,
+		    size_t num_acv, size_t& samp_index);
+  /// helper function to copy a range from sample_vars to discrete int variables
+  void sample_to_div(const Real* sample_vars, Variables& vars,
+		     size_t& adiv_index, size_t num_adiv, size_t& samp_index);
+  /// helper function to copy a range from sample_vars to discrete string vars
+  void sample_to_dsv(const Real* sample_vars, Variables& vars,
+		     size_t& adsv_index, size_t num_adsv, size_t& samp_index,
+		     const StringSetArray& dss_values);
+  /// helper function to copy a range from sample_vars to discrete real vars
+  void sample_to_drv(const Real* sample_vars, Variables& vars,
+		     size_t& adrv_index, size_t num_adrv, size_t& samp_index);
+
+  //
   //- Heading: Data
   //
   
@@ -391,7 +404,7 @@ private:
 
 inline void NonDSampling::pre_run()
 { 
-  NonD::pre_run();
+  Analyzer::pre_run();
 
   // synchronize the derivative components flowing down from a NestedModel's
   // call to subIterator.response_results_active_set(), so that the correct 
@@ -486,8 +499,9 @@ inline void NonDSampling::vary_pattern(bool pattern_flag)
 
 
 /** transform x_samples to u_samples for use by expansionSampler */
-inline void NonDSampling::transform_samples(bool x_to_u)
-{ transform_samples(allSamples, x_to_u, numSamples); }
+inline void NonDSampling::
+transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
+{ transform_samples(nataf, allSamples, numSamples, x_to_u); }
 
 
 /** This version of get_parameter_sets() extracts data from the
@@ -504,6 +518,102 @@ get_parameter_sets(Model& model, const int num_samples,
     class member allSamples. */
 inline void NonDSampling::get_parameter_sets(Model& model)
 { get_parameter_sets(model, numSamples, allSamples); }
+
+
+inline void NonDSampling::
+sample_to_cv(const Real* sample_vars, Variables& vars, size_t& acv_index,
+	     size_t num_acv, size_t& samp_index)
+{
+  // sampled continuous vars (by value)
+  for (size_t i=0; i<num_acv; ++i, ++samp_index, ++acv_index)
+    vars.all_continuous_variable(sample_vars[samp_index], acv_index);
+}
+
+
+inline void NonDSampling::
+sample_to_div(const Real* sample_vars, Variables& vars, size_t& adiv_index,
+	      size_t num_adiv, size_t& samp_index)
+{
+  // sampled discrete int vars (by value cast from Real)
+  for (size_t i=0; i<num_adiv; ++i, ++samp_index, ++adiv_index)
+    vars.all_discrete_int_variable((int)sample_vars[samp_index], adiv_index);
+}
+
+
+inline void NonDSampling::
+sample_to_dsv(const Real* sample_vars, Variables& vars, size_t& adsv_index,
+	      size_t num_adsv, size_t& samp_index,
+	      const StringSetArray& dss_values)
+{
+  // sampled discrete string vars (by index cast from Real)
+  size_t i, set_index;
+  for (i=0; i<num_adsv; ++i, ++samp_index, ++adsv_index) {
+    set_index = (size_t)sample_vars[samp_index];
+    const String& dss = set_index_to_value(set_index, dss_values[adsv_index]);
+    vars.all_discrete_string_variable(dss, adsv_index);
+  }
+}
+
+
+inline void NonDSampling::
+sample_to_drv(const Real* sample_vars, Variables& vars, size_t& adrv_index,
+	      size_t num_adrv, size_t& samp_index)
+{
+  // sampled discrete real vars (by value)
+  for (size_t i=0; i<num_adrv; ++i, ++samp_index, ++adrv_index)
+    vars.all_discrete_real_variable(sample_vars[samp_index], adrv_index);
+}
+
+
+inline void NonDSampling::
+sample_to_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
+	       size_t num_cv, size_t& div_index, size_t num_div,
+	       size_t& dsv_index, size_t num_dsv, size_t& drv_index,
+	       size_t num_drv, size_t& samp_index, Model& model)
+{
+  sample_to_cv(sample_vars,  vars,  cv_index, num_cv,  samp_index);
+  sample_to_div(sample_vars, vars, div_index, num_div, samp_index);
+  if (num_dsv) {
+    short active_view = vars.view().first, all_view =
+      ( active_view == RELAXED_ALL || ( active_view >= RELAXED_DESIGN &&
+        active_view <= RELAXED_STATE )) ? RELAXED_ALL : MIXED_ALL;
+    // Note: Model::activeDiscSetStringValues is cached, so no penalty for
+    //       repeated query with same view
+    sample_to_dsv(sample_vars, vars, dsv_index, num_dsv, samp_index,
+		  model.discrete_set_string_values(all_view));
+  }
+  sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
+}
+
+
+inline void NonDSampling::
+sample_to_cv_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
+		  size_t num_cv, size_t& div_index, size_t num_div,
+		  size_t& dsv_index, size_t num_dsv, size_t& drv_index,
+		  size_t num_drv, size_t& samp_index)//, Model& model)
+{
+  // UNIFORM views do not currently support non-relaxed discrete
+
+  sample_to_cv(sample_vars, vars, cv_index, num_cv, samp_index);
+  //sample_to_div(sample_vars, vars, div_index, num_div, samp_index);
+  //if (num_dsv) {
+    //short active_view = vars.view().first, all_view = () ? : ;
+    //sample_to_dsv(sample_vars, vars, dsv_index,num_dsv,samp_index,
+    //              model.discrete_set_string_values(all_view));
+  //}
+  //sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
+}
+
+
+inline void NonDSampling::
+update_model_from_sample(Model& model, const Real* sample_vars)
+{ sample_to_variables(sample_vars, model.current_variables(), model); }
+
+
+inline void NonDSampling::
+sample_to_variables(const Real* sample_vars, Variables& vars)
+{ sample_to_variables(sample_vars, vars, iteratedModel); }
+// default to iteratedModel for dss values
 
 
 inline const RealVector& NonDSampling::response_error_estimates() const

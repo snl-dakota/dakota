@@ -15,6 +15,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "dakota_preproc_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
@@ -218,12 +219,42 @@ parse_inputs(ProgramOptions& prog_opts,
         }
         prog_opts.input_string(stdin_string);
       }
-      
-      if (prog_opts.echo_input())
-	echo_input_file(prog_opts);
 
-      // Parse the input file using one of the derived parser-specific classes
-      derived_parse_inputs(prog_opts);
+      if (prog_opts.preproc_input()) {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
+			  " template");
+
+	std::string tmpl_file = prog_opts.input_file();
+	if (!prog_opts.input_string().empty())
+	  // must generate to file on disk for pyprepro
+	  tmpl_file = string_to_tmpfile(prog_opts.input_string());
+
+	// run the pre-processor on the file
+	std::string preproc_file = pyprepro_input(tmpl_file,
+						  prog_opts.preproc_cmd());
+
+	if (prog_opts.echo_input())
+	  echo_input_file(preproc_file, "");
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(preproc_file, "", prog_opts.parser_options());
+
+	boost::filesystem::remove(preproc_file);
+	if (!prog_opts.input_string().empty())
+	  boost::filesystem::remove(tmpl_file);
+      }
+      else {
+
+	if (prog_opts.echo_input())
+	  echo_input_file(prog_opts.input_file(), prog_opts.input_string());
+
+	// Parse the input file using one of the derived parser-specific classes
+	derived_parse_inputs(prog_opts.input_file(), prog_opts.input_string(),
+			     prog_opts.parser_options());
+
+      }
 
       // Allow user input by callback function.
       
@@ -330,10 +361,13 @@ void ProblemDescDB::post_process()
 
 
 void ProblemDescDB::
-derived_parse_inputs(const ProgramOptions& prog_opts)
+derived_parse_inputs(const std::string& dakota_input_file,
+		     const std::string& dakota_input_string,
+		     const std::string& parser_options)
 {
   if (dbRep)
-    dbRep->derived_parse_inputs(prog_opts);
+    dbRep->derived_parse_inputs(dakota_input_file, dakota_input_string,
+				parser_options);
   else { // this fn must be redefined
     Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
 	 << " function.\n       No default defined at base class." << std::endl;
@@ -1760,6 +1794,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<SizetArray, DataMethodRep> SZAdme[] = {	
       // must be sorted by string (key)
+      {"nond.c3function_train.start_order_sequence", P startOrderSeq},
+      {"nond.c3function_train.start_rank_sequence", P startRankSeq},
       {"nond.collocation_points", P collocationPointsSeq},
       {"nond.expansion_samples", P expansionSamplesSeq},
       {"nond.pilot_samples", P pilotSamples}};
@@ -2492,7 +2528,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"jega.shrinkage_percentage", P shrinkagePercent},
 	{"mesh_adaptive_search.initial_delta", P initMeshSize},
 	{"mesh_adaptive_search.variable_neighborhood_search", P vns},
-  {"mesh_adaptive_search.variable_tolerance", P minMeshSize},
+	{"mesh_adaptive_search.variable_tolerance", P minMeshSize},
 	{"min_boxsize_limit", P minBoxSize},
 	{"mutation_rate", P mutationRate},
 	{"mutation_scale", P mutationScale},
@@ -2501,6 +2537,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"nl2sol.initial_trust_radius", P initTRRadius},
 	{"nl2sol.singular_conv_tol", P singConvTol},
 	{"nl2sol.singular_radius", P singRadius},
+	{"nond.c3function_train.rounding_tolerance", P roundingTolerance},
+	{"nond.c3function_train.solver_tolerance", P solverTolerance},
 	{"nond.collocation_ratio", P collocationRatio},
 	{"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
 	{"nond.multilevel_estimator_rate", P multilevEstimatorRate},
@@ -2517,7 +2555,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"trust_region.expand_threshold", P trustRegionExpandTrigger},
 	{"trust_region.expansion_factor", P trustRegionExpand},
 	{"trust_region.minimum_size", P trustRegionMinSize},
-  {"variable_tolerance", P threshStepLength},
+	{"variable_tolerance", P threshStepLength},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
 	{"volume_boxsize_limit", P volBoxSize},
@@ -2546,6 +2584,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"surrogate.neural_network_range", P annRange},
       {"surrogate.nugget", P krigingNugget},
       {"surrogate.percent", P percentFold},
+      {"surrogate.regression_penalty", P regressionL2Penalty},
       {"truncation_tolerance", P truncationTolerance}};
     #undef P
 
@@ -2608,6 +2647,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"max_iterations", P maxIterations},
 	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
 	{"nl2sol.covariance", P covarianceType},
+        {"nond.c3function_train.max_cross_iterations", P maxCrossIterations},
 	{"nond.chain_samples", P chainSamples},
 	{"nond.max_refinement_iterations", P maxRefineIterations},
 	{"nond.max_solver_iterations", P maxSolverIterations},
@@ -2639,10 +2679,11 @@ int ProblemDescDB::get_int(const String& entry_name) const
         {"active_subspace.bootstrap_samples", P numReplicates},
         {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"active_subspace.dimension", P subspaceDimension},
-
+        {"c3function_train.max_cross_iterations", P maxCrossIterations},
         {"initial_samples", P initialSamples},
         {"max_function_evals", P maxFunctionEvals},
         {"max_iterations", P maxIterations},
+	{"max_solver_iterations", P maxSolverIterations},
         {"nested.iterator_servers", P subMethodServers},
         {"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
@@ -2705,7 +2746,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.final_moments", P finalMomentsType},
 	{"nond.growth_override", P growthOverride},
 	{"nond.least_squares_regression_type", P lsRegressionType},
-	{"nond.multilevel_allocation_control", P mlmfAllocControl},
+	{"nond.multilevel_allocation_control", P multilevAllocControl},
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.regression_type", P regressionType},
@@ -2746,7 +2787,9 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"surrogate.rbf_bases", P rbfBases},
 	{"surrogate.rbf_max_pts", P rbfMaxPts},
 	{"surrogate.rbf_max_subsets", P rbfMaxSubsets},
-	{"surrogate.rbf_min_partition", P rbfMinPartition}};
+	{"surrogate.rbf_min_partition", P rbfMinPartition},
+	{"surrogate.regression_type", P regressionType}
+    };
     #undef P
 
     KW<short, DataModelRep> *kw;
@@ -2775,8 +2818,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       // must be sorted by string (key)
 	{"analysis_scheduling", P analysisScheduling},
 	{"evaluation_scheduling", P evalScheduling},
-	{"local_evaluation_scheduling", P asynchLocalEvalScheduling},
-	{"synchronization", P interfaceSynchronization}};
+	{"local_evaluation_scheduling", P asynchLocalEvalScheduling}};
     #undef P
 
     KW<short, DataInterfaceRep> *kw;
@@ -2921,6 +2963,11 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
 	{"jega.num_parents", P numParents},
+        {"nond.c3function_train.kick_rank", P kickRank},
+        {"nond.c3function_train.max_order", P maxOrder},
+      	{"nond.c3function_train.max_rank", P maxRank},
+        {"nond.c3function_train.start_order", P startOrder},
+        {"nond.c3function_train.start_rank", P startRank},
 	{"nond.collocation_points", P collocationPoints},
 	{"nond.expansion_samples", P expansionSamples},
   {"nond.target_moment", P targetMoment},
@@ -2942,7 +2989,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       // must be sorted by string (key)
       // must be sorted by string (key)
         {"c3function_train.kick_rank", P kickRank},
-        {"c3function_train.max_cross_iterations", P crossMaxIter},
         {"c3function_train.max_order", P maxOrder},
       	{"c3function_train.max_rank", P maxRank},
         {"c3function_train.start_order", P startOrder},
@@ -3119,6 +3165,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adapt_exp_design", P adaptExpDesign},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
+        {"nond.c3function_train.adapt_rank", P adaptRank},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
 	{"nond.d_optimal", P dOptimal},
@@ -3169,12 +3216,14 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nested.identity_resp_map", P identityRespMap},
 	{"surrogate.auto_refine", P autoRefine},
 	{"surrogate.challenge_points_file_active", P importChallengeActive},
+	{"surrogate.challenge_use_variable_labels", P importChalUseVariableLabels},
 	{"surrogate.cross_validate", P crossValidateFlag},
 	{"surrogate.decomp_discont_detect", P decompDiscontDetect},
 	{"surrogate.derivative_usage", P modelUseDerivsFlag},
 	{"surrogate.domain_decomp", P domainDecomp},
 	{"surrogate.export_surrogate", P exportSurrogate},
 	{"surrogate.import_build_active_only", P importBuildActive},
+	{"surrogate.import_use_variable_labels", P importUseVariableLabels},
 	{"surrogate.point_selection", P pointSelection},
 	{"surrogate.press", P pressFlag}};
     #undef P
@@ -3208,6 +3257,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"application.file_save", P fileSaveFlag},
 	{"application.file_tag", P fileTagFlag},
 	{"application.verbatim", P verbatimFlag},
+        {"asynch", P asynchFlag},
+        {"batch", P batchEvalFlag},
 	{"dirSave", P dirSave},
 	{"dirTag", P dirTag},
 	{"evaluation_cache", P evalCacheFlag},
@@ -3793,21 +3844,21 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 }
 
 
-void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
+void ProblemDescDB::echo_input_file(const std::string& dakota_input_file,
+				    const std::string& dakota_input_string,
+				    const std::string& tmpl_qualifier)
 {
-  const String& dakota_input_file = prog_opts.input_file();
-  const String& dakota_input_string = prog_opts.input_string();
   if (!dakota_input_string.empty()) {
     size_t header_len = 23;
     std::string header(header_len, '-');
     Cout << header << '\n';
-    Cout << "Begin DAKOTA input file\n";
+    Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
     if(dakota_input_file == "-")
       Cout << "(from standard input)\n";
     else
       Cout << "(from string)\n";
     Cout << header << std::endl;
-    Cout << prog_opts.input_string() << std::endl;
+    Cout << dakota_input_string << std::endl;
     Cout << "---------------------\n";
     Cout << "End DAKOTA input file\n";
     Cout << "---------------------\n" << std::endl;
@@ -3829,7 +3880,7 @@ void ProblemDescDB::echo_input_file(const ProgramOptions& prog_opts)
 				   dakota_input_file.size());
       std::string header(header_len, '-');
       Cout << header << '\n';
-      Cout << "Begin DAKOTA input file\n";
+      Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
       Cout << dakota_input_file << "\n"; 
       Cout << header << std::endl;
       int inputchar = inputstream.get();

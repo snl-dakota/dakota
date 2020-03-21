@@ -28,6 +28,7 @@
 #include "DiscrepancyCorrection.hpp"
 #include "dakota_tabular_io.hpp"
 #include "ParallelLibrary.hpp"
+#include "NatafTransformation.hpp"
 
 //#define DEBUG
 //#define CONVERGENCE_DATA
@@ -38,43 +39,46 @@ namespace Dakota {
 
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
-  expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
+  expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
+  multilevAllocControl(
+    problem_db.get_short("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
-    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
-  numUncertainQuant(0), numSamplesOnModel(0),
-  numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
+    problem_db.get_short("method.nond.multilevel_discrepancy_emulation")),
+  pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
+  kappaEstimatorRate(
+    problem_db.get_real("method.nond.multilevel_estimator_rate")),
+  gammaEstimatorScale(1.), numSamplesOnModel(0),
+  numSamplesOnExpansion(problem_db.get_int("method.nond.samples_on_emulator")),
   relativeMetric(true), nestedRules(false),
-  piecewiseBasis(probDescDB.get_bool("method.nond.piecewise_basis")),
-  useDerivs(probDescDB.get_bool("method.derivative_usage")),
-  refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
+  piecewiseBasis(problem_db.get_bool("method.nond.piecewise_basis")),
+  useDerivs(problem_db.get_bool("method.derivative_usage")),
+  refineType(problem_db.get_short("method.nond.expansion_refinement_type")),
   refineControl(
-    probDescDB.get_short("method.nond.expansion_refinement_control")),
+    problem_db.get_short("method.nond.expansion_refinement_control")),
   refineMetric(Pecos::NO_METRIC),
-  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
+  softConvLimit(problem_db.get_ushort("method.soft_convergence_limit")),
+  numUncertainQuant(0),
   maxRefineIterations(
-    probDescDB.get_int("method.nond.max_refinement_iterations")),
-  maxSolverIterations(probDescDB.get_int("method.nond.max_solver_iterations")),
-  ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
-  ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
-  vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
+    problem_db.get_int("method.nond.max_refinement_iterations")),
+  maxSolverIterations(problem_db.get_int("method.nond.max_solver_iterations")),
+  ruleNestingOverride(problem_db.get_short("method.nond.nesting_override")),
+  ruleGrowthOverride(problem_db.get_short("method.nond.growth_override")),
+  vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   // Note: minimum VBD order for variance-controlled refinement is enforced
   //       in NonDExpansion::construct_{quadrature,sparse_grid}
-  vbdOrderLimit(probDescDB.get_ushort("method.nond.vbd_interaction_order")),
-  vbdDropTol(probDescDB.get_real("method.vbd_drop_tolerance")),
-  covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
+  vbdOrderLimit(problem_db.get_ushort("method.nond.vbd_interaction_order")),
+  vbdDropTol(problem_db.get_real("method.vbd_drop_tolerance")),
+  covarianceControl(problem_db.get_short("method.nond.covariance_control")),
   // data for construct_expansion_sampler():
-  expansionSampleType(probDescDB.get_ushort("method.sample_type")),
-  origSeed(probDescDB.get_int("method.random_seed")),
-  expansionRng(probDescDB.get_string("method.random_number_generator")),
+  expansionSampleType(problem_db.get_ushort("method.sample_type")),
+  origSeed(problem_db.get_int("method.random_seed")),
+  expansionRng(problem_db.get_string("method.random_number_generator")),
   integrationRefine(
-    probDescDB.get_ushort("method.nond.integration_refinement")),
-  refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
+    problem_db.get_ushort("method.nond.integration_refinement")),
+  refinementSamples(problem_db.get_iv("method.nond.refinement_samples"))
 {
-  // override default definition in NonD ctor.  If there are any aleatory
-  // variables, then we will sample on that subset for probabilistic stats.
-  epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
-
+  initialize_counts();
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
 }
@@ -83,24 +87,24 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, short refine_type,
-	      short refine_control, short covar_control, short ml_discrep,
-	      short rule_nest, short rule_growth, bool piecewise_basis,
-	      bool use_derivs):
+	      short refine_control, short covar_control, short ml_alloc_control,
+	      short ml_discrep, const SizetArray& pilot, short rule_nest,
+	      short rule_growth, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS),
   statsType(Pecos::ACTIVE_EXPANSION_STATS),
-  multilevDiscrepEmulation(ml_discrep), numUncertainQuant(0),
+  multilevAllocControl(ml_alloc_control), multilevDiscrepEmulation(ml_discrep),
+  pilotSamples(pilot), kappaEstimatorRate(2.), gammaEstimatorScale(1.),
   numSamplesOnModel(0), numSamplesOnExpansion(0), relativeMetric(true),
   nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(refine_type), refineControl(refine_control),
-  refineMetric(Pecos::NO_METRIC), softConvLimit(3), maxRefineIterations(100),
-  maxSolverIterations(-1), ruleNestingOverride(rule_nest),
+  refineMetric(Pecos::NO_METRIC), softConvLimit(3), numUncertainQuant(0),
+  maxRefineIterations(100), maxSolverIterations(-1),
+  ruleNestingOverride(rule_nest),
   ruleGrowthOverride(rule_growth), vbdFlag(false), vbdOrderLimit(0),
   vbdDropTol(-1.), covarianceControl(covar_control)
 {
-  // override default definition in NonD ctor.  If there are any aleatory
-  // variables, then we will sample on that subset for probabilistic stats.
-  epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
+  initialize_counts();
 
   // level mappings not yet available
   // (defer initialize_response_covariance() and initialize_final_statistics())
@@ -111,9 +115,31 @@ NonDExpansion::~NonDExpansion()
 { }
 
 
+void NonDExpansion::initialize_counts()
+{
+  const Variables&  vars      = iteratedModel.current_variables();
+  const SizetArray& ac_totals = vars.shared_data().active_components_totals();
+
+  // flag for combined var expansions which include non-probabilistic subset
+  // (continuous only for now)
+  allVars = (ac_totals[TOTAL_CDV] || ac_totals[TOTAL_CEUV] ||
+	     ac_totals[TOTAL_CSV]);
+
+  // override default definition in NonD ctor.  If there are any aleatory
+  // variables, then we will sample on that subset for probabilistic stats.
+  bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
+  bool auv = (ac_totals[TOTAL_CAUV]  || ac_totals[TOTAL_DAUIV] ||
+	      ac_totals[TOTAL_DAUSV] || ac_totals[TOTAL_DAURV]);
+  epistemicStats = (euv && !auv);
+}
+
+
 bool NonDExpansion::resize()
 {
   bool parent_reinit_comms = NonD::resize();
+
+  initialize_counts();
 
   return parent_reinit_comms;
 }
@@ -211,12 +237,19 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   // check compatibility of refinement type and u-space type
   if (refineType == Pecos::H_REFINEMENT) { // override
-    if (u_space_type == ASKEY_U) // non-default
-      Cerr << "\nWarning: overriding ASKEY to STD_UNIFORM for h-refinement.\n"
-	   << std::endl;
-    else if (u_space_type == STD_NORMAL_U) // non-default
-      Cerr << "\nWarning: overriding WIENER to STD_UNIFORM for h-refinement.\n"
-	   << std::endl;
+    switch (u_space_type) {
+    //case EXTENDED_U: // default; not user-selectable -> quiet default reassign
+    //  break;
+    case ASKEY_U: case PARTIAL_ASKEY_U: // non-default
+      Cerr << "\nWarning: overriding transformation from ASKEY to STD_UNIFORM "
+	   << "for h-refinement.\n" << std::endl;
+      break;
+    case STD_NORMAL_U: // non-default
+      Cerr << "\nWarning: overriding transformation from WIENER to STD_UNIFORM "
+	   << "for h-refinement.\n" << std::endl;
+      break;
+    }
+
     u_space_type = STD_UNIFORM_U; piecewiseBasis = true;
   }
   else if (refineType == Pecos::P_REFINEMENT && piecewiseBasis) {
@@ -227,18 +260,6 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   if (err_flag)
     abort_handler(METHOD_ERROR);
-}
-
-
-void NonDExpansion::initialize_random(short u_space_type)
-{
-  // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
-  initialize_random_variable_transformation();
-  initialize_random_variable_types(u_space_type); // need x/u_types below
-  initialize_random_variable_correlations();
-  // for lightweight ctor, defer until call to requested_levels()
-  //initialize_final_statistics();
-  verify_correlation_support(u_space_type); // correlation warping factors
 }
 
 
@@ -254,8 +275,7 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
     abort_handler(METHOD_ERROR);
   }
 
-  u_space_sampler.assign_rep(new 
-    NonDCubature(g_u_model, natafTransform.u_types(), cub_int_order), false);
+  u_space_sampler.assign_rep(new NonDCubature(g_u_model, cub_int_order), false);
 }
 
 
@@ -366,16 +386,15 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 
   // tracking of unique product weights needed for PCE and SC standard modes
   // since both employ PolynomialApproximation::compute_numerical_moments(4).
-  // Neither PCE nor SC require product wts for all_vars mode, since moment
+  // Neither PCE nor SC require product wts for allVars mode, since moment
   // calculations must employ gauss_wts_1d.
-  // Exception 1: all_vars Nodal SC requires weights for total covariance()
+  // Exception 1: allVars Nodal SC requires weights for total covariance()
   //              evaluation in VBD.
   // Exception 2: NonDIntegration::print_points_weights() needs weights for
   //              outputLevel > NORMAL_OUTPUT.
-  bool all_vars  = (numContDesVars || numContEpistUncVars || numContStateVars);
   bool nodal_vbd = (vbdFlag && methodName == STOCH_COLLOCATION &&
     expansionCoeffsApproach != Pecos::HIERARCHICAL_SPARSE_GRID);
-  bool track_wts = (!all_vars || nodal_vbd || outputLevel > NORMAL_OUTPUT);
+  bool track_wts = (!allVars || nodal_vbd || outputLevel > NORMAL_OUTPUT);
 
   short growth_rate;
   if (ruleGrowthOverride == Pecos::UNRESTRICTED ||
@@ -428,14 +447,9 @@ construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
 
 void NonDExpansion::initialize_u_space_model()
 {
-  // Commonly used approx settings are passed through the DataFitSurrModel ctor
-  // chain.  Additional data are passed using Pecos::ExpansionConfigOptions.
-  // Note: passing outputLevel again is redundant with DataFitSurrModel ctor.
-  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-    uSpaceModel.shared_approximation().data_rep();
   if (refineControl) {
-    // communicate refinement metric to Pecos (determines internal bookkeeping
-    // requirements for some PolyApproximation types)
+    // communicate refinement metric to Pecos (determines internal
+    // bookkeeping requirements for some PolyApproximation types)
     if (totalLevelRequests) {
       refineMetric = Pecos::LEVEL_STATS_METRIC;
       for (size_t i=0; i<numFunctions; ++i)
@@ -447,36 +461,57 @@ void NonDExpansion::initialize_u_space_model()
     else
       refineMetric = Pecos::COVARIANCE_METRIC;
   }
+
+  // if all variables mode, initialize key to random variable subset
+  if (allVars) {
+    SharedApproxData* shared_data_rep =
+      uSpaceModel.shared_approximation().data_rep();
+
+    BitArray random_vars_key(numContinuousVars); // init to false
+    assign_value(random_vars_key, true, startCAUV, numCAUV);
+    shared_data_rep->random_variables_key(random_vars_key);
+  }
+}
+
+
+void NonDExpansion::configure_pecos_options()
+{
+  // Commonly used approx settings (e.g., order, outputLevel, useDerivs) are
+  // passed via the DataFitSurrModel ctor chain.  Additional data needed by
+  // {Orthog,Interp}PolyApproximation are passed in Pecos::
+  // {Expansion,Basis,Regression}ConfigOptions.   Note: passing outputLevel
+  // and useDerivs again is redundant with the DataFitSurrModel ctor.
+  SharedPecosApproxData* shared_data_rep =
+    (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
     expansionBasisType, iteratedModel.correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
     refineControl, refineMetric, statsType, maxRefineIterations,
     maxSolverIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
+  Pecos::BasisConfigOptions
+    bc_options(nestedRules, piecewiseBasis, true, useDerivs);
+  shared_data_rep->configuration_options(bc_options);
+}
 
-  // if all variables mode, initialize key to random variable subset
-  if (numContDesVars || numContEpistUncVars || numContStateVars) {
-    Pecos::BitArray random_vars_key(numContinuousVars);
-    size_t i, num_cdv_cauv = numContDesVars + numContAleatUncVars;
-    for (i=0; i<numContinuousVars; ++i)
-      random_vars_key[i] = (i >= numContDesVars && i < num_cdv_cauv);
-    shared_data_rep->random_variables_key(random_vars_key);
-  }
 
-  // share natafTransform instance with u-space sampler
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  if (!u_space_sampler.is_null())
-    ((NonD*)u_space_sampler.iterator_rep())->
-      initialize_random_variables(natafTransform); // shared rep
+void NonDExpansion::initialize_u_space_grid()
+{
+  // if model resize is pending, defer initializing a potentially large grid
+  if (iteratedModel.resize_pending())
+    { /* callResize = true; */ }
+  else {
+    //
+    // Note: not used by C3; Pecos restriction is appropriate (PCE/SC basis)
+    //
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
 
-  // if numerical integration, manage u_space_sampler updates
-  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
-      expansionCoeffsApproach == Pecos::CUBATURE ||
-      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID) {
-    shared_data_rep->integration_iterator(u_space_sampler);
-    numSamplesOnModel = u_space_sampler.maximum_evaluation_concurrency()
+    NonDIntegration* u_space_sampler_rep = 
+      (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+    u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
+
+    numSamplesOnModel = u_space_sampler_rep->maximum_evaluation_concurrency()
       / uSpaceModel.subordinate_model().derivative_concurrency();
     // maxEvalConcurrency already updated for expansion samples and regression
     if (numSamplesOnModel) // optional with default = 0
@@ -513,7 +548,7 @@ construct_expansion_sampler(const String& import_approx_file,
       "imported approx samples file", x_samples, numContinuousVars,
       import_approx_format); //, import_build_active_only);
     numSamplesOnExpansion = x_samples.numCols();
-    // transform to u space must follow initialize_random_variable_parameters(),
+    // transform to u space must follow runtime dist param updates,
     // so pass x_samples for now and transform at runtime
     exp_sampler_rep = new NonDSampling(uSpaceModel, x_samples);//u_samples);
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
@@ -537,6 +572,9 @@ construct_expansion_sampler(const String& import_approx_file,
 			    false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
+    // needs to precede exp_sampler_rep->requested_levels()
+    exp_sampler_rep->final_moments_type(NO_MOMENTS); // suppress sample moments
+
     // publish level mappings to expansion sampler, but suppress reliability
     // moment mappings (performed locally within compute_statistics())
     RealVectorArray empty_rv_array; // empty
@@ -545,8 +583,6 @@ construct_expansion_sampler(const String& import_approx_file,
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, false); // suppress PDFs (managed locally)
-    // also suppress final moments
-    exp_sampler_rep->final_moments_type(NO_MOMENTS);
 
     bool imp_sampling = false;
     if (integrationRefine && respLevelTarget != RELIABILITIES)
@@ -576,17 +612,11 @@ construct_expansion_sampler(const String& import_approx_file,
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
 	cdfFlag, false); // suppress PDFs (managed locally)
-      // needed if export_approx_points_file:
-      imp_sampler_rep->initialize_random_variables(natafTransform);// shared rep
       //imp_sampler_rep->final_moments_type(NO_MOMENTS); // already off for AIS
     }
   }
   // publish output verbosity
   exp_sampler_rep->output_level(outputLevel);
-  // publish natafTransform instance (shared rep: distribution parameter
-  // updates do not need to be explicitly propagated) so that u-space
-  // sampler has access to x-space data to perform inverse transforms
-  exp_sampler_rep->initialize_random_variables(natafTransform); // shared rep
   // store rep inside envelope
   expansionSampler.assign_rep(exp_sampler_rep, false);
 }
@@ -602,74 +632,71 @@ void NonDExpansion::core_run()
 
   compute_statistics(FINAL_RESULTS);
   // Note: print_results() called by Analyzer::post_run()
-  ++numUncertainQuant;
+
+  finalize_expansion();
 }
 
 
 void NonDExpansion::initialize_expansion()
 {
-  initialize_random_variable_parameters();//capture any distrib param insertions
+  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // initialization of Model mappings for iteratedModel, but local recursions
+  // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
+  if (!uSpaceModel.mapping_initialized()) {
+    ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+    /*bool var_size_changed =*/ uSpaceModel.initialize_mapping(pl_iter);
+    //if (var_size_changed) resize();
+  }
+  // Note: part of this occurs at DataFit build time (daceIterator -> g_u_model)
+  // as well as evaluation of uSpaceModel by expansion sampler. Therefore, take
+  // care to avoid redundancy using mappingInitialized flag.
+
   if (totalLevelRequests) initialize_level_mappings(); // size computed*Levels
   resize_final_statistics_gradients(); // finalStats ASV available at run time
-  transform_correlations();
+  //transform_correlations();
 
   // now that data has flowed down at run-time from any higher level recursions
   // to iteratedModel, it must be propagated up through the local g_u_model and
   // uSpaceModel recursions (so they are correct when propagated back down).
-  //
-  // RecastModel::update_from_model() has insufficient context to update
-  // distribution params for variables that are not transformed (i.e., 
-  // numerically-generated bases/points); it assumes that the presence of any
-  // variable transformation precludes flow of distribution parameters.  So
-  // we handle that special case here prior to the general recursion.  The
-  // alternative would be to supply another function pointer to RecastModel
-  // to support partial distribution parameter mappings.
-  Pecos::AleatoryDistParams& adp_u
-    = uSpaceModel.subordinate_model().aleatory_distribution_parameters();
-  const Pecos::AleatoryDistParams& adp_x
-    = iteratedModel.aleatory_distribution_parameters();
-  adp_u.update_partial(adp_x, natafTransform.x_random_variables(),
-		       natafTransform.u_types());
-  // now perform the general recursion
-  size_t depth = (methodName > STOCH_COLLOCATION && // multilevel/multifidelity
-		  multilevDiscrepEmulation == DISTINCT_EMULATION) ?
-    2    : // limit depth to avoid warning at HierarchSurrModel
-    _NPOS; // max depth
-  uSpaceModel.update_from_subordinate_model(depth);
+  // There is no need to recur below iteratedModel.
+  // RecastModel::update_from_model() had insufficient context to update
+  // distribution parameters for variables that were not transformed, but
+  // ProbabilityTransformModel::update_from_model() can now handle this.
+  size_t layers = 2; // PTModel, DFSModel
+  // recur once (beyond layer 1) so that layer 2 pulls from iteratedModel
+  uSpaceModel.update_from_subordinate_model(layers-1);
 
-  // if a sub-iterator, reset any refinements that may have occurred
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  if (subIteratorFlag && numUncertainQuant && refineType &&
-      !u_space_sampler.is_null())
-    u_space_sampler.reset();
+  // if a sub-iterator, reset previous history (e.g. grid refinements) as needed
+  if (subIteratorFlag) { //&& numUncertainQuant && refineType) {
+    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+    if (!u_space_sampler.is_null())
+      u_space_sampler.reset();// clear previous prior to next grid generate/eval
+  }
 
   // set initialPtU which is used in this class for all-variables mode and local
   // sensitivity calculations, and by external classes for queries on the PCE
   // emulator model (e.g., NonDBayesCalibration).  In the case of design,
   // epistemic, and state vars, it captures the current values for this UQ
-  // execution; for aleatory vars, it captures the initial values from user
-  // specifications or mean defaults.
-  if (numUncertainQuant == 0) // initial UQ: full update of initialPtU
-    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
-				initialPtU);
-  else if (numContDesVars || numContEpistUncVars || numContStateVars) {
-    // subsequent UQ for all vars mode: partial update of initialPtU; store
-    // current design/epistemic/state but don't overwrite initial aleatory
-    RealVector pt_u; size_t i;
-    natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), pt_u);
-    for (i=0; i<numContDesVars; ++i)
-      initialPtU[i] = pt_u[i]; // design
-    for (i=numContDesVars + numContAleatUncVars; i<numContinuousVars; ++i)
-      initialPtU[i] = pt_u[i]; // epistemic/state
-  }
+  // execution; for aleatory vars, it reflects the u-space mean values (which
+  // are invariant in std distribution cases despite updates from above).
+  initialPtU.size(numContinuousVars);
+  if (allVars)
+    uSpaceModel.probability_transformation().trans_X_to_U(
+      iteratedModel.continuous_variables(), initialPtU);
+  RealVector u_means = uSpaceModel.multivariate_distribution().means();
+  //const SharedVariablesData& svd
+  //  = iteratedModel.current_variables().shared_data();
+  for (size_t i=startCAUV; i<numCAUV; ++i)
+    initialPtU[i] = u_means[i];//[svd.cv_index_to_active_index(i)];
 
-  // transform any points imported into expansionSampler from user space into
-  // standardized space (must follow initialize_random_variable_parameters())
+  // transform any points imported into expansionSampler from user space
+  // into standardized space (must follow any dist param updates)
   if (expansionSampler.method_name() == LIST_SAMPLING &&
       numUncertainQuant == 0) {
     NonDSampling* exp_sampler_rep
       = (NonDSampling*)expansionSampler.iterator_rep();
-    exp_sampler_rep->transform_samples();
+    exp_sampler_rep->
+      transform_samples(uSpaceModel.probability_transformation());
   }
 }
 
@@ -677,11 +704,13 @@ void NonDExpansion::initialize_expansion()
 void NonDExpansion::compute_expansion()
 {
 #ifdef DERIV_DEBUG
+  Pecos::ProbabilityTransformation& nataf
+    = uSpaceModel.probability_transformation();
   // numerical verification of analytic Jacobian/Hessian routines
   RealVector rdv_u;
-  natafTransform.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
-  natafTransform.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
-  natafTransform.verify_design_jacobian(rdv_u);
+  nataf.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
+  nataf.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
+  nataf.verify_design_jacobian(rdv_u);
 #endif // DERIV_DEBUG
 
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
@@ -697,13 +726,11 @@ void NonDExpansion::compute_expansion()
     if (final_asv[i] & 2)
       { final_stat_grad_flag = true; break; }
 
-  // define ASV for u_space_sampler and expansion coefficient/gradient
-  // data flags for PecosApproximation
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  // define ASV for u_space_sampler and expansion coeff/grad data flags
   ShortArray sampler_asv(numFunctions, 0);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  size_t end_cauv = startCAUV + numCAUV;
   for (i=0; i<numFunctions; ++i) {
-    Approximation* poly_approx_rep = poly_approxs[i].approx_rep();
     bool expansion_coeff_flag = false, expansion_grad_flag = false;
     if (totalLevelRequests) {
       rl_len = requestedRespLevels[i].length();
@@ -747,13 +774,12 @@ void NonDExpansion::compute_expansion()
       // all vars requirements:
       //   mean grad: coeffs (nonrandom v),          coeff grads (random v)
       //   var  grad: coeffs (nonrandom v), coeffs & coeff grads (random v)
-      if (all_vars) { // aleatory + design/epistemic
+      if (allVars) { // aleatory + design/epistemic
 	size_t deriv_index, num_deriv_vars = final_dvv.size();
 	for (j=0; j<num_deriv_vars; ++j) {
 	  deriv_index = final_dvv[j] - 1; // OK since we are in an "All" view
 	  // random variable
-	  if (deriv_index >= numContDesVars &&
-	      deriv_index <  numContDesVars + numContAleatUncVars) {
+	  if (deriv_index >= startCAUV && deriv_index < end_cauv) {
 	    if (moment1_grad) expansion_grad_flag = true;
 	    if (moment2_grad) expansion_grad_flag = expansion_coeff_flag = true;
 	  }
@@ -770,22 +796,24 @@ void NonDExpansion::compute_expansion()
     else
       cntr += moment_offset + rl_len + pl_len + bl_len + gl_len;
 
-    // map expansion_{coeff,grad}_flag requirements into ASV and
-    // PecosApproximation settings
+    // map expansion_{coeff,grad}_flag requirements into sampler ASV and
+    // Approximation settings
     if (expansion_coeff_flag)             sampler_asv[i] |= 1;
     if (expansion_grad_flag || useDerivs) sampler_asv[i] |= 2;
-    poly_approx_rep->expansion_coefficient_flag(expansion_coeff_flag);
-    poly_approx_rep->expansion_gradient_flag(expansion_grad_flag);
+    Approximation& approx_i = poly_approxs[i];
+    approx_i.expansion_coefficient_flag(expansion_coeff_flag);
+    approx_i.expansion_gradient_flag(expansion_grad_flag);
   }
 
   // If OUU/SOP (multiple calls to core_run()), an expansion constructed over
   // the full range of all variables does not need to be reconstructed on
-  // subsequent calls.  However, an all_vars construction over a trust region
+  // subsequent calls.  However, an allVars construction over a trust region
   // needs rebuilding when the trust region is updated.  In the checks below,
   // all_approx detects any variable insertions or ASV omissions and
   // force_rebuild() manages variable augmentations.
-  bool all_approx = false;
-  if (all_vars && numUncertainQuant && secondaryACVarMapTargets.empty()) {
+  bool all_approx = false, dist_param_derivs
+    = (uSpaceModel.query_distribution_parameter_derivatives() > NO_DERIVS);
+  if (allVars && numUncertainQuant && !dist_param_derivs) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
     const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
@@ -805,21 +833,13 @@ void NonDExpansion::compute_expansion()
       // if required statistical sensitivities are not covered by All variables
       // mode for augmented design variables, then the simulations must evaluate
       // response sensitivities.
-      bool sampler_grad = false, dist_param_deriv = false;
+      bool sampler_grad = false;
       if (final_stat_grad_flag) {
-	size_t i, num_outer_cv = secondaryACVarMapTargets.size();
-	for (i=0; i<num_outer_cv; ++i)
-	  if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion
-	    { dist_param_deriv = true; break; }
-	sampler_grad = (all_vars) ? dist_param_deriv : true;
+	if (dist_param_derivs)
+	  uSpaceModel.activate_distribution_parameter_derivatives();
+	if (allVars) sampler_grad = dist_param_derivs;
+	else         sampler_grad = true;
       }
-      u_space_sampler_rep->distribution_parameter_derivatives(dist_param_deriv);
-      if (dist_param_deriv)
-	u_space_sampler.active_variable_mappings(primaryACVarMapIndices,
-	  primaryADIVarMapIndices, primaryADSVarMapIndices,
-	  primaryADRVarMapIndices, secondaryACVarMapTargets,
-	  secondaryADIVarMapTargets, secondaryADSVarMapTargets,
-	  secondaryADRVarMapTargets);
 
       // Set the u_space_sampler DVV, managing different gradient modes & their
       // combinations.  The u_space_sampler's DVV may then be augmented for
@@ -842,12 +862,11 @@ void NonDExpansion::compute_expansion()
 	else // assign cv_ids
 	  sampler_set.derivative_vector(cv_ids);
       }
-      else if (all_vars && sampler_grad) { // filter: retain only insertion tgts
+      else if (allVars && sampler_grad) { // filter: retain only insertion tgts
 	SizetArray filtered_final_dvv;
-	size_t num_cdv_cauv = numContDesVars+numContAleatUncVars;
 	for (i=0; i<num_final_grad_vars; ++i) {
 	  size_t dvv_i = final_dvv[i];
-	  if (dvv_i > numContDesVars && dvv_i <= num_cdv_cauv)
+	  if (dvv_i > startCAUV && dvv_i <= end_cauv)
 	    filtered_final_dvv.push_back(dvv_i);
 	}
 	sampler_set.derivative_vector(filtered_final_dvv);
@@ -862,6 +881,9 @@ void NonDExpansion::compute_expansion()
     }
 
     uSpaceModel.build_approximation();
+
+    if (u_space_sampler_rep && final_stat_grad_flag && dist_param_derivs)
+      uSpaceModel.deactivate_distribution_parameter_derivatives();
   }
 }
 
@@ -874,8 +896,8 @@ void NonDExpansion::refine_expansion()
   // DataMethod default for maxRefineIterations is -1, indicating no user spec.
   // Assign a context-specific default in this case.
   size_t  iter = 1,
-    max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  bool converged = (iter > max_refine);  Real metric;
+    max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
+  bool converged = (iter > max_refine_iter);  Real metric;
 
   // post-process nominal expansion, updating reference stats for refinement
   if (!converged) {
@@ -891,10 +913,24 @@ void NonDExpansion::refine_expansion()
     core_refinement(metric, false, true); // don't revert, print metrics
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
 
-    converged = (metric <= convergenceTol || ++iter > max_refine);
+    converged = (metric <= convergenceTol || ++iter > max_refine_iter);
   }
 
   post_refinement(metric);
+}
+
+
+void NonDExpansion::finalize_expansion()
+{
+  ++numUncertainQuant;
+
+  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // finalization of Model mappings for iteratedModel, but local recursions
+  // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
+  if (uSpaceModel.mapping_initialized()) {
+    /*bool var_size_changed =*/ uSpaceModel.finalize_mapping();
+    //if (var_size_changed) resize();
+  }
 }
 
 
@@ -923,12 +959,15 @@ core_refinement(Real& metric, bool revert, bool print_metric)
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
     update_expansion();
 
     // combine expansions if necessary for stats computation:
     // Note: NonDMultilevelSC overrides this fn and removes roll-up for Hier SC
     metric_roll_up();
+    RealVector stats_ref;
+    if (revert) pull_reference(stats_ref);
+
     // assess increment by computing refinement metric:
     // defer revert (pass false) -> simplifies best candidate tracking to follow
     // Note: covariance metric seems more self-consistent for Sobol'-weighted
@@ -943,11 +982,14 @@ core_refinement(Real& metric, bool revert, bool print_metric)
     }
     compute_statistics(REFINEMENT_RESULTS); // augment compute_*_metric()
     if (print_metric) print_results(Cout, REFINEMENT_RESULTS); // augment output
-    pull_candidate(levelStatsStar); // pull compute_*_metric() + augmented stats
+    pull_candidate(statsStar); // pull compute_*_metric() + augmented stats
 
-    if (revert) pop_increment();
-    else        merge_grid();
+    if (revert)
+      { pop_increment();  push_reference(stats_ref); }
+    else
+      merge_grid();
     break;
+  }
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: // SSG only
     // Dimension adaptive refinement using generalized sparse grids.
     // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
@@ -1100,8 +1142,8 @@ void NonDExpansion::merge_grid()
 
 
 void NonDExpansion::
-configure_levels(size_t& num_lev, unsigned short& model_form, bool& multilevel,
-		 bool mf_precedence)
+configure_sequence(unsigned short& num_steps, unsigned short& fixed_index,
+		   bool& multilevel,          bool mf_precedence)
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ...)
@@ -1109,46 +1151,46 @@ configure_levels(size_t& num_lev, unsigned short& model_form, bool& multilevel,
   ModelLIter m_iter = --ordered_models.end(); // HF model
   size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
 
-  multilevel = (num_hf_lev > 1 && ( num_mf <= 1 || !mf_precedence ) );
+  multilevel = ( num_hf_lev > 1 && ( num_mf <= 1 || !mf_precedence ) );
   if (multilevel) {
-    num_lev = num_hf_lev; model_form = num_mf - 1;
+    num_steps = num_hf_lev;  fixed_index = num_mf - 1;
     if (num_mf > 1)
       Cerr << "Warning: multiple model forms will be ignored in "
-	   << "NonDExpansion::configure_levels().\n";
+	   << "NonDExpansion::configure_sequence().\n";
   }
   else if ( num_mf > 1 && ( num_hf_lev <= 1 || mf_precedence ) ) {
-    num_lev = num_mf;
+    num_steps = num_mf;  fixed_index = USHRT_MAX; // sync w/ active soln index
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
-	   << "NonDExpansion::configure_levels().\n";
+	   << "NonDExpansion::configure_sequence().\n";
   }
   else {
     Cerr << "Error: no model hierarchy evident in NonDExpansion::"
-	 << "configure_levels()." << std::endl;
+	 << "configure_sequence()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 }
 
   
 void NonDExpansion::
-configure_cost(size_t num_lev, bool multilevel, RealVector& cost)
+configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
 {
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter;
   if (multilevel) {
     ModelLIter m_iter = --ordered_models.end(); // HF model
     cost = m_iter->solution_level_costs(); // can be empty
-    if (cost.length() != num_lev) {
+    if (cost.length() != num_steps) {
       Cerr << "Error: missing required simulation costs in NonDExpansion::"
 	   << "configure_cost()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
   }
   else  {
-    cost.sizeUninitialized(num_lev);
+    cost.sizeUninitialized(num_steps);
     m_iter = ordered_models.begin();
     bool missing_cost = false;
-    for (size_t i=0; i<num_lev; ++i, ++m_iter) {
+    for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost(); // cost for active soln index
       if (cost[i] <= 0.) missing_cost = true;
     }
@@ -1162,48 +1204,87 @@ configure_cost(size_t num_lev, bool multilevel, RealVector& cost)
 
 
 void NonDExpansion::
-configure_indices(unsigned short lev, unsigned short form, bool multilevel)
+configure_indices(unsigned short group, unsigned short form,
+		  unsigned short lev,   unsigned short s_index)
 {
-  // Set active surrogate/truth models within the hierarchical surrogate
-  // (iteratedModel)
+  // Set active surrogate/truth models within the Hierarch,DataFit surrogates
+  // (recursion from uSpaceModel to iteratedModel)
+  // > group index is assigned based on step in model form/resolution sequence
 
-  /*
-  UShortArray truth_key;
-  form_key(lev, form, multilevel, truth_key);
-  uSpaceModel.truth_model_key(truth_key);
+  UShortArray hf_key;
+  Pecos::DiscrepancyCalculator::form_key(group, form, lev, hf_key);
 
-  if (lev == 0) {
-    bypass_surrogate_mode();
-    uSpaceModel.surrogate_model_key(UShortArray());
+  if (hf_key[s_index] == 0 || !multilevDiscrepEmulation) {
+    bypass_surrogate_mode();              // one model evaluation
+    uSpaceModel.active_model_key(hf_key); // one data set
   }
-  else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
-    aggregated_models_mode();
-    UShortArray surr_key(truth_key);
-    --surr_key.back();// decrement trailing index (lev if multilevel, else form)
-    uSpaceModel.surrogate_model_key(surr_key);
+  else { // 3 data sets: HF, either LF or LF-hat, and discrep
+    UShortArray child_key(hf_key), discrep_key;
+    switch (multilevDiscrepEmulation) {
+    case DISTINCT_EMULATION:
+      aggregated_models_mode(); // two model evaluations
+      // child key is the LF model from a {HF,LF} aggregation
+      Pecos::DiscrepancyCalculator::decrement_key(child_key, s_index);
+      break;
+    case RECURSIVE_EMULATION:
+      bypass_surrogate_mode(); // still only one model evaluation
+      // child key is emulator of the LF model (LF-hat) --> dummy model indices
+      child_key[1] = child_key[2] = USHRT_MAX;// same group but no form,lev
+      break;
+    }
+    Pecos::DiscrepancyCalculator::
+      aggregate_keys(hf_key, child_key, discrep_key);
+    uSpaceModel.active_model_key(discrep_key);
   }
-  activate_key(truth_key);
-  */
+}
 
-  // assume bottom-up sweep through levels (avoid redundant mode updates)
-  if (lev == 0) {
-    bypass_surrogate_mode();
-    // deactivate surrogate model key (resize SharedApproxData::approxDataKeys)
-    uSpaceModel.surrogate_model_key(UShortArray());
-  }
-  else if (multilevDiscrepEmulation == DISTINCT_EMULATION) {
-    aggregated_models_mode();
-    if (multilevel) uSpaceModel.surrogate_model_key(form, lev-1);
-    else            uSpaceModel.surrogate_model_key(lev-1);
-  }
-  if (multilevel) uSpaceModel.truth_model_key(form, lev);
-  else            uSpaceModel.truth_model_key(lev);
 
-  // Notes:
-  // > truth and (modified) surrogate model keys get stored for use in
-  //   distinguishing data set relationships within SurrogateData
-  // > only the truth key gets activated for Model/Interface/Approximation/...
-  activate_key(uSpaceModel.truth_model_key());
+void NonDExpansion::assign_discrepancy_mode()
+{
+  // assign alternate defaults for correction and discrepancy emulation types
+  switch (iteratedModel.correction_type()) {
+  //case ADDITIVE_CORRECTION:
+  //case MULTIPLICATIVE_CORRECTION:
+  case NO_CORRECTION: // assign method-specific default
+    iteratedModel.correction_type(ADDITIVE_CORRECTION); break;
+  }
+
+  switch (multilevDiscrepEmulation) {
+  // HIERARCHICAL_INTERPOLANT approaches are already recursive ...
+  //case DISTINCT_EMULATION:
+  //  consider disallowing for basis type Pecos::HIERARCHICAL_INTERPOLANT
+  //case RECURSIVE_EMULATION:
+  //  consider disallowing for basis type Pecos::NODAL_INTERPOLANT
+  case DEFAULT_EMULATION: // assign method-specific default
+    multilevDiscrepEmulation =
+      //(expBasisType==Pecos::HIERARCHICAL_INTERPOLANT) ? RECURSIVE_EMULATION :
+      DISTINCT_EMULATION;
+    break;
+  }
+}
+
+
+void NonDExpansion::assign_hierarchical_response_mode()
+{
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+
+  if (iteratedModel.surrogate_type() != "hierarchical") {
+    Cerr << "Error: multilevel/multifidelity expansions require a "
+	 << "hierarchical model." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  // ML-MF {PCE,SC,FT} are based on model discrepancies, but multi-index cases
+  // may evolve towards BYPASS_SURROGATE as sparse grids in model space will
+  // manage QoI differences.
+  // > AGGREGATED_MODELS avoids decimation of data and can simplify algorithms,
+  //   but requires additional discrepancy keys for high-low QoI combinations
+  else
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);//MODEL_DISCREPANCY
 }
 
 
@@ -1214,19 +1295,19 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
     { equivHFEvals = 0.; return; }
 
   // compute the equivalent number of HF evaluations
-  size_t lev, num_lev = N_l.size();
+  size_t l, num_l = N_l.size();
   switch (multilevDiscrepEmulation) {
   case RECURSIVE_EMULATION:
-    for (lev=0; lev<num_lev; ++lev)
-      equivHFEvals += N_l[lev] * cost[lev]; // single model cost per level
+    for (l=0; l<num_l; ++l)
+      equivHFEvals += N_l[l] * cost[l]; // single model cost per level
     break;
   case DISTINCT_EMULATION:
     equivHFEvals = N_l[0] * cost[0]; // first level is single model cost
-    for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
-      equivHFEvals += N_l[lev] * (cost[lev] + cost[lev-1]);
+    for (l=1; l<num_l; ++l)  // subsequent levels incur 2 model costs
+      equivHFEvals += N_l[l] * (cost[l] + cost[l-1]);
     break;
   }
-  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+  equivHFEvals /= cost[num_l-1]; // normalize into equivalent HF evals
 }
 
 
@@ -1239,13 +1320,15 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
-  // (model form takes precedence)
-  size_t num_lev; unsigned short form; bool multilev;
-  configure_levels(num_lev, form, multilev, true); // MF given precedence
+  unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
+  configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
+  // either lev varies and form is fixed, or vice versa:
+  unsigned short& step = (multilev) ? lev : form;  step = 0;
+  if (multilev) { form = fixed_index;  seq_index = 2; }
+  else          {  lev = fixed_index;  seq_index = 1; }
 
   // initial low fidelity/lowest discretization expansion
-  unsigned short lev = 0;
-  configure_indices(lev, form, multilev);
+  configure_indices(step, form, lev, seq_index);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
@@ -1257,9 +1340,9 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // loop over each of the discrepancy levels
-  for (lev=1; lev<num_lev; ++lev) {
+  for (step=1; step<num_steps; ++step) {
     // configure hierarchical model indices and activate key in data fit model
-    configure_indices(lev, form, multilev);
+    configure_indices(step, form, lev, seq_index);
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
@@ -1303,74 +1386,220 @@ void NonDExpansion::greedy_multifidelity_expansion()
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // Initialize again (or must propagate settings from mf_expansion())
-  size_t num_lev, best_lev, lev_candidate, best_candidate;
-  unsigned short lev, form; RealVector cost;
-  bool multilev, full_covar = (covarianceControl == FULL_COVARIANCE);
-  configure_levels(num_lev, form, multilev, true); // MF given precedence
-  configure_cost(num_lev, multilev, cost);
+  unsigned short num_steps, fixed_index, form, lev, seq_index;  bool multilev;
+  configure_sequence(num_steps, fixed_index, multilev, true); // MF precedence
+  // either lev varies and form is fixed, or vice versa:
+  unsigned short& step = (multilev) ? lev : form; // step is an alias
+  if (multilev) { form = fixed_index;  seq_index = 2; }
+  else          {  lev = fixed_index;  seq_index = 1; }
+  RealVector cost;  configure_cost(num_steps, multilev, cost);
 
   // Initialize all levels.  Note: configure_indices() is used for completeness
-  // (activate_key() is sufficient for current grid initialization operations).
-  for (lev=0; lev<num_lev; ++lev) {
-    configure_indices(lev, form, multilev);//activate_key(lev, form, multilev);
+  // (uSpaceModel.active_model_key(...) is sufficient for current grid
+  // initialization operations).
+  for (step=0; step<num_steps; ++step) {
+    configure_indices(step, form, lev, seq_index);
     pre_refinement();
   }
 
-  size_t iter = 0,
-    max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
-  Real lev_metric, best_lev_metric = DBL_MAX;
-  while ( best_lev_metric > convergenceTol && iter < max_refine ) {
+  // Integrated MF refinement mirrors individual adaptive refinement in
+  // refine_expansion() in using the max_refinement_iterations specification.
+  // This differs from multilevel_regression(), which uses max_iterations and
+  // potentially max_solver_iterations.
+  size_t iter = 0, best_step, step_candidate, best_step_candidate,
+    max_refine_iter = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
+  Real step_metric, best_step_metric = DBL_MAX;
+  RealVector best_stats_star;
+  while ( best_step_metric > convergenceTol && iter < max_refine_iter ) {
 
     // Generate candidates at each level
     // > TO DO: need to be able to push / pop for all refine types (beyond GSG)
-    best_lev_metric = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
+    best_step_metric = 0.;
+    for (step=0; step<num_steps; ++step) {
       // configure hierarchical model indices and activate key in data fit model
-      configure_indices(lev, form, multilev);
+      configure_indices(step, form, lev, seq_index);
 
       // This returns the best/only candidate for the current level
-      // Note: it must roll up contributions from all levels --> lev_metric
-      lev_candidate = core_refinement(lev_metric, true, true);
+      // Note: it must roll up contributions from all levels --> step_metric
+      step_candidate = core_refinement(step_metric, true, true);
       // core_refinement() normalizes level candidates based on the number of
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
       // secondary normalization for relative level cost is required.
-      lev_metric /= level_cost(lev, cost);
-      Cout << "\n<<<<< Level " << lev+1 << " refinement metric = "
-	   << lev_metric << '\n';
+      step_metric /= sequence_cost(step, cost);
+      Cout << "\n<<<<< Sequence step " << step+1 << " refinement metric = "
+	   << step_metric << '\n';
 
       // Assess candidate for best across all levels
-      if (lev_metric > best_lev_metric) {
-	best_lev_metric = lev_metric;
-	best_lev = lev;	best_candidate = lev_candidate;
-	statsStar = levelStatsStar;
+      if (step_metric > best_step_metric) {
+	best_step        = step;         best_step_candidate = step_candidate;
+	best_step_metric = step_metric;  best_stats_star     = statsStar;
       }
     }
 
     // permanently apply best increment and update references for next increment
-    configure_indices(best_lev, form, multilev);
-    select_candidate(best_candidate);
-    push_candidate(statsStar);// update stats from best candidate (no recompute)
+    step = best_step; // also updates form | lev
+    configure_indices(step, form, lev, seq_index);
+    select_candidate(best_step_candidate);
+    push_candidate(best_stats_star); // update stats from best (no recompute)
 
     ++iter;
     Cout << "\n<<<<< Iteration " << iter
-	 << " completed: selected refinement indices = level " << best_lev+1
-	 << " candidate " << best_candidate+1 << '\n';
+	 << " completed: selected refinement indices = sequence step "
+	 << best_step+1 << " candidate " << best_step_candidate+1 << '\n';
     print_results(Cout, INTERMEDIATE_RESULTS);
   }
 
   // Perform final roll-up for each level and then combine levels
-  NLev.resize(num_lev);  bool reverted;
-  for (lev=0; lev<num_lev; ++lev) {
-    configure_indices(lev, form, multilev);
-    reverted = (lev != best_lev); // only candidate from best_lev was applied
-    post_refinement(best_lev_metric, reverted);
-    NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
+  NLev.resize(num_steps);  bool reverted;
+  for (step=0; step<num_steps; ++step) {
+    configure_indices(step, form, lev, seq_index);
+    reverted = (step != best_step); // only candidate from best_step was applied
+    post_refinement(best_step_metric, reverted);
+    NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
   combined_to_active(); // combine expansions and promote result to active
   // Final annotated results are computed / printed in core_run()
+}
+
+
+void NonDExpansion::multilevel_regression()
+{
+  unsigned short num_steps, fixed_index, form, lev, seq_index;
+  bool multilev, import_pilot;
+  size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
+
+  // Allow either model forms or discretization levels, but not both
+  configure_sequence(num_steps, fixed_index, multilev, false); // ML precedence
+  // either lev varies and form is fixed, or vice versa:
+  unsigned short& step = (multilev) ? lev : form; // step is an alias
+  if (multilev) { form = fixed_index;  seq_index = 2; }
+  else          {  lev = fixed_index;  seq_index = 1; }
+
+  // configure metrics and cost for each step in the sequence
+  RealVector cost, level_metrics(num_steps);
+  configure_cost(num_steps, multilev, cost);
+
+  // virtual: base implementation clears keys, assigns stats type, et al.
+  initialize_ml_regression(num_steps, import_pilot);
+
+  // Initialize NLev and load the pilot sample from user specification
+  NLev.assign(num_steps, 0);
+  SizetArray delta_N_l(num_steps);
+  load_pilot_sample(pilotSamples, delta_N_l);
+
+  // now converge on sample counts per level (NLev)
+  while ( iter <= max_iter &&
+	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
+
+    sum_root_var_cost = 0.;
+    for (step=0; step<num_steps; ++step) {
+
+      configure_indices(step, form, lev, seq_index);
+
+      if (iter == 0) { // initial expansion build
+	// Update solution control variable in uSpaceModel to support
+	// DataFitSurrModel::consistent() logic
+	if (import_pilot)
+	  uSpaceModel.update_from_subordinate_model(); // max depth
+
+	NLev[step] += delta_N_l[step]; // update total samples for this step
+	increment_sample_sequence(delta_N_l[step], NLev[step], step);
+	if (step == 0 || import_pilot)
+	  compute_expansion(); // init + import + build; not recursive
+	else
+	  update_expansion();  // just build; not recursive
+
+	if (import_pilot) { // update counts to include imported data
+	  NLev[step] = delta_N_l[step]
+	    = uSpaceModel.approximation_data(0).points();
+	  Cout << "Pilot count including import = " << delta_N_l[step]<< "\n\n";
+	  // Trap zero samples as it will cause FPE downstream
+	  if (NLev[step] == 0) { // no pilot spec, no import match
+	    Cerr << "Error: insufficient sample recovery for sequence step "
+		 << step << " in multilevel_regression()." << std::endl;
+	    abort_handler(METHOD_ERROR);
+	  }
+	}
+      }
+      else if (delta_N_l[step]) {
+	NLev[step] += delta_N_l[step]; // update total samples for this step
+	increment_sample_sequence(delta_N_l[step], NLev[step], step);
+	// Note: import build data is not re-processed by append_expansion()
+	append_expansion();
+      }
+
+      switch (multilevAllocControl) {
+      case ESTIMATOR_VARIANCE: {
+	Real& agg_var_l = level_metrics[step];
+	if (delta_N_l[step] > 0) aggregate_variance(agg_var_l);
+	sum_root_var_cost += std::pow(agg_var_l *
+	  std::pow(sequence_cost(step, cost), kappaEstimatorRate),
+	  1./(kappaEstimatorRate+1.));
+        // MSE reference is ML MC aggregation for pilot(+import) sample:
+	if (iter == 0) estimator_var0 += agg_var_l / NLev[step];
+	break;
+      }
+      default:
+	if (delta_N_l[step] > 0)
+	  level_metric(level_metrics[step], 2.);
+	//else sparsity,rank metric for this level same as previous iteration
+	break;
+      }
+    }
+
+    switch (multilevAllocControl) {
+    case ESTIMATOR_VARIANCE:
+      if (iter == 0) { // eps^2 / 2 = var * relative factor
+	eps_sq_div_2 = estimator_var0 * convergenceTol;
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
+      }
+      compute_sample_increment(level_metrics, cost, sum_root_var_cost,
+			       eps_sq_div_2, NLev, delta_N_l);
+      break;
+    default:
+      compute_sample_increment(2., level_metrics, NLev, delta_N_l);
+      break;
+    }
+    ++iter;
+    Cout << "\nML regression iteration " << iter << " sample increments:\n"
+	 << delta_N_l << std::endl;
+  }
+  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
+
+  finalize_ml_regression();
+  // Final annotated results are computed / printed in core_run()
+}
+
+
+void NonDExpansion::
+initialize_ml_regression(size_t num_steps, bool& import_pilot)
+{
+  // remove default key (empty activeKey) since this interferes with
+  // combine_approximation().  Also useful for ML/MF re-entrancy.
+  uSpaceModel.clear_model_keys();
+
+  // all stats are stats for the active sequence step (not combined)
+  statistics_type(Pecos::ACTIVE_EXPANSION_STATS);
+
+  // Multilevel variance aggregation requires independent sample sets
+  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
+  if (u_sub_iter != NULL)
+    ((Analyzer*)u_sub_iter)->vary_pattern(true);
+
+  // Default (overridden in derived classes)
+  import_pilot = false;
+}
+
+
+void NonDExpansion::finalize_ml_regression()
+{
+  // combine level expansions and promote to active expansion:
+  combined_to_active();
 }
 
 
@@ -1401,7 +1630,7 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   // increments.  For recursive discrepancy, however, all levels above the
   // selected candidate are invalidated.
   //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-  //  for (lev=best_lev+1; lev<num_lev; ++lev)
+  //  for (lev=best_lev+1; lev<num_steps; ++lev)
   //    uSpaceModel.clear_popped();
 }
 
@@ -1437,12 +1666,31 @@ select_refinement_points(const RealVectorArray& candidate_samples,
 }
 
 
+void NonDExpansion::append_expansion()
+{
+  // default implementation (may be overridden by derived classes)
+
+  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
+  //         if necessary (PCE), increment_order_from_grid() has been called
+
+  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
+  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
+						    true, false);
+  uSpaceModel.run_dace();
+  // append new DACE pts and rebuild expansion
+  uSpaceModel.append_approximation(true);
+}
+
+
 void NonDExpansion::
 append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
-       << "       NonDExpansion does not support data appending." << std::endl;
-  abort_handler(METHOD_ERROR);
+  // default implementation (may be overridden by derived classes)
+
+  // increment the dataset
+  numSamplesOnModel += resp_map.size();
+  // utilize rebuild
+  uSpaceModel.append_approximation(samples, resp_map, true);
 }
 
 
@@ -1517,8 +1765,8 @@ void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
   if (statsType != stats_type) {
     statsType = stats_type;
 
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
+    SharedApproxData* shared_data_rep
+      = uSpaceModel.shared_approximation().data_rep();
     shared_data_rep->refinement_statistics_type(stats_type);
 
     // poly_approxs share computed* trackers between active and combined stats
@@ -1526,8 +1774,7 @@ void NonDExpansion::statistics_type(short stats_type, bool clear_bits)
     if (clear_bits) {
       std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
       for (size_t i=0; i<numFunctions; ++i)
-	((PecosApproximation*)poly_approxs[i].approx_rep())
-	  ->clear_computed_bits();
+	poly_approxs[i].clear_computed_bits();
     }
 
     /*
@@ -1562,27 +1809,6 @@ void NonDExpansion::combined_to_active()
   // update approach for computing statistics; don't clear bits as
   // combined_to_active() can transfer bits from combined to active
   statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false);
-}
-
-
-void NonDExpansion::assign_specification_sequence()
-{
-  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
-
-  Cerr << "Error: no default implementation for assign_specification_"
-       << "sequence() used by multifidelity expansions." << std::endl;
-  abort_handler(METHOD_ERROR);
-}
-
-
-/** Default implementation redefined by Multilevel derived classes. */
-void NonDExpansion::increment_specification_sequence()
-{
-  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
-
-  Cerr << "Error: no default implementation for increment_specification_"
-       << "sequence() used by multifidelity expansions." << std::endl;
-  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1640,7 +1866,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
     // track best increment evaluated thus far
     if (delta > delta_star) {
       cit_star = cit;  delta_star = delta;  index_star = index;
-      pull_candidate(levelStatsStar); // pull comp_*_metric() + augmented stats
+      pull_candidate(statsStar); // pull comp_*_metric() + augmented stats
     }
 
     // restore previous state (destruct order is reversed from construct order)
@@ -1654,7 +1880,7 @@ increment_sets(Real& delta_star, bool revert, bool print_metric)
 
   if (!revert) { // permanently apply best increment and update references
     select_index_set_candidate(cit_star); // invalidates cit_star
-    push_candidate(levelStatsStar);
+    push_candidate(statsStar);
   }
   return index_star;
 }
@@ -1875,6 +2101,117 @@ compute_final_statistics_metric(bool revert, bool print_metric)
 */
 
 
+void NonDExpansion::
+compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
+			 Real sum_root_var_cost, Real eps_sq_div_2,
+			 const SizetArray& N_l, SizetArray& delta_N_l)
+{
+  // case ESTIMATOR_VARIANCE:
+
+  // eps^2 / 2 target computed based on relative tolerance: total MSE = eps^2
+  // which is equally apportioned (eps^2 / 2) among discretization MSE and
+  // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
+  // discretization error, we compute an initial estimator variance and then
+  // seek to reduce it by a relative_factor <= 1.
+
+  // We assume a functional dependence of estimator variance on NLev
+  // for minimizing aggregate cost subject to an MSE error balance:
+  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
+  // where Monte Carlo has gamma = kappa = 1.  To fit these parameters,
+  // one approach is to numerically estimate the variance in the mean
+  // estimator (alpha_0) from two sources:
+  // > from variation across k folds for the selected CV settings
+  // > from var decrease as NLev increases across iters
+
+  // compute and accumulate variance of mean estimator from the set of
+  // k-fold results within the selected settings from cross-validation:
+  //Real cv_var_i = poly_approx_rep->
+  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
+  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
+  //   cv_iterator class scope)
+  // To validate this approach, the actual estimator variance can be
+  // computed and compared with the CV variance approximation (as for
+  // traditional CV error plots, but predicting estimator variance
+  // instead of L2 fit error).
+
+  // update targets based on variance estimates
+  Real new_N_l; size_t lev, num_lev = N_l.size();
+  Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
+		       1. / kappaEstimatorRate);
+  for (lev=0; lev<num_lev; ++lev) {
+    new_N_l = std::pow(agg_var[lev] / sequence_cost(lev, cost),
+		       1. / (kappaEstimatorRate+1.)) * fact;
+    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
+  }
+}
+
+
+void NonDExpansion::aggregate_variance(Real& agg_var_l)
+{
+  // case ESTIMATOR_VARIANCE:
+  // statsType remains as Pecos::ACTIVE_EXPANSION_STATS
+
+  // control ML using aggregated variance across the vector of QoI
+  // (alternate approach: target QoI with largest variance)
+  agg_var_l = 0.;  Real var_l;
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    var_l = poly_approxs[qoi].variance(); // for active level
+    agg_var_l += var_l;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Variance(" << "qoi " << qoi+1 << ") = " << var_l << '\n';
+  }
+}
+
+
+void NonDExpansion::assign_specification_sequence()
+{
+  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
+
+  Cerr << "Error: no default implementation for assign_specification_"
+       << "sequence() used by multifidelity expansions." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+/** Default implementation redefined by Multilevel derived classes. */
+void NonDExpansion::increment_specification_sequence()
+{
+  // SeqSpec attributes are not elevated, so can't define default TPQ/SSG
+
+  Cerr << "Error: no default implementation for increment_specification_"
+       << "sequence() used by multifidelity expansions." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDExpansion::
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
+{
+  Cerr << "Error: no default implementation for increment_sample_sequence() "
+       << "defined for multilevel_regression()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDExpansion::level_metric(Real& lev_metric_l, Real power)
+{
+  Cerr << "Error: no default implementation for level_metric() "
+       << "defined for multilevel_regression()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+void NonDExpansion::
+compute_sample_increment(Real factor, const RealVector& lev_metrics,
+			 const SizetArray& N_l,	SizetArray& delta_N_l)
+{
+  Cerr << "Error: no default implementation for compute_sample_increment() "
+       << "defined for multilevel_regression()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
 {
   // anisotropy based on total Sobol indices (univariate effects only) averaged
@@ -1888,23 +2225,23 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
   }
 
   size_t i;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
-    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
+  bool combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Approximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
-    if (!vbdOrderLimit) // no order limit --> component used within total
-      poly_approx_rep->compute_component_effects();
-    poly_approx_rep->compute_total_effects(); // from scratch or using component
+    Approximation& approx_i = poly_approxs[i];
+    if (vbdOrderLimit) // prevent print/export of uninitialized memory
+      approx_i.clear_component_effects();
+    else // no order limit --> component used within total
+      approx_i.compute_component_effects();
+    approx_i.compute_total_effects(); // from scratch or using component
 
     // Note: response functions for which negligible variance is detected have
     // their totalSobolIndices assigned to zero.  This avoids corrupting the
     // aggregation, although the scaling that follows could be improved to
     // divide by the number of nonzero contributions (avg_sobol is currently
     // used only in a relative sense, so this is low priority).
-    if (numFunctions > 1) avg_sobol += poly_approx_rep->total_sobol_indices();
-    else                  avg_sobol  = poly_approx_rep->total_sobol_indices();
+    if (numFunctions > 1) avg_sobol += approx_i.total_sobol_indices();
+    else                  avg_sobol  = approx_i.total_sobol_indices();
   }
   if (numFunctions > 1)
     avg_sobol.scale(1./(Real)numFunctions);
@@ -1929,6 +2266,7 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
   // appropriate to extract the minimum decay rates over the response fn set.
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  // This context can be specific to PCE via Pecos
   PecosApproximation* poly_approx_rep
     = (PecosApproximation*)poly_approxs[0].approx_rep();
   min_decay = poly_approx_rep->dimension_decay_rates();
@@ -1954,17 +2292,14 @@ void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
 
 void NonDExpansion::compute_active_diagonal_variance()
 {
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    Approximation& approx_i = poly_approxs[i];
     Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE)
                 ? respVariance[i] : respCovariance(i,i);
-    if (pa_rep_i->expansion_coefficient_flag())
-      var_i = (all_vars) ? pa_rep_i->variance(initialPtU) :
-	                   pa_rep_i->variance();
+    if (approx_i.expansion_coefficient_flag())
+      var_i = (allVars) ? approx_i.variance(initialPtU) : approx_i.variance();
     else
       { warn_flag = true; var_i = 0.; }
   }
@@ -1978,20 +2313,17 @@ void NonDExpansion::compute_active_diagonal_variance()
 void NonDExpansion::compute_active_off_diagonal_covariance()
 {
   size_t i, j;
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (pa_rep_i->expansion_coefficient_flag())
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag())
       for (j=0; j<i; ++j) {
-	PecosApproximation* pa_rep_j
-	  = (PecosApproximation*)poly_approxs[j].approx_rep();
-	if (pa_rep_j->expansion_coefficient_flag())
-	  respCovariance(i,j) = (all_vars) ?
-	    pa_rep_i->covariance(initialPtU, pa_rep_j) :
-	    pa_rep_i->covariance(pa_rep_j);
+	Approximation& approx_j = poly_approxs[j];
+	if (approx_j.expansion_coefficient_flag())
+	  respCovariance(i,j) = (allVars) ?
+	    approx_i.covariance(initialPtU, approx_j) :
+	    approx_i.covariance(approx_j);
 	else
 	  { warn_flag = true; respCovariance(i,j) = 0.; }
       }
@@ -2010,17 +2342,15 @@ void NonDExpansion::compute_active_off_diagonal_covariance()
 
 void NonDExpansion::compute_combined_diagonal_variance()
 {
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    Approximation& approx_i = poly_approxs[i];
     Real& var_i = (covarianceControl == DIAGONAL_COVARIANCE)
                 ? respVariance[i] : respCovariance(i,i);
-    if (pa_rep_i->expansion_coefficient_flag())
-      var_i = (all_vars) ? pa_rep_i->combined_covariance(initialPtU, pa_rep_i)
-	                 : pa_rep_i->combined_covariance(pa_rep_i);
+    if (approx_i.expansion_coefficient_flag())
+      var_i = (allVars) ? approx_i.combined_covariance(initialPtU, approx_i)
+	                : approx_i.combined_covariance(approx_i);
     else
       { warn_flag = true; var_i = 0.; }
   }
@@ -2035,20 +2365,17 @@ void NonDExpansion::compute_combined_diagonal_variance()
 void NonDExpansion::compute_combined_off_diagonal_covariance()
 {
   size_t i, j;
-  bool warn_flag = false,
-    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* pa_rep_i
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (pa_rep_i->expansion_coefficient_flag())
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag())
       for (j=0; j<i; ++j) {
-	PecosApproximation* pa_rep_j
-	  = (PecosApproximation*)poly_approxs[j].approx_rep();
-	if (pa_rep_j->expansion_coefficient_flag())
-	  respCovariance(i,j) = (all_vars) ?
-	    pa_rep_i->combined_covariance(initialPtU, pa_rep_j) :
-	    pa_rep_i->combined_covariance(pa_rep_j);
+	Approximation& approx_j = poly_approxs[j];
+	if (approx_j.expansion_coefficient_flag())
+	  respCovariance(i,j) = (allVars) ?
+	    approx_i.combined_covariance(initialPtU, approx_j) :
+	    approx_i.combined_covariance(approx_j);
 	else
 	  { warn_flag = true; respCovariance(i,j) = 0.; }
       }
@@ -2096,13 +2423,12 @@ void NonDExpansion::compute_statistics(short results_state)
       //break;
     //}
     break;
-  case INTERMEDIATE_RESULTS: {
-    bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  case INTERMEDIATE_RESULTS:
     switch (refineMetric) {
     case Pecos::NO_METRIC: // possible for multifidelity_expansion()
       compute_moments();
       if (totalLevelRequests) {
-	if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+	if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
 	compute_level_mappings();
       }
       break;
@@ -2112,16 +2438,15 @@ void NonDExpansion::compute_statistics(short results_state)
 	compute_off_diagonal_covariance();
       break;
     case Pecos::MIXED_STATS_METRIC:
-      if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+      if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
       compute_moments(); compute_level_mappings();
       break;
     case Pecos::LEVEL_STATS_METRIC:
-      if (all_vars) uSpaceModel.continuous_variables(initialPtU); // see top
+      if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
       compute_level_mappings();
       break;
     }
     break;
-  }
   case FINAL_RESULTS:
     uSpaceModel.continuous_variables(initialPtU); // see top comment
     // -----------------------------
@@ -2159,8 +2484,7 @@ void NonDExpansion::compute_level_mappings()
   compute_numerical_level_mappings();
 
   // flags for limiting unneeded computation (matched in print_results())
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
-       combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS),
+  bool combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS),
        z_to_beta = (respLevelTarget == RELIABILITIES);
 
   // loop over response fns and compute/store analytic stats/stat grads
@@ -2170,9 +2494,9 @@ void NonDExpansion::compute_level_mappings()
   size_t i, j, rl_len, pl_len, bl_len, cntr = 0,
     moment_offset = (finalMomentsType) ? 2 : 0;
 
-  Approximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
+    Approximation& approx_i = poly_approxs[i];
+
     rl_len = requestedRespLevels[i].length();
     pl_len = requestedProbLevels[i].length();
     bl_len = requestedRelLevels[i].length();
@@ -2196,12 +2520,12 @@ void NonDExpansion::compute_level_mappings()
 	  { moments_flag = true; break; }
     }
     if (moments_flag) {
-      if (all_vars)
-	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
+      if (allVars)
+	approx_i.compute_moments(initialPtU, false, combined_stats);
       else
-	poly_approx_rep->compute_moments(false, combined_stats);
+	approx_i.compute_moments(false, combined_stats);
 
-      const RealVector& moments = poly_approx_rep->moments(); // virtual
+      const RealVector& moments = approx_i.moments(); // virtual
       mu = moments[0]; var = moments[1]; // Pecos provides central moments
 
       if (var >= 0.)
@@ -2315,22 +2639,20 @@ void NonDExpansion::compute_moments()
   // for use with incremental results states
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars),
-    combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
-  Approximation* poly_approx_rep;
+  bool combined_stats = (statsType == Pecos::COMBINED_EXPANSION_STATS);
   for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
-    if (poly_approx_rep->expansion_coefficient_flag()) {
-      if (all_vars)
-	poly_approx_rep->compute_moments(initialPtU, false, combined_stats);
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag()) {
+      if (allVars)
+	approx_i.compute_moments(initialPtU, false, combined_stats);
       else
-	poly_approx_rep->compute_moments(false, combined_stats);
+	approx_i.compute_moments(false, combined_stats);
 
       // extract variance (Pecos provides central moments)
       if (covarianceControl == DIAGONAL_COVARIANCE)
-	respVariance[i]      = poly_approx_rep->moment(1);
+	respVariance[i]      = approx_i.moment(1);
       else if (covarianceControl == FULL_COVARIANCE)
-	respCovariance(i,i)  = poly_approx_rep->moment(1);
+	respCovariance(i,i)  = approx_i.moment(1);
     }
   }
 }
@@ -2343,12 +2665,11 @@ void NonDExpansion::compute_sobol_indices()
   if (!vbdFlag) return;
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Approximation* poly_approx_rep;
   for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
-    if (poly_approx_rep->expansion_coefficient_flag()) {
-      poly_approx_rep->compute_component_effects(); // main or main+interaction
-      poly_approx_rep->compute_total_effects();     // total
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag()) {
+      approx_i.compute_component_effects(); // main or main+interaction
+      approx_i.compute_total_effects();     // total
     }
   }
 }
@@ -2360,7 +2681,6 @@ void NonDExpansion::compute_analytic_statistics()
 
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0,
     num_final_grad_vars = final_dvv.size(), total_offset,
     moment_offset = (finalMomentsType) ? 2 : 0;
@@ -2376,7 +2696,6 @@ void NonDExpansion::compute_analytic_statistics()
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   Real mu, var, sigma, beta, z;
   RealVector mu_grad, sigma_grad, final_stat_grad;
-  Approximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
     if (totalLevelRequests) {
       rl_len = requestedRespLevels[i].length();
@@ -2387,18 +2706,18 @@ void NonDExpansion::compute_analytic_statistics()
     else
       rl_len = pl_len = bl_len = gl_len = 0;
 
-    poly_approx_rep = poly_approxs[i].approx_rep();
+    Approximation& approx_i = poly_approxs[i];
 
     // Note: corresponding logic in NonDExpansion::compute_expansion() defines
     // expansionCoeffFlag as needed to support final data requirements.
     // If not full stats, suppress secondary moment calculations.
-    if (poly_approx_rep->expansion_coefficient_flag()) {
-      if (all_vars)
-	poly_approx_rep->compute_moments(initialPtU, true, combined_stats);
+    if (approx_i.expansion_coefficient_flag()) {
+      if (allVars)
+	approx_i.compute_moments(initialPtU, true, combined_stats);
       else
-	poly_approx_rep->compute_moments(true, combined_stats);
+	approx_i.compute_moments(true, combined_stats);
 
-      const RealVector& moments = poly_approx_rep->moments(); // virtual
+      const RealVector& moments = approx_i.moments(); // virtual
       mu = moments[0]; var = moments[1]; // Pecos provides central moments
 
       if (covarianceControl ==  DIAGONAL_COVARIANCE) respVariance[i]     = var;
@@ -2440,9 +2759,9 @@ void NonDExpansion::compute_analytic_statistics()
       finalStatistics.function_value(mu, cntr);
     // *** mean gradient
     if (mom1_grad_flag) {
-      const RealVector& grad = (all_vars) ?
-	poly_approx_rep->mean_gradient(initialPtU, final_dvv) :
-	poly_approx_rep->mean_gradient();
+      const RealVector& grad = (allVars) ?
+	approx_i.mean_gradient(initialPtU, final_dvv) :
+	approx_i.mean_gradient();
       if (final_mom1_grad_flag)
 	finalStatistics.function_gradient(grad, cntr);
       if (moment_grad_mapping_flag)
@@ -2465,9 +2784,9 @@ void NonDExpansion::compute_analytic_statistics()
     }
     // *** std deviation / variance gradient
     if (mom2_grad_flag) {
-      const RealVector& grad = (all_vars) ?
-	poly_approx_rep->variance_gradient(initialPtU, final_dvv) :
-	poly_approx_rep->variance_gradient();
+      const RealVector& grad = (allVars) ?
+	approx_i.variance_gradient(initialPtU, final_dvv) :
+	approx_i.variance_gradient();
       if (std_moments || moment_grad_mapping_flag) {
 	if (sigma_grad.empty())
 	  sigma_grad.sizeUninitialized(num_final_grad_vars);
@@ -2552,35 +2871,32 @@ void NonDExpansion::compute_analytic_statistics()
     cntr += gl_len;
  
     // *** local sensitivities
-    if (local_grad_stats && poly_approx_rep->expansion_coefficient_flag()) {
+    if (local_grad_stats && approx_i.expansion_coefficient_flag()) {
       // expansion sensitivities are defined from the coefficients and basis
       // polynomial derivatives.  They are computed for the means of the
       // uncertain varables and provide a measure of local importance (but not
       // scaled by input covariance as in mean value importance factors).
+      Pecos::MultivariateDistribution& x_dist
+	= iteratedModel.multivariate_distribution();
       const RealVector& exp_grad_u
-	= poly_approxs[i].gradient(uSpaceModel.current_variables());
-      RealVector exp_grad_x;
-      SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
-      SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-      RealVector x_means(natafTransform.x_means());
-      natafTransform.trans_grad_U_to_X(exp_grad_u, exp_grad_x, x_means,
-				       x_dvv, cv_ids);
-      Teuchos::setCol(exp_grad_x, (int)i, expGradsMeanX);
+	= approx_i.gradient(uSpaceModel.current_variables());
+      RealVector
+	exp_grad_x(Teuchos::getCol(Teuchos::View, expGradsMeanX, (int)i));
+      uSpaceModel.trans_grad_U_to_X(exp_grad_u, exp_grad_x, x_dist.means());
 
 #ifdef TEST_HESSIANS
       const RealSymMatrix& exp_hess_u
-	= poly_approxs[i].hessian(uSpaceModel.current_variables());
+	= approx_i.hessian(uSpaceModel.current_variables());
       //RealSymMatrix exp_hess_x;
-      //natafTransform.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_means,
-      //                                 x_dvv, cv_ids);
-      Cout << exp_hess_u; //exp_hess_x
+      //uSpaceModel.trans_hess_U_to_X(exp_hess_u, exp_hess_x, x_dist.means());
+      Cout << exp_hess_u; //<< exp_hess_x;
 #endif // TEST_HESSIANS
     }
 
     // *** global sensitivities:
-    if (vbdFlag && poly_approx_rep->expansion_coefficient_flag()) {
-      poly_approx_rep->compute_component_effects(); // main or main+interaction
-      poly_approx_rep->compute_total_effects();     // total
+    if (vbdFlag && approx_i.expansion_coefficient_flag()) {
+      approx_i.compute_component_effects(); // main or main+interaction
+      approx_i.compute_total_effects();     // total
     }
   }
 
@@ -2789,7 +3105,6 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
   switch (refineMetric) {
   case Pecos::COVARIANCE_METRIC: {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    Approximation* poly_approx_rep;
     bool full_covar = (covarianceControl == FULL_COVARIANCE);
     // push resp{V|Cov}ariance
     if (full_covar)
@@ -2798,10 +3113,9 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
       copy_data_partial(stats_ref, numFunctions, numFunctions, respVariance);
     // push Pecos::{expansion|numerical}Moments
     for (size_t i=0; i<numFunctions; ++i) {
-      poly_approx_rep = poly_approxs[i].approx_rep();
-      poly_approx_rep->moment(stats_ref[i], 0); // mean values
-      if (full_covar) poly_approx_rep->moment(respCovariance(i,i), 1);
-      else            poly_approx_rep->moment(respVariance[i],     1);
+      poly_approxs[i].moment(stats_ref[i], 0); // mean values
+      if (full_covar) poly_approxs[i].moment(respCovariance(i,i), 1);
+      else            poly_approxs[i].moment(respVariance[i],     1);
     }
     break;
   }
@@ -2893,14 +3207,13 @@ void NonDExpansion::archive_moments()
   bool exp_active = false, num_active = false;
   RealMatrix exp_matrix(4, numFunctions), num_matrix(4, numFunctions);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Approximation* poly_approx_rep;
   for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
-    if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag()) {
       // Pecos provides central moments
-      const RealVector& exp_moments = poly_approx_rep->expansion_moments();
+      const RealVector& exp_moments = approx_i.expansion_moments();
       const RealVector& num_int_moments
-	= poly_approx_rep->numerical_integration_moments();
+	= approx_i.numerical_integration_moments();
       size_t exp_mom = exp_moments.length(),
 	num_int_mom  = num_int_moments.length();
       if (exp_mom)  exp_active = true;
@@ -2961,8 +3274,9 @@ void NonDExpansion::archive_moments()
         // extract column or row of moment_stats
         resultsDB.insert(run_identifier(), {String("integration_moments"),
             iteratedModel.response_labels()[i]},
-            Teuchos::getCol<int,double>(Teuchos::View, *const_cast<RealMatrix*>(&num_matrix), i),
-            scales);
+            Teuchos::getCol<int,double>(Teuchos::View,
+					*const_cast<RealMatrix*>(&num_matrix),
+					i), scales);
       }
     }
   }
@@ -2983,7 +3297,6 @@ void NonDExpansion::archive_sobol_indices() {
     = iteratedModel.continuous_variable_labels();
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Approximation* poly_approx_rep;
   // Map from index to variable labels
   std::map<int, std::vector<const char *> > sobol_labels;
 
@@ -2997,19 +3310,18 @@ void NonDExpansion::archive_sobol_indices() {
   size_t i, j, num_indices;
   if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
+    SharedApproxData* shared_data_rep
+      = uSpaceModel.shared_approximation().data_rep();
     const Pecos::BitArrayULongMap& sobol_map
       = shared_data_rep->sobol_index_map();
     for (Pecos::BAULMCIter map_cit=sobol_map.begin();
 	 map_cit!=sobol_map.end(); ++map_cit) { // loop in key sorted order
       const BitArray& set = map_cit->first;
-      const int &order = set.count();
       unsigned long index = map_cit->second; // 0-way -> n 1-way -> interaction
       if (index > numContinuousVars) {       // an interaction
         if( sobol_labels.find(index) == sobol_labels.end())
           sobol_labels[index] = std::vector<const char *>();
-        orders[index] = order;
+        orders[index] = set.count();
 	for (j=0; j<numContinuousVars; ++j) {
 	  if (set[j])
 	    sobol_labels[index].push_back(cv_labels[j].c_str());
@@ -3020,8 +3332,8 @@ void NonDExpansion::archive_sobol_indices() {
 
   // archive sobol indices per response function
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
-    if (poly_approx_rep->expansion_coefficient_flag()) {
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag()) {
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
@@ -3030,11 +3342,10 @@ void NonDExpansion::archive_sobol_indices() {
 			    respCovariance(i,i) <= Pecos::SMALL_NUMBER ) )
 	              ? false : true;
       if (well_posed) {
-	const RealVector& total_indices
-	  = poly_approx_rep->total_sobol_indices();
-	const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
+	const RealVector& total_indices = approx_i.total_sobol_indices();
+	const RealVector& sobol_indices = approx_i.sobol_indices();
         Pecos::ULongULongMap sparse_sobol_map
-	  = poly_approx_rep->sparse_sobol_index_map();
+	  = approx_i.sparse_sobol_index_map();
 	bool dense = sparse_sobol_map.empty();
 	Real sobol; size_t main_cntr = 0;
 	// Store main effects and total effects
@@ -3146,28 +3457,35 @@ void NonDExpansion::update_final_statistics_gradients()
 
   // for all_variables, finalStatistics design grads are in u-space
   // -> transform to the original design space
-  if (numContDesVars || numContEpistUncVars || numContStateVars) {
+  if (allVars) {
     // this approach is more efficient but less general.  If we can assume
     // that the DVV only contains design/state vars, then we know they are
     // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
+    const SharedVariablesData& svd
+      = iteratedModel.current_variables().shared_data();
     SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
     const SizetArray& final_dvv
       = finalStatistics.active_set_derivative_vector();
-    size_t num_final_grad_vars = final_dvv.size();
-    Real factor, x = 0.; // x is a dummy for common pdf API (unused by uniform)
     const std::vector<Pecos::RandomVariable>& x_ran_vars
-      = natafTransform.x_random_variables();
+      = iteratedModel.multivariate_distribution().random_variables();
+    Pecos::ProbabilityTransformation& nataf
+      = uSpaceModel.probability_transformation();
 
+    RealVector init_x;  nataf.trans_U_to_X(initialPtU, init_x);
     RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
-    int num_final_stats = final_stat_grads.numCols();
-    for (size_t j=0; j<num_final_grad_vars; ++j) {
-      size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
-      if ( deriv_j <  numContDesVars ||
-	   deriv_j >= numContDesVars+numContAleatUncVars ) {
-	// augmented design var sensitivity: 2/range (see jacobian_dZ_dX())
-	factor = x_ran_vars[deriv_j].pdf(x)
-	       / Pecos::UniformRandomVariable::std_pdf();
-	for (size_t i=0; i<num_final_stats; ++i)
+    int num_final_stats = final_stat_grads.numCols();  Real z, x, factor;
+    size_t num_final_grad_vars = final_dvv.size(), i, j, rv_index, deriv_j,
+      end_cauv = startCAUV + numCAUV;
+    for (j=0; j<num_final_grad_vars; ++j) {
+      deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
+      if ( deriv_j < startCAUV || deriv_j >= end_cauv ) {
+	// design/epistemic/state: factor = 2/range (see jacobian_dZ_dX())
+	rv_index = svd.cv_index_to_all_index(deriv_j);
+	z = initialPtU[deriv_j];  x = init_x[deriv_j];
+	//nataf_rep->trans_Z_to_X(z, x, deriv_j); // private
+	factor = x_ran_vars[rv_index].pdf(x)
+	       / Pecos::UniformRandomVariable::std_pdf(z);
+	for (i=0; i<num_final_stats; ++i)
 	  final_stat_grads(j,i) *= factor;
       }
       // else inserted design variable sensitivity: no scaling required
@@ -3176,15 +3494,16 @@ void NonDExpansion::update_final_statistics_gradients()
     // This approach is more general, but is overkill for this purpose
     // and incurs additional copying overhead.
     /*
+    Pecos::ProbabilityTransformation& nataf
+      = uSpaceModel.probability_transformation();
     RealVector initial_pt_x_pv, fn_grad_u, fn_grad_x;
     copy_data(initial_pt_x, initial_pt_x_pv);
     RealMatrix jacobian_ux;
-    natafTransform.jacobian_dU_dX(initial_pt_x_pv, jacobian_ux);
+    nataf.jacobian_dU_dX(initial_pt_x_pv, jacobian_ux);
     RealBaseVector final_stat_grad;
     for (i=0; i<num_final_stats; ++i) {
       copy_data(finalStatistics.function_gradient_view(i), fn_grad_u);
-      natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, jacobian_ux,
-	                               final_dvv);
+      nataf.trans_grad_U_to_X(fn_grad_u, fn_grad_x, jacobian_ux, final_dvv);
       copy_data(fn_grad_x, final_stat_grad);
       finalStatistics.function_gradient(final_stat_grad, i)
     }
@@ -3215,17 +3534,16 @@ void NonDExpansion::print_moments(std::ostream& s)
   //   both exp/num: SC and PCE with numerical integration
   //   exp only:     PCE with unstructured grids (regression, exp sampling)
   // Also handle numerical exception of negative variance in either exp or num
-  Approximation* poly_approx_rep;
   size_t exp_mom, num_int_mom;
   bool exception = false, curr_exception, prev_exception = false;
   RealVector std_exp_moments, std_num_int_moments;
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
-    if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag()) {
       // Pecos provides central moments
-      const RealVector& exp_moments = poly_approx_rep->expansion_moments();
+      const RealVector& exp_moments = approx_i.expansion_moments();
       const RealVector& num_int_moments
-	= poly_approx_rep->numerical_integration_moments();
+	= approx_i.numerical_integration_moments();
       exp_mom = exp_moments.length(); num_int_mom = num_int_moments.length();
       curr_exception
 	= ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
@@ -3342,12 +3660,11 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
   // construct labels corresponding to (aggregated) sobol index map
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Approximation* poly_approx_rep; StringArray sobol_labels;
-  size_t i, j, num_indices;
+  StringArray sobol_labels;  size_t i, j, num_indices;
   if (vbdOrderLimit != 1) { // unlimited (0) or includes interactions (>1)
     // create aggregate interaction labels (once for all response fns)
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
+    SharedApproxData* shared_data_rep
+      = uSpaceModel.shared_approximation().data_rep();
     const Pecos::BitArrayULongMap& sobol_map
       = shared_data_rep->sobol_index_map();
     sobol_labels.resize(sobol_map.size());
@@ -3366,8 +3683,8 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
   // print sobol indices per response function
   for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = poly_approxs[i].approx_rep();
-    if (poly_approx_rep->expansion_coefficient_flag()) {
+    Approximation& approx_i = poly_approxs[i];
+    if (approx_i.expansion_coefficient_flag()) {
       // Note: vbdFlag can be defined for covarianceControl == NO_COVARIANCE.
       // In this case, we cannot screen effectively at this level.
       bool well_posed = ( ( covarianceControl   == DIAGONAL_COVARIANCE &&
@@ -3376,11 +3693,10 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 			    respCovariance(i,i) <= Pecos::SMALL_NUMBER ) )
 	              ? false : true;
       if (well_posed) {
-	const RealVector& total_indices
-	  = poly_approx_rep->total_sobol_indices();
-	const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
+	const RealVector& total_indices = approx_i.total_sobol_indices();
+	const RealVector& sobol_indices = approx_i.sobol_indices();
         Pecos::ULongULongMap sparse_sobol_map
-	  = poly_approx_rep->sparse_sobol_index_map();
+	  = approx_i.sparse_sobol_index_map();
 	bool dense = sparse_sobol_map.empty();
 	Real sobol; size_t main_cntr = 0;
 	// Print Main and Total effects
@@ -3441,13 +3757,11 @@ void NonDExpansion::print_local_sensitivity(std::ostream& s)
   s << "\nLocal sensitivities for each response function evaluated at "
     << "uncertain variable means:\n";
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  for (size_t i=0; i<numFunctions; ++i) {
-    Approximation* poly_approx_rep = poly_approxs[i].approx_rep();
-    if (poly_approx_rep->expansion_coefficient_flag()) {
+  for (size_t i=0; i<numFunctions; ++i)
+    if (poly_approxs[i].expansion_coefficient_flag()) {
       s << fn_labels[i] << ":\n";
       write_col_vector_trans(s, (int)i, expGradsMeanX);
     }
-  }
 }
 
 

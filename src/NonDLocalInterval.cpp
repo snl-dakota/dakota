@@ -44,7 +44,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
 	 << "NonDLocalInterval." << std::endl;
     err_flag = true;
   }
-  if (numUncertainVars != numContIntervalVars) {
+  if (numContinuousVars != numContIntervalVars) {
     Cerr << "\nError: only continuous interval distributions are currently "
 	 << "supported in NonDLocalInterval." << std::endl;
     err_flag = true;
@@ -177,7 +177,13 @@ void NonDLocalInterval::core_run()
   nondLIInstance = this;
 
   // *** TO DO: requires mapping pointers for correct updating logic ***
-  minMaxModel.update_from_subordinate_model();
+  //
+  // now that vars/labels/bounds/targets have flowed down at run-time from
+  // any higher level recursions, propagate them up local Model recursions
+  // so that they are correct when they propagate back down.  There is no
+  // need to recur below iteratedModel.
+  size_t layers = 1;
+  minMaxModel.update_from_subordinate_model(layers-1);
 
   RealVector min_initial_pt, max_initial_pt;
   copy_data(minMaxModel.continuous_variables(), min_initial_pt); // view->copy

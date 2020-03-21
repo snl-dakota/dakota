@@ -49,6 +49,6 @@ responses
 interface
   direct
    analysis_drivers 'text_book'
-
+  analysis_components 'component1' 'component2'
    
   

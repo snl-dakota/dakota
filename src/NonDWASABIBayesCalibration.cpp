@@ -96,15 +96,19 @@ void NonDWASABIBayesCalibration::calibrate()
   // initialize the prior PDF and sampler
   // the prior is currently assumed uniform, but this will be generalized
 
-  // set the bounds on the parameters (TMW: can this be moved?  
+  // set the bounds on the parameters (TMW: can this be moved?)
   // Does it require initialize_model() to be called first? 
   // resize, initializing to zero
   paramMins.size(numContinuousVars);
   paramMaxs.size(numContinuousVars);
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
-  for (size_t i=0; i<numContinuousVars; ++i)
-    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
+  RealRealPairArray bnds
+    = mcmcModel.multivariate_distribution().distribution_bounds();
+  // SVD index conversion is more general, but not required for current uses
+  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  for (size_t i=0; i<numContinuousVars; ++i) {
+    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
+    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+  }
 
   // TMW: evaluation of prior should be elevated to NonDBayes 
   // (even for MCMC-based methods)

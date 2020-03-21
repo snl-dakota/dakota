@@ -361,7 +361,9 @@ protected:
   //
 
   /// derived class specifics within parse_inputs()
-  virtual void derived_parse_inputs(const ProgramOptions& prog_opts);
+  virtual void derived_parse_inputs(const std::string& dakota_input_file,
+				    const std::string& dakota_input_string,
+				    const std::string& parser_options);
   /// derived class specifics within broadcast()
   virtual void derived_broadcast();
   /// derived class specifics within post_process()
@@ -438,7 +440,9 @@ private:
   bool model_has_interface(DataModelRep* model_rep) const;
 
   /// echo the (potentially) specified input file or string to stdout
-  void echo_input_file(const ProgramOptions& prog_opts);
+  void echo_input_file(const std::string& dakota_input_file,
+		       const std::string& dakota_input_string,
+		       const std::string& tmpl_qualifier = "");
 
   /// require user-specified block identifiers to be unique
   void enforce_unique_ids();
@@ -497,7 +501,6 @@ private:
   ProblemDescDB* dbRep;
   /// number of objects sharing dbRep
   int referenceCount;
-
 };
 
 

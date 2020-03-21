@@ -7,30 +7,33 @@ from collections import OrderedDict
 import numpy as np
 
 ## Capture the output here, once.
-_OUTPUT = ""
+__OUTPUT = ""
+
+## Directory in the build tree that contains dakota and dakota_restart_util
+__BIN_DIR = ""
 
 def extract_moments():
-    """Extract the moments from the global _OUTPUT
+    """Extract the moments from the global __OUTPUT
 
     Returns: The moments structured as a list of dictionaries.
         The items in the list are for executions, and the 
         key, value pairs in the dictionary are the response
         descriptors and an numpy array of the moments
     """
-    global _OUTPUT
+    global __OUTPUT
     moments = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("Sample moment statistics"):
             next(lines_iter)
             moments.append({})
-            moments_line = next(lines_iter)
-            while moments_line != '':
+            moments_line = next(lines_iter).strip()
+            while(moments_line):
                 tokens = moments_line.split()
                 resp_desc = tokens[0]
                 moments_values = np.array([float(t) for t in tokens[1:]])
                 moments[-1][resp_desc] = moments_values
-                moments_line = next(lines_iter)
+                moments_line = next(lines_iter).strip()
     return moments
 
 def extract_moment_confidence_intervals():
@@ -43,14 +46,14 @@ def extract_moment_confidence_intervals():
       lower and upper, 1st dimenion are mean and standard deviation
       """
 
-    global _OUTPUT
+    global __OUTPUT
     cis = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("95% confidence intervals"):
             cis.append({})
             nline = next(lines_iter) # discard header
-            nline = next(lines_iter) # first line of data
+            nline = next(lines_iter).strip() # first line of data
             while nline:
                 tokens = nline.split()
                 response = tokens[0]
@@ -59,12 +62,12 @@ def extract_moment_confidence_intervals():
                 values.append( [row_values[0], row_values[2]])
                 values.append( [row_values[1], row_values[3]])
                 cis[-1][response] = values
-                nline = next(lines_iter)
+                nline = next(lines_iter).strip()
     return cis
 
 
 def extract_pdfs():
-    """Extract the PDFs from the global _OUTPUT
+    """Extract the PDFs from the global __OUTPUT
 
     Returns: The PDFs with lower and upper bins structured
         as a list of dictionaries. The items in the list
@@ -73,23 +76,23 @@ def extract_pdfs():
         of the lower and upper bounds and the densities
         with dimension (num_bins, 3)
     """
-    global _OUTPUT
+    global __OUTPUT
     pdfs = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("Probability Density Function (PDF)"):
             pdfs.append({})
-            nline = next(lines_iter) # get either 'PDF for <descriptor>:" or a blank line
-            while nline != '':  # Loop over the responses
+            nline = next(lines_iter).strip() # get either 'PDF for <descriptor>:" or a blank line
+            while nline:  # Loop over the responses
                 desc = nline.split()[-1][:-1]
                 pdf_for_resp = []
                 next(lines_iter)  # Skip heading "Bin Lower..."
                 next(lines_iter)  # Skip heading "----..."
                 nline = next(lines_iter) # Get the first line of data for this response
-                while not nline.startswith("PDF for") and nline != '':  # loop over data
+                while not nline.startswith("PDF for") and nline:  # loop over data
                     values = [float(t) for t in nline.split()]
                     pdf_for_resp.append(values)
-                    nline = next(lines_iter)
+                    nline = next(lines_iter).strip()
                 pdfs[-1][desc] = pdf_for_resp
     return pdfs
 
@@ -116,7 +119,7 @@ def extract_level_mapping_row(line):
     return result
 
 def extract_level_mappings():
-    """Extract the level mappings from the global _OUTPUT
+    """Extract the level mappings from the global __OUTPUT
 
     Returns: The level mappings are structured as a list of 
         dictionaries. The items in the list are for executions, 
@@ -126,13 +129,13 @@ def extract_level_mappings():
         elements.
     """
 
-    global _OUTPUT
+    global __OUTPUT
     mappings = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("Level mappings for each"):
             mappings.append({})
-            nline = next(lines_iter) # get 'Cumulative Distribution..'
+            nline = next(lines_iter).strip() # get 'Cumulative Distribution..'
             while nline and not nline.startswith('--'):  # Loop over the responses
                 desc = nline.split()[-1][:-1]
                 mappings_for_resp = []
@@ -144,12 +147,12 @@ def extract_level_mappings():
                         nline:  # loop over data
                     values = extract_level_mapping_row(nline)
                     mappings_for_resp.append(values)
-                    nline = next(lines_iter)
+                    nline = next(lines_iter).strip()
                 mappings[-1][desc] = mappings_for_resp
     return mappings
 
 def extract_correlations_helper(corr_type = None):
-    """Extract the simple/simple rank correlation matrices from the global _OUTPUT
+    """Extract the simple/simple rank correlation matrices from the global __OUTPUT
 
     Returns: A list of all the simple (for corr_type == "pearson") or simple rank (otherwise)
       correlation matrices. The list elements are pairs (2-tuples). The first item is a list
@@ -160,7 +163,7 @@ def extract_correlations_helper(corr_type = None):
     else:
         heading = "Simple Rank Correlation Matrix"
     correlations = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith(heading):
             nline = next(lines_iter)
@@ -188,7 +191,7 @@ def extract_simple_correlations():
     return extract_correlations_helper("pearson")
 
 def extract_partial_correlations_helper(corr_type = None):
-    """Extract the partial/partial rank correlation matrices from the global _OUTPUT
+    """Extract the partial/partial rank correlation matrices from the global __OUTPUT
 
     Returns: A list of all the partial (for corr_type == "pearson") or partial rank (otherwise)
       correlation matrices. The list elements are dictionaries, with response descriptors as keys.
@@ -200,7 +203,7 @@ def extract_partial_correlations_helper(corr_type = None):
     else:
         heading = "Partial Rank Correlation Matrix"
     correlations = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith(heading):
             nline = next(lines_iter)
@@ -208,7 +211,7 @@ def extract_partial_correlations_helper(corr_type = None):
             responses = nline.split()
             for r in responses: 
                 inc_corr[r] = ([], [])
-            nline = next(lines_iter)
+            nline = next(lines_iter).strip()
             while(nline):
                 tokens = nline.split()
                 var = tokens[0]
@@ -216,7 +219,7 @@ def extract_partial_correlations_helper(corr_type = None):
                 for i, r in enumerate(responses):
                     inc_corr[r][0].append(var)
                     inc_corr[r][1].append(val[i])
-                nline = next(lines_iter)
+                nline = next(lines_iter).strip()
             correlations.append(inc_corr)
     return correlations
 
@@ -237,7 +240,7 @@ def extract_best_helper(result, labeled=False):
     """
     heading = "<<<<< Best " + result
     best = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith(heading):
             nline = next(lines_iter) # the first variable
@@ -280,17 +283,17 @@ def extract_best_parameter_confidence_intervals():
     Return as a list of dictionaries. The keys of the dictionaries are variable
       descriptors, and the values are tuples of lower and upper bounds
     """
-    line_re = re.compile(r"\s+(.+?):\s+\[\s+(.+?),\s+(.+)\s+\]")
+    line_re = re.compile(r"(.+?):\s+\[\s+(.+?),\s+(.+)\s+\]")
     cis = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("Confidence Intervals on Cal"):
-            nline = next(lines_iter) # the first variable
+            nline = next(lines_iter).strip() #the first variable
             ci = {}
             while(nline):
                 m = line_re.match(nline)
                 ci[m.group(1)] = (float(m.group(2)), float(m.group(3)))
-                nline = next(lines_iter)
+                nline = next(lines_iter).strip()
             cis.append(ci)
     return cis
 
@@ -300,7 +303,7 @@ def extract_best_residual_norms():
     Returns a list of norms
     """
     norms = []
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("<<<<< Best residual norm"):
             norm = line.split()[5]
@@ -312,7 +315,7 @@ def extract_best_residual_norms():
 def extract_multi_start_results():
     """Extract results summary from a multi_start study, including
     initial points, best points, and best responses"""
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("<<<<< Results summary:"):
             break
@@ -369,7 +372,7 @@ def extract_multi_start_results():
 def extract_pareto_set_results():
     """Extract results summary from a pareto_set study. These
     include the weights, variables, and functions."""
-    lines_iter = iter(_OUTPUT)
+    lines_iter = iter(__OUTPUT)
     for line in lines_iter:
         if line.startswith("<<<<< Results summary:"):
             break
@@ -539,8 +542,10 @@ def restart_response(row):
 def read_restart_file(restart_file):
     file_stem = restart_file.rsplit(".", 1)[0]
     neutral_file = file_stem + ".neu"
+    global __BIN_DIR
+    dru_path = os.path.join(__BIN_DIR,"dakota_restart_util")
     with open(os.devnull,"w") as fnull:
-        subprocess.call(["../dakota_restart_util",
+        subprocess.call([dru_path,
                          "to_neutral",
                           restart_file,
                           neutral_file], stdout=fnull)
@@ -600,7 +605,13 @@ def run_dakota(input_file):
     input_file: string containing a path to the input file
 
     """
-    global _OUTPUT
-    output = subprocess.check_output(["../dakota",input_file], stderr=subprocess.STDOUT)
-    _OUTPUT = output.split('\n')
-    
+    global __OUTPUT
+    global __BIN_DIR
+    dakota_path = os.path.join(__BIN_DIR,"dakota")
+    output = subprocess.check_output([dakota_path,input_file], stderr=subprocess.STDOUT)
+    __OUTPUT = output.split('\n')
+
+def set_executable_dir(bindir):
+    """Set the directory in the build tree that contains the executables"""
+    global __BIN_DIR
+    __BIN_DIR = bindir

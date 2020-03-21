@@ -131,7 +131,7 @@ pid_t SysCallApplicInterface::create_evaluation_process(bool block_flag)
 
 /** Check for completion of active asynch jobs (tracked with sysCallSet).
     Make one pass through sysCallSet & complete all jobs that have returned. */
-void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
+void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 {
   // Convenience function for common code between wait and nowait case.
 
@@ -151,7 +151,7 @@ void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       PRPQueueIter queue_it = lookup_by_eval_id(prp_queue, fn_eval_id);
       if (queue_it == prp_queue.end()) {
 	Cerr << "Error: failure in queue lookup within SysCallApplic"
-	     << "Interface::test_local_evaluations()." << std::endl;
+	     << "Interface::test_local_evaluation_sequence()." << std::endl;
 	abort_handler(-1);
       }
       Response response = queue_it->response(); // shallow copy
@@ -204,8 +204,8 @@ void SysCallApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
       catch(const FunctionEvalFailure& fneval_except) { 
 	// implemented at the derived class level since 
 	// DirectApplicInterface can do this w/o exceptions
-        //Cout << "Caught FunctionEvalFailure in test_local_evaluations(); "
-	//     << "message: " << fneval_except.what() << std::endl;
+        //Cout << "Caught FunctionEvalFailure in test_local_evaluation_sequence"
+	//     << "(); message: " << fneval_except.what() << std::endl;
         manage_failure(queue_it->variables(), response.active_set(),
 		       response, fn_eval_id);
       }

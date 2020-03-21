@@ -44,8 +44,7 @@ public:
   //
 
   bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
-  bool mapping_initialized() const;
+  //bool finalize_mapping();
   bool resize_pending() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
@@ -86,6 +85,8 @@ protected:
   /// Executed by the master to terminate the offline and online phase
   /// server operations when iteration on the AdaptedBasisModel is complete
   void stop_servers();
+
+  void assign_instance();
 
   // ---
   // Construct time convenience functions
@@ -159,9 +160,6 @@ protected:
   /// Number of fullspace active continuous variables
   size_t numFullspaceVars;
 
-  /// boolean flag to determine if mapping has been fully initialized
-  bool adaptedBasisInitialized;
-
   // Data for numerical representation
 
   /// current approximation of system rank
@@ -187,7 +185,7 @@ protected:
 
 inline void AdaptedBasisModel::derived_evaluate(const ActiveSet& set)
 {
-  if (!adaptedBasisInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -200,7 +198,7 @@ inline void AdaptedBasisModel::derived_evaluate(const ActiveSet& set)
 
 inline void AdaptedBasisModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  if (!adaptedBasisInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -213,7 +211,7 @@ inline void AdaptedBasisModel::derived_evaluate_nowait(const ActiveSet& set)
 
 inline const IntResponseMap& AdaptedBasisModel::derived_synchronize()
 {
-  if (!adaptedBasisInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -226,7 +224,7 @@ inline const IntResponseMap& AdaptedBasisModel::derived_synchronize()
 
 inline const IntResponseMap& AdaptedBasisModel::derived_synchronize_nowait()
 {
-  if (!adaptedBasisInitialized) {
+  if (!mappingInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -237,12 +235,8 @@ inline const IntResponseMap& AdaptedBasisModel::derived_synchronize_nowait()
 }
 
 
-inline bool AdaptedBasisModel::mapping_initialized() const
-{ return adaptedBasisInitialized; }
-
-
 inline bool AdaptedBasisModel::resize_pending() const
-{ return !adaptedBasisInitialized; }
+{ return !mappingInitialized; }
 
 
 /**  This specialization is because the model is used in multiple contexts
@@ -256,7 +250,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   onlineEvalConcurrency = max_eval_concurrency;
 
   if (recurse_flag) {
-    //if (!adaptedBasisInitialized) // see ActiveSubspaceModel
+    //if (!mappingInitialized) // see ActiveSubspaceModel
       pcePilotExpansion.init_communicators(pl_iter);
     subModel.init_communicators(pl_iter, max_eval_concurrency);
   }
@@ -276,6 +270,10 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 inline void AdaptedBasisModel::stop_servers()
 { component_parallel_mode(CONFIG_PHASE); }
+
+
+inline void AdaptedBasisModel::assign_instance()
+{ abmInstance = this; }
 
 } // namespace Dakota
 

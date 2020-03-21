@@ -1,0 +1,19 @@
+Blurb:: Sample allocation approach for multilevel polynomial chaos
+
+Description:: 
+Multilevel polynomial chaos requires a sample allocation strategy.  Three options are currently available:
+
+- greedy refinement (sparse grids, tensor grids, regression)
+- allocation based on assuming a convergence rate for the estimator variance (for regression only)
+- restricted isometry property (RIP) (for compressed sensing only)
+
+The greedy approach is generally preferred over assuming a convergence rate for the estimator variance or allocating samples based on the restricted isometry property (RIP) for compressed sensing.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+See_Also::

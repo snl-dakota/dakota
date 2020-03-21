@@ -43,9 +43,10 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
   tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
 
-  // natafTransform available: initialize_random_variables() called in
-  // NonDIntegration ctor
-  check_variables(natafTransform.x_random_variables());
+  //check_variables(x_dist.random_variables());
+  // TO DO: create a ProbabilityTransformModel, if needed
+  const Pecos::MultivariateDistribution& u_dist
+    = model.multivariate_distribution();
 
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
@@ -72,11 +73,10 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
 				       equidist_rules, use_derivs);
 
-  tpqDriver->initialize_grid(natafTransform.u_types(), ec_options, bc_options);
+  tpqDriver->initialize_grid(u_dist, ec_options, bc_options);
+  tpqDriver->initialize_grid_parameters(u_dist);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
-
-  tpqDriver->precompute_rules(); // efficiency optimization
 
   maxEvalConcurrency *= tpqDriver->grid_size();
 }
@@ -160,6 +160,8 @@ void NonDQuadrature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   tpqDriver->initialize_grid(poly_basis);
+  tpqDriver->
+    initialize_grid_parameters(iteratedModel.multivariate_distribution());
 
   switch (quadMode) {
   case FULL_TENSOR:
@@ -193,10 +195,6 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     maxEvalConcurrency *= numSamples;
     break;
   }
-
-  // Precompute quadrature rules (e.g., by defining maximal order for
-  // NumGenOrthogPolynomial::solve_eigenproblem()):
-  tpqDriver->precompute_rules(); // efficiency optimization
 }
 
 
@@ -234,9 +232,12 @@ compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref,
 void NonDQuadrature::get_parameter_sets(Model& model)
 {
   // capture any distribution parameter insertions
-  if (!numIntegrations || subIteratorFlag)
-    tpqDriver->initialize_grid_parameters(natafTransform.u_types(),
-      iteratedModel.aleatory_distribution_parameters());
+  if (subIteratorFlag)
+    tpqDriver->initialize_grid_parameters(model.multivariate_distribution());
+
+  // Precompute quadrature rules (e.g., by defining maximal order for
+  // NumGenOrthogPolynomial::solve_eigenproblem()):
+  tpqDriver->precompute_rules(); // efficiency optimization
 
   size_t i, j, num_quad_points = tpqDriver->grid_size();
   const Pecos::UShortArray& quad_order = tpqDriver->quadrature_order();
@@ -270,13 +271,14 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // ----------------------------------------------------------------------
   // Probabilistic collocation from random sampling of a tensor multi-index
   // ----------------------------------------------------------------------
-  case RANDOM_TENSOR:
+  case RANDOM_TENSOR: {
     Cout << numSamples << " samples drawn randomly from tensor grid.\n";
+    allSamples.shapeUninitialized(numContinuousVars, numSamples);
+
     const Pecos::UShortArray& lev_index = tpqDriver->level_index();
-    tpqDriver->update_1d_collocation_points_weights(quad_order, lev_index);
+    tpqDriver->assign_1d_collocation_points_weights(quad_order, lev_index);
     const Pecos::Real3DArray& colloc_pts_1d
       = tpqDriver->collocation_points_1d();
-    allSamples.shapeUninitialized(numContinuousVars, numSamples);
 
     // prevent case of all lhs_const variables, which is an lhs_prep error
     bool lhs_error_trap = true;
@@ -300,8 +302,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
       Pecos::LHSDriver lhs("lhs", IGNORE_RANKS, false);
       if (!randomSeed) randomSeed = generate_system_seed();
       lhs.seed(randomSeed);
-      lhs.generate_unique_index_samples(index_l_bnds, index_u_bnds, numSamples,
-					sorted_samples);
+      lhs.generate_uniform_index_samples(index_l_bnds, index_u_bnds, numSamples,
+					 sorted_samples, true); // backfill
 
       // convert multi-index samples into allSamples
       for (i=0; i<numSamples; ++i){
@@ -312,6 +314,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
       }
     }
     break;
+  }
   }
 }
 

@@ -283,7 +283,7 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 {
   // NPSOL computes constraints first, then the objective function.  However, 
   // Dakota assumes that the objective and constraint function values are all 
-  // computed in a single fn. evaluation. A numNonlinearConstraints check is
+  // computed in a single fn. evaluation.  A numNonlinearConstraints check is
   // therefore needed to ensure that 1 and only 1 mapping occurs.
 
   // Handle special cases with asv_request (see SOLBase::constraint_eval)

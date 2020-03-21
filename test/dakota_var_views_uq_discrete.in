@@ -7,10 +7,10 @@
 # Mix-and-match tests will be captured separately.
 
 method,
-	sampling,				#s0,#s2
-	  samples = 100				#s0,#s2
-	  seed = 34785
+	sampling				#s0,#s2
 #	global_evidence lhs			#s1,#s3
+	  samples = 10000			#s0,#s2
+	  seed = 34785
 
 variables,
 #	active all				#s2,#s3

@@ -65,9 +65,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     pointReuse = (import_pts) ? "all" : "none";
 
   // DataFitSurrModel is allowed to set the db list nodes, so long as it 
-  // restores the list nodes to their previous setting.  This removes the need
-  // to continuously reset at the strategy level (which would be wasteful
-  // since the type of derived model may not be known at the strategy level).
+  // restores the list nodes to their previous setting
   const String& dace_method_pointer
     = problem_db.get_string("model.dace_method_pointer");
   const String& actual_model_pointer
@@ -86,19 +84,35 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
 
   // Instantiate actual model from DB
+  bool basis_expansion = false;  short u_space_type;
   if (model_construct) {
     // If approx type uses standardized random variables (hard-wired for now),
     // wrap with a ProbabilityTransformModel (retaining distribution bounds as
     // in PCE, SC, C3 ctors)
     if (strends(surrogateType, "_orthogonal_polynomial") ||
-	strends(surrogateType, "_interpolation_polynomial") ||
-	strends(surrogateType, "_function_train" )) {
-      short u_space_type = /*PARTIAL_*/ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
+	strends(surrogateType, "_interpolation_polynomial")) {
+      basis_expansion = true;
+      u_space_type = problem_db.get_short("model.surrogate.expansion_type");
+    }
+    else if (strends(surrogateType, "_function_train" )) {
+      basis_expansion = true;
+      // Hardwire for C3 case prior to availability of XML spec:
+      u_space_type = PARTIAL_ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
+    }
+    else {
+      actualModel = problem_db.get_model();
+      // leave mvDist as initialized in Model ctor (from variables spec)
+    }
+
+    if (basis_expansion) {
       actualModel.assign_rep(new
 	ProbabilityTransformModel(problem_db.get_model(), u_space_type), false);
+      // overwrite mvDist from Model ctor by copying transformed u-space dist
+      // (keep them distinct to allow for different active views).
+      // construct time augmented with run time pull_distribution_parameters().
+      mvDist = actualModel.multivariate_distribution().copy();
     }
-    else
-      actualModel = problem_db.get_model();
+
     // ensure consistency of inputs/outputs between actual and approx
     check_submodel_compatibility(actualModel);
   }
@@ -153,17 +167,27 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 	!actualModel.derivative_estimation())
       cache = true;
   }
-  const StringArray fn_labels = (actualModel.is_null()) ? 
-    currentResponse.function_labels() : actualModel.response_labels();
+  // size approxInterface based on currentResponse, which is constructed from
+  // DB response spec, since actualModel could contain response aggregations
   approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
-    cache, am_interface_id, fn_labels), false);
+    cache, am_interface_id, currentResponse.function_labels()), false);
+
+  // initialize the basis, if needed
+  if (basis_expansion)
+    shared_approximation().construct_basis(mvDist);
 
   // initialize the DiscrepancyCorrection instance
-  deltaCorr.initialize(*this, surrogateFnIndices, corrType,
-    problem_db.get_short("model.surrogate.correction_order"));
+  switch (responseMode) {
+  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
+    if (corrType)
+      deltaCorr.initialize(*this, surrogateFnIndices, corrType,
+	problem_db.get_short("model.surrogate.correction_order"));
+    break;
+  }
 
   if (import_pts)
     import_points(problem_db.get_ushort("model.surrogate.import_build_format"),
+      problem_db.get_bool("model.surrogate.import_use_variable_labels"),
       problem_db.get_bool("model.surrogate.import_build_active_only"));
   if (export_pts)
     initialize_export();
@@ -184,10 +208,11 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 bool import_build_active_only,
 		 const String& export_approx_points_file,
 		 unsigned short export_approx_format):
+  // SVD can be shared, but don't share SRD as QoI +aggregations are consumed:
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(),
-		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().shared_data(),
+		 actual_model.current_variables().shared_data(), true,
+		 actual_model.current_response().shared_data(), false,
 		 set, corr_type, output_level),
   daceIterator(dace_iterator), actualModel(actual_model), pointsTotal(0),
   pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
@@ -212,11 +237,17 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (pointReuse.empty()) // assign default
     pointReuse = (import_pts) ? "all" : "none";
 
+  // copy actualModel dist (keep distinct to allow for different active views).
+  // ref values for distribution params at construct time are updated at run
+  // time via pull_distribution_parameters().
+  mvDist = actualModel.multivariate_distribution().copy();
+
   // update constraint counts in userDefinedConstraints.
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
 				 actualModel.num_nonlinear_eq_constraints(),
 				 actualModel.num_linear_ineq_constraints(),
 				 actualModel.num_linear_eq_constraints());
+
   update_from_model(actualModel);
   check_submodel_compatibility(actualModel);
 
@@ -253,26 +284,25 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (grad_flag)
     gradientType = (approx_type == "global_polynomial" ||
       approx_type == "global_gaussian" || approx_type == "global_kriging" ||
+      approx_type == "global_moving_least_squares" ||
       strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial") ||
       strbegins(approx_type, "local_") ||
-      strbegins(approx_type, "multipoint_") ||
-      approx_type == "global_moving_least_squares")
-      ? "analytic" : "numerical";
+      strbegins(approx_type, "multipoint_")) ? "analytic" : "numerical";
   else 
     gradientType = "none";
   if (hess_flag)
-    hessianType = (approx_type == "global_polynomial" ||
-      approx_type == "global_kriging" ||
-      strends(approx_type, "_orthogonal_polynomial") ||
-    //strends(approx_type, "_interpolation_polynomial") || // TO DO
-		   strbegins(approx_type, "local_"))
+    hessianType = ( strbegins(approx_type, "local_") ||
+      approx_type == "global_polynomial" || approx_type == "global_kriging" ||
+      strends(approx_type, "_orthogonal_polynomial"))
+    //strends(approx_type, "_interpolation_polynomial")) // TO DO
       ? "analytic" : "numerical";
   else
     hessianType = "none";
 
-  //Cout << "DFS gradientType = " << gradientType 
-  //     << " DFS hessianType = " << hessianType << std::endl;
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "DFS gradientType = " << gradientType 
+	 << " DFS hessianType = " << hessianType << std::endl;
 
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to
   // defaults if needed.
@@ -294,15 +324,57 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
 
-  if (import_pts) import_points(import_build_format, import_build_active_only);
+  // TODO: pass import_use_var_labels from lightweight DFSModel ctor
+  bool import_use_var_labels = false;
+  if (import_pts) import_points(import_build_format, import_use_var_labels,
+				import_build_active_only);
   if (export_pts) initialize_export();
   if (import_pts || export_pts) manage_data_recastings();
 }
 
 
+void DataFitSurrModel::check_submodel_compatibility(const Model& sub_model)
+{
+  bool error_flag = false;
+  // Check for compatible array sizing between sub_model and currentResponse.
+  // HierarchSurrModel creates aggregations and DataFitSurrModel consumes them.
+  // For now, allow either a factor of 2 or 1 from aggregation or not.  In the
+  // future, aggregations may span a broader model hierarchy (e.g., factor =
+  // orderedModels.size()).  In general, the fn count check needs to be
+  // specialized in the derived classes.
+  size_t sm_qoi = sub_model.qoi();
+  if ( numFns != sm_qoi) {
+    Cerr << "Error: incompatibility between approximate and actual model "
+	 << "response function sets\n       within DataFitSurrModel: " << numFns
+	 << " approximate and " << sm_qoi << " actual functions.\n       "
+	 << "Check consistency of responses specifications." << std::endl;
+    error_flag = true;
+  }
+
+  // check view-based variable counts:
+  SurrogateModel::check_submodel_compatibility(sub_model);
+  // cases not covered by the SurrogateModel check are disallowed for DFSModel
+  short active_view = currentVariables.view().first,
+     sm_active_view = sub_model.current_variables().view().first;
+  if ( !( active_view == sm_active_view ||
+	( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
+	  active_view >= RELAXED_DESIGN ) ||
+	( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	  sm_active_view >= RELAXED_DESIGN ) ) ) {
+    Cerr << "Error: unsupported variable view differences between "
+   	     << "approximate and actual models within DataFitSurrModel."
+   	     << std::endl;
+    error_flag = true;
+  }
+
+  if (error_flag)
+    abort_handler(-1);
+}
+
+
 bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  SurrogateModel::initialize_mapping(pl_iter);
+  Model::initialize_mapping(pl_iter);
   actualModel.initialize_mapping(pl_iter);
 
   // push data that varies per iterator execution rather than per-evaluation
@@ -320,7 +392,7 @@ bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 bool DataFitSurrModel::finalize_mapping()
 {
   actualModel.finalize_mapping();
-  SurrogateModel::finalize_mapping();
+  Model::finalize_mapping();
 
   return false; // no change to problem size
 }
@@ -947,7 +1019,7 @@ void DataFitSurrModel::build_approx_interface()
 void DataFitSurrModel::build_local_multipoint()
 {
   // set DataFitSurrModel parallelism mode to actualModel
-  component_parallel_mode(TRUTH_MODEL);
+  component_parallel_mode(TRUTH_MODEL_MODE);
 
   // Define the data requests
   short asv_value = 3;
@@ -1001,7 +1073,7 @@ void DataFitSurrModel::build_global()
   size_t i, j, reuse_points = 0;
   int fn_index = *surrogateFnIndices.begin();
   const Pecos::SurrogateData& approx_data
-    = approxInterface.approximation_data(fn_index); // default SurrData
+    = approxInterface.approximation_data(fn_index);
   bool anchor = approx_data.anchor();
   if (pointReuse == "all" || pointReuse == "region") {
 
@@ -1046,9 +1118,9 @@ void DataFitSurrModel::build_global()
 	// region center first, we must take care to not include this point
 	// in the point reuse, since this would cause it to be used twice.
 	// Note: for NonD uses with u-space models, the global_bounds boolean
-	// in NonD::transform_model() needs to be set in order to allow test
-	// of transformed bounds in "region" reuse case.  For "all" reuse case
-	// typically used with data import, this is not necessary.
+	// in ProbabilityTransformModel ctor needs to be set in order to allow
+	// test of transformed bounds in "region" reuse case.  For "all" reuse
+	// case typically used with data import, this is not necessary.
 	if ( inside(db_vars) && !(anchor && // avoid anchor duplic
 	     active_vars_compare(db_vars, approx_data.anchor_variables())) ) {
 	  // Eval id definitions:
@@ -1089,7 +1161,7 @@ void DataFitSurrModel::build_global()
   else { // new data
 
     // set DataFitSurrModel parallelism mode to actualModel
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // daceIterator must generate at least diff_points samples, should
     // populate allData lists (allDataFlag = true), and should bypass
@@ -1161,7 +1233,7 @@ void DataFitSurrModel::rebuild_global()
   else { // new data
 
     // set DataFitSurrModel parallelism mode to actualModel
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // daceIterator must generate at least diff_points samples, should
     // populate allData lists (allDataFlag = true), and should bypass
@@ -1456,7 +1528,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   // Compute actual model response
   // -----------------------------
   if (actual_eval) {
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
     update_model(actualModel); // update variables/bounds/labels in actualModel
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
@@ -1498,7 +1570,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     }
 
     // compute the approximate response
-    //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
+    //component_parallel_mode(SURROGATE_MODEL_MODE); // does not use parallelism
     //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     //parallelLib.parallel_configuration_iterator(modelPCIter);
     if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
@@ -1696,7 +1768,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
@@ -1793,7 +1865,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
-    component_parallel_mode(TRUTH_MODEL);
+    component_parallel_mode(TRUTH_MODEL_MODE);
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
@@ -1898,7 +1970,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 {
   bool actual_evals = !truthIdMap.empty();
 
-  //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
+  //component_parallel_mode(SURROGATE_MODEL_MODE); // does not use parallelism
   //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
   //parallelLib.parallel_configuration_iterator(modelPCIter);
 
@@ -2024,7 +2096,7 @@ asv_split_eval(const ShortArray& orig_asv, ShortArray& actual_asv,
     Surrogate data imports default to active/inactive variables, but
     user can override to active only */
 void DataFitSurrModel::
-import_points(unsigned short tabular_format, bool active_only)
+import_points(unsigned short tabular_format, bool use_var_labels, bool active_only)
 {
   // Temporary objects to use to read correct size vars/resp; use copies
   // so that read_data_tabular() does not alter state of vars/resp objects
@@ -2033,21 +2105,21 @@ import_points(unsigned short tabular_format, bool active_only)
     actualModel.current_variables().copy(); 
   Response  resp = actualModel.is_null() ? currentResponse.copy() : 
     actualModel.current_response().copy();
-  size_t num_vars = active_only ? 
-    (vars.cv() + vars.div() + vars.dsv() + vars.drv()) : vars.tv();
+  size_t num_vars = active_only ? vars.total_active() : vars.tv();
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieving points with " << num_vars
-	 << " variables and " << numFns << " response functions from file "
-	 << importPointsFile << '\n';
+	 << " variables and " << numFns << " response\nfunctions from file '"
+	 << importPointsFile << "'\n";
   // Preserves eval and interface ids in the PRPList, if annotated format
   // If no eval ID, will number successively from 1
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
-  TabularIO::read_data_tabular(importPointsFile, 
-			       "DataFitSurrModel samples file", vars, resp,
+  String context_msg = "Surrogate model with id '" + model_id() +
+    "' import_build_points";
+  TabularIO::read_data_tabular(importPointsFile, context_msg, vars, resp,
 			       import_prp_list, tabular_format, verbose,
-			       active_only);
+			       use_var_labels, active_only);
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieved " << import_prp_list.size()
 	 << " total points." << std::endl;
@@ -2130,11 +2202,11 @@ void DataFitSurrModel::component_parallel_mode(short mode)
   //  return; // already in correct parallel mode
 
   /* Moved up a level so that config can be restored after optInterface usage
-  //if (mode == TRUTH_MODEL) {
+  //if (mode == TRUTH_MODEL_MODE) {
     // ParallelLibrary::currPCIter activation delegated to subModel
   //}
   //else 
-  if (mode == SURROGATE_MODEL)
+  if (mode == SURROGATE_MODEL_MODE)
     parallelLib.parallel_configuration_iterator(modelPCIter);
   //else if (mode == 0)
   */
@@ -2203,31 +2275,6 @@ void DataFitSurrModel::init_model(Model& model)
   if (userDefinedConstraints.num_nonlinear_eq_constraints())
     model.nonlinear_eq_constraint_targets(
       userDefinedConstraints.nonlinear_eq_constraint_targets());
-
-  // discrete set values
-
-  if (!discreteDesignSetIntValues.empty())
-    model.discrete_design_set_int_values(discreteDesignSetIntValues);
-  if (!discreteDesignSetRealValues.empty())
-    model.discrete_design_set_real_values(discreteDesignSetRealValues);
-  if (!discreteStateSetIntValues.empty())
-    model.discrete_state_set_int_values(discreteStateSetIntValues);
-  if (!discreteStateSetRealValues.empty())
-    model.discrete_state_set_real_values(discreteStateSetRealValues);
-
-  // uncertain variable distribution data
-
-  // Note: Variables instances defined from the same variablesId are not shared
-  // (see ProblemDescDB::get_variables()), so we propagate any distribution
-  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
-  // differing variablesId, we cannot assume that the distribution information
-  // can be mapped, since the distributions used to build may differ from those
-  // used to evaluate.   More careful logic may be needed in the future...
-  if (currentVariables.shared_data().id() ==
-      model.current_variables().shared_data().id()) {
-    model.aleatory_distribution_parameters().update(aleatDistParams);
-    model.epistemic_distribution_parameters().update(epistDistParams);
-  }
 
   // labels: update model with current{Variables,Response} descriptors
 
@@ -2378,6 +2425,37 @@ void DataFitSurrModel::update_model(Model& model)
 	 << "DataFitSurrModel::update_model()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
+
+  // uncertain variable distribution data (dependent on label updates above)
+
+  // Note: Variables instances defined from the same variablesId are not shared
+  // (see ProblemDescDB::get_variables()), so we propagate any distribution
+  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
+  // differing variablesId, we assume that the distribution information can be
+  // mapped when a variable label is matched, but this precludes the case
+  // where the distribution for the same variable differs between that used to
+  // build and that used to evaluate.   More careful logic could involve
+  // matching both variable label and distribution type (presumably the dist
+  // params would be consistent when the dist type is the same), and this could
+  // be implemented at the lower (MultivariateDistribution) level.
+  // > currentVariables may have different active view from incoming model
+  //   vars, but MultivariateDistribution updates can be performed for all
+  //   vars (independent of view)
+  // > when model is a ProbabilityTransformModel, its mvDist is in u-space.
+  //   DataFit operates in and pushes updates to this transformed space for
+  //   parameterized std distribs (e.g. {JACOBI,GEN_LAGUERE,NUM_GEN}_ORTHOG).
+  // > it is sufficient to pull parameters at initialize_mapping() time, as
+  //   this data varies per iterator execution rather than per-evaluation
+  const SharedVariablesData&   svd =          currentVariables.shared_data();
+  const SharedVariablesData& m_svd = model.current_variables().shared_data();
+  if (svd.id() == m_svd.id()) // same set of variables
+    model.multivariate_distribution().pull_distribution_parameters(mvDist);
+  else { // map between related sets of variables based on labels
+    StringArray pull_labels;    svd.assemble_all_labels(pull_labels);
+    StringArray push_labels;  m_svd.assemble_all_labels(push_labels);
+    model.multivariate_distribution().
+      pull_distribution_parameters(mvDist, pull_labels, push_labels);
+  }
 }
 
 
@@ -2422,32 +2500,20 @@ void DataFitSurrModel::update_from_model(const Model& model)
     currentResponse.function_labels(model.response_labels());
   }
 
-  if (!model.discrete_design_set_int_values().empty())
-    discreteDesignSetIntValues = model.discrete_design_set_int_values();
-  if (!model.discrete_design_set_string_values().empty())
-    discreteDesignSetStringValues = model.discrete_design_set_string_values();
-  if (!model.discrete_design_set_real_values().empty())
-    discreteDesignSetRealValues = model.discrete_design_set_real_values();
+  // uncertain variable distribution data (dependent on label updates above)
 
-  // uncertain variable distribution data
-  // Note: Variables instances defined from the same variablesId are not shared
-  // (see ProblemDescDB::get_variables()), so we propagate any distribution
-  // updates (e.g., NestedModel insertions) up/down the Model recursion.  For
-  // differing variablesId, we cannot assume that the distribution information
-  // can be mapped, since the distributions used to build may differ from those
-  // used to evaluate.  More careful logic may be needed in the future...
-  if (currentVariables.shared_data().id() ==
-      model.current_variables().shared_data().id()) {
-    aleatDistParams.update(model.aleatory_distribution_parameters());
-    epistDistParams.update(model.epistemic_distribution_parameters());
+  // See notes in init_model() above, with the difference that these
+  // updates are performed once at lightweight construct time.
+  const SharedVariablesData&   svd =          currentVariables.shared_data();
+  const SharedVariablesData& m_svd = model.current_variables().shared_data();
+  if (svd.id() == m_svd.id()) // same variables specification
+    mvDist.pull_distribution_parameters(model.multivariate_distribution());
+  else{ // map between related sets of variables based on labels
+    StringArray pull_labels;  m_svd.assemble_all_labels(pull_labels);
+    StringArray push_labels;    svd.assemble_all_labels(push_labels);
+    mvDist.pull_distribution_parameters(model.multivariate_distribution(),
+					pull_labels, push_labels);
   }
-
-  if (!model.discrete_state_set_int_values().empty())
-    discreteStateSetIntValues = model.discrete_state_set_int_values();
-  if (!model.discrete_state_set_string_values().empty())
-    discreteStateSetStringValues = model.discrete_state_set_string_values();
-  if (!model.discrete_state_set_real_values().empty())
-    discreteStateSetRealValues = model.discrete_state_set_real_values();
 
   // linear constraints
 
@@ -2508,8 +2574,9 @@ void DataFitSurrModel::update_from_model(const Model& model)
       model.nonlinear_eq_constraint_targets());
 }
 
-void DataFitSurrModel::declare_sources() {
 
+void DataFitSurrModel::declare_sources()
+{
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if(actualModel.is_null() || surrogateFnIndices.size() == numFns) {
@@ -2536,8 +2603,8 @@ void DataFitSurrModel::declare_sources() {
         "approximation");
     break;
   }
-
 }
+
 
 ActiveSet DataFitSurrModel::default_interface_active_set() {
   // The ApproximationInterface may provide just a subset
@@ -2552,10 +2619,8 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
   const bool has_hessians = hessianType != "none" &&  has_deriv_vars &&
     (hessianType == "analytic" || supportsEstimDerivs);
   // Most frequent case: build surrogates for all responses
-  if(responseMode == MODEL_DISCREPANCY || 
-     responseMode == AGGREGATED_MODELS ||
-     actualModel.is_null() ||
-     surrogateFnIndices.size() == numFns) {
+  if (responseMode == MODEL_DISCREPANCY || responseMode == AGGREGATED_MODELS ||
+      actualModel.is_null() || surrogateFnIndices.size() == numFns) {
     std::fill(asv.begin(), asv.end(), 1);
     if(has_gradients)
       for(auto &a : asv)
@@ -2578,6 +2643,5 @@ ActiveSet DataFitSurrModel::default_interface_active_set() {
   set.request_vector(asv);
   return set;
 }
-
 
 } // namespace Dakota

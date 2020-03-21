@@ -36,8 +36,6 @@ ScalingModel(Model& sub_model):
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initializing scaling transformation" << std::endl;
 
-  scaleModelInstance = this;
-
   modelId = RecastModel::recast_model_id(root_model_id(), "SCALING");
   // RecastModel is constructed, then later initialized because scaled
   // properties need to be set on the RecastModel, like bounds, but
@@ -943,7 +941,7 @@ void ScalingModel::response_modify_n2s(const Variables& native_vars,
   }
 
   if (outputLevel > NORMAL_OUTPUT)
-    if (start_offset < scaleModelInstance->num_primary_fns())
+    if (start_offset < num_primary_fns())
       Cout << "Primary response after scaling transformation:\n";
     else
       Cout << "Secondary response after scaling transformation:\n";
@@ -1116,7 +1114,7 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
   }
 
   if (outputLevel > NORMAL_OUTPUT)
-    if (start_offset < scaleModelInstance->num_primary_fns())
+    if (start_offset < num_primary_fns())
       Cout << "Primary response after unscaling transformation:\n";
     else
       Cout << "Secondary response after unscaling transformation:\n";

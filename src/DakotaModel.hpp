@@ -22,9 +22,12 @@
 #include "DakotaConstraints.hpp"
 //#include "DakotaInterface.hpp"
 #include "DakotaResponse.hpp"
-#include "DistributionParams.hpp"
+#include "MultivariateDistribution.hpp"
 
-namespace Pecos { class SurrogateData; /* forward declarations */ }
+namespace Pecos { /* forward declarations */
+class SurrogateData;
+class ProbabilityTransformation;
+}
 
 namespace Dakota {
 
@@ -147,28 +150,12 @@ public:
 
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
-  /// set the indices that define the active approximation sub-model
-  /// within surrogate models
-  virtual void surrogate_model_key(unsigned short lf_model_index,
-				 unsigned short lf_soln_lev_index = USHRT_MAX);
-  /// set the index pair that defines the active approximation sub-model
-  /// within surrogate models
-  virtual void surrogate_model_key(const UShortArray& lf_key);
-  /// return the indices of the active approximation sub-model within
-  /// surrogate models
-  virtual const UShortArray& surrogate_model_key() const;
-
+  /// return the active approximation sub-model in surrogate models
+  virtual const Model& surrogate_model() const;
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
-  /// set the indices that define the active truth sub-model within
-  /// surrogate models
-  virtual void truth_model_key(unsigned short hf_model_index,
-			       unsigned short hf_soln_lev_index = USHRT_MAX);
-  /// set the index pair that defines the active truth sub-model within
-  /// surrogate models
-  virtual void truth_model_key(const UShortArray& hf_key);
-  /// return the indices of the active truth sub-model within surrogate models
-  virtual const UShortArray& truth_model_key() const;
+  /// return the active truth sub-model in surrogate models
+  virtual const Model& truth_model() const;
 
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -205,15 +192,60 @@ public:
   /// set the (currently active) surrogate function index set
   virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
 
-  /// initialize model mapping, returns true if the variables size has changed
+  /// return probability transformation employed by the Model (forwarded along
+  /// to ProbabilityTransformModel recasting)
+  virtual Pecos::ProbabilityTransformation& probability_transformation();
+
+  /// Perform any global updates prior to individual evaluate() calls;
+  /// returns true if the variables size has changed
   virtual bool initialize_mapping(ParLevLIter pl_iter);
-  /// finalize model mapping, returns true if the variables size has changed
+  /// restore state in preparation for next initialization;
+  /// returns true if the variables size has changed
   virtual bool finalize_mapping();
-  /// return true if mapping has been fully initialized, false otherwise.
-  virtual bool mapping_initialized() const;
   /// return true if a potential resize is still pending, such that
   /// sizing-based initialization should be deferred
   virtual bool resize_pending() const;
+
+  /// set primaryA{C,DI,DS,DR}VarMapIndices, secondaryA{C,DI,DS,DR}VarMapTargets
+  /// (coming from a higher-level NestedModel context to inform derivative est.)
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
+  /// return primaryACVarMapIndices
+  virtual const SizetArray& nested_acv1_indices() const;
+  /// return secondaryACVarMapTargets
+  virtual const ShortArray& nested_acv2_targets() const;
+  /// calculate and return derivative composition of final results
+  /// w.r.t. distribution parameters (none, all, or mixed)
+  virtual short query_distribution_parameter_derivatives() const;
+  /// activate derivative setting w.r.t. distribution parameters
+  virtual void activate_distribution_parameter_derivatives();
+  /// deactivate derivative setting w.r.t. distribution parameters
+  virtual void deactivate_distribution_parameter_derivatives();
+
+  /// transform x-space gradient vector to u-space
+  virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_u,
+				 const RealVector& x_vars);
+  /// transform u-space gradient vector to x-space
+  virtual void trans_grad_U_to_X(const RealVector& fn_grad_u,
+				 RealVector& fn_grad_x,
+				 const RealVector& x_vars);
+  /// transform x-space gradient vector to gradient with respect to inserted
+  /// distribution parameters
+  virtual void trans_grad_X_to_S(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_s,
+				 const RealVector& x_vars);
+  /// transform x-space Hessian matrix to u-space
+  virtual void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+				 RealSymMatrix& fn_hess_u,
+				 const RealVector& x_vars,
+				 const RealVector& fn_grad_x);
 
   /// build a new SurrogateModel approximation
   virtual void build_approximation();
@@ -297,8 +329,7 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve a SurrogateData instance from a particular Approximation
   /// instance within the ApproximationInterface of a DataFitSurrModel
-  virtual const Pecos::SurrogateData&
-    approximation_data(size_t fn_index, size_t d_index = _NPOS);
+  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within a DataFitSurrModel
@@ -320,8 +351,8 @@ public:
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
 
-  /// link together more than one SurrogateData instance (DataFitSurrModel)
-  virtual void link_multilevel_approximation_data();
+  // link together more than one SurrogateData instance (DataFitSurrModel)
+  //virtual void link_multilevel_approximation_data();
 
   /// retrieve error estimates corresponding to the Model's response
   /// (could be surrogate error for SurrogateModels, statistical MSE for
@@ -337,11 +368,12 @@ public:
   /// return the correction type from the DiscrepancyCorrection object
   /// used by SurrogateModels
   virtual short correction_type();
-  /// apply the DiscrepancyCorrection object to correct an approximation
-  /// within a SurrogateModel
+
+  /// apply a DiscrepancyCorrection to correct an approximation within
+  /// a HierarchSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
-			    const UShortArrayPair& keys);
-  /// apply the DiscrepancyCorrection object to recursively correct an 
+			    const UShortArray& paired_key);
+  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
@@ -466,6 +498,9 @@ public:
   /// return Model's (top-level) evaluation counter, not to be confused
   /// with derived counter returned by derived_evaluation_id()
   int evaluation_id() const;
+
+  // return mappingInitialized
+  bool mapping_initialized() const;
 
   /// allocate communicator partitions for a model and store
   /// configuration in modelPCIterMap
@@ -663,44 +698,6 @@ public:
   /// return all continuous variable identifiers from currentVariables
   SizetMultiArrayConstView  all_continuous_variable_ids()      const;
 
-  /// return the sets of values available for each of the discrete
-  /// design set integer variables
-  const IntSetArray& discrete_design_set_int_values() const;
-  /// define the sets of values available for each of the discrete
-  /// design set integer variables
-  void discrete_design_set_int_values(const IntSetArray& isa);
-  /// return the sets of values available for each of the discrete
-  /// design set string variables
-  const StringSetArray& discrete_design_set_string_values() const;
-  /// define the sets of values available for each of the discrete
-  /// design set string variables
-  void discrete_design_set_string_values(const StringSetArray& ssa);
-  /// return the sets of values available for each of the discrete
-  /// design set real variables
-  const RealSetArray& discrete_design_set_real_values() const;
-  /// define the sets of values available for each of the discrete
-  /// design set real variables
-  void discrete_design_set_real_values(const RealSetArray& rsa);
-
-  /// return the sets of values available for each of the discrete
-  /// state set integer variables
-  const IntSetArray& discrete_state_set_int_values() const;
-  /// define the sets of values available for each of the discrete
-  /// state set integer variables
-  void discrete_state_set_int_values(const IntSetArray& isa);
-  /// return the sets of values available for each of the discrete
-  /// state set string variables
-  const StringSetArray& discrete_state_set_string_values() const;
-  /// define the sets of values available for each of the discrete
-  /// state set string variables
-  void discrete_state_set_string_values(const StringSetArray& ssa);
-  /// return the sets of values available for each of the discrete
-  /// state set real variables
-  const RealSetArray& discrete_state_set_real_values() const;
-  /// define the sets of values available for each of the discrete
-  /// state set real variables
-  void discrete_state_set_real_values(const RealSetArray& rsa);
-
   // array indicating which discrete integer variables are set vs. range?
   /// define and return discreteIntSets using active view from currentVariables
   const BitArray& discrete_int_sets();
@@ -730,18 +727,12 @@ public:
   /// discrete set real variables (aggregated in activeDiscSetRealValues)
   const RealSetArray& discrete_set_real_values(short active_view);
 
-  /// return aleatDistParams
-  Pecos::AleatoryDistParams& aleatory_distribution_parameters();
-  /// return aleatDistParams
-  const Pecos::AleatoryDistParams& aleatory_distribution_parameters() const;
-  /// set aleatDistParams
-  void aleatory_distribution_parameters(const Pecos::AleatoryDistParams& adp);
-  /// return epistDistParams
-  Pecos::EpistemicDistParams& epistemic_distribution_parameters();
-  /// return epistDistParams
-  const Pecos::EpistemicDistParams& epistemic_distribution_parameters() const;
-  /// set epistDistParams
-  void epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp);
+  /// return mvDist
+  Pecos::MultivariateDistribution& multivariate_distribution();
+  /// return mvDist
+  const Pecos::MultivariateDistribution& multivariate_distribution() const;
+  // set mvDist
+  //void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
 
   // LABELS and TAGS
 
@@ -1167,9 +1158,10 @@ protected:
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
   Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
-	ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-	const SharedResponseData& srd, const ActiveSet& set,
-	short output_level);
+	ParallelLibrary& parallel_lib,
+	const SharedVariablesData& svd, bool share_svd,
+	const SharedResponseData&  srd, bool share_srd,
+	const ActiveSet& set, short output_level);
 
   /// constructor initializing base class for recast model instances
   Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
@@ -1221,19 +1213,24 @@ protected:
   //- Heading: Member functions
   //
 
+  /// initialize distribution types from problemDescDB
+  void initialize_distribution(
+    Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
+  /// initialize distribution parameters from problemDescDB
+  void initialize_distribution_parameters(
+    Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
+
   /// default logic for defining asynchEvalFlag and evaluationCapacity
   /// based on ie_pl settings
   void set_ie_asynchronous_mode(int max_eval_concurrency);
 
-  /// set the current value of each string variable offset + i to the
-  /// longest string value found in the admissible string set ssa[i]
-  void string_variable_max(const StringSetArray& ssa, size_t offset, 
-			   Variables& vars) ;
-
-  /// set the current value of each string variable offset + i to the
-  /// longest string value found in the admissible string map srma[i]
-  void string_variable_max(const StringRealMapArray& srma, size_t offset, 
-			   Variables& vars);
+  /// assign all of the longest possible string values into vars
+  void assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
+			  Variables& vars);
+  /// return iterator for longest string value found in string set
+  SSCIter max_string(const StringSet& ss);
+  /// return iterator for longest string value found in string map
+  SRMCIter max_string(const StringRealMap& srm);
 
   /// Initialize data needed for computing finite differences
   /// (active/inactive, center point, and bounds)
@@ -1392,6 +1389,9 @@ protected:
   /// and PRPair
   IntArray messageLengths;
 
+  /// track use of initialize_mapping() and finalize_mapping()
+  bool mappingInitialized;
+
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
       due to circular destruction dependency (reference counts can't
@@ -1404,9 +1404,8 @@ protected:
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
 
-  /// the component parallelism mode: 0 (none),
-  /// 1 (INTERFACE/OPTIONAL_INTERFACE/SURROGATE_MODEL), or
-  /// 2 (SUB_MODEL/TRUTH_MODEL)
+  /// the component parallelism mode: NO_PARALLEL_MODE, SURROGATE_MODEL_MODE,
+  // TRUTH_MODEL_MODE, SUB_MODEL_MODE, INTERFACE_MODE, OPTIONAL_INTERFACE_MODE
   short componentParallelMode;
 
   /// flags asynch evaluations (local or distributed)
@@ -1418,6 +1417,7 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
+  /*
   /// array of IntSet's, each containing the set of allowable integer
   /// values corresponding to a discrete design integer set variable
   IntSetArray discreteDesignSetIntValues;
@@ -1437,11 +1437,11 @@ protected:
   /// array of RealSet's, each containing the set of allowable real
   /// values corresponding to a discrete state real set variable
   RealSetArray discreteStateSetRealValues;
+  */
 
-  /// container for aleatory random variable distribution parameters
-  Pecos::AleatoryDistParams aleatDistParams;
-  /// container for epistemic random variable distribution parameters
-  Pecos::EpistemicDistParams epistDistParams;
+  /// the multivariate random variable distribution (in probability space
+  /// corresponding to currentVariables)
+  Pecos::MultivariateDistribution mvDist;
 
   /// array of flags (one per primary function) for switching the
   /// sense to maximize the primary function (default is minimize)
@@ -1505,17 +1505,6 @@ private:
   /// perform quasi-Newton Hessian updates
   void update_quasi_hessians(const Variables& vars, Response& new_response,
 			     const ActiveSet& original_set);
-
-  /// return the lower bound for a finite difference offset, drawn from
-  /// global or distribution bounds
-  Real finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
-				     const RealVector& global_c_l_bnds,
-				     size_t cv_index) const;
-  /// return the upper bound for a finite difference offset, drawn from
-  /// global or distribution bounds
-  Real finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
-				     const RealVector& global_c_u_bnds,
-				     size_t cv_index) const;
 
   /// Coordinates usage of estimate_derivatives() calls based on asv_in
   bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out, 
@@ -1629,6 +1618,16 @@ private:
   // key for identifying discrete real set variables within the active
   // discrete real variables
   //BitArray discreteRealSets;
+
+  /// previous view used in discrete_set_int_values(view): avoids
+  /// recomputation of activeDiscSetIntValues
+  short prevDSIView;
+  /// previous view used in discrete_set_string_values(view): avoids
+  /// recomputation of activeDiscSetStringValues
+  short prevDSSView;
+  /// previous view used in discrete_set_real_values(view): avoids
+  /// recomputation of activeDiscSetRealValues
+  short prevDSRView;
 
   /// used to collect sub-models for subordinate_models()
   ModelList modelList;
@@ -2205,6 +2204,7 @@ inline SizetMultiArrayConstView Model::all_continuous_variable_ids() const
 }
 
 
+/*
 inline const IntSetArray& Model::discrete_design_set_int_values() const
 {
   return (modelRep) ? modelRep->discreteDesignSetIntValues
@@ -2287,6 +2287,7 @@ inline void Model::discrete_state_set_real_values(const RealSetArray& rsa)
   if (modelRep) modelRep->discreteStateSetRealValues = rsa;
   else          discreteStateSetRealValues = rsa;
 }
+*/
 
 
 inline const BitArray& Model::discrete_int_sets()
@@ -2328,38 +2329,21 @@ inline const RealSetArray& Model::discrete_set_real_values()
 }
 
 
-inline Pecos::AleatoryDistParams& Model::aleatory_distribution_parameters()
-{ return (modelRep) ? modelRep->aleatDistParams : aleatDistParams; }
+inline Pecos::MultivariateDistribution& Model::multivariate_distribution()
+{ return (modelRep) ? modelRep->mvDist : mvDist; }
 
 
-inline const Pecos::AleatoryDistParams& Model::
-aleatory_distribution_parameters() const
-{ return (modelRep) ? modelRep->aleatDistParams : aleatDistParams; }
+inline const Pecos::MultivariateDistribution& Model::
+multivariate_distribution() const
+{ return (modelRep) ? modelRep->mvDist : mvDist; }
 
 
-inline void Model::
-aleatory_distribution_parameters(const Pecos::AleatoryDistParams& adp)
-{
-  if (modelRep) modelRep->aleatDistParams = adp;
-  else          aleatDistParams = adp;
-}
-
-
-inline Pecos::EpistemicDistParams& Model::epistemic_distribution_parameters()
-{ return (modelRep) ? modelRep->epistDistParams : epistDistParams; }
-
-
-inline const Pecos::EpistemicDistParams& Model::
-epistemic_distribution_parameters() const
-{ return (modelRep) ? modelRep->epistDistParams : epistDistParams; }
-
-
-inline void Model::
-epistemic_distribution_parameters(const Pecos::EpistemicDistParams& edp)
-{
-  if (modelRep) modelRep->epistDistParams = edp;
-  else          epistDistParams = edp;
-}
+// inline void Model::
+// multivariate_distribution(const Pecos::MultivariateDistribution& dist)
+// {
+//   if (modelRep) modelRep->mvDist = dist;
+//   else          mvDist = dist;
+// }
 
 
 inline StringMultiArrayConstView Model::continuous_variable_labels() const
@@ -2665,18 +2649,26 @@ inline Real Model::continuous_lower_bound(size_t i) const
 inline void Model::continuous_lower_bounds(const RealVector& c_l_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.continuous_lower_bounds(c_l_bnds);
-  else
+    modelRep->continuous_lower_bounds(c_l_bnds);
+  else {
     userDefinedConstraints.continuous_lower_bounds(c_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(c_l_bnds,
+	currentVariables.shared_data().cv_to_all_mask());
+  }
 }
 
 
 inline void Model::continuous_lower_bound(Real c_l_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.continuous_lower_bound(c_l_bnd, i);
-  else
+    modelRep->continuous_lower_bound(c_l_bnd, i);
+  else {
     userDefinedConstraints.continuous_lower_bound(c_l_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(c_l_bnd,
+	currentVariables.shared_data().cv_index_to_all_index(i));
+  }
 }
 
 
@@ -2697,18 +2689,26 @@ inline Real Model::continuous_upper_bound(size_t i) const
 inline void Model::continuous_upper_bounds(const RealVector& c_u_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.continuous_upper_bounds(c_u_bnds);
-  else
+    modelRep->continuous_upper_bounds(c_u_bnds);
+  else {
     userDefinedConstraints.continuous_upper_bounds(c_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(c_u_bnds,
+	currentVariables.shared_data().cv_to_all_mask());
+  }
 }
 
 
 inline void Model::continuous_upper_bound(Real c_u_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.continuous_upper_bound(c_u_bnd, i);
-  else
+    modelRep->continuous_upper_bound(c_u_bnd, i);
+  else {
     userDefinedConstraints.continuous_upper_bound(c_u_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(c_u_bnd,
+	currentVariables.shared_data().cv_index_to_all_index(i));
+  }
 }
 
 
@@ -2731,18 +2731,26 @@ inline int Model::discrete_int_lower_bound(size_t i) const
 inline void Model::discrete_int_lower_bounds(const IntVector& d_l_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_int_lower_bounds(d_l_bnds);
-  else
+    modelRep->discrete_int_lower_bounds(d_l_bnds);
+  else {
     userDefinedConstraints.discrete_int_lower_bounds(d_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(d_l_bnds,
+	currentVariables.shared_data().div_to_all_mask());
+  }
 }
 
 
 inline void Model::discrete_int_lower_bound(int d_l_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_int_lower_bound(d_l_bnd, i);
-  else
+    modelRep->discrete_int_lower_bound(d_l_bnd, i);
+  else {
     userDefinedConstraints.discrete_int_lower_bound(d_l_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(d_l_bnd,
+	currentVariables.shared_data().div_index_to_all_index(i));
+  }
 }
 
 
@@ -2765,18 +2773,26 @@ inline int Model::discrete_int_upper_bound(size_t i) const
 inline void Model::discrete_int_upper_bounds(const IntVector& d_u_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_int_upper_bounds(d_u_bnds);
-  else
+    modelRep->discrete_int_upper_bounds(d_u_bnds);
+  else {
     userDefinedConstraints.discrete_int_upper_bounds(d_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(d_u_bnds,
+	currentVariables.shared_data().div_to_all_mask());
+  }
 }
 
 
 inline void Model::discrete_int_upper_bound(int d_u_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_int_upper_bound(d_u_bnd, i);
-  else
+    modelRep->discrete_int_upper_bound(d_u_bnd, i);
+  else {
     userDefinedConstraints.discrete_int_upper_bound(d_u_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(d_u_bnd,
+	currentVariables.shared_data().div_index_to_all_index(i));
+  }
 }
 
 
@@ -2799,18 +2815,26 @@ inline Real Model::discrete_real_lower_bound(size_t i) const
 inline void Model::discrete_real_lower_bounds(const RealVector& d_l_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_real_lower_bounds(d_l_bnds);
-  else
+    modelRep->discrete_real_lower_bounds(d_l_bnds);
+  else {
     userDefinedConstraints.discrete_real_lower_bounds(d_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(d_l_bnds,
+	currentVariables.shared_data().drv_to_all_mask());
+  }
 }
 
 
 inline void Model::discrete_real_lower_bound(Real d_l_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_real_lower_bound(d_l_bnd, i);
-  else
+    modelRep->discrete_real_lower_bound(d_l_bnd, i);
+  else {
     userDefinedConstraints.discrete_real_lower_bound(d_l_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(d_l_bnd,
+	currentVariables.shared_data().drv_index_to_all_index(i));
+  }
 }
 
 
@@ -2833,18 +2857,26 @@ inline Real Model::discrete_real_upper_bound(size_t i) const
 inline void Model::discrete_real_upper_bounds(const RealVector& d_u_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_real_upper_bounds(d_u_bnds);
-  else
+    modelRep->discrete_real_upper_bounds(d_u_bnds);
+  else {
     userDefinedConstraints.discrete_real_upper_bounds(d_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(d_u_bnds,
+	currentVariables.shared_data().drv_to_all_mask());
+  }
 }
 
 
 inline void Model::discrete_real_upper_bound(Real d_u_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.discrete_real_upper_bound(d_u_bnd, i);
-  else
+    modelRep->discrete_real_upper_bound(d_u_bnd, i);
+  else {
     userDefinedConstraints.discrete_real_upper_bound(d_u_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(d_u_bnd,
+	currentVariables.shared_data().drv_index_to_all_index(i));
+  }
 }
 
 
@@ -2860,10 +2892,13 @@ inline void Model::
 inactive_continuous_lower_bounds(const RealVector& i_c_l_bnds)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.inactive_continuous_lower_bounds(i_c_l_bnds);
-  else
+    modelRep->inactive_continuous_lower_bounds(i_c_l_bnds);
+  else {
     userDefinedConstraints.inactive_continuous_lower_bounds(i_c_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(i_c_l_bnds,
+	currentVariables.shared_data().icv_to_all_mask());
+  }
 }
 
 
@@ -2879,10 +2914,13 @@ inline void Model::
 inactive_continuous_upper_bounds(const RealVector& i_c_u_bnds)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.inactive_continuous_upper_bounds(i_c_u_bnds);
-  else
+    modelRep->inactive_continuous_upper_bounds(i_c_u_bnds);
+  else {
     userDefinedConstraints.inactive_continuous_upper_bounds(i_c_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(i_c_u_bnds,
+	currentVariables.shared_data().icv_to_all_mask());
+  }
 }
 
 
@@ -2898,10 +2936,13 @@ inline void Model::
 inactive_discrete_int_lower_bounds(const IntVector& i_d_l_bnds)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.inactive_discrete_int_lower_bounds(i_d_l_bnds);
-  else
+    modelRep->inactive_discrete_int_lower_bounds(i_d_l_bnds);
+  else {
     userDefinedConstraints.inactive_discrete_int_lower_bounds(i_d_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(i_d_l_bnds,
+	currentVariables.shared_data().idiv_to_all_mask());
+  }
 }
 
 
@@ -2917,10 +2958,13 @@ inline void Model::
 inactive_discrete_int_upper_bounds(const IntVector& i_d_u_bnds)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.inactive_discrete_int_upper_bounds(i_d_u_bnds);
-  else
+    modelRep->inactive_discrete_int_upper_bounds(i_d_u_bnds);
+  else {
     userDefinedConstraints.inactive_discrete_int_upper_bounds(i_d_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(i_d_u_bnds,
+	currentVariables.shared_data().idiv_to_all_mask());
+  }
 }
 
 
@@ -2936,10 +2980,13 @@ inline void Model::
 inactive_discrete_real_lower_bounds(const RealVector& i_d_l_bnds)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.inactive_discrete_real_lower_bounds(i_d_l_bnds);
-  else
+    modelRep->inactive_discrete_real_lower_bounds(i_d_l_bnds);
+  else {
     userDefinedConstraints.inactive_discrete_real_lower_bounds(i_d_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(i_d_l_bnds,
+	currentVariables.shared_data().idrv_to_all_mask());
+  }
 }
 
 
@@ -2955,10 +3002,13 @@ inline void Model::
 inactive_discrete_real_upper_bounds(const RealVector& i_d_u_bnds)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.inactive_discrete_real_upper_bounds(i_d_u_bnds);
-  else
+    modelRep->inactive_discrete_real_upper_bounds(i_d_u_bnds);
+  else {
     userDefinedConstraints.inactive_discrete_real_upper_bounds(i_d_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(i_d_u_bnds,
+	currentVariables.shared_data().idrv_to_all_mask());
+  }
 }
 
 
@@ -2973,18 +3023,26 @@ inline const RealVector& Model::all_continuous_lower_bounds() const
 inline void Model::all_continuous_lower_bounds(const RealVector& a_c_l_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_continuous_lower_bounds(a_c_l_bnds);
-  else
+    modelRep->all_continuous_lower_bounds(a_c_l_bnds);
+  else {
     userDefinedConstraints.all_continuous_lower_bounds(a_c_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(a_c_l_bnds,
+	currentVariables.shared_data().acv_to_all_mask());
+  }
 }
 
 
 inline void Model::all_continuous_lower_bound(Real a_c_l_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_continuous_lower_bound(a_c_l_bnd, i);
-  else
+    modelRep->all_continuous_lower_bound(a_c_l_bnd, i);
+  else {
     userDefinedConstraints.all_continuous_lower_bound(a_c_l_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(a_c_l_bnd,
+        currentVariables.shared_data().acv_index_to_all_index(i));
+  }
 }
 
 
@@ -2999,18 +3057,26 @@ inline const RealVector& Model::all_continuous_upper_bounds() const
 inline void Model::all_continuous_upper_bounds(const RealVector& a_c_u_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_continuous_upper_bounds(a_c_u_bnds);
-  else
+    modelRep->all_continuous_upper_bounds(a_c_u_bnds);
+  else {
     userDefinedConstraints.all_continuous_upper_bounds(a_c_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(a_c_u_bnds,
+        currentVariables.shared_data().acv_to_all_mask());
+  }
 }
 
 
 inline void Model::all_continuous_upper_bound(Real a_c_u_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_continuous_upper_bound(a_c_u_bnd, i);
-  else
+    modelRep->all_continuous_upper_bound(a_c_u_bnd, i);
+  else {
     userDefinedConstraints.all_continuous_upper_bound(a_c_u_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(a_c_u_bnd,
+        currentVariables.shared_data().acv_index_to_all_index(i));
+  }
 }
 
 
@@ -3025,18 +3091,26 @@ inline const IntVector& Model::all_discrete_int_lower_bounds() const
 inline void Model::all_discrete_int_lower_bounds(const IntVector& a_d_l_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_discrete_int_lower_bounds(a_d_l_bnds);
-  else
+    modelRep->all_discrete_int_lower_bounds(a_d_l_bnds);
+  else {
     userDefinedConstraints.all_discrete_int_lower_bounds(a_d_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(a_d_l_bnds,
+        currentVariables.shared_data().adiv_to_all_mask());
+  }
 }
 
 
 inline void Model::all_discrete_int_lower_bound(int a_d_l_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_discrete_int_lower_bound(a_d_l_bnd, i);
-  else
+    modelRep->all_discrete_int_lower_bound(a_d_l_bnd, i);
+  else {
     userDefinedConstraints.all_discrete_int_lower_bound(a_d_l_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(a_d_l_bnd,
+        currentVariables.shared_data().adiv_index_to_all_index(i));
+  }
 }
 
 
@@ -3051,18 +3125,26 @@ inline const IntVector& Model::all_discrete_int_upper_bounds() const
 inline void Model::all_discrete_int_upper_bounds(const IntVector& a_d_u_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_discrete_int_upper_bounds(a_d_u_bnds);
-  else
+    modelRep->all_discrete_int_upper_bounds(a_d_u_bnds);
+  else {
     userDefinedConstraints.all_discrete_int_upper_bounds(a_d_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(a_d_u_bnds,
+        currentVariables.shared_data().adiv_to_all_mask());
+  }
 }
 
 
 inline void Model::all_discrete_int_upper_bound(int a_d_u_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_discrete_int_upper_bound(a_d_u_bnd, i);
-  else
+    modelRep->all_discrete_int_upper_bound(a_d_u_bnd, i);
+  else {
     userDefinedConstraints.all_discrete_int_upper_bound(a_d_u_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(a_d_u_bnd,
+        currentVariables.shared_data().adiv_index_to_all_index(i));
+  }
 }
 
 
@@ -3077,19 +3159,26 @@ inline const RealVector& Model::all_discrete_real_lower_bounds() const
 inline void Model::all_discrete_real_lower_bounds(const RealVector& a_d_l_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_discrete_real_lower_bounds(a_d_l_bnds);
-  else
+    modelRep->all_discrete_real_lower_bounds(a_d_l_bnds);
+  else {
     userDefinedConstraints.all_discrete_real_lower_bounds(a_d_l_bnds);
+    if (mvDist.global_bounds())
+      mvDist.lower_bounds(a_d_l_bnds,
+        currentVariables.shared_data().adrv_to_all_mask());
+  }
 }
 
 
 inline void Model::all_discrete_real_lower_bound(Real a_d_l_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.all_discrete_real_lower_bound(a_d_l_bnd, i);
-  else
+    modelRep->all_discrete_real_lower_bound(a_d_l_bnd, i);
+  else {
     userDefinedConstraints.all_discrete_real_lower_bound(a_d_l_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.lower_bound(a_d_l_bnd,
+        currentVariables.shared_data().adrv_index_to_all_index(i));
+  }
 }
 
 
@@ -3104,19 +3193,26 @@ inline const RealVector& Model::all_discrete_real_upper_bounds() const
 inline void Model::all_discrete_real_upper_bounds(const RealVector& a_d_u_bnds)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.all_discrete_real_upper_bounds(a_d_u_bnds);
-  else
+    modelRep->all_discrete_real_upper_bounds(a_d_u_bnds);
+  else {
     userDefinedConstraints.all_discrete_real_upper_bounds(a_d_u_bnds);
+    if (mvDist.global_bounds())
+      mvDist.upper_bounds(a_d_u_bnds,
+        currentVariables.shared_data().adrv_to_all_mask());
+  }
 }
 
 
 inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
 {
   if (modelRep)
-    modelRep->
-      userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
-  else
+    modelRep->all_discrete_real_upper_bound(a_d_u_bnd, i);
+  else {
     userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
+    if (mvDist.global_bounds())
+      mvDist.upper_bound(a_d_u_bnd,
+        currentVariables.shared_data().adrv_index_to_all_index(i));
+  }
 }
 
 
@@ -3125,8 +3221,9 @@ Model::reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
 {
   if (modelRep)
-    modelRep->userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
-					     num_lin_ineq_cons, num_lin_eq_cons);
+    modelRep->
+      userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
+				     num_lin_ineq_cons, num_lin_eq_cons);
   else
     userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
 				   num_lin_ineq_cons, num_lin_eq_cons);
@@ -3534,6 +3631,10 @@ inline const IntArray& Model::message_lengths() const
 { return (modelRep) ? modelRep->messageLengths : messageLengths; }
 
 
+inline bool Model::mapping_initialized() const
+{ return (modelRep) ? modelRep->mappingInitialized : mappingInitialized; }
+
+
 inline void Model::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
   if (modelRep) modelRep->modelPCIter = pc_iter;
@@ -3564,6 +3665,26 @@ inline bool Model::is_null() const
 
 inline Model* Model::model_rep() const
 { return modelRep; }
+
+
+inline SSCIter Model::max_string(const StringSet& ss)
+{
+  SSCIter ss_it = ss.begin(),  max_it = ss_it;  ++ss_it;
+  for (; ss_it!=ss.end(); ++ss_it)
+    if (ss_it->size() > max_it->size())
+      max_it = ss_it;
+  return max_it;
+}
+
+
+inline SRMCIter Model::max_string(const StringRealMap& srm)
+{
+  SRMCIter srm_it = srm.begin(),  max_it = srm_it;  ++srm_it;
+  for (; srm_it!=srm.end(); ++srm_it)
+    if (srm_it->first.size() > max_it->first.size())
+      max_it = srm_it;
+  return max_it;
+}
 
 
 /*

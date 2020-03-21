@@ -677,12 +677,12 @@ inline void Optimizer::not_available(const std::string& package_name)
 // Data utilities supporting Opt TPL refactor which may eventually be promoted
 // to a more generally accessible location - RWH
 template <typename VectorType1, typename VectorType2, typename SetArray>
-void copy_data( const VectorType1 & source, 
-                const BitArray & set_bits,
-                const SetArray& set_vars, 
-                      VectorType2 & dest, 
-                      size_t offset,
-                      size_t len)
+void copy_variables( const VectorType1 & source, 
+                     const BitArray & set_bits,
+                     const SetArray& set_vars, 
+                           VectorType2 & dest, 
+                           size_t offset,
+                           size_t len)
 {
   size_t i, index, set_cntr;
 
@@ -710,11 +710,11 @@ void copy_data( const VectorType1 & source,
 
 
 template <typename VectorType1, typename VectorType2, typename SetArray>
-void copy_data( const VectorType1 & source, 
-                const SetArray& set_vars, 
-                      VectorType2 & dest, 
-                      size_t offset,
-                      size_t len)
+void copy_variables( const VectorType1 & source, 
+                     const SetArray& set_vars, 
+                           VectorType2 & dest, 
+                           size_t offset,
+                           size_t len)
 {
   size_t i, index;
   for(i=0; i<len; ++i)
@@ -732,12 +732,12 @@ void copy_data( const VectorType1 & source,
 //----------------------------------------------------------------
 
 template <typename VectorType1, typename VectorType2>
-void copy_data( const VectorType1 & source, 
-                      VectorType2 & dest, 
-                const BitArray & int_set_bits, 
-                const IntSetArray& set_int_vars, 
-                size_t offset,
-                size_t len)
+void copy_variables( const VectorType1 & source, 
+                           VectorType2 & dest, 
+                     const BitArray & int_set_bits, 
+                     const IntSetArray& set_int_vars, 
+                     size_t offset,
+                     size_t len)
 {
   size_t i, dsi_cntr;
   for(i=0, dsi_cntr=0; i<len; ++i)
@@ -821,7 +821,7 @@ void set_variables( const VectorType & source,
   copy_data_partial(source, 0, contVars, 0, num_cont_vars);
   vars.continuous_variables(contVars);
 
-  copy_data(source, discIntVars, int_set_bits, set_int_vars, num_cont_vars, num_disc_int_vars);
+  copy_variables(source, discIntVars, int_set_bits, set_int_vars, num_cont_vars, num_disc_int_vars);
   vars.discrete_int_variables(discIntVars);
 
   // Does this work for more than one discrete Real variables set? - RWH
@@ -861,16 +861,16 @@ void get_variables( Model & model,
   const StringSetArray& pt_set_string = model.discrete_set_string_values();
 
   int offset = 0;
-  copy_data(cvars, vec);
+  copy_data_partial(cvars, 0, vec, offset, cvars.length());
 
   offset = cvars.length();
-  copy_data(divars, int_set_bits, pt_set_int, vec, offset, divars.length());
+  copy_variables(divars, int_set_bits, pt_set_int, vec, offset, divars.length());
 
   offset += divars.length();
-  copy_data(drvars, pt_set_real, vec, offset, drvars.length());
+  copy_variables(drvars, pt_set_real, vec, offset, drvars.length());
 
   offset = drvars.length();
-  copy_data(dsvars, pt_set_string, vec, offset, dsvars.size());
+  copy_variables(dsvars, pt_set_string, vec, offset, dsvars.size());
 }
 
 //----------------------------------------------------------------

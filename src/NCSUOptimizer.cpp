@@ -273,7 +273,8 @@ void NCSUOptimizer::core_run()
 
   // terminate when size of box  w/ f_min < sigmaper*size of orig box
   double sigmaper = (minBoxSize >= 0.) ? minBoxSize : 1.e-4;
-  // terminate when volume of box w/ f_min < volper*volume of orig box
+  // terminate when volume of box w/ f_min < volper percent of the volume of 
+  // orig box
   double volper   = (volBoxSize >= 0.) ? volBoxSize : 1.e-6;
   // convergence tolerance for target solution (DIRECT wants 0. when inactive)
   double fglper   = (solutionTarget > -DBL_MAX) ? convergenceTol : 0.;
@@ -350,8 +351,8 @@ void NCSUOptimizer::core_run()
       Cout << "(prescribed global minimum reached within tolerance)";
       break;;
     case 4:
-      Cout << "(best rectangle reduced from original volume by prescribed "
-	   << "fraction)";
+      Cout << "(volume of best hyperrectangle is less than the "
+        << "prescribed percentage of the original)"; 
       break;;
     case 5:
       Cout << "(best rectangle measure is less than prescribed min box size)";

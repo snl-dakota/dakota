@@ -270,6 +270,7 @@ inline SharedResponseData::SharedResponseData()
 #endif
 }
 
+
 inline SharedResponseData::SharedResponseData(const ProblemDescDB& problem_db):
   srdRep(new SharedResponseDataRep(problem_db))
 {
@@ -278,6 +279,7 @@ inline SharedResponseData::SharedResponseData(const ProblemDescDB& problem_db):
   Cout << "  srdRep use_count = " << srdRep.use_count() << std::endl;
 #endif
 }
+
 
 inline SharedResponseData::SharedResponseData(const ActiveSet& set):
   srdRep(new SharedResponseDataRep(set))

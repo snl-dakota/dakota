@@ -45,8 +45,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void wait_local_evaluations(PRPQueue& prp_queue);
-  void test_local_evaluations(PRPQueue& prp_queue);
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue);
+  void test_local_evaluation_sequence(PRPQueue& prp_queue);
 
   pid_t create_analysis_process(bool block_flag, bool new_group);
 

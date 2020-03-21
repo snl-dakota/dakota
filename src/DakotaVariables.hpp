@@ -197,6 +197,7 @@ public:
   //
 
   size_t tv()         const; ///< total number of vars
+  size_t total_active() const; ///< total number of active vars
   size_t cv()         const; ///< number of active continuous vars
   size_t cv_start()   const; ///< start index of active continuous vars
   size_t div()        const; ///< number of active discrete int vars
@@ -505,6 +506,9 @@ public:
   /// return all discrete real variable position identifiers
   SizetMultiArrayConstView all_discrete_real_variable_ids() const;
 
+  /// get all or active labels in input spec order
+  StringArray ordered_labels(unsigned short vars_part = ALL_VARS) const;
+
   /// a deep variables copy for use in history mechanisms
   /// (SharedVariablesData uses a shallow copy by default)
   Variables copy(bool deep_svd = false) const;
@@ -654,6 +658,13 @@ inline size_t Variables::tv() const
   return (variablesRep) ? variablesRep->tv() :
     allContinuousVars.length()   + allDiscreteIntVars.length() +
     allDiscreteStringVars.size() + allDiscreteRealVars.length();
+}
+
+
+inline size_t Variables::total_active() const
+{
+  return (variablesRep) ? variablesRep->total_active() :
+    cv() + div() + dsv() + drv();
 }
 
 

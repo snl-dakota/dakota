@@ -561,6 +561,7 @@ specific development activities:
     in performing function evaluations synchronously or asynchronously.
 \li \ref VarContainersViews - discussion of data storage for variables
     and explanation of active and inactive views of this data.
+\li \ref demotpl - a README for bringing a new Third-Party Library (TPL) into Dakota
 
 
 \section DevAddtnl Additional Resources

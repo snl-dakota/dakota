@@ -74,22 +74,27 @@ protected:
   //
  
   /// base constructor for DB construction of multilevel/multifidelity PCE
-  NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model);
-  /// base constructor for lightweight construction of 
-  /// multilevel/multifidelity PCE using numerical integration
+  /// (method_name is not necessary, rather it is just a convenient overload
+  /// allowing the derived ML PCE class to bypass the standard PCE ctor)
+  NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
+		      Model& model);
+  /// base constructor for lightweight construction of multifidelity PCE
+  /// using numerical integration
   NonDPolynomialChaos(unsigned short method_name, Model& model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
-		      short ml_discrep, short rule_nest, short rule_growth,
-		      bool piecewise_basis, bool use_derivs);
-  /// base constructor for lightweight construction of 
-  /// multilevel/multifidelity PCE using regression
+		      short ml_alloc_control, short ml_discrep, short rule_nest,
+		      short rule_growth, bool piecewise_basis, bool use_derivs);
+  /// base constructor for lightweight construction of multilevel PCE
+  /// using regression
   NonDPolynomialChaos(unsigned short method_name, Model& model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
-		      short ml_discrep, //short rule_nest, short rule_growth,
+		      short ml_alloc_control, short ml_discrep,
+		      const SizetArray& pilot,
+		      //short rule_nest, short rule_growth,
 		      bool piecewise_basis, bool use_derivs,
 		      Real colloc_ratio, int seed, bool cv_flag);
 
@@ -105,7 +110,7 @@ protected:
 
   void initialize_u_space_model();
 
-  /// form or import an orthogonal polynomial expansion using PCE methods
+  //void initialize_expansion();
   void compute_expansion();
 
   void select_refinement_points(const RealVectorArray& candidate_samples,
@@ -135,9 +140,6 @@ protected:
   //
   //- Heading: Member functions
   //
-
-  /// generate new samples from numSamplesOnModel and update expansion
-  void append_expansion();
 
   /// configure exp_orders from inputs
   void config_expansion_orders(unsigned short exp_order,
@@ -189,7 +191,8 @@ protected:
   /// factor applied to terms^termsOrder in computing number of regression
   /// points, either user specified or inferred
   Real collocRatio;
-  /// option for regression PCE using a filtered set tensor-product points
+  /// option for regression PCE using a filtered set of tensor-product
+  /// quadrature points
   bool tensorRegression;
 
   /// flag for use of cross-validation for selection of parameter settings
@@ -199,19 +202,8 @@ protected:
   /// tolerance in order to manage computational cost
   bool crossValidNoiseOnly;
 
-  /// user specified import build points file
+  /// user-specified file for importing build points
   String importBuildPointsFile;
-  /// user specified import build file format
-  unsigned short importBuildFormat;
-  /// user specified import build active only
-  bool importBuildActiveOnly;
-
-  /// user specified import approx. points file
-  String importApproxPointsFile;
-  /// user specified import approx. file format
-  unsigned short importApproxFormat;
-  /// user specified import approx. active only
-  bool importApproxActiveOnly;
 
   /// filename for import of chaos coefficients
   String expansionImportFile;
@@ -293,27 +285,17 @@ private:
 inline void NonDPolynomialChaos::
 append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  // adapt the expansion in sync with the dataset
-  numSamplesOnModel += resp_map.size();
-  if (expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION)
+  switch (expansionCoeffsApproach) {
+  case Pecos::ORTHOG_LEAST_INTERPOLATION: // no exp order update
+    NonDExpansion::append_expansion(samples, resp_map); break;
+  default:
+    // adapt the expansion in sync with the dataset
+    numSamplesOnModel += resp_map.size();
     increment_order_from_grid();
-
-  // utilize rebuild following expansion updates
-  uSpaceModel.append_approximation(samples, resp_map, true);
-}
-
-
-inline void NonDPolynomialChaos::append_expansion()
-{
-  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
-  //         increment_order_from_grid() called
-
-  // Run uSpaceModel::daceIterator to generate numSamplesOnModel
-  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
-						    true, false);
-  uSpaceModel.run_dace();
-  // append new DACE pts and rebuild expansion
-  uSpaceModel.append_approximation(true);
+    // utilize rebuild following expansion updates
+    uSpaceModel.append_approximation(samples, resp_map, true);
+    break;
+  }
 }
 
 

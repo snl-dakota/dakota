@@ -17,7 +17,7 @@
 #include "H5Cpp.h"      // C++ API
 #include "hdf5.h"       // C API
 #include "hdf5_hl.h"    // C H5Lite API
-
+#include "H5CompType.h"
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -41,6 +41,10 @@ HDF5IOHelper::HDF5IOHelper(const std::string& file_name, bool overwrite) :
   // create or open a file
   //H5::Exception::dontPrint();
   if( overwrite ) {
+    // In H5F_ACC_TRUNC mode, if the file exists, HDF5 tries to open it
+    // in read/write mode. This fails if the file is corrupt, so we
+    // need to remove it first.  
+    std::remove(fileName.c_str());
     h5File = H5::H5File(fileName.c_str(), H5F_ACC_TRUNC);
   } else {
     try {
@@ -131,6 +135,14 @@ void HDF5IOHelper::set_vector(const String &dset_name, H5::DataSet &ds,
 
   std::vector<const char *> ptrs_to_data = pointers_to_strings(data);
   set_vector(dset_name, ds, ptrs_to_data, index, row);
+}
+
+/// Set a field on all elements of a 1D dataset of compound type using a ds object.
+void HDF5IOHelper::set_vector_vector_field(const String &dset_name, H5::DataSet &ds,
+                     const std::vector<String> &data, const size_t length,
+                     const String &field_name) {
+  std::vector<const char *> ptrs_to_data = pointers_to_strings(data);
+  set_vector_vector_field(dset_name, ds, ptrs_to_data, length, field_name);
 }
 
 /// Append a scalar to a 1D dataset
@@ -349,21 +361,8 @@ create_empty_dataset(const String &dset_name, const IntArray &dims,
                   const void* fill_val) 
 {
   create_groups(dset_name);
-  H5::DataType h5_type, fill_type;
-  switch (stored_type) {
-    case ResultsOutputType::REAL:
-      h5_type = h5_file_dtype(double(0.0));
-      fill_type = h5_mem_dtype(double(0.0));
-      break;
-    case ResultsOutputType::INTEGER:
-      h5_type = h5_file_dtype(int(0));
-      fill_type = h5_mem_dtype(int(0));
-      break;
-    case ResultsOutputType::STRING:
-      h5_type = h5_file_dtype(String(""));
-      fill_type = h5_mem_dtype(String(""));
-      break;
-  }
+  H5::DataType h5_type = h5_file_dtype(stored_type);
+  H5::DataType fill_type = h5_mem_dtype(stored_type);
   hsize_t element_size = h5_type.getSize();
   int rank = dims.size();
   //hsize_t fdims[rank];
@@ -425,6 +424,42 @@ create_empty_dataset(const String &dset_name, const IntArray &dims,
     H5::DataSpace dataspace = H5::DataSpace(rank, fdims.get());
     create_dataset(h5File, dset_name, h5_type, dataspace);
   }
+}
+
+/// Create a dataset with compound type
+void HDF5IOHelper::create_empty_dataset(const String &dset_name, const IntArray &dims, 
+                         const std::vector<VariableParametersField> &fields) {
+
+  create_groups(dset_name);
+  // 1. Create the fields as a vector of H5::DataTypes
+  // 2. Create the Compound
+  std::vector< std::unique_ptr<H5::DataType> > field_t;
+  for(const auto &f : fields) {
+    if(f.dims.empty()) { // scalar
+      field_t.emplace(field_t.end(), new H5::DataType(h5_file_dtype(f.type)));
+    } else { // non-scalar dataset field
+      int ndims = f.dims.size();
+      std::unique_ptr<hsize_t[]> field_dims(new hsize_t[ndims]);
+      std::copy(f.dims.begin(), f.dims.end(), field_dims.get());
+      field_t.emplace(field_t.end(),
+          new H5::ArrayType(h5_file_dtype(f.type), ndims, field_dims.get()));
+    }
+  }
+  size_t comp_t_size = 0;
+  for(const auto &f : field_t)
+    comp_t_size += f->getSize();
+  H5::CompType comp_t(comp_t_size);
+  size_t comp_t_offset = 0;
+  for(int i = 0; i < fields.size(); ++i) {
+    comp_t.insertMember(fields[i].name, comp_t_offset, *field_t[i]);
+    comp_t_offset += field_t[i]->getSize();
+  }
+
+  int rank = dims.size();
+  std::unique_ptr<hsize_t[]> fdims(new hsize_t[rank]);
+  std::copy(dims.begin(), dims.end(), fdims.get());
+  H5::DataSpace dataspace = H5::DataSpace(rank, fdims.get());
+  create_dataset(h5File, dset_name, comp_t, dataspace);
 }
 
 bool HDF5IOHelper::is_scale(const H5::DataSet dset) const
