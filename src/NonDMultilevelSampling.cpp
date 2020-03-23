@@ -697,7 +697,7 @@ static RealVector *static_lev_cost_vec(NULL);
       RealVectorArray mu_hat_ref(num_steps);
       RealVector agg_var_mean_qoi_ref(numFunctions), agg_var_var_qoi_ref(numFunctions), agg_var_qoi_ref(numFunctions);
 
-      configure_indices(num_steps-1, model_form, cost, lev_cost);
+      configure_indices(num_steps-1, model_form, lev, seq_index);
 
       numSamples = 10000;
 
@@ -715,14 +715,14 @@ static RealVector *static_lev_cost_vec(NULL);
       for (qoi = 0; qoi < numFunctions; ++qoi) {
         num_samples_array[qoi] = numSamples;
       }
-      accumulate_ml_Qsums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_lev-1,
-                          mu_hat_ref[num_lev-1], num_samples_array);
+      accumulate_ml_Qsums(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, num_steps-1,
+                          mu_hat_ref[num_steps-1], num_samples_array);
       Real agg_var_l_ref = 0;
       if (sampleAllocationType==AGGREGATED_VARIANCE) {
         if (targetMoment == 1) {
-          agg_var_l_ref = aggregate_variance_Qsum(sum_Ql_ref[1][num_lev-1], sum_Qlm1_ref[1][lev],
-                                              sum_Ql_ref[2][num_lev-1], sum_QlQlm1_ref[pr11][lev], sum_Qlm1_ref[2][lev],
-                                                  num_samples_array, num_lev-1);
+          agg_var_l_ref = aggregate_variance_Qsum(sum_Ql_ref[1][num_steps-1], sum_Qlm1_ref[1][lev],
+                                              sum_Ql_ref[2][num_steps-1], sum_QlQlm1_ref[pr11][lev], sum_Qlm1_ref[2][lev],
+                                                  num_samples_array, num_steps-1);
         } else if (targetMoment == 2) {
           for (qoi = 0; qoi < numFunctions; ++qoi) {
             agg_var_l_ref += var_of_var_ml_lmax(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, numSamples,
@@ -738,7 +738,7 @@ static RealVector *static_lev_cost_vec(NULL);
         for (qoi = 0; qoi < numFunctions; ++qoi) {
           num_samples_array[qoi] = numSamples;
 
-          agg_var_mean_qoi_ref[qoi] = variance_Ysum(sum_Ql_ref[1][num_lev-1][qoi], sum_Ql_ref[2][num_lev-1][qoi], numSamples);
+          agg_var_mean_qoi_ref[qoi] = variance_Ysum(sum_Ql_ref[1][num_steps-1][qoi], sum_Ql_ref[2][num_steps-1][qoi], numSamples);
 
           agg_var_var_qoi_ref[qoi] = var_of_var_ml_lmax(sum_Ql_ref, sum_Qlm1_ref, sum_QlQlm1_ref, numSamples,
                                                                           100, qoi, false, place_holder) *
@@ -1132,7 +1132,7 @@ static RealVector *static_lev_cost_vec(NULL);
           Cout << "\t\tQoi: " << qoi << "\n\t\t\t";
           for (step=0; step<num_steps; ++step) {
             assert(N_target_qoi(qoi, step) >= 0);
-            delta_N_l_qoi(qoi, step) = one_sided_delta(N_l[step][qoi], std::ceil(N_target_qoi(qoi, step)));
+            delta_N_l_qoi(qoi, step) = std::min(N_l[step][qoi]*2, one_sided_delta(N_l[step][qoi], std::ceil(N_target_qoi(qoi, step))));
             Cout << delta_N_l_qoi(qoi, step) << ", \t";
           }
           Cout << "\n";
