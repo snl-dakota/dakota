@@ -246,11 +246,11 @@ public:
 
   /// return primary moments using Pecos::PolynomialApproximation::moments()
   const RealVector& moments() const;
-  /// return Pecos::PolynomialApproximation::expansionMoments
+  /// return expansion moments from Pecos::PolynomialApproximation
   const RealVector& expansion_moments() const;
-  /// return Pecos::PolynomialApproximation::numericalMoments
+  /// return numerical moments from Pecos::PolynomialApproximation
   const RealVector& numerical_integration_moments() const;
-  /// return Pecos::PolynomialApproximation::combinedMoments
+  /// return combined moments from multilevel-muktifidelity expansion roll-up
   const RealVector& combined_moments() const;
 
   /// return primary moment using Pecos::PolynomialApproximation::moment(i)
